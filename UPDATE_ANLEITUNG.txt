@@ -1,0 +1,25 @@
+GERLIES FUT V10.1 – UPDATE AUF DEM HANDY
+
+DAS IST EIN ERSATZ-UPDATE FÜR DIE AKTUELLEN GITHUB-PAGES-DATEIEN.
+
+1. Dieses ZIP auf dem Handy entpacken.
+2. Dein GitHub-Repository Gerlies-FUT öffnen.
+3. Add file -> Upload files.
+4. ALLE Dateien aus dem entpackten V10.1-Ordner hochladen.
+5. Gleichnamige Dateien werden mit dem neuen Commit aktualisiert.
+6. Commit changes.
+7. Unter Actions warten, bis "pages build and deployment" grün ist.
+8. Danach denselben Link öffnen:
+   https://basti17svh-cloud.github.io/Gerlies-FUT/
+9. Falls noch die alte Seite erscheint:
+   - Browser-Seite vollständig neu laden.
+   - Eine installierte Gerlies-FUT-PWA komplett schließen und erneut öffnen.
+   - Der neue Service Worker löscht alte Gerlies-FUT-Shell-Caches beim Aktivieren.
+
+WICHTIG
+- Der alte EA-Live-Synchronisierungsweg ist entfernt.
+- Beim ersten Start versucht V10.1 eine statische FC27-CSV-Datei von GitHub zu laden.
+- Falls GitHub Raw nicht erreichbar ist, wird automatisch jsDelivr versucht.
+- Ein Datensatz wird nur akzeptiert, wenn die Plausibilitäts- und Ratingtests bestehen.
+- Danach wird er lokal im Gerät gespeichert.
+- Dein Bruder behält denselben GitHub-Pages-Link.

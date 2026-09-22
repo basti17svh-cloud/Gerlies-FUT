@@ -2,8 +2,8 @@
   "id": "./",
   "name": "Gerlies FUT",
   "short_name": "Gerlies FUT",
-  "description": "FUT-inspiriertes Fußball-Sammel-, Squad- und Manager-Spiel.",
-  "start_url": "./index.html",
+  "description": "Gerlies FUT V10.1 – PWA mit validiertem FC-27-Datenloader.",
+  "start_url": "./index.html?v=10.1",
   "scope": "./",
   "display": "standalone",
   "display_override": [

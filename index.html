@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V10</title>
+<title>Gerlies FUT V10.1</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -110,26 +110,31 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .pwa-install-card button{width:100%}
 .pwa-installed{color:#8effbb;font-size:7px;font-weight:900}
 
+
+.face img{width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;filter:drop-shadow(0 4px 5px rgba(0,0,0,.2))}
+.dbsource{margin-top:8px;padding:8px;border-radius:8px;background:#0b1210;border:1px solid #26362f;color:#92a29c;font-size:7px;line-height:1.45}
+.dbsource.ok{border-color:#365f46;color:#9df1b8}.dbsource.warn{border-color:#64404a;color:#ffb0bc}
 </style>
 </head>
 <body>
 
 <div id="dbGate" class="dbgate">
   <div class="dbinner">
-    <div class="gatebrand"><div class="mark">GFUT</div><h1>Gerlies FUT</h1><p>Beim ersten Start wird die aktuelle FC‑27-Basisdatenbank geladen und lokal gespeichert. Direkter Abruf und Proxy-Fallback werden automatisch getestet.</p></div>
+    <div class="gatebrand"><div class="mark">GFUT</div><h1>Gerlies FUT</h1><p>Beim ersten Start lädt Gerlies FUT einen geprüften FC‑27-Datensatz aus einer statischen GitHub-Datenquelle und speichert ihn lokal. Es gibt keinen EA-Liveabruf und keinen Proxy mehr.</p></div>
     <div class="dbstatus">
       <h3 id="dbTitle">FC‑27-Datenbank vorbereiten</h3>
       <p id="dbText">Prüfe lokalen Datenspeicher …</p>
       <div class="progress"><div id="dbBar"></div></div>
       <div class="dbnumbers"><span id="dbCount">0 Spieler</span><span id="dbPercent">0%</span></div>
       <button id="dbRetry" class="primary" style="width:100%;margin-top:11px;display:none">Erneut versuchen</button>
-      <button id="dbReset" class="secondary" style="width:100%;margin-top:7px;display:none">Datenbank neu synchronisieren</button>
+      <button id="dbReset" class="secondary" style="width:100%;margin-top:7px;display:none">Datenbank neu laden</button>
+      <button id="dbOffline" class="secondary" style="width:100%;margin-top:7px;display:none">Nur Oberfläche testen</button>
       <div id="dbWarn" class="apiwarn"></div>
       <div class="pwa-install-card">
         <strong>Gerlies FUT als App installieren</strong>
         <p id="pwaInstallHint">Sobald diese Seite über HTTPS geöffnet wird, kannst du Gerlies FUT direkt auf dem Homescreen installieren.</p>
         <button id="pwaInstallBtn" class="primary">App installieren</button>
-      </div><div style="margin-top:8px;color:#7f8e89;font-size:7px;line-height:1.45">Quelle: EA SPORTS FC Ratings/Drop API. Proxy-Fallback nur für Browser-Kompatibilität; keine erfundenen Ratings.</div>
+      </div><div style="margin-top:8px;color:#7f8e89;font-size:7px;line-height:1.45">Datenquelle: öffentlicher FC‑27-Datensatz (GitHub) mit Validierung gegen bekannte FC‑27-Ratinganker. Keine künstliche Herabstufung von Spieler-Ratings.</div>
     </div>
   </div>
 </div>
@@ -293,10 +298,18 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 
 
 <script>
-const EA_API="https://drop-api.ea.com/rating/ea-sports-fc";
-const JINA_PREFIX="https://r.jina.ai/";
-const EXPECTED_TOTAL=19789;
-const LEAGUE_CHOICES=["Bundesliga","Premier League","LALIGA EA SPORTS","Serie A Enilive","Ligue 1 McDonald's"];
+const DB_SOURCES=[
+ {name:"GitHub FC27 CSV",url:"https://raw.githubusercontent.com/mzafram2001/ea-fc/main/data/dataset_ea_fc_27.csv"},
+ {name:"jsDelivr FC27 CSV",url:"https://cdn.jsdelivr.net/gh/mzafram2001/ea-fc@main/data/dataset_ea_fc_27.csv"}
+];
+const DB_MIN_PLAYERS=10000;
+const LEAGUE_CHOICES=[
+ {id:"bundesliga",label:"Bundesliga",aliases:["Bundesliga"]},
+ {id:"premier",label:"Premier League",aliases:["Premier League"]},
+ {id:"laliga",label:"LALIGA EA SPORTS",aliases:["LALIGA EA SPORTS","La Liga"]},
+ {id:"seriea",label:"Serie A",aliases:["Serie A Enilive","Serie A"]},
+ {id:"ligue1",label:"Ligue 1",aliases:["Ligue 1 McDonald's","Ligue 1"]}
+];
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n||0).toLocaleString("de-DE");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -369,283 +382,106 @@ const SBCS=[
 ];
 
 function baseState(){return{
- version:9,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(18).fill(null),packs:{},
+ version:101,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(18).fill(null),packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,packs:0,sbcs:0,market:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},
  roles:{},focus:{},activeEvo:null,evoProgress:{},profile:{clubName:"Gerlies FUT Club"},friends:[],auctions:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return x?{...b,...x,version:9,stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[]}:b
+  return x?{...b,...x,version:101,stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[]}:b
  }catch(e){return baseState()}
 }
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB101",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 async function idbPutMany(arr){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readwrite"),s=t.objectStore("players");for(const p of arr)s.put(p);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 
-function first(raw,...keys){for(const k of keys){if(raw?.[k]!==undefined&&raw?.[k]!==null&&raw?.[k]!=="")return raw[k]}return ""}
-function norm(raw){
- const name=first(raw,"commonName","name","Name","playerName","displayName","shortName","longName");
- const team=first(raw,"teamName","team","Team","club","Club");
- const id=String(first(raw,"eaId","id","ID","playerId","playerid","assetId")||`${name}-${team}`);
- const num=(...k)=>Number(first(raw,...k))||0;
- let alt=first(raw,"alternativePositions","alternative positions","altPositions","alternatePositions","secondaryPositions");
- if(Array.isArray(alt))alt=alt.join(",");
- const image=first(raw,
-   "playerShieldUrl","shieldUrl","cardImageUrl","cardUrl","imageUrl","avatarUrl",
-   "playerImageUrl","playerImage","image","shield"
- );
- return{
-  id,
-  name,
-  gender:first(raw,"gender","Gender"),
-  ovr:num("overallRating","ovr","OVR","rating"),
-  pac:num("stat_pac","pace","pac","PAC"),
-  sho:num("stat_sho","shooting","sho","SHO"),
-  pas:num("stat_pas","passing","pas","PAS"),
-  dri:num("stat_dri","dribbling","dri","DRI"),
-  def:num("stat_def","defending","def","DEF"),
-  phy:num("stat_phy","physicality","physical","phy","PHY"),
-  position:String(first(raw,"position","Position","pos")||"CM").toUpperCase(),
-  alt:String(alt||""),
-  nation:first(raw,"nationality","nation","Nation"),
-  league:first(raw,"leagueName","league","League"),
-  team,
-  card:image,
-  url:first(raw,"url","playerUrl","profileUrl"),
-  playstyles:first(raw,"playstyles","playStyles"),
-  playstylesPlus:first(raw,"playstyles_plus","playstylesPlus","playStylesPlus")
- }
+function first(raw,...keys){for(const k of keys){if(raw?.[k]!==undefined&&raw?.[k]!==null&&String(raw[k]).trim()!=="")return raw[k]}return ""}
+function cleanNum(v){const n=Number(String(v??"").replace(/[^0-9.-]/g,""));return Number.isFinite(n)?n:0}
+function csvRow(line){const out=[];let cur="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(c===','&&!q){out.push(cur);cur=""}else cur+=c}out.push(cur);return out}
+function parseCSV(text){const lines=String(text||"").replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim().length);if(lines.length<2)throw new Error("CSV enthält keine Datensätze");const headers=csvRow(lines[0]).map(x=>x.trim());const rows=[];for(let i=1;i<lines.length;i++){const vals=csvRow(lines[i]);if(vals.length<3)continue;const r={};for(let c=0;c<headers.length;c++)r[headers[c]]=vals[c]??"";rows.push(r)}return rows}
+function sofifaFace(id){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/27_120.png`}
+function normCSV(raw){
+ const id=String(first(raw,"sofifa_id","player_id","ea_id","id"));
+ const name=String(first(raw,"short_name","common_name","name","long_name")).trim();
+ const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
+ const face=String(first(raw,"player_face_url","player_face","face_url","image_url")||sofifaFace(id));
+ return{id,name,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),league:String(first(raw,"league_name","league")),team:String(first(raw,"club_name","team_name","club","team")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),source:"fc27-open-data"}
 }
-function rarityOf(p){const r=Number(p.ovr||0);return r>=75?"gold":r>=65?"silver":"bronze"}
+function rarityOf(p){const r=Number(p?.ovr||0);return r>=75?"gold":r>=65?"silver":"bronze"}
 function cardClass(p,item){return item?.evo?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(item.evo||0)):0}
 function displayBase(item){const b=itemBase(item);return b?{...b,ovr:itemRating(item)}:null}
 function makeItem(base,tradeable=false){return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0}}
-
-function candidateCardUrl(p){
- if(p.card && /^https?:\/\//i.test(String(p.card)))return String(p.card);
- return "";
-}
 function cardHTML(p,item=null,mini=false){
- if(!p)return"";
- const cls=cardClass(p,item),url=candidateCardUrl(p),r=item?itemRating(item):p.ovr;
- const fallback=`<div class="custom-card ${cls}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(p.position)}</div></div><div class="face"><span>${esc(p.name.split(/\s+/).map(x=>x[0]).slice(0,2).join(""))}</span></div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(p.team)} · ${esc(p.nation)}</div><div class="stats">${[["PAC",p.pac],["SHO",p.sho],["PAS",p.pas],["DRI",p.dri],["DEF",p.def],["PHY",p.phy]].map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
- return`<div class="${mini?"mini":""}"><div class="card-shell">${url?`<img class="official-card" src="${esc(url)}" alt="${esc(p.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`:""}<div style="${url?"display:none":""}">${fallback}</div></div></div>`
+ if(!p)return"";const cls=cardClass(p,item),r=item?itemRating(item):p.ovr,initials=p.name.split(/\s+/).map(x=>x[0]).slice(0,2).join('');
+ const face=p.face?`<img src="${esc(p.face)}" alt="${esc(p.name)}" onerror="this.remove();this.parentElement.querySelector('span').style.display='block'">`:"";
+ const body=`<div class="custom-card ${cls}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(p.position)}</div></div><div class="face">${face}<span style="${p.face?'display:none':''}">${esc(initials)}</span></div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(p.team)} · ${esc(p.nation)}</div><div class="stats">${[["PAC",p.pac],["SHO",p.sho],["PAS",p.pas],["DRI",p.dri],["DEF",p.def],["PHY",p.phy]].map(x=>`<span><b>${x[1]||'-'}</b>${x[0]}</span>`).join("")}</div></div></div>`;
+ return`<div class="${mini?"mini":""}"><div class="card-shell">${body}</div></div>`
 }
-
-function extractJsonFromReaderPayload(text){
- const trimmed=String(text||"").trim();
- if(!trimmed)throw new Error("Leere Proxy-Antwort");
- try{
-   const direct=JSON.parse(trimmed);
-   if(direct && Array.isArray(direct.items))return direct;
-   const nested=direct?.data?.content ?? direct?.content ?? direct?.data;
-   if(typeof nested==="string"){
-     const a=nested.indexOf("{"),b=nested.lastIndexOf("}");
-     if(a>=0&&b>a)return JSON.parse(nested.slice(a,b+1));
-   }
- }catch(e){}
- const a=trimmed.indexOf("{"),b=trimmed.lastIndexOf("}");
- if(a>=0&&b>a){
-   try{return JSON.parse(trimmed.slice(a,b+1))}catch(e){}
- }
- throw new Error("Proxy-Antwort enthält kein lesbares EA-JSON");
+function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function validateDatabase(players){
+ if(!Array.isArray(players)||players.length<DB_MIN_PLAYERS)return{ok:false,reason:`Nur ${players?.length||0} Spieler gefunden`};
+ const valid=players.filter(p=>p.id&&p.name&&p.ovr>=40&&p.ovr<=99&&p.position).length;if(valid/players.length<.95)return{ok:false,reason:"Zu viele unvollständige Datensätze"};
+ const anchors=[['mbapp',91],['haaland',91],['yamal',90]];
+ for(const [needle,ovr] of anchors){const p=players.find(x=>normalizeKey(x.name).includes(needle));if(!p||p.ovr!==ovr)return{ok:false,reason:`Ratinganker ${needle} fehlt oder ist nicht ${ovr}`}}
+ const counts={gold:0,silver:0,bronze:0};players.forEach(p=>counts[rarityOf(p)]++);if(counts.gold<1000||counts.silver<1000||counts.bronze<500)return{ok:false,reason:"Gold/Silber/Bronze-Verteilung unplausibel"};
+ const leagueKeys=players.map(p=>normalizeKey(p.league)).filter(Boolean);const must=[["Bundesliga",k=>k==="bundesliga"],["Premier League",k=>k==="premier league"],["LaLiga",k=>k.includes("la liga")||k.includes("laliga")],["Serie A",k=>k.startsWith("serie a")],["Ligue 1",k=>k.startsWith("ligue 1")]];for(const [label,test] of must){if(leagueKeys.filter(test).length<15)return{ok:false,reason:`Liga ${label} fehlt oder ist unvollständig`}}
+ const withTeam=players.filter(p=>p.team).length,withNation=players.filter(p=>p.nation).length;if(withTeam/players.length<.85||withNation/players.length<.85)return{ok:false,reason:"Vereins-/Nationalitätsfelder unvollständig"};
+ return{ok:true,counts}
 }
-
-async function fetchWithTimeout(url,options={},ms=30000){
- const controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),ms);
- try{
-   return await fetch(url,{...options,signal:controller.signal});
- }finally{
-   clearTimeout(timer);
- }
-}
-
-async function fetchPageDirect(offset,gender,limit){
- const q=new URLSearchParams({locale:"en",limit:String(limit),offset:String(offset),gender:String(gender)});
- const r=await fetchWithTimeout(`${EA_API}?${q.toString()}`,{mode:"cors"},22000);
- if(!r.ok)throw new Error(`EA HTTP ${r.status}`);
- const d=await r.json();
- return{items:Array.isArray(d.items)?d.items:[],total:Number(d.total||d.totalItems||d.totalCount||d.count||0),via:"direct"}
-}
-
-async function fetchPageProxy(offset,gender,limit,attempt=0){
- const q=new URLSearchParams({locale:"en",limit:String(limit),offset:String(offset),gender:String(gender)});
- const target=`${EA_API}?${q.toString()}`;
- const proxy=`${JINA_PREFIX}${target}`;
- const r=await fetchWithTimeout(proxy,{mode:"cors"},45000);
- if(r.status===429||r.status===503){
-   if(attempt>=5)throw new Error(`Proxy HTTP ${r.status}`);
-   await sleep(4500*(attempt+1));
-   return fetchPageProxy(offset,gender,limit,attempt+1);
- }
- if(!r.ok)throw new Error(`Proxy HTTP ${r.status}`);
- const text=await r.text();
- const d=extractJsonFromReaderPayload(text);
- return{items:Array.isArray(d.items)?d.items:[],total:Number(d.total||d.totalItems||d.totalCount||d.count||0),via:"proxy"}
-}
-
-let DATA_ROUTE="unknown";
-async function fetchPageSmart(offset,gender,limit){
- if(DATA_ROUTE!=="proxy"){
-   try{
-     const out=await fetchPageDirect(offset,gender,limit);
-     DATA_ROUTE="direct";
-     return out;
-   }catch(err){
-     if(DATA_ROUTE==="direct")throw err;
-   }
- }
- const out=await fetchPageProxy(offset,gender,limit);
- DATA_ROUTE="proxy";
- return out;
-}
-
+async function fetchText(url,ms=45000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:"no-store",signal:c.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);const text=await r.text();if(text.length<100000)throw new Error("Antwort ist zu klein");return text}finally{clearTimeout(t)}}
+let DATA_ROUTE="cache";
+async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
+async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
 async function syncDatabase(force=false){
- $("dbRetry").style.display="none";
- $("dbReset").style.display="none";
- $("dbWarn").textContent="";
- $("dbTitle").textContent="FC‑27-Datenbank wird synchronisiert";
- $("dbText").textContent="Teste direkten EA-Abruf. Falls dein Browser lokale Cross-Origin-Anfragen blockiert, wird automatisch der Proxy-Fallback verwendet.";
- $("dbBar").style.width="1%";
- DATA_ROUTE="unknown";
-
+ $("dbRetry").style.display="none";$("dbReset").style.display="none";$("dbOffline").style.display="none";$("dbWarn").textContent="";$("dbTitle").textContent="FC‑27-Datenbank wird vorbereitet";$("dbText").textContent="Prüfe lokalen Datenspeicher …";$("dbBar").style.width="5%";
  try{
-   if(force)await idbClear();
-
-   let existing=await idbCount();
-   let loaded=existing;
-   const seen=new Set((await idbAll()).map(p=>String(p.id)));
-
-   async function syncGender(gender){
-     // Probe with a high limit first. If EA caps it to 100, the returned page size
-     // becomes the real step. This keeps the loader future-proof.
-     let probe=await fetchPageSmart(0,gender,1000);
-     let step=Math.max(1,probe.items.length||100);
-     let total=probe.total||0;
-
-     async function store(items){
-       const normalized=items.map(norm).filter(p=>p.name&&p.ovr&&p.id);
-       const fresh=normalized.filter(p=>!seen.has(String(p.id)));
-       fresh.forEach(p=>seen.add(String(p.id)));
-       if(fresh.length){
-         await idbPutMany(fresh);
-         loaded+=fresh.length;
-       }
-       const pc=Math.min(99,Math.max(1,Math.round(loaded/EXPECTED_TOTAL*100)));
-       $("dbBar").style.width=`${pc}%`;
-       $("dbCount").textContent=`${fmt(loaded)} / ca. ${fmt(EXPECTED_TOTAL)} Spieler`;
-       $("dbPercent").textContent=`${pc}%`;
-       $("dbText").textContent=DATA_ROUTE==="direct"
-         ?"Direkter EA-Abruf aktiv."
-         :"Proxy-Fallback aktiv. Der Browser lädt die EA-Daten jetzt über einen lesbaren HTTPS-Zwischenweg.";
-     }
-
-     await store(probe.items);
-     if(probe.items.length<step)return;
-
-     let offset=step;
-     let emptyPages=0;
-     while(offset<30000){
-       // In direct mode we can use a larger batch. Anonymous Reader traffic is rate-limited,
-       // so proxy mode deliberately uses a smaller batch and backs off between batches.
-       const batchSize=DATA_ROUTE==="direct"?8:3;
-       const req=[];
-       for(let j=0;j<batchSize;j++)req.push(fetchPageSmart(offset+j*step,gender,step));
-       const results=await Promise.all(req);
-
-       let allEmpty=true;
-       for(const result of results){
-         if(result.items.length){
-           allEmpty=false;
-           await store(result.items);
-         }
-       }
-       if(allEmpty){emptyPages++;}else{emptyPages=0;}
-       if(results.some(x=>x.items.length<step)||emptyPages>=1)break;
-
-       offset+=batchSize*step;
-       if(DATA_ROUTE==="proxy")await sleep(10500);
-     }
-   }
-
-   // EA's ratings endpoint separates men's and women's datasets.
-   await syncGender(0);
-   await syncGender(1);
-
-   PLAYERS=await idbAll();
-   if(PLAYERS.length<15000){
-     throw new Error(`Nur ${PLAYERS.length} FC‑27-Spieler konnten geladen werden.`);
-   }
-
-   finishDbLoad();
- }catch(err){
-   console.error(err);
-   PLAYERS=await idbAll().catch(()=>[]);
-   $("dbTitle").textContent="Synchronisierung unterbrochen";
-   $("dbText").textContent=PLAYERS.length
-     ?`${fmt(PLAYERS.length)} Spieler wurden bereits lokal gespeichert. Ein erneuter Versuch setzt dort technisch fort, statt alles zu verwerfen.`
-     :"Es konnten noch keine FC‑27-Spielerdaten gespeichert werden.";
-   $("dbWarn").textContent=
-     "Die alte Version scheiterte bei lokalen HTML-Dateien an Cross-Origin/EA-Sperren. V7.1 besitzt deshalb einen Proxy-Fallback und speichert Teilfortschritt. Für die stabilste Nutzung ist HTTPS-Hosting weiterhin besser als file://.";
-   $("dbRetry").style.display="block";
-   $("dbReset").style.display="block";
- }
+  if(!force){const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache";return finishDbLoad(true)}}
+  let errors=[];
+  for(let i=0;i<DB_SOURCES.length;i++){
+   const src=DB_SOURCES[i];$("dbText").textContent=`Lade FC‑27-Datensatz: ${src.name} …`;$("dbBar").style.width=`${15+i*20}%`;$("dbPercent").textContent=`${15+i*20}%`;
+   try{
+    const text=await fetchText(src.url);$("dbText").textContent=`Prüfe ${src.name} …`;$("dbBar").style.width="65%";
+    const raw=parseCSV(text),players=raw.map(normCSV).filter(p=>p.id&&p.name&&p.ovr);const v=validateDatabase(players);if(!v.ok)throw new Error(v.reason);
+    $("dbText").textContent=`${fmt(players.length)} geprüfte FC‑27-Spieler werden lokal gespeichert …`;$("dbCount").textContent=`${fmt(players.length)} Spieler`;$("dbBar").style.width="82%";
+    await savePlayers(players);PLAYERS=players;DATA_ROUTE=src.name;return finishDbLoad(true)
+   }catch(e){errors.push(`${src.name}: ${e.message||e}`)}
+  }
+  const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache (Netzquelle nicht erreichbar)";return finishDbLoad(true)}
+  PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,errors.join(' | '))
+ }catch(err){console.error(err);PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,String(err?.message||err))}
 }
-function finishDbLoad(){
- P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent="Ratings, Positionen und Basisattribute werden jetzt aus den lokal gespeicherten FC‑27-Daten gebildet.";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$("homeDb").textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler lokal gespeichert. Gold = 75+, Silber = 65–74, Bronze = bis 64. Datenweg: ${DATA_ROUTE==="proxy"?"Proxy-Fallback":"direkt EA"}.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){$("onboard").classList.add("active");renderLeagueChoices()}renderAll()},350)
+function finishDbLoad(full=true,errorText=""){
+ P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){$("onboard").classList.add("active");renderLeagueChoices()}renderAll()},250)}
+ else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
-async function boot(){
- try{
-   const n=await idbCount();
-   if(n>=15000){
-     $("dbText").textContent="Lokale FC‑27-Datenbank gefunden …";
-     PLAYERS=await idbAll();
-     finishDbLoad();
-   }else{
-     if(n>0){
-       $("dbText").textContent=`${fmt(n)} bereits gespeicherte Spieler gefunden. Synchronisierung wird fortgesetzt …`;
-     }
-     syncDatabase(false);
-   }
- }catch(e){
-   syncDatabase(false);
- }
-}
-$("dbRetry").addEventListener("click",()=>syncDatabase(false));
-$("dbReset").addEventListener("click",()=>syncDatabase(true));
-$("syncAgain").addEventListener("click",()=>{$("dbGate").style.display="block";syncDatabase(true)});
+async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
+$("dbRetry").addEventListener("click",()=>syncDatabase(false));$("dbReset").addEventListener("click",()=>syncDatabase(true));$("dbOffline").addEventListener("click",()=>{$("dbGate").style.display="none";$("onboard").classList.remove("active");renderAll();toast("UI-Testmodus: keine Packs/Starter mit Fallback-Daten.")});$("syncAgain").addEventListener("click",()=>{$("dbGate").style.display="block";syncDatabase(true)});
 
-function leaguePool(name){return PLAYERS.filter(p=>String(p.league).toLowerCase()===name.toLowerCase())}
-function renderLeagueChoices(){
- $("leagueGrid").innerHTML=LEAGUE_CHOICES.map(l=>{const pool=leaguePool(l),g=pool.filter(p=>rarityOf(p)==="gold").length,s=pool.filter(p=>rarityOf(p)==="silver").length,b=pool.filter(p=>rarityOf(p)==="bronze").length;return`<button class="leaguebtn" data-league="${esc(l)}"><div><strong>${esc(l)}</strong><span>${g} Gold · ${s} Silber · ${b} Bronze verfügbar</span></div><b>›</b></button>`}).join("")
+function leagueChoice(id){return LEAGUE_CHOICES.find(x=>x.id===id)||LEAGUE_CHOICES.find(x=>x.label===id)}
+function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const aliases=c.aliases.map(normalizeKey);return PLAYERS.filter(p=>{const k=normalizeKey(p.league);if(k.includes('women')||k.includes('frauen'))return false;return aliases.some(a=>k===a||k.startsWith(a+' '))})}
+function renderLeagueChoices(){$("leagueGrid").innerHTML=LEAGUE_CHOICES.map(c=>{const pool=leaguePool(c.id),g=pool.filter(p=>p.ovr>=75&&p.ovr<=80).length,si=pool.filter(p=>rarityOf(p)==="silver").length,b=pool.filter(p=>rarityOf(p)==="bronze").length;return`<button class="leaguebtn" data-league="${c.id}" ${pool.length<18?'disabled':''}><div><strong>${esc(c.label)}</strong><span>${g} Starter-Gold · ${si} Silber · ${b} Bronze verfügbar</span></div><b>›</b></button>`}).join("")}
+function posFit(p,slot){if(!p)return 0;const vals=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];if(vals.includes(slot))return 1;const compat={LB:["LWB"],RB:["RWB"],CB:["CDM"],CM:["CDM","CAM"],CDM:["CM"],CAM:["CM","CF"],LW:["LM","ST"],RW:["RM","ST"],LM:["LW"],RM:["RW"],ST:["CF","LW","RW"],GK:[]};return vals.some(v=>(compat[slot]||[]).includes(v))?.72:0}
+function weightedStarterPick(pool,slot,used){let cand=pool.filter(p=>!used.has(p.id)&&(slot?posFit(p,slot)>0:true));if(!cand.length)cand=pool.filter(p=>!used.has(p.id));if(!cand.length)return null;const weights=cand.map(p=>Math.max(1,12-(p.ovr%10))),total=weights.reduce((a,b)=>a+b,0);let r=Math.random()*total;for(let i=0;i<cand.length;i++){r-=weights[i];if(r<=0){used.add(cand[i].id);return cand[i]}}const p=cand[cand.length-1];used.add(p.id);return p}
+function buildStarter(id){
+ const league=leaguePool(id),global=PLAYERS.filter(p=>!normalizeKey(p.league).includes('women')&&!normalizeKey(p.league).includes('frauen'));
+ const bands={gold:league.filter(p=>p.ovr>=75&&p.ovr<=80),silver:league.filter(p=>p.ovr>=65&&p.ovr<=74),bronze:league.filter(p=>p.ovr<=64)};
+ const need={gold:3,silver:4,bronze:11};for(const k of Object.keys(need)){if(bands[k].length<need[k]){const extra=global.filter(p=>rarityOf(p)===k&&(k!=="gold"||(p.ovr>=75&&p.ovr<=80)));const seen=new Set(bands[k].map(p=>p.id));bands[k]=bands[k].concat(extra.filter(p=>!seen.has(p.id)))}}
+ if(Object.keys(need).some(k=>bands[k].length<need[k]))return null;
+ const slots=FORMATIONS["4-3-3"].map(x=>x.p),desired=["bronze","bronze","silver","bronze","bronze","silver","gold","silver","gold","gold","silver"],left={...need},used=new Set(),chosen=[];
+ for(let i=0;i<11;i++){let band=desired[i],p=null;if(left[band]>0)p=weightedStarterPick(bands[band],slots[i],used);if(!p){for(const alt of ["bronze","silver","gold"]){if(left[alt]>0&&(p=weightedStarterPick(bands[alt],slots[i],used))){band=alt;break}}}if(!p)return null;left[band]--;chosen.push(p)}
+ const bench=[];for(const band of ["bronze","silver","gold"]){while(left[band]>0){const p=weightedStarterPick(bands[band],null,used);if(!p)return null;bench.push(p);left[band]--}}
+ if(chosen.length+bench.length!==18)return null;return chosen.concat(bench)
 }
-function posFit(p,slot){
- const vals=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];
- if(vals.includes(slot))return 1;
- const compat={LB:["LWB"],RB:["RWB"],CB:["CDM"],CM:["CDM","CAM"],CDM:["CM"],CAM:["CM","CF"],LW:["LM","ST"],RW:["RM","ST"],LM:["LW"],RM:["RW"],ST:["CF","LW","RW"],GK:[]};
- return vals.some(v=>(compat[slot]||[]).includes(v))?.72:0
-}
-function takeBest(pool,slot,used){
- const list=pool.filter(p=>!used.has(p.id)).sort((a,b)=>(posFit(b,slot)*100+b.ovr)-(posFit(a,slot)*100+a.ovr));const p=list[0];if(p)used.add(p.id);return p
-}
-function buildStarter(league){
- const pool=leaguePool(league),bands={gold:pool.filter(p=>rarityOf(p)==="gold"),silver:pool.filter(p=>rarityOf(p)==="silver"),bronze:pool.filter(p=>rarityOf(p)==="bronze")};
- if(bands.gold.length<3||bands.silver.length<4||bands.bronze.length<11)return null;
- const slots=FORMATIONS["4-3-3"].map(x=>x.p),plan=["bronze","bronze","silver","bronze","bronze","silver","gold","silver","gold","gold","silver"],used=new Set(),chosen=[];
- for(let i=0;i<11;i++){const p=takeBest(bands[plan[i]],slots[i],used)||takeBest(bands[plan[i]],"CM",used);if(!p)return null;chosen.push(p)}
- const bench=[];for(let i=0;i<7;i++){const p=takeBest(bands.bronze,"CM",used);if(!p)return null;bench.push(p)}
- return[...chosen,...bench]
-}
-$("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b)return;state.starterLeague=b.dataset.league;$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten · 4 echte Silberkarten · 11 echte Bronzekarten":"Für diese Liga fehlen passende Karten in einer der Ratingstufen."})
+$("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b||b.disabled)return;state.starterLeague=b.dataset.league;const c=leagueChoice(state.starterLeague);$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${c?.label||state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten (75–80) · 4 echte Silberkarten · 11 echte Bronzekarten · Ratings werden nie verändert.":"Für diese Auswahl konnte kein valider 18er-Starterkader gebildet werden."})
 $("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=items.map(i=>i.uid);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
 
 function renderWallet(){$("coins").textContent=fmt(state.coins);$("points").textContent=fmt(state.points)}
@@ -690,10 +526,7 @@ $("autoSquad").addEventListener("click",()=>{const used=new Set(),sq=Array(18).f
 function weightedPlayer(min,max){
  const pool=PLAYERS.filter(p=>p.ovr>=min&&p.ovr<=max);let total=0;const weights=pool.map(p=>{const w=Math.pow(1.55,Math.max(0,max-p.ovr));total+=w;return w});let r=Math.random()*total;for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0)return pool[i]}return pool[pool.length-1]
 }
-function generatePack(id){const p=PACKS.find(x=>x.id===id),arr=[];if(p.guarantee)arr.push(weightedPlayer(p.guarantee,99));while(arr.length<p.count)arr.push(weightedPlayer(p.min,p.max));return arr.map(b=>makeItem(b,true))}
-function renderStore(){
- $("packGrid").innerHTML=PACKS.filter(p=>p.coins!==null).map(p=>`<div class="pack"><div class="packart ${p.type==="bronze"?"bronze-art":p.type==="silver"?"silver-art":p.type==="gold"?"gold-art":"special-art"}">${p.name.toUpperCase()}</div><h3>${p.name}</h3><p>${p.count} Spieler aus der echten FC‑27-Datenbank.</p><div class="prices"><button class="primary" data-buy="${p.id}" data-cur="coins">🪙 ${fmt(p.coins)}</button><button class="secondary" data-buy="${p.id}" data-cur="points" ${!p.points?"disabled":""}>◆ ${fmt(p.points||0)}</button></div></div>`).join("");
- const inv=Object.entries(state.packs).filter(([,n])=>n>0);$("ownedPacks").innerHTML=inv.length?`<div class="panel"><h3 style="margin:0 0 6px;font-size:11px">Meine Packs</h3>${inv.map(([id,n])=>`<button class="secondary" data-owned="${id}" style="width:100%;margin-top:5px">${n}× ${PACKS.find(p=>p.id===id)?.name||id}</button>`).join("")}</div>`:""
+function generatePack(id){const p=PACKS.find(x=>x.id===id),arr=[],used=new Set();const take=(min,max)=>{for(let tries=0;tries<40;tries++){const b=weightedPlayer(min,max);if(b&&!used.has(b.id)){used.add(b.id);return b}}return PLAYERS.find(x=>x.ovr>=min&&x.ovr<=max&&!used.has(x.id))};if(p.guarantee){const g=take(p.guarantee,99);if(g)arr.push(g)}while(arr.length<p.count){const b=take(p.min,p.max);if(!b)break;arr.push(b)}return arr.map(b=>makeItem(b,true))
 }
 $("storeView").addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur,price=p[cur];if(state[cur]<price)return toast("Nicht genügend Guthaben.");state[cur]-=price;save();openPack(p.id);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;state.packs[id]--;save();openPack(id)}})
 function openPack(id){pendingPack=generatePack(id);$("opening").classList.add("active");$("openStage").style.display="block";$("reveal").classList.remove("active");$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("openPackBtn").disabled=false}
