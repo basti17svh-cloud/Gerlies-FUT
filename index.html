@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V17</title>
+<title>Gerlies FUT V18</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -120,7 +120,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .dbsource{margin-top:8px;padding:8px;border-radius:8px;background:#0b1210;border:1px solid #26362f;color:#92a29c;font-size:7px;line-height:1.45}
 .dbsource.ok{border-color:#365f46;color:#9df1b8}.dbsource.warn{border-color:#64404a;color:#ffb0bc}
 
-/* GERLIES FUT V17 — improved portraits, flags, badges and biography data */
+/* GERLIES FUT V18 — cache-bust, guaranteed bot market, portrait fallback */
 .face{overflow:hidden;isolation:isolate;background:radial-gradient(circle at 50% 22%,rgba(255,255,255,.22),transparent 22%),linear-gradient(180deg,rgba(255,255,255,.08),transparent 42%)}
 .face img{width:118%;height:118%;object-fit:cover;object-position:center 16%;display:block;transform:translate(-7%,-6%) scale(1.12);transform-origin:center top;filter:drop-shadow(0 4px 6px rgba(0,0,0,.28));clip-path:ellipse(45% 48% at 50% 47%)}
 .face-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:44px;color:#ffffffcc;filter:drop-shadow(0 4px 6px rgba(0,0,0,.28));position:absolute;inset:0}.card-icons{position:absolute;z-index:4;left:12px;top:60px;display:flex;flex-direction:column;gap:4px;align-items:center}.card-flag{font-size:14px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}.card-league,.card-club{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:4.5px;font-weight:1000;line-height:1;text-align:center;letter-spacing:.02em;color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:0 2px 6px rgba(0,0,0,.22);overflow:hidden}.card-league{border-radius:50%;background:linear-gradient(145deg,#0a141f,#2d6ef7)}.card-club{clip-path:polygon(50% 0,92% 18%,92% 70%,50% 100%,8% 70%,8% 18%)}.card-club span,.card-league span{transform:scale(.96)}.mini .card-icons{left:8px;top:38px;gap:3px}.mini .card-flag{font-size:10px}.mini .card-league,.mini .card-club{width:15px;height:15px;font-size:3.6px}.quickcard-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.inline-chip{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:999px;background:#15221d;border:1px solid #31453d;color:#cfe7dc;font-size:6px;font-weight:900}.inline-chip.flag{font-size:11px;padding:0 4px}.detail-actions{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}.detail-actions .primary,.detail-actions .secondary{width:100%}.pickrow .slot-occupant{display:block;color:#9cafaa;font-size:6px;margin-top:2px}.pickrow .slot-name{font-size:9px;font-weight:1000}
@@ -133,7 +133,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .campaign-card{cursor:pointer;position:relative}.campaign-card:after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:23px;color:var(--lime)}.campaign-card:hover{border-color:#526a5e}.campaign-detail-grid{display:grid;gap:8px}.campaign-step{padding:10px;border-radius:10px;background:#101815;border:1px solid #2c3934}.campaign-step strong{font-size:9px}.campaign-step p{margin:4px 0 0;color:#8b9893;font-size:7px;line-height:1.4}
 @media(max-width:560px){.packgrid{grid-template-columns:1fr}.player-modal-card{grid-template-columns:1fr}.player-detail-photo{width:140px;margin:auto}.player-modal-card .card-shell{width:140px;margin:auto}.resultgrid{grid-template-columns:repeat(2,1fr)}.results-actions{grid-template-columns:1fr}}
 
-</style>
+.build-badge{margin-left:6px;padding:3px 6px;border:1px solid #395047;border-radius:999px;background:#0f1915;color:#aee8c4;font-size:6px;font-weight:1000;letter-spacing:.08em}</style>
 </head>
 <body>
 
@@ -174,7 +174,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT</h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -222,7 +222,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 
 <section id="objectivesView" class="view"><div class="headline"><h2>Objectives</h2><p>Foundations, Season Points und Evolutions-Fortschritt.</p></div><div class="section"><div id="taskList" class="tasklist"></div><div class="evo-panel"><div class="headline" style="padding-left:0"><h2 style="font-size:17px">Evolutions</h2><p>Entwickle geeignete Spieler über Match-Ziele.</p></div><div id="evoGrid" class="evo-grid"></div></div></div></section>
 
-<section id="marketView" class="view"><div class="headline"><h2>Transfermarkt</h2><p>Suche gezielt nach Spielern, Vereinen, Ligen, Nationen, Rating, Qualität und Preis.</p></div><div class="section">
+<section id="marketView" class="view"><div class="headline"><h2>Transfermarkt</h2><p>Suche gezielt nach Spielern, Vereinen, Ligen, Nationen, Rating, Qualität und Preis.</p></div><div class="section"><div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
   <div class="market-filter-panel">
     <div class="market-filter-grid">
       <div class="market-field full"><label>Spielername</label><input id="marketName" type="search" placeholder="z. B. Nkunku, Musiala, Haaland …" autocomplete="off"></div>
@@ -782,7 +782,23 @@ function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Numb
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity=$("marketQuality").value==="special"||$("marketSpecialType").value?"1":".5"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value;const source=PLAYERS.filter(p=>!league||p.league===league);const clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else if(filters.quality==="special"||(!filters.quality&&filters.specialType)){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}else if(!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}const r=Math.min(99,base.ovr+boost),special=variant==="special",price=marketPriceForRating(r,special),start=Math.max(150,Math.round(price*.55/50)*50);return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
-function refreshMarket(){const f=marketFilters();let pool=PLAYERS.filter(p=>(!f.name||normalizeKey(p.name).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation));if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}else if(f.quality==="bronze")pool=pool.filter(p=>rarityOf(p)==="bronze");else if(f.quality==="silver")pool=pool.filter(p=>rarityOf(p)==="silver"&&p.ovr>=f.ratingMin&&p.ovr<=Math.min(74,f.ratingMax));else if(f.quality==="gold")pool=pool.filter(p=>rarityOf(p)==="gold"&&p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);else pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);const shuffled=[...pool].sort(()=>Math.random()-.5);const desired=Math.min(160,Math.max(40,shuffled.length));let listings=[];for(const base of shuffled.slice(0,desired)){const x=createMarketListing(base,f);if(f.quality==="special"&&x.variant!=="special")continue;if(f.specialType==="totw"&&!String(x.eventName).startsWith("Team of the Week"))continue;if(f.specialType==="event"&&(x.variant!=="special"||String(x.eventName).startsWith("Team of the Week")))continue;if(f.priceMin&&x.price<f.priceMin)continue;if(f.priceMax&&x.price>f.priceMax)continue;listings.push(x);if(listings.length>=24)break}marketListings=listings;$("marketResultMeta").innerHTML=`<span>${fmt(marketListings.length)} Angebote angezeigt${pool.length?` · ${fmt(pool.length)} Spieler passen zu den Grundfiltern`:""}</span><span>${f.name?`Suche: ${esc($("marketName").value)}`:""}</span>`;renderMarket()}
+function refreshMarket(){
+ const f=marketFilters();
+ let pool=PLAYERS.filter(p=>(!f.name||normalizeKey(p.name).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation));
+ if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
+ else if(f.quality==="bronze")pool=pool.filter(p=>rarityOf(p)==="bronze");
+ else if(f.quality==="silver")pool=pool.filter(p=>rarityOf(p)==="silver"&&p.ovr>=f.ratingMin&&p.ovr<=Math.min(74,f.ratingMax));
+ else if(f.quality==="gold")pool=pool.filter(p=>rarityOf(p)==="gold"&&p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
+ else pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
+ const shuffled=[...pool].sort(()=>Math.random()-.5);let listings=[];
+ for(const base of shuffled.slice(0,Math.min(200,shuffled.length))){const x=createMarketListing(base,f);if(f.quality==="special"&&x.variant!=="special")continue;if(f.specialType==="totw"&&!String(x.eventName).startsWith("Team of the Week"))continue;if(f.specialType==="event"&&(x.variant!=="special"||String(x.eventName).startsWith("Team of the Week")))continue;if(f.priceMin&&x.price<f.priceMin)continue;if(f.priceMax&&x.price>f.priceMax)continue;listings.push(x);if(listings.length>=24)break}
+ // V18 safety net: with default filters the market must never be empty while player data exists.
+ const defaultSearch=!f.name&&!f.league&&!f.club&&!f.nation&&!f.quality&&!f.specialType&&!f.priceMin&&!f.priceMax&&f.ratingMin===65&&f.ratingMax===99;
+ if(!listings.length&&defaultSearch){const botPool=PLAYERS.filter(p=>Number(p.ovr)>=65&&Number(p.ovr)<=99).sort(()=>Math.random()-.5).slice(0,24);listings=botPool.map(base=>createMarketListing(base,{...f,quality:"",specialType:""}))}
+ marketListings=listings;
+ $("marketResultMeta").innerHTML=`<span>${fmt(marketListings.length)} Angebote angezeigt${pool.length?` · ${fmt(pool.length)} Spieler passen zu den Filtern`:""}</span><span>${marketListings.length?"Bot-Markt aktiv":`DB: ${fmt(PLAYERS.length)} Spieler geladen`}</span>`;
+ renderMarket()
+}
 function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
 function settleAuctions(){for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;toast(`Gebot gewonnen: ${x.base.name}`)}}save()}
 function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(b.position)} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
@@ -1173,7 +1189,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js",{scope:"./"}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=18",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-reloaded")){sessionStorage.setItem("gfut-v18-reloaded","1");location.reload()}});
  });
 }
 
