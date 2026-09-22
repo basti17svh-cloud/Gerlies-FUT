@@ -1,18 +1,7 @@
-GERLIES FUT V12
+GERLIES FUT V16
 
-1. Alle Dateien aus diesem Ordner gemeinsam auf GitHub Pages / einen HTTPS-Webspace hochladen.
-2. index.html öffnen.
-3. Browserdaten der alten Version ggf. einmal neu laden, falls der Service Worker noch V10.2 zeigt.
-4. Gerlies FUT kann anschließend als PWA installiert werden.
+1. Kompletten Ordner auf deinen Webspace/GitHub Pages hochladen und vorhandene V15-Dateien ersetzen.
+2. index.html, manifest.webmanifest, service-worker.js, players-fallback.json UND den assets-Ordner gemeinsam hochladen.
+3. Danach Browser/App einmal komplett neu laden. Falls die alte PWA noch angezeigt wird: App schließen und erneut öffnen; V16 nutzt einen neuen Service-Worker-Cache.
 
-Neu in V12:
-- EAFC-inspirierte Spielerkarten mit Kopfportraits und lokalen Fallback-Portraits
-- Klick auf Spieler öffnet Spielerdetails
-- Tausch der Spieler per Drag & Drop
-- Falsche Position: Hauptposition + Warnsymbol + 0 Chemie
-- Shop: Premium Gold Pack (7.500 Coins / 150 Points)
-- Shop: Promo 85+ Spezial Pack (20.000 Coins / 400 Points, mind. 1x 85+)
-- Pack Opening: verborgenes Pack, 3-2-1 Countdown, Flash, Best-Player Reveal
-- Pack-Ergebnis: pro Spieler Club oder Schnellverkauf
-- Duplikate erlaubt
-- Campaign Hub Karten sind anklickbar
+Wichtig: assets/portraits nicht weglassen – sie sind der lokale Bild-Fallback, damit Karten nie leer bleiben.

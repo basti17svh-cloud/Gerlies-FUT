@@ -1,10 +1,13 @@
-GERLIES FUT V12 QA
+GERLIES FUT V16 – QA
 
-- JavaScript Syntaxcheck: vorgesehen
-- PWA-Shell inklusive 8 lokalen Portrait-Fallbacks
-- Shop-Packs: 2 kaufbare Packtypen
-- Reward-Packs bleiben für Objectives/SBC/Season erhalten
-- Packentscheidungen werden erst nach Reveal in Club/Coins übernommen
-- Squad: Detailklick getrennt von Drag & Drop
-- Chemie: falsche Position ergibt 0 Chemie
-- Positionsanzeige nimmt den Slot nur an, wenn er als Haupt-/Nebenposition im Datensatz enthalten ist
+Geprüft:
+- JavaScript Syntax (node --check)
+- Freunde: Profilcode enthält nur aktive 18 Spieler + Formation, kein Vereinsbestand
+- Freundes-Aufstellung: Startelf + Bank im gleichen Pitch-/Kartenlayout
+- Spielen: Rivals, Squad Battles, zufälliger Gegner, Freund gegen Freund
+- Friendlies verändern keine Rivals-Punkte und geben keine Rivals/Squad-Battle-Belohnung
+- Portrait-Fallbacks p1–p8 liegen lokal im Paket
+- Transfermarkt V15 Filter bleiben erhalten
+- Live TOTW 1: 23 Spieler/Ratings/Positionen als aktueller In-Form-Pool verdrahtet
+- TOTW-Spieler ersetzen bei Packziehung die Basisversion
+- PWA Cache auf V16 aktualisiert
