@@ -1,24 +1,18 @@
-GERLIES FUT V10.2 – UPDATE AUF DEM HANDY
+GERLIES FUT V12
 
-WARUM DIESES UPDATE?
-V10.1 konnte den großen FC27-Datensatz laden, hat ihn aber abgelehnt,
-weil die Rohdatei keine verlässliche Liga-Spalte enthält.
-V10.2 leitet die fünf Starter-Ligen aus dem aktuellen 2026/27-Verein ab.
+1. Alle Dateien aus diesem Ordner gemeinsam auf GitHub Pages / einen HTTPS-Webspace hochladen.
+2. index.html öffnen.
+3. Browserdaten der alten Version ggf. einmal neu laden, falls der Service Worker noch V10.2 zeigt.
+4. Gerlies FUT kann anschließend als PWA installiert werden.
 
-SO AKTUALISIERST DU:
-1. ZIP entpacken.
-2. GitHub Repository Gerlies-FUT öffnen.
-3. Add file -> Upload files.
-4. ALLE Dateien aus diesem Ordner hochladen.
-5. Commit changes.
-6. Unter Actions auf grünen "pages build and deployment"-Haken warten.
-7. Danach öffnen:
-   https://basti17svh-cloud.github.io/Gerlies-FUT/?v=10.2
-8. Installierte PWA vollständig schließen und neu öffnen.
-
-WICHTIG:
-- Der Link für deinen Bruder bleibt unverändert.
-- Ratings werden nicht verändert.
-- Gold >=75, Silber 65–74, Bronze <=64.
-- Top-5-Ligen werden aus den aktuellen 2026/27-Vereinen abgeleitet.
-- Spieler außerhalb sicher zugeordneter Ligen bekommen keinen erfundenen Liga-Chemiebonus.
+Neu in V12:
+- EAFC-inspirierte Spielerkarten mit Kopfportraits und lokalen Fallback-Portraits
+- Klick auf Spieler öffnet Spielerdetails
+- Tausch der Spieler per Drag & Drop
+- Falsche Position: Hauptposition + Warnsymbol + 0 Chemie
+- Shop: Premium Gold Pack (7.500 Coins / 150 Points)
+- Shop: Promo 85+ Spezial Pack (20.000 Coins / 400 Points, mind. 1x 85+)
+- Pack Opening: verborgenes Pack, 3-2-1 Countdown, Flash, Best-Player Reveal
+- Pack-Ergebnis: pro Spieler Club oder Schnellverkauf
+- Duplikate erlaubt
+- Campaign Hub Karten sind anklickbar

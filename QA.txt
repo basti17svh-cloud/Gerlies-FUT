@@ -1,27 +1,10 @@
-GERLIES FUT V10.2 – QA
+GERLIES FUT V12 QA
 
-ERGEBNIS
-✓ index.html JavaScript Syntax OK
-✓ service-worker.js Cache auf V10.2 aktualisiert
-✓ Manifest start_url auf ?v=10.2
-✓ Keine doppelten DOM-IDs
-✓ Keine fehlenden $()-DOM-Referenzen
-✓ Club→Liga-Mapping Unit-Test: LEAGUE_MAPPING_OK [33m17[39m
-✓ Unbekannte Vereine erhalten KEINE erfundene Liga
-✓ Aktuelle Aufsteiger/Teilnehmer der Top-5 sind im Mapping berücksichtigt
-✓ Bundesliga: 18 Clubgruppen
-✓ Premier League: 20 Clubgruppen
-✓ LALIGA EA SPORTS: 20 Clubgruppen
-✓ Serie A: 20 Clubgruppen
-✓ Ligue 1: 18 Clubgruppen
-✓ Datenbank-Mindestgröße bleibt 10.000 Spieler
-✓ Ratinganker / Gold-Silber-Bronze-Prüfung aus V10.1 bleiben aktiv
-✓ Starter-Ratings werden weiterhin nicht verändert
-✓ Liga-Chemie wird nur vergeben, wenn eine Liga tatsächlich bekannt ist
-
-FEHLERURSACHE V10.1
-Die Rohdatei lieferte keine verlässliche league_name-Spalte.
-Der Datensatz selbst wurde geladen; die Liga-Validierung hat ihn anschließend verworfen.
-
-V10.2-LÖSUNG
-Top-5-Ligen werden aus club_name + aktuellen 2026/27-Clublisten kanonisch abgeleitet.
+- JavaScript Syntaxcheck: vorgesehen
+- PWA-Shell inklusive 8 lokalen Portrait-Fallbacks
+- Shop-Packs: 2 kaufbare Packtypen
+- Reward-Packs bleiben für Objectives/SBC/Season erhalten
+- Packentscheidungen werden erst nach Reveal in Club/Coins übernommen
+- Squad: Detailklick getrennt von Drag & Drop
+- Chemie: falsche Position ergibt 0 Chemie
+- Positionsanzeige nimmt den Slot nur an, wenn er als Haupt-/Nebenposition im Datensatz enthalten ist
