@@ -1,25 +1,24 @@
-GERLIES FUT V10.1 – UPDATE AUF DEM HANDY
+GERLIES FUT V10.2 – UPDATE AUF DEM HANDY
 
-DAS IST EIN ERSATZ-UPDATE FÜR DIE AKTUELLEN GITHUB-PAGES-DATEIEN.
+WARUM DIESES UPDATE?
+V10.1 konnte den großen FC27-Datensatz laden, hat ihn aber abgelehnt,
+weil die Rohdatei keine verlässliche Liga-Spalte enthält.
+V10.2 leitet die fünf Starter-Ligen aus dem aktuellen 2026/27-Verein ab.
 
-1. Dieses ZIP auf dem Handy entpacken.
-2. Dein GitHub-Repository Gerlies-FUT öffnen.
+SO AKTUALISIERST DU:
+1. ZIP entpacken.
+2. GitHub Repository Gerlies-FUT öffnen.
 3. Add file -> Upload files.
-4. ALLE Dateien aus dem entpackten V10.1-Ordner hochladen.
-5. Gleichnamige Dateien werden mit dem neuen Commit aktualisiert.
-6. Commit changes.
-7. Unter Actions warten, bis "pages build and deployment" grün ist.
-8. Danach denselben Link öffnen:
-   https://basti17svh-cloud.github.io/Gerlies-FUT/
-9. Falls noch die alte Seite erscheint:
-   - Browser-Seite vollständig neu laden.
-   - Eine installierte Gerlies-FUT-PWA komplett schließen und erneut öffnen.
-   - Der neue Service Worker löscht alte Gerlies-FUT-Shell-Caches beim Aktivieren.
+4. ALLE Dateien aus diesem Ordner hochladen.
+5. Commit changes.
+6. Unter Actions auf grünen "pages build and deployment"-Haken warten.
+7. Danach öffnen:
+   https://basti17svh-cloud.github.io/Gerlies-FUT/?v=10.2
+8. Installierte PWA vollständig schließen und neu öffnen.
 
-WICHTIG
-- Der alte EA-Live-Synchronisierungsweg ist entfernt.
-- Beim ersten Start versucht V10.1 eine statische FC27-CSV-Datei von GitHub zu laden.
-- Falls GitHub Raw nicht erreichbar ist, wird automatisch jsDelivr versucht.
-- Ein Datensatz wird nur akzeptiert, wenn die Plausibilitäts- und Ratingtests bestehen.
-- Danach wird er lokal im Gerät gespeichert.
-- Dein Bruder behält denselben GitHub-Pages-Link.
+WICHTIG:
+- Der Link für deinen Bruder bleibt unverändert.
+- Ratings werden nicht verändert.
+- Gold >=75, Silber 65–74, Bronze <=64.
+- Top-5-Ligen werden aus den aktuellen 2026/27-Vereinen abgeleitet.
+- Spieler außerhalb sicher zugeordneter Ligen bekommen keinen erfundenen Liga-Chemiebonus.

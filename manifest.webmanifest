@@ -3,7 +3,7 @@
   "name": "Gerlies FUT",
   "short_name": "Gerlies FUT",
   "description": "Gerlies FUT V10.1 – PWA mit validiertem FC-27-Datenloader.",
-  "start_url": "./index.html?v=10.1",
+  "start_url": "./index.html?v=10.2",
   "scope": "./",
   "display": "standalone",
   "display_override": [

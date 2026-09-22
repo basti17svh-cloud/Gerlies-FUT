@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V10.1</title>
+<title>Gerlies FUT V10.2</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -382,20 +382,20 @@ const SBCS=[
 ];
 
 function baseState(){return{
- version:101,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(18).fill(null),packs:{},
+ version:102,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(18).fill(null),packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,packs:0,sbcs:0,market:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},
  roles:{},focus:{},activeEvo:null,evoProgress:{},profile:{clubName:"Gerlies FUT Club"},friends:[],auctions:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return x?{...b,...x,version:101,stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[]}:b
+  return x?{...b,...x,version:102,stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[]}:b
  }catch(e){return baseState()}
 }
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB101",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB102",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -411,7 +411,9 @@ function normCSV(raw){
  const name=String(first(raw,"short_name","common_name","name","long_name")).trim();
  const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url")||sofifaFace(id));
- return{id,name,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),league:String(first(raw,"league_name","league")),team:String(first(raw,"club_name","team_name","club","team")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),source:"fc27-open-data"}
+ const team=String(first(raw,"club_name","team_name","club","team")).trim();
+ const rawLeague=String(first(raw,"league_name","league")).trim();
+ return{id,name,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),league:leagueFromClub(team,rawLeague),team,face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),source:"fc27-open-data"}
 }
 function rarityOf(p){const r=Number(p?.ovr||0);return r>=75?"gold":r>=65?"silver":"bronze"}
 function cardClass(p,item){return item?.evo?"special":rarityOf(p)}
@@ -426,13 +428,142 @@ function cardHTML(p,item=null,mini=false){
  return`<div class="${mini?"mini":""}"><div class="card-shell">${body}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+
+const TOP5_CLUB_LEAGUES={
+ "Bundesliga":[
+  ["FC Augsburg","Augsburg"],
+  ["1. FC Union Berlin","Union Berlin"],
+  ["SV Werder Bremen","Werder Bremen"],
+  ["Borussia Dortmund","Dortmund"],
+  ["SV Elversberg","Elversberg"],
+  ["Eintracht Frankfurt","Frankfurt"],
+  ["Sport-Club Freiburg","SC Freiburg","Freiburg"],
+  ["Hamburger SV","Hamburg"],
+  ["TSG Hoffenheim","TSG 1899 Hoffenheim","Hoffenheim"],
+  ["1. FC Köln","FC Köln","Köln","Cologne"],
+  ["RB Leipzig","Leipzig"],
+  ["Bayer 04 Leverkusen","Bayer Leverkusen","Leverkusen"],
+  ["1. FSV Mainz 05","Mainz 05","Mainz"],
+  ["Borussia Mönchengladbach","Mönchengladbach","Borussia Monchengladbach","Gladbach"],
+  ["FC Bayern München","Bayern München","Bayern Munich"],
+  ["SC Paderborn 07","Paderborn"],
+  ["FC Schalke 04","Schalke 04","Schalke"],
+  ["VfB Stuttgart","Stuttgart"]
+ ],
+ "Premier League":[
+  ["AFC Bournemouth","Bournemouth"],
+  ["Arsenal","Arsenal FC"],
+  ["Aston Villa"],
+  ["Brentford","Brentford FC"],
+  ["Brighton & Hove Albion","Brighton and Hove Albion","Brighton"],
+  ["Chelsea","Chelsea FC"],
+  ["Coventry City","Coventry"],
+  ["Crystal Palace"],
+  ["Everton","Everton FC"],
+  ["Fulham","Fulham FC"],
+  ["Hull City","Hull"],
+  ["Ipswich Town","Ipswich"],
+  ["Leeds United","Leeds"],
+  ["Liverpool","Liverpool FC"],
+  ["Manchester City","Man City"],
+  ["Manchester United","Man United","Man Utd"],
+  ["Newcastle United","Newcastle"],
+  ["Nottingham Forest","Nottm Forest"],
+  ["Sunderland","Sunderland AFC"],
+  ["Tottenham Hotspur","Tottenham","Spurs"]
+ ],
+ "LALIGA EA SPORTS":[
+  ["Athletic Club","Athletic Bilbao"],
+  ["Atlético de Madrid","Atletico de Madrid","Atlético Madrid","Atletico Madrid"],
+  ["CA Osasuna","Osasuna"],
+  ["Celta","Celta Vigo","RC Celta"],
+  ["Deportivo Alavés","Deportivo Alaves","Alavés","Alaves"],
+  ["Elche CF","Elche"],
+  ["FC Barcelona","Barcelona"],
+  ["Getafe CF","Getafe"],
+  ["Levante UD","Levante"],
+  ["Málaga CF","Malaga CF","Málaga","Malaga"],
+  ["R. Racing Club","Racing Santander","Racing Club"],
+  ["Rayo Vallecano"],
+  ["RC Deportivo","Deportivo La Coruña","Deportivo La Coruna","Deportivo"],
+  ["RCD Espanyol de Barcelona","Espanyol","RCD Espanyol"],
+  ["Real Betis","Real Betis Balompié"],
+  ["Real Madrid","Real Madrid CF"],
+  ["Real Sociedad"],
+  ["Sevilla FC","Sevilla"],
+  ["Valencia CF","Valencia"],
+  ["Villarreal CF","Villarreal"]
+ ],
+ "Serie A":[
+  ["Atalanta","Atalanta BC"],
+  ["Sassuolo","US Sassuolo Calcio"],
+  ["Bologna","Bologna FC 1909"],
+  ["Lazio","SS Lazio"],
+  ["Frosinone","Frosinone Calcio"],
+  ["Juventus","Juventus FC"],
+  ["Genoa","Genoa CFC"],
+  ["Napoli","SSC Napoli"],
+  ["Inter","Inter Milan","Internazionale","FC Internazionale Milano"],
+  ["Monza","AC Monza"],
+  ["Parma","Parma Calcio 1913"],
+  ["Cagliari","Cagliari Calcio"],
+  ["Roma","AS Roma"],
+  ["Fiorentina","ACF Fiorentina"],
+  ["Torino","Torino FC"],
+  ["Milan","AC Milan"],
+  ["Udinese","Udinese Calcio"],
+  ["Como","Como 1907"],
+  ["Venezia","Venezia FC"],
+  ["Lecce","US Lecce"]
+ ],
+ "Ligue 1":[
+  ["Angers SCO","Angers"],
+  ["AJ Auxerre","Auxerre"],
+  ["Stade Brestois 29","Brest"],
+  ["Le Havre AC","Le Havre"],
+  ["Le Mans FC","Le Mans"],
+  ["RC Lens","Lens"],
+  ["FC Lorient","Lorient"],
+  ["LOSC","LOSC Lille","Lille"],
+  ["Olympique Lyonnais","Lyon"],
+  ["Olympique de Marseille","Marseille"],
+  ["AS Monaco","Monaco"],
+  ["OGC Nice","Nice"],
+  ["Paris FC"],
+  ["Paris Saint-Germain","Paris SG","PSG"],
+  ["Stade Rennais F.C.","Stade Rennais FC","Rennes"],
+  ["RC Strasbourg Alsace","Strasbourg"],
+  ["Toulouse FC","Toulouse"],
+  ["ESTAC Troyes","Troyes"]
+ ]
+};
+function leagueFromClub(team,rawLeague=""){
+ const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
+ if(rk){
+  if(rk==="bundesliga")return"Bundesliga";
+  if(rk==="premier league")return"Premier League";
+  if(rk.includes("la liga")||rk.includes("laliga"))return"LALIGA EA SPORTS";
+  if(rk.startsWith("serie a"))return"Serie A";
+  if(rk.startsWith("ligue 1"))return"Ligue 1";
+ }
+ if(!tk)return String(rawLeague||"");
+ for(const [league,groups] of Object.entries(TOP5_CLUB_LEAGUES)){
+  for(const aliases of groups){
+   if(aliases.some(a=>normalizeKey(a)===tk))return league;
+  }
+ }
+ return String(rawLeague||"");
+}
+
 function validateDatabase(players){
  if(!Array.isArray(players)||players.length<DB_MIN_PLAYERS)return{ok:false,reason:`Nur ${players?.length||0} Spieler gefunden`};
  const valid=players.filter(p=>p.id&&p.name&&p.ovr>=40&&p.ovr<=99&&p.position).length;if(valid/players.length<.95)return{ok:false,reason:"Zu viele unvollständige Datensätze"};
  const anchors=[['mbapp',91],['haaland',91],['yamal',90]];
  for(const [needle,ovr] of anchors){const p=players.find(x=>normalizeKey(x.name).includes(needle));if(!p||p.ovr!==ovr)return{ok:false,reason:`Ratinganker ${needle} fehlt oder ist nicht ${ovr}`}}
  const counts={gold:0,silver:0,bronze:0};players.forEach(p=>counts[rarityOf(p)]++);if(counts.gold<1000||counts.silver<1000||counts.bronze<500)return{ok:false,reason:"Gold/Silber/Bronze-Verteilung unplausibel"};
- const leagueKeys=players.map(p=>normalizeKey(p.league)).filter(Boolean);const must=[["Bundesliga",k=>k==="bundesliga"],["Premier League",k=>k==="premier league"],["LaLiga",k=>k.includes("la liga")||k.includes("laliga")],["Serie A",k=>k.startsWith("serie a")],["Ligue 1",k=>k.startsWith("ligue 1")]];for(const [label,test] of must){if(leagueKeys.filter(test).length<15)return{ok:false,reason:`Liga ${label} fehlt oder ist unvollständig`}}
+ const leagueCounts={};players.forEach(p=>{if(p.league)leagueCounts[p.league]=(leagueCounts[p.league]||0)+1});
+ const must=["Bundesliga","Premier League","LALIGA EA SPORTS","Serie A","Ligue 1"];
+ for(const label of must){if((leagueCounts[label]||0)<100)return{ok:false,reason:`Liga ${label}: nur ${leagueCounts[label]||0} Spieler zugeordnet`}}
  const withTeam=players.filter(p=>p.team).length,withNation=players.filter(p=>p.nation).length;if(withTeam/players.length<.85||withNation/players.length<.85)return{ok:false,reason:"Vereins-/Nationalitätsfelder unvollständig"};
  return{ok:true,counts}
 }
@@ -467,7 +598,7 @@ async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);aw
 $("dbRetry").addEventListener("click",()=>syncDatabase(false));$("dbReset").addEventListener("click",()=>syncDatabase(true));$("dbOffline").addEventListener("click",()=>{$("dbGate").style.display="none";$("onboard").classList.remove("active");renderAll();toast("UI-Testmodus: keine Packs/Starter mit Fallback-Daten.")});$("syncAgain").addEventListener("click",()=>{$("dbGate").style.display="block";syncDatabase(true)});
 
 function leagueChoice(id){return LEAGUE_CHOICES.find(x=>x.id===id)||LEAGUE_CHOICES.find(x=>x.label===id)}
-function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const aliases=c.aliases.map(normalizeKey);return PLAYERS.filter(p=>{const k=normalizeKey(p.league);if(k.includes('women')||k.includes('frauen'))return false;return aliases.some(a=>k===a||k.startsWith(a+' '))})}
+function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const canonical=c.label==="Serie A"?"Serie A":c.label==="Ligue 1"?"Ligue 1":c.label;return PLAYERS.filter(p=>p.league===canonical)}
 function renderLeagueChoices(){$("leagueGrid").innerHTML=LEAGUE_CHOICES.map(c=>{const pool=leaguePool(c.id),g=pool.filter(p=>p.ovr>=75&&p.ovr<=80).length,si=pool.filter(p=>rarityOf(p)==="silver").length,b=pool.filter(p=>rarityOf(p)==="bronze").length;return`<button class="leaguebtn" data-league="${c.id}" ${pool.length<18?'disabled':''}><div><strong>${esc(c.label)}</strong><span>${g} Starter-Gold · ${si} Silber · ${b} Bronze verfügbar</span></div><b>›</b></button>`}).join("")}
 function posFit(p,slot){if(!p)return 0;const vals=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];if(vals.includes(slot))return 1;const compat={LB:["LWB"],RB:["RWB"],CB:["CDM"],CM:["CDM","CAM"],CDM:["CM"],CAM:["CM","CF"],LW:["LM","ST"],RW:["RM","ST"],LM:["LW"],RM:["RW"],ST:["CF","LW","RW"],GK:[]};return vals.some(v=>(compat[slot]||[]).includes(v))?.72:0}
 function weightedStarterPick(pool,slot,used){let cand=pool.filter(p=>!used.has(p.id)&&(slot?posFit(p,slot)>0:true));if(!cand.length)cand=pool.filter(p=>!used.has(p.id));if(!cand.length)return null;const weights=cand.map(p=>Math.max(1,12-(p.ovr%10))),total=weights.reduce((a,b)=>a+b,0);let r=Math.random()*total;for(let i=0;i<cand.length;i++){r-=weights[i];if(r<=0){used.add(cand[i].id);return cand[i]}}const p=cand[cand.length-1];used.add(p.id);return p}
@@ -492,7 +623,7 @@ function chemThreshold(n,a,b,c){return n>=c?3:n>=b?2:n>=a?1:0}
 function playerChem(index,items){
  if(index>=11||!items[index])return 0;
  const b=displayBase(items[index]),slot=currentFormation()[index].p;if(!b||!inPosition(b,slot))return 0;
- const xi=items.slice(0,11).filter(Boolean).map(displayBase),club=xi.filter(x=>x.team===b.team).length,nation=xi.filter(x=>x.nation===b.nation).length,league=xi.filter(x=>x.league===b.league).length;
+ const xi=items.slice(0,11).filter(Boolean).map(displayBase),club=b.team?xi.filter(x=>x.team===b.team).length:0,nation=b.nation?xi.filter(x=>x.nation===b.nation).length:0,league=b.league?xi.filter(x=>x.league===b.league).length:0;
  return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
 }
 function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0;let chem=0;for(let i=0;i<11;i++)chem+=playerChem(i,items);return{items,filled:items.filter(Boolean).length,rating,chem}}
@@ -565,10 +696,10 @@ function progressEvolution(){if(!state.activeEvo)return;const evo=EVOLUTIONS.fin
 
 
 let activeSbcGroup="Foundations";
-function renderSBC(){const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];$("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");$("sbcGrid").innerHTML=SBCS.filter(s=>s.group===activeSbcGroup).map(s=>{const set=sbcSelections[s.id]||new Set(),available=state.club.filter(i=>!state.squad.includes(i.uid)&&s.filter(displayBase(i))),sel=available.filter(i=>set.has(i.uid)),avg=sel.length?sel.reduce((n,i)=>n+itemRating(i),0)/sel.length:0,leagues=[...new Set(sel.map(i=>displayBase(i)?.league).filter(Boolean))],ok=sel.length===s.count&&(!s.maxAvg||avg<=s.maxAvg)&&(!s.minAvg||avg>=s.minAvg)&&(!s.sameLeague||leagues.length===1);return`<div class="sbc"><h3>${s.name}</h3><p>${s.desc}</p><div class="sbcreq">${s.req} · gewählt ${sel.length}/${s.count}${s.maxAvg||s.minAvg?` · Ø ${avg.toFixed(1)}`:""}${s.sameLeague?` · Ligen ${leagues.length}`:""}</div><div class="sbclist">${available.slice(0,80).map(i=>{const b=displayBase(i);return`<label class="sbcp"><input type="checkbox" data-sbc="${s.id}" value="${i.uid}" ${set.has(i.uid)?"checked":""}><div><strong>${itemRating(i)} ${esc(b.name)}</strong><small>${esc(b.team)} · ${esc(b.league)} · ${rarityOf(b)}</small></div></label>`}).join("")||'<p style="font-size:7px;color:#82908a">Keine geeigneten Spieler außerhalb des aktiven Kaders.</p>'}</div><button class="primary" data-submit="${s.id}" style="width:100%;margin-top:8px" ${ok?"":"disabled"}>Abgeben · ${rewardText(s.reward)}</button></div>`}).join("")}
+function renderSBC(){const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];$("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");$("sbcGrid").innerHTML=SBCS.filter(s=>s.group===activeSbcGroup).map(s=>{const set=sbcSelections[s.id]||new Set(),available=state.club.filter(i=>!state.squad.includes(i.uid)&&s.filter(displayBase(i))),sel=available.filter(i=>set.has(i.uid)),avg=sel.length?sel.reduce((n,i)=>n+itemRating(i),0)/sel.length:0,leagues=[...new Set(sel.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=sel.every(i=>!!displayBase(i)?.league),ok=sel.length===s.count&&(!s.maxAvg||avg<=s.maxAvg)&&(!s.minAvg||avg>=s.minAvg)&&(!s.sameLeague||(allHaveLeague&&leagues.length===1));return`<div class="sbc"><h3>${s.name}</h3><p>${s.desc}</p><div class="sbcreq">${s.req} · gewählt ${sel.length}/${s.count}${s.maxAvg||s.minAvg?` · Ø ${avg.toFixed(1)}`:""}${s.sameLeague?` · Ligen ${leagues.length}`:""}</div><div class="sbclist">${available.slice(0,80).map(i=>{const b=displayBase(i);return`<label class="sbcp"><input type="checkbox" data-sbc="${s.id}" value="${i.uid}" ${set.has(i.uid)?"checked":""}><div><strong>${itemRating(i)} ${esc(b.name)}</strong><small>${esc(b.team)} · ${esc(b.league)} · ${rarityOf(b)}</small></div></label>`}).join("")||'<p style="font-size:7px;color:#82908a">Keine geeigneten Spieler außerhalb des aktiven Kaders.</p>'}</div><button class="primary" data-submit="${s.id}" style="width:100%;margin-top:8px" ${ok?"":"disabled"}>Abgeben · ${rewardText(s.reward)}</button></div>`}).join("")}
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;renderSBC()});
 $("sbcView").addEventListener("change",e=>{const c=e.target.closest("[data-sbc]");if(!c)return;const id=c.dataset.sbc;if(!sbcSelections[id])sbcSelections[id]=new Set();c.checked?sbcSelections[id].add(c.value):sbcSelections[id].delete(c.value);renderSBC()});
-$("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit),set=sbcSelections[sbc.id]||new Set(),sel=state.club.filter(i=>set.has(i.uid)&&!state.squad.includes(i.uid)&&sbc.filter(displayBase(i))),avg=sel.length?sel.reduce((n,i)=>n+itemRating(i),0)/sel.length:0,leagues=[...new Set(sel.map(i=>displayBase(i)?.league).filter(Boolean))],ok=sel.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||leagues.length===1);if(!ok)return;const ids=new Set(sel.map(i=>i.uid));state.club=state.club.filter(i=>!ids.has(i.uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast("SBC abgeschlossen.")})
+$("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit),set=sbcSelections[sbc.id]||new Set(),sel=state.club.filter(i=>set.has(i.uid)&&!state.squad.includes(i.uid)&&sbc.filter(displayBase(i))),avg=sel.length?sel.reduce((n,i)=>n+itemRating(i),0)/sel.length:0,leagues=[...new Set(sel.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=sel.every(i=>!!displayBase(i)?.league),ok=sel.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||(allHaveLeague&&leagues.length===1));if(!ok)return;const ids=new Set(sel.map(i=>i.uid));state.club=state.club.filter(i=>!ids.has(i.uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast("SBC abgeschlossen.")})
 
 
 let matchTimer=null,matchSpeed=650;

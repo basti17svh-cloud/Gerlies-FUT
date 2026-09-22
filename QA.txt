@@ -1,65 +1,27 @@
-GERLIES FUT V10.1 – FINALER QA-BERICHT
+GERLIES FUT V10.2 – QA
 
-Dieser Bericht bezieht sich auf exakt die Dateien im ZIP gerlies-fut-v10-1-final.zip.
+ERGEBNIS
+✓ index.html JavaScript Syntax OK
+✓ service-worker.js Cache auf V10.2 aktualisiert
+✓ Manifest start_url auf ?v=10.2
+✓ Keine doppelten DOM-IDs
+✓ Keine fehlenden $()-DOM-Referenzen
+✓ Club→Liga-Mapping Unit-Test: LEAGUE_MAPPING_OK [33m17[39m
+✓ Unbekannte Vereine erhalten KEINE erfundene Liga
+✓ Aktuelle Aufsteiger/Teilnehmer der Top-5 sind im Mapping berücksichtigt
+✓ Bundesliga: 18 Clubgruppen
+✓ Premier League: 20 Clubgruppen
+✓ LALIGA EA SPORTS: 20 Clubgruppen
+✓ Serie A: 20 Clubgruppen
+✓ Ligue 1: 18 Clubgruppen
+✓ Datenbank-Mindestgröße bleibt 10.000 Spieler
+✓ Ratinganker / Gold-Silber-Bronze-Prüfung aus V10.1 bleiben aktiv
+✓ Starter-Ratings werden weiterhin nicht verändert
+✓ Liga-Chemie wird nur vergeben, wenn eine Liga tatsächlich bekannt ist
 
-AUTOMATISCHE PRÜFUNGEN
-✓ index.html JavaScript: Syntax OK
-✓ service-worker.js: Syntax OK
-✓ Manifest JSON: OK
-✓ UI-Fallback JSON: OK (305 Spieler)
-✓ DOM IDs: 116 IDs, keine Duplikate, keine fehlenden $()-Referenzen
-✓ CSV + Normalisierung + Datenvalidierung: bestanden
-✓ Starterset 100 Durchläufe: bestanden
-✓ Packlogik 1000 Durchläufe je Packtyp: bestanden
-✓ EA Drop API aus Runtime entfernt
-✓ Jina Proxy aus Runtime entfernt
-✓ Statische FC27 GitHub-Quelle vorhanden
-✓ jsDelivr-Spiegel vorhanden
-✓ Mindestvalidierung >= 10.000
-✓ CSV Parser verwendet echte Regex
-✓ Positions-Fit vorhanden
-✓ Starterfunktion vorhanden
-✓ Pack-Duplikatschutz vorhanden
-✓ Neuer PWA Cache
+FEHLERURSACHE V10.1
+Die Rohdatei lieferte keine verlässliche league_name-Spalte.
+Der Datensatz selbst wurde geladen; die Liga-Validierung hat ihn anschließend verworfen.
 
-DATENLOGIK
-- Der frühere EA-Drop-API/Jina-Liveabruf wurde vollständig aus der Laufzeit entfernt.
-- Primärquelle: statischer FC27-CSV-Datensatz aus dem öffentlichen Open-Source-Repository.
-- Fallbackquelle: jsDelivr-Spiegel derselben statischen Datei.
-- Ein Datensatz gilt nur dann als Voll-Datenbank, wenn mindestens 10.000 Spieler vorhanden sind.
-- >=95 % der Datensätze müssen ID, Name, OVR 40–99 und Position besitzen.
-- Ratinganker: Mbappé 91, Haaland 91, Yamal 90.
-- Zusätzlich werden Gold/Silber/Bronze-Verteilung, Top-Ligen, Vereine und Nationalitäten plausibilisiert.
-- Erst nach erfolgreicher Prüfung wird die Datenbank in IndexedDB gespeichert.
-- Wenn beide statischen Quellen beim ersten Start ausfallen, wird ein klar gekennzeichneter 305-Spieler-Datensatz ausschließlich zum UI-Test angeboten. Er wird nicht als vollständige Datenbank ausgegeben.
-
-STARTERSET
-- Exakt 18 unterschiedliche Spieler.
-- Exakt 3 echte Goldkarten, 4 echte Silberkarten, 11 echte Bronzekarten.
-- Gold/Silber/Bronze wird nur aus dem echten OVR berechnet:
-  Gold >= 75, Silber 65–74, Bronze <= 64.
-- Kein OVR wird für das Starterset verändert.
-- Starter-Gold wird bewusst aus OVR 75–80 gezogen.
-- Positions-Fit der Startelf ist aktiv.
-
-PACKS
-- Drei Spieler pro Pack.
-- Keine identische Spieler-ID zweimal im selben Pack.
-- 82+-Pack garantiert mindestens einen 82+.
-- 85+-Pack garantiert mindestens einen 85+.
-
-QA-FEHler, DIE WÄHREND DER ENTWICKLUNG GEFUNDEN UND VOR DIESEM ZIP KORRIGIERT WURDEN
-1. CSV-Regex-Escaping war in einer Zwischenversion doppelt escaped.
-   Das hätte CSV-Zeilen falsch getrennt. Korrigiert und anschließend erneut getestet.
-2. posFit() war nach einem Starter-Umbau in einer Zwischenversion versehentlich entfernt worden.
-   Der Starter-Unit-Test erkannte das. Funktion wiederhergestellt; Startertests danach erneut bestanden.
-
-DATEN-EINSCHRÄNKUNG
-Der verwendete Open-Source-FC27-Datensatz beschreibt laut Repository die Männer-Datenbank.
-V10.1 behauptet deshalb nicht, die gesamten 19.789 Einträge der EA-Ratingsseite (Männer + Frauen) geladen zu haben.
-Die App zeigt die tatsächlich validierte Spielerzahl an. Eine separate Frauen-Datenquelle kann später ergänzt werden.
-
-PWA / CACHE
-- Cache-Version: gerlies-fut-v10-1-shell.
-- Alte Gerlies-FUT-Shell-Caches werden beim Aktivieren entfernt.
-- Manifest-start_url enthält ?v=10.1.
+V10.2-LÖSUNG
+Top-5-Ligen werden aus club_name + aktuellen 2026/27-Clublisten kanonisch abgeleitet.
