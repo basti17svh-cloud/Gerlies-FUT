@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.62</title>
+<title>Gerlies FUT V18.63</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -946,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.62</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.63</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1296,8 +1296,8 @@ const PACKS=[
  {id:"raremixed",name:"Seltenes Gemischtes Spieler-Pack",coins:20000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · Gold/Silber/Bronze gemischt · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19}
 ];
 const LIVE_TOTW={name:"Team of the Week 1",activeUntil:"23.09.2026",players:[
- {names:["lamine yamal"],ovr:91,position:"RW"},{names:["david raya"],ovr:89,position:"GK"},{names:["melchie dumornay","dumornay"],ovr:89,position:"LW"},
- {names:["lucy bronze"],ovr:86,position:"CB"},{names:["marcus thuram"],ovr:86,position:"ST"},{names:["felix nmecha"],ovr:86,position:"CM"},{names:["esmee brugts","brugts"],ovr:85,position:"LB"},
+ {names:["lamine yamal"],ovr:91,position:"RW"},{names:["david raya"],ovr:89,position:"GK"},{names:["Melchie Dumornay","Melchie Daëlle Dumornay"],eaId:"265898",ovr:89,position:"LW",fallback:{id:"265898",name:"Melchie Dumornay",fullName:"Melchie Dumornay",ovr:88,position:"LW",team:"OL Lyonnes",league:"Arkema Première Ligue",nation:"Haiti",face:"https://cdn.futwiz.com/assets/img/fc27/faces/265898.png",pac:93,sho:86,pas:81,dri:91,def:62,phy:75,source:"fc27-totw-verified"}},
+ {names:["Lucy Bronze"],eaId:"227246",ovr:86,position:"CB",fallback:{id:"227246",name:"Lucy Bronze",fullName:"Lucy Bronze",ovr:85,position:"CB",team:"Chelsea",league:"Barclays Women's Super League",nation:"England",face:"https://cdn.futwiz.com/assets/img/fc27/faces/227246.png",pac:73,sho:70,pas:82,dri:82,def:86,phy:88,source:"fc27-totw-verified"}},{names:["marcus thuram"],ovr:86,position:"ST"},{names:["felix nmecha"],ovr:86,position:"CM"},{names:["Esmee Brugts"],eaId:"267530",ovr:85,position:"LB",fallback:{id:"267530",name:"Esmee Brugts",fullName:"Esmee Brugts",ovr:84,position:"LB",team:"FC Barcelona",league:"Liga F Moeve",nation:"Netherlands",face:"https://cdn.futwiz.com/assets/img/fc27/faces/267530.png",pac:88,sho:75,pas:80,dri:82,def:82,phy:76,source:"fc27-totw-verified"}},
  {names:["matvey safonov","matvei safonov","safonov"],ovr:84,position:"GK"},{names:["ereleta memeti","erëleta memeti","memeti"],ovr:84,position:"RM"},{names:["amanda gutierres","amanda gutierres dos santos"],ovr:83,position:"ST"},
  {names:["alvaro carreras","alvaro fernandez carreras","álvaro carreras"],ovr:83,position:"LB"},{names:["gabriel martinelli","gabriel teodoro martinelli silva"],ovr:82,position:"RW"},
  {names:["xherdan shaqiri"],ovr:80,position:"CAM"},{names:["lewis dunk"],ovr:80,position:"CB"},{names:["jose paradela","josé paradela"],ovr:80,position:"RW"},{names:["ianis stoica"],ovr:80,position:"LM"},
@@ -1333,22 +1333,56 @@ function futwizVerifiedIconFace(name){
 const MID_ICON_BASES=MID_ICON_DATA.map(([name,ovr,position,alt=""])=>{const s=iconStatProfile(ovr,position,name),futwizId=futwizVerifiedIconId(name),face=futwizVerifiedIconFace(name);return{id:`midicon-${iconSlug(name)}`,name,ovr,position,alt,nation:"",league:"Icons",team:"ICON",face,futwizId,...s,source:"fc27-mid-icon-pool",isIcon:true}});
 function randomMidIconBase(){return MID_ICON_BASES[Math.floor(Math.random()*MID_ICON_BASES.length)]||null}
 function makeMidIconItem(base,tradeable=true){return makeItem(base,tradeable,{variant:"icon-mid",eventName:"Mid Icon"})}
-function totwSearchKeys(p){return [...new Set([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).map(normalizeKey).filter(Boolean))]}
-function totwAliasMatch(p,info){
- const keys=totwSearchKeys(p),aliases=(info?.names||[]).map(normalizeKey).filter(Boolean);
- let best=0;for(const a of aliases)for(const k of keys){if(k===a)best=Math.max(best,100);else if(k.includes(a)||a.includes(k))best=Math.max(best,70);else{const al=a.split(" "),kl=k.split(" "),shared=al.filter(x=>x.length>2&&kl.includes(x)).length;if(shared)best=Math.max(best,shared*15)}}
- return best
+function totwSearchKeys(p){
+ const names=[p?.name,p?.fullName,[p?.firstName,p?.lastName].filter(Boolean).join(" ")].filter(Boolean);
+ return [...new Set(names.map(normalizeKey).filter(Boolean))]
 }
-function totwInfo(base){if(!base)return null;let best=null,score=0;for(const info of LIVE_TOTW.players){const s=totwAliasMatch(base,info);if(s>score){score=s;best=info}}return score>=30?best:null}
+function totwAliases(info){
+ return [...new Set((info?.names||[]).map(normalizeKey).filter(a=>a.split(" ").filter(Boolean).length>=2&&a.split(" ").every(t=>t.length>=2)))]
+}
+function totwAliasMatch(p,info){
+ if(!p||!info)return 0;
+ if(info.eaId&&String(p.id||"")===String(info.eaId))return 100;
+ const keys=new Set(totwSearchKeys(p)),aliases=totwAliases(info);
+ return aliases.some(a=>keys.has(a))?100:0
+}
+function uniqueTotwPlayer(matches){
+ if(matches.length===1)return matches[0];
+ const ids=new Set(matches.map(p=>String(p?.id||"")).filter(Boolean));
+ return ids.size===1&&matches.length?matches[0]:null
+}
+function totwInfo(base){
+ if(!base)return null;
+ const matches=LIVE_TOTW.players.filter(info=>totwAliasMatch(base,info)===100);
+ return matches.length===1?matches[0]:null
+}
 function currentTotwBases(){return PLAYERS.filter(p=>!!totwInfo(p))}
 const LIVE_TOTW_BASE_CACHE=new Map(),LIVE_TOTW_EA_PENDING=new Set();
 function bestEaTotwAsset(info,rows){
- const assets=(rows||[]).map(normEAAsset).filter(Boolean);let best=null,score=0;
- for(const a of assets){const s=totwAliasMatch(a,info);if(s>score){score=s;best=a}}
- return score>=30?best:null
+ const assets=(rows||[]).map(normEAAsset).filter(Boolean);
+ let matches=assets.filter(a=>totwAliasMatch(a,info)===100);
+ if(info?.eaId){const byId=matches.filter(a=>String(a.id||"")===String(info.eaId));if(byId.length)matches=byId}
+ return uniqueTotwPlayer(matches)
 }
 function mergeTotwBase(base,a,index){
- const seed=base||{id:`totw-preview-${index}`,name:String(LIVE_TOTW.players[index]?.names?.[0]||"TOTW Spieler"),ovr:Number(LIVE_TOTW.players[index]?.ovr||80),position:LIVE_TOTW.players[index]?.position||"CM",alt:"",nation:"",team:"",league:"",face:"",pac:0,sho:0,pas:0,dri:0,def:0,phy:0};
+ const info=LIVE_TOTW.players[index]||{},fallback=info.fallback||{};
+ const seed={...(base||{}),
+  id:base?.id||fallback.id||("totw-preview-"+index),
+  name:base?.name||fallback.name||info.names?.[0]||"TOTW Spieler",
+  fullName:base?.fullName||fallback.fullName||base?.name||fallback.name||info.names?.[0]||"",
+  firstName:base?.firstName||fallback.firstName||"",lastName:base?.lastName||fallback.lastName||"",
+  ovr:Number(base?.ovr||fallback.ovr||info.ovr||80),
+  position:base?.position||fallback.position||info.position||"CM",
+  alt:base?.alt||fallback.alt||"",nation:base?.nation||fallback.nation||"",
+  team:base?.team||fallback.team||"",league:base?.league||fallback.league||"",
+  face:base?.face||fallback.face||"",nationFlag:base?.nationFlag||fallback.nationFlag||"",
+  nationCode:base?.nationCode||fallback.nationCode||"",clubLogo:base?.clubLogo||fallback.clubLogo||"",
+  teamId:base?.teamId||fallback.teamId||"",leagueLogo:base?.leagueLogo||fallback.leagueLogo||"",
+  leagueId:base?.leagueId||fallback.leagueId||"",
+  pac:Number(base?.pac||fallback.pac||0),sho:Number(base?.sho||fallback.sho||0),pas:Number(base?.pas||fallback.pas||0),
+  dri:Number(base?.dri||fallback.dri||0),def:Number(base?.def||fallback.def||0),phy:Number(base?.phy||fallback.phy||0),
+  source:base?.source||fallback.source||"fc27-totw-preview"
+ };
  if(!a)return seed;
  return {...seed,id:a.id||seed.id,name:a.name||seed.name,fullName:a.fullName||seed.fullName,firstName:a.firstName||seed.firstName,lastName:a.lastName||seed.lastName,
   team:a.team||seed.team,league:a.league||seed.league,nation:a.nation||seed.nation,face:a.face||seed.face,nationFlag:a.nationFlag||seed.nationFlag,nationCode:a.nationCode||seed.nationCode,
@@ -1356,10 +1390,12 @@ function mergeTotwBase(base,a,index){
   ovr:a.ovr||seed.ovr,pac:a.pac||seed.pac,sho:a.sho||seed.sho,pas:a.pas||seed.pas,dri:a.dri||seed.dri,def:a.def||seed.def,phy:a.phy||seed.phy}
 }
 function resolveTotwBase(info,index){
- const cached=LIVE_TOTW_BASE_CACHE.get(index);if(cached)return cached;
- let best=null,bestScore=0;for(const p of PLAYERS){const s=totwAliasMatch(p,info);if(s>bestScore){bestScore=s;best=p;if(s===100)break}}
- const base=bestScore>=30?best:null;
- const out=mergeTotwBase(base,null,index);LIVE_TOTW_BASE_CACHE.set(index,out);P_BY_ID.set(String(out.id),out);return out
+ const cached=LIVE_TOTW_BASE_CACHE.get(index);
+ if(cached){P_BY_ID.set(String(cached.id),cached);return cached}
+ let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
+ if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
+ const base=uniqueTotwPlayer(candidates),out=mergeTotwBase(base,null,index);
+ LIVE_TOTW_BASE_CACHE.set(index,out);P_BY_ID.set(String(out.id),out);return out
 }
 async function hydrateTotwFromEa(index){
  if(LIVE_TOTW_EA_PENDING.has(index))return;const info=LIVE_TOTW.players[index];if(!info)return;
@@ -1797,9 +1833,9 @@ function ensurePlayerAffiliationAssets(p){
  ensureEaPlayerAssets(p)
 }
 function inlineMetaHTML(p){p=resolvedAffiliation(p);return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
-const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV5")||"{}")))}catch(e){return new Map()}})();
-const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV5")||"{}")))}catch(e){return new Map()}})();
-function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV5",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV5",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
+const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV6")||"{}")))}catch(e){return new Map()}})();
+const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV6")||"{}")))}catch(e){return new Map()}})();
+function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV6",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV6",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
 function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit)return arr;return [hit,...arr.filter(x=>x!==hit)]}
@@ -1858,7 +1894,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1862";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1863";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -2330,6 +2366,10 @@ const EA_LEAGUE_NAME_BY_ID={
  "10336":"Colombia League 2","10341":"Mexico League 2","10350":"Saudi League 2","10353":"Argentina League 2"
 };
 const LEAGUE_NAME_ALIASES={
+ "liga f":"Liga F Moeve","liga f moeve":"Liga F Moeve",
+ "arkema pl":"Arkema Première Ligue","arkema premiere ligue":"Arkema Première Ligue","arkema premiere league":"Arkema Première Ligue","premiere ligue":"Arkema Première Ligue",
+ "barclays wsl":"Barclays Women's Super League","barclays womens super league":"Barclays Women's Super League","womens super league":"Barclays Women's Super League",
+
  "belgium pro league":"1A Pro League","belgian pro league":"1A Pro League","jupiler pro league":"1A Pro League",
  "liga nos":"Liga Portugal","liga portugal betclic":"Liga Portugal","portuguese league":"Liga Portugal",
  "super lig":"Trendyol Süper Lig","super lig turkey":"Trendyol Süper Lig","trendyol super lig":"Trendyol Süper Lig",
@@ -3766,7 +3806,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1862",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1863",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-62-reloaded")){sessionStorage.setItem("gfut-v18-62-reloaded","1");location.reload()}});
  });
 }
