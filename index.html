@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.36</title>
+<title>Gerlies FUT V18.37</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.36 bench visibility + transfer market full-card view */
+/* V18.37 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -463,6 +463,34 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   .market-listing-price{font-size:11px!important}
   .market-listing-details{font-size:5.7px;padding:7px 5px}
 }
+
+
+/* V18.37 pack tiers: instant / board / walkout / special / double walkout */
+.opening{isolation:isolate}
+.opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
+.opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
+.opening.mode-walkout:before,.opening.mode-double:before{opacity:.8;background:repeating-conic-gradient(from 0deg,rgba(216,255,62,.33) 0 2deg,transparent 2deg 11deg);animation:packRays 4s linear infinite}
+.opening.mode-walkout:after,.opening.mode-double:after{opacity:.72;background:radial-gradient(circle at 50% 50%,rgba(216,255,62,.35),rgba(47,181,136,.12) 27%,transparent 58%);animation:walkGlow .7s ease-in-out infinite alternate}
+.opening.mode-special:before{opacity:.85;background:repeating-conic-gradient(from 0deg,rgba(71,225,255,.36) 0 3deg,rgba(180,64,255,.16) 3deg 7deg,transparent 7deg 13deg);animation:packRays 3s linear infinite}
+.opening.mode-special:after{opacity:.8;background:radial-gradient(circle at 50% 50%,rgba(89,255,231,.35),rgba(157,62,255,.22) 32%,transparent 62%);animation:walkGlow .55s ease-in-out infinite alternate}
+@keyframes packRays{to{transform:rotate(360deg)}}@keyframes walkGlow{to{transform:scale(1.12);filter:brightness(1.35)}}@keyframes boardGlow{0%{transform:scale(.55);opacity:0}40%{opacity:.6}100%{transform:scale(1.25);opacity:0}}
+.reveal{position:relative;z-index:5;min-width:min(92vw,620px)}
+.reveal-cards{display:flex;align-items:flex-end;justify-content:center;gap:12px;min-height:286px}
+.reveal-second{display:none}
+.opening.mode-double .reveal-second{display:block;animation:secondWalk .55s cubic-bezier(.16,.84,.28,1) both}
+.opening.mode-board .reveal .card-shell{width:168px}
+.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:218px}
+.opening.mode-double .reveal .card-shell{width:168px}
+.opening.mode-walkout .revealbadge,.opening.mode-double .revealbadge{font-size:14px;color:#dcff45;text-shadow:0 0 22px rgba(216,255,62,.8)}
+.opening.mode-special .revealbadge{font-size:14px;color:#8fffe9;text-shadow:0 0 22px rgba(89,255,231,.8)}
+.opening.mode-walkout .reveal-cards,.opening.mode-special .reveal-cards{animation:walkCard .72s cubic-bezier(.14,.9,.24,1) both}
+.opening.mode-board .reveal-cards{animation:boardCard .45s ease-out both}
+@keyframes walkCard{0%{transform:translateY(90px) scale(.72);opacity:0;filter:brightness(2)}100%{transform:none;opacity:1;filter:none}}
+@keyframes boardCard{0%{transform:translateY(35px) scale(.9);opacity:0}100%{transform:none;opacity:1}}
+@keyframes secondWalk{0%{transform:translateX(80px) scale(.72);opacity:0;filter:brightness(2)}100%{transform:none;opacity:1;filter:none}}
+.opening.mode-double .walkout-title{color:#dcff45;font-size:10px}
+.opening.mode-special .walkout-title{color:#8fffe9}
+@media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
 
 </style>
 </head>
@@ -511,7 +539,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.36</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.37</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -631,7 +659,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
   <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Team umbenennen</h3><p>Ändere den Namen deines Clubs. Dein Freundesprofil wird automatisch aktualisiert.</p><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><button id="saveProfileName" class="primary">Teamname speichern</button></div>
-  <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong>100.000 FC Points</strong><span>Exklusive Code-Belohnung</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
+  <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Gerlies FUT installieren</h3><p id="pwaInstallHint">Installiere Gerlies FUT als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Gerlies FUT installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">DATEN</span><h3>FC27-Datenbank</h3><p id="homeDb">FC27-Datenbankstatus und technische Einstellungen.</p><button id="syncAgain" class="secondary">FC27-Daten neu laden</button></div>
 </div></div></section>
@@ -690,7 +718,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="opponentTeamModal" class="modal friend-team-modal opponent-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="opponentTeamModalTitle">Gegner</h3><div id="opponentTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="opponentTeamModalClose" class="secondary">Schließen</button></div><div id="opponentTeamModalBody"></div></div></div>
 
 
-<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack">PACK</div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div id="revealCard"></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
+<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack">PACK</div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
 <div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Alle Nicht-Duplikate in Club</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
@@ -1541,8 +1569,59 @@ function renderStore(){
 }
 $("storeView").addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur,price=p?.[cur];if(!p||price==null)return;const lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;state.packs[id]--;save();openPack(id)}})
 let pendingResolved=new Set();
-function openPack(id){pendingPack=generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");$("opening").classList.add("active");$("openStage").style.display="block";$("reveal").classList.remove("active");$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
-$("openPackBtn").addEventListener("click",async()=>{$("openPackBtn").disabled=true;$("openPackBtn").style.display="none";$("bigPack").classList.add("pulse");for(const n of [3,2,1]){$("packCountdown").textContent=n;await sleep(1000)}$("packCountdown").textContent="";$("bigPack").classList.remove("pulse");const f=$("flash");f.classList.remove("go");void f.offsetWidth;f.classList.add("go");await sleep(220);$("openStage").style.display="none";const iconWalkout=pendingPack.find(i=>i.variant==="icon-mid"),best=iconWalkout||[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a))[0],base=displayBase(best);$("revealBadge").textContent=best.variant==="icon-mid"?"MID ICON":base.ovr>=86?"WALKOUT":base.ovr>=83?"BOARD":rarityOf(base).toUpperCase();$("revealCard").innerHTML=cardHTML(base,best);$("walkoutTitle").textContent=`${base.name} · ${base.position} · ${base.team}`;$("reveal").classList.add("active");await sleep(base.ovr>=86?2400:1700);finishPack()})
+function openPack(id){pendingPack=generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
+function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
+function packRevealPlan(){
+ const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
+ const walkouts=ranked.filter(packIsWalkout),specials=ranked.filter(packIsSpecial),best=ranked[0]||null;
+ if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:3800};
+ if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MID ICON":(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:3300}}
+ if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:3000};
+ if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"BOARD",duration:1500};
+ return{mode:"none",cards:best?[best]:[],label:"",duration:0}
+}
+function finishPack(){
+ const opening=$("opening");
+ opening.className="opening";
+ $("openStage").style.display="block";
+ $("reveal").classList.remove("active");
+ $("bigPack").classList.remove("pulse");
+ $("packCountdown").textContent="";
+ renderPackResults();
+ $("results").classList.add("active");
+}
+async function runPackReveal(plan){
+ const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
+ opening.className="opening active mode-"+plan.mode;
+ $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
+ if(plan.mode==="none"){finishPack();return}
+ $("bigPack").classList.add("pulse");
+ if(plan.mode==="board"){
+  await sleep(320);
+ }else{
+  for(const n of [3,2,1]){$("packCountdown").textContent=n;await sleep(plan.mode==="double"?520:460)}
+ }
+ $("packCountdown").textContent="";$("bigPack").classList.remove("pulse");
+ flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
+ await sleep(plan.mode==="board"?160:260);
+ $("openStage").style.display="none";
+ const first=plan.cards[0],firstBase=displayBase(first);
+ if(!first||!firstBase){finishPack();return}
+ $("revealBadge").textContent=plan.label;
+ $("revealCard").innerHTML=cardHTML(firstBase,first);
+ $("revealSecondCard").innerHTML="";
+ $("walkoutTitle").textContent=`${firstBase.name} · ${positionLabel(firstBase.position,firstBase)} · ${firstBase.team}`;
+ reveal.classList.add("active");
+ if(plan.mode==="double"&&plan.cards[1]){
+  await sleep(550);
+  const second=plan.cards[1],secondBase=displayBase(second);
+  if(secondBase)$("revealSecondCard").innerHTML=cardHTML(secondBase,second);
+ }
+ await sleep(plan.duration-(plan.mode==="double"?550:0));
+ finishPack();
+}
+$("openPackBtn").addEventListener("click",async()=>{try{await runPackReveal(packRevealPlan())}catch(err){console.error("Pack reveal failed",err);finishPack();toast("Pack geöffnet. Animation wurde übersprungen.")}})
 function renderPackResults(){const dupMap=packDuplicateMap(),normal=[],dups=[];pendingPack.forEach((i,k)=>(dupMap.get(k)?dups:normal).push({i,k}));const card=({i,k},duplicate)=>{const b=displayBase(i),done=pendingResolved.has(k),canTransfer=duplicate&&i.tradeable;return`<div class="result-item ${duplicate?"duplicate":""} ${done?"resolved":""}" data-result-item="${k}"><button class="pack-profile-tap" data-pack-open="${k}" aria-label="${esc(b.name)} Profil ansehen">${cardHTML(b,i)}</button>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':''}${done?`<div class="result-status">ERLEDIGT</div>`:`<div class="result-item-actions">${duplicate?`<button class="primary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${canTransfer?`<button class="secondary" data-pack-transfer="${k}">Auf Transferliste</button>`:""}`:`<button class="primary" data-pack-club="${k}">In den Club schicken</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button>`}<button class="secondary" data-pack-sell="${k}">Schnellverkauf +${fmt(quickSell(i))}</button></div>${duplicate?'<div class="duplicate-note">Duplikat: SBC-Speicher, Transferliste oder Schnellverkauf.</div>':''}`}</div>`};const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?'duplicate':''}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?'':'n'}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join('')}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;$ ("resultGrid").innerHTML=section("Pack-Inhalt",normal,false)+(dups.length?section("Duplikate",dups,true):"");const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)),sellTotal=unresolved.reduce((sum,x)=>sum+quickSell(x.i),0);$ ("resultQuickSellAll").textContent=unresolved.length?`Alles schnellverkaufen · +${fmt(sellTotal)} Coins`:"Alles schnellverkauft";$ ("resultQuickSellAll").disabled=!unresolved.length;$ ("resultAllClub").disabled=!normal.some(x=>!pendingResolved.has(x.k));$ ("resultDone").disabled=pendingResolved.size!==pendingPack.length}
 $ ("resultGrid").addEventListener("click",e=>{const c=e.target.closest("[data-pack-club]"),ins=e.target.closest("[data-pack-insert]"),q=e.target.closest("[data-pack-sell]"),o=e.target.closest("[data-pack-open]"),store=e.target.closest("[data-pack-sbcstore]"),tr=e.target.closest("[data-pack-transfer]");if(c){const k=Number(c.dataset.packClub),i=pendingPack[k],dup=packDuplicateMap().get(k);if(!i||pendingResolved.has(k)||dup)return;state.club.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();return}if(ins){const k=Number(ins.dataset.packInsert),i=pendingPack[k],dup=packDuplicateMap().get(k);if(!i||pendingResolved.has(k)||dup)return;if(!state.club.find(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();openSlotPickerForItem(i.uid);return}if(store){const k=Number(store.dataset.packSbcstore),i=pendingPack[k];if(!i||pendingResolved.has(k))return;state.sbcStorage=state.sbcStorage||[];if(state.sbcStorage.length>=100)return toast("SBC-Speicher voll (100/100).");state.sbcStorage.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();toast("Duplikat im SBC-Speicher abgelegt.");return}if(tr){const k=Number(tr.dataset.packTransfer),i=pendingPack[k];if(!i||pendingResolved.has(k)||!i.tradeable)return;state.club.push(i);state.transferList=state.transferList||[];state.transferList.push(i.uid);pendingResolved.add(k);save();renderPackResults();renderAll();toast("Duplikat auf die Transferliste verschoben.");return}if(q){const k=Number(q.dataset.packSell),i=pendingPack[k];if(!i||pendingResolved.has(k))return;state.coins+=quickSell(i);pendingResolved.add(k);save();renderPackResults();renderAll();toast(`+${fmt(quickSell(i))} Coins`);return}if(o){const k=Number(o.dataset.packOpen);openPackPlayerDetails(k)}})
 $ ("resultAllClub").addEventListener("click",()=>{const dupMap=packDuplicateMap();pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)){state.club.push(i);pendingResolved.add(k)}});save();renderPackResults();renderAll()})
@@ -1582,14 +1661,11 @@ function marketArchetypeMultiplier(base){
  }
  return mult
 }
-function marketDemandMultiplier(base){
- const name=normalizeKey(base?.name||"");
- const demand={"felix nmecha":1.55};
- return demand[name]||1
-}
+function isFelixNmecha(base){const name=normalizeKey(base?.name||""),team=normalizeKey(base?.team||"");return /(^| )f(elix)? ?nmecha$/.test(name)&&team.includes("borussia dortmund")}
+function marketDemandMultiplier(base){if(isFelixNmecha(base))return 2.35;const name=normalizeKey(base?.name||"");const demand={};return demand[name]||1}
 function marketMetaFactor(base){const score=marketMetaScore(base),styleCount=marketPlayStyleCount(base),alts=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;let factor=Math.exp((score-78)*.13);factor*=1+Math.min(.28,styleCount*.04);factor*=1+Math.min(.14,alts*.05);factor*=marketArchetypeMultiplier(base);factor*=marketDemandMultiplier(base);const lg=normalizeKey(base?.league||"");if(["bundesliga","premier league","laliga ea sports","la liga","serie a","ligue 1"].includes(lg))factor*=1.05;const tm=normalizeKey(base?.team||"");if(["borussia dortmund","fc bayern munchen","bayern munich","real madrid","fc barcelona","barcelona","liverpool","arsenal","manchester city","manchester united","paris saint germain","psg","juventus","inter","ac milan"].includes(tm))factor*=1.07;return Math.max(.55,Math.min(9,factor))}
 function marketRoundPrice(v){const step=v>=100000?1000:v>=10000?250:50;return Math.max(150,Math.round(v/step)*step)}
-function marketPriceForRating(r,special=false,base=null){const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);const meta=marketMetaFactor(base||{ovr:rr}),specialMult=special?1.55:1,variation=.92+Math.random()*.16;let value=basePrice*meta*specialMult*variation;const name=normalizeKey(base?.name||"");if(name==="felix nmecha"&&rr>=85)value=Math.max(value,special?190000:120000);return marketRoundPrice(value)}
+function marketPriceForRating(r,special=false,base=null){const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);const meta=marketMetaFactor(base||{ovr:rr}),specialMult=special?1.55:1,variation=.92+Math.random()*.16;let value=basePrice*meta*specialMult*variation;if(isFelixNmecha(base)&&rr>=85)value=Math.max(value,special?190000:120000);return marketRoundPrice(value)}
 function marketPreviewItem(x){return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||""}}
 function listingRating(x){return Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"?"special":rarityOf(x.base)}
@@ -2135,10 +2211,26 @@ $("friendTeamModalBody").addEventListener("click",e=>{const b=e.target.closest("
 
 
 
-const PROMO_CODES={"säulen1415":{id:"saeulen1415_100k",points:100000,label:"Säulen1415"}};
+const PROMO_CODES={
+ "säulen1415":{id:"saeulen1415_100k",points:100000,label:"Säulen1415"},
+ "ranger":{id:"ranger_50k",points:50000,label:"Ranger"}
+};
 function normalizePromoCode(v){return String(v||"").normalize("NFC").trim().toLocaleLowerCase("de-DE")}
-function renderPromo(){const status=$("promoStatus"),input=$("promoCodeInput"),used=!!state.promoClaims?.saeulen1415_100k;if(!status)return;if(used){status.className="promo-status success";status.textContent="Promocode bereits eingelöst · 100.000 FC Points wurden diesem Spielstand gutgeschrieben.";if(input)input.value="Säulen1415"}else{status.className="promo-status";status.textContent="Gib deinen Promocode ein und tippe auf „Einlösen“."}}
-function redeemPromo(){const input=$("promoCodeInput"),status=$("promoStatus"),key=normalizePromoCode(input?.value),promo=PROMO_CODES[key];if(!promo){if(status){status.className="promo-status error";status.textContent="Promocode ungültig. Prüfe die Schreibweise und versuche es erneut."}return}state.promoClaims=state.promoClaims||{};if(state.promoClaims[promo.id]){if(status){status.className="promo-status success";status.textContent="Dieser Promocode wurde in diesem Spielstand bereits eingelöst."}return}state.points+=promo.points;state.promoClaims[promo.id]={claimedAt:Date.now(),code:promo.label,reward:{points:promo.points}};save();renderWallet();renderPromo();toast("100.000 FC Points gutgeschrieben.")}
+function renderPromo(){
+ const status=$("promoStatus"),title=$("promoRewardTitle"),sub=$("promoRewardSub");
+ if(!status)return;
+ const claims=Object.values(state.promoClaims||{}).filter(Boolean).sort((a,b)=>Number(b.claimedAt||0)-Number(a.claimedAt||0));
+ if(claims.length){const last=claims[0],pts=Number(last.reward?.points||0);status.className="promo-status success";status.textContent=`Zuletzt eingelöst: ${last.code} · ${fmt(pts)} FC Points. Jeder Code kann pro Spielstand nur einmal verwendet werden.`;if(title)title.textContent=`${fmt(pts)} FC Points`;if(sub)sub.textContent=`Belohnung aus „${last.code}“`;}
+ else{status.className="promo-status";status.textContent="Gib deinen Promocode ein und tippe auf „Einlösen“.";if(title)title.textContent="Promocode-Belohnung";if(sub)sub.textContent="Jeder gültige Code hat seine eigene Belohnung."}
+}
+function redeemPromo(){
+ const input=$("promoCodeInput"),status=$("promoStatus"),key=normalizePromoCode(input?.value),promo=PROMO_CODES[key];
+ if(!promo){if(status){status.className="promo-status error";status.textContent="Promocode ungültig. Prüfe die Schreibweise und versuche es erneut."}return}
+ state.promoClaims=state.promoClaims||{};
+ if(state.promoClaims[promo.id]){if(status){status.className="promo-status success";status.textContent=`„${promo.label}“ wurde in diesem Spielstand bereits eingelöst.`}return}
+ state.points+=promo.points;state.promoClaims[promo.id]={claimedAt:Date.now(),code:promo.label,reward:{points:promo.points}};
+ save();renderWallet();renderPromo();if(input)input.value="";toast(`${fmt(promo.points)} FC Points gutgeschrieben.`)
+}
 $("redeemPromoCode")?.addEventListener("click",redeemPromo);
 $("promoCodeInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")redeemPromo()});
 function renderAll(){renderWallet();renderHome();renderSquad();renderPlay();renderStore();renderTasks();renderSBC();renderEvos();renderClub();renderSocial();renderPromo();fillLeagueFilter();if(!marketListings.length)refreshMarket();save()}
