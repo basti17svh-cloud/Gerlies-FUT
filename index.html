@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.46</title>
+<title>Gerlies FUT V18.47</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -797,6 +797,55 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .mini .rare-mark{top:7px!important;right:4px!important;font-size:3.1px!important;padding:2px 3px!important}
 .squad-drawer .mini .rare-mark{top:6px!important;right:3px!important}
 
+
+
+/* V18.47 — bank/reserve = same card geometry as XI; rare badge higher */
+.rare-mark{top:9px!important;right:6px!important}
+.mini .rare-mark{top:3px!important;right:4px!important}
+.squad-drawer .mini .rare-mark{top:3px!important;right:4px!important}
+
+.squad-drawer #bench .mini .custom-card .card-top,
+.squad-drawer #reserve .mini .custom-card .card-top{
+  left:7%!important;top:8%!important;width:27%!important;text-align:center!important
+}
+.squad-drawer #bench .mini .custom-card .ovr,
+.squad-drawer #reserve .mini .custom-card .ovr{
+  font-size:clamp(15px,4.3vw,21px)!important;line-height:.92!important
+}
+.squad-drawer #bench .mini .custom-card .pos,
+.squad-drawer #reserve .mini .custom-card .pos{
+  font-size:6px!important;margin-top:2px!important;transform:translateY(-2px)!important
+}
+.squad-drawer #bench .mini .custom-card .face,
+.squad-drawer #reserve .mini .custom-card .face{
+  left:34%!important;right:2%!important;top:21%!important;height:43%!important;overflow:hidden!important
+}
+.squad-drawer #bench .mini .custom-card .face img,
+.squad-drawer #reserve .mini .custom-card .face img{
+  width:108%!important;height:112%!important;object-fit:contain!important;object-position:center top!important;
+  transform:translate(-3%,-2%) scale(1.06)!important
+}
+.squad-drawer #bench .mini .custom-card .card-icons,
+.squad-drawer #reserve .mini .custom-card .card-icons{
+  left:8%!important;top:35%!important;gap:2px!important;align-items:center!important;z-index:8!important
+}
+.squad-drawer #bench .mini .card-flag-img,
+.squad-drawer #reserve .mini .card-flag-img{width:11px!important;height:7px!important}
+.squad-drawer #bench .mini .card-league,
+.squad-drawer #bench .mini .card-club,
+.squad-drawer #reserve .mini .card-league,
+.squad-drawer #reserve .mini .card-club{width:10px!important;height:10px!important}
+.squad-drawer #bench .mini .badge-img,
+.squad-drawer #reserve .mini .badge-img{width:10px!important;height:10px!important;object-fit:contain!important}
+.squad-drawer #bench .mini .custom-card .card-bottom,
+.squad-drawer #reserve .mini .custom-card .card-bottom{
+  left:7%!important;right:7%!important;bottom:7%!important;background:none!important
+}
+.squad-drawer #bench .mini .custom-card .pname,
+.squad-drawer #reserve .mini .custom-card .pname{
+  font-size:5.8px!important;padding-top:3px!important;line-height:1.05!important
+}
+
 </style>
 </head>
 <body>
@@ -844,7 +893,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.46</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.47</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1535,26 +1584,34 @@ function apiSportsTeamLogo(team){const id=API_SPORTS_TEAM_IDS[normalizeKey(team)
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1846";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1847";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
-let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0;
+let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false;
 
 function badgeDiscoveryKey(kind,name){return kind+"|"+normalizeKey(name)}
-function discoveredBadge(kind,name){
- const row=BADGE_DISCOVERY_CACHE[badgeDiscoveryKey(kind,name)];
- return String(row?.url||"").trim()
+function badgeDiscoveryRow(kind,name){return BADGE_DISCOVERY_CACHE[badgeDiscoveryKey(kind,name)]||null}
+function discoveredBadge(kind,name){return String(badgeDiscoveryRow(kind,name)?.url||"").trim()}
+function discoveredClubLeague(team){
+ const row=badgeDiscoveryRow("club",team);
+ if(!row)return {name:"",url:""};
+ const name=String(row.leagueName||"").trim();
+ const direct=String(row.leagueUrl||"").trim();
+ const cached=name?discoveredBadge("league",name):"";
+ return {name,url:direct||cached}
 }
 function persistBadgeDiscovery(){try{localStorage.setItem(GFUT_BADGE_DISCOVERY_KEY,JSON.stringify(BADGE_DISCOVERY_CACHE))}catch(e){}}
+function claimRank(cl){return cl?.rank==="preferred"?0:cl?.rank==="normal"?1:2}
+function claimHasEnd(cl){return !!(cl?.qualifiers?.P582?.length)}
 function wikidataClaimId(entity,pid){
  const claims=entity?.claims?.[pid]||[];
- const ranked=[...claims].sort((a,b)=>(a.rank==="preferred"?0:a.rank==="normal"?1:2)-(b.rank==="preferred"?0:b.rank==="normal"?1:2));
+ const ranked=[...claims].sort((a,b)=>(claimHasEnd(a)?1:0)-(claimHasEnd(b)?1:0)||claimRank(a)-claimRank(b));
  for(const cl of ranked){const id=cl?.mainsnak?.datavalue?.value?.id;if(id)return String(id)}
  return""
 }
 function wikidataClaimFile(entity,pid){
  const claims=entity?.claims?.[pid]||[];
- const ranked=[...claims].sort((a,b)=>(a.rank==="preferred"?0:a.rank==="normal"?1:2)-(b.rank==="preferred"?0:b.rank==="normal"?1:2));
+ const ranked=[...claims].sort((a,b)=>claimRank(a)-claimRank(b));
  for(const cl of ranked){const v=cl?.mainsnak?.datavalue?.value;if(typeof v==="string"&&v.trim())return v.trim()}
  return""
 }
@@ -1565,36 +1622,40 @@ function commonsFileUrl(filename){
 function footballEntityScore(result,kind,name){
  const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
  let score=0;
- if(label===target)score+=8;
+ if(label===target)score+=10;
  if(label&&target&&(label.includes(target)||target.includes(label)))score+=4;
  const ta=new Set(target.split(" ").filter(x=>x.length>2)),la=label.split(" ").filter(x=>x.length>2);
- score+=la.filter(x=>ta.has(x)).length*1.35;
+ score+=la.filter(x=>ta.has(x)).length*1.5;
  if(kind==="club"){
-  if(/football club|association football club|soccer club|sports club|professional football club/.test(desc))score+=7;
-  else if(/football|soccer/.test(desc)&&/club|team/.test(desc))score+=4;
-  else score-=4;
+  if(/association football club|football club|soccer club|professional football club/.test(desc))score+=9;
+  else if(/football|soccer/.test(desc)&&/club|team/.test(desc))score+=5;
+  else if(/sports club/.test(desc))score+=1;
+  else score-=5;
  }else{
-  if(/football league|association football league|professional league|football competition/.test(desc))score+=7;
-  else if(/football|soccer/.test(desc)&&/league|competition/.test(desc))score+=4;
-  else score-=4;
+  if(/association football league|football league|professional football league/.test(desc))score+=9;
+  else if(/football|soccer/.test(desc)&&/league|competition|division/.test(desc))score+=6;
+  else score-=5;
  }
  return score
 }
 async function wikidataFindFootballEntity(name,kind){
- const attempts=[String(name||"").trim(),kind==="club"?String(name||"").trim()+" football club":String(name||"").trim()+" football league"];
+ const base=String(name||"").trim();
+ const attempts=kind==="club"
+  ?[base,base+" association football",base+" football club",base+" soccer club"]
+  :[base,base+" football league",base+" association football league"];
  for(const q of attempts){
   if(!q)continue;
-  const url=`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&uselang=en&type=item&limit=8&format=json&origin=*`;
-  const data=await fetchJson(url,14000),rows=Array.isArray(data?.search)?data.search:[];
+  const url=`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&uselang=en&type=item&limit=10&format=json&origin=*`;
+  const data=await fetchJson(url,16000),rows=Array.isArray(data?.search)?data.search:[];
   const ranked=rows.map(x=>({x,score:footballEntityScore(x,kind,name)})).sort((a,b)=>b.score-a.score);
-  if(ranked[0]?.score>=7)return ranked[0].x
+  if(ranked[0]?.score>=8)return ranked[0].x
  }
  return null
 }
 async function wikidataEntity(qid){
  if(!qid)return null;
  const url=`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}&props=claims%7Clabels&languages=en%7Cde&format=json&origin=*`;
- const data=await fetchJson(url,14000);
+ const data=await fetchJson(url,16000);
  return data?.entities?.[qid]||null
 }
 function entityLabel(entity){
@@ -1602,25 +1663,46 @@ function entityLabel(entity){
 }
 function applyDiscoveredClubMeta(team,row){
  const tk=normalizeKey(team);if(!tk||!row)return;
+ const linkedLeague=row.leagueName?badgeDiscoveryRow("league",row.leagueName):null;
+ const leagueUrl=String(row.leagueUrl||linkedLeague?.url||"").trim();
  let changed=false;
  for(const p of PLAYERS){
   if(normalizeKey(p?.team)!==tk)continue;
-  if(row.url&&!p.clubLogo){p.clubLogo=row.url;changed=true}
-  if(row.leagueName&&!p.league){p.league=row.leagueName;changed=true}
-  if(row.leagueUrl&&!p.leagueLogo){p.leagueLogo=row.leagueUrl;changed=true}
+  if(row.url&&p.clubLogo!==row.url){p.clubLogo=row.url;changed=true}
+  if(row.leagueName&&p.league!==row.leagueName){p.league=row.leagueName;changed=true}
+  if(leagueUrl&&p.leagueLogo!==leagueUrl){p.leagueLogo=leagueUrl;changed=true}
  }
  if(changed){
   P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
   for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);
  }
 }
-function applyBadgeCacheToPlayers(){
- for(const [key,row] of Object.entries(BADGE_DISCOVERY_CACHE)){
-  if(!key.startsWith("club|")||!row?.name)continue;
-  applyDiscoveredClubMeta(row.name,row)
+function applyDiscoveredLeagueMeta(league,row){
+ const lk=normalizeKey(league);if(!lk||!row?.url)return;
+ let changed=false;
+ for(const p of PLAYERS){
+  if(normalizeKey(p?.league)!==lk)continue;
+  if(p.leagueLogo!==row.url){p.leagueLogo=row.url;changed=true}
+ }
+ if(changed){
+  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
+  for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);
+ }
+ for(const rowClub of Object.values(BADGE_DISCOVERY_CACHE)){
+  if(!rowClub?.leagueName||normalizeKey(rowClub.leagueName)!==lk)continue;
+  if(!rowClub.leagueUrl)rowClub.leagueUrl=row.url;
+  if(rowClub.name)applyDiscoveredClubMeta(rowClub.name,rowClub)
  }
 }
-async function discoverFootballBadge(kind,name){
+function applyBadgeCacheToPlayers(){
+ for(const [key,row] of Object.entries(BADGE_DISCOVERY_CACHE)){
+  if(key.startsWith("league|")&&row?.name)applyDiscoveredLeagueMeta(row.name,row)
+ }
+ for(const [key,row] of Object.entries(BADGE_DISCOVERY_CACHE)){
+  if(key.startsWith("club|")&&row?.name)applyDiscoveredClubMeta(row.name,row)
+ }
+}
+async function discoverFootballBadge(kind,name,leagueHint=""){
  const search=await wikidataFindFootballEntity(name,kind);
  if(!search?.id)return null;
  const entity=await wikidataEntity(search.id);if(!entity)return null;
@@ -1628,46 +1710,82 @@ async function discoverFootballBadge(kind,name){
  const row={name:String(name||""),qid:search.id,url:commonsFileUrl(file),ts:Date.now()};
  if(kind==="club"){
   const leagueQid=wikidataClaimId(entity,"P118");
-  if(leagueQid){
-   const leagueEntity=await wikidataEntity(leagueQid);
-   if(leagueEntity){
-    row.leagueName=entityLabel(leagueEntity);
-    const leagueFile=wikidataClaimFile(leagueEntity,"P154")||wikidataClaimFile(leagueEntity,"P94");
-    row.leagueUrl=commonsFileUrl(leagueFile);
-    if(row.leagueName&&row.leagueUrl){
-     BADGE_DISCOVERY_CACHE[badgeDiscoveryKey("league",row.leagueName)]={name:row.leagueName,qid:leagueQid,url:row.leagueUrl,ts:Date.now()}
-    }
+  const leagueEntity=leagueQid?await wikidataEntity(leagueQid):null;
+  let leagueName=entityLabel(leagueEntity);
+  if(!leagueName&&leagueHint)leagueName=String(leagueHint).trim();
+  row.leagueName=leagueName;
+  if(leagueEntity){
+   const leagueFile=wikidataClaimFile(leagueEntity,"P154")||wikidataClaimFile(leagueEntity,"P94");
+   row.leagueUrl=commonsFileUrl(leagueFile)
+  }
+  if(row.leagueName){
+   const existing=badgeDiscoveryRow("league",row.leagueName);
+   if(row.leagueUrl){
+    BADGE_DISCOVERY_CACHE[badgeDiscoveryKey("league",row.leagueName)]={name:row.leagueName,qid:leagueQid||existing?.qid||"",url:row.leagueUrl,ts:Date.now()}
+   }else{
+    queueBadgeDiscovery("league",row.leagueName)
    }
   }
  }
  return row
 }
-function queueBadgeDiscovery(kind,name){
+function queueBadgeDiscovery(kind,name,leagueHint="",priority=false){
  const clean=String(name||"").trim();if(!clean)return;
- const key=badgeDiscoveryKey(kind,clean);
- if(BADGE_DISCOVERY_CACHE[key]||BADGE_DISCOVERY_PENDING.has(key))return;
- BADGE_DISCOVERY_PENDING.add(key);BADGE_DISCOVERY_QUEUE.push({kind,name:clean,key});pumpBadgeDiscovery()
+ const key=badgeDiscoveryKey(kind,clean),old=BADGE_DISCOVERY_CACHE[key],age=Date.now()-Number(old?.ts||0);
+ const recentMiss=old?.miss&&age<6*60*60*1000;
+ const recentNoLogo=old?.qid&&!old?.url&&age<12*60*60*1000;
+ if(old?.url||recentMiss||recentNoLogo||BADGE_DISCOVERY_PENDING.has(key))return;
+ BADGE_DISCOVERY_PENDING.add(key);
+ const job={kind,name:clean,key,leagueHint:String(leagueHint||"").trim()};
+ priority?BADGE_DISCOVERY_QUEUE.unshift(job):BADGE_DISCOVERY_QUEUE.push(job);
+ pumpBadgeDiscovery()
 }
 function scheduleBadgeRerender(){
  clearTimeout(BADGE_DISCOVERY_RENDER_TIMER);
- BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{renderSquad();renderClub();if(currentViewId?.()==="marketView")renderMarket()}catch(e){}},260)
+ BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{renderSquad();renderClub();if(currentViewId?.()==="marketView")renderMarket()}catch(e){}},220)
 }
 function pumpBadgeDiscovery(){
- while(BADGE_DISCOVERY_ACTIVE<3&&BADGE_DISCOVERY_QUEUE.length){
+ while(BADGE_DISCOVERY_ACTIVE<2&&BADGE_DISCOVERY_QUEUE.length){
   const job=BADGE_DISCOVERY_QUEUE.shift();BADGE_DISCOVERY_ACTIVE++;
   (async()=>{
    try{
-    const row=await discoverFootballBadge(job.kind,job.name);
+    const row=await discoverFootballBadge(job.kind,job.name,job.leagueHint);
     BADGE_DISCOVERY_CACHE[job.key]=row||{name:job.name,url:"",ts:Date.now(),miss:true};
     if(row&&job.kind==="club")applyDiscoveredClubMeta(job.name,row);
+    if(row&&job.kind==="league")applyDiscoveredLeagueMeta(job.name,row);
     persistBadgeDiscovery();scheduleBadgeRerender()
    }catch(e){
     BADGE_DISCOVERY_CACHE[job.key]={name:job.name,url:"",ts:Date.now(),miss:true};persistBadgeDiscovery()
    }finally{
-    BADGE_DISCOVERY_PENDING.delete(job.key);BADGE_DISCOVERY_ACTIVE--;pumpBadgeDiscovery()
+    BADGE_DISCOVERY_PENDING.delete(job.key);BADGE_DISCOVERY_ACTIVE--;
+    setTimeout(pumpBadgeDiscovery,160)
    }
   })()
  }
+}
+function prioritizeVisibleSquadBadges(){
+ try{
+  const items=squadItems().filter(Boolean);
+  for(const it of items){
+   const p=displayBase(it);if(!p)continue;
+   if(p.team)queueBadgeDiscovery("club",p.team,p.league,true);
+   if(p.league)queueBadgeDiscovery("league",p.league,"",true)
+  }
+ }catch(e){}
+}
+function startGlobalBadgePrewarm(){
+ if(BADGE_PREWARM_STARTED||!PLAYERS.length)return;
+ BADGE_PREWARM_STARTED=true;
+ prioritizeVisibleSquadBadges();
+ setTimeout(()=>{
+  const clubs=new Map(),leagues=new Set();
+  for(const p of PLAYERS){
+   if(p?.team&&!clubs.has(normalizeKey(p.team)))clubs.set(normalizeKey(p.team),{team:p.team,league:p.league||""});
+   if(p?.league)leagues.add(p.league)
+  }
+  for(const row of clubs.values())queueBadgeDiscovery("club",row.team,row.league,false);
+  for(const league of leagues)queueBadgeDiscovery("league",league,"",false)
+ },3500)
 }
 function emblemCandidates(kind,p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};
@@ -1676,15 +1794,18 @@ function emblemCandidates(kind,p){
   if(/^\d+$/.test(String(p?.teamId||"")))add(`https://cdn.sofifa.net/meta/team/${p.teamId}/120.png`);
   add(apiSportsTeamLogo(p?.team));
   add(discoveredBadge("club",p?.team));
-  if(!arr.length&&p?.team)queueBadgeDiscovery("club",p.team);
+  if(p?.team&&!discoveredBadge("club",p.team))queueBadgeDiscovery("club",p.team,p.league,true);
  }
  if(kind==="league"){
+  const linked=discoveredClubLeague(p?.team);
   add(p?.leagueLogo);
   if(/^\d+$/.test(String(p?.leagueId||"")))add(`https://cdn.sofifa.net/meta/league/${p.leagueId}/120.png`);
   add(apiSportsLeagueLogo(p?.league));
-  add(discoveredBadge("league",p?.league));
-  if(!arr.length&&p?.league)queueBadgeDiscovery("league",p.league);
-  if(!arr.length&&!p?.league&&p?.team)queueBadgeDiscovery("club",p.team);
+  add(linked.url);
+  add(discoveredBadge("league",p?.league||linked.name));
+  if(p?.team&&!linked.url)queueBadgeDiscovery("club",p.team,p.league,true);
+  const leagueName=String(p?.league||linked.name||"").trim();
+  if(leagueName&&!discoveredBadge("league",leagueName))queueBadgeDiscovery("league",leagueName,"",true);
  }
  if(kind==="flag"){
   add(p?.nationFlag);
@@ -1912,7 +2033,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();setTimeout(()=>{enrichEaAssetsInBackground()},800)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(()=>{enrichEaAssetsInBackground()},800);setTimeout(startGlobalBadgePrewarm,1200)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
@@ -3114,7 +3235,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1846",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1847",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
  });
 }
