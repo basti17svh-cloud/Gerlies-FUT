@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.50</title>
+<title>Gerlies FUT V18.51</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -593,6 +593,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .evo-stage-side{grid-column:2!important;grid-row:2!important;display:flex;flex-direction:column;min-width:0;align-self:stretch}
 .evo-stage-upgrades{margin:0 0 11px!important;padding:9px 10px;border-radius:10px;border:1px solid #293631;background:#0b1210;color:#bdc9c5!important;font-size:7px!important;line-height:1.5!important}
 .evo-goal-list{display:grid;gap:10px;margin-top:auto}
+.evo-starter-note{margin:0 0 9px;padding:7px 9px;border:1px solid rgba(100,215,255,.34);border-radius:9px;background:rgba(100,215,255,.07);color:#bfefff;font-size:7px;font-weight:850;line-height:1.45}
+.evo-starter-note b{color:#fff;font-weight:1000}
 .evo-goal{display:grid;grid-template-columns:1fr auto;gap:5px 9px;align-items:center}
 .evo-goal-label{font-size:8px;font-weight:900;color:#edf4f1}
 .evo-goal-value{font-size:8px;font-weight:1000;color:#aab7b2}
@@ -854,6 +856,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 
 
+/* V18.51 — Evolution matches count from the kickoff XI; later substitutions are allowed */
+
 /* V18.50 — global badge reliability: league-first discovery, shared identity propagation, persistent assets */
 
 /* V18.49 — explicit club/league identity in player details & biography */
@@ -918,7 +922,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.50</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.51</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2807,11 +2811,12 @@ function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null){
   const pi=evoPreviewItem(item,evo,idx,baseline),pb=displayBase(pi),isCurrent=idx===progressStage,done=progressStage>idx,future=progressStage>=0&&idx>progressStage;
   const stageProg=isCurrent?prog:(done?{matches:st.matches||0,wins:st.wins||0}:{matches:0,wins:0});
   const ready=isCurrent&&evoStageDone(st,stageProg);
-  const goals=[st.matches?evoGoalRow("Spiele",stageProg.matches,st.matches,future):"",st.wins?evoGoalRow("Siege",stageProg.wins,st.wins,future):""].join("");
+  const goals=[st.matches?evoGoalRow("Spiele · Startelf",stageProg.matches,st.matches,future):"",st.wins?evoGoalRow("Siege · Startelf",stageProg.wins,st.wins,future):""].join("");
+  const starterNote=isCurrent?'<div class="evo-starter-note"><b>Startelf-Pflicht:</b> Der Evo-Spieler muss beim Anpfiff in der Startelf stehen. Danach darf er ausgewechselt werden – er muss nicht durchspielen.</div>':"";
   return`<div class="evo-stage ${isCurrent?'current':''} ${done?'done':''} ${future?'future':''}">
    <div class="evo-stage-head"><div><span>${esc(st.label||`Stufe ${idx+1}`)}</span><strong>${stageGoalText(st)}</strong></div><b>${done?'✓':isCurrent?(ready?'BEREIT':`${evoProgressPct(st,stageProg)}%`):`${pb.ovr} GES`}</b></div>
    <div class="evo-stage-card">${cardHTML(pb,pi,false)}</div>
-   <div class="evo-stage-side"><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo))}</div><div class="evo-goal-list">${goals}</div>
+   <div class="evo-stage-side"><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo))}</div>${starterNote}<div class="evo-goal-list">${goals}</div>
    ${ready?`<div class="evo-ready-note">Alle Ziele erreicht. Upgrade kann jetzt abgeholt werden.</div><button class="primary evo-stage-claim" data-evo-claim-stage="${idx}">Evolution erhalten</button>`:""}</div>
   </div>`
  }).join("")}</div>`
@@ -2858,7 +2863,8 @@ $("evoPickerBody").addEventListener("click",e=>{const cand=e.target.closest("[da
 function progressEvolution(resultKey="loss"){
  expireActiveEvolutionIfNeeded();if(!state.activeEvo)return;
  const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId),item=state.club.find(x=>x.uid===state.activeEvo.uid);
- if(!evo||!item||!match?.lineup?.slice(0,11).includes(item.uid))return;
+ const kickoffStarters=Array.isArray(match?.initialStarters)?match.initialStarters:match?.lineup?.slice(0,11)||[];
+ if(!evo||!item||!kickoffStarters.includes(item.uid))return;
  const stage=Number(state.activeEvo.stage||0),st=evo.stages[stage];if(!st)return;
  const key=state.activeEvo.instanceKey,prog=state.evoProgress[key]||{uid:item.uid,stage,matches:0,wins:0,ready:false};
  if(prog.ready)return;
@@ -2951,7 +2957,7 @@ function startMatch(mode,opponent=null){
  matchManagerDraft=null;
  match={
   mode,minute:0,home:0,away:0,power,opp,opponentProfile,opponentName:name,finished:false,paused:false,
-  lineup:[...state.squad.slice(0,18)],formation:state.formation,tactic:"balanced",
+  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:"balanced",
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false
  };
