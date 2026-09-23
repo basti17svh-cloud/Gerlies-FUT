@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.39</title>
+<title>Gerlies FUT V18.40</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.39 bench visibility + transfer market full-card view */
+/* V18.40 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -465,7 +465,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.39 pack tiers: instant / board / walkout / special / double walkout */
+/* V18.40 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
 .opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
@@ -493,7 +493,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
 
 
-/* V18.39 — 7-player bench, evolution layout fix, market name suggestions */
+/* V18.40 — 7-player bench, evolution layout fix, market name suggestions */
 .bench{
   display:grid!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
@@ -535,7 +535,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.39 — EAFC-style Bank / Reserve drawers */
+/* V18.40 — EAFC-style Bank / Reserve drawers */
 .squad-stage{position:relative;margin-bottom:12px}
 .squad-drawer-tabs{position:relative;z-index:13;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:-1px}
 .squad-drawer-tab{min-height:48px;border:1px solid #293a34;background:#111a17;color:#d8e1dd;font-size:13px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:7px}
@@ -566,6 +566,68 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  .squad-drawer-tab{min-height:46px;font-size:12px}
  .squad-drawer #bench .mini .custom-card .ovr,.squad-drawer #reserve .mini .custom-card .ovr{font-size:16px!important}
  .squad-drawer #bench .mini .custom-card .pos,.squad-drawer #reserve .mini .custom-card .pos{font-size:5px!important}
+}
+
+
+/* V18.40 — Evolution progress lanes + manual claim transformation */
+.evo-stage{
+  display:grid!important;
+  grid-template-columns:minmax(118px,150px) minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:16px!important;
+  row-gap:8px!important;
+  align-items:start!important;
+  overflow:hidden!important;
+}
+.evo-stage-head{grid-column:1/-1!important;margin-bottom:2px!important}
+.evo-stage-card{grid-column:1!important;grid-row:2!important;width:100%!important;max-width:150px!important;margin:0!important;align-self:start}
+.evo-stage-card .card-shell{width:100%!important;max-width:150px!important}
+.evo-stage-card .custom-card .face{left:31%!important;right:2%!important;top:20%!important;height:44%!important;overflow:hidden!important}
+.evo-stage-card .custom-card .face img{width:104%!important;height:104%!important;object-fit:contain!important;object-position:center top!important;transform:translate(-2%,0)!important}
+.evo-stage-card .custom-card .card-icons{left:8%!important;top:34%!important;gap:2px!important}
+.evo-stage-card .custom-card .card-bottom{left:7%!important;right:7%!important;bottom:6%!important}
+.evo-stage-card .custom-card .pname{font-size:7px!important}
+.evo-stage-card .custom-card .meta{font-size:4.4px!important}
+.evo-stage-card .custom-card .stats{font-size:3.9px!important}
+.evo-stage-card .custom-card .stats b{font-size:5.8px!important}
+.evo-stage-side{grid-column:2!important;grid-row:2!important;display:flex;flex-direction:column;min-width:0;align-self:stretch}
+.evo-stage-upgrades{margin:0 0 11px!important;padding:9px 10px;border-radius:10px;border:1px solid #293631;background:#0b1210;color:#bdc9c5!important;font-size:7px!important;line-height:1.5!important}
+.evo-goal-list{display:grid;gap:10px;margin-top:auto}
+.evo-goal{display:grid;grid-template-columns:1fr auto;gap:5px 9px;align-items:center}
+.evo-goal-label{font-size:8px;font-weight:900;color:#edf4f1}
+.evo-goal-value{font-size:8px;font-weight:1000;color:#aab7b2}
+.evo-goal.done .evo-goal-value{color:#d8ff3e}
+.evo-goal-bar{grid-column:1/-1;height:10px;border-radius:999px;background:#26312d;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+.evo-goal-bar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#47e2b2,#d8ff3e);box-shadow:0 0 10px rgba(216,255,62,.22);transition:width .28s ease}
+.evo-stage.future .evo-goal{opacity:.42}
+.evo-stage.done .evo-goal{opacity:.72}
+.evo-stage-claim{margin-top:12px;min-height:46px;border-radius:12px!important;width:100%;font-size:9px!important;font-weight:1000!important;box-shadow:0 10px 24px rgba(216,255,62,.13)}
+.evo-ready-note{margin-top:8px;padding:7px 9px;border:1px solid rgba(216,255,62,.45);border-radius:9px;background:rgba(216,255,62,.07);color:#d8ff3e;font-size:7px;font-weight:900}
+.evo-claim-overlay{position:fixed;inset:0;z-index:140;background:radial-gradient(circle at 50% 46%,rgba(123,67,255,.27),transparent 30%),rgba(2,5,4,.96);display:none;align-items:center;justify-content:center;padding:20px}
+.evo-claim-overlay.active{display:flex}
+.evo-claim-stage{text-align:center;width:min(620px,96vw)}
+.evo-claim-kicker{font-size:8px;letter-spacing:.18em;color:#bda8ff;font-weight:1000;margin-bottom:12px}
+.evo-transform-wrap{position:relative;display:flex;align-items:center;justify-content:center;min-height:390px}
+.evo-transform-before,.evo-transform-after{position:absolute;width:min(250px,62vw);transition:opacity .42s ease,transform .7s cubic-bezier(.16,.84,.3,1),filter .7s ease}
+.evo-transform-before{opacity:1;transform:scale(1);filter:none}
+.evo-transform-after{opacity:0;transform:scale(.72) rotateY(80deg);filter:brightness(1.8) blur(4px)}
+.evo-claim-overlay.revealed .evo-transform-before{opacity:0;transform:scale(.84) rotateY(-70deg);filter:brightness(1.7) blur(4px)}
+.evo-claim-overlay.revealed .evo-transform-after{opacity:1;transform:scale(1) rotateY(0);filter:none}
+.evo-claim-burst{position:absolute;width:430px;height:430px;border-radius:50%;opacity:0;background:repeating-conic-gradient(from 0deg,rgba(216,255,62,.32) 0 2deg,transparent 2deg 11deg);animation:none}
+.evo-claim-overlay.revealed .evo-claim-burst{opacity:.55;animation:evoBurst 1.6s ease-out both}
+@keyframes evoBurst{0%{transform:scale(.3) rotate(0);opacity:0}35%{opacity:.75}100%{transform:scale(1.25) rotate(70deg);opacity:0}}
+.evo-claim-title{margin-top:8px;font-size:18px;font-weight:1000;color:#fff}
+.evo-claim-sub{margin-top:5px;color:#9eaca7;font-size:8px}
+.evo-claim-close{margin-top:16px;min-width:190px}
+@media(max-width:560px){
+ .evo-stage{grid-template-columns:112px minmax(0,1fr)!important;column-gap:12px!important;padding:10px!important}
+ .evo-stage-card{max-width:112px!important}
+ .evo-stage-card .card-shell{max-width:112px!important}
+ .evo-stage-upgrades{font-size:6.1px!important;padding:7px 8px;margin-bottom:9px!important}
+ .evo-goal-list{gap:8px}.evo-goal-label,.evo-goal-value{font-size:7px}.evo-goal-bar{height:8px}
+ .evo-stage-claim{min-height:40px;font-size:8px!important;margin-top:10px}
+ .evo-transform-wrap{min-height:340px}
+ .evo-transform-before,.evo-transform-after{width:min(220px,66vw)}
 }
 
 </style>
@@ -615,7 +677,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.39</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.40</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1875,20 +1937,74 @@ function evoProgressPct(st,prog){const parts=[];if(st.matches)parts.push(Math.mi
 function evoStageDone(st,prog){return(!st.matches||Number(prog.matches||0)>=st.matches)&&(!st.wins||Number(prog.wins||0)>=st.wins)}
 function migrateLegacyEvo(){if(!state.activeEvo||state.activeEvo.instanceKey)return;const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId);if(!evo){state.activeEvo=null;return}const sch=evolutionSchedule(evo);const old=state.evoProgress?.[evo.id]||{};state.activeEvo={...state.activeEvo,instanceKey:sch.key,completionEnd:sch.completionEnd.getTime(),stage:0};state.evoProgress[sch.key]={uid:state.activeEvo.uid,stage:0,matches:Number(old.matches||0),wins:0}}
 function expireActiveEvolutionIfNeeded(){migrateLegacyEvo();if(!state.activeEvo)return;const end=Number(state.activeEvo.completionEnd||0);if(end&&Date.now()>end){state.evoHistory=state.evoHistory||[];state.evoHistory.unshift({evoId:state.activeEvo.evoId,uid:state.activeEvo.uid,status:"expired",at:Date.now()});state.activeEvo=null;save()}}
-function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null){return`<div class="evo-stage-track">${evo.stages.map((st,idx)=>{const pi=evoPreviewItem(item,evo,idx,baseline),pb=displayBase(pi),isCurrent=idx===progressStage,done=progressStage>idx,pct=isCurrent?evoProgressPct(st,prog):(done?100:0);return`<div class="evo-stage ${isCurrent?'current':''} ${done?'done':''}"><div class="evo-stage-head"><div><span>${esc(st.label||`Stufe ${idx+1}`)}</span><strong>${stageGoalText(st)}</strong></div><b>${done?'✓':isCurrent?`${pct}%`:`${pb.ovr} GES`}</b></div><div class="evo-stage-card">${cardHTML(pb,pi,false)}</div><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo))}</div>${isCurrent?`<div class="progress"><div style="width:${pct}%"></div></div><small>${prog.matches||0}/${st.matches||0} Spiele${st.wins?` · ${prog.wins||0}/${st.wins} Siege`:''}</small>`:''}</div>`}).join("")}</div>`}
+function evoGoalRow(label,current,target,locked=false){
+ const cur=Math.max(0,Number(current||0)),max=Math.max(1,Number(target||0)),pct=Math.max(0,Math.min(100,Math.round(cur/max*100))),done=cur>=max;
+ return`<div class="evo-goal ${done?"done":""}"><span class="evo-goal-label">${esc(label)}</span><b class="evo-goal-value">${Math.min(cur,max)}/${max}</b><div class="evo-goal-bar"><i style="width:${locked?0:pct}%"></i></div></div>`
+}
+function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null){
+ return`<div class="evo-stage-track">${evo.stages.map((st,idx)=>{
+  const pi=evoPreviewItem(item,evo,idx,baseline),pb=displayBase(pi),isCurrent=idx===progressStage,done=progressStage>idx,future=progressStage>=0&&idx>progressStage;
+  const stageProg=isCurrent?prog:(done?{matches:st.matches||0,wins:st.wins||0}:{matches:0,wins:0});
+  const ready=isCurrent&&evoStageDone(st,stageProg);
+  const goals=[st.matches?evoGoalRow("Spiele",stageProg.matches,st.matches,future):"",st.wins?evoGoalRow("Siege",stageProg.wins,st.wins,future):""].join("");
+  return`<div class="evo-stage ${isCurrent?'current':''} ${done?'done':''} ${future?'future':''}">
+   <div class="evo-stage-head"><div><span>${esc(st.label||`Stufe ${idx+1}`)}</span><strong>${stageGoalText(st)}</strong></div><b>${done?'✓':isCurrent?(ready?'BEREIT':`${evoProgressPct(st,stageProg)}%`):`${pb.ovr} GES`}</b></div>
+   <div class="evo-stage-card">${cardHTML(pb,pi,false)}</div>
+   <div class="evo-stage-side"><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo))}</div><div class="evo-goal-list">${goals}</div>
+   ${ready?`<div class="evo-ready-note">Alle Ziele erreicht. Upgrade kann jetzt abgeholt werden.</div><button class="primary evo-stage-claim" data-evo-claim-stage="${idx}">Evolution erhalten</button>`:""}</div>
+  </div>`
+ }).join("")}</div>`
+}
 function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div><div class="evo-candidate-grid">${eligible.length?eligible.map(i=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}</div>`;showUiLayer("evoPickerModal","evo-picker")}
 function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){const b=displayBase(item);$("evoPickerBody").innerHTML=`<button class="secondary evo-picker-back" data-evo-picker-back="${evo.id}">← Andere Spieler</button><div class="evo-selected"><div><h3>${esc(b.name)}</h3><p>${esc(evoRequirementText(evo))}</p><div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div></div><button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" ${state.activeEvo?'disabled':''}>${state.activeEvo?'Bereits eine Evolution aktiv':'Evolution starten'}</button></div>${evoStagesHTML(item,evo,-1,{})}`;evoPickerContext={evoId:evo.id,uid:item.uid,instanceKey:sch.key}}
-function startEvolution(evoId,uid){expireActiveEvolutionIfNeeded();if(state.activeEvo)return toast("Beende oder brich zuerst deine aktive Evolution ab.");const evo=EVOLUTION_POOL.find(x=>x.id===evoId),item=state.club.find(x=>x.uid===uid);if(!evo||!item||!evoEligible(item,evo))return toast("Dieser Spieler erfüllt die Voraussetzungen nicht.");const active=activeEvolutionDefinitions().some(x=>x.id===evo.id),sch=evolutionSchedule(evo);if(!active||Date.now()>sch.signupEnd)return toast("Diese Evolution kann nicht mehr gestartet werden.");state.activeEvo={evoId:evo.id,uid:item.uid,instanceKey:sch.key,completionEnd:sch.completionEnd.getTime(),stage:0,baseline:{evo:Number(item.evo||0),evoStats:{...(item.evoStats||{})},evoPlaystyles:[...(item.evoPlaystyles||[])],overridePosition:item.overridePosition||""}};state.evoProgress[sch.key]={uid:item.uid,stage:0,matches:0,wins:0};save();closeUiLayer("evoPickerModal","evo-picker");activeEvoTab="active";renderAll();switchView("evolutionView");toast(`${displayBase(item).name}: Evolution gestartet.`)}
+function startEvolution(evoId,uid){expireActiveEvolutionIfNeeded();if(state.activeEvo)return toast("Beende oder brich zuerst deine aktive Evolution ab.");const evo=EVOLUTION_POOL.find(x=>x.id===evoId),item=state.club.find(x=>x.uid===uid);if(!evo||!item||!evoEligible(item,evo))return toast("Dieser Spieler erfüllt die Voraussetzungen nicht.");const active=activeEvolutionDefinitions().some(x=>x.id===evo.id),sch=evolutionSchedule(evo);if(!active||Date.now()>sch.signupEnd)return toast("Diese Evolution kann nicht mehr gestartet werden.");state.activeEvo={evoId:evo.id,uid:item.uid,instanceKey:sch.key,completionEnd:sch.completionEnd.getTime(),stage:0,baseline:{evo:Number(item.evo||0),evoStats:{...(item.evoStats||{})},evoPlaystyles:[...(item.evoPlaystyles||[])],overridePosition:item.overridePosition||""}};state.evoProgress[sch.key]={uid:item.uid,stage:0,matches:0,wins:0,ready:false};save();closeUiLayer("evoPickerModal","evo-picker");activeEvoTab="active";renderAll();switchView("evolutionView");toast(`${displayBase(item).name}: Evolution gestartet.`)}
+function closeEvoClaimReveal(){
+ const o=$("evoClaimOverlay");if(o)o.remove()
+}
+function showEvoClaimReveal(beforeItem,afterItem,evo,stageIndex,isFinal){
+ closeEvoClaimReveal();
+ const beforeBase=displayBase(beforeItem),afterBase=displayBase(afterItem);if(!beforeBase||!afterBase)return;
+ const o=document.createElement("div");o.id="evoClaimOverlay";o.className="evo-claim-overlay";
+ o.innerHTML=`<div class="evo-claim-stage"><div class="evo-claim-kicker">EVOLUTION · STUFE ${stageIndex+1}</div><div class="evo-transform-wrap"><div class="evo-claim-burst"></div><div class="evo-transform-before">${cardHTML(beforeBase,beforeItem,false)}</div><div class="evo-transform-after">${cardHTML(afterBase,afterItem,false)}</div></div><div class="evo-claim-title">${esc(afterBase.name)} · ${itemRating(afterItem)} GES</div><div class="evo-claim-sub">${isFinal?"Evolution abgeschlossen":"Nächste Stufe freigeschaltet"} · neue Werte wurden übernommen</div><button class="primary evo-claim-close" type="button">Weiter</button></div>`;
+ document.body.appendChild(o);requestAnimationFrame(()=>{o.classList.add("active");setTimeout(()=>o.classList.add("revealed"),180)});
+ o.querySelector(".evo-claim-close")?.addEventListener("click",closeEvoClaimReveal);
+}
+function claimEvolutionStage(){
+ expireActiveEvolutionIfNeeded();if(!state.activeEvo)return;
+ const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId),item=state.club.find(x=>x.uid===state.activeEvo.uid);if(!evo||!item)return;
+ const stage=Number(state.activeEvo.stage||0),st=evo.stages[stage],key=state.activeEvo.instanceKey,prog=state.evoProgress[key]||{};
+ if(!st||!evoStageDone(st,prog))return toast("Die Ziele dieser Stufe sind noch nicht vollständig erreicht.");
+ const beforeItem=JSON.parse(JSON.stringify(item));
+ applyEvoStage(item,st);
+ const afterItem=JSON.parse(JSON.stringify(item)),nextStage=stage+1,isFinal=nextStage>=evo.stages.length;
+ if(isFinal){
+  state.evoHistory=state.evoHistory||[];state.evoHistory.unshift({evoId:evo.id,uid:item.uid,status:"completed",at:Date.now()});
+  state.activeEvo=null;delete state.evoProgress[key];activeEvoTab="completed";
+ }else{
+  state.activeEvo.stage=nextStage;state.evoProgress[key]={uid:item.uid,stage:nextStage,matches:0,wins:0,ready:false}
+ }
+ save();renderAll();showEvoClaimReveal(beforeItem,afterItem,evo,stage,isFinal)
+}
 function renderAvailableEvolution(evo){const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo),focus=evoFocusPlayerUid&&eligible.some(x=>x.uid===evoFocusPlayerUid);return`<div class="evo-offer ${focus?'focus':''}"><div class="evo-offer-top"><div><span class="evo-live">${Date.now()-sch.start<48*3600000?'NEU':'LIVE'}</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: +${st.ovr||0} GES</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${!eligible.length||state.activeEvo?'disabled':''}>${!eligible.length?'Keine geeigneten Spieler':state.activeEvo?'Aktive Evo zuerst abschließen':'Spieler wählen & Vorschau'}</button></div>`}
 function renderActiveEvolution(){expireActiveEvolutionIfNeeded();if(!state.activeEvo)return'<div class="evo-empty">Keine Evolution aktiv. Wähle unter „Verfügbar“ eine Evolution und anschließend einen qualifizierten Spieler.</div>';const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId),item=state.club.find(x=>x.uid===state.activeEvo.uid);if(!evo||!item)return'<div class="evo-empty">Aktive Evolution konnte nicht geladen werden.</div>';const stage=Number(state.activeEvo.stage||0),prog=state.evoProgress[state.activeEvo.instanceKey]||{stage,matches:0,wins:0},b=displayBase(item),end=new Date(Number(state.activeEvo.completionEnd||0));return`<div class="evo-active-card"><div class="evo-active-head"><div><span class="evo-live">AKTIV</span><h3>${esc(evo.name)}</h3><p>${esc(b.name)} · Stufe ${Math.min(stage+1,evo.stages.length)}/${evo.stages.length}</p></div><div class="evo-count"><b>${evoTimeLeft(end)}</b><span>Restzeit</span></div></div>${evoStagesHTML(item,evo,stage,prog,state.activeEvo.baseline||null)}<button class="secondary" data-cancel-evo="${evo.id}">Evolution abbrechen</button></div>`}
 function renderEvoHistory(status){const rows=(state.evoHistory||[]).filter(x=>status==="completed"?x.status==="completed":x.status!=="completed");if(!rows.length)return'<div class="evo-empty">Hier gibt es noch keine Einträge.</div>';return rows.slice(0,20).map(h=>{const evo=EVOLUTION_POOL.find(x=>x.id===h.evoId),item=state.club.find(x=>x.uid===h.uid),b=item?displayBase(item):null;return`<div class="evo-history"><div><strong>${esc(evo?.name||h.evoId)}</strong><span>${b?esc(b.name):'Spieler'} · ${h.status==='completed'?'Abgeschlossen':h.status==='expired'?'Abgelaufen':'Abgebrochen'}</span></div>${b?`<div class="evo-history-card">${cardHTML(b,item,true)}</div>`:''}</div>`}).join("")}
 function renderPastEvolutions(){const nowDefs=new Set(activeEvolutionDefinitions().map(x=>x.id)),previous=activeEvolutionDefinitions(new Date(Date.now()-7*86400000)).filter(x=>!nowDefs.has(x.id));const old=previous.map(evo=>{const sch=evolutionSchedule(evo,new Date(),-1);return`<div class="evo-offer expired"><div class="evo-offer-top"><div><span class="evo-live">ABGELAUFEN</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Startphase beendet <b>${evoDate(sch.signupEnd)}</b></span></div></div>`}).join("");return old+renderEvoHistory("past")}
 function renderEvos(){if(!$("evoGrid"))return;expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleTotal=active.reduce((n,e)=>n+eligibleEvoPlayers(e).length,0);$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleTotal} passende Karten-Treffer in deinem Verein</span></div><div><strong>Content-Wechsel</strong><span>Montag 19:00 · unterschiedliche Laufzeiten</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
-$("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),c=e.target.closest("[data-cancel-evo]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(c&&state.activeEvo){if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;state.evoHistory=state.evoHistory||[];state.evoHistory.unshift({evoId:state.activeEvo.evoId,uid:state.activeEvo.uid,status:"cancelled",at:Date.now()});state.activeEvo=null;save();activeEvoTab="available";renderAll();toast("Evolution abgebrochen.")}});
+$("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),c=e.target.closest("[data-cancel-evo]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage();return}if(c&&state.activeEvo){if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;state.evoHistory=state.evoHistory||[];state.evoHistory.unshift({evoId:state.activeEvo.evoId,uid:state.activeEvo.uid,status:"cancelled",at:Date.now()});state.activeEvo=null;save();activeEvoTab="available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
 $("evoPickerBody").addEventListener("click",e=>{const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)renderEvoCandidatePreview(evo,item);return}if(back){openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid)}});
-function progressEvolution(resultKey="loss"){expireActiveEvolutionIfNeeded();if(!state.activeEvo)return;const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId),item=state.club.find(x=>x.uid===state.activeEvo.uid);if(!evo||!item||!match?.lineup?.slice(0,11).includes(item.uid))return;let stage=Number(state.activeEvo.stage||0),st=evo.stages[stage];if(!st)return;const key=state.activeEvo.instanceKey,prog=state.evoProgress[key]||{uid:item.uid,stage,matches:0,wins:0};prog.matches=Number(prog.matches||0)+1;if(resultKey==="win")prog.wins=Number(prog.wins||0)+1;state.evoProgress[key]=prog;if(evoStageDone(st,prog)){applyEvoStage(item,st);stage++;if(stage>=evo.stages.length){state.evoHistory=state.evoHistory||[];state.evoHistory.unshift({evoId:evo.id,uid:item.uid,status:"completed",at:Date.now()});state.activeEvo=null;toast(`${displayBase(item)?.name||"Spieler"}: Evolution abgeschlossen!`)}else{state.activeEvo.stage=stage;state.evoProgress[key]={uid:item.uid,stage,matches:0,wins:0};toast(`${displayBase(item)?.name||"Spieler"}: Stufe ${stage} abgeschlossen. Stufe ${stage+1} freigeschaltet.`)}}}
+function progressEvolution(resultKey="loss"){
+ expireActiveEvolutionIfNeeded();if(!state.activeEvo)return;
+ const evo=EVOLUTION_POOL.find(x=>x.id===state.activeEvo.evoId),item=state.club.find(x=>x.uid===state.activeEvo.uid);
+ if(!evo||!item||!match?.lineup?.slice(0,11).includes(item.uid))return;
+ const stage=Number(state.activeEvo.stage||0),st=evo.stages[stage];if(!st)return;
+ const key=state.activeEvo.instanceKey,prog=state.evoProgress[key]||{uid:item.uid,stage,matches:0,wins:0,ready:false};
+ if(prog.ready)return;
+ prog.matches=Number(prog.matches||0)+1;if(resultKey==="win")prog.wins=Number(prog.wins||0)+1;
+ prog.ready=evoStageDone(st,prog);state.evoProgress[key]=prog;
+ if(prog.ready)toast(`${displayBase(item)?.name||"Spieler"}: Stufe ${stage+1} abgeschlossen – Upgrade abholen.`)
+}
 
 
 let activeSbcGroup="Foundations";
