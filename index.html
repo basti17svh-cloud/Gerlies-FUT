@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.47</title>
+<title>Gerlies FUT V18.48</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -846,6 +846,12 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   font-size:5.8px!important;padding-top:3px!important;line-height:1.05!important
 }
 
+
+
+/* V18.48 — final rare-label position after card alignment */
+.rare-mark{top:6px!important}
+.mini .rare-mark,.squad-drawer .mini .rare-mark{top:1px!important}
+
 </style>
 </head>
 <body>
@@ -893,7 +899,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.47</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.48</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1304,7 +1310,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1846",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1848",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1336,61 +1342,90 @@ function normCSV(raw){
  return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
+function eaObject(raw,key){
+ const v=raw?.[key];
+ return v&&typeof v==="object"&&!Array.isArray(v)?v:null
+}
+function eaVisual(raw,key){
+ const obj=eaObject(raw,key);if(!obj)return null;
+ const id=String(deepFirst(obj,"id","externalId","externalID")||"").trim();
+ const name=String(deepFirst(obj,"label","name","shortName","shortLabel")||"").trim();
+ const imageUrl=String(deepFirst(obj,"imageUrl","logoUrl","flagUrl","url")||"").trim();
+ return {id,name,imageUrl,obj}
+}
 function normEAAsset(raw){
  const firstName=String(deepFirst(raw,"firstName","first_name","player.firstName")).trim();
  const lastName=String(deepFirst(raw,"lastName","last_name","player.lastName")).trim();
  const builtName=[firstName,lastName].filter(Boolean).join(" ").trim();
- const name=String(deepFirst(raw,"commonName","common_name","name","Name","fullName","full_name","playerName","shortName")||builtName).trim();
+ const commonName=String(deepFirst(raw,"commonName","common_name")).trim();
+ const name=String(deepFirst(raw,"name","Name","fullName","full_name","playerName","shortName")||commonName||builtName).trim();
  const url=String(deepFirst(raw,"url","URL","playerUrl","player_url"));
  const urlId=(url.match(/\/(\d+)(?:\?.*)?$/)||[])[1]||"";
- const rawId=String(deepFirst(raw,"playerId","player_id","eaId","ea_id","athleteId","athlete_id","id","ID"));
- const id=urlId||(/^[0-9]{5,}$/.test(rawId)?rawId:"");
- const team=String(deepFirst(raw,"team","Team","teamName","team_name","clubName","club_name","team.name","club.name")).trim();
- const league=String(deepFirst(raw,"league","League","leagueName","league_name","league.name","competitionName","competition_name")).trim();
- const pos=String(deepFirst(raw,"position","Position","primaryPosition","primary_position")).trim().toUpperCase();
+ const rawId=String(deepFirst(raw,"eaId","eaID","playerId","playerID","player_id","ea_id","athleteId","athlete_id","id","ID"));
+ const id=urlId||(/^[0-9]{4,}$/.test(rawId)?rawId:"");
+
+ const teamV=eaVisual(raw,"team");
+ const natV=eaVisual(raw,"nationality");
+ const directLeagueV=eaVisual(raw,"league");
+ const teamLeagueV=teamV?.obj&&teamV.obj.league&&typeof teamV.obj.league==="object"
+  ?(()=>{const o=teamV.obj.league;return {id:String(deepFirst(o,"id","externalId","externalID")||"").trim(),name:String(deepFirst(o,"label","name","shortName","shortLabel")||"").trim(),imageUrl:String(deepFirst(o,"imageUrl","logoUrl","url")||"").trim(),obj:o}})()
+  :null;
+ const leagueV=directLeagueV||teamLeagueV;
+
+ const posObj=eaObject(raw,"position");
+ const pos=String(
+  (posObj?deepFirst(posObj,"shortLabel","shortName","label","name","id"):"")||
+  deepFirst(raw,"preferredPosition","positionName","positionLabel","Position")
+ ).trim().toUpperCase();
  const altRaw=String(deepFirst(raw,"alternative positions","Alternative positions","alternativePositions","alternative_positions","altPositions","alt_positions")).trim();
+
+ const team=String(teamV?.name||deepFirst(raw,"teamName","team_name","clubName","club_name")).trim();
+ const league=String(leagueV?.name||deepFirst(raw,"leagueName","league_name","competitionName","competition_name")).trim();
+ const nation=String(natV?.name||deepFirst(raw,"nation","Nation","nationName","nation_name","country","countryName","country_name")).trim();
+
  return {
-  id,name,fullName:builtName||name,firstName,lastName,team,league,url,
+  id,name,fullName:builtName||String(deepFirst(raw,"fullName","full_name")||name).trim(),firstName,lastName,team,league,url,
   ovr:cleanNum(deepFirst(raw,"ovr","OVR","overall","overallRating","overall_rating","rating")),
-  pac:cleanNum(deepFirst(raw,"pac","PAC","pace","Pace")),
-  sho:cleanNum(deepFirst(raw,"sho","SHO","shooting","Shooting")),
-  pas:cleanNum(deepFirst(raw,"pas","PAS","passing","Passing")),
-  dri:cleanNum(deepFirst(raw,"dri","DRI","dribbling","Dribbling")),
-  def:cleanNum(deepFirst(raw,"def","DEF","defending","Defending")),
-  phy:cleanNum(deepFirst(raw,"phy","PHY","physicality","Physicality","physic")),
+  pac:cleanNum(deepFirst(raw,"pac","PAC","pace","Pace","stats.pace","stats.pac")),
+  sho:cleanNum(deepFirst(raw,"sho","SHO","shooting","Shooting","stats.shooting","stats.sho")),
+  pas:cleanNum(deepFirst(raw,"pas","PAS","passing","Passing","stats.passing","stats.pas")),
+  dri:cleanNum(deepFirst(raw,"dri","DRI","dribbling","Dribbling","stats.dribbling","stats.dri")),
+  def:cleanNum(deepFirst(raw,"def","DEF","defending","Defending","stats.defending","stats.def")),
+  phy:cleanNum(deepFirst(raw,"phy","PHY","physicality","Physicality","physic","stats.physical","stats.phy")),
   position:pos,
   alt:altRaw.split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean).join(','),
   preferredFoot:String(deepFirst(raw,"preferred foot","Preferred foot","preferredFoot","preferred_foot")),
   weakFoot:cleanNum(deepFirst(raw,"weak foot","Weak foot","weakFoot","weak_foot")),
   skillMoves:cleanNum(deepFirst(raw,"skill moves","Skill moves","skillMoves","skill_moves")),
-  face:String(deepFirst(raw,"playerFaceUrl","player_face_url","imageUrl","image_url","headshotImgUrl","headshot_img_url","headshot","portraitUrl","portrait_url","avatarUrl","avatar_url","playerImageUrl","player_image_url","images.headshot.url")),
-  nation:String(deepFirst(raw,"nation","Nation","nationality","nationName","nation_name","country","countryName","country_name","nationality.name")),
-  nationCode:String(deepFirst(raw,"nationalityId","nationId","nation_id","countryId","country_id","nationality.id")),
-  nationFlag:String(deepFirst(raw,"nationImageUrl","nation_image_url","nationalityImageUrl","nationality_image_url","countryFlagUrl","country_flag_url","flagUrl","flag_url","images.nation.url")),
-  teamId:String(deepFirst(raw,"teamId","team_id","clubId","club_id","team.id","club.id")),
-  clubLogo:String(deepFirst(raw,"teamImageUrl","team_image_url","clubImageUrl","club_image_url","teamLogoUrl","team_logo_url","clubLogoUrl","club_logo_url","badgeUrl","badge_url","crestUrl","crest_url","images.team.url")),
-  leagueId:String(deepFirst(raw,"leagueId","league_id","competitionId","competition_id","league.id")),
-  leagueLogo:String(deepFirst(raw,"leagueImageUrl","league_image_url","competitionImageUrl","competition_image_url","leagueLogoUrl","league_logo_url","images.league.url")),
+  face:String(deepFirst(raw,"avatarUrl","playerFaceUrl","player_face_url","imageUrl","image_url","headshotImgUrl","headshot_img_url","headshot","portraitUrl","portrait_url","playerImageUrl","player_image_url","images.headshot.url")),
+  nation,
+  nationCode:String(natV?.id||deepFirst(raw,"nationalityId","nationId","nation_id","countryId","country_id")),
+  nationFlag:String(natV?.imageUrl||deepFirst(raw,"nationImageUrl","nation_image_url","nationalityImageUrl","nationality_image_url","countryFlagUrl","country_flag_url","flagUrl","flag_url","images.nation.url")),
+  teamId:String(teamV?.id||deepFirst(raw,"teamId","team_id","clubId","club_id")),
+  clubLogo:String(teamV?.imageUrl||deepFirst(raw,"teamImageUrl","team_image_url","clubImageUrl","club_image_url","teamLogoUrl","team_logo_url","clubLogoUrl","club_logo_url","badgeUrl","badge_url","crestUrl","crest_url","images.team.url")),
+  leagueId:String(leagueV?.id||deepFirst(raw,"leagueId","league_id","competitionId","competition_id")),
+  leagueLogo:String(leagueV?.imageUrl||deepFirst(raw,"leagueImageUrl","league_image_url","competitionImageUrl","competition_image_url","leagueLogoUrl","league_logo_url","images.league.url")),
   card:String(deepFirst(raw,"card","cardUrl","card_url","playerCardUrl","player_card_url")),
   playstyles:deepFirst(raw,"play style","playStyle","play_style","playstyles","PlayStyles"),
-  gender:String(deepFirst(raw,"__gfutGender","gender","Gender","sex","Sex")),
+  gender:String(deepFirst(raw,"__gfutGender","gender.label","gender.name","gender.id","gender","Gender","sex","Sex")),
   baseRare:parseRareValue(deepFirst(raw,"rarity","Rarity","cardRarity","card_rarity","itemRarity","item_rarity","rare","isRare","is_rare"))
  }
 }
 async function fetchJson(url,ms=45000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:"no-store",signal:c.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
-async function fetchEaRatingsGender(gender,limit=1000,maxPages=50){
- const out=[];
+async function fetchEaRatingsGender(gender,limit=100,maxPages=240,onPage=null){
+ const out=[],pageSize=Math.max(1,Math.min(100,Number(limit)||100));
  for(let page=0,offset=0;page<maxPages;page++){
-  const url=`${EA_RATINGS_API}?locale=en&gender=${gender}&limit=${limit}&offset=${offset}`;
+  const url=`${EA_RATINGS_API}?locale=en&gender=${gender}&limit=${pageSize}&offset=${offset}`;
   const data=await fetchJson(url,45000);
-  const items=Array.isArray(data?.items)?data.items:[];
+  const items=Array.isArray(data?.items)?data.items:Array.isArray(data?.players)?data.players:Array.isArray(data?.ratings)?data.ratings:[];
   if(!items.length)break;
   out.push(...items);
-  if(items.length<limit)break;
+  if(typeof onPage==="function")onPage(items,page,offset);
   offset+=items.length;
-  await sleep(60);
+  if(items.length<pageSize)break;
+  await sleep(25)
  }
- return out;
+ return out
 }
 async function enrichPlayersWithEaAssets(players){
  const byId=new Map(),byName=new Map();
@@ -1401,8 +1436,10 @@ async function enrichPlayersWithEaAssets(players){
   byName.get(k).push(i);
  });
  const merged=players.slice(),teamAssets=new Map(),leagueAssets=new Map(),teamAssetsById=new Map(),leagueAssetsById=new Map();
- let applied=0,seen=0;
- const items=[...(await fetchEaRatingsGender(0,1000,40)).map(x=>({...x,__gfutGender:"male"})),...(await fetchEaRatingsGender(1,1000,30)).map(x=>({...x,__gfutGender:"female"}))];
+ let applied=0,seen=0,matched=0;
+
+ const rawItems=await fetchEaRatingsGender(0,100,240);
+ const items=rawItems.map(x=>({...x,__gfutGender:"male"}));
 
  const leagueKey=v=>{
   const k=normalizeKey(v);
@@ -1416,56 +1453,81 @@ async function enrichPlayersWithEaAssets(players){
  const footballStop=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","de","the"]);
  const sig=v=>normalizeKey(v).split(" ").filter(x=>x&&!footballStop.has(x));
  const overlapScore=(a,b)=>{
-  const A=sig(a),B=sig(b); if(!A.length||!B.length)return 0;
-  const bs=new Set(B),shared=A.filter(x=>bs.has(x));
-  if(!shared.length)return 0;
-  const meaningful=shared.some(x=>x.length>=5||/\d/.test(x)); if(!meaningful)return 0;
-  const containment=shared.length/Math.min(A.length,B.length);
-  const jaccard=shared.length/new Set([...A,...B]).size;
-  return containment*.78+jaccard*.22;
+  const A=sig(a),B=sig(b);if(!A.length||!B.length)return 0;
+  const bs=new Set(B),shared=A.filter(x=>bs.has(x));if(!shared.length)return 0;
+  const meaningful=shared.some(x=>x.length>=5||/\d/.test(x));if(!meaningful)return 0;
+  const containment=shared.length/Math.min(A.length,B.length),jaccard=shared.length/new Set([...A,...B]).size;
+  return containment*.78+jaccard*.22
  };
  const fuzzyResolve=(name,map)=>{
   let best=null,bestScore=0,second=0;
   for(const [k,v] of map){
    const s=overlapScore(name,k);
-   if(s>bestScore){second=bestScore;bestScore=s;best=v}
-   else if(s>second)second=s;
+   if(s>bestScore){second=bestScore;bestScore=s;best=v}else if(s>second)second=s
   }
-  return bestScore>=.86&&(bestScore-second>=.08||bestScore>=.98)?best:null;
+  return bestScore>=.86&&(bestScore-second>=.08||bestScore>=.98)?best:null
  };
  const teamResolveCache=new Map(),leagueResolveCache=new Map();
 
  for(const raw of items){
   const a=normEAAsset(raw);seen++;
-  const ta={clubLogo:a.clubLogo||"",teamId:a.teamId||"",leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||""};
-  const la={leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||""};
+  if(!a.id&&!a.name)continue;
+  const ta={clubLogo:a.clubLogo||"",teamId:a.teamId||"",leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||"",league:a.league||""};
+  const la={leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||"",league:a.league||""};
   if(a.team){
    const k=normalizeKey(a.team),prev=teamAssets.get(k)||{};
-   const val={clubLogo:a.clubLogo||prev.clubLogo||"",teamId:a.teamId||prev.teamId||"",leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||""};
-   teamAssets.set(k,val);
-   if(a.teamId)teamAssetsById.set(String(a.teamId),val);
+   const val={
+    clubLogo:a.clubLogo||prev.clubLogo||"",teamId:a.teamId||prev.teamId||"",
+    leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||"",league:a.league||prev.league||""
+   };
+   teamAssets.set(k,val);if(a.teamId)teamAssetsById.set(String(a.teamId),val)
   }
   if(a.league){
    const k=leagueKey(a.league),prev=leagueAssets.get(k)||{};
-   const val={leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||""};
-   leagueAssets.set(k,val);
-   if(a.leagueId)leagueAssetsById.set(String(a.leagueId),val);
+   const val={leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||"",league:a.league||prev.league||""};
+   leagueAssets.set(k,val);if(a.leagueId)leagueAssetsById.set(String(a.leagueId),val)
   }
+
   let idx=undefined;
   if(a.id&&byId.has(String(a.id)))idx=byId.get(String(a.id));
-  if(idx===undefined&&a.name){const cand=byName.get(normalizeKey(a.name))||[];if(cand.length===1)idx=cand[0]}
+  if(idx===undefined&&a.name){
+   const cand=byName.get(normalizeKey(a.name))||[];
+   if(cand.length===1)idx=cand[0]
+  }
   if(idx===undefined)continue;
+  matched++;
+
   const p=merged[idx],next={...p};
-  if(a.name)next.name=a.name;if(a.fullName)next.fullName=a.fullName;if(a.firstName)next.firstName=a.firstName;if(a.lastName)next.lastName=a.lastName;
+  if(a.name)next.name=a.name;
+  if(a.fullName)next.fullName=a.fullName;
+  if(a.firstName)next.firstName=a.firstName;
+  if(a.lastName)next.lastName=a.lastName;
   if(a.ovr)next.ovr=a.ovr;if(a.pac)next.pac=a.pac;if(a.sho)next.sho=a.sho;if(a.pas)next.pas=a.pas;if(a.dri)next.dri=a.dri;if(a.def)next.def=a.def;if(a.phy)next.phy=a.phy;
-  if(a.position)next.position=a.position;if(a.alt)next.alt=a.alt;if(a.nation)next.nation=a.nation;if(!next.league&&a.league)next.league=a.league;
-  if(a.face)next.face=a.face;if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
-  if(a.preferredFoot)next.preferredFoot=a.preferredFoot;if(a.weakFoot)next.weakFoot=a.weakFoot;if(a.skillMoves)next.skillMoves=a.skillMoves;if(a.gender)next.gender=a.gender;if(a.baseRare!==null)next.baseRare=a.baseRare;
+  if(a.position)next.position=a.position;if(a.alt)next.alt=a.alt;
+  if(a.nation)next.nation=a.nation;
+  if(a.face)next.face=a.face;
+  if(a.nationFlag)next.nationFlag=a.nationFlag;
+  if(a.nationCode)next.nationCode=a.nationCode;
+
+  // Exact player match: this is the most reliable source for current club/league visual metadata.
+  if(a.clubLogo)next.clubLogo=a.clubLogo;
+  if(a.teamId)next.teamId=a.teamId;
+  if(a.leagueLogo)next.leagueLogo=a.leagueLogo;
+  if(a.leagueId)next.leagueId=a.leagueId;
+  if(a.league)next.league=a.league;
+  if(!next.team&&a.team)next.team=a.team;
+
+  if(a.preferredFoot)next.preferredFoot=a.preferredFoot;
+  if(a.weakFoot)next.weakFoot=a.weakFoot;
+  if(a.skillMoves)next.skillMoves=a.skillMoves;
+  if(a.gender)next.gender=a.gender;
+  if(a.baseRare!==null)next.baseRare=a.baseRare;
   if(a.playstyles)next.playstyles=Array.isArray(a.playstyles)?a.playstyles.join(", "):String(a.playstyles);
   next.card="";next.source="fc27-ratings+current-roster";
-  merged[idx]=next;
+  merged[idx]=next
  }
 
+ // Team/league maps fill players that could not be matched one-to-one.
  for(let i=0;i<merged.length;i++){
   const p=merged[i],next={...p};
   const teamNameKey=normalizeKey(p.team),leagueNameKey=leagueKey(p.league);
@@ -1480,6 +1542,7 @@ async function enrichPlayersWithEaAssets(players){
    if(ta.teamId&&!next.teamId)next.teamId=ta.teamId;
    if(ta.leagueLogo&&!next.leagueLogo)next.leagueLogo=ta.leagueLogo;
    if(ta.leagueId&&!next.leagueId)next.leagueId=ta.leagueId;
+   if(ta.league&&!next.league)next.league=ta.league
   }
   let la=p.leagueId?leagueAssetsById.get(String(p.leagueId)):null;
   if(!la)la=leagueAssets.get(leagueNameKey);
@@ -1487,10 +1550,14 @@ async function enrichPlayersWithEaAssets(players){
    if(leagueResolveCache.has(leagueNameKey))la=leagueResolveCache.get(leagueNameKey);
    else{la=fuzzyResolve(p.league,leagueAssets);leagueResolveCache.set(leagueNameKey,la||null)}
   }
-  if(la){if(la.leagueLogo&&!next.leagueLogo)next.leagueLogo=la.leagueLogo;if(la.leagueId&&!next.leagueId)next.leagueId=la.leagueId}
+  if(la){
+   if(la.leagueLogo&&!next.leagueLogo)next.leagueLogo=la.leagueLogo;
+   if(la.leagueId&&!next.leagueId)next.leagueId=la.leagueId;
+   if(la.league&&!next.league)next.league=la.league
+  }
   if(JSON.stringify(next)!==JSON.stringify(p)){merged[i]=next;applied++}
  }
- return {players:merged,applied,seen};
+ return {players:merged,applied,seen,matched}
 }
 function rarityOf(p){const r=Number(p?.ovr||0);return r>=75?"gold":r>=65?"silver":"bronze"}
 function isBaseRare(p){
@@ -1780,8 +1847,8 @@ function startGlobalBadgePrewarm(){
  setTimeout(()=>{
   const clubs=new Map(),leagues=new Set();
   for(const p of PLAYERS){
-   if(p?.team&&!clubs.has(normalizeKey(p.team)))clubs.set(normalizeKey(p.team),{team:p.team,league:p.league||""});
-   if(p?.league)leagues.add(p.league)
+   if(p?.team&&!p?.clubLogo&&!apiSportsTeamLogo(p.team)&&!clubs.has(normalizeKey(p.team)))clubs.set(normalizeKey(p.team),{team:p.team,league:p.league||""});
+   if(p?.league&&!p?.leagueLogo&&!apiSportsLeagueLogo(p.league))leagues.add(p.league)
   }
   for(const row of clubs.values())queueBadgeDiscovery("club",row.team,row.league,false);
   for(const league of leagues)queueBadgeDiscovery("league",league,"",false)
@@ -2010,13 +2077,53 @@ async function syncDatabase(force=false){
   PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,errors.join(' | '))
  }catch(err){console.error(err);PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,String(err?.message||err))}
 }
+let EA_VISIBLE_ENRICH_RUNNING=false;
+async function fetchEaPlayerSearch(name){
+ const q=String(name||"").trim();if(!q)return[];
+ const url=`${EA_RATINGS_API}?locale=en&gender=0&limit=20&offset=0&search=${encodeURIComponent(q)}`;
+ const data=await fetchJson(url,20000);
+ return Array.isArray(data?.items)?data.items:Array.isArray(data?.players)?data.players:Array.isArray(data?.ratings)?data.ratings:[]
+}
+function applyEaAssetToPlayerById(a){
+ if(!a?.id)return false;
+ const idx=PLAYERS.findIndex(p=>String(p.id)===String(a.id));if(idx<0)return false;
+ const p=PLAYERS[idx],next={...p};
+ if(a.team&&!next.team)next.team=a.team;
+ if(a.league)next.league=a.league;
+ if(a.clubLogo)next.clubLogo=a.clubLogo;if(a.teamId)next.teamId=a.teamId;
+ if(a.leagueLogo)next.leagueLogo=a.leagueLogo;if(a.leagueId)next.leagueId=a.leagueId;
+ if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
+ if(a.face)next.face=a.face;
+ PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);return true
+}
+async function enrichVisibleSquadAssets(){
+ if(EA_VISIBLE_ENRICH_RUNNING||!PLAYERS.length)return;
+ EA_VISIBLE_ENRICH_RUNNING=true;
+ try{
+  const visible=squadItems().filter(Boolean).map(it=>displayBase(it)).filter(Boolean);
+  const unique=new Map(visible.map(p=>[String(p.id),p]));
+  let changed=false;
+  for(const p of unique.values()){
+   if(p.clubLogo&&p.leagueLogo)continue;
+   try{
+    const rows=await fetchEaPlayerSearch(p.fullName||p.name);
+    const assets=rows.map(normEAAsset).filter(Boolean);
+    const exact=assets.find(a=>String(a.id)===String(p.id))||
+      assets.find(a=>normalizeKey(a.name)===normalizeKey(p.name));
+    if(exact&&applyEaAssetToPlayerById(exact))changed=true
+   }catch(e){}
+   await sleep(35)
+  }
+  if(changed){await savePlayers(PLAYERS);renderAll()}
+ }finally{EA_VISIBLE_ENRICH_RUNNING=false}
+}
 let EA_ASSET_ENRICH_RUNNING=false,EA_ASSET_ENRICH_DONE=false;
 function portraitCoverage(players){if(!players?.length)return 0;return players.filter(p=>String(p?.face||p?.portrait||p?.headshot||"").trim()).length/players.length}
 function emblemCoverage(players){
  if(!players?.length)return 0;
  const ok=players.filter(p=>{
-  const club=String(p?.clubLogo||"").trim()||/^\d+$/.test(String(p?.teamId||""));
-  const league=String(p?.leagueLogo||"").trim()||/^\d+$/.test(String(p?.leagueId||""))||!!apiSportsLeagueLogo(p?.league);
+  const club=!!String(p?.clubLogo||"").trim()||!!apiSportsTeamLogo(p?.team);
+  const league=!!String(p?.leagueLogo||"").trim()||!!apiSportsLeagueLogo(p?.league);
   return club&&league
  }).length;
  return ok/players.length
@@ -2027,13 +2134,13 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll()}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(()=>{enrichEaAssetsInBackground()},800);setTimeout(startGlobalBadgePrewarm,1200)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();setTimeout(enrichVisibleSquadAssets,180);setTimeout(()=>{enrichEaAssetsInBackground()},700)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
@@ -3235,7 +3342,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1847",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1848",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
  });
 }
