@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.54</title>
+<title>Gerlies FUT V18.55</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -867,6 +867,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 
 
+/* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
+
 /* V18.54 — consolidated native implementation; no runtime patch injection */
 
 /* V18.53 — black/gold TOTW cards, clickable TOTW bios, live badge refresh, icon portraits */
@@ -939,7 +941,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.54</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.55</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1309,11 +1311,61 @@ const MID_ICON_DATA=[
 ];
 function iconStatProfile(ovr,pos,name){const h=hashNum(name),j=n=>Math.max(1,Math.min(99,n+((h>>((n%5)+1))%5)-2));if(pos==="GK")return{pac:j(55),sho:j(22),pas:j(76),dri:j(70),def:j(32),phy:j(Math.min(92,ovr-4))};if(["CB","LB","RB","CDM"].includes(pos))return{pac:j(Math.min(94,ovr-3)),sho:j(Math.max(60,ovr-18)),pas:j(ovr-5),dri:j(ovr-6),def:j(Math.min(96,ovr+1)),phy:j(Math.min(95,ovr))};if(["CM","LM","RM","CAM"].includes(pos))return{pac:j(ovr-3),sho:j(ovr-5),pas:j(Math.min(97,ovr+2)),dri:j(Math.min(97,ovr+1)),def:j(ovr-14),phy:j(ovr-8)};return{pac:j(Math.min(97,ovr+1)),sho:j(Math.min(98,ovr+2)),pas:j(ovr-6),dri:j(Math.min(97,ovr+1)),def:j(ovr-28),phy:j(ovr-7)}}
 function iconSlug(name){return normalizeKey(name).replace(/\s+/g,"-")}
-const MID_ICON_BASES=MID_ICON_DATA.map(([name,ovr,position,alt=""])=>{const s=iconStatProfile(ovr,position,name);return{id:`midicon-${iconSlug(name)}`,name,ovr,position,alt,nation:"",league:"Icons",team:"ICON",face:"",...s,source:"fc27-mid-icon-pool",isIcon:true}});
+const FUTWIZ_ICON_IDS={
+ "christine sinclair":"226359","hege riise":"84415","pepe":"120533","raphael varane":"201535","sergio aguero":"153079","lucio":"266690",
+ "pele":"237067","ronaldo":"37576","zinedine zidane":"1397","johan cruyff":"190045","alex morgan":"226301","zico":"166691","xavi":"10535",
+ "eusebio":"242519","cafu":"5003","homare sawa":"227006","oliver kahn":"488","ruud gullit":"214100","gianluigi buffon":"1179",
+ "roberto carlos":"238430","zlatan ibrahimovic":"41236","toni kroos":"182521","luis figo":"5589","kaka":"138449","wayne rooney":"54050",
+ "francesco totti":"1238","steven gerrard":"13743","hugo sanchez":"166149","jairzinho":"268513","javier zanetti":"1041",
+ "marcelo":"176676","rio ferdinand":"7289","gareth bale":"71557"
+};
+function futwizVerifiedIconId(name){return FUTWIZ_ICON_IDS[normalizeKey(name)]||""}
+function futwizVerifiedIconFace(name){
+ const id=futwizVerifiedIconId(name);return id?`https://cdn.futwiz.com/cdn-cgi/image/width%3D360%2Cquality%3D100%2Cformat%3Dwebp/assets/img/fc27/faces/${id}.png`:""
+}
+const MID_ICON_BASES=MID_ICON_DATA.map(([name,ovr,position,alt=""])=>{const s=iconStatProfile(ovr,position,name),futwizId=futwizVerifiedIconId(name),face=futwizVerifiedIconFace(name);return{id:`midicon-${iconSlug(name)}`,name,ovr,position,alt,nation:"",league:"Icons",team:"ICON",face,futwizId,...s,source:"fc27-mid-icon-pool",isIcon:true}});
 function randomMidIconBase(){return MID_ICON_BASES[Math.floor(Math.random()*MID_ICON_BASES.length)]||null}
 function makeMidIconItem(base,tradeable=true){return makeItem(base,tradeable,{variant:"icon-mid",eventName:"Mid Icon"})}
-function totwInfo(base){if(!base)return null;const n=normalizeKey(base.name);return LIVE_TOTW.players.find(x=>x.names.some(a=>{const k=normalizeKey(a);return n===k||n.includes(k)||k.includes(n)}))||null}
+function totwSearchKeys(p){return [...new Set([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).map(normalizeKey).filter(Boolean))]}
+function totwAliasMatch(p,info){
+ const keys=totwSearchKeys(p),aliases=(info?.names||[]).map(normalizeKey).filter(Boolean);
+ let best=0;for(const a of aliases)for(const k of keys){if(k===a)best=Math.max(best,100);else if(k.includes(a)||a.includes(k))best=Math.max(best,70);else{const al=a.split(" "),kl=k.split(" "),shared=al.filter(x=>x.length>2&&kl.includes(x)).length;if(shared)best=Math.max(best,shared*15)}}
+ return best
+}
+function totwInfo(base){if(!base)return null;let best=null,score=0;for(const info of LIVE_TOTW.players){const s=totwAliasMatch(base,info);if(s>score){score=s;best=info}}return score>=30?best:null}
 function currentTotwBases(){return PLAYERS.filter(p=>!!totwInfo(p))}
+const LIVE_TOTW_BASE_CACHE=new Map(),LIVE_TOTW_EA_PENDING=new Set();
+function bestEaTotwAsset(info,rows){
+ const assets=(rows||[]).map(normEAAsset).filter(Boolean);let best=null,score=0;
+ for(const a of assets){const s=totwAliasMatch(a,info);if(s>score){score=s;best=a}}
+ return score>=30?best:null
+}
+function mergeTotwBase(base,a,index){
+ const seed=base||{id:`totw-preview-${index}`,name:String(LIVE_TOTW.players[index]?.names?.[0]||"TOTW Spieler"),ovr:Number(LIVE_TOTW.players[index]?.ovr||80),position:LIVE_TOTW.players[index]?.position||"CM",alt:"",nation:"",team:"",league:"",face:"",pac:0,sho:0,pas:0,dri:0,def:0,phy:0};
+ if(!a)return seed;
+ return {...seed,id:a.id||seed.id,name:a.name||seed.name,fullName:a.fullName||seed.fullName,firstName:a.firstName||seed.firstName,lastName:a.lastName||seed.lastName,
+  team:a.team||seed.team,league:a.league||seed.league,nation:a.nation||seed.nation,face:a.face||seed.face,nationFlag:a.nationFlag||seed.nationFlag,nationCode:a.nationCode||seed.nationCode,
+  clubLogo:a.clubLogo||seed.clubLogo,teamId:a.teamId||seed.teamId,leagueLogo:a.leagueLogo||seed.leagueLogo,leagueId:a.leagueId||seed.leagueId,
+  ovr:a.ovr||seed.ovr,pac:a.pac||seed.pac,sho:a.sho||seed.sho,pas:a.pas||seed.pas,dri:a.dri||seed.dri,def:a.def||seed.def,phy:a.phy||seed.phy}
+}
+function resolveTotwBase(info,index){
+ const cached=LIVE_TOTW_BASE_CACHE.get(index);if(cached)return cached;
+ let best=null,bestScore=0;for(const p of PLAYERS){const s=totwAliasMatch(p,info);if(s>bestScore){bestScore=s;best=p;if(s===100)break}}
+ const base=bestScore>=30?best:null;
+ const out=mergeTotwBase(base,null,index);LIVE_TOTW_BASE_CACHE.set(index,out);P_BY_ID.set(String(out.id),out);return out
+}
+async function hydrateTotwFromEa(index){
+ if(LIVE_TOTW_EA_PENDING.has(index))return;const info=LIVE_TOTW.players[index];if(!info)return;
+ const current=resolveTotwBase(info,index);if(current.team&&current.league&&current.face&&current.clubLogo&&current.leagueLogo)return;
+ LIVE_TOTW_EA_PENDING.add(index);
+ try{
+  const queries=[current.fullName,current.name,...(info.names||[])].filter(Boolean),seen=new Set();
+  let asset=null;
+  for(const q of queries){const k=normalizeKey(q);if(!k||seen.has(k))continue;seen.add(k);try{asset=bestEaTotwAsset(info,await fetchEaPlayerSearch(q));if(asset)break}catch(e){}}
+  if(asset){const merged=mergeTotwBase(current,asset,index);LIVE_TOTW_BASE_CACHE.set(index,merged);P_BY_ID.set(String(merged.id),merged);if(/^[0-9]+$/.test(String(asset.id||"")))applyEaAssetToPlayerById(asset);scheduleBadgeRerender();renderMarket()}
+ }finally{LIVE_TOTW_EA_PENDING.delete(index)}
+}
+function prewarmLiveTotw(){LIVE_TOTW.players.forEach((_,i)=>setTimeout(()=>hydrateTotwFromEa(i),i*90))}
 const TOTW_VIEW_SLOTS=[
  {p:"GK",x:50,y:89},{p:"CB",x:22,y:70},{p:"CB",x:50,y:73},{p:"CB",x:78,y:70},{p:"CDM",x:50,y:55},
  {p:"LM",x:12,y:39},{p:"CM",x:36,y:43},{p:"CM",x:64,y:43},{p:"RM",x:88,y:39},{p:"ST",x:38,y:17},{p:"ST",x:62,y:17}
@@ -1322,9 +1374,9 @@ const TOTW_XI_ORDER=[1,6,3,10,17,2,5,0,8,4,9];
 const TOTW_BENCH_ORDER=[7,13,12,11,15,18,16];
 const TOTW_RESERVE_ORDER=[19,20,21,22,14];
 function totwPreviewEntry(info,index){
- const base=PLAYERS.find(p=>totwInfo(p)===info)||{id:`totw-preview-${index}`,name:String(info.names?.[0]||"TOTW Spieler").replace(/\b\w/g,m=>m.toUpperCase()),fullName:String(info.names?.[0]||"TOTW Spieler"),ovr:Number(info.ovr||80),position:info.position||"CM",alt:"",nation:"",team:"",league:"",face:"",pac:0,sho:0,pas:0,dri:0,def:0,phy:0};
+ const base=resolveTotwBase(info,index);if(!base.team||!base.league||!base.face||!base.clubLogo||!base.leagueLogo)hydrateTotwFromEa(index);
  const item={uid:`totw-view-${index}`,pid:String(base.id),evo:0,variant:"special",boost:Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0)),displayRating:Number(info.ovr||base.ovr),eventName:LIVE_TOTW.name,overridePosition:info.position||base.position,rare:true};
- if(!P_BY_ID.has(String(base.id)))P_BY_ID.set(String(base.id),base);
+ P_BY_ID.set(String(base.id),base);
  return{index,info,base,item,player:displayBase(item)||{...base,ovr:info.ovr,position:info.position||base.position}}
 }
 function liveTotwTeamEntries(){return LIVE_TOTW.players.map((info,i)=>totwPreviewEntry(info,i))}
@@ -1378,7 +1430,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1854",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1855",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1703,14 +1755,27 @@ function playerAffiliationHTML(p,compact=false){
 function refreshAffiliationDom(){
  document.querySelectorAll("[data-player-context-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerContextId||""));if(p)el.textContent=playerContextLine(p)});
  document.querySelectorAll(".affiliation-grid[data-player-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerId||""));if(!p)return;const wrap=document.createElement("div");wrap.innerHTML=playerAffiliationHTML(p,el.classList.contains("compact"));const fresh=wrap.firstElementChild;if(fresh)el.replaceWith(fresh)});
- document.querySelectorAll(".custom-card[data-player-id]").forEach(card=>{const p=P_BY_ID.get(String(card.dataset.playerId||""));if(!p)return;const rp=resolvedPlayer(p),club=card.querySelector(".card-club"),league=card.querySelector(".card-league");if(club){club.title=rp.team||"Verein";club.innerHTML=badgeAsset("club",rp,clubShort(rp.team))}if(league){league.title=rp.league||"Liga";league.innerHTML=badgeAsset("league",rp,leagueShort(rp.league))}if(rp.isIcon&&rp.face){const face=card.querySelector(".face");if(face)face.innerHTML=portraitHTML(rp)}});
+ document.querySelectorAll(".custom-card[data-player-id]").forEach(card=>{const p=P_BY_ID.get(String(card.dataset.playerId||""));if(!p)return;const rp=resolvedPlayer(p),club=card.querySelector(".card-club"),league=card.querySelector(".card-league");if(club){club.title=rp.team||"Verein";club.innerHTML=badgeAsset("club",rp,clubShort(rp.team))}if(league){league.title=rp.league||"Liga";league.innerHTML=badgeAsset("league",rp,leagueShort(rp.league))}if(rp.face){const face=card.querySelector(".face");if(face)face.innerHTML=portraitHTML(rp)}});
  const activeGrid=document.querySelector("#bioDetailBody .affiliation-grid[data-player-id]");if(activeGrid&&$("bioModal")?.classList.contains("active")){const p=P_BY_ID.get(String(activeGrid.dataset.playerId||""));if(p)$("bioDetailSub").textContent=playerContextLine(p)}
  const playerGrid=document.querySelector("#playerDetailBody .affiliation-grid[data-player-id]");if(playerGrid&&$("playerModal")?.classList.contains("active")){const p=P_BY_ID.get(String(playerGrid.dataset.playerId||""));if(p)$("playerDetailSub").textContent=playerContextLine(p)}
+}
+const EA_PLAYER_DETAIL_PENDING=new Set();
+async function ensureEaPlayerAssets(p){
+ if(!p?.id||p?.isIcon)return;const key=String(p.id);if(EA_PLAYER_DETAIL_PENDING.has(key))return;
+ const current=P_BY_ID.get(key)||p;if(current.team&&current.league&&current.face&&current.clubLogo&&current.leagueLogo)return;
+ EA_PLAYER_DETAIL_PENDING.add(key);
+ try{
+  const queries=[current.fullName,current.name,[current.firstName,current.lastName].filter(Boolean).join(" ")].filter(Boolean),seen=new Set();
+  let exact=null;
+  for(const q of queries){const nk=normalizeKey(q);if(!nk||seen.has(nk))continue;seen.add(nk);try{const assets=(await fetchEaPlayerSearch(q)).map(normEAAsset).filter(Boolean);exact=assets.find(a=>String(a.id)===key)||assets.find(a=>normalizeKey(a.fullName||a.name)===normalizeKey(current.fullName||current.name));if(exact)break}catch(e){}}
+  if(exact){if(applyEaAssetToPlayerById(exact)){await savePlayers(PLAYERS);refreshAffiliationDom();scheduleBadgeRerender()}}
+ }finally{EA_PLAYER_DETAIL_PENDING.delete(key)}
 }
 function ensurePlayerAffiliationAssets(p){
  if(!p)return;
  if(p.team)queueBadgeDiscovery("club",p.team,p.league,true);
- if(p.league)queueBadgeDiscovery("league",p.league,"",true)
+ if(p.league)queueBadgeDiscovery("league",p.league,"",true);
+ ensureEaPlayerAssets(p)
 }
 function inlineMetaHTML(p){return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
 const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV2")||"{}")))}catch(e){return new Map()}})();
@@ -1727,7 +1792,11 @@ const FIFAROSTERS_FACE_OVERRIDES={};
 function fifaRostersPlayerUrl(p,version=27){const id=String(p?.id||"").replace(/\D/g,"");return id?`https://www.fifarosters.com/players?futid=${id}&player=${id}&v=${version}`:""}
 function fifaRostersFaceCandidates(id,version=27){const raw=String(id||"").replace(/\D/g,"");if(!raw)return[];const n=raw.padStart(6,"0"),override=FIFAROSTERS_FACE_OVERRIDES[raw]||FIFAROSTERS_FACE_OVERRIDES[n];return [override,`https://fifarosters.global.ssl.fastly.net/assets/players/${raw}.png`,`https://www.fifarosters.com/assets/players/${raw}.png`,`https://www.fifarosters.com/assets/player-faces/${raw}.png`].filter(Boolean)}
 function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:FC27|FC26)\/(?:components\/items|full\/player-shields)/i.test(String(url||""))}
-function portraitCandidates(p){const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};if(p?.isIcon){const cached=iconPortraitUrl(p);add(cached);if(!cached)queueIconPortrait(p,true)}add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr}
+function portraitCandidates(p){
+ const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};
+ if(p?.isIcon){const verified=iconPortraitUrl(p);add(verified);if(p?.futwizId){futwizFaceCandidates(p.futwizId).forEach(add);fifaRostersFaceCandidates(p.futwizId,27).forEach(add)}return arr}
+ add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr
+}
 const API_SPORTS_LEAGUE_IDS={
  "bundesliga":78,"premier league":39,"laliga ea sports":140,"la liga":140,"serie a":135,"ligue 1":61
 };
@@ -1770,7 +1839,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1854";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1855";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -1853,13 +1922,13 @@ function entityLabel(entity){
 }
 
 /* V18.53 — icon portrait resolver (Wikidata P18 / Wikimedia Commons), cached lazily. */
-const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1854";
+const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1855";
 let ICON_PORTRAIT_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_ICON_PORTRAIT_KEY)||"{}")||{}}catch(e){return{}}})();
 const ICON_PORTRAIT_PENDING=new Set(),ICON_PORTRAIT_QUEUE=[];
 let ICON_PORTRAIT_ACTIVE=0,ICON_PORTRAIT_PREWARM_STARTED=false,ICON_PORTRAIT_RENDER_TIMER=0;
 function persistIconPortraits(){try{localStorage.setItem(GFUT_ICON_PORTRAIT_KEY,JSON.stringify(ICON_PORTRAIT_CACHE))}catch(e){}}
 function iconPortraitKey(name){return normalizeKey(name)}
-function iconPortraitUrl(p){return String(p?.face||ICON_PORTRAIT_CACHE[iconPortraitKey(p?.name)]?.url||"").trim()}
+function iconPortraitUrl(p){if(!p?.isIcon)return String(p?.face||"").trim();return String(futwizVerifiedIconFace(p?.name)||p?.face||"").trim()}
 function commonsPortraitUrl(filename){const f=String(filename||"").trim();return f?`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}?width=360`:""}
 function footballPersonScore(result,name){
  const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
@@ -1910,7 +1979,8 @@ function queueIconPortrait(p,priority=false){
 }
 function startIconPortraitPrewarm(){
  if(ICON_PORTRAIT_PREWARM_STARTED)return;ICON_PORTRAIT_PREWARM_STARTED=true;
- for(const icon of MID_ICON_BASES){const old=ICON_PORTRAIT_CACHE[iconPortraitKey(icon.name)];if(old?.url)applyIconPortrait(icon.name,old);else queueIconPortrait(icon,false)}
+ for(const icon of MID_ICON_BASES){const face=futwizVerifiedIconFace(icon.name);if(face){icon.face=face;P_BY_ID.set(String(icon.id),icon)}}
+ scheduleIconPortraitRerender()
 }
 function applyDiscoveredClubMeta(team,row){
  const tk=normalizeKey(team),tsig=clubIdentityKey(team);if(!tk||!row)return;
@@ -2309,7 +2379,7 @@ function applyEaAssetToPlayerById(a){
  if(!a?.id)return false;
  const idx=PLAYERS.findIndex(p=>String(p.id)===String(a.id));if(idx<0)return false;
  const p=PLAYERS[idx],next={...p};
- if(a.team&&!next.team)next.team=a.team;
+ if(a.team)next.team=a.team;
  if(a.league)next.league=a.league;
  if(a.clubLogo)next.clubLogo=a.clubLogo;if(a.teamId)next.teamId=a.teamId;
  if(a.leagueLogo)next.leagueLogo=a.leagueLogo;if(a.leagueId)next.leagueId=a.leagueId;
@@ -2363,7 +2433,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,2200)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
@@ -2859,19 +2929,19 @@ function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstNa
 function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
  const q=normalizeKey(query);if(q.length<2)return[];
- const seen=new Set();
- return PLAYERS.filter(p=>playerSearchText(p).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||playerDisplaySearchName(a).localeCompare(playerDisplaySearchName(b),"de")).filter(p=>{const k=normalizeKey(playerDisplaySearchName(p))+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,12)
+ const seen=new Set(),totw=liveTotwTeamEntries().map(e=>e.base);
+ return [...MID_ICON_BASES,...totw,...PLAYERS].filter(p=>playerSearchText(p).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||playerDisplaySearchName(a).localeCompare(playerDisplaySearchName(b),"de")).filter(p=>{const k=normalizeKey(playerDisplaySearchName(p))+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,16)
 }
 function hideMarketNameSuggestions(){const box=$("marketNameSuggestions");if(box)box.classList.remove("open")}
 function renderMarketNameSuggestions(){
  const box=$("marketNameSuggestions"),input=$("marketName");if(!box||!input)return;
  const rows=marketNameSuggestionPlayers(input.value);
  if(!rows.length){box.innerHTML="";box.classList.remove("open");return}
- box.innerHTML=rows.map(p=>`<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`).join("");
+ box.innerHTML=rows.map(p=>`<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}" data-market-name-type="${p.isIcon?"icon":totwInfo(p)?"totw":""}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.isIcon?"ICON · ":totwInfo(p)?"TOTW · ":""}${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`).join("");
  box.classList.add("open")
 }
 function refreshMarket(){
- const f=marketFilters(),source=f.specialType==="icon"?MID_ICON_BASES:PLAYERS;
+ const f=marketFilters(),source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):PLAYERS);
  let pool=source.filter(p=>(!f.name||playerSearchText(p).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
  if(f.specialType==="icon")pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
  else if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
@@ -2891,7 +2961,7 @@ function refreshMarket(){
 function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
 function settleAuctions(){for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;toast(`Gebot gewonnen: ${x.base.name}`)}}save()}
 function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
-function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=Math.max(50,Math.round(x.bid*.05/50)*50);return`<div class="item market-listing"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
+function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=Math.max(50,Math.round(x.bid*.05/50)*50);return`<div class="item market-listing" data-market-listing="${i}"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").textContent=`Transfermarkt · ${esc(x.base.team)} · ${fmt(x.price)} Coins`;
@@ -2904,10 +2974,10 @@ function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="
 $("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="event")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
-$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=playerDisplaySearchName(p);hideMarketNameSuggestions();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
+$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=playerDisplaySearchName(p);const type=b.dataset.marketNameType||"";if(type){$("marketSpecialType").value=type;$("marketQuality").value="special"}hideMarketNameSuggestions();updateRatingUI();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
 document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
 $("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
-$("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}})
+$("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]"),listing=e.target.closest("[data-market-listing]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}if(listing){openMarketPlayerDetails(Number(listing.dataset.marketListing));return}})
 $("transferWatchList").addEventListener("click",e=>{const o=e.target.closest("[data-watch-open]"),r=e.target.closest("[data-watch-remove]");if(o){const i=state.club.find(x=>x.uid===o.dataset.watchOpen);if(i)openPlayerDetails(i,null);return}if(r){state.transferList=(state.transferList||[]).filter(x=>x!==r.dataset.watchRemove);save();renderTransferWatch();toast("Von Transferliste entfernt.")}})
 function updateMarketCountdowns(){
  if(!document.getElementById("marketView")?.classList.contains("active"))return;
