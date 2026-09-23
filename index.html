@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.43</title>
+<title>Gerlies FUT V18.44</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -784,7 +784,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.43</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.44</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1282,35 +1282,93 @@ async function enrichPlayersWithEaAssets(players){
   if(!byName.has(k))byName.set(k,[]);
   byName.get(k).push(i);
  });
- const merged=players.slice(),teamAssets=new Map(),leagueAssets=new Map();
+ const merged=players.slice(),teamAssets=new Map(),leagueAssets=new Map(),teamAssetsById=new Map(),leagueAssetsById=new Map();
  let applied=0,seen=0;
  const items=[...(await fetchEaRatingsGender(0,1000,40)).map(x=>({...x,__gfutGender:"male"})),...(await fetchEaRatingsGender(1,1000,30)).map(x=>({...x,__gfutGender:"female"}))];
- const leagueKey=v=>{const k=normalizeKey(v);if(k.includes('bundesliga'))return'bundesliga';if(k.includes('premier league'))return'premier league';if(k.includes('laliga')||k.includes('la liga'))return'laliga';if(k.startsWith('serie a'))return'serie a';if(k.startsWith('ligue 1'))return'ligue 1';return k};
+
+ const leagueKey=v=>{
+  const k=normalizeKey(v);
+  if(k.includes("bundesliga")&&!k.includes("frauen"))return"bundesliga";
+  if(k.includes("premier league"))return"premier league";
+  if(k.includes("laliga")||k.includes("la liga"))return"laliga";
+  if(k.startsWith("serie a"))return"serie a";
+  if(k.startsWith("ligue 1"))return"ligue 1";
+  return k;
+ };
+ const footballStop=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","de","the"]);
+ const sig=v=>normalizeKey(v).split(" ").filter(x=>x&&!footballStop.has(x));
+ const overlapScore=(a,b)=>{
+  const A=sig(a),B=sig(b); if(!A.length||!B.length)return 0;
+  const bs=new Set(B),shared=A.filter(x=>bs.has(x));
+  if(!shared.length)return 0;
+  const meaningful=shared.some(x=>x.length>=5||/\d/.test(x)); if(!meaningful)return 0;
+  const containment=shared.length/Math.min(A.length,B.length);
+  const jaccard=shared.length/new Set([...A,...B]).size;
+  return containment*.78+jaccard*.22;
+ };
+ const fuzzyResolve=(name,map)=>{
+  let best=null,bestScore=0,second=0;
+  for(const [k,v] of map){
+   const s=overlapScore(name,k);
+   if(s>bestScore){second=bestScore;bestScore=s;best=v}
+   else if(s>second)second=s;
+  }
+  return bestScore>=.86&&(bestScore-second>=.08||bestScore>=.98)?best:null;
+ };
+ const teamResolveCache=new Map(),leagueResolveCache=new Map();
+
  for(const raw of items){
   const a=normEAAsset(raw);seen++;
-  if(a.team){const k=normalizeKey(a.team),prev=teamAssets.get(k)||{};teamAssets.set(k,{clubLogo:a.clubLogo||prev.clubLogo||'',teamId:a.teamId||prev.teamId||'',leagueLogo:a.leagueLogo||prev.leagueLogo||'',leagueId:a.leagueId||prev.leagueId||''})}
-  if(a.league){const k=leagueKey(a.league),prev=leagueAssets.get(k)||{};leagueAssets.set(k,{leagueLogo:a.leagueLogo||prev.leagueLogo||'',leagueId:a.leagueId||prev.leagueId||''})}
+  const ta={clubLogo:a.clubLogo||"",teamId:a.teamId||"",leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||""};
+  const la={leagueLogo:a.leagueLogo||"",leagueId:a.leagueId||""};
+  if(a.team){
+   const k=normalizeKey(a.team),prev=teamAssets.get(k)||{};
+   const val={clubLogo:a.clubLogo||prev.clubLogo||"",teamId:a.teamId||prev.teamId||"",leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||""};
+   teamAssets.set(k,val);
+   if(a.teamId)teamAssetsById.set(String(a.teamId),val);
+  }
+  if(a.league){
+   const k=leagueKey(a.league),prev=leagueAssets.get(k)||{};
+   const val={leagueLogo:a.leagueLogo||prev.leagueLogo||"",leagueId:a.leagueId||prev.leagueId||""};
+   leagueAssets.set(k,val);
+   if(a.leagueId)leagueAssetsById.set(String(a.leagueId),val);
+  }
   let idx=undefined;
   if(a.id&&byId.has(String(a.id)))idx=byId.get(String(a.id));
   if(idx===undefined&&a.name){const cand=byName.get(normalizeKey(a.name))||[];if(cand.length===1)idx=cand[0]}
   if(idx===undefined)continue;
   const p=merged[idx],next={...p};
-  // FC27 attributes/portrait are authoritative; current 26/27 roster remains authoritative for club and league.
   if(a.name)next.name=a.name;if(a.fullName)next.fullName=a.fullName;if(a.firstName)next.firstName=a.firstName;if(a.lastName)next.lastName=a.lastName;
   if(a.ovr)next.ovr=a.ovr;if(a.pac)next.pac=a.pac;if(a.sho)next.sho=a.sho;if(a.pas)next.pas=a.pas;if(a.dri)next.dri=a.dri;if(a.def)next.def=a.def;if(a.phy)next.phy=a.phy;
   if(a.position)next.position=a.position;if(a.alt)next.alt=a.alt;if(a.nation)next.nation=a.nation;
   if(a.face)next.face=a.face;if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
   if(a.preferredFoot)next.preferredFoot=a.preferredFoot;if(a.weakFoot)next.weakFoot=a.weakFoot;if(a.skillMoves)next.skillMoves=a.skillMoves;if(a.gender)next.gender=a.gender;
-  if(a.playstyles)next.playstyles=Array.isArray(a.playstyles)?a.playstyles.join(', '):String(a.playstyles);
-  next.card='';next.source='fc27-ratings+current-roster';
+  if(a.playstyles)next.playstyles=Array.isArray(a.playstyles)?a.playstyles.join(", "):String(a.playstyles);
+  next.card="";next.source="fc27-ratings+current-roster";
   merged[idx]=next;
  }
- // Attach club/league graphics by CURRENT roster identity, never by an individual player's old EA club.
+
  for(let i=0;i<merged.length;i++){
   const p=merged[i],next={...p};
-  const ta=teamAssets.get(normalizeKey(p.team));
-  if(ta){if(ta.clubLogo)next.clubLogo=ta.clubLogo;if(ta.teamId)next.teamId=ta.teamId;if(ta.leagueLogo&&!next.leagueLogo)next.leagueLogo=ta.leagueLogo;if(ta.leagueId&&!next.leagueId)next.leagueId=ta.leagueId}
-  const la=leagueAssets.get(leagueKey(p.league));
+  const teamNameKey=normalizeKey(p.team),leagueNameKey=leagueKey(p.league);
+  let ta=p.teamId?teamAssetsById.get(String(p.teamId)):null;
+  if(!ta)ta=teamAssets.get(teamNameKey);
+  if(!ta&&p.team){
+   if(teamResolveCache.has(teamNameKey))ta=teamResolveCache.get(teamNameKey);
+   else{ta=fuzzyResolve(p.team,teamAssets);teamResolveCache.set(teamNameKey,ta||null)}
+  }
+  if(ta){
+   if(ta.clubLogo)next.clubLogo=ta.clubLogo;
+   if(ta.teamId)next.teamId=ta.teamId;
+   if(ta.leagueLogo&&!next.leagueLogo)next.leagueLogo=ta.leagueLogo;
+   if(ta.leagueId&&!next.leagueId)next.leagueId=ta.leagueId;
+  }
+  let la=p.leagueId?leagueAssetsById.get(String(p.leagueId)):null;
+  if(!la)la=leagueAssets.get(leagueNameKey);
+  if(!la&&p.league){
+   if(leagueResolveCache.has(leagueNameKey))la=leagueResolveCache.get(leagueNameKey);
+   else{la=fuzzyResolve(p.league,leagueAssets);leagueResolveCache.set(leagueNameKey,la||null)}
+  }
   if(la){if(la.leagueLogo)next.leagueLogo=la.leagueLogo;if(la.leagueId)next.leagueId=la.leagueId}
   if(JSON.stringify(next)!==JSON.stringify(p)){merged[i]=next;applied++}
  }
@@ -1395,11 +1453,34 @@ const API_SPORTS_TEAM_IDS={
 };
 function apiSportsLeagueLogo(league){const id=API_SPORTS_LEAGUE_IDS[normalizeKey(league)];return id?`https://media.api-sports.io/football/leagues/${id}.png`:""}
 function apiSportsTeamLogo(team){const id=API_SPORTS_TEAM_IDS[normalizeKey(team)];return id?`https://media.api-sports.io/football/teams/${id}.png`:""}
-function emblemCandidates(kind,p){const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(kind==='club'){add(apiSportsTeamLogo(p?.team));add(p?.clubLogo);if(/^\d+$/.test(String(p?.teamId||'')))add(`https://cdn.sofifa.net/meta/team/${p.teamId}/120.png`)}if(kind==='league'){add(apiSportsLeagueLogo(p?.league));add(p?.leagueLogo);if(/^\d+$/.test(String(p?.leagueId||'')))add(`https://cdn.sofifa.net/meta/league/${p.leagueId}/120.png`)}if(kind==='flag'){add(p?.nationFlag)}return arr}
+function emblemCandidates(kind,p){
+ const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};
+ if(kind==="club"){
+  add(p?.clubLogo);
+  if(/^\d+$/.test(String(p?.teamId||"")))add(`https://cdn.sofifa.net/meta/team/${p.teamId}/120.png`);
+  add(apiSportsTeamLogo(p?.team));
+ }
+ if(kind==="league"){
+  add(p?.leagueLogo);
+  if(/^\d+$/.test(String(p?.leagueId||"")))add(`https://cdn.sofifa.net/meta/league/${p.leagueId}/120.png`);
+  add(apiSportsLeagueLogo(p?.league));
+ }
+ if(kind==="flag"){
+  add(p?.nationFlag);
+  const raw=normalizeKey(p?.nation),special={"england":"gb-eng","scotland":"gb-sct","wales":"gb-wls","northern ireland":"gb-nir"};
+  const code=special[raw]||countryCode(p?.nation).toLowerCase();
+  if(/^[a-z]{2}(?:-[a-z]{3})?$/.test(code))add(`https://flagcdn.com/w40/${code}.png`);
+ }
+ return arr
+}
 function imgCandidatesAttr(arr){return esc(JSON.stringify(arr))}
 function advanceImg(el){try{const failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());persistImageCaches()}const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];return}el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
 function portraitHTML(p){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback">👤</span>`}
-function badgeAsset(kind,p,fallbackText){const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);if(!arr.length)return `<span class="asset-fallback">${esc(fallbackText)}</span>`;return `<img class="badge-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${esc(fallbackText)}</span>`}
+function badgeAsset(kind,p,fallbackText){
+ const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);
+ if(!arr.length)return '<span class="asset-fallback" style="display:none"></span>';
+ return `<img class="badge-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none"></span>`
+}
 function flagAsset(p){const key=imageCacheKey('flag',p),arr=prioritizeCached(emblemCandidates('flag',p),key);if(!arr.length)return `<span>${flagEmoji(p.nation)}</span>`;return `<img class="card-flag-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${flagEmoji(p.nation)}</span>`}
 function officialCardCandidates(p){const id=String(p?.id||"").replace(/[^0-9]/g,"");const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(p?.card&&/\/FC27\//i.test(p.card))add(p.card);if(!id)return arr;add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_de.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_en.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/full/player-shields/en/${id}.png?width=512`);return arr}
 function advanceOfficialCard(el){try{const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;if(i<arr.length){el.classList.remove('loaded');el.dataset.idx=String(i);el.src=arr[i];return}el.remove()}catch(e){el.remove()}}
@@ -2800,7 +2881,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=18",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1844",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
  });
 }
