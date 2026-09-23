@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.55</title>
+<title>Gerlies FUT V18.56</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -867,6 +867,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 
 
+/* V18.56 — direct Icon name search + expanded verified FUTWIZ face IDs */
+
 /* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
 
 /* V18.54 — consolidated native implementation; no runtime patch injection */
@@ -941,7 +943,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.55</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.56</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1317,7 +1319,9 @@ const FUTWIZ_ICON_IDS={
  "eusebio":"242519","cafu":"5003","homare sawa":"227006","oliver kahn":"488","ruud gullit":"214100","gianluigi buffon":"1179",
  "roberto carlos":"238430","zlatan ibrahimovic":"41236","toni kroos":"182521","luis figo":"5589","kaka":"138449","wayne rooney":"54050",
  "francesco totti":"1238","steven gerrard":"13743","hugo sanchez":"166149","jairzinho":"268513","javier zanetti":"1041",
- "marcelo":"176676","rio ferdinand":"7289","gareth bale":"71557"
+ "marcelo":"176676","rio ferdinand":"7289","gareth bale":"71557",
+ "garrincha":"247553","birgit prinz":"275276","mia hamm":"275243","franz beckenbauer":"168473","andres iniesta":"41","diego maradona":"190042",
+ "george best":"226764","gerd muller":"190048","rivaldo":"4231","andrea pirlo":"7763","lothar matthaus":"238435","fabio cannavaro":"1183","carles puyol":"238384"
 };
 function futwizVerifiedIconId(name){return FUTWIZ_ICON_IDS[normalizeKey(name)]||""}
 function futwizVerifiedIconFace(name){
@@ -1430,7 +1434,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1855",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1856",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1922,7 +1926,7 @@ function entityLabel(entity){
 }
 
 /* V18.53 — icon portrait resolver (Wikidata P18 / Wikimedia Commons), cached lazily. */
-const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1855";
+const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1856";
 let ICON_PORTRAIT_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_ICON_PORTRAIT_KEY)||"{}")||{}}catch(e){return{}}})();
 const ICON_PORTRAIT_PENDING=new Set(),ICON_PORTRAIT_QUEUE=[];
 let ICON_PORTRAIT_ACTIVE=0,ICON_PORTRAIT_PREWARM_STARTED=false,ICON_PORTRAIT_RENDER_TIMER=0;
@@ -2919,7 +2923,7 @@ function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Numb
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value;const source=PLAYERS.filter(p=>!league||p.league===league);const clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);
- if(filters.specialType==="icon"){variant="icon-mid";eventName="MID ICON"}
+ if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="MID ICON"}
  else if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}
  else if(filters.specialType==="event"){const sp=specialVariant("event");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
@@ -2941,7 +2945,7 @@ function renderMarketNameSuggestions(){
  box.classList.add("open")
 }
 function refreshMarket(){
- const f=marketFilters(),source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):PLAYERS);
+ const f=marketFilters(),source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):(f.name?[...PLAYERS,...MID_ICON_BASES]:PLAYERS));
  let pool=source.filter(p=>(!f.name||playerSearchText(p).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
  if(f.specialType==="icon")pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
  else if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
