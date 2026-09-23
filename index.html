@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.52</title>
+<title>Gerlies FUT V18.53</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -37,7 +37,15 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .onboard{position:fixed;inset:0;z-index:240;display:none;overflow:auto;background:radial-gradient(circle at 50% 0,#163c33,transparent 40%),#050807;padding:calc(21px + env(safe-area-inset-top)) 14px calc(25px + env(safe-area-inset-bottom))}
 .onboard.active{display:block}.oninner{max-width:650px;margin:auto}.leaguegrid{display:grid;gap:8px;margin-top:15px}.leaguebtn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;border:1px solid #30403a;background:#101814;color:#fff;text-align:left}.leaguebtn strong{font-size:13px}.leaguebtn span{display:block;color:#8e9b97;font-size:7px;margin-top:3px}.leaguebtn b{font-size:18px;color:var(--lime)}.starterstage{display:none;text-align:center}.starterstage.active{display:block}.starterpack{width:180px;height:250px;margin:23px auto;display:grid;place-items:center;clip-path:polygon(10% 0,100% 4%,92% 100%,0 94%);background:linear-gradient(145deg,#a67527,#eedc94 40%,#768985 61%,#b46f3f);box-shadow:0 0 55px rgba(215,255,62,.25);color:#0c140f;font-weight:1000;font-size:23px;font-style:italic}.starterpack.pulse{animation:starterPulse .65s infinite alternate}@keyframes starterPulse{to{transform:scale(1.07);filter:brightness(1.4)}}
 /* cards */
-.card-shell{position:relative;width:158px;aspect-ratio:.7;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}.official-card{width:100%;height:100%;object-fit:contain;display:block}.custom-card{position:absolute;inset:0;overflow:hidden;clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);color:#211807}.custom-card.gold{background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.55),transparent 20%),linear-gradient(145deg,#f4e2a1,#bc8b26 31%,#f0d27a 64%,#8a5d12)}.custom-card.silver{color:#18201e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.7),transparent 20%),linear-gradient(145deg,#eef3f1,#9ca8a5 34%,#dfe5e3 63%,#667370)}.custom-card.bronze{color:#27180e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.34),transparent 20%),linear-gradient(145deg,#d39969,#875130 34%,#c17b4b 63%,#55311f)}.custom-card.special{color:#fff;background:radial-gradient(circle at 55% 28%,rgba(255,255,255,.45),transparent 18%),linear-gradient(145deg,#18efbc,#2f5ecb 39%,#962bdc 68%,#191d26)}.custom-card:before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,255,255,.3);clip-path:inherit}.card-top{position:absolute;z-index:4;left:15px;top:22px;width:36px;text-align:center}.ovr{font-size:26px;font-weight:1000;line-height:.9}.pos{font-size:8px;font-weight:950;margin-top:3px}.face{position:absolute;z-index:2;left:40px;right:6px;top:45px;height:105px;display:grid;place-items:center}.face span{font-size:28px;font-weight:1000;opacity:.17}.card-bottom{position:absolute;z-index:4;left:12px;right:12px;bottom:15px;text-align:center}.pname{padding-top:5px;border-top:1px solid currentColor;font-size:9px;font-weight:1000;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{margin-top:3px;font-size:5px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;margin-top:4px;font-size:4px}.stats b{display:block;font-size:6px}.mini .card-shell{width:104px}.mini .custom-card .card-top{left:10px;top:15px}.mini .custom-card .ovr{font-size:18px}.mini .custom-card .face{left:28px;top:28px;height:75px}.mini .custom-card .face span{font-size:20px}.mini .custom-card .card-bottom{left:7px;right:7px;bottom:9px}.mini .custom-card .pname{font-size:6px;padding-top:3px}.mini .custom-card .stats{display:none}
+.card-shell{position:relative;width:158px;aspect-ratio:.7;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}.official-card{width:100%;height:100%;object-fit:contain;display:block}.custom-card{position:absolute;inset:0;overflow:hidden;clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);color:#211807}.custom-card.gold{background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.55),transparent 20%),linear-gradient(145deg,#f4e2a1,#bc8b26 31%,#f0d27a 64%,#8a5d12)}.custom-card.silver{color:#18201e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.7),transparent 20%),linear-gradient(145deg,#eef3f1,#9ca8a5 34%,#dfe5e3 63%,#667370)}.custom-card.bronze{color:#27180e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.34),transparent 20%),linear-gradient(145deg,#d39969,#875130 34%,#c17b4b 63%,#55311f)}.custom-card.special{color:#fff;background:radial-gradient(circle at 55% 28%,rgba(255,255,255,.45),transparent 18%),linear-gradient(145deg,#18efbc,#2f5ecb 39%,#962bdc 68%,#191d26)}
+.custom-card.totw{color:#f5e8b0;background:
+ radial-gradient(circle at 62% 24%,rgba(255,224,118,.28),transparent 18%),
+ linear-gradient(155deg,#050606 0,#171813 28%,#070807 52%,#2a2312 75%,#080908 100%);
+ box-shadow:inset 0 0 0 1px rgba(231,194,88,.34)}
+.custom-card.totw:before{border-color:rgba(235,202,108,.58)}
+.custom-card.totw:after{content:"TOTW";position:absolute;z-index:6;right:9px;top:8px;padding:3px 5px;border-radius:999px;background:linear-gradient(135deg,#e3c45f,#8f6e1f);color:#111;font-size:4.5px;font-weight:1000;letter-spacing:.08em;box-shadow:0 2px 7px #0008}
+.custom-card.totw .pname{border-color:#d9bd65}.custom-card.totw .meta,.custom-card.totw .stats{color:#eadb9f}
+.mini .custom-card.totw:after{right:5px;top:5px;font-size:3.4px;padding:2px 4px}.custom-card:before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,255,255,.3);clip-path:inherit}.card-top{position:absolute;z-index:4;left:15px;top:22px;width:36px;text-align:center}.ovr{font-size:26px;font-weight:1000;line-height:.9}.pos{font-size:8px;font-weight:950;margin-top:3px}.face{position:absolute;z-index:2;left:40px;right:6px;top:45px;height:105px;display:grid;place-items:center}.face span{font-size:28px;font-weight:1000;opacity:.17}.card-bottom{position:absolute;z-index:4;left:12px;right:12px;bottom:15px;text-align:center}.pname{padding-top:5px;border-top:1px solid currentColor;font-size:9px;font-weight:1000;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{margin-top:3px;font-size:5px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;margin-top:4px;font-size:4px}.stats b{display:block;font-size:6px}.mini .card-shell{width:104px}.mini .custom-card .card-top{left:10px;top:15px}.mini .custom-card .ovr{font-size:18px}.mini .custom-card .face{left:28px;top:28px;height:75px}.mini .custom-card .face span{font-size:20px}.mini .custom-card .card-bottom{left:7px;right:7px;bottom:9px}.mini .custom-card .pname{font-size:6px;padding-top:3px}.mini .custom-card .stats{display:none}
 /* home */
 .hero{margin:13px;border:1px solid rgba(216,255,62,.2);border-radius:20px;padding:21px;background:radial-gradient(circle at 92% 12%,rgba(78,241,185,.18),transparent 34%),linear-gradient(135deg,rgba(216,255,62,.12),transparent 43%),#101814}.hero small{color:var(--lime);font-size:7px;font-weight:950;letter-spacing:.15em;text-transform:uppercase}.hero h2{margin:6px 0;font-size:29px;line-height:.95;text-transform:uppercase;font-style:italic}.hero p{margin:0;color:#a2afaa;font-size:9px;line-height:1.5}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.kpi{padding:9px 4px;border-radius:10px;border:1px solid #27332f;background:#0c1311;text-align:center}.kpi strong{display:block;font-size:16px}.kpi span{display:block;color:var(--muted);font-size:6px;text-transform:uppercase;margin-top:2px}
 /* dashboard home — premium FC27-inspired pass */
@@ -183,7 +191,8 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 /* V18.25 — swipe hub, match preview & Squad Battles opponent selection */
 .home-hero-card{touch-action:pan-y;user-select:none;-webkit-user-select:none}.home-slider-dot{pointer-events:none}.home-hero-card.swiping{transition:none!important}.home-swipe-hint{position:absolute;right:14px;bottom:14px;z-index:2;color:#7f8f88;font-size:6px;letter-spacing:.08em;text-transform:uppercase;pointer-events:none}.home-swipe-hint:before{content:"‹  wischen  ›"}
 .sb-opponent-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.sb-opponent{position:relative;padding:12px;border:1px solid #304139;border-radius:14px;background:radial-gradient(circle at 100% 0,rgba(91,201,255,.11),transparent 34%),#0d1512;color:#fff;text-align:left;overflow:hidden}.sb-opponent.selected{border-color:var(--lime);box-shadow:0 0 0 1px rgba(216,255,62,.18),0 10px 24px rgba(0,0,0,.28)}.sb-opponent .tier{display:inline-flex;padding:4px 6px;border-radius:999px;border:1px solid #31473d;background:#132019;color:#a7f4c0;font-size:6px;font-weight:1000;text-transform:uppercase}.sb-opponent h4{margin:8px 0 4px;font-size:12px}.sb-opponent p{margin:0;color:#8fa099;font-size:7px;line-height:1.4}.sb-opponent-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}.sb-opponent-stats div{padding:7px 5px;border-radius:9px;background:#101a16;border:1px solid #26372f;text-align:center}.sb-opponent-stats strong{display:block;font-size:13px}.sb-opponent-stats span{display:block;margin-top:2px;color:#7f9088;font-size:5.5px;text-transform:uppercase}.sb-opponent-reward{margin-top:8px;color:#ffe078;font-size:7px;font-weight:900}.sb-selection-actions{display:flex;gap:7px;margin-top:10px}.sb-selection-actions button{flex:1}.preview-actions{display:flex;gap:7px;flex-wrap:wrap}.preview-actions button{min-width:120px}.opponent-team-modal .modalinner{max-width:760px}.opponent-note{margin:8px 0 0;padding:8px 9px;border-radius:9px;border:1px solid #2a3a33;background:#0c1411;color:#8e9e97;font-size:7px;line-height:1.4}
-.totw-team-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.totw-team-head strong{display:block;font-size:14px}.totw-team-head span{display:block;margin-top:3px;color:#8fa099;font-size:7px}.totw-section-title{margin:11px 0 7px;color:#a7b5af;font-size:7px;font-weight:1000;text-transform:uppercase;letter-spacing:.12em}.totw-reserve{display:grid;grid-template-columns:repeat(5,minmax(72px,1fr));gap:5px;overflow-x:auto;padding-bottom:3px}.totw-reserve .mini .card-shell{width:100%}.pack.promopack[data-pack-kind="players"]{border-color:#b99139;background:radial-gradient(circle at 85% 0,rgba(255,216,99,.12),transparent 34%),linear-gradient(145deg,#17150d,#0b100d)}.mixed-art{background:linear-gradient(145deg,#a86f38 0 18%,#d9dedd 18% 48%,#d4b64e 48% 100%);color:#101713}.pack.promopack[data-pack-kind="mixed"]{border-color:#4fa68d;background:radial-gradient(circle at 85% 0,rgba(80,255,184,.11),transparent 34%),linear-gradient(145deg,#0d1714,#0a100e)}.pack-rotation-note{margin-bottom:9px;padding:9px 10px;border-radius:10px;border:1px solid #304139;background:#0c1411;color:#91a099;font-size:7px;line-height:1.45}.rare-mark{position:absolute;z-index:7;right:8px;top:31px;padding:3px 5px;border-radius:999px;background:#111b17cc;border:1px solid #fff5;color:#ffe994;font-size:4px;font-weight:1000;letter-spacing:.08em}.mini .rare-mark{right:5px;top:20px;font-size:3.2px;padding:2px 3px}
+.totw-team-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.totw-team-head strong{display:block;font-size:14px}.totw-team-head span{display:block;margin-top:3px;color:#8fa099;font-size:7px}.totw-section-title{margin:11px 0 7px;color:#a7b5af;font-size:7px;font-weight:1000;text-transform:uppercase;letter-spacing:.12em}.totw-reserve{display:grid;grid-template-columns:repeat(5,minmax(72px,1fr));gap:5px;overflow-x:auto;padding-bottom:3px}.totw-reserve .mini .card-shell{width:100%}
+.friend-slot.totw-slot{pointer-events:auto}.totw-player-btn{all:unset;display:block;position:relative;width:100%;cursor:pointer;touch-action:manipulation}.totw-player-btn:active{transform:scale(.97)}.totw-player-btn:focus-visible{outline:2px solid #e3c45f;outline-offset:2px;border-radius:8px}.pack.promopack[data-pack-kind="players"]{border-color:#b99139;background:radial-gradient(circle at 85% 0,rgba(255,216,99,.12),transparent 34%),linear-gradient(145deg,#17150d,#0b100d)}.mixed-art{background:linear-gradient(145deg,#a86f38 0 18%,#d9dedd 18% 48%,#d4b64e 48% 100%);color:#101713}.pack.promopack[data-pack-kind="mixed"]{border-color:#4fa68d;background:radial-gradient(circle at 85% 0,rgba(80,255,184,.11),transparent 34%),linear-gradient(145deg,#0d1714,#0a100e)}.pack-rotation-note{margin-bottom:9px;padding:9px 10px;border-radius:10px;border:1px solid #304139;background:#0c1411;color:#91a099;font-size:7px;line-height:1.45}.rare-mark{position:absolute;z-index:7;right:8px;top:31px;padding:3px 5px;border-radius:999px;background:#111b17cc;border:1px solid #fff5;color:#ffe994;font-size:4px;font-weight:1000;letter-spacing:.08em}.mini .rare-mark{right:5px;top:20px;font-size:3.2px;padding:2px 3px}
 @media(max-width:520px){.sb-opponent-grid{grid-template-columns:1fr}.preview-actions{display:grid;grid-template-columns:1fr 1fr}.preview-actions button{min-width:0}.home-swipe-hint{font-size:5.5px}}
 
 /* V18.18 — Team Management + Squad Battles lineup preview */
@@ -858,6 +867,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 
 
+/* V18.53 — black/gold TOTW cards, clickable TOTW bios, live badge refresh, icon portraits */
+
 /* V18.52 — robust club/league identity + TOTW/Icon market filters + TOTW team view */
 
 /* V18.51 — Evolution matches count from the kickoff XI; later substitutions are allowed */
@@ -926,7 +937,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.52</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.53</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1311,22 +1322,24 @@ const TOTW_RESERVE_ORDER=[19,20,21,22,14];
 function totwPreviewEntry(info,index){
  const base=PLAYERS.find(p=>totwInfo(p)===info)||{id:`totw-preview-${index}`,name:String(info.names?.[0]||"TOTW Spieler").replace(/\b\w/g,m=>m.toUpperCase()),fullName:String(info.names?.[0]||"TOTW Spieler"),ovr:Number(info.ovr||80),position:info.position||"CM",alt:"",nation:"",team:"",league:"",face:"",pac:0,sho:0,pas:0,dri:0,def:0,phy:0};
  const item={uid:`totw-view-${index}`,pid:String(base.id),evo:0,variant:"special",boost:Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0)),displayRating:Number(info.ovr||base.ovr),eventName:LIVE_TOTW.name,overridePosition:info.position||base.position,rare:true};
- return{info,base,item,player:displayBase(item)||{...base,ovr:info.ovr,position:info.position||base.position}}
+ if(!P_BY_ID.has(String(base.id)))P_BY_ID.set(String(base.id),base);
+ return{index,info,base,item,player:displayBase(item)||{...base,ovr:info.ovr,position:info.position||base.position}}
 }
 function liveTotwTeamEntries(){return LIVE_TOTW.players.map((info,i)=>totwPreviewEntry(info,i))}
 function totwTeamCard(entry,slot=null){
  if(!entry)return'<div class="emptyslot">LEER</div>';const b=entry.player,out=slot&&posFit(b,slot)<=0,shown=out?b.position:(slot||b.position);
- return `<div class="${out?"out":""}" style="position:relative">${cardHTML(b,entry.item,true,shown)}${out?'<div class="poswarn">!</div>':""}</div>`
+ return `<button type="button" class="totw-player-btn ${out?"out":""}" data-totw-bio="${entry.index}" aria-label="${esc(b.name)} Spielerbiografie öffnen">${cardHTML(b,entry.item,true,shown)}${out?'<div class="poswarn">!</div>':""}</button>`
 }
 function openTotwTeam(){
  const all=liveTotwTeamEntries(),xi=TOTW_XI_ORDER.map(i=>all[i]).filter(Boolean),bench=TOTW_BENCH_ORDER.map(i=>all[i]).filter(Boolean),reserve=TOTW_RESERVE_ORDER.map(i=>all[i]).filter(Boolean);
  const rating=xi.length?Math.round(xi.reduce((n,e)=>n+Number(e.player.ovr||0),0)/xi.length):0;
  $("opponentTeamModalTitle").textContent=LIVE_TOTW.name;
  $("opponentTeamModalSub").textContent=`3-1-4-2 · ${rating} GES · ${all.length} Spieler`;
- const pitch=TOTW_VIEW_SLOTS.map((slot,i)=>`<div class="friend-slot ${xi[i]&&posFit(xi[i].player,slot.p)<=0?"out":""}" style="left:${slot.x}%;top:${slot.y}%">${xi[i]?totwTeamCard(xi[i],slot.p):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}</div>`).join("");
+ const pitch=TOTW_VIEW_SLOTS.map((slot,i)=>`<div class="friend-slot totw-slot ${xi[i]&&posFit(xi[i].player,slot.p)<=0?"out":""}" style="left:${slot.x}%;top:${slot.y}%">${xi[i]?totwTeamCard(xi[i],slot.p):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}</div>`).join("");
  $("opponentTeamModalBody").innerHTML=`<div class="totw-team-head"><div><strong>${esc(LIVE_TOTW.name)}</strong><span>Live-Team · Ausrufezeichen = falsche Position</span></div><span>Aktiv bis ${esc(LIVE_TOTW.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Rating</span></div><div class="kpi"><strong>3-1-4-2</strong><span>Formation</span></div><div class="kpi"><strong>${all.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench">${bench.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div><div class="totw-section-title">Reserve</div><div class="totw-reserve">${reserve.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div>`;
  showUiLayer("opponentTeamModal","opponent-team")
 }
+$("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-totw-bio]");if(!btn)return;const entry=liveTotwTeamEntries()[Number(btn.dataset.totwBio)];if(entry)openBiography(entry.item,null)});
 function makeLivePackItem(base,tradeable=true){const info=totwInfo(base);return info?makeItem(base,tradeable,{variant:"special",eventName:LIVE_TOTW.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
 
 const TASKS=[
@@ -1363,7 +1376,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1852",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1853",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1627,7 +1640,7 @@ function isBaseRare(p){
  return r>=80||(r>=78&&!!ps)
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
-function cardClass(p,item){return item?.variant==="icon-mid"?"icon":item?.evo||item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(item.evo||0)+(item.boost||0)):0}
 function displayBase(item){const b=itemBase(item);if(!b)return null;let out={...b,ovr:itemRating(item),position:item?.overridePosition||b.position};const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
@@ -1659,8 +1672,8 @@ function statValue(p,key){const n=Number(p?.[key]||0);if(n>0)return n;const keys
 function resolvedAffiliation(p){
  if(!p)return p;
  const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
- const league=String(p.league||"").trim()||leagueFromClub(team,"")||String(linked.name||"").trim();
- return {...p,league,clubLogo:String(p.clubLogo||"").trim()||apiSportsTeamLogo(team)||discoveredBadge("club",team),leagueLogo:String(p.leagueLogo||"").trim()||String(linked.url||"").trim()||discoveredBadge("league",league)||apiSportsLeagueLogo(league)}
+ const linkedLeague=String(linked.name||"").trim(),league=linkedLeague||leagueFromClub(team,String(p.league||"").trim())||String(p.league||"").trim();
+ return {...p,league,clubLogo:discoveredBadge("club",team)||String(p.clubLogo||"").trim()||apiSportsTeamLogo(team),leagueLogo:String(linked.url||"").trim()||discoveredBadge("league",league)||String(p.leagueLogo||"").trim()||apiSportsLeagueLogo(league)}
 }
 function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
 function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div></div>`}
@@ -1688,6 +1701,7 @@ function playerAffiliationHTML(p,compact=false){
 function refreshAffiliationDom(){
  document.querySelectorAll("[data-player-context-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerContextId||""));if(p)el.textContent=playerContextLine(p)});
  document.querySelectorAll(".affiliation-grid[data-player-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerId||""));if(!p)return;const wrap=document.createElement("div");wrap.innerHTML=playerAffiliationHTML(p,el.classList.contains("compact"));const fresh=wrap.firstElementChild;if(fresh)el.replaceWith(fresh)});
+ document.querySelectorAll(".custom-card[data-player-id]").forEach(card=>{const p=P_BY_ID.get(String(card.dataset.playerId||""));if(!p)return;const rp=resolvedPlayer(p),club=card.querySelector(".card-club"),league=card.querySelector(".card-league");if(club){club.title=rp.team||"Verein";club.innerHTML=badgeAsset("club",rp,clubShort(rp.team))}if(league){league.title=rp.league||"Liga";league.innerHTML=badgeAsset("league",rp,leagueShort(rp.league))}if(rp.isIcon&&rp.face){const face=card.querySelector(".face");if(face)face.innerHTML=portraitHTML(rp)}});
  const activeGrid=document.querySelector("#bioDetailBody .affiliation-grid[data-player-id]");if(activeGrid&&$("bioModal")?.classList.contains("active")){const p=P_BY_ID.get(String(activeGrid.dataset.playerId||""));if(p)$("bioDetailSub").textContent=playerContextLine(p)}
  const playerGrid=document.querySelector("#playerDetailBody .affiliation-grid[data-player-id]");if(playerGrid&&$("playerModal")?.classList.contains("active")){const p=P_BY_ID.get(String(playerGrid.dataset.playerId||""));if(p)$("playerDetailSub").textContent=playerContextLine(p)}
 }
@@ -1711,7 +1725,7 @@ const FIFAROSTERS_FACE_OVERRIDES={};
 function fifaRostersPlayerUrl(p,version=27){const id=String(p?.id||"").replace(/\D/g,"");return id?`https://www.fifarosters.com/players?futid=${id}&player=${id}&v=${version}`:""}
 function fifaRostersFaceCandidates(id,version=27){const raw=String(id||"").replace(/\D/g,"");if(!raw)return[];const n=raw.padStart(6,"0"),override=FIFAROSTERS_FACE_OVERRIDES[raw]||FIFAROSTERS_FACE_OVERRIDES[n];return [override,`https://fifarosters.global.ssl.fastly.net/assets/players/${raw}.png`,`https://www.fifarosters.com/assets/players/${raw}.png`,`https://www.fifarosters.com/assets/player-faces/${raw}.png`].filter(Boolean)}
 function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:FC27|FC26)\/(?:components\/items|full\/player-shields)/i.test(String(url||""))}
-function portraitCandidates(p){const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr}
+function portraitCandidates(p){const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};if(p?.isIcon){const cached=iconPortraitUrl(p);add(cached);if(!cached)queueIconPortrait(p,true)}add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr}
 const API_SPORTS_LEAGUE_IDS={
  "bundesliga":78,"premier league":39,"laliga ea sports":140,"la liga":140,"serie a":135,"ligue 1":61
 };
@@ -1754,7 +1768,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1852";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1853";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -1835,13 +1849,74 @@ async function wikidataEntity(qid){
 function entityLabel(entity){
  return String(entity?.labels?.en?.value||entity?.labels?.de?.value||"").trim()
 }
+
+/* V18.53 — icon portrait resolver (Wikidata P18 / Wikimedia Commons), cached lazily. */
+const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1853";
+let ICON_PORTRAIT_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_ICON_PORTRAIT_KEY)||"{}")||{}}catch(e){return{}}})();
+const ICON_PORTRAIT_PENDING=new Set(),ICON_PORTRAIT_QUEUE=[];
+let ICON_PORTRAIT_ACTIVE=0,ICON_PORTRAIT_PREWARM_STARTED=false,ICON_PORTRAIT_RENDER_TIMER=0;
+function persistIconPortraits(){try{localStorage.setItem(GFUT_ICON_PORTRAIT_KEY,JSON.stringify(ICON_PORTRAIT_CACHE))}catch(e){}}
+function iconPortraitKey(name){return normalizeKey(name)}
+function iconPortraitUrl(p){return String(p?.face||ICON_PORTRAIT_CACHE[iconPortraitKey(p?.name)]?.url||"").trim()}
+function commonsPortraitUrl(filename){const f=String(filename||"").trim();return f?`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}?width=360`:""}
+function footballPersonScore(result,name){
+ const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
+ let score=0;if(label===target)score+=12;if(label&&target&&(label.includes(target)||target.includes(label)))score+=4;
+ if(/footballer|association football player|soccer player|professional footballer/.test(desc))score+=10;
+ else if(/football manager|football coach/.test(desc))score+=3;
+ if(/club|team|stadium|league/.test(desc)&&!/footballer|player/.test(desc))score-=8;
+ return score
+}
+async function wikidataFindFootballPerson(name){
+ const base=String(name||"").trim();
+ for(const q of [base,base+" footballer",base+" soccer player"]){
+  const url=`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&uselang=en&type=item&limit=10&format=json&origin=*`;
+  const data=await fetchJson(url,16000),rows=Array.isArray(data?.search)?data.search:[];
+  const ranked=rows.map(x=>({x,score:footballPersonScore(x,name)})).sort((a,b)=>b.score-a.score);
+  if(ranked[0]?.score>=10)return ranked[0].x
+ }
+ return null
+}
+async function discoverIconPortrait(name){
+ const found=await wikidataFindFootballPerson(name);if(!found?.id)return null;
+ const entity=await wikidataEntity(found.id);if(!entity)return null;
+ const file=wikidataClaimFile(entity,"P18");return file?{name,qid:found.id,url:commonsPortraitUrl(file),ts:Date.now()}:null
+}
+function applyIconPortrait(name,row){
+ if(!row?.url)return;const key=iconPortraitKey(name);
+ for(const icon of MID_ICON_BASES){if(iconPortraitKey(icon.name)!==key)continue;icon.face=row.url;P_BY_ID.set(String(icon.id),icon)}
+}
+function scheduleIconPortraitRerender(){
+ clearTimeout(ICON_PORTRAIT_RENDER_TIMER);
+ ICON_PORTRAIT_RENDER_TIMER=setTimeout(()=>{try{renderSquad();renderClub();if(currentViewId?.()==="marketView")renderMarket();refreshAffiliationDom()}catch(e){}},180)
+}
+function pumpIconPortraits(){
+ while(ICON_PORTRAIT_ACTIVE<3&&ICON_PORTRAIT_QUEUE.length){
+  const job=ICON_PORTRAIT_QUEUE.shift();ICON_PORTRAIT_ACTIVE++;
+  (async()=>{try{
+   const row=await discoverIconPortrait(job.name);ICON_PORTRAIT_CACHE[job.key]=row||{name:job.name,url:"",miss:true,ts:Date.now()};
+   if(row)applyIconPortrait(job.name,row);persistIconPortraits();scheduleIconPortraitRerender()
+  }catch(e){ICON_PORTRAIT_CACHE[job.key]={name:job.name,url:"",miss:true,ts:Date.now()};persistIconPortraits()}
+  finally{ICON_PORTRAIT_PENDING.delete(job.key);ICON_PORTRAIT_ACTIVE--;setTimeout(pumpIconPortraits,140)}})()
+ }
+}
+function queueIconPortrait(p,priority=false){
+ if(!p?.isIcon||!p?.name)return;const key=iconPortraitKey(p.name),old=ICON_PORTRAIT_CACHE[key],age=Date.now()-Number(old?.ts||0);
+ if(old?.url){if(!p.face)applyIconPortrait(p.name,old);return}
+ if((old?.miss&&age<6*60*60*1000)||ICON_PORTRAIT_PENDING.has(key))return;
+ ICON_PORTRAIT_PENDING.add(key);const job={key,name:p.name};priority?ICON_PORTRAIT_QUEUE.unshift(job):ICON_PORTRAIT_QUEUE.push(job);pumpIconPortraits()
+}
+function startIconPortraitPrewarm(){
+ if(ICON_PORTRAIT_PREWARM_STARTED)return;ICON_PORTRAIT_PREWARM_STARTED=true;
+ for(const icon of MID_ICON_BASES){const old=ICON_PORTRAIT_CACHE[iconPortraitKey(icon.name)];if(old?.url)applyIconPortrait(icon.name,old);else queueIconPortrait(icon,false)}
+}
 function applyDiscoveredClubMeta(team,row){
- const tk=normalizeKey(team);if(!tk||!row)return;
+ const tk=normalizeKey(team),tsig=clubIdentityKey(team);if(!tk||!row)return;
  const linkedLeague=row.leagueName?badgeDiscoveryRow("league",row.leagueName):null;
  const leagueUrl=String(row.leagueUrl||linkedLeague?.url||"").trim();
  let changed=false;
  for(const p of PLAYERS){
-  if(normalizeKey(p?.team)!==tk)continue;
+  const pk=normalizeKey(p?.team),psig=clubIdentityKey(p?.team);if(pk!==tk&&(!tsig||psig!==tsig))continue;
   if(row.url&&p.clubLogo!==row.url){p.clubLogo=row.url;changed=true}
   if(row.leagueName&&p.league!==row.leagueName){p.league=row.leagueName;changed=true}
   if(leagueUrl&&p.leagueLogo!==leagueUrl){p.leagueLogo=leagueUrl;changed=true}
@@ -1974,15 +2049,13 @@ function emblemCandidates(kind,p){
   if(p?.team&&!discoveredBadge("club",p.team))queueBadgeDiscovery("club",p.team,p.league,true);
  }
  if(kind==="league"){
-  const linked=discoveredClubLeague(p?.team);
-  add(p?.leagueLogo);
-  // League crests come from EA metadata, explicit API-Sports mappings or discovered Wikimedia assets.
-  // Do not synthesize a SoFIFA meta/league URL: unlike team crests it is not a dependable generic source.
+  const linked=discoveredClubLeague(p?.team),leagueName=String(linked.name||p?.league||"").trim();
+  // Team-linked competition is authoritative when a club lookup resolved one.
   add(linked.url);
-  add(discoveredBadge("league",p?.league||linked.name));
-  add(apiSportsLeagueLogo(p?.league));
+  add(discoveredBadge("league",leagueName));
+  add(p?.leagueLogo);
+  add(apiSportsLeagueLogo(leagueName));
   if(p?.team&&!linked.url)queueBadgeDiscovery("club",p.team,p.league,true);
-  const leagueName=String(p?.league||linked.name||"").trim();
   if(leagueName&&!discoveredBadge("league",leagueName))queueBadgeDiscovery("league",leagueName,"",true);
  }
  if(kind==="flag"){
@@ -2029,7 +2102,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
  if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
  const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
  const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
- const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
+ const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
  const official=officialCardHTML(p,item);
  return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}</div></div>`
 }
@@ -2288,7 +2361,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,2200)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
