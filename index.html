@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.40</title>
+<title>Gerlies FUT V18.41</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.40 bench visibility + transfer market full-card view */
+/* V18.41 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -465,7 +465,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.40 pack tiers: instant / board / walkout / special / double walkout */
+/* V18.41 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
 .opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
@@ -493,7 +493,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
 
 
-/* V18.40 — 7-player bench, evolution layout fix, market name suggestions */
+/* V18.41 — 7-player bench, evolution layout fix, market name suggestions */
 .bench{
   display:grid!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
@@ -535,7 +535,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.40 — EAFC-style Bank / Reserve drawers */
+/* V18.41 — EAFC-style Bank / Reserve drawers */
 .squad-stage{position:relative;margin-bottom:12px}
 .squad-drawer-tabs{position:relative;z-index:13;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:-1px}
 .squad-drawer-tab{min-height:48px;border:1px solid #293a34;background:#111a17;color:#d8e1dd;font-size:13px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:7px}
@@ -569,7 +569,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.40 — Evolution progress lanes + manual claim transformation */
+/* V18.41 — Evolution progress lanes + manual claim transformation */
 .evo-stage{
   display:grid!important;
   grid-template-columns:minmax(118px,150px) minmax(0,1fr)!important;
@@ -630,6 +630,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  .evo-transform-before,.evo-transform-after{width:min(220px,66vw)}
 }
 
+
+/* V18.41 — reserve drag support + squad picker filters */
+.reserveslot button,.benchslot button{touch-action:none!important;user-select:none!important;-webkit-user-select:none!important}
+.reserveslot button.drag-source,.benchslot button.drag-source{opacity:.38}
+.picker-controls{display:none;grid-template-columns:1fr 1fr;gap:8px;padding:9px;margin:0 0 9px;border:1px solid #2f3c37;border-radius:12px;background:#0d1512}
+.picker-controls.active{display:grid}
+.picker-controls label span{display:block;margin:0 0 4px;color:#91a099;font-size:6px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.picker-controls select{width:100%;min-height:40px;border:1px solid #36453f;border-radius:10px;background:#121c18;color:#fff;padding:0 9px;font-size:8px;font-weight:850}
+@media(max-width:520px){.picker-controls{grid-template-columns:1fr 1fr;gap:6px;padding:7px}.picker-controls select{font-size:7px;min-height:38px}}
+
 </style>
 </head>
 <body>
@@ -677,7 +687,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.40</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.41</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -848,7 +858,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </div></div>
 </div>
 
-<div id="picker" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="pickerTitle">Spieler wählen</h3><div id="pickerSub" style="font-size:7px;color:#87958f"></div></div><button id="pickerClose" class="secondary">Schließen</button></div><div id="pickList" class="picklist"></div></div></div>
+<div id="picker" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="pickerTitle">Spieler wählen</h3><div id="pickerSub" style="font-size:7px;color:#87958f"></div></div><button id="pickerClose" class="secondary">Schließen</button></div><div id="pickerControls" class="picker-controls"><label><span>Position</span><select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH</option><option value="CB">IV</option><option value="RB">RV</option><option value="LB">LV</option><option value="RWB">RAV</option><option value="LWB">LAV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="RM">RM</option><option value="RW">RF</option><option value="LM">LM</option><option value="LW">LF</option><option value="CF">MS</option><option value="ST">ST</option></select></label><label><span>Sortierung</span><select id="pickerSort"><option value="rating">Höchstes Rating</option><option value="position">Position zuerst</option></select></label></div><div id="pickList" class="picklist"></div></div></div>
 <div id="playerModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerdetails</h3><div id="playerDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="playerModalClose" class="secondary">Schließen</button></div><div id="playerDetailBody"></div></div></div>
 <div id="evoPickerModal" class="modal"><div class="modalinner evo-modalinner"><div class="modalhead"><div><h3 id="evoPickerTitle">Evolution</h3><div id="evoPickerSub" style="font-size:7px;color:#87958f"></div></div><button id="evoPickerClose" class="secondary">Schließen</button></div><div id="evoPickerBody"></div></div></div>
 <div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerbiografie</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
@@ -1088,7 +1098,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1814",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1841",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1104,11 +1114,12 @@ function sofifaFace(id){const n=String(id||"").replace(/\D/g,"").padStart(6,"0")
 function normCSV(raw){
  const id=String(first(raw,"sofifa_id","player_id","ea_id","id"));
  const name=String(first(raw,"short_name","common_name","name","long_name")).trim();
+ const fullName=String(first(raw,"long_name","full_name","player_name","name","common_name","short_name")).trim()||name;
  const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url"));
  const team=String(first(raw,"club_name","team_name","club","team")).trim();
  const rawLeague=String(first(raw,"league_name","league")).trim();
- return{id,name,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),source:"fc27-open-data"}
+ return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),source:"fc27-open-data"}
 }
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function normEAAsset(raw){
@@ -1125,7 +1136,7 @@ function normEAAsset(raw){
  const pos=String(deepFirst(raw,"position","Position","primaryPosition","primary_position")).trim().toUpperCase();
  const altRaw=String(deepFirst(raw,"alternative positions","Alternative positions","alternativePositions","alternative_positions","altPositions","alt_positions")).trim();
  return {
-  id,name,team,league,url,
+  id,name,fullName:builtName||name,firstName,lastName,team,league,url,
   ovr:cleanNum(deepFirst(raw,"ovr","OVR","overall","overallRating","overall_rating","rating")),
   pac:cleanNum(deepFirst(raw,"pac","PAC","pace","Pace")),
   sho:cleanNum(deepFirst(raw,"sho","SHO","shooting","Shooting")),
@@ -1188,7 +1199,7 @@ async function enrichPlayersWithEaAssets(players){
   if(idx===undefined)continue;
   const p=merged[idx],next={...p};
   // FC27 attributes/portrait are authoritative; current 26/27 roster remains authoritative for club and league.
-  if(a.name)next.name=a.name;
+  if(a.name)next.name=a.name;if(a.fullName)next.fullName=a.fullName;if(a.firstName)next.firstName=a.firstName;if(a.lastName)next.lastName=a.lastName;
   if(a.ovr)next.ovr=a.ovr;if(a.pac)next.pac=a.pac;if(a.sho)next.sho=a.sho;if(a.pas)next.pas=a.pas;if(a.dri)next.dri=a.dri;if(a.def)next.def=a.def;if(a.phy)next.phy=a.phy;
   if(a.position)next.position=a.position;if(a.alt)next.alt=a.alt;if(a.nation)next.nation=a.nation;
   if(a.face)next.face=a.face;if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
@@ -1472,15 +1483,15 @@ async function syncDatabase(force=false){
 let EA_ASSET_ENRICH_RUNNING=false,EA_ASSET_ENRICH_DONE=false;
 function portraitCoverage(players){if(!players?.length)return 0;return players.filter(p=>String(p?.face||p?.portrait||p?.headshot||"").trim()).length/players.length}
 async function enrichEaAssetsInBackground(){
- if(EA_ASSET_ENRICH_RUNNING||EA_ASSET_ENRICH_DONE||!PLAYERS.length||portraitCoverage(PLAYERS)>.65)return;
+ const missingFullNames=PLAYERS.some(p=>!String(p?.fullName||"").trim());if(EA_ASSET_ENRICH_RUNNING||EA_ASSET_ENRICH_DONE||!PLAYERS.length||(portraitCoverage(PLAYERS)>.65&&!missingFullNames))return;
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll()}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll()}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true,errorText=""){
- P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
+ P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
  if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();setTimeout(()=>{enrichEaAssetsInBackground()},800)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
@@ -1568,11 +1579,32 @@ function renderRoles(items){
 }
 $("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
 $("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
+let pickerFilterPosition="",pickerSortMode="rating";
+function pickerCandidates(){
+ const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
+ let list=[...state.club];
+ if(i>=11&&pickerFilterPosition)list=list.filter(it=>{const b=displayBase(it);return playerPositions(b).includes(pickerFilterPosition)});
+ list.sort((a,b)=>{
+  const ba=displayBase(a),bb=displayBase(b),fa=i<11?posFit(ba,slot):1,fb=i<11?posFit(bb,slot):1;
+  if(i<11)return(fb-fa)||itemRating(b)-itemRating(a);
+  if(pickerSortMode==="position"&&pickerFilterPosition){const pa=playerPositions(ba).includes(pickerFilterPosition)?1:0,pb=playerPositions(bb).includes(pickerFilterPosition)?1:0;if(pb!==pa)return pb-pa}
+  return itemRating(b)-itemRating(a)||String(ba?.name||"").localeCompare(String(bb?.name||""),"de")
+ });
+ return{list,used,cur,slot}
+}
+function renderPickerCandidates(){
+ const i=pickerIndex;if(i<0)return;const {list,used,cur,slot}=pickerCandidates();
+ $("pickList").innerHTML=list.map(it=>{const b=displayBase(it),f=i<11?posFit(b,slot):1,disabled=used.has(it.uid)&&it.uid!==cur;return`<button class="pickrow" data-pick="${it.uid}" ${disabled?"disabled":""}><div class="pickrating">${itemRating(it)}</div><div><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small>${inlineMetaHTML(b)}</div><div class="fit ${f<=0?"bad":""}">${i>=18?"Reserve":i>=11?"Bank":f>=1?"Perfekt":f>0?"Alternative":"Fremd"}</div></button>`}).join("")||'<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
+}
 function openPicker(i){
- pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
- $("pickerTitle").textContent=i<11?`${positionLabel(slot)} besetzen`:i<18?`Bank ${i-10}`:`Reserve ${i-17}`;$("pickerSub").textContent="Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.";
- const list=[...state.club].sort((a,b)=>{const ba=displayBase(a),bb=displayBase(b),fa=i<11?posFit(ba,slot):1,fb=i<11?posFit(bb,slot):1;return(fb-fa)||itemRating(b)-itemRating(a)});
- $("pickList").innerHTML=list.map(it=>{const b=displayBase(it),f=i<11?posFit(b,slot):1,disabled=used.has(it.uid)&&it.uid!==cur;return`<button class="pickrow" data-pick="${it.uid}" ${disabled?"disabled":""}><div class="pickrating">${itemRating(it)}</div><div><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small>${inlineMetaHTML(b)}</div><div class="fit ${f<=0?"bad":""}">${i>=18?"Reserve":i>=11?"Bank":f>=1?"Perfekt":f>0?"Alternative":"Fremd"}</div></button>`}).join("");showUiLayer("picker","picker")
+ pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE");
+ $("pickerTitle").textContent=i<11?`${positionLabel(slot)} besetzen`:i<18?`Bank ${i-10}`:`Reserve ${i-17}`;
+ $("pickerSub").textContent=i<11?"Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.":"Filtere nach Position oder nimm einfach die Spieler mit dem höchsten Rating.";
+ const controls=$("pickerControls");controls?.classList.toggle("active",i>=11);
+ pickerFilterPosition="";pickerSortMode="rating";
+ if($("pickerPositionFilter"))$("pickerPositionFilter").value="";
+ if($("pickerSort"))$("pickerSort").value="rating";
+ renderPickerCandidates();showUiLayer("picker","picker")
 }
 function putItemIntoSlot(itemUid,toIndex){const fromIndex=state.squad.indexOf(itemUid);if(fromIndex===toIndex)return;if(fromIndex>=0){const tmp=state.squad[toIndex];state.squad[toIndex]=itemUid;state.squad[fromIndex]=tmp||null}else state.squad[toIndex]=itemUid}
 function openSlotPickerForItem(itemUid){
@@ -1595,6 +1627,8 @@ function squadClick(e){const button=e.target.closest("[data-slot]");if(!button)r
 $("pitch").addEventListener("click",squadClick);
 $("bench").addEventListener("click",squadClick);
 $("pickerClose").addEventListener("click",()=>closeUiLayer("picker","picker"));
+$("pickerPositionFilter")?.addEventListener("change",e=>{pickerFilterPosition=String(e.target.value||"").toUpperCase();renderPickerCandidates()});
+$("pickerSort")?.addEventListener("change",e=>{pickerSortMode=e.target.value||"rating";renderPickerCandidates()});
 $("pickList").addEventListener("click",e=>{
  const b=e.target.closest("[data-pick]"),sp=e.target.closest("[data-slotpick]");
  if(b&&pickerMode==="player"){putItemIntoSlot(b.dataset.pick,pickerIndex);closeUiLayer("picker","picker");save();renderAll();return}
@@ -1816,31 +1850,71 @@ $("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-cl
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
 const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
+let MARKET_META_PERCENTILE=new Map(),MARKET_META_BUCKETS=new Map(),MARKET_META_MODEL_SIZE=0;
 function marketPlayStyleCount(base){const raw=[base?.playstyles,base?.playstylesPlus].filter(Boolean).join(',');return raw?raw.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).length:0}
-function marketMetaScore(base){const pos=String(base?.position||"").toUpperCase(),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0);let score=78;if(["ST","RW","LW","RM","LM","CAM","CF"].includes(pos)){score=pac*.27+sho*.24+dri*.27+pas*.11+phy*.07+def*.04;if(pac>=88)score+=2.2;if(dri>=86)score+=1.8;if(sho>=84)score+=1.3;if(pac>=84&&dri>=84)score+=1.2}else if(["CM","CDM"].includes(pos)){score=pac*.16+sho*.08+pas*.19+dri*.18+def*.18+phy*.21;if(pac>=80)score+=1.4;if(dri>=82)score+=1.3;if(def>=80)score+=1.1;if(phy>=85)score+=1.5;if(pas>=80)score+=.8;if(sho>=75)score+=.4;score+=Math.max(0,[pac,sho,pas,dri,def,phy].filter(v=>v>=80).length-2)*.65}else if(["CB","LB","RB","LWB","RWB"].includes(pos)){score=pac*.24+def*.31+phy*.23+pas*.08+dri*.10+sho*.04;if(pac>=82)score+=1.8;if(def>=84)score+=1.4;if(phy>=84)score+=1.1}else if(pos==="GK"){score=pac*.19+sho*.17+pas*.12+dri*.24+def*.10+phy*.18;if(dri>=85)score+=1.2;if(pac>=84)score+=.8}else score=(pac+sho+pas+dri+def+phy)/6;return score}
-function marketArchetypeMultiplier(base){
- const pos=String(base?.position||"").toUpperCase(),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0);
- let mult=1;
- if(["CM","CDM"].includes(pos)){
+function marketPositionGroup(base){const p=String(base?.position||"").toUpperCase();if(p==="GK")return"GK";if(["CB","LB","RB","LWB","RWB"].includes(p))return"DEF";if(["CM","CDM"].includes(p))return"MID";if(["CAM","LM","RM","LW","RW","CF","ST"].includes(p))return"ATT";return"OTHER"}
+function marketMetaScore(base){
+ const pos=String(base?.position||"").toUpperCase(),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0),skills=Number(base?.skillMoves||0),wf=Number(base?.weakFoot||0),styles=marketPlayStyleCount(base);
+ let score=0;
+ if(pos==="GK"){
+  score=pac*.22+sho*.18+pas*.12+dri*.25+def*.08+phy*.15;
+  if(dri>=85)score+=2;if(pac>=82)score+=1.2;if(phy>=82)score+=.7;
+ }else if(["CM","CDM"].includes(pos)){
+  score=pac*.17+sho*.07+pas*.18+dri*.18+def*.18+phy*.22;
   const complete=[pac,pas,dri,def,phy].filter(v=>v>=80).length;
-  if(complete>=5)mult*=2.05;else if(complete===4)mult*=1.62;else if(complete===3)mult*=1.28;
-  if(pac>=80&&dri>=82&&def>=80&&phy>=84)mult*=1.48;
-  if(pas>=82&&dri>=82&&phy>=84)mult*=1.18;
- }else if(["ST","RW","LW","RM","LM","CAM","CF"].includes(pos)){
-  if(pac>=88&&dri>=86&&sho>=84)mult*=1.68;
-  else if(pac>=86&&dri>=84)mult*=1.32;
-  if(sho>=88&&dri>=86)mult*=1.18;
+  score+=complete*1.15;if(pac>=80&&dri>=82)score+=2.1;if(def>=80&&phy>=84)score+=2.3;if(pas>=82)score+=1;if(sho>=75)score+=.45;
+ }else if(["CAM","LM","RM","LW","RW","CF","ST"].includes(pos)){
+  score=pac*.29+sho*.23+pas*.10+dri*.28+def*.02+phy*.08;
+  if(pac>=90)score+=3.1;else if(pac>=86)score+=1.8;if(dri>=86)score+=2.2;if(sho>=84)score+=1.6;if(pac>=88&&dri>=86)score+=2.2;
  }else if(["CB","LB","RB","LWB","RWB"].includes(pos)){
-  if(pac>=84&&def>=84&&phy>=84)mult*=1.62;
-  else if(pac>=82&&def>=82)mult*=1.30;
- }
- return mult
+  score=pac*.25+sho*.02+pas*.08+dri*.09+def*.32+phy*.24;
+  if(pac>=84)score+=2.5;else if(pac>=80)score+=1.3;if(def>=84)score+=1.8;if(phy>=84)score+=1.4;if(pac>=82&&def>=82&&phy>=82)score+=2.2;
+ }else score=(pac+sho+pas+dri+def+phy)/6;
+ if(skills>=5)score+=2.2;else if(skills>=4)score+=1.1;
+ if(wf>=5)score+=1.7;else if(wf>=4)score+=.8;
+ score+=Math.min(2.4,styles*.32);
+ const altCount=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;score+=Math.min(1.6,altCount*.45);
+ return score
 }
-function isFelixNmecha(base){const name=normalizeKey(base?.name||""),team=normalizeKey(base?.team||"");return /(^| )f(elix)? ?nmecha$/.test(name)&&team.includes("borussia dortmund")}
-function marketDemandMultiplier(base){if(isFelixNmecha(base))return 2.35;const name=normalizeKey(base?.name||"");const demand={};return demand[name]||1}
-function marketMetaFactor(base){const score=marketMetaScore(base),styleCount=marketPlayStyleCount(base),alts=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;let factor=Math.exp((score-78)*.13);factor*=1+Math.min(.28,styleCount*.04);factor*=1+Math.min(.14,alts*.05);factor*=marketArchetypeMultiplier(base);factor*=marketDemandMultiplier(base);const lg=normalizeKey(base?.league||"");if(["bundesliga","premier league","laliga ea sports","la liga","serie a","ligue 1"].includes(lg))factor*=1.05;const tm=normalizeKey(base?.team||"");if(["borussia dortmund","fc bayern munchen","bayern munich","real madrid","fc barcelona","barcelona","liverpool","arsenal","manchester city","manchester united","paris saint germain","psg","juventus","inter","ac milan"].includes(tm))factor*=1.07;return Math.max(.55,Math.min(9,factor))}
+function rebuildMarketMetaModel(){
+ MARKET_META_PERCENTILE=new Map();MARKET_META_BUCKETS=new Map();MARKET_META_MODEL_SIZE=PLAYERS.length;
+ for(const p of PLAYERS){const g=marketPositionGroup(p),r=Math.round(Number(p.ovr||0)),key=`${g}|${r}`,row={id:String(p.id),score:marketMetaScore(p)};if(!MARKET_META_BUCKETS.has(key))MARKET_META_BUCKETS.set(key,[]);MARKET_META_BUCKETS.get(key).push(row)}
+ for(const [key,rows] of MARKET_META_BUCKETS){rows.sort((a,b)=>a.score-b.score);const den=Math.max(1,rows.length-1);rows.forEach((row,i)=>MARKET_META_PERCENTILE.set(row.id,i/den))}
+}
+function ensureMarketMetaModel(){if(MARKET_META_MODEL_SIZE!==PLAYERS.length||!MARKET_META_PERCENTILE.size)rebuildMarketMetaModel()}
+function marketMetaPercentile(base){
+ ensureMarketMetaModel();const id=String(base?.id||"");if(id&&MARKET_META_PERCENTILE.has(id))return MARKET_META_PERCENTILE.get(id);
+ const key=`${marketPositionGroup(base)}|${Math.round(Number(base?.ovr||0))}`,rows=MARKET_META_BUCKETS.get(key)||[];if(!rows.length)return .5;
+ const s=marketMetaScore(base),idx=rows.findIndex(x=>x.score>=s);return idx<0?1:idx/Math.max(1,rows.length-1)
+}
+function marketPercentileMultiplier(p){
+ if(p>=.995)return 7.2;if(p>=.985)return 5.8;if(p>=.97)return 4.6;if(p>=.94)return 3.6;if(p>=.88)return 2.75;if(p>=.78)return 2.05;if(p>=.65)return 1.55;if(p>=.45)return 1.16;if(p>=.25)return .96;return .78
+}
+function marketAbsoluteMetaMultiplier(base){
+ const g=marketPositionGroup(base),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0);
+ let m=1;
+ if(g==="MID"){if(pac>=80&&dri>=82&&def>=80&&phy>=84)m*=1.45;if([pac,pas,dri,def,phy].filter(v=>v>=80).length>=5)m*=1.28}
+ if(g==="ATT"){if(pac>=90&&dri>=84)m*=1.45;else if(pac>=87&&dri>=83)m*=1.25;if(sho>=85&&dri>=85)m*=1.16}
+ if(g==="DEF"){if(pac>=84&&def>=84&&phy>=84)m*=1.42;else if(pac>=82&&def>=82)m*=1.20}
+ if(g==="GK"){if(dri>=86&&pac>=82)m*=1.18}
+ return m
+}
+function marketDemandMultiplier(base){
+ const pct=marketMetaPercentile(base),styles=marketPlayStyleCount(base),alts=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;
+ let m=marketPercentileMultiplier(pct)*marketAbsoluteMetaMultiplier(base);
+ m*=1+Math.min(.22,styles*.025);m*=1+Math.min(.12,alts*.035);
+ const lg=normalizeKey(base?.league||"");if(["bundesliga","premier league","laliga ea sports","la liga","serie a","ligue 1"].includes(lg))m*=1.04;
+ return m
+}
+function marketMetaFactor(base){return Math.max(.65,Math.min(10.5,marketDemandMultiplier(base)))}
 function marketRoundPrice(v){const step=v>=100000?1000:v>=10000?250:50;return Math.max(150,Math.round(v/step)*step)}
-function marketPriceForRating(r,special=false,base=null){const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);const meta=marketMetaFactor(base||{ovr:rr}),specialMult=special?1.55:1,variation=.92+Math.random()*.16;let value=basePrice*meta*specialMult*variation;if(isFelixNmecha(base)&&rr>=85)value=Math.max(value,special?190000:120000);return marketRoundPrice(value)}
+function marketPriceForRating(r,special=false,base=null){
+ const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);
+ const pct=base?marketMetaPercentile(base):.5,meta=base?marketMetaFactor(base):1,specialMult=special?(1.45+Math.max(0,pct-.75)*1.8):1,variation=.93+Math.random()*.14;
+ let value=basePrice*meta*specialMult*variation;
+ if(pct>=.995)value=Math.max(value,basePrice*6.5);else if(pct>=.985)value=Math.max(value,basePrice*5.1);else if(pct>=.97)value=Math.max(value,basePrice*4.0);else if(pct>=.94)value=Math.max(value,basePrice*3.1);else if(pct>=.88)value=Math.max(value,basePrice*2.35);
+ return marketRoundPrice(value)
+}
 function marketPreviewItem(x){return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||""}}
 function listingRating(x){return Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"?"special":rarityOf(x.base)}
@@ -1850,24 +1924,25 @@ function specialVariant(type=""){const events=["Eventkarte","Road to Glory","Bir
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity=$("marketQuality").value==="special"||$("marketSpecialType").value?"1":".5"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value;const source=PLAYERS.filter(p=>!league||p.league===league);const clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
-function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else if(filters.quality==="special"||(!filters.quality&&filters.specialType)){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}else if(!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}const r=Math.min(99,base.ovr+boost),special=variant==="special";let price=marketPriceForRating(r,special,base);if(isFelixNmecha(base)&&r>=85)price=Math.max(price,special?190000:120000);price=marketRoundPrice(price);const start=Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else if(filters.quality==="special"||(!filters.quality&&filters.specialType)){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}else if(!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}const r=Math.min(99,base.ovr+boost),special=variant==="special";let price=marketPriceForRating(r,special,base);price=marketRoundPrice(price);const start=Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "))}
+function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
- const q=normalizeKey(query);
- if(q.length<2)return[];
+ const q=normalizeKey(query);if(q.length<2)return[];
  const seen=new Set();
- return PLAYERS.filter(p=>normalizeKey(p.name).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||String(a.name).localeCompare(String(b.name),"de")).filter(p=>{const k=normalizeKey(p.name)+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,12)
+ return PLAYERS.filter(p=>playerSearchText(p).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||playerDisplaySearchName(a).localeCompare(playerDisplaySearchName(b),"de")).filter(p=>{const k=normalizeKey(playerDisplaySearchName(p))+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,12)
 }
 function hideMarketNameSuggestions(){const box=$("marketNameSuggestions");if(box)box.classList.remove("open")}
 function renderMarketNameSuggestions(){
  const box=$("marketNameSuggestions"),input=$("marketName");if(!box||!input)return;
  const rows=marketNameSuggestionPlayers(input.value);
  if(!rows.length){box.innerHTML="";box.classList.remove("open");return}
- box.innerHTML=rows.map(p=>`<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`).join("");
+ box.innerHTML=rows.map(p=>`<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`).join("");
  box.classList.add("open")
 }
 function refreshMarket(){
  const f=marketFilters();
- let pool=PLAYERS.filter(p=>(!f.name||normalizeKey(p.name).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
+ let pool=PLAYERS.filter(p=>(!f.name||playerSearchText(p).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
  if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
  else if(f.quality==="bronze")pool=pool.filter(p=>rarityOf(p)==="bronze");
  else if(f.quality==="silver")pool=pool.filter(p=>rarityOf(p)==="silver"&&p.ovr>=f.ratingMin&&p.ovr<=Math.min(74,f.ratingMax));
@@ -1898,7 +1973,7 @@ function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="
 $("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{if($("marketSpecialType").value)$("marketQuality").value="special";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
-$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=p.name;hideMarketNameSuggestions();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
+$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=playerDisplaySearchName(p);hideMarketNameSuggestions();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
 document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
 $("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
 $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}})
