@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.29</title>
+<title>Gerlies FUT V18.30</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -363,6 +363,27 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .role-panel.collapsed{padding-bottom:10px}.role-panel.collapsed>p,.role-panel.collapsed .role-list{display:none}.role-panel.collapsed .role-panel-head{margin-bottom:0}
 @media(max-width:560px){.club-card-preview{min-height:212px}.club-card-preview .card-shell{width:min(142px,96%)!important}}
 
+
+
+/* V18.30 portrait polish + bench faces + emblem fallback */
+/* Club: portrait slightly higher, keep full head visible */
+.club-card-preview .custom-card .face{left:33px!important;right:2px!important;top:25px!important;height:126px!important;overflow:hidden!important}
+.club-card-preview .custom-card .face img{width:104%!important;height:104%!important;object-fit:contain!important;object-position:center top!important;transform:translate(-2%,0) scale(1.02)!important}
+/* Pitch: stop clipping foreheads on some portraits */
+.pitch .slot .mini .custom-card .face,.friend-pitch .friend-slot .mini .custom-card .face{left:34%!important;right:2%!important;top:19%!important;height:46%!important;overflow:hidden!important}
+.pitch .slot .mini .custom-card .face img,.friend-pitch .friend-slot .mini .custom-card .face img{width:106%!important;height:108%!important;object-fit:contain!important;object-position:center top!important;transform:translate(-2%,0) scale(1.02)!important}
+/* Bench had inherited the large full-card portrait box; give it its own compact portrait geometry */
+.bench .mini .custom-card .face,.friend-bench .mini .custom-card .face{left:29%!important;right:2%!important;top:21%!important;height:48%!important;overflow:hidden!important}
+.bench .mini .custom-card .face img,.friend-bench .mini .custom-card .face img{width:108%!important;height:110%!important;object-fit:contain!important;object-position:center top!important;transform:translate(-3%,0) scale(1.02)!important}
+.bench .mini .custom-card .card-icons,.friend-bench .mini .custom-card .card-icons{left:8%!important;top:34%!important;gap:2px!important}
+.bench .mini .card-flag-img,.friend-bench .mini .card-flag-img{width:11px!important;height:7px!important}
+.bench .mini .card-league,.bench .mini .card-club,.friend-bench .mini .card-league,.friend-bench .mini .card-club{width:10px!important;height:10px!important}
+/* Cleaner fallback emblems for clubs/leagues without a remote crest */
+.card-league .asset-fallback,.card-club .asset-fallback{display:grid;place-items:center;width:100%;height:100%;font-size:5px;font-weight:1000;line-height:1;color:#f6faf8;text-shadow:0 1px 2px #0008}
+.card-league:has(.asset-fallback:not([style*="display:none"])){border-radius:50%!important;background:linear-gradient(145deg,#284d65,#102633)!important;border:1px solid rgba(160,220,255,.35)!important;box-shadow:0 1px 4px #0005!important;overflow:hidden!important}
+.card-club:has(.asset-fallback:not([style*="display:none"])){clip-path:polygon(50% 0,92% 18%,92% 70%,50% 100%,8% 70%,8% 18%)!important;background:linear-gradient(145deg,#1f342c,#0d1713)!important;border:1px solid rgba(126,255,196,.32)!important;box-shadow:0 1px 4px #0005!important;overflow:hidden!important}
+.mini .card-league .asset-fallback,.mini .card-club .asset-fallback{font-size:3.4px!important}
+
 </style>
 </head>
 <body>
@@ -414,7 +435,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.29</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.30</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
