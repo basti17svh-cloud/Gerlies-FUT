@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.68</title>
+<title>Gerlies FUT V18.69</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -946,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.68</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.69</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2074,8 +2074,9 @@ function applyDiscoveredClubMeta(team,row){
    if(leagueUrl&&!p.leagueLogo){p.leagueLogo=leagueUrl;changed=true}
  }
  if(changed){
-  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
+ P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
   restoreSyntheticPlayerIds();
+  scheduleMarketFilterIndexRebuild();
   scheduleBadgePlayerSave()
  }
 }
@@ -2506,6 +2507,7 @@ async function fetchEaPlayerSearch(name){
 function propagateEaAffiliation(seed){
  const tk=normalizeKey(seed?.team),lk=normalizeKey(seed?.league);
  if(!tk&&!lk)return;
+ let changedAny=false;
  for(let i=0;i<PLAYERS.length;i++){
   const p=PLAYERS[i];let next=p,changed=false;
   if(tk&&normalizeKey(p?.team)===tk){
@@ -2520,8 +2522,9 @@ function propagateEaAffiliation(seed){
    if(seed.leagueLogo&&!next.leagueLogo){next.leagueLogo=seed.leagueLogo;changed=true}
    if(seed.leagueId&&!next.leagueId){next.leagueId=seed.leagueId;changed=true}
   }
-  if(changed){PLAYERS[i]=next;P_BY_ID.set(String(next.id),next)}
+  if(changed){PLAYERS[i]=next;P_BY_ID.set(String(next.id),next);changedAny=true}
  }
+ if(changedAny)scheduleMarketFilterIndexRebuild()
 }
 function applyEaAssetToPlayerById(a){
  if(!a?.id)return false;
@@ -2533,7 +2536,7 @@ function applyEaAssetToPlayerById(a){
  if(a.leagueLogo)next.leagueLogo=a.leagueLogo;if(a.leagueId)next.leagueId=a.leagueId;
  if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
  if(a.face)next.face=a.face;
- PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);restoreSyntheticPlayerIds();
+ PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);restoreSyntheticPlayerIds();scheduleMarketFilterIndexRebuild();
  propagateEaAffiliation(next);
  restoreSyntheticPlayerIds();
  return true
@@ -2576,11 +2579,11 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true,errorText=""){
- applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);
+ applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
  if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
@@ -3091,7 +3094,7 @@ function qualityLabel(x){if(x.variant==="icon-mid")return"MID ICON";if(x.variant
 function specialVariant(type=""){const events=["Eventkarte","Road to Glory","Birthday Event","Champions Event"];const eventName=events[Math.floor(Math.random()*events.length)],boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
-function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value;const source=[...PLAYERS,...totwFallbackFilterPlayers()].filter(p=>!league||String(p?.league||resolvedAffiliation(p)?.league||"")===league);const clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
+function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
 function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="MID ICON"}
@@ -3116,7 +3119,7 @@ function renderMarketNameSuggestions(){
  box.classList.add("open")
 }
 function refreshMarket(){
- const f=marketFilters(),source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):(f.name?[...PLAYERS,...MID_ICON_BASES]:PLAYERS));
+ const f=marketFilters(),regular=f.league?marketPlayersForLeague(f.league):PLAYERS,source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):(f.name?[...regular,...MID_ICON_BASES]:regular));
  let pool=source.filter(p=>(!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
  if(f.specialType==="icon")pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
  else if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
@@ -3646,6 +3649,10 @@ $("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();if(e.current
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
 $("campaignModalBody")?.addEventListener("click",e=>{const go=e.target.closest("[data-campaign-go]");if(!go)return;$("campaignModal").classList.remove("active");replaceUiState("view",{view:go.dataset.campaignGo});switchView(go.dataset.campaignGo,{push:false})});
 
+let MARKET_FILTER_INDEX=new Map(),MARKET_FILTER_INDEX_TIMER=0;
+function rebuildMarketFilterIndex(){const index=new Map();for(const p of PLAYERS){const league=String(p?.league||"").trim()||String(resolvedAffiliation(p)?.league||"").trim();if(!league)continue;if(!p.league)p.league=league;let rows=index.get(league);if(!rows)index.set(league,rows=[]);rows.push(p)}MARKET_FILTER_INDEX=index}
+function scheduleMarketFilterIndexRebuild(){if(!PLAYERS.length)return;clearTimeout(MARKET_FILTER_INDEX_TIMER);MARKET_FILTER_INDEX_TIMER=setTimeout(rebuildMarketFilterIndex,350)}
+function marketPlayersForLeague(league){if(!MARKET_FILTER_INDEX.size&&PLAYERS.length)rebuildMarketFilterIndex();return league?MARKET_FILTER_INDEX.get(String(league))||[]:PLAYERS}
 function totwFallbackFilterPlayers(){return LIVE_TOTW.players.map((info,i)=>mergeTotwBase(null,null,i)).filter(p=>p.team||p.league||p.nation)}
 function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].filter(Boolean))].sort((a,b)=>a.localeCompare(b));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
 
@@ -3849,8 +3856,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1868",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-68-reloaded")){sessionStorage.setItem("gfut-v18-68-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1869",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-69-reloaded")){sessionStorage.setItem("gfut-v18-69-reloaded","1");location.reload()}});
  });
 }
 
