@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.41</title>
+<title>Gerlies FUT V18.42</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.41 bench visibility + transfer market full-card view */
+/* V18.42 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -465,7 +465,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.41 pack tiers: instant / board / walkout / special / double walkout */
+/* V18.42 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
 .opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
@@ -493,7 +493,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
 
 
-/* V18.41 — 7-player bench, evolution layout fix, market name suggestions */
+/* V18.42 — 7-player bench, evolution layout fix, market name suggestions */
 .bench{
   display:grid!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
@@ -535,7 +535,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.41 — EAFC-style Bank / Reserve drawers */
+/* V18.42 — EAFC-style Bank / Reserve drawers */
 .squad-stage{position:relative;margin-bottom:12px}
 .squad-drawer-tabs{position:relative;z-index:13;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:-1px}
 .squad-drawer-tab{min-height:48px;border:1px solid #293a34;background:#111a17;color:#d8e1dd;font-size:13px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:7px}
@@ -569,7 +569,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.41 — Evolution progress lanes + manual claim transformation */
+/* V18.42 — Evolution progress lanes + manual claim transformation */
 .evo-stage{
   display:grid!important;
   grid-template-columns:minmax(118px,150px) minmax(0,1fr)!important;
@@ -631,7 +631,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.41 — reserve drag support + squad picker filters */
+/* V18.42 — reserve drag support + squad picker filters */
 .reserveslot button,.benchslot button{touch-action:none!important;user-select:none!important;-webkit-user-select:none!important}
 .reserveslot button.drag-source,.benchslot button.drag-source{opacity:.38}
 .picker-controls{display:none;grid-template-columns:1fr 1fr;gap:8px;padding:9px;margin:0 0 9px;border:1px solid #2f3c37;border-radius:12px;background:#0d1512}
@@ -639,6 +639,103 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .picker-controls label span{display:block;margin:0 0 4px;color:#91a099;font-size:6px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
 .picker-controls select{width:100%;min-height:40px;border:1px solid #36453f;border-radius:10px;background:#121c18;color:#fff;padding:0 9px;font-size:8px;font-weight:850}
 @media(max-width:520px){.picker-controls{grid-template-columns:1fr 1fr;gap:6px;padding:7px}.picker-controls select{font-size:7px;min-height:38px}}
+
+
+/* V18.42 — pack presentation tiers */
+.opening.mode-plain{background:rgba(3,7,5,.985)}
+.opening.mode-plain .reveal{animation:none!important}
+.opening.mode-plain .reveal .card-shell{width:178px}
+.opening.mode-plain .revealbadge{font-size:8px;color:#aab6b1;letter-spacing:.13em}
+.opening.mode-plain .walkout-title{font-size:8px;color:#d9e2de}
+
+.opening.mode-board{background:
+ radial-gradient(circle at 50% 45%,rgba(216,255,62,.10),transparent 34%),
+ linear-gradient(180deg,#050907,#0a120e 55%,#050807)}
+.opening.mode-board:before{
+ opacity:.55!important;
+ background:
+  linear-gradient(90deg,transparent 0 13%,rgba(216,255,62,.16) 13% 14%,transparent 14% 29%,rgba(216,255,62,.12) 29% 30%,transparent 30% 70%,rgba(216,255,62,.12) 70% 71%,transparent 71% 86%,rgba(216,255,62,.16) 86% 87%,transparent 87%),
+  radial-gradient(circle,#d8ff3e44 0 3%,transparent 32%)!important;
+ animation:boardArena 1.8s ease-in-out infinite alternate!important
+}
+.opening.mode-board:after{
+ opacity:.55!important;
+ inset:0!important;
+ background:linear-gradient(180deg,transparent 0 35%,rgba(216,255,62,.12) 50%,transparent 65%)!important;
+ animation:boardSweep .9s ease-in-out infinite alternate!important
+}
+.opening.mode-board .reveal .card-shell{width:192px!important;filter:drop-shadow(0 0 24px rgba(216,255,62,.28))}
+.opening.mode-board .revealbadge{font-size:11px;color:#d8ff3e;text-shadow:0 0 16px rgba(216,255,62,.72);letter-spacing:.16em}
+.opening.mode-board .walkout-title{font-size:10px;color:#eef7f2}
+.opening.mode-board .reveal-cards{animation:boardReveal .68s cubic-bezier(.18,.85,.28,1) both!important}
+
+.opening.mode-walkout,.opening.mode-double{
+ background:
+ radial-gradient(circle at 50% 44%,rgba(216,255,62,.18),transparent 30%),
+ linear-gradient(180deg,#020403,#071008 48%,#020302)}
+.opening.mode-walkout:before,.opening.mode-double:before{
+ opacity:1!important;
+ inset:-42%!important;
+ background:
+ repeating-conic-gradient(from 0deg,rgba(216,255,62,.42) 0 1.5deg,transparent 1.5deg 7deg),
+ radial-gradient(circle at 50% 50%,rgba(255,255,255,.22),transparent 29%)!important;
+ animation:packRays 2.4s linear infinite!important
+}
+.opening.mode-walkout:after,.opening.mode-double:after{
+ opacity:1!important;
+ inset:0!important;
+ background:
+ linear-gradient(105deg,transparent 0 36%,rgba(255,255,255,.22) 42%,transparent 48%),
+ linear-gradient(255deg,transparent 0 36%,rgba(216,255,62,.18) 42%,transparent 48%),
+ radial-gradient(circle at 50% 78%,rgba(216,255,62,.24),transparent 36%)!important;
+ animation:walkStadium .6s ease-in-out infinite alternate!important
+}
+.opening.mode-walkout .reveal,.opening.mode-double .reveal{filter:drop-shadow(0 0 30px rgba(216,255,62,.20))}
+.opening.mode-walkout .reveal .card-shell{width:246px!important;filter:drop-shadow(0 0 34px rgba(216,255,62,.45))}
+.opening.mode-double .reveal .card-shell{width:176px!important;filter:drop-shadow(0 0 28px rgba(216,255,62,.38))}
+.opening.mode-walkout .revealbadge,.opening.mode-double .revealbadge{
+ font-size:20px!important;letter-spacing:.18em;color:#edff8c!important;
+ text-shadow:0 0 12px #d8ff3e,0 0 34px rgba(216,255,62,.9)!important;
+ animation:walkoutBadge .7s ease-in-out infinite alternate
+}
+.opening.mode-walkout .walkout-title,.opening.mode-double .walkout-title{
+ font-size:13px!important;font-weight:1000;color:#fff!important;
+ text-shadow:0 0 18px rgba(216,255,62,.45)
+}
+.opening.mode-walkout .reveal-cards,.opening.mode-double .reveal-cards{animation:walkoutEntrance .88s cubic-bezier(.12,.9,.18,1) both!important}
+
+.opening.mode-special{
+ background:
+ radial-gradient(circle at 50% 44%,rgba(89,255,231,.18),transparent 30%),
+ linear-gradient(180deg,#04050b,#09051a 55%,#030408)}
+.opening.mode-special .reveal .card-shell{width:236px!important;filter:drop-shadow(0 0 32px rgba(89,255,231,.34))}
+.opening.mode-special .revealbadge{font-size:17px!important;letter-spacing:.15em}
+.opening.mode-special .walkout-title{font-size:12px!important}
+
+.pack-fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:4}
+.pack-confetti{position:absolute;top:-24px;width:7px;height:14px;border-radius:2px;opacity:.96;animation:packConfettiFall var(--dur) linear var(--delay) forwards}
+.pack-spark{position:absolute;width:5px;height:5px;border-radius:50%;background:#f2ffb5;box-shadow:0 0 12px #d8ff3e;animation:packSpark 1.1s ease-out forwards}
+.pack-floor-lights{position:absolute;left:8%;right:8%;bottom:6%;height:18px;display:flex;justify-content:space-between;z-index:3;pointer-events:none}
+.pack-floor-lights i{width:7%;height:100%;border-radius:50%;background:#d8ff3e;filter:blur(8px);opacity:.22;animation:floorPulse .38s ease-in-out infinite alternate}
+.pack-floor-lights i:nth-child(even){animation-delay:.18s}
+
+@keyframes boardArena{to{transform:scale(1.04);filter:brightness(1.2)}}
+@keyframes boardSweep{from{transform:translateY(-12%);opacity:.25}to{transform:translateY(12%);opacity:.7}}
+@keyframes boardReveal{0%{transform:translateY(46px) scale(.86);opacity:0;filter:brightness(1.8)}60%{transform:translateY(-4px) scale(1.035);opacity:1}100%{transform:none;opacity:1;filter:none}}
+@keyframes walkStadium{to{filter:brightness(1.5);transform:scale(1.025)}}
+@keyframes walkoutBadge{to{transform:scale(1.07);filter:brightness(1.35)}}
+@keyframes walkoutEntrance{0%{transform:translateY(120px) scale(.58);opacity:0;filter:brightness(3) blur(6px)}55%{transform:translateY(-12px) scale(1.07);opacity:1;filter:brightness(1.4)}100%{transform:none;opacity:1;filter:none}}
+@keyframes packConfettiFall{0%{transform:translate3d(0,-10px,0) rotate(0);opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(760deg);opacity:.15}}
+@keyframes packSpark{0%{transform:translate(0,0) scale(.2);opacity:0}15%{opacity:1}100%{transform:translate(var(--sx),var(--sy)) scale(1.2);opacity:0}}
+@keyframes floorPulse{to{opacity:.72;transform:scaleX(1.35)}}
+@media(max-width:430px){
+ .opening.mode-plain .reveal .card-shell{width:166px}
+ .opening.mode-board .reveal .card-shell{width:184px!important}
+ .opening.mode-walkout .reveal .card-shell{width:225px!important}
+ .opening.mode-double .reveal .card-shell{width:148px!important}
+ .opening.mode-special .reveal .card-shell{width:218px!important}
+ .opening.mode-walkout .revealbadge,.opening.mode-double .revealbadge{font-size:16px!important}
+}
 
 </style>
 </head>
@@ -687,7 +784,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.41</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.42</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1784,15 +1881,17 @@ function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRati
 function packRevealPlan(){
  const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
  const walkouts=ranked.filter(packIsWalkout),specials=ranked.filter(packIsSpecial),best=ranked[0]||null;
- if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:3800};
- if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MID ICON":(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:3300}}
- if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:3000};
- if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"BOARD",duration:1500};
- return{mode:"none",cards:best?[best]:[],label:"",duration:0}
+ if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:5900};
+ if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MID ICON":(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}}
+ if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:5200};
+ if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"BOARD",duration:2350};
+ return{mode:"plain",cards:best?[best]:[],label:"HÖCHSTE KARTE",duration:1250}
 }
 function finishPack(){
  const opening=$("opening");
  opening.className="opening";
+ opening.querySelector(".pack-fx")?.remove();
+ opening.querySelector(".pack-floor-lights")?.remove();
  $("openStage").style.display="block";
  $("reveal").classList.remove("active");
  $("bigPack").classList.remove("pulse");
@@ -1800,34 +1899,81 @@ function finishPack(){
  renderPackResults();
  $("results").classList.add("active");
 }
-async function runPackReveal(plan){
- const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
- opening.className="opening active mode-"+plan.mode;
- $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
- if(plan.mode==="none"){finishPack();return}
- $("bigPack").classList.add("pulse");
- if(plan.mode==="board"){
-  await sleep(320);
- }else{
-  for(const n of [3,2,1]){$("packCountdown").textContent=n;await sleep(plan.mode==="double"?520:460)}
+function packFxLayer(){
+ const opening=$("opening");let fx=opening.querySelector(".pack-fx");
+ if(!fx){fx=document.createElement("div");fx.className="pack-fx";opening.appendChild(fx)}
+ return fx
+}
+function addPackFloorLights(){
+ const opening=$("opening");if(opening.querySelector(".pack-floor-lights"))return;
+ const x=document.createElement("div");x.className="pack-floor-lights";x.innerHTML="<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>";opening.appendChild(x)
+}
+function spawnPackConfetti(count=70,special=false){
+ const fx=packFxLayer(),palette=special?["#57ffe3","#8c63ff","#ff5ad7","#ffffff","#ffd85a"]:["#d8ff3e","#ffffff","#72ffc0","#ffd85a","#7de7ff"];
+ for(let i=0;i<count;i++){
+  const p=document.createElement("i");p.className="pack-confetti";
+  p.style.left=(Math.random()*100)+"%";p.style.background=palette[i%palette.length];
+  p.style.setProperty("--dur",(2.5+Math.random()*2.2)+"s");p.style.setProperty("--delay",(Math.random()*.75)+"s");
+  p.style.setProperty("--drift",((-80+Math.random()*160)|0)+"px");fx.appendChild(p)
  }
- $("packCountdown").textContent="";$("bigPack").classList.remove("pulse");
- flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
- await sleep(plan.mode==="board"?160:260);
- $("openStage").style.display="none";
- const first=plan.cards[0],firstBase=displayBase(first);
- if(!first||!firstBase){finishPack();return}
+}
+function spawnPackSparks(count=34){
+ const fx=packFxLayer();
+ for(let i=0;i<count;i++){const p=document.createElement("i");p.className="pack-spark";p.style.left=(42+Math.random()*16)+"%";p.style.top=(42+Math.random()*16)+"%";p.style.setProperty("--sx",((-180+Math.random()*360)|0)+"px");p.style.setProperty("--sy",((-170+Math.random()*250)|0)+"px");fx.appendChild(p)}
+}
+function showPackRevealCard(plan){
+ const first=plan.cards[0],firstBase=displayBase(first);if(!first||!firstBase)return false;
  $("revealBadge").textContent=plan.label;
  $("revealCard").innerHTML=cardHTML(firstBase,first);
  $("revealSecondCard").innerHTML="";
  $("walkoutTitle").textContent=`${firstBase.name} · ${positionLabel(firstBase.position,firstBase)} · ${firstBase.team}`;
- reveal.classList.add("active");
- if(plan.mode==="double"&&plan.cards[1]){
-  await sleep(550);
-  const second=plan.cards[1],secondBase=displayBase(second);
-  if(secondBase)$("revealSecondCard").innerHTML=cardHTML(secondBase,second);
+ $("reveal").classList.add("active");return true
+}
+async function runPackReveal(plan){
+ const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
+ opening.className="opening active mode-"+plan.mode;
+ $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
+ opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
+
+ if(plan.mode==="plain"){
+  $("openStage").style.display="none";
+  if(!showPackRevealCard(plan)){finishPack();return}
+  await sleep(plan.duration);finishPack();return
  }
- await sleep(plan.duration-(plan.mode==="double"?550:0));
+
+ $("bigPack").classList.add("pulse");
+ if(plan.mode==="board"){
+  $("packCountdown").textContent="BOARD";
+  await sleep(520);
+  $("packCountdown").textContent="";
+  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
+  await sleep(220);
+  $("openStage").style.display="none";
+  if(!showPackRevealCard(plan)){finishPack();return}
+  spawnPackSparks(16);addPackFloorLights();
+  await sleep(plan.duration);finishPack();return
+ }
+
+ addPackFloorLights();
+ const countdown=plan.mode==="double"?[3,2,1]:[3,2,1];
+ for(const n of countdown){$("packCountdown").textContent=n;spawnPackSparks(8);await sleep(plan.mode==="double"?620:560)}
+ $("packCountdown").textContent="";
+ $("bigPack").classList.remove("pulse");
+ flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
+ spawnPackSparks(plan.mode==="double"?60:46);
+ spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,plan.mode==="special");
+ await sleep(340);
+ $("openStage").style.display="none";
+ if(!showPackRevealCard(plan)){finishPack();return}
+
+ if(plan.mode==="double"&&plan.cards[1]){
+  await sleep(700);
+  const second=plan.cards[1],secondBase=displayBase(second);
+  if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,false)}
+ }
+ if(plan.mode==="walkout"){await sleep(700);spawnPackConfetti(55,false)}
+ if(plan.mode==="special"){await sleep(650);spawnPackConfetti(50,true)}
+ await sleep(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
  finishPack();
 }
 $("openPackBtn").addEventListener("click",async()=>{try{await runPackReveal(packRevealPlan())}catch(err){console.error("Pack reveal failed",err);finishPack();toast("Pack geöffnet. Animation wurde übersprungen.")}})
