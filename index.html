@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.30</title>
+<title>Gerlies FUT V18.31</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -384,6 +384,24 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .card-club:has(.asset-fallback:not([style*="display:none"])){clip-path:polygon(50% 0,92% 18%,92% 70%,50% 100%,8% 70%,8% 18%)!important;background:linear-gradient(145deg,#1f342c,#0d1713)!important;border:1px solid rgba(126,255,196,.32)!important;box-shadow:0 1px 4px #0005!important;overflow:hidden!important}
 .mini .card-league .asset-fallback,.mini .card-club .asset-fallback{font-size:3.4px!important}
 
+
+/* V18.31 in-match visual team management */
+.manager-panel{padding:13px;border-radius:18px;background:linear-gradient(180deg,#0d1713,#09100e);border-color:#2b4439}
+.manager-panel h3{font-size:16px;margin-bottom:4px}.manager-panel>p{font-size:8px;line-height:1.5;margin-bottom:10px}
+.match-manager-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.match-manager-head span{font-size:7px;color:#9aaba3}.match-manager-head strong{font-size:9px;color:var(--lime)}
+.match-manager-pitch{position:relative;width:100%;aspect-ratio:.72;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.2);background:repeating-linear-gradient(0deg,#0f6543 0 11%,#0b5739 11% 22%);box-shadow:inset 0 1px rgba(255,255,255,.05)}
+.match-manager-pitch:before{content:"";position:absolute;left:5%;right:5%;top:4%;bottom:4%;border:2px solid rgba(255,255,255,.25);pointer-events:none}.match-manager-pitch:after{content:"";position:absolute;left:50%;top:4%;bottom:4%;border-left:2px solid rgba(255,255,255,.18);pointer-events:none}
+.match-manager-slot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:15.6%;padding:0;border:0;background:transparent;touch-action:none;user-select:none}.match-manager-slot .mini .card-shell{width:100%;filter:drop-shadow(0 7px 8px rgba(0,0,0,.4))}.match-manager-slot.forced{filter:drop-shadow(0 0 8px #ff647a)}.match-manager-slot.forced:after{content:"VERLETZT";position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);padding:2px 4px;border-radius:99px;background:#541a25;color:#ff9bad;font-size:4.5px;font-weight:1000;letter-spacing:.04em}
+.match-manager-bench-wrap{margin-top:9px}.match-manager-bench-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.match-manager-bench-title strong{font-size:9px}.match-manager-bench-title span{font-size:6px;color:#7f9189}
+.match-manager-bench{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.match-manager-bench button{width:100%;padding:0;border:0;background:transparent;touch-action:none;user-select:none}.match-manager-bench .mini .card-shell{width:100%}.match-manager-bench .emptyslot{font-size:4.5px;opacity:.55}
+.match-manager-used{margin-top:9px;padding:8px;border-radius:10px;border:1px solid #273a32;background:#0b1310}.match-manager-used:empty{display:none}.match-manager-used-title{font-size:7px;color:#899a92;margin-bottom:5px}.match-manager-used-list{display:flex;gap:5px;flex-wrap:wrap}.match-manager-used-player{padding:5px 7px;border-radius:99px;border:1px solid #3a4440;background:#151918;color:#8f9995;font-size:6px;text-decoration:line-through}.match-manager-used-player b{color:#b8c0bd;text-decoration:none}
+.match-manager-slot.drop-target,.match-manager-bench button.drop-target{outline:2px solid var(--lime);filter:drop-shadow(0 0 10px rgba(216,255,62,.6))}.match-manager-slot.invalid-target,.match-manager-bench button.invalid-target{outline:2px solid #ff647a}
+.match-manager-dragghost{position:fixed;z-index:9999;pointer-events:none;width:70px;transform:translate(-50%,-50%) scale(.95);opacity:.96;filter:drop-shadow(0 14px 28px rgba(0,0,0,.72))}.match-manager-dragghost .card-shell{width:70px}
+.match-manager-tip{margin:8px 0 0;padding:7px 8px;border-radius:9px;background:#101a16;border:1px solid #2b3d35;color:#8fa199;font-size:6.5px;line-height:1.45}.match-manager-tip b{color:#cfe7da}
+.manager-grid.match-settings{margin-top:10px}.manager-grid.match-settings label{font-size:7px}.manager-grid.match-settings select{min-height:46px;border-radius:11px}
+#confirmSubBtn{background:var(--lime);color:#07100c;border-color:var(--lime)}
+@media(max-width:560px){.match-manager-slot{width:16.2%}.match-manager-bench{gap:3px}.match-manager-pitch{aspect-ratio:.70}.manager-panel{padding:10px}}
+
 </style>
 </head>
 <body>
@@ -435,7 +453,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.30</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.31</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -636,16 +654,13 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
   <div id="managerPanel" class="manager-panel">
    <h3>Team-Management</h3>
-   <p>Die Simulation ist pausiert. Nimm eine Auswechslung vor oder ändere die Formation und setze das Spiel fort.</p>
-   <div class="manager-grid">
-    <label>Spieler raus
-     <select id="subOutSelect"></select>
-    </label>
-    <label>Spieler rein
-     <select id="subInSelect"></select>
-    </label>
-   </div>
-   <div class="manager-grid" style="margin-top:7px">
+   <p>Ziehe einen Ersatzspieler direkt auf die gewünschte Position. Innerhalb der Startelf kannst du Spieler ebenfalls per Drag & Drop verschieben.</p>
+   <div class="match-manager-head"><span id="matchManagerStatus">Aktuelle Aufstellung</span><strong id="matchSubsMeta">0/5 Wechsel</strong></div>
+   <div id="matchManagerPitch" class="match-manager-pitch"></div>
+   <div class="match-manager-bench-wrap"><div class="match-manager-bench-title"><strong>Ersatzbank</strong><span>Einwechseln: Karte auf Spielfeld ziehen</span></div><div id="matchManagerBench" class="match-manager-bench"></div></div>
+   <div id="matchUsedSubs" class="match-manager-used"></div>
+   <div class="match-manager-tip"><b>Wichtig:</b> Ausgewechselte Spieler verlassen den Matchkader für diese Partie und können nicht erneut eingewechselt werden. Auf die Torwartposition kann nur ein Torwart gezogen werden.</div>
+   <div class="manager-grid match-settings">
     <label>Formation
      <select id="matchFormationSelect">
       <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option>
@@ -660,8 +675,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </label>
    </div>
    <div class="match-controls">
-    <button id="confirmSubBtn" class="primary">Änderung übernehmen</button>
-    <button id="resumeMatchBtn" class="secondary">Ohne Wechsel weiterspielen</button>
+    <button id="confirmSubBtn" class="primary">Übernehmen & weiterspielen</button>
+    <button id="resumeMatchBtn" class="secondary">Abbrechen</button>
    </div>
   </div>
 
@@ -1618,7 +1633,7 @@ function startMatch(mode,opponent=null){
  match={
   mode,minute:0,home:0,away:0,power,opp,opponentProfile,opponentName:name,finished:false,paused:false,
   lineup:[...state.squad],formation:state.formation,tactic:"balanced",
-  subsUsed:0,shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
+  subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false
  };
  $("match").classList.add("active");
@@ -1728,55 +1743,62 @@ function simTick(){
  updateMatchUI();
  if(match.minute>=90)finishMatch()
 }
-function fillManagerSelectors(){
- if(!match)return;
- const starters=match.lineup.slice(0,11).map((uid,i)=>({uid,i,b:currentMatchBase(uid)})).filter(x=>x.uid&&x.b);
- const bench=match.lineup.slice(11,18).map((uid,k)=>({uid,i:11+k,b:currentMatchBase(uid)})).filter(x=>x.uid&&x.b);
- $("subOutSelect").innerHTML=starters.map(x=>`<option value="${x.i}" ${match.forcedOut===x.uid?"selected":""}>${esc(x.b.name)} · ${x.b.position} · ${currentMatchRating(x.uid)}</option>`).join("");
- $("subInSelect").innerHTML=bench.map(x=>`<option value="${x.i}">${esc(x.b.name)} · ${x.b.position} · ${currentMatchRating(x.uid)}</option>`).join("");
- $("matchFormationSelect").value=match.formation;
- $("matchTacticSelect").value=match.tactic
+function matchManagerSlotHTML(uid,i){
+ const form=FORMATIONS[match?.formation]||FORMATIONS["4-3-3"],slot=form[i],b=uid?currentMatchBase(uid):null,out=b&&posFit(b,slot.p)<=0,forced=uid&&match?.forcedOut===uid;
+ return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""}" data-match-slot="${i}" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${slot.p}</div>`}${out?'<div class="poswarn">!</div>':''}</button>`
 }
+function matchManagerBenchHTML(uid,i){const b=uid?currentMatchBase(uid):null,item=uid?state.club.find(x=>x.uid===uid):null;return `<button data-match-slot="${i}">${b?cardHTML(b,item,true,b.position):'<div class="emptyslot">FREI</div>'}</button>`}
+function renderMatchManager(){
+ if(!match)return;
+ const form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"];
+ $("matchManagerPitch").innerHTML=match.lineup.slice(0,11).map((uid,i)=>matchManagerSlotHTML(uid,i)).join("");
+ $("matchManagerBench").innerHTML=match.lineup.slice(11,18).map((uid,k)=>matchManagerBenchHTML(uid,11+k)).join("");
+ $("matchSubsMeta").textContent=`${match.subsUsed||0}/5 Wechsel`;
+ const forced=match.forcedOut?currentMatchBase(match.forcedOut):null;
+ $("matchManagerStatus").textContent=forced?`${forced.name} muss ersetzt werden`:`${match.formation} · ${$("matchTacticSelect").selectedOptions?.[0]?.textContent||"Ausgeglichen"}`;
+ const used=Array.isArray(match.subbedOut)?match.subbedOut:[];
+ $("matchUsedSubs").innerHTML=used.length?`<div class="match-manager-used-title">Bereits ausgewechselt · nicht mehr verfügbar</div><div class="match-manager-used-list">${used.map(uid=>{const b=currentMatchBase(uid);return b?`<span class="match-manager-used-player"><b>${currentMatchRating(uid)}</b> ${esc(b.name)}</span>`:""}).join("")}</div>`:"";
+ $("matchFormationSelect").value=match.formation;$("matchTacticSelect").value=match.tactic
+}
+function managerDropAllowed(from,to){
+ if(!match||from===to||from<0||to<0||from>=18||to>=18)return false;
+ if(from<11&&to>=11)return false;
+ if(from>=11&&to>=11)return !!match.lineup[from];
+ if(from>=11&&to<11){if(!match.lineup[from]||match.subsUsed>=5)return false;const target=(FORMATIONS[match.formation]||FORMATIONS["4-3-3"])[to]?.p,inB=currentMatchBase(match.lineup[from]);if(target==="GK"&&posFit(inB,"GK")<=0)return false;return true}
+ return from<11&&to<11&&!!match.lineup[from]
+}
+function applyMatchManagerDrop(from,to){
+ if(!match||!managerDropAllowed(from,to)){if(from>=11&&to<11&&match?.subsUsed>=5)toast("Maximal fünf Auswechslungen erreicht.");else if(from>=11&&to<11&&(FORMATIONS[match.formation]||FORMATIONS["4-3-3"])[to]?.p==="GK")toast("Auf die Torwartposition kann nur ein Torwart eingewechselt werden.");return false}
+ if(from<11&&to<11){const tmp=match.lineup[to];match.lineup[to]=match.lineup[from];match.lineup[from]=tmp;addLog("Positionswechsel innerhalb der Startelf.");renderMatchManager();return true}
+ if(from>=11&&to>=11){const tmp=match.lineup[to];match.lineup[to]=match.lineup[from];match.lineup[from]=tmp;renderMatchManager();return true}
+ const inUid=match.lineup[from],outUid=match.lineup[to],inB=currentMatchBase(inUid),outB=currentMatchBase(outUid);
+ match.lineup[to]=inUid;match.lineup[from]=null;match.subsUsed=(match.subsUsed||0)+1;if(!Array.isArray(match.subbedOut))match.subbedOut=[];if(outUid&&!match.subbedOut.includes(outUid))match.subbedOut.push(outUid);if(match.forcedOut===outUid)match.forcedOut=null;
+ addLog(`Wechsel: ${inB?.name||"Einwechselspieler"} kommt für ${outB?.name||"Spieler"}.`);renderMatchManager();return true
+}
+let matchManagerDrag=null;
+function clearMatchManagerDrag(){if(matchManagerDrag?.ghost)matchManagerDrag.ghost.remove();document.querySelectorAll("#managerPanel .drop-target,#managerPanel .invalid-target").forEach(x=>x.classList.remove("drop-target","invalid-target"));matchManagerDrag=null}
+function startMatchManagerDrag(e){
+ if(!match||!match.paused)return;const el=e.target.closest("#managerPanel [data-match-slot]");if(!el)return;const from=Number(el.dataset.matchSlot);if(!Number.isInteger(from)||!match.lineup[from])return;matchManagerDrag={from,startX:e.clientX,startY:e.clientY,active:false,ghost:null,target:null};
+}
+function moveMatchManagerDrag(e){
+ const d=matchManagerDrag;if(!d)return;const dist=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);if(!d.active&&dist<7)return;if(!d.active){d.active=true;const src=document.querySelector(`#managerPanel [data-match-slot="${d.from}"]`),g=document.createElement("div");g.className="match-manager-dragghost";g.innerHTML=src?.innerHTML||"";document.body.appendChild(g);d.ghost=g;document.body.style.userSelect="none"}
+ if(d.ghost){d.ghost.style.left=`${e.clientX}px`;d.ghost.style.top=`${e.clientY}px`}
+ document.querySelectorAll("#managerPanel .drop-target,#managerPanel .invalid-target").forEach(x=>x.classList.remove("drop-target","invalid-target"));const under=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#managerPanel [data-match-slot]");d.target=under?Number(under.dataset.matchSlot):null;if(under&&d.target!==d.from)under.classList.add(managerDropAllowed(d.from,d.target)?"drop-target":"invalid-target");if(d.active)e.preventDefault()
+}
+function endMatchManagerDrag(e){const d=matchManagerDrag;if(!d)return;const active=d.active,target=d.target;clearMatchManagerDrag();document.body.style.userSelect="";if(active&&Number.isInteger(target))applyMatchManagerDrop(d.from,target)}
+document.addEventListener("pointerdown",startMatchManagerDrag,{passive:true});document.addEventListener("pointermove",moveMatchManagerDrag,{passive:false});document.addEventListener("pointerup",endMatchManagerDrag,{passive:true});document.addEventListener("pointercancel",()=>{clearMatchManagerDrag();document.body.style.userSelect=""},{passive:true});
+function fillManagerSelectors(){renderMatchManager()}
 function pauseForManagement(reason="Team-Management geöffnet."){
- if(!match||match.finished)return;
- match.paused=true;
- stopMatchTimer();
- fillManagerSelectors();
- $("managerPanel").classList.add("active");
- $("eventBanner").textContent=reason;
- $("eventBanner").classList.add("active");
- setMatchPill(true)
+ if(!match||match.finished)return;match.paused=true;stopMatchTimer();renderMatchManager();$("managerPanel").classList.add("active");$("eventBanner").textContent=reason;$("eventBanner").classList.add("active");setMatchPill(true)
 }
 function resumeMatch(){
- if(!match||match.finished)return;
- match.paused=false;
- match.forcedOut=null;
- $("managerPanel").classList.remove("active");
- $("eventBanner").classList.remove("active");
- setMatchPill(false);
- startMatchTimer()
+ if(!match||match.finished)return;match.paused=false;match.forcedOut=null;$("managerPanel").classList.remove("active");$("eventBanner").classList.remove("active");setMatchPill(false);startMatchTimer()
 }
 $("manageTeamBtn").addEventListener("click",()=>pauseForManagement("Du hast die Simulation für Team-Management pausiert."));
 $("resumeMatchBtn").addEventListener("click",resumeMatch);
-
-$("confirmSubBtn").addEventListener("click",()=>{
- if(!match)return;
- const outIdx=Number($("subOutSelect").value),inIdx=Number($("subInSelect").value);
- match.formation=$("matchFormationSelect").value;
- match.tactic=$("matchTacticSelect").value;
-
- if(Number.isInteger(outIdx)&&Number.isInteger(inIdx)&&outIdx>=0&&outIdx<11&&inIdx>=11&&inIdx<18){
-  if(match.subsUsed>=5)return toast("Maximal fünf Auswechslungen erreicht.");
-  const outUid=match.lineup[outIdx],inUid=match.lineup[inIdx];
-  const outB=currentMatchBase(outUid),inB=currentMatchBase(inUid);
-  match.lineup[outIdx]=inUid;
-  match.lineup[inIdx]=outUid;
-  match.subsUsed++;
-  addLog(`Wechsel: ${inB?.name||"Einwechselspieler"} kommt für ${outB?.name||"Spieler"}.`);
- }
- addLog(`Formation: ${match.formation} · Taktik: ${$("matchTacticSelect").selectedOptions[0].textContent}.`);
- resumeMatch()
-});
+$("matchFormationSelect").addEventListener("change",()=>{if(!match)return;match.formation=$("matchFormationSelect").value;renderMatchManager()});
+$("matchTacticSelect").addEventListener("change",()=>{if(!match)return;match.tactic=$("matchTacticSelect").value;renderMatchManager()});
+$("confirmSubBtn").addEventListener("click",()=>{if(!match)return;match.formation=$("matchFormationSelect").value;match.tactic=$("matchTacticSelect").value;addLog(`Formation: ${match.formation} · Taktik: ${$("matchTacticSelect").selectedOptions[0].textContent}.`);resumeMatch()});
 
 $("matchSpeedBtn").addEventListener("click",()=>{
  if(matchSpeed===650){matchSpeed=300;$("matchSpeedBtn").textContent="Tempo: Schnell"}
