@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.37</title>
+<title>Gerlies FUT V18.38</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.37 bench visibility + transfer market full-card view */
+/* V18.38 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -465,7 +465,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.37 pack tiers: instant / board / walkout / special / double walkout */
+/* V18.38 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
 .opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
@@ -491,6 +491,48 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .opening.mode-double .walkout-title{color:#dcff45;font-size:10px}
 .opening.mode-special .walkout-title{color:#8fffe9}
 @media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
+
+
+/* V18.38 — 7-player bench, evolution layout fix, market name suggestions */
+.bench{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  grid-auto-columns:auto!important;
+  gap:4px!important;
+  overflow:hidden!important;
+  scroll-snap-type:none!important;
+  padding:0 0 4px!important;
+}
+.benchslot{min-width:0!important;scroll-snap-align:none!important}
+.benchslot .mini .card-shell{width:100%!important}
+.evo-stage-card{width:100%;max-width:150px;margin:0 auto}
+.evo-stage-card .card-shell{width:100%!important;max-width:150px!important}
+.evo-stage-upgrades{position:relative;z-index:2}
+.market-name-wrap{position:relative}
+.market-name-suggestions{display:none;position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:80;max-height:290px;overflow:auto;border:1px solid #3a4a44;border-radius:12px;background:#0b1210;box-shadow:0 18px 34px rgba(0,0,0,.48);padding:5px}
+.market-name-suggestions.open{display:grid;gap:4px}
+.market-name-suggestion{width:100%;display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 9px;border:1px solid transparent;border-radius:9px;background:#101916;color:#fff;text-align:left}
+.market-name-suggestion:hover,.market-name-suggestion:focus-visible{border-color:#53685f;background:#15211d;outline:none}
+.market-name-suggestion .rating{font-size:17px;font-weight:1000;color:#d8ff3e;text-align:center}
+.market-name-suggestion strong{display:block;font-size:9px}.market-name-suggestion small{display:block;margin-top:2px;color:#87958f;font-size:6.5px}
+.market-name-suggestion .pos{font-size:7px;font-weight:1000;color:#aebcb6}
+@media(max-width:650px){
+  .evo-stage{grid-template-columns:108px minmax(0,1fr)!important;column-gap:12px!important;row-gap:6px}
+  .evo-stage-card{width:104px!important;max-width:104px!important;margin:0!important}
+  .evo-stage-card .card-shell{width:104px!important;max-width:104px!important}
+  .evo-stage-upgrades{margin-top:0!important;padding:2px 0 0!important;font-size:6.4px!important;line-height:1.5!important}
+  .evo-stage .progress,.evo-stage small{grid-column:2!important}
+}
+@media(max-width:560px){
+  .bench{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:3px!important}
+  .bench .mini .custom-card .pname{font-size:4.8px!important}
+  .bench .mini .custom-card .ovr{font-size:15px!important}
+  .bench .mini .custom-card .pos{font-size:5px!important}
+  .bench .mini .card-flag-img{width:9px!important;height:6px!important}
+  .bench .mini .card-league,.bench .mini .card-club{width:8px!important;height:8px!important}
+  .market-name-suggestions{max-height:250px}
+}
 
 </style>
 </head>
@@ -539,7 +581,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.37</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.38</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -635,7 +677,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="marketView" class="view"><div class="headline"><h2>Transfermarkt</h2><p>Suche gezielt nach Spielern, Vereinen, Ligen, Nationen, Rating, Qualität und Preis.</p></div><div class="section"><div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
   <div class="market-filter-panel">
     <div class="market-filter-grid">
-      <div class="market-field full"><label>Spielername</label><input id="marketName" type="search" placeholder="z. B. Nkunku, Musiala, Haaland …" autocomplete="off"></div>
+      <div class="market-field full market-name-field"><label>Spielername</label><div class="market-name-wrap"><input id="marketName" type="search" placeholder="z. B. Bellingham, Bell, Musiala …" autocomplete="off"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div></div>
       <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
       <div class="market-field"><label>Verein</label><select id="marketClub"><option value="">Alle Vereine</option></select></div>
       <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
@@ -1675,7 +1717,21 @@ function specialVariant(type=""){const events=["Eventkarte","Road to Glory","Bir
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity=$("marketQuality").value==="special"||$("marketSpecialType").value?"1":".5"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value;const source=PLAYERS.filter(p=>!league||p.league===league);const clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
-function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else if(filters.quality==="special"||(!filters.quality&&filters.specialType)){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}else if(!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}const r=Math.min(99,base.ovr+boost),special=variant==="special",price=marketPriceForRating(r,special,base),start=Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else if(filters.quality==="special"||(!filters.quality&&filters.specialType)){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}else if(!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}const r=Math.min(99,base.ovr+boost),special=variant==="special";let price=marketPriceForRating(r,special,base);if(isFelixNmecha(base)&&r>=85)price=Math.max(price,special?190000:120000);price=marketRoundPrice(price);const start=Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+function marketNameSuggestionPlayers(query){
+ const q=normalizeKey(query);
+ if(q.length<2)return[];
+ const seen=new Set();
+ return PLAYERS.filter(p=>normalizeKey(p.name).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||String(a.name).localeCompare(String(b.name),"de")).filter(p=>{const k=normalizeKey(p.name)+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,12)
+}
+function hideMarketNameSuggestions(){const box=$("marketNameSuggestions");if(box)box.classList.remove("open")}
+function renderMarketNameSuggestions(){
+ const box=$("marketNameSuggestions"),input=$("marketName");if(!box||!input)return;
+ const rows=marketNameSuggestionPlayers(input.value);
+ if(!rows.length){box.innerHTML="";box.classList.remove("open");return}
+ box.innerHTML=rows.map(p=>`<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`).join("");
+ box.classList.add("open")
+}
 function refreshMarket(){
  const f=marketFilters();
  let pool=PLAYERS.filter(p=>(!f.name||normalizeKey(p.name).includes(f.name))&&(!f.league||p.league===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
@@ -1706,7 +1762,12 @@ function openMarketPlayerDetails(i){
 function buyMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled||state.coins<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}state.coins-=x.price;state.club.push(listingToClubItem(x));state.stats.market++;x.settled=true;x.won=true;save();renderAll();renderMarket();toast(`${x.base.name} gekauft.`);return true}
 function bidMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled)return false;const inc=Math.max(50,Math.round(x.bid*.05/50)*50),newBid=x.bid+inc;if(state.coins<newBid){toast("Nicht genügend Coins.");return false}if(x.myBid)state.coins+=x.myBid;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;if(Math.random()<.38)x.bid+=Math.max(50,Math.round(x.bid*.04/50)*50);save();renderWallet();renderMarket();toast(`Gebot abgegeben: ${fmt(newBid)} Coins`);return true}
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
-$("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{if($("marketSpecialType").value)$("marketQuality").value="special";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
+$("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{if($("marketSpecialType").value)$("marketQuality").value="special";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
+$("marketName").addEventListener("focus",renderMarketNameSuggestions);
+$("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
+$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=p.name;hideMarketNameSuggestions();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
+document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
+$("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
 $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}})
 $("transferWatchList").addEventListener("click",e=>{const o=e.target.closest("[data-watch-open]"),r=e.target.closest("[data-watch-remove]");if(o){const i=state.club.find(x=>x.uid===o.dataset.watchOpen);if(i)openPlayerDetails(i,null);return}if(r){state.transferList=(state.transferList||[]).filter(x=>x!==r.dataset.watchRemove);save();renderTransferWatch();toast("Von Transferliste entfernt.")}})
 function updateMarketCountdowns(){
