@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.48</title>
+<title>Gerlies FUT V18.49</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -852,6 +852,23 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .rare-mark{top:6px!important}
 .mini .rare-mark,.squad-drawer .mini .rare-mark{top:1px!important}
 
+
+
+/* V18.49 — explicit club/league identity in player details & biography */
+.affiliation-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}
+.affiliation-card{min-width:0;display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #2c3c42;border-radius:11px;background:#0d1518}
+.affiliation-logo{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:#ffffff08}
+.affiliation-logo .badge-img{width:26px!important;height:26px!important;object-fit:contain!important}
+.affiliation-empty{color:#6e7b80;font-size:16px;font-weight:900}
+.affiliation-card>div:last-child{min-width:0}
+.affiliation-card span{display:block;color:#738087;font-size:6px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.affiliation-card strong{display:block;margin-top:2px;color:#f2f7f5;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.affiliation-grid.compact{margin:8px 0 10px}
+.affiliation-grid.compact .affiliation-card{padding:7px 8px}
+.affiliation-grid.compact .affiliation-logo{flex-basis:27px;width:27px;height:27px}
+.affiliation-grid.compact .affiliation-logo .badge-img{width:22px!important;height:22px!important}
+@media(max-width:560px){.affiliation-card strong{font-size:7.5px}.affiliation-logo{flex-basis:28px;width:28px;height:28px}.affiliation-logo .badge-img{width:23px!important;height:23px!important}}
+
 </style>
 </head>
 <body>
@@ -899,7 +916,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.48</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.49</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1310,7 +1327,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1848",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1849",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1601,6 +1618,31 @@ function statTemplate(pos){const t={GK:[45,20,45,48,18,44],CB:[60,45,58,62,79,77
 function statValue(p,key){const n=Number(p?.[key]||0);if(n>0)return n;const keys=['pac','sho','pas','dri','def','phy'],i=keys.indexOf(key),base=statTemplate(String(p?.position||'CM').toUpperCase())[i]||60,ovr=Number(p?.ovr||70),adj=Math.round((ovr-75)*0.8);return Math.max(25,Math.min(99,base+adj))}
 function resolvedPlayer(p){if(!p)return p;return {...p,nation:nationLabel(p.nation),pac:statValue(p,'pac'),sho:statValue(p,'sho'),pas:statValue(p,'pas'),dri:statValue(p,'dri'),def:statValue(p,'def'),phy:statValue(p,'phy')}}
 function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div></div>`}
+function playerClubLabel(p){return String(p?.team||"").trim()||"Vereinslos"}
+function playerLeagueLabel(p){
+ const league=String(p?.league||"").trim();
+ if(league)return league;
+ return String(p?.team||"").trim()?"Liga wird ermittelt":"Keine Liga"
+}
+function playerContextLine(p){return `${playerClubLabel(p)} · ${playerLeagueLabel(p)} · ${nationLabel(p?.nation)}`}
+function playerAffiliationHTML(p,compact=false){
+ const hasClub=!!String(p?.team||"").trim(),hasLeague=!!String(p?.league||"").trim();
+ return `<div class="affiliation-grid ${compact?"compact":""}">
+  <div class="affiliation-card">
+   <div class="affiliation-logo">${hasClub?badgeAsset("club",p,clubShort(p.team)):'<span class="affiliation-empty">—</span>'}</div>
+   <div><span>Verein</span><strong>${esc(playerClubLabel(p))}</strong></div>
+  </div>
+  <div class="affiliation-card">
+   <div class="affiliation-logo">${hasLeague?badgeAsset("league",p,leagueShort(p.league)):'<span class="affiliation-empty">—</span>'}</div>
+   <div><span>Liga</span><strong>${esc(playerLeagueLabel(p))}</strong></div>
+  </div>
+ </div>`
+}
+function ensurePlayerAffiliationAssets(p){
+ if(!p)return;
+ if(p.team)queueBadgeDiscovery("club",p.team,p.league,true);
+ if(p.league)queueBadgeDiscovery("league",p.league,"",true)
+}
 function inlineMetaHTML(p){return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
 const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV2")||"{}")))}catch(e){return new Map()}})();
 const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV2")||"{}")))}catch(e){return new Map()}})();
@@ -1799,8 +1841,8 @@ async function discoverFootballBadge(kind,name,leagueHint=""){
 function queueBadgeDiscovery(kind,name,leagueHint="",priority=false){
  const clean=String(name||"").trim();if(!clean)return;
  const key=badgeDiscoveryKey(kind,clean),old=BADGE_DISCOVERY_CACHE[key],age=Date.now()-Number(old?.ts||0);
- const recentMiss=old?.miss&&age<6*60*60*1000;
- const recentNoLogo=old?.qid&&!old?.url&&age<12*60*60*1000;
+ const recentMiss=old?.miss&&age<5*60*1000;
+ const recentNoLogo=old?.qid&&!old?.url&&age<15*60*1000;
  if(old?.url||recentMiss||recentNoLogo||BADGE_DISCOVERY_PENDING.has(key))return;
  BADGE_DISCOVERY_PENDING.add(key);
  const job={kind,name:clean,key,leagueHint:String(leagueHint||"").trim()};
@@ -1812,7 +1854,7 @@ function scheduleBadgeRerender(){
  BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{renderSquad();renderClub();if(currentViewId?.()==="marketView")renderMarket()}catch(e){}},220)
 }
 function pumpBadgeDiscovery(){
- while(BADGE_DISCOVERY_ACTIVE<2&&BADGE_DISCOVERY_QUEUE.length){
+ while(BADGE_DISCOVERY_ACTIVE<3&&BADGE_DISCOVERY_QUEUE.length){
   const job=BADGE_DISCOVERY_QUEUE.shift();BADGE_DISCOVERY_ACTIVE++;
   (async()=>{
    try{
@@ -1906,7 +1948,14 @@ function workRates(p){const pos=String(p?.position||"");if(["ST","LW","RW","CAM"
 function stars(n){return "★".repeat(Math.max(0,n))+"☆".repeat(Math.max(0,5-n))}
 function isOnTransferList(uid){return (state.transferList||[]).includes(uid)}
 function toggleTransferList(uid){state.transferList=state.transferList||[];if(isOnTransferList(uid))state.transferList=state.transferList.filter(x=>x!==uid);else state.transferList.push(uid);save()}
-function openBiography(item,index){if(!item)return;const base=displayBase(item),b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";$("bioDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;$("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(b.name)}</h2><p>${esc(b.team)} · ${esc(b.league)}</p><div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div><div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b.position))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;showUiLayer("bioModal","bio")}
+function openBiography(item,index){
+ if(!item)return;
+ const base=displayBase(item),b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";
+ ensurePlayerAffiliationAssets(b);
+ $("bioDetailSub").textContent=playerContextLine(b);
+ $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(b.name)}</h2><p>${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div><div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b.position))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;
+ showUiLayer("bioModal","bio")
+}
 function cardHTML(p,item=null,mini=false,shownPosition=null){
  if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
  const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
@@ -2140,7 +2189,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();setTimeout(enrichVisibleSquadAssets,180);setTimeout(()=>{enrichEaAssetsInBackground()},700)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,1400)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}}
@@ -2219,7 +2268,7 @@ function renderSquad(){
  $("reserveDrawerCount").textContent=`${m.reserveFilled}/5`;
  syncSquadDrawer();
  if(m.filled===18)state.stats.full=1;
- renderRoles(m.items);save()
+ renderRoles(m.items);save();setTimeout(prioritizeVisibleSquadBadges,20)
 }
 function renderRoles(items){
  const form=currentFormation();
@@ -2264,12 +2313,16 @@ function openSlotPickerForItem(itemUid){
 }
 function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
-function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline">${esc(b.team)} · ${esc(b.league)} · ${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</div><div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionRoleLabel(shown).replace('+',''))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`}
+function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){
+ b=resolvedPlayer(b);ensurePlayerAffiliationAssets(b);
+ const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");
+ return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionRoleLabel(shown).replace('+',''))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
+}
 
-function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null,fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;$ ("playerDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
+function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null,fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;$ ("playerDetailSub").textContent=playerContextLine(b);const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
 function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
-function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${esc(b.team)} · ${esc(b.league)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
+function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
 let suppressSquadClick=false;
 function squadClick(e){const button=e.target.closest("[data-slot]");if(!button)return;if(suppressSquadClick){suppressSquadClick=false;return}const i=Number(button.dataset.slot);if(!Number.isInteger(i))return;const item=squadItems()[i];if(item)openPlayerDetails(item,i);else openPicker(i)}
 $("pitch").addEventListener("click",squadClick);
@@ -3342,7 +3395,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1848",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1849",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
  });
 }
