@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.28</title>
+<title>Gerlies FUT V18.29</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -342,6 +342,27 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
 
+
+/* V18.29 portrait sizing, club full cards, collapsible roles */
+.custom-card .pos{transform:translateY(-2px)}
+.custom-card .face{left:33px!important;right:2px!important;top:31px!important;height:128px!important}
+.custom-card .face img{width:106%!important;height:106%!important;object-fit:contain!important;object-position:center bottom!important;transform:translateX(-2%) scale(1.03)!important}
+.pitch .slot .mini .custom-card .pos,.friend-pitch .friend-slot .mini .custom-card .pos{transform:translateY(-2px)!important}
+.pitch .slot .mini .custom-card .face,.friend-pitch .friend-slot .mini .custom-card .face{left:34%!important;right:2%!important;top:21%!important;height:43%!important}
+.pitch .slot .mini .custom-card .face img,.friend-pitch .friend-slot .mini .custom-card .face img{width:108%!important;height:112%!important;object-position:center top!important;transform:translate(-3%,-2%) scale(1.06)!important}
+.club-card-preview{min-height:228px;padding:8px 4px 2px}
+.club-card-preview>div{display:flex;justify-content:center;width:100%}
+.club-card-preview .card-shell{width:min(150px,94%)!important;filter:drop-shadow(0 12px 16px rgba(0,0,0,.36))}
+.club-card-preview .custom-card .stats{display:grid!important}
+.club-card-preview .custom-card .meta{display:block!important}
+.club-card-preview .custom-card .face{left:33px!important;right:2px!important;top:31px!important;height:128px!important}
+.club-card-preview .custom-card .face img{width:106%!important;height:106%!important;transform:translateX(-2%) scale(1.03)!important}
+.role-panel{overflow:hidden;transition:max-height .22s ease,padding .22s ease}
+.role-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.role-panel-head h3{margin:0;font-size:12px}.role-toggle{min-width:92px;min-height:34px;padding:6px 10px;border-radius:10px;border:1px solid #34423d;background:#15201c;color:#dce6e1;font-size:8px;font-weight:900}
+.role-panel.collapsed{padding-bottom:10px}.role-panel.collapsed>p,.role-panel.collapsed .role-list{display:none}.role-panel.collapsed .role-panel-head{margin-bottom:0}
+@media(max-width:560px){.club-card-preview{min-height:212px}.club-card-preview .card-shell{width:min(142px,96%)!important}}
+
 </style>
 </head>
 <body>
@@ -393,7 +414,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.28</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.29</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -466,7 +487,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
   <div id="pitch" class="pitch"></div><div id="bench" class="bench"></div>
-  <div class="role-panel"><h3>Rollen & Fokus</h3><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
+  <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
 <section id="playView" class="view"><div class="headline"><h2>Spielen</h2><p>Wähle den Spielmodus. Für alle Modi brauchst du eine komplette Startelf und Bank.</p></div><div class="section"><div class="modegrid">
@@ -1236,6 +1257,7 @@ function renderRoles(items){
  $("roleList").innerHTML=items.slice(0,11).map((it,i)=>{const b=it?displayBase(it):null,slot=form[i].p,roles=ROLE_OPTIONS[slot]||["Balanced"],current=state.roles[i]&&roles.includes(state.roles[i])?state.roles[i]:roles[0],focus=state.focus[i]||"Balanced";state.roles[i]=current;state.focus[i]=focus;return `<div class="role-row"><div class="role-player">${slot} · ${b?esc(b.name):"Leer"}</div><select data-role-slot="${i}" ${b?"":"disabled"}>${roles.map(r=>`<option value="${esc(r)}" ${r===current?"selected":""}>${roleLabel(r)}</option>`).join("")}</select><select data-focus-slot="${i}" ${b?"":"disabled"}>${FOCUS_OPTIONS.map(f=>`<option value="${esc(f)}" ${f===focus?"selected":""}>${focusLabel(f)}</option>`).join("")}</select></div>`}).join("")
 }
 $("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
+$("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
 function openPicker(i){
  pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:"BANK",used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
  $("pickerTitle").textContent=i<11?`${slot} besetzen`:`Bank ${i-10}`;$("pickerSub").textContent="Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.";
@@ -1419,7 +1441,7 @@ function renderClub(){
  const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value;
  let arr=state.club.filter(i=>{const b=displayBase(i);if(!b)return false;const positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))});
  arr.sort((a,b)=>sort==="new"?(b.acquired||0)-(a.acquired||0):itemRating(b)-itemRating(a));
- $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,true)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-select="${i.uid}">Für Evolution prüfen</button></div></div>`}).join("");
+ $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-select="${i.uid}">Für Evolution prüfen</button></div></div>`}).join("");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
 $("clubPosition").addEventListener("change",renderClub);$("clubRarity").addEventListener("change",renderClub);$("clubSort").addEventListener("change",renderClub);
