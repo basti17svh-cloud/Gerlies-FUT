@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.42</title>
+<title>Gerlies FUT V18.43</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -784,7 +784,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.42</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.43</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1323,11 +1323,20 @@ function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(ite
 function displayBase(item){const b=itemBase(item);if(!b)return null;let out={...b,ovr:itemRating(item),position:item?.overridePosition||b.position};const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
 function makeItem(base,tradeable=false,opts={}){return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare:!!opts.rare}}
 function portraitFallback(p){return""}
-const COUNTRY_CODES={germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR",ghana:"GH","ivory coast":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA","bosnia":"BA","czech republic":"CZ","republic of ireland":"IE","north macedonia":"MK"};
+const COUNTRY_CODES={
+germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",turkiye:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US","united states of america":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR","korea republic":"KR",ghana:"GH","ivory coast":"CI","cote d ivoire":"CI","cote divoire":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA",bosnia:"BA","czech republic":"CZ",czechia:"CZ","republic of ireland":"IE",ireland:"IE","north macedonia":"MK",
+"burkina faso":"BF",albania:"AL",algeria:"DZ",andorra:"AD",angola:"AO",armenia:"AM",azerbaijan:"AZ",bahrain:"BH",belarus:"BY",benin:"BJ",bolivia:"BO",botswana:"BW",bulgaria:"BG",burundi:"BI","cape verde":"CV","cabo verde":"CV","central african republic":"CF",chad:"TD",chile:"CL",china:"CN","china pr":"CN","chinese pr":"CN","costa rica":"CR",cuba:"CU",curacao:"CW",cyprus:"CY","democratic republic of congo":"CD","dr congo":"CD","congo dr":"CD",congo:"CG",ecuador:"EC","el salvador":"SV","equatorial guinea":"GQ",eritrea:"ER",estonia:"EE",eswatini:"SZ",ethiopia:"ET","faroe islands":"FO",fiji:"FJ",finland:"FI",gabon:"GA",gambia:"GM",georgia:"GE",greece:"GR",guatemala:"GT",guinea:"GN","guinea bissau":"GW","guinea-bissau":"GW",guyana:"GY",haiti:"HT",honduras:"HN","hong kong":"HK",hungary:"HU",iceland:"IS",india:"IN",indonesia:"ID",iran:"IR",iraq:"IQ",israel:"IL",jamaica:"JM",jordan:"JO",kazakhstan:"KZ",kenya:"KE",kosovo:"XK",kuwait:"KW",kyrgyzstan:"KG",latvia:"LV",lebanon:"LB",lesotho:"LS",liberia:"LR",libya:"LY",liechtenstein:"LI",lithuania:"LT",luxembourg:"LU",madagascar:"MG",malawi:"MW",malaysia:"MY",mali:"ML",malta:"MT",mauritania:"MR",mauritius:"MU",moldova:"MD",monaco:"MC",montenegro:"ME",mozambique:"MZ",namibia:"NA",nepal:"NP","new zealand":"NZ",nicaragua:"NI",niger:"NE","north korea":"KP","korea dpr":"KP","northern ireland":"GB",oman:"OM",pakistan:"PK",palestine:"PS",panama:"PA",paraguay:"PY",peru:"PE",philippines:"PH","puerto rico":"PR",qatar:"QA",romania:"RO",russia:"RU",rwanda:"RW","saudi arabia":"SA","san marino":"SM",scotland:"GB",seychelles:"SC","sierra leone":"SL",singapore:"SG",slovakia:"SK",slovenia:"SI","south africa":"ZA","south sudan":"SS","sri lanka":"LK",sudan:"SD",suriname:"SR",syria:"SY",tajikistan:"TJ",tanzania:"TZ",thailand:"TH",togo:"TG","trinidad and tobago":"TT",tunisia:"TN",turkmenistan:"TM",uganda:"UG",ukraine:"UA","united arab emirates":"AE",uae:"AE",uzbekistan:"UZ",venezuela:"VE",vietnam:"VN",wales:"GB",yemen:"YE",zambia:"ZM",zimbabwe:"ZW"
+};
 const COUNTRY_NAMES={DE:"Germany",FR:"France",GB:"England",ES:"Spain",IT:"Italy",BR:"Brazil",AR:"Argentina",NL:"Netherlands",BE:"Belgium",PT:"Portugal",NO:"Norway",SE:"Sweden",DK:"Denmark",PL:"Poland",HR:"Croatia",RS:"Serbia",CH:"Switzerland",AT:"Austria",TR:"Turkey",MA:"Morocco",NG:"Nigeria",CM:"Cameroon",SN:"Senegal",US:"United States",MX:"Mexico",UY:"Uruguay",CO:"Colombia",JP:"Japan",KR:"South Korea",GH:"Ghana",CI:"Ivory Coast",EG:"Egypt",BA:"Bosnia and Herzegovina",CZ:"Czech Republic",IE:"Republic of Ireland",MK:"North Macedonia"};
 function countryCode(name){const str=String(name||"").trim();if(/^[A-Z]{2}$/.test(str))return str;const key=normalizeKey(str);return COUNTRY_CODES[key]||String(str).slice(0,2).toUpperCase()}
 function nationLabel(name){const code=countryCode(name);return COUNTRY_NAMES[code]||String(name||code||"")}
-function flagEmoji(name){const code=countryCode(name);return /^[A-Z]{2}$/.test(code)?String.fromCodePoint(...[...code].map(c=>127397+c.charCodeAt(0))):"🏳️"}
+function flagEmoji(name){
+ const key=normalizeKey(name);
+ const footballFlags={england:"🏴",scotland:"🏴",wales:"🏴","northern ireland":"🏴"};
+ if(footballFlags[key])return footballFlags[key];
+ const code=countryCode(name);
+ return /^[A-Z]{2}$/.test(code)?String.fromCodePoint(...[...code].map(c=>127397+c.charCodeAt(0))):"🏳️"
+}
 function hashNum(v){let h=0;for(const c of String(v||""))h=((h<<5)-h+c.charCodeAt(0))|0;return Math.abs(h)}
 function leagueShort(league){const m={"Bundesliga":"BL","Premier League":"PL","LALIGA EA SPORTS":"LL","LaLiga":"LL","Serie A":"SA","Ligue 1":"L1"};return m[league]||String(league||"LG").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase()}
 function leagueBadgeStyle(league){const n=normalizeKey(league);if(n==='bundesliga')return 'background:linear-gradient(145deg,#ea2a2a,#941414)';if(n==='premier league')return 'background:linear-gradient(145deg,#7426ff,#2a1555)';if(n.includes('laliga'))return 'background:linear-gradient(145deg,#ff6a2a,#8b143d)';if(n==='serie a')return 'background:linear-gradient(145deg,#1473ff,#082f73)';if(n==='ligue 1')return 'background:linear-gradient(145deg,#08242b,#13b8d9)';return `background:linear-gradient(145deg,hsl(${(hashNum(league)%360)} 70% 44%),hsl(${(hashNum(league)+48)%360} 70% 24%))`}
