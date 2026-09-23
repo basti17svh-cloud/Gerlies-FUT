@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.58</title>
+<title>Gerlies FUT V18.59</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -886,6 +886,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .affiliation-card{min-width:0;display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #2c3c42;border-radius:11px;background:#0d1518}
 .affiliation-logo{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:#ffffff08}
 .affiliation-logo .badge-img{width:26px!important;height:26px!important;object-fit:contain!important}
+.affiliation-logo .asset-fallback{width:26px;height:26px;display:grid;place-items:center;font-size:7px;font-weight:1000;line-height:1;color:#f6faf8;text-shadow:0 1px 2px #0008;border:1px solid rgba(255,255,255,.22);box-shadow:0 1px 4px #0005}
+.affiliation-logo .club-badge-fallback{clip-path:polygon(50% 0,92% 18%,92% 70%,50% 100%,8% 70%,8% 18%);background:linear-gradient(145deg,#1f342c,#0d1713);border-color:rgba(126,255,196,.32)}
+.affiliation-logo .league-badge-fallback{border-radius:50%;background:linear-gradient(145deg,#284d65,#102633);border-color:rgba(160,220,255,.35)}
 .affiliation-empty{color:#6e7b80;font-size:16px;font-weight:900}
 .affiliation-card>div:last-child{min-width:0}
 .affiliation-card span{display:block;color:#738087;font-size:6px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
@@ -943,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.58</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.59</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1462,8 +1465,8 @@ function normCSV(raw){
  const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url"));
  const team=String(first(raw,"club_name","team_name","club","team")).trim();
- const rawLeague=String(first(raw,"league_name","league")).trim();
- return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
+ const rawLeague=String(first(raw,"league_name","league")).trim(),leagueId=String(first(raw,"league_id","competition_id"));
+ return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function eaObject(raw,key){
@@ -1730,7 +1733,7 @@ function statValue(p,key){const n=Number(p?.[key]||0);if(n>0)return n;const keys
 function resolvedAffiliation(p){
  if(!p)return p;
  const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
- const linkedLeague=String(linked.name||"").trim(),sourceLeague=String(p.league||"").trim(),league=leagueFromClub(team,sourceLeague)||sourceLeague||linkedLeague;
+ const linkedLeague=String(linked.name||"").trim(),sourceLeague=String(p.league||"").trim(),league=leagueFromClub(team,sourceLeague,p.leagueId)||sourceLeague||linkedLeague;
  return {...p,league,clubLogo:String(p.clubLogo||"").trim()||apiSportsTeamLogo(team)||discoveredBadge("club",team),leagueLogo:String(p.leagueLogo||"").trim()||apiSportsLeagueLogo(league)||String(linked.url||"").trim()||discoveredBadge("league",league)}
 }
 function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
@@ -1782,9 +1785,9 @@ function ensurePlayerAffiliationAssets(p){
  ensureEaPlayerAssets(p)
 }
 function inlineMetaHTML(p){return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
-const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV3")||"{}")))}catch(e){return new Map()}})();
-const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV3")||"{}")))}catch(e){return new Map()}})();
-function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV3",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV3",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
+const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV4")||"{}")))}catch(e){return new Map()}})();
+const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV4")||"{}")))}catch(e){return new Map()}})();
+function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV4",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV4",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
 function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit)return arr;return [hit,...arr.filter(x=>x!==hit)]}
@@ -1843,7 +1846,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1857";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1859";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -1882,6 +1885,13 @@ function commonsFileUrl(filename){
  const f=String(filename||"").trim();
  return f?`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}?width=180`:""
 }
+function plausibleBadgeFile(filename,kind){
+ const f=String(filename||"").trim(),n=normalizeKey(f.split(/[\\/]/).pop()||"");
+ if(!f||!/\.(?:svg|png|webp|jpe?g|gif)$/i.test(f))return false;
+ if(/(?:sjaal|scarf|shawl|jersey|shirt|kit|uniform|stadium|arena|fan|supporter|flag|banner|poster|ticket|mascot|tifo|matchday|footballer|player)/.test(n))return false;
+ return kind==="club"||kind==="league"
+}
+
 function footballEntityScore(result,kind,name){
  const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
  const signature=value=>kind==="club"?clubIdentityKey(value).replace(/\b(?:18|19|20)\d{2}\b/g,"").trim():normalizeKey(value);
@@ -2024,7 +2034,7 @@ async function discoverFootballBadge(kind,name,leagueHint=""){
  const search=await wikidataFindFootballEntity(name,kind);
  if(!search?.id)return null;
  const entity=await wikidataEntity(search.id);if(!entity)return null;
- const file=wikidataClaimFile(entity,"P154")||wikidataClaimFile(entity,"P94");
+ const file=[wikidataClaimFile(entity,"P154"),wikidataClaimFile(entity,"P94")].find(candidate=>plausibleBadgeFile(candidate,kind))||"";
  const row={name:String(name||""),qid:search.id,url:commonsFileUrl(file),ts:Date.now()};
  if(kind==="club"){
   const leagueQid=wikidataClaimId(entity,"P118");
@@ -2033,7 +2043,7 @@ async function discoverFootballBadge(kind,name,leagueHint=""){
   if(!leagueName&&leagueHint)leagueName=String(leagueHint).trim();
   row.leagueName=leagueName;
   if(leagueEntity){
-   const leagueFile=wikidataClaimFile(leagueEntity,"P154")||wikidataClaimFile(leagueEntity,"P94");
+   const leagueFile=[wikidataClaimFile(leagueEntity,"P154"),wikidataClaimFile(leagueEntity,"P94")].find(candidate=>plausibleBadgeFile(candidate,"league"))||"";
    row.leagueUrl=commonsFileUrl(leagueFile)
   }
   if(row.leagueName){
@@ -2137,8 +2147,9 @@ function advanceImg(el){try{const failed=String(el?.currentSrc||el?.src||'');if(
 function portraitHTML(p){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback">👤</span>`}
 function badgeAsset(kind,p,fallbackText){
  const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);
- if(!arr.length)return '<span class="asset-fallback" style="display:none"></span>';
- return `<img class="badge-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none"></span>`
+ const fallbackClass=kind==="league"?"league-badge-fallback":"club-badge-fallback",fallbackTextHtml=esc(fallbackText||"");
+ if(!arr.length)return '<span class="asset-fallback '+fallbackClass+'">'+fallbackTextHtml+'</span>';
+ return '<img class="badge-img" src="'+esc(arr[0])+'" data-cache-key="'+esc(key)+'" data-candidates="'+imgCandidatesAttr(arr)+'" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback '+fallbackClass+'" style="display:none">'+fallbackTextHtml+'</span>'
 }
 function flagAsset(p){const key=imageCacheKey('flag',p),arr=prioritizeCached(emblemCandidates('flag',p),key);if(!arr.length)return `<span>${flagEmoji(p.nation)}</span>`;return `<img class="card-flag-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${flagEmoji(p.nation)}</span>`}
 function officialCardCandidates(p){const id=String(p?.id||"").replace(/[^0-9]/g,"");const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(p?.card&&/\/FC27\//i.test(p.card))add(p.card);if(!id)return arr;add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_de.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_en.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/full/player-shields/en/${id}.png?width=512`);return arr}
@@ -2282,8 +2293,43 @@ const TOP5_CLUB_LEAGUES={
   ["ESTAC Troyes","Troyes"]
  ]
 };
-function leagueFromClub(team,rawLeague=""){
+/* V18.59 — resolve EA competition IDs before unreliable display labels and keep unverified crest fallbacks explicit. */
+const EA_LEAGUE_NAME_BY_ID={
+ "1":"Danish Superliga","4":"1A Pro League","7":"Liga do Brasil","10":"Eredivisie",
+ "13":"Premier League","14":"EFL Championship","16":"Ligue 1","17":"Ligue 2",
+ "19":"Bundesliga","20":"2. Bundesliga","31":"Serie A","32":"Serie B",
+ "39":"Major League Soccer","41":"Eliteserien","50":"Scottish Premiership",
+ "53":"LALIGA EA SPORTS","54":"LaLiga 2","56":"Allsvenskan","57":"Colombia Apertura",
+ "58":"Colombia Clausura","60":"EFL League One","61":"EFL League Two","63":"Hellas Liga",
+ "65":"SSE Airtricity League","66":"Ekstraklasa","67":"Russian Premier League","68":"Trendyol Süper Lig",
+ "80":"Österreichische Fußball-Bundesliga","83":"K League 1","84":"Liga MX","85":"Liga MX",
+ "189":"Swiss Super League","308":"Liga Portugal","319":"Česká Liga","322":"Finnliiga",
+ "332":"Ukrayina Liha","335":"Campeonato Scotiabank","336":"Liga Dimayor","341":"Liga MX",
+ "347":"South African FL","349":"Meiji Yasuda J1 League","350":"Saudi Pro League","351":"A-League Men",
+ "10001":"Denmark League 2","10004":"Belgium League 2","10007":"Brazil League 2",
+ "10010":"Netherlands League 2","10017":"France League 3","10020":"Germany League 3",
+ "10032":"Italy League 3","10041":"Norway League 2","10050":"Scotland League 2",
+ "10054":"Spain League 3","10056":"Sweden League 2","10061":"England League 5",
+ "10065":"Ireland League 2","10066":"Poland League 2","10067":"Russia League 2",
+ "10076":"Rest of World 2","10080":"Austria League 2","10083":"Korea League 2",
+ "10189":"Switzerland League 2","10308":"Portugal League 2","10335":"Chile League 2",
+ "10336":"Colombia League 2","10341":"Mexico League 2","10350":"Saudi League 2","10353":"Argentina League 2"
+};
+const LEAGUE_NAME_ALIASES={
+ "belgium pro league":"1A Pro League","belgian pro league":"1A Pro League","jupiler pro league":"1A Pro League",
+ "liga nos":"Liga Portugal","liga portugal betclic":"Liga Portugal","portuguese league":"Liga Portugal",
+ "super lig":"Trendyol Süper Lig","super lig turkey":"Trendyol Süper Lig","trendyol super lig":"Trendyol Süper Lig",
+ "scottish prem":"Scottish Premiership","cinch premiership":"Scottish Premiership",
+ "austrian bundesliga":"Österreichische Fußball-Bundesliga","bundesliga austria":"Österreichische Fußball-Bundesliga",
+ "brack super league":"Swiss Super League","raiffeisen super league":"Swiss Super League",
+ "serie a enilive":"Serie A","serie bkt":"Serie B","ligue 1 mcdonalds":"Ligue 1",
+ "laliga":"LALIGA EA SPORTS","laliga ea sports":"LALIGA EA SPORTS","la liga":"LALIGA EA SPORTS",
+ "laliga hypermotion":"LaLiga 2"
+};
+function leagueFromClub(team,rawLeague="",leagueId=""){
+ const id=String(leagueId||"").trim();if(EA_LEAGUE_NAME_BY_ID[id])return EA_LEAGUE_NAME_BY_ID[id];
  const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
+ if(LEAGUE_NAME_ALIASES[rk])return LEAGUE_NAME_ALIASES[rk];
  if(rk){
   if(rk==="bundesliga")return"Bundesliga";
   if(rk==="premier league")return"Premier League";
@@ -3684,8 +3730,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1858",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-58-reloaded")){sessionStorage.setItem("gfut-v18-58-reloaded","1");location.reload()}});
+  navigator.service-worker.register("./service-worker.js?v=1859",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-59-reloaded")){sessionStorage.setItem("gfut-v18-59-reloaded","1");location.reload()}});
  });
 }
 
