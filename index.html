@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.27</title>
+<title>Gerlies FUT V18.28</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -309,6 +309,39 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .nav button .nav-ico{width:30px;height:30px}.nav button .nav-ico svg{width:26px;height:26px}.nav button .nav-label{font-size:11px;line-height:1.08}
 @media(max-width:560px){.slot,.friend-slot{width:15.8%}.toolbar{gap:8px}.toolbar select,.toolbar .primary,.toolbar .secondary{min-height:50px;font-size:13px}.squad-shortcuts-grid,.more-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.shortcut-btn,.more-item{min-height:78px;font-size:10px}.shortcut-btn .ico svg,.more-item .nav-ico svg{width:22px;height:22px}.more-tray{bottom:100px;padding:10px}.nav{gap:8px;padding:8px 8px calc(10px + env(safe-area-inset-bottom))}.nav button{min-height:76px;border-radius:18px}.nav button .nav-label{font-size:9px}.bench{grid-template-columns:repeat(7,minmax(72px,1fr))}}
 
+
+/* V18.28 mobile lock, nav colors, squad-card cleanup, club cards */
+html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none}
+body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
+.app{overflow-x:clip}
+.nav{overflow:hidden;touch-action:pan-y}
+.more-tray{max-width:calc(100vw - 16px)}
+.nav button{--navc:#b8c3be;color:var(--navc)}
+.nav button:nth-child(1){--navc:#72efc1}.nav button:nth-child(2){--navc:#d7ff49}.nav button:nth-child(3){--navc:#63d5ff}.nav button:nth-child(4){--navc:#ffd36b}.nav button:nth-child(5){--navc:#ff9b72}.nav button:nth-child(6){--navc:#c98bff}
+.nav button .nav-ico,.nav button .nav-label{color:var(--navc)}
+.nav button:not(.active){background:linear-gradient(180deg,#111816,#0b100f);border-color:color-mix(in srgb,var(--navc) 25%,#34423d)}
+.nav button.active{background:radial-gradient(circle at 50% 5%,color-mix(in srgb,var(--navc) 22%,transparent),transparent 55%),linear-gradient(180deg,#1a231d,#101713);border-color:color-mix(in srgb,var(--navc) 72%,#27332f);box-shadow:0 0 0 1px color-mix(in srgb,var(--navc) 15%,transparent),0 10px 22px rgba(0,0,0,.25)}
+.nav button.active:after{content:"";width:34px;height:3px;border-radius:99px;background:var(--navc);box-shadow:0 0 10px color-mix(in srgb,var(--navc) 70%,transparent)}
+.more-item:nth-child(1){color:#c17cff}.more-item:nth-child(2){color:#89ffcb}.more-item:nth-child(3){color:#b6ff8f}.more-item:nth-child(4){color:#72efc1}.more-item:nth-child(5){color:#8dd9ff}
+/* squad card internal layout: keep portrait clear of rating and badges */
+.pitch .slot .mini .custom-card .card-top,.friend-pitch .friend-slot .mini .custom-card .card-top{left:7%!important;top:8%!important;width:27%!important;text-align:center}
+.pitch .slot .mini .custom-card .ovr,.friend-pitch .friend-slot .mini .custom-card .ovr{font-size:clamp(15px,4.3vw,21px)!important;line-height:.92!important}
+.pitch .slot .mini .custom-card .pos,.friend-pitch .friend-slot .mini .custom-card .pos{font-size:6px!important;margin-top:2px!important}
+.pitch .slot .mini .custom-card .face,.friend-pitch .friend-slot .mini .custom-card .face{left:36%!important;right:3%!important;top:23%!important;height:39%!important;overflow:hidden!important}
+.pitch .slot .mini .custom-card .face img,.friend-pitch .friend-slot .mini .custom-card .face img{width:100%!important;height:108%!important;object-fit:contain!important;object-position:center top!important;transform:translateY(-1%)!important}
+.pitch .slot .mini .card-icons,.friend-pitch .friend-slot .mini .card-icons{left:8%!important;top:35%!important;gap:2px!important;align-items:center!important}
+.pitch .slot .mini .card-flag-img,.friend-pitch .friend-slot .mini .card-flag-img{width:11px!important;height:7px!important}
+.pitch .slot .mini .card-league,.pitch .slot .mini .card-club,.friend-pitch .friend-slot .mini .card-league,.friend-pitch .friend-slot .mini .card-club{width:10px!important;height:10px!important}
+.pitch .slot .mini .custom-card .card-bottom,.friend-pitch .friend-slot .mini .custom-card .card-bottom{left:7%!important;right:7%!important;bottom:7%!important;background:none!important}
+.pitch .slot .mini .custom-card .pname,.friend-pitch .friend-slot .mini .custom-card .pname{font-size:5.8px!important;padding-top:3px!important;line-height:1.05!important}
+/* club collection */
+.club-filters{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.club-filters select{min-width:0;font-size:13px}
+.club-item{display:flex;flex-direction:column;align-items:stretch;padding:10px}
+.club-card-preview{display:flex;justify-content:center;align-items:center;width:100%;min-height:154px;padding:4px;border:0;background:transparent;color:inherit;cursor:pointer}
+.club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
+.club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
+@media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
+
 </style>
 </head>
 <body>
@@ -360,7 +393,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.27</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.28</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -433,13 +466,6 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
   <div id="pitch" class="pitch"></div><div id="bench" class="bench"></div>
-  <div class="squad-shortcuts"><div class="squad-shortcuts-head"><h3>Schnellaktionen</h3><button type="button" data-go="homeView">Alle anzeigen ›</button></div><div class="squad-shortcuts-grid">
-    <button class="shortcut-btn" data-go="sbcView"><span class="ico"><svg viewBox="0 0 24 24"><path d="m12 2 8 4.5v11L12 22 4 17.5v-11z"></path><path d="M9 10h6M9 14h6"></path></svg></span><span>SBC</span></button>
-    <button class="shortcut-btn" data-go="objectivesView"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><path d="M17 7 21 3"></path></svg></span><span>Ziele</span></button>
-    <button class="shortcut-btn" data-go="promoView"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h16v8H4z"></path><path d="M8 8v8M16 8v8"></path><path d="M11 11h2M11 13h2"></path></svg></span><span>Promocode</span></button>
-    <button class="shortcut-btn" data-go="socialView"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="8" cy="8.5" r="2.7"></circle><circle cx="16.5" cy="9.5" r="2.2"></circle><path d="M3.5 19c.7-3.3 2.8-5.1 6-5.1 3.2 0 5.3 1.8 6 5.1"></path><path d="M14.5 18.8c.4-2.1 1.8-3.4 4.3-3.9"></path></svg></span><span>Freunde</span></button>
-    <button class="shortcut-btn" data-go="clubView"><span class="ico"><svg viewBox="0 0 24 24"><path d="m12 3 7 3v5c0 4.2-2.2 7.7-7 10-4.8-2.3-7-5.8-7-10V6z"></path></svg></span><span>Verein</span></button>
-  </div></div>
   <div class="role-panel"><h3>Rollen & Fokus</h3><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
@@ -484,7 +510,11 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 <section id="promoView" class="view"><div class="headline"><h2>Promocode</h2><p>Löse exklusive Gerlies-FUT-Codes ein.</p></div><div class="section"><div class="promo-wrap"><div class="promo-hero"><small>GERLIES FUT REWARDS</small><h2>Promo-Code<br>einlösen</h2><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p></div><div class="promo-card"><label for="promoCodeInput">Promocode</label><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong>100.000 FC Points</strong><span>Exklusive Code-Belohnung</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div><div class="promo-code-hint">Jeder Promocode kann pro Spielstand nur einmal verwendet werden.</div></div></div></div></section>
 
 <section id="clubView" class="view"><div class="headline"><h2>Mein Club</h2><p>Alle gezogenen, gekauften und entwickelten Spieleritems.</p></div><div class="section">
-  <div class="filters"><select id="clubRarity"><option value="">Alle</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Special</option></select><select id="clubSort"><option value="rating">Rating</option><option value="new">Neueste</option></select></div><div id="clubGrid" class="itemgrid"></div>
+  <div class="filters club-filters">
+    <select id="clubPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select>
+    <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Special</option></select>
+    <select id="clubSort"><option value="rating">Rating</option><option value="new">Neueste</option></select>
+  </div><div id="clubGrid" class="itemgrid"></div>
   <div class="club-tools"><h3>Verein & App</h3><p id="homeDb">FC27-Datenbankstatus und technische Einstellungen.</p><div class="club-tools-grid"><button id="openTeamManagement" class="secondary">Team Management</button><button id="syncAgain" class="secondary">FC27-Daten neu laden</button><button id="pwaInstallHome" class="primary">App installieren</button></div></div>
 </div></section>
 
@@ -1386,12 +1416,13 @@ $("resultDone").addEventListener("click",()=>{if(pendingResolved.size!==pendingP
 
 function quickSell(i){const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function renderClub(){
- const rar=$("clubRarity").value,sort=$("clubSort").value;
- let arr=state.club.filter(i=>!rar||cardClass(displayBase(i),i)===rar);
+ const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value;
+ let arr=state.club.filter(i=>{const b=displayBase(i);if(!b)return false;const positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))});
  arr.sort((a,b)=>sort==="new"?(b.acquired||0)-(a.acquired||0):itemRating(b)-itemRating(a));
- $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item"><div class="mini" data-club-open="${i.uid}">${cardHTML(b,i)}</div><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-select="${i.uid}">Für Evolution prüfen</button></div></div>`}).join("")
+ $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,true)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-select="${i.uid}">Für Evolution prüfen</button></div></div>`}).join("");
+ if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
-$("clubRarity").addEventListener("change",renderClub);$("clubSort").addEventListener("change",renderClub);
+$("clubPosition").addEventListener("change",renderClub);$("clubRarity").addEventListener("change",renderClub);$("clubSort").addEventListener("change",renderClub);
 $("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-select]");if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);if(state.activeEvo?.uid===i.uid)state.activeEvo=null;save();renderAll();toast("Schnellverkauft.");return}if(ev){const item=state.club.find(x=>x.uid===ev.dataset.evoSelect);if(!item)return;const b=displayBase(item),evo=EVOLUTIONS.find(v=>b.ovr<=v.max&&(!v.positions||v.positions.includes(b.position)));if(!evo)return toast("Für diesen Spieler ist aktuell keine Evolution verfügbar.");state.activeEvo={uid:item.uid,evoId:evo.id};state.evoProgress[evo.id]={uid:item.uid,matches:0};save();renderAll();toast(`${evo.name} mit ${b.name} gestartet.`)}})
 
 const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
