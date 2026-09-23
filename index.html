@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.38</title>
+<title>Gerlies FUT V18.39</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -430,7 +430,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
 
-/* V18.38 bench visibility + transfer market full-card view */
+/* V18.39 bench visibility + transfer market full-card view */
 .bench{
   grid-template-columns:none!important;
   grid-auto-flow:column;
@@ -465,7 +465,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
-/* V18.38 pack tiers: instant / board / walkout / special / double walkout */
+/* V18.39 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
 .opening.mode-board:before{opacity:.28;background:radial-gradient(circle,#d8ff3e66 0 4%,transparent 34%);animation:boardGlow 1s ease-out both}
@@ -493,7 +493,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:430px){.opening.mode-double .reveal .card-shell{width:145px}.opening.mode-walkout .reveal .card-shell,.opening.mode-special .reveal .card-shell{width:205px}.reveal-cards{gap:6px}}
 
 
-/* V18.38 — 7-player bench, evolution layout fix, market name suggestions */
+/* V18.39 — 7-player bench, evolution layout fix, market name suggestions */
 .bench{
   display:grid!important;
   grid-template-columns:repeat(7,minmax(0,1fr))!important;
@@ -532,6 +532,40 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   .bench .mini .card-flag-img{width:9px!important;height:6px!important}
   .bench .mini .card-league,.bench .mini .card-club{width:8px!important;height:8px!important}
   .market-name-suggestions{max-height:250px}
+}
+
+
+/* V18.39 — EAFC-style Bank / Reserve drawers */
+.squad-stage{position:relative;margin-bottom:12px}
+.squad-drawer-tabs{position:relative;z-index:13;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:-1px}
+.squad-drawer-tab{min-height:48px;border:1px solid #293a34;background:#111a17;color:#d8e1dd;font-size:13px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:7px}
+.squad-drawer-tab:first-child{border-radius:0 0 0 18px}
+.squad-drawer-tab:last-child{border-radius:0 0 18px 0;border-left:0}
+.squad-drawer-tab b{font-size:7px;color:#8b9994}.squad-drawer-tab i{font-size:14px;font-style:normal;color:#9daaa5}
+.squad-drawer-tab.active{background:linear-gradient(180deg,#1c2924,#15201c);color:#d8ff3e;border-color:#4a5c38}
+.squad-drawer-tab.active b,.squad-drawer-tab.active i{color:#d8ff3e}
+.squad-drawer{position:relative;z-index:12;max-height:0;opacity:0;overflow:hidden;padding:0 10px;background:#111a17;border:0 solid #31413b;transition:max-height .22s ease,opacity .16s ease,padding .22s ease,border-width .22s ease}
+.squad-drawer.open{max-height:430px;opacity:1;padding:12px 10px 13px;border-width:0 1px 1px;border-radius:0 0 18px 18px}
+.squad-drawer-grid{display:none!important;margin:0!important}
+.squad-drawer[data-mode="bench"] #bench{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important;padding:0!important}
+.squad-drawer[data-mode="reserve"] #reserve{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.reserveslot,.benchslot{min-width:0}
+.reserveslot button,.benchslot button{width:100%;padding:0;border:0;background:transparent;position:relative}
+.reserveslot .mini .card-shell,.squad-drawer #bench .mini .card-shell{width:100%!important}
+.squad-drawer .emptyslot{min-height:108px}
+.squad-drawer #bench .mini .custom-card .face,.squad-drawer #reserve .mini .custom-card .face{left:29%!important;right:2%!important;top:18%!important;height:50%!important;overflow:hidden!important}
+.squad-drawer #bench .mini .custom-card .face img,.squad-drawer #reserve .mini .custom-card .face img{width:106%!important;height:106%!important;object-fit:contain!important;object-position:center top!important;transform:translate(-3%,0) scale(1.00)!important}
+.squad-drawer #bench .mini .custom-card .card-icons,.squad-drawer #reserve .mini .custom-card .card-icons{left:7%!important;top:32%!important;gap:1px!important}
+.squad-drawer #bench .mini .custom-card .pname,.squad-drawer #reserve .mini .custom-card .pname{font-size:5.5px!important}
+.squad-drawer .drop-target{filter:drop-shadow(0 0 10px rgba(216,255,62,.8));transform:scale(1.04)}
+.squad-drawer-tab.drop-target{box-shadow:inset 0 0 0 2px #d8ff3e}
+@media(max-width:560px){
+ .squad-drawer.open{max-height:390px;padding:10px 7px 11px}
+ .squad-drawer[data-mode="bench"] #bench,.squad-drawer[data-mode="reserve"] #reserve{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important}
+ .squad-drawer .emptyslot{min-height:88px}
+ .squad-drawer-tab{min-height:46px;font-size:12px}
+ .squad-drawer #bench .mini .custom-card .ovr,.squad-drawer #reserve .mini .custom-card .ovr{font-size:16px!important}
+ .squad-drawer #bench .mini .custom-card .pos,.squad-drawer #reserve .mini .custom-card .pos{font-size:5px!important}
 }
 
 </style>
@@ -581,7 +615,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.38</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.39</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -652,7 +686,17 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
-  <div id="pitch" class="pitch"></div><div id="bench" class="bench"></div>
+  <div class="squad-stage">
+    <div id="pitch" class="pitch"></div>
+    <div class="squad-drawer-tabs">
+      <button id="benchDrawerTab" class="squad-drawer-tab" type="button" data-squad-drawer="bench"><span>Bank</span><b id="benchDrawerCount">0/7</b><i>⌃</i></button>
+      <button id="reserveDrawerTab" class="squad-drawer-tab" type="button" data-squad-drawer="reserve"><span>Reserve</span><b id="reserveDrawerCount">0/5</b><i>⌃</i></button>
+    </div>
+    <div id="squadDrawer" class="squad-drawer" data-mode="">
+      <div id="bench" class="bench squad-drawer-grid" data-drawer-drop="bench"></div>
+      <div id="reserve" class="reserve squad-drawer-grid" data-drawer-drop="reserve"></div>
+    </div>
+  </div>
   <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
@@ -969,14 +1013,14 @@ const SBCS=[
 ];
 
 function baseState(){return{
- version:120,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(18).fill(null),packs:{},
+ version:120,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(23).fill(null),packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},
  roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],sbcStorage:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0}
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return x?{...b,...x,version:120,stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b
+  return x?{...b,...x,version:120,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b
  }catch(e){return baseState()}
 }
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
@@ -1415,10 +1459,11 @@ function posFit(p,slot){
  return vals.includes(String(slot||"").toUpperCase())?1:0;
 }
 $("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b||b.disabled)return;state.starterLeague=b.dataset.league;const c=leagueChoice(state.starterLeague);$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${c?.label||state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten (75–80) · 4 echte Silberkarten · 11 echte Bronzekarten · Ratings werden nie verändert.":"Für diese Auswahl konnte kein valider 18er-Starterkader gebildet werden."})
-$("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=items.map(i=>i.uid);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
+$("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=[...items.map(i=>i.uid),...Array(5).fill(null)];state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
 
 function renderWallet(){$("coins").textContent=fmt(state.coins);$("points").textContent=fmt(state.points)}
-function squadItems(){return state.squad.map(id=>state.club.find(x=>x.uid===id)||null)}
+function ensureSquadSlots(){if(!Array.isArray(state.squad))state.squad=[];while(state.squad.length<23)state.squad.push(null);if(state.squad.length>23)state.squad=state.squad.slice(0,23)}
+function squadItems(){ensureSquadSlots();return state.squad.map(id=>state.club.find(x=>x.uid===id)||null)}
 function currentFormation(){return FORMATIONS[state.formation]||FORMATIONS["4-3-3"]}
 function inPosition(base,slot){return posFit(base,slot)>0}
 function chemThreshold(n,a,b,c){return n>=c?3:n>=b?2:n>=a?1:0}
@@ -1429,15 +1474,29 @@ function playerChem(index,items){
  const club=b.team?eligible.filter(x=>x.team===b.team).length:0,nation=b.nation?eligible.filter(x=>x.nation===b.nation).length:0,league=b.league?eligible.filter(x=>x.league===b.league).length:0;
  return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
 }
-function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0;let chem=0;for(let i=0;i<11;i++)chem+=playerChem(i,items);return{items,filled:items.filter(Boolean).length,rating,chem}}
+function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0;let chem=0;for(let i=0;i<11;i++)chem+=playerChem(i,items);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem}}
 function slotHTML(item,i){
  const s=currentFormation()[i],base=item?displayBase(item):null,chem=item?playerChem(i,squadItems()):0,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
  return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}<div class="chem-dots">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></button>`
 }
-function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
+function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Bankplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
+function reserveHTML(item,i){const b=item?displayBase(item):null;return`<div class="reserveslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Reserveplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">RES<br>+</div>'}</button></div>`}
+let squadDrawerMode="";
+function syncSquadDrawer(){
+ const drawer=$("squadDrawer");if(!drawer)return;
+ drawer.dataset.mode=squadDrawerMode;drawer.classList.toggle("open",!!squadDrawerMode);
+ document.querySelectorAll("[data-squad-drawer]").forEach(b=>{const on=b.dataset.squadDrawer===squadDrawerMode;b.classList.toggle("active",on);const i=b.querySelector("i");if(i)i.textContent=on?"⌄":"⌃"})
+}
+function setSquadDrawer(mode,toggle=false){const next=(toggle&&squadDrawerMode===mode)?"":mode;squadDrawerMode=next;syncSquadDrawer()}
 function renderSquad(){
+ ensureSquadSlots();
  const m=squadMetrics();$("sqRating").textContent=m.rating||"–";$("sqChem").textContent=`${m.chem}/33`;$("sqFilled").textContent=`${m.filled}/18`;$("formationSelect").value=state.formation;
- $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i)).join("");$("bench").innerHTML=m.items.slice(11).map((x,k)=>benchHTML(x,11+k)).join("");
+ $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i)).join("");
+ $("bench").innerHTML=m.items.slice(11,18).map((x,k)=>benchHTML(x,11+k)).join("");
+ $("reserve").innerHTML=m.items.slice(18,23).map((x,k)=>reserveHTML(x,18+k)).join("");
+ $("benchDrawerCount").textContent=`${m.items.slice(11,18).filter(Boolean).length}/7`;
+ $("reserveDrawerCount").textContent=`${m.reserveFilled}/5`;
+ syncSquadDrawer();
  if(m.filled===18)state.stats.full=1;
  renderRoles(m.items);save()
 }
@@ -1448,24 +1507,24 @@ function renderRoles(items){
 $("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
 $("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
 function openPicker(i){
- pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:"BANK",used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
- $("pickerTitle").textContent=i<11?`${positionLabel(slot)} besetzen`:`Bank ${i-10}`;$("pickerSub").textContent="Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.";
+ pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
+ $("pickerTitle").textContent=i<11?`${positionLabel(slot)} besetzen`:i<18?`Bank ${i-10}`:`Reserve ${i-17}`;$("pickerSub").textContent="Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.";
  const list=[...state.club].sort((a,b)=>{const ba=displayBase(a),bb=displayBase(b),fa=i<11?posFit(ba,slot):1,fb=i<11?posFit(bb,slot):1;return(fb-fa)||itemRating(b)-itemRating(a)});
- $("pickList").innerHTML=list.map(it=>{const b=displayBase(it),f=i<11?posFit(b,slot):1,disabled=used.has(it.uid)&&it.uid!==cur;return`<button class="pickrow" data-pick="${it.uid}" ${disabled?"disabled":""}><div class="pickrating">${itemRating(it)}</div><div><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small>${inlineMetaHTML(b)}</div><div class="fit ${f<=0?"bad":""}">${i>=11?"Bank":f>=1?"Perfekt":f>0?"Alternative":"Fremd"}</div></button>`}).join("");showUiLayer("picker","picker")
+ $("pickList").innerHTML=list.map(it=>{const b=displayBase(it),f=i<11?posFit(b,slot):1,disabled=used.has(it.uid)&&it.uid!==cur;return`<button class="pickrow" data-pick="${it.uid}" ${disabled?"disabled":""}><div class="pickrating">${itemRating(it)}</div><div><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small>${inlineMetaHTML(b)}</div><div class="fit ${f<=0?"bad":""}">${i>=18?"Reserve":i>=11?"Bank":f>=1?"Perfekt":f>0?"Alternative":"Fremd"}</div></button>`}).join("");showUiLayer("picker","picker")
 }
 function putItemIntoSlot(itemUid,toIndex){const fromIndex=state.squad.indexOf(itemUid);if(fromIndex===toIndex)return;if(fromIndex>=0){const tmp=state.squad[toIndex];state.squad[toIndex]=itemUid;state.squad[fromIndex]=tmp||null}else state.squad[toIndex]=itemUid}
 function openSlotPickerForItem(itemUid){
  const item=state.club.find(x=>x.uid===itemUid);if(!item)return;const b=displayBase(item);pickerMode='slot';pickerSourceUid=itemUid;pickerIndex=-1;
  $("pickerTitle").textContent=`${b.name} einfügen`;
  $("pickerSub").textContent='Wähle den Kaderplatz, den dieser Spieler übernehmen soll.';
- $("pickList").innerHTML=state.squad.map((uid,idx)=>{const slotName=idx<11?currentFormation()[idx].p:`Bank ${idx-10}`,slotDisplay=idx<11?positionLabel(slotName,b):slotName;const occItem=uid?state.club.find(x=>x.uid===uid):null;const occ=occItem?displayBase(occItem):null;const fit=idx<11?posFit(b,slotName):1;return`<button class="pickrow" data-slotpick="${idx}"><div class="pickrating">${idx<11?slotDisplay:'B'}</div><div><span class="slot-name">${esc(slotDisplay)}</span><span class="slot-occupant">${occ?`${esc(occ.name)} · ${itemRating(occItem)}`:'Leer'}</span></div><div class="fit ${fit<=0&&idx<11?"bad":""}">${idx>=11?'Bank':fit>=1?'Perfekt':fit>0?'Alternative':'Fremd'}</div></button>`}).join('');
+ $("pickList").innerHTML=state.squad.map((uid,idx)=>{const slotName=idx<11?currentFormation()[idx].p:(idx<18?`Bank ${idx-10}`:`Reserve ${idx-17}`),slotDisplay=idx<11?positionLabel(slotName,b):slotName;const occItem=uid?state.club.find(x=>x.uid===uid):null;const occ=occItem?displayBase(occItem):null;const fit=idx<11?posFit(b,slotName):1;return`<button class="pickrow" data-slotpick="${idx}"><div class="pickrating">${idx<11?slotDisplay:'B'}</div><div><span class="slot-name">${esc(slotDisplay)}</span><span class="slot-occupant">${occ?`${esc(occ.name)} · ${itemRating(occItem)}`:'Leer'}</span></div><div class="fit ${fit<=0&&idx<11?"bad":""}">${idx>=18?'Reserve':idx>=11?'Bank':fit>=1?'Perfekt':fit>0?'Alternative':'Fremd'}</div></button>`}).join('');
  showUiLayer("picker","picker")
 }
 function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
-function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":"Vereinsitem");return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline">${esc(b.team)} · ${esc(b.league)} · ${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</div><div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionRoleLabel(shown).replace('+',''))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`}
+function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline">${esc(b.team)} · ${esc(b.league)} · ${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</div><div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionRoleLabel(shown).replace('+',''))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`}
 
-function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:"BANK"):null,fits=!slot||slot==="BANK"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&fits?slot:b.position;$ ("playerDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
+function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null,fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;$ ("playerDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
 function packItemKey(item){return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),item?.rare?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
 function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${esc(b.team)} · ${esc(b.league)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
@@ -1545,10 +1604,11 @@ $("playerDetailBody").addEventListener("click",e=>{
 });
 let dragState=null;
 function clearDropTargets(){document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'))}
+function squadDragElement(e){return e.target.closest('#pitch [data-slot],#bench [data-slot],#reserve [data-slot]')}
 function startSquadPointer(e){
- const slot=e.target.closest('#pitch [data-slot],#bench [data-slot]');if(!slot)return;
+ const slot=squadDragElement(e);if(!slot)return;
  const from=Number(slot.dataset.slot),item=squadItems()[from];if(!item)return;
- dragState={from,startX:e.clientX,startY:e.clientY,active:false,source:slot,ghost:null,lastTarget:null,pointerId:e.pointerId};
+ dragState={from,startX:e.clientX,startY:e.clientY,active:false,source:slot,ghost:null,lastTarget:null,pointerId:e.pointerId,drawerHover:""};
 }
 function moveSquadPointer(e){
  if(!dragState||e.pointerId!==dragState.pointerId)return;
@@ -1562,7 +1622,13 @@ function moveSquadPointer(e){
  e.preventDefault();
  if(dragState.ghost){dragState.ghost.style.left=e.clientX+'px';dragState.ghost.style.top=e.clientY+'px'}
  clearDropTargets();
- const el=document.elementFromPoint(e.clientX,e.clientY),target=el?.closest?.('#pitch [data-slot],#bench [data-slot]');
+ const el=document.elementFromPoint(e.clientX,e.clientY);
+ const tab=el?.closest?.('[data-squad-drawer]');
+ if(tab){
+  const mode=tab.dataset.squadDrawer;
+  if(mode&&dragState.drawerHover!==mode){dragState.drawerHover=mode;setSquadDrawer(mode,false)}
+ }else dragState.drawerHover="";
+ const target=el?.closest?.('#pitch [data-slot],#bench [data-slot],#reserve [data-slot]');
  if(target&&Number(target.dataset.slot)!==dragState.from){target.classList.add('drop-target');dragState.lastTarget=target}else dragState.lastTarget=null;
 }
 function endSquadPointer(e){
@@ -1570,15 +1636,20 @@ function endSquadPointer(e){
  const d=dragState;
  if(d.active){
   suppressSquadClick=true;
-  const target=d.lastTarget||document.elementFromPoint(e.clientX,e.clientY)?.closest?.('#pitch [data-slot],#bench [data-slot]');
-  if(target){const to=Number(target.dataset.slot);if(Number.isInteger(to)&&to!==d.from){const tmp=state.squad[to];state.squad[to]=state.squad[d.from];state.squad[d.from]=tmp;save();renderAll();toast('Spieler getauscht.')}}
+  const target=d.lastTarget||document.elementFromPoint(e.clientX,e.clientY)?.closest?.('#pitch [data-slot],#bench [data-slot],#reserve [data-slot]');
+  if(target){
+   const to=Number(target.dataset.slot);
+   if(Number.isInteger(to)&&to!==d.from){const tmp=state.squad[to];state.squad[to]=state.squad[d.from];state.squad[d.from]=tmp;save();renderAll();toast(to>=18?'In Reserve verschoben.':to>=11?'Auf die Bank verschoben.':'Spieler getauscht.')}
+  }
  }
  d.source?.classList.remove('drag-source');d.ghost?.remove();clearDropTargets();dragState=null;
 }
-document.addEventListener('pointerdown',e=>{if(e.target.closest('#pitch [data-slot],#bench [data-slot]'))startSquadPointer(e)},{passive:true});
+document.addEventListener('pointerdown',e=>{if(squadDragElement(e))startSquadPointer(e)},{passive:true});
 document.addEventListener('pointermove',moveSquadPointer,{passive:false});
 document.addEventListener('pointerup',endSquadPointer);
 document.addEventListener('pointercancel',endSquadPointer);
+document.querySelector('.squad-drawer-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-squad-drawer]');if(!b)return;setSquadDrawer(b.dataset.squadDrawer,true)});
+$("reserve")?.addEventListener("click",squadClick);
 
 
 function weightedPlayer(min,max){
@@ -1903,7 +1974,7 @@ function startMatch(mode,opponent=null){
  matchManagerDraft=null;
  match={
   mode,minute:0,home:0,away:0,power,opp,opponentProfile,opponentName:name,finished:false,paused:false,
-  lineup:[...state.squad],formation:state.formation,tactic:"balanced",
+  lineup:[...state.squad.slice(0,18)],formation:state.formation,tactic:"balanced",
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false
  };
@@ -2248,7 +2319,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{const sel=e.target.closes
 
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
- const payload={v:2,username:state.profile.username||"",clubName:state.profile.clubName||"Gerlies FUT Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
+ const payload={v:2,username:state.profile.username||"",clubName:state.profile.clubName||"Gerlies FUT Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
