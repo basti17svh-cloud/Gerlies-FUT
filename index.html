@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.44</title>
+<title>Gerlies FUT V18.45</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -737,6 +737,59 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  .opening.mode-walkout .revealbadge,.opening.mode-double .revealbadge{font-size:16px!important}
 }
 
+
+
+/* V18.45 — unified rarity + shiny rare base cards + bank/reserve badge clarity */
+.custom-card.base-rare{
+  box-shadow:inset 0 0 0 1px rgba(255,248,196,.34),inset 0 0 24px rgba(255,232,138,.16),0 0 16px rgba(255,220,92,.09);
+}
+.custom-card.base-rare:after{
+  content:"";position:absolute;z-index:3;pointer-events:none;
+  width:54%;height:165%;top:-32%;left:-72%;
+  background:linear-gradient(108deg,transparent 0 32%,rgba(255,255,255,.05) 38%,rgba(255,248,198,.62) 48%,rgba(255,255,255,.14) 55%,transparent 66%);
+  transform:skewX(-15deg);mix-blend-mode:screen;opacity:.82;
+  animation:gfutRareSweep 4.4s cubic-bezier(.45,0,.28,1) infinite;
+}
+.custom-card.base-rare.gold{
+  background:
+    radial-gradient(circle at 55% 27%,rgba(255,255,255,.68),transparent 20%),
+    linear-gradient(145deg,#fff0ad 0%,#c89525 29%,#f5dc7f 55%,#b77a15 78%,#f0d374 100%);
+}
+.custom-card.base-rare.silver{
+  background:
+    radial-gradient(circle at 55% 27%,rgba(255,255,255,.82),transparent 21%),
+    linear-gradient(145deg,#f8fcfb,#aab8b5 30%,#edf2f0 58%,#7c8b87 82%,#d8e0dd);
+}
+.custom-card.base-rare.bronze{
+  background:
+    radial-gradient(circle at 55% 27%,rgba(255,255,255,.46),transparent 20%),
+    linear-gradient(145deg,#e2ab7e,#8e5735 31%,#ce8552 59%,#67402a 82%,#bd7547);
+}
+@keyframes gfutRareSweep{
+  0%,48%{left:-72%;opacity:0}
+  55%{opacity:.22}
+  68%{left:122%;opacity:.9}
+  76%,100%{left:122%;opacity:0}
+}
+.rare-mark{
+  background:linear-gradient(135deg,rgba(24,29,22,.96),rgba(86,70,25,.94))!important;
+  border:1px solid rgba(255,239,154,.72)!important;
+  color:#fff1a6!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.42),0 0 9px rgba(255,223,105,.22);
+}
+.squad-drawer #bench .mini .custom-card .card-icons,
+.squad-drawer #reserve .mini .custom-card .card-icons{z-index:8!important}
+.squad-drawer #bench .mini .card-league,.squad-drawer #bench .mini .card-club,
+.squad-drawer #reserve .mini .card-league,.squad-drawer #reserve .mini .card-club{
+  width:16px!important;height:16px!important;overflow:visible!important;
+}
+.squad-drawer #bench .mini .card-flag-img,.squad-drawer #reserve .mini .card-flag-img{
+  width:15px!important;height:10px!important;
+}
+.squad-drawer #bench .mini .badge-img,.squad-drawer #reserve .mini .badge-img{
+  width:16px!important;height:16px!important;object-fit:contain!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.38));
+}
+
 </style>
 </head>
 <body>
@@ -784,7 +837,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.44</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.45</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1195,7 +1248,7 @@ function loadState(){
 function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
-function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1841",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1845",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
@@ -1205,6 +1258,14 @@ function first(raw,...keys){for(const k of keys){if(raw?.[k]!==undefined&&raw?.[
 function deepGet(obj,path){try{return String(path||"").split(".").reduce((acc,key)=>acc==null?undefined:acc[key],obj)}catch(e){return undefined}}
 function deepFirst(raw,...paths){for(const path of paths){if(!path)continue;const val=String(path).includes(".")?deepGet(raw,path):raw?.[path];if(val!==undefined&&val!==null&&String(val).trim()!=="")return val}return ""}
 function cleanNum(v){const n=Number(String(v??"").replace(/[^0-9.-]/g,""));return Number.isFinite(n)?n:0}
+function parseRareValue(v){
+ const raw=String(v??"").trim().toLowerCase();
+ if(!raw)return null;
+ const x=raw.replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+ if(["0","false","no","common","non rare","nonrare"].includes(x)||x.includes("common"))return false;
+ if(["1","true","yes","rare","selten"].includes(x)||x.includes("rare"))return true;
+ return null
+}
 function csvRow(line){const out=[];let cur="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(c===','&&!q){out.push(cur);cur=""}else cur+=c}out.push(cur);return out}
 function parseCSV(text){const lines=String(text||"").replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim().length);if(lines.length<2)throw new Error("CSV enthält keine Datensätze");const headers=csvRow(lines[0]).map(x=>x.trim());const rows=[];for(let i=1;i<lines.length;i++){const vals=csvRow(lines[i]);if(vals.length<3)continue;const r={};for(let c=0;c<headers.length;c++)r[headers[c]]=vals[c]??"";rows.push(r)}return rows}
 function sofifaFace(id){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/27_120.png`}
@@ -1216,7 +1277,7 @@ function normCSV(raw){
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url"));
  const team=String(first(raw,"club_name","team_name","club","team")).trim();
  const rawLeague=String(first(raw,"league_name","league")).trim();
- return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),source:"fc27-open-data"}
+ return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague),leagueId:String(first(raw,"league_id","competition_id")),leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function normEAAsset(raw){
@@ -1256,7 +1317,8 @@ function normEAAsset(raw){
   leagueLogo:String(deepFirst(raw,"leagueImageUrl","league_image_url","competitionImageUrl","competition_image_url","leagueLogoUrl","league_logo_url","images.league.url")),
   card:String(deepFirst(raw,"card","cardUrl","card_url","playerCardUrl","player_card_url")),
   playstyles:deepFirst(raw,"play style","playStyle","play_style","playstyles","PlayStyles"),
-  gender:String(deepFirst(raw,"__gfutGender","gender","Gender","sex","Sex"))
+  gender:String(deepFirst(raw,"__gfutGender","gender","Gender","sex","Sex")),
+  baseRare:parseRareValue(deepFirst(raw,"rarity","Rarity","cardRarity","card_rarity","itemRarity","item_rarity","rare","isRare","is_rare"))
  }
 }
 async function fetchJson(url,ms=45000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:"no-store",signal:c.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
@@ -1342,7 +1404,7 @@ async function enrichPlayersWithEaAssets(players){
   if(a.ovr)next.ovr=a.ovr;if(a.pac)next.pac=a.pac;if(a.sho)next.sho=a.sho;if(a.pas)next.pas=a.pas;if(a.dri)next.dri=a.dri;if(a.def)next.def=a.def;if(a.phy)next.phy=a.phy;
   if(a.position)next.position=a.position;if(a.alt)next.alt=a.alt;if(a.nation)next.nation=a.nation;
   if(a.face)next.face=a.face;if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
-  if(a.preferredFoot)next.preferredFoot=a.preferredFoot;if(a.weakFoot)next.weakFoot=a.weakFoot;if(a.skillMoves)next.skillMoves=a.skillMoves;if(a.gender)next.gender=a.gender;
+  if(a.preferredFoot)next.preferredFoot=a.preferredFoot;if(a.weakFoot)next.weakFoot=a.weakFoot;if(a.skillMoves)next.skillMoves=a.skillMoves;if(a.gender)next.gender=a.gender;if(a.baseRare!==null)next.baseRare=a.baseRare;
   if(a.playstyles)next.playstyles=Array.isArray(a.playstyles)?a.playstyles.join(", "):String(a.playstyles);
   next.card="";next.source="fc27-ratings+current-roster";
   merged[idx]=next;
@@ -1358,8 +1420,8 @@ async function enrichPlayersWithEaAssets(players){
    else{ta=fuzzyResolve(p.team,teamAssets);teamResolveCache.set(teamNameKey,ta||null)}
   }
   if(ta){
-   if(ta.clubLogo)next.clubLogo=ta.clubLogo;
-   if(ta.teamId)next.teamId=ta.teamId;
+   if(ta.clubLogo&&!next.clubLogo)next.clubLogo=ta.clubLogo;
+   if(ta.teamId&&!next.teamId)next.teamId=ta.teamId;
    if(ta.leagueLogo&&!next.leagueLogo)next.leagueLogo=ta.leagueLogo;
    if(ta.leagueId&&!next.leagueId)next.leagueId=ta.leagueId;
   }
@@ -1369,17 +1431,27 @@ async function enrichPlayersWithEaAssets(players){
    if(leagueResolveCache.has(leagueNameKey))la=leagueResolveCache.get(leagueNameKey);
    else{la=fuzzyResolve(p.league,leagueAssets);leagueResolveCache.set(leagueNameKey,la||null)}
   }
-  if(la){if(la.leagueLogo)next.leagueLogo=la.leagueLogo;if(la.leagueId)next.leagueId=la.leagueId}
+  if(la){if(la.leagueLogo&&!next.leagueLogo)next.leagueLogo=la.leagueLogo;if(la.leagueId&&!next.leagueId)next.leagueId=la.leagueId}
   if(JSON.stringify(next)!==JSON.stringify(p)){merged[i]=next;applied++}
  }
  return {players:merged,applied,seen};
 }
 function rarityOf(p){const r=Number(p?.ovr||0);return r>=75?"gold":r>=65?"silver":"bronze"}
+function isBaseRare(p){
+ if(!p)return false;
+ if(typeof p.baseRare==="boolean")return p.baseRare;
+ const explicit=parseRareValue(p.rarity??p.cardRarity??p.itemRarity??p.rareBase);
+ if(explicit!==null)return explicit;
+ const r=Number(p.ovr||0);
+ const ps=String(p.playstylesPlus||p.playstyles_plus||"").trim();
+ return r>=80||(r>=78&&!!ps)
+}
+function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function cardClass(p,item){return item?.variant==="icon-mid"?"icon":item?.evo||item?.variant==="special"?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(item.evo||0)+(item.boost||0)):0}
 function displayBase(item){const b=itemBase(item);if(!b)return null;let out={...b,ovr:itemRating(item),position:item?.overridePosition||b.position};const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
-function makeItem(base,tradeable=false,opts={}){return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare:!!opts.rare}}
+function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base);return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare}}
 function portraitFallback(p){return""}
 const COUNTRY_CODES={
 germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",turkiye:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US","united states of america":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR","korea republic":"KR",ghana:"GH","ivory coast":"CI","cote d ivoire":"CI","cote divoire":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA",bosnia:"BA","czech republic":"CZ",czechia:"CZ","republic of ireland":"IE",ireland:"IE","north macedonia":"MK",
@@ -1500,8 +1572,9 @@ function toggleTransferList(uid){state.transferList=state.transferList||[];if(is
 function openBiography(item,index){if(!item)return;const base=displayBase(item),b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";$("bioDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;$("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(b.name)}</h2><p>${esc(b.team)} · ${esc(b.league)}</p><div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div><div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b.position))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;showUiLayer("bioModal","bio")}
 function cardHTML(p,item=null,mini=false,shownPosition=null){
  if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
- const rareMark=item?.rare&&!item?.variant?`<div class="rare-mark">SELTEN</div>`:"";
- const body=`<div class="custom-card ${cls}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
+ const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
+ const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
+ const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
  const official=officialCardHTML(p,item);
  return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}</div></div>`
 }
@@ -1669,8 +1742,18 @@ async function syncDatabase(force=false){
 }
 let EA_ASSET_ENRICH_RUNNING=false,EA_ASSET_ENRICH_DONE=false;
 function portraitCoverage(players){if(!players?.length)return 0;return players.filter(p=>String(p?.face||p?.portrait||p?.headshot||"").trim()).length/players.length}
+function emblemCoverage(players){
+ if(!players?.length)return 0;
+ const ok=players.filter(p=>{
+  const club=String(p?.clubLogo||"").trim()||/^\d+$/.test(String(p?.teamId||""));
+  const league=String(p?.leagueLogo||"").trim()||/^\d+$/.test(String(p?.leagueId||""))||!!apiSportsLeagueLogo(p?.league);
+  return club&&league
+ }).length;
+ return ok/players.length
+}
 async function enrichEaAssetsInBackground(){
- const missingFullNames=PLAYERS.some(p=>!String(p?.fullName||"").trim());if(EA_ASSET_ENRICH_RUNNING||EA_ASSET_ENRICH_DONE||!PLAYERS.length||(portraitCoverage(PLAYERS)>.65&&!missingFullNames))return;
+ const missingFullNames=PLAYERS.some(p=>!String(p?.fullName||"").trim()),needBadges=emblemCoverage(PLAYERS)<.92;
+ if(EA_ASSET_ENRICH_RUNNING||EA_ASSET_ENRICH_DONE||!PLAYERS.length||(portraitCoverage(PLAYERS)>.65&&!missingFullNames&&!needBadges))return;
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
@@ -1806,7 +1889,7 @@ function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div 
 function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline">${esc(b.team)} · ${esc(b.league)} · ${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</div><div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionRoleLabel(shown).replace('+',''))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`}
 
 function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null,fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;$ ("playerDetailSub").textContent=`${esc(b.team)} · ${esc(b.league)} · ${esc(nationLabel(b.nation))}`;const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
-function packItemKey(item){return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),item?.rare?"1":"0"].join("|")}
+function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
 function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${esc(b.team)} · ${esc(b.league)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
 let suppressSquadClick=false;
@@ -1955,7 +2038,7 @@ function generatePack(id){
  let guaranteeSlot=-1;if(p.guarantee){guaranteeSlot=specs.findIndex(x=>x.max>=p.guarantee);if(guaranteeSlot<0)guaranteeSlot=0}
  specs.forEach((spec,i)=>{const min=i===guaranteeSlot?Math.max(spec.min||0,p.guarantee||0):(spec.min||0),max=spec.max??99,b=take(min,max);if(b)arr.push(makeLivePackItem(b,true))});
  if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase();if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,true)}}
- let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
+ let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
  return arr.slice(0,p.count)
 }
 function renderStore(){
@@ -2881,7 +2964,7 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1844",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1845",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
  });
 }
