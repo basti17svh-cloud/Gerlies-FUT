@@ -1,8 +1,9 @@
-const CACHE="gerlies-fut-v18-53-root-shell";
+const CACHE="gerlies-fut-v18-53b-root-shell";
 const PATCH="./v1853-patch.js";
 const SHELL=["./","./index.html","./manifest.webmanifest","./players-fallback.json","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png","./p1.png","./p2.png","./p3.png","./p4.png","./p5.png","./p6.png","./p7.png","./p8.png",PATCH];
 
 function injectPatch(html){
+ html=html.replaceAll("V18.52","V18.53");
  if(html.includes("v1853-patch.js"))return html;
  return html.replace("</body>",`<script src="${PATCH}"></script></body>`)
 }
