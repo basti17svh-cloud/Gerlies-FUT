@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.35</title>
+<title>Gerlies FUT V18.36</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -429,6 +429,41 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .match-manager-tip{font-size:7px}
 @media(max-width:560px){.match-manager-slot{width:15%}.match-manager-pitch{aspect-ratio:.76}.match-manager-bench{gap:4px}}
 
+
+/* V18.36 bench visibility + transfer market full-card view */
+.bench{
+  grid-template-columns:none!important;
+  grid-auto-flow:column;
+  grid-auto-columns:calc((100% - 28px)/5);
+  gap:7px!important;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scroll-padding-inline:2px;
+  padding:0 0 6px!important;
+}
+.benchslot{min-width:0;scroll-snap-align:start}
+.benchslot:last-child{scroll-snap-align:end}
+#marketGrid{gap:12px}
+#marketGrid .item{padding:10px 8px 12px;border-radius:15px}
+.market-card-preview{display:flex;justify-content:center;align-items:center;width:100%;padding:4px 0 8px;border:0;background:transparent;color:inherit;cursor:pointer}
+.market-card-preview>div{display:flex;justify-content:center;width:100%}
+.market-card-preview .card-shell{width:min(185px,94%)!important;filter:drop-shadow(0 12px 17px rgba(0,0,0,.38))}
+.market-card-preview .custom-card .stats{display:grid!important}
+.market-card-preview .custom-card .meta{display:block!important}
+.market-listing-price{text-align:center;font-size:14px!important;margin:2px 0 2px!important;color:#f3f7f5}
+.market-listing-club{text-align:center;font-size:7px!important}
+.market-listing-details{margin-top:7px;padding:8px 7px;border:1px solid #2d3b36;border-radius:10px;background:#0b1210;text-align:center;color:#9aa8a2;font-size:6.5px;line-height:1.55}
+.market-listing-details strong{color:#fff}
+@media(max-width:560px){
+  .bench{grid-auto-columns:calc((100% - 21px)/4)}
+  #marketGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #marketGrid .item{padding:8px 5px 10px}
+  .market-card-preview .card-shell{width:min(150px,97%)!important}
+  .market-listing-price{font-size:11px!important}
+  .market-listing-details{font-size:5.7px;padding:7px 5px}
+}
+
 </style>
 </head>
 <body>
@@ -476,7 +511,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.35</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.36</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1529,9 +1564,32 @@ $("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-cl
 const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
 function marketPlayStyleCount(base){const raw=[base?.playstyles,base?.playstylesPlus].filter(Boolean).join(',');return raw?raw.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).length:0}
 function marketMetaScore(base){const pos=String(base?.position||"").toUpperCase(),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0);let score=78;if(["ST","RW","LW","RM","LM","CAM","CF"].includes(pos)){score=pac*.27+sho*.24+dri*.27+pas*.11+phy*.07+def*.04;if(pac>=88)score+=2.2;if(dri>=86)score+=1.8;if(sho>=84)score+=1.3;if(pac>=84&&dri>=84)score+=1.2}else if(["CM","CDM"].includes(pos)){score=pac*.16+sho*.08+pas*.19+dri*.18+def*.18+phy*.21;if(pac>=80)score+=1.4;if(dri>=82)score+=1.3;if(def>=80)score+=1.1;if(phy>=85)score+=1.5;if(pas>=80)score+=.8;if(sho>=75)score+=.4;score+=Math.max(0,[pac,sho,pas,dri,def,phy].filter(v=>v>=80).length-2)*.65}else if(["CB","LB","RB","LWB","RWB"].includes(pos)){score=pac*.24+def*.31+phy*.23+pas*.08+dri*.10+sho*.04;if(pac>=82)score+=1.8;if(def>=84)score+=1.4;if(phy>=84)score+=1.1}else if(pos==="GK"){score=pac*.19+sho*.17+pas*.12+dri*.24+def*.10+phy*.18;if(dri>=85)score+=1.2;if(pac>=84)score+=.8}else score=(pac+sho+pas+dri+def+phy)/6;return score}
-function marketMetaFactor(base){const score=marketMetaScore(base),styleCount=marketPlayStyleCount(base),alts=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;let factor=Math.exp((score-78)*.12);factor*=1+Math.min(.24,styleCount*.035);factor*=1+Math.min(.10,alts*.04);const lg=normalizeKey(base?.league||"");if(["bundesliga","premier league","laliga ea sports","la liga","serie a","ligue 1"].includes(lg))factor*=1.04;const tm=normalizeKey(base?.team||"");if(["borussia dortmund","fc bayern munchen","bayern munich","real madrid","fc barcelona","barcelona","liverpool","arsenal","manchester city","manchester united","paris saint germain","psg","juventus","inter","ac milan"].includes(tm))factor*=1.06;return Math.max(.55,Math.min(5.25,factor))}
+function marketArchetypeMultiplier(base){
+ const pos=String(base?.position||"").toUpperCase(),pac=Number(base?.pac||0),sho=Number(base?.sho||0),pas=Number(base?.pas||0),dri=Number(base?.dri||0),def=Number(base?.def||0),phy=Number(base?.phy||0);
+ let mult=1;
+ if(["CM","CDM"].includes(pos)){
+  const complete=[pac,pas,dri,def,phy].filter(v=>v>=80).length;
+  if(complete>=5)mult*=2.05;else if(complete===4)mult*=1.62;else if(complete===3)mult*=1.28;
+  if(pac>=80&&dri>=82&&def>=80&&phy>=84)mult*=1.48;
+  if(pas>=82&&dri>=82&&phy>=84)mult*=1.18;
+ }else if(["ST","RW","LW","RM","LM","CAM","CF"].includes(pos)){
+  if(pac>=88&&dri>=86&&sho>=84)mult*=1.68;
+  else if(pac>=86&&dri>=84)mult*=1.32;
+  if(sho>=88&&dri>=86)mult*=1.18;
+ }else if(["CB","LB","RB","LWB","RWB"].includes(pos)){
+  if(pac>=84&&def>=84&&phy>=84)mult*=1.62;
+  else if(pac>=82&&def>=82)mult*=1.30;
+ }
+ return mult
+}
+function marketDemandMultiplier(base){
+ const name=normalizeKey(base?.name||"");
+ const demand={"felix nmecha":1.55};
+ return demand[name]||1
+}
+function marketMetaFactor(base){const score=marketMetaScore(base),styleCount=marketPlayStyleCount(base),alts=String(base?.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean).length;let factor=Math.exp((score-78)*.13);factor*=1+Math.min(.28,styleCount*.04);factor*=1+Math.min(.14,alts*.05);factor*=marketArchetypeMultiplier(base);factor*=marketDemandMultiplier(base);const lg=normalizeKey(base?.league||"");if(["bundesliga","premier league","laliga ea sports","la liga","serie a","ligue 1"].includes(lg))factor*=1.05;const tm=normalizeKey(base?.team||"");if(["borussia dortmund","fc bayern munchen","bayern munich","real madrid","fc barcelona","barcelona","liverpool","arsenal","manchester city","manchester united","paris saint germain","psg","juventus","inter","ac milan"].includes(tm))factor*=1.07;return Math.max(.55,Math.min(9,factor))}
 function marketRoundPrice(v){const step=v>=100000?1000:v>=10000?250:50;return Math.max(150,Math.round(v/step)*step)}
-function marketPriceForRating(r,special=false,base=null){const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);const meta=marketMetaFactor(base||{ovr:rr}),specialMult=special?1.55:1,variation=.92+Math.random()*.16;return marketRoundPrice(basePrice*meta*specialMult*variation)}
+function marketPriceForRating(r,special=false,base=null){const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);const meta=marketMetaFactor(base||{ovr:rr}),specialMult=special?1.55:1,variation=.92+Math.random()*.16;let value=basePrice*meta*specialMult*variation;const name=normalizeKey(base?.name||"");if(name==="felix nmecha"&&rr>=85)value=Math.max(value,special?190000:120000);return marketRoundPrice(value)}
 function marketPreviewItem(x){return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||""}}
 function listingRating(x){return Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"?"special":rarityOf(x.base)}
@@ -1562,7 +1620,7 @@ function refreshMarket(){
 function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
 function settleAuctions(){for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;toast(`Gebot gewonnen: ${x.base.name}`)}}save()}
 function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
-function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"";return`<div class="item"><div class="mini" data-market-open="${i}" role="button" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi)}</div><h4>${fmt(x.price)} Coins</h4><p>${esc(x.base.team)}</p><div style="text-align:center;margin-top:4px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="auction-meta">${marketMetaFactor(x.base)>=2.15?`<span class="quality-tag special">META</span> · `:""}Rating ${listingRating(x)} · Gebot ${fmt(x.bid)} · <span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(Math.max(50,Math.round(x.bid*.05/50)*50))}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
+function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=Math.max(50,Math.round(x.bid*.05/50)*50);return`<div class="item market-listing"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").textContent=`Transfermarkt · ${esc(x.base.team)} · ${fmt(x.price)} Coins`;
