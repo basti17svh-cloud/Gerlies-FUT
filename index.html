@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.61</title>
+<title>Gerlies FUT V18.62</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -946,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.61</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.62</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1400,7 +1400,7 @@ function openTotwTeam(){
  $("opponentTeamModalBody").innerHTML=`<div class="totw-team-head"><div><strong>${esc(LIVE_TOTW.name)}</strong><span>Live-Team · Ausrufezeichen = falsche Position</span></div><span>Aktiv bis ${esc(LIVE_TOTW.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Rating</span></div><div class="kpi"><strong>3-1-4-2</strong><span>Formation</span></div><div class="kpi"><strong>${all.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench">${bench.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div><div class="totw-section-title">Reserve</div><div class="totw-reserve">${reserve.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div>`;
  showUiLayer("opponentTeamModal","opponent-team")
 }
-$("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-totw-bio]");if(!btn)return;const entry=liveTotwTeamEntries()[Number(btn.dataset.totwBio)];if(entry)openBiography(entry.item,null)});
+$("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-totw-bio]");if(!btn)return;const entry=liveTotwTeamEntries()[Number(btn.dataset.totwBio)];if(entry)openBiography(entry.item,null,entry.player)});
 function makeLivePackItem(base,tradeable=true){const info=totwInfo(base);return info?makeItem(base,tradeable,{variant:"special",eventName:LIVE_TOTW.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
 
 const TASKS=[
@@ -1858,7 +1858,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1861";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1862";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -2179,9 +2179,11 @@ function workRates(p){const pos=String(p?.position||"");if(["ST","LW","RW","CAM"
 function stars(n){return "★".repeat(Math.max(0,n))+"☆".repeat(Math.max(0,5-n))}
 function isOnTransferList(uid){return (state.transferList||[]).includes(uid)}
 function toggleTransferList(uid){state.transferList=state.transferList||[];if(isOnTransferList(uid))state.transferList=state.transferList.filter(x=>x!==uid);else state.transferList.push(uid);save()}
-function openBiography(item,index){
+function openBiography(item,index,fallbackBase=null){
  if(!item)return;
- const base=displayBase(item),b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";
+ const shown=displayBase(item),base=shown||(fallbackBase?{...fallbackBase,ovr:Math.min(99,Number(fallbackBase.ovr||0)+Number(item.boost||0)),position:item.overridePosition||fallbackBase.position}:null);
+ if(!base)return;
+ const b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";
  ensurePlayerAffiliationAssets(b);
  $("bioDetailSub").textContent=playerContextLine(b);
  $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(b.name)}</h2><p data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div><div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b.position))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;
@@ -2342,7 +2344,7 @@ const EA_MENS_CLUB_LEAGUES={
  "1A Pro League":["KRC Genk","Genk","KAA Gent","Gent","Club Brugge KV","Club Brugge","RSC Anderlecht","Anderlecht","Royal Antwerp FC","Royal Antwerp","Antwerp","Union Saint-Gilloise","Union SG","Standard Liège","Standard Liege","Sporting Charleroi","Charleroi","Cercle Brugge","KV Mechelen","Mechelen","OH Leuven","Oud-Heverlee Leuven","Sint-Truidense VV","STVV","KVC Westerlo","Westerlo","FCV Dender EH","Dender","Zulte Waregem","KV Kortrijk","Kortrijk","Beerschot","KAS Eupen","Eupen","La Louvière","RAAL La Louvière"],
  "Eredivisie":["Ajax","AFC Ajax","PSV","PSV Eindhoven","Feyenoord","AZ","AZ Alkmaar","FC Twente","Twente","FC Utrecht","Utrecht","Go Ahead Eagles","NEC Nijmegen","NEC","Sparta Rotterdam","SC Heerenveen","Heerenveen","PEC Zwolle","Fortuna Sittard","FC Groningen","Groningen","Heracles Almelo","Heracles","NAC Breda","FC Volendam","Willem II","RKC Waalwijk","Excelsior","Almere City FC","Vitesse","FC Emmen","Cambuur","Roda JC Kerkrade"],
  "Liga Portugal":["SL Benfica","Benfica","FC Porto","Porto","Sporting CP","Sporting Clube de Portugal","SC Braga","Braga","Vitória SC","Vitória Guimarães","Vitoria Guimaraes","Boavista FC","Boavista","FC Famalicão","Famalicão","Rio Ave FC","Rio Ave","Gil Vicente FC","Gil Vicente","Casa Pia AC","Casa Pia","Moreirense FC","Moreirense","Estoril Praia","FC Arouca","Arouca","Santa Clara","CD Nacional","Nacional","Tondela","Farense","Alverca"],
- "Trendyol Süper Lig":["Galatasaray","Fenerbahçe","Fenerbahce","Beşiktaş","Besiktas","Trabzonspor","Başakşehir","Basaksehir","Sivasspor","Konyaspor","Kayserispor","Antalyaspor","Alanyaspor","Çaykur Rizespor","Caykur Rizespor","Gaziantep FK","Gaziantep","Göztepe","Goztepe","Samsunspor","Kasımpaşa","Kasimpasa","Eyüpspor","Eyupspor","Hatayspor","Adana Demirspor","İstanbulspor","Istanbulspor","Fatih Karagümrük"],
+ "Trendyol Süper Lig":["Amed SK","Amedspor","Galatasaray","Fenerbahçe","Fenerbahce","Beşiktaş","Besiktas","Trabzonspor","Başakşehir","Basaksehir","Sivasspor","Konyaspor","Kayserispor","Antalyaspor","Alanyaspor","Çaykur Rizespor","Caykur Rizespor","Gaziantep FK","Gaziantep","Göztepe","Goztepe","Samsunspor","Kasımpaşa","Kasimpasa","Eyüpspor","Eyupspor","Hatayspor","Adana Demirspor","İstanbulspor","Istanbulspor","Fatih Karagümrük"],
  "Scottish Premiership":["Celtic","Celtic FC","Rangers","Rangers FC","Heart of Midlothian","Hearts","Aberdeen","Hibernian","Dundee United","Dundee FC","Dundee","Motherwell","Kilmarnock","St. Mirren","St Mirren","Ross County","St. Johnstone","St Johnstone","Livingston","Falkirk","Partick Thistle","Ayr United","Dunfermline Athletic"],
  "Österreichische Fußball-Bundesliga":["RB Salzburg","Red Bull Salzburg","Salzburg","SK Sturm Graz","Sturm Graz","Rapid Wien","SK Rapid Wien","Austria Wien","FK Austria Wien","LASK","LASK Linz","TSV Hartberg","Hartberg","Wolfsberger AC","Wolfsberg","Blau-Weiß Linz","Blau Weiss Linz","WSG Tirol","SCR Altach","Altach","Grazer AK","Austria Klagenfurt"],
  "Swiss Super League":["FC Basel 1893","FC Basel","Basel","BSC Young Boys","Young Boys","Servette FC","Servette","FC Zürich","FC Zurich","FC Lugano","Lugano","FC St. Gallen","FC St Gallen","St. Gallen","FC Luzern","Luzern","Lausanne-Sport","Lausanne Sport","Grasshopper Club Zürich","Grasshopper Club Zurich","Grasshoppers","FC Sion","Sion","FC Winterthur","Winterthur","Yverdon Sport","Yverdon"],
@@ -2691,7 +2693,7 @@ $("playerDetailBody").addEventListener("click",e=>{
        marketSimilar=e.target.closest("[data-market-similar]"),
        packBio=e.target.closest("[data-pack-bio]");
  if(packBio){const k=Number(packBio.dataset.packBio),item=pendingPack[k];if(item)openBiography(item,-1);return;}
- if(marketBio){const i=Number(marketBio.dataset.marketBio),x=marketListings[i];if(x)openBiography(marketPreviewItem(x),-1);return;}
+ if(marketBio){const i=Number(marketBio.dataset.marketBio),x=marketListings[i];if(x)openBiography(marketPreviewItem(x),-1,x.base);return;}
  if(marketBid){const i=Number(marketBid.dataset.marketBidAction);if(bidMarketListing(i))openMarketPlayerDetails(i);return;}
  if(marketBuy){const i=Number(marketBuy.dataset.marketBuyAction);if(buyMarketListing(i))$("playerModal").classList.remove("active");return;}
  if(marketSimilar){const i=Number(marketSimilar.dataset.marketSimilar),x=marketListings[i];if(x){$("playerModal").classList.remove("active");$("marketName").value="";$("marketLeague").value=x.base.league||"";updateMarketDependentFilters();if([...$("marketClub").options].some(o=>o.value===x.base.team))$("marketClub").value=x.base.team||"";$("marketPosition").value=x.overridePosition||x.base.position||"";$("marketRatingMin").value=Math.max(65,Math.min(99,listingRating(x)-3));$("marketRatingMax").value=Math.min(99,listingRating(x)+3);updateRatingUI();refreshMarket();}return;}
@@ -3764,8 +3766,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1861",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-61-reloaded")){sessionStorage.setItem("gfut-v18-61-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1862",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-62-reloaded")){sessionStorage.setItem("gfut-v18-62-reloaded","1");location.reload()}});
  });
 }
 
