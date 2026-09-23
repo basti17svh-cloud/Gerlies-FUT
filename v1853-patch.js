@@ -1,0 +1,68 @@
+(()=>{
+'use strict';
+const VERSION='V18.53';
+const wikiCache=new Map();
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function escQ(v){return encodeURIComponent(String(v||'').trim())}
+async function wikiThumb(query){
+ const key=String(query||'').trim().toLowerCase();if(!key)return'';if(wikiCache.has(key))return wikiCache.get(key);
+ try{
+  const url=`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${escQ(query)}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=500&format=json&origin=*`;
+  const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw new Error(String(r.status));const j=await r.json();
+  const pages=Object.values(j?.query?.pages||{});const out=String(pages[0]?.thumbnail?.source||'');wikiCache.set(key,out);return out
+ }catch(e){wikiCache.set(key,'');return''}
+}
+function installStyle(){
+ const s=document.createElement('style');s.id='gfut-v1853-style';s.textContent=`
+.custom-card.totw{color:#f7e4a1;background:radial-gradient(circle at 68% 25%,rgba(255,220,105,.22),transparent 22%),radial-gradient(circle at 28% 68%,rgba(188,140,35,.16),transparent 31%),linear-gradient(145deg,#171817 0%,#050606 38%,#15120b 67%,#020303 100%);box-shadow:inset 0 0 0 1px rgba(246,211,105,.16)}
+.custom-card.totw:before{border-color:rgba(245,210,101,.72);box-shadow:inset 0 0 18px rgba(214,164,48,.12)}
+.custom-card.totw .pname{border-top-color:#d8b651;color:#f7e4a1}.custom-card.totw .meta,.custom-card.totw .stats{color:#e2c76f}.custom-card.totw .card-top{color:#f6dc84}
+.opponent-team-modal .card-shell{cursor:pointer}.opponent-team-modal .card-shell:active{transform:scale(.97)}
+.icon .face img,.custom-card.icon .face img{filter:none!important}
+`;
+ document.head.appendChild(s)
+}
+function patchVersion(){document.title=document.title.replace(/V18\.\d+/,'V18.53');const b=document.querySelector('.build-badge');if(b)b.textContent=VERSION}
+function patchCardClass(){
+ if(typeof window.cardClass!=='function'||window.cardClass.__v1853)return;
+ const old=window.cardClass;const next=function(p,item){if(item?.variant==='special'&&String(item?.eventName||'').toLowerCase().includes('team of the week'))return'totw';return old(p,item)};next.__v1853=true;window.cardClass=next
+}
+function findTotwEntryByName(name){
+ const n=String(name||'').trim().toLowerCase();if(!n||typeof window.liveTotwTeamEntries!=='function')return null;
+ return window.liveTotwTeamEntries().find(e=>{const a=String(e?.player?.name||e?.base?.name||'').trim().toLowerCase();return a===n||a.includes(n)||n.includes(a)})||null
+}
+function installTotwBioClick(){
+ document.addEventListener('click',e=>{
+  const modal=e.target.closest('#opponentTeamModal');if(!modal||!modal.classList.contains('active'))return;
+  const card=e.target.closest('.card-shell');if(!card)return;
+  const title=String(document.querySelector('#opponentTeamModalTitle')?.textContent||'').toLowerCase();if(!title.includes('team of the week'))return;
+  const name=card.querySelector('.pname')?.textContent||'';const entry=findTotwEntryByName(name);if(!entry||typeof window.openBiography!=='function')return;
+  e.preventDefault();e.stopPropagation();window.openBiography(entry.item,-1)
+ },true)
+}
+async function enrichIconFaces(){
+ const icons=Array.isArray(window.MID_ICON_BASES)?window.MID_ICON_BASES:[];
+ for(let i=0;i<icons.length;i++){
+  const p=icons[i];if(p.face)continue;const u=await wikiThumb(`${p.name} footballer`);if(u)p.face=u;
+  if(i%6===5)await sleep(20)
+ }
+ try{if(typeof window.renderMarket==='function'&&document.querySelector('#marketView.active'))window.renderMarket()}catch(e){}
+}
+async function enrichAffiliation(p){
+ if(!p)return;let changed=false;
+ if(p.team&&!p.clubLogo){const u=await wikiThumb(`${p.team} football club`);if(u){p.clubLogo=u;changed=true}}
+ if(p.league&&!p.leagueLogo){const u=await wikiThumb(`${p.league} football league`);if(u){p.leagueLogo=u;changed=true}}
+ if(changed&&typeof window.refreshAffiliationDom==='function')try{window.refreshAffiliationDom()}catch(e){}
+}
+function patchAffiliationDiscovery(){
+ if(typeof window.ensurePlayerAffiliationAssets!=='function'||window.ensurePlayerAffiliationAssets.__v1853)return;
+ const old=window.ensurePlayerAffiliationAssets;const next=function(p){old(p);enrichAffiliation(p)};next.__v1853=true;window.ensurePlayerAffiliationAssets=next
+}
+function hydrateVisibleAffiliations(){
+ const players=Array.isArray(window.PLAYERS)?window.PLAYERS:[];
+ document.querySelectorAll('.affiliation-grid[data-player-id]').forEach(el=>{const id=String(el.dataset.playerId||'');const p=(window.P_BY_ID&&window.P_BY_ID.get)?window.P_BY_ID.get(id):players.find(x=>String(x.id)===id);if(p)enrichAffiliation(p)})
+}
+function observe(){let t=0;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(()=>{patchVersion();patchCardClass();patchAffiliationDiscovery();hydrateVisibleAffiliations()},80)}).observe(document.documentElement,{subtree:true,childList:true})}
+function boot(){installStyle();patchVersion();patchCardClass();patchAffiliationDiscovery();installTotwBioClick();hydrateVisibleAffiliations();enrichIconFaces();observe()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0),{once:true});else setTimeout(boot,0)
+})();
