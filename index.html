@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.59</title>
+<title>Gerlies FUT V18.60</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -946,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.59</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.60</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1465,8 +1465,8 @@ function normCSV(raw){
  const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url"));
  const team=String(first(raw,"club_name","team_name","club","team")).trim();
- const rawLeague=String(first(raw,"league_name","league")).trim(),leagueId=String(first(raw,"league_id","competition_id"));
- return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender:String(first(raw,"gender","sex","player_gender")),baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
+ const rawLeague=String(first(raw,"league_name","league")).trim(),leagueId=String(first(raw,"league_id","competition_id")),gender=String(first(raw,"gender","sex","player_gender"));
+ return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId,gender,"fc27-open-data"),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender,baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function eaObject(raw,key){
@@ -1733,8 +1733,10 @@ function statValue(p,key){const n=Number(p?.[key]||0);if(n>0)return n;const keys
 function resolvedAffiliation(p){
  if(!p)return p;
  const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
- const linkedLeague=String(linked.name||"").trim(),sourceLeague=String(p.league||"").trim(),league=leagueFromClub(team,sourceLeague,p.leagueId)||sourceLeague||linkedLeague;
- return {...p,league,clubLogo:String(p.clubLogo||"").trim()||apiSportsTeamLogo(team)||discoveredBadge("club",team),leagueLogo:String(p.leagueLogo||"").trim()||apiSportsLeagueLogo(league)||String(linked.url||"").trim()||discoveredBadge("league",league)}
+ const linkedLeague=String(linked.name||"").trim(),sourceLeague=String(p.league||"").trim(),league=leagueFromClub(team,sourceLeague,p.leagueId,p.gender,p.source)||sourceLeague||linkedLeague;
+ const canonicalSourceLeague=leagueFromClub("",sourceLeague,p.leagueId,p.gender,p.source),canonicalLinkedLeague=leagueFromClub("",linkedLeague,"",p.gender,p.source);
+ const sourceLogoMatches=!!canonicalSourceLeague&&normalizeKey(canonicalSourceLeague)===normalizeKey(league),linkedLogoMatches=!!canonicalLinkedLeague&&normalizeKey(canonicalLinkedLeague)===normalizeKey(league);
+ return {...p,league,clubLogo:String(p.clubLogo||"").trim()||apiSportsTeamLogo(team)||discoveredBadge("club",team),leagueLogo:(sourceLogoMatches?String(p.leagueLogo||"").trim():"")||apiSportsLeagueLogo(league)||(linkedLogoMatches?String(linked.url||"").trim():"")||discoveredBadge("league",league)}
 }
 function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
 function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div></div>`}
@@ -1785,9 +1787,9 @@ function ensurePlayerAffiliationAssets(p){
  ensureEaPlayerAssets(p)
 }
 function inlineMetaHTML(p){return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
-const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV4")||"{}")))}catch(e){return new Map()}})();
-const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV4")||"{}")))}catch(e){return new Map()}})();
-function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV4",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV4",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
+const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV5")||"{}")))}catch(e){return new Map()}})();
+const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV5")||"{}")))}catch(e){return new Map()}})();
+function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV5",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV5",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
 function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit)return arr;return [hit,...arr.filter(x=>x!==hit)]}
@@ -1846,7 +1848,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1859";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1860";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -2326,7 +2328,24 @@ const LEAGUE_NAME_ALIASES={
  "laliga":"LALIGA EA SPORTS","laliga ea sports":"LALIGA EA SPORTS","la liga":"LALIGA EA SPORTS",
  "laliga hypermotion":"LaLiga 2"
 };
-function leagueFromClub(team,rawLeague="",leagueId=""){
+const EA_MENS_CLUB_LEAGUES={
+ "1A Pro League":["KRC Genk","Genk","KAA Gent","Gent","Club Brugge KV","Club Brugge","RSC Anderlecht","Anderlecht","Royal Antwerp FC","Royal Antwerp","Antwerp","Union Saint-Gilloise","Union SG","Standard Liège","Standard Liege","Sporting Charleroi","Charleroi","Cercle Brugge","KV Mechelen","Mechelen","OH Leuven","Oud-Heverlee Leuven","Sint-Truidense VV","STVV","KVC Westerlo","Westerlo","FCV Dender EH","Dender","Zulte Waregem","KV Kortrijk","Kortrijk","Beerschot","KAS Eupen","Eupen","La Louvière","RAAL La Louvière"],
+ "Eredivisie":["Ajax","AFC Ajax","PSV","PSV Eindhoven","Feyenoord","AZ","AZ Alkmaar","FC Twente","Twente","FC Utrecht","Utrecht","Go Ahead Eagles","NEC Nijmegen","NEC","Sparta Rotterdam","SC Heerenveen","Heerenveen","PEC Zwolle","Fortuna Sittard","FC Groningen","Groningen","Heracles Almelo","Heracles","NAC Breda","FC Volendam","Willem II","RKC Waalwijk","Excelsior","Almere City FC","Vitesse","FC Emmen","Cambuur","Roda JC Kerkrade"],
+ "Liga Portugal":["SL Benfica","Benfica","FC Porto","Porto","Sporting CP","Sporting Clube de Portugal","SC Braga","Braga","Vitória SC","Vitória Guimarães","Vitoria Guimaraes","Boavista FC","Boavista","FC Famalicão","Famalicão","Rio Ave FC","Rio Ave","Gil Vicente FC","Gil Vicente","Casa Pia AC","Casa Pia","Moreirense FC","Moreirense","Estoril Praia","FC Arouca","Arouca","Santa Clara","CD Nacional","Nacional","Tondela","Farense","Alverca"],
+ "Trendyol Süper Lig":["Galatasaray","Fenerbahçe","Fenerbahce","Beşiktaş","Besiktas","Trabzonspor","Başakşehir","Basaksehir","Sivasspor","Konyaspor","Kayserispor","Antalyaspor","Alanyaspor","Çaykur Rizespor","Caykur Rizespor","Gaziantep FK","Gaziantep","Göztepe","Goztepe","Samsunspor","Kasımpaşa","Kasimpasa","Eyüpspor","Eyupspor","Hatayspor","Adana Demirspor","İstanbulspor","Istanbulspor","Fatih Karagümrük"],
+ "Scottish Premiership":["Celtic","Celtic FC","Rangers","Rangers FC","Heart of Midlothian","Hearts","Aberdeen","Hibernian","Dundee United","Dundee FC","Dundee","Motherwell","Kilmarnock","St. Mirren","St Mirren","Ross County","St. Johnstone","St Johnstone","Livingston","Falkirk","Partick Thistle","Ayr United","Dunfermline Athletic"],
+ "Österreichische Fußball-Bundesliga":["RB Salzburg","Red Bull Salzburg","Salzburg","SK Sturm Graz","Sturm Graz","Rapid Wien","SK Rapid Wien","Austria Wien","FK Austria Wien","LASK","LASK Linz","TSV Hartberg","Hartberg","Wolfsberger AC","Wolfsberg","Blau-Weiß Linz","Blau Weiss Linz","WSG Tirol","SCR Altach","Altach","Grazer AK","Austria Klagenfurt"],
+ "Swiss Super League":["FC Basel 1893","FC Basel","Basel","BSC Young Boys","Young Boys","Servette FC","Servette","FC Zürich","FC Zurich","FC Lugano","Lugano","FC St. Gallen","FC St Gallen","St. Gallen","FC Luzern","Luzern","Lausanne-Sport","Lausanne Sport","Grasshopper Club Zürich","Grasshopper Club Zurich","Grasshoppers","FC Sion","Sion","FC Winterthur","Winterthur","Yverdon Sport","Yverdon"],
+ "Super League Vrouwenvoetbal":["RSC Anderlecht Women","RSC Anderlecht Ladies","KRC Genk Ladies","KRC Genk Women","Club Brugge Women","KAA Gent Ladies","Standard Liège Women"]
+};
+function knownEAClubLeague(team){
+ const sig=clubIdentityKey(team),raw=normalizeKey(team);if(!sig&&!raw)return"";
+ for(const [league,names] of Object.entries(EA_MENS_CLUB_LEAGUES)){
+  if(names.some(name=>normalizeKey(name)===raw||clubIdentityKey(name)===sig))return league
+ }
+ return""
+}
+function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
  const id=String(leagueId||"").trim();if(EA_LEAGUE_NAME_BY_ID[id])return EA_LEAGUE_NAME_BY_ID[id];
  const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
  if(LEAGUE_NAME_ALIASES[rk])return LEAGUE_NAME_ALIASES[rk];
@@ -2351,6 +2370,11 @@ function leagueFromClub(team,rawLeague="",leagueId=""){
   }
   if(matches.length===1)return matches[0]
  }
+ const female=/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(gender));
+ const isMensSource=source==="fc27-open-data"||source==="fc27-open-data-men";
+ const mapped=knownEAClubLeague(team),mappedIsWomens=/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(mapped));
+ if(female&&mappedIsWomens)return mapped;
+ if(isMensSource&&!female&&mapped&&!mappedIsWomens)return mapped;
  return String(rawLeague||"");
 }
 
@@ -3730,8 +3754,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1859",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-59-reloaded")){sessionStorage.setItem("gfut-v18-59-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1860",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-60-reloaded")){sessionStorage.setItem("gfut-v18-60-reloaded","1");location.reload()}});
  });
 }
 
