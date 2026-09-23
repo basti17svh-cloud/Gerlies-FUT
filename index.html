@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.56</title>
+<title>Gerlies FUT V18.57</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -943,7 +943,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.56</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.57</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1730,8 +1730,8 @@ function statValue(p,key){const n=Number(p?.[key]||0);if(n>0)return n;const keys
 function resolvedAffiliation(p){
  if(!p)return p;
  const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
- const linkedLeague=String(linked.name||"").trim(),league=linkedLeague||leagueFromClub(team,String(p.league||"").trim())||String(p.league||"").trim();
- return {...p,league,clubLogo:discoveredBadge("club",team)||String(p.clubLogo||"").trim()||apiSportsTeamLogo(team),leagueLogo:String(linked.url||"").trim()||discoveredBadge("league",league)||String(p.leagueLogo||"").trim()||apiSportsLeagueLogo(league)}
+ const linkedLeague=String(linked.name||"").trim(),sourceLeague=String(p.league||"").trim(),league=leagueFromClub(team,sourceLeague)||sourceLeague||linkedLeague;
+ return {...p,league,clubLogo:String(p.clubLogo||"").trim()||apiSportsTeamLogo(team)||discoveredBadge("club",team),leagueLogo:String(p.leagueLogo||"").trim()||apiSportsLeagueLogo(league)||String(linked.url||"").trim()||discoveredBadge("league",league)}
 }
 function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
 function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div></div>`}
@@ -1782,9 +1782,9 @@ function ensurePlayerAffiliationAssets(p){
  ensureEaPlayerAssets(p)
 }
 function inlineMetaHTML(p){return `<div class="quickcard-meta"><span class="inline-chip flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagEmoji(p.nation)}</span><span class="inline-chip" title="${esc(p.league||'Liga')}">${esc(leagueShort(p.league))}</span><span class="inline-chip" title="${esc(p.team||'Verein')}">${esc(clubShort(p.team))}</span></div>`}
-const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV2")||"{}")))}catch(e){return new Map()}})();
-const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV2")||"{}")))}catch(e){return new Map()}})();
-function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV2",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV2",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
+const IMAGE_SOURCE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageSourceCacheV3")||"{}")))}catch(e){return new Map()}})();
+const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(localStorage.getItem("gfutImageFailureCacheV3")||"{}")))}catch(e){return new Map()}})();
+function persistImageCaches(){try{localStorage.setItem("gfutImageSourceCacheV3",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV3",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
 function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit)return arr;return [hit,...arr.filter(x=>x!==hit)]}
@@ -1798,7 +1798,7 @@ function fifaRostersFaceCandidates(id,version=27){const raw=String(id||"").repla
 function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:FC27|FC26)\/(?:components\/items|full\/player-shields)/i.test(String(url||""))}
 function portraitCandidates(p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};
- if(p?.isIcon){const verified=iconPortraitUrl(p);add(verified);if(p?.futwizId){futwizFaceCandidates(p.futwizId).forEach(add);fifaRostersFaceCandidates(p.futwizId,27).forEach(add)}return arr}
+ if(p?.isIcon){const verified=iconPortraitUrl(p);add(verified);if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);return arr}
  add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr
 }
 const API_SPORTS_LEAGUE_IDS={
@@ -1843,7 +1843,7 @@ function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1855";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1857";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -1884,22 +1884,13 @@ function commonsFileUrl(filename){
 }
 function footballEntityScore(result,kind,name){
  const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
- let score=0;
- if(label===target)score+=10;
- if(label&&target&&(label.includes(target)||target.includes(label)))score+=4;
- const ta=new Set(target.split(" ").filter(x=>x.length>2)),la=label.split(" ").filter(x=>x.length>2);
- score+=la.filter(x=>ta.has(x)).length*1.5;
+ const signature=value=>kind==="club"?clubIdentityKey(value).replace(/\b(?:18|19|20)\d{2}\b/g,"").trim():normalizeKey(value);
+ if(label!==target&&signature(label)!==signature(target))return -100;
  if(kind==="club"){
-  if(/association football club|football club|soccer club|professional football club/.test(desc))score+=9;
-  else if(/football|soccer/.test(desc)&&/club|team/.test(desc))score+=5;
-  else if(/sports club/.test(desc))score+=1;
-  else score-=5;
+  return /association football club|football club|soccer club|professional football club/.test(desc)?10:-100;
  }else{
-  if(/association football league|football league|professional football league/.test(desc))score+=9;
-  else if(/football|soccer/.test(desc)&&/league|competition|division/.test(desc))score+=6;
-  else score-=5;
+  return /association football league|football league|professional football league|association football competition/.test(desc)?10:-100;
  }
- return score
 }
 async function wikidataFindFootballEntity(name,kind){
  const base=String(name||"").trim();
@@ -1926,13 +1917,13 @@ function entityLabel(entity){
 }
 
 /* V18.53 — icon portrait resolver (Wikidata P18 / Wikimedia Commons), cached lazily. */
-const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1856";
+const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1857";
 let ICON_PORTRAIT_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_ICON_PORTRAIT_KEY)||"{}")||{}}catch(e){return{}}})();
 const ICON_PORTRAIT_PENDING=new Set(),ICON_PORTRAIT_QUEUE=[];
 let ICON_PORTRAIT_ACTIVE=0,ICON_PORTRAIT_PREWARM_STARTED=false,ICON_PORTRAIT_RENDER_TIMER=0;
 function persistIconPortraits(){try{localStorage.setItem(GFUT_ICON_PORTRAIT_KEY,JSON.stringify(ICON_PORTRAIT_CACHE))}catch(e){}}
 function iconPortraitKey(name){return normalizeKey(name)}
-function iconPortraitUrl(p){if(!p?.isIcon)return String(p?.face||"").trim();return String(futwizVerifiedIconFace(p?.name)||p?.face||"").trim()}
+function iconPortraitUrl(p){if(!p?.isIcon)return String(p?.face||"").trim();return String(futwizVerifiedIconFace(p?.name)||"").trim()}
 function commonsPortraitUrl(filename){const f=String(filename||"").trim();return f?`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}?width=360`:""}
 function footballPersonScore(result,name){
  const label=normalizeKey(result?.label||""),target=normalizeKey(name),desc=normalizeKey(result?.description||"");
@@ -1993,9 +1984,9 @@ function applyDiscoveredClubMeta(team,row){
  let changed=false;
  for(const p of PLAYERS){
   const pk=normalizeKey(p?.team),psig=clubIdentityKey(p?.team);if(pk!==tk&&(!tsig||psig!==tsig))continue;
-  if(row.url&&p.clubLogo!==row.url){p.clubLogo=row.url;changed=true}
-  if(row.leagueName&&p.league!==row.leagueName){p.league=row.leagueName;changed=true}
-  if(leagueUrl&&p.leagueLogo!==leagueUrl){p.leagueLogo=leagueUrl;changed=true}
+   if(row.url&&!p.clubLogo){p.clubLogo=row.url;changed=true}
+   if(row.leagueName&&!p.league){p.league=row.leagueName;changed=true}
+   if(leagueUrl&&!p.leagueLogo){p.leagueLogo=leagueUrl;changed=true}
  }
  if(changed){
   P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
@@ -2008,7 +1999,7 @@ function applyDiscoveredLeagueMeta(league,row){
  let changed=false;
  for(const p of PLAYERS){
   if(normalizeKey(p?.league)!==lk)continue;
-  if(p.leagueLogo!==row.url){p.leagueLogo=row.url;changed=true}
+   if(!p.leagueLogo){p.leagueLogo=row.url;changed=true}
  }
  if(changed){
   P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
@@ -2125,12 +2116,11 @@ function emblemCandidates(kind,p){
   if(p?.team&&!discoveredBadge("club",p.team))queueBadgeDiscovery("club",p.team,p.league,true);
  }
  if(kind==="league"){
-  const linked=discoveredClubLeague(p?.team),leagueName=String(linked.name||p?.league||"").trim();
-  // Team-linked competition is authoritative when a club lookup resolved one.
-  add(linked.url);
-  add(discoveredBadge("league",leagueName));
+  const linked=discoveredClubLeague(p?.team),leagueName=String(p?.league||linked.name||"").trim();
   add(p?.leagueLogo);
   add(apiSportsLeagueLogo(leagueName));
+  add(linked.url);
+  add(discoveredBadge("league",leagueName));
   if(p?.team&&!linked.url)queueBadgeDiscovery("club",p.team,p.league,true);
   if(leagueName&&!discoveredBadge("league",leagueName))queueBadgeDiscovery("league",leagueName,"",true);
  }
@@ -2445,6 +2435,28 @@ $("dbRetry").addEventListener("click",()=>syncDatabase(false));$("dbReset").addE
 
 function leagueChoice(id){return LEAGUE_CHOICES.find(x=>x.id===id)||LEAGUE_CHOICES.find(x=>x.label===id)}
 function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const canonical=c.label==="Serie A"?"Serie A":c.label==="Ligue 1"?"Ligue 1":c.label;return PLAYERS.filter(p=>p.league===canonical)}
+function buildStarter(id){
+ const pool=leaguePool(id).filter(p=>p&&p.id&&Number.isFinite(Number(p.ovr)));
+ const tiers=[
+  pool.filter(p=>Number(p.ovr)>=75&&Number(p.ovr)<=80).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de")),
+  pool.filter(p=>Number(p.ovr)>=65&&Number(p.ovr)<75).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de")),
+  pool.filter(p=>Number(p.ovr)<65).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de"))
+ ];
+ const counts=[3,4,11];
+ if(tiers.some((rows,i)=>rows.length<counts[i]))return null;
+ const selected=tiers.map((rows,i)=>rows.slice(0,counts[i]));
+ const isKeeper=p=>[p?.position,...String(p?.alt||"").split(/[,/]/)].some(x=>String(x||"").trim().toUpperCase()==="GK");
+ if(!selected.flat().some(isKeeper)){
+  const keeperTier=tiers.findIndex(rows=>rows.some(isKeeper));
+  if(keeperTier>=0){
+   const keeper=tiers[keeperTier].find(isKeeper);
+   const replaceIndex=selected[keeperTier].findIndex(p=>!isKeeper(p));
+   if(replaceIndex>=0)selected[keeperTier][replaceIndex]=keeper;
+  }
+ }
+ const rank=p=>{const pos=String(p?.position||"").toUpperCase();if(pos==="GK")return 0;if(["LB","CB","RB","LWB","RWB"].includes(pos))return 1;if(["CDM","CM","CAM"].includes(pos))return 2;if(["LM","RM","LW","RW"].includes(pos))return 3;if(["CF","ST"].includes(pos))return 4;return 2};
+ return selected.flat().sort((a,b)=>rank(a)-rank(b)||b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de"));
+}
 
 function prepareOnboarding(){
  $("onboard").classList.add("active");
@@ -2970,7 +2982,7 @@ function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").textContent=`Transfermarkt · ${esc(x.base.team)} · ${fmt(x.price)} Coins`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,pi,{shownPosition:shown,slot:null,fits:true,chem:null,context:`${fmt(x.price)} Coins`})}<div class="detail-menu"><button class="menu-action" data-market-bio="${i}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-market-bid-action="${i}" ${x.settled?'disabled':''}><span><span>Bieten +${fmt(inc)} Coins</span><small>Aktuelles Gebot: ${fmt(x.bid)} Coins · ${x.settled?'Angebot beendet':auctionTime(x)+' Sekunden'}</small></span><b>›</b></button><button class="menu-action" data-market-buy-action="${i}" ${x.settled?'disabled':''}><span><span>Sofortkauf · ${fmt(x.price)} Coins</span><small>Spieler direkt deinem Verein hinzufügen.</small></span><b>›</b></button><button class="menu-action" data-market-similar="${i}"><span><span>Ähnliche Spieler suchen</span><small>Position, Liga und Rating als Filter übernehmen.</small></span><b>›</b></button></div>`;
- $("playerModal").classList.add("active");
+ showUiLayer("playerModal","player");
 }
 function buyMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled||state.coins<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}state.coins-=x.price;state.club.push(listingToClubItem(x));state.stats.market++;x.settled=true;x.won=true;save();renderAll();renderMarket();toast(`${x.base.name} gekauft.`);return true}
 function bidMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled)return false;const inc=Math.max(50,Math.round(x.bid*.05/50)*50),newBid=x.bid+inc;if(state.coins<newBid){toast("Nicht genügend Coins.");return false}if(x.myBid)state.coins+=x.myBid;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;if(Math.random()<.38)x.bid+=Math.max(50,Math.round(x.bid*.04/50)*50);save();renderWallet();renderMarket();toast(`Gebot abgegeben: ${fmt(newBid)} Coins`);return true}
@@ -3567,29 +3579,47 @@ $("promoCodeInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")redeemPro
 function renderAll(){renderWallet();renderHome();renderSquad();renderPlay();renderStore();renderTasks();renderSBC();renderEvos();renderClub();renderSocial();renderPromo();fillLeagueFilter();if(!marketListings.length)refreshMarket();save()}
 
 // V18.25 — Android/Samsung Zurück: echte App-Navigation statt versehentlichem Beenden.
-let uiHistoryApplying=false,squadBattleStage="closed";
+let uiHistoryApplying=false,squadBattleStage="closed",uiLayerStack=[];
+const UI_LAYER_BASE_Z=170;
 function currentViewId(){return document.querySelector(".view.active")?.id||"homeView"}
 function uiState(kind="view",extra={}){return{gfut:true,kind,view:extra.view||currentViewId(),...extra}}
 function pushUiState(kind="view",extra={}){if(uiHistoryApplying)return;history.pushState(uiState(kind,extra),"",location.href)}
 function replaceUiState(kind="view",extra={}){history.replaceState(uiState(kind,extra),"",location.href)}
-function showUiLayer(id,kind=id,extra={},historyMode="push"){const el=$(id);if(!el)return;const wasActive=el.classList.contains("active");el.classList.add("active");if(historyMode==="replace")replaceUiState(kind,{layer:id,...extra});else if(historyMode!=="none"&&(!wasActive||history.state?.kind!==kind))pushUiState(kind,{layer:id,...extra})}
-function closeUiLayer(id,kind){const el=$(id);if(!el?.classList.contains("active"))return;if(history.state?.gfut&&history.state.kind===kind){history.back();return}el.classList.remove("active");if(id==="squadBattleModal")squadBattleStage="closed"}
+function syncUiLayerStack(){
+ const active=[...document.querySelectorAll(".modal.active")],ids=new Set(active.map(el=>el.id).filter(Boolean));
+ uiLayerStack=uiLayerStack.filter(id=>ids.has(id));
+ for(const el of active)if(el.id&&!uiLayerStack.includes(el.id))uiLayerStack.push(el.id);
+ uiLayerStack.forEach((id,i)=>{const el=$(id);if(el)el.style.zIndex=String(UI_LAYER_BASE_Z+i+1)})
+}
+function topUiLayer(){syncUiLayerStack();return uiLayerStack[uiLayerStack.length-1]||""}
+function removeUiLayer(id){
+ const el=$(id);if(el)el.classList.remove("active");
+ uiLayerStack=uiLayerStack.filter(x=>x!==id);
+ if(id==="squadBattleModal")squadBattleStage="closed";
+ syncUiLayerStack()
+}
+function closeTopUiLayer(){
+ const id=topUiLayer();if(!id)return false;
+ if(id==="squadBattleModal"&&squadBattleStage==="preview"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
+ removeUiLayer(id);return true
+}
+function showUiLayer(id,kind=id,extra={},historyMode="push"){
+ const el=$(id);if(!el)return;
+ const wasActive=el.classList.contains("active");
+ uiLayerStack=uiLayerStack.filter(x=>x!==id);el.classList.add("active");uiLayerStack.push(id);syncUiLayerStack();
+ if(historyMode==="replace")replaceUiState(kind,{layer:id,...extra});else if(historyMode!=="none"&&(!wasActive||history.state?.kind!==kind))pushUiState(kind,{layer:id,...extra})
+}
+function closeUiLayer(id,kind){
+ const el=$(id);if(!el?.classList.contains("active"))return;
+ if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
+ removeUiLayer(id)
+}
 function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();if(id==="marketView"&&!marketListings.length)refreshMarket();if(id==="clubView")renderClub();if(id==="sbcView")renderSBC();if(id==="objectivesView")renderTasks();if(id==="evolutionView")renderEvos();if(id==="extrasView"){renderPromo();renderSocial();updatePwaInstallUi();}if(id==="squadView")renderSquad();if(id==="playView")renderPlay();if(id==="socialView")renderSocial();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
 function protectLockedBack(message,kind){history.pushState(uiState(kind),"",location.href);toast(message)}
 function handleAppBack(targetState){
- if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
- if($("results")?.classList.contains("active")&&pendingResolved.size!==pendingPack.length){protectLockedBack("Pack-Inhalt zuerst vollständig zuweisen.","pack-results");return true}
- if($("opponentTeamModal")?.classList.contains("active")){$("opponentTeamModal").classList.remove("active");return true}
- if($("bioModal")?.classList.contains("active")){$("bioModal").classList.remove("active");return true}
- if($("picker")?.classList.contains("active")){$("picker").classList.remove("active");return true}
- if($("playerModal")?.classList.contains("active")){$("playerModal").classList.remove("active");return true}
- if($("friendTeamModal")?.classList.contains("active")){$("friendTeamModal").classList.remove("active");return true}
- if($("campaignModal")?.classList.contains("active")){$("campaignModal").classList.remove("active");return true}
- if($("teamManagementModal")?.classList.contains("active")){$("teamManagementModal").classList.remove("active");return true}
- if($("squadBattleModal")?.classList.contains("active")){
-  if(squadBattleStage==="preview"){renderSquadBattleSelection("none");return true}
-  $("squadBattleModal").classList.remove("active");squadBattleStage="closed";return true
- }
+  if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
+  if($("results")?.classList.contains("active")&&pendingResolved.size!==pendingPack.length){protectLockedBack("Pack-Inhalt zuerst vollständig zuweisen.","pack-results");return true}
+  if(closeTopUiLayer())return true;
  if($("match")?.classList.contains("active")){
   if($("managerPanel")?.classList.contains("active")){resumeMatch();return true}
   if($("matchResult")?.classList.contains("active")){stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;if(targetState?.gfut&&targetState.view)switchView(targetState.view,{push:false});return true}
@@ -3653,8 +3683,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1849",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-16-reloaded")){sessionStorage.setItem("gfut-v18-16-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1857",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-57-reloaded")){sessionStorage.setItem("gfut-v18-57-reloaded","1");location.reload()}});
  });
 }
 
