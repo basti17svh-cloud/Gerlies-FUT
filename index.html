@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.57</title>
+<title>Gerlies FUT V18.58</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -943,7 +943,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.57</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.58</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2974,10 +2974,11 @@ function refreshMarket(){
  $("marketResultMeta").innerHTML=`<span>${fmt(marketListings.length)} Angebote angezeigt${pool.length?` · ${fmt(pool.length)} Spieler passen zu den Filtern`:""}</span><span>${marketListings.length?"Bot-Markt aktiv":`DB: ${fmt(PLAYERS.length)} Spieler geladen`}</span>`;
  renderMarket()
 }
+function bidIncrement(amount){return Math.max(50,Math.round(Number(amount||0)*.05/50)*50)}
 function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
 function settleAuctions(){for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;toast(`Gebot gewonnen: ${x.base.name}`)}}save()}
 function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
-function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=Math.max(50,Math.round(x.bid*.05/50)*50);return`<div class="item market-listing" data-market-listing="${i}"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
+function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=bidIncrement(x.bid);return`<div class="item market-listing" data-market-listing="${i}"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").textContent=`Transfermarkt · ${esc(x.base.team)} · ${fmt(x.price)} Coins`;
@@ -2985,7 +2986,7 @@ function openMarketPlayerDetails(i){
  showUiLayer("playerModal","player");
 }
 function buyMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled||state.coins<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}state.coins-=x.price;state.club.push(listingToClubItem(x));state.stats.market++;x.settled=true;x.won=true;save();renderAll();renderMarket();toast(`${x.base.name} gekauft.`);return true}
-function bidMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled)return false;const inc=Math.max(50,Math.round(x.bid*.05/50)*50),newBid=x.bid+inc;if(state.coins<newBid){toast("Nicht genügend Coins.");return false}if(x.myBid)state.coins+=x.myBid;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;if(Math.random()<.38)x.bid+=Math.max(50,Math.round(x.bid*.04/50)*50);save();renderWallet();renderMarket();toast(`Gebot abgegeben: ${fmt(newBid)} Coins`);return true}
+function bidMarketListing(i){const x=marketListings[Number(i)];if(!x||x.settled)return false;const inc=bidIncrement(x.bid),newBid=x.bid+inc;if(state.coins<newBid){toast("Nicht genügend Coins.");return false}if(x.myBid)state.coins+=x.myBid;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;if(Math.random()<.38)x.bid+=Math.max(50,Math.round(x.bid*.04/50)*50);save();renderWallet();renderMarket();toast(`Gebot abgegeben: ${fmt(newBid)} Coins`);return true}
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="event")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
@@ -3683,8 +3684,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1857",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-57-reloaded")){sessionStorage.setItem("gfut-v18-57-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1858",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-58-reloaded")){sessionStorage.setItem("gfut-v18-58-reloaded","1");location.reload()}});
  });
 }
 
