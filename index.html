@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.66</title>
+<title>Gerlies FUT V18.67</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -946,7 +946,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.66</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.67</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1358,6 +1358,10 @@ function totwInfo(base){
 }
 function currentTotwBases(){return PLAYERS.filter(p=>!!totwInfo(p))}
 const LIVE_TOTW_BASE_CACHE=new Map(),LIVE_TOTW_EA_PENDING=new Set();
+function restoreSyntheticPlayerIds(){
+ for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);
+ for(const base of LIVE_TOTW_BASE_CACHE.values())if(base?.id)P_BY_ID.set(String(base.id),base)
+}
 function bestEaTotwAsset(info,rows){
  const assets=(rows||[]).map(normEAAsset).filter(Boolean);
  let matches=assets.filter(a=>totwAliasMatch(a,info)===100);
@@ -1384,7 +1388,7 @@ function mergeTotwBase(base,a,index){
   source:fallback.source||base?.source||"fc27-totw-preview"
  };
  if(!a)return seed;
- return {...seed,id:a.id||seed.id,name:a.name||seed.name,fullName:a.fullName||seed.fullName,firstName:a.firstName||seed.firstName,lastName:a.lastName||seed.lastName,
+ return {...seed,id:a.id||seed.id,name:fallback.name||a.name||seed.name,fullName:fallback.fullName||a.fullName||seed.fullName,firstName:fallback.firstName||a.firstName||seed.firstName,lastName:fallback.lastName||a.lastName||seed.lastName,
   team:a.team||seed.team,league:a.league||seed.league,nation:a.nation||seed.nation,face:a.face||seed.face,nationFlag:a.nationFlag||seed.nationFlag,nationCode:a.nationCode||seed.nationCode,
   clubLogo:a.clubLogo||seed.clubLogo,teamId:a.teamId||seed.teamId,leagueLogo:a.leagueLogo||seed.leagueLogo,leagueId:a.leagueId||seed.leagueId,
   ovr:a.ovr||seed.ovr,pac:a.pac||seed.pac,sho:a.sho||seed.sho,pas:a.pas||seed.pas,dri:a.dri||seed.dri,def:a.def||seed.def,phy:a.phy||seed.phy}
@@ -1916,7 +1920,7 @@ async function loadVerifiedBadges(){
 
 /* V18.46 — generic crest resolver for clubs/leagues outside the hardcoded Top-5 set.
    Uses Wikidata entity identity + Wikimedia Commons logo files, cached locally and resolved lazily. */
-const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1866";
+const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1867";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
@@ -2070,7 +2074,7 @@ function applyDiscoveredClubMeta(team,row){
  }
  if(changed){
   P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
-  for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);
+  restoreSyntheticPlayerIds();
   scheduleBadgePlayerSave()
  }
 }
@@ -2083,7 +2087,7 @@ function applyDiscoveredLeagueMeta(league,row){
  }
  if(changed){
   P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));
-  for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);
+  restoreSyntheticPlayerIds();
   scheduleBadgePlayerSave()
  }
  for(const rowClub of Object.values(BADGE_DISCOVERY_CACHE)){
@@ -2528,8 +2532,9 @@ function applyEaAssetToPlayerById(a){
  if(a.leagueLogo)next.leagueLogo=a.leagueLogo;if(a.leagueId)next.leagueId=a.leagueId;
  if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
  if(a.face)next.face=a.face;
- PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);
+ PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);restoreSyntheticPlayerIds();
  propagateEaAffiliation(next);
+ restoreSyntheticPlayerIds();
  return true
 }
 async function enrichVisibleSquadAssets(){
@@ -2570,12 +2575,12 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);
- P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;for(const icon of MID_ICON_BASES)P_BY_ID.set(String(icon.id),icon);$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
+ P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
  if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
@@ -3143,7 +3148,12 @@ function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="
 $("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="event")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
-$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;$("marketName").value=playerDisplaySearchName(p);const type=b.dataset.marketNameType||"";if(type){$("marketSpecialType").value=type;$("marketQuality").value="special"}hideMarketNameSuggestions();updateRatingUI();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
+$("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;
+ const type=b.dataset.marketNameType||"";
+ $("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";
+ $("marketPriceMin").value="";$("marketPriceMax").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;
+ $("marketSpecialType").value=type;$("marketQuality").value=type?"special":rarityOf(p)==="bronze"?"bronze":"";
+ $("marketName").value=playerDisplaySearchName(p);hideMarketNameSuggestions();updateRatingUI();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
 document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
 $("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
 $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]"),listing=e.target.closest("[data-market-listing]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}if(listing){openMarketPlayerDetails(Number(listing.dataset.marketListing));return}})
@@ -3837,8 +3847,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1866",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-66-reloaded")){sessionStorage.setItem("gfut-v18-66-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1867",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-67-reloaded")){sessionStorage.setItem("gfut-v18-67-reloaded","1");location.reload()}});
  });
 }
 
