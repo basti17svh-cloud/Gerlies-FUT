@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.88</title>
+<title>Gerlies FUT V18.89</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1041,7 +1041,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.88</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.89</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3522,7 +3522,7 @@ $ ("resultAllClub").addEventListener("click",()=>{const dupMap=packDuplicateMap(
 $ ("resultQuickSellAll").addEventListener("click",()=>{const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));if(!unresolved.length)return;const total=unresolved.reduce((s,x)=>s+quickSell(x.i),0);if(!confirm(`Wirklich alle ${unresolved.length} verbleibenden Karten für ${fmt(total)} Coins schnellverkaufen?`))return;state.coins+=total;unresolved.forEach(x=>pendingResolved.add(x.k));save();renderPackResults();renderAll();toast(`+${fmt(total)} Coins`)})
 $ ("resultDone").addEventListener("click",()=>{if(pendingResolved.size!==pendingPack.length)return;$ ("results").classList.remove("active");pendingPack=[];pendingResolved=new Set();state.pendingPack=[];state.pendingResolved=[];renderAll()})
 
-function quickSell(i){const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
+function quickSell(i){if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function renderClub(){
  const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value;
  let arr=state.club.filter(i=>!(state.transferList||[]).includes(i.uid)).filter(i=>{const b=displayBase(i);if(!b)return false;const positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))});
@@ -3616,7 +3616,7 @@ function createMarketListing(base,filters){let variant="",eventName="",boost=0,o
  else if(filters.specialType==="event"){const sp=specialVariant("event");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
- const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid";let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);const start=Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+ const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
 function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "))}
 function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
@@ -4851,12 +4851,26 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
+const GFUT_BUILD="V18.89";
+async function checkForGerliesUpdate(){
+ if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
+ try{
+  const url=new URL("./index.html",location.href);url.searchParams.set("_gfut_update",Date.now().toString());
+  const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
+  if(!res.ok)return;const html=await res.text(),match=html.match(/<title>Gerlies FUT (V[\d.]+)<\/title>/),remote=match?.[1]||"";
+  if(remote&&remote!==GFUT_BUILD&&!sessionStorage.getItem("gfut-update-"+remote)){
+   sessionStorage.setItem("gfut-update-"+remote,"1");
+   try{const reg=await navigator.serviceWorker?.getRegistration("./");await reg?.update()}catch(e){}
+   const fresh=new URL("./",location.href);fresh.searchParams.set("_gfut_updated",Date.now().toString());location.replace(fresh.href)
+  }
+ }catch(e){console.warn("Update-Prüfung:",e)}
+}
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1888",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-88-reloaded")){sessionStorage.setItem("gfut-v18-88-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1889",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-89-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
  });
-}
+}else window.addEventListener("load",checkForGerliesUpdate);
 
 </script>
 <script src="./season-system.js"></script>
