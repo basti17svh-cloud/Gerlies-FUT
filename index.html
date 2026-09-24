@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.86</title>
+<title>Gerlies FUT V18.87</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -937,7 +937,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 /* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
 
-/* V18.86 — Companion-style SBC slot details with left/right navigation; no market action */
+/* V18.87 — German SBC/TOTW labels and complete SBC assistant plans */
 
 /* V18.85 — SBC Assistant: auto-fill by rating, quality, positions, league and team protection */
 
@@ -1040,7 +1040,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.86</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.87</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1136,7 +1136,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Premium-Packs kaufen. Nach dem Reveal entscheidest du bei jedem Spieler: Club oder Schnellverkauf.</p></div><div class="section"><div id="liveContentPanel" class="live-content"></div><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Objectives, SBCs und Season.</p></div><div id="ownedPacks"></div></div></section>
 
-<section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Foundation-Upgrades mit Club-Spielern und Duplikaten aus deinem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
+<section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Grundlagen-Herausforderungen mit Spielern aus deinem Verein und dem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
 <section id="objectivesView" class="view"><div class="headline"><h2>Ziele</h2><p>Tages-, Wochen- und Saisonziele bringen SP und Belohnungen für deinen Club.</p></div><div class="section"><button class="pass-link" data-go="seasonPassView">Season Pass ansehen →</button><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
 <section id="seasonPassView" class="view"><div class="headline"><h2>Season Pass</h2><p>Spiele, erfülle Ziele und hole Belohnungen auf dem kostenlosen und Premium-Pfad ab.</p></div><div class="section"><button class="pass-link" data-go="objectivesView">Ziele für Season Points ansehen →</button><div id="seasonPass"></div></div></section>
@@ -1155,7 +1155,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
       <div class="market-field"><label>Position</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select></div>
       <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
-      <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team of the Week</option><option value="icon">Icons</option><option value="event">Eventkarten</option></select></div>
+      <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="event">Eventkarten</option></select></div>
       <div class="range-card">
         <div class="range-head"><strong>Gesamtwertung</strong><span id="marketRatingLabel">65 – 99</span></div>
         <div class="dual-range"><input id="marketRatingMin" type="range" min="65" max="99" value="65"><input id="marketRatingMax" type="range" min="65" max="99" value="99"></div>
@@ -1545,9 +1545,10 @@ function uniqueTotwPlayer(matches){
  return ids.size===1&&matches.length?matches[0]:null
 }
 function totwIsActive(at=new Date()){return !!activeTotwWeek(at)}
+function totwDisplayName(name){return String(name||"").replace(/^Team of the Week\b/i,"Team der Woche")}
 function updateTotwMarketOption(){
  const option=$("marketSpecialType")?.querySelector('option[value="totw"]');if(!option)return;
- option.disabled=false;option.textContent="Team of the Week"
+ option.disabled=false;option.textContent="Team der Woche"
 }
 function totwInfo(base){
  if(!base)return null;const team=activeTotwWeek();if(!team)return null;
@@ -1649,10 +1650,10 @@ function totwTeamCard(entry,slot=null){
 function openTotwTeam(){
  const all=liveTotwTeamEntries(),xi=TOTW_XI_ORDER.map(i=>all[i]).filter(Boolean),bench=TOTW_BENCH_ORDER.map(i=>all[i]).filter(Boolean),reserve=TOTW_RESERVE_ORDER.map(i=>all[i]).filter(Boolean);
  const rating=xi.length?Math.round(xi.reduce((n,e)=>n+Number(e.player.ovr||0),0)/xi.length):0;
- $("opponentTeamModalTitle").textContent=LIVE_TOTW.name;
+ $("opponentTeamModalTitle").textContent=totwDisplayName(LIVE_TOTW.name);
  $("opponentTeamModalSub").textContent=`3-1-4-2 · ${rating} GES · ${all.length} Spieler`;
  const pitch=TOTW_VIEW_SLOTS.map((slot,i)=>`<div class="friend-slot totw-slot ${xi[i]&&posFit(xi[i].player,slot.p)<=0?"out":""}" style="left:${slot.x}%;top:${slot.y}%">${xi[i]?totwTeamCard(xi[i],slot.p):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}</div>`).join("");
- $("opponentTeamModalBody").innerHTML=`<div class="totw-team-head"><div><strong>${esc(LIVE_TOTW.name)}</strong><span>${totwIsActive()?"Aktuelles Team":"Archiviertes Team"} · Ausrufezeichen = falsche Position</span></div><span>${totwIsActive()?"Aktiv bis":"Beendet am"} ${esc(LIVE_TOTW.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Rating</span></div><div class="kpi"><strong>3-1-4-2</strong><span>Formation</span></div><div class="kpi"><strong>${all.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench">${bench.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div><div class="totw-section-title">Reserve</div><div class="totw-reserve">${reserve.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div>`;
+ $("opponentTeamModalBody").innerHTML=`<div class="totw-team-head"><div><strong>${esc(totwDisplayName(LIVE_TOTW.name))}</strong><span>${totwIsActive()?"Aktuelles Team":"Archiviertes Team"} · Ausrufezeichen = falsche Position</span></div><span>${totwIsActive()?"Aktiv bis":"Beendet am"} ${esc(LIVE_TOTW.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Gesamtstärke</span></div><div class="kpi"><strong>3-1-4-2</strong><span>Formation</span></div><div class="kpi"><strong>${all.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench">${bench.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div><div class="totw-section-title">Reserve</div><div class="totw-reserve">${reserve.map(e=>`<div>${totwTeamCard(e)}</div>`).join("")}</div>`;
  showUiLayer("opponentTeamModal","opponent-team")
 }
 $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-totw-bio]");if(!btn)return;const entry=liveTotwTeamEntries()[Number(btn.dataset.totwBio)];if(entry)openBiography(entry.item,null,entry.player)});
@@ -1671,11 +1672,11 @@ const TASKS=[
 ];
 
 const SBCS=[
- {group:"Foundations",id:"bronze",name:"Room To Grow",desc:"11 Bronze-Spieler abgeben.",req:"11× Bronze · max. OVR 64",filter:b=>rarityOf(b)==="bronze",count:11,reward:{pack:"silver",qty:1}},
- {group:"Foundations",id:"silver",name:"Build Up Play",desc:"11 Silber-Spieler abgeben.",req:"11× Silber · OVR 65–74",filter:b=>rarityOf(b)==="silver",count:11,reward:{pack:"gold",qty:1}},
- {group:"Upgrades",id:"gold",name:"Raw Power",desc:"11 Gold-Spieler abgeben.",req:"11× Gold · Durchschnitt max. 85",filter:b=>rarityOf(b)==="gold",count:11,maxAvg:85,reward:{pack:"82",qty:1}},
- {group:"Upgrades",id:"83squad",name:"83-Rated Squad",desc:"11 Spieler mit hohem Durchschnitt.",req:"11 Spieler · Durchschnitt mindestens 83",filter:b=>b.ovr>=75,count:11,minAvg:83,reward:{pack:"goldplayers",qty:1}},
- {group:"League",id:"sameleague",name:"League Link",desc:"11 Goldspieler aus einer Liga.",req:"11 Gold · gleiche Liga",filter:b=>rarityOf(b)==="gold",count:11,sameLeague:true,reward:{coins:3500,pack:"82",qty:1}}
+ {group:"Grundlagen",id:"bronze",name:"Platz zum Wachsen",desc:"11 Bronze-Spieler abgeben.",req:"11× Bronze · max. GES 64",filter:b=>rarityOf(b)==="bronze",count:11,reward:{pack:"silver",qty:1}},
+ {group:"Grundlagen",id:"silver",name:"Spielaufbau",desc:"11 Silber-Spieler abgeben.",req:"11× Silber · GES 65–74",filter:b=>rarityOf(b)==="silver",count:11,reward:{pack:"gold",qty:1}},
+ {group:"Verbesserungen",id:"gold",name:"Volle Stärke",desc:"11 Gold-Spieler abgeben.",req:"11× Gold · Durchschnitt max. 85",filter:b=>rarityOf(b)==="gold",count:11,maxAvg:85,reward:{pack:"82",qty:1}},
+ {group:"Verbesserungen",id:"83squad",name:"83er-Team",desc:"11 Spieler mit hohem Durchschnitt.",req:"11 Spieler · Durchschnitt mindestens 83",filter:b=>b.ovr>=75,count:11,minAvg:83,reward:{pack:"goldplayers",qty:1}},
+ {group:"Ligen",id:"sameleague",name:"Ligaverbindung",desc:"11 Goldspieler aus einer Liga.",req:"11 Gold · gleiche Liga",filter:b=>rarityOf(b)==="gold",count:11,sameLeague:true,reward:{coins:3500,pack:"82",qty:1}}
 ];
 
 function baseState(){return{
@@ -3406,7 +3407,7 @@ function generatePack(id){
  return arr.slice(0,p.count)
 }
 function renderStore(){
- const activePromos=activePromoPacks(),reset=nextPromoReset(new Date(),19),live=$("liveContentPanel");if(live)live.innerHTML=`<h3>Live Content</h3><p>${totwIsActive()?`<strong>${esc(LIVE_TOTW.name)}</strong>, Mid Icons und wechselnde Promo-Packs sind aktiv.`:`<strong>${esc(LIVE_TOTW.name)}</strong> ist beendet. Mid Icons und wechselnde Promo-Packs sind verfügbar.`}</p><div class="live-badges">${totwIsActive()?`<span class="live-badge">${LIVE_TOTW.players.length} TOTW-Spieler</span>`:""}<span class="live-badge">${MID_ICON_BASES.length} Mid Icons</span><span class="live-badge event">Promo-Wechsel täglich 19:00</span></div><div class="pack-rotation-note">Heute aktiv: ${activePromos.map(p=>esc(p.name)).join(" · ")}. Wechsel um ${reset.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}. Jedes Promo-Pack ist pro 19-Uhr-Fenster auf 10 Käufe begrenzt.</div>`;
+ const activePromos=activePromoPacks(),reset=nextPromoReset(new Date(),19),live=$("liveContentPanel");if(live)live.innerHTML=`<h3>Aktuelle Inhalte</h3><p>${totwIsActive()?`<strong>${esc(totwDisplayName(LIVE_TOTW.name))}</strong>, mittlere Ikonen und wechselnde Promo-Packs sind aktiv.`:`<strong>${esc(totwDisplayName(LIVE_TOTW.name))}</strong> ist beendet. Mittlere Ikonen und wechselnde Promo-Packs sind verfügbar.`}</p><div class="live-badges">${totwIsActive()?`<span class="live-badge">${LIVE_TOTW.players.length} Spieler im Team der Woche</span>`:""}<span class="live-badge">${MID_ICON_BASES.length} mittlere Ikonen</span><span class="live-badge event">Promo-Wechsel täglich 19:00</span></div><div class="pack-rotation-note">Heute aktiv: ${activePromos.map(p=>esc(p.name)).join(" · ")}. Wechsel um ${reset.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}. Jedes Promo-Pack ist pro 19-Uhr-Fenster auf 10 Käufe begrenzt.</div>`;
  const purch=activeStorePacks();$("packGrid").innerHTML=purch.map(p=>{const lim=promoUsage(p),limited=Number.isFinite(lim.remaining),sold=limited&&lim.remaining<=0,resetAt=p.dailyLimit?nextPromoReset(new Date(),p.resetHour??19):null;return`<div class="pack ${p.promo?'promopack':''}" data-pack-kind="${esc(p.packKind||'standard')}"><div class="pack-tag">${esc(p.tag||'SHOP')}</div><div class="packart ${packArtClass(p)}">${esc(packArtLabel(p))}</div><h3>${esc(p.name)}</h3><p>${esc(p.desc||'')}</p><div class="packfeatures"><span>${p.count} Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>1× ${p.guarantee}+ garantiert</span>`:""}<span>Mid Icon ${packChanceLabel(p.iconChance)}</span></div>${limited?`<div class="pack-limitbar ${sold?'soldout':''}"><span>Promo-Limit · ${lim.used}/${p.dailyLimit} gekauft</span><strong>${sold?'LIMIT ERREICHT':`${lim.remaining} übrig`}</strong></div><div class="pack-odds">Reset und Pack-Wechsel täglich um ${String(p.resetHour??19).padStart(2,'0')}:00 Uhr. Nächster Reset: ${resetAt.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.</div>`:`<div class="pack-limitbar"><span>Standard-Pack</span><strong>UNBEGRENZT</strong></div>`}<div class="prices"><button class="primary" data-buy="${p.id}" data-cur="coins" ${sold?'disabled':''}>${fmt(p.coins)} Coins</button><button class="secondary" data-buy="${p.id}" data-cur="points" ${sold?'disabled':''}>${fmt(p.points)} FC Points</button></div></div>`}).join("");
  const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0);$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
@@ -3419,7 +3420,7 @@ function packRevealPlan(){
  const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
  const walkouts=ranked.filter(packIsWalkout),specials=ranked.filter(packIsSpecial),best=ranked[0]||null;
  if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:5900};
- if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MID ICON":(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}}
+ if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MITTLERE IKONE":totwDisplayName(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}}
  if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:5200};
  if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"BOARD",duration:2350};
  return{mode:"plain",cards:best?[best]:[],label:"HÖCHSTE KARTE",duration:1250}
@@ -3602,7 +3603,7 @@ function marketPreviewItem(x){return{uid:"preview",pid:String(x.base.id),evo:0,v
 function listingRating(x){return Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"||x.variant==="icon-mid"?"special":rarityOf(x.base)}
 function auctionTime(x){return Math.max(0,Math.ceil((Number(x?.ends||0)-Date.now())/1000))}
-function qualityLabel(x){if(x.variant==="icon-mid")return"MID ICON";if(x.variant==="special")return x.eventName||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
+function qualityLabel(x){if(x.variant==="icon-mid")return"MITTLERE IKONE";if(x.variant==="special")return totwDisplayName(x.eventName)||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
 function specialVariant(type=""){const events=["Eventkarte","Road to Glory","Birthday Event","Champions Event"];const eventName=events[Math.floor(Math.random()*events.length)],boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
@@ -3810,7 +3811,7 @@ function progressEvolution(resultKey="loss"){
 }
 
 
-let activeSbcGroup="Foundations",activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
+ let activeSbcGroup="Grundlagen",activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false;
@@ -3860,11 +3861,13 @@ function sbcRequirementSummary(sbc,stats){
  if(sbc.minAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / ${sbc.minAvg}+`,ok:stats.avgOk&&stats.count===sbc.count});
  else if(sbc.maxAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
  else if(sbc.sameLeague)reqs.push({label:"Liga",value:stats.leagues.length===1&&stats.count===sbc.count?"1 Liga":`${stats.leagues.length} Ligen`,ok:stats.leagueOk&&stats.count===sbc.count});
- else reqs.push({label:"Belohnung",value:rewardText(sbc.reward),ok:false});
+ else reqs.push({label:"Belohnung",value:sbcRewardText(sbc.reward),ok:false});
  return reqs.slice(0,3)
 }
+function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
+function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${reward.qty||1}× ${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
 function sbcRewardPackLabel(reward){
- if(reward?.pack)return PACKS.find(p=>p.id===reward.pack)?.name||"Pack";
+ if(reward?.pack)return sbcPackName(reward.pack);
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
 }
 function sbcOverviewCard(s){
@@ -3898,12 +3901,12 @@ function sbcWarningHTML(sbc){
 function sbcPickerCandidates(){
  if(!activeSbcId||!sbcPickerState)return[];const draft=sbcDraft(activeSbcId),current=sbcSlotUid(draft,sbcPickerState.area,sbcPickerState.index),used=new Set([...draft.squad,...draft.test].filter(Boolean).filter(uid=>uid!==current));
  const q=normalizeKey(sbcPickerState.query||""),pos=String(sbcPickerState.position||""),quality=String(sbcPickerState.quality||""),source=String(sbcPickerState.source||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
- let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
+ const seen=new Set();let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
   const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;
   if(q&&!playerSearchText(b).includes(q))return false;if(pos&&!playerPositions(b).includes(pos))return false;
   if(source&&x.source!==source)return false;if(rating<min||rating>max)return false;
   if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}
-  return true
+  const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
  rows.sort((a,b)=>{const ar=itemRating(a.item),br=itemRating(b.item);if(sbcPickerState.sort==="low")return ar-br;return br-ar});
  return rows.slice(0,120)
@@ -3958,7 +3961,7 @@ function sbcAssistantHTML(sbc){
  <div class="sbc-assistant-toggle"><div><strong>Spieler aus meinen 3 Teams schützen</strong><small>Verwendete Karten werden vom Assistenten übersprungen.</small></div><label class="sbc-switch"><input id="sbcAssistantProtect" type="checkbox" ${a.protectTeams?"checked":""}><span></span></label></div>
  <div class="sbc-assistant-toggle"><div><strong>Position ignorieren</strong><small>An: beste Karten beliebig einsetzen · Aus: nur passende Positionen.</small></div><label class="sbc-switch"><input id="sbcAssistantIgnorePosition" type="checkbox" ${a.ignorePosition?"checked":""}><span></span></label></div>
  <div class="sbc-assistant-grid">
-  <div class="sbc-assistant-field full"><label>Sortieren nach</label><select id="sbcAssistantSort"><option value="high" ${a.sort==="high"?"selected":""}>Rating: hoch bis niedrig</option><option value="low" ${a.sort==="low"?"selected":""}>Rating: niedrig bis hoch</option></select></div>
+  <div class="sbc-assistant-field full"><label>Sortieren nach</label><select id="sbcAssistantSort"><option value="high" ${a.sort==="high"?"selected":""}>GES: hoch bis niedrig</option><option value="low" ${a.sort==="low"?"selected":""}>GES: niedrig bis hoch</option></select></div>
   <div class="sbc-assistant-field full"><label>GES-Bereich</label><div class="sbc-assistant-range"><input id="sbcAssistantMin" type="number" min="0" max="99" value="${Number(a.min)}" placeholder="Min. GES"><input id="sbcAssistantMax" type="number" min="0" max="99" value="${Number(a.max)}" placeholder="Max. GES"></div></div>
   <div class="sbc-assistant-field"><label>Qualität</label><select id="sbcAssistantQuality"><option value="">Alle</option><option value="bronze" ${a.quality==="bronze"?"selected":""}>Bronze</option><option value="silver" ${a.quality==="silver"?"selected":""}>Silber</option><option value="gold" ${a.quality==="gold"?"selected":""}>Gold</option><option value="special" ${a.quality==="special"?"selected":""}>Spezial</option></select></div>
   <div class="sbc-assistant-field"><label>Liga</label><select id="sbcAssistantLeague"><option value="">Alle / automatisch</option>${leagues.map(l=>`<option value="${esc(l)}" ${a.league===l?"selected":""}>${esc(l)}</option>`).join("")}</select></div>
@@ -3971,45 +3974,56 @@ function sbcAssistantQuality(item,b){
  if(item?.variant||item?.evo)return"special";return rarityOf(b)
 }
 function sbcAssistantBasePool(sbc,draft,a){
- const used=new Set([...draft.squad,...draft.test].filter(Boolean));
+ const used=new Set([...draft.squad,...draft.test].filter(Boolean)),seen=new Set();
  let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
   const b=displayBase(x.item),rating=itemRating(x.item);if(!b||!sbc.filter(b))return false;
   if(a.protectTeams&&sbcTeamUsageForUid(x.item.uid).length)return false;
   if(rating<Number(a.min||0)||rating>Number(a.max??99))return false;
   if(a.quality&&sbcAssistantQuality(x.item,b)!==a.quality)return false;
   if(a.league&&String(resolvedAffiliation(b)?.league||"")!==a.league)return false;
-  return true
+  const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
  rows.sort((x,y)=>{const d=itemRating(y.item)-itemRating(x.item);return a.sort==="low"?-d:d});
  return rows
 }
-function sbcAssistantAutoLeague(sbc,draft,a,rows,needed){
- if(a.league||!sbc.sameLeague)return a.league||"";
- const existing=draft.squad.map(uid=>sbcItemRecord(uid)?.item).filter(Boolean).map(i=>String(resolvedAffiliation(displayBase(i))?.league||"")).filter(Boolean);
- const uniq=[...new Set(existing)];if(uniq.length===1)return uniq[0];if(uniq.length>1)return"__NO_VALID_LEAGUE__";
- const groups=new Map();for(const row of rows){const l=String(resolvedAffiliation(displayBase(row.item))?.league||"");if(!l)continue;if(!groups.has(l))groups.set(l,[]);groups.get(l).push(row)}
- const candidates=[...groups.entries()].filter(([,list])=>list.length>=needed);
- if(!candidates.length)return"__NO_VALID_LEAGUE__";
- candidates.sort((a1,b1)=>{const av=a1[1].slice(0,needed).reduce((n,x)=>n+itemRating(x.item),0),bv=b1[1].slice(0,needed).reduce((n,x)=>n+itemRating(x.item),0);return a.sort==="low"?av-bv:bv-av});
- return candidates[0][0]
+function sbcAssistantPlan(sbc,draft,a,rows,empty,league){
+ const pool=league?rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league):rows;
+ if(pool.length<empty.length)return null;
+ const build=ordered=>{
+  const choices=new Map(empty.map(slot=>[slot,ordered.map((row,i)=>a.ignorePosition||posFit(displayBase(row.item),FORMATIONS["4-3-3"][slot]?.p)>0?i:-1).filter(i=>i>=0)]));
+  if([...choices.values()].some(list=>!list.length))return null;
+  const assigned=new Map(),place=(slot,seen)=>{
+   for(const i of choices.get(slot)){
+    if(seen.has(i))continue;seen.add(i);
+    const previous=assigned.get(i);
+    if(previous===undefined||place(previous,seen)){assigned.set(i,slot);return true}
+   }
+   return false
+  };
+  for(const slot of [...empty].sort((x,y)=>choices.get(x).length-choices.get(y).length))if(!place(slot,new Set()))return null;
+  const planned={...draft,squad:[...draft.squad]};for(const [i,slot] of assigned)planned.squad[slot]=String(ordered[i].item.uid);
+  if(!sbcDraftStats(sbc,planned).ok)return null;
+  return{draft:planned,league,rating:empty.reduce((n,slot)=>n+itemRating(sbcItemRecord(planned.squad[slot])?.item),0)}
+ };
+ return build(pool)||build([...pool].reverse())
 }
 function runSbcAssistant(){
  const sbc=SBCS.find(x=>x.id===activeSbcId),a=sbcAssistantState;if(!sbc||!a)return;
  if(Number(a.min)>Number(a.max))return toast("Min. GES darf nicht über Max. GES liegen.");
- const draft=sbcDraft(sbc.id),formation=FORMATIONS["4-3-3"],empty=draft.squad.map((uid,i)=>uid?null:i).filter(i=>i!==null);
+ const draft=sbcDraft(sbc.id),empty=draft.squad.map((uid,i)=>uid?null:i).filter(i=>i!==null);
  if(!empty.length){sbcAssistantState=null;renderSBC();return toast("Alle 11 SBC-Plätze sind bereits belegt.")}
- let rows=sbcAssistantBasePool(sbc,draft,a),league=sbcAssistantAutoLeague(sbc,draft,a,rows,empty.length);
- if(league==="__NO_VALID_LEAGUE__"){toast("Keine einzelne Liga kann die freien Plätze mit diesen Filtern füllen.");return}
- if(league)rows=rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league);
- const remaining=[...rows],assigned=[];
- for(const slotIndex of empty){
-  let pickIndex=0;
-  if(!a.ignorePosition){pickIndex=remaining.findIndex(x=>posFit(displayBase(x.item),formation[slotIndex]?.p)>0);if(pickIndex<0)continue}
-  if(!remaining.length)break;const [pick]=remaining.splice(pickIndex,1);if(!pick)continue;draft.squad[slotIndex]=String(pick.item.uid);assigned.push(pick)
- }
- sbcSetDraft(sbc.id,draft);sbcAssistantState=null;renderSBC();
- const stats=sbcDraftStats(sbc);const leagueNote=league?` · Liga: ${league}`:"";
- toast(`Assistent: ${assigned.length} Spieler eingesetzt${leagueNote}. ${stats.count}/${sbc.count} belegt.`)
+ const manual=draft.squad.map(uid=>sbcItemRecord(uid)?.item).filter(Boolean);
+ if(manual.some(item=>!sbc.filter(displayBase(item))))return toast("Eine manuell eingesetzte Karte erfüllt die SBC-Bedingung nicht. Bitte zuerst austauschen.");
+ const manualLeagues=[...new Set(manual.map(item=>String(resolvedAffiliation(displayBase(item))?.league||"")))];
+ if(sbc.sameLeague&&(manualLeagues.length>1||manualLeagues.includes("")))return toast("Die manuell eingesetzten Spieler müssen aus derselben Liga stammen.");
+ if(sbc.sameLeague&&a.league&&manualLeagues.length&&manualLeagues[0]!==a.league)return toast("Die gewählte Liga passt nicht zu den bereits eingesetzten Spielern.");
+ const rows=sbcAssistantBasePool(sbc,draft,a);
+ const leagues=a.league?[a.league]:sbc.sameLeague?(manualLeagues.length?manualLeagues:[...new Set(rows.map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")).filter(Boolean))]):[""];
+ const plans=leagues.map(league=>sbcAssistantPlan(sbc,draft,a,rows,empty,league)).filter(Boolean);
+ if(!plans.length)return toast(sbc.sameLeague?"Nicht genügend passende Spieler aus einer Liga für alle freien Plätze. Bitte Filter oder Teamschutz ändern.":"Nicht genügend passende Spieler für alle freien Plätze und SBC-Bedingungen. Bitte Filter oder Teamschutz ändern.");
+ plans.sort((x,y)=>a.sort==="low"?x.rating-y.rating:y.rating-x.rating);
+ const chosen=plans[0];sbcSetDraft(sbc.id,chosen.draft);sbcAssistantState=null;renderSBC();
+ toast(`Assistent: ${empty.length} Spieler eingesetzt${chosen.league?` · Liga: ${chosen.league}`:""}. ${sbc.count}/${sbc.count} belegt.`)
 }
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),reqs=sbcRequirementSummary(sbc,stats),formation=FORMATIONS["4-3-3"];
@@ -4019,7 +4033,7 @@ function renderSbcEditor(sbc){
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,"squad",i,slot)).join("")}</div>
  <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle><div><strong>⚒ Testareal</strong><span>12 Zusatzplätze · Spieler vorbereiten und per Drag & Drop einsetzen</span></div><b class="sbc-test-chevron">⌃</b></button>
  <div class="sbc-test-drawer ${draft.testOpen?"open":""}"><div class="sbc-test-note"><span>3 Reihen × 4 Plätze</span><span>${draft.test.filter(Boolean).length}/12 belegt</span></div><div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcWorkSlotHTML(sbc,"test",i)).join("")}</div></div>
- <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(rewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
+ <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(sbcRewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
  </div>${sbcSlotDetailHTML(sbc)}${sbcPickerHTML()}${sbcWarningHTML(sbc)}${sbcAssistantHTML(sbc)}`
 }
 function renderSBC(){
@@ -4495,7 +4509,7 @@ function updateObjectiveIndicators(){
 }
 function homeHeroSlides(){return[
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division} · ${state.rivals.points}/12`,theme:"gold"},
- totwIsActive()?{kicker:"LIVE CONTENT",title:'TEAM OF THE<br><span>WEEK</span>',text:`${LIVE_TOTW.name} ist aktiv. Entdecke die aktuellen Spezialkarten im Store.`,button:"Zum Store →",go:"storeView",teamView:"totw",shield:"TOTW",live:"JETZT LIVE",aside:"NEUE SPEZIALKARTEN",aside2:"NUR FÜR KURZE ZEIT",theme:"gold"}:{kicker:"SEASON PASS",title:'DEINE<br><span>SAISON</span>',text:"Spiele Matches und erfülle Ziele, um Spielbelohnungen freizuschalten.",button:"Season Pass öffnen →",go:"seasonPassView",shield:"SP",live:"SAISON AKTIV",aside:"KOSTENLOS & PREMIUM",aside2:`${fmt(state.sp||0)} SP GESAMMELT`,theme:"gold"},
+ totwIsActive()?{kicker:"AKTUELLE INHALTE",title:'TEAM DER<br><span>WOCHE</span>',text:`${totwDisplayName(LIVE_TOTW.name)} ist aktiv. Entdecke die aktuellen Spezialkarten im Store.`,button:"Zum Store →",go:"storeView",teamView:"totw",shield:"TOTW",live:"JETZT AKTIV",aside:"NEUE SPEZIALKARTEN",aside2:"NUR FÜR KURZE ZEIT",theme:"gold"}:{kicker:"SAISONPASS",title:'DEINE<br><span>SAISON</span>',text:"Spiele Matches und erfülle Ziele, um Spielbelohnungen freizuschalten.",button:"Saisonpass öffnen →",go:"seasonPassView",shield:"SP",live:"SAISON AKTIV",aside:"KOSTENLOS & PREMIUM",aside2:`${fmt(state.sp||0)} SP GESAMMELT`,theme:"gold"},
  {kicker:"EVOLUTIONS",title:'EVOLUTION<br><span>LAB</span>',text:state.activeEvo?"Deine aktive Evolution läuft. Spiele weiter und bringe deinen Profi aufs nächste Level.":"Wähle einen geeigneten Spieler und entwickle ihn über Match-Ziele weiter.",button:"Evolutions öffnen →",go:"evolutionView",shield:"EVO",live:state.activeEvo?"AKTIV":"VERFÜGBAR",aside:"ENTWICKLE DEINEN PROFI",aside2:"MATCHES · BOOSTS · PLAYSTYLES",theme:"violet"}
 ]}
 function renderHomeHero(){const slides=homeHeroSlides(),hero=slides[homeHeroSlide]||slides[0],card=$("homeHeroCard");if(card)card.dataset.theme=hero.theme;$("homeHeroKicker").textContent=hero.kicker;$("homeHeroTitle").innerHTML=hero.title;$("homeHeroText").textContent=hero.text;$("homeHeroShield").textContent=hero.shield;$("homeHeroLive").textContent=hero.live;$("homeHeroAside").innerHTML=hero.aside.replace(". ",".<br>");$("homeHeroAside2").textContent=hero.aside2;$("homeHeroAction").textContent=hero.button;$("homeHeroAction").dataset.go=hero.go;const teamBtn=$("homeHeroTeam");if(teamBtn){teamBtn.style.display=hero.teamView==="totw"?"inline-flex":"none";teamBtn.dataset.homeTeamView=hero.teamView||""}document.querySelectorAll("[data-home-slide]").forEach((b,i)=>b.classList.toggle("active",i===homeHeroSlide))}
@@ -4838,8 +4852,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1873",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-73-reloaded")){sessionStorage.setItem("gfut-v18-73-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1887",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-87-reloaded")){sessionStorage.setItem("gfut-v18-87-reloaded","1");location.reload()}});
  });
 }
 

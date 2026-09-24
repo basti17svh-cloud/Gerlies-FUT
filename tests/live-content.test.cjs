@@ -5,17 +5,17 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-const totw=html.slice(html.indexOf('const LIVE_TOTW='),html.indexOf('const MID_ICON_DATA='));
+const weeks=html.slice(html.indexOf('const TOTW_WEEK_1='),html.indexOf('const MID_ICON_DATA='));
 const active=html.slice(html.indexOf('function totwIsActive('),html.indexOf('function updateTotwMarketOption('));
-const info=html.slice(html.indexOf('function totwInfo('),html.indexOf('function currentTotwBases('));
-const prewarm=html.match(/^function prewarmLiveTotw\(\)\{.*$/m)?.[0];
-const ctx={totwAliasMatch:()=>100,hydrateTotwFromEa:()=>{throw new Error('Expired content should not fetch')},setTimeout};
-vm.createContext(ctx);vm.runInContext([totw,active,info,prewarm].join('\n'),ctx);
+const ctx={Intl,Date};
+vm.createContext(ctx);vm.runInContext([weeks,active].join('\n'),ctx);
 
-test('Team of the Week stops being live after its real expiry',()=>{
- assert.equal(ctx.totwIsActive(new Date(2026,8,23,23,59,59)),true);
- assert.equal(ctx.totwIsActive(new Date(2026,8,24,0,0,0)),false);
- assert.equal(ctx.totwIsActive(new Date(2026,8,24,12,0,0)),false);
- assert.equal(ctx.totwInfo({id:'277643'}),null);
- assert.doesNotThrow(()=>ctx.prewarmLiveTotw());
+test('Team der Woche wechselt mittwochs um 19 Uhr Berliner Zeit und läuft eine Woche',()=>{
+ const current=iso=>ctx.activeTotwWeek(new Date(iso))?.id||null;
+ assert.equal(current('2026-09-23T16:59:59Z'),1);
+ assert.equal(current('2026-09-23T17:00:00Z'),2);
+ assert.equal(current('2026-09-30T16:59:59Z'),2);
+ assert.equal(current('2026-09-30T17:00:00Z'),null);
+ assert.equal(ctx.totwIsActive(new Date('2026-09-30T17:00:00Z')),false);
+ assert.equal(ctx.totwDisplayName('Team of the Week 2'),'Team der Woche 2');
 });
