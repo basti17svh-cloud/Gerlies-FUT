@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.91</title>
+<title>Gerlies FUT V18.92</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1070,7 +1070,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.91</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.92</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1280,7 +1280,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack">PACK</div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
-<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Alle Nicht-Duplikate in Club</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
+<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
 
 <div id="match" class="match">
@@ -3553,11 +3553,120 @@ async function runPackReveal(plan){
  finishPack();
 }
 $("openPackBtn").addEventListener("click",async()=>{try{await runPackReveal(packRevealPlan())}catch(err){console.error("Pack reveal failed",err);finishPack();toast("Pack geöffnet. Animation wurde übersprungen.")}})
-function renderPackResults(){state.pendingResolved=[...pendingResolved];save();const dupMap=packDuplicateMap(),normal=[],dups=[];pendingPack.forEach((i,k)=>(dupMap.get(k)?dups:normal).push({i,k}));const card=({i,k},duplicate)=>{const b=displayBase(i),done=pendingResolved.has(k),canTransfer=duplicate&&i.tradeable;return`<div class="result-item ${duplicate?"duplicate":""} ${done?"resolved":""}" data-result-item="${k}"><button class="pack-profile-tap" data-pack-open="${k}" aria-label="${esc(b.name)} Profil ansehen">${cardHTML(b,i)}</button>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':''}${done?`<div class="result-status">ERLEDIGT</div>`:`<div class="result-item-actions">${duplicate?`<button class="primary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${canTransfer?`<button class="secondary" data-pack-transfer="${k}">Auf Transferliste</button>`:""}`:`<button class="primary" data-pack-club="${k}">In den Club schicken</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button>`}<button class="secondary" data-pack-sell="${k}">Schnellverkauf +${fmt(quickSell(i))}</button></div>${duplicate?'<div class="duplicate-note">Duplikat: SBC-Speicher, Transferliste oder Schnellverkauf.</div>':''}`}</div>`};const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?'duplicate':''}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?'':'n'}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join('')}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;$ ("resultGrid").innerHTML=section("Pack-Inhalt",normal,false)+(dups.length?section("Duplikate",dups,true):"");const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)),sellTotal=unresolved.reduce((sum,x)=>sum+quickSell(x.i),0);$ ("resultQuickSellAll").textContent=unresolved.length?`Alles schnellverkaufen · +${fmt(sellTotal)} Coins`:"Alles schnellverkauft";$ ("resultQuickSellAll").disabled=!unresolved.length;$ ("resultAllClub").disabled=!normal.some(x=>!pendingResolved.has(x.k));$ ("resultDone").disabled=pendingResolved.size!==pendingPack.length}
-$ ("resultGrid").addEventListener("click",e=>{const c=e.target.closest("[data-pack-club]"),ins=e.target.closest("[data-pack-insert]"),q=e.target.closest("[data-pack-sell]"),o=e.target.closest("[data-pack-open]"),store=e.target.closest("[data-pack-sbcstore]"),tr=e.target.closest("[data-pack-transfer]");if(c){const k=Number(c.dataset.packClub),i=pendingPack[k],dup=packDuplicateMap().get(k);if(!i||pendingResolved.has(k)||dup)return;state.club.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();return}if(ins){const k=Number(ins.dataset.packInsert),i=pendingPack[k],dup=packDuplicateMap().get(k);if(!i||pendingResolved.has(k)||dup)return;if(!state.club.find(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();openSlotPickerForItem(i.uid);return}if(store){const k=Number(store.dataset.packSbcstore),i=pendingPack[k];if(!i||pendingResolved.has(k))return;state.sbcStorage=state.sbcStorage||[];if(state.sbcStorage.length>=100)return toast("SBC-Speicher voll (100/100).");state.sbcStorage.push(i);pendingResolved.add(k);save();renderPackResults();renderAll();toast("Duplikat im SBC-Speicher abgelegt.");return}if(tr){const k=Number(tr.dataset.packTransfer),i=pendingPack[k];if(!i||pendingResolved.has(k)||!i.tradeable)return;state.club.push(i);state.transferList=state.transferList||[];state.transferList.push(i.uid);pendingResolved.add(k);save();renderPackResults();renderAll();toast("Duplikat auf die Transferliste verschoben.");return}if(q){const k=Number(q.dataset.packSell),i=pendingPack[k];if(!i||pendingResolved.has(k))return;state.coins+=quickSell(i);pendingResolved.add(k);save();renderPackResults();renderAll();toast(`+${fmt(quickSell(i))} Coins`);return}if(o){const k=Number(o.dataset.packOpen);openPackPlayerDetails(k)}})
-$ ("resultAllClub").addEventListener("click",()=>{const dupMap=packDuplicateMap();pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)){state.club.push(i);pendingResolved.add(k)}});save();renderPackResults();renderAll()})
-$ ("resultQuickSellAll").addEventListener("click",()=>{const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));if(!unresolved.length)return;const total=unresolved.reduce((s,x)=>s+quickSell(x.i),0);if(!confirm(`Wirklich alle ${unresolved.length} verbleibenden Karten für ${fmt(total)} Coins schnellverkaufen?`))return;state.coins+=total;unresolved.forEach(x=>pendingResolved.add(x.k));save();renderPackResults();renderAll();toast(`+${fmt(total)} Coins`)})
-$ ("resultDone").addEventListener("click",()=>{if(pendingResolved.size!==pendingPack.length)return;$ ("results").classList.remove("active");pendingPack=[];pendingResolved=new Set();state.pendingPack=[];state.pendingResolved=[];renderAll()})
+function tradeableClubTwinForPackItem(item){
+ if(!item||item.tradeable)return null;
+ const key=packItemKey(item),listed=new Set(state.transferList||[]);
+ return (state.club||[]).find(x=>x?.tradeable&&packItemKey(x)===key&&!listed.has(x.uid)&&!(state.transferSales||[]).some(s=>String(s.uid)===String(x.uid)&&s.status==="active"))||null
+}
+function closeResolvedPackResults(){
+ $("results").classList.remove("active");
+ pendingPack=[];pendingResolved=new Set();state.pendingPack=[];state.pendingResolved=[];
+ save();renderAll()
+}
+function finishPackIfResolved(){
+ const unresolved=pendingPack.some((_,k)=>!pendingResolved.has(k));
+ if(unresolved)return false;
+ closeResolvedPackResults();return true
+}
+function renderPackResults(){
+ state.pendingResolved=[...pendingResolved];save();
+ const dupMap=packDuplicateMap(),normal=[],dups=[];
+ pendingPack.forEach((i,k)=>{if(pendingResolved.has(k))return;(dupMap.get(k)?dups:normal).push({i,k})});
+ const card=({i,k},duplicate)=>{
+  const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
+  const duplicateActions=canTransfer
+   ?`<button class="primary" data-pack-transfer="${k}">Auf Transferliste</button><button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
+   :`<button class="primary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}<button class="secondary" data-pack-sell="${k}">Abstoßen</button>`;
+  return `<div class="result-item ${duplicate?"duplicate":""}" data-result-item="${k}"><button class="pack-profile-tap" data-pack-open="${k}" aria-label="${esc(b.name)} Profil ansehen">${cardHTML(b,i)}</button>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':""}<div class="result-item-actions">${duplicate?duplicateActions:`<button class="primary" data-pack-club="${k}">In den Verein</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button><button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`}</div>${duplicate?'<div class="duplicate-note">Duplikat zuerst auflösen, bevor du fortfährst.</div>':""}</div>`
+ };
+ const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?"duplicate":""}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?"":"n"}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join("")}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;
+ $("resultGrid").innerHTML=(normal.length?section("Pack-Inhalt",normal,false):"")+(dups.length?section("Duplikate",dups,true):"");
+ const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));
+ const tradeableTotal=unresolved.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0);
+ $("resultAllClub").textContent="Zum Verein hinzufügen";
+ $("resultAllClub").disabled=!normal.length;
+ $("resultAllClub").style.display=normal.length?"":"none";
+ $("resultQuickSellAll").textContent=unresolved.length?`Alles schnellverkaufen / abstoßen${tradeableTotal?` · +${fmt(tradeableTotal)} Coins`:""}`:"";
+ $("resultQuickSellAll").disabled=!unresolved.length;
+ $("resultQuickSellAll").style.display=unresolved.length?"":"none";
+ $("resultDone").disabled=true;
+ $("resultDone").style.display="none"
+}
+$("resultGrid").addEventListener("click",e=>{
+ const c=e.target.closest("[data-pack-club]"),ins=e.target.closest("[data-pack-insert]"),q=e.target.closest("[data-pack-sell]"),o=e.target.closest("[data-pack-open]"),store=e.target.closest("[data-pack-sbcstore]"),tr=e.target.closest("[data-pack-transfer]"),swap=e.target.closest("[data-pack-swap-tradeable]");
+ if(c){
+  const k=Number(c.dataset.packClub),i=pendingPack[k],dup=packDuplicateMap().get(k);
+  if(!i||pendingResolved.has(k)||dup)return;
+  state.club.push(i);pendingResolved.add(k);save();
+  if(finishPackIfResolved())return;
+  renderPackResults();renderAll();return
+ }
+ if(ins){
+  const k=Number(ins.dataset.packInsert),i=pendingPack[k],dup=packDuplicateMap().get(k);
+  if(!i||pendingResolved.has(k)||dup)return;
+  if(!state.club.find(x=>x.uid===i.uid))state.club.push(i);
+  pendingResolved.add(k);save();renderPackResults();renderAll();openSlotPickerForItem(i.uid);return
+ }
+ if(store){
+  const k=Number(store.dataset.packSbcstore),i=pendingPack[k];
+  if(!i||pendingResolved.has(k)||i.tradeable)return;
+  state.sbcStorage=state.sbcStorage||[];
+  if(state.sbcStorage.length>=100)return toast("SBC-Speicher voll (100/100).");
+  state.sbcStorage.push(i);pendingResolved.add(k);save();toast("Duplikat im SBC-Speicher abgelegt.");
+  if(finishPackIfResolved())return;
+  renderPackResults();renderAll();return
+ }
+ if(tr){
+  const k=Number(tr.dataset.packTransfer),i=pendingPack[k];
+  if(!i||pendingResolved.has(k)||!i.tradeable)return;
+  state.club.push(i);state.transferList=state.transferList||[];state.transferList.push(i.uid);pendingResolved.add(k);save();toast("Duplikat auf die Transferliste verschoben.");
+  if(finishPackIfResolved())return;
+  renderPackResults();renderAll();return
+ }
+ if(swap){
+  const k=Number(swap.dataset.packSwapTradeable),incoming=pendingPack[k];
+  if(!incoming||pendingResolved.has(k)||incoming.tradeable)return;
+  const existing=tradeableClubTwinForPackItem(incoming);
+  if(!existing)return toast("Keine tauschbare Vereinskarte verfügbar.");
+  const clubIndex=state.club.findIndex(x=>x.uid===existing.uid);
+  if(clubIndex<0)return;
+  state.club[clubIndex]=incoming;
+  state.squad=state.squad.map(id=>id===existing.uid?incoming.uid:id);
+  (state.squadPresets||[]).forEach(p=>{if(p?.squad)p.squad=p.squad.map(id=>id===existing.uid?incoming.uid:id)});
+  if(state.activeEvo?.uid===existing.uid)state.activeEvo.uid=incoming.uid;
+  pendingPack[k]=existing;state.pendingPack=pendingPack;save();
+  toast("Getauscht: Die tauschbare Vereinskarte kann jetzt verkauft werden.");
+  renderPackResults();renderAll();return
+ }
+ if(q){
+  const k=Number(q.dataset.packSell),i=pendingPack[k];
+  if(!i||pendingResolved.has(k))return;
+  if(i.tradeable){const value=quickSell(i);state.coins+=value;toast(`+${fmt(value)} Coins`)}
+  else toast("Untauschbares Duplikat abgestoßen.");
+  pendingResolved.add(k);save();
+  if(finishPackIfResolved())return;
+  renderPackResults();renderAll();return
+ }
+ if(o){const k=Number(o.dataset.packOpen);openPackPlayerDetails(k)}
+});
+$("resultAllClub").addEventListener("click",()=>{
+ const dupMap=packDuplicateMap();let added=0;
+ pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)){state.club.push(i);pendingResolved.add(k);added++}});
+ if(!added)return;
+ save();toast(added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
+ if(finishPackIfResolved())return;
+ renderPackResults();renderAll()
+});
+$("resultQuickSellAll").addEventListener("click",()=>{
+ const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));
+ if(!unresolved.length)return;
+ const total=unresolved.filter(x=>x.i.tradeable).reduce((s,x)=>s+quickSell(x.i),0),untradeable=unresolved.filter(x=>!x.i.tradeable).length;
+ const wording=untradeable?`Wirklich alle ${unresolved.length} verbleibenden Karten auflösen? Untauschbare Karten werden abgestoßen.`:`Wirklich alle ${unresolved.length} verbleibenden Karten für ${fmt(total)} Coins schnellverkaufen?`;
+ if(!confirm(wording))return;
+ state.coins+=total;unresolved.forEach(x=>pendingResolved.add(x.k));save();toast(total?`+${fmt(total)} Coins`:"Karten abgestoßen.");
+ finishPackIfResolved()
+});
+$("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
 function quickSell(i){if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function renderClub(){
@@ -4980,7 +5089,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.91";
+const GFUT_BUILD="V18.92";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -4996,8 +5105,8 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1891",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-91-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1892",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-92-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 
