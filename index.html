@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.90</title>
+<title>Gerlies FUT V18.91</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1070,7 +1070,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.90</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.91</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3719,7 +3719,7 @@ function marketAuctionState(x){
 }
 function marketRowHTML(x,i,tracked=false){
  const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
- return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${fmt(x.startPrice||x.bid)} </b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${fmt(x.price)}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${fmt(x.bid)}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${fmt(x.myBid)} Coins · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${x.settled?"disabled":""}>Bieten · ${fmt(next)}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${fmt(x.price)}</button></div></div>`
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${fmt(x.startPrice||x.bid)} </b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${fmt(x.price)}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${fmt(x.bid)}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${fmt(x.myBid)} Coins · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${fmt(next)}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${fmt(x.price)}</button></div></div>`
 }
 function processBotOutbids(){
  let changed=false;const now=Date.now();
@@ -3742,14 +3742,18 @@ function transferSuggestedPrices(item){
  buy=Math.max(200,marketRoundPrice(buy));const start=Math.max(150,marketRoundPrice(buy*.82));return{start,buy}
 }
 function transferSaleItem(sale){return state.club.find(i=>i.uid===sale.uid)||sale.item||null}
+function transferSellEditorHTML(item,defaults=null){
+ const p=defaults||transferSuggestedPrices(item),uid=item.uid;
+ return `<div class="transfer-sell-editor"><label>Startpreis<input data-sell-start="${esc(uid)}" type="number" min="150" step="50" value="${Number(p.start||p.startPrice||150)}"></label><label>Sofortkauf<input data-sell-buy="${esc(uid)}" type="number" min="200" step="50" value="${Number(p.buy||p.buyNow||200)}"></label><label>Dauer<select data-sell-duration="${esc(uid)}"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button class="primary" data-transfer-confirm-sell="${esc(uid)}">Jetzt anbieten</button></div>`
+}
 function transferSaleRowHTML(sale,kind){
  const item=transferSaleItem(sale),b=item?displayBase(item):null;if(!item||!b)return"";
- const active=kind==="active",sold=kind==="sold",unsold=kind==="unsold",time=active?Math.max(0,Math.ceil((sale.ends-Date.now())/1000))+"s":sold?"Abgelaufen":"Abgelaufen";
- return `<div class="transfer-sale-row ${kind}"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>Startpreis ${fmt(sale.startPrice)} · Sofortkauf ${fmt(sale.buyNow)}${sold?` · Verkauft für ${fmt(sale.soldPrice||sale.buyNow)}`:""}${active?` · Akt. Gebot ${fmt(sale.currentBid||sale.startPrice)}`:""}</small><div class="transfer-sale-status">${sold?"Verkauft":unsold?"Nicht verkauft":`Aktiv · ${time}`}</div></div><div class="transfer-sale-actions">${unsold?`<button class="primary" data-transfer-relist="${esc(sale.uid)}">Erneut anbieten</button>`:""}${active?"":sold?"":`<button class="secondary" data-watch-remove="${esc(sale.uid)}">In Verein</button>`}</div></div>`
+ const active=kind==="active",sold=kind==="sold",unsold=kind==="unsold",time=active?Math.max(0,Math.ceil((sale.ends-Date.now())/1000))+"s":sold?"Abgelaufen":"Abgelaufen",editing=unsold&&sellEditorUid===item.uid;
+ return `<div class="transfer-sale-row ${kind}"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>Startpreis ${fmt(sale.startPrice)} · Sofortkauf ${fmt(sale.buyNow)}${sold?` · Verkauft für ${fmt(sale.soldPrice||sale.buyNow)}`:""}${active?` · Akt. Gebot ${fmt(sale.currentBid||sale.startPrice)}`:""}</small><div class="transfer-sale-status">${sold?"Verkauft":unsold?"Nicht verkauft":`Aktiv · <span data-transfer-sale-time="${esc(sale.id)}">${time}</span>`}</div></div><div class="transfer-sale-actions">${unsold?`<button class="primary" data-transfer-relist="${esc(sale.uid)}">Erneut anbieten</button>`:""}${active?"":sold?"":`<button class="secondary" data-watch-remove="${esc(sale.uid)}">In Verein</button>`}</div>${editing?transferSellEditorHTML(item,{start:sale.startPrice,buy:sale.buyNow}):""}</div>`
 }
 function availableTransferRowHTML(item){
  const b=displayBase(item),p=transferSuggestedPrices(item),editing=sellEditorUid===item.uid;
- return `<div class="transfer-sale-row"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · Richtwert ${fmt(p.buy)} Coins</small><div class="transfer-sale-status">Verfügbar</div></div><div class="transfer-sale-actions"><button class="primary" data-transfer-sell="${esc(item.uid)}">Anbieten</button><button class="secondary" data-watch-remove="${esc(item.uid)}">In Verein</button></div>${editing?`<div class="transfer-sell-editor"><label>Startpreis<input data-sell-start="${esc(item.uid)}" type="number" min="150" step="50" value="${p.start}"></label><label>Sofortkauf<input data-sell-buy="${esc(item.uid)}" type="number" min="200" step="50" value="${p.buy}"></label><label>Dauer<select data-sell-duration="${esc(item.uid)}"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button class="primary" data-transfer-confirm-sell="${esc(item.uid)}">Jetzt anbieten</button></div>`:""}</div>`
+ return `<div class="transfer-sale-row"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · Richtwert ${fmt(p.buy)} Coins</small><div class="transfer-sale-status">Verfügbar</div></div><div class="transfer-sale-actions"><button class="primary" data-transfer-sell="${esc(item.uid)}">Anbieten</button><button class="secondary" data-watch-remove="${esc(item.uid)}">In Verein</button></div>${editing?transferSellEditorHTML(item,p):""}</div>`
 }
 function renderTransferWatch(){
  settleTransferSales();
@@ -3823,7 +3827,7 @@ $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-m
 $("wonAuctions").addEventListener("click",e=>{const bid=e.target.closest("[data-my-auction-bid]"),buy=e.target.closest("[data-my-auction-buy]"),open=e.target.closest("[data-my-auction-open]");if(bid){bidMarketListing(Number(bid.dataset.myAuctionBid),true);return}if(buy){buyMarketListing(Number(buy.dataset.myAuctionBuy),true);return}if(open){const x=state.auctions?.[Number(open.dataset.myAuctionOpen)];if(x){const idx=marketListings.indexOf(x);if(idx>=0)openMarketPlayerDetails(idx);else openBiography(marketPreviewItem(x),-1,x.base)}}});
 $("transferWatchList").addEventListener("click",e=>{
  const o=e.target.closest("[data-transfer-item-open]"),r=e.target.closest("[data-watch-remove]"),sell=e.target.closest("[data-transfer-sell]"),confirmSell=e.target.closest("[data-transfer-confirm-sell]"),relist=e.target.closest("[data-transfer-relist]"),clearSold=e.target.closest("[data-clear-sold]");
- if(o){const uid=o.dataset.transferItemOpen,item=state.club.find(x=>x.uid===uid)||(state.transferSales||[]).find(s=>String(s.uid)===String(uid))?.item;if(item)openPlayerDetails(item,state.squad.indexOf(uid)>=0?state.squad.indexOf(uid):null);return}
+ if(o){const uid=o.dataset.transferItemOpen,inClub=state.club.find(x=>x.uid===uid),item=inClub||(state.transferSales||[]).find(s=>String(s.uid)===String(uid))?.item;if(inClub)openPlayerDetails(inClub,state.squad.indexOf(uid)>=0?state.squad.indexOf(uid):null);else if(item)openBiography(item,-1);return}
  if(clearSold){state.transferSales=(state.transferSales||[]).filter(s=>s.status!=="sold");save();renderTransferWatch();return}
  if(sell||relist){sellEditorUid=(sell||relist).dataset.transferSell||(sell||relist).dataset.transferRelist;renderTransferWatch();return}
  if(confirmSell){const uid=confirmSell.dataset.transferConfirmSell,start=document.querySelector(`[data-sell-start="${CSS.escape(uid)}"]`),buy=document.querySelector(`[data-sell-buy="${CSS.escape(uid)}"]`),dur=document.querySelector(`[data-sell-duration="${CSS.escape(uid)}"]`);createTransferSale(uid,start?.value,buy?.value,dur?.value);return}
@@ -3833,7 +3837,7 @@ function updateMarketCountdowns(){
  const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&Date.now()>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
  if(!document.getElementById("marketView")?.classList.contains("active"))return;
  marketListings.forEach((x,i)=>{const el=document.querySelector(`[data-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});
- (state.auctions||[]).forEach((x,i)=>{const el=document.querySelector(`[data-my-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});
+ (state.auctions||[]).forEach((x,i)=>{const el=document.querySelector(`[data-my-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});(state.transferSales||[]).filter(s=>s.status==="active").forEach(s=>{const el=document.querySelector(`[data-transfer-sale-time="${CSS.escape(String(s.id))}"]`);if(el)el.textContent=`${Math.max(0,Math.ceil((s.ends-Date.now())/1000))}s`});
  if(botChanged||settled||expired||salesChanged)renderMarket()
 }
 setInterval(updateMarketCountdowns,1000);
@@ -4976,7 +4980,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.90";
+const GFUT_BUILD="V18.91";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -4992,8 +4996,8 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1890",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-90-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1891",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-91-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 
