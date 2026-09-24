@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.87</title>
+<title>Gerlies FUT V18.88</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -121,6 +121,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .sbc-editor-pitch{position:relative;aspect-ratio:.72;min-height:510px;border:1px solid #2e6061;border-radius:17px;overflow:hidden;background:radial-gradient(circle at 50% 49%,transparent 0 13%,rgba(255,255,255,.14) 13.3% 13.8%,transparent 14.1%),linear-gradient(90deg,transparent 49.7%,rgba(255,255,255,.15) 49.7% 50.3%,transparent 50.3%),repeating-linear-gradient(0deg,#08634c 0 11%,#07563f 11% 22%);box-shadow:inset 0 0 34px rgba(0,0,0,.28)}
 .sbc-editor-pitch:before{content:"";position:absolute;inset:5%;border:1px solid rgba(255,255,255,.23);border-radius:3px;pointer-events:none}.sbc-editor-pitch:after{content:"";position:absolute;left:35%;right:35%;top:5%;height:16%;border:1px solid rgba(255,255,255,.18);border-top:0;pointer-events:none}
 .sbc-work-slot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:17.5%;min-width:58px;aspect-ratio:.70;display:grid;place-items:center;border:0;background:transparent;padding:0;cursor:pointer}.sbc-work-slot.filled{touch-action:none}.sbc-card-wrap{width:100%;min-width:0;display:block}.sbc-card-wrap>.mini{width:100%;display:block}.sbc-work-slot .mini,.sbc-work-slot .mini .card-shell{width:100%}.sbc-work-slot .card-shell{filter:drop-shadow(0 7px 9px rgba(0,0,0,.48))}.sbc-work-slot.drop-target,.sbc-test-slot.drop-target{outline:2px solid #8ae9ff;outline-offset:3px;border-radius:8px;filter:drop-shadow(0 0 12px rgba(82,215,255,.6))}.sbc-work-slot.drag-source,.sbc-test-slot.drag-source{opacity:.28}
+.sbc-editor-pitch .sbc-work-slot[data-sbc-index="0"]{z-index:4}
 .sbc-empty-slot{width:74%;aspect-ratio:.70;display:grid;place-items:center;border:1px solid rgba(183,210,218,.38);clip-path:polygon(10% 0,90% 0,100% 8%,96% 90%,83% 100%,17% 100%,4% 90%,0 8%);background:linear-gradient(160deg,rgba(19,31,37,.82),rgba(8,16,20,.86));color:#8fa1a8;text-align:center}.sbc-empty-slot b{display:block;font-size:18px;font-weight:500}.sbc-empty-slot span{display:block;font-size:6px;font-weight:1000;margin-top:2px}.sbc-slot-remove{position:absolute;z-index:15;right:-4px;top:-4px;width:20px;height:20px;border-radius:50%;border:1px solid #65454d;background:#29171b;color:#ff9aaa;font-size:12px;line-height:1}
 .sbc-builder-footer{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.sbc-builder-footer button{width:100%}.sbc-submit-state{grid-column:1/-1;padding:7px 9px;border-radius:8px;background:#0d1519;border:1px solid #2c3d44;color:#87979f;font-size:6.5px;line-height:1.4}.sbc-submit-state.ok{border-color:#347753;color:#a4f3bb;background:#0d2117}
 .sbc-test-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:11px 12px;border:1px solid #384a52;border-radius:10px;background:linear-gradient(145deg,#111c21,#0b1418);color:#fff;text-align:left}.sbc-test-toggle strong{font-size:9px}.sbc-test-toggle span{color:#88a0aa;font-size:7px}.sbc-test-chevron{font-size:15px;transition:.18s transform}.sbc-test-toggle.open .sbc-test-chevron{transform:rotate(180deg)}
@@ -1040,7 +1041,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.87</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.88</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3858,8 +3859,8 @@ function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
 }
 function sbcRequirementSummary(sbc,stats){
  const reqs=[{label:"Spieler",value:`${stats.count}/${sbc.count}`,ok:stats.count===sbc.count},{label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule}];
- if(sbc.minAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / ${sbc.minAvg}+`,ok:stats.avgOk&&stats.count===sbc.count});
- else if(sbc.maxAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
+  if(sbc.minAvg)reqs.push({label:"Ø GES",value:`${stats.avg.toFixed(1)} / ${sbc.minAvg}+`,ok:stats.avgOk&&stats.count===sbc.count});
+  else if(sbc.maxAvg)reqs.push({label:"Ø GES",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
  else if(sbc.sameLeague)reqs.push({label:"Liga",value:stats.leagues.length===1&&stats.count===sbc.count?"1 Liga":`${stats.leagues.length} Ligen`,ok:stats.leagueOk&&stats.count===sbc.count});
  else reqs.push({label:"Belohnung",value:sbcRewardText(sbc.reward),ok:false});
  return reqs.slice(0,3)
@@ -4852,8 +4853,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1887",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-87-reloaded")){sessionStorage.setItem("gfut-v18-87-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1888",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-88-reloaded")){sessionStorage.setItem("gfut-v18-88-reloaded","1");location.reload()}});
  });
 }
 
