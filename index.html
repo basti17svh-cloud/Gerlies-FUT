@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V18.93</title>
+<title>Footera V18.94</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1063,7 +1063,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </div>
     <div id="starterStage" class="starterstage">
       <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1 id="starterTitle">Starterset</h1><p id="starterInfo">18 echte Spieler aus deiner gewählten Liga.</p></div>
-      <div id="starterPack" class="starterpack">STARTER</div>
+      <div id="starterPack" class="starterpack"><img src="./assets/footera/promo.webp" alt="Footera Starter-Paket" /><span>Starter-Paket</span></div>
       <button id="starterOpen" class="primary" style="width:100%">Starterset öffnen</button>
     </div>
   </div>
@@ -1071,7 +1071,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.93</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.94</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1279,7 +1279,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="opponentTeamModal" class="modal friend-team-modal opponent-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="opponentTeamModalTitle">Gegner</h3><div id="opponentTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="opponentTeamModalClose" class="secondary">Schließen</button></div><div id="opponentTeamModalBody"></div></div></div>
 
 
-<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack">PACK</div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
+<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
 <div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
@@ -3433,9 +3433,8 @@ function packChanceLabel(v){if(!v)return"0 %";return `${(v*100).toLocaleString("
 function activePromoPacks(){const key=promoWindowKey(new Date(),19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],ids=sets[cycle]||sets[0];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-function packArtLabel(p){if(p.id==="mixed6")return"MIX 6";if(p.id==="electrum")return"ELECTRUM";if(p.id==="raremixed")return"RARE MIX";if(p.id==="primegold")return"PRIME";if(p.id==="goldplayers")return"GOLD 12";return p.type==="gold"?"GOLD":"PACK"}
-function packArtClass(p){return p.type==="mixed"?"mixed-art":p.type==="special"?"special-art":`${p.type}-art`}
 const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp"};
+function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 let storeTab="promo";
 let storePromoKey="";
 function storeCountdown(end){const minutes=Math.max(0,Math.ceil((end-Date.now())/60000));return `${Math.floor(minutes/60)} Std. ${minutes%60} Min.`}
@@ -3458,7 +3457,7 @@ function renderStore(){
  $("storeContext").textContent=promo?"Limitierte Packs · Wechsel täglich um 19:00 Uhr.": "Bronze, Silber und Gold · dauerhaft erhältlich.";
  const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
  $("packGrid").innerHTML=purch.map(p=>{
-  const lim=promoUsage(p),sold=lim.remaining<=0,packArt=STORE_PACK_ART[p.id]||"./assets/footera/promo.webp";
+  const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
   const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span>${currency==="coins"?"●":"◆"} ${fmt(p[currency])}<small>${label}</small></span><strong>Kaufen</strong></button>`;
   return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
@@ -3470,11 +3469,11 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0);$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0);$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
 $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const items=generatePack(id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;save();openPack(id,items)}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -4133,8 +4132,9 @@ function sbcRewardPackLabel(reward){
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
 }
 function sbcOverviewCard(s){
- const stats=sbcDraftStats(s),pct=Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100);
- return `<article class="sbc-hub-card"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta"><span class="sbc-hub-chip">${esc(s.req)}</span><span class="sbc-hub-chip ${stats.ok?"done":""}">${stats.count}/${s.count} Spieler</span><span class="sbc-hub-chip">${pct}% vorbereitet</span></div></div><div class="sbc-hub-reward"><div class="sbc-hub-pack">${esc(sbcRewardPackLabel(s.reward))}</div><button class="secondary" type="button" data-sbc-open="${esc(s.id)}">Öffnen</button></div></article>`
+ const stats=sbcDraftStats(s),pct=Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100),rewardName=sbcRewardPackLabel(s.reward);
+ const rewardArt=s.reward?.pack?`<div class="sbc-hub-pack"><img src="${packArtSrc(s.reward.pack)}" alt="${esc(rewardName)}" loading="lazy"></div><span class="sbc-reward-name">${esc(rewardName)}</span>`:`<span class="sbc-reward-name">${esc(rewardName)}</span>`;
+ return `<article class="sbc-hub-card"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta"><span class="sbc-hub-chip">${esc(s.req)}</span><span class="sbc-hub-chip ${stats.ok?"done":""}">${stats.count}/${s.count} Spieler</span><span class="sbc-hub-chip">${pct}% vorbereitet</span></div></div><div class="sbc-hub-reward">${rewardArt}<button class="secondary" type="button" data-sbc-open="${esc(s.id)}">Öffnen</button></div></article>`
 }
 function sbcWorkSlotHTML(sbc,area,index,slot=null){
  const draft=sbcDraft(sbc.id),uid=sbcSlotUid(draft,area,index),row=sbcItemRecord(uid),item=row?.item,b=item?displayBase(item):null,label=slot?.p||"";
@@ -4783,7 +4783,7 @@ function renderHomeRewards(){
  if(claimable.length){const first=claimable[0];cards.push(`<div class="home-reward-card"><div class="reward-gift"><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></div><div class="home-reward-copy"><strong>Aufgaben-Belohnungen</strong><small>${claimable.length} Aufgabe${claimable.length===1?"":"n"} abgeschlossen</small><p>${esc(first.title)} · ${esc(rewardText(first.reward))}</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`)}
  if(objectivesReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">SP</div><div class="home-reward-copy"><strong>Ziele</strong><small>${objectivesReady} Belohnung${objectivesReady===1?"":"en"} abholbereit</small><p>Tages-, Wochen- und Saisonziele warten auf dich.</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`);
  if(passReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">PASS</div><div class="home-reward-copy"><strong>Season Pass</strong><small>${passReady} Belohnung${passReady===1?"":"en"} abholbereit</small><p>Belohnungen aus dem kostenlosen oder Premium-Pfad warten auf dich.</p><button class="primary" data-go="seasonPassView">Jetzt abholen</button></div></div>`);
- for(const pack of packs.slice(0,Math.max(0,2-cards.length))){const qty=state.packs[pack.id]||0,type=pack.type==="special"?"special":pack.type==="silver"?"silver":pack.type==="bronze"?"bronze":"gold";cards.push(`<div class="home-reward-card"><div class="mini-pack ${type}">UT</div><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
+ for(const pack of packs.slice(0,Math.max(0,2-cards.length))){const qty=state.packs[pack.id]||0;cards.push(`<div class="home-reward-card"><img class="mini-pack" src="${packArtSrc(pack.id)}" alt="${esc(pack.name)}" loading="lazy"><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
  if(!cards.length)cards.push(`<div class="home-empty-note">Noch nichts abholbereit. Schließe Ziele, SBCs oder Season-Stufen ab – neue Rewards erscheinen hier automatisch ganz oben.</div>`);
  $("homeRewardGrid").innerHTML=cards.join("")
 }
@@ -5112,7 +5112,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.93";
+const GFUT_BUILD="V18.94";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5128,8 +5128,8 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1893",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-93-reloaded")){sessionStorage.setItem("gfut-v18-93-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1894",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-94-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 

@@ -6,6 +6,7 @@ const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const packDefinitions=html.slice(html.indexOf('const PACKS=['),html.indexOf('const TOTW_WEEK_1='));
+const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let storeTab='));
 const storeCode=html.slice(html.indexOf('function renderStore(){'),html.indexOf('let pendingResolved='));
 
 function store(){
@@ -25,7 +26,7 @@ function store(){
  };
  vm.createContext(ctx);
  vm.runInContext(`${packDefinitions}
-  const STORE_PACK_ART={bronze:'bronze.webp',silver:'silber.webp',gold:'gold.webp'};
+  ${artCode}
   let storeTab='classic';
   function activePromoPacks(){return PACKS.filter(p=>p.rotation).slice(0,3)}
   function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}

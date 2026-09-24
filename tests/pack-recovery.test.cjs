@@ -6,6 +6,7 @@ const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
+const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let storeTab='));
 const packCode=html.slice(html.indexOf('let pendingResolved='),html.indexOf('function packIsSpecial('));
 const resultCode=html.slice(html.indexOf('function renderPackResults(){'),html.indexOf('$("resultGrid").addEventListener'));
 const finishCode=html.slice(html.indexOf('function finishPack(){'),html.indexOf('function packFxLayer('));
@@ -23,13 +24,14 @@ function app(saved=new Map()){
   cardHTML:()=>'<div>Karte</div>',quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
  };
  vm.createContext(ctx);
- vm.runInContext(`${stateCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${resultCode}\n${finishCode}`,ctx);
+ vm.runInContext(`${stateCode}\n${artCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${resultCode}\n${finishCode}`,ctx);
  return{ctx,elements,saved,read:expr=>vm.runInContext(expr,ctx)}
 }
 
 test('an unopened pack survives reload and returns as distributable cards',async()=>{
  const saved=new Map(),first=app(saved);
  first.read('openPack("gold")');await Promise.resolve();
+ assert.equal(first.elements.get('bigPackArt').src,'./assets/footera/gold.webp');
  assert.equal(JSON.parse(saved.get('gerliesFutV9')).pendingPack.length,2);
  const recovered=app(saved);
  assert.equal(recovered.read('pendingPack.length'),2);

@@ -1,4 +1,4 @@
-/* Footera V18.93: backgrounds, branding and Store only. Player-card art is untouched. */
+/* Footera V18.94: shared pack artwork for Store, SBCs, rewards and opening. Player-card art is untouched. */
 :root{
   --bg:#090708;--panel:#151112;--panel2:#1e1719;--line:#483236;
   --text:#f9f7f6;--muted:#b3a4a7;
@@ -110,6 +110,34 @@ body{
 .store-pack.soldout{opacity:.7}
 .store-pack-art{display:grid;place-items:center;min-width:0;min-height:170px}
 .store-pack-art img{display:block;width:100%;height:190px;object-fit:contain;filter:drop-shadow(0 10px 13px rgba(0,0,0,.6))}
+
+/* The same foil packs appear wherever a pack is shown. */
+.sbc-hub-pack{
+  width:100%;height:124px;clip-path:none;border-radius:0;
+  background:transparent;color:inherit;overflow:visible;
+}
+.sbc-hub-pack img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 7px rgba(0,0,0,.5))}
+.sbc-reward-name{display:block;color:#eee0df;font-size:8px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.mini-pack{
+  display:block;clip-path:none;border:0;background:transparent!important;
+  box-shadow:none;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.55));
+}
+.mini-pack::before{content:none}
+.owned-pack-art{width:36px;height:50px;flex:0 0 36px;object-fit:contain}
+.owned-pack-row>div{flex:1;min-width:0}
+.starterpack,.bigpack{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  clip-path:none;background:transparent;box-shadow:none;color:#fff;
+}
+.starterpack img,.bigpack img{
+  display:block;width:100%;height:calc(100% - 25px);object-fit:contain;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.65));
+}
+.starterpack span,.bigpack span{
+  display:block;max-width:100%;color:#f7f2ee;font-size:11px;font-weight:800;
+  font-style:normal;letter-spacing:.01em;text-align:center;line-height:1.2;
+  text-shadow:0 2px 8px rgba(0,0,0,.9);
+}
 .store-pack-content{min-width:0;display:flex;flex-direction:column}
 .store-pack-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;flex-wrap:wrap}
 .store-pack-heading h3{margin:0;font-size:clamp(15px,2.5vw,20px);line-height:1.17}
