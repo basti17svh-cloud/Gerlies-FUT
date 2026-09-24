@@ -28,7 +28,7 @@ function setup(initial={}){
  };
  vm.createContext(ctx);
  vm.runInContext(source,ctx,{filename:'season-system.js'});
- const api=vm.runInContext('({seasonInfo,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,renderTasks})',ctx);
+ const api=vm.runInContext('({seasonInfo,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
  return{ctx,state:ctx.state,elements,api,click(id,selector,dataset){
   const handler=element(id).listeners.click;
   assert.ok(handler,`${id} click handler`);
@@ -41,9 +41,10 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  assert.equal(ctx.SEASON_REWARDS.length,30);
  assert.equal(ctx.SEASON_REWARDS.at(-1).sp,26500);
  assert.ok(ctx.SEASON_REWARDS.every(t=>t.reward&&t.premium));
- assert.equal(api.seasonInfo(new Date('2026-10-22T18:59:59Z')).number,1);
- assert.equal(api.seasonInfo(new Date('2026-10-22T19:00:00Z')).number,2);
- assert.equal(api.objectiveWindow('daily',new Date('2026-09-23T18:59:59Z')).end.toISOString(),'2026-09-23T19:00:00.000Z');
+ const seasonBoundary=new Date(2026,9,22,19,0,0),dailyBoundary=new Date(2026,8,23,19,0,0);
+ assert.equal(api.seasonInfo(new Date(seasonBoundary.getTime()-1000)).number,1);
+ assert.equal(api.seasonInfo(seasonBoundary).number,2);
+ assert.equal(api.objectiveWindow('daily',new Date(dailyBoundary.getTime()-1000)).end.getTime(),dailyBoundary.getTime());
  assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
  assert.equal(api.objectiveWindow('season',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
  assert.notDeepEqual(api.objectiveWindow('daily',new Date('2026-09-23T20:00:00Z')).tasks.map(t=>t.id),api.objectiveWindow('daily',new Date('2026-09-24T20:00:00Z')).tasks.map(t=>t.id));
@@ -90,6 +91,19 @@ test('buying premium unlocks achieved tiers retroactively, and duplicate claims 
  app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'1'});
  assert.equal(state.coins,amount+500);
  assert.equal(api.availableObjectiveRewardsCount(),2);
+});
+
+test('objective notice counts only objectives while Pass rewards appear separately',()=>{
+ const app=setup({sp:500});
+ const{api,state}=app;
+ assert.equal(api.availablePassRewardsCount(),2);
+ assert.equal(api.availableRotatingObjectiveRewardsCount(),0);
+ api.renderTasks();
+ assert.match(app.elements.get('objectiveSummary').textContent,/^0 Belohnungen abholbereit/);
+ const daily=api.objectiveWindow('daily').tasks[0];
+ state.stats[daily.stat]+=daily.target;
+ assert.ok(api.availableRotatingObjectiveRewardsCount()>=1);
+ assert.equal(api.availablePassRewardsCount(),2);
 });
 
 test('claiming a rotating objective and the weekly set bonus grants each only once',()=>{

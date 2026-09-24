@@ -905,6 +905,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .pass-ladder{display:flex;gap:9px;overflow-x:auto;scroll-snap-type:x proximity;padding:5px 0 10px;scrollbar-color:#718a61 #17231b}.pass-tier{flex:0 0 172px;scroll-snap-align:start;border:1px solid #34453a;border-radius:12px;padding:9px;background:#101a14}.pass-tier.reached{border-color:#a4bf55}.pass-tier-header{display:flex;justify-content:space-between;color:#deedcc;font-size:9px;font-weight:900;margin-bottom:8px}.pass-tier-header small{color:#94a79b;font-size:8px}.pass-reward{min-height:89px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;padding:9px;border-radius:9px;border:1px solid #34483b;background:#16241b;margin-top:5px}.pass-reward.premium{border-color:#6d633e;background:#211f15}.pass-reward b{font-size:8px;color:#a6f7c6}.pass-reward.premium b{color:#ffde83}.pass-reward span{font-size:9px;line-height:1.25;color:#e7efdf}.pass-reward button{min-height:30px;font-size:9px}.pass-reward em{font-size:8px;color:#8ca496;font-style:normal}
 .objective-tabs{display:flex;gap:7px;overflow-x:auto;margin:18px 0 10px}.objective-tabs button{min-height:36px;white-space:nowrap;padding:0 12px;border-radius:18px;border:1px solid #365044;background:#13221a;color:#bcd1c2;font-size:10px;font-weight:800}.objective-tabs button.active{background:var(--lime);border-color:var(--lime);color:#132014}.objective-summary{font-size:10px;color:#b3c4ba;margin-bottom:10px}.objective-group-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:13px 0 7px}.objective-group-head strong{font-size:13px}.objective-group-head span{font-size:9px;color:#94aaa0}.objective-bonus{border:1px solid #5b6d3e;border-radius:12px;padding:11px;margin-top:8px;background:#1a2317;display:flex;justify-content:space-between;align-items:center;gap:10px}.objective-bonus b{font-size:10px;color:#e3f4b3}.objective-bonus small{display:block;color:#a5b2a0;margin-top:4px;font-size:8px}.objective-bonus button{min-height:34px;font-size:9px}
 @media(max-width:600px){.pass-panel{padding:12px}.pass-top{display:block}.pass-time{display:block;margin-top:7px}.pass-tier{flex-basis:155px}.pass-upgrade-actions{width:100%}.pass-upgrade-actions button{flex:1 1 130px}}
+.home-action.season{--tile:#ffda72;border-color:rgba(255,218,114,.32);background:radial-gradient(circle at 10% 50%,rgba(255,218,114,.13),transparent 42%),linear-gradient(145deg,#18190e,#0a100e)}
+.home-action .ready-count,.more-item .ready-count{position:absolute;top:6px;right:6px;z-index:4;display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:#dfff45;color:#152012;font-size:10px;font-weight:1000;box-shadow:0 2px 10px #0007}
+.more-item{position:relative}.ready-count[hidden]{display:none!important}
+.pass-link{display:block;width:100%;margin-bottom:10px;padding:12px 14px;border:1px solid #6d633e;border-radius:11px;background:#211f15;color:#ffde83;text-align:left;font-size:10px;font-weight:900}
 </style>
 </head>
 <body>
@@ -952,7 +956,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.70</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.71</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -998,7 +1002,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
         <button class="home-action sbc" data-go="sbcView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="m24 4 17 10v20L24 44 7 34V14L24 4Z"/><circle cx="18" cy="22" r="4"/><circle cx="30" cy="22" r="4"/><path d="M12 34c1-6 4-9 8-9M36 34c-1-6-4-9-8-9"/></svg></span><span class="home-action-copy"><strong>SBC</strong><small>Challenges meistern</small></span><span class="home-action-arrow">›</span></button>
         <button class="home-action transfer" data-go="marketView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M5 15h31M29 8l7 7-7 7M43 33H12M19 26l-7 7 7 7"/></svg></span><span class="home-action-copy"><strong>Transfers</strong><small>Markt durchsuchen</small></span><span class="home-action-arrow">›</span></button>
         <button class="home-action store" data-go="storeView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 9h5l4 23h21l4-16H15"/><circle cx="19" cy="39" r="2.5"/><circle cx="35" cy="39" r="2.5"/></svg></span><span class="home-action-copy"><strong>Store</strong><small>Packs und Angebote</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action objectives" data-go="objectivesView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="10"/><circle cx="24" cy="24" r="3"/><path d="M32 16 43 5M36 5h7v7"/></svg></span><span class="home-action-copy"><strong>Ziele</strong><small>Belohnungen freischalten</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action objectives" data-go="objectivesView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="10"/><circle cx="24" cy="24" r="3"/><path d="M32 16 43 5M36 5h7v7"/></svg></span><span class="home-action-copy"><strong>Ziele</strong><small id="homeObjectiveHint">Belohnungen freischalten</small></span><span id="homeObjectiveBadge" class="ready-count" hidden aria-label="Abholbare Ziele"></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action season" data-go="seasonPassView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 8h34v32H7zM13 8v32M35 8v32M19 23l5-11 5 11-5 13z"/></svg></span><span class="home-action-copy"><strong>Season Pass</strong><small id="homePassHint">Kostenlos & Premium · 30 Stufen</small></span><span id="homePassBadge" class="ready-count" hidden aria-label="Abholbare Passbelohnungen"></span><span class="home-action-arrow">›</span></button>
       </div>
 
       <div class="home-panel">
@@ -1048,7 +1053,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Foundation-Upgrades mit Club-Spielern und Duplikaten aus deinem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
-<section id="objectivesView" class="view"><div class="headline"><h2>Ziele & Season Pass</h2><p>Neue Tages-, Wochen- und Saisonziele bringen SP. Belohnungen holst du auf dem kostenlosen oder Premium-Pfad ab.</p></div><div class="section"><div id="seasonPass"></div><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
+<section id="objectivesView" class="view"><div class="headline"><h2>Ziele</h2><p>Tages-, Wochen- und Saisonziele bringen SP und Belohnungen für deinen Club.</p></div><div class="section"><button class="pass-link" data-go="seasonPassView">Season Pass ansehen →</button><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
+<section id="seasonPassView" class="view"><div class="headline"><h2>Season Pass</h2><p>Spiele, erfülle Ziele und hole Belohnungen auf dem kostenlosen und Premium-Pfad ab.</p></div><div class="section"><button class="pass-link" data-go="objectivesView">Ziele für Season Points ansehen →</button><div id="seasonPass"></div></div></section>
 
 <section id="evolutionView" class="view"><div class="headline"><h2>Evolutions</h2><p>Nur qualifizierte Spieler werden vorgeschlagen. Jede Stufe zeigt dir vor dem Start die resultierende Karte und ihre Upgrades.</p></div><div class="section">
   <div class="evo-tabs" id="evoTabs"><button class="evo-tab active" data-evo-tab="available">Verfügbar</button><button class="evo-tab" data-evo-tab="active">Aktiv</button><button class="evo-tab" data-evo-tab="completed">Abgeschlossen</button><button class="evo-tab" data-evo-tab="past">Vergangen</button></div>
@@ -1115,7 +1121,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </nav>
 <div id="moreTray" class="more-tray"><div class="more-grid">
   <button class="more-item evo" data-go="evolutionView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="M7 3h10M8 3v6l5 4-5 8h9l-5-8 4-4V3"></path></svg></span><span>Evolutions</span></button>
-  <button class="more-item" data-go="objectivesView"><span class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><path d="M17 7 21 3"></path><path d="M18.5 3H21v2.5"></path></svg></span><span>Ziele</span></button>
+  <button class="more-item" data-go="objectivesView"><span class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><path d="M17 7 21 3"></path><path d="M18.5 3H21v2.5"></path></svg></span><span>Ziele</span><span id="moreObjectiveBadge" class="ready-count" hidden aria-label="Abholbare Ziele"></span></button>
+  <button class="more-item" data-go="seasonPassView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 4v16M16 4v16M10 12l2-5 2 5-2 5z"></path></svg></span><span>Season Pass</span><span id="morePassBadge" class="ready-count" hidden aria-label="Abholbare Passbelohnungen"></span></button>
   <button class="more-item" data-go="sbcView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="m12 2 8 4.5v11L12 22 4 17.5v-11z"></path><path d="M9 10h6M9 14h6"></path></svg></span><span>SBC</span></button>
   <button class="more-item" data-go="clubView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="m12 3 7 3v5c0 4.2-2.2 7.7-7 10-4.8-2.3-7-5.8-7-10V6z"></path></svg></span><span>Verein</span></button>
   <button class="more-item" data-go="socialView"><span class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="8" cy="8.5" r="2.7"></circle><circle cx="16.5" cy="9.5" r="2.2"></circle><path d="M3.5 19c.7-3.3 2.8-5.1 6-5.1 3.2 0 5.3 1.8 6 5.1"></path><path d="M14.5 18.8c.4-2.1 1.8-3.4 4.3-3.9"></path></svg></span><span>Freunde</span></button>
@@ -1336,7 +1343,39 @@ function futwizVerifiedIconId(name){return FUTWIZ_ICON_IDS[normalizeKey(name)]||
 function futwizVerifiedIconFace(name){
  const id=futwizVerifiedIconId(name);return id?`https://cdn.futwiz.com/cdn-cgi/image/width%3D360%2Cquality%3D100%2Cformat%3Dwebp/assets/img/fc27/faces/${id}.png`:""
 }
-const MID_ICON_BASES=MID_ICON_DATA.map(([name,ovr,position,alt=""])=>{const s=iconStatProfile(ovr,position,name),futwizId=futwizVerifiedIconId(name),face=futwizVerifiedIconFace(name);return{id:`midicon-${iconSlug(name)}`,name,ovr,position,alt,nation:"",league:"Icons",team:"ICON",face,futwizId,...s,source:"fc27-mid-icon-pool",isIcon:true}});
+const ICON_NATIONS=Object.fromEntries(Object.entries({
+ "Canada":["Christine Sinclair"],
+ "England":["Ellen White","Bobby Charlton","Bobby Moore","Wayne Rooney","Alan Shearer","Gary Lineker","Rio Ferdinand","Paul Scholes","Kelly Smith","Frank Lampard","Michael Owen","David Beckham","Ian Wright","John Barnes","Geoff Hurst","Ashley Cole","Sol Campbell","Steven Gerrard"],
+ "Brazil":["Formiga","Lúcio","Maicon","Pelé","Ronaldo","Garrincha","Zico","Carlos Alberto","Cafu","Roberto Carlos","Rivaldo","Rivellino","Kaká","Marcelo","Jairzinho","Sócrates","Sissi","Dunga"],
+ "Norway":["Hege Riise"],
+ "Germany":["Karl-Heinz Rummenigge","Franz Beckenbauer","Birgit Prinz","Nadine Angerer","Gerd Müller","Oliver Kahn","Lothar Matthäus","Toni Kroos","Philipp Lahm","Bastian Schweinsteiger","Miroslav Klose"],
+ "Portugal":["Pepe","Eusébio","Luís Figo"],
+ "France":["Raphaël Varane","Jean-Pierre Papin","Zinedine Zidane","Thierry Henry","Camille Abily","Lilian Thuram","Marcel Desailly","Franck Ribéry","Elise Pichon","Patrick Vieira","Laurent Blanc","Robert Pirès","Claude Makélélé","Emmanuel Petit","Eric Cantona"],
+ "Argentina":["Sergio Agüero","Diego Maradona","Javier Zanetti","Gabriel Batistuta","Juan Román Riquelme","Mario Kempes","Hernán Crespo"],
+ "United States":["Tobin Heath","Mia Hamm","Alex Morgan","Julie Foudy"],
+ "Japan":["Yuki Nagasato","Homare Sawa","Aya Miyama"],
+ "Ivory Coast":["Yaya Touré","Didier Drogba"],
+ "Italy":["Paolo Maldini","Gianluigi Buffon","Roberto Baggio","Franco Baresi","Andrea Pirlo","Alessandro Del Piero","Francesco Totti","Alessandro Nesta","Fabio Cannavaro","Giorgio Chiellini","Gianluca Zambrotta","Gennaro Gattuso"],
+ "Netherlands":["Johan Cruyff","Marco van Basten","Ruud Gullit","Dennis Bergkamp","Ruud van Nistelrooy","Ronald Koeman","Edwin van der Sar","Robin van Persie","Patrick Kluivert","Frank Rijkaard"],
+ "Hungary":["Ferenc Puskás"],
+ "Spain":["Andrés Iniesta","Xavi","Raúl","Iker Casillas","Emilio Butragueño","Carles Puyol","Fernando Hierro","Fernando Torres"],
+ "Sweden":["Zlatan Ibrahimović","Caroline Seger","Lotta Schelin"],
+ "Scotland":["Kenny Dalglish"],
+ "Denmark":["Peter Schmeichel","Michael Laudrup"],
+ "Bulgaria":["Hristo Stoichkov"],
+ "Mexico":["Hugo Sánchez"],
+ "Cameroon":["Samuel Eto'o"],
+ "Czech Republic":["Petr Čech","Pavel Nedvěd"],
+ "South Korea":["Cha Bum-kun"],
+ "Romania":["Gheorghe Hagi"],
+ "Wales":["Gareth Bale","Ian Rush"],
+ "Ghana":["Michael Essien"],
+ "Serbia":["Nemanja Vidić"],
+ "Ukraine":["Andriy Shevchenko"],
+ "Northern Ireland":["George Best"],
+ "Republic of Ireland":["Roy Keane"]
+}).flatMap(([nation,names])=>names.map(name=>[iconSlug(name),nation])));
+const MID_ICON_BASES=MID_ICON_DATA.map(([name,ovr,position,alt=""])=>{const s=iconStatProfile(ovr,position,name),futwizId=futwizVerifiedIconId(name),face=futwizVerifiedIconFace(name);return{id:`midicon-${iconSlug(name)}`,name,ovr,position,alt,nation:ICON_NATIONS[iconSlug(name)]||"",league:"Icons",team:"ICON",face,futwizId,...s,source:"fc27-mid-icon-pool",isIcon:true}});
 function randomMidIconBase(){return MID_ICON_BASES[Math.floor(Math.random()*MID_ICON_BASES.length)]||null}
 function makeMidIconItem(base,tradeable=true){return makeItem(base,tradeable,{variant:"icon-mid",eventName:"Mid Icon"})}
 function totwSearchKeys(p){
@@ -1480,7 +1519,16 @@ function loadState(){
   return x?{...b,...x,version:120,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b
  }catch(e){return baseState()}
 }
-function save(){localStorage.setItem("gerliesFutV9",JSON.stringify(state));localStorage.setItem("uc27v7",JSON.stringify(state))}
+let saveQueued=false;
+function save(){
+ if(saveQueued)return;
+ saveQueued=true;
+ queueMicrotask(()=>{
+  saveQueued=false;
+  // Several actions call save() before and after rendering; persist their final state once.
+  localStorage.setItem("gerliesFutV9",JSON.stringify(state))
+ })
+}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
 function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1856",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
@@ -1759,7 +1807,7 @@ germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",it
 };
 const COUNTRY_NAMES={DE:"Germany",FR:"France",GB:"England",ES:"Spain",IT:"Italy",BR:"Brazil",AR:"Argentina",NL:"Netherlands",BE:"Belgium",PT:"Portugal",NO:"Norway",SE:"Sweden",DK:"Denmark",PL:"Poland",HR:"Croatia",RS:"Serbia",CH:"Switzerland",AT:"Austria",TR:"Turkey",MA:"Morocco",NG:"Nigeria",CM:"Cameroon",SN:"Senegal",US:"United States",MX:"Mexico",UY:"Uruguay",CO:"Colombia",JP:"Japan",KR:"South Korea",GH:"Ghana",CI:"Ivory Coast",EG:"Egypt",BA:"Bosnia and Herzegovina",CZ:"Czech Republic",IE:"Republic of Ireland",MK:"North Macedonia"};
 function countryCode(name){const str=String(name||"").trim();if(/^[A-Z]{2}$/.test(str))return str;const key=normalizeKey(str);return COUNTRY_CODES[key]||String(str).slice(0,2).toUpperCase()}
-function nationLabel(name){const code=countryCode(name);return COUNTRY_NAMES[code]||String(name||code||"")}
+function nationLabel(name){const raw=String(name||"").trim();if(["england","scotland","wales","northern ireland"].includes(normalizeKey(raw)))return raw;const code=countryCode(raw);return COUNTRY_NAMES[code]||raw||code}
 function flagEmoji(name){
  const key=normalizeKey(name);
  const footballFlags={england:"🏴",scotland:"🏴",wales:"🏴","northern ireland":"🏴"};
@@ -2585,13 +2633,13 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;renderAll();setTimeout(startGlobalBadgePrewarm,900)}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll();setTimeout(startGlobalBadgePrewarm,900)}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true,errorText=""){
  applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
+ if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;fillLeagueFilter();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
  else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
 }
 async function boot(){
@@ -2664,16 +2712,38 @@ function squadItems(){ensureSquadSlots();return state.squad.map(id=>state.club.f
 function currentFormation(){return FORMATIONS[state.formation]||FORMATIONS["4-3-3"]}
 function inPosition(base,slot){return posFit(base,slot)>0}
 function chemThreshold(n,a,b,c){return n>=c?3:n>=b?2:n>=a?1:0}
-function playerChem(index,items){
- if(index>=11||!items[index])return 0;
- const form=currentFormation(),b=displayBase(items[index]),slot=form[index]?.p;if(!b||!inPosition(b,slot))return 0;
- const eligible=items.slice(0,11).map((it,i)=>{if(!it)return null;const pb=displayBase(it),ps=form[i]?.p;return pb&&inPosition(pb,ps)?pb:null}).filter(Boolean);
- const club=b.team?eligible.filter(x=>x.team===b.team).length:0,nation=b.nation?eligible.filter(x=>x.nation===b.nation).length:0,league=b.league?eligible.filter(x=>x.league===b.league).length:0;
- return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
+function chemNationKey(nation){
+ const key=normalizeKey(nation||"");
+ if(!key)return"";
+ // Football uses four distinct home nations, even though their flags share a country code.
+ if(["england","scotland","wales","northern ireland"].includes(key))return key;
+ return countryCode(nation)
 }
-function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0;let chem=0;for(let i=0;i<11;i++)chem+=playerChem(i,items);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem}}
-function slotHTML(item,i){
- const s=currentFormation()[i],base=item?displayBase(item):null,chem=item?playerChem(i,squadItems()):0,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
+function squadChemistry(items){
+ const form=currentFormation(),xi=items.slice(0,11).map((item,i)=>{
+  const base=item?displayBase(item):null;
+  return base&&inPosition(base,form[i]?.p)?{base,icon:!!(base.isIcon||item.variant==="icon-mid")}:null
+ });
+ const clubs=new Map(),nations=new Map(),leagues=new Map();let icons=0;
+ const add=(map,key)=>{if(key)map.set(key,(map.get(key)||0)+1)};
+ for(const entry of xi){
+  if(!entry)continue;
+  const {base,icon}=entry,nation=chemNationKey(base.nation);
+  add(nations,nation);
+  if(icon){icons++;continue}
+  add(clubs,base.team);add(leagues,base.league)
+ }
+ return xi.map(entry=>{
+  if(!entry)return 0;
+  if(entry.icon)return 3;
+  const b=entry.base,club=clubs.get(b.team)||0,nation=nations.get(chemNationKey(b.nation))||0,league=(leagues.get(b.league)||0)+(b.league?icons:0);
+  return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
+ })
+}
+function playerChem(index,items){return index>=0&&index<11?squadChemistry(items)[index]||0:0}
+function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0,chemScores=squadChemistry(items),chem=chemScores.reduce((total,value)=>total+value,0);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem,chemScores}}
+function slotHTML(item,i,chem=0){
+ const s=currentFormation()[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
  return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}<div class="chem-dots">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></button>`
 }
 function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Bankplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
@@ -2688,7 +2758,7 @@ function setSquadDrawer(mode,toggle=false){const next=(toggle&&squadDrawerMode==
 function renderSquad(){
  ensureSquadSlots();
  const m=squadMetrics();$("sqRating").textContent=m.rating||"–";$("sqChem").textContent=`${m.chem}/33`;$("sqFilled").textContent=`${m.filled}/18`;$("formationSelect").value=state.formation;
- $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i)).join("");
+ $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i,m.chemScores[i])).join("");
  $("bench").innerHTML=m.items.slice(11,18).map((x,k)=>benchHTML(x,11+k)).join("");
  $("reserve").innerHTML=m.items.slice(18,23).map((x,k)=>reserveHTML(x,18+k)).join("");
  $("benchDrawerCount").textContent=`${m.items.slice(11,18).filter(Boolean).length}/7`;
@@ -2906,7 +2976,7 @@ function renderStore(){
 }
 $("storeView").addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur,price=p?.[cur];if(!p||price==null)return;const lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;state.packs[id]--;save();openPack(id)}})
 let pendingResolved=new Set();
-function openPack(id){pendingPack=generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id){pendingPack=generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -3144,7 +3214,7 @@ function refreshMarket(){
 }
 function bidIncrement(amount){return Math.max(50,Math.round(Number(amount||0)*.05/50)*50)}
 function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
-function settleAuctions(){for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){ensureObjectiveWindows();state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;toast(`Gebot gewonnen: ${x.base.name}`)}}save()}
+function settleAuctions(){let progress=false;for(const x of marketListings){if(x.settled||Date.now()<x.ends)continue;x.settled=true;if(x.myBid&&x.myBid>=x.bid){ensureObjectiveWindows();state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;progress=true;toast(`Gebot gewonnen: ${x.base.name}`)}}if(progress)updateObjectiveIndicators();save()}
 function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
 function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=bidIncrement(x.bid);return`<div class="item market-listing" data-market-listing="${i}"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';const won=marketListings.filter(x=>x.won).length;$("wonAuctions").innerHTML=won?`<div class="won-auction">${won} Auktion(en) gewonnen und automatisch dem Verein hinzugefügt.</div>`:"";renderTransferWatch()}
 function openMarketPlayerDetails(i){
@@ -3628,6 +3698,14 @@ let homeHeroSlide=0;
 function homeClaimableTasks(){return TASKS.filter(t=>Math.min(t.target,state.stats[t.stat]||0)>=t.target&&!state.claims[t.id])}
 function homeOwnedPacks(){return PACKS.filter(p=>(state.packs[p.id]||0)>0)}
 function homeRewardsTotal(){return homeClaimableTasks().length+availableObjectiveRewardsCount()+homeOwnedPacks().reduce((s,p)=>s+(state.packs[p.id]||0),0)}
+function updateObjectiveIndicators(){
+ const objectiveReady=homeClaimableTasks().length+availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount();
+ for(const [id,count] of [["homeObjectiveBadge",objectiveReady],["moreObjectiveBadge",objectiveReady],["homePassBadge",passReady],["morePassBadge",passReady]]){
+  const badge=$(id);if(!badge)continue;badge.hidden=!count;badge.textContent=count?String(count):""
+ }
+ $("homeObjectiveHint").textContent=objectiveReady?`${objectiveReady} Belohnung${objectiveReady===1?"":"en"} abholbereit`:"Belohnungen freischalten";
+ $("homePassHint").textContent=passReady?`${passReady} Passbelohnung${passReady===1?"":"en"} abholbereit`:"Kostenlos & Premium · 30 Stufen"
+}
 function homeHeroSlides(){return[
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division} · ${state.rivals.points}/12`,theme:"gold"},
  {kicker:"LIVE CONTENT",title:'TEAM OF THE<br><span>WEEK</span>',text:`${LIVE_TOTW.name} ist aktiv. Entdecke die aktuellen Spezialkarten im Store.`,button:"Zum Store →",go:"storeView",teamView:"totw",shield:"TOTW",live:"JETZT LIVE",aside:"NEUE SPEZIALKARTEN",aside2:"NUR FÜR KURZE ZEIT",theme:"gold"},
@@ -3635,19 +3713,20 @@ function homeHeroSlides(){return[
 ]}
 function renderHomeHero(){const slides=homeHeroSlides(),hero=slides[homeHeroSlide]||slides[0],card=$("homeHeroCard");if(card)card.dataset.theme=hero.theme;$("homeHeroKicker").textContent=hero.kicker;$("homeHeroTitle").innerHTML=hero.title;$("homeHeroText").textContent=hero.text;$("homeHeroShield").textContent=hero.shield;$("homeHeroLive").textContent=hero.live;$("homeHeroAside").innerHTML=hero.aside.replace(". ",".<br>");$("homeHeroAside2").textContent=hero.aside2;$("homeHeroAction").textContent=hero.button;$("homeHeroAction").dataset.go=hero.go;const teamBtn=$("homeHeroTeam");if(teamBtn){teamBtn.style.display=hero.teamView==="totw"?"inline-flex":"none";teamBtn.dataset.homeTeamView=hero.teamView||""}document.querySelectorAll("[data-home-slide]").forEach((b,i)=>b.classList.toggle("active",i===homeHeroSlide))}
 function renderHomeRewards(){
- const claimable=homeClaimableTasks(),seasonReady=availableObjectiveRewardsCount(),packs=homeOwnedPacks(),total=homeRewardsTotal();
+ const claimable=homeClaimableTasks(),objectivesReady=availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount(),packs=homeOwnedPacks(),total=claimable.length+objectivesReady+passReady+packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0);
  $("homeReadyCount").textContent=String(total);
  $("homeReadySummary").textContent=total?`Du hast ${total} Belohnung${total===1?"":"en"}, die abgeholt werden können.`:"Aktuell warten keine Belohnungen auf dich.";
  const cards=[];
  if(claimable.length){const first=claimable[0];cards.push(`<div class="home-reward-card"><div class="reward-gift"><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></div><div class="home-reward-copy"><strong>Aufgaben-Belohnungen</strong><small>${claimable.length} Aufgabe${claimable.length===1?"":"n"} abgeschlossen</small><p>${esc(first.title)} · ${esc(rewardText(first.reward))}</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`)}
- if(seasonReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">SP</div><div class="home-reward-copy"><strong>Ziele & Season Pass</strong><small>${seasonReady} Belohnung${seasonReady===1?"":"en"} abholbereit</small><p>Deine Tages-, Wochen- und Saisonziele sowie Pass-Stufen warten auf dich.</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`);
+ if(objectivesReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">SP</div><div class="home-reward-copy"><strong>Ziele</strong><small>${objectivesReady} Belohnung${objectivesReady===1?"":"en"} abholbereit</small><p>Tages-, Wochen- und Saisonziele warten auf dich.</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`);
+ if(passReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">PASS</div><div class="home-reward-copy"><strong>Season Pass</strong><small>${passReady} Belohnung${passReady===1?"":"en"} abholbereit</small><p>Belohnungen aus dem kostenlosen oder Premium-Pfad warten auf dich.</p><button class="primary" data-go="seasonPassView">Jetzt abholen</button></div></div>`);
  for(const pack of packs.slice(0,Math.max(0,2-cards.length))){const qty=state.packs[pack.id]||0,type=pack.type==="special"?"special":pack.type==="silver"?"silver":pack.type==="bronze"?"bronze":"gold";cards.push(`<div class="home-reward-card"><div class="mini-pack ${type}">UT</div><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
  if(!cards.length)cards.push(`<div class="home-empty-note">Noch nichts abholbereit. Schließe Ziele, SBCs oder Season-Stufen ab – neue Rewards erscheinen hier automatisch ganz oben.</div>`);
  $("homeRewardGrid").innerHTML=cards.join("")
 }
 function renderHomeProgress(){
  const m=squadMetrics(),starterDone=[(state.stats.starter||0)>0,m.filled===18,(state.stats.matches||0)>0,((state.stats.sbcs||0)>0||(state.stats.market||0)>0)].filter(Boolean).length,starterTotal=4,seasonUnlocked=SEASON_REWARDS.filter(r=>(state.sp||0)>=r.sp).length,seasonTotal=SEASON_REWARDS.length,sbcDone=Math.min(SBCS.length,state.stats.sbcs||0);
- const entries=[{done:starterDone,total:starterTotal,title:"Starteraufgaben",desc:"Hol dir einen soliden Start.",campaign:0},{done:seasonUnlocked,total:seasonTotal,title:"Saison",desc:`Level ${Math.max(1,seasonUnlocked)} von ${seasonTotal}`,go:"objectivesView"},{done:sbcDone,total:SBCS.length,title:"SBCs",desc:"Challenges abgeschlossen",go:"sbcView"}];
+ const entries=[{done:starterDone,total:starterTotal,title:"Starteraufgaben",desc:"Hol dir einen soliden Start.",campaign:0},{done:seasonUnlocked,total:seasonTotal,title:"Season Pass",desc:`Level ${Math.max(1,seasonUnlocked)} von ${seasonTotal}`,go:"seasonPassView"},{done:sbcDone,total:SBCS.length,title:"SBCs",desc:"Challenges abgeschlossen",go:"sbcView"}];
  $("homeProgressGrid").innerHTML=entries.map(x=>{const pct=x.total?Math.round(x.done/x.total*100):0,attrs=x.campaign!=null?`data-campaign-open="${x.campaign}"`:`data-go="${x.go}"`;return `<button class="home-progress-card" ${attrs}><div class="progress-ring" style="--pct:${pct}%"><span>${x.done}/${x.total}</span></div><div class="home-progress-copy"><strong>${esc(x.title)}</strong><small>${esc(x.desc)}</small></div></button>`}).join("")
 }
 function renderHome(){const m=squadMetrics();$("homeRating").textContent=m.rating||"–";$("homeChem").textContent=`${m.chem}/33`;$("homePlayers").textContent=state.club.length;renderHomeHero();renderHomeRewards();renderHomeProgress()}
@@ -3765,7 +3844,21 @@ function redeemPromo(){
 }
 $("redeemPromoCode")?.addEventListener("click",redeemPromo);
 $("promoCodeInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")redeemPromo()});
-function renderAll(){renderWallet();renderHome();renderSquad();renderPlay();renderStore();renderTasks();renderSBC();renderEvos();renderClub();renderSocial();renderPromo();fillLeagueFilter();if(!marketListings.length)refreshMarket();save()}
+function renderActiveView(id){
+ if(id==="homeView")renderHome();
+ else if(id==="squadView")renderSquad();
+ else if(id==="playView")renderPlay();
+ else if(id==="storeView")renderStore();
+ else if(id==="objectivesView")renderTasks();
+ else if(id==="seasonPassView")renderSeasonPass();
+ else if(id==="sbcView")renderSBC();
+ else if(id==="evolutionView")renderEvos();
+ else if(id==="clubView")renderClub();
+ else if(id==="socialView")renderSocial();
+ else if(id==="extrasView"){renderPromo();renderSocial();updatePwaInstallUi()}
+ else if(id==="marketView"){if(!marketListings.length)refreshMarket();else renderMarket()}
+}
+function renderAll(){renderWallet();renderActiveView(currentViewId());updateObjectiveIndicators();save()}
 
 // V18.25 — Android/Samsung Zurück: echte App-Navigation statt versehentlichem Beenden.
 let uiHistoryApplying=false,squadBattleStage="closed",uiLayerStack=[];
@@ -3803,7 +3896,7 @@ function closeUiLayer(id,kind){
  if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
  removeUiLayer(id)
 }
-function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();if(id==="marketView"&&!marketListings.length)refreshMarket();if(id==="clubView")renderClub();if(id==="sbcView")renderSBC();if(id==="objectivesView")renderTasks();if(id==="evolutionView")renderEvos();if(id==="extrasView"){renderPromo();renderSocial();updatePwaInstallUi();}if(id==="squadView")renderSquad();if(id==="playView")renderPlay();if(id==="socialView")renderSocial();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
+function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();renderActiveView(id);updateObjectiveIndicators();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
 function protectLockedBack(message,kind){history.pushState(uiState(kind),"",location.href);toast(message)}
 function handleAppBack(targetState){
   if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
@@ -3821,7 +3914,7 @@ if(!history.state?.gfut)replaceUiState("view",{view:currentViewId()});
 
 function moreTray(){return $("moreTray")}
 function hideMoreTray(){const t=moreTray();if(t)t.classList.remove("open")}
-function toggleMoreTray(){const t=moreTray();if(!t)return;const open=t.classList.toggle("open");document.querySelectorAll('.nav button').forEach(b=>{if(b.dataset.view==="moreView")b.classList.toggle('active',open||["evolutionView","objectivesView","sbcView","clubView","socialView","extrasView"].includes(currentViewId()))});}
+function toggleMoreTray(){const t=moreTray();if(!t)return;const open=t.classList.toggle("open");document.querySelectorAll('.nav button').forEach(b=>{if(b.dataset.view==="moreView")b.classList.toggle('active',open||["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"].includes(currentViewId()))});}
 
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.toggle==="more"){toggleMoreTray();return}switchView(b.dataset.view)}));document.addEventListener("click",e=>{const moreBtn=e.target.closest("[data-toggle=more]");if(!moreBtn&&!e.target.closest("#moreTray"))hideMoreTray();const b=e.target.closest("[data-go]");if(b){hideMoreTray();switchView(b.dataset.go)}})
 $("campaignModal").addEventListener("click",e=>{if(e.target===$("campaignModal"))closeUiLayer("campaignModal","campaign")});

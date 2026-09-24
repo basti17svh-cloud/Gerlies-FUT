@@ -126,12 +126,18 @@ function objectiveProgress(task){
  return Math.min(task.target,Math.max(0,Number(state.stats[task.stat]||0)-base))
 }
 function activeObjectiveGroups(at=new Date()){return OBJECTIVE_GROUPS.map(group=>objectiveWindow(group,at))}
-function availableObjectiveRewardsCount(){
+function availableRotatingObjectiveRewardsCount(){
  ensureObjectiveWindows();
  const taskCount=activeObjectiveGroups().reduce((n,window)=>n+window.tasks.filter(task=>objectiveProgress(task)>=task.target&&!state.objectiveClaims[task.key]).length,0);
- const passCount=SEASON_REWARDS.reduce((n,tier)=>n+(state.sp>=tier.sp&&!state.seasonPass.freeClaims[tier.level]?1:0)+(state.seasonPass.premium&&state.sp>=tier.sp&&!state.seasonPass.premiumClaims[tier.level]?1:0),0);
  const week=objectiveWindow("weekly"),bonusReady=week.tasks.every(task=>state.objectiveClaims[task.key])&&!state.objectiveBonuses[week.key];
- return taskCount+passCount+(bonusReady?1:0)
+ return taskCount+(bonusReady?1:0)
+}
+function availablePassRewardsCount(){
+ ensureObjectiveWindows();
+ return SEASON_REWARDS.reduce((n,tier)=>n+(state.sp>=tier.sp&&!state.seasonPass.freeClaims[tier.level]?1:0)+(state.seasonPass.premium&&state.sp>=tier.sp&&!state.seasonPass.premiumClaims[tier.level]?1:0),0)
+}
+function availableObjectiveRewardsCount(){
+ return availableRotatingObjectiveRewardsCount()+availablePassRewardsCount()
 }
 
 const originalGrant=grant;
@@ -151,6 +157,7 @@ function rewardCell(tier,which){
 }
 function renderSeasonPass(){
  const host=$("seasonPass");if(!host)return;
+ if(ensureObjectiveWindows())save();
  const info=seasonInfo(),sp=Math.max(0,Number(state.sp||0)),max=SEASON_REWARDS[SEASON_REWARDS.length-1].sp;
  const next=SEASON_REWARDS.find(t=>t.sp>sp),level=SEASON_REWARDS.filter(t=>sp>=t.sp).length;
  const previous=host.querySelector(".pass-ladder"),previousScroll=previous?.scrollLeft||0;
@@ -167,10 +174,9 @@ function objectiveCard(task,group){
 }
 function renderTasks(){
  const changed=ensureObjectiveWindows();if(changed)save();
- renderSeasonPass();
  const groups=activeObjectiveGroups(),options=[["all","Alle"],["foundation","Foundations"],["daily","Täglich"],["weekly","Wöchentlich"],["season","Saison"]];
  $("objectiveTabs").innerHTML=options.map(([key,label])=>`<button type="button" data-objective-tab="${key}" class="${objectiveTab===key?"active":""}">${label}</button>`).join("");
- const pending=availableObjectiveRewardsCount()+TASKS.filter(t=>!state.claims[t.id]&&Number(state.stats[t.stat]||0)>=t.target).length;
+ const pending=availableRotatingObjectiveRewardsCount()+TASKS.filter(t=>!state.claims[t.id]&&Number(state.stats[t.stat]||0)>=t.target).length;
  $("objectiveSummary").textContent=`${pending} Belohnung${pending===1?"":"en"} abholbereit · Ziele erneuern sich zu den angezeigten Zeiten.`;
  const sections=[];
  if(objectiveTab==="all"||objectiveTab==="foundation"){
@@ -228,6 +234,8 @@ ensureObjectiveWindows();save();
 setInterval(()=>{
  if(!ensureObjectiveWindows())return;
  save();
+ updateObjectiveIndicators();
  if($("objectivesView")?.classList.contains("active"))renderTasks();
+ if($("seasonPassView")?.classList.contains("active"))renderSeasonPass();
  if($("homeView")?.classList.contains("active"))renderHome()
 },60000);
