@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.80</title>
+<title>Gerlies FUT V18.81</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -912,6 +912,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 /* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
 
+/* V18.81 — weekly TOTW archive, TOTW2 and automatic Wednesday 19:00 rotation */
+
 /* V18.54 — consolidated native implementation; no runtime patch injection */
 
 /* V18.53 — black/gold TOTW cards, clickable TOTW bios, live badge refresh, icon portraits */
@@ -1003,7 +1005,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.80</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.81</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1372,7 +1374,7 @@ const PACKS=[
  {id:"electrum",name:"Premium Electrum Spieler-Pack",coins:25000,points:350,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.0012,dailyLimit:10,resetHour:19},
  {id:"raremixed",name:"Seltenes Gemischtes Spieler-Pack",coins:20000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · Gold/Silber/Bronze gemischt · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19}
 ];
-const LIVE_TOTW={name:"Team of the Week 1",activeUntil:"23.09.2026",players:[
+const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",fallback:{id:"277643",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",ovr:91,position:"RW",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/277643.png",pac:87,sho:85,pas:88,dri:94,def:40,phy:63,source:"fc27-totw-verified"}},{names:["David Raya","David Raya Martin","David Raya Martín"],eaId:"220901",ovr:89,position:"GK",fallback:{id:"220901",name:"David Raya",fullName:"David Raya Martín",ovr:89,position:"GK",team:"Arsenal FC",league:"Premier League",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/220901.png",pac:88,sho:87,pas:89,dri:89,def:60,phy:88,source:"fc27-totw-verified"}},{names:["Melchie Dumornay","Melchie Daëlle Dumornay"],eaId:"265898",ovr:89,position:"LW",fallback:{id:"265898",name:"Melchie Dumornay",fullName:"Melchie Dumornay",ovr:88,position:"LW",team:"OL Lyonnes",league:"Arkema Première Ligue",nation:"Haiti",face:"https://cdn.futwiz.com/assets/img/fc27/faces/265898.png",pac:93,sho:86,pas:81,dri:91,def:62,phy:75,source:"fc27-totw-verified"}},
  {names:["Lucy Bronze"],eaId:"227246",ovr:86,position:"CB",fallback:{id:"227246",name:"Lucy Bronze",fullName:"Lucy Bronze",ovr:85,position:"CB",team:"Chelsea",league:"Barclays Women's Super League",nation:"England",face:"https://cdn.futwiz.com/assets/img/fc27/faces/227246.png",pac:73,sho:70,pas:82,dri:82,def:86,phy:88,source:"fc27-totw-verified"}},{names:["marcus thuram"],ovr:86,position:"ST"},{names:["felix nmecha"],ovr:86,position:"CM"},{names:["Esmee Brugts"],eaId:"267530",ovr:85,position:"LB",fallback:{id:"267530",name:"Esmee Brugts",fullName:"Esmee Brugts",ovr:84,position:"LB",team:"FC Barcelona",league:"Liga F Moeve",nation:"Netherlands",face:"https://cdn.futwiz.com/assets/img/fc27/faces/267530.png",pac:88,sho:75,pas:80,dri:82,def:82,phy:76,source:"fc27-totw-verified"}},
  {names:["matvey safonov","matvei safonov","safonov"],ovr:84,position:"GK"},{names:["Erëleta Memeti","Ereleta Memeti"],eaId:"265058",ovr:84,position:"RM",fallback:{id:"265058",name:"Erëleta Memeti",fullName:"Erëleta Memeti",ovr:82,position:"RM",team:"Frankfurt",league:"Google Pixel Frauen-Bundesliga",nation:"Kosovo",face:"https://cdn.futwiz.com/assets/img/fc27/faces/265058.png",pac:87,sho:81,pas:82,dri:84,def:58,phy:68,source:"fc27-totw-verified"}},{names:["Amanda Gutierres","Amanda Gutierres dos Santos"],eaId:"267674",ovr:83,position:"ST",fallback:{id:"267674",name:"Amanda Gutierres",fullName:"Amanda Gutierres dos Santos",ovr:79,position:"ST",team:"Boston Legacy",league:"National Women's Soccer League",nation:"Brazil",face:"https://cdn.futwiz.com/assets/img/fc27/faces/267674.png",pac:82,sho:83,pas:66,dri:80,def:41,phy:81,source:"fc27-totw-verified"}},
@@ -1381,6 +1383,53 @@ const LIVE_TOTW={name:"Team of the Week 1",activeUntil:"23.09.2026",players:[
  {names:["sven mijnans"],ovr:80,position:"ST"},{names:["yannik engelhardt"],ovr:80,position:"CDM"},{names:["tiago santos","tiago carvalho santos"],ovr:80,position:"RB"},{names:["gift orban"],ovr:80,position:"ST"},
  {names:["bruno damiani"],ovr:80,position:"ST"},{names:["franco mastantuono","valentin mastantuono","valentín mastantuono"],ovr:80,position:"RM"},{names:["trent kone-doherty","trent koné-doherty","kone-doherty"],ovr:80,position:"RM"}
 ]};
+const TOTW_WEEK_2={id:2,name:"Team of the Week 2",releaseDate:"2026-09-23",activeUntil:"30.09.2026 18:59",players:[
+ {names:["Michael Olise","Michael Akpovie Olise"],ovr:91,position:"RM"},
+ {names:["Raphinha","Raphael Dias Belloli","Raphael Dias Belloli"],ovr:89,position:"ST"},
+ {names:["Sophia Wilson","Sophia Smith","Sophia Olivia Wilson"],ovr:89,position:"ST"},
+ {names:["Marquinhos","Marcos Aoas Correa","Marcos Aoás Corrêa"],ovr:88,position:"CB"},
+ {names:["Mohamed Salah","Mohamed Salah Hamed Mahrous Ghaly"],ovr:88,position:"RM"},
+ {names:["Antoine Semenyo","Antoine Serlom Semenyo"],ovr:86,position:"LM"},
+ {names:["Corentin Tolisso"],ovr:84,position:"CM"},
+ {names:["Alberto Moleiro","Alberto Moleiro Gonzalez","Alberto Moleiro González"],ovr:84,position:"CAM"},
+ {names:["Vedat Muriqi"],ovr:83,position:"ST"},
+ {names:["Jonathan David","Jonathan Christian David"],ovr:82,position:"ST"},
+ {names:["Miguel Gutierrez","Miguel Gutierrez Ortega","Miguel Gutiérrez","Miguel Gutiérrez Ortega"],ovr:82,position:"LB"},
+ {names:["Lorenzo Palmisani"],ovr:82,position:"GK"},
+ {names:["Pascal Gross","Pascal Groß"],ovr:81,position:"CDM"},
+ {names:["Olivia Holdt"],ovr:81,position:"LM"},
+ {names:["Anis Hadj Moussa","Anis Hadj-Moussa"],ovr:80,position:"RW"},
+ {names:["Bella Andersson"],ovr:80,position:"CB"},
+ {names:["Marco Reus"],ovr:80,position:"CAM"},
+ {names:["Pablo Rosario"],ovr:80,position:"CDM"},
+ {names:["Hannes Delcroix"],ovr:80,position:"CB"},
+ {names:["Dujon Sterling"],ovr:80,position:"RB"},
+ {names:["Salomon Rodriguez","Salomón Rodríguez"],ovr:80,position:"ST"},
+ {names:["Jack Moylan"],ovr:80,position:"CAM"},
+ {names:["Chiara Hahn"],ovr:80,position:"CDM"}
+]};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2];
+
+function totwAddCalendarDays(isoDate,days){
+ const [y,m,d]=String(isoDate||"").split("-").map(Number);
+ const dt=new Date(Date.UTC(y,m-1,d));dt.setUTCDate(dt.getUTCDate()+Number(days||0));
+ return dt.toISOString().slice(0,10)
+}
+function berlinMinuteKey(at=new Date()){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(at).filter(x=>x.type!=="literal").map(x=>[x.type,x.value]));
+ return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`
+}
+function totwStartKey(team){return `${team.releaseDate}T19:00`}
+function totwEndKey(team){return `${totwAddCalendarDays(team.releaseDate,7)}T18:59`}
+function activeTotwWeek(at=new Date()){
+ const key=berlinMinuteKey(at);
+ return [...TOTW_WEEKS].reverse().find(team=>key>=totwStartKey(team)&&key<=totwEndKey(team))||null
+}
+function latestPublishedTotw(at=new Date()){
+ const key=berlinMinuteKey(at);
+ return [...TOTW_WEEKS].reverse().find(team=>key>=totwStartKey(team))||TOTW_WEEKS[0]||null
+}
+let LIVE_TOTW=activeTotwWeek()||latestPublishedTotw()||TOTW_WEEK_2;
 const MID_ICON_DATA=[
  ["Christine Sinclair",91,"ST"],["Ellen White",89,"ST"],["Formiga",90,"CDM"],["Hege Riise",90,"CM"],["Karl-Heinz Rummenigge",90,"ST"],["Pepe",89,"CB"],["Raphaël Varane",90,"CB"],["Sergio Agüero",90,"ST"],["Tobin Heath",90,"RW"],["Yuki Nagasato",89,"CAM"],
  ["Lúcio",89,"CB"],["Yaya Touré",88,"CM"],["Maicon",88,"RB"],["Jean-Pierre Papin",89,"ST"],
@@ -1460,18 +1509,14 @@ function uniqueTotwPlayer(matches){
  const ids=new Set(matches.map(p=>String(p?.id||"")).filter(Boolean));
  return ids.size===1&&matches.length?matches[0]:null
 }
-function totwIsActive(at=new Date()){
- const [day,month,year]=LIVE_TOTW.activeUntil.split(".").map(Number);
- return Number.isFinite(year)&&at.getTime()<=new Date(year,month-1,day,23,59,59,999).getTime()
-}
+function totwIsActive(at=new Date()){return !!activeTotwWeek(at)}
 function updateTotwMarketOption(){
  const option=$("marketSpecialType")?.querySelector('option[value="totw"]');if(!option)return;
- option.disabled=!totwIsActive();option.textContent=totwIsActive()?"Team of the Week":"Team of the Week (beendet)";
- if(option.disabled&&$("marketSpecialType").value==="totw")$("marketSpecialType").value=""
+ option.disabled=false;option.textContent="Team of the Week"
 }
 function totwInfo(base){
- if(!base||!totwIsActive())return null;
- const matches=LIVE_TOTW.players.filter(info=>totwAliasMatch(base,info)===100);
+ if(!base)return null;const team=activeTotwWeek();if(!team)return null;
+ const matches=team.players.filter(info=>totwAliasMatch(base,info)===100);
  return matches.length===1?matches[0]:null
 }
 function currentTotwBases(){return PLAYERS.filter(p=>!!totwInfo(p))}
@@ -1486,8 +1531,8 @@ function bestEaTotwAsset(info,rows){
  if(info?.eaId){const byId=matches.filter(a=>String(a.id||"")===String(info.eaId));if(byId.length)matches=byId}
  return uniqueTotwPlayer(matches)
 }
-function mergeTotwBase(base,a,index){
- const info=LIVE_TOTW.players[index]||{},fallback=info.fallback||{};
+function mergeTotwWeekBase(team,base,a,index){
+ const info=team?.players?.[index]||{},fallback=info.fallback||{};
  const seed={...(base||{}),
   id:fallback.id||base?.id||("totw-preview-"+index),
   name:fallback.name||base?.name||info.names?.[0]||"TOTW Spieler",
@@ -1505,12 +1550,23 @@ function mergeTotwBase(base,a,index){
   dri:Number(fallback.dri||base?.dri||0),def:Number(fallback.def||base?.def||0),phy:Number(fallback.phy||base?.phy||0),
   source:fallback.source||base?.source||"fc27-totw-preview"
  };
- if(!a)return seed;
- return {...seed,id:a.id||seed.id,name:fallback.name||a.name||seed.name,fullName:fallback.fullName||a.fullName||seed.fullName,firstName:fallback.firstName||a.firstName||seed.firstName,lastName:fallback.lastName||a.lastName||seed.lastName,
-  team:a.team||seed.team,league:a.league||seed.league,nation:a.nation||seed.nation,face:a.face||seed.face,nationFlag:a.nationFlag||seed.nationFlag,nationCode:a.nationCode||seed.nationCode,
-  clubLogo:a.clubLogo||seed.clubLogo,teamId:a.teamId||seed.teamId,leagueLogo:a.leagueLogo||seed.leagueLogo,leagueId:a.leagueId||seed.leagueId,
-  ovr:a.ovr||seed.ovr,pac:a.pac||seed.pac,sho:a.sho||seed.sho,pas:a.pas||seed.pas,dri:a.dri||seed.dri,def:a.def||seed.def,phy:a.phy||seed.phy}
+ const tagged={...seed,_totwWeekId:team?.id||0,_totwWeekName:team?.name||"Team of the Week",_totwRating:Number(info.ovr||seed.ovr||0),_totwPosition:info.position||seed.position};
+ if(!a)return tagged;
+ return {...tagged,id:a.id||tagged.id,name:fallback.name||a.name||tagged.name,fullName:fallback.fullName||a.fullName||tagged.fullName,firstName:fallback.firstName||a.firstName||tagged.firstName,lastName:fallback.lastName||a.lastName||tagged.lastName,
+  team:a.team||tagged.team,league:a.league||tagged.league,nation:a.nation||tagged.nation,face:a.face||tagged.face,nationFlag:a.nationFlag||tagged.nationFlag,nationCode:a.nationCode||tagged.nationCode,
+  clubLogo:a.clubLogo||tagged.clubLogo,teamId:a.teamId||tagged.teamId,leagueLogo:a.leagueLogo||tagged.leagueLogo,leagueId:a.leagueId||tagged.leagueId,
+  ovr:a.ovr||tagged.ovr,pac:a.pac||tagged.pac,sho:a.sho||tagged.sho,pas:a.pas||tagged.pas,dri:a.dri||tagged.dri,def:a.def||tagged.def,phy:a.phy||tagged.phy}
 }
+function mergeTotwBase(base,a,index){return mergeTotwWeekBase(LIVE_TOTW,base,a,index)}
+const TOTW_ARCHIVE_BASE_CACHE=new Map();
+function resolveTotwWeekBase(team,info,index){
+ const key=`${team.id}:${index}`,cached=TOTW_ARCHIVE_BASE_CACHE.get(key);if(cached)return cached;
+ let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
+ if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
+ const base=uniqueTotwPlayer(candidates),out=mergeTotwWeekBase(team,base,null,index);
+ TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);return out
+}
+function allTotwMarketBases(){return TOTW_WEEKS.flatMap(team=>team.players.map((info,index)=>resolveTotwWeekBase(team,info,index)))}
 function resolveTotwBase(info,index){
  const cached=LIVE_TOTW_BASE_CACHE.get(index);
  if(cached){P_BY_ID.set(String(cached.id),cached);return cached}
@@ -1530,7 +1586,13 @@ async function hydrateTotwFromEa(index){
   if(asset){const merged=mergeTotwBase(current,asset,index);LIVE_TOTW_BASE_CACHE.set(index,merged);P_BY_ID.set(String(merged.id),merged);if(/^[0-9]+$/.test(String(asset.id||"")))applyEaAssetToPlayerById(asset);scheduleBadgeRerender();renderMarket()}
  }finally{LIVE_TOTW_EA_PENDING.delete(index)}
 }
-function prewarmLiveTotw(){if(totwIsActive())LIVE_TOTW.players.forEach((_,i)=>setTimeout(()=>hydrateTotwFromEa(i),i*90))}
+function prewarmLiveTotw(){const active=activeTotwWeek();if(!active)return;if(LIVE_TOTW.id!==active.id){LIVE_TOTW=active;LIVE_TOTW_BASE_CACHE.clear();LIVE_TOTW_EA_PENDING.clear()}LIVE_TOTW.players.forEach((_,i)=>setTimeout(()=>hydrateTotwFromEa(i),i*90))}
+function syncTotwClock(){
+ const next=activeTotwWeek()||latestPublishedTotw();if(!next)return;
+ if(!LIVE_TOTW||LIVE_TOTW.id!==next.id){LIVE_TOTW=next;LIVE_TOTW_BASE_CACHE.clear();LIVE_TOTW_EA_PENDING.clear();prewarmLiveTotw();try{renderHome();if(currentViewId?.()==="marketView")refreshMarket()}catch(e){}}
+ updateTotwMarketOption()
+}
+setInterval(syncTotwClock,30000)
 const TOTW_VIEW_SLOTS=[
  {p:"GK",x:50,y:89},{p:"CB",x:22,y:70},{p:"CB",x:50,y:73},{p:"CB",x:78,y:70},{p:"CDM",x:50,y:55},
  {p:"LM",x:12,y:39},{p:"CM",x:36,y:43},{p:"CM",x:64,y:43},{p:"RM",x:88,y:39},{p:"ST",x:38,y:17},{p:"ST",x:62,y:17}
@@ -1559,7 +1621,7 @@ function openTotwTeam(){
  showUiLayer("opponentTeamModal","opponent-team")
 }
 $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-totw-bio]");if(!btn)return;const entry=liveTotwTeamEntries()[Number(btn.dataset.totwBio)];if(entry)openBiography(entry.item,null,entry.player)});
-function makeLivePackItem(base,tradeable=true){const info=totwInfo(base);return info?makeItem(base,tradeable,{variant:"special",eventName:LIVE_TOTW.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
+function makeLivePackItem(base,tradeable=true){const team=activeTotwWeek(),info=totwInfo(base);return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
 
 const TASKS=[
  {id:"starter",title:"Club gegründet",desc:"Öffne dein Starterset.",stat:"starter",target:1,reward:{coins:750,sp:250}},
@@ -3511,9 +3573,9 @@ function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Numb
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
-function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base);
+function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="MID ICON"}
- else if(filters.specialType==="totw"&&live){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}
+ else if(filters.specialType==="totw"&&(archived||live)){const info=archived||live;variant="special";eventName=archived?.name||(activeTotwWeek()?.name||"Team of the Week");boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));overridePosition=info.position||base.position}
  else if(filters.specialType==="event"){const sp=specialVariant("event");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
@@ -3522,7 +3584,7 @@ function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstNa
 function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
  const q=normalizeKey(query);if(q.length<2)return[];
- const seen=new Set(),totw=liveTotwTeamEntries().map(e=>e.base);
+ const seen=new Set(),totw=allTotwMarketBases();
  return [...MID_ICON_BASES,...totw,...PLAYERS].filter(p=>playerSearchText(p).includes(q)).sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0)||playerDisplaySearchName(a).localeCompare(playerDisplaySearchName(b),"de")).filter(p=>{const k=normalizeKey(playerDisplaySearchName(p))+"|"+normalizeKey(p.team);if(seen.has(k))return false;seen.add(k);return true}).slice(0,16)
 }
 function hideMarketNameSuggestions(){const box=$("marketNameSuggestions");if(box)box.classList.remove("open")}
@@ -3530,14 +3592,14 @@ function renderMarketNameSuggestions(){
  const box=$("marketNameSuggestions"),input=$("marketName");if(!box||!input)return;
  const rows=marketNameSuggestionPlayers(input.value);
  if(!rows.length){box.innerHTML="";box.classList.remove("open");return}
- box.innerHTML=rows.map(raw=>{const p=resolvedAffiliation(raw);return `<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}" data-market-name-type="${p.isIcon?"icon":totwInfo(p)?"totw":""}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.isIcon?"ICON · ":totwInfo(p)?"TOTW · ":""}${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`}).join("");
+ box.innerHTML=rows.map(raw=>{const p=resolvedAffiliation(raw);return `<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}" data-market-name-type="${p.isIcon?"icon":(p._totwWeekId||totwInfo(p))?"totw":""}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.isIcon?"ICON · ":(p._totwWeekId||totwInfo(p))?"TOTW · ":""}${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`}).join("");
  box.classList.add("open")
 }
 function refreshMarket(){
- const f=marketFilters(),regular=f.league?marketPlayersForLeague(f.league):PLAYERS,source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?liveTotwTeamEntries().map(e=>e.base):(f.name?[...regular,...MID_ICON_BASES]:regular));
+ const f=marketFilters(),regular=f.league?marketPlayersForLeague(f.league):PLAYERS,source=f.specialType==="icon"?MID_ICON_BASES:(f.specialType==="totw"?allTotwMarketBases():(f.name?[...regular,...MID_ICON_BASES,...allTotwMarketBases()]:regular));
  let pool=source.filter(p=>(!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position));
  if(f.specialType==="icon")pool=pool.filter(p=>p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
- else if(f.specialType==="totw"){pool=pool.filter(p=>{const x=totwInfo(p);return x&&x.ovr>=f.ratingMin&&x.ovr<=f.ratingMax})}
+ else if(f.specialType==="totw"){pool=pool.filter(p=>{const rating=Number(p?._totwRating||totwInfo(p)?.ovr||0);return rating>=f.ratingMin&&rating<=f.ratingMax})}
  else if(f.quality==="bronze")pool=pool.filter(p=>rarityOf(p)==="bronze");
  else if(f.quality==="silver")pool=pool.filter(p=>rarityOf(p)==="silver"&&p.ovr>=f.ratingMin&&p.ovr<=Math.min(74,f.ratingMax));
  else if(f.quality==="gold")pool=pool.filter(p=>rarityOf(p)==="gold"&&p.ovr>=f.ratingMin&&p.ovr<=f.ratingMax);
