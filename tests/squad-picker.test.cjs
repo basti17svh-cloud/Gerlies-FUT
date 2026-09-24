@@ -26,13 +26,23 @@ function setup(){
 
 test('Vereinssuche sorts by position, filters name and rating, and can limit untradeable cards',()=>{
  const {ctx}=setup();vm.runInContext('pickerIndex=0',ctx);
- assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['d','a','c','b']);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['d','c']);
  vm.runInContext('pickerSearchTerm="alvaro";pickerMinRating=80;pickerMaxRating=85',ctx);
- assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['a']);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),[]);
  vm.runInContext('pickerSearchTerm="";pickerMinRating=0;pickerMaxRating=99;pickerFilterPosition="ST";pickerOnlyUntradeable=true',ctx);
- assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['a','c']);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['c']);
  vm.runInContext('pickerOnlyUntradeable=false;pickerFilterPosition="";pickerSortMode="rating-asc"',ctx);
- assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['c','a','d','b']);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['c','d']);
+});
+
+test('cards from XI, bench and reserve are unavailable until moved out of the squad',()=>{
+ const {ctx,state}=setup();state.squad[11]='c';state.squad[18]='d';
+ vm.runInContext('pickerIndex=0',ctx);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),[]);
+ assert.equal(ctx.removeSquadPlayer('c',11),true);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['c']);
+ assert.equal(ctx.removeSquadPlayer('d',18),true);
+ assert.deepEqual(Array.from(ctx.pickerCandidates().list,x=>x.uid),['d','c']);
 });
 
 test('removing a starter keeps the club card and frees only its squad place',()=>{
@@ -41,6 +51,8 @@ test('removing a starter keeps the club card and frees only its squad place',()=
  assert.equal(ctx.removeSquadPlayer('a',0),true);
  assert.equal(state.squad[0],null);
  assert.ok(state.club.some(item=>item.uid==='a'));
+ vm.runInContext('pickerIndex=0',ctx);
+ assert.ok(ctx.pickerCandidates().list.some(item=>item.uid==='a'));
  assert.equal(state.roles[0],undefined);assert.equal(state.focus[0],undefined);
  assert.equal(state.squad[1],'b');
  assert.equal(ctx.putItemIntoSlot('c',0),true);

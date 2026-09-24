@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.74</title>
+<title>Gerlies FUT V18.75</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -233,6 +233,10 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .onboard-profile .preview{margin:10px 0;color:#cbd5d1;font-size:9px}
 .squad-battle-preview .friend-team-title{align-items:center}
 .squad-battle-preview .friend-pitch{margin-top:10px}
+.official-card{position:absolute;inset:0;display:block;opacity:0;pointer-events:none}.official-card.loaded{opacity:1}
+.preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
+.preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
+.preview-lineup-slot{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer;touch-action:manipulation}.squad-battle-preview .friend-slot{pointer-events:none}.squad-battle-preview .friend-slot .preview-lineup-slot{pointer-events:auto}.preview-lineup-slot .mini .card-shell{width:100%}.preview-lineup-slot.swap-source{border-radius:8px;outline:2px solid var(--lime);box-shadow:0 0 15px #d8ff3e55}.preview-lineup-slot:focus-visible{outline:2px solid var(--lime);border-radius:8px}
 .home-db-bottom{margin-top:8px}
 
 
@@ -984,7 +988,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.74</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.75</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1957,7 +1961,7 @@ function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_S
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
 function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;return [hit,...arr.filter(x=>x!==hit)]}
-function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded')}
+function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none'}}
 function sofifaFaceByVersion(id,version){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/${version}_120.png`}
 function sofifaFaceCandidates(id){return[27,26,25,24].map(v=>sofifaFaceByVersion(id,v)).filter(Boolean)}
 function futwizFaceCandidates(id){const raw=String(id||"").replace(/\D/g,"");if(!raw)return[];return[27,26,25].map(v=>`https://cdn.futwiz.com/assets/img/fc${v}/faces/${raw}.png`)}
@@ -2350,7 +2354,7 @@ function emblemCandidates(kind,p){
 }
 function imgCandidatesAttr(arr){return esc(JSON.stringify(arr))}
 function advanceImg(el){try{const failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());persistImageCaches()}const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];return}el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
-function portraitHTML(p){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback">👤</span>`}
+function portraitHTML(p,deferred=false){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img ${deferred?`data-pending-src="${esc(arr[0])}" style="display:none"`:`src="${esc(arr[0])}"`} data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback" ${deferred?'style="display:flex"':''}>👤</span>`}
 function badgeAsset(kind,p,fallbackText){
  const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);
  const fallbackClass=kind==="league"?"league-badge-fallback":"club-badge-fallback",fallbackTextHtml=esc(fallbackText||"");
@@ -2358,9 +2362,24 @@ function badgeAsset(kind,p,fallbackText){
  return '<img class="badge-img" src="'+esc(arr[0])+'" data-cache-key="'+esc(key)+'" data-candidates="'+imgCandidatesAttr(arr)+'" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback '+fallbackClass+'" style="display:none">'+fallbackTextHtml+'</span>'
 }
 function flagAsset(p){const key=imageCacheKey('flag',p),arr=prioritizeCached(emblemCandidates('flag',p),key);if(!arr.length)return `<span>${flagEmoji(p.nation)}</span>`;return `<img class="card-flag-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${flagEmoji(p.nation)}</span>`}
-function officialCardCandidates(p){const id=String(p?.id||"").replace(/[^0-9]/g,"");const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(p?.card&&/\/FC27\//i.test(p.card))add(p.card);if(!id)return arr;add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_de.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_en.webp`);add(`https://ratings-images-prod.pulse.ea.com/FC27/full/player-shields/en/${id}.png?width=512`);return arr}
-function advanceOfficialCard(el){try{const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;if(i<arr.length){el.classList.remove('loaded');el.dataset.idx=String(i);el.src=arr[i];return}el.remove()}catch(e){el.remove()}}
-function officialCardHTML(p,item){return''}
+function officialCardCandidates(p){const id=String(p?.id||"").replace(/[^0-9]/g,"");const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(p?.card&&/\/FC27\/components\/items\//i.test(p.card))add(p.card);if(!id)return arr;add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_de-DE.webp`);return arr}
+function advanceOfficialCard(el){
+ try{
+  const failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());persistImageCaches()}
+  const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;
+  while(i<arr.length&&imageFailedRecently(arr[i]))i++;
+  if(i<arr.length){el.classList.remove('loaded');el.dataset.idx=String(i);el.src=arr[i];return}
+  const pending=el.parentElement?.querySelector('.face img[data-pending-src]');
+  if(pending){const src=pending.dataset.pendingSrc;delete pending.dataset.pendingSrc;pending.style.display='';pending.src=src}
+  el.remove()
+ }catch(e){el?.remove()}
+}
+function officialCardHTML(p,item){
+ if(p?.isIcon||item?.variant||item?.evo||item?.boost||item?.overridePosition||!p?.id)return"";
+ const arr=prioritizeCached(officialCardCandidates(p),imageCacheKey('official-card',p));
+ if(!arr.length)return"";
+ return `<img class="official-card" src="${esc(arr[0])}" data-cache-key="${esc(imageCacheKey('official-card',p))}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" alt="${esc(p.name||'Spieler')}" loading="lazy" decoding="async" onload="rememberLoadedImage(this)" onerror="advanceOfficialCard(this)">`
+}
 function playerGender(p){const g=normalizeKey(p?.gender||p?.sex||p?.playerGender||"");if(["female","women","woman","f","1"].includes(g))return"female";if(["male","men","man","m","0"].includes(g))return"male";return""}
 function positionLabel(pos,p=null){const raw=String(pos||"").toUpperCase();if(raw==="GK")return playerGender(p)==="female"?"TH":"TW";const m={CB:"IV",RB:"RV",LB:"LV",RWB:"RAV",LWB:"LAV",CDM:"ZDM",CM:"ZM",CAM:"ZOM",RM:"RM",RW:"RF",LM:"LM",LW:"LF",CF:"MS",ST:"ST"};return m[raw]||raw}
 function cardStatPairs(p){if(String(p?.position||"").toUpperCase()==="GK")return[["HEC",p.pac],["BSI",p.sho],["ABS",p.pas],["REF",p.dri],["TMP",p.def],["POS",p.phy]];return[["TEM",p.pac],["SCH",p.sho],["PAS",p.pas],["DRI",p.dri],["DEF",p.def],["PHY",p.phy]]}
@@ -2385,11 +2404,11 @@ function openBiography(item,index,fallbackBase=null){
  showUiLayer("bioModal","bio")
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
- if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
- const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
- const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
- const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
- const official=officialCardHTML(p,item);
+  if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
+  const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
+  const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
+  const official=pos===p.position&&Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
+  const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
  return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
@@ -2932,9 +2951,9 @@ function renderPickerPreview(){
  $("pickerPreview").innerHTML=`<div class="picker-preview-card">${b?cardHTML(b,item,true):'<div class="picker-empty-card">+</div>'}</div><div class="picker-preview-copy"><small>${esc(label)}</small><strong>${b?esc(b.name):"Platz frei"}</strong><span>${pickerMode==="slot"?"Wähle einen Platz in deiner Aufstellung.":b?"Wähle einen Ersatz aus deinem Verein.":"Suche einen Spieler aus deinem Verein."}</span></div>`
 }
 function pickerCandidates(){
- const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i],query=normalizeKey(pickerSearchTerm);
- const list=state.club.filter(it=>{
-  const b=displayBase(it);if(!b)return false;
+  const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),query=normalizeKey(pickerSearchTerm);
+  const list=state.club.filter(it=>{
+   const b=displayBase(it);if(!b||used.has(it.uid))return false;
   const rating=itemRating(it);
   return rating>=pickerMinRating&&rating<=pickerMaxRating&&(!pickerOnlyUntradeable||!it.tradeable)
    &&(!pickerFilterPosition||playerPositions(b).includes(pickerFilterPosition))
@@ -2947,21 +2966,20 @@ function pickerCandidates(){
   if(pickerSortMode==="name")return String(ba.name).localeCompare(String(bb.name),"de")||rating;
   return rating||String(ba.name).localeCompare(String(bb.name),"de")
  });
- return{list,used,cur,slot}
+  return{list,slot}
 }
 function renderPickerCandidates(){
- if(pickerIndex<0)return;
- const {list,used,cur,slot}=pickerCandidates(),totalPages=Math.ceil(list.length/PICKER_PAGE_SIZE);
+  if(pickerIndex<0)return;
+  const {list,slot}=pickerCandidates(),totalPages=Math.ceil(list.length/PICKER_PAGE_SIZE);
  pickerPage=Math.min(pickerPage,Math.max(0,totalPages-1));
  $("pickerResultTitle").textContent="Spieler im Verein";
  $("pickerResultCount").textContent=`${list.length} Treffer · ${pickerSlotLabel(pickerIndex)} besetzen`;
  $("pickerEditFilters").hidden=false;
  $("pickList").className="picklist";
  $("pickList").innerHTML=list.slice(pickerPage*PICKER_PAGE_SIZE,(pickerPage+1)*PICKER_PAGE_SIZE).map(it=>{
-  const b=displayBase(it),f=pickerIndex<11?posFit(b,slot):1,from=state.squad.indexOf(it.uid),selected=it.uid===cur;
-  const tag=selected?"Auf diesem Platz":from>=0?`Im Kader · ${pickerSlotLabel(from)}`:pickerIndex>=11?"Im Verein":f?"Position passt":"Andere Position";
-  return`<button class="picker-player" type="button" data-pick="${esc(it.uid)}" aria-label="${esc(b.name)} auswählen" ${selected?"disabled":""}><span class="picker-player-add">${selected?"✓":"+"}</span>${cardHTML(b,it,true)}<span class="picker-player-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)}</small><span class="picker-player-stats">${cardStatPairs(resolvedPlayer(b)).map(([name,value])=>`<span><b>${Number(value)||0}</b>${esc(name)}</span>`).join("")}</span><span class="fit ${pickerIndex<11&&!f?"bad":""}">${esc(tag)}</span></span><span class="picker-player-arrow">›</span></button>`
- }).join("")||'<div class="picker-no-results">Keine Spieler für diese Suche gefunden.<br>Ändere die Filter oder den Ratingbereich.</div>';
+   const b=displayBase(it),f=pickerIndex<11?posFit(b,slot):1,tag=pickerIndex>=11?"Im Verein":f?"Position passt":"Andere Position";
+   return`<button class="picker-player" type="button" data-pick="${esc(it.uid)}" aria-label="${esc(b.name)} auswählen"><span class="picker-player-add">+</span>${cardHTML(b,it,true)}<span class="picker-player-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)}</small><span class="picker-player-stats">${cardStatPairs(resolvedPlayer(b)).map(([name,value])=>`<span><b>${Number(value)||0}</b>${esc(name)}</span>`).join("")}</span><span class="fit ${pickerIndex<11&&!f?"bad":""}">${esc(tag)}</span></span><span class="picker-player-arrow">›</span></button>`
+  }).join("")||'<div class="picker-no-results">Keine verfügbaren Spieler gefunden.<br>Spieler aus Startelf, Bank und Reserve erscheinen hier nicht. Passe gegebenenfalls deine Filter an.</div>';
  $("pickerPages").hidden=totalPages<=1;
  $("pickerPageLabel").textContent=`Seite ${pickerPage+1} von ${totalPages||1}`;
  $("pickerPrev").disabled=pickerPage===0;$("pickerNext").disabled=pickerPage>=totalPages-1
@@ -3018,13 +3036,13 @@ function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=
  return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
 }
 
-function openPlayerDetails(item,index=null){
+function openPlayerDetails(item,index=null,fromPreview=false){
  if(!item)return;const b=displayBase(item);if(!b)return;
  const inSquad=index!=null&&index>=0&&state.squad[index]===item.uid;
  const slot=inSquad?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null;
  const fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=inSquad&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;
  $("playerDetailSub").textContent=playerContextLine(b);
- const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button><button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
+ const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button>${fromPreview?`<button class="menu-action" data-preview-swap-start="${index}"><span><span>Mit Kaderplatz tauschen</span><small>Spieler in Startelf, Bank oder Reserve direkt tauschen.</small></span><b>›</b></button>`:''}<button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
  const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:inSquad?"Mannschaft":"Verein"})}${menu}`;
  showUiLayer("playerModal","player")
@@ -3054,11 +3072,12 @@ $("pickerNext").addEventListener("click",()=>{if((pickerPage+1)*PICKER_PAGE_SIZE
 $("pickList").addEventListener("click",e=>{
  const b=e.target.closest("[data-pick]"),sp=e.target.closest("[data-slotpick]");
  if(b&&pickerMode==="player"&&!b.disabled){
-  if(putItemIntoSlot(b.dataset.pick,pickerIndex)){closeUiLayer("picker","picker");save();renderAll();toast("Aufstellung aktualisiert.")}
+  if(!pickerCandidates().list.some(item=>item.uid===b.dataset.pick)){renderPickerCandidates();return}
+  if(putItemIntoSlot(b.dataset.pick,pickerIndex)){closeUiLayer("picker","picker");save();renderAll();refreshOpenMatchPreview();toast("Aufstellung aktualisiert.")}
   return
  }
  if(sp&&pickerMode==="slot"&&!sp.disabled){
-  if(putItemIntoSlot(pickerSourceUid,Number(sp.dataset.slotpick))){closeUiLayer("picker","picker");$("playerModal").classList.remove("active");save();renderAll();toast("Spieler in den Kader eingefügt.")}
+  if(putItemIntoSlot(pickerSourceUid,Number(sp.dataset.slotpick))){closeUiLayer("picker","picker");$("playerModal").classList.remove("active");save();renderAll();refreshOpenMatchPreview();toast("Spieler in den Kader eingefügt.")}
   return
  }
 });
@@ -3069,6 +3088,7 @@ $("playerDetailBody").addEventListener("click",e=>{
  const bio=e.target.closest("[data-open-bio]"),
        cons=e.target.closest("[data-consumable]"),
        rep=e.target.closest("[data-replace-slot]"),
+       swap=e.target.closest("[data-preview-swap-start]"),
        move=e.target.closest("[data-move-club]"),
        ins=e.target.closest("[data-insert-item]"),
        tl=e.target.closest("[data-transferlist]"),
@@ -3090,15 +3110,22 @@ $("playerDetailBody").addEventListener("click",e=>{
  }
  if(cons){toast("Verbrauchs-Items werden noch erweitert.");return;}
  if(rep){
-   $("playerModal").classList.remove("active");
-   replaceUiState("view",{view:currentViewId()});
+   removeUiLayer("playerModal");
+   if(squadBattleStage==="preview"&&$("squadBattleModal").classList.contains("active"))replaceUiState("squad-preview",{layer:"squadBattleModal",mode:pendingMatchContext?.mode});
+   else replaceUiState("view",{view:currentViewId()});
    openPicker(Number(rep.dataset.replaceSlot));
    return;
  }
+ if(swap){
+   removeUiLayer("playerModal");replaceUiState("squad-preview",{layer:"squadBattleModal",mode:pendingMatchContext?.mode});
+   previewSwapFrom=Number(swap.dataset.previewSwapStart);refreshOpenMatchPreview();return
+ }
  if(move){
    if(!removeSquadPlayer(move.dataset.moveClub,Number(move.dataset.moveClubIndex)))return;
-   removeUiLayer("playerModal");replaceUiState("view",{view:currentViewId()});
-   save();renderAll();toast("Spieler im Verein. Der Kaderplatz ist frei.");
+   removeUiLayer("playerModal");
+   if(squadBattleStage==="preview"&&$("squadBattleModal").classList.contains("active"))replaceUiState("squad-preview",{layer:"squadBattleModal",mode:pendingMatchContext?.mode});
+   else replaceUiState("view",{view:currentViewId()});
+   save();renderAll();refreshOpenMatchPreview();toast("Spieler im Verein. Der Kaderplatz ist frei.");
    return;
  }
  if(ins){$("playerModal").classList.remove("active");replaceUiState("view",{view:currentViewId()});openSlotPickerForItem(ins.dataset.insertItem);return;}
@@ -4044,7 +4071,7 @@ $("saveTeamManagement").addEventListener("click",()=>{
  toast(`Team Management gespeichert: ${clubName}`)
 });
 
-let pendingMatchContext=null;
+let pendingMatchContext=null,previewSwapFrom=-1;
 let squadBattleOpponentCache={key:"",list:[]};
 let selectedSquadBattleIndex=-1;
 const SB_TIERS=[
@@ -4060,14 +4087,55 @@ function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier=""
 function getSquadBattleOpponents(){const key=promoWindowKey(new Date(),19);if(squadBattleOpponentCache.key===key&&squadBattleOpponentCache.list.length===4)return squadBattleOpponentCache.list;const list=SB_TIERS.map((t,i)=>{const name=t.names[hashNum(`${key}|${t.id}|name`)%t.names.length];return buildGeneratedOpponent({name,target:t.target,chem:t.chem,formation:i%2?"4-2-3-1":"4-3-3",seed:`${key}|${t.id}`,tier:t.label,rewards:{win:t.win,draw:t.draw,loss:t.loss},sp:t.sp})});squadBattleOpponentCache={key,list};return list}
 function friendAsOpponent(fr){return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[fr.formation]?fr.formation:"4-3-3",rating:Number(fr.rating||70),chem:Number(fr.chem||0),squad:Array.isArray(fr.squad)?fr.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,(fr.rating||70)+(fr.chem||0)*.12)),rewards:null,sp:0}}
 function oneOffOpponent(mode){const m=squadMetrics(),base=Math.max(62,m.rating||72),stamp=Date.now();if(mode==="rivals")return buildGeneratedOpponent({name:"RIVALS XI",target:Math.max(68,Math.min(90,Math.round(base+1))),chem:Math.max(24,Math.min(33,m.chem||28)),formation:"4-2-3-1",seed:`rivals|${stamp}`,tier:"Division Rivals"});return buildGeneratedOpponent({name:["CITY XI","UNITED XI","ATHLETIC CLUB","RACING XI","FUT ALLSTARS"][hashNum(String(stamp))%5],target:Math.max(62,Math.min(87,Math.round(base+(Math.random()*6-3)))),chem:Math.max(14,Math.min(29,Math.round((m.chem||22)+(Math.random()*8-4)))),formation:"4-3-3",seed:`friendly|${stamp}`,tier:"Freundschaft"})}
-function ownLineupHTML(){const m=squadMetrics(),form=currentFormation(),items=squadItems(),pitch=items.slice(0,11).map((item,i)=>{const slot=form[i],b=item?displayBase(item):null,out=b&&posFit(b,slot.p)<=0;return `<div class="friend-slot ${out?"out":""}" style="left:${slot.x}%;top:${slot.y}%">${item?cardHTML(b,item,true,out?b.position:slot.p):`<div class="emptyslot">${positionLabel(slot.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}</div>`}).join(""),bench=items.slice(11,18).map(item=>{const b=item?displayBase(item):null;return `<div>${item?cardHTML(b,item,true,b.position):'<div class="emptyslot">BANK<br>+</div>'}</div>`}).join("");return{m,pitch,bench}}
-function renderMatchPreview(mode,opponent,historyMode="push"){const {m,pitch,bench}=ownLineupHTML(),titles={rivals:"Division Rivals",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"},title=titles[mode]||"Spielvorschau";pendingMatchContext={mode,opponent};if($("matchPreviewModalTitle"))$("matchPreviewModalTitle").textContent=title;$("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie`:"Gegner wird beim Anpfiff bestimmt";$("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary">Anpfiff</button></div></div><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>`;squadBattleStage="preview";showUiLayer("squadBattleModal","squad-preview",{mode},historyMode)}
+function ownLineupHTML(){
+ const m=squadMetrics(),form=currentFormation(),items=squadItems();
+ const card=(item,i,label)=>{const b=item?displayBase(item):null;return `<button type="button" class="preview-lineup-slot ${previewSwapFrom===i?'swap-source':''}" data-preview-slot="${i}" aria-label="${esc(label)}: ${esc(b?.name||'Platz frei')}">${b?cardHTML(b,item,true,i<11&&posFit(b,form[i].p)>0?form[i].p:b.position):`<div class="emptyslot">${esc(label)}<br>+</div>`}</button>`};
+ const pitch=items.slice(0,11).map((item,i)=>{const slot=form[i],b=item?displayBase(item):null,out=b&&posFit(b,slot.p)<=0;return `<div class="friend-slot ${out?'out':''}" style="left:${slot.x}%;top:${slot.y}%">${card(item,i,positionLabel(slot.p))}${out?'<div class="poswarn">!</div>':''}</div>`}).join('');
+ const bench=items.slice(11,18).map((item,k)=>card(item,k+11,`Bank ${k+1}`)).join('');
+ const reserve=items.slice(18,23).map((item,k)=>card(item,k+18,`Reserve ${k+1}`)).join('');
+ return{m,pitch,bench,reserve}
+}
+function refreshOpenMatchPreview(){
+ if(squadBattleStage!=="preview"||!pendingMatchContext||!$("squadBattleModal").classList.contains("active"))return;
+ const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={rivals:"Division Rivals",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
+ $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
+ $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
+ const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie`:"Gegner wird beim Anpfiff bestimmt";
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary" ${m.filled<18?'disabled':''}>Anpfiff</button></div></div><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite besetzte Karte in Startelf, Bank oder Reserve.':`Tippe auf eine Karte, um sie auszutauschen oder in den Verein zu schicken. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+}
+function renderMatchPreview(mode,opponent,historyMode="push"){
+ pendingMatchContext={mode,opponent};previewSwapFrom=-1;squadBattleStage="preview";
+ showUiLayer("squadBattleModal","squad-preview",{mode},historyMode);refreshOpenMatchPreview()
+}
 function renderSquadBattleSelection(historyMode="push"){const list=getSquadBattleOpponents();if($("matchPreviewModalTitle"))$("matchPreviewModalTitle").textContent="Squad Battles · Gegner auswählen";$("squadBattleModalSub").textContent="Vier Gegner mit unterschiedlicher Stärke und Belohnung";$("squadBattleModalBody").innerHTML=`<div class="online-note">Wähle einen Gegner. Höheres Teamrating und mehr Chemie bedeuten einen stärkeren Gegner und höhere Münzbelohnungen.</div><div class="sb-opponent-grid">${list.map((o,i)=>`<button class="sb-opponent ${i===selectedSquadBattleIndex?"selected":""}" data-sb-select="${i}"><span class="tier">${esc(o.tier)}</span><h4>${esc(o.name)}</h4><p>${esc(o.formation)} · KI-Gegner</p><div class="sb-opponent-stats"><div><strong>${o.rating}</strong><span>Rating</span></div><div><strong>${o.chem}/33</strong><span>Chemie</span></div><div><strong>${fmt(o.rewards?.win||0)}</strong><span>Sieg-Coins</span></div></div><div class="sb-opponent-reward">Sieg ${fmt(o.rewards?.win||0)} · Remis ${fmt(o.rewards?.draw||0)} · Niederlage ${fmt(o.rewards?.loss||0)} Coins</div></button>`).join("")}</div><div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button><button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Zur Aufstellung</button></div>`;squadBattleStage="selection";showUiLayer("squadBattleModal","squad-selection",{},historyMode)}
 function openModeEntry(mode){const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="squad"){selectedSquadBattleIndex=-1;renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
 function openOpponentTeam(opponent){if(!opponent)return;const formation=FORMATIONS[opponent.formation]?opponent.formation:"4-3-3",form=FORMATIONS[formation],sq=Array.isArray(opponent.squad)?opponent.squad:Array(18).fill(null);$("opponentTeamModalTitle").textContent=opponent.name||"Gegner";$("opponentTeamModalSub").textContent=`${formation} · Rating ${opponent.rating||0} · Chemie ${opponent.chem||0}/33`;const pitch=sq.slice(0,11).map((pl,i)=>{const slot=form[i];if(!pl)return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%"><div class="emptyslot">${slot.p}</div></div>`;const card=opponent.kind==="friend"?friendCard(pl,slot.p,true):cardHTML(pl,null,true,slot.p);return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%">${card}</div>`}).join(""),bench=sq.slice(11,18).map(pl=>`<div>${pl?(opponent.kind==="friend"?friendCard(pl,"BANK",true):cardHTML(pl,null,true,pl.position)):'<div class="emptyslot">BANK</div>'}</div>`).join("");$("opponentTeamModalBody").innerHTML=`<div class="friend-team-summary"><div class="kpi"><strong>${opponent.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${opponent.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>${opponent.rewards?`<div class="opponent-note">Squad-Battles-Belohnung: Sieg ${fmt(opponent.rewards.win)} Coins · Remis ${fmt(opponent.rewards.draw)} · Niederlage ${fmt(opponent.rewards.loss)}.</div>`:""}`;showUiLayer("opponentTeamModal","opponent-team")}
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
-$("squadBattleModalBody").addEventListener("click",e=>{const sel=e.target.closest("[data-sb-select]");if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);renderSquadBattleSelection("none");return}if(e.target.closest("#sbViewOpponent")){const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(o)openOpponentTeam(o);return}if(e.target.closest("#sbContinueLineup")){const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(o)renderMatchPreview("squad",o);return}if(e.target.closest("#previewOpponentBtn")){if(pendingMatchContext?.opponent)openOpponentTeam(pendingMatchContext.opponent);return}if(e.target.closest("#squadBattleKickoff")){const ctx=pendingMatchContext;if(!ctx)return;$("squadBattleModal").classList.remove("active");squadBattleStage="closed";replaceUiState("view",{view:"playView"});startMatch(ctx.mode,ctx.opponent);pendingMatchContext=null}});
+$("squadBattleModalBody").addEventListener("click",e=>{
+ const sel=e.target.closest("[data-sb-select]");
+ if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);renderSquadBattleSelection("none");return}
+ if(e.target.closest("#sbViewOpponent")){const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(o)openOpponentTeam(o);return}
+ if(e.target.closest("#sbContinueLineup")){const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(o)renderMatchPreview("squad",o);return}
+ if(e.target.closest("#previewOpponentBtn")){if(pendingMatchContext?.opponent)openOpponentTeam(pendingMatchContext.opponent);return}
+ if(e.target.closest("[data-preview-swap-cancel]")){previewSwapFrom=-1;refreshOpenMatchPreview();return}
+ const slotButton=e.target.closest("[data-preview-slot]");
+ if(slotButton){
+  const i=Number(slotButton.dataset.previewSlot);if(!Number.isInteger(i)||i<0||i>=state.squad.length)return;
+  if(previewSwapFrom>=0){
+   const source=previewSwapFrom;previewSwapFrom=-1;
+   if(i!==source){[state.squad[i],state.squad[source]]=[state.squad[source],state.squad[i]];save();renderAll();toast("Kaderplätze getauscht.")}
+   refreshOpenMatchPreview();return
+  }
+  const item=state.club.find(x=>x.uid===state.squad[i]);if(item)openPlayerDetails(item,i,true);else openPicker(i);
+  return
+ }
+ if(e.target.closest("#squadBattleKickoff")){
+  const ctx=pendingMatchContext;if(!ctx)return;
+  if(squadMetrics().filled<18){refreshOpenMatchPreview();toast("Für den Anpfiff brauchst du 11 Starter und 7 Bankspieler.");return}
+  removeUiLayer("squadBattleModal");previewSwapFrom=-1;replaceUiState("view",{view:"playView"});startMatch(ctx.mode,ctx.opponent);pendingMatchContext=null
+ }
+});
 
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
@@ -4155,7 +4223,7 @@ function removeUiLayer(id){
 }
 function closeTopUiLayer(){
  const id=topUiLayer();if(!id)return false;
- if(id==="squadBattleModal"&&squadBattleStage==="preview"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
+  if(id==="squadBattleModal"&&squadBattleStage==="preview"&&pendingMatchContext?.mode==="squad"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
  removeUiLayer(id);return true
 }
 function showUiLayer(id,kind=id,extra={},historyMode="push"){
