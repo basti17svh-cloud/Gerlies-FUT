@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.70</title>
+<title>Gerlies FUT V18.72</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -31,8 +31,22 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .nav{position:fixed;z-index:60;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:860px;display:grid;grid-template-columns:repeat(10,1fr);gap:2px;padding:5px 4px calc(5px + env(safe-area-inset-bottom));background:rgba(5,8,7,.97);backdrop-filter:blur(16px);border-top:1px solid #29332f}.nav button{border:0;background:transparent;color:#77847f;padding:10px 0;border-radius:8px;font-size:6.5px;font-weight:900;text-transform:uppercase}.nav button.active{background:#17211d;color:var(--lime)}
 .panel{border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#111916,#0a100e);padding:13px}.grid2{display:grid;gap:9px}.primary,.secondary,.danger{min-height:43px;border-radius:9px;padding:8px 10px;font-size:8px;font-weight:950;border:1px solid #34423d;cursor:pointer}.primary{background:var(--lime);border-color:var(--lime);color:#06100c}.secondary{background:#17211d;color:#fff}.danger{background:#251318;color:#ff8b9c;border-color:#5a313b}.primary:disabled,.secondary:disabled{opacity:.3;filter:grayscale(1)}
 /* database gate */
-.dbgate{position:fixed;inset:0;z-index:300;overflow:auto;background:radial-gradient(circle at 50% 0,#194439,transparent 42%),#050807;padding:calc(25px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}
-.dbinner{max-width:610px;margin:auto}.gatebrand{text-align:center;padding:18px 0 20px}.gatebrand .mark{width:70px;height:70px;margin:auto;font-size:20px}.gatebrand h1{margin:12px 0 4px;text-transform:uppercase;font-size:28px;font-style:italic}.gatebrand p{margin:0;color:#93a19d;font-size:10px;line-height:1.5}.dbstatus{margin-top:10px;padding:14px;border-radius:14px;border:1px solid #30413b;background:#0e1714}.dbstatus h3{margin:0 0 4px;font-size:13px}.dbstatus p{margin:0;color:#91a09b;font-size:8px;line-height:1.5}.progress{height:8px;margin-top:11px;border-radius:99px;background:#26312d;overflow:hidden}.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--lime),var(--mint));transition:.2s}.dbnumbers{display:flex;justify-content:space-between;margin-top:6px;color:#8e9d98;font-size:7px}.apiwarn{margin-top:10px;color:#ff9aaa;font-size:8px;line-height:1.45}
+.gatebrand{text-align:center;padding:18px 0 20px}.gatebrand .mark{width:70px;height:70px;margin:auto;font-size:20px}.gatebrand h1{margin:12px 0 4px;text-transform:uppercase;font-size:28px;font-style:italic}.gatebrand p{margin:0;color:#93a19d;font-size:10px;line-height:1.5}
+.dbgate{position:fixed;inset:0;z-index:300;isolation:isolate;overflow:auto;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 20%,#103a2a 0%,#071710 36%,#020604 78%);padding:calc(22px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom))}
+.dbgate::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% -14%,rgba(204,255,102,.24),transparent 45%),linear-gradient(110deg,transparent 20%,rgba(158,255,172,.07) 32%,transparent 42%),linear-gradient(250deg,transparent 20%,rgba(158,255,172,.07) 32%,transparent 42%)}
+.dbgate::after{content:"";position:absolute;left:10%;right:10%;bottom:-210px;height:420px;border:2px solid rgba(149,255,175,.16);border-radius:50%;box-shadow:0 0 0 54px rgba(42,135,87,.035),0 0 100px rgba(92,255,161,.09);transform:perspective(520px) rotateX(60deg);pointer-events:none}
+.dbinner{position:relative;z-index:1;width:min(100%,640px);min-height:min(760px,calc(100dvh - 90px));margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.splash-topline,.splash-footer{width:100%;display:flex;justify-content:space-between;align-items:center;color:#82978b;font-size:10px;font-weight:800;letter-spacing:.24em;text-transform:uppercase}
+.splash-topline{position:absolute;top:0;left:0}.splash-topline span:last-child{color:#d8ff3e}.splash-topline span:last-child::before{content:"";display:inline-block;width:6px;height:6px;margin:0 8px 1px 0;border-radius:50%;background:#d8ff3e;box-shadow:0 0 10px #d8ff3e}
+.splash-main{width:100%;padding:72px 0 96px}.splash-emblem{position:relative;width:116px;height:138px;margin:0 auto 33px;display:flex;flex-direction:column;align-items:center;justify-content:center;clip-path:polygon(17% 0,83% 0,100% 18%,92% 72%,50% 100%,8% 72%,0 18%);background:linear-gradient(140deg,#e8ff83 0%,#adff65 42%,#39e6b5 100%);color:#07130c;filter:drop-shadow(0 0 30px rgba(195,255,87,.2));animation:splash-float 4s ease-in-out infinite}
+.splash-emblem::before{content:"";position:absolute;inset:5px;clip-path:inherit;background:linear-gradient(145deg,#173627,#07130e 76%)}.splash-emblem strong,.splash-emblem small{position:relative;z-index:1}.splash-emblem strong{font-size:50px;line-height:1;font-weight:1000;letter-spacing:-.1em;font-style:italic;color:#e4ff93;padding-right:6px}.splash-emblem small{margin-top:8px;font-size:10px;font-weight:1000;letter-spacing:.42em;color:#7df3b8;padding-left:5px}
+.splash-kicker{color:#a3ffc0;font-size:11px;font-weight:900;letter-spacing:.36em;text-transform:uppercase}.splash-wordmark{margin:13px 0 0;font-size:clamp(60px,14vw,108px);line-height:.86;font-weight:1000;font-style:italic;letter-spacing:-.095em;text-transform:uppercase;text-shadow:0 10px 40px rgba(0,0,0,.55)}.splash-wordmark span{display:block;margin:7px 0 0 -7px;color:#d8ff3e;letter-spacing:-.08em}.splash-motto{margin:22px 0 0;color:#e6f4e8;font-size:clamp(13px,3.1vw,17px);font-weight:800;letter-spacing:.19em;text-transform:uppercase}
+.dbstatus{width:min(100%,370px);margin:0 auto}.dbstatus h3{margin:0 0 7px;color:#f0f9ef;font-size:13px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.dbstatus p{margin:0;color:#9cb3a6;font-size:12px;line-height:1.5}.dbgate .progress{height:4px;margin-top:22px;border-radius:100px;background:#2a4435;overflow:hidden}.dbgate .progress div{position:relative;height:100%;width:0;background:linear-gradient(90deg,#73edaf,#d8ff3e);box-shadow:0 0 15px rgba(216,255,62,.6);transition:width .35s ease}.dbgate .progress div::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 20%,rgba(255,255,255,.7) 55%,transparent 80%);animation:splash-shimmer 1.9s linear infinite}.dbnumbers{display:none}.apiwarn{margin-top:16px;color:#ffd0d7;font-size:11px;line-height:1.5}
+.dbgate.has-error .dbstatus{width:min(100%,410px);padding:22px;border:1px solid #805853;border-radius:18px;background:rgba(20,26,22,.86)}.dbgate.has-error .progress{display:none}.dbgate.has-error .dbstatus h3{color:#ffd9cd}.dbgate .dbstatus button{font-size:12px}.splash-footer{position:absolute;bottom:0;left:0;gap:12px;font-size:9px;letter-spacing:.13em}.splash-footer span:last-child{color:#d8ff3e}
+@keyframes splash-float{50%{transform:translateY(-8px)}}@keyframes splash-shimmer{from{transform:translateX(-100%)}to{transform:translateX(160%)}}
+@media(max-width:520px){.dbgate{padding-left:23px;padding-right:23px}.splash-topline,.splash-footer{font-size:8px}.splash-main{padding:80px 0 105px}.splash-emblem{width:94px;height:112px;margin-bottom:28px}.splash-emblem strong{font-size:40px}.splash-wordmark{font-size:clamp(56px,16vw,83px)}}
+@media(max-height:650px){.dbinner{min-height:550px}.splash-main{padding:58px 0 78px}.splash-emblem{width:86px;height:102px;margin-bottom:16px}.splash-emblem strong{font-size:36px}.splash-motto{margin-top:14px}}
+@media(prefers-reduced-motion:reduce){.splash-emblem,.dbgate .progress div::after{animation:none}.dbgate .progress div{transition:none}}
 /* onboarding */
 .onboard{position:fixed;inset:0;z-index:240;display:none;overflow:auto;background:radial-gradient(circle at 50% 0,#163c33,transparent 40%),#050807;padding:calc(21px + env(safe-area-inset-top)) 14px calc(25px + env(safe-area-inset-bottom))}
 .onboard.active{display:block}.oninner{max-width:650px;margin:auto}.leaguegrid{display:grid;gap:8px;margin-top:15px}.leaguebtn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;border:1px solid #30403a;background:#101814;color:#fff;text-align:left}.leaguebtn strong{font-size:13px}.leaguebtn span{display:block;color:#8e9b97;font-size:7px;margin-top:3px}.leaguebtn b{font-size:18px;color:var(--lime)}.starterstage{display:none;text-align:center}.starterstage.active{display:block}.starterpack{width:180px;height:250px;margin:23px auto;display:grid;place-items:center;clip-path:polygon(10% 0,100% 4%,92% 100%,0 94%);background:linear-gradient(145deg,#a67527,#eedc94 40%,#768985 61%,#b46f3f);box-shadow:0 0 55px rgba(215,255,62,.25);color:#0c140f;font-weight:1000;font-size:23px;font-style:italic}.starterpack.pulse{animation:starterPulse .65s infinite alternate}@keyframes starterPulse{to{transform:scale(1.07);filter:brightness(1.4)}}
@@ -915,18 +929,24 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div id="dbGate" class="dbgate">
   <div class="dbinner">
-    <div class="gatebrand"><div class="mark">GFUT</div><h1>Gerlies FUT</h1><p>Beim ersten Start lädt Gerlies FUT einen geprüften FC‑27-Datensatz aus einer statischen GitHub-Datenquelle und speichert ihn lokal. Es gibt keinen EA-Liveabruf und keinen Proxy mehr.</p></div>
-    <div class="dbstatus">
-      <h3 id="dbTitle">FC‑27-Datenbank vorbereiten</h3>
-      <p id="dbText">Prüfe lokalen Datenspeicher …</p>
-      <div class="progress"><div id="dbBar"></div></div>
-      <div class="dbnumbers"><span id="dbCount">0 Spieler</span><span id="dbPercent">0%</span></div>
-      <button id="dbRetry" class="primary" style="width:100%;margin-top:11px;display:none">Erneut versuchen</button>
-      <button id="dbReset" class="secondary" style="width:100%;margin-top:7px;display:none">Datenbank neu laden</button>
-      <button id="dbOffline" class="secondary" style="width:100%;margin-top:7px;display:none">Nur Oberfläche testen</button>
-      <div id="dbWarn" class="apiwarn"></div>
-      <div style="margin-top:8px;color:#7f8e89;font-size:7px;line-height:1.45">Datenquelle: öffentlicher FC‑27-Datensatz (GitHub) mit Validierung gegen bekannte FC‑27-Ratinganker. Keine künstliche Herabstufung von Spieler-Ratings.</div>
+    <div class="splash-topline"><span>GFUT // 27</span><span>Club-Zeit</span></div>
+    <div class="splash-main">
+      <div class="splash-emblem" aria-hidden="true"><strong>G</strong><small>FUT</small></div>
+      <div class="splash-kicker">Dein Club. Dein Spiel.</div>
+      <h1 class="splash-wordmark">GERLIES<span>FUT</span></h1>
+      <p class="splash-motto">Der Anpfiff wartet auf dich.</p>
     </div>
+    <div class="dbstatus">
+      <h3 id="dbTitle">Gleich geht's los</h3>
+      <p id="dbText" role="status" aria-live="polite">Daten werden geladen …</p>
+      <div class="progress" role="progressbar" aria-label="Daten werden geladen"><div id="dbBar"></div></div>
+      <div class="dbnumbers" aria-hidden="true"><span id="dbCount"></span><span id="dbPercent"></span></div>
+      <button id="dbRetry" class="primary" style="width:100%;margin-top:11px;display:none">Erneut versuchen</button>
+      <button id="dbReset" class="secondary" style="width:100%;margin-top:7px;display:none">Spieldaten neu laden</button>
+      <button id="dbOffline" class="secondary" style="width:100%;margin-top:7px;display:none">Vorschau öffnen</button>
+      <div id="dbWarn" class="apiwarn"></div>
+    </div>
+    <div class="splash-footer"><span>GERLIES FUT</span><span>PLAY YOUR WAY</span></div>
   </div>
 </div>
 
@@ -956,7 +976,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.71</span></h1><small id="dbIndicator">FC27 DB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.72</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1090,7 +1110,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Team umbenennen</h3><p>Ändere den Namen deines Clubs. Dein Freundesprofil wird automatisch aktualisiert.</p><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><button id="saveProfileName" class="primary">Teamname speichern</button></div>
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Gerlies FUT installieren</h3><p id="pwaInstallHint">Installiere Gerlies FUT als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Gerlies FUT installieren</button></div>
-  <div class="extras-card"><span class="extras-kicker">DATEN</span><h3>FC27-Datenbank</h3><p id="homeDb">FC27-Datenbankstatus und technische Einstellungen.</p><button id="syncAgain" class="secondary">FC27-Daten neu laden</button></div>
+  <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 
 <section id="clubView" class="view"><div class="headline"><h2>Mein Club</h2><p>Alle gezogenen, gekauften und entwickelten Spieleritems.</p></div><div class="section">
@@ -2534,22 +2554,22 @@ let DATA_ROUTE="cache";
 async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
 async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
 async function syncDatabase(force=false){
- $("dbRetry").style.display="none";$("dbReset").style.display="none";$("dbOffline").style.display="none";$("dbWarn").textContent="";$("dbTitle").textContent="FC‑27-Datenbank wird vorbereitet";$("dbText").textContent="Prüfe lokalen Datenspeicher …";$("dbBar").style.width="5%";
+ $("dbGate").classList.remove("has-error");$("dbRetry").style.display="none";$("dbReset").style.display="none";$("dbOffline").style.display="none";$("dbWarn").textContent="";$("dbTitle").textContent="Gleich geht's los";$("dbText").textContent="Daten werden geladen …";$("dbBar").style.width="5%";
  try{
   if(!force){const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache";return finishDbLoad(true)}}
   let errors=[];
   for(let i=0;i<DB_SOURCES.length;i++){
-   const src=DB_SOURCES[i];$("dbText").textContent=`Lade FC‑27-Datensatz: ${src.name} …`;$("dbBar").style.width=`${15+i*20}%`;$("dbPercent").textContent=`${15+i*20}%`;
+   const src=DB_SOURCES[i];$("dbText").textContent="Dein Club wird vorbereitet …";$("dbBar").style.width=`${15+i*20}%`;$("dbPercent").textContent=`${15+i*20}%`;
    try{
-    const text=await fetchText(src.url);$("dbText").textContent=`Prüfe ${src.name} …`;$("dbBar").style.width="65%";
+    const text=await fetchText(src.url);$("dbText").textContent="Nur noch einen Moment …";$("dbBar").style.width="65%";
     const raw=parseCSV(text),players=raw.map(normCSV).filter(p=>p.id&&p.name&&p.ovr);const v=validateDatabase(players);if(!v.ok)throw new Error(v.reason);
-    $("dbText").textContent=`${fmt(players.length)} geprüfte FC‑27-Spieler werden lokal gespeichert …`;$("dbCount").textContent=`${fmt(players.length)} Spieler`;$("dbBar").style.width="82%";
+    $("dbText").textContent="Alles für deinen Anpfiff wird bereitgemacht …";$("dbBar").style.width="82%";
     await savePlayers(players);PLAYERS=players;DATA_ROUTE=src.name;return finishDbLoad(true)
    }catch(e){errors.push(`${src.name}: ${e.message||e}`)}
   }
   const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache (Netzquelle nicht erreichbar)";return finishDbLoad(true)}
-  PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,errors.join(' | '))
- }catch(err){console.error(err);PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false,String(err?.message||err))}
+  console.warn("Spieldaten konnten nicht geladen werden:",errors.join(" | "));PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false)
+ }catch(err){console.error(err);PLAYERS=await loadFallback();DATA_ROUTE="UI-Fallback";finishDbLoad(false)}
 }
 let EA_VISIBLE_ENRICH_RUNNING=false;
 async function fetchEaPlayerSearch(name){
@@ -2636,17 +2656,17 @@ async function enrichEaAssetsInBackground(){
   if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll();setTimeout(startGlobalBadgePrewarm,900)}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
-function finishDbLoad(full=true,errorText=""){
+function finishDbLoad(full=true){
  applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
- P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";$("dbCount").textContent=`${fmt(PLAYERS.length)} Spieler`;
- if(full){$("dbTitle").textContent="FC‑27-Datenbank bereit";$("dbText").textContent=`${fmt(PLAYERS.length)} Datensätze geprüft und lokal gespeichert.`;$("dbWarn").textContent="";$("dbIndicator").textContent=`${fmt(PLAYERS.length)} Spieler`;$('homeDb').textContent=`${fmt(PLAYERS.length)} FC‑27-Spieler · Quelle: ${DATA_ROUTE}. Gold 75+, Silber 65–74, Bronze ≤64.`;fillLeagueFilter();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
- else{$("dbTitle").textContent="Datenquelle momentan nicht erreichbar";$("dbText").textContent=`Die Oberfläche ist verfügbar, aber der vollständige FC‑27-Datensatz wurde nicht geladen.`;$("dbWarn").textContent=`Kein Spielstart mit erfundenen Ratings. Diagnose: ${errorText||'keine Voll-Datenquelle erreichbar'}`;$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DB OFFLINE";$('homeDb').textContent='Vollständige FC‑27-Datenbank nicht verfügbar.'}
+ P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
+ if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";$("dbIndicator").textContent="DEIN CLUB";$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(()=>{enrichEaAssetsInBackground()},650);setTimeout(startGlobalBadgePrewarm,450);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
+ else{$("dbGate").classList.add("has-error");$("dbTitle").textContent="Start gerade nicht möglich";$("dbText").textContent="Deine Spieldaten konnten nicht vollständig geladen werden.";$("dbWarn").textContent="Bitte versuche es erneut. Dein Club und dein Fortschritt bleiben erhalten.";$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DEIN CLUB";$('homeDb').textContent="Spieldaten derzeit nicht verfügbar. Bitte erneut versuchen."}
 }
 async function boot(){
  await loadVerifiedBadges();
  try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}
 }
-$("dbRetry").addEventListener("click",()=>syncDatabase(false));$("dbReset").addEventListener("click",()=>syncDatabase(true));$("dbOffline").addEventListener("click",()=>{$("dbGate").style.display="none";$("onboard").classList.remove("active");renderAll();toast("UI-Testmodus: keine Packs/Starter mit Fallback-Daten.")});$("syncAgain").addEventListener("click",()=>{$("dbGate").style.display="block";syncDatabase(true)});
+$("dbRetry").addEventListener("click",()=>syncDatabase(false));$("dbReset").addEventListener("click",()=>syncDatabase(true));$("dbOffline").addEventListener("click",()=>{$("dbGate").style.display="none";$("onboard").classList.remove("active");renderAll();toast("Vorschau geöffnet. Für alle Spielinhalte bitte erneut laden.")});$("syncAgain").addEventListener("click",()=>{$("dbGate").style.display="grid";syncDatabase(true)});
 
 function leagueChoice(id){return LEAGUE_CHOICES.find(x=>x.id===id)||LEAGUE_CHOICES.find(x=>x.label===id)}
 function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const canonical=c.label==="Serie A"?"Serie A":c.label==="Ligue 1"?"Ligue 1":c.label;return PLAYERS.filter(p=>p.league===canonical)}
@@ -3354,7 +3374,7 @@ $("sbcView").addEventListener("change",e=>{const c=e.target.closest("[data-sbc]"
 $("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit);if(!sbc)return;const set=sbcSelections[sbc.id]||new Set(),all=sbcSourceItems(),sel=all.filter(x=>set.has(x.item.uid)&&sbc.filter(displayBase(x.item))),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||(allHaveLeague&&leagues.length===1));if(!ok)return;ensureObjectiveWindows();const ids=new Set(selItems.map(i=>i.uid)),activeCount=state.squad.filter(uid=>uid&&ids.has(uid)).length;state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast(activeCount?`SBC abgeschlossen. ${activeCount} Spieler aus dem aktiven Kader abgegeben.`:"SBC abgeschlossen.")})
 
 
-let matchTimer=null,matchSpeed=650;
+let matchTimer=null,matchSpeed=550;
 
 function renderPlay(){
  const m=squadMetrics(),ready=m.filled===18,friendSel=$("friendlyFriendSelect"),old=friendSel?.value||"";
@@ -3374,11 +3394,11 @@ $("friendlyFriendSelect").addEventListener("change",renderPlay);
 $("friendlyFriendSquad").addEventListener("click",()=>{const v=$("friendlyFriendSelect").value;if(v!==""&&state.friends[Number(v)])openFriendTeam(Number(v))});
 
 function currentMatchBase(uid){
- const item=state.club.find(x=>x.uid===uid);
+ const item=match?.clubIndex?.get(uid)||state.club.find(x=>x.uid===uid);
  return item?displayBase(item):null
 }
 function currentMatchRating(uid){
- const item=state.club.find(x=>x.uid===uid);
+ const item=match?.clubIndex?.get(uid)||state.club.find(x=>x.uid===uid);
  return item?itemRating(item):0
 }
 function matchPower(lineup,formation,tactic){
@@ -3428,7 +3448,8 @@ function startMatch(mode,opponent=null){
  }
  matchManagerDraft=null;
  match={
-  mode,minute:0,home:0,away:0,power,opp,opponentProfile,opponentName:name,finished:false,paused:false,
+  mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
+  clubIndex:new Map(state.club.map(item=>[item.uid,item])),
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:"balanced",
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false
@@ -3464,6 +3485,10 @@ function updateMatchUI(){
 function eventChance(base){
  return Math.random()<base
 }
+function matchTeamPower(){
+ // Chemistry is fixed at kickoff; substitutions still change the on-field rating and positional fit.
+ return matchPower(match.lineup,match.formation,match.tactic)+Math.max(0,Math.min(33,match.chem||0))*.12
+}
 function chooseScorer(lineup){
  const candidates=lineup.slice(5,11).filter(Boolean);
  const uid=candidates[Math.floor(Math.random()*candidates.length)]||lineup.find(Boolean);
@@ -3472,15 +3497,15 @@ function chooseScorer(lineup){
 }
 function simAttack(homeSide){
  const mods=tacticMods(match.tactic);
- const myPower=matchPower(match.lineup,match.formation,match.tactic);
+ const myPower=matchTeamPower();
  const edge=(myPower-match.opp)/18;
  if(homeSide){
-  const shotProb=Math.max(.12,Math.min(.34,.22+edge*.08))*mods.attack;
+  const shotProb=Math.max(.14,Math.min(.36,.26+edge*.045))*mods.attack;
   if(eventChance(shotProb)){
    match.shotsHome++;
-   const xg=Math.max(.05,Math.min(.55,.16+Math.random()*.26+edge*.08));
+   const xg=Math.max(.06,Math.min(.52,.14+Math.random()*.26+edge*.095));
    match.xgHome+=xg;
-   if(eventChance(xg*.52)){
+   if(eventChance(xg)){
     match.home++;
     addLog(`TOR! ${chooseScorer(match.lineup)} trifft für Gerlies FUT.`);
    }else if(Math.random()<.33){
@@ -3489,12 +3514,12 @@ function simAttack(homeSide){
   }
  }else{
   const concedeEdge=(match.opp-myPower)/18;
-  const shotProb=Math.max(.12,Math.min(.34,.22+concedeEdge*.08))/mods.defense;
+  const shotProb=Math.max(.14,Math.min(.36,.26+concedeEdge*.045))/mods.defense;
   if(eventChance(shotProb)){
    match.shotsAway++;
-   const xg=Math.max(.05,Math.min(.55,.16+Math.random()*.26+concedeEdge*.08));
+   const xg=Math.max(.06,Math.min(.52,.14+Math.random()*.26+concedeEdge*.095));
    match.xgAway+=xg;
-   if(eventChance(xg*.52)){
+   if(eventChance(xg)){
     match.away++;
     addLog("Gegentor. Der Gegner nutzt seine Chance.");
    }else if(Math.random()<.3){
@@ -3505,17 +3530,20 @@ function simAttack(homeSide){
 }
 function simTick(){
  if(!match||match.finished||match.paused)return;
- const step=matchSpeed<=300?2.6:1.7;
- match.minute=Math.min(90,match.minute+step);
+ const step=Math.min(90-match.minute,matchSpeed<=300?2.6:1.7);
+ match.minute+=step;
  const mods=tacticMods(match.tactic);
- const powerNow=matchPower(match.lineup,match.formation,match.tactic);
- match.poss+=((powerNow-match.opp)*.015)+mods.poss*.02+(Math.random()-.5)*.45;
+ const powerNow=matchTeamPower();
+ match.poss+=((powerNow-match.opp)*.015+mods.poss*.02)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
  match.poss=Math.max(34,Math.min(66,match.poss));
 
- if(Math.random()<.58)simAttack(Math.random()<match.poss/100);
+ // Chances are per match minute, so changing animation speed cannot change the result distribution.
+ const opportunities=step*.42;
+ if(Math.random()<Math.min(1,opportunities))simAttack(Math.random()<match.poss/100);
+ if(opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
 
  const min=Math.floor(match.minute);
- if(min===45&&!match.halftimeLogged){match.halftimeLogged=true;addLog("Halbzeit. Die Simulation läuft ohne Unterbrechung weiter.")}
+ if(min>=45&&!match.halftimeLogged){match.halftimeLogged=true;addLog("Halbzeit. Die Simulation läuft ohne Unterbrechung weiter.")}
 
  // Management events: actual interruption only when a reaction is required.
  if(min>=50&&!match.injuryTriggered&&Math.random()<.0035){
@@ -3642,8 +3670,8 @@ $("matchTacticSelect").addEventListener("change",()=>{const d=getMatchManagerDra
 $("confirmSubBtn").addEventListener("click",confirmMatchManagerChanges);
 
 $("matchSpeedBtn").addEventListener("click",()=>{
- if(matchSpeed===650){matchSpeed=300;$("matchSpeedBtn").textContent="Tempo: Schnell"}
- else{matchSpeed=650;$("matchSpeedBtn").textContent="Tempo: Normal"}
+ if(matchSpeed===550){matchSpeed=250;$("matchSpeedBtn").textContent="Tempo: Schnell"}
+ else{matchSpeed=550;$("matchSpeedBtn").textContent="Tempo: Normal"}
  if(match&&!match.paused&&!match.finished)startMatchTimer()
 });
 
@@ -3658,15 +3686,15 @@ function finishMatch(){
  let resultKey="loss";
  if(match.home>match.away){
   resultKey="win";state.stats.wins++;if(isFriendly)state.stats.friendlyWins=(state.stats.friendlyWins||0)+1;
-  reward=isFriendly?0:(match.mode==="rivals"?800:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:750));
+  reward=isFriendly?0:(match.mode==="rivals"?750:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:700));
   if(match.mode==="rivals"){
    state.rivals.points+=3;
    while(state.rivals.points>=12&&state.rivals.division>1){state.rivals.points-=12;state.rivals.division--;state.coins+=3000}
   }
  }else if(match.home===match.away){
-  resultKey="draw";state.stats.draws++;reward=isFriendly?0:(match.mode==="rivals"?650:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.draw:625));if(match.mode==="rivals")state.rivals.points++
+  resultKey="draw";state.stats.draws++;reward=isFriendly?0:(match.mode==="rivals"?610:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.draw:580));if(match.mode==="rivals")state.rivals.points++
  }else{
-  state.stats.losses++;reward=isFriendly?0:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.loss:500)
+  state.stats.losses++;reward=isFriendly?0:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.loss:465)
  }
  if(!isFriendly){
   state.stats.competitiveMatches=(state.stats.competitiveMatches||0)+1;
@@ -3775,10 +3803,10 @@ let pendingMatchContext=null;
 let squadBattleOpponentCache={key:"",list:[]};
 let selectedSquadBattleIndex=-1;
 const SB_TIERS=[
- {id:"easy",label:"Schwach",target:67,chem:9,win:350,draw:220,loss:120,sp:40,names:["Rookie United","Bronze Athletic","Starter XI"]},
- {id:"medium",label:"Etwas schwächer",target:74,chem:18,win:550,draw:350,loss:200,sp:60,names:["Union Eleven","Metro FC","Rising Stars"]},
- {id:"hard",label:"Gut",target:82,chem:27,win:800,draw:500,loss:300,sp:85,names:["Elite 27","Prime Athletic","Challengers FC"]},
- {id:"elite",label:"Sehr gut",target:88,chem:33,win:1100,draw:700,loss:400,sp:120,names:["Galácticos XI","Champions Club","Ultimate XI"]}
+ {id:"easy",label:"Schwach",target:67,chem:9,win:330,draw:205,loss:110,sp:40,names:["Rookie United","Bronze Athletic","Starter XI"]},
+ {id:"medium",label:"Etwas schwächer",target:74,chem:18,win:515,draw:325,loss:185,sp:60,names:["Union Eleven","Metro FC","Rising Stars"]},
+ {id:"hard",label:"Gut",target:82,chem:27,win:750,draw:470,loss:280,sp:85,names:["Elite 27","Prime Athletic","Challengers FC"]},
+ {id:"elite",label:"Sehr gut",target:88,chem:33,win:1030,draw:655,loss:375,sp:120,names:["Galácticos XI","Champions Club","Ultimate XI"]}
 ];
 function deterministicPick(arr,key){return arr.length?arr[hashNum(key)%arr.length]:null}
 function opponentPlayerForSlot(slot,target,seed,used){let pool=PLAYERS.filter(p=>Math.abs(Number(p.ovr||0)-target)<=2&&posFit(p,slot)>0&&!used.has(String(p.id)));if(!pool.length)pool=PLAYERS.filter(p=>Math.abs(Number(p.ovr||0)-target)<=5&&posFit(p,slot)>0&&!used.has(String(p.id)));if(!pool.length)pool=PLAYERS.filter(p=>posFit(p,slot)>0&&!used.has(String(p.id)));const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
@@ -3965,8 +3993,8 @@ updatePwaInstallUi();
 
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1870",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-70-reloaded")){sessionStorage.setItem("gfut-v18-70-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1872",{scope:"./"}).then(reg=>reg.update()).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-72-reloaded")){sessionStorage.setItem("gfut-v18-72-reloaded","1");location.reload()}});
  });
 }
 
