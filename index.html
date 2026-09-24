@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.81</title>
+<title>Gerlies FUT V18.82</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -111,6 +111,24 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .tasklist{display:grid;gap:8px}.task{padding:11px;border:1px solid #293630;border-radius:11px;background:#0f1714}.tasktop{display:flex;justify-content:space-between;gap:8px}.task h4{margin:0 0 3px;font-size:10px}.task p{margin:0;color:#87958f;font-size:7px}.reward{color:#ffd86c;font-size:7px;font-weight:900;white-space:nowrap}.taskfoot{display:flex;justify-content:space-between;align-items:center;margin-top:7px}.taskfoot small{font-size:7px;color:#899791}
 /* sbc */
 .sbc{padding:12px;border:1px solid #2c3934;border-radius:12px;background:#0f1714}.sbc h3{margin:0 0 4px;font-size:12px}.sbc p{margin:0;color:#899691;font-size:7px;line-height:1.4}.sbcreq{margin:8px 0;color:var(--lime);font-size:8px;font-weight:900}.sbclist{max-height:265px;overflow:auto;margin-top:7px;border-top:1px solid #26322e}.sbcp{display:flex;align-items:center;gap:7px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.05)}.sbcp input{width:18px;height:18px}.sbcp strong{font-size:8px}.sbcp small{display:block;color:#81908a;font-size:6px}
+
+/* V18.82 — Companion-style SBC builder. Uses the existing global cardHTML/card artwork unchanged. */
+.sbc-hub-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:12px;align-items:center;padding:14px;border:1px solid #2d3e46;border-radius:14px;background:radial-gradient(circle at 100% 0,rgba(85,206,255,.11),transparent 36%),linear-gradient(145deg,#101a1f,#0b1215);overflow:hidden}
+.sbc-hub-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#52d7ff,#9178ff)}
+.sbc-hub-card h3{margin:0;font-size:14px}.sbc-hub-card p{margin:4px 0 0;color:#8fa0a8;font-size:7px;line-height:1.45}.sbc-hub-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.sbc-hub-chip{padding:4px 6px;border-radius:999px;border:1px solid #354852;background:#101b20;color:#a9bac2;font-size:6px;font-weight:900}.sbc-hub-chip.done{border-color:#397c58;color:#a3f6bd;background:#10241a}.sbc-hub-reward{display:grid;gap:7px;text-align:center}.sbc-hub-pack{height:78px;display:grid;place-items:center;border-radius:9px;clip-path:polygon(10% 0,93% 4%,100% 88%,84% 100%,8% 96%,0 10%);background:linear-gradient(145deg,#73551d,#efd780 45%,#8a681f);color:#191409;font-size:9px;font-weight:1000;letter-spacing:.06em}.sbc-hub-reward button{min-height:36px}
+.sbc-builder{max-width:760px;margin:0 auto}.sbc-builder-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-bottom:10px}.sbc-builder-back{width:40px;height:40px;border:1px solid #34454d;border-radius:9px;background:#101a1e;color:#fff;font-size:19px}.sbc-builder-title strong{display:block;font-size:14px}.sbc-builder-title span{display:block;margin-top:3px;color:#85959d;font-size:7px}.sbc-builder-reward{padding:6px 8px;border-radius:8px;border:1px solid #5f5230;background:#1c190f;color:#ffe28a;font-size:7px;font-weight:950;text-align:right}
+.sbc-condition-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:8px}.sbc-condition{padding:7px 8px;border:1px solid #34444c;border-radius:8px;background:#0d161a}.sbc-condition b{display:block;font-size:9px}.sbc-condition span{display:block;margin-top:2px;color:#80919a;font-size:5.5px;text-transform:uppercase}.sbc-condition.ok{border-color:#336f53;background:#0e2118}.sbc-condition.ok b{color:#9df4b8}
+.sbc-editor-pitch{position:relative;aspect-ratio:.72;min-height:510px;border:1px solid #2e6061;border-radius:17px;overflow:hidden;background:radial-gradient(circle at 50% 49%,transparent 0 13%,rgba(255,255,255,.14) 13.3% 13.8%,transparent 14.1%),linear-gradient(90deg,transparent 49.7%,rgba(255,255,255,.15) 49.7% 50.3%,transparent 50.3%),repeating-linear-gradient(0deg,#08634c 0 11%,#07563f 11% 22%);box-shadow:inset 0 0 34px rgba(0,0,0,.28)}
+.sbc-editor-pitch:before{content:"";position:absolute;inset:5%;border:1px solid rgba(255,255,255,.23);border-radius:3px;pointer-events:none}.sbc-editor-pitch:after{content:"";position:absolute;left:35%;right:35%;top:5%;height:16%;border:1px solid rgba(255,255,255,.18);border-top:0;pointer-events:none}
+.sbc-work-slot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:17.5%;min-width:58px;aspect-ratio:.70;display:grid;place-items:center;border:0;background:transparent;padding:0;cursor:pointer}.sbc-work-slot.filled{touch-action:none}.sbc-work-slot .mini,.sbc-work-slot .mini .card-shell{width:100%}.sbc-work-slot .card-shell{filter:drop-shadow(0 7px 9px rgba(0,0,0,.48))}.sbc-work-slot.drop-target,.sbc-test-slot.drop-target{outline:2px solid #8ae9ff;outline-offset:3px;border-radius:8px;filter:drop-shadow(0 0 12px rgba(82,215,255,.6))}.sbc-work-slot.drag-source,.sbc-test-slot.drag-source{opacity:.28}
+.sbc-empty-slot{width:74%;aspect-ratio:.70;display:grid;place-items:center;border:1px solid rgba(183,210,218,.38);clip-path:polygon(10% 0,90% 0,100% 8%,96% 90%,83% 100%,17% 100%,4% 90%,0 8%);background:linear-gradient(160deg,rgba(19,31,37,.82),rgba(8,16,20,.86));color:#8fa1a8;text-align:center}.sbc-empty-slot b{display:block;font-size:18px;font-weight:500}.sbc-empty-slot span{display:block;font-size:6px;font-weight:1000;margin-top:2px}.sbc-slot-remove{position:absolute;z-index:15;right:-4px;top:-4px;width:20px;height:20px;border-radius:50%;border:1px solid #65454d;background:#29171b;color:#ff9aaa;font-size:12px;line-height:1}
+.sbc-builder-footer{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.sbc-builder-footer button{width:100%}.sbc-submit-state{grid-column:1/-1;padding:7px 9px;border-radius:8px;background:#0d1519;border:1px solid #2c3d44;color:#87979f;font-size:6.5px;line-height:1.4}.sbc-submit-state.ok{border-color:#347753;color:#a4f3bb;background:#0d2117}
+.sbc-test-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:11px 12px;border:1px solid #384a52;border-radius:10px;background:linear-gradient(145deg,#111c21,#0b1418);color:#fff;text-align:left}.sbc-test-toggle strong{font-size:9px}.sbc-test-toggle span{color:#88a0aa;font-size:7px}.sbc-test-chevron{font-size:15px;transition:.18s transform}.sbc-test-toggle.open .sbc-test-chevron{transform:rotate(180deg)}
+.sbc-test-drawer{display:none;margin-top:6px;padding:10px;border:1px solid #34474f;border-radius:12px;background:linear-gradient(180deg,#111d22,#091116)}.sbc-test-drawer.open{display:block}.sbc-test-note{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;color:#81929a;font-size:6.5px}.sbc-test-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.sbc-test-slot{position:relative;min-width:0;aspect-ratio:.70;display:grid;place-items:center;border:1px solid #2d4149;border-radius:8px;background:#0a1317;padding:2px;cursor:pointer}.sbc-test-slot.filled{border-color:transparent;background:transparent;touch-action:none}.sbc-test-slot .mini,.sbc-test-slot .mini .card-shell{width:100%}.sbc-test-slot .sbc-empty-slot{width:72%}
+.sbc-dragghost{position:fixed;z-index:1000;width:90px;pointer-events:none;transform:translate(-50%,-50%) scale(.96);filter:drop-shadow(0 15px 24px rgba(0,0,0,.72));opacity:.95}.sbc-dragghost .mini,.sbc-dragghost .mini .card-shell{width:100%}
+.sbc-player-picker{position:fixed;z-index:230;inset:0;overflow:auto;background:rgba(3,8,10,.985);padding:calc(14px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom))}.sbc-player-picker-inner{max-width:680px;margin:auto}.sbc-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.sbc-picker-head h3{margin:0;font-size:18px}.sbc-picker-head p{margin:3px 0 0;color:#81929a;font-size:7px}.sbc-picker-head button{min-width:42px}.sbc-picker-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px;border:1px solid #31434b;border-radius:12px;background:#0d171b}.sbc-picker-field.full{grid-column:1/-1}.sbc-picker-field label{display:block;margin-bottom:4px;color:#82939b;font-size:6px;font-weight:900;text-transform:uppercase}.sbc-picker-field input,.sbc-picker-field select{width:100%;min-height:40px;border:1px solid #354850;border-radius:8px;background:#101b20;color:#fff;padding:0 8px;font-size:13px}.sbc-picker-rating{display:grid;grid-template-columns:1fr 1fr;gap:6px}.sbc-picker-results-head{display:flex;justify-content:space-between;gap:8px;margin:10px 1px 7px;color:#87979f;font-size:7px}.sbc-picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.sbc-pick-card{min-width:0;padding:7px;border:1px solid #2d4048;border-radius:10px;background:#0d171b;color:#fff;text-align:center}.sbc-pick-card .mini,.sbc-pick-card .mini .card-shell{width:100%}.sbc-pick-card strong{display:block;margin-top:5px;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbc-pick-card small{display:block;margin-top:2px;color:#809098;font-size:5.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.sbc-hub-card{grid-template-columns:minmax(0,1fr) 92px}.sbc-editor-pitch{min-height:470px}.sbc-work-slot{width:18.4%}.sbc-test-grid{gap:5px}.sbc-player-picker{padding-left:9px;padding-right:9px}.sbc-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sbc-condition-bar{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
 /* match */
 .mode{padding:13px;border:1px solid #2c3934;border-radius:13px;background:radial-gradient(circle at 90% 10%,rgba(101,168,255,.13),transparent 33%),#0f1714}.mode h3{margin:0 0 4px;font-size:13px}.mode p{margin:0;color:#899691;font-size:7px;line-height:1.4}.record{color:var(--lime);font-size:8px;font-weight:900;margin-top:7px}.match{position:fixed;inset:0;z-index:200;display:none;overflow:auto;background:#050807;padding:calc(14px + env(safe-area-inset-top)) 11px calc(22px + env(safe-area-inset-bottom))}.match.active{display:block}.matchinner{max-width:630px;margin:auto}.scoreboard{padding:13px;border:1px solid #2b3933;border-radius:13px;background:#0f1714;text-align:center}.minute{color:var(--lime);font-size:8px;font-weight:900}.score{font-size:36px;font-weight:1000}.teams{display:flex;justify-content:space-between;color:#93a09c;font-size:7px}.logbox{margin-top:8px;min-height:125px;max-height:210px;overflow:auto;padding:8px;border:1px solid #26332e;border-radius:10px;background:#0a100e}.logline{font-size:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}.scene{margin-top:8px;padding:11px;border:1px solid #2a3732;border-radius:10px;background:#101815}.scene h3{margin:0 0 4px;font-size:12px}.scene p{margin:0;color:#87958f;font-size:7px}.choices{display:grid;gap:6px;margin-top:8px}.result{display:none;margin-top:9px;padding:13px;border:1px solid #304038;border-radius:11px;background:#101815;text-align:center}.result.active{display:block}
 /* opening */
@@ -912,6 +930,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 /* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
 
+/* V18.82 — Companion-style SBC builder with 11-player pitch, 12-slot Testareal and drag/drop */
+
 /* V18.81 — weekly TOTW archive, TOTW2 and automatic Wednesday 19:00 rotation */
 
 /* V18.54 — consolidated native implementation; no runtime patch injection */
@@ -1005,7 +1025,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.81</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.82</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3775,12 +3795,183 @@ function progressEvolution(resultKey="loss"){
 }
 
 
-let activeSbcGroup="Foundations";
+let activeSbcGroup="Foundations",activeSbcId=null;
+const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
+let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
+let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false;
+
+function persistSbcWorkspace(){try{localStorage.setItem(SBC_WORKSPACE_KEY,JSON.stringify(SBC_WORKSPACE))}catch(e){}}
 function sbcSourceItems(){return[...(state.club||[]).map(i=>({item:i,source:"club"})),...(state.sbcStorage||[]).map(i=>({item:i,source:"storage"}))]}
-function renderSBC(){const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;$("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");$("sbcGrid").innerHTML=SBCS.filter(s=>s.group===activeSbcGroup).map(s=>{const set=sbcSelections[s.id]||new Set(),available=sbcSourceItems().filter(x=>s.filter(displayBase(x.item))).sort((a,b)=>Number(set.has(b.item.uid))-Number(set.has(a.item.uid))||Number(state.squad.includes(b.item.uid))-Number(state.squad.includes(a.item.uid))||itemRating(b.item)-itemRating(a.item)),sel=available.filter(x=>set.has(x.item.uid)),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===s.count&&(!s.maxAvg||avg<=s.maxAvg)&&(!s.minAvg||avg>=s.minAvg)&&(!s.sameLeague||(allHaveLeague&&leagues.length===1)),activeSelected=selItems.filter(i=>state.squad.includes(i.uid)).length,storageSelected=sel.filter(x=>x.source==="storage").length;return`<div class="sbc"><h3>${s.name}</h3><p>${s.desc}</p><div class="sbcreq">${s.req} · gewählt ${selItems.length}/${s.count}${s.maxAvg||s.minAvg?` · Ø ${avg.toFixed(1)}`:""}${s.sameLeague?` · Ligen ${leagues.length}`:""}</div><div class="sbc-active-note">Club und SBC-Speicher können gemeinsam verwendet werden.${activeSelected?` ${activeSelected} Spieler stammen aus deinem aktiven Kader.`:""}${storageSelected?` ${storageSelected} aus dem SBC-Speicher.`:""}</div><div class="sbclist">${available.slice(0,120).map(x=>{const i=x.item,b=displayBase(i),inSquad=state.squad.includes(i.uid);return`<label class="sbcp ${inSquad?"in-squad":""}"><input type="checkbox" data-sbc="${s.id}" value="${i.uid}" ${set.has(i.uid)?"checked":""}><div><strong>${itemRating(i)} ${esc(b.name)}${inSquad?'<span class="sbc-squad-tag">AKTIVER KADER</span>':''}${x.source==="storage"?'<span class="sbc-storage-tag">SBC-SPEICHER</span>':''}</strong><small>${esc(b.team)} · ${esc(b.league)} · ${rarityOf(b)}</small></div></label>`}).join("")||'<p style="font-size:7px;color:#82908a">Keine geeigneten Spieler verfügbar.</p>'}</div><button class="primary" data-submit="${s.id}" style="width:100%;margin-top:8px" ${ok?"":"disabled"}>Abgeben · ${rewardText(s.reward)}</button></div>`}).join("")}
+function sbcSourceMap(){return new Map(sbcSourceItems().map(x=>[String(x.item.uid),x]))}
+function sbcDraft(id){
+ const map=sbcSourceMap(),raw=SBC_WORKSPACE[id]||{},seen=new Set();
+ const clean=(arr,len)=>Array.from({length:len},(_,i)=>{const uid=String(Array.isArray(arr)?arr[i]||"":"");if(!uid||!map.has(uid)||seen.has(uid))return null;seen.add(uid);return uid});
+ const draft={squad:clean(raw.squad,11),test:clean(raw.test,12),testOpen:!!raw.testOpen};
+ SBC_WORKSPACE[id]=draft;return draft
+}
+function sbcSetDraft(id,draft){SBC_WORKSPACE[id]=draft;persistSbcWorkspace()}
+function sbcItemRecord(uid){return uid?sbcSourceMap().get(String(uid))||null:null}
+function sbcSlotUid(draft,area,index){return area==="squad"?draft.squad[index]:draft.test[index]}
+function sbcSetSlotUid(draft,area,index,uid){if(area==="squad")draft.squad[index]=uid||null;else draft.test[index]=uid||null}
+function sbcFindUid(draft,uid){
+ let i=draft.squad.indexOf(uid);if(i>=0)return{area:"squad",index:i};
+ i=draft.test.indexOf(uid);return i>=0?{area:"test",index:i}:null
+}
+function sbcSwapSlots(id,fromArea,fromIndex,toArea,toIndex){
+ const draft=sbcDraft(id),from=sbcSlotUid(draft,fromArea,fromIndex);if(!from)return false;
+ const to=sbcSlotUid(draft,toArea,toIndex);
+ sbcSetSlotUid(draft,toArea,toIndex,from);sbcSetSlotUid(draft,fromArea,fromIndex,to||null);sbcSetDraft(id,draft);return true
+}
+function sbcPlaceUid(id,uid,area,index){
+ const draft=sbcDraft(id),map=sbcSourceMap();if(!map.has(String(uid)))return false;
+ const target=sbcSlotUid(draft,area,index),from=sbcFindUid(draft,String(uid));
+ if(from&&from.area===area&&from.index===index)return false;
+ if(from){sbcSetSlotUid(draft,from.area,from.index,target||null);sbcSetSlotUid(draft,area,index,String(uid))}
+ else sbcSetSlotUid(draft,area,index,String(uid));
+ sbcSetDraft(id,draft);return true
+}
+function sbcRemoveUid(id,area,index){
+ const draft=sbcDraft(id);if(!sbcSlotUid(draft,area,index))return false;sbcSetSlotUid(draft,area,index,null);sbcSetDraft(id,draft);return true
+}
+function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
+ const map=sbcSourceMap(),items=draft.squad.map(uid=>uid?map.get(String(uid))?.item:null).filter(Boolean),count=items.length;
+ const avg=count?items.reduce((n,i)=>n+itemRating(i),0)/count:0,allRule=count===sbc.count&&items.every(i=>sbc.filter(displayBase(i)));
+ const leagues=[...new Set(items.map(i=>resolvedAffiliation(displayBase(i))?.league).filter(Boolean))],allHaveLeague=items.every(i=>!!resolvedAffiliation(displayBase(i))?.league);
+ const avgOk=(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg),leagueOk=!sbc.sameLeague||(count===sbc.count&&allHaveLeague&&leagues.length===1);
+ return{items,count,avg,leagues,allRule,avgOk,leagueOk,ok:count===sbc.count&&allRule&&avgOk&&leagueOk}
+}
+function sbcRequirementSummary(sbc,stats){
+ const reqs=[{label:"Spieler",value:`${stats.count}/${sbc.count}`,ok:stats.count===sbc.count},{label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule}];
+ if(sbc.minAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / ${sbc.minAvg}+`,ok:stats.avgOk&&stats.count===sbc.count});
+ else if(sbc.maxAvg)reqs.push({label:"Ø Rating",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
+ else if(sbc.sameLeague)reqs.push({label:"Liga",value:stats.leagues.length===1&&stats.count===sbc.count?"1 Liga":`${stats.leagues.length} Ligen`,ok:stats.leagueOk&&stats.count===sbc.count});
+ else reqs.push({label:"Belohnung",value:rewardText(sbc.reward),ok:false});
+ return reqs.slice(0,3)
+}
+function sbcRewardPackLabel(reward){
+ if(reward?.pack)return PACKS.find(p=>p.id===reward.pack)?.name||"Pack";
+ if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
+}
+function sbcOverviewCard(s){
+ const stats=sbcDraftStats(s),pct=Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100);
+ return `<article class="sbc-hub-card"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta"><span class="sbc-hub-chip">${esc(s.req)}</span><span class="sbc-hub-chip ${stats.ok?"done":""}">${stats.count}/${s.count} Spieler</span><span class="sbc-hub-chip">${pct}% vorbereitet</span></div></div><div class="sbc-hub-reward"><div class="sbc-hub-pack">${esc(sbcRewardPackLabel(s.reward))}</div><button class="secondary" type="button" data-sbc-open="${esc(s.id)}">Öffnen</button></div></article>`
+}
+function sbcWorkSlotHTML(sbc,area,index,slot=null){
+ const draft=sbcDraft(sbc.id),uid=sbcSlotUid(draft,area,index),row=sbcItemRecord(uid),item=row?.item,b=item?displayBase(item):null,label=slot?.p||"";
+ if(!item)return `<div class="sbc-work-slot ${area==="test"?"sbc-test-slot":""}" data-sbc-area="${area}" data-sbc-index="${index}" ${area==="squad"&&slot?`style="left:${slot.x}%;top:${slot.y}%"`:""} role="button" tabindex="0"><div class="sbc-empty-slot"><div><b>+</b><span>${esc(area==="squad"?positionLabel(label):"PLATZ")}</span></div></div></div>`;
+ const shown=area==="squad"&&slot?.p?slot.p:b.position;
+ return `<div class="sbc-work-slot filled ${area==="test"?"sbc-test-slot":""}" data-sbc-area="${area}" data-sbc-index="${index}" ${area==="squad"&&slot?`style="left:${slot.x}%;top:${slot.y}%"`:""} role="button" tabindex="0"><div class="sbc-card-wrap">${cardHTML(b,item,true,shown)}</div><button class="sbc-slot-remove" type="button" data-sbc-remove="${area}:${index}" aria-label="Spieler entfernen">×</button></div>`
+}
+function sbcPickerTargetLabel(){
+ if(!sbcPickerState)return"";if(sbcPickerState.area==="test")return `Testareal · Platz ${sbcPickerState.index+1}`;
+ const slot=FORMATIONS["4-3-3"][sbcPickerState.index];return `SBC-Aufstellung · ${positionLabel(slot?.p||"")}`
+}
+function sbcPickerCandidates(){
+ if(!activeSbcId||!sbcPickerState)return[];const draft=sbcDraft(activeSbcId),current=sbcSlotUid(draft,sbcPickerState.area,sbcPickerState.index),used=new Set([...draft.squad,...draft.test].filter(Boolean).filter(uid=>uid!==current));
+ const q=normalizeKey(sbcPickerState.query||""),pos=String(sbcPickerState.position||""),quality=String(sbcPickerState.quality||""),source=String(sbcPickerState.source||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
+ let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
+  const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;
+  if(q&&!playerSearchText(b).includes(q))return false;if(pos&&!playerPositions(b).includes(pos))return false;
+  if(source&&x.source!==source)return false;if(rating<min||rating>max)return false;
+  if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}
+  return true
+ });
+ rows.sort((a,b)=>{const ar=itemRating(a.item),br=itemRating(b.item);if(sbcPickerState.sort==="low")return ar-br;return br-ar});
+ return rows.slice(0,120)
+}
+function sbcPickerHTML(){
+ if(!sbcPickerState)return"";const rows=sbcPickerCandidates();
+ return `<div class="sbc-player-picker" id="sbcPlayerPicker"><div class="sbc-player-picker-inner"><div class="sbc-picker-head"><div><h3>Vereinssuche</h3><p>${esc(sbcPickerTargetLabel())} · Spieler auswählen</p></div><button type="button" class="secondary" data-sbc-picker-close>×</button></div><div class="sbc-picker-filters">
+  <div class="sbc-picker-field full"><label>Spielername</label><input id="sbcPickerName" type="search" value="${esc(sbcPickerState.query||"")}" placeholder="Spielername eingeben" autocomplete="off"></div>
+  <div class="sbc-picker-field"><label>Position</label><select id="sbcPickerPosition"><option value="">Alle Positionen</option>${["GK","CB","LB","RB","CDM","CM","CAM","LM","RM","LW","RW","ST"].map(p=>`<option value="${p}" ${sbcPickerState.position===p?"selected":""}>${positionLabel(p)}</option>`).join("")}</select></div>
+  <div class="sbc-picker-field"><label>Qualität</label><select id="sbcPickerQuality"><option value="">Alle Qualitäten</option><option value="gold" ${sbcPickerState.quality==="gold"?"selected":""}>Gold</option><option value="silver" ${sbcPickerState.quality==="silver"?"selected":""}>Silber</option><option value="bronze" ${sbcPickerState.quality==="bronze"?"selected":""}>Bronze</option><option value="special" ${sbcPickerState.quality==="special"?"selected":""}>Spezial</option></select></div>
+  <div class="sbc-picker-field"><label>Quelle</label><select id="sbcPickerSource"><option value="">Verein + SBC-Speicher</option><option value="club" ${sbcPickerState.source==="club"?"selected":""}>Mein Verein</option><option value="storage" ${sbcPickerState.source==="storage"?"selected":""}>SBC-Speicher</option></select></div>
+  <div class="sbc-picker-field"><label>Sortieren</label><select id="sbcPickerSort"><option value="high" ${sbcPickerState.sort!=="low"?"selected":""}>Hoch bis niedrig</option><option value="low" ${sbcPickerState.sort==="low"?"selected":""}>Niedrig bis hoch</option></select></div>
+  <div class="sbc-picker-field full"><label>GES-Bereich</label><div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" min="0" max="99" value="${Number(sbcPickerState.min??0)}" placeholder="Min. GES"><input id="sbcPickerMax" type="number" min="0" max="99" value="${Number(sbcPickerState.max??99)}" placeholder="Max. GES"></div></div>
+ </div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler angezeigt</span><span>Tippen = einsetzen</span></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
+}
+function sbcPickerResultsHTML(rows=sbcPickerCandidates()){
+ return rows.length?rows.map(x=>{const i=x.item,b=displayBase(i);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))} · ${x.source==="storage"?"SBC-Speicher":"Verein"}</small></button>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Spieler für diese Filter gefunden.</div>'
+}
+function renderSbcPickerResults(){
+ const grid=$("sbcPickerResults"),count=$("sbcPickerResultCount");if(!grid||!sbcPickerState)return;const rows=sbcPickerCandidates();grid.innerHTML=sbcPickerResultsHTML(rows);if(count)count.textContent=`${rows.length} Spieler angezeigt`
+}
+function openSbcPicker(area,index){
+ if(!activeSbcId)return;sbcPickerState={area,index,query:"",position:"",quality:"",source:"",sort:"high",min:0,max:99};renderSBC();setTimeout(()=>$("sbcPickerName")?.focus(),40)
+}
+function renderSbcEditor(sbc){
+ const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),reqs=sbcRequirementSummary(sbc,stats),formation=FORMATIONS["4-3-3"];
+ const activeSelected=stats.items.filter(i=>state.squad.includes(i.uid)).length,storageSelected=stats.items.filter(i=>(state.sbcStorage||[]).some(x=>x.uid===i.uid)).length;
+ return `<div class="sbc-builder"><div class="sbc-builder-head"><button type="button" class="sbc-builder-back" data-sbc-back>‹</button><div class="sbc-builder-title"><strong>${esc(sbc.name)}</strong><span>${esc(sbc.req)}</span></div><div class="sbc-builder-reward">${esc(sbcRewardPackLabel(sbc.reward))}</div></div>
+ <div class="sbc-condition-bar">${reqs.map(r=>`<div class="sbc-condition ${r.ok?"ok":""}"><b>${esc(r.value)}</b><span>${esc(r.label)}</span></div>`).join("")}</div>
+ <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,"squad",i,slot)).join("")}</div>
+ <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle><div><strong>⚒ Testareal</strong><span>12 Zusatzplätze · Spieler vorbereiten und per Drag & Drop einsetzen</span></div><b class="sbc-test-chevron">⌃</b></button>
+ <div class="sbc-test-drawer ${draft.testOpen?"open":""}"><div class="sbc-test-note"><span>3 Reihen × 4 Plätze</span><span>${draft.test.filter(Boolean).length}/12 belegt</span></div><div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcWorkSlotHTML(sbc,"test",i)).join("")}</div></div>
+ <div class="sbc-builder-footer"><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(rewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
+ </div>${sbcPickerHTML()}`
+}
+function renderSBC(){
+ const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
+ if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
+ const active=SBCS.find(s=>s.id===activeSbcId);
+ if(active){
+  $("sbcTabs").innerHTML="";$("sbcGrid").innerHTML=renderSbcEditor(active);return
+ }
+ $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
+ $("sbcGrid").innerHTML=SBCS.filter(s=>s.group===activeSbcGroup).map(sbcOverviewCard).join("")||'<div class="online-note">Keine SBCs in dieser Kategorie.</div>'
+}
+function submitSbcById(id){
+ const sbc=SBCS.find(x=>x.id===id);if(!sbc)return;const draft=sbcDraft(id),stats=sbcDraftStats(sbc,draft);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
+ ensureObjectiveWindows();const ids=new Set(stats.items.map(i=>i.uid));persistActiveSquadPreset(state);
+ const teams=state.squadPresets.filter(p=>p?.squad.some(uid=>ids.has(uid))).map(p=>p.name);
+ if(teams.length&&!confirm(`Diese SBC entfernt Spieler aus ${teams.join(", ")}. Die Plätze werden in allen betroffenen Mannschaften frei. Fortfahren?`))return;
+ state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
+ grant(sbc.reward);state.stats.sbcs++;delete SBC_WORKSPACE[id];persistSbcWorkspace();activeSbcId=null;sbcPickerState=null;save();renderAll();toast(teams.length?`SBC abgeschlossen. Spieler aus ${teams.join(", ")} entfernt.`:"SBC abgeschlossen.")
+}
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;renderSBC()});
-$("sbcView").addEventListener("change",e=>{const c=e.target.closest("[data-sbc]");if(!c)return;const id=c.dataset.sbc;if(!sbcSelections[id])sbcSelections[id]=new Set();c.checked?sbcSelections[id].add(c.value):sbcSelections[id].delete(c.value);renderSBC()});
-$("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit);if(!sbc)return;const set=sbcSelections[sbc.id]||new Set(),all=sbcSourceItems(),sel=all.filter(x=>set.has(x.item.uid)&&sbc.filter(displayBase(x.item))),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||(allHaveLeague&&leagues.length===1));if(!ok)return;ensureObjectiveWindows();const ids=new Set(selItems.map(i=>i.uid));persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.some(uid=>ids.has(uid))).map(p=>p.name);if(teams.length&&!confirm(`Diese SBC entfernt Spieler aus ${teams.join(', ')}. Die Plätze werden in allen betroffenen Mannschaften frei. Fortfahren?`))return;state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast(teams.length?`SBC abgeschlossen. Spieler aus ${teams.join(', ')} entfernt.`:"SBC abgeschlossen.")})
+$("sbcView").addEventListener("click",e=>{
+ const open=e.target.closest("[data-sbc-open]"),back=e.target.closest("[data-sbc-back]"),toggle=e.target.closest("[data-sbc-test-toggle]"),remove=e.target.closest("[data-sbc-remove]"),slot=e.target.closest(".sbc-work-slot"),search=e.target.closest("[data-sbc-player-search]"),close=e.target.closest("[data-sbc-picker-close]"),pick=e.target.closest("[data-sbc-pick-uid]"),submit=e.target.closest("[data-submit]");
+ if(open){activeSbcId=open.dataset.sbcOpen;sbcPickerState=null;renderSBC();return}
+ if(back){activeSbcId=null;sbcPickerState=null;renderSBC();return}
+ if(toggle&&activeSbcId){const d=sbcDraft(activeSbcId);d.testOpen=!d.testOpen;sbcSetDraft(activeSbcId,d);renderSBC();return}
+ if(remove&&activeSbcId){e.stopPropagation();const [area,raw]=String(remove.dataset.sbcRemove||"").split(":");sbcRemoveUid(activeSbcId,area,Number(raw));renderSBC();return}
+ if(close){sbcPickerState=null;renderSBC();return}
+ if(pick&&activeSbcId&&sbcPickerState){if(sbcPlaceUid(activeSbcId,pick.dataset.sbcPickUid,sbcPickerState.area,sbcPickerState.index)){const d=sbcDraft(activeSbcId);if(sbcPickerState.area==="test")d.testOpen=true;sbcSetDraft(activeSbcId,d)}sbcPickerState=null;renderSBC();return}
+ if(search&&activeSbcId){const d=sbcDraft(activeSbcId),ti=d.test.findIndex(x=>!x),si=d.squad.findIndex(x=>!x);if(ti>=0){d.testOpen=true;sbcSetDraft(activeSbcId,d);openSbcPicker("test",ti)}else if(si>=0)openSbcPicker("squad",si);else openSbcPicker("test",0);return}
+ if(submit){submitSbcById(submit.dataset.submit);return}
+ if(slot&&activeSbcId&&!suppressSbcSlotClick&&!e.target.closest(".sbc-slot-remove")){openSbcPicker(slot.dataset.sbcArea,Number(slot.dataset.sbcIndex));return}
+ suppressSbcSlotClick=false
+});
+$("sbcView").addEventListener("input",e=>{if(!sbcPickerState)return;if(e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;renderSbcPickerResults()}});
+$("sbcView").addEventListener("change",e=>{if(!sbcPickerState)return;
+ if(e.target.id==="sbcPickerPosition")sbcPickerState.position=e.target.value;
+ else if(e.target.id==="sbcPickerQuality")sbcPickerState.quality=e.target.value;
+ else if(e.target.id==="sbcPickerSource")sbcPickerState.source=e.target.value;
+ else if(e.target.id==="sbcPickerSort")sbcPickerState.sort=e.target.value;
+ else if(e.target.id==="sbcPickerMin")sbcPickerState.min=Math.max(0,Math.min(99,Number(e.target.value||0)));
+ else if(e.target.id==="sbcPickerMax")sbcPickerState.max=Math.max(0,Math.min(99,Number(e.target.value||99)));
+ else return;renderSbcPickerResults()
+});
+function clearSbcDragVisuals(){
+ document.querySelectorAll("#sbcView .sbc-work-slot.drop-target,#sbcView .sbc-test-slot.drop-target").forEach(x=>x.classList.remove("drop-target"));
+ sbcDragState?.source?.classList.remove("drag-source");sbcDragState?.ghost?.remove()
+}
+document.addEventListener("pointerdown",e=>{
+ if(!activeSbcId||sbcPickerState||e.target.closest(".sbc-slot-remove"))return;const slot=e.target.closest("#sbcView .sbc-work-slot.filled");if(!slot)return;
+ sbcDragState={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,fromArea:slot.dataset.sbcArea,fromIndex:Number(slot.dataset.sbcIndex),source:slot,active:false,target:null,ghost:null}
+},{passive:true});
+document.addEventListener("pointermove",e=>{
+ const d=sbcDragState;if(!d||d.pointerId!==e.pointerId)return;const dist=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);if(!d.active&&dist<7)return;
+ if(!d.active){d.active=true;d.source?.classList.add("drag-source");const g=document.createElement("div");g.className="sbc-dragghost";g.innerHTML=d.source?.querySelector(".sbc-card-wrap")?.innerHTML||"";document.body.appendChild(g);d.ghost=g}
+ if(d.ghost){d.ghost.style.left=`${e.clientX}px`;d.ghost.style.top=`${e.clientY}px`}
+ document.querySelectorAll("#sbcView .sbc-work-slot.drop-target,#sbcView .sbc-test-slot.drop-target").forEach(x=>x.classList.remove("drop-target"));
+ const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#sbcView .sbc-work-slot");d.target=target&&!(target.dataset.sbcArea===d.fromArea&&Number(target.dataset.sbcIndex)===d.fromIndex)?target:null;if(d.target)d.target.classList.add("drop-target");e.preventDefault()
+},{passive:false});
+document.addEventListener("pointerup",e=>{
+ const d=sbcDragState;if(!d||d.pointerId!==e.pointerId)return;const active=d.active,target=d.target;clearSbcDragVisuals();sbcDragState=null;
+ if(active){suppressSbcSlotClick=true;if(target&&activeSbcId&&sbcSwapSlots(activeSbcId,d.fromArea,d.fromIndex,target.dataset.sbcArea,Number(target.dataset.sbcIndex))){renderSBC();toast("Spieler verschoben.")}setTimeout(()=>{suppressSbcSlotClick=false},80)}
+});
+document.addEventListener("pointercancel",()=>{clearSbcDragVisuals();sbcDragState=null});
 
 
 let matchTimer=null,matchSpeed=550;
