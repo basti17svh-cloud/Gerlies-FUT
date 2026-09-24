@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.75</title>
+<title>Gerlies FUT V18.76</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -233,6 +233,14 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .onboard-profile .preview{margin:10px 0;color:#cbd5d1;font-size:9px}
 .squad-battle-preview .friend-team-title{align-items:center}
 .squad-battle-preview .friend-pitch{margin-top:10px}
+.saved-squads{margin-bottom:13px;padding:13px;border:1px solid #365846;border-radius:16px;background:linear-gradient(135deg,#13241a,#0b1511)}
+.saved-squads h3{margin:0 0 3px;font-size:15px;color:#eef8e9}.saved-squads p{margin:0 0 10px;color:#a7bcae;font-size:10px;line-height:1.35}
+.squad-preset-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.squad-preset-tab{min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px 9px;border:1px solid #355243;border-radius:11px;background:#0d1913;color:#e3efe7;text-align:left;cursor:pointer}
+.squad-preset-tab strong{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px}.squad-preset-tab small{font-size:8px;color:#a1b5a5}.squad-preset-tab.active{border-color:var(--lime);background:#253521;box-shadow:inset 0 0 0 1px #c8f76a55}.squad-preset-tab.active strong,.squad-preset-tab.active small{color:#edffbe}.squad-preset-tab.new{border-style:dashed;color:#bbcfbd}
+.squad-preset-name{display:flex;align-items:center;gap:10px;margin-top:11px;font-size:10px;color:#b6c9ba}.squad-preset-name input{flex:1;min-width:0;min-height:38px;padding:7px 10px;border:1px solid #41634b;border-radius:9px;background:#0a1510;color:#fff;font:inherit;font-size:12px}
+.play-squad-selector{margin-bottom:14px}.play-squad-selector strong{display:block;margin-bottom:7px;font-size:12px}.squad-battle-preview .squad-preset-tabs{margin:10px 0 12px}
+@media(max-width:520px){.saved-squads{padding:10px}.squad-preset-tab{min-height:52px;padding:7px}.squad-preset-tab strong{font-size:9px}.squad-preset-tab small{font-size:7px}.squad-preset-name{font-size:9px}}
 .official-card{position:absolute;inset:0;display:block;opacity:0;pointer-events:none}.official-card.loaded{opacity:1}
 .preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
 .preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
@@ -988,7 +996,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.75</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.76</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1058,6 +1066,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </section>
 
 <section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
+  <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
   <div class="squad-stage">
@@ -1074,7 +1083,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
-<section id="playView" class="view"><div class="headline"><h2>Spielen</h2><p>Wähle den Spielmodus. Für alle Modi brauchst du eine komplette Startelf und Bank.</p></div><div class="section"><div class="modegrid">
+<section id="playView" class="view"><div class="headline"><h2>Spielen</h2><p>Wähle den Spielmodus. Für alle Modi brauchst du eine komplette Startelf und Bank.</p></div><div class="section"><div class="play-squad-selector"><strong>Mit welchem Team möchtest du spielen?</strong><div id="playSquadPresets" class="squad-preset-tabs"></div></div><div class="modegrid">
   <div class="mode"><span class="mode-tag">WETTBEWERB</span><h3>Division Rivals</h3><p>Spiele gegen einen deinem Kader angepassten Rivalen und arbeite dich durch die Divisionen.</p><div id="rvRecord" class="record"></div><button class="primary startmode" data-mode="rivals" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
   <div class="mode"><span class="mode-tag">KI</span><h3>Squad Battles</h3><p>Spiele gegen KI-Mannschaften und erhalte Coins und Season-Fortschritt.</p><div id="sbRecord" class="record"></div><button class="primary startmode" data-mode="squad" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
   <div class="mode friendly-mode"><span class="mode-tag">FRIENDLY</span><h3>Zufälliger Gegner</h3><p>Freundschaftsspiel gegen einen zufällig erzeugten Gegner auf deinem ungefähren Teamniveau.</p><div id="randomFriendlyRecord" class="record"></div><button class="primary startmode" data-mode="friendly-random" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
@@ -1565,15 +1574,43 @@ const SBCS=[
 ];
 
 function baseState(){return{
- version:120,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(23).fill(null),packs:{},
+ version:121,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
  roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return x?{...b,...x,version:120,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b
- }catch(e){return baseState()}
+  return initializeSquadPresets(x?{...b,...x,version:121,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
+ }catch(e){return initializeSquadPresets(baseState())}
+}
+function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
+function cleanSquadPreset(raw,clubIds,index){
+ const seen=new Set(),squad=Array.from({length:23},(_,i)=>{
+  const uid=Array.isArray(raw?.squad)?raw.squad[i]:null;
+  if(typeof uid!=="string"||!uid||seen.has(uid)||!clubIds.has(uid))return null;
+  seen.add(uid);return uid
+ });
+ const positions=squad.slice(0,11);
+ const entries=values=>Object.fromEntries(Object.entries(values&&typeof values==="object"&&!Array.isArray(values)?values:{}).filter(([key,value])=>/^(10|[0-9])$/.test(key)&&positions[Number(key)]&&typeof value==="string"));
+ return{name:squadPresetName(raw?.name,index),formation:["4-3-3","4-4-2","4-2-3-1"].includes(raw?.formation)?raw.formation:"4-3-3",squad,roles:entries(raw?.roles),focus:entries(raw?.focus)}
+}
+function initializeSquadPresets(s){
+ const idx=Number.isInteger(s.activeSquadPreset)&&s.activeSquadPreset>=0&&s.activeSquadPreset<3?s.activeSquadPreset:0;
+ const clubIds=new Set((Array.isArray(s.club)?s.club:[]).map(item=>item?.uid).filter(Boolean)),saved=Array.isArray(s.squadPresets)?s.squadPresets:[];
+ s.activeSquadPreset=idx;s.squadPresets=Array.from({length:3},(_,i)=>saved[i]?cleanSquadPreset(saved[i],clubIds,i):null);
+ const active=cleanSquadPreset({name:s.squadPresets[idx]?.name||(idx===0?"Mein Team":`Team ${idx+1}`),formation:s.formation,squad:s.squad,roles:s.roles,focus:s.focus},clubIds,idx);
+ s.squadPresets[idx]=active;s.squad=[...active.squad];s.formation=active.formation;s.roles={...active.roles};s.focus={...active.focus};
+ return s
+}
+function persistActiveSquadPreset(s){return initializeSquadPresets(s)}
+function activateSquadPreset(s,index){
+ if(!Number.isInteger(index)||index<0||index>=3||index===s.activeSquadPreset)return null;
+ persistActiveSquadPreset(s);
+ const created=!s.squadPresets[index],clubIds=new Set((s.club||[]).map(item=>item.uid));
+ const next=s.squadPresets[index]||cleanSquadPreset({...s.squadPresets[s.activeSquadPreset],name:`Team ${index+1}`},clubIds,index);
+ s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.roles={...next.roles};s.focus={...next.focus};
+ return{created,name:next.name}
 }
 let saveQueued=false;
 function save(){
@@ -1582,6 +1619,7 @@ function save(){
  queueMicrotask(()=>{
   saveQueued=false;
   // Several actions call save() before and after rendering; persist their final state once.
+  persistActiveSquadPreset(state);
   localStorage.setItem("gerliesFutV9",JSON.stringify(state))
  })
 }
@@ -2924,8 +2962,31 @@ function syncSquadDrawer(){
  document.querySelectorAll("[data-squad-drawer]").forEach(b=>{const on=b.dataset.squadDrawer===squadDrawerMode;b.classList.toggle("active",on);const i=b.querySelector("i");if(i)i.textContent=on?"⌄":"⌃"})
 }
 function setSquadDrawer(mode,toggle=false){const next=(toggle&&squadDrawerMode===mode)?"":mode;squadDrawerMode=next;syncSquadDrawer()}
+function squadPresetTabsHTML(){return state.squadPresets.map((preset,i)=>{
+ const active=i===state.activeSquadPreset,filled=(active?state.squad:preset?.squad||[]).slice(0,18).filter(Boolean).length,name=preset?.name||`Team ${i+1}`;
+ return `<button type="button" class="squad-preset-tab ${active?'active':''} ${preset?'':'new'}" data-select-squad="${i}" aria-pressed="${active}" aria-label="${esc(name)} ${preset?active?'aktiv':'aktivieren':'aus aktuellem Team erstellen'}"><strong>${esc(name)}</strong><small>${preset?`${filled}/18 · ${esc(preset.formation)}`:'＋ Team kopieren'}</small></button>`
+ }).join('')}
+function renderSquadPresetControls(){
+ for(const id of ['squadPresetTabs','playSquadPresets'])if($(id))$(id).innerHTML=squadPresetTabsHTML();
+ const input=$("squadPresetName");if(input&&document.activeElement!==input)input.value=state.squadPresets[state.activeSquadPreset]?.name||"Mein Team"
+}
+function selectSquadPreset(index){
+ const changed=activateSquadPreset(state,index);if(!changed)return;
+ previewSwapFrom=-1;
+ if(squadBattleStage==="preview"&&pendingMatchContext&&["rivals","friendly-random"].includes(pendingMatchContext.mode))pendingMatchContext.opponent=oneOffOpponent(pendingMatchContext.mode);
+ save();renderAll();refreshOpenMatchPreview();toast(changed.created?`${changed.name} als Kopie erstellt und aktiviert.`:`${changed.name} aktiviert.`)
+}
+function handleSquadPresetClick(e){const button=e.target.closest('[data-select-squad]');if(button)selectSquadPreset(Number(button.dataset.selectSquad))}
+$("squadPresetTabs").addEventListener("click",handleSquadPresetClick);
+$("playSquadPresets").addEventListener("click",handleSquadPresetClick);
+$("squadPresetName").addEventListener("change",e=>{
+ const name=squadPresetName(e.target.value,state.activeSquadPreset);
+ state.squadPresets[state.activeSquadPreset].name=name;e.target.value=name;
+ renderSquadPresetControls();save();toast(`Team heißt jetzt ${name}.`)
+});
 function renderSquad(){
  ensureSquadSlots();
+ renderSquadPresetControls();
  const m=squadMetrics();$("sqRating").textContent=m.rating||"–";$("sqChem").textContent=`${m.chem}/33`;$("sqFilled").textContent=`${m.filled}/18`;$("formationSelect").value=state.formation;
  $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i,m.chemScores[i])).join("");
  $("bench").innerHTML=m.items.slice(11,18).map((x,k)=>benchHTML(x,11+k)).join("");
@@ -3357,7 +3418,7 @@ function renderClub(){
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
 $("clubPosition").addEventListener("change",renderClub);$("clubRarity").addEventListener("change",renderClub);$("clubSort").addEventListener("change",renderClub);
-$("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);if(state.activeEvo?.uid===i.uid)state.activeEvo=null;save();renderAll();toast("Schnellverkauft.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
+$("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);if(state.activeEvo?.uid===i.uid)state.activeEvo=null;save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
 const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
@@ -3643,13 +3704,14 @@ function sbcSourceItems(){return[...(state.club||[]).map(i=>({item:i,source:"clu
 function renderSBC(){const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;$("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");$("sbcGrid").innerHTML=SBCS.filter(s=>s.group===activeSbcGroup).map(s=>{const set=sbcSelections[s.id]||new Set(),available=sbcSourceItems().filter(x=>s.filter(displayBase(x.item))).sort((a,b)=>Number(set.has(b.item.uid))-Number(set.has(a.item.uid))||Number(state.squad.includes(b.item.uid))-Number(state.squad.includes(a.item.uid))||itemRating(b.item)-itemRating(a.item)),sel=available.filter(x=>set.has(x.item.uid)),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===s.count&&(!s.maxAvg||avg<=s.maxAvg)&&(!s.minAvg||avg>=s.minAvg)&&(!s.sameLeague||(allHaveLeague&&leagues.length===1)),activeSelected=selItems.filter(i=>state.squad.includes(i.uid)).length,storageSelected=sel.filter(x=>x.source==="storage").length;return`<div class="sbc"><h3>${s.name}</h3><p>${s.desc}</p><div class="sbcreq">${s.req} · gewählt ${selItems.length}/${s.count}${s.maxAvg||s.minAvg?` · Ø ${avg.toFixed(1)}`:""}${s.sameLeague?` · Ligen ${leagues.length}`:""}</div><div class="sbc-active-note">Club und SBC-Speicher können gemeinsam verwendet werden.${activeSelected?` ${activeSelected} Spieler stammen aus deinem aktiven Kader.`:""}${storageSelected?` ${storageSelected} aus dem SBC-Speicher.`:""}</div><div class="sbclist">${available.slice(0,120).map(x=>{const i=x.item,b=displayBase(i),inSquad=state.squad.includes(i.uid);return`<label class="sbcp ${inSquad?"in-squad":""}"><input type="checkbox" data-sbc="${s.id}" value="${i.uid}" ${set.has(i.uid)?"checked":""}><div><strong>${itemRating(i)} ${esc(b.name)}${inSquad?'<span class="sbc-squad-tag">AKTIVER KADER</span>':''}${x.source==="storage"?'<span class="sbc-storage-tag">SBC-SPEICHER</span>':''}</strong><small>${esc(b.team)} · ${esc(b.league)} · ${rarityOf(b)}</small></div></label>`}).join("")||'<p style="font-size:7px;color:#82908a">Keine geeigneten Spieler verfügbar.</p>'}</div><button class="primary" data-submit="${s.id}" style="width:100%;margin-top:8px" ${ok?"":"disabled"}>Abgeben · ${rewardText(s.reward)}</button></div>`}).join("")}
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;renderSBC()});
 $("sbcView").addEventListener("change",e=>{const c=e.target.closest("[data-sbc]");if(!c)return;const id=c.dataset.sbc;if(!sbcSelections[id])sbcSelections[id]=new Set();c.checked?sbcSelections[id].add(c.value):sbcSelections[id].delete(c.value);renderSBC()});
-$("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit);if(!sbc)return;const set=sbcSelections[sbc.id]||new Set(),all=sbcSourceItems(),sel=all.filter(x=>set.has(x.item.uid)&&sbc.filter(displayBase(x.item))),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||(allHaveLeague&&leagues.length===1));if(!ok)return;ensureObjectiveWindows();const ids=new Set(selItems.map(i=>i.uid)),activeCount=state.squad.filter(uid=>uid&&ids.has(uid)).length;if(activeCount&&!confirm(`${activeCount} Spieler aus deiner aktiven Mannschaft für diese SBC dauerhaft abgeben?`))return;state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast(activeCount?`SBC abgeschlossen. ${activeCount} Spieler aus dem aktiven Kader abgegeben.`:"SBC abgeschlossen.")})
+$("sbcView").addEventListener("click",e=>{const b=e.target.closest("[data-submit]");if(!b)return;const sbc=SBCS.find(x=>x.id===b.dataset.submit);if(!sbc)return;const set=sbcSelections[sbc.id]||new Set(),all=sbcSourceItems(),sel=all.filter(x=>set.has(x.item.uid)&&sbc.filter(displayBase(x.item))),selItems=sel.map(x=>x.item),avg=selItems.length?selItems.reduce((n,i)=>n+itemRating(i),0)/selItems.length:0,leagues=[...new Set(selItems.map(i=>displayBase(i)?.league).filter(Boolean))],allHaveLeague=selItems.every(i=>!!displayBase(i)?.league),ok=selItems.length===sbc.count&&(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg)&&(!sbc.sameLeague||(allHaveLeague&&leagues.length===1));if(!ok)return;ensureObjectiveWindows();const ids=new Set(selItems.map(i=>i.uid));persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.some(uid=>ids.has(uid))).map(p=>p.name);if(teams.length&&!confirm(`Diese SBC entfernt Spieler aus ${teams.join(', ')}. Die Plätze werden in allen betroffenen Mannschaften frei. Fortfahren?`))return;state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));grant(sbc.reward);state.stats.sbcs++;sbcSelections[sbc.id]=new Set();save();renderAll();toast(teams.length?`SBC abgeschlossen. Spieler aus ${teams.join(', ')} entfernt.`:"SBC abgeschlossen.")})
 
 
 let matchTimer=null,matchSpeed=550;
 
 function renderPlay(){
  const m=squadMetrics(),ready=m.filled===18,friendSel=$("friendlyFriendSelect"),old=friendSel?.value||"";
+ renderSquadPresetControls();
  document.querySelectorAll(".startmode").forEach(b=>b.disabled=!ready);
  $("playLock").textContent=ready?"":`Kader unvollständig: ${m.filled}/18. Startelf und komplette Bank erforderlich.`;
  $("sbRecord").textContent=`${state.stats.matches} Gesamtspiele · ${state.stats.wins} Siege`;
@@ -4101,7 +4163,7 @@ function refreshOpenMatchPreview(){
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie`:"Gegner wird beim Anpfiff bestimmt";
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary" ${m.filled<18?'disabled':''}>Anpfiff</button></div></div><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite besetzte Karte in Startelf, Bank oder Reserve.':`Tippe auf eine Karte, um sie auszutauschen oder in den Verein zu schicken. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary" ${m.filled<18?'disabled':''}>Anpfiff</button></div></div><div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite besetzte Karte in Startelf, Bank oder Reserve.':`Tippe auf eine Karte, um sie auszutauschen oder in den Verein zu schicken. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
  pendingMatchContext={mode,opponent};previewSwapFrom=-1;squadBattleStage="preview";
@@ -4113,6 +4175,7 @@ function openOpponentTeam(opponent){if(!opponent)return;const formation=FORMATIO
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
 $("squadBattleModalBody").addEventListener("click",e=>{
+ if(e.target.closest('[data-select-squad]')){handleSquadPresetClick(e);return}
  const sel=e.target.closest("[data-sb-select]");
  if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);renderSquadBattleSelection("none");return}
  if(e.target.closest("#sbViewOpponent")){const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(o)openOpponentTeam(o);return}

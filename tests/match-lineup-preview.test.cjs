@@ -12,7 +12,7 @@ test('pre-match preview exposes XI, bench and reserve slots and responds to squa
  const state={squad:Array.from({length:23},(_,i)=>i<18?`p${i}`:null),formation:'4-3-3',profile:{clubName:'Mein Team'},club:[]};
  const elements=Object.fromEntries(['squadBattleModal','squadBattleModalBody','squadBattleModalSub','matchPreviewModalTitle'].map(id=>[id,{innerHTML:'',textContent:'',classList:{contains:()=>true}}]));
  const ctx={state,pendingMatchContext:null,squadBattleStage:'closed',previewSwapFrom:-1,
-  $:id=>elements[id],esc:x=>String(x),showUiLayer:()=>{},
+  $:id=>elements[id],esc:x=>String(x),showUiLayer:()=>{},squadPresetTabsHTML:()=>'<button data-select-squad="0">Mein Team</button>',
   squadMetrics:()=>({filled:state.squad.slice(0,18).filter(Boolean).length,rating:state.squad[0]==='p11'?85:82,chem:state.squad[0]==='p11'?27:24}),
   currentFormation:()=>Array.from({length:11},(_,i)=>({p:'ST',x:10+i*8,y:15+i*7})),
   squadItems:()=>state.squad.map(uid=>uid?{uid,name:uid,position:'ST'}:null),
@@ -24,6 +24,7 @@ test('pre-match preview exposes XI, bench and reserve slots and responds to squa
  assert.match(body(),/data-preview-slot="0"/);
  assert.match(body(),/data-preview-slot="11"/);
  assert.match(body(),/data-preview-slot="22"/);
+ assert.match(body(),/data-select-squad="0"/);
  assert.match(body(),/Rating<\/span><\/div>/);
  assert.doesNotMatch(body(),/id="squadBattleKickoff"[^>]*disabled/);
  [state.squad[0],state.squad[11]]=[state.squad[11],state.squad[0]];
