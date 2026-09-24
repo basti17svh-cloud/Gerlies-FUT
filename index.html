@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.77</title>
+<title>Gerlies FUT V18.78</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -245,6 +245,12 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
 .preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
 .preview-lineup-slot{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer;touch-action:manipulation}.squad-battle-preview .friend-slot{pointer-events:none}.squad-battle-preview .friend-slot .preview-lineup-slot{pointer-events:auto}.preview-lineup-slot .mini .card-shell{width:100%}.preview-lineup-slot.swap-source{border-radius:8px;outline:2px solid var(--lime);box-shadow:0 0 15px #d8ff3e55}.preview-lineup-slot:focus-visible{outline:2px solid var(--lime);border-radius:8px}
+.official-assigned-position{display:none;position:absolute;z-index:25;left:8%;top:19%;padding:2px 5px;border-radius:4px;background:linear-gradient(135deg,#f9e5a2,#c99e48);color:#2a210e;font-size:9px;font-weight:1000;box-shadow:0 2px 5px #33250d66;pointer-events:none}.card-shell:has(.official-card.loaded)>.official-assigned-position{display:block}.mini .official-assigned-position{padding:1px 3px;font-size:6px}
+.match-manager-slot .custom-card,.squad-battle-preview .friend-slot .custom-card{transform:scale(1.08)}
+.preview-tactic-control{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:11px 12px;border:1px solid #52755a;border-radius:12px;background:#13241b}.preview-tactic-control span{display:block;font-size:11px;font-weight:900}.preview-tactic-control small{display:block;margin-top:3px;font-size:8px;color:#a7bdae}.preview-tactic-control select{min-width:144px;min-height:42px;border:1px solid #688d68;border-radius:9px;background:#0b1712;color:#f3fff1;padding:8px;font-size:12px;font-weight:850}
+.preview-lineup-slot{touch-action:none;user-select:none}.preview-lineup-slot.drag-source{opacity:.35}.preview-lineup-slot.drop-target{outline:2px solid var(--lime);border-radius:8px;box-shadow:0 0 15px #d8ff3e77}.preview-dragghost{position:fixed;z-index:9999;pointer-events:none;width:82px;transform:translate(-50%,-50%);filter:drop-shadow(0 12px 22px #000b)}.preview-dragghost .card-shell{width:82px}
+.match-card-events{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:7px 0 3px}.match-card-events:empty{display:none}.match-red-card{display:inline-flex;gap:5px;align-items:center;padding:5px 8px;border:1px solid #a95460;border-radius:8px;background:#37151b;color:#ffe3e3;font-size:10px;font-weight:900}.match-red-card:before{content:"";width:9px;height:13px;border-radius:1px;background:#f13b45;box-shadow:0 1px 5px #ff354d99}.match-manager-slot.red-card-empty .emptyslot{border-color:#fa7782;color:#ffb8bf;background:#3a151baa}
+@media(max-width:480px){.preview-tactic-control{align-items:stretch;flex-direction:column;gap:7px}.preview-tactic-control select{width:100%}}
 .home-db-bottom{margin-top:8px}
 
 
@@ -996,7 +1002,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.77</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.78</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1218,6 +1224,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    </div>
    <div id="matchScore" class="score">0 : 0</div>
    <div class="teams"><span>GERLIES FUT</span><span id="oppName">RIVALS XI</span></div>
+   <div id="matchCardEvents" class="match-card-events" aria-live="polite"></div>
    <div class="matchstats">
     <div class="mstat"><strong id="matchPoss">50 : 50</strong><span>Ballbesitz</span></div>
     <div class="mstat"><strong id="matchShots">0 : 0</strong><span>Schüsse</span></div>
@@ -1574,14 +1581,14 @@ const SBCS=[
 ];
 
 function baseState(){return{
- version:121,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
+ version:122,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
  roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return initializeSquadPresets(x?{...b,...x,version:121,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
+  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
  }catch(e){return initializeSquadPresets(baseState())}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -1593,14 +1600,14 @@ function cleanSquadPreset(raw,clubIds,index){
  });
  const positions=squad.slice(0,11);
  const entries=values=>Object.fromEntries(Object.entries(values&&typeof values==="object"&&!Array.isArray(values)?values:{}).filter(([key,value])=>/^(10|[0-9])$/.test(key)&&positions[Number(key)]&&typeof value==="string"));
- return{name:squadPresetName(raw?.name,index),formation:["4-3-3","4-4-2","4-2-3-1"].includes(raw?.formation)?raw.formation:"4-3-3",squad,roles:entries(raw?.roles),focus:entries(raw?.focus)}
+ return{name:squadPresetName(raw?.name,index),formation:["4-3-3","4-4-2","4-2-3-1"].includes(raw?.formation)?raw.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(raw?.tactic)?raw.tactic:"balanced",squad,roles:entries(raw?.roles),focus:entries(raw?.focus)}
 }
 function initializeSquadPresets(s){
  const idx=Number.isInteger(s.activeSquadPreset)&&s.activeSquadPreset>=0&&s.activeSquadPreset<3?s.activeSquadPreset:0;
  const clubIds=new Set((Array.isArray(s.club)?s.club:[]).map(item=>item?.uid).filter(Boolean)),saved=Array.isArray(s.squadPresets)?s.squadPresets:[];
  s.activeSquadPreset=idx;s.squadPresets=Array.from({length:3},(_,i)=>saved[i]?cleanSquadPreset(saved[i],clubIds,i):null);
- const active=cleanSquadPreset({name:s.squadPresets[idx]?.name||(idx===0?"Mein Team":`Team ${idx+1}`),formation:s.formation,squad:s.squad,roles:s.roles,focus:s.focus},clubIds,idx);
- s.squadPresets[idx]=active;s.squad=[...active.squad];s.formation=active.formation;s.roles={...active.roles};s.focus={...active.focus};
+ const active=cleanSquadPreset({name:s.squadPresets[idx]?.name||(idx===0?"Mein Team":`Team ${idx+1}`),formation:s.formation,tactic:s.tactic,squad:s.squad,roles:s.roles,focus:s.focus},clubIds,idx);
+ s.squadPresets[idx]=active;s.squad=[...active.squad];s.formation=active.formation;s.tactic=active.tactic;s.roles={...active.roles};s.focus={...active.focus};
  return s
 }
 function persistActiveSquadPreset(s){return initializeSquadPresets(s)}
@@ -1609,7 +1616,7 @@ function activateSquadPreset(s,index){
  persistActiveSquadPreset(s);
  const created=!s.squadPresets[index],clubIds=new Set((s.club||[]).map(item=>item.uid));
  const next=s.squadPresets[index]||cleanSquadPreset({...s.squadPresets[s.activeSquadPreset],name:`Team ${index+1}`},clubIds,index);
- s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.roles={...next.roles};s.focus={...next.focus};
+ s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.tactic=next.tactic;s.roles={...next.roles};s.focus={...next.focus};
  return{created,name:next.name}
 }
 let saveQueued=false;
@@ -2445,9 +2452,10 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
   const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
-  const official=pos===p.position&&Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
+  const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
+  const assignedPosition=official&&pos!==p.position?`<span class="official-assigned-position" aria-label="Eingesetzt als ${esc(positionLabel(pos,p))}">${esc(positionLabel(pos,p))}</span>`:"";
   const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
- return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}</div></div>`
+ return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}${assignedPosition}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
 
@@ -3752,6 +3760,7 @@ function matchPower(lineup,formation,tactic){
   fitBonus+=posFit(b,form[i].p)>0?1.2:-1.5;
  });
  let base=valid?rating/valid:60;
+ base-=Math.max(0,11-valid)*3.6;
  if(tactic==="attacking")base+=1.3;
  if(tactic==="defensive")base+=.7;
  let roleBonus=0;xi.forEach((uid,i)=>{if(!uid)return;const b=currentMatchBase(uid),slot=form[i].p;if(b&&posFit(b,slot)>0)roleBonus+=.22;if(state.roles[i])roleBonus+=.08});return base+fitBonus/11+roleBonus
@@ -3789,7 +3798,7 @@ function startMatch(mode,opponent=null){
  match={
   mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
-  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:"balanced",
+  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:state.tactic||"balanced",redCards:[],
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false
  };
@@ -3802,7 +3811,7 @@ function startMatch(mode,opponent=null){
  $("oppName").textContent=name;
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
- addLog(mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`);
+ addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
  updateMatchUI();setMatchPill(false);startMatchTimer()
 }
 function addLog(t){
@@ -3816,6 +3825,7 @@ function updateMatchUI(){
  if(!match)return;
  $("matchMinute").textContent=`${Math.min(90,Math.floor(match.minute))}'`;
  $("matchScore").textContent=`${match.home} : ${match.away}`;
+ $("matchCardEvents").innerHTML=(match.redCards||[]).map(card=>`<span class="match-red-card">${esc(card.name)} · ${card.minute}'</span>`).join("");
  const poss=Math.max(32,Math.min(68,Math.round(match.poss)));
  $("matchPoss").textContent=`${poss} : ${100-poss}`;
  $("matchShots").textContent=`${match.shotsHome} : ${match.shotsAway}`;
@@ -3867,6 +3877,16 @@ function simAttack(homeSide){
   }
  }
 }
+function sendOffPlayer(){
+ if(!match)return false;
+ const form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],candidates=match.lineup.slice(0,11).map((uid,i)=>({uid,i})).filter(x=>x.uid&&form[x.i]?.p!=="GK");
+ if(!candidates.length)return false;
+ const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Gerlies-Spieler",minute=Math.floor(match.minute);
+ match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute});match.redCardSlot=i;
+ addLog(`Rote Karte für ${name}! Gerlies FUT spielt mit zehn Spielern weiter.`);
+ updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
+ return true
+}
 function simTick(){
  if(!match||match.finished||match.paused)return;
  const step=Math.min(90-match.minute,matchSpeed<=300?2.6:1.7);
@@ -3896,11 +3916,7 @@ function simTick(){
   }
  }
  if(min>=60&&!match.redTriggered&&Math.random()<.0017){
-  match.redTriggered=true;
-  addLog("Rote Karte! Gerlies FUT muss in Unterzahl weiterspielen.");
-  $("eventBanner").textContent="Platzverweis: Du kannst die Formation anpassen.";
-  $("eventBanner").classList.add("active");
-  pauseForManagement("Platzverweis: Passe bei Bedarf Formation oder Taktik an.");
+  match.redTriggered=sendOffPlayer();
   return
  }
 
@@ -3929,7 +3945,8 @@ function matchManagerIncoming(d=getMatchManagerDraft()){
 function matchManagerSlotHTML(uid,i,d=getMatchManagerDraft()){
  const form=FORMATIONS[d?.formation||match?.formation]||FORMATIONS["4-3-3"],slot=form[i],b=uid?currentMatchBase(uid):null,out=b&&posFit(b,slot.p)<=0,forced=uid&&match?.forcedOut===uid;
  const pendingIn=uid&&d?.baseLineup?.slice(11).includes(uid);
- return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""}" data-match-slot="${i}" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}${out?'<div class="poswarn">!</div>':''}</button>`
+ const redEmpty=!uid&&match?.redCardSlot===i;
+ return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""} ${redEmpty?"red-card-empty":""}" data-match-slot="${i}" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${redEmpty?"🟥<br>ROT":positionLabel(slot.p)}</div>`}${out?'<div class="poswarn">!</div>':''}</button>`
 }
 function matchManagerBenchHTML(uid,i,d=getMatchManagerDraft()){
  const b=uid?currentMatchBase(uid):null,item=uid?state.club.find(x=>x.uid===uid):null;
@@ -3945,14 +3962,15 @@ function renderMatchManager(){
  $("matchSubsMeta").textContent=pending?`${used} + ${pending} geplant / 5 Wechsel`:`${used}/5 Wechsel`;
  $("matchSubsMeta").classList.toggle("pending",pending>0);
  const forced=match.forcedOut?currentMatchBase(match.forcedOut):null;
- $("matchManagerStatus").textContent=forced?`${forced.name} verletzt · Wechsel kann vorbereitet werden`:pending?`${d.formation} · ${pending} Wechsel noch nicht bestätigt`:`${d.formation} · ${$("matchTacticSelect").selectedOptions?.[0]?.textContent||"Ausgeglichen"}`;
+ const red=match.redCards?.at(-1);
+ $("matchManagerStatus").textContent=forced?`${forced.name} verletzt · Wechsel kann vorbereitet werden`:red?`🟥 ${red.name} · 10 Spieler · ${d.formation}`:pending?`${d.formation} · ${pending} Wechsel noch nicht bestätigt`:`${d.formation} · ${$("matchTacticSelect").selectedOptions?.[0]?.textContent||"Ausgeglichen"}`;
  const already=Array.isArray(match.subbedOut)?match.subbedOut:[];
  $("matchUsedSubs").innerHTML=already.length?`<div class="match-manager-used-title">Bereits bestätigte Wechsel · nicht mehr verfügbar</div><div class="match-manager-used-list">${already.map(uid=>{const b=currentMatchBase(uid);return b?`<span class="match-manager-used-player"><b>${currentMatchRating(uid)}</b> ${esc(b.name)}</span>`:""}).join("")}</div>`:"";
  $("matchFormationSelect").value=d.formation;$("matchTacticSelect").value=d.tactic
 }
 function proposedManagerSwap(d,from,to){const arr=[...d.lineup],tmp=arr[to];arr[to]=arr[from];arr[from]=tmp;return arr}
 function managerDraftIsValid(arr,formation){
- if(arr.slice(0,11).some(uid=>!uid))return false;
+ if(arr.slice(0,11).filter(Boolean).length!==11-Math.min(1,match?.redCards?.length||0))return false;
  const form=FORMATIONS[formation]||FORMATIONS["4-3-3"];
  const gkIndex=form.findIndex(x=>x.p==="GK");if(gkIndex>=0){const gk=currentMatchBase(arr[gkIndex]);if(!gk||posFit(gk,"GK")<=0)return false}
  return true
@@ -4168,7 +4186,7 @@ function refreshOpenMatchPreview(){
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie`:"Gegner wird beim Anpfiff bestimmt";
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary" ${m.filled<18?'disabled':''}>Anpfiff</button></div></div><div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite besetzte Karte in Startelf, Bank oder Reserve.':`Tippe auf eine Karte, um sie auszutauschen oder in den Verein zu schicken. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="primary" ${m.filled<18?'disabled':''}>Anpfiff</button></div></div><div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><label class="preview-tactic-control" for="previewTacticSelect"><span>Taktik vor dem Anpfiff<small>Für diese Mannschaft gespeichert und im Spiel jederzeit anpassbar.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
  pendingMatchContext={mode,opponent};previewSwapFrom=-1;squadBattleStage="preview";
@@ -4179,7 +4197,52 @@ function openModeEntry(mode){const m=squadMetrics();if(m.filled<18)return toast(
 function openOpponentTeam(opponent){if(!opponent)return;const formation=FORMATIONS[opponent.formation]?opponent.formation:"4-3-3",form=FORMATIONS[formation],sq=Array.isArray(opponent.squad)?opponent.squad:Array(18).fill(null);$("opponentTeamModalTitle").textContent=opponent.name||"Gegner";$("opponentTeamModalSub").textContent=`${formation} · Rating ${opponent.rating||0} · Chemie ${opponent.chem||0}/33`;const pitch=sq.slice(0,11).map((pl,i)=>{const slot=form[i];if(!pl)return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%"><div class="emptyslot">${slot.p}</div></div>`;const card=opponent.kind==="friend"?friendCard(pl,slot.p,true):cardHTML(pl,null,true,slot.p);return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%">${card}</div>`}).join(""),bench=sq.slice(11,18).map(pl=>`<div>${pl?(opponent.kind==="friend"?friendCard(pl,"BANK",true):cardHTML(pl,null,true,pl.position)):'<div class="emptyslot">BANK</div>'}</div>`).join("");$("opponentTeamModalBody").innerHTML=`<div class="friend-team-summary"><div class="kpi"><strong>${opponent.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${opponent.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>${opponent.rewards?`<div class="opponent-note">Squad-Battles-Belohnung: Sieg ${fmt(opponent.rewards.win)} Coins · Remis ${fmt(opponent.rewards.draw)} · Niederlage ${fmt(opponent.rewards.loss)}.</div>`:""}`;showUiLayer("opponentTeamModal","opponent-team")}
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
+function swapPreviewSlots(from,to){
+ if(!Number.isInteger(from)||!Number.isInteger(to)||from<0||to<0||from>=state.squad.length||to>=state.squad.length||from===to||!state.squad[from])return false;
+ [state.squad[from],state.squad[to]]=[state.squad[to],state.squad[from]];
+ previewSwapFrom=-1;save();renderAll();refreshOpenMatchPreview();return true
+}
+let previewDrag=null,suppressPreviewClick=false;
+function clearPreviewDrag(){
+ previewDrag?.ghost?.remove();previewDrag?.source?.classList.remove("drag-source");
+ $("squadBattleModalBody").querySelectorAll(".preview-lineup-slot.drop-target").forEach(el=>el.classList.remove("drop-target"));
+ previewDrag=null
+}
+$("squadBattleModalBody").addEventListener("pointerdown",e=>{
+ const slot=e.target.closest("[data-preview-slot]");if(!slot||squadBattleStage!=="preview")return;
+ const from=Number(slot.dataset.previewSlot);if(!Number.isInteger(from)||!state.squad[from])return;
+ previewDrag={from,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,source:slot,active:false,target:null,ghost:null}
+},{passive:true});
+document.addEventListener("pointermove",e=>{
+ const d=previewDrag;if(!d||e.pointerId!==d.pointerId)return;
+ if(!d.active&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)<8)return;
+ if(!d.active){
+  d.active=true;d.source.classList.add("drag-source");
+  const card=d.source.querySelector(".card-shell")?.cloneNode(true);
+  if(card){d.ghost=document.createElement("div");d.ghost.className="preview-dragghost";d.ghost.appendChild(card);document.body.appendChild(d.ghost)}
+ }
+ e.preventDefault();if(d.ghost){d.ghost.style.left=`${e.clientX}px`;d.ghost.style.top=`${e.clientY}px`}
+ const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#squadBattleModalBody [data-preview-slot]");
+ $("squadBattleModalBody").querySelectorAll(".preview-lineup-slot.drop-target").forEach(el=>el.classList.remove("drop-target"));
+ d.target=target&&Number(target.dataset.previewSlot)!==d.from?Number(target.dataset.previewSlot):null;
+ if(d.target!==null)target.classList.add("drop-target")
+},{passive:false});
+document.addEventListener("pointerup",e=>{
+ const d=previewDrag;if(!d||e.pointerId!==d.pointerId)return;
+ const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#squadBattleModalBody [data-preview-slot]");
+ const to=target?Number(target.dataset.previewSlot):null,active=d.active;clearPreviewDrag();
+ if(!active)return;
+ suppressPreviewClick=true;setTimeout(()=>{suppressPreviewClick=false},0);
+ if(swapPreviewSlots(d.from,to))toast("Aufstellung vor dem Spiel aktualisiert.")
+},{passive:true});
+document.addEventListener("pointercancel",e=>{if(previewDrag?.pointerId===e.pointerId)clearPreviewDrag()},{passive:true});
+$("squadBattleModalBody").addEventListener("change",e=>{
+ if(e.target.id!=="previewTacticSelect")return;
+ state.tactic=["balanced","attacking","defensive"].includes(e.target.value)?e.target.value:"balanced";
+ save();toast(`Taktik: ${e.target.selectedOptions[0]?.textContent||"Ausgeglichen"}.`)
+});
 $("squadBattleModalBody").addEventListener("click",e=>{
+ if(suppressPreviewClick)return;
  if(e.target.closest('[data-select-squad]')){handleSquadPresetClick(e);return}
  const sel=e.target.closest("[data-sb-select]");
  if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);renderSquadBattleSelection("none");return}
@@ -4192,8 +4255,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
   const i=Number(slotButton.dataset.previewSlot);if(!Number.isInteger(i)||i<0||i>=state.squad.length)return;
   if(previewSwapFrom>=0){
    const source=previewSwapFrom;previewSwapFrom=-1;
-   if(i!==source){[state.squad[i],state.squad[source]]=[state.squad[source],state.squad[i]];save();renderAll();toast("Kaderplätze getauscht.")}
-   refreshOpenMatchPreview();return
+   if(swapPreviewSlots(source,i))toast("Kaderplätze getauscht.");else refreshOpenMatchPreview();return
   }
   const item=state.club.find(x=>x.uid===state.squad[i]);if(item)openPlayerDetails(item,i,true);else openPicker(i);
   return

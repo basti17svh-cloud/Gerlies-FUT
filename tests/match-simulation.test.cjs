@@ -72,3 +72,35 @@ test('the fast setting preserves the match outcome distribution and halftime',()
  assert.equal(normal.halftimes,2000);
  assert.equal(fast.halftimes,2000);
 });
+
+test('a named red card removes one outfield player and prevents playing eleven again',()=>{
+ const{ctx}=simulator(),logs=[],reasons=[];
+ ctx.FORMATIONS={'4-3-3':Array.from({length:11},(_,i)=>({p:i===0?'GK':'ST'}))};
+ ctx.currentMatchBase=uid=>({name:`Spieler ${uid}`,position:uid==='p0'?'GK':'ST'});
+ ctx.posFit=(player,slot)=>player.position===slot?1:0;
+ ctx.addLog=message=>logs.push(message);ctx.pauseForManagement=message=>reasons.push(message);
+ ctx.match={formation:'4-3-3',minute:78,lineup:Array.from({length:18},(_,i)=>`p${i}`),redCards:[]};
+ const managerValidation=extract('function managerDraftIsValid(', 'function managerDropAllowed(');
+ vm.runInContext(managerValidation,ctx);
+ assert.equal(ctx.sendOffPlayer(),true);
+ const red=ctx.match.redCards[0];
+ assert.match(red.name,/Spieler p\d+/);assert.notEqual(red.uid,'p0');
+ assert.equal(ctx.match.lineup.slice(0,11).filter(Boolean).length,10);
+ assert.equal(ctx.match.lineup[ctx.match.redCardSlot],null);
+ assert.match(logs[0],new RegExp(red.name));assert.match(reasons[0],new RegExp(red.name));
+ assert.equal(ctx.managerDraftIsValid(ctx.match.lineup,'4-3-3'),true);
+ const eleven=[...ctx.match.lineup];eleven[ctx.match.redCardSlot]=eleven[11];
+ assert.equal(ctx.managerDraftIsValid(eleven,'4-3-3'),false);
+});
+
+test('pregame defensive tactic reaches the match simulation',()=>{
+ const kickoff=extract('function startMatch(', 'function addLog('),logs=[],elements=new Map();
+ const node=id=>{if(!elements.has(id))elements.set(id,{classList:{add(){},remove(){}},value:'',textContent:''});return elements.get(id)};
+ const state={squad:Array.from({length:18},(_,i)=>`p${i}`),club:[],formation:'4-4-2',tactic:'defensive'};
+ const ctx={state,match:null,squadMetrics:()=>({filled:18,rating:83,chem:26}),$:node,
+  pushUiState:()=>{},addLog:message=>logs.push(message),updateMatchUI:()=>{},setMatchPill:()=>{},startMatchTimer:()=>{}};
+ vm.createContext(ctx);vm.runInContext(kickoff,ctx);
+ ctx.startMatch('rivals',{name:'RIVALS XI',power:85});
+ assert.equal(ctx.match.tactic,'defensive');
+ assert.match(logs[0],/Taktik: Defensiv/);
+});
