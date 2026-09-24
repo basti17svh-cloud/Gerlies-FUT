@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.73</title>
+<title>Gerlies FUT V18.74</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -92,6 +92,14 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .slot{position:absolute;z-index:4;transform:translate(-50%,-50%);width:18%;padding:0;border:0;background:transparent}.slot .mini .card-shell{width:100%;filter:drop-shadow(0 7px 8px rgba(0,0,0,.42))}.emptyslot{width:100%;aspect-ratio:.7;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.42);clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);background:rgba(7,14,11,.7);color:#c0cec9;font-size:7px;font-weight:900}.chem-dots{display:flex;justify-content:center;gap:2px;margin-top:-3px}.chem-dots i{width:5px;height:5px;transform:rotate(45deg);background:#34443e}.chem-dots i.on{background:var(--lime)}.slot.out{filter:saturate(.45)}.bench{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}.benchslot{min-width:0}.benchslot button{width:100%;padding:0;border:0;background:transparent}.benchslot .mini .card-shell{width:100%}.benchslot .emptyslot{font-size:5px}
 /* picker */
 .modal{position:fixed;inset:0;z-index:170;display:none;overflow:auto;background:#050807;padding:calc(14px + env(safe-area-inset-top)) 11px calc(22px + env(safe-area-inset-bottom))}.modal.active{display:block}.modalinner{max-width:660px;margin:auto}.modalhead{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0 10px;background:#050807}.modalhead h3{margin:0;font-size:17px}.picklist{display:grid;gap:7px}.pickrow{width:100%;display:flex;align-items:center;gap:8px;padding:7px;border:1px solid #293730;border-radius:9px;background:#0f1714;color:#fff;text-align:left}.pickrow:disabled{opacity:.3}.pickrating{width:38px;font-size:16px;font-weight:1000;color:var(--gold);text-align:center}.pickrow strong{font-size:9px}.pickrow small{display:block;color:#8b9994;font-size:7px;margin-top:2px}.fit{margin-left:auto;padding:4px 6px;border-radius:99px;background:#193025;color:#8dffc1;font-size:6px;font-weight:900}.fit.bad{background:#32191e;color:#ff8fa1}
+/* Squad selection: slot preview, club search and readable player cards. */
+.squad-picker-modal{background:radial-gradient(circle at 60% -8%,#12332d,transparent 48%),#050b0a}.squad-picker-modal [hidden]{display:none!important}.squad-picker-modal .modalhead{background:#07100e;padding:10px 0 12px;border-bottom:1px solid #294238}.squad-picker-modal .modalhead small{display:block;color:#9cb4a9;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}.squad-picker-modal .modalhead h3{font-size:21px;margin-top:3px}.squad-picker-modal .modalhead .secondary{min-height:38px;font-size:11px}
+.picker-preview{display:flex;align-items:center;gap:16px;min-height:142px;margin:13px 0 17px;padding:15px;border:1px solid #366751;border-radius:18px;background:radial-gradient(circle at 17% 40%,rgba(112,235,171,.17),transparent 37%),linear-gradient(120deg,#102b22,#0c1918 67%,#102123);box-shadow:0 15px 35px #0006}.picker-preview-card{flex:0 0 94px;display:grid;place-items:center}.picker-preview-card .mini .card-shell{width:86px}.picker-empty-card{width:78px;aspect-ratio:.72;display:grid;place-items:center;clip-path:polygon(9% 0,91% 0,100% 10%,95% 91%,83% 100%,17% 100%,5% 91%,0 10%);background:linear-gradient(140deg,#1d2c2b,#101919);border:1px solid #74917d;color:#c4ffc5;font-weight:1000;font-size:24px}.picker-preview-copy{min-width:0}.picker-preview-copy small{color:#9bdcaf;font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.picker-preview-copy strong{display:block;margin:6px 0;font-size:22px;line-height:1.1;overflow:hidden;text-overflow:ellipsis}.picker-preview-copy span{display:block;color:#aebfb7;font-size:12px;line-height:1.45}
+.picker-search{display:grid;gap:13px;padding:18px;border:1px solid #30433b;border-radius:17px;background:#0d1916}.picker-search-heading{margin:0;font-size:17px}.picker-field{display:grid;gap:7px;min-width:0;color:#a9bcb2;font-size:11px;font-weight:850}.picker-field input,.picker-field select{width:100%;min-height:47px;border:1px solid #40574b;border-radius:10px;background:#111e1b;color:#f6f9f6;padding:0 12px;font-size:15px;outline:none;color-scheme:dark}.picker-field input:focus,.picker-field select:focus{border-color:#b0ef7a;box-shadow:0 0 0 2px #bdff7b22}.picker-field input::placeholder{color:#788d83}.picker-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.picker-range{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.picker-check{display:flex;align-items:center;gap:10px;color:#d9e8df;font-size:12px;min-height:36px}.picker-check input{width:20px;height:20px;accent-color:var(--lime)}.picker-search .primary{min-height:49px;font-size:13px}
+.picker-results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 1px 12px}.picker-results-head strong{font-size:15px}.picker-results-head small{display:block;margin-top:4px;color:#98aba0;font-size:11px}.picker-results-head .secondary{font-size:11px;min-height:38px;white-space:nowrap}.squad-picker-modal .picklist{gap:9px}.picker-player{width:100%;display:grid;grid-template-columns:24px 88px minmax(0,1fr) 18px;align-items:center;gap:8px;min-height:123px;padding:10px 10px 10px 8px;border:1px solid #354a40;border-radius:14px;background:linear-gradient(115deg,#16251f,#101c19);color:#fff;text-align:left;cursor:pointer;transition:border-color .15s,transform .15s}.picker-player:hover,.picker-slot:hover{border-color:#c6f987;transform:translateY(-1px)}.picker-player:focus-visible,.picker-slot:focus-visible{outline:2px solid var(--lime);outline-offset:2px}.picker-player:disabled{opacity:.5;cursor:default}.picker-player:disabled:hover{transform:none}.picker-player .mini .card-shell{width:82px}.picker-player-add{color:#b9f49e;font-size:25px;text-align:center}.picker-player-info{min-width:0}.picker-player-info strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.picker-player-info small{display:block;margin-top:4px;color:#aabbb0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.picker-player-info .fit{display:inline-flex;margin:8px 0 0;font-size:10px;padding:5px 8px}.picker-player-arrow{color:#dcf3d2;font-size:23px}.picker-player-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;margin-top:9px}.picker-player-stats span{font-size:8px;color:#8fa69b;text-align:center}.picker-player-stats b{display:block;color:#f5f9f3;font-size:12px}.picker-pages{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0 32px}.picker-pages span{font-size:11px;color:#9db5a7}.picker-pages .secondary{min-width:95px;font-size:11px}.picker-no-results{padding:26px 14px;text-align:center;color:#afc3b6;border:1px dashed #4c6253;border-radius:13px;font-size:13px;line-height:1.5}
+.picker-slot-list{display:grid;gap:18px}.picker-slot-group h4{margin:0 0 9px;color:#bcebb4;font-size:12px;text-transform:uppercase;letter-spacing:.09em}.picker-slot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.picker-slot{display:flex;align-items:center;gap:9px;min-width:0;min-height:92px;width:100%;padding:8px;border:1px solid #354a40;border-radius:12px;background:#12211b;color:#fff;text-align:left;cursor:pointer;transition:border-color .15s,transform .15s}.picker-slot-card{flex:0 0 57px;display:grid;place-items:center}.picker-slot-card .mini .card-shell{width:54px}.picker-slot-card .picker-empty-card{width:48px;font-size:17px}.picker-slot-info{min-width:0}.picker-slot-info strong{display:block;font-size:13px}.picker-slot-info small{display:block;margin:3px 0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#a9bbae;font-size:10px}.picker-slot-info .fit{display:inline-block;margin:0;font-size:8px}
+.picker-slot:disabled{opacity:.45;cursor:default}.picker-slot:disabled:hover{border-color:#354a40;transform:none}
+@media(max-width:480px){.squad-picker-modal{padding-left:11px;padding-right:11px}.picker-preview{gap:8px;min-height:122px;padding:11px}.picker-preview-card{flex-basis:77px}.picker-preview-card .mini .card-shell{width:70px}.picker-preview-copy strong{font-size:17px}.picker-preview-copy span{font-size:11px}.picker-player{grid-template-columns:17px 72px minmax(0,1fr) 12px;gap:5px;min-height:110px;padding:7px 6px 7px 5px}.picker-player .mini .card-shell{width:69px}.picker-player-info strong{font-size:12px}.picker-player-info small{font-size:9px}.picker-player-stats{gap:1px}.picker-player-stats b{font-size:10px}.picker-player-stats span{font-size:7px}.picker-player-info .fit{font-size:8px;margin-top:5px}.picker-slot{gap:5px}.picker-slot-card{flex-basis:45px}.picker-slot-card .mini .card-shell{width:42px}.picker-slot-card .picker-empty-card{width:39px}.picker-slot-info strong{font-size:11px}.picker-slot-info small{font-size:9px}}
 /* store/club/market */
 .live-content{margin-bottom:10px;padding:12px;border:1px solid #3a4431;border-radius:13px;background:radial-gradient(circle at 90% 0,rgba(255,215,76,.12),transparent 34%),#101815}.live-content h3{margin:0;font-size:12px}.live-content p{margin:4px 0 0;color:#96a39e;font-size:7px;line-height:1.45}.live-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.live-badge{padding:5px 7px;border-radius:99px;border:1px solid #49553f;background:#171d14;color:#ffe07d;font-size:6px;font-weight:950}.live-badge.event{border-color:#384a58;background:#101924;color:#8edaff}
 .packgrid,.modegrid,.sbcgrid{display:grid;gap:9px}.pack{padding:12px;border:1px solid #2b3833;border-radius:13px;background:#101815}.packart{height:125px;border-radius:11px;display:grid;place-items:center;font-weight:1000;font-size:16px;font-style:italic}.bronze-art{background:linear-gradient(145deg,#81502f,#d59a6b,#59321f);color:#27160c}.silver-art{background:linear-gradient(145deg,#76827f,#edf2f0,#65706d);color:#14201c}.gold-art{background:linear-gradient(145deg,#976b1e,#f0db89,#72500e);color:#201604}.special-art{background:linear-gradient(145deg,#18efb8,#335bd1,#9429d9);color:#fff}.pack h3{margin:8px 0 3px;font-size:12px}.pack p{margin:0;color:#8d9a96;font-size:7px;line-height:1.4}.prices{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
@@ -976,7 +984,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.73</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.74</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1150,7 +1158,22 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </div></div>
 </div>
 
-<div id="picker" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="pickerTitle">Spieler wählen</h3><div id="pickerSub" style="font-size:7px;color:#87958f"></div></div><button id="pickerClose" class="secondary">Schließen</button></div><div id="pickerControls" class="picker-controls"><label><span>Position</span><select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH</option><option value="CB">IV</option><option value="RB">RV</option><option value="LB">LV</option><option value="RWB">RAV</option><option value="LWB">LAV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="RM">RM</option><option value="RW">RF</option><option value="LM">LM</option><option value="LW">LF</option><option value="CF">MS</option><option value="ST">ST</option></select></label><label><span>Sortierung</span><select id="pickerSort"><option value="rating">Höchstes Rating</option><option value="position">Position zuerst</option></select></label></div><div id="pickList" class="picklist"></div></div></div>
+<div id="picker" class="modal squad-picker-modal"><div class="modalinner">
+  <div class="modalhead"><div><small>Meine Mannschaft</small><h3 id="pickerTitle">Vereinssuche</h3><div id="pickerSub" style="font-size:11px;color:#a3b8aa;margin-top:4px"></div></div><button id="pickerClose" class="secondary" type="button">← Zurück</button></div>
+  <div id="pickerPreview" class="picker-preview"></div>
+  <form id="pickerControls" class="picker-search">
+    <h4 class="picker-search-heading">Im Verein suchen</h4>
+    <label class="picker-field">Spielername<input id="pickerName" type="search" placeholder="Name eingeben" autocomplete="off"></label>
+    <div class="picker-fields">
+      <label class="picker-field">Position<select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH</option><option value="CB">IV</option><option value="RB">RV</option><option value="LB">LV</option><option value="RWB">RAV</option><option value="LWB">LAV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="RM">RM</option><option value="RW">RF</option><option value="LM">LM</option><option value="LW">LF</option><option value="CF">MS</option><option value="ST">ST</option></select></label>
+      <label class="picker-field">Sortieren nach<select id="pickerSort"><option value="fit">Passung zur Position</option><option value="rating">Rating: hoch zuerst</option><option value="rating-asc">Rating: niedrig zuerst</option><option value="name">Spielername A–Z</option></select></label>
+    </div>
+    <div class="picker-range"><label class="picker-field">Min. Rating<input id="pickerRatingMin" type="number" inputmode="numeric" min="0" max="99" value="0"></label><label class="picker-field">Max. Rating<input id="pickerRatingMax" type="number" inputmode="numeric" min="0" max="99" value="99"></label></div>
+    <label class="picker-check"><input id="pickerOnlyUntradeable" type="checkbox"> Nur untauschbare Items</label>
+    <button class="primary" type="submit">Spieler suchen</button>
+  </form>
+  <div id="pickerResults" class="picker-results" hidden><div class="picker-results-head"><div><strong id="pickerResultTitle">Spieler im Verein</strong><small id="pickerResultCount"></small></div><button id="pickerEditFilters" class="secondary" type="button">Filter ändern</button></div><div id="pickList" class="picklist"></div><div id="pickerPages" class="picker-pages" hidden><button id="pickerPrev" class="secondary" type="button">← Vorherige</button><span id="pickerPageLabel"></span><button id="pickerNext" class="secondary" type="button">Nächste →</button></div></div>
+</div></div>
 <div id="playerModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerdetails</h3><div id="playerDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="playerModalClose" class="secondary">Schließen</button></div><div id="playerDetailBody"></div></div></div>
 <div id="evoPickerModal" class="modal"><div class="modalinner evo-modalinner"><div class="modalhead"><div><h3 id="evoPickerTitle">Evolution</h3><div id="evoPickerSub" style="font-size:7px;color:#87958f"></div></div><button id="evoPickerClose" class="secondary">Schließen</button></div><div id="evoPickerBody"></div></div></div>
 <div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerbiografie</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
@@ -2900,40 +2923,92 @@ function renderRoles(items){
 }
 $("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
 $("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
-let pickerFilterPosition="",pickerSortMode="rating";
+let pickerFilterPosition="",pickerSortMode="fit",pickerSearchTerm="",pickerMinRating=0,pickerMaxRating=99,pickerOnlyUntradeable=false,pickerPage=0,pickerStage="filters";
+const PICKER_PAGE_SIZE=20;
+function pickerSlotLabel(i){return i<11?positionLabel(currentFormation()[i].p):i<18?`Bank ${i-10}`:`Reserve ${i-17}`}
+function renderPickerPreview(){
+ const item=pickerMode==="slot"?state.club.find(x=>x.uid===pickerSourceUid):state.club.find(x=>x.uid===state.squad[pickerIndex]);
+ const b=item?displayBase(item):null,label=pickerMode==="slot"?"SPIELER EINFÜGEN":`KADERPLATZ · ${pickerSlotLabel(pickerIndex)}`;
+ $("pickerPreview").innerHTML=`<div class="picker-preview-card">${b?cardHTML(b,item,true):'<div class="picker-empty-card">+</div>'}</div><div class="picker-preview-copy"><small>${esc(label)}</small><strong>${b?esc(b.name):"Platz frei"}</strong><span>${pickerMode==="slot"?"Wähle einen Platz in deiner Aufstellung.":b?"Wähle einen Ersatz aus deinem Verein.":"Suche einen Spieler aus deinem Verein."}</span></div>`
+}
 function pickerCandidates(){
- const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i];
- let list=[...state.club];
- if(i>=11&&pickerFilterPosition)list=list.filter(it=>{const b=displayBase(it);return playerPositions(b).includes(pickerFilterPosition)});
+ const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),cur=state.squad[i],query=normalizeKey(pickerSearchTerm);
+ const list=state.club.filter(it=>{
+  const b=displayBase(it);if(!b)return false;
+  const rating=itemRating(it);
+  return rating>=pickerMinRating&&rating<=pickerMaxRating&&(!pickerOnlyUntradeable||!it.tradeable)
+   &&(!pickerFilterPosition||playerPositions(b).includes(pickerFilterPosition))
+   &&(!query||normalizeKey(b.name).includes(query))
+ });
  list.sort((a,b)=>{
-  const ba=displayBase(a),bb=displayBase(b),fa=i<11?posFit(ba,slot):1,fb=i<11?posFit(bb,slot):1;
-  if(i<11)return(fb-fa)||itemRating(b)-itemRating(a);
-  if(pickerSortMode==="position"&&pickerFilterPosition){const pa=playerPositions(ba).includes(pickerFilterPosition)?1:0,pb=playerPositions(bb).includes(pickerFilterPosition)?1:0;if(pb!==pa)return pb-pa}
-  return itemRating(b)-itemRating(a)||String(ba?.name||"").localeCompare(String(bb?.name||""),"de")
+  const ba=displayBase(a),bb=displayBase(b),rating=itemRating(b)-itemRating(a);
+  if(pickerSortMode==="fit"&&i<11){const fit=posFit(bb,slot)-posFit(ba,slot);if(fit)return fit}
+  if(pickerSortMode==="rating-asc")return-rating||String(ba.name).localeCompare(String(bb.name),"de");
+  if(pickerSortMode==="name")return String(ba.name).localeCompare(String(bb.name),"de")||rating;
+  return rating||String(ba.name).localeCompare(String(bb.name),"de")
  });
  return{list,used,cur,slot}
 }
 function renderPickerCandidates(){
- const i=pickerIndex;if(i<0)return;const {list,used,cur,slot}=pickerCandidates();
- $("pickList").innerHTML=list.map(it=>{const b=displayBase(it),f=i<11?posFit(b,slot):1,disabled=used.has(it.uid)&&it.uid!==cur;return`<button class="pickrow" data-pick="${it.uid}" ${disabled?"disabled":""}><div class="pickrating">${itemRating(it)}</div><div><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small>${inlineMetaHTML(b)}</div><div class="fit ${f<=0?"bad":""}">${i>=18?"Reserve":i>=11?"Bank":f>=1?"Perfekt":f>0?"Alternative":"Fremd"}</div></button>`}).join("")||'<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
+ if(pickerIndex<0)return;
+ const {list,used,cur,slot}=pickerCandidates(),totalPages=Math.ceil(list.length/PICKER_PAGE_SIZE);
+ pickerPage=Math.min(pickerPage,Math.max(0,totalPages-1));
+ $("pickerResultTitle").textContent="Spieler im Verein";
+ $("pickerResultCount").textContent=`${list.length} Treffer · ${pickerSlotLabel(pickerIndex)} besetzen`;
+ $("pickerEditFilters").hidden=false;
+ $("pickList").className="picklist";
+ $("pickList").innerHTML=list.slice(pickerPage*PICKER_PAGE_SIZE,(pickerPage+1)*PICKER_PAGE_SIZE).map(it=>{
+  const b=displayBase(it),f=pickerIndex<11?posFit(b,slot):1,from=state.squad.indexOf(it.uid),selected=it.uid===cur;
+  const tag=selected?"Auf diesem Platz":from>=0?`Im Kader · ${pickerSlotLabel(from)}`:pickerIndex>=11?"Im Verein":f?"Position passt":"Andere Position";
+  return`<button class="picker-player" type="button" data-pick="${esc(it.uid)}" aria-label="${esc(b.name)} auswählen" ${selected?"disabled":""}><span class="picker-player-add">${selected?"✓":"+"}</span>${cardHTML(b,it,true)}<span class="picker-player-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)}</small><span class="picker-player-stats">${cardStatPairs(resolvedPlayer(b)).map(([name,value])=>`<span><b>${Number(value)||0}</b>${esc(name)}</span>`).join("")}</span><span class="fit ${pickerIndex<11&&!f?"bad":""}">${esc(tag)}</span></span><span class="picker-player-arrow">›</span></button>`
+ }).join("")||'<div class="picker-no-results">Keine Spieler für diese Suche gefunden.<br>Ändere die Filter oder den Ratingbereich.</div>';
+ $("pickerPages").hidden=totalPages<=1;
+ $("pickerPageLabel").textContent=`Seite ${pickerPage+1} von ${totalPages||1}`;
+ $("pickerPrev").disabled=pickerPage===0;$("pickerNext").disabled=pickerPage>=totalPages-1
+}
+function renderSlotPickerCandidates(){
+ const item=state.club.find(x=>x.uid===pickerSourceUid),b=item?displayBase(item):null;if(!b)return;
+ $("pickerResultTitle").textContent="Kaderplatz wählen";$("pickerResultCount").textContent="Freie Plätze oder Spieler direkt ersetzen";
+ $("pickerEditFilters").hidden=true;$("pickerPages").hidden=true;$("pickList").className="picklist picker-slot-list";
+ const groups=[["Startelf",0,11],["Ersatzbank",11,18],["Reserve",18,23]];
+ $("pickList").innerHTML=groups.map(([title,start,end])=>`<section class="picker-slot-group"><h4>${title}</h4><div class="picker-slot-grid">${state.squad.slice(start,end).map((uid,k)=>{
+  const idx=start+k,occItem=state.club.find(x=>x.uid===uid),occ=occItem?displayBase(occItem):null,fit=idx<11?posFit(b,currentFormation()[idx].p):1;
+  return`<button class="picker-slot" type="button" data-slotpick="${idx}" ${uid===item.uid?"disabled":""}><span class="picker-slot-card">${occ?cardHTML(occ,occItem,true):'<span class="picker-empty-card">+</span>'}</span><span class="picker-slot-info"><strong>${esc(pickerSlotLabel(idx))}</strong><small>${occ?esc(occ.name):"Platz frei"}</small><span class="fit ${idx<11&&!fit?"bad":""}">${idx>=11?"Kader":fit?"Position passt":"Andere Position"}</span></span></button>`
+ }).join("")}</div></section>`).join("")
+}
+function setPickerStage(stage){
+ pickerStage=stage;$("pickerControls").hidden=stage!=="filters";$("pickerResults").hidden=stage!=="results";
+ if(stage==="results"){if(pickerMode==="slot")renderSlotPickerCandidates();else renderPickerCandidates()}
+ $("picker").scrollTop=0
 }
 function openPicker(i){
- pickerMode='player';pickerSourceUid=null;pickerIndex=i;const slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE");
- $("pickerTitle").textContent=i<11?`${positionLabel(slot)} besetzen`:i<18?`Bank ${i-10}`:`Reserve ${i-17}`;
- $("pickerSub").textContent=i<11?"Wähle einen Spieler aus deinem Verein für diesen Kaderplatz.":"Filtere nach Position oder nimm einfach die Spieler mit dem höchsten Rating.";
- const controls=$("pickerControls");controls?.classList.toggle("active",i>=11);
- pickerFilterPosition="";pickerSortMode="rating";
- if($("pickerPositionFilter"))$("pickerPositionFilter").value="";
- if($("pickerSort"))$("pickerSort").value="rating";
- renderPickerCandidates();showUiLayer("picker","picker")
+ ensureSquadSlots();if(!Number.isInteger(i)||i<0||i>=state.squad.length)return;
+ pickerMode="player";pickerSourceUid=null;pickerIndex=i;pickerPage=0;
+ pickerFilterPosition="";pickerSortMode="fit";pickerSearchTerm="";pickerMinRating=0;pickerMaxRating=99;pickerOnlyUntradeable=false;
+ $("pickerTitle").textContent="Vereinssuche";$("pickerSub").textContent=`${pickerSlotLabel(i)} · Spieler auswählen`;
+ $("pickerName").value="";$("pickerPositionFilter").value="";$("pickerSort").value="fit";$("pickerRatingMin").value="0";$("pickerRatingMax").value="99";$("pickerOnlyUntradeable").checked=false;
+ renderPickerPreview();setPickerStage("filters");showUiLayer("picker","picker")
 }
-function putItemIntoSlot(itemUid,toIndex){const fromIndex=state.squad.indexOf(itemUid);if(fromIndex===toIndex)return;if(fromIndex>=0){const tmp=state.squad[toIndex];state.squad[toIndex]=itemUid;state.squad[fromIndex]=tmp||null}else state.squad[toIndex]=itemUid}
+function putItemIntoSlot(itemUid,toIndex){
+ ensureSquadSlots();
+ if(!Number.isInteger(toIndex)||toIndex<0||toIndex>=state.squad.length||!state.club.some(x=>x.uid===itemUid))return false;
+ const fromIndex=state.squad.indexOf(itemUid);if(fromIndex===toIndex)return false;
+ if(fromIndex>=0){const displaced=state.squad[toIndex];state.squad[toIndex]=itemUid;state.squad[fromIndex]=displaced||null}
+ else state.squad[toIndex]=itemUid;
+ return true
+}
+function removeSquadPlayer(itemUid,fromIndex){
+ ensureSquadSlots();
+ if(!Number.isInteger(fromIndex)||fromIndex<0||fromIndex>=state.squad.length||state.squad[fromIndex]!==itemUid)return false;
+ state.squad[fromIndex]=null;
+ if(fromIndex<11){delete state.roles[fromIndex];delete state.focus[fromIndex]}
+ return true
+}
 function openSlotPickerForItem(itemUid){
- const item=state.club.find(x=>x.uid===itemUid);if(!item)return;const b=displayBase(item);pickerMode='slot';pickerSourceUid=itemUid;pickerIndex=-1;
- $("pickerTitle").textContent=`${b.name} einfügen`;
- $("pickerSub").textContent='Wähle den Kaderplatz, den dieser Spieler übernehmen soll.';
- $("pickList").innerHTML=state.squad.map((uid,idx)=>{const slotName=idx<11?currentFormation()[idx].p:(idx<18?`Bank ${idx-10}`:`Reserve ${idx-17}`),slotDisplay=idx<11?positionLabel(slotName,b):slotName;const occItem=uid?state.club.find(x=>x.uid===uid):null;const occ=occItem?displayBase(occItem):null;const fit=idx<11?posFit(b,slotName):1;return`<button class="pickrow" data-slotpick="${idx}"><div class="pickrating">${idx<11?slotDisplay:'B'}</div><div><span class="slot-name">${esc(slotDisplay)}</span><span class="slot-occupant">${occ?`${esc(occ.name)} · ${itemRating(occItem)}`:'Leer'}</span></div><div class="fit ${fit<=0&&idx<11?"bad":""}">${idx>=18?'Reserve':idx>=11?'Bank':fit>=1?'Perfekt':fit>0?'Alternative':'Fremd'}</div></button>`}).join('');
- showUiLayer("picker","picker")
+ ensureSquadSlots();const item=state.club.find(x=>x.uid===itemUid);if(!item)return;
+ pickerMode="slot";pickerSourceUid=itemUid;pickerIndex=-1;pickerPage=0;
+ $("pickerTitle").textContent="Kaderplatz wählen";$("pickerSub").textContent="Tippe auf einen freien oder besetzten Platz.";
+ renderPickerPreview();setPickerStage("results");showUiLayer("picker","picker")
 }
 function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
@@ -2943,7 +3018,17 @@ function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=
  return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
 }
 
-function openPlayerDetails(item,index=null){if(!item)return;const b=displayBase(item);if(!b)return;const slot=index!=null&&index>=0?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null,fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=index!=null&&index>=0&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;$ ("playerDetailSub").textContent=playerContextLine(b);const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${index??-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${index!=null&&index>=0?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz neu besetzen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:index==null?"Verein":"Mannschaft"})}${menu}`;showUiLayer("playerModal","player")}
+function openPlayerDetails(item,index=null){
+ if(!item)return;const b=displayBase(item);if(!b)return;
+ const inSquad=index!=null&&index>=0&&state.squad[index]===item.uid;
+ const slot=inSquad?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null;
+ const fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=inSquad&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;
+ $("playerDetailSub").textContent=playerContextLine(b);
+ const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button><button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
+ const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:inSquad?"Mannschaft":"Verein"})}${menu}`;
+ showUiLayer("playerModal","player")
+}
 function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
 function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
@@ -2951,13 +3036,31 @@ let suppressSquadClick=false;
 function squadClick(e){const button=e.target.closest("[data-slot]");if(!button)return;if(suppressSquadClick){suppressSquadClick=false;return}const i=Number(button.dataset.slot);if(!Number.isInteger(i))return;const item=squadItems()[i];if(item)openPlayerDetails(item,i);else openPicker(i)}
 $("pitch").addEventListener("click",squadClick);
 $("bench").addEventListener("click",squadClick);
-$("pickerClose").addEventListener("click",()=>closeUiLayer("picker","picker"));
-$("pickerPositionFilter")?.addEventListener("change",e=>{pickerFilterPosition=String(e.target.value||"").toUpperCase();renderPickerCandidates()});
-$("pickerSort")?.addEventListener("change",e=>{pickerSortMode=e.target.value||"rating";renderPickerCandidates()});
+$("pickerClose").addEventListener("click",()=>{if(pickerMode==="player"&&pickerStage==="results")setPickerStage("filters");else closeUiLayer("picker","picker")});
+$("pickerEditFilters").addEventListener("click",()=>setPickerStage("filters"));
+$("pickerControls").addEventListener("submit",e=>{
+ e.preventDefault();
+ if(pickerMode!=="player")return;
+ const min=Math.max(0,Math.min(99,Number($("pickerRatingMin").value||0)));
+ const max=Math.max(0,Math.min(99,Number($("pickerRatingMax").value||99)));
+ if(min>max){toast("Das minimale Rating muss unter dem maximalen Rating liegen.");return}
+ pickerSearchTerm=$("pickerName").value.trim();pickerFilterPosition=$("pickerPositionFilter").value;
+ pickerSortMode=$("pickerSort").value;pickerMinRating=min;pickerMaxRating=max;
+ pickerOnlyUntradeable=$("pickerOnlyUntradeable").checked;pickerPage=0;
+ setPickerStage("results")
+});
+$("pickerPrev").addEventListener("click",()=>{if(pickerPage>0){pickerPage--;renderPickerCandidates()}});
+$("pickerNext").addEventListener("click",()=>{if((pickerPage+1)*PICKER_PAGE_SIZE<pickerCandidates().list.length){pickerPage++;renderPickerCandidates()}});
 $("pickList").addEventListener("click",e=>{
  const b=e.target.closest("[data-pick]"),sp=e.target.closest("[data-slotpick]");
- if(b&&pickerMode==="player"){putItemIntoSlot(b.dataset.pick,pickerIndex);closeUiLayer("picker","picker");save();renderAll();return}
- if(sp&&pickerMode==="slot"){putItemIntoSlot(pickerSourceUid,Number(sp.dataset.slotpick));closeUiLayer("picker","picker");$("playerModal").classList.remove("active");save();renderAll();toast("Spieler in den Kader eingefügt.");return}
+ if(b&&pickerMode==="player"&&!b.disabled){
+  if(putItemIntoSlot(b.dataset.pick,pickerIndex)){closeUiLayer("picker","picker");save();renderAll();toast("Aufstellung aktualisiert.")}
+  return
+ }
+ if(sp&&pickerMode==="slot"&&!sp.disabled){
+  if(putItemIntoSlot(pickerSourceUid,Number(sp.dataset.slotpick))){closeUiLayer("picker","picker");$("playerModal").classList.remove("active");save();renderAll();toast("Spieler in den Kader eingefügt.")}
+  return
+ }
 });
 
 $("playerModalClose").addEventListener("click",()=>closeUiLayer("playerModal","player"));
@@ -2966,6 +3069,7 @@ $("playerDetailBody").addEventListener("click",e=>{
  const bio=e.target.closest("[data-open-bio]"),
        cons=e.target.closest("[data-consumable]"),
        rep=e.target.closest("[data-replace-slot]"),
+       move=e.target.closest("[data-move-club]"),
        ins=e.target.closest("[data-insert-item]"),
        tl=e.target.closest("[data-transferlist]"),
        market=e.target.closest("[data-search-market]"),
@@ -2989,6 +3093,12 @@ $("playerDetailBody").addEventListener("click",e=>{
    $("playerModal").classList.remove("active");
    replaceUiState("view",{view:currentViewId()});
    openPicker(Number(rep.dataset.replaceSlot));
+   return;
+ }
+ if(move){
+   if(!removeSquadPlayer(move.dataset.moveClub,Number(move.dataset.moveClubIndex)))return;
+   removeUiLayer("playerModal");replaceUiState("view",{view:currentViewId()});
+   save();renderAll();toast("Spieler im Verein. Der Kaderplatz ist frei.");
    return;
  }
  if(ins){$("playerModal").classList.remove("active");replaceUiState("view",{view:currentViewId()});openSlotPickerForItem(ins.dataset.insertItem);return;}
