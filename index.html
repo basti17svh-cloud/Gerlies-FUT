@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.84</title>
+<title>Gerlies FUT V18.85</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -130,6 +130,8 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .sbc-source-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:9px 0}.sbc-source-btn{min-height:42px;border:1px solid #354850;border-radius:9px;background:#101b20;color:#9baab1;font-size:7px;font-weight:950}.sbc-source-btn.active{border-color:#73dfff;background:#11252c;color:#b7efff}.sbc-source-btn b{display:block;font-size:10px;color:#fff;margin-bottom:2px}
 .sbc-team-warning{position:fixed;z-index:245;inset:0;display:grid;place-items:center;padding:18px;background:rgba(2,6,8,.86);backdrop-filter:blur(9px)}.sbc-team-warning-card{width:min(100%,560px);max-height:min(82dvh,680px);overflow:auto;padding:15px;border:1px solid #665347;border-radius:15px;background:radial-gradient(circle at 100% 0,rgba(255,188,88,.12),transparent 32%),linear-gradient(145deg,#1b1713,#0d1213);box-shadow:0 26px 70px rgba(0,0,0,.58)}.sbc-team-warning-head{display:flex;gap:10px;align-items:flex-start}.sbc-warning-icon{flex:0 0 38px;width:38px;height:38px;display:grid;place-items:center;border-radius:50%;border:1px solid #80623c;background:#2a2114;color:#ffd58a;font-size:19px}.sbc-team-warning h3{margin:0;font-size:16px}.sbc-team-warning p{margin:5px 0 0;color:#aa9f95;font-size:7.5px;line-height:1.5}.sbc-warning-list{display:grid;gap:6px;margin:12px 0}.sbc-warning-player{display:grid;grid-template-columns:42px minmax(0,1fr);gap:9px;align-items:center;padding:7px;border:1px solid #3c3430;border-radius:10px;background:#121414}.sbc-warning-player .mini,.sbc-warning-player .mini .card-shell{width:42px}.sbc-warning-player strong{display:block;font-size:9px}.sbc-warning-player small{display:block;margin-top:3px;color:#9b9086;font-size:6.5px;line-height:1.4}.sbc-warning-team-pill{display:inline-flex;margin:4px 4px 0 0;padding:3px 5px;border-radius:999px;border:1px solid #634e3a;background:#241c13;color:#ffd392;font-size:5.5px;font-weight:950}.sbc-warning-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.sbc-warning-actions .danger-confirm{min-height:43px;border:1px solid #7b532f;border-radius:9px;background:#3a2715;color:#ffdda4;font-size:8px;font-weight:1000}.sbc-warning-cancel{grid-column:1/-1;min-height:38px;border:0;background:transparent;color:#899790;font-size:7px;font-weight:900}
 .sbc-pick-team-tag{display:inline-flex;margin-top:4px;padding:2px 5px;border-radius:999px;border:1px solid #65523a;background:#241c13;color:#ffd392;font-size:5px;font-weight:950}
+.sbc-assistant{position:fixed;z-index:238;inset:0;overflow:auto;background:rgba(4,10,13,.985);padding:calc(14px + env(safe-area-inset-top)) 12px calc(25px + env(safe-area-inset-bottom))}.sbc-assistant-inner{max-width:620px;margin:auto}.sbc-assistant-head{display:grid;grid-template-columns:42px 1fr;gap:9px;align-items:center;margin-bottom:12px}.sbc-assistant-back{width:42px;height:42px;border:1px solid #354850;border-radius:9px;background:#101b20;color:#fff;font-size:20px}.sbc-assistant-head h3{margin:0;font-size:17px}.sbc-assistant-head p{margin:3px 0 0;color:#84969e;font-size:7px}.sbc-assistant-panel{padding:12px;border:1px solid #31454d;border-radius:14px;background:linear-gradient(145deg,#101b20,#0b1317)}.sbc-assistant-toggle{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}.sbc-assistant-toggle:first-child{padding-top:0}.sbc-assistant-toggle strong{display:block;font-size:9px}.sbc-assistant-toggle small{display:block;margin-top:3px;color:#82939b;font-size:6px}.sbc-switch{position:relative;width:38px;height:22px;flex:0 0 38px}.sbc-switch input{position:absolute;opacity:0}.sbc-switch span{position:absolute;inset:0;border-radius:999px;background:#36434a;transition:.16s}.sbc-switch span:after{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.16s}.sbc-switch input:checked+span{background:#39d98a}.sbc-switch input:checked+span:after{transform:translateX(16px)}.sbc-assistant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.sbc-assistant-field.full{grid-column:1/-1}.sbc-assistant-field label{display:block;margin:0 0 4px;color:#8798a0;font-size:6px;font-weight:950;text-transform:uppercase}.sbc-assistant-field select,.sbc-assistant-field input{width:100%;min-height:43px;border:1px solid #354850;border-radius:8px;background:#0d181d;color:#fff;padding:0 9px;font-size:13px}.sbc-assistant-range{display:grid;grid-template-columns:1fr 1fr;gap:7px}.sbc-assistant-hint{margin-top:10px;padding:9px;border:1px solid #2f444c;border-radius:9px;background:#0b1519;color:#8fa0a8;font-size:6.5px;line-height:1.5}.sbc-assistant-hint strong{color:#b9efff}.sbc-assistant-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.sbc-assistant-actions button{min-height:45px}.sbc-assistant-summary{margin-top:8px;color:#84959d;font-size:6.5px;text-align:center}.sbc-builder-footer.assistant-ready{grid-template-columns:repeat(3,minmax(0,1fr))}.sbc-builder-footer.assistant-ready .sbc-submit-state{grid-column:1/-1}
+@media(max-width:560px){.sbc-builder-footer.assistant-ready{grid-template-columns:1fr 1fr}.sbc-builder-footer.assistant-ready [data-sbc-assistant-open]{grid-column:1/-1;order:-1}.sbc-assistant-grid{grid-template-columns:1fr}.sbc-assistant-field.full{grid-column:auto}}
 @media(max-width:560px){.sbc-hub-card{grid-template-columns:minmax(0,1fr) 92px}.sbc-editor-pitch{min-height:470px}.sbc-work-slot{width:18.4%}.sbc-test-grid{gap:5px}.sbc-player-picker{padding-left:9px;padding-right:9px}.sbc-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sbc-condition-bar{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 /* match */
@@ -933,6 +935,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 /* V18.55 — EA-hydrated TOTW, verified FUTWIZ icon faces, full market name/click support */
 
+/* V18.85 — SBC Assistant: auto-fill by rating, quality, positions, league and team protection */
+
 /* V18.84 — fix collapsed official card shell inside SBC slots */
 
 /* V18.83 — SBC three-team safety warning and dedicated SBC-storage player list */
@@ -1032,7 +1036,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.84</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.85</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3802,7 +3806,7 @@ function progressEvolution(resultKey="loss"){
 }
 
 
-let activeSbcGroup="Foundations",activeSbcId=null,pendingSbcSubmissionId=null;
+let activeSbcGroup="Foundations",activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false;
@@ -3920,6 +3924,74 @@ function renderSbcPickerResults(){
 function openSbcPicker(area,index){
  if(!activeSbcId)return;sbcPickerState={area,index,query:"",position:"",quality:"",source:"",sort:"high",min:0,max:99};renderSBC();setTimeout(()=>$("sbcPickerName")?.focus(),40)
 }
+function sbcAssistantLeagues(sbc){
+ const rows=sbcSourceItems().filter(x=>{const b=displayBase(x.item);return b&&sbc.filter(b)});
+ return [...new Set(rows.map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))
+}
+function openSbcAssistant(){
+ if(!activeSbcId)return;const sbc=SBCS.find(x=>x.id===activeSbcId);if(!sbc)return;
+ sbcAssistantState={sort:"high",min:0,max:99,quality:"",ignorePosition:false,league:"",protectTeams:true};renderSBC()
+}
+function sbcAssistantHTML(sbc){
+ if(!sbcAssistantState)return"";
+ const a=sbcAssistantState,leagues=sbcAssistantLeagues(sbc),available=sbcSourceItems().length,protectedCount=sbcSourceItems().filter(x=>sbcTeamUsageForUid(x.item.uid).length).length;
+ return `<div class="sbc-assistant"><div class="sbc-assistant-inner"><div class="sbc-assistant-head"><button type="button" class="sbc-assistant-back" data-sbc-assistant-close>‹</button><div><h3>Assistent</h3><p>Automatischer SBC-Aufbau nach deinen Vorgaben</p></div></div><div class="sbc-assistant-panel">
+ <div class="sbc-assistant-toggle"><div><strong>Spieler aus meinen 3 Teams schützen</strong><small>Verwendete Karten werden vom Assistenten übersprungen.</small></div><label class="sbc-switch"><input id="sbcAssistantProtect" type="checkbox" ${a.protectTeams?"checked":""}><span></span></label></div>
+ <div class="sbc-assistant-toggle"><div><strong>Position ignorieren</strong><small>An: beste Karten beliebig einsetzen · Aus: nur passende Positionen.</small></div><label class="sbc-switch"><input id="sbcAssistantIgnorePosition" type="checkbox" ${a.ignorePosition?"checked":""}><span></span></label></div>
+ <div class="sbc-assistant-grid">
+  <div class="sbc-assistant-field full"><label>Sortieren nach</label><select id="sbcAssistantSort"><option value="high" ${a.sort==="high"?"selected":""}>Rating: hoch bis niedrig</option><option value="low" ${a.sort==="low"?"selected":""}>Rating: niedrig bis hoch</option></select></div>
+  <div class="sbc-assistant-field full"><label>GES-Bereich</label><div class="sbc-assistant-range"><input id="sbcAssistantMin" type="number" min="0" max="99" value="${Number(a.min)}" placeholder="Min. GES"><input id="sbcAssistantMax" type="number" min="0" max="99" value="${Number(a.max)}" placeholder="Max. GES"></div></div>
+  <div class="sbc-assistant-field"><label>Qualität</label><select id="sbcAssistantQuality"><option value="">Alle</option><option value="bronze" ${a.quality==="bronze"?"selected":""}>Bronze</option><option value="silver" ${a.quality==="silver"?"selected":""}>Silber</option><option value="gold" ${a.quality==="gold"?"selected":""}>Gold</option><option value="special" ${a.quality==="special"?"selected":""}>Spezial</option></select></div>
+  <div class="sbc-assistant-field"><label>Liga</label><select id="sbcAssistantLeague"><option value="">Alle / automatisch</option>${leagues.map(l=>`<option value="${esc(l)}" ${a.league===l?"selected":""}>${esc(l)}</option>`).join("")}</select></div>
+ </div>
+ <div class="sbc-assistant-hint"><strong>SBC-Anforderung wird immer berücksichtigt.</strong> Manuell gesetzte Spieler bleiben stehen; nur freie Plätze werden aufgefüllt. Bei „11 Spieler aus 1 Liga“ wählt der Assistent ohne Liga-Vorgabe automatisch eine geeignete Liga. Verfügbar: ${available} Karten${protectedCount?` · davon ${protectedCount} aktuell in Teams`:""}.</div>
+ <div class="sbc-assistant-actions"><button type="button" class="secondary" data-sbc-assistant-close>Zurück</button><button type="button" class="primary" data-sbc-assistant-build>Aufbau</button></div>
+ <div class="sbc-assistant-summary">Quelle: Mein Verein + SBC-Speicher</div></div></div></div>`
+}
+function sbcAssistantQuality(item,b){
+ if(item?.variant||item?.evo)return"special";return rarityOf(b)
+}
+function sbcAssistantBasePool(sbc,draft,a){
+ const used=new Set([...draft.squad,...draft.test].filter(Boolean));
+ let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
+  const b=displayBase(x.item),rating=itemRating(x.item);if(!b||!sbc.filter(b))return false;
+  if(a.protectTeams&&sbcTeamUsageForUid(x.item.uid).length)return false;
+  if(rating<Number(a.min||0)||rating>Number(a.max??99))return false;
+  if(a.quality&&sbcAssistantQuality(x.item,b)!==a.quality)return false;
+  if(a.league&&String(resolvedAffiliation(b)?.league||"")!==a.league)return false;
+  return true
+ });
+ rows.sort((x,y)=>{const d=itemRating(y.item)-itemRating(x.item);return a.sort==="low"?-d:d});
+ return rows
+}
+function sbcAssistantAutoLeague(sbc,draft,a,rows,needed){
+ if(a.league||!sbc.sameLeague)return a.league||"";
+ const existing=draft.squad.map(uid=>sbcItemRecord(uid)?.item).filter(Boolean).map(i=>String(resolvedAffiliation(displayBase(i))?.league||"")).filter(Boolean);
+ const uniq=[...new Set(existing)];if(uniq.length===1)return uniq[0];if(uniq.length>1)return"__NO_VALID_LEAGUE__";
+ const groups=new Map();for(const row of rows){const l=String(resolvedAffiliation(displayBase(row.item))?.league||"");if(!l)continue;if(!groups.has(l))groups.set(l,[]);groups.get(l).push(row)}
+ const candidates=[...groups.entries()].filter(([,list])=>list.length>=needed);
+ if(!candidates.length)return"__NO_VALID_LEAGUE__";
+ candidates.sort((a1,b1)=>{const av=a1[1].slice(0,needed).reduce((n,x)=>n+itemRating(x.item),0),bv=b1[1].slice(0,needed).reduce((n,x)=>n+itemRating(x.item),0);return a.sort==="low"?av-bv:bv-av});
+ return candidates[0][0]
+}
+function runSbcAssistant(){
+ const sbc=SBCS.find(x=>x.id===activeSbcId),a=sbcAssistantState;if(!sbc||!a)return;
+ if(Number(a.min)>Number(a.max))return toast("Min. GES darf nicht über Max. GES liegen.");
+ const draft=sbcDraft(sbc.id),formation=FORMATIONS["4-3-3"],empty=draft.squad.map((uid,i)=>uid?null:i).filter(i=>i!==null);
+ if(!empty.length){sbcAssistantState=null;renderSBC();return toast("Alle 11 SBC-Plätze sind bereits belegt.")}
+ let rows=sbcAssistantBasePool(sbc,draft,a),league=sbcAssistantAutoLeague(sbc,draft,a,rows,empty.length);
+ if(league==="__NO_VALID_LEAGUE__"){toast("Keine einzelne Liga kann die freien Plätze mit diesen Filtern füllen.");return}
+ if(league)rows=rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league);
+ const remaining=[...rows],assigned=[];
+ for(const slotIndex of empty){
+  let pickIndex=0;
+  if(!a.ignorePosition){pickIndex=remaining.findIndex(x=>posFit(displayBase(x.item),formation[slotIndex]?.p)>0);if(pickIndex<0)continue}
+  if(!remaining.length)break;const [pick]=remaining.splice(pickIndex,1);if(!pick)continue;draft.squad[slotIndex]=String(pick.item.uid);assigned.push(pick)
+ }
+ sbcSetDraft(sbc.id,draft);sbcAssistantState=null;renderSBC();
+ const stats=sbcDraftStats(sbc);const leagueNote=league?` · Liga: ${league}`:"";
+ toast(`Assistent: ${assigned.length} Spieler eingesetzt${leagueNote}. ${stats.count}/${sbc.count} belegt.`)
+}
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),reqs=sbcRequirementSummary(sbc,stats),formation=FORMATIONS["4-3-3"];
  const activeSelected=stats.items.filter(i=>state.squad.includes(i.uid)).length,storageSelected=stats.items.filter(i=>(state.sbcStorage||[]).some(x=>x.uid===i.uid)).length;
@@ -3928,8 +4000,8 @@ function renderSbcEditor(sbc){
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,"squad",i,slot)).join("")}</div>
  <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle><div><strong>⚒ Testareal</strong><span>12 Zusatzplätze · Spieler vorbereiten und per Drag & Drop einsetzen</span></div><b class="sbc-test-chevron">⌃</b></button>
  <div class="sbc-test-drawer ${draft.testOpen?"open":""}"><div class="sbc-test-note"><span>3 Reihen × 4 Plätze</span><span>${draft.test.filter(Boolean).length}/12 belegt</span></div><div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcWorkSlotHTML(sbc,"test",i)).join("")}</div></div>
- <div class="sbc-builder-footer"><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(rewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
- </div>${sbcPickerHTML()}${sbcWarningHTML(sbc)}`
+ <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(rewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
+ </div>${sbcPickerHTML()}${sbcWarningHTML(sbc)}${sbcAssistantHTML(sbc)}`
 }
 function renderSBC(){
  const groups=[...new Set(SBCS.map(s=>s.group))];if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
@@ -3952,7 +4024,7 @@ function finalizeSbcSubmission(id){
   return{...preset,squad,roles,focus}
  });
  state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
- grant(sbc.reward);state.stats.sbcs++;delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;activeSbcId=null;sbcPickerState=null;save();renderAll();toast(teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")
+ grant(sbc.reward);state.stats.sbcs++;delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;sbcAssistantState=null;activeSbcId=null;sbcPickerState=null;save();renderAll();toast(teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")
 }
 function submitSbcById(id){
  const sbc=SBCS.find(x=>x.id===id);if(!sbc)return;const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
@@ -3961,13 +4033,16 @@ function submitSbcById(id){
 }
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;renderSBC()});
 $("sbcView").addEventListener("click",e=>{
- const open=e.target.closest("[data-sbc-open]"),back=e.target.closest("[data-sbc-back]"),toggle=e.target.closest("[data-sbc-test-toggle]"),remove=e.target.closest("[data-sbc-remove]"),slot=e.target.closest(".sbc-work-slot"),search=e.target.closest("[data-sbc-player-search]"),close=e.target.closest("[data-sbc-picker-close]"),pick=e.target.closest("[data-sbc-pick-uid]"),submit=e.target.closest("[data-submit]"),sourceQuick=e.target.closest("[data-sbc-source-quick]"),warnReplace=e.target.closest("[data-sbc-warning-replace]"),warnConfirm=e.target.closest("[data-sbc-warning-confirm]"),warnCancel=e.target.closest("[data-sbc-warning-cancel]");
- if(warnCancel){pendingSbcSubmissionId=null;renderSBC();return}
+ const open=e.target.closest("[data-sbc-open]"),back=e.target.closest("[data-sbc-back]"),toggle=e.target.closest("[data-sbc-test-toggle]"),remove=e.target.closest("[data-sbc-remove]"),slot=e.target.closest(".sbc-work-slot"),search=e.target.closest("[data-sbc-player-search]"),close=e.target.closest("[data-sbc-picker-close]"),pick=e.target.closest("[data-sbc-pick-uid]"),submit=e.target.closest("[data-submit]"),sourceQuick=e.target.closest("[data-sbc-source-quick]"),warnReplace=e.target.closest("[data-sbc-warning-replace]"),warnConfirm=e.target.closest("[data-sbc-warning-confirm]"),warnCancel=e.target.closest("[data-sbc-warning-cancel]"),assistantOpen=e.target.closest("[data-sbc-assistant-open]"),assistantClose=e.target.closest("[data-sbc-assistant-close]"),assistantBuild=e.target.closest("[data-sbc-assistant-build]");
+ if(assistantClose){sbcAssistantState=null;renderSBC();return}
+ if(assistantBuild){runSbcAssistant();return}
+ if(assistantOpen){openSbcAssistant();return}
+  if(warnCancel){pendingSbcSubmissionId=null;renderSBC();return}
  if(warnConfirm&&pendingSbcSubmissionId){const id=pendingSbcSubmissionId;pendingSbcSubmissionId=null;finalizeSbcSubmission(id);return}
  if(warnReplace&&pendingSbcSubmissionId){const sbc=SBCS.find(x=>x.id===pendingSbcSubmissionId),draft=sbcDraft(pendingSbcSubmissionId),risks=sbc?new Set(sbcSubmissionRisks(sbc).map(r=>r.item.uid)):new Set(),idx=draft.squad.findIndex(uid=>risks.has(uid));pendingSbcSubmissionId=null;if(idx>=0)openSbcPicker("squad",idx);else renderSBC();return}
  if(sourceQuick&&sbcPickerState){sbcPickerState.source=sourceQuick.dataset.sbcSourceQuick==="storage"?"storage":"club";const select=$("sbcPickerSource");if(select)select.value=sbcPickerState.source;renderSBC();return}
- if(open){pendingSbcSubmissionId=null;activeSbcId=open.dataset.sbcOpen;sbcPickerState=null;renderSBC();return}
- if(back){pendingSbcSubmissionId=null;activeSbcId=null;sbcPickerState=null;renderSBC();return}
+ if(open){pendingSbcSubmissionId=null;sbcAssistantState=null;activeSbcId=open.dataset.sbcOpen;sbcPickerState=null;renderSBC();return}
+ if(back){pendingSbcSubmissionId=null;sbcAssistantState=null;activeSbcId=null;sbcPickerState=null;renderSBC();return}
  if(toggle&&activeSbcId){const d=sbcDraft(activeSbcId);d.testOpen=!d.testOpen;sbcSetDraft(activeSbcId,d);renderSBC();return}
  if(remove&&activeSbcId){e.stopPropagation();const [area,raw]=String(remove.dataset.sbcRemove||"").split(":");sbcRemoveUid(activeSbcId,area,Number(raw));renderSBC();return}
  if(close){sbcPickerState=null;renderSBC();return}
@@ -3977,8 +4052,22 @@ $("sbcView").addEventListener("click",e=>{
  if(slot&&activeSbcId&&!suppressSbcSlotClick&&!e.target.closest(".sbc-slot-remove")){openSbcPicker(slot.dataset.sbcArea,Number(slot.dataset.sbcIndex));return}
  suppressSbcSlotClick=false
 });
-$("sbcView").addEventListener("input",e=>{if(!sbcPickerState)return;if(e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;renderSbcPickerResults()}});
-$("sbcView").addEventListener("change",e=>{if(!sbcPickerState)return;
+$("sbcView").addEventListener("input",e=>{
+ if(sbcAssistantState){
+  if(e.target.id==="sbcAssistantMin")sbcAssistantState.min=Math.max(0,Math.min(99,Number(e.target.value||0)));
+  else if(e.target.id==="sbcAssistantMax")sbcAssistantState.max=Math.max(0,Math.min(99,Number(e.target.value||99)));
+ }
+ if(!sbcPickerState)return;if(e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;renderSbcPickerResults()}
+});
+$("sbcView").addEventListener("change",e=>{
+ if(sbcAssistantState){
+  if(e.target.id==="sbcAssistantProtect"){sbcAssistantState.protectTeams=e.target.checked;return}
+  if(e.target.id==="sbcAssistantIgnorePosition"){sbcAssistantState.ignorePosition=e.target.checked;return}
+  if(e.target.id==="sbcAssistantSort"){sbcAssistantState.sort=e.target.value;return}
+  if(e.target.id==="sbcAssistantQuality"){sbcAssistantState.quality=e.target.value;return}
+  if(e.target.id==="sbcAssistantLeague"){sbcAssistantState.league=e.target.value;return}
+ }
+ if(!sbcPickerState)return;
  if(e.target.id==="sbcPickerPosition")sbcPickerState.position=e.target.value;
  else if(e.target.id==="sbcPickerQuality")sbcPickerState.quality=e.target.value;
  else if(e.target.id==="sbcPickerSource")sbcPickerState.source=e.target.value;
@@ -3992,7 +4081,7 @@ function clearSbcDragVisuals(){
  sbcDragState?.source?.classList.remove("drag-source");sbcDragState?.ghost?.remove()
 }
 document.addEventListener("pointerdown",e=>{
- if(!activeSbcId||sbcPickerState||e.target.closest(".sbc-slot-remove"))return;const slot=e.target.closest("#sbcView .sbc-work-slot.filled");if(!slot)return;
+ if(!activeSbcId||sbcPickerState||sbcAssistantState||e.target.closest(".sbc-slot-remove"))return;const slot=e.target.closest("#sbcView .sbc-work-slot.filled");if(!slot)return;
  sbcDragState={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,fromArea:slot.dataset.sbcArea,fromIndex:Number(slot.dataset.sbcIndex),source:slot,active:false,target:null,ghost:null}
 },{passive:true});
 document.addEventListener("pointermove",e=>{
