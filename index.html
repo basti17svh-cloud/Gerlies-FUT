@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07100d">
+<meta name="theme-color" content="#10090b">
 
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<meta name="application-name" content="Gerlies FUT">
-<meta name="apple-mobile-web-app-title" content="Gerlies FUT">
+<meta name="application-name" content="Footera">
+<meta name="apple-mobile-web-app-title" content="Footera">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.92</title>
+<title>Footera V18.93</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -143,7 +143,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .opening{position:fixed;inset:0;z-index:190;display:none;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 48%,#17382f 0,#050807 55%,#010202)}.opening.active{display:flex}.openstage{text-align:center;position:relative;z-index:4}.bigpack{width:176px;height:246px;margin:auto;display:grid;place-items:center;clip-path:polygon(10% 0,100% 4%,92% 100%,0 94%);background:linear-gradient(145deg,#9c711f,#f0d98a,#74500e);color:#201603;font-size:23px;font-weight:1000;font-style:italic;box-shadow:0 0 55px rgba(216,255,62,.25)}.bigpack.pulse{animation:packPulse .58s infinite alternate}@keyframes packPulse{to{transform:scale(1.08);filter:brightness(1.5);box-shadow:0 0 95px rgba(216,255,62,.45)}}.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.flash.go{animation:flash .72s}@keyframes flash{0%{opacity:0}14%{opacity:1}100%{opacity:0}}.reveal{display:none;flex-direction:column;align-items:center}.reveal.active{display:flex}.revealbadge{color:var(--lime);font-size:9px;font-weight:1000;letter-spacing:.2em;margin-bottom:7px}.results{position:fixed;inset:0;z-index:195;display:none;overflow:auto;background:#050807;padding:calc(14px + env(safe-area-inset-top)) 11px calc(22px + env(safe-area-inset-bottom))}.results.active{display:block}.resultgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.resultgrid .card-shell{width:100%}.toast{position:fixed;z-index:400;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-12px);opacity:0;pointer-events:none;max-width:90vw;padding:10px 13px;border-radius:9px;background:#17201d;border:1px solid #34423e;font-size:8px;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(min-width:620px){.grid2,.packgrid,.modegrid,.sbcgrid{grid-template-columns:1fr 1fr}.itemgrid{grid-template-columns:repeat(3,1fr)}}
 
-/* Gerlies FUT V8 - FUT-inspired navigation/presentation */
+/* Footera V8 - FUT-inspired navigation/presentation */
 :root{--ea-panel:#0b1110;--ea-panel-2:#121b18;--ea-line:#2a3a34}
 .topbar{box-shadow:0 8px 22px rgba(0,0,0,.25)}
 .headline{border-bottom:1px solid rgba(255,255,255,.035)}
@@ -1018,17 +1018,18 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .more-item{position:relative}.ready-count[hidden]{display:none!important}
 .pass-link{display:block;width:100%;margin-bottom:10px;padding:12px 14px;border:1px solid #6d633e;border-radius:11px;background:#211f15;color:#ffde83;text-align:left;font-size:10px;font-weight:900}
 </style>
+<link rel="stylesheet" href="./footera-theme.css">
 </head>
 <body>
 
 <div id="dbGate" class="dbgate">
   <div class="dbinner">
-    <div class="splash-topline"><span>GFUT // 27</span><span>Club-Zeit</span></div>
+    <div class="splash-topline"><span>FOOTERA // 27</span><span>Club-Zeit</span></div>
     <div class="splash-main">
       <div class="splash-emblem" aria-hidden="true"><strong>G</strong><small>FUT</small></div>
       <div class="splash-kicker">Dein Club. Dein Spiel.</div>
-      <h1 class="splash-wordmark">GERLIES<span>FUT</span></h1>
-      <p class="splash-motto">Der Anpfiff wartet auf dich.</p>
+      <h1 class="splash-wordmark">FOOTERA</h1>
+      <p class="splash-motto">Build your era.</p>
     </div>
     <div class="dbstatus">
       <h3 id="dbTitle">Gleich geht's los</h3>
@@ -1040,14 +1041,14 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <button id="dbOffline" class="secondary" style="width:100%;margin-top:7px;display:none">Vorschau öffnen</button>
       <div id="dbWarn" class="apiwarn"></div>
     </div>
-    <div class="splash-footer"><span>GERLIES FUT</span><span>PLAY YOUR WAY</span></div>
+    <div class="splash-footer"><span>FOOTERA</span><span>BUILD YOUR ERA</span></div>
   </div>
 </div>
 
 <div id="onboard" class="onboard">
   <div class="oninner">
     <div id="usernameStep">
-      <div class="gatebrand"><div class="mark">GFUT</div><h1>Willkommen bei Gerlies FUT</h1><p>Bevor du deinen Club gründest, legst du deinen Benutzernamen fest.</p></div>
+      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1>Willkommen bei Footera</h1><p>Bevor du deinen Club gründest, legst du deinen Benutzernamen fest.</p></div>
       <div class="onboard-profile">
         <h2>Dein Benutzername</h2>
         <p>Aus dem Benutzernamen wird automatisch dein erster Teamname erstellt. Beispiel: <b>Ranger</b> → <b>Ranger FC</b>.</p>
@@ -1057,11 +1058,11 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       </div>
     </div>
     <div id="leagueStep" style="display:none">
-      <div class="gatebrand"><div class="mark">GFUT</div><h1>Gründe deinen Club</h1><p>Wähle die Liga deines Startersets. Die Karten behalten ihre echten FC‑27-Ratings. 3 Gold, 4 Silber und 11 Bronze.</p></div>
+      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1>Gründe deinen Club</h1><p>Wähle die Liga deines Startersets. Die Karten behalten ihre echten FC‑27-Ratings. 3 Gold, 4 Silber und 11 Bronze.</p></div>
       <div id="leagueGrid" class="leaguegrid"></div>
     </div>
     <div id="starterStage" class="starterstage">
-      <div class="gatebrand"><div class="mark">GFUT</div><h1 id="starterTitle">Starterset</h1><p id="starterInfo">18 echte Spieler aus deiner gewählten Liga.</p></div>
+      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1 id="starterTitle">Starterset</h1><p id="starterInfo">18 echte Spieler aus deiner gewählten Liga.</p></div>
       <div id="starterPack" class="starterpack">STARTER</div>
       <button id="starterOpen" class="primary" style="width:100%">Starterset öffnen</button>
     </div>
@@ -1070,8 +1071,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.92</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
-  <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.93</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+  <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
 <main>
@@ -1164,7 +1165,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="mode friendly-mode"><span class="mode-tag">FREUNDE</span><h3>Gegen Freund</h3><p>Wähle einen gespeicherten Freund und spiele gegen dessen aktive Mannschaft.</p><div class="friendly-select"><select id="friendlyFriendSelect"><option value="">Kein Freund gespeichert</option></select><button id="friendlyFriendSquad" class="secondary">Team</button></div><div id="friendFriendlyRecord" class="record"></div><button class="primary startmode" data-mode="friendly-friend" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
 </div><div id="playLock" style="margin-top:8px;color:#ff94a4;font-size:8px"></div></div></section>
 
-<section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Premium-Packs kaufen. Nach dem Reveal entscheidest du bei jedem Spieler: Club oder Schnellverkauf.</p></div><div class="section"><div id="liveContentPanel" class="live-content"></div><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Objectives, SBCs und Season.</p></div><div id="ownedPacks"></div></div></section>
+<section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Münzen oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><div id="ownedPacks"></div></div></section>
 
 <section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Grundlagen-Herausforderungen mit Spielern aus deinem Verein und dem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
@@ -1204,7 +1205,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
   <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Team umbenennen</h3><p>Ändere den Namen deines Clubs. Dein Freundesprofil wird automatisch aktualisiert.</p><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><button id="saveProfileName" class="primary">Teamname speichern</button></div>
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
-  <div class="extras-card"><span class="extras-kicker">APP</span><h3>Gerlies FUT installieren</h3><p id="pwaInstallHint">Installiere Gerlies FUT als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Gerlies FUT installieren</button></div>
+  <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 
@@ -1218,7 +1219,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Teamprofile austauschen und Freundeskader ansehen. Profilcodes funktionieren bereits geräteübergreifend ohne Server.</p></div><div class="section">
   <div class="social-grid">
-    <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Gerlies FUT Club</strong><br>Der Profilcode enthält nur dein Profil sowie aktive Aufstellung und Bank – nicht deinen gesamten Verein. Den Teamnamen änderst du unter Extras.</p><textarea id="myFriendCode" readonly></textarea><button id="refreshFriendCode" class="secondary" style="width:100%;margin-top:7px">Profilcode aktualisieren</button></div>
+    <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Der Profilcode enthält nur dein Profil sowie aktive Aufstellung und Bank – nicht deinen gesamten Verein. Den Teamnamen änderst du unter Extras.</p><textarea id="myFriendCode" readonly></textarea><button id="refreshFriendCode" class="secondary" style="width:100%;margin-top:7px">Profilcode aktualisieren</button></div>
     <div class="profile-card"><h3>Freund hinzufügen</h3><p>Profilcode einfügen und den aktuellen Freundeskader speichern.</p><textarea id="friendCodeInput" placeholder="Profilcode hier einfügen"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div>
     <div class="profile-card"><h3>Freundesliste</h3><div class="online-note">Tippe auf „Aufstellung“, um ausschließlich Startelf und Bank des Freundes im gleichen Team-Layout wie bei dir zu sehen.</div><div id="friendList" class="friend-list"></div></div>
   </div>
@@ -1428,8 +1429,8 @@ const CAMPAIGNS=[
 ];
 
 const PACKS=[
- {id:"bronze",name:"Bronze Players Pack",coins:null,points:null,type:"bronze",count:3,min:0,max:64,store:false,reward:true,desc:"3 Bronze-Spieler",iconChance:0},
- {id:"silver",name:"Silver Players Pack",coins:null,points:null,type:"silver",count:3,min:65,max:74,store:false,reward:true,desc:"3 Silber-Spieler",iconChance:0},
+ {id:"bronze",name:"Bronze-Pack",coins:750,points:null,type:"bronze",count:3,min:0,max:64,store:true,reward:true,desc:"3 Bronze-Spieler",iconChance:0,standard:true},
+ {id:"silver",name:"Silber-Pack",coins:1500,points:50,type:"silver",count:3,min:65,max:74,store:true,reward:true,desc:"3 Silber-Spieler",iconChance:0,standard:true},
  {id:"gold",name:"Premium Gold Pack",coins:7500,points:150,type:"gold",count:3,min:75,max:99,store:true,reward:true,desc:"3 Gold-Spieler · unbegrenzt verfügbar",tag:"PREMIUM",iconChance:0.0002,standard:true},
  {id:"82",name:"82+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:82,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 82+",iconChance:0.0002},
  {id:"85",name:"85+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:85,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 85+",iconChance:0.002},
@@ -1712,7 +1713,7 @@ const SBCS=[
 function baseState(){return{
  version:122,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
- roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club"},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
@@ -3434,6 +3435,12 @@ function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 function packArtLabel(p){if(p.id==="mixed6")return"MIX 6";if(p.id==="electrum")return"ELECTRUM";if(p.id==="raremixed")return"RARE MIX";if(p.id==="primegold")return"PRIME";if(p.id==="goldplayers")return"GOLD 12";return p.type==="gold"?"GOLD":"PACK"}
 function packArtClass(p){return p.type==="mixed"?"mixed-art":p.type==="special"?"special-art":`${p.type}-art`}
+const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp"};
+let storeTab="promo";
+let storePromoKey="";
+function storeCountdown(end){const minutes=Math.max(0,Math.ceil((end-Date.now())/60000));return `${Math.floor(minutes/60)} Std. ${minutes%60} Min.`}
+function updateStoreCountdown(){document.querySelectorAll("#storeView [data-store-ends]").forEach(el=>{el.textContent=`Endet in ${storeCountdown(Number(el.dataset.storeEnds))}`})}
+setInterval(()=>{if(currentViewId()==="storeView"){if(storeTab==="promo"&&promoWindowKey(new Date(),19)!==storePromoKey)renderStore();else updateStoreCountdown()}},60000);
 function generatePack(id){
  const p=PACKS.find(x=>x.id===id),arr=[],used=new Set();if(!p)return[];
  const take=(min,max)=>{for(let tries=0;tries<120;tries++){const b=weightedPlayer(min,max);if(b&&!used.has(String(b.id))){used.add(String(b.id));return b}}const b=PLAYERS.find(x=>x.ovr>=min&&x.ovr<=max&&!used.has(String(x.id)));if(b)used.add(String(b.id));return b||null};
@@ -3445,13 +3452,29 @@ function generatePack(id){
  return arr.slice(0,p.count)
 }
 function renderStore(){
- const activePromos=activePromoPacks(),reset=nextPromoReset(new Date(),19),live=$("liveContentPanel");if(live)live.innerHTML=`<h3>Aktuelle Inhalte</h3><p>${totwIsActive()?`<strong>${esc(totwDisplayName(LIVE_TOTW.name))}</strong>, mittlere Ikonen und wechselnde Promo-Packs sind aktiv.`:`<strong>${esc(totwDisplayName(LIVE_TOTW.name))}</strong> ist beendet. Mittlere Ikonen und wechselnde Promo-Packs sind verfügbar.`}</p><div class="live-badges">${totwIsActive()?`<span class="live-badge">${LIVE_TOTW.players.length} Spieler im Team der Woche</span>`:""}<span class="live-badge">${MID_ICON_BASES.length} mittlere Ikonen</span><span class="live-badge event">Promo-Wechsel täglich 19:00</span></div><div class="pack-rotation-note">Heute aktiv: ${activePromos.map(p=>esc(p.name)).join(" · ")}. Wechsel um ${reset.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}. Jedes Promo-Pack ist pro 19-Uhr-Fenster auf 10 Käufe begrenzt.</div>`;
- const purch=activeStorePacks();$("packGrid").innerHTML=purch.map(p=>{const lim=promoUsage(p),limited=Number.isFinite(lim.remaining),sold=limited&&lim.remaining<=0,resetAt=p.dailyLimit?nextPromoReset(new Date(),p.resetHour??19):null;return`<div class="pack ${p.promo?'promopack':''}" data-pack-kind="${esc(p.packKind||'standard')}"><div class="pack-tag">${esc(p.tag||'SHOP')}</div><div class="packart ${packArtClass(p)}">${esc(packArtLabel(p))}</div><h3>${esc(p.name)}</h3><p>${esc(p.desc||'')}</p><div class="packfeatures"><span>${p.count} Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>1× ${p.guarantee}+ garantiert</span>`:""}<span>Mid Icon ${packChanceLabel(p.iconChance)}</span></div>${limited?`<div class="pack-limitbar ${sold?'soldout':''}"><span>Promo-Limit · ${lim.used}/${p.dailyLimit} gekauft</span><strong>${sold?'LIMIT ERREICHT':`${lim.remaining} übrig`}</strong></div><div class="pack-odds">Reset und Pack-Wechsel täglich um ${String(p.resetHour??19).padStart(2,'0')}:00 Uhr. Nächster Reset: ${resetAt.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.</div>`:`<div class="pack-limitbar"><span>Standard-Pack</span><strong>UNBEGRENZT</strong></div>`}<div class="prices"><button class="primary" data-buy="${p.id}" data-cur="coins" ${sold?'disabled':''}>${fmt(p.coins)} Coins</button><button class="secondary" data-buy="${p.id}" data-cur="points" ${sold?'disabled':''}>${fmt(p.points)} FC Points</button></div></div>`}).join("");
+ const promo=storeTab==="promo",reset=nextPromoReset(new Date(),19);
+ storePromoKey=promoWindowKey(new Date(),19);
+ for(const tab of document.querySelectorAll("#storeView [data-store-tab]")){const active=tab.dataset.storeTab===storeTab;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active))}
+ $("storeContext").textContent=promo?"Limitierte Packs · Wechsel täglich um 19:00 Uhr.": "Bronze, Silber und Gold · dauerhaft erhältlich.";
+ const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
+ $("packGrid").innerHTML=purch.map(p=>{
+  const lim=promoUsage(p),sold=lim.remaining<=0,packArt=STORE_PACK_ART[p.id]||"./assets/footera/promo.webp";
+  const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span>${currency==="coins"?"●":"◆"} ${fmt(p[currency])}<small>${label}</small></span><strong>Kaufen</strong></button>`;
+  return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
+   <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
+   <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
+   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}</div>
+   <p>${esc(p.desc||"")}</p>
+   ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
+   <div class="store-pack-prices ${p.points==null?"coins-only":""}">${button("coins","Münzen")}${button("points","Footera Points")}</div>
+   </div></article>`
+ }).join("");
+ updateStoreCountdown();
  const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0);$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
-$("storeView").addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur,price=p?.[cur];if(!p||price==null)return;const lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;state.packs[id]--;save();openPack(id)}})
+$("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const items=generatePack(id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;save();openPack(id,items)}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id){pendingPack=generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening");opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPack").textContent=PACKS.find(p=>p.id===id)?.name||"PACK";$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -3951,7 +3974,7 @@ function updateMarketCountdowns(){
 }
 setInterval(updateMarketCountdowns,1000);
 
-function rewardText(r){const a=[];if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} FC Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
+function rewardText(r){const a=[];if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
 function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);claimSeasonRewards()}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
@@ -4511,9 +4534,9 @@ function simAttack(homeSide){
    match.xgHome+=xg;
    if(eventChance(xg)){
     match.home++;
-    addLog(`TOR! ${chooseScorer(match.lineup)} trifft für Gerlies FUT.`);
+    addLog(`TOR! ${chooseScorer(match.lineup)} trifft für Footera.`);
    }else if(Math.random()<.33){
-    addLog("Gute Chance für Gerlies FUT, aber kein Tor.");
+    addLog("Gute Chance für Footera, aber kein Tor.");
    }
   }
  }else{
@@ -4538,7 +4561,7 @@ function sendOffPlayer(){
  if(!candidates.length)return false;
  const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Gerlies-Spieler",minute=Math.floor(match.minute);
  match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute});match.redCardSlot=i;
- addLog(`Rote Karte für ${name}! Gerlies FUT spielt mit zehn Spielern weiter.`);
+ addLog(`Rote Karte für ${name}! Footera spielt mit zehn Spielern weiter.`);
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
 }
@@ -4724,7 +4747,7 @@ function finishMatch(){
  $("eventBanner").classList.remove("active");
  $("matchResult").classList.add("active");
  $("matchResultTitle").textContent=match.home>match.away?"Sieg":match.home===match.away?"Unentschieden":"Niederlage";
- $("matchResultText").textContent=`Gerlies FUT ${match.home}:${match.away} · ${match.shotsHome}:${match.shotsAway} Schüsse · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)}`;
+ $("matchResultText").textContent=`Footera ${match.home}:${match.away} · ${match.shotsHome}:${match.shotsAway} Schüsse · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)}`;
  $("matchReward").textContent=String(match.mode).startsWith("friendly")?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
  setMatchPill(true);
  renderAll()
@@ -4924,7 +4947,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
 
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
- const payload={v:2,username:state.profile.username||"",clubName:state.profile.clubName||"Gerlies FUT Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
+ const payload={v:2,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
@@ -4936,7 +4959,7 @@ function openFriendTeam(index){const f=state.friends[index];if(!f)return;const f
  const bench=sq.slice(11,18).map(fp=>`<div>${fp?friendCard(fp,"BANK",true):'<div class="emptyslot">BANK<br>+</div>'}</div>`).join('');
  $("friendTeamModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(f.clubName||"Freund")}</h2><p>Nur aktive Aufstellung und Ersatzbank · kein Vereinsbestand</p></div><button class="primary" data-friend-modal-play="${index}">Zur eigenen Aufstellung</button></div><div class="friend-team-summary"><div class="kpi"><strong>${f.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${f.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>`;showUiLayer("friendTeamModal","friend-team")}
 function renderSocial(){
- $("profileClubName").value=state.profile.clubName||"Gerlies FUT Club";if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Gerlies FUT Club";$("myFriendCode").value=encodeFriendProfile();
+ $("profileClubName").value=state.profile.clubName||"Footera Club";if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Footera Club";$("myFriendCode").value=encodeFriendProfile();
  $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button><button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>'
 }
 $("saveProfileName").addEventListener("click",()=>{state.profile.clubName=$("profileClubName").value.trim()||`${state.profile.username||"Gerlies"} FC`;save();renderSocial();renderHome();toast("Clubname gespeichert.")});
@@ -4957,7 +4980,7 @@ function renderPromo(){
  const status=$("promoStatus"),title=$("promoRewardTitle"),sub=$("promoRewardSub");
  if(!status)return;
  const claims=Object.values(state.promoClaims||{}).filter(Boolean).sort((a,b)=>Number(b.claimedAt||0)-Number(a.claimedAt||0));
- if(claims.length){const last=claims[0],pts=Number(last.reward?.points||0);status.className="promo-status success";status.textContent=`Zuletzt eingelöst: ${last.code} · ${fmt(pts)} FC Points. Jeder Code kann pro Spielstand nur einmal verwendet werden.`;if(title)title.textContent=`${fmt(pts)} FC Points`;if(sub)sub.textContent=`Belohnung aus „${last.code}“`;}
+ if(claims.length){const last=claims[0],pts=Number(last.reward?.points||0);status.className="promo-status success";status.textContent=`Zuletzt eingelöst: ${last.code} · ${fmt(pts)} Footera Points. Jeder Code kann pro Spielstand nur einmal verwendet werden.`;if(title)title.textContent=`${fmt(pts)} Footera Points`;if(sub)sub.textContent=`Belohnung aus „${last.code}“`;}
  else{status.className="promo-status";status.textContent="Gib deinen Promocode ein und tippe auf „Einlösen“.";if(title)title.textContent="Promocode-Belohnung";if(sub)sub.textContent="Jeder gültige Code hat seine eigene Belohnung."}
 }
 function redeemPromo(){
@@ -4966,7 +4989,7 @@ function redeemPromo(){
  state.promoClaims=state.promoClaims||{};
  if(state.promoClaims[promo.id]){if(status){status.className="promo-status success";status.textContent=`„${promo.label}“ wurde in diesem Spielstand bereits eingelöst.`}return}
  state.points+=promo.points;state.promoClaims[promo.id]={claimedAt:Date.now(),code:promo.label,reward:{points:promo.points}};
- save();renderWallet();renderPromo();if(input)input.value="";toast(`${fmt(promo.points)} FC Points gutgeschrieben.`)
+ save();renderWallet();renderPromo();if(input)input.value="";toast(`${fmt(promo.points)} Footera Points gutgeschrieben.`)
 }
 $("redeemPromoCode")?.addEventListener("click",redeemPromo);
 $("promoCodeInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")redeemPromo()});
@@ -5055,14 +5078,14 @@ function updatePwaInstallUi(){
  const hint=$("pwaInstallHint");
  const buttons=[$("extrasInstallBtn")].filter(Boolean);
  if(installed){
-  if(hint)hint.innerHTML='<span class="pwa-installed">Gerlies FUT ist bereits als App installiert.</span>';
+  if(hint)hint.innerHTML='<span class="pwa-installed">Footera ist bereits als App installiert.</span>';
   buttons.forEach(b=>{b.textContent="App installiert";b.disabled=true});
  }else{
-  buttons.forEach(b=>{b.disabled=false;b.textContent="Gerlies FUT installieren"});
+  buttons.forEach(b=>{b.disabled=false;b.textContent="Footera installieren"});
  }
 }
 async function triggerPwaInstall(){
- if(pwaStandalone()){toast("Gerlies FUT ist bereits installiert.");return}
+ if(pwaStandalone()){toast("Footera ist bereits installiert.");return}
  if(deferredInstallPrompt){
   deferredInstallPrompt.prompt();
   try{await deferredInstallPrompt.userChoice}catch(e){}
@@ -5071,7 +5094,7 @@ async function triggerPwaInstall(){
   return
  }
  if(location.protocol!=="https:" && location.hostname!=="localhost"){
-  toast("Für die App-Installation muss Gerlies FUT zuerst online über HTTPS geöffnet werden.");
+  toast("Für die App-Installation muss Footera zuerst online über HTTPS geöffnet werden.");
   return
  }
  toast("Falls kein Dialog erscheint: Browser-Menü öffnen → „App installieren“ oder „Zum Startbildschirm hinzufügen“.")
@@ -5084,18 +5107,18 @@ window.addEventListener("beforeinstallprompt",e=>{
 window.addEventListener("appinstalled",()=>{
  deferredInstallPrompt=null;
  updatePwaInstallUi();
- toast("Gerlies FUT wurde installiert.")
+ toast("Footera wurde installiert.")
 });
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.92";
+const GFUT_BUILD="V18.93";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
   const url=new URL("./index.html",location.href);url.searchParams.set("_gfut_update",Date.now().toString());
   const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
-  if(!res.ok)return;const html=await res.text(),match=html.match(/<title>Gerlies FUT (V[\d.]+)<\/title>/),remote=match?.[1]||"";
+  if(!res.ok)return;const html=await res.text(),match=html.match(/<title>Footera (V[\d.]+)<\/title>/),remote=match?.[1]||"";
   if(remote&&remote!==GFUT_BUILD&&!sessionStorage.getItem("gfut-update-"+remote)){
    sessionStorage.setItem("gfut-update-"+remote,"1");
    try{const reg=await navigator.serviceWorker?.getRegistration("./");await reg?.update()}catch(e){}
@@ -5105,8 +5128,8 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1892",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-92-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1893",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-93-reloaded")){sessionStorage.setItem("gfut-v18-93-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 

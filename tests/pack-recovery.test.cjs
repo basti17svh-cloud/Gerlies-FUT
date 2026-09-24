@@ -7,7 +7,7 @@ const vm=require('node:vm');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
 const packCode=html.slice(html.indexOf('let pendingResolved='),html.indexOf('function packIsSpecial('));
-const resultCode=html.match(/^function renderPackResults\(\)\{.*$/m)?.[0];
+const resultCode=html.slice(html.indexOf('function renderPackResults(){'),html.indexOf('$("resultGrid").addEventListener'));
 const finishCode=html.slice(html.indexOf('function finishPack(){'),html.indexOf('function packFxLayer('));
 
 function app(saved=new Map()){
@@ -46,9 +46,9 @@ test('partially distributed pack restores only unresolved actions after reload',
  assert.deepEqual(JSON.parse(saved.get('gerliesFutV9')).pendingResolved,[0]);
  const recovered=app(saved);recovered.read('finishPack()');
  const markup=recovered.elements.get('resultGrid').innerHTML;
- assert.match(markup,/data-result-item="0"/);
+ assert.doesNotMatch(markup,/data-result-item="0"/);
  assert.match(markup,/data-result-item="1"/);
- assert.equal((markup.match(/In den Club schicken/g)||[]).length,1);
+ assert.equal((markup.match(/In den Verein/g)||[]).length,1);
  assert.equal(recovered.read('pendingResolved.has(0)'),true);
  assert.equal(recovered.elements.get('resultDone').disabled,true);
 });

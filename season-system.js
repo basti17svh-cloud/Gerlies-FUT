@@ -162,7 +162,7 @@ function renderSeasonPass(){
  const next=SEASON_REWARDS.find(t=>t.sp>sp),level=SEASON_REWARDS.filter(t=>sp>=t.sp).length;
  const previous=host.querySelector(".pass-ladder"),previousScroll=previous?.scrollLeft||0;
  const upgrade=state.seasonPass.premium?'<strong>✓ Premium aktiviert</strong><p>Beide Spuren verwenden dieselben Season Points. Bereits erreichte Premium-Stufen können abgeholt werden.</p>':
-  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar. Nur Guthaben aus Gerlies FUT.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${fmt(PASS_PRICE.coins)} Coins</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${fmt(PASS_PRICE.points)} FC Points</button></div>`;
+  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar. Nur Guthaben aus Footera.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${fmt(PASS_PRICE.coins)} Coins</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${fmt(PASS_PRICE.points)} Footera Points</button></div>`;
  host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON PASS · SAISON ${info.number}</span><h3>${info.number===1?"Ones to Watch":"Saison "+info.number}</h3><p>Kostenloser und Premium-Pfad · 30 Stufen · gleiche SP für beide</p></div><span class="pass-time">Endet ${passDate(info.end)}</span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(sp)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<div class="pass-tier ${sp>=tier.sp?"reached":""}"><div class="pass-tier-header"><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${rewardCell(tier,"free")}${rewardCell(tier,"premium")}</div>`).join("")}</div></div>`;
  host.querySelector(".pass-ladder").scrollLeft=previousScroll
 }
@@ -207,7 +207,7 @@ $("seasonPass").addEventListener("click",event=>{
   if(state.seasonPass.premium)return;
   const currency=buy.dataset.passBuy,price=PASS_PRICE[currency];
   if(!price||!Number.isFinite(state[currency])||state[currency]<price)return toast("Nicht genügend Guthaben.");
-  if(!confirm(`Premium-Pass für Saison ${seasonInfo().number} für ${fmt(price)} ${currency==="coins"?"Coins":"FC Points"} freischalten?`))return;
+  if(!confirm(`Premium-Pass für Saison ${seasonInfo().number} für ${fmt(price)} ${currency==="coins"?"Coins":"Footera Points"} freischalten?`))return;
   state[currency]-=price;state.seasonPass.premium=true;save();renderAll();toast("Premium-Pass aktiviert.");return
  }
  if(!claim)return;

@@ -1,17 +1,17 @@
 {
   "id": "./",
-  "name": "Gerlies FUT",
-  "short_name": "Gerlies FUT",
-  "description": "Gerlies FUT V16 – FUT-inspiriertes Squad-, Pack-, Transfer- und Evolutionsspiel.",
-  "start_url": "./index.html?v=16",
+  "name": "Footera",
+  "short_name": "Footera",
+  "description": "Footera V18.93 – Fußballteam, Packs, Transfers und Evolutions.",
+  "start_url": "./index.html?v=18.93",
   "scope": "./",
   "display": "standalone",
   "display_override": [
     "standalone",
     "minimal-ui"
   ],
-  "background_color": "#050807",
-  "theme_color": "#07100d",
+  "background_color": "#090708",
+  "theme_color": "#10090b",
   "orientation": "portrait-primary",
   "categories": [
     "games",

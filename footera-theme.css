@@ -1,0 +1,151 @@
+/* Footera V18.93: backgrounds, branding and Store only. Player-card art is untouched. */
+:root{
+  --bg:#090708;--panel:#151112;--panel2:#1e1719;--line:#483236;
+  --text:#f9f7f6;--muted:#b3a4a7;
+}
+html{background:#070607}
+body{
+  background:linear-gradient(180deg,rgba(5,5,6,.44),rgba(5,5,6,.68) 40%,rgba(6,5,6,.82)),
+    url("./assets/footera/stadion.webp") center top/cover fixed no-repeat;
+}
+.app{background:linear-gradient(180deg,rgba(9,7,8,.08),rgba(9,7,8,.38))}
+.topbar{
+  background:linear-gradient(180deg,rgba(8,7,8,.96),rgba(17,10,12,.92));
+  border-bottom-color:rgba(250,66,90,.28);
+}
+.mark{
+  clip-path:none;background:transparent url("./assets/footera/emblem.png") center/contain no-repeat;
+  box-shadow:none;color:transparent;font-size:0!important;
+}
+.brand h1{letter-spacing:.09em}
+.build-badge{border-color:#74404b;background:#291419;color:#ffd5dd}
+.walletbox{border-color:#4a3338;background:linear-gradient(145deg,#201619,#100e0f)}
+.walletbox span{color:#b8a8ad}
+.pts strong{color:#ffacbd}
+.nav{
+  background:rgba(9,8,9,.96);border-top-color:#6d3a44;
+  box-shadow:0 -9px 32px rgba(0,0,0,.45);
+}
+.nav button.active{background:#28171b;color:#ff596d}
+.nav button.active .nav-ico{color:#ff596d}
+.more-tray{background:#120d0f;border-color:#5f303a}
+.panel,.home-action,.home-hero-card,.home-reward-card,.pass-panel,.pass-tier,
+.pass-reward,.profile-card,.extras-card,.sbc-storage-bar,.transfer-section,
+.owned-pack-row,.campaign-step,.objective-bonus{
+  background:linear-gradient(145deg,rgba(30,23,25,.96),rgba(13,12,13,.96));
+  border-color:rgba(142,77,86,.44);
+}
+.home-dashboard:before{
+  background:radial-gradient(circle at 12% 8%,rgba(210,36,65,.12),transparent 25%),
+    radial-gradient(circle at 88% 40%,rgba(150,19,38,.07),transparent 34%);
+}
+.primary{background:#e83b55;border-color:#f15a70;color:#fff}
+.primary:hover{background:#f34a63}
+.secondary{background:#261b1e;border-color:#62404a}
+.headline h2{color:#fff}
+.dbgate,.onboard{
+  background:linear-gradient(180deg,rgba(7,5,6,.4),rgba(5,5,6,.8)),
+    url("./assets/footera/stadion.webp") center/cover no-repeat #070607;
+}
+.dbgate::before{background:radial-gradient(ellipse at 50% 0,rgba(209,40,62,.12),transparent 60%)}
+.dbgate::after{border-color:rgba(225,52,76,.22);box-shadow:0 0 0 54px rgba(155,35,54,.025),0 0 100px rgba(208,29,58,.1)}
+.splash-emblem{
+  clip-path:none;background:transparent url("./assets/footera/emblem.png") center/contain no-repeat;
+  filter:drop-shadow(0 0 25px rgba(195,30,58,.25));
+}
+.splash-emblem::before,.splash-emblem strong,.splash-emblem small{display:none}
+.splash-wordmark{font-size:clamp(48px,13vw,88px);letter-spacing:.02em}
+.splash-kicker,.splash-footer span:last-child,.splash-topline span:last-child{color:#ff5a70}
+.splash-topline span:last-child::before{background:#fa4560;box-shadow:0 0 10px #fa4560}
+.dbgate .progress{background:#38252a}
+.dbgate .progress div{background:linear-gradient(90deg,#71192b,#f04c66);box-shadow:0 0 15px rgba(240,60,90,.4)}
+
+/* Neutral surfaces across the game; gameplay pitches and status colours remain as designed. */
+.sbc,.sbc-hub-card,.sbc-builder-back,.sbc-condition:not(.ok),.sbc-submit-state:not(.ok),
+.sbc-test-drawer,.sbc-player-picker,.sbc-picker-filters,.sbc-pick-card,
+.sbc-assistant,.sbc-assistant-panel,.sbc-slot-detail,.sbc-slot-nav,
+.market-filter-panel,.market-row:not(.leading):not(.outbid):not(.lost):not(.expired):not(.won),
+.market-listing-details,.market-price-cell,.market-name-suggestions,
+.club-tools,.mode,.evo-card,.evo-summary>div,.evo-requirements,.evo-candidate,
+.evo-selected,.evo-history,.evo-stage,.saved-squads,.squad-shortcuts,
+.squad-drawer,.squad-picker-modal,.transfer-watch-row,.transfer-sell-editor,
+.transfer-sale-row:not(.sold):not(.unsold):not(.active){
+  background:linear-gradient(145deg,rgba(29,22,25,.95),rgba(11,12,13,.97));
+  border-color:rgba(134,77,87,.38);
+}
+.squad-picker-modal .modalhead,.sbc-assistant-back,.sbc-builder-back,
+.sbc-slot-detail-back{background:#1d1518}
+.market-field input,.market-field select,.sbc-picker-field input,.sbc-picker-field select,
+.transfer-sell-editor input,.transfer-sell-editor select{
+  background:#21191c;border-color:#5a3c45;color:#fff;
+}
+.objective-tabs button,.evo-tab,.sbc-tab,.squad-preset-tab,.squad-drawer-tab{
+  background:#21191c;border-color:#67434c;color:#e4d4d8;
+}
+.objective-tabs button.active,.squad-preset-tab.active,.squad-drawer-tab.active{
+  background:#a52c43;border-color:#e34760;color:#fff;
+}
+
+/* Companion-style Store: two tabs, direct currency actions, no preview. */
+#storeView .section{padding-top:8px}
+#storeView .headline p{color:#c9b9bd}
+.store-tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:1px 0 10px}
+.store-tabs button{
+  min-height:46px;border-radius:11px;border:1px solid #59434a;
+  background:rgba(20,18,19,.93);color:#cbbdc1;font-size:11px;font-weight:750;
+  cursor:pointer;
+}
+.store-tabs button.active{
+  border-color:#e94660;background:linear-gradient(145deg,#2f171e,#1b1518);
+  color:#fff;box-shadow:inset 0 -2px #d73953,0 0 18px rgba(195,34,58,.13);
+}
+.store-context{min-height:15px;margin:0 0 10px;color:#d0adb6;font-size:9px}
+#packGrid.packgrid{display:grid;grid-template-columns:1fr;gap:10px}
+.store-pack{
+  display:grid;grid-template-columns:minmax(115px,30%) minmax(0,1fr);gap:16px;
+  min-height:205px;padding:14px;border:1px solid #554148;border-radius:17px;
+  background:linear-gradient(120deg,rgba(28,26,25,.96),rgba(13,17,17,.97));
+  box-shadow:0 14px 30px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.045);
+}
+.store-pack.soldout{opacity:.7}
+.store-pack-art{display:grid;place-items:center;min-width:0;min-height:170px}
+.store-pack-art img{display:block;width:100%;height:190px;object-fit:contain;filter:drop-shadow(0 10px 13px rgba(0,0,0,.6))}
+.store-pack-content{min-width:0;display:flex;flex-direction:column}
+.store-pack-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;flex-wrap:wrap}
+.store-pack-heading h3{margin:0;font-size:clamp(15px,2.5vw,20px);line-height:1.17}
+.store-time{display:inline-block;padding:5px 7px;border:1px solid #844352;border-radius:999px;color:#ff8295;background:#2d161c;font-size:9px;font-weight:750;white-space:nowrap}
+.store-pack-features{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 6px;color:#e8e1e2;font-size:9px}
+.store-pack-features span{padding-right:7px;border-right:1px solid #56454b}
+.store-pack-features span:last-child{border:0}
+.store-pack-features b{font-size:15px;color:#fff}
+.store-pack-content p{margin:0 0 9px;color:#c3b8ba;font-size:9px;line-height:1.45}
+.store-pack-limit{margin-top:auto;margin-bottom:7px;color:#e1b8a5;font-size:9px}
+.store-pack-prices{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto}
+.store-pack-prices.coins-only{grid-template-columns:1fr}
+.store-buy-button{
+  display:flex;align-items:center;justify-content:space-between;gap:5px;
+  min-height:42px;padding:7px 10px;border-radius:10px;border:1px solid #65565a;
+  background:#231e20;color:#fff;text-align:left;cursor:pointer;
+}
+.store-buy-button.points{background:linear-gradient(110deg,#9d263d,#e83a55);border-color:#ef5a73}
+.store-buy-button.coins-only,.coins-only .store-buy-button.coins{background:linear-gradient(110deg,#9d263d,#e83a55);border-color:#ef5a73}
+.store-buy-button span{font-size:11px;font-weight:850;white-space:nowrap}
+.store-buy-button small{display:block;margin-top:2px;font-size:7px;font-weight:600;color:#e8d6db}
+.store-buy-button strong{font-size:9px}
+.store-buy-button:disabled{opacity:.48;cursor:not-allowed}
+@media(max-width:520px){
+  .store-pack{grid-template-columns:minmax(100px,32%) minmax(0,1fr);gap:9px;min-height:184px;padding:10px}
+  .store-pack-art{min-height:158px}
+  .store-pack-art img{height:173px}
+  .store-pack-heading h3{font-size:15px}
+  .store-pack-features{gap:4px;margin:7px 0 5px;font-size:8px}
+  .store-pack-features span{padding-right:4px}
+  .store-pack-content p{font-size:8px}
+  .store-buy-button{padding:5px 6px;min-height:39px}
+  .store-buy-button span{font-size:10px}
+  .store-buy-button strong{font-size:8px}
+}
+@media(max-width:390px){
+  .store-pack-prices:not(.coins-only){grid-template-columns:1fr 1fr}
+  .store-buy-button{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px}
+}
