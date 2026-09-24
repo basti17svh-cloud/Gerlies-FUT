@@ -1,4 +1,4 @@
-const CACHE="gerlies-fut-v18-88-root-shell";
+const CACHE="gerlies-fut-v18-89-root-shell";
 const SHELL=["./","./index.html","./season-system.js","./manifest.webmanifest","./players-fallback.json","./assets/badge-manifest.json","./assets/player-traits.json","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png","./p1.png","./p2.png","./p3.png","./p4.png","./p5.png","./p6.png","./p7.png","./p8.png"];
 
 self.addEventListener("install",e=>
