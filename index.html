@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.89</title>
+<title>Gerlies FUT V18.90</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -543,6 +543,35 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 }
 
 
+/* V18.90 — Companion-style transfer market rows and transfer-list states */
+#marketGrid{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+.market-row{position:relative;display:grid;grid-template-columns:92px minmax(0,1fr) 188px;gap:10px;align-items:center;min-height:126px;padding:9px 10px;border:1px solid #2c3934;border-radius:11px;background:linear-gradient(145deg,#111916,#0b100f);overflow:hidden;transition:border-color .18s,background .18s,box-shadow .18s}
+.market-row.leading{border-color:#43d986;background:linear-gradient(145deg,rgba(33,93,63,.38),#0b1410);box-shadow:inset 3px 0 #43d986}
+.market-row.outbid{border-color:#d7b94c;background:linear-gradient(145deg,rgba(109,88,23,.34),#151309);box-shadow:inset 3px 0 #d7b94c}
+.market-row.lost,.market-row.expired{border-color:#d65b68;background:linear-gradient(145deg,rgba(108,31,42,.32),#160b0e);box-shadow:inset 3px 0 #d65b68}
+.market-row.won{border-color:#55df91;background:linear-gradient(145deg,rgba(37,104,69,.38),#0a160f);box-shadow:inset 3px 0 #55df91}
+.market-row-card{display:flex;align-items:center;justify-content:center;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}
+.market-row-card .mini,.market-row-card .mini .card-shell{width:78px!important}
+.market-row-card .card-shell{filter:drop-shadow(0 7px 10px rgba(0,0,0,.38))}
+.market-row-main{min-width:0}.market-row-name{display:flex;align-items:center;gap:6px;min-width:0}.market-row-name strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.market-row-name .quality-tag{flex:0 0 auto}
+.market-status-line{display:flex;align-items:center;gap:6px;min-height:20px;margin-top:5px;font-size:7px;font-weight:950}.market-status-icon{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid #3a4842;background:#15201c;color:#b9c8c2;font-size:10px}.market-row.leading .market-status-icon,.market-row.won .market-status-icon{border-color:#43d986;background:#183827;color:#8dffb8}.market-row.outbid .market-status-icon{border-color:#d7b94c;background:#3a3215;color:#ffe27e}.market-row.lost .market-status-icon,.market-row.expired .market-status-icon{border-color:#d65b68;background:#3d171c;color:#ff9ba7}
+.market-price-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:7px}.market-price-cell{padding:6px;border:1px solid #27352f;border-radius:7px;background:#0b1210}.market-price-cell span{display:block;color:#7f8e88;font-size:5.5px;text-transform:uppercase}.market-price-cell b{display:block;margin-top:2px;font-size:8px;white-space:nowrap}.market-row-sub{margin-top:5px;color:#81918a;font-size:6px;line-height:1.35}
+.market-row-actions{display:grid;grid-template-columns:1fr;gap:6px}.market-row-actions button{width:100%;min-height:42px;font-size:7px}.market-row-actions .bid-direct{background:#17211d;color:#fff;border-color:#3b4b45}.market-row-actions .buy-direct{background:var(--lime);border-color:var(--lime);color:#06100c}
+.market-row-actions button:disabled{opacity:.35}
+.my-bids-panel{margin-top:11px;padding:10px;border:1px solid #33433d;border-radius:12px;background:#0d1512}.my-bids-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.my-bids-head strong{font-size:11px}.my-bids-head span{font-size:6px;color:#82918b}
+.my-bids-panel .market-row{min-height:112px;grid-template-columns:76px minmax(0,1fr) 164px}.my-bids-panel .market-row-card .mini,.my-bids-panel .market-row-card .mini .card-shell{width:64px!important}
+.transfer-watch{margin-top:16px!important;padding-top:12px!important}.transfer-watch-list{display:grid;gap:10px!important}.transfer-section{border:1px solid #2b3933;border-radius:12px;background:#0d1512;overflow:hidden}.transfer-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;border-bottom:1px solid #27342f}.transfer-section-head h4{margin:0;font-size:10px}.transfer-section-head span{color:#86948e;font-size:6px}.transfer-section-head button{min-height:30px;padding:5px 8px;font-size:6px}.transfer-section-body{display:grid;gap:6px;padding:7px}.transfer-empty{padding:12px;text-align:center;color:#718078;font-size:6.5px}
+.transfer-sale-row{display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px;border:1px solid #293831;border-radius:9px;background:#101814}.transfer-sale-row.sold{border-color:#356f50;background:#0d1b14}.transfer-sale-row.unsold{border-color:#70414a;background:#1a1012}.transfer-sale-row.active{border-color:#4d6046;background:#111a12}.transfer-sale-card{border:0;background:transparent;padding:0}.transfer-sale-card .mini,.transfer-sale-card .mini .card-shell{width:58px!important}.transfer-sale-info{min-width:0}.transfer-sale-info strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.transfer-sale-info small{display:block;margin-top:3px;color:#84928c;font-size:5.8px;line-height:1.45}.transfer-sale-status{margin-top:4px;font-size:6px;font-weight:950}.transfer-sale-row.sold .transfer-sale-status{color:#82efa9}.transfer-sale-row.unsold .transfer-sale-status{color:#ff9eaa}.transfer-sale-row.active .transfer-sale-status{color:#d9ff72}.transfer-sale-actions{display:grid;gap:4px;min-width:88px}.transfer-sale-actions button{min-height:32px;padding:5px 7px;font-size:6px}
+.transfer-sell-editor{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;padding:8px;margin-top:2px;border:1px solid #3b4b44;border-radius:8px;background:#0a110f}.transfer-sell-editor label{display:block;color:#82918b;font-size:5.5px;font-weight:900}.transfer-sell-editor input,.transfer-sell-editor select{width:100%;min-height:36px;margin-top:3px;border:1px solid #33443d;border-radius:7px;background:#111a16;color:#fff;padding:0 7px;font-size:11px}.transfer-sell-editor button{align-self:end;min-height:36px;font-size:6px}
+@media(max-width:620px){
+ .market-row{grid-template-columns:70px minmax(0,1fr) 112px;gap:7px;min-height:112px;padding:7px}
+ .market-row-card .mini,.market-row-card .mini .card-shell{width:63px!important}
+ .market-row-name strong{font-size:9px}.market-price-grid{grid-template-columns:1fr 1fr}.market-price-cell{padding:5px}.market-row-actions button{min-height:38px;font-size:6px;padding:5px}
+ .my-bids-panel .market-row{grid-template-columns:62px minmax(0,1fr) 105px}.my-bids-panel .market-row-card .mini,.my-bids-panel .market-row-card .mini .card-shell{width:54px!important}
+ .transfer-sale-row{grid-template-columns:58px minmax(0,1fr) 82px;gap:6px}.transfer-sale-card .mini,.transfer-sale-card .mini .card-shell{width:50px!important}.transfer-sell-editor{grid-template-columns:1fr 1fr}.transfer-sell-editor button{grid-column:1/-1}
+}
+
+
 /* V18.42 pack tiers: instant / board / walkout / special / double walkout */
 .opening{isolation:isolate}
 .opening:before,.opening:after{content:"";position:absolute;inset:-28%;pointer-events:none;opacity:0;z-index:1}
@@ -1041,7 +1070,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.89</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.90</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1169,7 +1198,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </div>
   <div id="marketResultMeta" class="market-result-meta"><span>Filter setzen und suchen.</span><span></span></div>
   <div id="marketGrid" class="itemgrid"></div><div id="wonAuctions"></div>
-  <div class="transfer-watch"><h3>Meine Transferliste</h3><p>Spieler, die du aus der Detailansicht auf deine Transferliste gesetzt hast.</p><div id="transferWatchList" class="transfer-watch-list"></div></div>
+  <div class="transfer-watch"><h3>Transferliste</h3><p>Verkaufte, nicht verkaufte, verfügbare und aktive Transfers wie in der Companion-App.</p><div id="transferWatchList" class="transfer-watch-list"></div></div>
 </div></section>
 
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
@@ -1338,7 +1367,7 @@ const fmt=n=>Number(n||0).toLocaleString("de-DE");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-let PLAYERS=[],P_BY_ID=new Map(),state=loadState(),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sbcSelections={},match=null;
+let PLAYERS=[],P_BY_ID=new Map(),state=loadState(),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sellEditorUid=null,sbcSelections={},match=null;
 
 const FORMATIONS={
 "4-3-3":[
@@ -1683,12 +1712,12 @@ const SBCS=[
 function baseState(){return{
  version:122,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
- roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Gerlies FUT Club"},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
+  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
  }catch(e){return initializeSquadPresets(baseState())}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -2537,7 +2566,15 @@ function weakFootStars(p){return ratedStars(p?.weakFoot)}
 function workRates(p){return String(p?.workRates||p?.workRate||"").trim()||"–"}
 function stars(n){return n>=1&&n<=5?"★".repeat(n)+"☆".repeat(5-n):"–"}
 function isOnTransferList(uid){return (state.transferList||[]).includes(uid)}
-function toggleTransferList(uid){state.transferList=state.transferList||[];if(isOnTransferList(uid))state.transferList=state.transferList.filter(x=>x!==uid);else state.transferList.push(uid);save()}
+function activeTransferSaleForUid(uid){return (state.transferSales||[]).find(s=>String(s.uid)===String(uid)&&s.status==="active")||null}
+function toggleTransferList(uid){
+ state.transferList=state.transferList||[];
+ const item=state.club.find(x=>x.uid===uid);
+ if(!isOnTransferList(uid)&&item&&!item.tradeable){toast("Untauschbare Spieler können nicht auf die Transferliste.");return false}
+ if(isOnTransferList(uid)&&activeTransferSaleForUid(uid)){toast("Aktive Transfers können nicht aus der Transferliste entfernt werden.");return false}
+ if(isOnTransferList(uid))state.transferList=state.transferList.filter(x=>x!==uid);else state.transferList.push(uid);
+ save();return true
+}
 function openBiography(item,index,fallbackBase=null){
  if(!item)return;
  const shown=displayBase(item),base=shown||(fallbackBase?{...fallbackBase,ovr:Math.min(99,Number(fallbackBase.ovr||0)+Number(item.boost||0)),position:item.overridePosition||fallbackBase.position}:null);
@@ -3304,13 +3341,13 @@ $("playerDetailBody").addEventListener("click",e=>{
  }
  if(ins){$("playerModal").classList.remove("active");replaceUiState("view",{view:currentViewId()});openSlotPickerForItem(ins.dataset.insertItem);return;}
  if(tl){
-   toggleTransferList(tl.dataset.transferlist);
+   const changed=toggleTransferList(tl.dataset.transferlist);
    const item=state.club.find(x=>x.uid===tl.dataset.transferlist);
    if(item){
      const idx=state.squad.indexOf(item.uid);
      openPlayerDetails(item,idx>=0?idx:null);
    }
-   toast(isOnTransferList(tl.dataset.transferlist)?"Zur Transferliste hinzugefügt.":"Von Transferliste entfernt.");
+   if(changed)toast(isOnTransferList(tl.dataset.transferlist)?"Zur Transferliste hinzugefügt.":"Von Transferliste entfernt.");
    return;
  }
  if(market){
@@ -3616,7 +3653,7 @@ function createMarketListing(base,filters){let variant="",eventName="",boost=0,o
  else if(filters.specialType==="event"){const sp=specialVariant("event");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
- const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
+ const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,startPrice:start,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
 function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "))}
 function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
@@ -3657,37 +3694,119 @@ function settleAuctions(){
  let changed=false;
  for(const x of new Set([...(state.auctions||[]),...marketListings])){
   if(x.settled||Date.now()<x.ends)continue;
-  x.settled=true;
+  x.settled=true;x.botOutbidAt=0;
   if(!x.myBid)continue;
-  if(x.myBid>=x.bid&&P_BY_ID.has(String(x.base?.id))){
+  if(!x.refunded&&x.myBid>=x.bid&&P_BY_ID.has(String(x.base?.id))){
    ensureObjectiveWindows();state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;
    toast(`Gebot gewonnen: ${x.base.name}`)
   }else{
-   state.coins+=x.myBid;x.myBid=0;x.refunded=true;
-   toast(`Gebot verloren: ${x.base?.name||"Spieler"}. Coins zurückerstattet.`)
+   if(!x.refunded){state.coins+=Number(x.myBid||0);x.refunded=true}
+   x.won=false;toast(`Gebot verloren: ${x.base?.name||"Spieler"}.`)
   }
   changed=true
  }
  if(changed){updateObjectiveIndicators();renderWallet();save()}
  return changed
 }
+function marketAuctionState(x){
+ if(x?.bought)return{key:"won",label:"Sofort gekauft",icon:"✓"};
+ if(x?.settled&&x?.won)return{key:"won",label:"Gewonnen",icon:"✓"};
+ if(x?.settled&&x?.myBid)return{key:"lost",label:"Verloren",icon:"×"};
+ if(x?.settled)return{key:"expired",label:"Abgelaufen",icon:"×"};
+ if(x?.myBid&&x?.refunded&&Number(x.bid)>Number(x.myBid))return{key:"outbid",label:"Überboten",icon:"!"};
+ if(x?.myBid&&!x?.refunded&&Number(x.myBid)>=Number(x.bid))return{key:"leading",label:"Höchstbietender",icon:"✓"};
+ return{key:"neutral",label:"Auktion läuft",icon:""}
+}
+function marketRowHTML(x,i,tracked=false){
+ const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${fmt(x.startPrice||x.bid)} </b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${fmt(x.price)}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${fmt(x.bid)}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${fmt(x.myBid)} Coins · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${x.settled?"disabled":""}>Bieten · ${fmt(next)}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${fmt(x.price)}</button></div></div>`
+}
+function processBotOutbids(){
+ let changed=false;const now=Date.now();
+ for(const x of state.auctions||[]){
+  if(x.settled||!x.myBid||x.refunded||!x.botOutbidAt||now<x.botOutbidAt)continue;
+  const raise=Math.max(50,Math.round(Number(x.bid||0)*.04/50)*50);
+  x.bid=Number(x.myBid)+raise;x.refunded=true;x.outbid=true;x.botOutbidAt=0;state.coins+=Number(x.myBid||0);changed=true;
+  toast(`Überboten: ${x.base?.name||"Spieler"} · ${fmt(x.bid)} Coins`)
+ }
+ if(changed){save();renderWallet()}return changed
+}
 function renderMyAuctions(){
  const auctions=state.auctions||[];
- $("wonAuctions").innerHTML=auctions.length?`<div class="won-auction"><strong>Meine Gebote</strong>${auctions.slice(-12).reverse().map((x,reverseIndex)=>{
-  const i=auctions.length-1-reverseIndex,inc=bidIncrement(x.bid),status=x.won?"Gewonnen":x.refunded?"Verloren · Coins zurück":x.myBid<x.bid?"Überboten":x.settled?"Beendet":"Höchstgebot";
-  return `<div class="transfer-watch-row"><div class="info"><strong>${esc(x.base?.name||"Spieler")}</strong><small>${status} · ${fmt(x.bid)} Coins${x.settled?"":` · <span data-my-auction-time="${i}">${auctionTime(x)}s</span>`}</small></div>${!x.settled?`<button class="secondary" data-my-auction-bid="${i}">Bieten +${fmt(inc)}</button><button class="primary" data-my-auction-buy="${i}">Sofortkauf</button>`:""}</div>`
- }).join("")}</div>`:""
+ $("wonAuctions").innerHTML=auctions.length?`<div class="my-bids-panel"><div class="my-bids-head"><strong>Meine Gebote</strong><span>${auctions.length} beobachtet</span></div>${auctions.slice(-12).reverse().map((x,reverseIndex)=>{const i=auctions.length-1-reverseIndex;return marketRowHTML(x,i,true)}).join("")}</div>`:""
 }
-function renderTransferWatch(){const ids=state.transferList||[],items=ids.map(id=>state.club.find(x=>x.uid===id)).filter(Boolean);$("transferWatchList").innerHTML=items.length?items.map(i=>{const b=displayBase(i);return`<div class="transfer-watch-row"><div class="rating">${itemRating(i)}</div><div class="info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · ${esc(b.league)}</small></div><button class="secondary" data-watch-open="${i.uid}">Öffnen</button><button class="secondary" data-watch-remove="${i.uid}">×</button></div>`}).join(""):'<div class="online-note">Noch keine Spieler auf der Transferliste.</div>'}
-function renderMarket(){settleAuctions();$("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>{const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",meta=marketMetaFactor(x.base),inc=bidIncrement(x.bid);return`<div class="item market-listing" data-market-listing="${i}"><button class="market-card-preview" data-market-open="${i}" aria-label="${esc(x.base.name)} öffnen">${cardHTML(b,pi,false,x.overridePosition||b.position)}</button><h4 class="market-listing-price">${fmt(x.price)} Coins</h4><p class="market-listing-club">${esc(x.base.team)}</p><div style="text-align:center;margin-top:5px"><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span>${meta>=2.15?` <span class="quality-tag special">META</span>`:""}</div><div class="market-listing-details"><strong>Gebot ${fmt(x.bid)}</strong> · Rating ${listingRating(x)}<br><span data-auction-time="${i}">${x.settled?(x.won?"GEWONNEN":"ABGELAUFEN"):`Noch ${auctionTime(x)}s`}</span></div><div class="bidbox"><button class="secondary" data-bid="${i}" ${x.settled?"disabled":""}>Bieten +${fmt(inc)}</button><button class="primary" data-mbuy="${i}" ${x.settled?"disabled":""}>Sofortkauf</button></div></div>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';renderMyAuctions();renderTransferWatch()}
+function transferSuggestedPrices(item){
+ const b=displayBase(item);if(!b)return{start:150,buy:200};
+ const special=!!item.variant||!!item.evo;let buy=marketPriceForRating(itemRating(item),special,b);
+ if(item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"))buy=Math.max(10500,buy);
+ buy=Math.max(200,marketRoundPrice(buy));const start=Math.max(150,marketRoundPrice(buy*.82));return{start,buy}
+}
+function transferSaleItem(sale){return state.club.find(i=>i.uid===sale.uid)||sale.item||null}
+function transferSaleRowHTML(sale,kind){
+ const item=transferSaleItem(sale),b=item?displayBase(item):null;if(!item||!b)return"";
+ const active=kind==="active",sold=kind==="sold",unsold=kind==="unsold",time=active?Math.max(0,Math.ceil((sale.ends-Date.now())/1000))+"s":sold?"Abgelaufen":"Abgelaufen";
+ return `<div class="transfer-sale-row ${kind}"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>Startpreis ${fmt(sale.startPrice)} · Sofortkauf ${fmt(sale.buyNow)}${sold?` · Verkauft für ${fmt(sale.soldPrice||sale.buyNow)}`:""}${active?` · Akt. Gebot ${fmt(sale.currentBid||sale.startPrice)}`:""}</small><div class="transfer-sale-status">${sold?"Verkauft":unsold?"Nicht verkauft":`Aktiv · ${time}`}</div></div><div class="transfer-sale-actions">${unsold?`<button class="primary" data-transfer-relist="${esc(sale.uid)}">Erneut anbieten</button>`:""}${active?"":sold?"":`<button class="secondary" data-watch-remove="${esc(sale.uid)}">In Verein</button>`}</div></div>`
+}
+function availableTransferRowHTML(item){
+ const b=displayBase(item),p=transferSuggestedPrices(item),editing=sellEditorUid===item.uid;
+ return `<div class="transfer-sale-row"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · Richtwert ${fmt(p.buy)} Coins</small><div class="transfer-sale-status">Verfügbar</div></div><div class="transfer-sale-actions"><button class="primary" data-transfer-sell="${esc(item.uid)}">Anbieten</button><button class="secondary" data-watch-remove="${esc(item.uid)}">In Verein</button></div>${editing?`<div class="transfer-sell-editor"><label>Startpreis<input data-sell-start="${esc(item.uid)}" type="number" min="150" step="50" value="${p.start}"></label><label>Sofortkauf<input data-sell-buy="${esc(item.uid)}" type="number" min="200" step="50" value="${p.buy}"></label><label>Dauer<select data-sell-duration="${esc(item.uid)}"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button class="primary" data-transfer-confirm-sell="${esc(item.uid)}">Jetzt anbieten</button></div>`:""}</div>`
+}
+function renderTransferWatch(){
+ settleTransferSales();
+ const sales=state.transferSales||[],sold=sales.filter(s=>s.status==="sold"),unsold=sales.filter(s=>s.status==="unsold"),active=sales.filter(s=>s.status==="active"),covered=new Set(active.concat(unsold).map(s=>String(s.uid))),items=(state.transferList||[]).map(id=>state.club.find(x=>x.uid===id)).filter(i=>i&&!covered.has(String(i.uid)));
+ const section=(title,rows,body,action="")=>`<section class="transfer-section"><div class="transfer-section-head"><div><h4>${title}</h4><span>${rows.length} Item${rows.length===1?"":"s"}</span></div>${action}</div><div class="transfer-section-body">${rows.length?body:'<div class="transfer-empty">Keine Items in diesem Bereich.</div>'}</div></section>`;
+ $("transferWatchList").innerHTML=section("Verkaufte Items",sold,sold.map(s=>transferSaleRowHTML(s,"sold")).join(""),sold.length?'<button class="secondary" data-clear-sold>Verkaufte löschen</button>':"")+section("Nicht verkaufte Items",unsold,unsold.map(s=>transferSaleRowHTML(s,"unsold")).join(""))+section("Verfügbare Items",items,items.map(availableTransferRowHTML).join(""))+section("Aktive Transfers",active,active.map(s=>transferSaleRowHTML(s,"active")).join(""))
+}
+function renderMarket(){
+ processBotOutbids();settleAuctions();settleTransferSales();
+ $("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>marketRowHTML(x,i,false)).join(""):'<div class="online-note">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';
+ renderMyAuctions();renderTransferWatch()
+}
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").textContent=`Transfermarkt · ${esc(x.base.team)} · ${fmt(x.price)} Coins`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,pi,{shownPosition:shown,slot:null,fits:true,chem:null,context:`${fmt(x.price)} Coins`})}<div class="detail-menu"><button class="menu-action" data-market-bio="${i}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-market-bid-action="${i}" ${x.settled?'disabled':''}><span><span>Bieten +${fmt(inc)} Coins</span><small>Aktuelles Gebot: ${fmt(x.bid)} Coins · ${x.settled?'Angebot beendet':auctionTime(x)+' Sekunden'}</small></span><b>›</b></button><button class="menu-action" data-market-buy-action="${i}" ${x.settled?'disabled':''}><span><span>Sofortkauf · ${fmt(x.price)} Coins</span><small>Spieler direkt deinem Verein hinzufügen.</small></span><b>›</b></button><button class="menu-action" data-market-similar="${i}"><span><span>Ähnliche Spieler suchen</span><small>Position, Liga und Rating als Filter übernehmen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player");
 }
-function buyMarketListing(i,tracked=false){const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)];if(!x||x.settled||state.coins+(x.myBid||0)<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}ensureObjectiveWindows();state.coins+=x.myBid||0;state.coins-=x.price;x.myBid=0;state.club.push(listingToClubItem(x));state.stats.market++;x.settled=true;x.won=true;save();renderAll();toast(`${x.base.name} gekauft.`);return true}
-function bidMarketListing(i,tracked=false){const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)];if(!x||x.settled)return false;const inc=bidIncrement(x.bid),newBid=x.bid+inc;if(state.coins+(x.myBid||0)<newBid){toast("Nicht genügend Coins.");return false}if(x.myBid)state.coins+=x.myBid;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;if(Math.random()<.38)x.bid+=Math.max(50,Math.round(x.bid*.04/50)*50);if(!state.auctions.includes(x))state.auctions.push(x);save();renderWallet();renderMarket();toast(`Gebot abgegeben: ${fmt(newBid)} Coins`);return true}
+function buyMarketListing(i,tracked=false){
+ const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)],held=x?.myBid&&!x?.refunded?Number(x.myBid):0;
+ if(!x||x.settled||state.coins+held<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}
+ ensureObjectiveWindows();if(held)state.coins+=held;state.coins-=x.price;x.myBid=0;x.refunded=false;x.botOutbidAt=0;x.bought=true;x.settled=true;x.won=true;state.club.push(listingToClubItem(x));state.stats.market++;
+ if(!state.auctions.includes(x))state.auctions.push(x);
+ save();renderAll();toast(`${x.base.name} für ${fmt(x.price)} Coins gekauft.`);return true
+}
+function bidMarketListing(i,tracked=false){
+ const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)];if(!x||x.settled)return false;
+ const inc=bidIncrement(x.bid),newBid=Number(x.bid)+inc,held=x.myBid&&!x.refunded?Number(x.myBid):0;
+ if(state.coins+held<newBid){toast("Nicht genügend Coins.");return false}
+ if(held)state.coins+=held;state.coins-=newBid;x.myBid=newBid;x.bid=newBid;x.refunded=false;x.outbid=false;
+ x.botOutbidAt=Math.random()<.58?Date.now()+4000+Math.floor(Math.random()*9000):0;
+ if(!state.auctions.includes(x))state.auctions.push(x);
+ save();renderWallet();renderMarket();toast(`Höchstgebot: ${fmt(newBid)} Coins`);return true
+}
+function transferSalePlayerInSquad(uid){return (state.squadPresets||[]).some(p=>p?.squad?.includes(uid))||state.squad?.includes(uid)}
+function createTransferSale(uid,startPrice,buyNow,duration){
+ const item=state.club.find(i=>i.uid===uid);if(!item||!item.tradeable)return toast("Spieler ist nicht tauschbar.");
+ if(transferSalePlayerInSquad(uid))return toast("Spieler zuerst aus allen Mannschaften entfernen.");
+ startPrice=marketRoundPrice(Math.max(150,Number(startPrice||0)));buyNow=marketRoundPrice(Math.max(startPrice+50,Number(buyNow||0)));duration=Math.max(3600,Number(duration||3600));
+ state.transferSales=state.transferSales||[];state.transferSales=state.transferSales.filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));
+ const suggested=transferSuggestedPrices(item).buy,ratio=buyNow/Math.max(1,suggested),chance=ratio<=1.05?.82:ratio<=1.25?.6:ratio<=1.55?.3:.1,willSell=Math.random()<chance,now=Date.now(),ends=now+duration*1000;
+ const planned=Math.min(buyNow,Math.max(startPrice,marketRoundPrice(suggested*(.92+Math.random()*.12))));
+ state.transferSales.push({id:uid+"-"+now,uid,item:{...item},startPrice,buyNow,currentBid:startPrice,createdAt:now,ends,status:"active",saleAt:willSell?Math.min(ends-5000,now+18000+Math.floor(Math.random()*65000)):0,plannedPrice:planned});
+ sellEditorUid=null;save();renderTransferWatch();toast(`${displayBase(item)?.name||"Spieler"} angeboten.`)
+}
+function settleTransferSales(){
+ let changed=false,now=Date.now();state.transferSales=state.transferSales||[];
+ for(const sale of state.transferSales){
+  if(sale.status!=="active")continue;
+  if(sale.saleAt&&now>=sale.saleAt){
+   sale.status="sold";sale.soldPrice=sale.plannedPrice||sale.buyNow;sale.currentBid=sale.soldPrice;sale.soldAt=now;state.coins+=Number(sale.soldPrice||0);
+   state.club=state.club.filter(i=>i.uid!==sale.uid);state.transferList=(state.transferList||[]).filter(id=>id!==sale.uid);changed=true;toast(`Verkauft: ${displayBase(sale.item)?.name||"Spieler"} · ${fmt(sale.soldPrice)} Coins`);continue
+  }
+  if(now>=sale.ends){sale.status="unsold";sale.saleAt=0;changed=true}
+ }
+ if(changed){save();renderWallet()}return changed
+}
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="event")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
@@ -3701,15 +3820,21 @@ $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest
 document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
 $("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
 $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]"),listing=e.target.closest("[data-market-listing]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}if(listing){openMarketPlayerDetails(Number(listing.dataset.marketListing));return}})
-$("wonAuctions").addEventListener("click",e=>{const bid=e.target.closest("[data-my-auction-bid]"),buy=e.target.closest("[data-my-auction-buy]");if(bid)bidMarketListing(Number(bid.dataset.myAuctionBid),true);else if(buy)buyMarketListing(Number(buy.dataset.myAuctionBuy),true)});
-$("transferWatchList").addEventListener("click",e=>{const o=e.target.closest("[data-watch-open]"),r=e.target.closest("[data-watch-remove]");if(o){const i=state.club.find(x=>x.uid===o.dataset.watchOpen);if(i)openPlayerDetails(i,null);return}if(r){state.transferList=(state.transferList||[]).filter(x=>x!==r.dataset.watchRemove);save();renderTransferWatch();toast("Von Transferliste entfernt.")}})
+$("wonAuctions").addEventListener("click",e=>{const bid=e.target.closest("[data-my-auction-bid]"),buy=e.target.closest("[data-my-auction-buy]"),open=e.target.closest("[data-my-auction-open]");if(bid){bidMarketListing(Number(bid.dataset.myAuctionBid),true);return}if(buy){buyMarketListing(Number(buy.dataset.myAuctionBuy),true);return}if(open){const x=state.auctions?.[Number(open.dataset.myAuctionOpen)];if(x){const idx=marketListings.indexOf(x);if(idx>=0)openMarketPlayerDetails(idx);else openBiography(marketPreviewItem(x),-1,x.base)}}});
+$("transferWatchList").addEventListener("click",e=>{
+ const o=e.target.closest("[data-transfer-item-open]"),r=e.target.closest("[data-watch-remove]"),sell=e.target.closest("[data-transfer-sell]"),confirmSell=e.target.closest("[data-transfer-confirm-sell]"),relist=e.target.closest("[data-transfer-relist]"),clearSold=e.target.closest("[data-clear-sold]");
+ if(o){const uid=o.dataset.transferItemOpen,item=state.club.find(x=>x.uid===uid)||(state.transferSales||[]).find(s=>String(s.uid)===String(uid))?.item;if(item)openPlayerDetails(item,state.squad.indexOf(uid)>=0?state.squad.indexOf(uid):null);return}
+ if(clearSold){state.transferSales=(state.transferSales||[]).filter(s=>s.status!=="sold");save();renderTransferWatch();return}
+ if(sell||relist){sellEditorUid=(sell||relist).dataset.transferSell||(sell||relist).dataset.transferRelist;renderTransferWatch();return}
+ if(confirmSell){const uid=confirmSell.dataset.transferConfirmSell,start=document.querySelector(`[data-sell-start="${CSS.escape(uid)}"]`),buy=document.querySelector(`[data-sell-buy="${CSS.escape(uid)}"]`),dur=document.querySelector(`[data-sell-duration="${CSS.escape(uid)}"]`);createTransferSale(uid,start?.value,buy?.value,dur?.value);return}
+ if(r){const uid=r.dataset.watchRemove;if(activeTransferSaleForUid(uid))return toast("Aktiver Transfer kann nicht entfernt werden.");state.transferList=(state.transferList||[]).filter(x=>x!==uid);state.transferSales=(state.transferSales||[]).filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));save();renderTransferWatch();toast("Spieler zurück im Verein.");return}
+})
 function updateMarketCountdowns(){
- const expired=marketListings.some(x=>!x.settled&&Date.now()>=x.ends);
- const settled=settleAuctions();
+ const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&Date.now()>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
  if(!document.getElementById("marketView")?.classList.contains("active"))return;
  marketListings.forEach((x,i)=>{const el=document.querySelector(`[data-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});
  (state.auctions||[]).forEach((x,i)=>{const el=document.querySelector(`[data-my-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});
- if(settled||expired)renderMarket();
+ if(botChanged||settled||expired||salesChanged)renderMarket()
 }
 setInterval(updateMarketCountdowns,1000);
 
@@ -4851,7 +4976,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.89";
+const GFUT_BUILD="V18.90";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -4867,8 +4992,8 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1889",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-89-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1890",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-90-reloaded")){sessionStorage.setItem("gfut-v18-89-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 
