@@ -6,6 +6,7 @@ const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
+const controlsCode=html.slice(html.indexOf('function squadPresetTabsHTML(){'),html.indexOf('function renderSquad(){'));
 const club=Array.from({length:21},(_,i)=>({uid:`p${i}`,pid:`p${i}`}));
 function app(saved=new Map()){
  const ctx={localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)},queueMicrotask};
@@ -64,4 +65,19 @@ test('consumed cards are removed from every saved lineup and duplicate cards are
  instance.read('activateSquadPreset(state,0)');
  assert.equal(s.squad[0],'p0');
  assert.ok(!s.squad.includes('p1'));
+});
+
+test('squad controls immediately reflect formation and name edits before switching teams',()=>{
+ const appState=app(new Map([['gerliesFutV9',JSON.stringify({club,squad:[...club.slice(0,18).map(x=>x.uid),...Array(5).fill(null)]})]]));
+ const{ctx,state}=appState,elements=new Map();
+ const element=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',value:'',listeners:{},addEventListener(type,handler){this.listeners[type]=handler}});return elements.get(id)};
+ ctx.$=element;ctx.esc=String;ctx.document={activeElement:null};
+ vm.runInContext(controlsCode,ctx);
+ state.formation='4-4-2';ctx.renderSquadPresetControls();
+ assert.match(element('squadPresetTabs').innerHTML,/18\/18 · 4-4-2/);
+ const input=element('squadPresetName');ctx.document.activeElement=input;
+ input.value='Ziele';input.listeners.input({target:input});
+ assert.equal(state.squadPresets[0].name,'Ziele');
+ assert.match(element('squadPresetTabs').innerHTML,/Ziele/);
+ assert.equal(input.value,'Ziele');
 });

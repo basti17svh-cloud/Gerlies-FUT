@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Gerlies FUT V18.76</title>
+<title>Gerlies FUT V18.77</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -996,7 +996,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.76</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+  <div class="brand"><div class="mark">GFUT</div><div><h1>Gerlies FUT <span class="build-badge">V18.77</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Coins</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>FC Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2967,6 +2967,7 @@ function squadPresetTabsHTML(){return state.squadPresets.map((preset,i)=>{
  return `<button type="button" class="squad-preset-tab ${active?'active':''} ${preset?'':'new'}" data-select-squad="${i}" aria-pressed="${active}" aria-label="${esc(name)} ${preset?active?'aktiv':'aktivieren':'aus aktuellem Team erstellen'}"><strong>${esc(name)}</strong><small>${preset?`${filled}/18 · ${esc(preset.formation)}`:'＋ Team kopieren'}</small></button>`
  }).join('')}
 function renderSquadPresetControls(){
+ persistActiveSquadPreset(state);
  for(const id of ['squadPresetTabs','playSquadPresets'])if($(id))$(id).innerHTML=squadPresetTabsHTML();
  const input=$("squadPresetName");if(input&&document.activeElement!==input)input.value=state.squadPresets[state.activeSquadPreset]?.name||"Mein Team"
 }
@@ -2979,6 +2980,10 @@ function selectSquadPreset(index){
 function handleSquadPresetClick(e){const button=e.target.closest('[data-select-squad]');if(button)selectSquadPreset(Number(button.dataset.selectSquad))}
 $("squadPresetTabs").addEventListener("click",handleSquadPresetClick);
 $("playSquadPresets").addEventListener("click",handleSquadPresetClick);
+$("squadPresetName").addEventListener("input",e=>{
+ state.squadPresets[state.activeSquadPreset].name=squadPresetName(e.target.value,state.activeSquadPreset);
+ renderSquadPresetControls();save()
+});
 $("squadPresetName").addEventListener("change",e=>{
  const name=squadPresetName(e.target.value,state.activeSquadPreset);
  state.squadPresets[state.activeSquadPreset].name=name;e.target.value=name;
