@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V18.98</title>
+<title>Footera V18.99</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1087,7 +1087,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.98</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.99</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4564,7 +4564,8 @@ function startMatch(mode,opponent=null){
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:state.tactic||"balanced",redCards:[],
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
-  injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false
+  injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
+  extraTimeStarted:false,extraTimeBreakLogged:false,penaltyWinner:null,pensHome:null,pensAway:null
  };
  $("match").classList.add("active");
  pushUiState("match",{mode});
@@ -4582,12 +4583,12 @@ function addLog(t){
  if(!match)return;
  const d=document.createElement("div");
  d.className="logline";
- d.textContent=`${Math.min(90,Math.floor(match.minute))}' ${t}`;
+ d.textContent=`${Math.min(120,Math.floor(match.minute))}' ${t}`;
  $("matchLog").prepend(d)
 }
 function updateMatchUI(){
  if(!match)return;
- $("matchMinute").textContent=`${Math.min(90,Math.floor(match.minute))}'`;
+ $("matchMinute").textContent=`${Math.min(120,Math.floor(match.minute))}'`;
  $("matchScore").textContent=`${match.home} : ${match.away}`;
  $("matchCardEvents").innerHTML=(match.redCards||[]).map(card=>`<span class="match-red-card">${esc(card.name)} · ${card.minute}'</span>`).join("");
  const poss=Math.max(32,Math.min(68,Math.round(match.poss)));
@@ -4651,16 +4652,60 @@ function sendOffPlayer(){
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
 }
-function simTick(){
- if(!match||match.finished||match.paused)return;
+function matchNeedsWinner(){
+ return !!match&&match.mode!=="rivals"
+}
+function beginExtraTime(){
+ if(!match||match.extraTimeStarted)return;
+ match.extraTimeStarted=true;match.extraTimeBreakLogged=false;match.minute=90;
+ addLog("Nach 90 Minuten steht es unentschieden. Es geht in die Verlängerung.");
+ updateMatchUI()
+}
+function runPenaltyShootout(){
+ if(!match||match.penaltyWinner)return;
+ const edge=Math.max(-.06,Math.min(.06,(matchTeamPower()-match.opp)/140));
+ const homeChance=Math.max(.62,Math.min(.86,.74+edge));
+ const awayChance=Math.max(.62,Math.min(.86,.74-edge));
+ let home=0,away=0;
+ for(let i=0;i<5;i++){if(Math.random()<homeChance)home++;if(Math.random()<awayChance)away++}
+ let sudden=0;
+ while(home===away&&sudden<20){if(Math.random()<homeChance)home++;if(Math.random()<awayChance)away++;sudden++}
+ if(home===away){if(Math.random()<.5)home++;else away++}
+ match.pensHome=home;match.pensAway=away;match.penaltyWinner=home>away?"home":"away";
+ addLog(`Elfmeterschießen: ${match.penaltyWinner==="home"?matchHomeTeamName():matchAwayTeamName()} gewinnt ${home}:${away}.`);
+ finishMatch()
+}
+function resolveEndOfPhase(){
+ if(!match||match.finished)return true;
  if(!match.halftimeLogged&&match.minute>=45){
   match.halftimeLogged=true;match.halftimeActive=true;match.minute=45;updateMatchUI();addLog("Halbzeit.");
   pauseForManagement("Halbzeit – passe jetzt Aufstellung, Wechsel, Formation oder Taktik für die zweite Halbzeit an.");
-  return
+  return true
  }
+ if(!match.extraTimeStarted&&match.minute>=90){
+  match.minute=90;updateMatchUI();
+  if(match.home!==match.away||!matchNeedsWinner()){finishMatch();return true}
+  beginExtraTime();return true
+ }
+ if(match.extraTimeStarted&&!match.extraTimeBreakLogged&&match.minute>=105){
+  match.extraTimeBreakLogged=true;match.minute=105;updateMatchUI();addLog("Halbzeit der Verlängerung.");
+  return true
+ }
+ if(match.extraTimeStarted&&match.minute>=120){
+  match.minute=120;updateMatchUI();
+  if(match.home!==match.away){finishMatch();return true}
+  addLog("Auch nach 120 Minuten unentschieden. Das Elfmeterschießen entscheidet.");
+  runPenaltyShootout();return true
+ }
+ return false
+}
+function simTick(){
+ if(!match||match.finished||match.paused)return;
+ if(resolveEndOfPhase())return;
  const baseStep=matchSpeed<=300?2.6:1.7;
- const boundary=!match.halftimeLogged?45:90;
- const step=Math.min(90-match.minute,baseStep,Math.max(0,boundary-match.minute));
+ const boundary=!match.halftimeLogged?45:!match.extraTimeStarted?90:!match.extraTimeBreakLogged?105:120;
+ const step=Math.min(boundary-match.minute,baseStep);
+ if(step<=0){resolveEndOfPhase();return}
  match.minute+=step;
  const mods=tacticMods(match.tactic);
  const powerNow=matchTeamPower();
@@ -4673,14 +4718,8 @@ function simTick(){
  if(opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
 
  const min=Math.floor(match.minute);
- if(match.minute>=45&&!match.halftimeLogged){
-  match.halftimeLogged=true;match.halftimeActive=true;match.minute=45;updateMatchUI();addLog("Halbzeit.");
-  pauseForManagement("Halbzeit – passe jetzt Aufstellung, Wechsel, Formation oder Taktik für die zweite Halbzeit an.");
-  return
- }
-
- // Management events: actual interruption only when a reaction is required.
- if(min>=50&&!match.injuryTriggered&&Math.random()<.0035){
+ // Management events are limited to regulation time; extra time itself remains uninterrupted.
+ if(!match.extraTimeStarted&&min>=50&&!match.injuryTriggered&&Math.random()<.0035){
   match.injuryTriggered=true;
   const starter=match.lineup.slice(0,11).filter(Boolean)[Math.floor(Math.random()*11)];
   if(starter){
@@ -4690,13 +4729,13 @@ function simTick(){
    return
   }
  }
- if(min>=60&&!match.redTriggered&&Math.random()<.0017){
+ if(!match.extraTimeStarted&&min>=60&&!match.redTriggered&&Math.random()<.0017){
   match.redTriggered=sendOffPlayer();
   return
  }
 
  updateMatchUI();
- if(match.minute>=90)finishMatch()
+ resolveEndOfPhase()
 }
 let matchManagerDraft=null;
 function initMatchManagerDraft(){
@@ -4813,20 +4852,23 @@ function finishMatch(){
  if(!match||match.finished)return;
  ensureObjectiveWindows();
  stopMatchTimer();
- match.finished=true;match.minute=90;updateMatchUI();
+ match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();
  state.stats.matches++;
- let reward=0,isFriendly=String(match.mode).startsWith("friendly");
+ const isFriendly=String(match.mode).startsWith("friendly");
+ const decidedByPens=match.home===match.away&&!!match.penaltyWinner;
+ const homeWon=match.home>match.away||(decidedByPens&&match.penaltyWinner==="home");
+ const awayWon=match.home<match.away||(decidedByPens&&match.penaltyWinner==="away");
  if(isFriendly)state.stats.friendlies=(state.stats.friendlies||0)+1;
- let resultKey="loss";
- if(match.home>match.away){
+ let reward=0,resultKey="loss";
+ if(homeWon){
   resultKey="win";state.stats.wins++;if(isFriendly)state.stats.friendlyWins=(state.stats.friendlyWins||0)+1;
   reward=isFriendly?0:(match.mode==="rivals"?750:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:700));
   if(match.mode==="rivals"){
    state.rivals.points+=3;
    while(state.rivals.points>=12&&state.rivals.division>1){state.rivals.points-=12;state.rivals.division--;state.coins+=3000}
   }
- }else if(match.home===match.away){
-  resultKey="draw";state.stats.draws++;reward=isFriendly?0:(match.mode==="rivals"?610:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.draw:580));if(match.mode==="rivals")state.rivals.points++
+ }else if(!awayWon){
+  resultKey="draw";state.stats.draws++;reward=match.mode==="rivals"?610:0;if(match.mode==="rivals")state.rivals.points++
  }else{
   state.stats.losses++;reward=isFriendly?0:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.loss:465)
  }
@@ -4845,9 +4887,11 @@ function finishMatch(){
  $("managerPanel").classList.remove("active");
  $("eventBanner").classList.remove("active");
  $("matchResult").classList.add("active");
- $("matchResultTitle").textContent=match.home>match.away?"Sieg":match.home===match.away?"Unentschieden":"Niederlage";
- $("matchResultText").textContent=`${matchHomeTeamName()} ${match.home}:${match.away} ${matchAwayTeamName()} · ${match.shotsHome}:${match.shotsAway} Schüsse · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)}`;
- $("matchReward").textContent=String(match.mode).startsWith("friendly")?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
+ $("matchResultTitle").textContent=homeWon?"Sieg":awayWon?"Niederlage":"Unentschieden";
+ const pens=decidedByPens?` · Elfmeterschießen ${match.pensHome}:${match.pensAway}`:"";
+ const extra=match.extraTimeStarted&&!decidedByPens?" · nach Verlängerung":decidedByPens?" · nach Elfmeterschießen":"";
+ $("matchResultText").textContent=`${matchHomeTeamName()} ${match.home}:${match.away} ${matchAwayTeamName()}${pens}${extra} · ${match.shotsHome}:${match.shotsAway} Schüsse · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)}`;
+ $("matchReward").textContent=isFriendly?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
  setMatchPill(true);
  renderAll()
 }
@@ -5211,7 +5255,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.98";
+const GFUT_BUILD="V18.99";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
