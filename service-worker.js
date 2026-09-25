@@ -1,4 +1,4 @@
-const CACHE="footera-v19-08-root-shell";
+const CACHE="footera-v19-09-root-shell";
 const SHELL=["./","./index.html","./footera-theme.css","./season-system.js","./manifest.webmanifest","./players-fallback.json","./assets/badge-manifest.json","./assets/player-traits.json","./assets/footera/emblem.png","./assets/footera/stadion.webp","./assets/footera/bronze.webp","./assets/footera/silber.webp","./assets/footera/gold.webp","./assets/footera/promo.webp","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png","./p1.png","./p2.png","./p3.png","./p4.png","./p5.png","./p6.png","./p7.png","./p8.png"];
 
 self.addEventListener("install",e=>
