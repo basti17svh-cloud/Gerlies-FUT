@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V18.99</title>
+<title>Footera V19.00</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1087,7 +1087,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V18.99</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.00</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4542,7 +4542,7 @@ function startMatchTimer(){
 }
 function setMatchPill(paused){
  const pill=$("matchStatePill");
- pill.innerHTML=match?.finished?'<i></i><span>Abpfiff</span>':match?.halftimeActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Halbzeit</span>':paused?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Simulation pausiert</span>':'<i></i><span>Simulation läuft</span>'
+ pill.innerHTML=match?.finished?'<i></i><span>Abpfiff</span>':match?.halftimeActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Halbzeit</span>':match?.extraTimeManagementActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Vor Verlängerung</span>':paused?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Simulation pausiert</span>':'<i></i><span>Simulation läuft</span>'
 }
 function matchHomeTeamName(){return String(state.profile?.clubName||"Footera Club").trim()||"Footera Club"}
 function matchAwayTeamName(){return String(match?.opponentName||"Gegner").trim()||"Gegner"}
@@ -4565,7 +4565,7 @@ function startMatch(mode,opponent=null){
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:state.tactic||"balanced",redCards:[],
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
   injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
-  extraTimeStarted:false,extraTimeBreakLogged:false,penaltyWinner:null,pensHome:null,pensAway:null
+  extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyWinner:null,pensHome:null,pensAway:null
  };
  $("match").classList.add("active");
  pushUiState("match",{mode});
@@ -4657,9 +4657,10 @@ function matchNeedsWinner(){
 }
 function beginExtraTime(){
  if(!match||match.extraTimeStarted)return;
- match.extraTimeStarted=true;match.extraTimeBreakLogged=false;match.minute=90;
- addLog("Nach 90 Minuten steht es unentschieden. Es geht in die Verlängerung.");
- updateMatchUI()
+ match.extraTimeStarted=true;match.extraTimeBreakLogged=false;match.extraTimeManagementActive=true;match.minute=90;
+ addLog("Nach 90 Minuten steht es unentschieden. Vor der Verlängerung ist Team-Management möglich.");
+ updateMatchUI();
+ pauseForManagement("90 Minuten gespielt – passe jetzt Aufstellung, Wechsel, Formation oder Taktik für die Verlängerung an.")
 }
 function runPenaltyShootout(){
  if(!match||match.penaltyWinner)return;
@@ -4819,11 +4820,13 @@ document.addEventListener("pointerdown",startMatchManagerDrag,{passive:true});do
 function fillManagerSelectors(){renderMatchManager()}
 function pauseForManagement(reason="Team-Management geöffnet."){
  if(!match||match.finished)return;match.paused=true;stopMatchTimer();initMatchManagerDraft();$("matchFormationSelect").value=matchManagerDraft.formation;$("matchTacticSelect").value=matchManagerDraft.tactic;renderMatchManager();$("managerPanel").classList.add("active");$("eventBanner").textContent=reason;$("eventBanner").classList.add("active");
- const halftime=!!match.halftimeActive;$("confirmSubBtn").textContent=halftime?"Änderungen übernehmen & 2. Halbzeit starten":"Übernehmen & weiterspielen";$("resumeMatchBtn").textContent=halftime?"Ohne Änderungen in die 2. Halbzeit":"Änderungen verwerfen";
+ const halftime=!!match.halftimeActive,extraTime=!!match.extraTimeManagementActive;
+ $("confirmSubBtn").textContent=halftime?"Änderungen übernehmen & 2. Halbzeit starten":extraTime?"Änderungen übernehmen & Verlängerung starten":"Übernehmen & weiterspielen";
+ $("resumeMatchBtn").textContent=halftime?"Ohne Änderungen in die 2. Halbzeit":extraTime?"Ohne Änderungen in die Verlängerung":"Änderungen verwerfen";
  setMatchPill(true)
 }
 function resumeMatch(){
- if(!match||match.finished)return;const fromHalftime=!!match.halftimeActive;matchManagerDraft=null;match.paused=false;match.forcedOut=null;match.halftimeActive=false;$("managerPanel").classList.remove("active");$("eventBanner").classList.remove("active");$("confirmSubBtn").textContent="Übernehmen & weiterspielen";$("resumeMatchBtn").textContent="Änderungen verwerfen";if(fromHalftime)addLog("2. Halbzeit angepfiffen.");setMatchPill(false);startMatchTimer()
+ if(!match||match.finished)return;const fromHalftime=!!match.halftimeActive,fromExtraTime=!!match.extraTimeManagementActive;matchManagerDraft=null;match.paused=false;match.forcedOut=null;match.halftimeActive=false;match.extraTimeManagementActive=false;$("managerPanel").classList.remove("active");$("eventBanner").classList.remove("active");$("confirmSubBtn").textContent="Übernehmen & weiterspielen";$("resumeMatchBtn").textContent="Änderungen verwerfen";if(fromHalftime)addLog("2. Halbzeit angepfiffen.");if(fromExtraTime)addLog("Verlängerung angepfiffen.");setMatchPill(false);startMatchTimer()
 }
 function confirmMatchManagerChanges(){
  if(!match)return;const d=getMatchManagerDraft();if(!d)return;
@@ -4837,7 +4840,7 @@ function confirmMatchManagerChanges(){
  addLog(`Formation: ${match.formation} · Taktik: ${$("matchTacticSelect").selectedOptions[0]?.textContent||"Ausgeglichen"}.`);resumeMatch()
 }
 $("manageTeamBtn").addEventListener("click",()=>pauseForManagement("Du hast die Simulation für Team-Management pausiert."));
-$("resumeMatchBtn").addEventListener("click",()=>{toast("Änderungen verworfen.");resumeMatch()});
+$("resumeMatchBtn").addEventListener("click",()=>{if(!match?.halftimeActive&&!match?.extraTimeManagementActive)toast("Änderungen verworfen.");resumeMatch()});
 $("matchFormationSelect").addEventListener("change",()=>{const d=getMatchManagerDraft();if(!d)return;d.formation=$("matchFormationSelect").value;renderMatchManager()});
 $("matchTacticSelect").addEventListener("change",()=>{const d=getMatchManagerDraft();if(!d)return;d.tactic=$("matchTacticSelect").value;renderMatchManager()});
 $("confirmSubBtn").addEventListener("click",confirmMatchManagerChanges);
@@ -5255,7 +5258,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V18.99";
+const GFUT_BUILD="V19.00";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
