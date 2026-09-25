@@ -305,6 +305,11 @@ Schutzregeln:
 - mehrere Preisklassen
 - wenige absolute Chase Cards
 - auch günstige und ungewöhnliche Spieler
+- **jedes große Event muss alle regulären Positionsgruppen abdecken**
+- **keine reinen Feldspieler-Events**
+- mindestens ein Torhüter muss vertreten sein
+- Verteidigung, Mittelfeld und Angriff müssen jeweils sinnvoll besetzt sein
+- die Event-Auswahl darf ein Thema haben, aber nie auf Kosten der Positionsabdeckung gehen
 
 ## 14. Event-Team-Aufbau
 
@@ -314,6 +319,13 @@ Beispiel für 15 Event-Spieler:
 - 3 sehr starke Karten: ca. 88–89
 - 5 mittlere Karten: ca. 85–87
 - 5 günstige/ungewöhnliche Karten: ca. 82–84
+
+Zusätzlich gilt immer die Positionsabdeckung:
+- mindestens 1 TW
+- mehrere Verteidiger
+- mehrere Mittelfeldspieler
+- mehrere Angreifer
+- keine Positionsgruppe darf komplett fehlen
 
 Die Grenzen hängen von der Saisonphase ab.
 
