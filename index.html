@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.17</title>
+<title>Footera V19.18</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1768,10 +1768,22 @@ async function hydrateTotwFromEa(index){
   const queries=[current.fullName,current.name,...(info.names||[])].filter(Boolean),seen=new Set();
   let asset=null;
   for(const q of queries){const k=normalizeKey(q);if(!k||seen.has(k))continue;seen.add(k);try{asset=bestEaTotwAsset(info,await fetchEaPlayerSearch(q));if(asset)break}catch(e){}}
-  if(asset){const merged=mergeTotwBase(current,asset,index);LIVE_TOTW_BASE_CACHE.set(index,merged);P_BY_ID.set(String(merged.id),merged);if(/^[0-9]+$/.test(String(asset.id||"")))applyEaAssetToPlayerById(asset);scheduleBadgeRerender();renderMarket()}
+  if(asset){const merged=mergeTotwBase(current,asset,index);LIVE_TOTW_BASE_CACHE.set(index,merged);P_BY_ID.set(String(merged.id),merged);if(/^[0-9]+$/.test(String(asset.id||"")))applyEaAssetToPlayerById(asset);scheduleBadgeRerender();if(currentViewId?.()==="marketView")renderMarket()}
  }finally{LIVE_TOTW_EA_PENDING.delete(index)}
 }
-function prewarmLiveTotw(){const active=activeTotwWeek();if(!active)return;if(LIVE_TOTW.id!==active.id){LIVE_TOTW=active;LIVE_TOTW_BASE_CACHE.clear();LIVE_TOTW_EA_PENDING.clear()}LIVE_TOTW.players.forEach((_,i)=>setTimeout(()=>hydrateTotwFromEa(i),i*90))}
+let TOTW_PREWARM_TOKEN=0;
+function scheduleIdleTask(fn,timeout=3000){if("requestIdleCallback" in window)requestIdleCallback(()=>{try{const r=fn();if(r&&typeof r.catch==="function")r.catch(()=>{})}catch(e){}},{timeout});else setTimeout(()=>{try{const r=fn();if(r&&typeof r.catch==="function")r.catch(()=>{})}catch(e){}},Math.min(timeout,1800))}
+function prewarmLiveTotw(){
+ const active=activeTotwWeek();if(!active)return;
+ if(LIVE_TOTW.id!==active.id){LIVE_TOTW=active;LIVE_TOTW_BASE_CACHE.clear();LIVE_TOTW_EA_PENDING.clear()}
+ const token=++TOTW_PREWARM_TOKEN,queue=LIVE_TOTW.players.map((_,i)=>i);
+ const run=()=>{
+  if(token!==TOTW_PREWARM_TOKEN||document.hidden||!queue.length)return;
+  const index=queue.shift();
+  Promise.resolve(hydrateTotwFromEa(index)).catch(()=>{}).finally(()=>{if(queue.length&&token===TOTW_PREWARM_TOKEN)setTimeout(run,450)})
+ };
+ scheduleIdleTask(run,3000)
+}
 function syncTotwClock(){
  const next=activeTotwWeek()||latestPublishedTotw();if(!next)return;
  if(!LIVE_TOTW||LIVE_TOTW.id!==next.id){LIVE_TOTW=next;LIVE_TOTW_BASE_CACHE.clear();LIVE_TOTW_EA_PENDING.clear();prewarmLiveTotw();try{renderHome();if(currentViewId?.()==="marketView")refreshMarket()}catch(e){}}
@@ -1926,17 +1938,21 @@ function activateSquadPreset(s,index){
  s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.tactic=next.tactic;s.roles={...next.roles};s.focus={...next.focus};
  return{created,name:next.name}
 }
-let saveQueued=false;
+let saveQueued=false,saveDirty=false,saveTimer=0;
+function flushSave(){
+ if(!saveDirty&&!saveQueued)return;
+ clearTimeout(saveTimer);saveTimer=0;saveQueued=false;saveDirty=false;
+ persistActiveSquadPreset(state);
+ try{localStorage.setItem("gerliesFutV9",JSON.stringify(state))}catch(e){console.warn("Spielstand konnte nicht gespeichert werden",e)}
+}
 function save(){
+ saveDirty=true;
  if(saveQueued)return;
  saveQueued=true;
- queueMicrotask(()=>{
-  saveQueued=false;
-  // Several actions call save() before and after rendering; persist their final state once.
-  persistActiveSquadPreset(state);
-  localStorage.setItem("gerliesFutV9",JSON.stringify(state))
- })
+ saveTimer=setTimeout(flushSave,140)
 }
+window.addEventListener("pagehide",flushSave);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushSave()})
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
 function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1856",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
@@ -2380,7 +2396,7 @@ function verifiedClubBadge(team,p={}){
 }
 async function loadVerifiedBadges(){
  try{
-  const response=await fetch("./assets/badge-manifest.json",{cache:"no-store"});
+  const response=await fetch("./assets/badge-manifest.json",{cache:"force-cache"});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const data=await response.json();
   if(!data?.clubs||Object.keys(data.clubs).length<300)throw new Error("Badge-Manifest unvollständig");
@@ -2410,7 +2426,8 @@ function discoveredClubLeague(team){
  const cached=name?discoveredBadge("league",name):"";
  return {name,url:direct||cached}
 }
-function persistBadgeDiscovery(){try{localStorage.setItem(GFUT_BADGE_DISCOVERY_KEY,JSON.stringify(BADGE_DISCOVERY_CACHE))}catch(e){}}
+let BADGE_DISCOVERY_SAVE_TIMER=0;
+function persistBadgeDiscovery(){clearTimeout(BADGE_DISCOVERY_SAVE_TIMER);BADGE_DISCOVERY_SAVE_TIMER=setTimeout(()=>{try{localStorage.setItem(GFUT_BADGE_DISCOVERY_KEY,JSON.stringify(BADGE_DISCOVERY_CACHE))}catch(e){}},800)}
 function claimRank(cl){return cl?.rank==="preferred"?0:cl?.rank==="normal"?1:2}
 function claimHasEnd(cl){return !!(cl?.qualifiers?.P582?.length)}
 function wikidataClaimId(entity,pid){
@@ -2475,7 +2492,8 @@ const GFUT_ICON_PORTRAIT_KEY="gfutIconPortraitsV1857";
 let ICON_PORTRAIT_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_ICON_PORTRAIT_KEY)||"{}")||{}}catch(e){return{}}})();
 const ICON_PORTRAIT_PENDING=new Set(),ICON_PORTRAIT_QUEUE=[];
 let ICON_PORTRAIT_ACTIVE=0,ICON_PORTRAIT_PREWARM_STARTED=false,ICON_PORTRAIT_RENDER_TIMER=0;
-function persistIconPortraits(){try{localStorage.setItem(GFUT_ICON_PORTRAIT_KEY,JSON.stringify(ICON_PORTRAIT_CACHE))}catch(e){}}
+let ICON_PORTRAIT_SAVE_TIMER=0;
+function persistIconPortraits(){clearTimeout(ICON_PORTRAIT_SAVE_TIMER);ICON_PORTRAIT_SAVE_TIMER=setTimeout(()=>{try{localStorage.setItem(GFUT_ICON_PORTRAIT_KEY,JSON.stringify(ICON_PORTRAIT_CACHE))}catch(e){}},800)}
 function iconPortraitKey(name){return normalizeKey(name)}
 function iconPortraitUrl(p){if(!p?.isIcon)return String(p?.face||"").trim();return String(futwizVerifiedIconFace(p?.name)||"").trim()}
 function commonsPortraitUrl(filename){const f=String(filename||"").trim();return f?`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}?width=360`:""}
@@ -2632,7 +2650,7 @@ function scheduleBadgeRerender(){
  BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{const view=currentViewId?.();if(view==="squadView")renderSquad();else if(view==="clubView")renderClub();else if(view==="marketView")renderMarket();refreshAffiliationDom()}catch(e){}},700)
 }
 function pumpBadgeDiscovery(){
- while(BADGE_DISCOVERY_ACTIVE<5&&BADGE_DISCOVERY_QUEUE.length){
+ while(BADGE_DISCOVERY_ACTIVE<2&&BADGE_DISCOVERY_QUEUE.length){
   const job=BADGE_DISCOVERY_QUEUE.shift();BADGE_DISCOVERY_ACTIVE++;
   (async()=>{
    try{
@@ -2706,14 +2724,14 @@ function emblemCandidates(kind,p){
 }
 function imgCandidatesAttr(arr){return esc(JSON.stringify(arr))}
 function advanceImg(el){try{const failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());persistImageCaches()}const arr=JSON.parse(el.dataset.candidates||'[]');let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];return}el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
-function portraitHTML(p,deferred=false){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img ${deferred?`data-pending-src="${esc(arr[0])}" style="display:none"`:`src="${esc(arr[0])}"`} data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback" ${deferred?'style="display:flex"':''}>👤</span>`}
+function portraitHTML(p,deferred=false){const key=imageCacheKey('portrait',p),arr=prioritizeCached(portraitCandidates(p),key);if(!arr.length)return'<span class="face-fallback" style="display:flex">👤</span>';return `<img ${deferred?`data-pending-src="${esc(arr[0])}" style="display:none"`:`src="${esc(arr[0])}"`} loading="lazy" decoding="async" fetchpriority="low" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback" ${deferred?'style="display:flex"':''}>👤</span>`}
 function badgeAsset(kind,p,fallbackText){
  const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);
  const fallbackClass=kind==="league"?"league-badge-fallback":"club-badge-fallback",fallbackTextHtml=esc(fallbackText||"");
  if(!arr.length)return '<span class="asset-fallback '+fallbackClass+'">'+fallbackTextHtml+'</span>';
- return '<img class="badge-img" src="'+esc(arr[0])+'" data-cache-key="'+esc(key)+'" data-candidates="'+imgCandidatesAttr(arr)+'" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback '+fallbackClass+'" style="display:none">'+fallbackTextHtml+'</span>'
+ return '<img class="badge-img" src="'+esc(arr[0])+'" loading="lazy" decoding="async" fetchpriority="low" data-cache-key="'+esc(key)+'" data-candidates="'+imgCandidatesAttr(arr)+'" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback '+fallbackClass+'" style="display:none">'+fallbackTextHtml+'</span>'
 }
-function flagAsset(p){const key=imageCacheKey('flag',p),arr=prioritizeCached(emblemCandidates('flag',p),key);if(!arr.length)return `<span>${flagEmoji(p.nation)}</span>`;return `<img class="card-flag-img" src="${esc(arr[0])}" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${flagEmoji(p.nation)}</span>`}
+function flagAsset(p){const key=imageCacheKey('flag',p),arr=prioritizeCached(emblemCandidates('flag',p),key);if(!arr.length)return `<span>${flagEmoji(p.nation)}</span>`;return `<img class="card-flag-img" src="${esc(arr[0])}" loading="lazy" decoding="async" fetchpriority="low" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" referrerpolicy="no-referrer" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="asset-fallback" style="display:none">${flagEmoji(p.nation)}</span>`}
 function officialCardCandidates(p){const id=String(p?.id||"").replace(/[^0-9]/g,"");const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};if(p?.card&&/\/FC27\/components\/items\//i.test(p.card))add(p.card);if(!id)return arr;add(`https://ratings-images-prod.pulse.ea.com/FC27/components/items/${id}_de-DE.webp`);return arr}
 function advanceOfficialCard(el){
  try{
@@ -3019,7 +3037,7 @@ let DATA_ROUTE="cache";
 let PLAYER_TRAITS=null;
 async function loadPlayerTraits(){
  try{
-  const response=await fetch("./assets/player-traits.json");
+  const response=await fetch("./assets/player-traits.json",{cache:"force-cache"});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const data=await response.json();
   if(data?.fields?.join(",")!=="skillMoves,weakFoot,preferredFoot,physical"||Object.keys(data.players||{}).length<18000)throw new Error("Spielerwerte unvollständig");
@@ -3148,7 +3166,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true){
  applyPlayerTraits(PLAYERS);applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
- if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
+ if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();scheduleIdleTask(enrichVisibleSquadAssets,2200);setTimeout(startIconPortraitPrewarm,1200);scheduleIdleTask(prewarmLiveTotw,4500)},250)}
  else{$("dbGate").classList.add("has-error");$("dbTitle").textContent="Start gerade nicht möglich";$("dbText").textContent="Deine Spieldaten konnten nicht vollständig geladen werden.";$("dbWarn").textContent="Bitte versuche es erneut. Dein Club und dein Fortschritt bleiben erhalten.";$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";renderHeaderClubName();$('homeDb').textContent="Spieldaten derzeit nicht verfügbar. Bitte erneut versuchen."}
 }
 async function boot(){
@@ -4317,11 +4335,16 @@ $("transferWatchList").addEventListener("click",e=>{
  if(confirmSell){const uid=confirmSell.dataset.transferConfirmSell,start=document.querySelector(`[data-sell-start="${CSS.escape(uid)}"]`),buy=document.querySelector(`[data-sell-buy="${CSS.escape(uid)}"]`),dur=document.querySelector(`[data-sell-duration="${CSS.escape(uid)}"]`);createTransferSale(uid,start?.value,buy?.value,dur?.value);return}
  if(r){const uid=r.dataset.watchRemove;if(activeTransferSaleForUid(uid))return toast("Aktiver Transfer kann nicht entfernt werden.");state.transferList=(state.transferList||[]).filter(x=>x!==uid);state.transferSales=(state.transferSales||[]).filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));save();renderTransferWatch();renderTransferHubSummary();toast("Spieler zurück im Verein.");return}
 })
+let MARKET_BACKGROUND_TICK=0;
 function updateMarketCountdowns(){
- const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&Date.now()>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
- if(!document.getElementById("marketView")?.classList.contains("active"))return;
- marketListings.forEach((x,i)=>{const el=document.querySelector(`[data-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});
- (state.auctions||[]).forEach((x,i)=>{const el=document.querySelector(`[data-my-auction-time="${i}"]`);if(el&&!x.settled)el.textContent=`${auctionTime(x)}s`});(state.transferSales||[]).filter(s=>s.status==="active").forEach(s=>{const el=document.querySelector(`[data-transfer-sale-time="${CSS.escape(String(s.id))}"]`);if(el)el.textContent=`${Math.max(0,Math.ceil((s.ends-Date.now())/1000))}s`});
+ const marketActive=document.getElementById("marketView")?.classList.contains("active"),now=Date.now();
+ if(!marketActive&&now-MARKET_BACKGROUND_TICK<15000)return;
+ MARKET_BACKGROUND_TICK=now;
+ const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&now>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
+ if(!marketActive)return;
+ document.querySelectorAll("[data-auction-time]").forEach(el=>{const x=marketListings[Number(el.dataset.auctionTime)];if(x&&!x.settled)el.textContent=`${auctionTime(x)}s`});
+ document.querySelectorAll("[data-my-auction-time]").forEach(el=>{const x=(state.auctions||[])[Number(el.dataset.myAuctionTime)];if(x&&!x.settled)el.textContent=`${auctionTime(x)}s`});
+ document.querySelectorAll("[data-transfer-sale-time]").forEach(el=>{const x=(state.transferSales||[]).find(s=>String(s.id)===String(el.dataset.transferSaleTime));if(x&&x.status==="active")el.textContent=`${Math.max(0,Math.ceil((x.ends-now)/1000))}s`});
  if(botChanged||settled||expired||salesChanged)renderMarket()
 }
 setInterval(updateMarketCountdowns,1000);
@@ -5731,7 +5754,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.17";
+const GFUT_BUILD="V19.18";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -5749,7 +5772,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1917",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1918",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
