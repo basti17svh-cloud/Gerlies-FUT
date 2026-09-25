@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.18</title>
+<title>Footera V19.19</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1091,6 +1091,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .evo-payment-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
 .evo-payment-actions.one{grid-template-columns:1fr}
 .evo-result-cap{margin-top:7px;font-size:6.5px;color:var(--muted)}
+
+/* V19.19 — render only what is on screen; visual appearance is unchanged. */
+.club-item,.market-row{content-visibility:auto;contain-intrinsic-size:320px}
+.club-more{grid-column:1/-1;width:100%;margin-top:4px}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 </head>
@@ -1146,7 +1150,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.18</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.19</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1959,7 +1963,41 @@ function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
-async function idbPutMany(arr){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readwrite"),s=t.objectStore("players");for(const p of arr)s.put(p);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+async function idbPutMany(arr){if(!arr?.length)return;const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readwrite"),s=t.objectStore("players");for(const p of arr)s.put(p);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+
+let PLAYER_ARRAY_INDEX=new Map(),PLAYER_TEAM_INDEX=new Map(),PLAYER_TEAM_SIG_INDEX=new Map(),PLAYER_LEAGUE_INDEX=new Map(),PLAYER_POSITION_RATING_INDEX=new Map(),PLAYER_RATING_INDEX=new Map();
+function addRuntimeIndex(map,key,p){if(!key)return;let rows=map.get(key);if(!rows)map.set(key,rows=[]);rows.push(p)}
+function removeRuntimeIndex(map,key,p){if(!key)return;const rows=map.get(key);if(!rows)return;const i=rows.indexOf(p);if(i>=0)rows.splice(i,1);if(!rows.length)map.delete(key)}
+function rebuildPlayerRuntimeIndexes(){
+ PLAYER_ARRAY_INDEX=new Map();PLAYER_TEAM_INDEX=new Map();PLAYER_TEAM_SIG_INDEX=new Map();PLAYER_LEAGUE_INDEX=new Map();PLAYER_POSITION_RATING_INDEX=new Map();PLAYER_RATING_INDEX=new Map();
+ for(let i=0;i<PLAYERS.length;i++){
+  const p=PLAYERS[i],id=String(p?.id||"");if(id)PLAYER_ARRAY_INDEX.set(id,i);
+  addRuntimeIndex(PLAYER_TEAM_INDEX,normalizeKey(p?.team),p);addRuntimeIndex(PLAYER_TEAM_SIG_INDEX,clubIdentityKey(p?.team),p);addRuntimeIndex(PLAYER_LEAGUE_INDEX,normalizeKey(p?.league),p);
+  const rating=Math.round(Number(p?.ovr||0));addRuntimeIndex(PLAYER_RATING_INDEX,rating,p);
+  const positions=[p?.position,...String(p?.alt||"").split(/[,/]/)].map(x=>String(x||"").trim().toUpperCase()).filter(Boolean);
+  for(const pos of new Set(positions)){let byRating=PLAYER_POSITION_RATING_INDEX.get(pos);if(!byRating)PLAYER_POSITION_RATING_INDEX.set(pos,byRating=new Map());addRuntimeIndex(byRating,rating,p)}
+ }
+}
+function playerRowsForTeam(team){const exact=PLAYER_TEAM_INDEX.get(normalizeKey(team));if(exact?.length)return exact;return PLAYER_TEAM_SIG_INDEX.get(clubIdentityKey(team))||[]}
+function playerRowsForLeague(league){return PLAYER_LEAGUE_INDEX.get(normalizeKey(league))||[]}
+function reindexPlayerAffiliation(p,oldTeam="",oldLeague=""){
+ const oldTk=normalizeKey(oldTeam),newTk=normalizeKey(p?.team),oldSig=clubIdentityKey(oldTeam),newSig=clubIdentityKey(p?.team);
+ if(oldTk!==newTk){removeRuntimeIndex(PLAYER_TEAM_INDEX,oldTk,p);addRuntimeIndex(PLAYER_TEAM_INDEX,newTk,p)}
+ if(oldSig!==newSig){removeRuntimeIndex(PLAYER_TEAM_SIG_INDEX,oldSig,p);addRuntimeIndex(PLAYER_TEAM_SIG_INDEX,newSig,p)}
+ const oldLk=normalizeKey(oldLeague),newLk=normalizeKey(p?.league);
+ if(oldLk!==newLk){removeRuntimeIndex(PLAYER_LEAGUE_INDEX,oldLk,p);addRuntimeIndex(PLAYER_LEAGUE_INDEX,newLk,p)}
+}
+function indexedPositionCandidates(slot,target,span,used){
+ const byRating=PLAYER_POSITION_RATING_INDEX.get(String(slot||"").toUpperCase());if(!byRating)return[];
+ const out=[],lo=Math.max(0,Math.round(target-span)),hi=Math.min(99,Math.round(target+span));
+ for(let r=lo;r<=hi;r++)for(const p of byRating.get(r)||[])if(!used.has(String(p.id)))out.push(p);
+ return out
+}
+function indexedRatingCandidates(target,span,used){
+ const out=[],lo=Math.max(0,Math.round(target-span)),hi=Math.min(99,Math.round(target+span));
+ for(let r=lo;r<=hi;r++)for(const p of PLAYER_RATING_INDEX.get(r)||[])if(!used.has(String(p.id)))out.push(p);
+ return out
+}
 
 function first(raw,...keys){for(const k of keys){if(raw?.[k]!==undefined&&raw?.[k]!==null&&String(raw[k]).trim()!=="")return raw[k]}return ""}
 function deepGet(obj,path){try{return String(path||"").split(".").reduce((acc,key)=>acc==null?undefined:acc[key],obj)}catch(e){return undefined}}
@@ -2295,10 +2333,15 @@ function playerAffiliationHTML(p,compact=false){
   </div>
  </div>`
 }
-function refreshAffiliationDom(){
- document.querySelectorAll("[data-player-context-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerContextId||""));if(p)el.textContent=playerContextLine(p)});
- document.querySelectorAll(".affiliation-grid[data-player-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerId||""));if(!p)return;const wrap=document.createElement("div");wrap.innerHTML=playerAffiliationHTML(p,el.classList.contains("compact"));const fresh=wrap.firstElementChild;if(fresh)el.replaceWith(fresh)});
- document.querySelectorAll(".custom-card[data-player-id]").forEach(card=>{const p=P_BY_ID.get(String(card.dataset.playerId||""));if(!p)return;const rp=resolvedPlayer(p),club=card.querySelector(".card-club"),league=card.querySelector(".card-league");if(club){club.title=rp.team||"Verein";club.innerHTML=badgeAsset("club",rp,clubShort(rp.team))}if(league){league.title=rp.league||"Liga";league.innerHTML=badgeAsset("league",rp,leagueShort(rp.league))}if(rp.face){const face=card.querySelector(".face");if(face)face.innerHTML=portraitHTML(rp)}});
+function refreshAffiliationDom(refreshFaces=false){
+ document.querySelectorAll("[data-player-context-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerContextId||""));if(p){const text=playerContextLine(p);if(el.textContent!==text)el.textContent=text}});
+ document.querySelectorAll(".affiliation-grid[data-player-id]").forEach(el=>{const p=P_BY_ID.get(String(el.dataset.playerId||""));if(!p)return;const wrap=document.createElement("div");wrap.innerHTML=playerAffiliationHTML(p,el.classList.contains("compact"));const fresh=wrap.firstElementChild;if(fresh&&fresh.innerHTML!==el.innerHTML)el.replaceWith(fresh)});
+ document.querySelectorAll(".custom-card[data-player-id]").forEach(card=>{
+  const p=P_BY_ID.get(String(card.dataset.playerId||""));if(!p)return;const rp=resolvedPlayer(p),club=card.querySelector(".card-club"),league=card.querySelector(".card-league");
+  if(club){const sig=[rp.team,rp.clubLogo,discoveredBadge("club",rp.team),apiSportsTeamLogo(rp.team)].join("|");if(club.dataset.assetSig!==sig){club.dataset.assetSig=sig;club.title=rp.team||"Verein";club.innerHTML=badgeAsset("club",rp,clubShort(rp.team))}}
+  if(league){const sig=[rp.league,rp.leagueLogo,discoveredBadge("league",rp.league),apiSportsLeagueLogo(rp.league)].join("|");if(league.dataset.assetSig!==sig){league.dataset.assetSig=sig;league.title=rp.league||"Liga";league.innerHTML=badgeAsset("league",rp,leagueShort(rp.league))}}
+  if(refreshFaces&&rp.face){const face=card.querySelector(".face"),sig=String(rp.face||"");if(face&&face.dataset.faceSig!==sig){face.dataset.faceSig=sig;face.innerHTML=portraitHTML(rp)}}
+ });
  const activeGrid=document.querySelector("#bioDetailBody .affiliation-grid[data-player-id]");if(activeGrid&&$("bioModal")?.classList.contains("active")){const p=P_BY_ID.get(String(activeGrid.dataset.playerId||""));if(p)$("bioDetailSub").textContent=playerContextLine(p)}
  const playerGrid=document.querySelector("#playerDetailBody .affiliation-grid[data-player-id]");if(playerGrid&&$("playerModal")?.classList.contains("active")){const p=P_BY_ID.get(String(playerGrid.dataset.playerId||""));if(p)$("playerDetailSub").textContent=playerContextLine(p)}
 }
@@ -2311,7 +2354,7 @@ async function ensureEaPlayerAssets(p){
   const queries=[current.fullName,current.name,[current.firstName,current.lastName].filter(Boolean).join(" ")].filter(Boolean),seen=new Set();
   let exact=null;
   for(const q of queries){const nk=normalizeKey(q);if(!nk||seen.has(nk))continue;seen.add(nk);try{const assets=(await fetchEaPlayerSearch(q)).map(normEAAsset).filter(Boolean);exact=assets.find(a=>String(a.id)===key)||assets.find(a=>normalizeKey(a.fullName||a.name)===normalizeKey(current.fullName||current.name));if(exact)break}catch(e){}}
-  if(exact){if(applyEaAssetToPlayerById(exact)){await savePlayers(PLAYERS);refreshAffiliationDom();scheduleBadgeRerender()}}
+  if(exact&&applyEaAssetToPlayerById(exact))refreshAffiliationDom(true)
  }finally{EA_PLAYER_DETAIL_PENDING.delete(key)}
 }
 function ensurePlayerAffiliationAssets(p){
@@ -2410,9 +2453,12 @@ const GFUT_BADGE_DISCOVERY_KEY="gfutBadgeDiscoveryV1868";
 let BADGE_DISCOVERY_CACHE=(()=>{try{return JSON.parse(localStorage.getItem(GFUT_BADGE_DISCOVERY_KEY)||"{}")||{}}catch(e){return{}}})();
 const BADGE_DISCOVERY_PENDING=new Set(),BADGE_DISCOVERY_QUEUE=[];
 let BADGE_DISCOVERY_ACTIVE=0,BADGE_DISCOVERY_RENDER_TIMER=0,BADGE_PREWARM_STARTED=false,BADGE_PLAYER_SAVE_TIMER=0;
-function scheduleBadgePlayerSave(){
+const BADGE_PLAYER_SAVE_PENDING=new Map();
+function scheduleBadgePlayerSave(players=[]){
+ const rows=Array.isArray(players)?players:[players];for(const p of rows)if(p?.id)BADGE_PLAYER_SAVE_PENDING.set(String(p.id),p);
+ if(!BADGE_PLAYER_SAVE_PENDING.size)return;
  clearTimeout(BADGE_PLAYER_SAVE_TIMER);
- BADGE_PLAYER_SAVE_TIMER=setTimeout(()=>{savePlayers(PLAYERS).catch(()=>{})},1400)
+ BADGE_PLAYER_SAVE_TIMER=setTimeout(()=>{const batch=[...BADGE_PLAYER_SAVE_PENDING.values()];BADGE_PLAYER_SAVE_PENDING.clear();idbPutMany(batch).catch(()=>{})},1800)
 }
 
 function badgeDiscoveryKey(kind,name){return kind+"|"+normalizeKey(name)}
@@ -2526,7 +2572,7 @@ function applyIconPortrait(name,row){
 }
 function scheduleIconPortraitRerender(){
  clearTimeout(ICON_PORTRAIT_RENDER_TIMER);
- ICON_PORTRAIT_RENDER_TIMER=setTimeout(()=>{try{renderSquad();renderClub();if(currentViewId?.()==="marketView")renderMarket();refreshAffiliationDom()}catch(e){}},180)
+ ICON_PORTRAIT_RENDER_TIMER=setTimeout(()=>{try{refreshAffiliationDom(true)}catch(e){}},260)
 }
 function pumpIconPortraits(){
  while(ICON_PORTRAIT_ACTIVE<3&&ICON_PORTRAIT_QUEUE.length){
@@ -2550,36 +2596,29 @@ function startIconPortraitPrewarm(){
  scheduleIconPortraitRerender()
 }
 function applyDiscoveredClubMeta(team,row){
- const tk=normalizeKey(team),tsig=clubIdentityKey(team);if(!tk||!row)return;
- const linkedLeague=row.leagueName?badgeDiscoveryRow("league",row.leagueName):null;
- const leagueUrl=String(row.leagueUrl||linkedLeague?.url||"").trim();
- let changed=false;
- for(const p of PLAYERS){
-  const pk=normalizeKey(p?.team),psig=clubIdentityKey(p?.team);if(pk!==tk&&(!tsig||psig!==tsig))continue;
-   if(row.url&&!p.clubLogo){p.clubLogo=row.url;changed=true}
-   if(row.leagueName&&!p.league){p.league=row.leagueName;changed=true}
-   if(leagueUrl&&!p.leagueLogo){p.leagueLogo=leagueUrl;changed=true}
+ const tk=normalizeKey(team);if(!tk||!row)return[];
+ const linkedLeague=row.leagueName?badgeDiscoveryRow("league",row.leagueName):null,leagueUrl=String(row.leagueUrl||linkedLeague?.url||"").trim(),changedRows=[];
+ for(const p of playerRowsForTeam(team)){
+  const oldLeague=p.league;let changed=false;
+  if(row.url&&!p.clubLogo){p.clubLogo=row.url;changed=true}
+  if(row.leagueName&&!p.league){p.league=row.leagueName;changed=true}
+  if(leagueUrl&&!p.leagueLogo){p.leagueLogo=leagueUrl;changed=true}
+  if(changed){changedRows.push(p);if(oldLeague!==p.league)reindexPlayerAffiliation(p,p.team,oldLeague)}
  }
- if(changed){
-  scheduleMarketFilterIndexRebuild();
-  scheduleBadgePlayerSave()
- }
+ if(changedRows.length){scheduleMarketFilterIndexRebuild();scheduleBadgePlayerSave(changedRows)}
+ return changedRows
 }
 function applyDiscoveredLeagueMeta(league,row){
- const lk=normalizeKey(league);if(!lk||!row?.url)return;
- let changed=false;
- for(const p of PLAYERS){
-  if(normalizeKey(p?.league)!==lk)continue;
-   if(!p.leagueLogo){p.leagueLogo=row.url;changed=true}
- }
- if(changed){
-  scheduleBadgePlayerSave()
- }
+ const lk=normalizeKey(league);if(!lk||!row?.url)return[];
+ const changedRows=[];
+ for(const p of playerRowsForLeague(league))if(!p.leagueLogo){p.leagueLogo=row.url;changedRows.push(p)}
+ if(changedRows.length)scheduleBadgePlayerSave(changedRows);
  for(const rowClub of Object.values(BADGE_DISCOVERY_CACHE)){
   if(!rowClub?.leagueName||normalizeKey(rowClub.leagueName)!==lk)continue;
   if(!rowClub.leagueUrl)rowClub.leagueUrl=row.url;
-  if(rowClub.name)applyDiscoveredClubMeta(rowClub.name,rowClub)
+  if(rowClub.name)for(const p of applyDiscoveredClubMeta(rowClub.name,rowClub))if(!changedRows.includes(p))changedRows.push(p)
  }
+ return changedRows
 }
 function applyBadgeCacheToPlayers(){
  const clubs=new Map(),aliases=new Map(),leagues=new Map();
@@ -2592,9 +2631,9 @@ function applyBadgeCacheToPlayers(){
    if(sig&&!aliases.has(sig))aliases.set(sig,row)
   }
  }
- let changed=false,leagueChanged=false;
+ const changedRows=[];let leagueChanged=false;
  for(const p of PLAYERS){
-  const club=clubs.get(normalizeKey(p?.team))||aliases.get(clubIdentityKey(p?.team));
+  const oldLeague=p.league,club=clubs.get(normalizeKey(p?.team))||aliases.get(clubIdentityKey(p?.team));let changed=false;
   if(club){
    const linked=club.leagueName?leagues.get(normalizeKey(club.leagueName)):null;
    if(club.url&&!p.clubLogo){p.clubLogo=club.url;changed=true}
@@ -2604,8 +2643,9 @@ function applyBadgeCacheToPlayers(){
   }
   const league=leagues.get(normalizeKey(p?.league));
   if(league?.url&&!p.leagueLogo){p.leagueLogo=league.url;changed=true}
+  if(changed){changedRows.push(p);if(oldLeague!==p.league)reindexPlayerAffiliation(p,p.team,oldLeague)}
  }
- if(changed){if(leagueChanged)scheduleMarketFilterIndexRebuild();scheduleBadgePlayerSave()}
+ if(changedRows.length){if(leagueChanged)scheduleMarketFilterIndexRebuild();scheduleBadgePlayerSave(changedRows)}
 }
 async function discoverFootballBadge(kind,name,leagueHint=""){
  const search=await wikidataFindFootballEntity(name,kind);
@@ -2647,7 +2687,7 @@ function queueBadgeDiscovery(kind,name,leagueHint="",priority=false){
 }
 function scheduleBadgeRerender(){
  clearTimeout(BADGE_DISCOVERY_RENDER_TIMER);
- BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{const view=currentViewId?.();if(view==="squadView")renderSquad();else if(view==="clubView")renderClub();else if(view==="marketView")renderMarket();refreshAffiliationDom()}catch(e){}},700)
+ BADGE_DISCOVERY_RENDER_TIMER=setTimeout(()=>{try{refreshAffiliationDom(false)}catch(e){}},700)
 }
 function pumpBadgeDiscovery(){
  while(BADGE_DISCOVERY_ACTIVE<2&&BADGE_DISCOVERY_QUEUE.length){
@@ -3083,44 +3123,37 @@ async function fetchEaPlayerSearch(name){
  return Array.isArray(data?.items)?data.items:Array.isArray(data?.players)?data.players:Array.isArray(data?.ratings)?data.ratings:[]
 }
 function propagateEaAffiliation(seed){
- const tk=normalizeKey(seed?.team),lk=normalizeKey(seed?.league);
- if(!tk&&!lk)return;
- let changedAny=false;
- for(let i=0;i<PLAYERS.length;i++){
-  const p=PLAYERS[i];let next=p,changed=false;
-  if(tk&&normalizeKey(p?.team)===tk){
-   next={...next};
-   if(seed.clubLogo&&!next.clubLogo){next.clubLogo=seed.clubLogo;changed=true}
-   if(seed.teamId&&!next.teamId){next.teamId=seed.teamId;changed=true}
-   if(seed.league&&!next.league){next.league=seed.league;changed=true}
-   if(seed.leagueLogo&&!next.leagueLogo){next.leagueLogo=seed.leagueLogo;changed=true}
-   if(seed.leagueId&&!next.leagueId){next.leagueId=seed.leagueId;changed=true}
-  }else if(lk&&normalizeKey(p?.league)===lk){
-   next={...next};
-   if(seed.leagueLogo&&!next.leagueLogo){next.leagueLogo=seed.leagueLogo;changed=true}
-   if(seed.leagueId&&!next.leagueId){next.leagueId=seed.leagueId;changed=true}
+ const tk=normalizeKey(seed?.team),lk=normalizeKey(seed?.league);if(!tk&&!lk)return[];
+ const targets=new Set([...(tk?playerRowsForTeam(seed.team):[]),...(lk?playerRowsForLeague(seed.league):[])]),changedRows=[];
+ for(const p of targets){
+  const sameTeam=tk&&normalizeKey(p?.team)===tk,sameLeague=lk&&normalizeKey(p?.league)===lk,oldLeague=p.league;let changed=false;
+  if(sameTeam){
+   if(seed.clubLogo&&!p.clubLogo){p.clubLogo=seed.clubLogo;changed=true}
+   if(seed.teamId&&!p.teamId){p.teamId=seed.teamId;changed=true}
+   if(seed.league&&!p.league){p.league=seed.league;changed=true}
+   if(seed.leagueLogo&&!p.leagueLogo){p.leagueLogo=seed.leagueLogo;changed=true}
+   if(seed.leagueId&&!p.leagueId){p.leagueId=seed.leagueId;changed=true}
+  }else if(sameLeague){
+   if(seed.leagueLogo&&!p.leagueLogo){p.leagueLogo=seed.leagueLogo;changed=true}
+   if(seed.leagueId&&!p.leagueId){p.leagueId=seed.leagueId;changed=true}
   }
-  if(changed){PLAYERS[i]=next;P_BY_ID.set(String(next.id),next);changedAny=true}
+  if(changed){changedRows.push(p);P_BY_ID.set(String(p.id),p);if(oldLeague!==p.league)reindexPlayerAffiliation(p,p.team,oldLeague)}
  }
- if(changedAny)scheduleMarketFilterIndexRebuild()
+ if(changedRows.length){scheduleMarketFilterIndexRebuild();scheduleBadgePlayerSave(changedRows)}
+ return changedRows
 }
 function applyEaAssetToPlayerById(a){
- if(!a?.id)return false;
- const idx=PLAYERS.findIndex(p=>String(p.id)===String(a.id));if(idx<0)return false;
- const p=PLAYERS[idx],next={...p};
- if(a.team)next.team=a.team;
- if(a.league)next.league=a.league;
- if(a.clubLogo)next.clubLogo=a.clubLogo;if(a.teamId)next.teamId=a.teamId;
- if(a.leagueLogo)next.leagueLogo=a.leagueLogo;if(a.leagueId)next.leagueId=a.leagueId;
- if(a.nationFlag)next.nationFlag=a.nationFlag;if(a.nationCode)next.nationCode=a.nationCode;
- if(a.face)next.face=a.face;
- if(a.preferredFoot)next.preferredFoot=a.preferredFoot;
- if(a.weakFoot>=1&&a.weakFoot<=5)next.weakFoot=a.weakFoot;
- if(a.skillMoves>=1&&a.skillMoves<=5)next.skillMoves=a.skillMoves;
- PLAYERS[idx]=next;P_BY_ID.set(String(next.id),next);restoreSyntheticPlayerIds();scheduleMarketFilterIndexRebuild();
- propagateEaAffiliation(next);
- restoreSyntheticPlayerIds();
- return true
+ if(!a?.id)return false;const id=String(a.id);
+ let idx=PLAYER_ARRAY_INDEX.get(id);if(!Number.isInteger(idx)){idx=PLAYERS.findIndex(p=>String(p.id)===id);if(idx<0)return false;PLAYER_ARRAY_INDEX.set(id,idx)}
+ const p=PLAYERS[idx],oldTeam=p.team,oldLeague=p.league;let changed=false;
+ const set=(key,value,ok=true)=>{if(ok&&value!==undefined&&value!==null&&String(value)!==""&&p[key]!==value){p[key]=value;changed=true}};
+ set("team",a.team);set("league",a.league);set("clubLogo",a.clubLogo);set("teamId",a.teamId);set("leagueLogo",a.leagueLogo);set("leagueId",a.leagueId);set("nationFlag",a.nationFlag);set("nationCode",a.nationCode);set("face",a.face);set("preferredFoot",a.preferredFoot);
+ set("weakFoot",a.weakFoot,a.weakFoot>=1&&a.weakFoot<=5);set("skillMoves",a.skillMoves,a.skillMoves>=1&&a.skillMoves<=5);
+ if(oldTeam!==p.team||oldLeague!==p.league)reindexPlayerAffiliation(p,oldTeam,oldLeague);
+ P_BY_ID.set(id,p);const propagated=propagateEaAffiliation(p);
+ if(changed){scheduleMarketFilterIndexRebuild();scheduleBadgePlayerSave([p])}
+ if(changed||propagated.length)restoreSyntheticPlayerIds();
+ return changed||propagated.length>0
 }
 async function enrichVisibleSquadAssets(){
  if(EA_VISIBLE_ENRICH_RUNNING||!PLAYERS.length)return;
@@ -3140,7 +3173,7 @@ async function enrichVisibleSquadAssets(){
    }catch(e){}
    await sleep(35)
   }
-  if(changed){await savePlayers(PLAYERS);renderAll()}
+  if(changed)refreshAffiliationDom(true)
  }finally{EA_VISIBLE_ENRICH_RUNNING=false}
 }
 let EA_ASSET_ENRICH_RUNNING=false,EA_ASSET_ENRICH_DONE=false;
@@ -3160,11 +3193,11 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll()}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched;applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll()}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true){
- applyPlayerTraits(PLAYERS);applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
+ applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();applyBadgeCacheToPlayers();rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
  if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();scheduleIdleTask(enrichVisibleSquadAssets,2200);setTimeout(startIconPortraitPrewarm,1200);scheduleIdleTask(prewarmLiveTotw,4500)},250)}
  else{$("dbGate").classList.add("has-error");$("dbTitle").textContent="Start gerade nicht möglich";$("dbText").textContent="Deine Spieldaten konnten nicht vollständig geladen werden.";$("dbWarn").textContent="Bitte versuche es erneut. Dein Club und dein Fortschritt bleiben erhalten.";$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";renderHeaderClubName();$('homeDb').textContent="Spieldaten derzeit nicht verfügbar. Bitte erneut versuchen."}
@@ -4018,13 +4051,17 @@ function updateClubRatingLabel(){
  const min=Math.max(0,Math.min(99,Number($("clubRatingMin")?.value||0))),max=Math.max(0,Math.min(99,Number($("clubRatingMax")?.value||99)));
  if($("clubRatingLabel"))$("clubRatingLabel").textContent=`${min}–${max} GES`
 }
+const CLUB_RENDER_BATCH=72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
+function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
  syncClubFilterOptions();
  const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
  updateClubRatingLabel();
  let arr=state.club.filter(i=>!(state.transferList||[]).includes(i.uid)).filter(i=>{const b=displayBase(i);if(!b)return false;const a=resolvedAffiliation(b),positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)],rating=itemRating(i);return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))&&(!league||String(a?.league||"")===league)&&(!club||String(a?.team||"")===club)&&rating>=min&&rating<=max});
  arr.sort((a,b)=>{if(sort==="new")return Number(b.acquired||0)-Number(a.acquired||0);if(sort==="old")return Number(a.acquired||0)-Number(b.acquired||0);if(sort==="rating-asc")return itemRating(a)-itemRating(b);return itemRating(b)-itemRating(a)});
- $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button></div></div>`}).join("");
+ const signature=[rar,pos,sort,league,club,min,max,state.club.length,(state.transferList||[]).length].join("|");if(signature!==clubRenderSignature){clubRenderSignature=signature;clubRenderLimit=CLUB_RENDER_BATCH}
+ const shown=arr.slice(0,clubRenderLimit);
+ $("clubGrid").innerHTML=shown.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button></div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
 ["clubPosition","clubRarity","clubLeague","clubClub","clubSort"].forEach(id=>$(id)?.addEventListener("change",renderClub));
@@ -4032,11 +4069,11 @@ function changeClubRating(which){
  const minEl=$("clubRatingMin"),maxEl=$("clubRatingMax");if(!minEl||!maxEl)return;
  let min=Number(minEl.value),max=Number(maxEl.value);
  if(min>max){if(which==="min")maxEl.value=String(min);else minEl.value=String(max)}
- renderClub()
+ updateClubRatingLabel();scheduleClubRender()
 }
 $("clubRatingMin")?.addEventListener("input",()=>changeClubRating("min"));
 $("clubRatingMax")?.addEventListener("input",()=>changeClubRating("max"));
-$("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
+$("clubGrid").addEventListener("click",e=>{const more=e.target.closest("[data-club-more]"),open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(more){clubRenderLimit+=CLUB_RENDER_BATCH;renderClub();return}if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
 const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
@@ -4122,7 +4159,8 @@ function createMarketListing(base,filters){let variant="",eventName="",boost=0,o
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
  const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,startPrice:start,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
-function playerSearchText(p){return normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "))}
+const PLAYER_SEARCH_TEXT_CACHE=new WeakMap();
+function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
 function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
  const q=normalizeKey(query);if(q.length<2)return[];
@@ -5454,8 +5492,8 @@ const SB_TIERS=[
  {id:"elite",label:"Sehr gut",target:88,chem:33,win:1030,draw:655,loss:375,sp:120,names:["Galácticos XI","Champions Club","Ultimate XI"]}
 ];
 function deterministicPick(arr,key){return arr.length?arr[hashNum(key)%arr.length]:null}
-function opponentPlayerForSlot(slot,target,seed,used){let pool=PLAYERS.filter(p=>Math.abs(Number(p.ovr||0)-target)<=2&&posFit(p,slot)>0&&!used.has(String(p.id)));if(!pool.length)pool=PLAYERS.filter(p=>Math.abs(Number(p.ovr||0)-target)<=5&&posFit(p,slot)>0&&!used.has(String(p.id)));if(!pool.length)pool=PLAYERS.filter(p=>posFit(p,slot)>0&&!used.has(String(p.id)));const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
-function opponentBenchPlayer(target,seed,used){let pool=PLAYERS.filter(p=>Math.abs(Number(p.ovr||0)-target)<=4&&!used.has(String(p.id)));if(!pool.length)pool=PLAYERS.filter(p=>!used.has(String(p.id)));const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
+function opponentPlayerForSlot(slot,target,seed,used){let pool=indexedPositionCandidates(slot,target,2,used);if(!pool.length)pool=indexedPositionCandidates(slot,target,5,used);if(!pool.length)pool=indexedPositionCandidates(slot,50,used);const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
+function opponentBenchPlayer(target,seed,used){let pool=indexedRatingCandidates(target,4,used);if(!pool.length)pool=PLAYERS.filter(p=>!used.has(String(p.id)));const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
 function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier="",rewards=null,sp=0}){const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],used=new Set(),squad=[];form.forEach((slot,i)=>squad.push(opponentPlayerForSlot(slot.p,target,`${seed}|xi|${i}`,used)));for(let i=0;i<7;i++)squad.push(opponentBenchPlayer(target-1,`${seed}|bench|${i}`,used));const xi=squad.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((n,p)=>n+Number(p.ovr||0),0)/xi.length):target;return{kind:"generated",name,formation,rating,chem,squad,tier,rewards,sp,power:rating+chem*.12}}
 function getSquadBattleOpponents(){const key=promoWindowKey(new Date(),19);if(squadBattleOpponentCache.key===key&&squadBattleOpponentCache.list.length===4)return squadBattleOpponentCache.list;const list=SB_TIERS.map((t,i)=>{const name=t.names[hashNum(`${key}|${t.id}|name`)%t.names.length];return buildGeneratedOpponent({name,target:t.target,chem:t.chem,formation:i%2?"4-2-3-1":"4-3-3",seed:`${key}|${t.id}`,tier:t.label,rewards:{win:t.win,draw:t.draw,loss:t.loss},sp:t.sp})});squadBattleOpponentCache={key,list};return list}
 function friendAsOpponent(fr){return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[fr.formation]?fr.formation:"4-3-3",rating:Number(fr.rating||70),chem:Number(fr.chem||0),squad:Array.isArray(fr.squad)?fr.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,(fr.rating||70)+(fr.chem||0)*.12)),rewards:null,sp:0}}
@@ -5754,7 +5792,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.18";
+const GFUT_BUILD="V19.19";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -5772,7 +5810,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1918",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1919",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
