@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.00</title>
+<title>Footera V19.01</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -837,6 +837,25 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @keyframes packConfettiFall{0%{transform:translate3d(0,-10px,0) rotate(0);opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(760deg);opacity:.15}}
 @keyframes packSpark{0%{transform:translate(0,0) scale(.2);opacity:0}15%{opacity:1}100%{transform:translate(var(--sx),var(--sy)) scale(1.2);opacity:0}}
 @keyframes floorPulse{to{opacity:.72;transform:scaleX(1.35)}}
+/* Walkout: a moving tunnel introduces nation, position and club before the existing card reveal. */
+.walkout-tunnel{--walkout-beam:#d8ff3e;position:absolute;inset:0;z-index:3;display:none;overflow:hidden;perspective:650px;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#b7fc5a3d 0,#14291a 11%,#07100c 37%,#010403 78%)}
+.walkout-tunnel.active{display:block}
+.opening.mode-special .walkout-tunnel{--walkout-beam:#59ffe7;background:radial-gradient(ellipse at 50% 48%,#59ffe744 0,#12252c 11%,#090c1c 37%,#02030a 78%)}
+.walkout-tunnel:before{content:"";position:absolute;inset:0;background:linear-gradient(108deg,transparent 5%,#ffffff1f 17%,transparent 29%,transparent 71%,#ffffff1f 83%,transparent 95%),radial-gradient(circle at 50% 48%,#ffffff7a 0,transparent 9%);animation:walkTunnelGlow .56s ease-in-out infinite alternate}
+.walkout-tunnel:after{content:"";position:absolute;left:-50%;right:-50%;bottom:-49%;height:80%;background:repeating-linear-gradient(0deg,transparent 0 32px,#d8ff3e88 33px 35px,transparent 36px 69px),linear-gradient(90deg,transparent 0 27%,#d8ff3e44 27% 27.3%,transparent 27.3% 72.7%,#d8ff3e44 72.7% 73%,transparent 73%);transform:perspective(380px) rotateX(73deg);animation:walkTunnelFloor .38s linear infinite;opacity:.68}
+.walkout-gate{position:absolute;left:50%;top:47%;width:min(80vw,480px);height:min(95vh,580px);border:4px solid var(--walkout-beam);border-radius:38px 38px 12px 12px;box-shadow:0 0 26px var(--walkout-beam),inset 0 0 20px var(--walkout-beam);transform:translate(-50%,-50%) scale(.12);animation:walkTunnelGate 1.32s linear infinite;opacity:0}
+.walkout-gate:nth-child(2){animation-delay:-.44s}.walkout-gate:nth-child(3){animation-delay:-.88s}
+.walkout-clue{position:absolute;z-index:2;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;color:#fff;text-shadow:0 3px 22px #000}
+.walkout-clue.active{display:flex;animation:walkTunnelClue .68s cubic-bezier(.13,.86,.22,1) both}
+.walkout-clue-label{font-size:clamp(11px,3vw,15px);font-weight:1000;letter-spacing:.38em;color:var(--walkout-beam)}
+.walkout-clue-art{width:116px;height:116px;margin:18px 0 10px;display:grid;place-items:center;border:1px solid #ffffff70;border-radius:25px;background:radial-gradient(circle,#ffffff26,#071009cc 73%);box-shadow:0 0 40px var(--walkout-beam),inset 0 0 25px #ffffff16;font-size:64px;font-weight:1000;line-height:1}
+.walkout-clue-art .card-flag-img{width:90px;height:65px;object-fit:contain;border-radius:6px}.walkout-clue-art .badge-img{width:92px;height:92px;object-fit:contain}
+.walkout-clue-art .asset-fallback{font-size:24px;font-weight:1000;letter-spacing:.02em;line-height:1.1;padding:8px;overflow-wrap:anywhere}
+.walkout-clue-name{max-width:min(85vw,460px);font-size:clamp(19px,6vw,30px);font-weight:1000;line-height:1.13;text-transform:uppercase;overflow-wrap:anywhere}
+@keyframes walkTunnelGlow{to{filter:brightness(1.5);transform:scale(1.07)}}
+@keyframes walkTunnelFloor{to{background-position:0 70px,0 0}}
+@keyframes walkTunnelGate{0%{transform:translate(-50%,-50%) scale(.12);opacity:0}15%{opacity:.85}78%{opacity:.7}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+@keyframes walkTunnelClue{0%{transform:translateZ(-100px) scale(.62);filter:blur(10px);opacity:0}60%{transform:scale(1.08);filter:blur(0);opacity:1}100%{transform:none;opacity:1}}
 @media(max-width:430px){
  .opening.mode-plain .reveal .card-shell{width:166px}
  .opening.mode-board .reveal .card-shell{width:184px!important}
@@ -1087,7 +1106,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.00</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.01</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1295,7 +1314,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="opponentTeamModal" class="modal friend-team-modal opponent-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="opponentTeamModalTitle">Gegner</h3><div id="opponentTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="opponentTeamModalClose" class="secondary">Schließen</button></div><div id="opponentTeamModalBody"></div></div></div>
 
 
-<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
+<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
 <div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
@@ -3477,7 +3496,7 @@ function renderStore(){
 }
 $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const items=generatePack(id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;save();openPack(id,items)}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -3492,6 +3511,7 @@ function packRevealPlan(){
 function finishPack(){
  const opening=$("opening");
  opening.className="opening";
+ resetWalkoutTunnel();
  opening.querySelector(".pack-fx")?.remove();
  opening.querySelector(".pack-floor-lights")?.remove();
  $("openStage").style.display="block";
@@ -3531,6 +3551,25 @@ function showPackRevealCard(plan){
  $("walkoutTitle").textContent=`${firstBase.name} · ${positionLabel(firstBase.position,firstBase)} · ${firstBase.team}`;
  $("reveal").classList.add("active");return true
 }
+function resetWalkoutTunnel(){
+ $("walkoutTunnel").classList.remove("active");
+ const clue=$("walkoutClue");clue.classList.remove("active");clue.innerHTML=""
+}
+function showWalkoutClue(kind,base){
+ const clue=$("walkoutClue");let label,art,name;
+ if(kind==="nation"){
+  const key=normalizeKey(base.nation);
+  label="NATION";art=flagAsset(base);
+  if(["england","scotland","wales","northern ireland"].includes(key))name=base.nation;
+  else try{name=new Intl.DisplayNames(["de"],{type:"region"}).of(countryCode(base.nation))||nationLabel(base.nation)}catch(e){name=nationLabel(base.nation)}
+ }else if(kind==="position"){
+  label="POSITION";art=esc(positionLabel(base.position,base));name=""
+ }else{
+  label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"
+ }
+ clue.classList.remove("active");clue.innerHTML=`<div class="walkout-clue-label">${label}</div><div class="walkout-clue-art">${art}</div>${name?`<div class="walkout-clue-name">${esc(name)}</div>`:""}`;
+ void clue.offsetWidth;clue.classList.add("active")
+}
 async function runPackReveal(plan){
  const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
  opening.className="opening active mode-"+plan.mode;
@@ -3556,16 +3595,20 @@ async function runPackReveal(plan){
   await sleep(plan.duration);finishPack();return
  }
 
+ const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
  addPackFloorLights();
- const countdown=plan.mode==="double"?[3,2,1]:[3,2,1];
- for(const n of countdown){$("packCountdown").textContent=n;spawnPackSparks(8);await sleep(plan.mode==="double"?620:560)}
- $("packCountdown").textContent="";
+ $("openStage").style.display="none";
+ $("walkoutTunnel").classList.add("active");
+ await sleep(1050);
+ showWalkoutClue("nation",firstBase);await sleep(900);
+ showWalkoutClue("position",firstBase);await sleep(800);
+ showWalkoutClue("club",firstBase);await sleep(1050);
+ resetWalkoutTunnel();
  $("bigPack").classList.remove("pulse");
  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
  spawnPackSparks(plan.mode==="double"?60:46);
  spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,plan.mode==="special");
  await sleep(340);
- $("openStage").style.display="none";
  if(!showPackRevealCard(plan)){finishPack();return}
 
  if(plan.mode==="double"&&plan.cards[1]){
@@ -5258,7 +5301,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.00";
+const GFUT_BUILD="V19.01";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
