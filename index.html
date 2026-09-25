@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.09</title>
+<title>Footera V19.10</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -275,7 +275,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .official-card{position:absolute;inset:0;display:block;opacity:0;pointer-events:none}.official-card.loaded{opacity:1}
 .preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
 .preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
-/* V19.09 — Pre-Match-Bank: alle 7 Spieler sichtbar */
+/* V19.10 — Pre-Match-Bank: alle 7 Spieler sichtbar */
 .squad-battle-preview .preview-lineup-row{grid-template-columns:repeat(7,minmax(0,1fr))!important;overflow:visible!important;gap:5px!important;width:100%!important}
 .squad-battle-preview .preview-lineup-row>.preview-lineup-slot{min-width:0!important}
 .squad-battle-preview .preview-lineup-row .mini,.squad-battle-preview .preview-lineup-row .mini .card-shell{min-width:0!important;width:100%!important}
@@ -432,7 +432,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
-/* V19.09 — richer Club/SBC filtering */
+/* V19.10 — richer Club/SBC filtering */
 .club-rating-card{grid-column:1/-1;padding:9px 10px;border:1px solid #34413d;border-radius:10px;background:#0d1512}
 .club-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.club-rating-head strong{font-size:7px;text-transform:uppercase;color:#91a09a}.club-rating-head span{font-size:8px;font-weight:1000;color:var(--lime)}
 .club-rating-sliders{display:grid;gap:3px}.club-rating-sliders input[type=range]{width:100%;min-height:22px;accent-color:var(--lime)}
@@ -1143,7 +1143,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.09</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.10</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1275,7 +1275,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </div></section>
 
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
-  <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Team umbenennen</h3><p>Ändere den Namen deines Clubs. Dein Freundesprofil wird automatisch aktualisiert.</p><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><button id="saveProfileName" class="primary">Teamname speichern</button></div>
+  <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Vereinsprofil</h3><p>Benutzername und Teamname sind frei wählbar. Persönliche Belohnungen werden ausschließlich über deine unveränderliche Vereins-ID zugeordnet.</p><label>Benutzername<input id="profileUsername" maxlength="20" placeholder="Benutzername" autocomplete="off"></label><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><label>Vereins-ID<input id="profileSaveId" readonly aria-label="Eindeutige Vereins-ID"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><button id="saveProfileName" class="primary">Profil speichern</button><button id="copyProfileSaveId" class="secondary" type="button">ID kopieren</button></div></div>
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
@@ -1831,10 +1831,11 @@ function sbcGroupBannerHTML(group,rows){
  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">WÖCHENTLICH · DONNERSTAG 19:00</span><h3>Top-Partien</h3><p>Schließe alle vier Aufgaben ab. Jede SBC gibt ein Pack, danach folgt die Gruppenbelohnung.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
 }
 
+function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
 function baseState(){return{
  version:122,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
- roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club"},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
@@ -5215,6 +5216,7 @@ function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagu
 
 
 function openTeamManagement(){
+ if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();
  $("teamUsername").value=state.profile.username||"";
  $("teamClubName").value=state.profile.clubName||((state.profile.username||"Gerlies")+" FC");
  showUiLayer("teamManagementModal","team-management")
@@ -5358,10 +5360,15 @@ function openFriendTeam(index){const f=state.friends[index];if(!f)return;const f
  const bench=sq.slice(11,18).map(fp=>`<div>${fp?friendCard(fp,"BANK",true):'<div class="emptyslot">BANK<br>+</div>'}</div>`).join('');
  $("friendTeamModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(f.clubName||"Freund")}</h2><p>Nur aktive Aufstellung und Ersatzbank · kein Vereinsbestand</p></div><button class="primary" data-friend-modal-play="${index}">Zur eigenen Aufstellung</button></div><div class="friend-team-summary"><div class="kpi"><strong>${f.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${f.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>`;showUiLayer("friendTeamModal","friend-team")}
 function renderSocial(){
- $("profileClubName").value=state.profile.clubName||"Footera Club";if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Footera Club";$("myFriendCode").value=encodeFriendProfile();
+ if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();
+ if($("profileUsername"))$("profileUsername").value=state.profile.username||"";
+ if($("profileClubName"))$("profileClubName").value=state.profile.clubName||"Footera Club";
+ if($("profileSaveId"))$("profileSaveId").value=state.profile.saveId;
+ if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Footera Club";$("myFriendCode").value=encodeFriendProfile();
  $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button><button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>'
 }
-$("saveProfileName").addEventListener("click",()=>{state.profile.clubName=$("profileClubName").value.trim()||`${state.profile.username||"Gerlies"} FC`;save();renderSocial();renderHome();toast("Clubname gespeichert.")});
+$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;state.profile.clubName=$("profileClubName").value.trim()||`${username} FC`;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();toast("Vereinsprofil gespeichert.")});
+$("copyProfileSaveId")?.addEventListener("click",async()=>{if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();try{await navigator.clipboard.writeText(state.profile.saveId);toast("Vereins-ID kopiert.")}catch(e){const el=$("profileSaveId");el?.focus();el?.select();toast(`Vereins-ID: ${state.profile.saveId}`)}});
 $("refreshFriendCode").addEventListener("click",()=>{$("myFriendCode").value=encodeFriendProfile();toast("Profilcode aktualisiert.")});
 $("addFriendCode").addEventListener("click",()=>{const f=decodeFriendProfile($("friendCodeInput").value);if(!f||!Array.isArray(f.squad))return toast("Profilcode ungültig.");const key=(f.clubName||"Freund")+"|"+(f.rating||0)+"|"+(f.division||10),idx=state.friends.findIndex(x=>x._key===key);f._key=key;if(idx>=0)state.friends[idx]=f;else state.friends.push(f);save();$("friendCodeInput").value="";renderSocial();renderPlay();toast("Freundesprofil gespeichert.")});
 $("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
@@ -5514,7 +5521,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.09";
+const GFUT_BUILD="V19.10";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5530,7 +5537,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1909",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1910",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
