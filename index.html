@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.07</title>
+<title>Footera V19.08</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -275,6 +275,14 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .official-card{position:absolute;inset:0;display:block;opacity:0;pointer-events:none}.official-card.loaded{opacity:1}
 .preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
 .preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
+/* V19.08 — Pre-Match-Bank: alle 7 Spieler sichtbar */
+.squad-battle-preview .preview-lineup-row{grid-template-columns:repeat(7,minmax(0,1fr))!important;overflow:visible!important;gap:5px!important;width:100%!important}
+.squad-battle-preview .preview-lineup-row>.preview-lineup-slot{min-width:0!important}
+.squad-battle-preview .preview-lineup-row .mini,.squad-battle-preview .preview-lineup-row .mini .card-shell{min-width:0!important;width:100%!important}
+@media(max-width:560px){
+ .squad-battle-preview .preview-lineup-row{grid-template-columns:repeat(4,minmax(0,1fr))!important;overflow:visible!important;gap:6px!important}
+ .squad-battle-preview .preview-lineup-row .preview-lineup-slot{width:100%!important}
+}
 .preview-lineup-slot{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer;touch-action:manipulation}.squad-battle-preview .friend-slot{pointer-events:none}.squad-battle-preview .friend-slot .preview-lineup-slot{pointer-events:auto}.preview-lineup-slot .mini .card-shell{width:100%}.preview-lineup-slot.swap-source{border-radius:8px;outline:2px solid var(--lime);box-shadow:0 0 15px #d8ff3e55}.preview-lineup-slot:focus-visible{outline:2px solid var(--lime);border-radius:8px}
 .official-assigned-position{display:none;position:absolute;z-index:25;left:4%;top:30%;padding:2px 5px;border-radius:4px;background:linear-gradient(135deg,#f9e5a2,#c99e48);color:#2a210e;font-size:9px;font-weight:1000;box-shadow:0 2px 5px #33250d66;pointer-events:none}.card-shell:has(.official-card.loaded)>.official-assigned-position{display:block}.mini .official-assigned-position{padding:1px 3px;font-size:6px}.card-shell:has(>.custom-card.silver)>.official-assigned-position{background:linear-gradient(135deg,#f5f8f5,#a9b4b2);color:#19211e}.card-shell:has(>.custom-card.bronze)>.official-assigned-position{background:linear-gradient(135deg,#e6a879,#a35f37);color:#28170d}
 .card-shell:has(>.official-card.loaded)>.custom-card{visibility:hidden}.card-shell>.official-card{left:-9%;top:-9%;width:118%;height:118%}
@@ -424,7 +432,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
-/* V19.07 — richer Club/SBC filtering */
+/* V19.08 — richer Club/SBC filtering */
 .club-rating-card{grid-column:1/-1;padding:9px 10px;border:1px solid #34413d;border-radius:10px;background:#0d1512}
 .club-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.club-rating-head strong{font-size:7px;text-transform:uppercase;color:#91a09a}.club-rating-head span{font-size:8px;font-weight:1000;color:var(--lime)}
 .club-rating-sliders{display:grid;gap:3px}.club-rating-sliders input[type=range]{width:100%;min-height:22px;accent-color:var(--lime)}
@@ -1135,7 +1143,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.07</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.08</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5506,7 +5514,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.07";
+const GFUT_BUILD="V19.08";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5522,7 +5530,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1907",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1908",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
