@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.16</title>
+<title>Footera V19.17</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1146,7 +1146,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.16</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.17</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5731,7 +5731,8 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.16";
+const GFUT_BUILD="V19.17";
+function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5739,6 +5740,7 @@ async function checkForGerliesUpdate(){
   const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
   if(!res.ok)return;const html=await res.text(),match=html.match(/<title>Footera (V[\d.]+)<\/title>/),remote=match?.[1]||"";
   if(remote&&remote!==GFUT_BUILD&&!sessionStorage.getItem("gfut-update-"+remote)){
+   if(packFlowInProgress())return;
    sessionStorage.setItem("gfut-update-"+remote,"1");
    try{const reg=await navigator.serviceWorker?.getRegistration("./");await reg?.update()}catch(e){}
    const fresh=new URL("./",location.href);fresh.searchParams.set("_gfut_updated",Date.now().toString());location.replace(fresh.href)
@@ -5747,8 +5749,13 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1916",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
+  navigator.serviceWorker.register("./service-worker.js?v=1917",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+   if(packFlowInProgress())return;
+   const key="gfut-sw-reloaded-"+GFUT_BUILD;
+   if(sessionStorage.getItem(key))return;
+   sessionStorage.setItem(key,"1");location.reload()
+  });
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
 
