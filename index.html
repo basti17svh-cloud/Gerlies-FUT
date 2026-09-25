@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.14</title>
+<title>Footera V19.15</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -731,22 +731,24 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .evo-stage.done .evo-goal{opacity:.72}
 .evo-stage-claim{margin-top:12px;min-height:46px;border-radius:12px!important;width:100%;font-size:9px!important;font-weight:1000!important;box-shadow:0 10px 24px rgba(216,255,62,.13)}
 .evo-ready-note{margin-top:8px;padding:7px 9px;border:1px solid rgba(216,255,62,.45);border-radius:9px;background:rgba(216,255,62,.07);color:#d8ff3e;font-size:7px;font-weight:900}
-.evo-claim-overlay{position:fixed;inset:0;z-index:140;background:radial-gradient(circle at 50% 46%,rgba(123,67,255,.27),transparent 30%),rgba(2,5,4,.96);display:none;align-items:center;justify-content:center;padding:20px}
+.evo-claim-overlay{position:fixed;inset:0;z-index:320;background:radial-gradient(circle at 50% 46%,rgba(123,67,255,.27),transparent 30%),rgba(2,5,4,.96);display:none;align-items:center;justify-content:center;padding:20px;overscroll-behavior:contain}
 .evo-claim-overlay.active{display:flex}
-.evo-claim-stage{text-align:center;width:min(620px,96vw)}
-.evo-claim-kicker{font-size:8px;letter-spacing:.18em;color:#bda8ff;font-weight:1000;margin-bottom:12px}
-.evo-transform-wrap{position:relative;display:flex;align-items:center;justify-content:center;min-height:390px}
-.evo-transform-before,.evo-transform-after{position:absolute;width:min(250px,62vw);transition:opacity .42s ease,transform .7s cubic-bezier(.16,.84,.3,1),filter .7s ease}
-.evo-transform-before{opacity:1;transform:scale(1);filter:none}
-.evo-transform-after{opacity:0;transform:scale(.72) rotateY(80deg);filter:brightness(1.8) blur(4px)}
-.evo-claim-overlay.revealed .evo-transform-before{opacity:0;transform:scale(.84) rotateY(-70deg);filter:brightness(1.7) blur(4px)}
-.evo-claim-overlay.revealed .evo-transform-after{opacity:1;transform:scale(1) rotateY(0);filter:none}
-.evo-claim-burst{position:absolute;width:430px;height:430px;border-radius:50%;opacity:0;background:repeating-conic-gradient(from 0deg,rgba(216,255,62,.32) 0 2deg,transparent 2deg 11deg);animation:none}
+.evo-claim-stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:min(620px,96vw);margin:0 auto}
+.evo-claim-kicker{width:100%;font-size:8px;letter-spacing:.18em;color:#bda8ff;font-weight:1000;margin-bottom:12px;text-align:center}
+.evo-transform-wrap{position:relative;display:grid;place-items:center;width:100%;min-height:390px;margin:0 auto;pointer-events:none}
+.evo-transform-before,.evo-transform-after{position:absolute;left:50%;top:50%;display:flex;align-items:center;justify-content:center;width:min(250px,62vw);transition:opacity .42s ease,transform .7s cubic-bezier(.16,.84,.3,1),filter .7s ease;transform-origin:center center;pointer-events:none}
+.evo-transform-before>div,.evo-transform-after>div{width:100%;display:flex;justify-content:center}
+.evo-transform-before .card-shell,.evo-transform-after .card-shell{margin-left:auto!important;margin-right:auto!important}
+.evo-transform-before{opacity:1;transform:translate(-50%,-50%) scale(1);filter:none}
+.evo-transform-after{opacity:0;transform:translate(-50%,-50%) scale(.72) rotateY(80deg);filter:brightness(1.8) blur(4px)}
+.evo-claim-overlay.revealed .evo-transform-before{opacity:0;transform:translate(-50%,-50%) scale(.84) rotateY(-70deg);filter:brightness(1.7) blur(4px)}
+.evo-claim-overlay.revealed .evo-transform-after{opacity:1;transform:translate(-50%,-50%) scale(1) rotateY(0);filter:none}
+.evo-claim-burst{position:absolute;left:50%;top:50%;width:430px;height:430px;border-radius:50%;opacity:0;background:repeating-conic-gradient(from 0deg,rgba(216,255,62,.32) 0 2deg,transparent 2deg 11deg);animation:none;pointer-events:none;transform:translate(-50%,-50%)}
 .evo-claim-overlay.revealed .evo-claim-burst{opacity:.55;animation:evoBurst 1.6s ease-out both}
-@keyframes evoBurst{0%{transform:scale(.3) rotate(0);opacity:0}35%{opacity:.75}100%{transform:scale(1.25) rotate(70deg);opacity:0}}
-.evo-claim-title{margin-top:8px;font-size:18px;font-weight:1000;color:#fff}
-.evo-claim-sub{margin-top:5px;color:#9eaca7;font-size:8px}
-.evo-claim-close{margin-top:16px;min-width:190px}
+@keyframes evoBurst{0%{transform:translate(-50%,-50%) scale(.3) rotate(0);opacity:0}35%{opacity:.75}100%{transform:translate(-50%,-50%) scale(1.25) rotate(70deg);opacity:0}}
+.evo-claim-title{width:100%;margin-top:8px;font-size:18px;font-weight:1000;color:#fff;text-align:center}
+.evo-claim-sub{width:100%;margin-top:5px;color:#9eaca7;font-size:8px;text-align:center}
+.evo-claim-close{position:relative;z-index:5;width:min(390px,100%);min-width:190px;min-height:48px;margin:16px auto 0;pointer-events:auto;touch-action:manipulation;cursor:pointer}
 @media(max-width:560px){
  .evo-stage{grid-template-columns:112px minmax(0,1fr)!important;column-gap:12px!important;padding:10px!important}
  .evo-stage-card{max-width:112px!important}
@@ -1144,7 +1146,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.14</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.15</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4440,15 +4442,24 @@ function startEvolution(evoId,uid,payment="free"){
  save();closeUiLayer("evoPickerModal","evo-picker");activeEvoTab="active";renderAll();switchView("evolutionView");toast(`${displayBase(item).name}: Evolution gestartet · ${activeEvolutionCount()}/3 aktiv.`)
 }
 function closeEvoClaimReveal(){
- const o=$("evoClaimOverlay");if(o)o.remove()
+ const o=$("evoClaimOverlay");if(!o)return;
+ o.classList.remove("revealed","active");
+ o.setAttribute("aria-hidden","true");
+ o.style.pointerEvents="none";
+ requestAnimationFrame(()=>{if(o.isConnected)o.remove()})
 }
 function showEvoClaimReveal(beforeItem,afterItem,evo,stageIndex,isFinal){
  closeEvoClaimReveal();
  const beforeBase=displayBase(beforeItem),afterBase=displayBase(afterItem);if(!beforeBase||!afterBase)return;
- const o=document.createElement("div");o.id="evoClaimOverlay";o.className="evo-claim-overlay";
+ const o=document.createElement("div");o.id="evoClaimOverlay";o.className="evo-claim-overlay";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-hidden","false");
  o.innerHTML=`<div class="evo-claim-stage"><div class="evo-claim-kicker">EVOLUTION · STUFE ${stageIndex+1}</div><div class="evo-transform-wrap"><div class="evo-claim-burst"></div><div class="evo-transform-before">${cardHTML(beforeBase,beforeItem,false)}</div><div class="evo-transform-after">${cardHTML(afterBase,afterItem,false)}</div></div><div class="evo-claim-title">${esc(afterBase.name)} · ${itemRating(afterItem)} GES</div><div class="evo-claim-sub">${isFinal?"Evolution abgeschlossen":"Nächste Stufe freigeschaltet"} · neue Werte wurden übernommen</div><button class="primary evo-claim-close" type="button">Weiter</button></div>`;
- document.body.appendChild(o);requestAnimationFrame(()=>{o.classList.add("active");setTimeout(()=>o.classList.add("revealed"),180)});
- o.querySelector(".evo-claim-close")?.addEventListener("click",closeEvoClaimReveal);
+ document.body.appendChild(o);
+ const closeBtn=o.querySelector(".evo-claim-close");
+ const closeNow=e=>{e?.preventDefault?.();e?.stopPropagation?.();closeEvoClaimReveal()};
+ closeBtn?.addEventListener("click",closeNow,{once:true});
+ o.addEventListener("click",e=>{if(e.target===o)closeNow(e)});
+ o.addEventListener("keydown",e=>{if(e.key==="Escape")closeNow(e)});
+ requestAnimationFrame(()=>{o.classList.add("active");setTimeout(()=>{if(o.isConnected){o.classList.add("revealed");closeBtn?.focus({preventScroll:true})}},180)});
 }
 function claimEvolutionStage(instanceKey=""){
  expireActiveEvolutionIfNeeded();
@@ -5717,7 +5728,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.14";
+const GFUT_BUILD="V19.15";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5733,7 +5744,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1914",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1915",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
