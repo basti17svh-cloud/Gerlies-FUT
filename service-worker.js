@@ -1,4 +1,4 @@
-const CACHE="footera-v19-17-root-shell";
+const CACHE="footera-v19-18-root-shell";
 const SHELL=["./","./index.html","./footera-theme.css","./season-system.js","./manifest.webmanifest","./players-fallback.json","./assets/badge-manifest.json","./assets/player-traits.json","./assets/footera/emblem.png","./assets/footera/stadion.webp","./assets/footera/coins.webp","./assets/footera/points.webp","./assets/footera/bronze.webp","./assets/footera/silber.webp","./assets/footera/gold.webp","./assets/footera/promo.webp","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon.png","./p1.png","./p2.png","./p3.png","./p4.png","./p5.png","./p6.png","./p7.png","./p8.png"];
 
 self.addEventListener("install",e=>
@@ -19,25 +19,34 @@ self.addEventListener("activate",e=>
 
 self.addEventListener("fetch",e=>{
  const r=e.request,u=new URL(r.url);
- if(u.origin!==self.location.origin)return;
+ if(u.origin!==self.location.origin||r.method!=="GET")return;
  if(r.mode==="navigate"||u.pathname.endsWith("/index.html")){
   e.respondWith(
    fetch(new Request(r,{cache:"no-store"}))
     .then(res=>{
      const x=res.clone();
-     caches.open(CACHE).then(c=>c.put("./index.html",x));
+     e.waitUntil(caches.open(CACHE).then(c=>c.put("./index.html",x)));
      return res
     })
     .catch(()=>caches.match("./index.html"))
   );
   return
  }
+ const immutable=/\.(?:png|webp|jpe?g|gif|svg|ico)$/i.test(u.pathname);
  e.respondWith(
-  fetch(r)
-   .then(res=>{
-    if(r.method==="GET"&&res.ok)caches.open(CACHE).then(c=>c.put(r,res.clone()));
+  caches.match(r).then(cached=>{
+   if(cached){
+    if(!immutable){
+     e.waitUntil(fetch(r).then(res=>{
+      if(res.ok)return caches.open(CACHE).then(c=>c.put(r,res.clone()))
+     }).catch(()=>{}))
+    }
+    return cached
+   }
+   return fetch(r).then(res=>{
+    if(res.ok)e.waitUntil(caches.open(CACHE).then(c=>c.put(r,res.clone())));
     return res
    })
-   .catch(()=>caches.match(r))
+  })
  )
 });
