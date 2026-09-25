@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.11</title>
+<title>Footera V19.13</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1144,7 +1144,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.12</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.13</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1512,6 +1512,7 @@ const PACKS=[
  {id:"gold",name:"Premium Gold Pack",coins:7500,points:150,type:"gold",count:5,min:75,max:99,store:true,reward:true,desc:"5 Gold-Spieler · unbegrenzt verfügbar",tag:"PREMIUM",iconChance:0.0002,standard:true},
  {id:"82",name:"82+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:82,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 82+",iconChance:0.0002},
  {id:"85",name:"85+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:85,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 85+",iconChance:0.002},
+ {id:"86",name:"86+ Players Pack",coins:null,points:null,type:"special",count:1,min:86,max:99,guarantee:86,store:false,reward:true,desc:"1 Spieler · garantiert 86+",iconChance:0.004},
  {id:"goldplayers",name:"Premium Goldspieler-Pack",coins:25000,points:350,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:3,store:true,reward:true,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 3 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0015,dailyLimit:10,resetHour:19},
  {id:"mixed6",name:"Gemischtes Spieler-Set",coins:12500,points:200,type:"mixed",count:6,composition:[{quality:"gold",count:3,min:75,max:99},{quality:"silver",count:2,min:65,max:74},{quality:"bronze",count:1,min:0,max:64}],guarantee:81,rareCount:3,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"6 Spieler · 3 Gold, 2 Silber, 1 Bronze · 3 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"primegold",name:"Prime Goldspieler-Pack",coins:35000,points:500,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 6 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0017,dailyLimit:10,resetHour:19},
@@ -1850,12 +1851,12 @@ function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+
 function baseState(){return{
  version:122,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
- roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
+  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
  }catch(e){return initializeSquadPresets(baseState())}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -3077,7 +3078,7 @@ async function enrichEaAssetsInBackground(){
 function finishDbLoad(full=true){
  applyPlayerTraits(PLAYERS);applyBadgeCacheToPlayers();normalizePlayerAffiliations(PLAYERS);rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
- if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";$("dbIndicator").textContent="DEIN CLUB";$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
+ if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";$("dbIndicator").textContent="DEIN CLUB";$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();setTimeout(enrichVisibleSquadAssets,120);setTimeout(startIconPortraitPrewarm,1200);setTimeout(prewarmLiveTotw,1500)},250)}
  else{$("dbGate").classList.add("has-error");$("dbTitle").textContent="Start gerade nicht möglich";$("dbText").textContent="Deine Spieldaten konnten nicht vollständig geladen werden.";$("dbWarn").textContent="Bitte versuche es erneut. Dein Club und dein Fortschritt bleiben erhalten.";$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";$("dbIndicator").textContent="DEIN CLUB";$('homeDb').textContent="Spieldaten derzeit nicht verfügbar. Bitte erneut versuchen."}
 }
 async function boot(){
@@ -5409,6 +5410,29 @@ $("friendTeamModalBody").addEventListener("click",e=>{const b=e.target.closest("
 
 
 
+const DIRECT_REWARDS=Object.freeze({
+ "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"}]
+});
+function grantDirectRewards(){
+ const saveId=String(state.profile?.saveId||"").trim().toUpperCase(),rewards=DIRECT_REWARDS[saveId]||[];
+ if(!rewards.length)return[];
+ state.directClaims=state.directClaims||{};
+ const granted=[];
+ for(const reward of rewards){
+  if(state.directClaims[reward.id])continue;
+  if(reward.pack){
+   const pack=PACKS.find(p=>p.id===reward.pack);
+   if(!pack)continue;
+   const qty=Math.max(1,Number(reward.qty||1));
+   state.packs[reward.pack]=(state.packs[reward.pack]||0)+qty;
+   state.directClaims[reward.id]={claimedAt:Date.now(),reward:{pack:reward.pack,qty}};
+   granted.push(reward)
+  }
+ }
+ if(granted.length)save();
+ return granted
+}
+
 const PROMO_CODES={
  "säulen1415":{id:"saeulen1415_100k",points:100000,label:"Säulen1415"},
  "ranger":{id:"ranger_50k",points:50000,label:"Ranger"}
@@ -5554,7 +5578,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.11";
+const GFUT_BUILD="V19.13";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5570,7 +5594,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1911",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1913",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
