@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.06</title>
+<title>Footera V19.07</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -122,7 +122,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .sbc-hub-card.completed{opacity:.72}.sbc-hub-card.completed:before{background:#59d28a}.sbc-hub-card.completed .sbc-hub-reward button{border-color:#347753;color:#a4f3bb}
 .sbc-hub-chip{padding:4px 6px;border-radius:999px;border:1px solid #354852;background:#101b20;color:#a9bac2;font-size:6px;font-weight:900}.sbc-hub-chip.done{border-color:#397c58;color:#a3f6bd;background:#10241a}.sbc-hub-reward{display:grid;gap:7px;text-align:center}.sbc-hub-pack{height:78px;display:grid;place-items:center;border-radius:9px;clip-path:polygon(10% 0,93% 4%,100% 88%,84% 100%,8% 96%,0 10%);background:linear-gradient(145deg,#73551d,#efd780 45%,#8a681f);color:#191409;font-size:9px;font-weight:1000;letter-spacing:.06em}.sbc-hub-reward button{min-height:36px}
 .sbc-builder{max-width:760px;margin:0 auto}.sbc-builder-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-bottom:10px}.sbc-builder-back{width:40px;height:40px;border:1px solid #34454d;border-radius:9px;background:#101a1e;color:#fff;font-size:19px}.sbc-builder-title strong{display:block;font-size:14px}.sbc-builder-title span{display:block;margin-top:3px;color:#85959d;font-size:7px}.sbc-builder-reward{padding:6px 8px;border-radius:8px;border:1px solid #5f5230;background:#1c190f;color:#ffe28a;font-size:7px;font-weight:950;text-align:right}
-.sbc-condition-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:8px}.sbc-condition{padding:7px 8px;border:1px solid #34444c;border-radius:8px;background:#0d161a}.sbc-condition b{display:block;font-size:9px}.sbc-condition span{display:block;margin-top:2px;color:#80919a;font-size:5.5px;text-transform:uppercase}.sbc-condition.ok{border-color:#336f53;background:#0e2118}.sbc-condition.ok b{color:#9df4b8}
+.sbc-condition-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:5px;margin-bottom:8px}.sbc-condition{padding:7px 8px;border:1px solid #34444c;border-radius:8px;background:#0d161a}.sbc-condition b{display:block;font-size:9px}.sbc-condition span{display:block;margin-top:2px;color:#80919a;font-size:5.5px;text-transform:uppercase}.sbc-condition.ok{border-color:#336f53;background:#0e2118}.sbc-condition.ok b{color:#9df4b8}
 .sbc-editor-pitch{position:relative;aspect-ratio:.72;min-height:510px;border:1px solid #2e6061;border-radius:17px;overflow:hidden;background:radial-gradient(circle at 50% 49%,transparent 0 13%,rgba(255,255,255,.14) 13.3% 13.8%,transparent 14.1%),linear-gradient(90deg,transparent 49.7%,rgba(255,255,255,.15) 49.7% 50.3%,transparent 50.3%),repeating-linear-gradient(0deg,#08634c 0 11%,#07563f 11% 22%);box-shadow:inset 0 0 34px rgba(0,0,0,.28)}
 .sbc-editor-pitch:before{content:"";position:absolute;inset:5%;border:1px solid rgba(255,255,255,.23);border-radius:3px;pointer-events:none}.sbc-editor-pitch:after{content:"";position:absolute;left:35%;right:35%;top:5%;height:16%;border:1px solid rgba(255,255,255,.18);border-top:0;pointer-events:none}
 .sbc-work-slot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:17.5%;min-width:58px;aspect-ratio:.70;display:grid;place-items:center;border:0;background:transparent;padding:0;cursor:pointer}.sbc-work-slot.filled{touch-action:none}.sbc-card-wrap{width:100%;min-width:0;display:block}.sbc-card-wrap>.mini{width:100%;display:block}.sbc-work-slot .mini,.sbc-work-slot .mini .card-shell{width:100%}.sbc-work-slot .card-shell{filter:drop-shadow(0 7px 9px rgba(0,0,0,.48))}.sbc-work-slot.drop-target,.sbc-test-slot.drop-target{outline:2px solid #8ae9ff;outline-offset:3px;border-radius:8px;filter:drop-shadow(0 0 12px rgba(82,215,255,.6))}.sbc-work-slot.drag-source,.sbc-test-slot.drag-source{opacity:.28}
@@ -424,7 +424,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
-/* V19.06 — richer Club/SBC filtering */
+/* V19.07 — richer Club/SBC filtering */
 .club-rating-card{grid-column:1/-1;padding:9px 10px;border:1px solid #34413d;border-radius:10px;background:#0d1512}
 .club-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.club-rating-head strong{font-size:7px;text-transform:uppercase;color:#91a09a}.club-rating-head span{font-size:8px;font-weight:1000;color:var(--lime)}
 .club-rating-sliders{display:grid;gap:3px}.club-rating-sliders input[type=range]{width:100%;min-height:22px;accent-color:var(--lime)}
@@ -1135,7 +1135,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.06</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.07</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4396,15 +4396,21 @@ function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
 function sbcRequirementSummary(sbc,stats){
  const reqs=[{label:"Spieler",value:`${stats.count}/${sbc.count}`,ok:stats.count===sbc.count}];
  if(sbc.minAvg)reqs.push({label:"Ø GES",value:`${stats.avg.toFixed(1)} / ${sbc.minAvg}+`,ok:stats.avgOk&&stats.count===sbc.count});
- else if(sbc.maxAvg)reqs.push({label:"Ø GES",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
- else reqs.push({label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule});
+ if(sbc.maxAvg)reqs.push({label:"Ø GES",value:`${stats.avg.toFixed(1)} / max. ${sbc.maxAvg}`,ok:stats.avgOk&&stats.count===sbc.count});
  if(sbc.sameLeague)reqs.push({label:"Liga",value:stats.leagues.length===1&&stats.count===sbc.count?"1 Liga":`${stats.leagues.length} Ligen`,ok:stats.leagueOk&&stats.count===sbc.count});
- else if(sbc.minLeagues)reqs.push({label:"Ligen",value:`${stats.leagues.length}/${sbc.minLeagues}`,ok:stats.minLeaguesOk});
- else if(sbc.minClubs)reqs.push({label:"Vereine",value:`${stats.clubs.length}/${sbc.minClubs}`,ok:stats.minClubsOk});
- else if(sbc.minRare)reqs.push({label:"Seltene",value:`${stats.rareCount}/${sbc.minRare}`,ok:stats.minRareOk});
- else if(sbc.minGold)reqs.push({label:"Gold",value:`${stats.goldCount}/${sbc.minGold}`,ok:stats.minGoldOk});
- else if(sbc.maxSameClub)reqs.push({label:"Max. gleicher Verein",value:`${stats.maxSameClub}/${sbc.maxSameClub}`,ok:stats.maxSameClubOk});
- return reqs.slice(0,3)
+ if(sbc.minLeagues)reqs.push({label:"Ligen",value:`${stats.leagues.length}/${sbc.minLeagues}`,ok:stats.minLeaguesOk});
+ if(sbc.minClubs)reqs.push({label:"Vereine",value:`${stats.clubs.length}/${sbc.minClubs}`,ok:stats.minClubsOk});
+ if(sbc.minRare)reqs.push({label:"Seltene",value:`${stats.rareCount}/${sbc.minRare}`,ok:stats.minRareOk});
+ if(sbc.minGold)reqs.push({label:"Gold",value:`${stats.goldCount}/${sbc.minGold}`,ok:stats.minGoldOk});
+ if(sbc.maxSameClub)reqs.push({label:"Max. gleicher Verein",value:`${stats.maxSameClub}/${sbc.maxSameClub}`,ok:stats.maxSameClubOk});
+ if(reqs.length===1)reqs.push({label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule});
+ return reqs
+}
+function sbcFailedRequirementText(sbc,stats){
+ const failed=sbcRequirementSummary(sbc,stats).filter(r=>!r.ok);
+ if(!stats.allRule&&!failed.some(r=>r.label==="Bedingung"))failed.unshift({label:"Bedingung",value:"Offen"});
+ if(!failed.length)return"";
+ return "Noch offen: "+failed.map(r=>`${r.label} (${r.value})`).join(" · ")
 }
 function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
 function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${reward.qty||1}× ${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
@@ -4590,7 +4596,7 @@ function renderSbcEditor(sbc){
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,"squad",i,slot)).join("")}</div>
  <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle><div><strong>⚒ Testareal</strong><span>12 Zusatzplätze · Spieler vorbereiten und per Drag & Drop einsetzen</span></div><b class="sbc-test-chevron">⌃</b></button>
  <div class="sbc-test-drawer ${draft.testOpen?"open":""}"><div class="sbc-test-note"><span>3 Reihen × 4 Plätze</span><span>${draft.test.filter(Boolean).length}/12 belegt</span></div><div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcWorkSlotHTML(sbc,"test",i)).join("")}</div></div>
- <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(sbcRewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
+ <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(sbcRewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":esc(sbcFailedRequirementText(sbc,stats)||`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`)}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
  </div>${sbcSlotDetailHTML(sbc)}${sbcPickerHTML()}${sbcWarningHTML(sbc)}${sbcAssistantHTML(sbc)}`
 }
 function renderSBC(){
@@ -5500,7 +5506,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.06";
+const GFUT_BUILD="V19.07";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5516,7 +5522,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1906",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1907",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
