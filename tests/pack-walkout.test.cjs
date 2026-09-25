@@ -19,7 +19,7 @@ test('walkout travels through nation, position and club before revealing the pla
    classList:{add:n=>classes.add(n),remove:n=>classes.delete(n),contains:n=>classes.has(n)},
    querySelector:()=>null};
  }
- for(const id of ['opening','openPackBtn','openStage','bigPack','packCountdown','flash','boardIntro','walkoutTunnel','walkoutClue','reveal','revealBadge','revealCard','revealSecondCard','walkoutTitle','results'])elements.set(id,element(id));
+ for(const id of ['opening','openPackBtn','openStage','bigPack','packCountdown','flash','boardIntro','boardCue','walkoutTunnel','walkoutClue','reveal','revealBadge','revealCard','revealSecondCard','walkoutTitle','results'])elements.set(id,element(id));
  const get=id=>elements.get(id),snapshots=[];
  const base={name:'Testspieler',position:'ST',nation:'Germany',team:'FC Gerlies'};
  const ctx={

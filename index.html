@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.02</title>
+<title>Footera V19.03</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -774,7 +774,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  animation:boardSweep .9s ease-in-out infinite alternate!important
 }
 .opening.mode-board .reveal .card-shell{width:192px!important;filter:drop-shadow(0 0 24px rgba(216,255,62,.28))}
-.opening.mode-board .revealbadge{font-size:11px;color:#d8ff3e;text-shadow:0 0 16px rgba(216,255,62,.72);letter-spacing:.16em}
+.opening.mode-board .revealbadge{display:none}
 .opening.mode-board .walkout-title{font-size:10px;color:#eef7f2}
 .opening.mode-board .reveal-cards{animation:boardReveal .68s cubic-bezier(.18,.85,.28,1) both!important}
 .board-intro{position:absolute;inset:0;z-index:3;display:none;overflow:hidden;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#d8ff3e25,#0a140f 32%,#020604 75%)}
@@ -782,9 +782,14 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .board-intro:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 18%,#d8ff3e13 18% 18.5%,transparent 18.5% 81.5%,#d8ff3e13 81.5% 82%,transparent 82%),linear-gradient(180deg,transparent 0 65%,#d8ff3e1c 80%,transparent 100%);animation:boardIntroGlow 1s ease-in-out infinite alternate}
 .board-stripe{position:absolute;left:-10%;right:-10%;height:3px;background:linear-gradient(90deg,transparent,#d8ff3e 30%,#faffd0 50%,#d8ff3e 70%,transparent);box-shadow:0 0 19px #d8ff3e,0 0 45px #b5f779;transform:translateX(-110%);animation:boardStripe .7s cubic-bezier(.13,.8,.22,1) both}
 .board-stripe:nth-child(1){top:24%}.board-stripe:nth-child(2){top:36%;animation:boardStripeRight .7s cubic-bezier(.13,.8,.22,1) .12s both}.board-stripe:nth-child(3){bottom:30%;animation-delay:.24s}.board-stripe:nth-child(4){bottom:18%;animation:boardStripeRight .7s cubic-bezier(.13,.8,.22,1) .32s both}
-.board-plaque{position:relative;z-index:1;width:min(76vw,330px);padding:22px 14px;border:1px solid #d8ff3e98;border-radius:12px;background:linear-gradient(145deg,#20341d,#0b1410 58%,#1b2a19);box-shadow:inset 0 0 28px #d8ff3e22,0 0 30px #d8ff3e66;text-align:center;animation:boardPlaque .86s cubic-bezier(.15,.8,.24,1) both}
-.board-plaque strong{display:block;color:#f4ffd1;font-size:clamp(27px,8vw,47px);line-height:1;font-weight:1000;letter-spacing:.22em;text-shadow:0 0 24px #d8ff3e;padding-left:.22em}
-.board-plaque span{display:block;margin-top:10px;color:#cdeca5;font-size:9px;letter-spacing:.28em;font-weight:900}
+.board-plaque{position:relative;z-index:1;width:min(76vw,310px);min-height:172px;padding:15px;border:1px solid #d8ff3e98;border-radius:12px;background:linear-gradient(145deg,#20341d,#0b1410 58%,#1b2a19);box-shadow:inset 0 0 28px #d8ff3e22,0 0 30px #d8ff3e66;text-align:center;animation:boardPlaque .5s cubic-bezier(.15,.8,.24,1) both}
+.board-cue{display:none;flex-direction:column;align-items:center;justify-content:center;color:#f4ffd1}
+.board-cue.active{display:flex;animation:boardCuePop .38s cubic-bezier(.16,.86,.26,1) both}
+.board-cue-label{font-size:10px;font-weight:1000;letter-spacing:.28em;color:#d8ff3e}
+.board-cue-art{width:72px;height:72px;margin:9px 0 5px;display:grid;place-items:center;border:1px solid #d8ff3e70;border-radius:11px;background:#0b170ecc;box-shadow:0 0 15px #d8ff3e60;font-size:39px;font-weight:1000;line-height:1}
+.board-cue-art .card-flag-img{width:63px;height:44px;object-fit:contain}.board-cue-art .badge-img{width:62px;height:62px;object-fit:contain}
+.board-cue-art .asset-fallback{font-size:14px;font-weight:1000;line-height:1.1;overflow-wrap:anywhere}
+.board-cue-name{max-width:100%;font-size:clamp(13px,4vw,18px);font-weight:950;line-height:1.1;text-transform:uppercase;overflow-wrap:anywhere}
 
 .opening.mode-walkout,.opening.mode-double{
  background:
@@ -842,6 +847,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @keyframes boardStripe{0%{transform:translateX(-110%);opacity:0}45%{opacity:1}100%{transform:none;opacity:.7}}
 @keyframes boardStripeRight{0%{transform:translateX(110%);opacity:0}45%{opacity:1}100%{transform:none;opacity:.7}}
 @keyframes boardPlaque{0%{transform:scale(.78);opacity:0;filter:brightness(2) blur(8px)}65%{transform:scale(1.04);opacity:1;filter:brightness(1.4)}100%{transform:none;opacity:1;filter:none}}
+@keyframes boardCuePop{0%{transform:scale(.72);filter:blur(4px);opacity:0}65%{transform:scale(1.07);filter:none;opacity:1}100%{transform:none;opacity:1}}
 @keyframes boardIntroGlow{to{filter:brightness(1.45)}}
 @keyframes walkStadium{to{filter:brightness(1.5);transform:scale(1.025)}}
 @keyframes walkoutBadge{to{transform:scale(1.07);filter:brightness(1.35)}}
@@ -1118,7 +1124,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.02</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.03</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1326,7 +1332,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="opponentTeamModal" class="modal friend-team-modal opponent-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="opponentTeamModalTitle">Gegner</h3><div id="opponentTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="opponentTeamModalClose" class="secondary">Schließen</button></div><div id="opponentTeamModalBody"></div></div></div>
 
 
-<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro" aria-hidden="true"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><strong>BOARD</strong><span>STARKE KARTE</span></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
+<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
 <div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
@@ -3508,7 +3514,7 @@ function renderStore(){
 }
 $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const items=generatePack(id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;save();openPack(id,items)}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";$("boardIntro").classList.remove("active");resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){pendingPack=prepared||generatePack(id);pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -3517,13 +3523,13 @@ function packRevealPlan(){
  if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:5900};
  if(specials.length){const first=specials[0];return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"MITTLERE IKONE":totwDisplayName(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}}
  if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:5200};
- if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"BOARD",duration:2350};
+ if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"",duration:2350};
  return{mode:"plain",cards:best?[best]:[],label:"HÖCHSTE KARTE",duration:1250}
 }
 function finishPack(){
  const opening=$("opening");
  opening.className="opening";
- $("boardIntro").classList.remove("active");
+ resetBoardIntro();
  resetWalkoutTunnel();
  opening.querySelector(".pack-fx")?.remove();
  opening.querySelector(".pack-floor-lights")?.remove();
@@ -3564,6 +3570,23 @@ function showPackRevealCard(plan){
  $("walkoutTitle").textContent=`${firstBase.name} · ${positionLabel(firstBase.position,firstBase)} · ${firstBase.team}`;
  $("reveal").classList.add("active");return true
 }
+function resetBoardIntro(){
+ $("boardIntro").classList.remove("active");
+ const cue=$("boardCue");cue.classList.remove("active");cue.innerHTML=""
+}
+function packRevealNationName(nation){
+ const key=normalizeKey(nation);
+ if(["england","scotland","wales","northern ireland"].includes(key))return nation;
+ try{return new Intl.DisplayNames(["de"],{type:"region"}).of(countryCode(nation))||nationLabel(nation)}catch(e){return nationLabel(nation)}
+}
+function showBoardCue(kind,base){
+ const cue=$("boardCue");let label,art,name;
+ if(kind==="nation"){label="NATION";art=flagAsset(base);name=packRevealNationName(base.nation)}
+ else if(kind==="position"){label="POSITION";art=esc(positionLabel(base.position,base));name=""}
+ else{label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"}
+ cue.classList.remove("active");cue.innerHTML=`<div class="board-cue-label">${label}</div><div class="board-cue-art">${art}</div>${name?`<div class="board-cue-name">${esc(name)}</div>`:""}`;
+ void cue.offsetWidth;cue.classList.add("active")
+}
 function resetWalkoutTunnel(){
  $("walkoutTunnel").classList.remove("active");
  const clue=$("walkoutClue");clue.classList.remove("active");clue.innerHTML=""
@@ -3571,10 +3594,7 @@ function resetWalkoutTunnel(){
 function showWalkoutClue(kind,base){
  const clue=$("walkoutClue");let label,art,name;
  if(kind==="nation"){
-  const key=normalizeKey(base.nation);
-  label="NATION";art=flagAsset(base);
-  if(["england","scotland","wales","northern ireland"].includes(key))name=base.nation;
-  else try{name=new Intl.DisplayNames(["de"],{type:"region"}).of(countryCode(base.nation))||nationLabel(base.nation)}catch(e){name=nationLabel(base.nation)}
+  label="NATION";art=flagAsset(base);name=packRevealNationName(base.nation)
  }else if(kind==="position"){
   label="POSITION";art=esc(positionLabel(base.position,base));name=""
  }else{
@@ -3597,13 +3617,15 @@ async function runPackReveal(plan){
 
  $("bigPack").classList.add("pulse");
  if(plan.mode==="board"){
+  const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
   addPackFloorLights();
-  await sleep(350);
+  await sleep(250);
   $("openStage").style.display="none";
   $("boardIntro").classList.add("active");
-  spawnPackSparks(12);
-  await sleep(1050);
-  $("boardIntro").classList.remove("active");
+  showBoardCue("nation",firstBase);await sleep(550);
+  showBoardCue("position",firstBase);await sleep(520);
+  showBoardCue("club",firstBase);await sleep(620);
+  resetBoardIntro();
   $("bigPack").classList.remove("pulse");
   flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
   await sleep(220);
@@ -5318,7 +5340,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.02";
+const GFUT_BUILD="V19.03";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
