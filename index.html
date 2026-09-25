@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.08</title>
+<title>Footera V19.09</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -275,7 +275,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .official-card{position:absolute;inset:0;display:block;opacity:0;pointer-events:none}.official-card.loaded{opacity:1}
 .preview-edit-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px 12px;border:1px solid #3a6047;border-radius:11px;background:#12231a;color:#c7e8cc;font-size:10px;line-height:1.35}.preview-edit-hint button{flex:none}
 .preview-lineup-heading{margin:13px 0 6px;font-size:12px;color:#e5f3e8}.preview-lineup-row{margin-top:0}
-/* V19.08 — Pre-Match-Bank: alle 7 Spieler sichtbar */
+/* V19.09 — Pre-Match-Bank: alle 7 Spieler sichtbar */
 .squad-battle-preview .preview-lineup-row{grid-template-columns:repeat(7,minmax(0,1fr))!important;overflow:visible!important;gap:5px!important;width:100%!important}
 .squad-battle-preview .preview-lineup-row>.preview-lineup-slot{min-width:0!important}
 .squad-battle-preview .preview-lineup-row .mini,.squad-battle-preview .preview-lineup-row .mini .card-shell{min-width:0!important;width:100%!important}
@@ -432,7 +432,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
-/* V19.08 — richer Club/SBC filtering */
+/* V19.09 — richer Club/SBC filtering */
 .club-rating-card{grid-column:1/-1;padding:9px 10px;border:1px solid #34413d;border-radius:10px;background:#0d1512}
 .club-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.club-rating-head strong{font-size:7px;text-transform:uppercase;color:#91a09a}.club-rating-head span{font-size:8px;font-weight:1000;color:var(--lime)}
 .club-rating-sliders{display:grid;gap:3px}.club-rating-sliders input[type=range]{width:100%;min-height:22px;accent-color:var(--lime)}
@@ -1143,7 +1143,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.08</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.09</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3702,13 +3702,13 @@ async function runPackReveal(plan){
   await sleep(250);
   $("openStage").style.display="none";
   $("boardIntro").classList.add("active");
-  showBoardCue("nation",firstBase);await sleep(550);
-  showBoardCue("position",firstBase);await sleep(520);
-  showBoardCue("club",firstBase);await sleep(620);
+  showBoardCue("nation",firstBase);await sleep(850);
+  showBoardCue("position",firstBase);await sleep(800);
+  showBoardCue("club",firstBase);await sleep(1000);
   resetBoardIntro();
   $("bigPack").classList.remove("pulse");
   flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
-  await sleep(220);
+  await sleep(350);
   if(!showPackRevealCard(plan)){finishPack();return}
   spawnPackSparks(22);
   await sleep(plan.duration);finishPack();return
@@ -3718,16 +3718,16 @@ async function runPackReveal(plan){
  addPackFloorLights();
  $("openStage").style.display="none";
  $("walkoutTunnel").classList.add("active");
- await sleep(1050);
- showWalkoutClue("nation",firstBase);await sleep(900);
- showWalkoutClue("position",firstBase);await sleep(800);
- showWalkoutClue("club",firstBase);await sleep(1050);
+ await sleep(1200);
+ showWalkoutClue("nation",firstBase);await sleep(1000);
+ showWalkoutClue("position",firstBase);await sleep(900);
+ showWalkoutClue("club",firstBase);await sleep(1150);
  resetWalkoutTunnel();
  $("bigPack").classList.remove("pulse");
  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
  spawnPackSparks(plan.mode==="double"?60:46);
  spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,plan.mode==="special");
- await sleep(340);
+ await sleep(380);
  if(!showPackRevealCard(plan)){finishPack();return}
 
  if(plan.mode==="double"&&plan.cards[1]){
@@ -5514,7 +5514,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.08";
+const GFUT_BUILD="V19.09";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5530,7 +5530,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1908",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1909",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
