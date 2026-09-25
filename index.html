@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.13</title>
+<title>Footera V19.14</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1144,7 +1144,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.13</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.14</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1250,29 +1250,64 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div id="evoSummary" class="evo-summary"></div><div id="evoGrid" class="evo-grid"></div>
 </div></section>
 
-<section id="marketView" class="view"><div class="headline"><h2>Transfermarkt</h2><p>Suche gezielt nach Spielern, Vereinen, Ligen, Nationen, Rating, Qualität und Preis.</p></div><div class="section"><div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
-  <div class="market-filter-panel">
-    <div class="market-filter-grid">
-      <div class="market-field full market-name-field"><label>Spielername</label><div class="market-name-wrap"><input id="marketName" type="search" placeholder="z. B. Bellingham, Bell, Musiala …" autocomplete="off"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div></div>
-      <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
-      <div class="market-field"><label>Verein</label><select id="marketClub"><option value="">Alle Vereine</option></select></div>
-      <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
-      <div class="market-field"><label>Position</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select></div>
-      <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
-      <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="event">Eventkarten</option></select></div>
-      <div class="range-card">
-        <div class="range-head"><strong>Gesamtwertung</strong><span id="marketRatingLabel">65 – 99</span></div>
-        <div class="dual-range"><input id="marketRatingMin" type="range" min="65" max="99" value="65"><input id="marketRatingMax" type="range" min="65" max="99" value="99"></div>
-        <div class="range-scale"><span id="marketRatingFloor">65</span><span>99</span></div>
-      </div>
-      <div class="market-field"><label>Preis min.</label><input id="marketPriceMin" type="number" min="0" step="50" inputmode="numeric" placeholder="0 Coins"></div>
-      <div class="market-field"><label>Preis max.</label><input id="marketPriceMax" type="number" min="0" step="50" inputmode="numeric" placeholder="Kein Limit"></div>
+<section id="marketView" class="view"><div class="headline"><h2>Transfers</h2><p>Transfermarkt, Transferliste und deine Gebote in einer zentralen Übersicht.</p></div><div class="section">
+  <div id="marketHub" class="transfer-hub">
+    <button type="button" class="transfer-hub-buy" data-market-section="search">
+      <span class="transfer-hub-kicker">TRANSFERMARKT</span>
+      <h3>Spieler kaufen</h3>
+      <p>Suche gezielt nach Spielern und vergleiche aktuelle Marktangebote.</p>
+      <div class="transfer-hub-buy-art" aria-hidden="true"><span>⇄</span></div>
+      <span class="transfer-hub-cta">Transfermarkt-Suche öffnen →</span>
+    </button>
+    <div class="transfer-hub-grid">
+      <button type="button" class="transfer-hub-card" data-market-section="list">
+        <div class="transfer-hub-card-head"><h3>Transferliste</h3><span class="transfer-hub-symbol" aria-hidden="true">⇆</span></div>
+        <strong id="marketHubTransferCount">0</strong><span>Items</span>
+        <div class="transfer-hub-stats"><span>Angeboten <b id="marketHubActiveSales">0</b></span><span>Verkauft <b id="marketHubSoldSales">0</b></span></div>
+      </button>
+      <button type="button" class="transfer-hub-card" data-market-section="bids">
+        <div class="transfer-hub-card-head"><h3>Meine Gebote</h3><span class="transfer-hub-symbol" aria-hidden="true">↗</span></div>
+        <strong id="marketHubBidCount">0</strong><span>beobachtet</span>
+        <div class="transfer-hub-stats"><span>Höchstgebot <b id="marketHubLeadingBids">0</b></span><span>Überboten <b id="marketHubOutbidBids">0</b></span></div>
+      </button>
     </div>
-    <div class="market-actions"><button id="resetMarketFilters" class="secondary">Filter zurücksetzen</button><button id="refreshMarket" class="primary">Suchen</button></div>
   </div>
-  <div id="marketResultMeta" class="market-result-meta"><span>Filter setzen und suchen.</span><span></span></div>
-  <div id="marketGrid" class="itemgrid"></div><div id="wonAuctions"></div>
-  <div class="transfer-watch"><h3>Transferliste</h3><p>Verkaufte, nicht verkaufte, verfügbare und aktive Transfers wie in der Companion-App.</p><div id="transferWatchList" class="transfer-watch-list"></div></div>
+
+  <div id="marketSearchShell" class="market-detail-shell" hidden>
+    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Spieler finden und kaufen</span></div></div>
+    <div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
+    <div class="market-filter-panel">
+      <div class="market-filter-grid">
+        <div class="market-field full market-name-field"><label>Spielername</label><div class="market-name-wrap"><input id="marketName" type="search" placeholder="z. B. Bellingham, Modrić, Musiala …" autocomplete="off"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div></div>
+        <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
+        <div class="market-field"><label>Verein</label><select id="marketClub"><option value="">Alle Vereine</option></select></div>
+        <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
+        <div class="market-field"><label>Position</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select></div>
+        <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
+        <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="event">Eventkarten</option></select></div>
+        <div class="range-card">
+          <div class="range-head"><strong>Gesamtwertung</strong><span id="marketRatingLabel">65 – 99</span></div>
+          <div class="dual-range"><input id="marketRatingMin" type="range" min="65" max="99" value="65"><input id="marketRatingMax" type="range" min="65" max="99" value="99"></div>
+          <div class="range-scale"><span id="marketRatingFloor">65</span><span>99</span></div>
+        </div>
+        <div class="market-field"><label>Preis min.</label><input id="marketPriceMin" type="number" min="0" step="50" inputmode="numeric" placeholder="0 Coins"></div>
+        <div class="market-field"><label>Preis max.</label><input id="marketPriceMax" type="number" min="0" step="50" inputmode="numeric" placeholder="Kein Limit"></div>
+      </div>
+      <div class="market-actions"><button id="resetMarketFilters" class="secondary">Filter zurücksetzen</button><button id="refreshMarket" class="primary">Suchen</button></div>
+    </div>
+    <div id="marketResultMeta" class="market-result-meta"><span>Filter setzen und suchen.</span><span></span></div>
+    <div id="marketGrid" class="itemgrid"></div>
+  </div>
+
+  <div id="marketTransferShell" class="market-detail-shell" hidden>
+    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transferliste</strong><span>Verfügbar, angeboten, verkauft und nicht verkauft</span></div></div>
+    <div class="transfer-watch"><div id="transferWatchList" class="transfer-watch-list"></div></div>
+  </div>
+
+  <div id="marketBidsShell" class="market-detail-shell" hidden>
+    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Meine Gebote</strong><span>Höchstgebote, überbotene und abgelaufene Auktionen</span></div></div>
+    <div id="wonAuctions"></div>
+  </div>
 </div></section>
 
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
@@ -1339,6 +1374,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div id="pickerResults" class="picker-results" hidden><div class="picker-results-head"><div><strong id="pickerResultTitle">Spieler im Verein</strong><small id="pickerResultCount"></small></div><button id="pickerEditFilters" class="secondary" type="button">Filter ändern</button></div><div id="pickList" class="picklist"></div><div id="pickerPages" class="picker-pages" hidden><button id="pickerPrev" class="secondary" type="button">← Vorherige</button><span id="pickerPageLabel"></span><button id="pickerNext" class="secondary" type="button">Nächste →</button></div></div>
 </div></div>
 <div id="playerModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerdetails</h3><div id="playerDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="playerModalClose" class="secondary">Schließen</button></div><div id="playerDetailBody"></div></div></div>
+<div id="priceCompareModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="priceCompareTitle">Preisvergleich</h3><div id="priceCompareSub" style="font-size:7px;color:#87958f">Aktuelle Marktangebote</div></div><button id="priceCompareClose" class="secondary">Schließen</button></div><div id="priceCompareBody"></div></div></div>
+<div id="transferOfferModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Auf Transfermarkt anbieten</h3><div id="transferOfferSub" style="font-size:7px;color:#87958f"></div></div><button id="transferOfferClose" class="secondary">Schließen</button></div><div id="transferOfferBody"></div></div></div>
 <div id="evoPickerModal" class="modal"><div class="modalinner evo-modalinner"><div class="modalhead"><div><h3 id="evoPickerTitle">Evolution</h3><div id="evoPickerSub" style="font-size:7px;color:#87958f"></div></div><button id="evoPickerClose" class="secondary">Schließen</button></div><div id="evoPickerBody"></div></div></div>
 <div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerbiografie</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
 <div id="campaignModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="campaignModalTitle">Campaign Hub</h3><div style="font-size:7px;color:#87958f">Fortschritt und nächste Schritte</div></div><button id="campaignModalClose" class="secondary">Schließen</button></div><div id="campaignModalBody" class="campaign-detail-grid"></div></div></div>
@@ -2706,6 +2743,37 @@ function workRates(p){return String(p?.workRates||p?.workRate||"").trim()||"–"
 function stars(n){return n>=1&&n<=5?"★".repeat(n)+"☆".repeat(5-n):"–"}
 function isOnTransferList(uid){return (state.transferList||[]).includes(uid)}
 function activeTransferSaleForUid(uid){return (state.transferSales||[]).find(s=>String(s.uid)===String(uid)&&s.status==="active")||null}
+let transferOfferContext=null;
+function priceCompareSeed(base,i){return hashNum(`${base?.id||base?.name||"player"}|${i}|${promoWindowKey(new Date(),19)}`)}
+function buildPriceComparison(item,fallbackBase=null){
+ const base=displayBase(item)||fallbackBase;if(!base)return[];
+ const special=!!item?.variant||!!item?.evo||!!base.isIcon;
+ let guide=item?.uid?transferSuggestedPrices(item).buy:marketRoundPrice(marketPriceForRating(Number(base.ovr||75),special,base));
+ guide=Math.max(200,Number(guide||200));
+ return Array.from({length:9},(_,i)=>{const seed=priceCompareSeed(base,i),swing=.84+(seed%360)/1000,buy=Math.max(200,marketRoundPrice(guide*swing)),start=Math.max(150,marketRoundPrice(buy*(.70+((seed>>4)%18)/100))),bid=Math.max(start,marketRoundPrice(start*(1+((seed>>7)%10)/100))),seconds=180+((seed>>10)%3300);return{start,buy,bid,seconds}}).sort((a,b)=>a.buy-b.buy)
+}
+function openPriceComparison(item,fallbackBase=null){
+ const base=displayBase(item)||fallbackBase;if(!base)return;
+ const offers=buildPriceComparison(item,fallbackBase),cheapest=offers[0]?.buy||0,shown=displayBase(item)||base;
+ $("priceCompareTitle").textContent=`Preisvergleich · ${base.name}`;
+ $("priceCompareSub").textContent=`${playerClubLabel(base)} · ${positionLabel(base.position,base)} · GES ${Number(shown.ovr||base.ovr||0)}`;
+ $("priceCompareBody").innerHTML=`<div class="price-compare-hero"><div class="price-compare-card">${cardHTML(shown,item||makeItem(base,true),true)}</div><div><span>Günstigster Sofortkauf</span><strong>${currencyAmountHTML("coins",cheapest,"price-compare-best")}</strong><small>${offers.length} Angebote ausschließlich für ${esc(base.name)}</small></div></div><div class="price-compare-list">${offers.map((o,i)=>`<div class="price-compare-row"><span class="price-compare-rank">#${i+1}</span><div><small>Startpreis</small><b>${currencyAmountHTML("coins",o.start,"compact")}</b></div><div><small>Akt. Gebot</small><b>${currencyAmountHTML("coins",o.bid,"compact")}</b></div><div><small>Sofortkauf</small><b>${currencyAmountHTML("coins",o.buy,"compact")}</b></div><div><small>Restzeit</small><b>${Math.floor(o.seconds/60)}m ${o.seconds%60}s</b></div></div>`).join("")}</div>`;
+ showUiLayer("priceCompareModal","price-compare")
+}
+function openTransferOfferModal(item,{packIndex=null}={}){
+ if(!item)return;const base=displayBase(item);if(!base)return;
+ const inClub=state.club.some(x=>x.uid===item.uid),inSquad=inClub&&transferSalePlayerInSquad(item.uid),active=inClub&&activeTransferSaleForUid(item.uid),p=transferSuggestedPrices(item);
+ transferOfferContext={uid:item.uid,packIndex:Number.isInteger(packIndex)?packIndex:null};
+ $("transferOfferSub").textContent=`${base.name} · ${playerClubLabel(base)}`;
+ $("transferOfferBody").innerHTML=`<div class="transfer-offer-player"><div class="transfer-offer-card">${cardHTML(base,item,true)}</div><div><h3>${esc(base.name)}</h3><p>Lege Startpreis, Sofortkauf und Angebotsdauer fest.</p>${inSquad?'<div class="transfer-offer-warning">Der Spieler steckt in einer gespeicherten Mannschaft. Entferne ihn zuerst aus allen Teams.</div>':""}${active?'<div class="transfer-offer-warning">Dieser Spieler ist bereits aktiv auf dem Transfermarkt.</div>':""}${!item.tradeable?'<div class="transfer-offer-warning">Dieses Item ist untauschbar.</div>':""}</div></div><div class="transfer-offer-form"><label>Startpreis<input id="directSellStart" type="number" min="150" step="50" value="${Number(p.start||150)}"></label><label>Sofortkauf<input id="directSellBuy" type="number" min="200" step="50" value="${Number(p.buy||200)}"></label><label>Dauer<select id="directSellDuration"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button id="directSellConfirm" class="primary" ${(!item.tradeable||inSquad||active)?"disabled":""}>Jetzt aktiv anbieten</button></div>`;
+ showUiLayer("transferOfferModal","transfer-offer")
+}
+function movePackItemToTransferList(k){
+ const item=pendingPack[k];if(!item||pendingResolved.has(k)||!item.tradeable)return false;
+ if(!state.club.some(x=>x.uid===item.uid))state.club.push(item);
+ state.transferList=state.transferList||[];if(!state.transferList.includes(item.uid))state.transferList.push(item.uid);
+ pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();return true
+}
 function toggleTransferList(uid){
  state.transferList=state.transferList||[];
  const item=state.club.find(x=>x.uid===uid);
@@ -3391,15 +3459,24 @@ function openPlayerDetails(item,index=null,fromPreview=false){
  const inSquad=index!=null&&index>=0&&state.squad[index]===item.uid;
  const slot=inSquad?(index<11?currentFormation()[index]?.p:(index<18?"BANK":"RESERVE")):null;
  const fits=!slot||slot==="BANK"||slot==="RESERVE"||inPosition(b,slot),chem=inSquad&&index<11?playerChem(index,squadItems()):null,shown=slot&&slot!=="BANK"&&slot!=="RESERVE"&&fits?slot:b.position;
+ const activeSale=activeTransferSaleForUid(item.uid),blockedByTeam=transferSalePlayerInSquad(item.uid);
  $("playerDetailSub").textContent=playerContextLine(b);
  const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button>${fromPreview?`<button class="menu-action" data-preview-swap-start="${index}"><span><span>Mit Kaderplatz tauschen</span><small>Spieler in Startelf, Bank oder Reserve direkt tauschen.</small></span><b>›</b></button>`:''}<button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
- const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}"><span><span>${isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste setzen"}</span><small>Spieler für Transfers markieren.</small></span><b>›</b></button><button class="menu-action" data-search-market="${esc(item.uid)}"><span><span>Auf Transfermarkt suchen</span><small>Ähnliche Angebote anzeigen.</small></span><b>›</b></button></div>`;
+ const listLabel=isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste";
+ const sellDisabled=!item.tradeable||blockedByTeam||!!activeSale,sellText=activeSale?"Aktiv auf Transfermarkt":"Auf Transfermarkt anbieten",sellNote=!item.tradeable?"Dieses Item ist untauschbar.":blockedByTeam?"Zuerst aus allen gespeicherten Teams entfernen.":activeSale?"Angebot läuft bereits.":"Startpreis, Sofortkauf und Dauer festlegen.";
+ const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}" ${!item.tradeable?"disabled":""}><span><span>${listLabel}</span><small>Spieler passiv auf deiner Transferliste vormerken.</small></span><b>›</b></button><button class="menu-action" data-direct-sell="${esc(item.uid)}" ${sellDisabled?"disabled":""}><span><span>${sellText}</span><small>${sellNote}</small></span><b>›</b></button><button class="menu-action" data-price-compare="${esc(item.uid)}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:inSquad?"Mannschaft":"Verein"})}${menu}`;
  showUiLayer("playerModal","player")
 }
 function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
-function openPackPlayerDetails(k){const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;$ ("playerDetailSub").textContent=`Pack · ${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;$ ("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button></div>`;showUiLayer("playerModal","player")}
+function openPackPlayerDetails(k){
+ const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;
+ $("playerDetailSub").textContent=`Pack · ${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;
+ const transferActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack passiv auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Item direkt mit Startpreis und Sofortkauf anbieten.</small></span><b>›</b></button>`:'';
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${transferActions}<button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
+ showUiLayer("playerModal","player")
+}
 let suppressSquadClick=false;
 function squadClick(e){const button=e.target.closest("[data-slot]");if(!button)return;if(suppressSquadClick){suppressSquadClick=false;return}const i=Number(button.dataset.slot);if(!Number.isInteger(i))return;const item=squadItems()[i];if(item)openPlayerDetails(item,i);else openPicker(i)}
 $("pitch").addEventListener("click",squadClick);
@@ -3434,6 +3511,22 @@ $("pickList").addEventListener("click",e=>{
 
 $("playerModalClose").addEventListener("click",()=>closeUiLayer("playerModal","player"));
 $("bioModalClose").addEventListener("click",()=>closeUiLayer("bioModal","bio"));
+$("priceCompareClose").addEventListener("click",()=>closeUiLayer("priceCompareModal","price-compare"));
+$("transferOfferClose").addEventListener("click",()=>closeUiLayer("transferOfferModal","transfer-offer"));
+$("transferOfferBody").addEventListener("click",e=>{
+ const confirmBtn=e.target.closest("#directSellConfirm");if(!confirmBtn||!transferOfferContext)return;
+ const ctx={...transferOfferContext};let item=null,addedFromPack=false;
+ if(ctx.packIndex!=null){
+  item=pendingPack[ctx.packIndex];if(!item||pendingResolved.has(ctx.packIndex)||!item.tradeable)return toast("Pack-Item ist nicht mehr verfügbar.");
+  if(!state.club.some(x=>x.uid===item.uid)){state.club.push(item);addedFromPack=true}
+ }else item=state.club.find(x=>x.uid===ctx.uid);
+ if(!item)return;
+ const ok=createTransferSale(item.uid,$("directSellStart")?.value,$("directSellBuy")?.value,$("directSellDuration")?.value);
+ if(!ok){if(addedFromPack)state.club=state.club.filter(x=>x.uid!==item.uid);return}
+ if(ctx.packIndex!=null){pendingResolved.add(ctx.packIndex);state.pendingResolved=[...pendingResolved];save()}
+ transferOfferContext=null;removeUiLayer("transferOfferModal");removeUiLayer("playerModal");
+ if(ctx.packIndex!=null){if(finishPackIfResolved())return;renderPackResults();renderAll()}
+});
 $("playerDetailBody").addEventListener("click",e=>{
  const bio=e.target.closest("[data-open-bio]"),
        cons=e.target.closest("[data-consumable]"),
@@ -3447,8 +3540,20 @@ $("playerDetailBody").addEventListener("click",e=>{
        marketBid=e.target.closest("[data-market-bid-action]"),
        marketBuy=e.target.closest("[data-market-buy-action]"),
        marketSimilar=e.target.closest("[data-market-similar]"),
-       packBio=e.target.closest("[data-pack-bio]");
+       packBio=e.target.closest("[data-pack-bio]"),
+       directSell=e.target.closest("[data-direct-sell]"),
+       priceCompare=e.target.closest("[data-price-compare]"),
+       marketCompare=e.target.closest("[data-market-price-compare]"),
+       packCompare=e.target.closest("[data-pack-price-compare]"),
+       packDirectSell=e.target.closest("[data-pack-direct-sell]"),
+       packTransfer=e.target.closest("[data-pack-transfer-profile]");
  if(packBio){const k=Number(packBio.dataset.packBio),item=pendingPack[k];if(item)openBiography(item,-1);return;}
+ if(packCompare){const k=Number(packCompare.dataset.packPriceCompare),item=pendingPack[k];if(item)openPriceComparison(item);return;}
+ if(packDirectSell){const k=Number(packDirectSell.dataset.packDirectSell),item=pendingPack[k];if(item)openTransferOfferModal(item,{packIndex:k});return;}
+ if(packTransfer){const k=Number(packTransfer.dataset.packTransferProfile);if(movePackItemToTransferList(k)){removeUiLayer("playerModal");toast("Auf Transferliste verschoben.");if(finishPackIfResolved())return;renderPackResults();renderAll()}return;}
+ if(marketCompare){const i=Number(marketCompare.dataset.marketPriceCompare),x=marketListings[i];if(x)openPriceComparison(marketPreviewItem(x),x.base);return;}
+ if(directSell){const item=state.club.find(x=>x.uid===directSell.dataset.directSell);if(item)openTransferOfferModal(item);return;}
+ if(priceCompare){const item=state.club.find(x=>x.uid===priceCompare.dataset.priceCompare);if(item)openPriceComparison(item);return;}
  if(marketBio){const i=Number(marketBio.dataset.marketBio),x=marketListings[i];if(x)openBiography(marketPreviewItem(x),-1,x.base);return;}
  if(marketBid){const i=Number(marketBid.dataset.marketBidAction);if(bidMarketListing(i))openMarketPlayerDetails(i);return;}
  if(marketBuy){const i=Number(marketBuy.dataset.marketBuyAction);if(buyMarketListing(i))$("playerModal").classList.remove("active");return;}
@@ -3780,7 +3885,7 @@ function renderPackResults(){
  const card=({i,k},duplicate)=>{
   const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
   const duplicateActions=canTransfer
-   ?`<button class="primary" data-pack-transfer="${k}">Auf Transferliste</button><button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
+   ?`<button class="primary" data-pack-open="${k}">Profil & Transferoptionen</button><button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
    :`<button class="primary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}<button class="secondary" data-pack-sell="${k}">Abstoßen</button>`;
   return `<div class="result-item ${duplicate?"duplicate":""}" data-result-item="${k}"><button class="pack-profile-tap" data-pack-open="${k}" aria-label="${esc(b.name)} Profil ansehen">${cardHTML(b,i)}</button>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':""}<div class="result-item-actions">${duplicate?duplicateActions:`<button class="primary" data-pack-club="${k}">In den Verein</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button><button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`}</div>${duplicate?'<div class="duplicate-note">Duplikat zuerst auflösen, bevor du fortfährst.</div>':""}</div>`
  };
@@ -4061,7 +4166,8 @@ function marketAuctionState(x){
 }
 function marketRowHTML(x,i,tracked=false){
  const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
- return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button></div></div>`
+ const removeAction=tracked&&x.settled?`<button class="secondary auction-remove" data-my-auction-remove="${i}">Aus Liste entfernen</button>`:"";
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
 }
 function processBotOutbids(){
  let changed=false;const now=Date.now();
@@ -4075,7 +4181,7 @@ function processBotOutbids(){
 }
 function renderMyAuctions(){
  const auctions=state.auctions||[];
- $("wonAuctions").innerHTML=auctions.length?`<div class="my-bids-panel"><div class="my-bids-head"><strong>Meine Gebote</strong><span>${auctions.length} beobachtet</span></div>${auctions.slice(-12).reverse().map((x,reverseIndex)=>{const i=auctions.length-1-reverseIndex;return marketRowHTML(x,i,true)}).join("")}</div>`:""
+ $("wonAuctions").innerHTML=auctions.length?`<div class="my-bids-panel"><div class="my-bids-head"><strong>Meine Gebote</strong><span>${auctions.length} beobachtet</span></div>${auctions.slice(-20).reverse().map((x,reverseIndex)=>{const i=auctions.length-1-reverseIndex;return marketRowHTML(x,i,true)}).join("")}</div>`:'<div class="transfer-empty">Du hast aktuell keine Gebote oder beobachteten Auktionen.</div>'
 }
 function transferSuggestedPrices(item){
  const b=displayBase(item);if(!b)return{start:150,buy:200};
@@ -4095,7 +4201,7 @@ function transferSaleRowHTML(sale,kind){
 }
 function availableTransferRowHTML(item){
  const b=displayBase(item),p=transferSuggestedPrices(item),editing=sellEditorUid===item.uid;
- return `<div class="transfer-sale-row"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · Richtwert ${currencyAmountHTML("coins",p.buy,"compact")}</small><div class="transfer-sale-status">Verfügbar</div></div><div class="transfer-sale-actions"><button class="primary" data-transfer-sell="${esc(item.uid)}">Anbieten</button><button class="secondary" data-watch-remove="${esc(item.uid)}">In Verein</button></div>${editing?transferSellEditorHTML(item,p):""}</div>`
+ return `<div class="transfer-sale-row"><button class="transfer-sale-card" data-transfer-item-open="${esc(item.uid)}">${cardHTML(b,item,true)}</button><div class="transfer-sale-info"><strong>${esc(b.name)}</strong><small>${esc(positionLabel(b.position,b))} · ${esc(b.team)} · Richtwert ${currencyAmountHTML("coins",p.buy,"compact")}</small><div class="transfer-sale-status">Verfügbar</div></div><div class="transfer-sale-actions"><button class="primary" data-transfer-sell="${esc(item.uid)}">Anbieten</button><button class="secondary" data-transfer-compare="${esc(item.uid)}">Preisvergleich</button><button class="secondary" data-watch-remove="${esc(item.uid)}">In Verein</button></div>${editing?transferSellEditorHTML(item,p):""}</div>`
 }
 function renderTransferWatch(){
  settleTransferSales();
@@ -4103,16 +4209,36 @@ function renderTransferWatch(){
  const section=(title,rows,body,action="")=>`<section class="transfer-section"><div class="transfer-section-head"><div><h4>${title}</h4><span>${rows.length} Item${rows.length===1?"":"s"}</span></div>${action}</div><div class="transfer-section-body">${rows.length?body:'<div class="transfer-empty">Keine Items in diesem Bereich.</div>'}</div></section>`;
  $("transferWatchList").innerHTML=section("Verkaufte Items",sold,sold.map(s=>transferSaleRowHTML(s,"sold")).join(""),sold.length?'<button class="secondary" data-clear-sold>Verkaufte löschen</button>':"")+section("Nicht verkaufte Items",unsold,unsold.map(s=>transferSaleRowHTML(s,"unsold")).join(""))+section("Verfügbare Items",items,items.map(availableTransferRowHTML).join(""))+section("Aktive Transfers",active,active.map(s=>transferSaleRowHTML(s,"active")).join(""))
 }
+let marketSection="hub";
+function renderTransferHubSummary(){
+ const sales=state.transferSales||[],active=sales.filter(s=>s.status==="active"),sold=sales.filter(s=>s.status==="sold"),unsold=sales.filter(s=>s.status==="unsold"),covered=new Set(active.concat(unsold).map(s=>String(s.uid))),available=(state.transferList||[]).filter(uid=>state.club.some(x=>x.uid===uid)&&!covered.has(String(uid))),auctions=state.auctions||[];
+ const total=available.length+active.length+unsold.length+sold.length,leading=auctions.filter(x=>!x.settled&&marketAuctionState(x).key==="leading").length,outbid=auctions.filter(x=>marketAuctionState(x).key==="outbid").length;
+ if($("marketHubTransferCount"))$("marketHubTransferCount").textContent=fmt(total);
+ if($("marketHubActiveSales"))$("marketHubActiveSales").textContent=fmt(active.length);
+ if($("marketHubSoldSales"))$("marketHubSoldSales").textContent=fmt(sold.length);
+ if($("marketHubBidCount"))$("marketHubBidCount").textContent=fmt(auctions.length);
+ if($("marketHubLeadingBids"))$("marketHubLeadingBids").textContent=fmt(leading);
+ if($("marketHubOutbidBids"))$("marketHubOutbidBids").textContent=fmt(outbid)
+}
+function applyMarketSection(){
+ const hub=$("marketHub"),search=$("marketSearchShell"),list=$("marketTransferShell"),bids=$("marketBidsShell");if(!hub)return;
+ hub.hidden=marketSection!=="hub";search.hidden=marketSection!=="search";list.hidden=marketSection!=="list";bids.hidden=marketSection!=="bids"
+}
+function showMarketSection(section="hub"){
+ marketSection=["hub","search","list","bids"].includes(section)?section:"hub";applyMarketSection();renderTransferHubSummary();
+ if(marketSection==="search"&&!marketListings.length)refreshMarket();else if(marketSection!=="hub")renderMarket();
+ window.scrollTo({top:0,behavior:"smooth"})
+}
 function renderMarket(){
  processBotOutbids();settleAuctions();settleTransferSales();
  $("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>marketRowHTML(x,i,false)).join(""):'<div class="online-note">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';
- renderMyAuctions();renderTransferWatch()
+ renderMyAuctions();renderTransferWatch();renderTransferHubSummary();applyMarketSection()
 }
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
  $("playerDetailSub").innerHTML=`Transfermarkt · ${esc(x.base.team)} · ${currencyAmountHTML("coins",x.price,"compact")}`;
- $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,pi,{shownPosition:shown,slot:null,fits:true,chem:null,context:`${fmt(x.price)} Footera Coins`})}<div class="detail-menu"><button class="menu-action" data-market-bio="${i}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-market-bid-action="${i}" ${x.settled?'disabled':''}><span><span>Bieten +${currencyAmountHTML("coins",inc,"compact")}</span><small>Aktuelles Gebot: ${currencyAmountHTML("coins",x.bid,"compact")} · ${x.settled?'Angebot beendet':auctionTime(x)+' Sekunden'}</small></span><b>›</b></button><button class="menu-action" data-market-buy-action="${i}" ${x.settled?'disabled':''}><span><span>Sofortkauf · ${currencyAmountHTML("coins",x.price,"compact")}</span><small>Spieler direkt deinem Verein hinzufügen.</small></span><b>›</b></button><button class="menu-action" data-market-similar="${i}"><span><span>Ähnliche Spieler suchen</span><small>Position, Liga und Rating als Filter übernehmen.</small></span><b>›</b></button></div>`;
- showUiLayer("playerModal","player");
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,pi,{shownPosition:shown,slot:null,fits:true,chem:null,context:`${fmt(x.price)} Footera Coins`})}<div class="detail-menu"><button class="menu-action" data-market-bio="${i}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-market-price-compare="${i}"><span><span>Preisvergleich</span><small>Nur Angebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button><button class="menu-action" data-market-bid-action="${i}" ${x.settled?'disabled':''}><span><span>Bieten +${currencyAmountHTML("coins",inc,"compact")}</span><small>Aktuelles Gebot: ${currencyAmountHTML("coins",x.bid,"compact")} · ${x.settled?'Angebot beendet':auctionTime(x)+' Sekunden'}</small></span><b>›</b></button><button class="menu-action" data-market-buy-action="${i}" ${x.settled?'disabled':''}><span><span>Sofortkauf · ${currencyAmountHTML("coins",x.price,"compact")}</span><small>Spieler direkt deinem Verein hinzufügen.</small></span><b>›</b></button></div>`;
+ showUiLayer("playerModal","player")
 }
 function buyMarketListing(i,tracked=false){
  const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)],held=x?.myBid&&!x?.refunded?Number(x.myBid):0;
@@ -4132,14 +4258,15 @@ function bidMarketListing(i,tracked=false){
 }
 function transferSalePlayerInSquad(uid){return (state.squadPresets||[]).some(p=>p?.squad?.includes(uid))||state.squad?.includes(uid)}
 function createTransferSale(uid,startPrice,buyNow,duration){
- const item=state.club.find(i=>i.uid===uid);if(!item||!item.tradeable)return toast("Spieler ist nicht tauschbar.");
- if(transferSalePlayerInSquad(uid))return toast("Spieler zuerst aus allen Mannschaften entfernen.");
+ const item=state.club.find(i=>i.uid===uid);if(!item||!item.tradeable){toast("Spieler ist nicht tauschbar.");return false}
+ if(transferSalePlayerInSquad(uid)){toast("Spieler zuerst aus allen Mannschaften entfernen.");return false}
+ if(activeTransferSaleForUid(uid)){toast("Spieler ist bereits aktiv angeboten.");return false}
  startPrice=marketRoundPrice(Math.max(150,Number(startPrice||0)));buyNow=marketRoundPrice(Math.max(startPrice+50,Number(buyNow||0)));duration=Math.max(3600,Number(duration||3600));
  state.transferSales=state.transferSales||[];state.transferSales=state.transferSales.filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));
  const suggested=transferSuggestedPrices(item).buy,ratio=buyNow/Math.max(1,suggested),chance=ratio<=1.05?.82:ratio<=1.25?.6:ratio<=1.55?.3:.1,willSell=Math.random()<chance,now=Date.now(),ends=now+duration*1000;
  const planned=Math.min(buyNow,Math.max(startPrice,marketRoundPrice(suggested*(.92+Math.random()*.12))));
  state.transferSales.push({id:uid+"-"+now,uid,item:{...item},startPrice,buyNow,currentBid:startPrice,createdAt:now,ends,status:"active",saleAt:willSell?Math.min(ends-5000,now+18000+Math.floor(Math.random()*65000)):0,plannedPrice:planned});
- sellEditorUid=null;save();renderTransferWatch();toast(`${displayBase(item)?.name||"Spieler"} angeboten.`)
+ sellEditorUid=null;save();renderTransferWatch();renderTransferHubSummary();toast(`${displayBase(item)?.name||"Spieler"} angeboten.`);return true
 }
 function settleTransferSales(){
  let changed=false,now=Date.now();state.transferSales=state.transferSales||[];
@@ -4165,15 +4292,27 @@ $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest
  $("marketName").value=playerDisplaySearchName(p);hideMarketNameSuggestions();updateRatingUI();refreshMarket();setTimeout(()=>$("marketGrid")?.scrollIntoView({behavior:"smooth",block:"start"}),80)});
 document.addEventListener("click",e=>{if(!e.target.closest(".market-name-field"))hideMarketNameSuggestions()});
 $("marketPriceMin").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});$("marketPriceMax").addEventListener("keydown",e=>{if(e.key==="Enter")refreshMarket()});
+$("marketView").addEventListener("click",e=>{
+ const section=e.target.closest("[data-market-section]"),home=e.target.closest("[data-market-home]");
+ if(section){showMarketSection(section.dataset.marketSection);return}
+ if(home){showMarketSection("hub");return}
+});
 $("marketGrid").addEventListener("click",e=>{const buy=e.target.closest("[data-mbuy]"),bid=e.target.closest("[data-bid]"),open=e.target.closest("[data-market-open]"),listing=e.target.closest("[data-market-listing]");if(buy){buyMarketListing(Number(buy.dataset.mbuy));return}if(bid){bidMarketListing(Number(bid.dataset.bid));return}if(open){openMarketPlayerDetails(Number(open.dataset.marketOpen));return}if(listing){openMarketPlayerDetails(Number(listing.dataset.marketListing));return}})
-$("wonAuctions").addEventListener("click",e=>{const bid=e.target.closest("[data-my-auction-bid]"),buy=e.target.closest("[data-my-auction-buy]"),open=e.target.closest("[data-my-auction-open]");if(bid){bidMarketListing(Number(bid.dataset.myAuctionBid),true);return}if(buy){buyMarketListing(Number(buy.dataset.myAuctionBuy),true);return}if(open){const x=state.auctions?.[Number(open.dataset.myAuctionOpen)];if(x){const idx=marketListings.indexOf(x);if(idx>=0)openMarketPlayerDetails(idx);else openBiography(marketPreviewItem(x),-1,x.base)}}});
+$("wonAuctions").addEventListener("click",e=>{
+ const bid=e.target.closest("[data-my-auction-bid]"),buy=e.target.closest("[data-my-auction-buy]"),open=e.target.closest("[data-my-auction-open]"),remove=e.target.closest("[data-my-auction-remove]");
+ if(remove){const i=Number(remove.dataset.myAuctionRemove),x=state.auctions?.[i];if(!x?.settled)return;state.auctions.splice(i,1);save();renderMarket();toast("Abgelaufenen Eintrag entfernt.");return}
+ if(bid){bidMarketListing(Number(bid.dataset.myAuctionBid),true);return}
+ if(buy){buyMarketListing(Number(buy.dataset.myAuctionBuy),true);return}
+ if(open){const x=state.auctions?.[Number(open.dataset.myAuctionOpen)];if(x){const idx=marketListings.indexOf(x);if(idx>=0)openMarketPlayerDetails(idx);else openBiography(marketPreviewItem(x),-1,x.base)}}
+});
 $("transferWatchList").addEventListener("click",e=>{
- const o=e.target.closest("[data-transfer-item-open]"),r=e.target.closest("[data-watch-remove]"),sell=e.target.closest("[data-transfer-sell]"),confirmSell=e.target.closest("[data-transfer-confirm-sell]"),relist=e.target.closest("[data-transfer-relist]"),clearSold=e.target.closest("[data-clear-sold]");
+ const o=e.target.closest("[data-transfer-item-open]"),r=e.target.closest("[data-watch-remove]"),sell=e.target.closest("[data-transfer-sell]"),compare=e.target.closest("[data-transfer-compare]"),confirmSell=e.target.closest("[data-transfer-confirm-sell]"),relist=e.target.closest("[data-transfer-relist]"),clearSold=e.target.closest("[data-clear-sold]");
  if(o){const uid=o.dataset.transferItemOpen,inClub=state.club.find(x=>x.uid===uid),item=inClub||(state.transferSales||[]).find(s=>String(s.uid)===String(uid))?.item;if(inClub)openPlayerDetails(inClub,state.squad.indexOf(uid)>=0?state.squad.indexOf(uid):null);else if(item)openBiography(item,-1);return}
- if(clearSold){state.transferSales=(state.transferSales||[]).filter(s=>s.status!=="sold");save();renderTransferWatch();return}
+ if(compare){const item=state.club.find(x=>x.uid===compare.dataset.transferCompare);if(item)openPriceComparison(item);return}
+ if(clearSold){state.transferSales=(state.transferSales||[]).filter(s=>s.status!=="sold");save();renderTransferWatch();renderTransferHubSummary();return}
  if(sell||relist){sellEditorUid=(sell||relist).dataset.transferSell||(sell||relist).dataset.transferRelist;renderTransferWatch();return}
  if(confirmSell){const uid=confirmSell.dataset.transferConfirmSell,start=document.querySelector(`[data-sell-start="${CSS.escape(uid)}"]`),buy=document.querySelector(`[data-sell-buy="${CSS.escape(uid)}"]`),dur=document.querySelector(`[data-sell-duration="${CSS.escape(uid)}"]`);createTransferSale(uid,start?.value,buy?.value,dur?.value);return}
- if(r){const uid=r.dataset.watchRemove;if(activeTransferSaleForUid(uid))return toast("Aktiver Transfer kann nicht entfernt werden.");state.transferList=(state.transferList||[]).filter(x=>x!==uid);state.transferSales=(state.transferSales||[]).filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));save();renderTransferWatch();toast("Spieler zurück im Verein.");return}
+ if(r){const uid=r.dataset.watchRemove;if(activeTransferSaleForUid(uid))return toast("Aktiver Transfer kann nicht entfernt werden.");state.transferList=(state.transferList||[]).filter(x=>x!==uid);state.transferSales=(state.transferSales||[]).filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));save();renderTransferWatch();renderTransferHubSummary();toast("Spieler zurück im Verein.");return}
 })
 function updateMarketCountdowns(){
  const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&Date.now()>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
@@ -5473,7 +5612,7 @@ function renderAll(){renderWallet();renderActiveView(currentViewId());updateObje
 
 // V18.25 — Android/Samsung Zurück: echte App-Navigation statt versehentlichem Beenden.
 let uiHistoryApplying=false,squadBattleStage="closed",uiLayerStack=[];
-const UI_LAYER_BASE_Z=170;
+const UI_LAYER_BASE_Z=210;
 function currentViewId(){return document.querySelector(".view.active")?.id||"homeView"}
 function uiState(kind="view",extra={}){return{gfut:true,kind,view:extra.view||currentViewId(),...extra}}
 function pushUiState(kind="view",extra={}){if(uiHistoryApplying)return;history.pushState(uiState(kind,extra),"",location.href)}
@@ -5507,7 +5646,7 @@ function closeUiLayer(id,kind){
  if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
  removeUiLayer(id)
 }
-function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();renderActiveView(id);updateObjectiveIndicators();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
+function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();if(id==="marketView"&&prev!=="marketView")marketSection="hub";document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();renderActiveView(id);updateObjectiveIndicators();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
 function protectLockedBack(message,kind){history.pushState(uiState(kind),"",location.href);toast(message)}
 function handleAppBack(targetState){
   if($("usernameRequiredModal")?.classList.contains("active")&&!String(state.profile?.username||"").trim()){protectLockedBack("Bitte zuerst einen Benutzernamen festlegen.","username-required");return true}
@@ -5578,7 +5717,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.13";
+const GFUT_BUILD="V19.14";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5594,7 +5733,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1913",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1914",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);

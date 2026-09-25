@@ -212,3 +212,33 @@ body{
  .walletbox .wallet-currency-icon{width:24px;height:24px;flex-basis:24px}
  .store-buy-button .currency-icon{width:18px;height:18px}
 }
+
+/* V19.14 — Transfer-Zentrale, Preisvergleich und direkte Angebote */
+.transfer-hub{display:grid;gap:12px}
+.transfer-hub-buy,.transfer-hub-card{width:100%;border:1px solid rgba(143,78,90,.55);color:#fff;text-align:left;cursor:pointer}
+.transfer-hub-buy{position:relative;min-height:230px;padding:24px;border-radius:22px;overflow:hidden;background:radial-gradient(circle at 82% 25%,rgba(232,59,85,.25),transparent 34%),linear-gradient(135deg,#21151a,#101416 60%,#161012)}
+.transfer-hub-buy:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 32px,rgba(255,255,255,.025) 32px 34px);pointer-events:none}
+.transfer-hub-buy>*{position:relative;z-index:1}.transfer-hub-kicker{display:block;font-size:8px;font-weight:1000;letter-spacing:.16em;color:#ff8799}
+.transfer-hub-buy h3{margin:9px 0 6px;font-size:31px;line-height:1}.transfer-hub-buy p{max-width:390px;margin:0;color:#cbbbc0;font-size:10px;line-height:1.5}
+.transfer-hub-buy-art{position:absolute;right:22px;bottom:24px;width:92px;height:92px;display:grid;place-items:center;border-radius:24px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(0,0,0,.18));font-size:50px;color:#ff536e;transform:rotate(-4deg)}
+.transfer-hub-cta{display:inline-flex;margin-top:34px;padding:10px 13px;border-radius:10px;background:#e83b55;color:#fff;font-size:9px;font-weight:950}
+.transfer-hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.transfer-hub-card{min-height:190px;padding:18px;border-radius:19px;background:linear-gradient(145deg,rgba(32,23,26,.98),rgba(14,14,15,.98))}
+.transfer-hub-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.transfer-hub-card h3{margin:0;font-size:17px}.transfer-hub-symbol{font-size:32px;color:#ff7187}
+.transfer-hub-card>strong{display:block;margin-top:30px;font-size:42px;font-weight:500}.transfer-hub-card>span:not(.transfer-hub-symbol){display:block;margin-top:2px;color:#b3a5aa;font-size:10px}
+.transfer-hub-stats{display:flex;gap:18px;margin-top:18px;padding-top:13px;border-top:1px solid rgba(255,255,255,.15);color:#cbbec2;font-size:9px}.transfer-hub-stats b{color:#fff;font-size:11px;margin-left:4px}
+.market-detail-shell[hidden],#marketHub[hidden]{display:none!important}.market-detail-nav{display:flex;align-items:center;gap:11px;margin-bottom:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.market-detail-nav button{min-height:36px}.market-detail-nav strong{display:block;font-size:15px}.market-detail-nav span{display:block;margin-top:2px;color:#a19297;font-size:7px}
+#marketTransferShell .transfer-watch{margin-top:0!important;padding-top:0!important;border-top:0!important}.my-bids-panel{margin-top:0}.market-row-actions .auction-remove{border-color:#78434e;color:#ff9cab;background:#2b171c}
+.price-compare-hero{display:grid;grid-template-columns:130px minmax(0,1fr);gap:18px;align-items:center;padding:15px;border:1px solid #5b3b44;border-radius:17px;background:linear-gradient(145deg,#24171b,#111214)}
+.price-compare-card .mini,.price-compare-card .mini .card-shell{width:118px!important}.price-compare-hero>div:last-child>span{display:block;color:#b7a8ad;font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+.price-compare-hero>div:last-child>strong{display:block;margin:8px 0;font-size:24px}.price-compare-hero>div:last-child>small{display:block;color:#a49399;font-size:8px;line-height:1.45}
+.price-compare-best .currency-icon{width:25px;height:25px}.price-compare-best{gap:7px}.price-compare-list{display:grid;gap:7px;margin-top:10px}
+.price-compare-row{display:grid;grid-template-columns:36px repeat(4,minmax(0,1fr));gap:7px;align-items:center;padding:10px;border:1px solid #49333a;border-radius:11px;background:linear-gradient(145deg,#20171a,#101213)}
+.price-compare-rank{font-size:9px;font-weight:1000;color:#ff8296}.price-compare-row small{display:block;color:#9f9196;font-size:6px}.price-compare-row b{display:block;margin-top:3px;font-size:8px}
+.transfer-offer-player{display:grid;grid-template-columns:130px minmax(0,1fr);gap:16px;align-items:center;padding:14px;border:1px solid #543a42;border-radius:16px;background:linear-gradient(145deg,#21171a,#101214)}
+.transfer-offer-card .mini,.transfer-offer-card .mini .card-shell{width:115px!important}.transfer-offer-player h3{margin:0;font-size:19px}.transfer-offer-player p{margin:5px 0;color:#a7999e;font-size:8px}
+.transfer-offer-warning{margin-top:7px;padding:7px 8px;border:1px solid #7a4650;border-radius:8px;background:#32171d;color:#ffabb8;font-size:7px;line-height:1.4}
+.transfer-offer-form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;padding:12px;border:1px solid #4a343b;border-radius:13px;background:#151214}
+.transfer-offer-form label{color:#a5969b;font-size:7px;font-weight:900}.transfer-offer-form input,.transfer-offer-form select{width:100%;min-height:42px;margin-top:4px;border:1px solid #583b44;border-radius:8px;background:#21191c;color:#fff;padding:0 9px;font-size:13px}
+.transfer-offer-form button{grid-column:1/-1}
+@media(max-width:620px){.transfer-hub-buy{min-height:205px;padding:18px}.transfer-hub-buy h3{font-size:26px}.transfer-hub-buy-art{width:72px;height:72px;right:16px;bottom:18px;font-size:38px}.transfer-hub-cta{margin-top:28px}.transfer-hub-grid{grid-template-columns:1fr 1fr;gap:8px}.transfer-hub-card{min-height:172px;padding:13px}.transfer-hub-card h3{font-size:13px}.transfer-hub-symbol{font-size:24px}.transfer-hub-card>strong{font-size:34px;margin-top:25px}.transfer-hub-stats{display:grid;gap:5px;margin-top:13px}.price-compare-hero,.transfer-offer-player{grid-template-columns:96px minmax(0,1fr);gap:10px}.price-compare-card .mini,.price-compare-card .mini .card-shell,.transfer-offer-card .mini,.transfer-offer-card .mini .card-shell{width:88px!important}.price-compare-row{grid-template-columns:26px 1fr 1fr;gap:5px}.transfer-offer-form{grid-template-columns:1fr 1fr}.transfer-offer-form label:nth-child(3){grid-column:1/-1}}
