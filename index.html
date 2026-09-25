@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.03</title>
+<title>Footera V19.04</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -419,6 +419,12 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-card-preview .mini{display:flex;justify-content:center;width:100%}.club-card-preview .mini .card-shell{width:108px!important;max-width:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
 .club-item h4{margin-top:2px;font-size:9px}.club-item p{font-size:6.5px}.club-item .quickcard-meta{justify-content:center}.club-empty{grid-column:1/-1;padding:22px;border:1px dashed #34423d;border-radius:14px;color:#91a09a;text-align:center;font-size:9px}
 @media(max-width:560px){.club-filters{grid-template-columns:1fr 1fr}.club-filters #clubSort{grid-column:1/-1}.club-card-preview{min-height:145px}.club-card-preview .mini .card-shell{width:100px!important}.itemgrid{gap:10px}.nav button{min-width:0}.more-tray{max-width:calc(100vw - 12px)}}
+/* V19.04 — richer Club/SBC filtering */
+.club-rating-card{grid-column:1/-1;padding:9px 10px;border:1px solid #34413d;border-radius:10px;background:#0d1512}
+.club-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}.club-rating-head strong{font-size:7px;text-transform:uppercase;color:#91a09a}.club-rating-head span{font-size:8px;font-weight:1000;color:var(--lime)}
+.club-rating-sliders{display:grid;gap:3px}.club-rating-sliders input[type=range]{width:100%;min-height:22px;accent-color:var(--lime)}
+.sbc-picker-range-card{padding:8px;border:1px solid #2d4148;border-radius:9px;background:#0b1418}.sbc-picker-range-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px}.sbc-picker-range-head span{color:#b7efff;font-size:8px;font-weight:1000}.sbc-picker-range-sliders{display:grid;gap:2px}.sbc-picker-range-sliders input[type=range]{width:100%;min-height:22px;accent-color:#73dfff}
+
 
 
 /* V18.29 portrait sizing, club full cards, collapsible roles */
@@ -1124,7 +1130,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.03</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.04</span></h1><small id="dbIndicator">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin"><span>Münzen</span><strong id="coins">0</strong></div><div class="walletbox pts"><span>Footera Points</span><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1265,8 +1271,11 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="clubView" class="view"><div class="headline"><h2>Mein Club</h2><p>Alle gezogenen, gekauften und entwickelten Spieleritems.</p></div><div class="section">
   <div class="filters club-filters">
     <select id="clubPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select>
-    <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Special</option></select>
-    <select id="clubSort"><option value="rating">Rating</option><option value="new">Neueste</option></select>
+    <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
+    <select id="clubLeague"><option value="">Alle Ligen</option></select>
+    <select id="clubClub"><option value="">Alle Vereine</option></select>
+    <select id="clubSort"><option value="rating-desc">Rating: hoch → niedrig</option><option value="rating-asc">Rating: niedrig → hoch</option><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option></select>
+    <div class="club-rating-card"><div class="club-rating-head"><strong>GES-Bereich</strong><span id="clubRatingLabel">0–99 GES</span></div><div class="club-rating-sliders"><input id="clubRatingMin" type="range" min="0" max="99" step="1" value="0" aria-label="Minimales Rating"><input id="clubRatingMax" type="range" min="0" max="99" step="1" value="99" aria-label="Maximales Rating"></div></div>
   </div><div id="clubGrid" class="itemgrid"></div>
 </div></section>
 
@@ -3777,14 +3786,42 @@ $("resultQuickSellAll").addEventListener("click",()=>{
 $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
 function quickSell(i){if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
+function clubFilterItems(){
+ return (state.club||[]).filter(i=>!(state.transferList||[]).includes(i.uid)).map(item=>({item,b:displayBase(item)})).filter(x=>x.b)
+}
+function syncClubFilterOptions(){
+ const leagueEl=$("clubLeague"),clubEl=$("clubClub");if(!leagueEl||!clubEl)return;
+ const rows=clubFilterItems(),wantedLeague=leagueEl.value,wantedClub=clubEl.value;
+ const leagues=[...new Set(rows.map(x=>String(resolvedAffiliation(x.b)?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ leagueEl.innerHTML='<option value="">Alle Ligen</option>'+leagues.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ leagueEl.value=leagues.includes(wantedLeague)?wantedLeague:"";
+ const activeLeague=leagueEl.value;
+ const clubs=[...new Set(rows.filter(x=>!activeLeague||String(resolvedAffiliation(x.b)?.league||"")===activeLeague).map(x=>String(resolvedAffiliation(x.b)?.team||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ clubEl.innerHTML='<option value="">Alle Vereine</option>'+clubs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ clubEl.value=clubs.includes(wantedClub)?wantedClub:""
+}
+function updateClubRatingLabel(){
+ const min=Math.max(0,Math.min(99,Number($("clubRatingMin")?.value||0))),max=Math.max(0,Math.min(99,Number($("clubRatingMax")?.value||99)));
+ if($("clubRatingLabel"))$("clubRatingLabel").textContent=`${min}–${max} GES`
+}
 function renderClub(){
- const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value;
- let arr=state.club.filter(i=>!(state.transferList||[]).includes(i.uid)).filter(i=>{const b=displayBase(i);if(!b)return false;const positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))});
- arr.sort((a,b)=>sort==="new"?(b.acquired||0)-(a.acquired||0):itemRating(b)-itemRating(a));
+ syncClubFilterOptions();
+ const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
+ updateClubRatingLabel();
+ let arr=state.club.filter(i=>!(state.transferList||[]).includes(i.uid)).filter(i=>{const b=displayBase(i);if(!b)return false;const a=resolvedAffiliation(b),positions=[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)],rating=itemRating(i);return(!rar||cardClass(b,i)===rar)&&(!pos||positions.includes(pos))&&(!league||String(a?.league||"")===league)&&(!club||String(a?.team||"")===club)&&rating>=min&&rating<=max});
+ arr.sort((a,b)=>{if(sort==="new")return Number(b.acquired||0)-Number(a.acquired||0);if(sort==="old")return Number(a.acquired||0)-Number(b.acquired||0);if(sort==="rating-asc")return itemRating(a)-itemRating(b);return itemRating(b)-itemRating(a)});
  $("clubGrid").innerHTML=arr.map(i=>{const b=displayBase(i),ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button></div></div>`}).join("");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
-$("clubPosition").addEventListener("change",renderClub);$("clubRarity").addEventListener("change",renderClub);$("clubSort").addEventListener("change",renderClub);
+["clubPosition","clubRarity","clubLeague","clubClub","clubSort"].forEach(id=>$(id)?.addEventListener("change",renderClub));
+function changeClubRating(which){
+ const minEl=$("clubRatingMin"),maxEl=$("clubRatingMax");if(!minEl||!maxEl)return;
+ let min=Number(minEl.value),max=Number(maxEl.value);
+ if(min>max){if(which==="min")maxEl.value=String(min);else minEl.value=String(max)}
+ renderClub()
+}
+$("clubRatingMin")?.addEventListener("input",()=>changeClubRating("min"));
+$("clubRatingMax")?.addEventListener("input",()=>changeClubRating("max"));
 $("clubGrid").addEventListener("click",e=>{const open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
@@ -4241,7 +4278,13 @@ function progressEvolution(resultKey="loss"){
  let activeSbcGroup="Grundlagen",activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
-let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false;
+let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
+function sbcDefaultPickerFilters(){return{query:"",position:"",quality:"",source:"",sort:"high",min:0,max:99,league:"",club:""}}
+function rememberSbcPickerFilters(){
+ if(!activeSbcId||!sbcPickerState)return;
+ const {query,position,quality,source,sort,min,max,league,club}=sbcPickerState;
+ SBC_PICKER_FILTERS[activeSbcId]={query,position,quality,source,sort,min,max,league,club}
+}
 
 function persistSbcWorkspace(){try{localStorage.setItem(SBC_WORKSPACE_KEY,JSON.stringify(SBC_WORKSPACE))}catch(e){}}
 function sbcSourceItems(){return[...(state.club||[]).map(i=>({item:i,source:"club"})),...(state.sbcStorage||[]).map(i=>({item:i,source:"storage"}))]}
@@ -4326,29 +4369,46 @@ function sbcWarningHTML(sbc){
  const risks=sbcSubmissionRisks(sbc);if(!risks.length)return"";
  return `<div class="sbc-team-warning" role="dialog" aria-modal="true" aria-label="SBC Sicherheitsabfrage"><div class="sbc-team-warning-card"><div class="sbc-team-warning-head"><div class="sbc-warning-icon">!</div><div><h3>Spieler aus deinen Teams ausgewählt</h3><p>Mindestens ein Spieler dieser SBC ist Bestandteil einer deiner drei Mannschaften. Wenn du fortfährst, wird die Karte dauerhaft abgegeben und der entsprechende Kaderplatz in jedem betroffenen Team frei.</p></div></div><div class="sbc-warning-list">${risks.map(r=>{const b=displayBase(r.item);return `<div class="sbc-warning-player"><div>${cardHTML(b,r.item,true)}</div><div><strong>${esc(b?.name||"Spieler")} · ${itemRating(r.item)} ${esc(positionLabel(b?.position,b))}</strong><small>Wird aus folgenden Mannschaften entfernt:</small><div>${r.teams.map(t=>`<span class="sbc-warning-team-pill">${esc(t)}</span>`).join("")}</div></div></div>`}).join("")}</div><div class="sbc-warning-actions"><button type="button" class="secondary" data-sbc-warning-replace>Spieler austauschen</button><button type="button" class="danger-confirm" data-sbc-warning-confirm>Trotzdem abgeben</button><button type="button" class="sbc-warning-cancel" data-sbc-warning-cancel>Abbrechen und SBC weiter bearbeiten</button></div></div></div>`
 }
+function sbcPickerFacetRows(){
+ if(!sbcPickerState)return[];const source=String(sbcPickerState.source||""),quality=String(sbcPickerState.quality||""),pos=String(sbcPickerState.position||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
+ return sbcSourceItems().filter(x=>{const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;if(source&&x.source!==source)return false;if(pos&&!playerPositions(b).includes(pos))return false;if(rating<min||rating>max)return false;if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}return true})
+}
+function sbcPickerLeagues(){
+ return [...new Set(sbcPickerFacetRows().map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))
+}
+function sbcPickerClubs(){
+ const league=String(sbcPickerState?.league||"");
+ return [...new Set(sbcPickerFacetRows().filter(x=>!league||String(resolvedAffiliation(displayBase(x.item))?.league||"")===league).map(x=>String(resolvedAffiliation(displayBase(x.item))?.team||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))
+}
+function normalizeSbcPickerClub(){
+ if(!sbcPickerState)return;const clubs=sbcPickerClubs();if(sbcPickerState.club&&!clubs.includes(sbcPickerState.club))sbcPickerState.club=""
+}
 function sbcPickerCandidates(){
  if(!activeSbcId||!sbcPickerState)return[];const draft=sbcDraft(activeSbcId),current=sbcSlotUid(draft,sbcPickerState.area,sbcPickerState.index),used=new Set([...draft.squad,...draft.test].filter(Boolean).filter(uid=>uid!==current));
- const q=normalizeKey(sbcPickerState.query||""),pos=String(sbcPickerState.position||""),quality=String(sbcPickerState.quality||""),source=String(sbcPickerState.source||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
+ const q=normalizeKey(sbcPickerState.query||""),pos=String(sbcPickerState.position||""),quality=String(sbcPickerState.quality||""),source=String(sbcPickerState.source||""),league=String(sbcPickerState.league||""),club=String(sbcPickerState.club||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
  const seen=new Set();let rows=sbcSourceItems().filter(x=>!used.has(String(x.item.uid))).filter(x=>{
-  const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;
+  const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;const a=resolvedAffiliation(b);
   if(q&&!playerSearchText(b).includes(q))return false;if(pos&&!playerPositions(b).includes(pos))return false;
   if(source&&x.source!==source)return false;if(rating<min||rating>max)return false;
   if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}
+  if(league&&String(a?.league||"")!==league)return false;if(club&&String(a?.team||"")!==club)return false;
   const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
- rows.sort((a,b)=>{const ar=itemRating(a.item),br=itemRating(b.item);if(sbcPickerState.sort==="low")return ar-br;return br-ar});
+ rows.sort((a,b)=>{if(sbcPickerState.sort==="new")return Number(b.item.acquired||0)-Number(a.item.acquired||0);if(sbcPickerState.sort==="old")return Number(a.item.acquired||0)-Number(b.item.acquired||0);const ar=itemRating(a.item),br=itemRating(b.item);if(sbcPickerState.sort==="low")return ar-br;return br-ar});
  return rows.slice(0,120)
 }
 function sbcPickerHTML(){
- if(!sbcPickerState)return"";const rows=sbcPickerCandidates();
+ if(!sbcPickerState)return"";normalizeSbcPickerClub();rememberSbcPickerFilters();const rows=sbcPickerCandidates(),leagues=sbcPickerLeagues(),clubs=sbcPickerClubs(),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
  return `<div class="sbc-player-picker" id="sbcPlayerPicker"><div class="sbc-player-picker-inner"><div class="sbc-picker-head"><div><h3>Vereinssuche</h3><p>${esc(sbcPickerTargetLabel())} · Spieler auswählen</p></div><button type="button" class="secondary" data-sbc-picker-close>×</button></div><div class="sbc-picker-filters">
   <div class="sbc-picker-field full"><label>Spielername</label><input id="sbcPickerName" type="search" value="${esc(sbcPickerState.query||"")}" placeholder="Spielername eingeben" autocomplete="off"></div>
-  <div class="sbc-picker-field"><label>Position</label><select id="sbcPickerPosition"><option value="">Alle Positionen</option>${["GK","CB","LB","RB","CDM","CM","CAM","LM","RM","LW","RW","ST"].map(p=>`<option value="${p}" ${sbcPickerState.position===p?"selected":""}>${positionLabel(p)}</option>`).join("")}</select></div>
+  <div class="sbc-picker-field"><label>Position</label><select id="sbcPickerPosition"><option value="">Beliebig</option>${["GK","CB","LB","RB","CDM","CM","CAM","LM","RM","LW","RW","ST"].map(p=>`<option value="${p}" ${sbcPickerState.position===p?"selected":""}>${positionLabel(p)}</option>`).join("")}</select></div>
   <div class="sbc-picker-field"><label>Qualität</label><select id="sbcPickerQuality"><option value="">Alle Qualitäten</option><option value="gold" ${sbcPickerState.quality==="gold"?"selected":""}>Gold</option><option value="silver" ${sbcPickerState.quality==="silver"?"selected":""}>Silber</option><option value="bronze" ${sbcPickerState.quality==="bronze"?"selected":""}>Bronze</option><option value="special" ${sbcPickerState.quality==="special"?"selected":""}>Spezial</option></select></div>
+  <div class="sbc-picker-field"><label>Liga</label><select id="sbcPickerLeague"><option value="">Alle Ligen</option>${leagues.map(v=>`<option value="${esc(v)}" ${sbcPickerState.league===v?"selected":""}>${esc(v)}</option>`).join("")}</select></div>
+  <div class="sbc-picker-field"><label>Verein</label><select id="sbcPickerClub"><option value="">Alle Vereine</option>${clubs.map(v=>`<option value="${esc(v)}" ${sbcPickerState.club===v?"selected":""}>${esc(v)}</option>`).join("")}</select></div>
   <div class="sbc-picker-field"><label>Quelle</label><select id="sbcPickerSource"><option value="">Verein + SBC-Speicher</option><option value="club" ${sbcPickerState.source==="club"?"selected":""}>Mein Verein</option><option value="storage" ${sbcPickerState.source==="storage"?"selected":""}>SBC-Speicher</option></select></div>
-  <div class="sbc-picker-field"><label>Sortieren</label><select id="sbcPickerSort"><option value="high" ${sbcPickerState.sort!=="low"?"selected":""}>Hoch bis niedrig</option><option value="low" ${sbcPickerState.sort==="low"?"selected":""}>Niedrig bis hoch</option></select></div>
-  <div class="sbc-picker-field full"><label>GES-Bereich</label><div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" min="0" max="99" value="${Number(sbcPickerState.min??0)}" placeholder="Min. GES"><input id="sbcPickerMax" type="number" min="0" max="99" value="${Number(sbcPickerState.max??99)}" placeholder="Max. GES"></div></div>
- </div><div class="sbc-source-switch"><button type="button" class="sbc-source-btn ${sbcPickerState.source!=="storage"?"active":""}" data-sbc-source-quick="club"><b>Mein Verein</b><span>${(state.club||[]).length} Spieler</span></button><button type="button" class="sbc-source-btn ${sbcPickerState.source==="storage"?"active":""}" data-sbc-source-quick="storage"><b>SBC-Speicher</b><span>${(state.sbcStorage||[]).length} Spieler</span></button></div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler angezeigt</span><span>${sbcPickerState.source==="storage"?"SBC-Speicher":"Verein"} · Tippen = einsetzen</span></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
+  <div class="sbc-picker-field"><label>Sortieren</label><select id="sbcPickerSort"><option value="high" ${sbcPickerState.sort==="high"?"selected":""}>GES: hoch → niedrig</option><option value="low" ${sbcPickerState.sort==="low"?"selected":""}>GES: niedrig → hoch</option><option value="new" ${sbcPickerState.sort==="new"?"selected":""}>Neueste zuerst</option><option value="old" ${sbcPickerState.sort==="old"?"selected":""}>Älteste zuerst</option></select></div>
+  <div class="sbc-picker-field full"><label>GES-Bereich</label><div class="sbc-picker-range-card"><div class="sbc-picker-range-head"><span id="sbcPickerRangeLabel">${min}–${max} GES</span></div><div class="sbc-picker-range-sliders"><input id="sbcPickerMinRange" type="range" min="0" max="99" step="1" value="${min}" aria-label="Minimales Rating"><input id="sbcPickerMaxRange" type="range" min="0" max="99" step="1" value="${max}" aria-label="Maximales Rating"></div><div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" min="0" max="99" value="${min}" placeholder="Min. GES"><input id="sbcPickerMax" type="number" min="0" max="99" value="${max}" placeholder="Max. GES"></div></div></div>
+ </div><div class="sbc-source-switch"><button type="button" class="sbc-source-btn ${sbcPickerState.source!=="storage"?"active":""}" data-sbc-source-quick="club"><b>Mein Verein</b><span>${(state.club||[]).length} Spieler</span></button><button type="button" class="sbc-source-btn ${sbcPickerState.source==="storage"?"active":""}" data-sbc-source-quick="storage"><b>SBC-Speicher</b><span>${(state.sbcStorage||[]).length} Spieler</span></button></div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler angezeigt</span><span>${sbcPickerState.source==="storage"?"SBC-Speicher":sbcPickerState.source==="club"?"Verein":"Verein + Speicher"} · Tippen = einsetzen</span></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
 }
 function sbcPickerResultsHTML(rows=sbcPickerCandidates()){
  return rows.length?rows.map(x=>{const i=x.item,b=displayBase(i),teams=sbcTeamUsageForUid(i.uid);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))} · ${x.source==="storage"?"SBC-Speicher":"Verein"}</small>${teams.length?`<span class="sbc-pick-team-tag">In: ${esc(teams.join(" · "))}</span>`:""}</button>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine Spieler für diese Filter gefunden.</div>'
@@ -4357,7 +4417,7 @@ function renderSbcPickerResults(){
  const grid=$("sbcPickerResults"),count=$("sbcPickerResultCount");if(!grid||!sbcPickerState)return;const rows=sbcPickerCandidates();grid.innerHTML=sbcPickerResultsHTML(rows);if(count)count.textContent=`${rows.length} Spieler angezeigt`
 }
 function openSbcPicker(area,index){
- if(!activeSbcId)return;sbcPickerState={area,index,query:"",position:"",quality:"",source:"",sort:"high",min:0,max:99};renderSBC();setTimeout(()=>$("sbcPickerName")?.focus(),40)
+ if(!activeSbcId)return;const saved={...sbcDefaultPickerFilters(),...(SBC_PICKER_FILTERS[activeSbcId]||{})};sbcPickerState={...saved,area,index};normalizeSbcPickerClub();renderSBC();setTimeout(()=>$("sbcPickerName")?.focus(),40)
 }
 function openSbcSlotDetail(index){
  if(!activeSbcId||!Number.isInteger(index)||index<0||index>=11)return;
@@ -4415,25 +4475,22 @@ function sbcAssistantBasePool(sbc,draft,a){
  return rows
 }
 function sbcAssistantPlan(sbc,draft,a,rows,empty,league){
- const pool=league?rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league):rows;
- if(pool.length<empty.length)return null;
+ const pool=league?rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league):rows;if(!pool.length)return null;
  const build=ordered=>{
   const choices=new Map(empty.map(slot=>[slot,ordered.map((row,i)=>a.ignorePosition||posFit(displayBase(row.item),FORMATIONS["4-3-3"][slot]?.p)>0?i:-1).filter(i=>i>=0)]));
-  if([...choices.values()].some(list=>!list.length))return null;
   const assigned=new Map(),place=(slot,seen)=>{
-   for(const i of choices.get(slot)){
-    if(seen.has(i))continue;seen.add(i);
-    const previous=assigned.get(i);
-    if(previous===undefined||place(previous,seen)){assigned.set(i,slot);return true}
-   }
+   for(const i of choices.get(slot)||[]){if(seen.has(i))continue;seen.add(i);const previous=assigned.get(i);if(previous===undefined||place(previous,seen)){assigned.set(i,slot);return true}}
    return false
   };
-  for(const slot of [...empty].sort((x,y)=>choices.get(x).length-choices.get(y).length))if(!place(slot,new Set()))return null;
+  for(const slot of [...empty].sort((x,y)=>(choices.get(x)?.length||0)-(choices.get(y)?.length||0)))if((choices.get(slot)||[]).length)place(slot,new Set());
+  if(!assigned.size)return null;
   const planned={...draft,squad:[...draft.squad]};for(const [i,slot] of assigned)planned.squad[slot]=String(ordered[i].item.uid);
-  if(!sbcDraftStats(sbc,planned).ok)return null;
-  return{draft:planned,league,rating:empty.reduce((n,slot)=>n+itemRating(sbcItemRecord(planned.squad[slot])?.item),0)}
+  const stats=sbcDraftStats(sbc,planned),rating=[...assigned.entries()].reduce((n,[i])=>n+itemRating(ordered[i].item),0);
+  return{draft:planned,league,rating,count:assigned.size,valid:stats.ok}
  };
- return build(pool)||build([...pool].reverse())
+ const variants=[build(pool),build([...pool].reverse())].filter(Boolean);
+ variants.sort((x,y)=>Number(y.valid)-Number(x.valid)||y.count-x.count||(a.sort==="low"?x.rating-y.rating:y.rating-x.rating));
+ return variants[0]||null
 }
 function runSbcAssistant(){
  const sbc=SBCS.find(x=>x.id===activeSbcId),a=sbcAssistantState;if(!sbc||!a)return;
@@ -4448,10 +4505,10 @@ function runSbcAssistant(){
  const rows=sbcAssistantBasePool(sbc,draft,a);
  const leagues=a.league?[a.league]:sbc.sameLeague?(manualLeagues.length?manualLeagues:[...new Set(rows.map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")).filter(Boolean))]):[""];
  const plans=leagues.map(league=>sbcAssistantPlan(sbc,draft,a,rows,empty,league)).filter(Boolean);
- if(!plans.length)return toast(sbc.sameLeague?"Nicht genügend passende Spieler aus einer Liga für alle freien Plätze. Bitte Filter oder Teamschutz ändern.":"Nicht genügend passende Spieler für alle freien Plätze und SBC-Bedingungen. Bitte Filter oder Teamschutz ändern.");
- plans.sort((x,y)=>a.sort==="low"?x.rating-y.rating:y.rating-x.rating);
- const chosen=plans[0];sbcSetDraft(sbc.id,chosen.draft);sbcAssistantState=null;renderSBC();
- toast(`Assistent: ${empty.length} Spieler eingesetzt${chosen.league?` · Liga: ${chosen.league}`:""}. ${sbc.count}/${sbc.count} belegt.`)
+ if(!plans.length)return toast("Keine passenden Spieler für die freien Plätze gefunden. Bitte Filter oder Teamschutz ändern.");
+ plans.sort((x,y)=>Number(y.valid)-Number(x.valid)||y.count-x.count||(a.sort==="low"?x.rating-y.rating:y.rating-x.rating));
+ const chosen=plans[0];sbcSetDraft(sbc.id,chosen.draft);const total=chosen.draft.squad.filter(Boolean).length,inserted=chosen.count,complete=sbcDraftStats(sbc,chosen.draft).ok;sbcAssistantState=null;renderSBC();
+ toast(complete?`Assistent: ${inserted} Spieler eingesetzt${chosen.league?` · Liga: ${chosen.league}`:""}. 11/11 belegt.`:`Teilbefüllung: ${inserted} passende Spieler eingesetzt. ${total}/11 belegt.`)
 }
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),reqs=sbcRequirementSummary(sbc,stats),formation=FORMATIONS["4-3-3"];
@@ -4485,7 +4542,7 @@ function finalizeSbcSubmission(id){
   return{...preset,squad,roles,focus}
  });
  state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
- grant(sbc.reward);state.stats.sbcs++;delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;save();renderAll();toast(teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")
+ grant(sbc.reward);state.stats.sbcs++;delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});save();renderAll();toast(teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")
 }
 function submitSbcById(id){
  const sbc=SBCS.find(x=>x.id===id);if(!sbc)return;const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
@@ -4506,13 +4563,13 @@ $("sbcView").addEventListener("click",e=>{
   if(warnCancel){pendingSbcSubmissionId=null;renderSBC();return}
  if(warnConfirm&&pendingSbcSubmissionId){const id=pendingSbcSubmissionId;pendingSbcSubmissionId=null;finalizeSbcSubmission(id);return}
  if(warnReplace&&pendingSbcSubmissionId){const sbc=SBCS.find(x=>x.id===pendingSbcSubmissionId),draft=sbcDraft(pendingSbcSubmissionId),risks=sbc?new Set(sbcSubmissionRisks(sbc).map(r=>r.item.uid)):new Set(),idx=draft.squad.findIndex(uid=>risks.has(uid));pendingSbcSubmissionId=null;if(idx>=0){sbcSlotDetailState={index:idx};openSbcPicker("squad",idx)}else renderSBC();return}
- if(sourceQuick&&sbcPickerState){sbcPickerState.source=sourceQuick.dataset.sbcSourceQuick==="storage"?"storage":"club";const select=$("sbcPickerSource");if(select)select.value=sbcPickerState.source;renderSBC();return}
- if(open){pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=open.dataset.sbcOpen;sbcPickerState=null;renderSBC();return}
- if(back){pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;renderSBC();return}
+ if(sourceQuick&&sbcPickerState){sbcPickerState.source=sourceQuick.dataset.sbcSourceQuick==="storage"?"storage":"club";normalizeSbcPickerClub();rememberSbcPickerFilters();renderSBC();return}
+ if(open){pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=open.dataset.sbcOpen;sbcPickerState=null;renderSBC();if(!uiHistoryApplying)pushUiState("sbc-editor",{view:"sbcView",sbcId:activeSbcId});return}
+ if(back){if(history.state?.gfut&&history.state.kind==="sbc-editor"){history.back();return}pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;renderSBC();return}
  if(toggle&&activeSbcId){const d=sbcDraft(activeSbcId);d.testOpen=!d.testOpen;sbcSetDraft(activeSbcId,d);renderSBC();return}
  if(remove&&activeSbcId){e.stopPropagation();const [area,raw]=String(remove.dataset.sbcRemove||"").split(":");sbcRemoveUid(activeSbcId,area,Number(raw));renderSBC();return}
- if(close){sbcPickerState=null;renderSBC();return}
- if(pick&&activeSbcId&&sbcPickerState){const area=sbcPickerState.area,index=Number(sbcPickerState.index),before=sbcSlotUid(sbcDraft(activeSbcId),area,index);if(sbcPlaceUid(activeSbcId,pick.dataset.sbcPickUid,area,index)){const d=sbcDraft(activeSbcId);if(area==="test")d.testOpen=true;sbcSetDraft(activeSbcId,d);sbcPickerState=null;renderSBC();toast(before?"Getauscht.":"Spieler hinzugefügt.")}return}
+ if(close){rememberSbcPickerFilters();sbcPickerState=null;renderSBC();return}
+ if(pick&&activeSbcId&&sbcPickerState){const area=sbcPickerState.area,index=Number(sbcPickerState.index),before=sbcSlotUid(sbcDraft(activeSbcId),area,index);rememberSbcPickerFilters();if(sbcPlaceUid(activeSbcId,pick.dataset.sbcPickUid,area,index)){const d=sbcDraft(activeSbcId);if(area==="test")d.testOpen=true;sbcSetDraft(activeSbcId,d);sbcPickerState=null;renderSBC();toast(before?"Getauscht.":"Spieler hinzugefügt.")}return}
  if(search&&activeSbcId){sbcSlotDetailState=null;const d=sbcDraft(activeSbcId),ti=d.test.findIndex(x=>!x),si=d.squad.findIndex(x=>!x);if(ti>=0){d.testOpen=true;sbcSetDraft(activeSbcId,d);openSbcPicker("test",ti)}else if(si>=0)openSbcPicker("squad",si);else openSbcPicker("test",0);return}
  if(submit){submitSbcById(submit.dataset.submit);return}
  if(slot&&activeSbcId&&!suppressSbcSlotClick&&!e.target.closest(".sbc-slot-remove")){const area=slot.dataset.sbcArea,index=Number(slot.dataset.sbcIndex);if(area==="squad")openSbcSlotDetail(index);else openSbcPicker(area,index);return}
@@ -4523,7 +4580,18 @@ $("sbcView").addEventListener("input",e=>{
   if(e.target.id==="sbcAssistantMin")sbcAssistantState.min=Math.max(0,Math.min(99,Number(e.target.value||0)));
   else if(e.target.id==="sbcAssistantMax")sbcAssistantState.max=Math.max(0,Math.min(99,Number(e.target.value||99)));
  }
- if(!sbcPickerState)return;if(e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;renderSbcPickerResults()}
+ if(!sbcPickerState)return;
+ if(e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;rememberSbcPickerFilters();renderSbcPickerResults();return}
+ if(["sbcPickerMin","sbcPickerMinRange","sbcPickerMax","sbcPickerMaxRange"].includes(e.target.id)){
+  const isMin=e.target.id.includes("Min"),value=Math.max(0,Math.min(99,Number(e.target.value||0)));
+  if(isMin)sbcPickerState.min=value;else sbcPickerState.max=value;
+  if(Number(sbcPickerState.min)>Number(sbcPickerState.max)){if(isMin)sbcPickerState.max=sbcPickerState.min;else sbcPickerState.min=sbcPickerState.max}
+  const min=Number(sbcPickerState.min),max=Number(sbcPickerState.max);
+  for(const id of ["sbcPickerMin","sbcPickerMinRange"])if($(id))$(id).value=String(min);
+  for(const id of ["sbcPickerMax","sbcPickerMaxRange"])if($(id))$(id).value=String(max);
+  if($("sbcPickerRangeLabel"))$("sbcPickerRangeLabel").textContent=`${min}–${max} GES`;
+  normalizeSbcPickerClub();rememberSbcPickerFilters();renderSbcPickerResults()
+ }
 });
 $("sbcView").addEventListener("change",e=>{
  if(sbcAssistantState){
@@ -4538,9 +4606,12 @@ $("sbcView").addEventListener("change",e=>{
  else if(e.target.id==="sbcPickerQuality")sbcPickerState.quality=e.target.value;
  else if(e.target.id==="sbcPickerSource")sbcPickerState.source=e.target.value;
  else if(e.target.id==="sbcPickerSort")sbcPickerState.sort=e.target.value;
- else if(e.target.id==="sbcPickerMin")sbcPickerState.min=Math.max(0,Math.min(99,Number(e.target.value||0)));
- else if(e.target.id==="sbcPickerMax")sbcPickerState.max=Math.max(0,Math.min(99,Number(e.target.value||99)));
- else return;renderSbcPickerResults()
+ else if(e.target.id==="sbcPickerLeague"){sbcPickerState.league=e.target.value;normalizeSbcPickerClub();rememberSbcPickerFilters();renderSBC();return}
+ else if(e.target.id==="sbcPickerClub")sbcPickerState.club=e.target.value;
+ else if(e.target.id==="sbcPickerMin"||e.target.id==="sbcPickerMinRange")sbcPickerState.min=Math.max(0,Math.min(99,Number(e.target.value||0)));
+ else if(e.target.id==="sbcPickerMax"||e.target.id==="sbcPickerMaxRange")sbcPickerState.max=Math.max(0,Math.min(99,Number(e.target.value||99)));
+ else return;
+ normalizeSbcPickerClub();rememberSbcPickerFilters();renderSbcPickerResults()
 });
 function clearSbcDragVisuals(){
  document.querySelectorAll("#sbcView .sbc-work-slot.drop-target,#sbcView .sbc-test-slot.drop-target").forEach(x=>x.classList.remove("drop-target"));
@@ -5279,6 +5350,9 @@ function handleAppBack(targetState){
   if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
   if($("results")?.classList.contains("active")&&pendingResolved.size!==pendingPack.length){protectLockedBack("Pack-Inhalt zuerst vollständig zuweisen.","pack-results");return true}
   if(closeTopUiLayer())return true;
+ if(currentViewId()==="sbcView"&&activeSbcId){
+  pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcId=null;renderSBC();return true
+ }
  if($("match")?.classList.contains("active")){
   if($("managerPanel")?.classList.contains("active")){resumeMatch();return true}
   if($("matchResult")?.classList.contains("active")){stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;if(targetState?.gfut&&targetState.view)switchView(targetState.view,{push:false});return true}
@@ -5340,7 +5414,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.03";
+const GFUT_BUILD="V19.04";
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
@@ -5356,7 +5430,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1897",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1904",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(!sessionStorage.getItem("gfut-v18-97-reloaded")){sessionStorage.setItem("gfut-v18-94-reloaded","1");location.reload()}});
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
