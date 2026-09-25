@@ -177,3 +177,38 @@ body{
   .store-pack-prices:not(.coins-only){grid-template-columns:1fr 1fr}
   .store-buy-button{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px}
 }
+
+/* V19.12 — Footera Coins & Points visual currency system */
+.currency-amount{display:inline-flex;align-items:center;justify-content:flex-start;gap:4px;white-space:nowrap;vertical-align:middle}
+.currency-icon{display:inline-block;width:15px;height:15px;object-fit:contain;flex:0 0 auto;vertical-align:middle}
+.currency-icon.coins{filter:drop-shadow(0 0 4px rgba(255,196,54,.28))}
+.currency-icon.points{filter:drop-shadow(0 0 5px rgba(255,45,139,.28))}
+.currency-value{font:inherit;color:inherit}
+.walletbox{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:96px}
+.walletbox .wallet-currency-icon{display:block;width:30px;height:30px;object-fit:contain;flex:0 0 30px}
+.walletbox strong{margin-top:0!important;line-height:1}
+.walletbox.coin{border-color:rgba(221,177,75,.38)}
+.walletbox.pts{border-color:rgba(236,74,133,.38)}
+.store-buy-button .store-price{display:flex;align-items:center;min-width:0}
+.store-buy-button .currency-amount{display:inline-flex;padding:0;border:0;background:none;font-size:11px;font-weight:900}
+.store-buy-button .currency-amount .currency-value{padding:0;border:0;background:none;font-size:inherit;font-weight:inherit}
+.store-buy-button .currency-icon{width:20px;height:20px}
+.evo-price>.currency-amount{padding:5px 7px;border-radius:9px;border:1px solid rgba(255,255,255,.11);background:rgba(0,0,0,.22);font-size:6.5px;font-weight:1000}
+.evo-price>.currency-amount .currency-value{padding:0;border:0;background:none;font-size:inherit;font-weight:inherit}
+.evo-price>.currency-amount .currency-icon{width:15px;height:15px}
+.evo-payment-actions .currency-amount{justify-content:center;font-size:8px;font-weight:950}
+.evo-payment-actions .currency-icon{width:18px;height:18px}
+.market-price-cell b .currency-amount{justify-content:center}
+.market-price-cell .currency-icon{width:13px;height:13px}
+.market-row-actions .currency-amount{justify-content:center;font:inherit}
+.market-row-actions .currency-icon{width:17px;height:17px}
+.currency-amount.compact{gap:3px}
+.currency-amount.compact .currency-icon{width:13px;height:13px}
+.menu-action .currency-amount{font:inherit}
+#playerDetailSub .currency-amount{font:inherit}
+.transfer-sale-info .currency-amount{font:inherit}
+@media(max-width:520px){
+ .walletbox{min-width:74px;gap:5px;padding:7px 8px}
+ .walletbox .wallet-currency-icon{width:24px;height:24px;flex-basis:24px}
+ .store-buy-button .currency-icon{width:18px;height:18px}
+}
