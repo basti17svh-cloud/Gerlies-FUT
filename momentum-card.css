@@ -1,0 +1,63 @@
+/* The supplied MOMENTUM master art is used unchanged at every card size. */
+.momentum-shell{container-type:inline-size}
+.momentum-shell .custom-card.momentum{
+ clip-path:polygon(8% 7%,16% 3%,33% 4%,50% 1%,66% 4%,84% 3%,94% 8%,99% 18%,97% 87%,87% 96%,50% 100%,13% 96%,3% 87%,1% 18%);
+ background:#020e21 url("./assets/footera/momentum-master.jpg") center center / 132% 125% no-repeat;
+ color:#e0fbff;
+}
+.momentum-shell .custom-card.momentum:before{display:none}
+
+/* Position these values inside the six spaces and the nameplate of the master. */
+:is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .card-top{
+ left:13%!important;top:17%!important;width:27%!important;text-align:center!important;z-index:8!important;
+}
+.momentum-shell .custom-card.momentum .ovr{font-size:19cqw!important;line-height:.88!important;color:#eaffff!important;text-shadow:0 1px 4px #00192f,0 0 11px #46f4ff!important}
+.momentum-shell .custom-card.momentum .pos{margin-top:3cqw!important;font-size:7.4cqw!important;line-height:1!important;color:#c9f8ff!important;text-shadow:0 1px 4px #00182c!important}
+:is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .face{
+ left:25%!important;right:4%!important;top:19%!important;height:43%!important;z-index:4!important;overflow:visible!important;background:none!important;
+}
+.momentum-shell .custom-card.momentum .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important;filter:drop-shadow(0 5px 6px #001229c9)!important}
+.momentum-shell .custom-card.momentum .face .face-fallback{font-size:25cqw}
+:is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .card-icons{
+ left:24%!important;right:16%!important;top:84%!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:1cqw!important;z-index:9!important;
+}
+.momentum-shell .custom-card.momentum .card-flag-img{width:12cqw!important;height:8cqw!important;max-width:none!important;object-fit:cover!important}
+.momentum-shell .custom-card.momentum .card-flag{font-size:8cqw!important;line-height:1!important}
+.momentum-shell .custom-card.momentum .card-league,.momentum-shell .custom-card.momentum .card-club{width:12cqw!important;height:12cqw!important;flex:none!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:3.5cqw!important}
+:is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .card-bottom{
+ left:15%!important;right:15%!important;top:62%!important;bottom:18%!important;padding:0!important;background:none!important;z-index:8!important;text-align:center!important;
+}
+.momentum-shell .custom-card.momentum .pname{border:0!important;padding:0!important;margin:0!important;font-size:7.6cqw!important;line-height:1.08!important;letter-spacing:.035em!important;color:#e5fcff!important;text-shadow:0 2px 4px #000,0 0 8px #0ff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.momentum-shell .custom-card.momentum .meta{display:block!important;margin:1cqw 0 0!important;font-size:3.4cqw!important;color:#8aebfb!important;letter-spacing:.04em!important}
+.momentum-shell .custom-card.momentum .stats{position:absolute!important;left:-6%!important;right:-6%!important;bottom:1%!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:.2cqw!important;margin:0!important;color:#9de8f6!important;font-size:2.7cqw!important;line-height:1!important;text-shadow:0 1px 3px #00121c!important}
+.momentum-shell .custom-card.momentum .stats b{display:block!important;margin-bottom:.5cqw!important;font-size:5.7cqw!important;line-height:1!important;color:#e9ffff!important}
+
+.event-showcase[data-event-theme="momentum"]{border-color:#249ab7;background:radial-gradient(circle at 75% 0%,#00b7ff39,transparent 31%),radial-gradient(circle at 13% 60%,#154ecf46,transparent 35%),linear-gradient(160deg,#020b1c,#081c39 48%,#012836)}
+.event-showcase[data-event-theme="momentum"] .event-showcase-kicker{color:#64eeff}
+.event-showcase[data-event-theme="momentum"] .event-showcase-head h3{text-shadow:0 0 25px #1bdeff99}
+.event-showcase[data-event-theme="momentum"] .event-player .card-shell{filter:drop-shadow(0 0 10px #02d5ff66)}
+.event-showcase[data-event-theme="momentum"] .event-player:focus-visible{outline-color:#52ebff}
+.quality-tag.momentum{border-color:#00d7f6!important;background:linear-gradient(125deg,#03172b,#075073)!important;color:#bafcff!important;box-shadow:0 0 12px #01bce566!important}
+
+/* The reveal's actual lead card selects the palette; no animation timings change. */
+.opening.theme-momentum{--momentum-beam:#49eafa;background:radial-gradient(circle at 50% 46%,#08587f 0%,#041935 30%,#010714 76%)!important}
+.opening.theme-momentum:before{background:repeating-conic-gradient(from 0deg,#23cce861 0 1.5deg,transparent 1.5deg 7deg),radial-gradient(circle,#b5f8ff3b,transparent 31%)!important}
+.opening.theme-momentum:after{background:linear-gradient(105deg,transparent 0 36%,#b5efff45 42%,transparent 48%),linear-gradient(255deg,transparent 0 36%,#14d8f14b 42%,transparent 48%),radial-gradient(circle at 50% 78%,#0bdfff50,transparent 36%)!important}
+.opening.theme-momentum .openstage:before{background:radial-gradient(circle,#48e9ff66,transparent 66%)}
+.opening.theme-momentum .board-intro{background:radial-gradient(ellipse at 50% 48%,#35e5ff38,#09274b 33%,#010b1d 75%)}
+.opening.theme-momentum .board-intro:before{background:linear-gradient(90deg,transparent 0 18%,#3cdeff36 18% 18.5%,transparent 18.5% 81.5%,#3cdeff36 81.5% 82%,transparent 82%),linear-gradient(180deg,transparent 0 65%,#1bbde339 80%,transparent 100%)}
+.opening.theme-momentum .board-stripe{background:linear-gradient(90deg,transparent,#00c9ee 30%,#e5ffff 50%,#00c9ee 70%,transparent);box-shadow:0 0 19px #00d9ff,0 0 45px #31a5ef}
+.opening.theme-momentum .board-plaque{border-color:#59ecff;background:linear-gradient(145deg,#062c51,#07182b 58%,#064568);box-shadow:inset 0 0 28px #37dfff40,0 0 30px #1ccfff80}
+.opening.theme-momentum .board-cue-label{color:#7df1ff}
+.opening.theme-momentum .board-cue-art{border-color:#63edff;background:#042640dd;box-shadow:0 0 18px #2fe5ff88}
+.opening.theme-momentum .walkout-tunnel{--walkout-beam:var(--momentum-beam);background:radial-gradient(ellipse at 50% 48%,#48dcff5c 0,#0a3458 12%,#041327 38%,#010814 78%)}
+.opening.theme-momentum .walkout-tunnel:before{background:linear-gradient(108deg,transparent 5%,#7cf2ff44 17%,transparent 29%,transparent 71%,#7cf2ff44 83%,transparent 95%),radial-gradient(circle at 50% 48%,#c2faff99 0,transparent 9%)}
+.opening.theme-momentum .walkout-tunnel:after{background:repeating-linear-gradient(0deg,transparent 0 32px,#20dfffbb 33px 35px,transparent 36px 69px),linear-gradient(90deg,transparent 0 27%,#5bf1ff77 27% 27.3%,transparent 27.3% 72.7%,#5bf1ff77 72.7% 73%,transparent 73%)}
+.opening.theme-momentum .walkout-clue-art{background:radial-gradient(circle,#95f9ff43,#041f40dd 73%)}
+.opening.theme-momentum .pack-floor-lights i{background:#3edfff}
+.opening.theme-momentum .pack-spark{background:#d8ffff;box-shadow:0 0 14px #29e9ff}
+.opening.theme-momentum .pack-confetti{background:#16d2f4!important}
+.opening.theme-momentum .pack-confetti:nth-child(3n){background:#e0feff!important}
+.opening.theme-momentum .pack-confetti:nth-child(5n){background:#176cf3!important}
+.opening.theme-momentum .reveal,.opening.theme-momentum .reveal .card-shell{filter:drop-shadow(0 0 32px #00d9ff99)!important}
+.opening.theme-momentum .revealbadge,.opening.theme-momentum .walkout-title{color:#aff9ff!important;text-shadow:0 0 14px #00d5ff,0 0 34px #08b9ee!important}
