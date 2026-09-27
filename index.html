@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.20</title>
+<title>Footera V19.21</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -52,6 +52,40 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .onboard.active{display:block}.oninner{max-width:650px;margin:auto}.leaguegrid{display:grid;gap:8px;margin-top:15px}.leaguebtn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;border:1px solid #30403a;background:#101814;color:#fff;text-align:left}.leaguebtn strong{font-size:13px}.leaguebtn span{display:block;color:#8e9b97;font-size:7px;margin-top:3px}.leaguebtn b{font-size:18px;color:var(--lime)}.starterstage{display:none;text-align:center}.starterstage.active{display:block}.starterpack{width:180px;height:250px;margin:23px auto;display:grid;place-items:center;clip-path:polygon(10% 0,100% 4%,92% 100%,0 94%);background:linear-gradient(145deg,#a67527,#eedc94 40%,#768985 61%,#b46f3f);box-shadow:0 0 55px rgba(215,255,62,.25);color:#0c140f;font-weight:1000;font-size:23px;font-style:italic}.starterpack.pulse{animation:starterPulse .65s infinite alternate}@keyframes starterPulse{to{transform:scale(1.07);filter:brightness(1.4)}}
 /* cards */
 .card-shell{position:relative;width:158px;aspect-ratio:.7;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}.official-card{width:100%;height:100%;object-fit:contain;display:block}.custom-card{position:absolute;inset:0;overflow:hidden;clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);color:#211807}.custom-card.gold{background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.55),transparent 20%),linear-gradient(145deg,#f4e2a1,#bc8b26 31%,#f0d27a 64%,#8a5d12)}.custom-card.silver{color:#18201e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.7),transparent 20%),linear-gradient(145deg,#eef3f1,#9ca8a5 34%,#dfe5e3 63%,#667370)}.custom-card.bronze{color:#27180e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.34),transparent 20%),linear-gradient(145deg,#d39969,#875130 34%,#c17b4b 63%,#55311f)}.custom-card.special{color:#fff;background:radial-gradient(circle at 55% 28%,rgba(255,255,255,.45),transparent 18%),linear-gradient(145deg,#18efbc,#2f5ecb 39%,#962bdc 68%,#191d26)}
+.custom-card.legacy{
+ color:#ffe8b5;
+ background:
+  radial-gradient(circle at 67% 27%,rgba(255,92,82,.30),transparent 19%),
+  radial-gradient(circle at 36% 55%,rgba(187,20,43,.28),transparent 30%),
+  linear-gradient(133deg,transparent 0 18%,rgba(246,188,92,.17) 18.5% 20%,transparent 20.5% 36%,rgba(120,8,28,.52) 36.5% 54%,transparent 55%),
+  linear-gradient(42deg,transparent 0 24%,rgba(255,211,128,.12) 24.5% 26%,transparent 26.5% 62%,rgba(126,8,24,.54) 62.5% 74%,transparent 74.5%),
+  linear-gradient(155deg,#160507 0%,#5b0817 28%,#210508 51%,#790c22 72%,#100506 100%);
+ box-shadow:inset 0 0 0 1px rgba(255,213,132,.62),inset 0 0 24px rgba(231,150,64,.18)
+}
+.custom-card.legacy:before{
+ z-index:1;
+ border:1px solid rgba(255,220,148,.78);
+ background:
+  linear-gradient(145deg,transparent 0 23%,rgba(255,226,161,.13) 23.5% 24.5%,transparent 25% 62%,rgba(246,169,70,.13) 62.5% 64%,transparent 64.5%),
+  linear-gradient(35deg,transparent 0 42%,rgba(132,8,27,.28) 42.5% 55%,transparent 55.5%);
+ box-shadow:inset 0 0 0 2px rgba(97,17,16,.56),inset 0 0 18px rgba(255,186,89,.13)
+}
+.custom-card.legacy:after{
+ content:"LEGACY EVENT";position:absolute;z-index:7;right:8px;top:7px;
+ padding:3px 6px;border:1px solid rgba(255,226,161,.72);border-radius:999px;
+ background:linear-gradient(135deg,#2a0809,#751324 58%,#32100d);
+ color:#ffdda0;font-size:4.3px;font-weight:1000;letter-spacing:.12em;
+ box-shadow:0 2px 9px #0009,0 0 8px rgba(239,164,77,.22)
+}
+.custom-card.legacy .face{background:radial-gradient(circle at 55% 32%,rgba(255,214,151,.15),transparent 34%);z-index:2}
+.custom-card.legacy .face img{filter:drop-shadow(0 5px 6px rgba(0,0,0,.48)) saturate(1.04) contrast(1.03)}
+.custom-card.legacy .pname{border-color:#e9b85e;color:#fff0c7;text-shadow:0 1px 3px #000}
+.custom-card.legacy .meta{color:#e8bc75}
+.custom-card.legacy .stats{color:#ffe8b5}
+.custom-card.legacy .stats b{color:#fff3d0}
+.custom-card.legacy .ovr,.custom-card.legacy .pos{color:#ffe6a6;text-shadow:0 1px 3px #000}
+.mini .custom-card.legacy:after{right:4px;top:4px;padding:2px 4px;font-size:2.9px;letter-spacing:.07em}
+.quality-tag.legacy{border-color:#b47a35!important;background:linear-gradient(135deg,#2d090b,#6a1220)!important;color:#ffd98f!important;box-shadow:inset 0 0 0 1px rgba(255,218,143,.12)}
 .custom-card.totw{color:#f5e8b0;background:
  radial-gradient(circle at 62% 24%,rgba(255,224,118,.28),transparent 18%),
  linear-gradient(155deg,#050606 0,#171813 28%,#070807 52%,#2a2312 75%,#080908 100%);
@@ -1166,7 +1200,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.20</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.21</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1306,7 +1340,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
         <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
         <div class="market-field"><label>Position</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select></div>
         <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
-        <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="event">Eventkarten</option></select></div>
+        <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="legacy">Legacy Event</option></select></div>
         <div class="range-card">
           <div class="range-head"><strong>Gesamtwertung</strong><span id="marketRatingLabel">65 – 99</span></div>
           <div class="dual-range"><input id="marketRatingMin" type="range" min="65" max="99" value="65"><input id="marketRatingMax" type="range" min="65" max="99" value="99"></div>
@@ -1518,6 +1552,22 @@ function currencyAmountHTML(currency,amount,extraClass=""){const meta=CURRENCY_M
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+/* V19.21 — Legacy Event: migrate all early placeholder events into one permanent event identity. */
+function isLegacyEventName(name){
+ const n=String(name||"").trim().toLowerCase();
+ return n==="legacy event"||n==="eventkarte"||n==="road to glory"||n==="birthday event"||n==="champions event"
+}
+function migrateLegacyEventItem(item){
+ if(item&&item.variant==="special"&&isLegacyEventName(item.eventName)){item.eventName="Legacy Event";item.legacyEvent=true}
+ return item
+}
+function migrateLegacyEventState(s){
+ if(!s||typeof s!=="object")return s;
+ for(const key of ["club","sbcStorage","pendingPack"]){if(Array.isArray(s[key]))s[key].forEach(migrateLegacyEventItem)}
+ if(Array.isArray(s.auctions))s.auctions.forEach(x=>{migrateLegacyEventItem(x);if(x?.item)migrateLegacyEventItem(x.item)});
+ if(Array.isArray(s.transferSales))s.transferSales.forEach(x=>{if(x?.item)migrateLegacyEventItem(x.item)});
+ return s
+}
 let PLAYERS=[],P_BY_ID=new Map(),state=loadState(),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sellEditorUid=null,sbcSelections={},match=null;
 
 const FORMATIONS={
@@ -1928,8 +1978,8 @@ function baseState(){return{
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b)
- }catch(e){return initializeSquadPresets(baseState())}
+  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:122,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
+ }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
 function cleanSquadPreset(raw,clubIds,index){
@@ -2280,7 +2330,7 @@ function isBaseRare(p){
  return r>=80||(r>=78&&!!ps)
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
-function cardClass(p,item){if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(item.evo||0)+(item.boost||0)):0}
 function displayBase(item){const b=itemBase(item);if(!b)return null;let out={...b,ovr:itemRating(item),position:item?.overridePosition||b.position};const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
@@ -2399,6 +2449,7 @@ function fifaRostersFaceCandidates(id,version=27){const raw=String(id||"").repla
 function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:FC27|FC26)\/(?:components\/items|full\/player-shields)/i.test(String(url||""))}
 function portraitCandidates(p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};
+ const canonical=P_BY_ID.get(String(p?.id||""));if(canonical&&canonical!==p){add(canonical.face);add(canonical.portrait);add(canonical.headshot)}
  if(p?.isIcon){const verified=iconPortraitUrl(p);add(verified);if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);return arr}
  add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr
 }
@@ -2870,7 +2921,7 @@ function openBiography(item,index,fallbackBase=null){
  showUiLayer("bioModal","bio")
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
-  if(!p)return"";p=resolvedPlayer(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
+  if(!p)return"";p=resolvedPlayer(p);if(item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
   const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
@@ -4159,12 +4210,12 @@ function marketPriceForRating(r,special=false,base=null){
  if(pct>=.995)value=Math.max(value,basePrice*6.5);else if(pct>=.985)value=Math.max(value,basePrice*5.1);else if(pct>=.97)value=Math.max(value,basePrice*4.0);else if(pct>=.94)value=Math.max(value,basePrice*3.1);else if(pct>=.88)value=Math.max(value,basePrice*2.35);
  return marketRoundPrice(value)
 }
-function marketPreviewItem(x){return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||""}}
+function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||"",legacyEvent:isLegacyEventName(x.eventName)}}
 function listingRating(x){return Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"||x.variant==="icon-mid"?"special":rarityOf(x.base)}
 function auctionTime(x){return Math.max(0,Math.ceil((Number(x?.ends||0)-Date.now())/1000))}
-function qualityLabel(x){if(x.variant==="icon-mid")return"MITTLERE IKONE";if(x.variant==="special")return totwDisplayName(x.eventName)||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
-function specialVariant(type=""){const events=["Eventkarte","Road to Glory","Birthday Event","Champions Event"];const eventName=events[Math.floor(Math.random()*events.length)],boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost}}
+function qualityLabel(x){if(x.variant==="icon-mid")return"MITTLERE IKONE";if(x.variant==="special"&&isLegacyEventName(x.eventName))return"LEGACY EVENT";if(x.variant==="special")return totwDisplayName(x.eventName)||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
+function specialVariant(type=""){const eventName="Legacy Event",boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost,legacyEvent:true}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
@@ -4172,7 +4223,7 @@ function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit
 function createMarketListing(base,filters){let variant="",eventName="",boost=0,overridePosition="";const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="MID ICON"}
  else if(filters.specialType==="totw"&&(archived||live)){const info=archived||live;variant="special";eventName=archived?.name||(activeTotwWeek()?.name||"Team of the Week");boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));overridePosition=info.position||base.position}
- else if(filters.specialType==="event"){const sp=specialVariant("event");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
+ else if(filters.specialType==="legacy"){const sp=specialVariant("legacy");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
  const r=Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventName,boost,overridePosition,price,startPrice:start,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
@@ -4205,7 +4256,7 @@ function marketSnapshotBases(f){
 }
 function buildMarketSnapshot(f){
  const bases=marketSnapshotBases(f),offers=bases.map(base=>createMarketListing(base,{...f,quality:"",specialType:"base"}));
- for(const base of bases){if(Number(base.ovr||0)>=75&&marketSnapshotHash(base.id)%9===0)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"event"}))}
+ for(const base of bases){if(Number(base.ovr||0)>=75&&marketSnapshotHash(base.id)%9===0)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"legacy"}))}
  for(const base of allTotwMarketBases())offers.push(createMarketListing(base,{...f,quality:"special",specialType:"totw"}));
  for(const base of MID_ICON_BASES)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"icon"}));
  for(let i=offers.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[offers[i],offers[j]]=[offers[j],offers[i]]}
@@ -4216,7 +4267,7 @@ function marketListingMatchesFilters(x,f){
  const p=x.base||{},rating=listingRating(x),pos=x.overridePosition||p.position,league=String(p?.league||resolvedAffiliation(p)?.league||"");
  if(f.name&&!playerSearchText(p).includes(f.name))return false;if(f.league&&league!==f.league)return false;if(f.club&&p.team!==f.club)return false;if(f.nation&&p.nation!==f.nation)return false;if(f.position&&pos!==f.position)return false;
  if(rating<f.ratingMin||rating>f.ratingMax)return false;if(f.quality&&listingQuality(x)!==f.quality)return false;
- if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="event"&&!(x.variant==="special"&&!String(x.eventName).startsWith("Team of the Week")))return false;
+ if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;
  if(f.priceMin&&Number(x.price||0)<f.priceMin)return false;if(f.priceMax&&Number(x.price||0)>f.priceMax)return false;return true
 }
 function marketPageCount(){return Math.max(1,Math.ceil(marketAllListings.length/MARKET_PAGE_SIZE))}
@@ -4258,7 +4309,7 @@ function marketAuctionState(x){
  return{key:"neutral",label:"Auktion läuft",icon:""}
 }
 function marketRowHTML(x,i,tracked=false){
- const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
+ const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=String(x.eventName).startsWith("Team of the Week")?"totw":isLegacyEventName(x.eventName)?"legacy":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
  const removeAction=tracked&&x.settled?`<button class="secondary auction-remove" data-my-auction-remove="${i}">Aus Liste entfernen</button>`:"";
  return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
 }
@@ -4375,7 +4426,7 @@ function settleTransferSales(){
 }
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("marketPagination").addEventListener("click",e=>{const b=e.target.closest("[data-market-page]");if(!b||b.disabled)return;if(b.dataset.marketPage==="prev")setMarketPage(marketPage-1);if(b.dataset.marketPage==="next")setMarketPage(marketPage+1)});
-$("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="event")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
+$("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
 $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;
@@ -5827,7 +5878,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.20";
+const GFUT_BUILD="V19.21";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
