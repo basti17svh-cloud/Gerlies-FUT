@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.29</title>
+<title>Footera V19.30</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1253,7 +1253,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.29</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1274,6 +1274,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
           </div>
         </div>
         <div class="home-hero-visual">
+          <div id="homeMomentumRoster" class="home-momentum-roster" hidden></div>
           <div class="hero-burst"></div>
           <div class="hero-emblem">
             <svg viewBox="0 0 64 40" aria-hidden="true"><path d="M7 31 3 8l16 11L32 2l13 17L61 8l-4 23H7Z"/><path d="M9 35h46v3H9z"/></svg>
@@ -2033,16 +2034,43 @@ function renderEvents(){
  tabs.innerHTML=events.map(ev=>`<button type="button" class="event-tab ${ev.id===selected.id?"active":""}" data-event-select="${esc(ev.id)}">${esc(ev.shortName||ev.name)}</button>`).join("");
  showcase.dataset.eventTheme=selected.theme||"event";
  const top=entries.length?Math.max(...entries.map(e=>Number(e.player?.ovr||0))):0;
- body.innerHTML=`<div class="event-showcase-head"><span class="event-showcase-kicker">FOOTERA ULTIMATE TEAM</span><h3>${esc(selected.name)}</h3><p>${esc(selected.subtitle||"Event Release")}</p></div><div class="event-meta-strip"><div class="event-meta"><b>${entries.length}</b><span>Spieler</span></div><div class="event-meta"><b>${top||"–"}</b><span>Top-Rating</span></div><div class="event-meta"><b>${esc(selected.activeUntil||"Offen")}</b><span>${selected.kind==="totw"?"Verfügbar bis":"Event bis"}</span></div></div><div class="event-roster">${entries.length?entries.map((entry,index)=>`<button type="button" class="event-player" data-event-player="${index}" aria-label="${esc(entry.player?.name||"Spieler")} öffnen">${cardHTML(entry.player,entry.item,true,entry.player?.position)}</button>`).join(""):'<div class="event-empty">Für dieses Event sind noch keine Spieler veröffentlicht.</div>'}</div><div class="event-foot"><div><strong>${selected.kind==="totw"?"Mittwoch 19:00 Rotation":"Aktueller Promo-Release"}</strong><br>${selected.kind==="totw"?"Jede TOTW-Woche bleibt anschließend im Archiv abrufbar.":"Neue Event-Teams erscheinen hier automatisch als eigener Reiter."}</div>${selected.kind==="totw"&&String(selected.team?.id)===String(LIVE_TOTW?.id)?'<button type="button" class="secondary" data-event-open-team>Aufstellung ansehen</button>':""}</div>`;
+ body.innerHTML=`<div class="event-showcase-head"><span class="event-showcase-kicker">FOOTERA ULTIMATE TEAM</span><h3>${esc(selected.name)}</h3><p>${esc(selected.subtitle||"Event Release")}</p></div><div class="event-meta-strip"><div class="event-meta"><b>${entries.length}</b><span>Spieler</span></div><div class="event-meta"><b>${top||"–"}</b><span>Top-Rating</span></div><div class="event-meta"><b>${esc(selected.activeUntil||"Offen")}</b><span>${selected.kind==="totw"?"Verfügbar bis":"Event bis"}</span></div></div><div class="event-roster">${entries.length?entries.map((entry,index)=>`<button type="button" class="event-player" data-event-player="${index}" aria-label="${esc(entry.player?.name||"Spieler")} öffnen">${cardHTML(entry.player,entry.item,true,entry.player?.position)}</button>`).join(""):'<div class="event-empty">Für dieses Event sind noch keine Spieler veröffentlicht.</div>'}</div><div class="event-foot"><div><strong>${selected.kind==="totw"?"Mittwoch 19:00 Rotation":"Aktueller Promo-Release"}</strong><br>${selected.kind==="totw"?"Jede TOTW-Woche bleibt anschließend im Archiv abrufbar.":"Neue Event-Teams erscheinen hier automatisch als eigener Reiter."}</div>${selected.id===MOMENTUM_EVENT.id?'<button type="button" class="secondary" data-event-open-momentum>Aufstellung ansehen</button>':selected.kind==="totw"&&String(selected.team?.id)===String(LIVE_TOTW?.id)?'<button type="button" class="secondary" data-event-open-team>Aufstellung ansehen</button>':""}</div>`;
  body.dataset.eventId=selected.id
 }
 $("eventTabs")?.addEventListener("click",e=>{const b=e.target.closest("[data-event-select]");if(!b)return;eventSelectedId=b.dataset.eventSelect||"";renderEvents()});
 $("eventShowcaseBody")?.addEventListener("click",e=>{
+ if(e.target.closest("[data-event-open-momentum]")){openMomentumTeam();return}
  if(e.target.closest("[data-event-open-team]")){openTotwTeam();return}
  const b=e.target.closest("[data-event-player]");if(!b)return;
  const selected=eventShowcases().find(x=>x.id===$("eventShowcaseBody")?.dataset.eventId);if(!selected)return;
  const entry=selected.entries()[Number(b.dataset.eventPlayer)];if(entry)openBiography(entry.item,null,entry.player)
 });
+// Reuse the TOTW team modal and the existing event items. The eleven pitch slots
+// reflect the positions in this release; the remaining three cards form the bench.
+const MOMENTUM_TEAM_SLOTS=[
+ {p:"GK",x:50,y:90},{p:"LB",x:20,y:73},{p:"CB",x:50,y:73},{p:"CM",x:80,y:69},
+ {p:"CAM",x:32,y:51},{p:"CAM",x:65,y:51},{p:"RM",x:89,y:47},
+ {p:"LW",x:13,y:29},{p:"RW",x:85,y:29},{p:"ST",x:38,y:12},{p:"ST",x:64,y:12}
+];
+function momentumTeamLineup(entries){
+ const used=new Set();const xi=MOMENTUM_TEAM_SLOTS.map(slot=>{
+  const entry=entries.find(e=>!used.has(e.index)&&e.player.position===slot.p)
+   ||entries.find(e=>!used.has(e.index)&&posFit(e.player,slot.p))
+   ||entries.find(e=>!used.has(e.index));
+  if(entry)used.add(entry.index);return entry
+ });
+ return{xi,bench:entries.filter(e=>!used.has(e.index))}
+}
+function momentumTeamCard(entry){return `<button type="button" class="totw-player-btn" data-momentum-team-bio="${entry.index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`}
+function openMomentumTeam(){
+ const entries=promoEventEntries(MOMENTUM_EVENT),{xi,bench}=momentumTeamLineup(entries);
+ const rating=Math.round(xi.reduce((n,e)=>n+Number(e?.player?.ovr||0),0)/xi.length);
+ $("opponentTeamModalTitle").textContent=`${MOMENTUM_EVENT.name} ${MOMENTUM_EVENT.subtitle}`;
+ $("opponentTeamModalSub").textContent=`${entries.length} Spezialkarten · Event bis ${MOMENTUM_EVENT.activeUntil}`;
+ $("opponentTeamModalBody").innerHTML=`<div class="momentum-team-overview"><div class="totw-team-head"><div><strong>${esc(MOMENTUM_EVENT.name)} ${esc(MOMENTUM_EVENT.subtitle)}</strong><span>Elf auf dem Feld · ${bench.length} auf der Bank</span></div><span>${esc(MOMENTUM_EVENT.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Gesamtstärke</span></div><div class="kpi"><strong>${xi.length}</strong><span>Startelf</span></div><div class="kpi"><strong>${entries.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${MOMENTUM_TEAM_SLOTS.map((slot,i)=>`<div class="friend-slot momentum-slot" style="left:${slot.x}%;top:${slot.y}%">${xi[i]?momentumTeamCard(xi[i]):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}</div>`).join("")}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench momentum-team-bench">${bench.map(e=>`<div>${momentumTeamCard(e)}</div>`).join("")}</div></div>`;
+ showUiLayer("opponentTeamModal","opponent-team")
+}
+$("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-momentum-team-bio]");if(!btn)return;const entry=promoEventEntries(MOMENTUM_EVENT)[Number(btn.dataset.momentumTeamBio)];if(entry)openBiography(entry.item,null,entry.player)});
 function makeLivePackItem(base,tradeable=true){const team=activeTotwWeek(),info=totwInfo(base);return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
 
 const TASKS=[
@@ -5679,11 +5707,22 @@ function updateObjectiveIndicators(){
  $("homePassHint").textContent=passReady?`${passReady} Passbelohnung${passReady===1?"":"en"} abholbereit`:"Kostenlos & Premium · 30 Stufen"
 }
 function homeHeroSlides(){return[
+ ...(momentumIsActive()?[{kicker:"NEUES EVENT · TEAM 1",title:'MOMENTUM<br><span>TEAM 1</span>',text:`${MOMENTUM_EVENT.name} ${MOMENTUM_EVENT.subtitle} ist jetzt live. Verfügbar in Packs bis ${new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(MOMENTUM_EVENT.activeUntilAt))} Uhr.`,button:"Zum Team",action:"momentum-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"M",live:"JETZT IN PACKS",aside:`${MOMENTUM_EVENT.players.length} SPEZIALKARTEN`,aside2:MOMENTUM_EVENT.activeUntil,theme:"momentum",event:MOMENTUM_EVENT}]:[]),
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division} · ${state.rivals.points}/12`,theme:"gold"},
  totwIsActive()?{kicker:"AKTUELLE INHALTE",title:'TEAM DER<br><span>WOCHE</span>',text:`${totwDisplayName(LIVE_TOTW.name)} ist aktiv. Entdecke die aktuellen Spezialkarten im Store.`,button:"Zum Store →",go:"storeView",teamView:"totw",shield:"TOTW",live:"JETZT AKTIV",aside:"NEUE SPEZIALKARTEN",aside2:"NUR FÜR KURZE ZEIT",theme:"gold"}:{kicker:"SAISONPASS",title:'DEINE<br><span>SAISON</span>',text:"Spiele Matches und erfülle Ziele, um Spielbelohnungen freizuschalten.",button:"Saisonpass öffnen →",go:"seasonPassView",shield:"SP",live:"SAISON AKTIV",aside:"KOSTENLOS & PREMIUM",aside2:`${fmt(state.sp||0)} SP GESAMMELT`,theme:"gold"},
  {kicker:"EVOLUTIONS",title:'EVOLUTION<br><span>LAB</span>',text:activeEvolutionCount()?`${activeEvolutionCount()}/3 Evolutionen laufen. Spiele weiter und entwickle deine Profis parallel.`:"Wähle geeignete Spieler und entwickle sie über Match-Ziele weiter.",button:"Evolutions öffnen →",go:"evolutionView",shield:"EVO",live:activeEvolutionCount()?`${activeEvolutionCount()}/3 AKTIV`:"VERFÜGBAR",aside:"ENTWICKLE DEINE PROFIS",aside2:"MATCHES · BOOSTS · PLAYSTYLES",theme:"violet"}
 ]}
-function renderHomeHero(){const slides=homeHeroSlides(),hero=slides[homeHeroSlide]||slides[0],card=$("homeHeroCard");if(card)card.dataset.theme=hero.theme;$("homeHeroKicker").textContent=hero.kicker;$("homeHeroTitle").innerHTML=hero.title;$("homeHeroText").textContent=hero.text;$("homeHeroShield").textContent=hero.shield;$("homeHeroLive").textContent=hero.live;$("homeHeroAside").innerHTML=hero.aside.replace(". ",".<br>");$("homeHeroAside2").textContent=hero.aside2;$("homeHeroAction").textContent=hero.button;$("homeHeroAction").dataset.go=hero.go;const teamBtn=$("homeHeroTeam");if(teamBtn){teamBtn.style.display=hero.teamView==="totw"?"inline-flex":"none";teamBtn.dataset.homeTeamView=hero.teamView||""}document.querySelectorAll("[data-home-slide]").forEach((b,i)=>b.classList.toggle("active",i===homeHeroSlide))}
+function renderHomeHero(){
+ const slides=homeHeroSlides();if(homeHeroSlide>=slides.length)homeHeroSlide=0;
+ const hero=slides[homeHeroSlide],card=$("homeHeroCard");if(card)card.dataset.theme=hero.theme;
+ $("homeHeroKicker").textContent=hero.kicker;$("homeHeroTitle").innerHTML=hero.title;$("homeHeroText").textContent=hero.text;
+ $("homeHeroShield").textContent=hero.shield;$("homeHeroLive").textContent=hero.live;$("homeHeroAside").innerHTML=hero.aside.replace(". ",".<br>");$("homeHeroAside2").textContent=hero.aside2;
+ const action=$("homeHeroAction");action.textContent=hero.button;action.dataset.homeHeroAction=hero.action||"";if(hero.go)action.dataset.go=hero.go;else delete action.dataset.go;
+ const teamBtn=$("homeHeroTeam");teamBtn.style.display=hero.teamView?"inline-flex":"none";teamBtn.textContent=hero.teamButton||"Team ansehen";teamBtn.dataset.homeTeamView=hero.teamView||"";
+ const roster=$("homeMomentumRoster");roster.hidden=!hero.event;
+ roster.innerHTML=hero.event?promoEventEntries(hero.event).map((entry,index)=>`<button type="button" class="home-momentum-player" data-home-event-player="${index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`).join(""):"";
+ $("homeSliderDots").innerHTML=slides.map((_,i)=>`<span class="home-slider-dot ${i===homeHeroSlide?"active":""}" data-home-slide="${i}" aria-hidden="true"></span>`).join("")
+}
 function renderHomeRewards(){
  const claimable=homeClaimableTasks(),objectivesReady=availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount(),packs=homeOwnedPacks(),total=claimable.length+objectivesReady+passReady+packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0);
  $("homeReadyCount").textContent=String(total);
@@ -5714,7 +5753,9 @@ let heroSwipeStart=null;
 $("homeHeroCard")?.addEventListener("pointerdown",e=>{heroSwipeStart={x:e.clientX,y:e.clientY,id:e.pointerId}});
 $("homeHeroCard")?.addEventListener("pointerup",e=>{if(!heroSwipeStart||heroSwipeStart.id!==e.pointerId)return;const dx=e.clientX-heroSwipeStart.x,dy=e.clientY-heroSwipeStart.y;heroSwipeStart=null;if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;const len=homeHeroSlides().length;homeHeroSlide=(homeHeroSlide+(dx<0?1:-1)+len)%len;renderHomeHero()});
 $("homeHeroCard")?.addEventListener("pointercancel",()=>{heroSwipeStart=null});
-$("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();if(e.currentTarget.dataset.homeTeamView==="totw")openTotwTeam()});
+$("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=promoEventEntries(event)[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
+$("homeHeroAction")?.addEventListener("click",e=>{if(e.currentTarget.dataset.homeHeroAction==="momentum-team"){e.stopPropagation();openMomentumTeam()}});
+$("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();const view=e.currentTarget.dataset.homeTeamView;if(view==="totw")openTotwTeam();else if(view==="momentum-shop"){storeTab="promo";switchView("storeView")}});
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
 $("campaignModalBody")?.addEventListener("click",e=>{const go=e.target.closest("[data-campaign-go]");if(!go)return;$("campaignModal").classList.remove("active");replaceUiState("view",{view:go.dataset.campaignGo});switchView(go.dataset.campaignGo,{push:false})});
 
@@ -6074,7 +6115,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.29";
+const GFUT_BUILD="V19.30";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6092,7 +6133,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1929",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1930",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

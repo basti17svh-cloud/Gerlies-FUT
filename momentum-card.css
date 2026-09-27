@@ -42,6 +42,49 @@
 .event-showcase[data-event-theme="momentum"] .event-player:focus-visible{outline-color:#52ebff}
 .quality-tag.momentum{border-color:#00d7f6!important;background:linear-gradient(125deg,#03172b,#075073)!important;color:#bafcff!important;box-shadow:0 0 12px #01bce566!important}
 
+/* The first home slide uses the existing slider with every currently active event item. */
+.home-hero-card[data-theme="momentum"]{
+ --hero-accent:#5eeaff;--hero-accent-rgb:68,224,255;
+ display:flex;flex-direction:column;align-items:stretch;gap:15px;min-height:0;
+ padding:23px 22px 30px;border-color:#1cbedbdd;
+ background:radial-gradient(circle at 50% 55%,#08749a55,transparent 48%),radial-gradient(circle at 7% 0%,#254fa049,transparent 48%),linear-gradient(145deg,#020b20,#071b34 60%,#011521);
+ box-shadow:0 18px 44px #0008,inset 0 0 32px #00c9ef16,0 0 23px #00caef23;
+}
+.home-hero-card[data-theme="momentum"]:before{inset:0;background:repeating-linear-gradient(132deg,transparent 0 57px,#21dfff0d 58px 59px),radial-gradient(circle at 82% 75%,#5beaf820,transparent 42%);transform:none}
+.home-hero-card[data-theme="momentum"]:after{width:42%;height:48%;right:-9%;bottom:4%;border-radius:0;transform:rotate(31deg);clip-path:polygon(52% 0,100% 42%,66% 100%,0 68%);border:1px solid #44ecff44;box-shadow:0 0 36px #0bd0ed55}
+.home-hero-card[data-theme="momentum"] .home-hero-copy{align-self:stretch;text-align:center}
+.home-hero-card[data-theme="momentum"] .home-hero-copy small{justify-content:center;color:#91e9ff}
+.home-hero-card[data-theme="momentum"] .home-hero-copy h2{font-size:clamp(31px,5.2vw,47px);line-height:.93;margin:9px 0 8px;text-shadow:0 0 22px #07bfff88,0 4px 14px #001225}
+.home-hero-card[data-theme="momentum"] .home-hero-copy p{max-width:none;font-size:11px;color:#d2e9f4}
+.home-hero-card[data-theme="momentum"] .home-hero-actions{justify-content:center;margin-top:13px}
+.home-hero-card[data-theme="momentum"] .home-hero-cta{background:linear-gradient(130deg,#a2f9ff,#37c9ec);color:#021522;box-shadow:0 0 22px #28d8ef4a}
+.home-hero-card[data-theme="momentum"] .home-hero-team{border:1px solid #49d9ef;background:#062639;color:#d2fbff}
+.home-hero-card[data-theme="momentum"] .hero-metrics,.home-hero-card[data-theme="momentum"] .hero-burst,.home-hero-card[data-theme="momentum"] .hero-emblem,.home-hero-card[data-theme="momentum"] .hero-live-box,.home-hero-card[data-theme="momentum"] .home-hero-visual:before,.home-hero-card[data-theme="momentum"] .home-hero-visual:after{display:none}
+.home-hero-card[data-theme="momentum"] .home-hero-visual{display:block;min-height:0;width:100%}
+.home-momentum-roster{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px 3px;width:100%;max-width:780px;margin:0 auto;position:relative;z-index:3}
+.home-momentum-roster[hidden]{display:none!important}
+.home-momentum-player{all:unset;display:block;min-width:0;cursor:pointer;touch-action:manipulation;text-align:center}
+.home-momentum-player .mini,.home-momentum-player .mini .card-shell{width:100%!important}
+.home-momentum-player .card-shell{filter:drop-shadow(0 0 5px #00d6f988)}
+.home-momentum-player:focus-visible{outline:2px solid #80f6ff;outline-offset:2px;border-radius:5px}
+.home-momentum-player:active{transform:scale(.96)}
+@media(max-width:640px){.home-momentum-roster{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:560px){
+ .home-hero-card[data-theme="momentum"]{padding:18px 12px 27px;gap:13px}
+ .home-hero-card[data-theme="momentum"] .home-hero-copy h2{font-size:34px}
+ .home-hero-card[data-theme="momentum"] .home-hero-copy p{font-size:10px;line-height:1.45}
+ .home-hero-card[data-theme="momentum"] .home-hero-actions{flex-wrap:nowrap}
+ .home-hero-card[data-theme="momentum"] .home-hero-actions button{flex:1;min-width:0;min-height:43px}
+ .home-momentum-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 2px}
+}
+.momentum-team-overview .totw-team-head strong{color:#a5f5ff;text-shadow:0 0 14px #00d9ff88}
+.momentum-team-overview .pitch{border-color:#25adce;box-shadow:inset 0 0 32px #0bc4dc22}
+.momentum-team-overview .friend-slot.momentum-slot{pointer-events:auto}
+.momentum-team-overview .friend-slot .mini,.momentum-team-overview .friend-slot .mini .card-shell{width:100%!important}
+.momentum-team-overview .friend-slot .card-shell{filter:drop-shadow(0 0 5px #00d9ff77)}
+.momentum-team-bench{grid-template-columns:repeat(3,minmax(80px,150px));justify-content:center}
+.momentum-team-bench .mini,.momentum-team-bench .mini .card-shell{width:100%!important}
+
 /* The reveal's actual lead card selects the palette; no animation timings change. */
 .opening.theme-momentum{--momentum-beam:#49eafa;background:radial-gradient(circle at 50% 46%,#08587f 0%,#041935 30%,#010714 76%)!important}
 .opening.theme-momentum:before{background:repeating-conic-gradient(from 0deg,#23cce861 0 1.5deg,transparent 1.5deg 7deg),radial-gradient(circle,#b5f8ff3b,transparent 31%)!important}
