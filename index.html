@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.26</title>
+<title>Footera V19.27</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1195,272 +1195,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-item,.market-row{content-visibility:auto;contain-intrinsic-size:320px}
 .club-more{grid-column:1/-1;width:100%;margin-top:4px}
 
-/* V19.25 — final Legacy layout authority.
-   These rules intentionally live at the very end so older generic squad-card rules cannot break Legacy cards. */
-.custom-card.legacy .card-top{
-  left:9%!important;top:12%!important;width:24%!important;text-align:center!important;z-index:10!important
-}
-.custom-card.legacy .ovr{
-  font-size:clamp(24px,6.8vw,30px)!important;line-height:.88!important;color:#f8d98a!important
-}
-.custom-card.legacy .pos{
-  margin-top:4px!important;font-size:8px!important;line-height:1!important;transform:none!important;color:#f5d38a!important
-}
-.custom-card.legacy .card-icons{
-  left:8%!important;top:34%!important;z-index:10!important
-}
-.custom-card.legacy .face{
-  left:31%!important;right:2%!important;top:18%!important;height:54%!important;overflow:hidden!important;z-index:4!important
-}
-.custom-card.legacy .face img{
-  width:106%!important;height:108%!important;object-fit:contain!important;object-position:center top!important;
-  transform:translate(-2%,0) scale(1.02)!important
-}
-.custom-card.legacy .card-bottom{
-  left:7%!important;right:7%!important;bottom:5%!important;padding:5px 4px 3px!important;
-  background:linear-gradient(180deg,rgba(31,3,7,.12),rgba(17,2,5,.78) 26%,rgba(10,1,3,.92))!important;z-index:10!important
-}
-.custom-card.legacy:after{
-  top:4%!important;min-width:38%!important;padding:2px 5px!important;font-size:4px!important;letter-spacing:.14em!important
-}
-.custom-card.legacy .legacy-crown{
-  top:.8%!important;width:17%!important;height:auto!important;z-index:12!important
-}
-.custom-card.legacy .legacy-frame{z-index:8!important}
-.custom-card.legacy .legacy-laurel{z-index:7!important}
-
-/* Startelf + Gegnerteam: dedicated compact Legacy layout */
-.pitch .slot .mini .custom-card.legacy .card-top,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-top{
-  left:7%!important;top:14%!important;width:25%!important
-}
-.pitch .slot .mini .custom-card.legacy .ovr,
-.friend-pitch .friend-slot .mini .custom-card.legacy .ovr{
-  font-size:clamp(16px,4.1vw,20px)!important;line-height:.88!important
-}
-.pitch .slot .mini .custom-card.legacy .pos,
-.friend-pitch .friend-slot .mini .custom-card.legacy .pos{
-  font-size:5.6px!important;margin-top:2px!important;transform:none!important
-}
-.pitch .slot .mini .custom-card.legacy:after,
-.friend-pitch .friend-slot .mini .custom-card.legacy:after{
-  top:3%!important;min-width:34%!important;padding:1px 3px!important;font-size:2px!important;letter-spacing:.08em!important
-}
-.pitch .slot .mini .custom-card.legacy .legacy-crown,
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-crown{
-  top:.4%!important;width:11%!important;height:auto!important
-}
-.pitch .slot .mini .custom-card.legacy .face,
-.friend-pitch .friend-slot .mini .custom-card.legacy .face{
-  left:31%!important;right:2%!important;top:22%!important;height:48%!important;overflow:hidden!important
-}
-.pitch .slot .mini .custom-card.legacy .face img,
-.friend-pitch .friend-slot .mini .custom-card.legacy .face img{
-  width:106%!important;height:110%!important;object-fit:contain!important;object-position:center top!important;
-  transform:translate(-2%,-1%) scale(1.02)!important
-}
-.pitch .slot .mini .custom-card.legacy .card-icons,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-icons{
-  left:7%!important;top:40%!important;gap:2px!important;z-index:10!important
-}
-.pitch .slot .mini .custom-card.legacy .card-bottom,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-bottom{
-  left:6%!important;right:6%!important;bottom:4%!important;padding:2px 2px 1px!important;
-  background:linear-gradient(180deg,rgba(31,3,7,.08),rgba(12,1,4,.88))!important
-}
-.pitch .slot .mini .custom-card.legacy .pname,
-.friend-pitch .friend-slot .mini .custom-card.legacy .pname{
-  font-size:5.4px!important;padding-top:2px!important;line-height:1!important
-}
-.pitch .slot .mini .custom-card.legacy .legacy-laurel,
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-laurel{
-  right:3%!important;top:41%!important;width:11%!important;height:auto!important;opacity:.58!important
-}
-.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(1),
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(1){width:27%!important;height:20%!important;right:-8%!important;top:25%!important}
-.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(2),
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(2){width:22%!important;height:27%!important;left:-8%!important;top:50%!important}
-.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(3),
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(3){width:28%!important;height:16%!important;right:-8%!important;bottom:18%!important}
-.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(4),
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(4){width:24%!important;height:13%!important;left:15%!important;bottom:-3%!important}
-
-/* Bank/Reserve use the same safe Legacy geometry as the XI */
-.squad-drawer #bench .mini .custom-card.legacy .card-top,
-.squad-drawer #reserve .mini .custom-card.legacy .card-top{
-  left:7%!important;top:14%!important;width:25%!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .ovr,
-.squad-drawer #reserve .mini .custom-card.legacy .ovr{
-  font-size:clamp(16px,4.1vw,20px)!important;line-height:.88!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .pos,
-.squad-drawer #reserve .mini .custom-card.legacy .pos{
-  font-size:5.6px!important;margin-top:2px!important;transform:none!important
-}
-.squad-drawer #bench .mini .custom-card.legacy:after,
-.squad-drawer #reserve .mini .custom-card.legacy:after{
-  top:3%!important;min-width:34%!important;padding:1px 3px!important;font-size:2px!important;letter-spacing:.08em!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .legacy-crown,
-.squad-drawer #reserve .mini .custom-card.legacy .legacy-crown{
-  top:.4%!important;width:11%!important;height:auto!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .face,
-.squad-drawer #reserve .mini .custom-card.legacy .face{
-  left:31%!important;right:2%!important;top:22%!important;height:48%!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .face img,
-.squad-drawer #reserve .mini .custom-card.legacy .face img{
-  width:106%!important;height:110%!important;object-fit:contain!important;object-position:center top!important;
-  transform:translate(-2%,-1%) scale(1.02)!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .card-icons,
-.squad-drawer #reserve .mini .custom-card.legacy .card-icons{
-  left:7%!important;top:40%!important;z-index:10!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .card-bottom,
-.squad-drawer #reserve .mini .custom-card.legacy .card-bottom{
-  left:6%!important;right:6%!important;bottom:4%!important;padding:2px 2px 1px!important;
-  background:linear-gradient(180deg,rgba(31,3,7,.08),rgba(12,1,4,.88))!important
-}
-.squad-drawer #bench .mini .custom-card.legacy .pname,
-.squad-drawer #reserve .mini .custom-card.legacy .pname{
-  font-size:5.4px!important;padding-top:2px!important;line-height:1!important
-}
-
-
-/* V19.26 — Legacy master-reference pass */
-.custom-card.legacy{
-  clip-path:polygon(10% 2%,18% 1%,38% 3%,50% .3%,62% 3%,82% 1%,90% 2%,100% 10%,97% 88%,89% 95%,70% 98%,50% 100%,30% 98%,11% 95%,3% 88%,0 10%)!important;
-  background:
-    radial-gradient(circle at 15% 13%,rgba(255,224,155,.42),transparent 2.2%),
-    radial-gradient(circle at 87% 18%,rgba(255,215,136,.32),transparent 2.5%),
-    radial-gradient(circle at 12% 74%,rgba(255,67,70,.28),transparent 5%),
-    radial-gradient(circle at 86% 68%,rgba(255,53,67,.28),transparent 6%),
-    radial-gradient(ellipse at 50% 102%,rgba(255,174,72,.30),transparent 28%),
-    linear-gradient(128deg,transparent 0 15%,rgba(255,213,135,.17) 15.4% 17%,transparent 17.5% 31%,rgba(117,4,21,.65) 31.5% 47%,transparent 47.5%),
-    linear-gradient(36deg,transparent 0 20%,rgba(255,205,122,.15) 20.5% 23%,transparent 23.5% 56%,rgba(132,6,30,.70) 56.5% 72%,transparent 72.5%),
-    linear-gradient(154deg,#090102 0%,#41050f 18%,#130204 35%,#71091f 56%,#34050b 77%,#080102 100%)!important;
-  box-shadow:inset 0 0 34px rgba(0,0,0,.58),inset 0 0 22px rgba(255,167,62,.16),0 0 0 1px rgba(137,82,27,.72)!important
-}
-.custom-card.legacy:before{
-  background:
-    linear-gradient(143deg,transparent 0 10%,rgba(255,232,172,.12) 10.5% 11.3%,transparent 12% 28%,rgba(255,88,77,.12) 28.5% 40%,transparent 40.5%),
-    linear-gradient(29deg,transparent 0 37%,rgba(255,215,145,.15) 37.5% 39%,transparent 39.5% 64%,rgba(117,4,25,.31) 64.5% 77%,transparent 77.5%),
-    repeating-linear-gradient(121deg,transparent 0 27px,rgba(255,230,170,.05) 28px 29px,transparent 30px 51px)!important;
-  box-shadow:inset 0 0 35px rgba(255,172,75,.09)!important
-}
-.custom-card.legacy .legacy-frame{filter:drop-shadow(0 0 4px rgba(255,188,84,.38)) drop-shadow(0 0 1px #fff0bf)!important}
-.custom-card.legacy .legacy-frame .outer{stroke:#f7d58d!important;stroke-width:3.1!important}
-.custom-card.legacy .legacy-frame .mid{stroke:#8c5922!important;stroke-width:1.5!important}
-.custom-card.legacy .legacy-frame .inner{stroke:rgba(255,239,194,.88)!important;stroke-width:.72!important}
-.custom-card.legacy .legacy-crown{
-  top:1.2%!important;width:14%!important;height:auto!important;z-index:14!important;
-  filter:drop-shadow(0 1px 2px #000) drop-shadow(0 0 5px rgba(255,206,111,.38))!important
-}
-.custom-card.legacy:after{
-  top:8.1%!important;min-width:45%!important;padding:2.5px 7px!important;
-  border-top:1px solid rgba(255,226,160,.78)!important;border-bottom:1px solid rgba(116,66,25,.92)!important;
-  background:linear-gradient(90deg,transparent,#33070c 12%,#64101d 50%,#33070c 88%,transparent)!important;
-  font-size:4.35px!important;letter-spacing:.18em!important;color:#ffe0a0!important
-}
-.custom-card.legacy .legacy-shards i{box-shadow:inset 0 0 10px rgba(255,230,170,.10),0 0 5px rgba(255,83,67,.10)!important}
-.custom-card.legacy .legacy-shards i:nth-child(1){width:47%!important;height:26%!important;right:-15%!important;top:22%!important;clip-path:polygon(0 45%,100% 0,63% 100%)!important}
-.custom-card.legacy .legacy-shards i:nth-child(2){width:39%!important;height:34%!important;left:-15%!important;top:51%!important;clip-path:polygon(100% 0,76% 100%,0 64%)!important}
-.custom-card.legacy .legacy-shards i:nth-child(3){width:49%!important;height:22%!important;right:-16%!important;bottom:20%!important;clip-path:polygon(0 0,100% 47%,28% 100%)!important}
-.custom-card.legacy .legacy-shards i:nth-child(4){width:39%!important;height:18%!important;left:10%!important;bottom:-4%!important;clip-path:polygon(0 0,100% 20%,64% 100%,15% 76%)!important}
-.custom-card.legacy .legacy-shards i:nth-child(5){width:31%!important;height:23%!important;left:-8%!important;top:15%!important;clip-path:polygon(0 30%,100% 0,69% 100%,18% 74%)!important}
-.custom-card.legacy .legacy-shards i:nth-child(6){width:30%!important;height:19%!important;right:-5%!important;top:49%!important;clip-path:polygon(0 0,100% 24%,74% 100%,18% 71%)!important}
-.custom-card.legacy .legacy-laurel{right:5%!important;top:39%!important;width:15%!important;height:auto!important;opacity:.72!important}
-.custom-card.legacy .card-top{left:9%!important;top:16%!important;width:24%!important}
-.custom-card.legacy .ovr{font-size:29px!important}
-.custom-card.legacy .pos{font-size:9px!important;margin-top:4px!important}
-.custom-card.legacy .card-icons{left:8%!important;top:35%!important}
-.custom-card.legacy .face{left:31%!important;right:1%!important;top:19%!important;height:53%!important}
-.custom-card.legacy .card-bottom{
-  left:6.5%!important;right:6.5%!important;bottom:4.5%!important;padding:6px 5px 4px!important;
-  background:linear-gradient(180deg,rgba(38,4,8,.08),rgba(24,2,6,.74) 22%,rgba(8,1,3,.94))!important
-}
-.custom-card.legacy .pname{font-size:10px!important;padding-top:5px!important;letter-spacing:.035em!important}
-.custom-card.legacy .meta{font-size:5.7px!important;margin-top:3px!important}
-.custom-card.legacy .stats{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:2px!important;margin-top:5px!important;font-size:5.4px!important;line-height:1!important}
-.custom-card.legacy .stats b{font-size:8.2px!important;line-height:1!important;margin-bottom:1px!important}
-
-/* Legacy XI: crown above banner, full OVR and visible six stats */
-.pitch .slot .mini .custom-card.legacy:after,
-.friend-pitch .friend-slot .mini .custom-card.legacy:after{
-  top:7.2%!important;min-width:43%!important;padding:1px 3px!important;font-size:2.05px!important;letter-spacing:.075em!important
-}
-.pitch .slot .mini .custom-card.legacy .legacy-crown,
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-crown{
-  top:.8%!important;width:12.5%!important;height:auto!important
-}
-.pitch .slot .mini .custom-card.legacy .card-top,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-top{
-  left:7%!important;top:17%!important;width:25%!important
-}
-.pitch .slot .mini .custom-card.legacy .ovr,
-.friend-pitch .friend-slot .mini .custom-card.legacy .ovr{
-  font-size:clamp(16px,4.2vw,20px)!important;line-height:.86!important
-}
-.pitch .slot .mini .custom-card.legacy .pos,
-.friend-pitch .friend-slot .mini .custom-card.legacy .pos{
-  font-size:5.4px!important;margin-top:2px!important
-}
-.pitch .slot .mini .custom-card.legacy .face,
-.friend-pitch .friend-slot .mini .custom-card.legacy .face{
-  left:30%!important;right:1%!important;top:25%!important;height:43%!important
-}
-.pitch .slot .mini .custom-card.legacy .card-icons,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-icons{
-  left:7%!important;top:40%!important;gap:1px!important
-}
-.pitch .slot .mini .custom-card.legacy .legacy-laurel,
-.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-laurel{
-  right:3%!important;top:40%!important;width:11%!important;opacity:.56!important
-}
-.pitch .slot .mini .custom-card.legacy .card-bottom,
-.friend-pitch .friend-slot .mini .custom-card.legacy .card-bottom{
-  left:5.5%!important;right:5.5%!important;bottom:3%!important;padding:2px 2px 2px!important;
-  background:linear-gradient(180deg,rgba(34,3,8,.10),rgba(10,1,3,.93))!important
-}
-.pitch .slot .mini .custom-card.legacy .pname,
-.friend-pitch .friend-slot .mini .custom-card.legacy .pname{
-  font-size:5.2px!important;padding-top:2px!important;line-height:1!important
-}
-.pitch .slot .mini .custom-card.legacy .meta,
-.friend-pitch .friend-slot .mini .custom-card.legacy .meta{display:none!important}
-.pitch .slot .mini .custom-card.legacy .stats,
-.friend-pitch .friend-slot .mini .custom-card.legacy .stats{
-  display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:.5px!important;margin-top:2px!important;
-  font-size:2.2px!important;line-height:1!important;color:#e7bd75!important
-}
-.pitch .slot .mini .custom-card.legacy .stats b,
-.friend-pitch .friend-slot .mini .custom-card.legacy .stats b{
-  display:block!important;font-size:4.4px!important;line-height:1!important;margin-bottom:.5px!important;color:#ffe2a0!important
-}
-
-/* Bank/Reserve get the same visible-stat treatment */
-.squad-drawer #bench .mini .custom-card.legacy:after,
-.squad-drawer #reserve .mini .custom-card.legacy:after{top:7.2%!important;min-width:43%!important;font-size:2.05px!important}
-.squad-drawer #bench .mini .custom-card.legacy .legacy-crown,
-.squad-drawer #reserve .mini .custom-card.legacy .legacy-crown{top:.8%!important;width:12.5%!important}
-.squad-drawer #bench .mini .custom-card.legacy .card-top,
-.squad-drawer #reserve .mini .custom-card.legacy .card-top{left:7%!important;top:17%!important;width:25%!important}
-.squad-drawer #bench .mini .custom-card.legacy .face,
-.squad-drawer #reserve .mini .custom-card.legacy .face{left:30%!important;right:1%!important;top:25%!important;height:43%!important}
-.squad-drawer #bench .mini .custom-card.legacy .card-bottom,
-.squad-drawer #reserve .mini .custom-card.legacy .card-bottom{left:5.5%!important;right:5.5%!important;bottom:3%!important;padding:2px!important;background:linear-gradient(180deg,rgba(34,3,8,.10),rgba(10,1,3,.93))!important}
-.squad-drawer #bench .mini .custom-card.legacy .meta,
-.squad-drawer #reserve .mini .custom-card.legacy .meta{display:none!important}
-.squad-drawer #bench .mini .custom-card.legacy .stats,
-.squad-drawer #reserve .mini .custom-card.legacy .stats{display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:.5px!important;margin-top:2px!important;font-size:2.2px!important;line-height:1!important}
-.squad-drawer #bench .mini .custom-card.legacy .stats b,
-.squad-drawer #reserve .mini .custom-card.legacy .stats b{display:block!important;font-size:4.4px!important;line-height:1!important;margin-bottom:.5px!important}
 
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
+<link rel="stylesheet" href="./legacy-card.css">
 </head>
 <body>
 
@@ -1514,7 +1252,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.26</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.27</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3317,8 +3055,16 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
   const assignedPosition=official&&pos!==p.position?`<span class="official-assigned-position" aria-label="Eingesetzt als ${esc(positionLabel(pos,p))}">${esc(positionLabel(pos,p))}</span>`:"";
-  const legacyDecor=cls==="legacy"?`<svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}${assignedPosition}${evoMarker}</div></div>`
+  const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
+    <path fill="#b10931" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
+    <path fill="#6c0517" opacity=".73" d="M57 28 84 8 93 36 63 57 32 50Z"/><path fill="#dd2042" opacity=".4" d="M84 8 96 20 93 36 63 57Z"/>
+    <path fill="#ffbd63" opacity=".24" d="M32 50 63 57 23 70Z"/><path fill="#ff244b" opacity=".24" d="M7 62 23 70 35 95 10 109Z"/>
+    <path fill="#f6bf68" opacity=".24" d="M10 109 35 95 49 123 29 136Z"/><path fill="#cf1740" opacity=".44" d="M49 123 78 92 93 111 71 136Z"/>
+    <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#ff5367" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
+    <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
+    <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
+   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
+ const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":""}">${body}${official}${assignedPosition}${evoMarker}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
 
@@ -6295,7 +6041,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.26";
+const GFUT_BUILD="V19.27";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6313,7 +6059,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1926",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1927",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

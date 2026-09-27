@@ -1,0 +1,55 @@
+/* One Legacy design scales from the full player view down to the squad slots. */
+.legacy-shell{container-type:inline-size}
+.legacy-shell .custom-card.legacy{
+ clip-path:polygon(10% 2%,18% 1%,38% 3%,50% .3%,62% 3%,82% 1%,90% 2%,100% 10%,97% 88%,89% 95%,70% 98%,50% 100%,30% 98%,11% 95%,3% 88%,0 10%);
+ background:
+  radial-gradient(circle at 15% 13%,#ffe9ad85,transparent 2.4%),
+  radial-gradient(circle at 89% 18%,#ffe8a880,transparent 2.6%),
+  radial-gradient(circle at 10% 74%,#ff284670,transparent 6%),
+  radial-gradient(circle at 92% 67%,#ff2f6665,transparent 8%),
+  radial-gradient(ellipse at 50% 105%,#ffaf4b59,transparent 30%),
+  linear-gradient(128deg,transparent 0 15%,#ffdd8f33 15.4% 17%,transparent 17.5% 31%,#750415a6 31.5% 47%,transparent 47.5%),
+  linear-gradient(36deg,transparent 0 20%,#ffcd7a2b 20.5% 23%,transparent 23.5% 56%,#84061eb3 56.5% 72%,transparent 72.5%),
+  linear-gradient(154deg,#090102 0%,#43050f 18%,#160204 35%,#750b23 56%,#34050b 77%,#080102 100%);
+ box-shadow:inset 0 0 34px #0009,inset 0 0 22px #ffa73e29,0 0 0 1px #89521bb8
+}
+.legacy-shell .custom-card.legacy:before{
+ background:linear-gradient(143deg,transparent 0 10%,#ffe8ac1f 10.5% 11.3%,transparent 12% 28%,#ff584d1f 28.5% 40%,transparent 40.5%),
+  linear-gradient(29deg,transparent 0 37%,#ffd79126 37.5% 39%,transparent 39.5% 64%,#75041950 64.5% 77%,transparent 77.5%);
+ box-shadow:inset 0 0 35px #ffac4b17
+}
+.legacy-shell .custom-card.legacy .legacy-facets{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none}
+.legacy-shell .custom-card.legacy .legacy-shards{z-index:3}
+.legacy-shell .custom-card.legacy .legacy-shards i{box-shadow:inset 0 0 10px #ffe6aa1a,0 0 5px #ff53431a}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(1){width:47%;height:26%;right:-15%;top:22%}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(2){width:39%;height:34%;left:-15%;top:51%}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(3){width:49%;height:22%;right:-16%;bottom:20%}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(4){width:39%;height:18%;left:10%;bottom:-4%}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(5){width:31%;height:23%;left:-8%;top:15%;clip-path:polygon(0 30%,100% 0,69% 100%,18% 74%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(6){width:30%;height:19%;right:-5%;top:49%;clip-path:polygon(0 0,100% 24%,74% 100%,18% 71%)}
+.legacy-shell .custom-card.legacy .legacy-frame{z-index:11;filter:drop-shadow(0 0 4px #ffbc5460) drop-shadow(0 0 1px #fff0bf)}
+.legacy-shell .custom-card.legacy .legacy-frame .outer{stroke:#f7d58d;stroke-width:3.1}
+.legacy-shell .custom-card.legacy .legacy-frame .mid{stroke:#8c5922;stroke-width:1.5}
+.legacy-shell .custom-card.legacy .legacy-frame .inner{stroke:#ffefc2e0;stroke-width:.72}
+.legacy-shell .custom-card.legacy .legacy-crown{top:1.2%;width:14%;height:auto;z-index:13;filter:drop-shadow(0 1px 2px #000) drop-shadow(0 0 5px #ffce6f60)}
+.legacy-shell .custom-card.legacy:after{
+ top:7.2%;min-width:45%;padding:.7cqw 2cqw;border-top:1px solid #ffe2a0c7;border-bottom:1px solid #744219eb;
+ background:linear-gradient(90deg,transparent,#33070c 12%,#64101d 50%,#33070c 88%,transparent);
+ color:#ffe0a0;font-size:max(2px,2.8cqw);letter-spacing:.14em;z-index:12
+}
+.legacy-shell .custom-card.legacy .legacy-laurel{right:5%;top:39%;width:15%;height:auto;opacity:.73;z-index:6}
+
+/* Specificity covers legacy cards inside older pitch and drawer rules as well. */
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-top{left:9%!important;top:17%!important;width:26%!important;text-align:center!important;z-index:9!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .ovr{font-size:19.5cqw!important;line-height:.86!important;letter-spacing:-.05em!important;color:#ffe2a2!important;text-shadow:0 2px 5px #000,0 0 10px #e99c4d55!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .pos{margin-top:1.7cqw!important;font-size:6.1cqw!important;line-height:1!important;transform:none!important;color:#f8d797!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-icons{left:11%!important;top:35%!important;gap:1.5cqw!important;align-items:center!important;z-index:9!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-flag-img{width:13cqw!important;height:8.5cqw!important;max-width:none!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-league,:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-club{width:12cqw!important;height:12cqw!important;font-size:3.2cqw!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .face{left:17%!important;right:0!important;top:22%!important;height:61%!important;overflow:hidden!important;z-index:4!important;background:none!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important;filter:drop-shadow(0 5px 7px #000b) saturate(1.06) contrast(1.04)!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-bottom{left:6.5%!important;right:6.5%!important;bottom:4.5%!important;padding:1.2cqw 1.6cqw 1cqw!important;background:linear-gradient(180deg,#26040808,#180206c7 27%,#080103f5)!important;z-index:9!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .pname{padding-top:2.4cqw!important;font-size:6.7cqw!important;line-height:1.05!important;letter-spacing:.02em!important;color:#ffe7b1!important;border-color:#d9a650!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .meta{display:block!important;margin-top:1.3cqw!important;font-size:3.6cqw!important;line-height:1!important;color:#e1b876!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .stats{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:.4cqw!important;margin-top:2.4cqw!important;font-size:max(3px,2.8cqw)!important;line-height:1!important;color:#e7c281!important}
+:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .stats b{display:block!important;margin-bottom:.5cqw!important;font-size:max(5px,5cqw)!important;line-height:1!important;color:#ffe6a8!important}
