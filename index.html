@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.24</title>
+<title>Footera V19.25</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1194,6 +1194,141 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 /* V19.19 — render only what is on screen; visual appearance is unchanged. */
 .club-item,.market-row{content-visibility:auto;contain-intrinsic-size:320px}
 .club-more{grid-column:1/-1;width:100%;margin-top:4px}
+
+/* V19.25 — final Legacy layout authority.
+   These rules intentionally live at the very end so older generic squad-card rules cannot break Legacy cards. */
+.custom-card.legacy .card-top{
+  left:9%!important;top:12%!important;width:24%!important;text-align:center!important;z-index:10!important
+}
+.custom-card.legacy .ovr{
+  font-size:clamp(24px,6.8vw,30px)!important;line-height:.88!important;color:#f8d98a!important
+}
+.custom-card.legacy .pos{
+  margin-top:4px!important;font-size:8px!important;line-height:1!important;transform:none!important;color:#f5d38a!important
+}
+.custom-card.legacy .card-icons{
+  left:8%!important;top:34%!important;z-index:10!important
+}
+.custom-card.legacy .face{
+  left:31%!important;right:2%!important;top:18%!important;height:54%!important;overflow:hidden!important;z-index:4!important
+}
+.custom-card.legacy .face img{
+  width:106%!important;height:108%!important;object-fit:contain!important;object-position:center top!important;
+  transform:translate(-2%,0) scale(1.02)!important
+}
+.custom-card.legacy .card-bottom{
+  left:7%!important;right:7%!important;bottom:5%!important;padding:5px 4px 3px!important;
+  background:linear-gradient(180deg,rgba(31,3,7,.12),rgba(17,2,5,.78) 26%,rgba(10,1,3,.92))!important;z-index:10!important
+}
+.custom-card.legacy:after{
+  top:4%!important;min-width:38%!important;padding:2px 5px!important;font-size:4px!important;letter-spacing:.14em!important
+}
+.custom-card.legacy .legacy-crown{
+  top:.8%!important;width:17%!important;height:auto!important;z-index:12!important
+}
+.custom-card.legacy .legacy-frame{z-index:8!important}
+.custom-card.legacy .legacy-laurel{z-index:7!important}
+
+/* Startelf + Gegnerteam: dedicated compact Legacy layout */
+.pitch .slot .mini .custom-card.legacy .card-top,
+.friend-pitch .friend-slot .mini .custom-card.legacy .card-top{
+  left:7%!important;top:14%!important;width:25%!important
+}
+.pitch .slot .mini .custom-card.legacy .ovr,
+.friend-pitch .friend-slot .mini .custom-card.legacy .ovr{
+  font-size:clamp(16px,4.1vw,20px)!important;line-height:.88!important
+}
+.pitch .slot .mini .custom-card.legacy .pos,
+.friend-pitch .friend-slot .mini .custom-card.legacy .pos{
+  font-size:5.6px!important;margin-top:2px!important;transform:none!important
+}
+.pitch .slot .mini .custom-card.legacy:after,
+.friend-pitch .friend-slot .mini .custom-card.legacy:after{
+  top:3%!important;min-width:34%!important;padding:1px 3px!important;font-size:2px!important;letter-spacing:.08em!important
+}
+.pitch .slot .mini .custom-card.legacy .legacy-crown,
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-crown{
+  top:.4%!important;width:11%!important;height:auto!important
+}
+.pitch .slot .mini .custom-card.legacy .face,
+.friend-pitch .friend-slot .mini .custom-card.legacy .face{
+  left:31%!important;right:2%!important;top:22%!important;height:48%!important;overflow:hidden!important
+}
+.pitch .slot .mini .custom-card.legacy .face img,
+.friend-pitch .friend-slot .mini .custom-card.legacy .face img{
+  width:106%!important;height:110%!important;object-fit:contain!important;object-position:center top!important;
+  transform:translate(-2%,-1%) scale(1.02)!important
+}
+.pitch .slot .mini .custom-card.legacy .card-icons,
+.friend-pitch .friend-slot .mini .custom-card.legacy .card-icons{
+  left:7%!important;top:40%!important;gap:2px!important;z-index:10!important
+}
+.pitch .slot .mini .custom-card.legacy .card-bottom,
+.friend-pitch .friend-slot .mini .custom-card.legacy .card-bottom{
+  left:6%!important;right:6%!important;bottom:4%!important;padding:2px 2px 1px!important;
+  background:linear-gradient(180deg,rgba(31,3,7,.08),rgba(12,1,4,.88))!important
+}
+.pitch .slot .mini .custom-card.legacy .pname,
+.friend-pitch .friend-slot .mini .custom-card.legacy .pname{
+  font-size:5.4px!important;padding-top:2px!important;line-height:1!important
+}
+.pitch .slot .mini .custom-card.legacy .legacy-laurel,
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-laurel{
+  right:3%!important;top:41%!important;width:11%!important;height:auto!important;opacity:.58!important
+}
+.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(1),
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(1){width:27%!important;height:20%!important;right:-8%!important;top:25%!important}
+.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(2),
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(2){width:22%!important;height:27%!important;left:-8%!important;top:50%!important}
+.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(3),
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(3){width:28%!important;height:16%!important;right:-8%!important;bottom:18%!important}
+.pitch .slot .mini .custom-card.legacy .legacy-shards i:nth-child(4),
+.friend-pitch .friend-slot .mini .custom-card.legacy .legacy-shards i:nth-child(4){width:24%!important;height:13%!important;left:15%!important;bottom:-3%!important}
+
+/* Bank/Reserve use the same safe Legacy geometry as the XI */
+.squad-drawer #bench .mini .custom-card.legacy .card-top,
+.squad-drawer #reserve .mini .custom-card.legacy .card-top{
+  left:7%!important;top:14%!important;width:25%!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .ovr,
+.squad-drawer #reserve .mini .custom-card.legacy .ovr{
+  font-size:clamp(16px,4.1vw,20px)!important;line-height:.88!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .pos,
+.squad-drawer #reserve .mini .custom-card.legacy .pos{
+  font-size:5.6px!important;margin-top:2px!important;transform:none!important
+}
+.squad-drawer #bench .mini .custom-card.legacy:after,
+.squad-drawer #reserve .mini .custom-card.legacy:after{
+  top:3%!important;min-width:34%!important;padding:1px 3px!important;font-size:2px!important;letter-spacing:.08em!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .legacy-crown,
+.squad-drawer #reserve .mini .custom-card.legacy .legacy-crown{
+  top:.4%!important;width:11%!important;height:auto!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .face,
+.squad-drawer #reserve .mini .custom-card.legacy .face{
+  left:31%!important;right:2%!important;top:22%!important;height:48%!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .face img,
+.squad-drawer #reserve .mini .custom-card.legacy .face img{
+  width:106%!important;height:110%!important;object-fit:contain!important;object-position:center top!important;
+  transform:translate(-2%,-1%) scale(1.02)!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .card-icons,
+.squad-drawer #reserve .mini .custom-card.legacy .card-icons{
+  left:7%!important;top:40%!important;z-index:10!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .card-bottom,
+.squad-drawer #reserve .mini .custom-card.legacy .card-bottom{
+  left:6%!important;right:6%!important;bottom:4%!important;padding:2px 2px 1px!important;
+  background:linear-gradient(180deg,rgba(31,3,7,.08),rgba(12,1,4,.88))!important
+}
+.squad-drawer #bench .mini .custom-card.legacy .pname,
+.squad-drawer #reserve .mini .custom-card.legacy .pname{
+  font-size:5.4px!important;padding-top:2px!important;line-height:1!important
+}
+
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 </head>
@@ -1249,7 +1384,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.24</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.25</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -6030,7 +6165,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.24";
+const GFUT_BUILD="V19.25";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6048,7 +6183,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1924",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1925",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
