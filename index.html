@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.28</title>
+<title>Footera V19.29</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1253,7 +1253,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.28</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.29</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2487,7 +2487,7 @@ function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function cardClass(p,item){if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;return Math.min(99,(momentum?momentum.ovr:b.ovr+(item.boost||0))+(item.evo||0))}
-function displayBase(item){const b=itemBase(item);if(!b)return null;const momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;let out={...b,ovr:itemRating(item),position:momentum?.position||item?.overridePosition||b.position};if(momentum){for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
+function displayBase(item){const b=itemBase(item);if(!b)return null;const momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;let out={...b,ovr:itemRating(item),position:momentum?.position||item?.overridePosition||b.position};if(momentum){out.name=momentum.name;for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
 function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",eventType:opts.eventType||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||"")}}
 function portraitFallback(p){return""}
 const COUNTRY_CODES={
@@ -4398,8 +4398,8 @@ function createMarketListing(base,filters){let variant="",eventName="",eventType
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
  const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");let price=marketPriceForRating(r,special,base);if(variant==="icon-mid")price=Math.max(price,marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,Math.min(99,r))]||500000)*2.2));price=marketRoundPrice(price);if(isTotw)price=Math.max(10500,price);const start=isTotw?Math.max(9000,marketRoundPrice(price*.70)):Math.max(150,marketRoundPrice(price*.70));return{base,variant,eventType,eventName,boost,overridePosition,price,startPrice:start,bid:start,ends:Date.now()+60000+Math.floor(Math.random()*150000),myBid:0}}
 const PLAYER_SEARCH_TEXT_CACHE=new WeakMap();
-function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
-function playerDisplaySearchName(p){const full=String(p?.fullName||"").trim();return full||String(p?.name||"").trim()}
+function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName,MOMENTUM_BY_ID.get(String(p?.id||""))?.name].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
+function playerDisplaySearchName(p){const event=$("marketSpecialType")?.value==="momentum"?MOMENTUM_BY_ID.get(String(p?.id||"")):null;const full=String(p?.fullName||"").trim();return event?.name||full||String(p?.name||"").trim()}
 function marketNameSuggestionPlayers(query){
  const q=normalizeKey(query);if(q.length<2)return[];
  const seen=new Set(),totw=allTotwMarketBases();
@@ -4482,7 +4482,7 @@ function marketAuctionState(x){
 function marketRowHTML(x,i,tracked=false){
  const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=isMomentumItem(x)?"momentum":String(x.eventName).startsWith("Team of the Week")?"totw":isLegacyEventName(x.eventName)?"legacy":x.variant==="special"?"special":"",next=x.bid+bidIncrement(x.bid),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
  const removeAction=tracked&&x.settled?`<button class="secondary auction-remove" data-my-auction-remove="${i}">Aus Liste entfernen</button>`:"";
- return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(x.base?.name||"Spieler")} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(x.base?.name||b.name||"Spieler")}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(isMomentumItem(x)?b.name:(x.base?.name||"Spieler"))} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(isMomentumItem(x)?b.name:(x.base?.name||b.name||"Spieler"))}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading")?"disabled":""}>${st.key==="leading"?"Höchstbietender":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
 }
 function processBotOutbids(){
  let changed=false;const now=Date.now();
@@ -6074,7 +6074,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.28";
+const GFUT_BUILD="V19.29";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6092,7 +6092,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1928",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1929",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

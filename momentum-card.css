@@ -19,17 +19,20 @@
 .momentum-shell .custom-card.momentum .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important;filter:drop-shadow(0 5px 6px #001229c9)!important}
 .momentum-shell .custom-card.momentum .face .face-fallback{font-size:25cqw}
 :is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .card-icons{
- left:24%!important;right:16%!important;top:84%!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:1cqw!important;z-index:9!important;
+ inset:0!important;width:100%!important;height:100%!important;display:block!important;z-index:9!important;pointer-events:none!important;
 }
-.momentum-shell .custom-card.momentum .card-flag-img{width:12cqw!important;height:8cqw!important;max-width:none!important;object-fit:cover!important}
-.momentum-shell .custom-card.momentum .card-flag{font-size:8cqw!important;line-height:1!important}
-.momentum-shell .custom-card.momentum .card-league,.momentum-shell .custom-card.momentum .card-club{width:12cqw!important;height:12cqw!important;flex:none!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:3.5cqw!important}
+/* Exact centres of the master artwork: flag 33%, shield 50%, round badge 68%, y 84%. */
+:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-flag,:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-club,:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-league{position:absolute!important;top:84%!important;transform:translate(-50%,-50%)!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;flex:none!important;background:transparent!important;border:0!important;box-shadow:none!important;line-height:1!important}
+:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-flag{left:33%!important;width:12cqw!important;height:9cqw!important;font-size:8cqw!important}
+:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-flag-img{width:12cqw!important;height:8cqw!important;max-width:none!important;object-fit:cover!important}
+:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-club{left:50%!important;width:10cqw!important;height:12cqw!important;font-size:3.5cqw!important}
+:is(.momentum-shell,#bench .momentum-shell,#reserve .momentum-shell) .custom-card.momentum .card-league{left:68%!important;width:10cqw!important;height:10cqw!important;font-size:3.5cqw!important}
 :is(.momentum-shell,.pitch .slot .mini .momentum-shell,.friend-pitch .friend-slot .mini .momentum-shell,.squad-drawer #bench .mini .momentum-shell,.squad-drawer #reserve .mini .momentum-shell) .custom-card.momentum .card-bottom{
- left:15%!important;right:15%!important;top:62%!important;bottom:18%!important;padding:0!important;background:none!important;z-index:8!important;text-align:center!important;
+ left:15%!important;right:15%!important;top:59%!important;bottom:18%!important;padding:0!important;background:none!important;z-index:8!important;text-align:center!important;
 }
 .momentum-shell .custom-card.momentum .pname{border:0!important;padding:0!important;margin:0!important;font-size:7.6cqw!important;line-height:1.08!important;letter-spacing:.035em!important;color:#e5fcff!important;text-shadow:0 2px 4px #000,0 0 8px #0ff!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .momentum-shell .custom-card.momentum .meta{display:block!important;margin:1cqw 0 0!important;font-size:3.4cqw!important;color:#8aebfb!important;letter-spacing:.04em!important}
-.momentum-shell .custom-card.momentum .stats{position:absolute!important;left:-6%!important;right:-6%!important;bottom:1%!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:.2cqw!important;margin:0!important;color:#9de8f6!important;font-size:2.7cqw!important;line-height:1!important;text-shadow:0 1px 3px #00121c!important}
+.momentum-shell .custom-card.momentum .stats{position:absolute!important;left:-6%!important;right:-6%!important;top:54%!important;bottom:auto!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:.2cqw!important;margin:0!important;color:#9de8f6!important;font-size:2.7cqw!important;line-height:1!important;text-shadow:0 1px 3px #00121c!important}
 .momentum-shell .custom-card.momentum .stats b{display:block!important;margin-bottom:.5cqw!important;font-size:5.7cqw!important;line-height:1!important;color:#e9ffff!important}
 
 .event-showcase[data-event-theme="momentum"]{border-color:#249ab7;background:radial-gradient(circle at 75% 0%,#00b7ff39,transparent 31%),radial-gradient(circle at 13% 60%,#154ecf46,transparent 35%),linear-gradient(160deg,#020b1c,#081c39 48%,#012836)}

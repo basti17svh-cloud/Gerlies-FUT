@@ -29,7 +29,7 @@ test('MOMENTUM owns its rating/stats without mutating the base item; window clos
  vm.runInContext(section('function itemRating(item){','function makeItem(')+section('function makeItem(','function portraitFallback('),c);
  const original={...db.get('247827')},item=c.makeMomentumItem(original,true),shown=c.displayBase(item);
  assert.equal(item.variant,'special');assert.equal(item.eventType,'momentum');assert.equal(item.eventName,'MOMENTUM');
- assert.equal(shown.ovr,89);assert.equal(shown.dri,90);assert.equal(original.ovr,90);assert.equal(original.dri,91);
+ assert.equal(shown.name,'Michael Olise');assert.equal(shown.ovr,89);assert.equal(shown.dri,90);assert.equal(original.name,'M. Olise');assert.equal(original.ovr,90);assert.equal(original.dri,91);
  const winger=c.makeMomentumItem(db.get('230142'),true);assert.equal(c.displayBase(winger).position,'LW');assert.equal(c.displayBase(winger).alt,'ST');
  assert.equal(c.momentumIsActive(Date.parse('2026-09-27T00:00:00+02:00')),true);
  assert.equal(c.momentumIsActive(Date.parse('2026-10-11T19:00:00+02:00')),false);
@@ -47,7 +47,7 @@ test('board and walkout reveal choose the real lead item; regular modes stay reg
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.match(source,/footera-v19-28-root-shell/);assert.match(source,/momentum-card\.css/);
+ assert.match(source,/footera-v19-29-root-shell/);assert.match(source,/momentum-card\.css/);
  assert.match(css,/momentum-master\.jpg/);assert.ok(fs.existsSync(path.join(__dirname,'../assets/footera/momentum-master.jpg')));
 });
 
