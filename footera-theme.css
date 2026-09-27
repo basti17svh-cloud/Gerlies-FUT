@@ -242,3 +242,25 @@ body{
 .transfer-offer-form label{color:#a5969b;font-size:7px;font-weight:900}.transfer-offer-form input,.transfer-offer-form select{width:100%;min-height:42px;margin-top:4px;border:1px solid #583b44;border-radius:8px;background:#21191c;color:#fff;padding:0 9px;font-size:13px}
 .transfer-offer-form button{grid-column:1/-1}
 @media(max-width:620px){.transfer-hub-buy{min-height:205px;padding:18px}.transfer-hub-buy h3{font-size:26px}.transfer-hub-buy-art{width:72px;height:72px;right:16px;bottom:18px;font-size:38px}.transfer-hub-cta{margin-top:28px}.transfer-hub-grid{grid-template-columns:1fr 1fr;gap:8px}.transfer-hub-card{min-height:172px;padding:13px}.transfer-hub-card h3{font-size:13px}.transfer-hub-symbol{font-size:24px}.transfer-hub-card>strong{font-size:34px;margin-top:25px}.transfer-hub-stats{display:grid;gap:5px;margin-top:13px}.price-compare-hero,.transfer-offer-player{grid-template-columns:96px minmax(0,1fr);gap:10px}.price-compare-card .mini,.price-compare-card .mini .card-shell,.transfer-offer-card .mini,.transfer-offer-card .mini .card-shell{width:88px!important}.price-compare-row{grid-template-columns:26px 1fr 1fr;gap:5px}.transfer-offer-form{grid-template-columns:1fr 1fr}.transfer-offer-form label:nth-child(3){grid-column:1/-1}}
+/* Weekly progress reuses the existing Home, Play and match-result surfaces. */
+.home-competition{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.competition-tile,.competition-result{min-width:0;padding:14px;border:1px solid #65434c;border-radius:15px;background:linear-gradient(145deg,#24191d,#111115);color:#f8eced}
+.competition-tile{display:flex;flex-direction:column;gap:7px}
+.competition-tile small,.competition-result small{color:#ff9daa;font-size:10px;font-weight:800;letter-spacing:.04em}
+.competition-tile strong{font-size:16px;line-height:1.25}
+.competition-tile span,.competition-result span{font-size:11px;line-height:1.4;color:#d9c5ca}
+.competition-tile em,.competition-result em{font-size:11px;font-style:normal;color:#ffd671;font-weight:800}
+.competition-bar{height:7px;width:100%;overflow:hidden;border-radius:10px;background:#39272d}
+.competition-bar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#e93856,#ffc369);transition:width .6s ease}
+.competition-claim{display:block;width:100%;max-width:100%;padding:10px;margin:8px 0;white-space:normal;overflow-wrap:anywhere;text-align:center;font-size:11px}
+.competition-difficulty{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:11px 0;color:#f7e5e9;font-size:12px}
+.competition-difficulty select{min-width:150px;padding:10px;border-radius:9px;border:1px solid #75505b;background:#21181c;color:#fff}
+.competition-result{display:flex;flex-direction:column;gap:8px;margin:12px 0;animation:competition-enter .32s ease-out}
+.competition-result strong{font-size:19px;color:#ffcf75}.competition-result b{font-size:16px}.competition-result p{margin:0;font-size:13px}
+.competition-result.promoted{border-color:#ffd671;box-shadow:0 0 22px rgba(255,195,92,.21)}
+.competition-result.promoted b{animation:competition-pulse .65s ease-out;color:#ffe5a0}
+.pass-time{line-height:1.5}.pass-time strong{color:#ffd578}
+@keyframes competition-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes competition-pulse{50%{filter:brightness(1.7);transform:scale(1.035)}}
+@media(max-width:760px){.home-competition{grid-template-columns:1fr}.competition-tile{padding:13px}.competition-result{padding:13px}}
+@media(prefers-reduced-motion:reduce){.competition-result,.competition-result.promoted b{animation:none}.competition-bar i{transition:none}}

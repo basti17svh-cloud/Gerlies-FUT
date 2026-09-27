@@ -18,7 +18,7 @@ function store(){
  };
  const ctx={
   state:{coins:3000,points:100,packs:{}},document:{querySelectorAll:()=>tabElements},
-  $:get,fmt:String,esc:String,packCompositionText:p=>p.type,updateStoreCountdown:()=>{},
+  $:get,fmt:String,esc:String,currencyAmountHTML:(_currency,amount)=>String(amount),packCompositionText:p=>p.type,updateStoreCountdown:()=>{},
   nextPromoReset:()=>new Date(Date.now()+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),
   generatePack:()=>[{uid:'test'}],consumePromoPurchase:()=>true,
   renderWallet:()=>{},save:()=>{},toast:()=>{},

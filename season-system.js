@@ -52,25 +52,32 @@ const OBJECTIVE_GROUP_NAMES={daily:"Täglich",weekly:"Wöchentlich",season:"Sais
 const OBJECTIVE_GROUP_SIZE={daily:3,weekly:4,season:4};
 const OBJECTIVE_STATS=["competitiveMatches","competitiveWins","rivalsMatches","squadMatches","packs","market","sbcs"];
 
+const SEASON_SCHEDULE=[
+ {number:1,key:"s1",name:"THE BEGINNING",start:"2026-09-17T19:00:00+02:00",end:"2026-10-30T19:00:00+01:00"},
+ {number:2,key:"s2",name:"HALLOWEEN",start:"2026-10-30T19:00:00+01:00",end:null}
+];
 function seasonInfo(at=new Date()){
- const first=new Date(2026,8,17,19,0,0),date=new Date(at);
- let start=new Date(first),end=new Date(2026,9,22,19,0,0),number=1;
- while(date>=end){start=new Date(end);end=new Date(start);end.setDate(end.getDate()+35);number++}
- return{key:"s"+number,number,start,end}
+ const date=new Date(at),current=[...SEASON_SCHEDULE].reverse().find(s=>date>=new Date(s.start))||SEASON_SCHEDULE[0];
+ return{...current,start:new Date(current.start),end:current.end?new Date(current.end):null}
+}
+function seasonCountdown(end,at=new Date()){
+ if(!end)return"Enddatum folgt";
+ const minutes=Math.max(0,Math.ceil((new Date(end)-new Date(at))/60000));
+ if(minutes===0)return"Beendet";
+ if(minutes<1440)return`Endet in ${Math.floor(minutes/60)} Std. ${minutes%60} Min.`;
+ return`Endet in ${Math.ceil(minutes/1440)} Tagen`
 }
 function objectiveStart(group,at){
  const date=new Date(at);
  if(group==="season")return seasonInfo(date).start;
- const start=new Date(date);start.setHours(19,0,0,0);
- if(group==="daily"){if(date<start)start.setDate(start.getDate()-1);return start}
- const weekday=(start.getDay()+6)%7;start.setDate(start.getDate()-weekday);
- if(date<start)start.setDate(start.getDate()-7);
- return start
+ if(group==="weekly")return berlinWeekStart(date,1,19);
+ const p=berlinParts(date),start=berlinInstant(p.year,p.month,p.day,19);
+ return date<start?berlinShiftDays(start,-1,19):start
 }
 function objectiveWindow(group,at=new Date()){
  const season=seasonInfo(at),start=objectiveStart(group,at),end=group==="season"?season.end:new Date(start);
- if(group==="daily")end.setDate(end.getDate()+1);
- if(group==="weekly")end.setDate(end.getDate()+7);
+ if(group==="daily")end.setTime(berlinShiftDays(start,1,19).getTime());
+ if(group==="weekly")end.setTime(berlinShiftDays(start,7,19).getTime());
  const key=group+":"+season.key+":"+start.getTime(),pool=OBJECTIVE_POOLS[group];
  const rotation=group==="season"?season.number-1:Math.floor(start.getTime()/(group==="daily"?86400000:7*86400000));
  const tasks=Array.from({length:OBJECTIVE_GROUP_SIZE[group]},(_,i)=>{
@@ -147,7 +154,7 @@ const originalRenderAll=renderAll;
 renderAll=function(){const changed=ensureObjectiveWindows();originalRenderAll();if(changed)save()};
 let objectiveTab="all";
 const WEEKLY_BONUS={sp:500,pack:"gold"};
-function passDate(date){return new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(date)}
+function passDate(date,weekday=false){return date?new Intl.DateTimeFormat("de-DE",{timeZone:FOOTERA_TIME_ZONE,...(weekday?{weekday:"long"}:{}),day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(date):"Termin folgt"}
 function rewardCell(tier,which){
  const premium=which==="premium",unlocked=Number(state.sp||0)>=tier.sp,owned=!premium||state.seasonPass.premium,claimed=!!passClaims(which)[tier.level];
  const reward=premium?tier.premium:tier.reward;
@@ -163,7 +170,7 @@ function renderSeasonPass(){
  const previous=host.querySelector(".pass-ladder"),previousScroll=previous?.scrollLeft||0;
  const upgrade=state.seasonPass.premium?'<strong>✓ Premium aktiviert</strong><p>Beide Spuren verwenden dieselben Season Points. Bereits erreichte Premium-Stufen können abgeholt werden.</p>':
   `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar. Nur Guthaben aus Footera.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${fmt(PASS_PRICE.coins)} Coins</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${fmt(PASS_PRICE.points)} Footera Points</button></div>`;
- host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON PASS · SAISON ${info.number}</span><h3>${info.number===1?"Ones to Watch":"Saison "+info.number}</h3><p>Kostenloser und Premium-Pfad · 30 Stufen · gleiche SP für beide</p></div><span class="pass-time">Endet ${passDate(info.end)}</span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(sp)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<div class="pass-tier ${sp>=tier.sp?"reached":""}"><div class="pass-tier-header"><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${rewardCell(tier,"free")}${rewardCell(tier,"premium")}</div>`).join("")}</div></div>`;
+ host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON ${info.number} · ${esc(info.name)}</span><h3>${esc(info.name)}</h3><p>Kostenloser und Premium-Pfad · 30 Stufen · gleiche SP für beide</p></div><span class="pass-time">Start ${passDate(info.start)}<br>${info.end?`Endet ${passDate(info.end,true)}<br>`:""}<strong>${seasonCountdown(info.end)}</strong></span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(sp)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<div class="pass-tier ${sp>=tier.sp?"reached":""}"><div class="pass-tier-header"><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${rewardCell(tier,"free")}${rewardCell(tier,"premium")}</div>`).join("")}</div></div>`;
  host.querySelector(".pass-ladder").scrollLeft=previousScroll
 }
 function objectiveCard(task,group){

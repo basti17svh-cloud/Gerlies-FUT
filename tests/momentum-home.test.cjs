@@ -8,13 +8,13 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 
 test('active MOMENTUM goes before Rivals, and its actual event deadline is displayed',()=>{
- const event={name:'MOMENTUM',subtitle:'TEAM 1',players:Array.from({length:14},(_,i)=>({pid:String(i)})),activeUntilAt:'2026-10-11T19:00:00+02:00',activeUntil:'11.10.2026 · 19:00'};
- const c={Date,Intl,state:{rivals:{division:10,points:0},sp:0},MOMENTUM_EVENT:event,momentumIsActive:()=>true,totwIsActive:()=>false,activeEvolutionCount:()=>0,fmt:String};vm.createContext(c);
+ const event={name:'MOMENTUM',subtitle:'TEAM 1',players:Array.from({length:14},(_,i)=>({pid:String(i)})),activeUntilAt:'2026-10-02T19:00:00+02:00',activeUntil:'02.10.2026 · 19:00'};
+ const c={Date,Intl,state:{rivals:{division:10,weeklyPoints:0},sp:0},MOMENTUM_EVENT:event,momentumIsActive:()=>true,totwIsActive:()=>false,activeEvolutionCount:()=>0,fmt:String};vm.createContext(c);
  vm.runInContext(section('function homeHeroSlides(){','function renderHomeRewards(){'),c);
  const slides=c.homeHeroSlides();assert.equal(slides.length,4);
  assert.equal(slides[0].theme,'momentum');assert.equal(slides[1].title.includes('RIVALS'),true);
  assert.equal(slides[0].button,'Zum Team');assert.equal(slides[0].teamButton,'Zum Shop');
- assert.match(slides[0].text,/MOMENTUM TEAM 1/);assert.match(slides[0].text,/Sonntag.*11.*Oktober.*19:00 Uhr/);
+ assert.match(slides[0].text,/MOMENTUM TEAM 1/);assert.match(slides[0].text,/Freitag.*2.*Oktober.*19:00 Uhr/);
  c.momentumIsActive=()=>false;assert.equal(c.homeHeroSlides().length,3);assert.equal(c.homeHeroSlides()[0].shield,'DR');
 });
 

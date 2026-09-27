@@ -24,13 +24,13 @@ test('nation, position and club pop up in the short pack intro before the card',
  const ctx={$,displayBase:()=>({name:'Testspieler',position:'CM',nation:'Germany',team:'Testverein'}),cardHTML:()=>'<div class="card-shell">Karte</div>',positionLabel:()=> 'ZM',
   flagAsset:()=>'<span>🇩🇪</span>',badgeAsset:()=>'<img alt="Testverein">',clubShort:()=> 'TV',
   normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
-  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},
+  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,
   sleep:ms=>{frames.push({ms,intro:$('boardIntro').classList.contains('active'),cue:$('boardCue').innerHTML,card:$('revealCard').innerHTML,pack:$('openStage').style.display});return Promise.resolve()}
  };
  vm.createContext(ctx);
  vm.runInContext(section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
  await vm.runInContext('runPackReveal({mode:"board",cards:[{}],label:"",duration:2350})',ctx);
- assert.deepEqual(frames.map(f=>f.ms),[250,550,520,620,220,2350]);
+ assert.deepEqual(frames.map(f=>f.ms),[250,850,800,1000,350,2350]);
  assert.equal(frames[0].intro,false);
  assert.ok(frames.slice(1,4).every(f=>f.intro));
  assert.equal(frames[1].pack,'none');

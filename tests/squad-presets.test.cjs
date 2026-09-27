@@ -9,7 +9,7 @@ const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('f
 const controlsCode=html.slice(html.indexOf('function squadPresetTabsHTML(){'),html.indexOf('function renderSquad(){'));
 const club=Array.from({length:21},(_,i)=>({uid:`p${i}`,pid:`p${i}`}));
 function app(saved=new Map()){
- const ctx={localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)},queueMicrotask};
+ const ctx={localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)},queueMicrotask,setTimeout:fn=>{queueMicrotask(fn);return 1},clearTimeout(){},window:{addEventListener(){}},document:{addEventListener(){}},newFooteraSaveId:()=>"GF-TEST",migrateLegacyEventState:x=>x};
  vm.createContext(ctx);vm.runInContext(`${stateCode}\nlet state=loadState()`,ctx);
  return{saved,ctx,state:vm.runInContext('state',ctx),read:code=>vm.runInContext(code,ctx)}
 }

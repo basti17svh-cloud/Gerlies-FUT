@@ -15,6 +15,7 @@ function scenario(players,squad,options={}){
  const messages=[];let writes=0;
  const ctx={
   SBCS:[{id:'sameleague',count:11,sameLeague:true,filter:item=>item.quality==='gold'}],
+  getActiveSbcById:id=>ctx.SBCS.find(s=>s.id===id),
   activeSbcId:'sameleague',sbcAssistantState:{sort:'high',min:0,max:99,quality:'',league:'',ignorePosition:false,protectTeams:true,...options.assistant},
   FORMATIONS:{'4-3-3':positions.map(p=>({p}))},
   state:{club:players.filter(x=>x.source==='club'),sbcStorage:players.filter(x=>x.source==='storage')},
@@ -34,14 +35,13 @@ function scenario(players,squad,options={}){
  return{draft,messages,writes,assistant:ctx.sbcAssistantState};
 }
 
-test('Ligamangel lässt die manuell gesetzten Karten und freien Plätze unverändert',()=>{
+test('Ligamangel erhält manuelle Karten und befüllt passende freie Plätze nur teilweise',()=>{
  const players=[player('manuell','GK'),...Array.from({length:5},(_,i)=>player(`k${i}`,'CM'))];
  const result=scenario(players,['manuell'],{assistant:{league:'Bundesliga',ignorePosition:true,protectTeams:false}});
- assert.equal(result.writes,0);
+ assert.equal(result.writes,1);
  assert.equal(result.draft.squad[0],'manuell');
- assert.equal(result.draft.squad.filter(Boolean).length,1);
- assert.match(result.messages[0],/Nicht genügend passende Spieler/);
- assert.ok(result.assistant);
+ assert.equal(result.draft.squad.filter(Boolean).length,6);
+ assert.match(result.messages[0],/Teilbefüllung: 5 passende Spieler/);
 });
 
 test('fünf manuelle Karten bleiben, sechs freie Plätze werden positionsgerecht und ohne Duplikate ergänzt',()=>{

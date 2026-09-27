@@ -5,10 +5,11 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const time=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const weeks=html.slice(html.indexOf('const TOTW_WEEK_1='),html.indexOf('const MID_ICON_DATA='));
 const active=html.slice(html.indexOf('function totwIsActive('),html.indexOf('function updateTotwMarketOption('));
 const ctx={Intl,Date};
-vm.createContext(ctx);vm.runInContext([weeks,active].join('\n'),ctx);
+vm.createContext(ctx);vm.runInContext([time,weeks,active].join('\n'),ctx);
 
 test('Team der Woche wechselt mittwochs um 19 Uhr Berliner Zeit und läuft eine Woche',()=>{
  const current=iso=>ctx.activeTotwWeek(new Date(iso))?.id||null;

@@ -17,9 +17,10 @@ function app(saved=new Map()){
   return elements.get(id)
  };
  const ctx={
-  localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)},queueMicrotask,
+  localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)},queueMicrotask,setTimeout:fn=>{queueMicrotask(fn);return 1},clearTimeout(){},window:{addEventListener(){}},document:{addEventListener(){}},
+  initializeSquadPresets:x=>x,migrateLegacyEventState:x=>x,newFooteraSaveId:()=>"GF-TEST",
   generatePack:()=>[{uid:'pack-1',pid:'1',tradeable:true},{uid:'pack-2',pid:'2',tradeable:true}],
-  ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},PACKS:[{id:'gold',name:'Gold Pack'}],
+  ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},resetBoardIntro(){},resetWalkoutTunnel(){},PACKS:[{id:'gold',name:'Gold Pack'}],
   $:el,packDuplicateMap:()=>new Map([[0,false],[1,false]]),displayBase:item=>({name:`Spieler ${item.pid}`,ovr:75}),
   cardHTML:()=>'<div>Karte</div>',quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
  };

@@ -5,6 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const source=fs.readFileSync(path.join(__dirname,'../season-system.js'),'utf8');
+const timeSource=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const firstTen=[0,500,1000,1800,2800,4000,5500,7500,10000,13500].map((sp,i)=>({level:i+1,sp,reward:i===0?{coins:500}:{pack:'gold'}}));
 
 function setup(initial={}){
@@ -27,6 +28,7 @@ function setup(initial={}){
   claimSeasonRewards(){}
  };
  vm.createContext(ctx);
+ vm.runInContext(timeSource,ctx,{filename:'footera-time.js'});
  vm.runInContext(source,ctx,{filename:'season-system.js'});
  const api=vm.runInContext('({seasonInfo,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
  return{ctx,state:ctx.state,elements,api,click(id,selector,dataset){
@@ -41,9 +43,11 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  assert.equal(ctx.SEASON_REWARDS.length,30);
  assert.equal(ctx.SEASON_REWARDS.at(-1).sp,26500);
  assert.ok(ctx.SEASON_REWARDS.every(t=>t.reward&&t.premium));
- const seasonBoundary=new Date(2026,9,22,19,0,0),dailyBoundary=new Date(2026,8,23,19,0,0);
+ const seasonBoundary=new Date('2026-10-30T18:00:00Z'),dailyBoundary=new Date('2026-09-23T17:00:00Z');
  assert.equal(api.seasonInfo(new Date(seasonBoundary.getTime()-1000)).number,1);
  assert.equal(api.seasonInfo(seasonBoundary).number,2);
+ assert.equal(api.seasonInfo(seasonBoundary).name,'HALLOWEEN');
+ assert.equal(api.seasonInfo(new Date('2026-09-27T12:00:00Z')).name,'THE BEGINNING');
  assert.equal(api.objectiveWindow('daily',new Date(dailyBoundary.getTime()-1000)).end.getTime(),dailyBoundary.getTime());
  assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
  assert.equal(api.objectiveWindow('season',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
@@ -129,13 +133,25 @@ test('claiming a rotating objective and the weekly set bonus grants each only on
 test('season change settles earned rewards once and resets premium and SP',()=>{
  const app=setup({coins:1000,sp:500,seasonPass:{key:'s1',premium:true,freeClaims:{1:true},premiumClaims:{}},objectiveWindows:{}});
  const{state,api}=app;
- api.ensureObjectiveWindows(new Date('2026-10-22T19:00:00Z'));
+ api.ensureObjectiveWindows(new Date('2026-10-30T18:00:00Z'));
  assert.equal(state.seasonPass.key,'s2');
  assert.equal(state.seasonPass.premium,false);
  assert.equal(state.sp,0);
  assert.equal(state.coins,4000);
  assert.equal(state.packs.gold,2);
- api.ensureObjectiveWindows(new Date('2026-10-22T19:01:00Z'));
+ api.ensureObjectiveWindows(new Date('2026-10-30T18:01:00Z'));
  assert.equal(state.coins,4000);
  assert.equal(state.packs.gold,2);
+});
+
+test('Berlin week boundaries retain 09:00 wall time through winter and summer time',()=>{
+ const {ctx,api}=setup();
+ const before=ctx.berlinWeekStart(new Date('2026-10-26T07:59:59Z'),1,9);
+ const after=ctx.berlinWeekStart(new Date('2026-10-26T08:00:00Z'),1,9);
+ assert.equal(before.toISOString(),'2026-10-19T07:00:00.000Z');
+ assert.equal(after.toISOString(),'2026-10-26T08:00:00.000Z');
+ assert.equal(ctx.berlinWeekStart(new Date('2027-03-29T07:00:00Z'),1,9).toISOString(),'2027-03-29T07:00:00.000Z');
+ assert.equal(api.seasonInfo(new Date('2026-10-30T17:59:59Z')).key,'s1');
+ assert.equal(api.seasonInfo(new Date('2026-10-30T18:00:00Z')).key,'s2');
+ assert.equal(ctx.seasonCountdown(new Date('2026-10-30T18:00:00Z'),new Date('2026-10-30T09:36:00Z')),'Endet in 8 Std. 24 Min.');
 });

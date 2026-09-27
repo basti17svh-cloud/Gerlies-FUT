@@ -26,13 +26,13 @@ test('walkout travels through nation, position and club before revealing the pla
   $:get,displayBase:()=>base,cardHTML:()=>'<div class="card-shell">Spielerkarte</div>',
   positionLabel:()=> 'ST',flagAsset:()=>'<span>🇩🇪</span>',badgeAsset:()=>'<img alt="FC Gerlies">',clubShort:()=> 'FC',
   normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
-  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},
+  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,
   sleep:ms=>{snapshots.push({ms,clue:get('walkoutClue').innerHTML,tunnel:get('walkoutTunnel').classList.contains('active'),card:get('revealCard').innerHTML});return Promise.resolve()}
  };
  vm.createContext(ctx);
  vm.runInContext(section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
  await vm.runInContext('runPackReveal({mode:"walkout",cards:[{}],label:"WALKOUT",duration:5200})',ctx);
- assert.deepEqual(snapshots.map(x=>x.ms),[1050,900,800,1050,340,700,4500]);
+ assert.deepEqual(snapshots.map(x=>x.ms),[1200,1000,900,1150,380,700,4500]);
  assert.match(snapshots[1].clue,/NATION.*Deutschland/s);
  assert.match(snapshots[2].clue,/POSITION.*ST/s);
  assert.match(snapshots[3].clue,/VEREIN.*FC Gerlies/s);
