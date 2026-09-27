@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.23</title>
+<title>Footera V19.24</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -53,39 +53,73 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 /* cards */
 .card-shell{position:relative;width:158px;aspect-ratio:.7;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}.official-card{width:100%;height:100%;object-fit:contain;display:block}.custom-card{position:absolute;inset:0;overflow:hidden;clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);color:#211807}.custom-card.gold{background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.55),transparent 20%),linear-gradient(145deg,#f4e2a1,#bc8b26 31%,#f0d27a 64%,#8a5d12)}.custom-card.silver{color:#18201e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.7),transparent 20%),linear-gradient(145deg,#eef3f1,#9ca8a5 34%,#dfe5e3 63%,#667370)}.custom-card.bronze{color:#27180e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.34),transparent 20%),linear-gradient(145deg,#d39969,#875130 34%,#c17b4b 63%,#55311f)}.custom-card.special{color:#fff;background:radial-gradient(circle at 55% 28%,rgba(255,255,255,.45),transparent 18%),linear-gradient(145deg,#18efbc,#2f5ecb 39%,#962bdc 68%,#191d26)}
 .custom-card.legacy{
- color:#ffe8b5;
+ color:#f9d991;
  background:
-  radial-gradient(circle at 67% 27%,rgba(255,92,82,.30),transparent 19%),
-  radial-gradient(circle at 36% 55%,rgba(187,20,43,.28),transparent 30%),
-  linear-gradient(133deg,transparent 0 18%,rgba(246,188,92,.17) 18.5% 20%,transparent 20.5% 36%,rgba(120,8,28,.52) 36.5% 54%,transparent 55%),
-  linear-gradient(42deg,transparent 0 24%,rgba(255,211,128,.12) 24.5% 26%,transparent 26.5% 62%,rgba(126,8,24,.54) 62.5% 74%,transparent 74.5%),
-  linear-gradient(155deg,#160507 0%,#5b0817 28%,#210508 51%,#790c22 72%,#100506 100%);
- box-shadow:inset 0 0 0 1px rgba(255,213,132,.62),inset 0 0 24px rgba(231,150,64,.18)
+  radial-gradient(circle at 69% 30%,rgba(255,105,73,.27),transparent 18%),
+  radial-gradient(circle at 50% 72%,rgba(255,24,58,.16),transparent 27%),
+  radial-gradient(ellipse at 50% 104%,rgba(232,145,53,.28),transparent 31%),
+  linear-gradient(125deg,transparent 0 12%,rgba(255,202,111,.16) 12.4% 13.2%,transparent 13.6% 35%,rgba(109,4,20,.58) 35.5% 51%,transparent 51.5%),
+  linear-gradient(37deg,transparent 0 18%,rgba(249,190,92,.13) 18.5% 20%,transparent 20.5% 54%,rgba(132,7,31,.67) 54.5% 69%,transparent 69.5%),
+  linear-gradient(153deg,#120305 0%,#4f0713 22%,#160305 43%,#72091e 64%,#290408 83%,#090203 100%);
+ box-shadow:
+  inset 0 0 30px rgba(0,0,0,.46),
+  inset 0 0 16px rgba(255,173,73,.15),
+  0 0 0 1px rgba(126,76,25,.72)
 }
 .custom-card.legacy:before{
- z-index:1;
- border:1px solid rgba(255,220,148,.78);
+ content:"";position:absolute;z-index:1;inset:0;border:0;clip-path:inherit;pointer-events:none;
  background:
-  linear-gradient(145deg,transparent 0 23%,rgba(255,226,161,.13) 23.5% 24.5%,transparent 25% 62%,rgba(246,169,70,.13) 62.5% 64%,transparent 64.5%),
-  linear-gradient(35deg,transparent 0 42%,rgba(132,8,27,.28) 42.5% 55%,transparent 55.5%);
- box-shadow:inset 0 0 0 2px rgba(97,17,16,.56),inset 0 0 18px rgba(255,186,89,.13)
+  linear-gradient(152deg,transparent 0 14%,rgba(255,226,154,.14) 14.5% 15.4%,transparent 16% 32%,rgba(255,89,74,.12) 32.5% 46%,transparent 46.5%),
+  linear-gradient(28deg,transparent 0 34%,rgba(255,208,121,.13) 34.5% 36%,transparent 36.5% 67%,rgba(131,9,28,.30) 67.5% 78%,transparent 78.5%),
+  repeating-linear-gradient(118deg,transparent 0 29px,rgba(255,226,156,.045) 30px 31px,transparent 32px 55px);
+ box-shadow:inset 0 0 26px rgba(247,170,72,.12)
 }
 .custom-card.legacy:after{
- content:"LEGACY EVENT";position:absolute;z-index:7;right:8px;top:7px;
- padding:3px 6px;border:1px solid rgba(255,226,161,.72);border-radius:999px;
- background:linear-gradient(135deg,#2a0809,#751324 58%,#32100d);
- color:#ffdda0;font-size:4.3px;font-weight:1000;letter-spacing:.12em;
- box-shadow:0 2px 9px #0009,0 0 8px rgba(239,164,77,.22)
+ content:"LEGACY EVENT";position:absolute;z-index:8;left:50%;right:auto;top:11px;transform:translateX(-50%);
+ min-width:62px;padding:2px 8px 2.5px;border-top:1px solid rgba(255,224,151,.70);border-bottom:1px solid rgba(112,59,23,.84);
+ background:linear-gradient(90deg,transparent,#481018 18%,#731320 50%,#481018 82%,transparent);
+ color:#f9d996;font-size:4.1px;font-weight:1000;letter-spacing:.20em;text-align:center;white-space:nowrap;
+ text-shadow:0 1px 3px #000;box-shadow:0 3px 9px rgba(0,0,0,.36)
 }
-.custom-card.legacy .face{background:radial-gradient(circle at 55% 32%,rgba(255,214,151,.15),transparent 34%);z-index:2}
-.custom-card.legacy .face img{filter:drop-shadow(0 5px 6px rgba(0,0,0,.48)) saturate(1.04) contrast(1.03)}
-.custom-card.legacy .pname{border-color:#e9b85e;color:#fff0c7;text-shadow:0 1px 3px #000}
-.custom-card.legacy .meta{color:#e8bc75}
-.custom-card.legacy .stats{color:#ffe8b5}
-.custom-card.legacy .stats b{color:#fff3d0}
-.custom-card.legacy .ovr,.custom-card.legacy .pos{color:#ffe6a6;text-shadow:0 1px 3px #000}
-.mini .custom-card.legacy:after{right:4px;top:4px;padding:2px 4px;font-size:2.9px;letter-spacing:.07em}
-.quality-tag.legacy{border-color:#b47a35!important;background:linear-gradient(135deg,#2d090b,#6a1220)!important;color:#ffd98f!important;box-shadow:inset 0 0 0 1px rgba(255,218,143,.12)}
+.custom-card.legacy .legacy-frame{position:absolute;z-index:7;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,199,103,.28))}
+.custom-card.legacy .legacy-frame .outer{fill:none;stroke:#f4cf84;stroke-width:2.3;stroke-linejoin:round}
+.custom-card.legacy .legacy-frame .mid{fill:none;stroke:#8d5a25;stroke-width:1.1;stroke-linejoin:round}
+.custom-card.legacy .legacy-frame .inner{fill:none;stroke:rgba(255,232,177,.78);stroke-width:.58;stroke-linejoin:round}
+.custom-card.legacy .legacy-crown{position:absolute;z-index:9;left:50%;top:2px;transform:translateX(-50%);width:20px;height:10px;filter:drop-shadow(0 1px 2px #000)}
+.custom-card.legacy .legacy-crown path{fill:#f6d27d;stroke:#fff0b9;stroke-width:.35}
+.custom-card.legacy .legacy-laurel{position:absolute;z-index:5;right:7px;top:70px;width:22px;height:57px;opacity:.74;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.custom-card.legacy .legacy-laurel path{fill:#d8aa59;stroke:#ffdfa0;stroke-width:.45}
+.custom-card.legacy .legacy-shards{position:absolute;z-index:1;inset:0;pointer-events:none}
+.custom-card.legacy .legacy-shards i{position:absolute;display:block;background:linear-gradient(145deg,rgba(255,225,157,.36),rgba(139,7,25,.45) 48%,rgba(255,78,57,.18));border:1px solid rgba(255,208,118,.20);filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.custom-card.legacy .legacy-shards i:nth-child(1){width:54px;height:42px;right:-15px;top:41px;clip-path:polygon(0 42%,100% 0,63% 100%)}
+.custom-card.legacy .legacy-shards i:nth-child(2){width:43px;height:61px;left:-18px;top:101px;clip-path:polygon(100% 0,76% 100%,0 64%)}
+.custom-card.legacy .legacy-shards i:nth-child(3){width:61px;height:37px;right:-17px;bottom:36px;clip-path:polygon(0 0,100% 47%,28% 100%)}
+.custom-card.legacy .legacy-shards i:nth-child(4){width:50px;height:30px;left:18px;bottom:-8px;clip-path:polygon(0 0,100% 22%,62% 100%,17% 78%)}
+.custom-card.legacy .card-top{z-index:6;top:28px;left:15px}
+.custom-card.legacy .ovr{color:#f9d986;font-size:28px;letter-spacing:-.04em;text-shadow:0 2px 4px #000,0 0 8px rgba(255,200,101,.12)}
+.custom-card.legacy .pos{color:#f7d791;text-shadow:0 1px 3px #000}
+.custom-card.legacy .card-icons{z-index:6;top:67px}
+.custom-card.legacy .face{z-index:3;left:36px;right:3px;top:44px;height:112px;background:radial-gradient(circle at 55% 39%,rgba(255,211,145,.13),transparent 36%)}
+.custom-card.legacy .face img{filter:drop-shadow(0 6px 7px rgba(0,0,0,.58)) saturate(1.06) contrast(1.04)}
+.custom-card.legacy .card-bottom{z-index:6;left:12px;right:12px;bottom:12px;padding:5px 4px 2px;background:linear-gradient(180deg,rgba(26,3,6,.04),rgba(18,2,5,.66) 28%,rgba(13,2,4,.84));clip-path:polygon(4% 0,96% 0,100% 18%,96% 100%,4% 100%,0 18%)}
+.custom-card.legacy .pname{padding-top:5px;border-color:#d9a650;color:#ffe6ad;font-size:9px;letter-spacing:.03em;text-shadow:0 1px 3px #000}
+.custom-card.legacy .meta{color:#c9954b;letter-spacing:.05em}
+.custom-card.legacy .stats{color:#e5bf78}
+.custom-card.legacy .stats b{color:#ffe5a8;text-shadow:0 1px 2px #000}
+.mini .custom-card.legacy:after{top:7px;min-width:42px;padding:1px 4px;font-size:2.4px;letter-spacing:.12em}
+.mini .custom-card.legacy .legacy-crown{top:1px;width:14px;height:7px}
+.mini .custom-card.legacy .legacy-laurel{right:4px;top:47px;width:14px;height:38px}
+.mini .custom-card.legacy .legacy-shards i:nth-child(1){width:35px;height:27px;right:-10px;top:28px}
+.mini .custom-card.legacy .legacy-shards i:nth-child(2){width:28px;height:40px;left:-12px;top:67px}
+.mini .custom-card.legacy .legacy-shards i:nth-child(3){width:40px;height:25px;right:-11px;bottom:24px}
+.mini .custom-card.legacy .legacy-shards i:nth-child(4){width:33px;height:20px;left:12px;bottom:-6px}
+.mini .custom-card.legacy .card-top{top:19px;left:9px}
+.mini .custom-card.legacy .ovr{font-size:18px}
+.mini .custom-card.legacy .card-icons{top:43px}
+.mini .custom-card.legacy .face{left:26px;right:2px;top:30px;height:79px}
+.mini .custom-card.legacy .card-bottom{left:6px;right:6px;bottom:7px;padding:3px 2px 1px}
+.mini .custom-card.legacy .pname{font-size:5.8px;padding-top:3px}
+.quality-tag.legacy{border-color:#b47a35!important;background:linear-gradient(135deg,#240608,#6f1020 58%,#2e0b08)!important;color:#ffd98f!important;box-shadow:inset 0 0 0 1px rgba(255,218,143,.14),0 0 8px rgba(218,149,59,.08)}
 .custom-card.totw{color:#f5e8b0;background:
  radial-gradient(circle at 62% 24%,rgba(255,224,118,.28),transparent 18%),
  linear-gradient(155deg,#050606 0,#171813 28%,#070807 52%,#2a2312 75%,#080908 100%);
@@ -1215,7 +1249,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.23</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.24</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3018,7 +3052,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
   const assignedPosition=official&&pos!==p.position?`<span class="official-assigned-position" aria-label="Eingesetzt als ${esc(positionLabel(pos,p))}">${esc(positionLabel(pos,p))}</span>`:"";
-  const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}"><div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
+  const legacyDecor=cls==="legacy"?`<svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><polygon class="outer" points="8,1 92,1 99,10 96,130 84,142 16,142 4,130 1,10"/><polygon class="mid" points="10,3 90,3 97,11 94,128 82,139 18,139 6,128 3,11"/><polygon class="inner" points="12,6 88,6 94,13 91,126 80,136 20,136 9,126 6,13"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
  const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell">${body}${official}${assignedPosition}${evoMarker}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
@@ -5996,7 +6030,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.23";
+const GFUT_BUILD="V19.24";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6014,7 +6048,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1923",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1924",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
