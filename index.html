@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.21</title>
+<title>Footera V19.22</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -346,6 +346,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 
 /* FC27 player details */
 .player-centered{display:block;text-align:left;padding-top:2px}.player-detail-overview{display:grid;grid-template-columns:176px minmax(0,1fr);gap:15px;align-items:start}.player-detail-card{display:grid;place-items:center;padding:10px 6px;border:1px solid var(--fc27-line);border-radius:14px;background:radial-gradient(circle at 50% 25%,rgba(100,215,255,.08),transparent 48%),#080e11}.player-detail-card .card-shell{width:164px}.player-detail-summary{min-width:0}.player-detail-summary h2{margin:0;font-size:23px;line-height:1}.player-detail-summary .subline{margin-top:5px;color:#8fa1aa;font-size:8px;line-height:1.4}.fc27-status{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.fc27-pill{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:999px;border:1px solid #31434c;background:#101a1f;color:#d9e5ea;font-size:7px;font-weight:900}.fc27-pill.good{border-color:#2f6b7f;background:#102632;color:#9be6ff}.fc27-pill.bad{border-color:#75434a;background:#29171b;color:#ff9eab}
+.item-purchase-info{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:9px 10px;border:1px solid #32424a;border-radius:10px;background:#0d161a}.item-purchase-info span{color:#85969e;font-size:7px;font-weight:850}.item-purchase-info strong{display:flex;align-items:center;gap:5px;color:#f3f7f8;font-size:10px}.item-purchase-info .currency-amount{font-size:inherit}
 .fc27-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}.fc27-info{padding:8px 9px;border:1px solid var(--fc27-line);border-radius:9px;background:var(--fc27-panel)}.fc27-info b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fc27-info span{display:block;margin-top:3px;color:#80919a;font-size:6px;text-transform:uppercase;letter-spacing:.05em}
 .fc27-section{margin-top:13px}.fc27-section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}.fc27-section-head strong{font-size:9px}.fc27-section-head small{color:#7f9098;font-size:6px}.position-chips{display:flex;gap:5px;flex-wrap:wrap}.position-chip{padding:6px 9px;border-radius:7px;border:1px solid #314149;background:#0f171b;color:#b9c6cc;font-size:7px;font-weight:1000}.position-chip.primary{background:#15313d;border-color:#34758d;color:#9fe9ff}.position-chip.current{box-shadow:inset 0 0 0 1px #b5efff}
 .detail-chem{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid var(--fc27-line);border-radius:9px;background:#0d1519}.detail-chem strong{font-size:8px}.detail-chem small{display:block;color:#7f9098;font-size:6px;margin-top:2px}.detail-chem-diamonds{display:flex;gap:5px;margin-left:auto}.detail-chem-diamonds i{width:10px;height:10px;transform:rotate(45deg);background:#2e3a40;border:1px solid #516069}.detail-chem-diamonds i.on{background:var(--fc27-cyan);border-color:#c2f2ff;box-shadow:0 0 9px #64d7ff88}
@@ -1200,7 +1201,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.21</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.22</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1566,6 +1567,19 @@ function migrateLegacyEventState(s){
  for(const key of ["club","sbcStorage","pendingPack"]){if(Array.isArray(s[key]))s[key].forEach(migrateLegacyEventItem)}
  if(Array.isArray(s.auctions))s.auctions.forEach(x=>{migrateLegacyEventItem(x);if(x?.item)migrateLegacyEventItem(x.item)});
  if(Array.isArray(s.transferSales))s.transferSales.forEach(x=>{if(x?.item)migrateLegacyEventItem(x.item)});
+ if(Array.isArray(s.club)&&Array.isArray(s.auctions)){
+  const purchases=new Map();
+  for(const x of s.auctions){
+   const pid=String(x?.base?.id||""),paid=x?.bought?Number(x.price||0):(x?.settled&&x?.won&&!x?.refunded?Number(x.myBid||0):0);
+   if(!pid||!(paid>0))continue;
+   if(!purchases.has(pid))purchases.set(pid,[]);
+   purchases.get(pid).push(Math.round(paid))
+  }
+  for(const [pid,prices] of purchases){
+   const owned=s.club.filter(item=>String(item?.pid||"")===pid&&!(Number(item?.purchasePrice||0)>0));
+   if(prices.length===1&&owned.length===1){owned[0].purchasePrice=prices[0];owned[0].acquisitionSource="market"}
+  }
+ }
  return s
 }
 let PLAYERS=[],P_BY_ID=new Map(),state=loadState(),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sellEditorUid=null,sbcSelections={},match=null;
@@ -2334,7 +2348,7 @@ function cardClass(p,item){if(item?.variant==="icon-mid")return"icon";if(item?.v
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);return b?Math.min(99,b.ovr+(item.evo||0)+(item.boost||0)):0}
 function displayBase(item){const b=itemBase(item);if(!b)return null;let out={...b,ovr:itemRating(item),position:item?.overridePosition||b.position};const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
-function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base);return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare}}
+function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||"")}}
 function portraitFallback(p){return""}
 const COUNTRY_CODES={
 germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",turkiye:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US","united states of america":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR","korea republic":"KR",ghana:"GH","ivory coast":"CI","cote d ivoire":"CI","cote divoire":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA",bosnia:"BA","czech republic":"CZ",czechia:"CZ","republic of ireland":"IE",ireland:"IE","north macedonia":"MK",
@@ -2921,7 +2935,7 @@ function openBiography(item,index,fallbackBase=null){
  showUiLayer("bioModal","bio")
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
-  if(!p)return"";p=resolvedPlayer(p);if(item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
+  if(!p)return"";p=resolvedPlayer(p);if(!mini&&item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?.displayRating??(item?itemRating(item):p.ovr),pos=shownPosition||p.position;
   const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
@@ -3570,10 +3584,11 @@ function openSlotPickerForItem(itemUid){
 }
 function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
+function purchaseInfoHTML(item){const paid=Number(item?.purchasePrice||0);if(!(paid>0))return"";return `<div class="item-purchase-info"><span>Item gekauft für</span><strong>${currencyAmountHTML("coins",paid,"compact")}</strong></div>`}
 function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){
  b=resolvedPlayer(b);ensurePlayerAffiliationAssets(b);
  const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");
- return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
+ return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
 }
 
 function openPlayerDetails(item,index=null,fromPreview=false){
@@ -3585,7 +3600,7 @@ function openPlayerDetails(item,index=null,fromPreview=false){
  $("playerDetailSub").textContent=playerContextLine(b);
  const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button>${fromPreview?`<button class="menu-action" data-preview-swap-start="${index}"><span><span>Mit Kaderplatz tauschen</span><small>Spieler in Startelf, Bank oder Reserve direkt tauschen.</small></span><b>›</b></button>`:''}<button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
  const listLabel=isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste";
- const sellDisabled=!item.tradeable||blockedByTeam||!!activeSale,sellText=activeSale?"Aktiv auf Transfermarkt":"Auf Transfermarkt anbieten",sellNote=!item.tradeable?"Dieses Item ist untauschbar.":blockedByTeam?"Zuerst aus allen gespeicherten Teams entfernen.":activeSale?"Angebot läuft bereits.":"Startpreis, Sofortkauf und Dauer festlegen.";
+ const sellDisabled=!item.tradeable||!!activeSale,sellText=activeSale?"Aktiv auf Transfermarkt":"Auf Transfermarkt anbieten",sellNote=!item.tradeable?"Dieses Item ist untauschbar.":activeSale?"Angebot läuft bereits.":blockedByTeam?"Beim Anbieten wird der Spieler automatisch aus allen gespeicherten Teams entfernt.":"Startpreis, Sofortkauf und Dauer festlegen.";
  const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}" ${!item.tradeable?"disabled":""}><span><span>${listLabel}</span><small>Spieler passiv auf deiner Transferliste vormerken.</small></span><b>›</b></button><button class="menu-action" data-direct-sell="${esc(item.uid)}" ${sellDisabled?"disabled":""}><span><span>${sellText}</span><small>${sellNote}</small></span><b>›</b></button><button class="menu-action" data-price-compare="${esc(item.uid)}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:inSquad?"Mannschaft":"Verein"})}${menu}`;
  showUiLayer("playerModal","player")
@@ -4279,7 +4294,7 @@ function refreshMarket(){
  const f=marketFilters();ensureMarketSnapshot(f);marketAllListings=marketInventory.filter(x=>marketListingMatchesFilters(x,f));applyMarketPage(1);renderMarket()
 }
 function bidIncrement(amount){return Math.max(50,Math.round(Number(amount||0)*.05/50)*50)}
-function listingToClubItem(x){return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||""})}
+function listingToClubItem(x,paidPrice=0){const paid=Math.max(0,Math.round(Number(paidPrice||0)));return makeItem(x.base,true,{variant:x.variant,boost:x.boost,eventName:x.eventName,overridePosition:x.overridePosition||"",purchasePrice:paid,acquisitionSource:paid>0?"market":""})}
 function settleAuctions(){
  if(!PLAYERS.length)return false;
  let changed=false;
@@ -4288,7 +4303,7 @@ function settleAuctions(){
   x.settled=true;x.botOutbidAt=0;
   if(!x.myBid)continue;
   if(!x.refunded&&x.myBid>=x.bid&&P_BY_ID.has(String(x.base?.id))){
-   ensureObjectiveWindows();state.club.push(listingToClubItem(x));state.stats.market++;x.won=true;
+   ensureObjectiveWindows();state.club.push(listingToClubItem(x,x.myBid));state.stats.market++;x.won=true;
    toast(`Gebot gewonnen: ${x.base.name}`)
   }else{
    if(!x.refunded){state.coins+=Number(x.myBid||0);x.refunded=true}
@@ -4373,10 +4388,24 @@ function showMarketSection(section="hub"){
  if(marketSection==="search"&&!marketListings.length)refreshMarket();else if(marketSection!=="hub")renderMarket();
  window.scrollTo({top:0,behavior:"smooth"})
 }
+let MARKET_PORTRAIT_WARM_TOKEN=0;
+async function prewarmMarketPortraits(token){
+ const visible=[...new Map(marketListings.map(x=>{const id=String(x?.base?.id||"");return[id,P_BY_ID.get(id)||x?.base]}).filter(([id,p])=>id&&p)).values()];
+ for(const p of visible){
+  if(token!==MARKET_PORTRAIT_WARM_TOKEN||currentViewId()!=="marketView"||marketSection!=="search")return;
+  const current=P_BY_ID.get(String(p.id))||p;
+  if(!String(current.face||"").trim()){
+   try{await ensureEaPlayerAssets(current)}catch(e){}
+   await sleep(70)
+  }
+ }
+ if(token===MARKET_PORTRAIT_WARM_TOKEN)refreshAffiliationDom(true)
+}
+function queueMarketPortraitWarmup(){const token=++MARKET_PORTRAIT_WARM_TOKEN;scheduleIdleTask(()=>prewarmMarketPortraits(token),250)}
 function renderMarket(){
  processBotOutbids();settleAuctions();settleTransferSales();
  $("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>marketRowHTML(x,i,false)).join(""):'<div class="online-note">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';
- updateMarketResultMeta();renderMarketPagination();renderMyAuctions();renderTransferWatch();renderTransferHubSummary();applyMarketSection()
+ updateMarketResultMeta();renderMarketPagination();renderMyAuctions();renderTransferWatch();renderTransferHubSummary();applyMarketSection();if(marketSection==="search"&&marketListings.length)queueMarketPortraitWarmup()
 }
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,inc=bidIncrement(x.bid);
@@ -4387,7 +4416,7 @@ function openMarketPlayerDetails(i){
 function buyMarketListing(i,tracked=false){
  const x=tracked?state.auctions?.[Number(i)]:marketListings[Number(i)],held=x?.myBid&&!x?.refunded?Number(x.myBid):0;
  if(!x||x.settled||state.coins+held<x.price){toast("Nicht genügend Coins oder Angebot abgelaufen.");return false}
- ensureObjectiveWindows();if(held)state.coins+=held;state.coins-=x.price;x.myBid=0;x.refunded=false;x.botOutbidAt=0;x.bought=true;x.settled=true;x.won=true;state.club.push(listingToClubItem(x));state.stats.market++;
+ ensureObjectiveWindows();if(held)state.coins+=held;state.coins-=x.price;x.myBid=0;x.refunded=false;x.botOutbidAt=0;x.bought=true;x.boughtAt=Date.now();x.settled=true;x.won=true;state.club.push(listingToClubItem(x,x.price));state.stats.market++;
  if(!state.auctions.includes(x))state.auctions.push(x);
  save();renderAll();toast(`${x.base.name} für ${fmt(x.price)} Coins gekauft.`);return true
 }
@@ -4401,16 +4430,26 @@ function bidMarketListing(i,tracked=false){
  save();renderWallet();renderMarket();toast(`Höchstgebot: ${fmt(newBid)} Coins`);return true
 }
 function transferSalePlayerInSquad(uid){return (state.squadPresets||[]).some(p=>p?.squad?.includes(uid))||state.squad?.includes(uid)}
+function removeTransferItemFromSquads(uid){
+ let removed=false;
+ const clear=(squad,roles,focus)=>{
+  if(!Array.isArray(squad))return;
+  squad.forEach((id,i)=>{if(String(id)!==String(uid))return;squad[i]=null;removed=true;if(i<11){if(roles)delete roles[i];if(focus)delete focus[i]}})
+ };
+ clear(state.squad,state.roles,state.focus);
+ for(const preset of state.squadPresets||[])if(preset)clear(preset.squad,preset.roles,preset.focus);
+ return removed
+}
 function createTransferSale(uid,startPrice,buyNow,duration){
  const item=state.club.find(i=>i.uid===uid);if(!item||!item.tradeable){toast("Spieler ist nicht tauschbar.");return false}
- if(transferSalePlayerInSquad(uid)){toast("Spieler zuerst aus allen Mannschaften entfernen.");return false}
  if(activeTransferSaleForUid(uid)){toast("Spieler ist bereits aktiv angeboten.");return false}
+ const removedFromSquads=removeTransferItemFromSquads(uid);
  startPrice=marketRoundPrice(Math.max(150,Number(startPrice||0)));buyNow=marketRoundPrice(Math.max(startPrice+50,Number(buyNow||0)));duration=Math.max(3600,Number(duration||3600));
  state.transferSales=state.transferSales||[];state.transferSales=state.transferSales.filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));
  const suggested=transferSuggestedPrices(item).buy,ratio=buyNow/Math.max(1,suggested),chance=ratio<=1.05?.82:ratio<=1.25?.6:ratio<=1.55?.3:.1,willSell=Math.random()<chance,now=Date.now(),ends=now+duration*1000;
  const planned=Math.min(buyNow,Math.max(startPrice,marketRoundPrice(suggested*(.92+Math.random()*.12))));
  state.transferSales.push({id:uid+"-"+now,uid,item:{...item},startPrice,buyNow,currentBid:startPrice,createdAt:now,ends,status:"active",saleAt:willSell?Math.min(ends-5000,now+18000+Math.floor(Math.random()*65000)):0,plannedPrice:planned});
- sellEditorUid=null;save();renderTransferWatch();renderTransferHubSummary();toast(`${displayBase(item)?.name||"Spieler"} angeboten.`);return true
+ sellEditorUid=null;save();renderTransferWatch();renderTransferHubSummary();toast(`${displayBase(item)?.name||"Spieler"} angeboten.${removedFromSquads?" Aus Mannschaft entfernt.":""}`);return true
 }
 function settleTransferSales(){
  let changed=false,now=Date.now();state.transferSales=state.transferSales||[];
@@ -5878,7 +5917,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.21";
+const GFUT_BUILD="V19.22";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
