@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.33</title>
+<title>Footera V19.34</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1253,7 +1253,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.33</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.34</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2761,11 +2761,15 @@ const API_SPORTS_TEAM_IDS={
 const CLUB_IDENTITY_STOP=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","the"]);
 function clubIdentityKey(v){return normalizeKey(v).split(" ").filter(x=>x&&!CLUB_IDENTITY_STOP.has(x)).join(" ")}
 function apiSportsLeagueLogo(league){const id=API_SPORTS_LEAGUE_IDS[normalizeKey(league)];return id?`https://media.api-sports.io/football/leagues/${id}.png`:""}
+const API_SPORTS_TEAM_ID_CACHE=new Map();
 function apiSportsTeamId(team){
- const exact=API_SPORTS_TEAM_IDS[normalizeKey(team)];if(exact)return exact;
+ const key=normalizeKey(team);
+ if(API_SPORTS_TEAM_ID_CACHE.has(key))return API_SPORTS_TEAM_ID_CACHE.get(key);
+ const exact=API_SPORTS_TEAM_IDS[key];if(exact){API_SPORTS_TEAM_ID_CACHE.set(key,exact);return exact}
  const sig=clubIdentityKey(team);if(!sig)return"";
  const ids=new Set(Object.entries(API_SPORTS_TEAM_IDS).filter(([name])=>clubIdentityKey(name)===sig).map(([,id])=>id));
- return ids.size===1?[...ids][0]:""
+ const result=ids.size===1?[...ids][0]:"";
+ API_SPORTS_TEAM_ID_CACHE.set(key,result);return result
 }
 function apiSportsTeamLogo(team){const id=apiSportsTeamId(team);return id?`https://media.api-sports.io/football/teams/${id}.png`:""}
 
@@ -3368,11 +3372,15 @@ const EA_MENS_CLUB_LEAGUES={
  "Swiss Super League":["FC Basel 1893","FC Basel","Basel","BSC Young Boys","Young Boys","Servette FC","Servette","FC Zürich","FC Zurich","FC Lugano","Lugano","FC St. Gallen","FC St Gallen","St. Gallen","FC Luzern","Luzern","Lausanne-Sport","Lausanne Sport","Grasshopper Club Zürich","Grasshopper Club Zurich","Grasshoppers","FC Sion","Sion","FC Winterthur","Winterthur","Yverdon Sport","Yverdon"],
  "Super League Vrouwenvoetbal":["RSC Anderlecht Women","RSC Anderlecht Ladies","KRC Genk Ladies","KRC Genk Women","Club Brugge Women","KAA Gent Ladies","Standard Liège Women"]
 };
+const KNOWN_EA_CLUB_LEAGUE_CACHE=new Map(),TOP5_CLUB_LEAGUE_CACHE=new Map();
 function knownEAClubLeague(team){
- const sig=clubIdentityKey(team),raw=normalizeKey(team);if(!sig&&!raw)return"";
+ const raw=normalizeKey(team);
+ if(KNOWN_EA_CLUB_LEAGUE_CACHE.has(raw))return KNOWN_EA_CLUB_LEAGUE_CACHE.get(raw);
+ const sig=clubIdentityKey(team);if(!sig&&!raw)return"";
  for(const [league,names] of Object.entries(EA_MENS_CLUB_LEAGUES)){
-  if(names.some(name=>normalizeKey(name)===raw||clubIdentityKey(name)===sig))return league
+  if(names.some(name=>normalizeKey(name)===raw||clubIdentityKey(name)===sig)){KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,league);return league}
  }
+ KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,"");
  return""
 }
 function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
@@ -3389,19 +3397,24 @@ function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
   if(rk.startsWith("ligue 1"))return"Ligue 1";
  }
  if(!tk)return String(rawLeague||"");
- for(const [league,groups] of Object.entries(TOP5_CLUB_LEAGUES)){
-  for(const aliases of groups){
-   if(aliases.some(a=>normalizeKey(a)===tk))return league;
-  }
- }
- const sig=clubIdentityKey(team);
- if(sig){
-  const matches=[];
+ if(!TOP5_CLUB_LEAGUE_CACHE.has(tk)){
+  let found="";
   for(const [league,groups] of Object.entries(TOP5_CLUB_LEAGUES)){
-   if(groups.some(aliases=>aliases.some(a=>clubIdentityKey(a)===sig)))matches.push(league)
+   if(groups.some(aliases=>aliases.some(a=>normalizeKey(a)===tk))){found=league;break}
   }
-  if(matches.length===1)return matches[0]
+  if(!found){
+   const sig=clubIdentityKey(team);
+   if(sig){
+    const matches=[];
+    for(const [league,groups] of Object.entries(TOP5_CLUB_LEAGUES)){
+     if(groups.some(aliases=>aliases.some(a=>clubIdentityKey(a)===sig)))matches.push(league)
+    }
+    if(matches.length===1)found=matches[0]
+   }
+  }
+  TOP5_CLUB_LEAGUE_CACHE.set(tk,found)
  }
+ const top5=TOP5_CLUB_LEAGUE_CACHE.get(tk);if(top5)return top5;
  const female=/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(gender));
  const isMensSource=source==="fc27-open-data"||source==="fc27-open-data-men";
  const mapped=knownEAClubLeague(team),mappedIsWomens=/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(mapped));
