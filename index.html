@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.30</title>
+<title>Footera V19.31</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1253,7 +1253,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.31</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1970,7 +1970,7 @@ $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.clos
    {id,name,subtitle,activeUntil,theme,players:[{pid|eaId|names,ovr,position,boost,eventName,variant}]} */
 // FC27 sofifa_id is the permanent player identity; MOMENTUM is a separate item.
 // Keeper stats use Footera's HEC / BSI / ABS / REF / TMP / POS mapping.
-const MOMENTUM_EVENT={id:"momentum-team-1",name:"MOMENTUM",shortName:"MOMENTUM",subtitle:"TEAM 1",theme:"momentum",activeFrom:"2026-09-27T00:00:00+02:00",activeUntilAt:"2026-10-11T19:00:00+02:00",activeUntil:"11.10.2026 · 19:00",players:[
+const MOMENTUM_EVENT={id:"momentum-team-1",name:"MOMENTUM",shortName:"MOMENTUM",subtitle:"TEAM 1",theme:"momentum",activeFrom:"2026-09-27T00:00:00+02:00",activeUntilAt:"2026-10-02T19:00:00+02:00",activeUntil:"02.10.2026 · 19:00",players:[
  {pid:"241461",name:"Ferran Torres",ovr:89,position:"ST",baseOvr:84,team:"Paris Saint-Germain",nation:"Spain",alt:"LW,LM",stats:[91,89,83,87,42,78]},
  {pid:"247827",name:"Michael Olise",ovr:89,position:"RM",baseOvr:90,team:"Bayern München",nation:"France",alt:"RW,CAM",stats:[83,81,89,90,47,69]},
  {pid:"233419",name:"Raphinha",ovr:88,position:"RW",baseOvr:88,team:"FC Barcelona",nation:"Brazil",alt:"LW,CAM,LM,RM,ST",stats:[92,87,86,88,54,76]},
@@ -2071,7 +2071,29 @@ function openMomentumTeam(){
  showUiLayer("opponentTeamModal","opponent-team")
 }
 $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-momentum-team-bio]");if(!btn)return;const entry=promoEventEntries(MOMENTUM_EVENT)[Number(btn.dataset.momentumTeamBio)];if(entry)openBiography(entry.item,null,entry.player)});
-function makeLivePackItem(base,tradeable=true){const team=activeTotwWeek(),info=totwInfo(base);return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position}):makeItem(base,tradeable)}
+function eventPackIsActive(event,at=Date.now()){
+ const start=event?.activeFrom?Date.parse(event.activeFrom):NaN,end=event?.activeUntilAt?Date.parse(event.activeUntilAt):NaN;
+ return (!Number.isFinite(start)||at>=start)&&(!Number.isFinite(end)||at<end)
+}
+function activePromoPackEntry(base,at=Date.now()){
+ if(!base)return null;const pid=String(base.id||"");
+ for(const event of EVENT_PROMO_RELEASES||[]){
+  if(!eventPackIsActive(event,at))continue;
+  const info=(event.players||[]).find(x=>String(x?.pid||x?.eaId||"")===pid);
+  if(info)return{event,info}
+ }
+ return null
+}
+function makePromoPackItem(base,entry,tradeable=true){
+ const event=entry?.event,info=entry?.info;if(!event||!info)return null;
+ if(event.id===MOMENTUM_EVENT.id)return makeMomentumItem(base,tradeable);
+ return makeItem(base,tradeable,{variant:"special",eventType:event.theme||event.id||"promo",eventName:event.name||"Event",boost:Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0)),overridePosition:info.position||base.position,rare:true})
+}
+function makeLivePackItem(base,tradeable=true){
+ const promo=activePromoPackEntry(base);if(promo){const special=makePromoPackItem(base,promo,tradeable);if(special)return special}
+ const team=activeTotwWeek(),info=totwInfo(base);
+ return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position,rare:true}):makeItem(base,tradeable)
+}
 
 const TASKS=[
  {id:"starter",title:"Club gegründet",desc:"Öffne dein Starterset.",stat:"starter",target:1,reward:{coins:750,sp:250}},
@@ -4003,12 +4025,6 @@ function generatePack(id){
  let guaranteeSlot=-1;if(p.guarantee){guaranteeSlot=specs.findIndex(x=>x.max>=p.guarantee);if(guaranteeSlot<0)guaranteeSlot=0}
  specs.forEach((spec,i)=>{const min=i===guaranteeSlot?Math.max(spec.min||0,p.guarantee||0):(spec.min||0),max=spec.max??99,b=take(min,max);if(b)arr.push(makeLivePackItem(b,true))});
  if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase();if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,true)}}
- // One event hit can replace a gold slot. The base versions remain in the pool.
- if(momentumIsActive()&&specs.some(x=>x.quality==="gold"||x.min>=75)&&Math.random()<(p.promo ? 0.06 : 0.025)){
-  const slots=arr.map((item,index)=>({item,index})).filter(x=>!x.item.variant&&rarityOf(displayBase(x.item))==="gold");
-  const pool=MOMENTUM_EVENT.players.filter(info=>P_BY_ID.has(info.pid)),weights=pool.map(info=>Math.max(1,91-info.ovr)),total=weights.reduce((sum,n)=>sum+n,0);
-  if(slots.length&&total){let pick=Math.random()*total,chosen=pool[0];for(let k=0;k<pool.length;k++){pick-=weights[k];if(pick<0){chosen=pool[k];break}}const slot=slots[Math.floor(Math.random()*slots.length)];arr[slot.index]=makeMomentumItem(P_BY_ID.get(chosen.pid),slot.item.tradeable)}
- }
  let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
  return arr.slice(0,p.count)
 }
@@ -6115,7 +6131,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.30";
+const GFUT_BUILD="V19.31";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6133,7 +6149,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1930",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1931",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
