@@ -10,7 +10,7 @@ const emblemsCode=html.slice(html.indexOf('function emblemsHTML('),html.indexOf(
 const rendererCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
 const css=fs.readFileSync(path.join(__dirname,'../card-layout.css'),'utf8');
 function context(){
- const ctx={esc:String,resolvedPlayer:p=>p,isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
+ const ctx={esc:String,resolvedPlayer:p=>p,isFounderItem:i=>i?.pid==='footera-founder-bastian-gerlach',isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
   positionLabel:p=>p==='GK'?'TW':p,cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
@@ -24,7 +24,7 @@ test('all card types share the Founder information order and visible name/stat g
  const ctx=context();
  const samples=[['bronze',{...gerlach,rarity:'bronze'},null],['silver',{...gerlach,rarity:'silver'},null],['gold',gerlach,null],
   ['totw',gerlach,{variant:'special',eventName:'Team of the Week 1'}],['legacy',gerlach,{variant:'special',eventName:'Legacy Event'}],
-  ['momentum',gerlach,{variant:'special',eventType:'momentum'}],['icon',gerlach,{variant:'icon-mid'}],['founder',gerlach,{variant:'founder'}]];
+  ['momentum',gerlach,{variant:'special',eventType:'momentum'}],['icon',gerlach,{variant:'icon-mid'}],['founder',gerlach,{pid:'footera-founder-bastian-gerlach',variant:'founder'}]];
  for(const [theme,player,item] of samples){
   const markup=ctx.cardHTML(player,item,true);
   assert.match(markup,new RegExp(`class="custom-card ${theme}(?: |")`),theme);

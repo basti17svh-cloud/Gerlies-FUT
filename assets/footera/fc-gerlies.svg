@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="FC Gerlies">
+ <defs><radialGradient id="g"><stop stop-color="#164f46"/><stop offset="1" stop-color="#061c1c"/></radialGradient></defs>
+ <circle cx="50" cy="50" r="48" fill="#f5dfb0"/><circle cx="50" cy="50" r="44" fill="url(#g)" stroke="#fff4db" stroke-width="2"/>
+ <circle cx="50" cy="51" r="30" fill="none" stroke="#f2e8ce" stroke-width="1.5"/>
+ <path d="M40 72V42l5-4V27h10v11l5 4v30H40m7-35h6m-6 10h6m-6 10h6" fill="#e9e6d9" stroke="#052a29" stroke-width="2" stroke-linejoin="round"/>
+ <circle cx="50" cy="67" r="5" fill="#d5262e"/><path d="M27 68c3 9 9 14 18 17m28-17c-3 9-9 14-18 17" fill="none" stroke="#e9e6d9" stroke-width="2"/>
+ <text x="50" y="19" text-anchor="middle" fill="#fff5da" font-size="8" font-family="Arial,sans-serif" font-weight="bold" letter-spacing="1">FC GERLIES</text>
+ <text x="50" y="93" text-anchor="middle" fill="#fff5da" font-size="8" font-family="Arial,sans-serif" font-weight="bold">05</text>
+</svg>

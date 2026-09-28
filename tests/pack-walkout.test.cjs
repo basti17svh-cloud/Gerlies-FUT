@@ -26,7 +26,7 @@ test('walkout travels through nation, position and club before revealing the pla
   $:get,displayBase:()=>base,cardHTML:()=>'<div class="card-shell">Spielerkarte</div>',
   positionLabel:()=> 'ST',flagAsset:()=>'<span>🇩🇪</span>',badgeAsset:()=>'<img alt="FC Gerlies">',clubShort:()=> 'FC',
   normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
-  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,
+  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,isFounderItem:()=>false,pendingPack:[],
   sleep:ms=>{snapshots.push({ms,clue:get('walkoutClue').innerHTML,tunnel:get('walkoutTunnel').classList.contains('active'),card:get('revealCard').innerHTML});return Promise.resolve()}
  };
  vm.createContext(ctx);

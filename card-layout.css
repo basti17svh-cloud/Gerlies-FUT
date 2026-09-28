@@ -29,16 +29,35 @@
 .card-shell .custom-card.momentum{--card-column-fill:linear-gradient(180deg,#001628f5,#002c4bd9);--card-name-fill:linear-gradient(90deg,#001626,#053c56,#001626);--card-name-border:#4ee5ff;--card-stats-fill:linear-gradient(180deg,#001727f5,#001021f9);--card-name-color:#e5fcff;--card-stats-color:#9de8f6;--card-value-color:#e9ffff}
 .card-shell .custom-card.founder{
  color:#ffe7ae;
- background:radial-gradient(circle at 58% 35%,#18d1ba70,transparent 32%),linear-gradient(132deg,#043c39,#061918 37%,#156a63 69%,#092729);
- box-shadow:inset 0 0 0 2px #e8c889,inset 0 0 18px #46f0d766;
+ background:linear-gradient(147deg,transparent 12%,#57e8d224 12.4%,transparent 13.2%,transparent 45%,#f8d88039 45.5%,transparent 46.2%),repeating-linear-gradient(120deg,#56ffec11 0 1px,transparent 1px 22px),radial-gradient(circle at 63% 36%,#13bfb17c,transparent 35%),linear-gradient(130deg,#07262a,#041316 42%,#105b57 72%,#042022);
+ box-shadow:inset 0 0 0 2px #efce82,inset 0 0 0 5px #042a2b,inset 0 0 0 6px #8decdf,inset 0 0 24px #46f0d766,0 0 14px #17dcc15c;
  --card-column-fill:linear-gradient(180deg,#001d20f5,#004038dc);
  --card-name-fill:linear-gradient(90deg,#002326,#066058,#002326);
  --card-name-border:#f1d18c;
  --card-stats-fill:linear-gradient(180deg,#062421ef,#021416);
  --card-name-color:#ffe7ae;
  --card-stats-color:#ffe7ae;
+ --card-value-color:#fff3cb;
 }
+.card-shell .custom-card.founder:before{content:"";position:absolute;inset:3% 4%;pointer-events:none;z-index:2;border:1px solid #e9d39199;clip-path:polygon(0 13%,28% 4%,50% 0,72% 4%,100% 13%,100% 88%,50% 100%,0 88%);background:linear-gradient(142deg,transparent 20%,#7afeea42 20.4%,transparent 21.1%,transparent 65%,#f6ce8250 65.5%,transparent 66%),linear-gradient(30deg,transparent 42%,#7afeea26 42.4%,transparent 43%)}
 .card-shell .custom-card.founder:after{content:"FOUNDER";position:absolute;top:7%;left:50%;transform:translateX(-50%);font-size:4.5cqw;letter-spacing:.2em;font-weight:900;z-index:11;color:#f3dba4;text-shadow:0 1px 4px #000}
+.opening.mode-walkout.theme-founder{background:radial-gradient(circle at 50% 42%,#1c837880 0,#063f3e 31%,#050f13 75%)}
+.opening.theme-founder .walkout-tunnel{--walkout-beam:#eaca8a;background:radial-gradient(ellipse at 50% 46%,#51e9d35c,#073534 28%,#031013 76%)}
+.opening.theme-founder .walkout-clue-label,.opening.theme-founder .revealbadge{color:#f2d696;text-shadow:0 0 18px #78f6e8}
+.opening.theme-founder .reveal .card-shell{filter:drop-shadow(0 0 30px #30d7c18c)!important}
+.founder-pack-row{border-color:#caa663!important;background:linear-gradient(115deg,#082d30,#0c1618)!important;box-shadow:inset 0 0 0 1px #56dacc4d}
+.founder-result-card{display:flex;flex-direction:column;align-items:center;gap:14px;padding:15px 5px 22px;color:#f4dfa8;text-align:center}
+.founder-result-card .card-shell{width:min(48vw,230px);filter:drop-shadow(0 0 16px #36d2c38a)}
+.founder-result-card>strong{font-size:clamp(12px,3vw,18px)}
+.bio-founder-label{display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #bc9f62;border-radius:99px;background:#0a3634;color:#f5dda3;font-size:10px;font-weight:900;letter-spacing:.12em}
+@media(max-width:560px){
+ .bio-top{grid-template-columns:minmax(0,1fr);gap:12px}
+ .bio-card{display:grid;place-items:center}
+ .bio-card .card-shell{width:min(55vw,200px)}
+ .bio-headline{min-width:0}
+ .bio-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .bio-stat{min-width:0;overflow:hidden}
+}
 
 /* The context list overrides historic squad/bench rules without changing their sizes. */
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-top{

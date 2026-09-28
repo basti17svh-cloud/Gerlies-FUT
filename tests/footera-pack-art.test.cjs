@@ -10,7 +10,7 @@ const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let
 const sbcCode=html.slice(html.indexOf('function sbcOverviewCard('),html.indexOf('function sbcPickerTargetLabel('));
 
 test('every SBC reward uses the matching new Footera foil pack',()=>{
- const ctx={sbcDraftStats:()=>({count:0,ok:false}),sbcRewardPackLabel:r=>r.pack,esc:String};
+ const ctx={FOUNDER_PACK_ID:'founder-bastian',sbcDraftStats:()=>({count:0,ok:false}),sbcIsCompleted:()=>false,sbcRewardPackLabel:r=>r.pack,esc:String};
  vm.createContext(ctx);
  vm.runInContext(`${artCode}\n${sbcCode}`,ctx);
  for(const [id,file] of Object.entries({silver:'silber.webp',gold:'gold.webp','82':'promo.webp',goldplayers:'promo.webp'})){

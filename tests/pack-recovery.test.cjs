@@ -23,6 +23,7 @@ function app(saved=new Map()){
   ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},resetBoardIntro(){},resetWalkoutTunnel(){},PACKS:[{id:'gold',name:'Gold Pack'}],
   $:el,packDuplicateMap:()=>new Map([[0,false],[1,false]]),displayBase:item=>({name:`Spieler ${item.pid}`,ovr:75}),
   cardHTML:()=>'<div>Karte</div>',quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
+  FOUNDER_PACK_ID:'founder-bastian',isFounderItem:()=>false,
  };
  vm.createContext(ctx);
  vm.runInContext(`${stateCode}\n${artCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${resultCode}\n${finishCode}`,ctx);

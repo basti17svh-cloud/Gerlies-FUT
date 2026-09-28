@@ -76,3 +76,15 @@ test('Icon adds exactly one link to its own nation, and wrong position removes b
  assert.equal(api.playerChem(0,line(icon,german)),0);
  assert.equal(api.playerChem(1,line(icon,german)),0);
 });
+
+test('Founder always has 3/3 on ST and ZOM while preserving Icon-like teammate links',()=>{
+ const{api,formation}=setup();
+ const founder={pid:'footera-founder-bastian-gerlach',position:'ST',alt:'CAM',nation:'Germany',team:'FC Gerlies',league:'Footera'};
+ const teammate=ordinary('CM','France','Premier League','Arsenal FC');
+ formation[0].p='ST';assert.equal(api.playerChem(0,line(founder,teammate)),3);
+ formation[0].p='CAM';assert.equal(api.playerChem(0,line(founder,teammate)),3);
+ formation[0].p='CB';assert.equal(api.playerChem(0,line(founder,teammate)),0);
+ formation[0].p='ST';const other=ordinary('CM','Germany','Premier League','Chelsea');
+ assert.equal(api.playerChem(1,line(null,teammate,other)),0);
+ assert.equal(api.playerChem(1,line(founder,teammate,other)),1);
+});
