@@ -66,7 +66,7 @@ test('Founder uses the blank crystal artwork while position and attributes remai
  assert.match(css,/\.card-shell \.custom-card\.founder:before\{content:none\}/);
 });
 
-test('Rangers Founder uses the same renderer and only adds its yellow-and-black theme',()=>{
+test('Rangers Founder uses the same renderer with its yellow-and-black 2:3 artwork',()=>{
  const ctx=context(),p={id:'footera-founder-marco-gerlach',name:'M. Gerlach',position:'ST',ovr:88,team:'Schweinfurt Rangers 09',nation:'Germany',league:'Footera'};
  const item={pid:p.id,variant:'founder'},card=ctx.cardHTML(p,item,false);
  assert.match(card,/class="custom-card founder rangers-founder"/);assert.match(card,/class="card-shell founder-shell"/);

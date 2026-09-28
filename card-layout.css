@@ -139,8 +139,18 @@
 /* Match the apparent size of ordinary XI cards; keep the portrait within the inner frame. */
 #pitch .slot .mini .founder-shell{width:120%;margin-left:-10%;transform:translateY(-7%)}
 
-/* Rangers Founder changes only the shared card's decorative theme. All fields and
-   dimensions still come from cardHTML and the Founder master geometry above. */
+/* Rangers Founder uses the shared cardHTML fields and Founder slots. Align those
+   slots to the supplied 2:3 artwork without adding a second card renderer. */
+.founder-shell:has(>.rangers-founder){
+ /* The supplied Rangers artwork is 2:3; preserve that shape and align its native
+    photo opening/left rail with the same master renderer fields. */
+ aspect-ratio:2/3;
+ --card-info-left:13%;
+ --card-info-width:21%;
+ --card-portrait-right:8%;
+ --card-portrait-height:52%;
+ --card-name-top:65%;
+}
 .card-shell .custom-card.founder.rangers-founder{
  background-image:url("./assets/footera/founder-marco-frame.webp");
  --card-column-fill:transparent;
@@ -150,12 +160,22 @@
  --card-value-color:#fff0c6;
  color:#ffdf92;
 }
-.founder-shell .custom-card.founder.rangers-founder .face:before{
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-top{top:16%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .ovr{font-size:15cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .pos{font-size:6.2cqw!important;margin-top:.5cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-icons{top:31.5%!important;gap:2.2cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-flag,
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-flag-img{width:12cqw!important;height:8cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-club{width:14.5cqw!important;height:14.5cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .card-league{width:15cqw!important;height:15cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .face:before{
  background:radial-gradient(ellipse at 49% 64%,#ffd43b91,transparent 59%);
 }
-.founder-shell .custom-card.founder.rangers-founder .pname{
- background:linear-gradient(90deg,#0e0902,#362303 50%,#0e0902)!important;
- border-color:#f8c850!important;
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .face img{object-fit:fill!important;filter:none}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .pname{
+ background:linear-gradient(90deg,#0b08048c,#2016088c 50%,#0b08048c)!important;
+ border:0!important;
+ clip-path:polygon(2% 0,98% 0,100% 50%,98% 100%,2% 100%,0 50%);
  color:#ffe9b4!important;
  font-family:Arial,sans-serif!important;
 }
