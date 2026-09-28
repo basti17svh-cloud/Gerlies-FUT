@@ -108,7 +108,7 @@
  --card-info-left:17%;
  --card-info-width:18%;
  --card-portrait-left:31%;
- --card-portrait-right:5%;
+ --card-portrait-right:13%;
  --card-portrait-top:15%;
  --card-portrait-height:52%;
  --card-name-top:61%;
@@ -136,4 +136,5 @@
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .stats{top:36%!important;bottom:auto!important;height:26%!important}
 .founder-shell .custom-card.founder .stats span{border-right:1px solid #c2a16c8f}
 @media(max-width:560px){.player-detail-card .founder-shell{width:min(52vw,190px)}}
-#pitch .slot .mini .founder-shell{width:108%;margin-left:-4%}
+/* Match the apparent size of ordinary XI cards; keep the portrait within the inner frame. */
+#pitch .slot .mini .founder-shell{width:120%;margin-left:-10%;transform:translateY(-7%)}
