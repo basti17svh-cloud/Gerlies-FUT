@@ -173,11 +173,12 @@ function ensureObjectiveWindows(at=new Date()){
  state.objectiveWindows=state.objectiveWindows||{};
  state.objectiveClaims=state.objectiveClaims||{};
  state.objectiveBonuses=state.objectiveBonuses||{};
- const seasonWindow=objectiveWindow("season",at),seasonBaseline=state.objectiveWindows.season?.key===seasonWindow?.key?state.objectiveWindows.season.baseline:null;
- for(const group of activeObjectiveGroupKeys(at)){
+ const keys=activeObjectiveGroupKeys(at),seasonWindow=objectiveWindow("season",at);
+ keys.sort((a,b)=>a==="season"?-1:b==="season"?1:0);
+ for(const group of keys){
   const window=objectiveWindow(group,at);if(!window)continue;
   const existing=state.objectiveWindows[group];if(existing?.key===window.key)continue;
-  const sharedSeasonBaseline=["season","squad","rivals"].includes(group)&&seasonBaseline?seasonBaseline:null;
+  const sharedSeasonBaseline=["squad","rivals"].includes(group)&&state.objectiveWindows.season?.key===seasonWindow?.key?state.objectiveWindows.season.baseline:null;
   state.objectiveWindows[group]={key:window.key,baseline:sharedSeasonBaseline||Object.fromEntries(OBJECTIVE_STATS.map(stat=>[stat,Number(state.stats[stat]||0)]))};
   changed=true
  }
@@ -301,7 +302,7 @@ $("taskList").addEventListener("click",event=>{
  if(bonus.dataset.objectiveBonus!==week.key||state.objectiveBonuses[week.key]||!weeklyBonusReady(week))return;
  state.objectiveBonuses[week.key]=true;grant(WEEKLY_BONUS);save();renderAll();toast("Wochenmeister-Bonus abgeholt.")
 });
-ensureObjectiveWindows();save();
+capSeasonSp();ensureObjectiveWindows();save();
 setInterval(()=>{
  if(!ensureObjectiveWindows())return;
  save();
