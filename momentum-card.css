@@ -1,11 +1,22 @@
-/* The supplied MOMENTUM master art is used unchanged at every card size. */
+/* A clean crystal skin follows the shared card geometry at every size. */
 .momentum-shell{container-type:inline-size}
 .momentum-shell .custom-card.momentum{
- clip-path:polygon(8% 7%,16% 3%,33% 4%,50% 1%,66% 4%,84% 3%,94% 8%,99% 18%,97% 87%,87% 96%,50% 100%,13% 96%,3% 87%,1% 18%);
- background:#020e21 url("./assets/footera/momentum-master.jpg") center center / 132% 125% no-repeat;
+ clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);
+ background:
+  linear-gradient(145deg,transparent 25%,#81faff2b 26%,transparent 28% 62%,#2ce7ff25 63%,transparent 65%),
+  conic-gradient(from 210deg at 74% 38%,transparent 0 32deg,#15adca44 45deg,transparent 76deg 216deg,#7efaff36 231deg,transparent 254deg),
+  radial-gradient(ellipse at 63% 39%,#1184b58c,transparent 44%),
+  linear-gradient(155deg,#041329 4%,#0a3359 46%,#021020 100%);
+ box-shadow:inset 0 0 0 1.5cqw #62eefa,inset 0 0 15cqw #079cda73;
  color:#e0fbff;
 }
-.momentum-shell .custom-card.momentum:before{display:none}
+.momentum-shell .custom-card.momentum:before{inset:2.2cqw;border:1px solid #b8fcffad;opacity:.8;pointer-events:none}
+.momentum-shell .custom-card.momentum:after{
+ content:"MOMENTUM";position:absolute;z-index:3;top:7%;right:12%;
+ padding:.5cqw 2cqw;border:1px solid #79edff9c;border-radius:2cqw;
+ background:#031c32d9;color:#d9fbff;font-size:max(3px,4cqw);font-weight:900;
+ letter-spacing:.08em;text-shadow:0 0 5px #27e9ff;
+}
 
 /* The central card layout supplies all coordinates; only the cyan theme is local. */
 .momentum-shell .custom-card.momentum .ovr{color:#eaffff;text-shadow:0 1px 4px #00192f,0 0 11px #46f4ff}
@@ -22,7 +33,7 @@
 .event-showcase[data-event-theme="momentum"] .event-player:focus-visible{outline-color:#52ebff}
 .quality-tag.momentum{border-color:#00d7f6!important;background:linear-gradient(125deg,#03172b,#075073)!important;color:#bafcff!important;box-shadow:0 0 12px #01bce566!important}
 
-/* The first home slide uses the existing slider with every currently active event item. */
+/* Four readable cards preview the event; the Team button opens the full squad. */
 .home-hero-card[data-theme="momentum"]{
  --hero-accent:#5eeaff;--hero-accent-rgb:68,224,255;
  display:flex;flex-direction:column;align-items:stretch;gap:9px;min-height:0;
@@ -41,11 +52,12 @@
 .home-hero-card[data-theme="momentum"] .home-hero-team{border:1px solid #49d9ef;background:#062639;color:#d2fbff}
 .home-hero-card[data-theme="momentum"] .hero-metrics,.home-hero-card[data-theme="momentum"] .hero-burst,.home-hero-card[data-theme="momentum"] .hero-emblem,.home-hero-card[data-theme="momentum"] .hero-live-box,.home-hero-card[data-theme="momentum"] .home-hero-visual:before,.home-hero-card[data-theme="momentum"] .home-hero-visual:after{display:none}
 .home-hero-card[data-theme="momentum"] .home-hero-visual{display:block;min-height:0;width:100%}
-.home-momentum-roster{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px 2px;width:100%;max-width:420px;margin:0 auto;position:relative;z-index:3}
+.home-momentum-roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;width:100%;max-width:470px;margin:0 auto;position:relative;z-index:3}
 .home-momentum-roster[hidden]{display:none!important}
 .home-momentum-player{all:unset;display:block;min-width:0;cursor:pointer;touch-action:manipulation;text-align:center}
 .home-momentum-player .mini,.home-momentum-player .mini .card-shell{width:100%!important}
 .home-momentum-player .card-shell{filter:drop-shadow(0 0 5px #00d6f988)}
+.home-momentum-count{grid-column:1/-1;margin-top:3px;color:#9de8f6;font-size:9px;font-weight:800;letter-spacing:.04em;text-align:center}
 .home-momentum-player:focus-visible{outline:2px solid #80f6ff;outline-offset:2px;border-radius:5px}
 .home-momentum-player:active{transform:scale(.96)}
 @media(max-width:560px){

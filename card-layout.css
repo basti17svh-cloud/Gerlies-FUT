@@ -63,6 +63,10 @@
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important}
 .card-shell .custom-card .face .face-fallback{font-size:24cqw!important}
 
+/* Give portraits room in the biography and slightly enlarge squad cards. */
+.bio-card .card-shell{--card-portrait-top:15%;--card-portrait-height:54%}
+#pitch .slot{width:19%}
+
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-bottom{
  position:absolute!important;left:7%!important;right:7%!important;top:var(--card-name-top)!important;bottom:5%!important;height:auto!important;padding:0!important;margin:0!important;clip-path:none!important;z-index:10!important;background:var(--card-stats-fill)!important;text-align:center!important;
 }

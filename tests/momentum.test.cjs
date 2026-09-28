@@ -47,8 +47,9 @@ test('board and walkout reveal choose the real lead item; regular modes stay reg
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.match(source,/footera-v19-30-root-shell/);assert.match(source,/momentum-card\.css/);
- assert.match(css,/momentum-master\.jpg/);assert.ok(fs.existsSync(path.join(__dirname,'../assets/footera/momentum-master.jpg')));
+ assert.match(source,/footera-v19-42-root-shell/);assert.match(source,/momentum-card\.css/);
+ assert.match(css,/\.momentum-shell \.custom-card\.momentum/);
+ assert.doesNotMatch(css,/momentum-master\.jpg/);
 });
 
 test('MOMENTUM changes the light theme only; board and walkout timings match ordinary pulls',async()=>{
@@ -87,16 +88,16 @@ test('market offers use 14 fixed identities, target ratings and preserve event t
 });
 
 test('gold packs can hit MOMENTUM during the window; no new hits after expiry',()=>{
- const script=section('function generatePack(id){','function renderStore(){');
+ const script=section('function makePromoPackItem(','const TASKS=')+section('function generatePack(id,tradeable=true){','function renderStore(){');
  function roll(at,type='gold'){
   class Clock extends Date{static now(){return at}}
   const fixedMath=Object.create(Math);fixedMath.random=()=>0;
-  const base={id:'ordinary-player',ovr:80,position:'ST',name:'Gold'};
-  const c=context({Date:Clock,Math:fixedMath,PACKS:[{id:'test',type,count:1,min:type==='gold'?75:0,max:type==='gold'?99:64}],PLAYERS:[base],weightedPlayer:()=>base,rarityOf:()=>type,isCardRare:()=>false,displayBase:()=>base,makeLivePackItem:(p,tradeable)=>({pid:p.id,variant:'',tradeable}),makeItem:(p,tradeable,opts)=>({pid:String(p.id),variant:opts.variant,eventType:opts.eventType,eventName:opts.eventName,tradeable})});
-  c.P_BY_ID=new Map(vm.runInContext('MOMENTUM_EVENT.players',c).map(p=>[p.pid,{id:p.pid,ovr:p.baseOvr,position:p.position}]));
+  const base={id:'247827',ovr:89,position:'RM',name:'M. Olise'},bronze={id:'bronze',ovr:64,position:'ST',name:'Bronze'};
+  const c=context({Date:Clock,Math:fixedMath,PACKS:[{id:'test',type,count:1,min:type==='gold'?75:0,max:type==='gold'?99:64}],PLAYERS:[base,bronze],weightedPlayer:()=>type==='bronze'?bronze:base,rarityOf:()=>type,isCardRare:()=>false,displayBase:()=>base,isActiveEventSbcBase:()=>false,activeTotwWeek:()=>null,totwInfo:()=>null,makeItem:(p,tradeable,opts={})=>({pid:p.id,tradeable,...opts})});
+  c.activePromoPackEntry=p=>p.id===base.id&&at<Date.parse(vm.runInContext('MOMENTUM_EVENT.activeUntilAt',c))?{event:vm.runInContext('MOMENTUM_EVENT',c),info:{pid:p.id}}:null;
   vm.runInContext(script,c);return c.generatePack('test')[0];
  }
- const start=Date.parse('2026-09-27T12:00:00+02:00'),end=Date.parse('2026-10-11T19:00:00+02:00');
+ const start=Date.parse('2026-09-27T12:00:00+02:00'),end=Date.parse('2026-10-02T19:00:00+02:00');
  assert.equal(roll(start).eventType,'momentum');
  assert.equal(roll(start,'bronze').eventType,undefined);
  assert.equal(roll(end).eventType,undefined);
