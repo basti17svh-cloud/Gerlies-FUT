@@ -181,11 +181,8 @@ function renderCompetitionModeStatus(){
 }
 function renderCompetitionHome(){
  const host=$("competitionHome");if(!host)return;
- syncCompetitionWeeks();const sb=state.squadBattle,r=state.rivals,s=seasonInfo(),rank=sbRank(sb.points),next=SB_RANKS.find(x=>x.min>sb.points);
- const sbPct=next?Math.min(100,Math.round((sb.points-rank.min)/(next.min-rank.min)*100)):100;
- host.innerHTML=`<div class="competition-tile"><small>SQUAD BATTLES · RESET MONTAG 09:00</small><strong>${rank.name.toUpperCase()} · ${fmt(sb.points)} BP</strong><span>${sb.played}/14 gewertete Spiele · ${competitionCountdown("squad")}</span><div class="competition-bar"><i style="width:${sbPct}%"></i></div>${competitionClaimButtons("squad")}</div>
- <div class="competition-tile"><small>RIVALS · RESET DONNERSTAG 09:00</small><strong>${rivalsStageLabel(r)}</strong><span>${r.weeklyPoints}/35 Wochenpunkte · ${r.weeklyPoints>=35?"Upgrade erreicht":r.weeklyPoints>=15?"Wochenreward erreicht":"Reward ab 15"} · ${competitionCountdown("rivals")}</span><div class="competition-bar"><i style="width:${Math.min(100,Math.round(r.weeklyPoints/35*100))}%"></i></div>${r.streak>=2?`<em>Siegesserie ×${r.streak}</em>`:""}${competitionClaimButtons("rivals")}</div>
- <div class="competition-tile"><small>SEASON ${s.number} · ${esc(s.name)}</small><strong>${seasonCountdown(s.end)}</strong><span>${s.end?`Endet ${passDate(s.end,true)}`:"Start "+passDate(s.start)}</span></div>`
+ const s=seasonInfo();
+ host.innerHTML=`<div class="competition-tile season-only"><small>SEASON ${s.number} · ${esc(s.name)}</small><strong>${seasonCountdown(s.end)}</strong><span>${s.end?`Endet ${passDate(s.end,true)}`:"Start "+passDate(s.start)}</span></div>`
 }
 function renderCompetitionProgress(snapshot){
  const host=$("competitionProgress");if(!host)return;
