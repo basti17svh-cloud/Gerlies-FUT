@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 580" role="img" aria-label="Footera Founder Pack">
+ <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#312500"/><stop offset=".52" stop-color="#080604"/><stop offset="1" stop-color="#4b3000"/></linearGradient><linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff2c1"/><stop offset=".45" stop-color="#bb8240"/><stop offset=".75" stop-color="#ffeaa8"/><stop offset="1" stop-color="#8f6937"/></linearGradient></defs>
+ <path d="M42 35 130 19 220 39 310 19 398 35 425 114 405 481 220 565 35 481 15 114Z" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+ <path d="M56 58 138 46 220 68 302 46 384 58 400 126 382 462 220 532 58 462 40 126Z" fill="none" stroke="#ffd32a" stroke-width="2"/>
+ <path d="m46 163 153-101-27 176-114 78m339-141L250 69l24 171 116 89M75 445l153-217 141 226M39 375l181 155 182-154" fill="none" stroke="#ffe04b" opacity=".36" stroke-width="2"/>
+ <path d="m128 39 92 33 92-33-62 129-30 68-30-68Z" fill="#ffc300" opacity=".12"/>
+ <path d="m194 174 26 25 26-25-7 32h-38Z" fill="url(#gold)"/><path d="M194 213h52" stroke="#ffeeb6" stroke-width="4"/>
+ <text x="220" y="260" text-anchor="middle" fill="#f7e3ac" font-family="Arial,sans-serif" font-size="29" font-weight="bold" letter-spacing="7">FOOTERA</text>
+ <text x="220" y="313" text-anchor="middle" fill="#f9e9bf" font-family="Arial,sans-serif" font-size="44" font-weight="bold" letter-spacing="4">FOUNDER</text>
+ <path d="M83 338h274" stroke="url(#gold)" stroke-width="3"/>
+ <text x="220" y="386" text-anchor="middle" fill="#ffdf63" font-family="Arial,sans-serif" font-size="19" font-weight="bold" letter-spacing="3">EXKLUSIVES PACK</text>
+ <circle cx="220" cy="441" r="27" fill="#1b1203" stroke="url(#gold)" stroke-width="4"/><path d="m208 437 12-13 12 13-5 21h-14Z" fill="url(#gold)"/>
+</svg>

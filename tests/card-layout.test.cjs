@@ -10,7 +10,7 @@ const emblemsCode=html.slice(html.indexOf('function emblemsHTML('),html.indexOf(
 const rendererCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
 const css=fs.readFileSync(path.join(__dirname,'../card-layout.css'),'utf8');
 function context(){
- const ctx={esc:String,resolvedPlayer:p=>p,isFounderItem:i=>i?.pid==='footera-founder-bastian-gerlach',isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
+ const ctx={esc:String,MARCO_FOUNDER_PLAYER_ID:'footera-founder-marco-gerlach',resolvedPlayer:p=>p,isFounderItem:i=>['footera-founder-bastian-gerlach','footera-founder-marco-gerlach'].includes(i?.pid),isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
   positionLabel:p=>p==='GK'?'TW':p,cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
@@ -64,4 +64,16 @@ test('Founder uses the blank crystal artwork while position and attributes remai
  assert.match(css,/url\("\.\/assets\/footera\/founder-frame\.webp"\)/);
  assert.match(css,/:is\(\.founder-shell,[^)]*\) \.custom-card\.founder \.card-bottom/);
  assert.match(css,/\.card-shell \.custom-card\.founder:before\{content:none\}/);
+});
+
+test('Rangers Founder uses the same renderer and only adds its yellow-and-black theme',()=>{
+ const ctx=context(),p={id:'footera-founder-marco-gerlach',name:'M. Gerlach',position:'ST',ovr:88,team:'Schweinfurt Rangers 09',nation:'Germany',league:'Footera'};
+ const item={pid:p.id,variant:'founder'},card=ctx.cardHTML(p,item,false);
+ assert.match(card,/class="custom-card founder rangers-founder"/);assert.match(card,/class="card-shell founder-shell"/);
+ assert.match(card,/class="pos">ST<\/div>/);assert.match(card,/title="M\. Gerlach"/);
+ assert.equal((card.match(/<small>(?:TEM|SCH|PAS|DRI|DEF|PHY)<\/small>/g)||[]).length,6);
+ assert.doesNotMatch(card,/chem-dots|official-card/);
+ assert.match(css,/\.custom-card\.founder\.rangers-founder\{/);
+ assert.match(css,/\.rangers-founder[\s\S]*?founder-marco-frame\.webp/);
+ assert.match(css,/\.custom-card \.face\{[\s\S]*?overflow:hidden!important/);
 });

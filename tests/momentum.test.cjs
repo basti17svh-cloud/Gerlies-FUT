@@ -8,7 +8,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'../momentum-card.css'),'utf8');
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 function context(extra={}){
- const c={Date,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',isFounderItem:()=>false,...extra};vm.createContext(c);
+ const c={Date,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',founderRuleForPack:()=>undefined,isFounderItem:()=>false,...extra};vm.createContext(c);
  vm.runInContext(section('const MOMENTUM_EVENT=','let eventSelectedId='),c);
  return c
 }
@@ -47,7 +47,7 @@ test('board and walkout reveal choose the real lead item; regular modes stay reg
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.match(source,/footera-v19-46-root-shell/);assert.match(source,/momentum-card\.css/);
+ assert.match(source,/footera-v19-47-root-shell/);assert.match(source,/momentum-card\.css/);
  assert.match(css,/\.momentum-shell \.custom-card\.momentum/);
  assert.doesNotMatch(css,/momentum-master\.jpg/);
 });

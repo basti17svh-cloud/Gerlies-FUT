@@ -13,7 +13,7 @@ function setup({initial={},now='2026-09-27T12:00:00Z',eventPlayers=[]}={}){
  const state={coins:0,packs:{},rivals:{division:10,points:0},...initial};
  const players=[{id:'bronze-gk',ovr:60,position:'GK'},...Array.from({length:8},(_,i)=>({id:`bronze-${i}`,ovr:60,position:'ST'}))];
  const event={id:'momentum-team-1',name:'MOMENTUM',subtitle:'TEAM 1',activeFrom:'2026-09-27T00:00:00+02:00',activeUntilAt:'2026-10-02T19:00:00+02:00',players:eventPlayers};
- const ctx={Date:ClockDate,Intl,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',state,PLAYERS:players,PACKS:[{id:'gold',name:'Gold-Pack'},{id:'82',name:'82+'}],MOMENTUM_EVENT:event,EVENT_PROMO_RELEASES:[event],LIVE_TOTW:{name:'TOTW',players:[]},
+ const ctx={Date:ClockDate,Intl,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',state,PLAYERS:players,PACKS:[{id:'gold',name:'Gold-Pack'},{id:'82',name:'82+'}],MOMENTUM_EVENT:event,EVENT_PROMO_RELEASES:[event],LIVE_TOTW:{name:'TOTW',players:[]},
   FORMATIONS:{'4-3-3':[{p:'GK'},...Array.from({length:10},()=>({p:'ST'}))]},
   eventPackIsActive:(e,at)=>at>=Date.parse(e.activeFrom)&&at<Date.parse(e.activeUntilAt),
   promoEventEntries:e=>e.players.map((p,i)=>({player:{id:p.pid,position:p.position,ovr:p.ovr},item:{pid:p.pid,variant:'special'},index:i})),
@@ -110,7 +110,7 @@ test('event windows end at Friday 19:00 Berlin, including after the clock change
 
 test('reward-only rating packs retain tradeability and TOTW pack needs a live team',()=>{
  const {ctx}=setup();let next=1;
- Object.assign(ctx,{weightedPlayer:min=>({id:String(next++),ovr:min,position:'ST'}),makeLivePackItem:(p,tradeable)=>({pid:p.id,tradeable}),
+ Object.assign(ctx,{founderRuleForPack:()=>undefined,weightedPlayer:min=>({id:String(next++),ovr:min,position:'ST'}),makeLivePackItem:(p,tradeable)=>({pid:p.id,tradeable}),
   isCardRare:()=>false,displayBase:()=>({ovr:77}),rarityOf:()=>"gold",uid:()=>String(next++),activeTotwWeek:()=>null,
   liveTotwTeamEntries:()=>[{item:{pid:'totw-1',variant:'special',eventName:'Team of the Week 2'}}]});
  const code=html.slice(html.indexOf('function generatePack(id,tradeable=true){'),html.indexOf('function renderStore(){'));
