@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.39</title>
+<title>Footera V19.40</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1200,6 +1200,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./legacy-card.css">
 <link rel="stylesheet" href="./momentum-card.css">
+<link rel="stylesheet" href="./card-layout.css">
 </head>
 <body>
 
@@ -1253,7 +1254,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.39</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.40</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2612,7 +2613,7 @@ function isBaseRare(p){
  return r>=80||(r>=78&&!!ps)
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
-function cardClass(p,item){if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(isMomentumItem(item))return"momentum";if(item?.variant==="founder")return"founder";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
 function itemBase(item){return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
 function displayBase(item){const b=itemBase(item);if(!b)return null;const momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null,eventStats=Array.isArray(item?.eventStats)?item.eventStats:null;let out={...b,ovr:itemRating(item),position:momentum?.position||item?.overridePosition||b.position};if(momentum){if(momentum.name)out.name=momentum.name;if(momentum.stats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];if(momentum.position)out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}if(eventStats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=Number(eventStats[index]??out[k]??0);const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
@@ -2660,7 +2661,7 @@ function normalizePlayerAffiliations(players){
  }
  return players
 }function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
-function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div></div>`}
+function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div></div>`}
 function playerClubLabel(p){const a=resolvedAffiliation(p);return String(a?.team||"").trim()||"Vereinslos"}
 function playerLeagueLabel(p){
  const a=resolvedAffiliation(p),league=String(a?.league||"").trim();
@@ -3210,8 +3211,8 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   if(!p)return"";p=resolvedPlayer(p);if(!mini&&item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?(itemRating(item)||Number(item.displayRating)||Number(p.ovr)||0):p.ovr,pos=shownPosition||p.position;
   const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
-  const official=Number(r)===Number(p.ovr)?officialCardHTML(p,item):"";
-  const assignedPosition=official&&pos!==p.position?`<span class="official-assigned-position" aria-label="Eingesetzt als ${esc(positionLabel(pos,p))}">${esc(positionLabel(pos,p))}</span>`:"";
+  const fullName=String(p.name||"Spieler").trim(),parts=fullName.split(/\s+/),shortName=fullName.length>19&&parts.length>1?`${parts[0][0]}. ${parts.slice(1).join(" ")}`:fullName;
+  const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
     <path fill="#b10931" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
     <path fill="#6c0517" opacity=".73" d="M57 28 84 8 93 36 63 57 32 50Z"/><path fill="#dd2042" opacity=".4" d="M84 8 96 20 93 36 63 57Z"/>
@@ -3220,8 +3221,8 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
     <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#ff5367" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
-   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,!!official)}</div><div class="card-bottom"><div class="pname">${esc(p.name)}</div><div class="meta">${esc(item?.variant==="icon-mid"?"MID ICON":p.team)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><b>${x[1]}</b>${x[0]}</span>`).join("")}</div></div></div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":""}">${body}${official}${assignedPosition}${evoMarker}</div></div>`
+   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div></div>`;
+ const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":""}">${body}${evoMarker}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
 
@@ -6254,7 +6255,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.39";
+const GFUT_BUILD="V19.40";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;

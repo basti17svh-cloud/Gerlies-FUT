@@ -39,17 +39,10 @@
 }
 .legacy-shell .custom-card.legacy .legacy-laurel{right:5%;top:39%;width:15%;height:auto;opacity:.73;z-index:6}
 
-/* Specificity covers legacy cards inside older pitch and drawer rules as well. */
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-top{left:9%!important;top:17%!important;width:26%!important;text-align:center!important;z-index:9!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .ovr{font-size:19.5cqw!important;line-height:.86!important;letter-spacing:-.05em!important;color:#ffe2a2!important;text-shadow:0 2px 5px #000,0 0 10px #e99c4d55!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .pos{margin-top:1.7cqw!important;font-size:6.1cqw!important;line-height:1!important;transform:none!important;color:#f8d797!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-icons{left:11%!important;top:35%!important;gap:1.5cqw!important;align-items:center!important;z-index:9!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-flag-img{width:13cqw!important;height:8.5cqw!important;max-width:none!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-league,:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-club{width:12cqw!important;height:12cqw!important;font-size:3.2cqw!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .face{left:17%!important;right:0!important;top:22%!important;height:61%!important;overflow:hidden!important;z-index:4!important;background:none!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important;filter:drop-shadow(0 5px 7px #000b) saturate(1.06) contrast(1.04)!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .card-bottom{left:6.5%!important;right:6.5%!important;bottom:4.5%!important;padding:1.2cqw 1.6cqw 1cqw!important;background:linear-gradient(180deg,#26040808,#180206c7 27%,#080103f5)!important;z-index:9!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .pname{padding-top:2.4cqw!important;font-size:6.7cqw!important;line-height:1.05!important;letter-spacing:.02em!important;color:#ffe7b1!important;border-color:#d9a650!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .meta{display:block!important;margin-top:1.3cqw!important;font-size:3.6cqw!important;line-height:1!important;color:#e1b876!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .stats{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:.4cqw!important;margin-top:2.4cqw!important;font-size:max(3px,2.8cqw)!important;line-height:1!important;color:#e7c281!important}
-:is(.legacy-shell,.pitch .slot .mini,.friend-pitch .friend-slot .mini,.squad-drawer #bench .mini,.squad-drawer #reserve .mini) .custom-card.legacy .stats b{display:block!important;margin-bottom:.5cqw!important;font-size:max(5px,5cqw)!important;line-height:1!important;color:#ffe6a8!important}
+/* Coordinates come from card-layout.css; keep the red/gold Legacy treatment. */
+.legacy-shell .custom-card.legacy .ovr{color:#ffe2a2;text-shadow:0 2px 5px #000,0 0 10px #e99c4d55}
+.legacy-shell .custom-card.legacy .pos{color:#f8d797}
+.legacy-shell .custom-card.legacy .face img{filter:drop-shadow(0 5px 7px #000b) saturate(1.06) contrast(1.04)}
+.legacy-shell .custom-card.legacy .pname{color:#ffe7b1;text-shadow:0 1px 3px #000}
+.legacy-shell .custom-card.legacy .stats{color:#e7c281}
+.legacy-shell .custom-card.legacy .stats b{color:#ffe6a8;text-shadow:0 1px 2px #000}

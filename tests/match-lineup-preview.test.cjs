@@ -52,16 +52,17 @@ test('preview drag swap changes lineup and refreshes the displayed team',()=>{
  assert.deepEqual([saves,renders,previews],[1,1,1]);
 });
 
-test('the official card stays visible at a valid secondary position with a position label',()=>{
+test('a secondary position uses the shared card and preserves its position label',()=>{
  const ctx={prioritizeCached:arr=>arr,imageCacheKey:()=>'',esc:String,imgCandidatesAttr:JSON.stringify,
-  resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,emblemsHTML:()=>'',portraitHTML:()=>'',
+  resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,emblemsHTML:()=>'',portraitHTML:()=>'<img src="portrait.png">',
   positionLabel:pos=>({CAM:'ZOM',RM:'RM'})[pos]||pos,cardStatPairs:()=>[]};
  vm.createContext(ctx);vm.runInContext(`${imageCode}\n${cardCode}`,ctx);
  const palmer={id:'257498',name:'C. Palmer',ovr:85,position:'CAM',alt:'RM',team:'Chelsea FC'};
  const card=ctx.cardHTML(palmer,null,true,'RM');
- assert.match(card,/class="official-card"/);
- assert.match(card,/class="official-assigned-position" aria-label="Eingesetzt als RM">RM/);
- assert.match(card,/class="custom-card gold"/,'a fallback stays available if the remote card fails');
+ assert.match(card,/class="pos">RM/);
+ assert.match(card,/class="custom-card gold"/);
+ assert.match(card,/src="portrait.png"/);
+ assert.doesNotMatch(card,/class="official-card"/);
 });
 
 test('new club items show their real rating when displayRating has its default zero',()=>{

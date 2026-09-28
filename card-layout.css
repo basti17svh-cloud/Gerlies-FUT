@@ -1,0 +1,78 @@
+/* One layout for every player card. All dimensions scale with the card shell. */
+.card-shell{
+ container-type:inline-size;
+ --card-info-left:10%;
+ --card-info-width:23%;
+ --card-portrait-left:29%;
+ --card-portrait-right:5%;
+ --card-portrait-top:19%;
+ --card-portrait-height:52%;
+ --card-name-top:70%;
+}
+.card-shell .custom-card{
+ --card-column-fill:linear-gradient(180deg,#0005,#0002);
+ --card-name-fill:linear-gradient(90deg,#0007,#0009,#0007);
+ --card-name-border:currentColor;
+ --card-stats-fill:linear-gradient(180deg,#0000,#0008);
+ --card-name-color:inherit;
+ --card-stats-color:inherit;
+ --card-value-color:inherit;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.icon){
+ --card-column-fill:linear-gradient(180deg,#fff4,#0002);
+ --card-name-fill:linear-gradient(90deg,#0005,#0008,#0005);
+ --card-name-border:#fff8;
+ --card-name-color:#fff;
+}
+.card-shell .custom-card.totw{--card-name-border:#d9bd65;--card-name-fill:linear-gradient(90deg,#111b,#42371de8,#111b);--card-stats-color:#eadb9f}
+.card-shell .custom-card.legacy{--card-column-fill:linear-gradient(180deg,#190205e8,#38070cb9);--card-name-fill:linear-gradient(90deg,#240407,#671321,#240407);--card-name-border:#d9a650;--card-stats-fill:linear-gradient(180deg,#180206e8,#080103);--card-name-color:#ffe7b1;--card-stats-color:#e7c281;--card-value-color:#ffe6a8}
+.card-shell .custom-card.momentum{--card-column-fill:linear-gradient(180deg,#001628f5,#002c4bd9);--card-name-fill:linear-gradient(90deg,#001626,#053c56,#001626);--card-name-border:#4ee5ff;--card-stats-fill:linear-gradient(180deg,#001727f5,#001021f9);--card-name-color:#e5fcff;--card-stats-color:#9de8f6;--card-value-color:#e9ffff}
+.card-shell .custom-card.founder{
+ color:#ffe7ae;
+ background:radial-gradient(circle at 58% 35%,#18d1ba70,transparent 32%),linear-gradient(132deg,#043c39,#061918 37%,#156a63 69%,#092729);
+ box-shadow:inset 0 0 0 2px #e8c889,inset 0 0 18px #46f0d766;
+ --card-column-fill:linear-gradient(180deg,#001d20f5,#004038dc);
+ --card-name-fill:linear-gradient(90deg,#002326,#066058,#002326);
+ --card-name-border:#f1d18c;
+ --card-stats-fill:linear-gradient(180deg,#062421ef,#021416);
+ --card-name-color:#ffe7ae;
+ --card-stats-color:#ffe7ae;
+}
+.card-shell .custom-card.founder:after{content:"FOUNDER";position:absolute;top:7%;left:50%;transform:translateX(-50%);font-size:4.5cqw;letter-spacing:.2em;font-weight:900;z-index:11;color:#f3dba4;text-shadow:0 1px 4px #000}
+
+/* The context list overrides historic squad/bench rules without changing their sizes. */
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-top{
+ position:absolute!important;left:var(--card-info-left)!important;top:17.5%!important;width:var(--card-info-width)!important;height:auto!important;text-align:center!important;transform:none!important;z-index:9!important;isolation:isolate;
+}
+.card-shell .custom-card .card-top:before{content:"";position:absolute;z-index:-1;left:-4%;right:-4%;top:-2cqw;height:72cqw;background:var(--card-column-fill);border:1px solid #ffffff32;clip-path:polygon(12% 0,88% 0,100% 7%,100% 92%,50% 100%,0 92%,0 7%);pointer-events:none}
+:is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .ovr{font-size:20cqw!important;line-height:.93!important;letter-spacing:-.05em!important}
+:is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .pos{font-size:7.3cqw!important;line-height:1!important;margin-top:1.3cqw!important;transform:none!important}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-icons{
+ position:absolute!important;inset:auto!important;left:var(--card-info-left)!important;top:40%!important;width:var(--card-info-width)!important;height:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:3.5cqw!important;z-index:9!important;pointer-events:none!important;
+}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card :is(.card-flag,.card-club,.card-league){position:static!important;display:grid!important;place-items:center!important;transform:none!important;flex:none!important;margin:0!important;padding:0!important;line-height:1!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-flag{width:12cqw!important;height:8cqw!important;font-size:8cqw!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-flag-img{width:12cqw!important;height:8cqw!important;max-width:100%!important;object-fit:cover!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-club{width:11cqw!important;height:11cqw!important;font-size:3.4cqw!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-league{width:10cqw!important;height:10cqw!important;font-size:3.4cqw!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .badge-img{width:100%!important;height:100%!important;object-fit:contain!important}
+
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .face{
+ position:absolute!important;left:var(--card-portrait-left)!important;right:var(--card-portrait-right)!important;top:var(--card-portrait-top)!important;height:var(--card-portrait-height)!important;z-index:4!important;overflow:hidden!important;background:none!important;isolation:isolate;
+}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .face img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;clip-path:none!important}
+.card-shell .custom-card .face .face-fallback{font-size:24cqw!important}
+
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-bottom{
+ position:absolute!important;left:7%!important;right:7%!important;top:var(--card-name-top)!important;bottom:5%!important;height:auto!important;padding:0!important;margin:0!important;clip-path:none!important;z-index:10!important;background:var(--card-stats-fill)!important;text-align:center!important;
+}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .pname{
+ display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:39%!important;margin:0!important;padding:0 1cqw!important;border:1px solid var(--card-name-border)!important;background:var(--card-name-fill)!important;color:var(--card-name-color)!important;line-height:1!important;font-size:max(3.5px,calc(8cqw * var(--card-name-scale,1)))!important;letter-spacing:0!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;text-shadow:0 1px 3px #000!important;
+}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .stats{
+ position:absolute!important;left:0!important;right:0!important;top:43%!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:0!important;padding:0!important;align-items:center!important;color:var(--card-stats-color)!important;line-height:1!important;text-align:center!important;font-size:max(3px,2.8cqw)!important;
+}
+.card-shell .custom-card .stats span{min-width:0;border-right:1px solid #ffffff3b}
+.card-shell .custom-card .stats span:last-child{border-right:0}
+.card-shell .custom-card .stats small{display:block;font-size:max(3px,2.8cqw);font-weight:900;line-height:1;margin-bottom:1cqw}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .stats b{display:block!important;margin:0!important;font-size:max(5px,6.5cqw)!important;line-height:1!important;color:var(--card-value-color)!important}
