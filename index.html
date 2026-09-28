@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.43</title>
+<title>Footera V19.44</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1254,7 +1254,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.43</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.44</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3257,7 +3257,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
    </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const body=`<div class="custom-card ${cls}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div></div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":""}">${body}${evoMarker}</div></div>`
+ const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}</div></div>`
 }
 function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
 
@@ -6298,7 +6298,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.43";
+const GFUT_BUILD="V19.44";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6316,7 +6316,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1943",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1944",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

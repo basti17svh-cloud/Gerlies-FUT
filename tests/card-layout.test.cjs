@@ -50,3 +50,17 @@ test('goalkeepers use the same geometry with six keeper stats, long names fit th
  assert.match(long,/T\. Alexander-Arnold/);
  assert.match(long,/--card-name-scale:0\.78/);
 });
+
+test('Founder uses the blank crystal artwork while position and attributes remain dynamic in the master renderer',()=>{
+ const ctx=context(),founder={pid:'footera-founder-bastian-gerlach',variant:'founder'};
+ const striker=ctx.cardHTML(gerlach,founder,false,'ST'),midfielder=ctx.cardHTML(gerlach,founder,false,'ZOM');
+ assert.match(striker,/class="card-shell founder-shell"/);
+ assert.match(striker,/class="custom-card founder"/);
+ assert.match(striker,/class="pos">ST<\/div>/);
+ assert.match(midfielder,/class="pos">ZOM<\/div>/);
+ assert.match(striker,/title="B\. Gerlach"/);
+ assert.match(striker,/<small>TEM<\/small><b>91<\/b>/);
+ assert.doesNotMatch(striker,/chem-dots|official-card/);
+ assert.match(css,/url\("\.\/assets\/footera\/founder-frame\.webp"\)/);
+ assert.match(css,/\.founder-shell \.custom-card\.founder \.card-bottom/);
+});

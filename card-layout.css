@@ -29,18 +29,18 @@
 .card-shell .custom-card.momentum{--card-column-fill:linear-gradient(180deg,#001628f5,#002c4bd9);--card-name-fill:linear-gradient(90deg,#001626,#053c56,#001626);--card-name-border:#4ee5ff;--card-stats-fill:linear-gradient(180deg,#001727f5,#001021f9);--card-name-color:#e5fcff;--card-stats-color:#9de8f6;--card-value-color:#e9ffff}
 .card-shell .custom-card.founder{
  color:#ffe7ae;
- background:linear-gradient(147deg,transparent 12%,#57e8d224 12.4%,transparent 13.2%,transparent 45%,#f8d88039 45.5%,transparent 46.2%),repeating-linear-gradient(120deg,#56ffec11 0 1px,transparent 1px 22px),radial-gradient(circle at 63% 36%,#13bfb17c,transparent 35%),linear-gradient(130deg,#07262a,#041316 42%,#105b57 72%,#042022);
- box-shadow:inset 0 0 0 2px #efce82,inset 0 0 0 5px #042a2b,inset 0 0 0 6px #8decdf,inset 0 0 24px #46f0d766,0 0 14px #17dcc15c;
- --card-column-fill:linear-gradient(180deg,#001d20f5,#004038dc);
- --card-name-fill:linear-gradient(90deg,#002326,#066058,#002326);
+ background:url("./assets/footera/founder-frame.webp") center / 100% 100% no-repeat;
+ clip-path:none;
+ overflow:visible;
+ box-shadow:none;
+ --card-column-fill:transparent;
+ --card-name-fill:linear-gradient(90deg,#00191b,#065149 50%,#00191b);
  --card-name-border:#f1d18c;
- --card-stats-fill:linear-gradient(180deg,#062421ef,#021416);
+ --card-stats-fill:transparent;
  --card-name-color:#ffe7ae;
  --card-stats-color:#ffe7ae;
  --card-value-color:#fff3cb;
 }
-.card-shell .custom-card.founder:before{content:"";position:absolute;inset:3% 4%;pointer-events:none;z-index:2;border:1px solid #e9d39199;clip-path:polygon(0 13%,28% 4%,50% 0,72% 4%,100% 13%,100% 88%,50% 100%,0 88%);background:linear-gradient(142deg,transparent 20%,#7afeea42 20.4%,transparent 21.1%,transparent 65%,#f6ce8250 65.5%,transparent 66%),linear-gradient(30deg,transparent 42%,#7afeea26 42.4%,transparent 43%)}
-.card-shell .custom-card.founder:after{content:"FOUNDER";position:absolute;top:7%;left:50%;transform:translateX(-50%);font-size:4.5cqw;letter-spacing:.2em;font-weight:900;z-index:11;color:#f3dba4;text-shadow:0 1px 4px #000}
 .opening.mode-walkout.theme-founder{background:radial-gradient(circle at 50% 42%,#1c837880 0,#063f3e 31%,#050f13 75%)}
 .opening.theme-founder .walkout-tunnel{--walkout-beam:#eaca8a;background:radial-gradient(ellipse at 50% 46%,#51e9d35c,#073534 28%,#031013 76%)}
 .opening.theme-founder .walkout-clue-label,.opening.theme-founder .revealbadge{color:#f2d696;text-shadow:0 0 18px #78f6e8}
@@ -99,3 +99,37 @@
 .card-shell .custom-card .stats span:last-child{border-right:0}
 .card-shell .custom-card .stats small{display:block;font-size:max(3px,2.8cqw);font-weight:900;line-height:1;margin-bottom:1cqw}
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .stats b{display:block!important;margin:0!important;font-size:max(5px,6.5cqw)!important;line-height:1!important;color:var(--card-value-color)!important}
+
+/* The Founder artwork is a blank theme layer. The shared card renderer supplies all player content. */
+.founder-shell{
+ aspect-ratio:.75;
+ --card-info-left:17%;
+ --card-info-width:18%;
+ --card-portrait-left:31%;
+ --card-portrait-right:5%;
+ --card-portrait-top:17%;
+ --card-portrait-height:50%;
+ --card-name-top:60%;
+}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-top{top:19.5%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-top:before{content:none}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .ovr{font-size:11cqw!important;line-height:1!important;color:#f8df9e;text-shadow:0 2px 4px #000}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .pos{font-size:5cqw!important;color:#ffe9b5;text-shadow:0 1px 3px #000}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-icons{top:35%!important;gap:2.7cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-flag{width:10cqw!important;height:6.6cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-flag-img{width:10cqw!important;height:6.6cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-club{width:10cqw!important;height:10cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-league{width:9.5cqw!important;height:9.5cqw!important}
+.founder-shell .custom-card.founder .face:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 55% 59%,#f9e4a37d,transparent 58%);filter:blur(4cqw);pointer-events:none}
+.founder-shell .custom-card.founder .face img{position:relative;z-index:1;filter:drop-shadow(0 1cqw 1.4cqw #010d0ce0)}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-bottom{left:16%!important;right:15%!important;bottom:8%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .pname{
+ width:85%!important;height:20%!important;margin:0 auto!important;
+ background:linear-gradient(90deg,#d2a454,#ffe6a5 9%,#103c38 11%,#07544c 51%,#103c38 89%,#ffe6a5 91%,#d2a454)!important;
+ border:2px solid #f5d58d!important;
+ clip-path:polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%);
+ font-family:Georgia,"Times New Roman",serif!important;font-weight:700!important;text-transform:none!important;
+ text-shadow:0 1px 3px #000!important;
+}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .stats{top:27%!important;bottom:auto!important;height:28%!important}
+.founder-shell .custom-card.founder .stats span{border-right:1px solid #c2a16c8f}
