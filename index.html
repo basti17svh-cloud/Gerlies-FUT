@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.37</title>
+<title>Footera V19.38</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -491,7 +491,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .nav{overflow:hidden;touch-action:pan-y}
 .more-tray{max-width:calc(100vw - 16px)}
 .nav button{--navc:#b8c3be;color:var(--navc)}
-.nav button:nth-child(1){--navc:#72efc1}.nav button:nth-child(2){--navc:#d7ff49}.nav button:nth-child(3){--navc:#63d5ff}.nav button:nth-child(4){--navc:#ffd36b}.nav button:nth-child(5){--navc:#ff9b72}.nav button:nth-child(6){--navc:#66e5ff}.nav button:nth-child(7){--navc:#c98bff}
+.nav button:nth-child(1){--navc:#72efc1}.nav button:nth-child(2){--navc:#d7ff49}.nav button:nth-child(3){--navc:#63d5ff}.nav button:nth-child(4){--navc:#ffd36b}.nav button:nth-child(5){--navc:#ff9b72}.nav button:nth-child(6){--navc:#c98bff}
 .nav button .nav-ico,.nav button .nav-label{color:var(--navc)}
 .nav button:not(.active){background:linear-gradient(180deg,#111816,#0b100f);border-color:color-mix(in srgb,var(--navc) 25%,#34423d)}
 .nav button.active{background:radial-gradient(circle at 50% 5%,color-mix(in srgb,var(--navc) 22%,transparent),transparent 55%),linear-gradient(180deg,#1a231d,#101713);border-color:color-mix(in srgb,var(--navc) 72%,#27332f);box-shadow:0 0 0 1px color-mix(in srgb,var(--navc) 15%,transparent),0 10px 22px rgba(0,0,0,.25)}
@@ -1253,7 +1253,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.37</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.38</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1294,7 +1294,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
         </div>
       </div>
 
-      <div id="competitionHome" class="home-competition"></div>
 
       <div class="home-action-grid">
         <button class="home-action" data-go="squadView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="18" cy="16" r="7"/><circle cx="34" cy="19" r="5"/><path d="M5 40c1-10 6-15 13-15s12 5 13 15M29 29c7 0 11 4 12 11"/></svg></span><span class="home-action-copy"><strong>Mannschaft</strong><small>Dein Team verwalten</small></span><span class="home-action-arrow">›</span></button>
@@ -1354,7 +1353,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Grundlagen-Herausforderungen mit Spielern aus deinem Verein und dem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
-<section id="objectivesView" class="view"><div class="headline"><h2>Ziele</h2><p>Tages-, Wochen- und Saisonziele bringen SP und Belohnungen für deinen Club.</p></div><div class="section"><button class="pass-link" data-go="seasonPassView">Season Pass ansehen →</button><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
+<section id="objectivesView" class="view"><div class="headline"><h2>Ziele</h2><p>Tägliche, wöchentliche, Saison-, Squad-Battles-, Rivals- und spätere Aufholziele bringen SP und Belohnungen.</p></div><div class="section"><button class="pass-link" data-go="seasonPassView">Season Pass ansehen →</button><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
 <section id="seasonPassView" class="view"><div class="headline"><h2>Season Pass</h2><p>Spiele, erfülle Ziele und hole Belohnungen auf dem kostenlosen und Premium-Pfad ab.</p></div><div class="section"><button class="pass-link" data-go="objectivesView">Ziele für Season Points ansehen →</button><div id="seasonPass"></div></div></section>
 
 <section id="evolutionView" class="view"><div class="headline"><h2>Evolutions</h2><p>Nur qualifizierte Spieler werden vorgeschlagen. Jede Stufe zeigt dir vor dem Start die resultierende Karte und ihre Upgrades.</p></div><div class="section">
@@ -1464,7 +1463,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <button data-view="playView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="M7 7h10l3 3v7l-3 3H7l-3-3v-7z"></path><path d="m10 9 5 3-5 3z"></path></svg></span><span class="nav-label">Spielen</span></button>
   <button data-view="marketView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="M4 7h3l2.1 10.5h8.8L20 10H8.3"></path><circle cx="10" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg></span><span class="nav-label">Transfers</span></button>
   <button data-view="storeView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="M4 7h16l-1.2 13H5.2z"></path><path d="M8 7a4 4 0 0 1 8 0"></path></svg></span><span class="nav-label">Store</span></button>
-  <button class="events-nav" data-view="eventsView"><span class="nav-ico"><svg viewBox="0 0 24 24"><path d="m12 2 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 8.6l6.2-.9z"></path></svg></span><span class="nav-label">Events</span></button>
   <button data-view="moreView" data-toggle="more"><span class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></span><span class="nav-label">Mehr</span></button>
 </nav>
 <div id="moreTray" class="more-tray"><div class="more-grid">
@@ -2255,7 +2253,7 @@ function sbcGroupBannerHTML(group,rows){
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
 function baseState(){return{
  version:123,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
- stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
+ stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
  roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
@@ -5785,8 +5783,8 @@ function finishMatch(){
  if(!isFriendly){
   state.stats.competitiveMatches=(state.stats.competitiveMatches||0)+1;
   if(resultKey==="win")state.stats.competitiveWins=(state.stats.competitiveWins||0)+1;
-  if(match.mode==="rivals")state.stats.rivalsMatches=(state.stats.rivalsMatches||0)+1;
-  if(match.mode==="squad")state.stats.squadMatches=(state.stats.squadMatches||0)+1
+  if(match.mode==="rivals"){state.stats.rivalsMatches=(state.stats.rivalsMatches||0)+1;if(resultKey==="win")state.stats.rivalsWins=(state.stats.rivalsWins||0)+1}
+  if(match.mode==="squad"){state.stats.squadMatches=(state.stats.squadMatches||0)+1;if(resultKey==="win")state.stats.squadWins=(state.stats.squadWins||0)+1}
  }
  const competitionProgress=recordCompetitionMatch(match.mode,resultKey,match.home,match.away,match.opponentProfile,match.battleDifficulty);
  let boostCoins=0;
@@ -6255,7 +6253,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.37";
+const GFUT_BUILD="V19.38";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6273,7 +6271,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1937",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1938",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
