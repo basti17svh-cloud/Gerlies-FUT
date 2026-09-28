@@ -64,6 +64,17 @@ test('the official card stays visible at a valid secondary position with a posit
  assert.match(card,/class="custom-card gold"/,'a fallback stays available if the remote card fails');
 });
 
+test('new club items show their real rating when displayRating has its default zero',()=>{
+ const ctx={esc:String,resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,
+  itemRating:()=>78,officialCardHTML:()=>'',emblemsHTML:()=>'',portraitHTML:()=>'',
+  positionLabel:p=>p,cardStatPairs:()=>[],activeEvolutionForUid:()=>null};
+ vm.createContext(ctx);vm.runInContext(cardCode,ctx);
+ const player={id:'starter',name:'Starter',ovr:78,position:'ST',team:'Club'};
+ const card=ctx.cardHTML(player,{pid:'starter',uid:'test',displayRating:0},true);
+ assert.match(card,/class="ovr">78<\/div>/);
+ assert.doesNotMatch(card,/class="ovr">0<\/div>/);
+});
+
 test('base player cards use the official FC27 image path while special cards retain their own art',()=>{
  const ctx={prioritizeCached:arr=>arr,imageCacheKey:()=>'',esc:String,imgCandidatesAttr:JSON.stringify};
  vm.createContext(ctx);vm.runInContext(imageCode,ctx);
