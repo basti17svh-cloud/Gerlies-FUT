@@ -41,6 +41,8 @@
  --card-stats-color:#ffe7ae;
  --card-value-color:#fff3cb;
 }
+/* The shared inner outline would draw a rectangle across the ornate Founder art. */
+.card-shell .custom-card.founder:before{content:none}
 .opening.mode-walkout.theme-founder{background:radial-gradient(circle at 50% 42%,#1c837880 0,#063f3e 31%,#050f13 75%)}
 .opening.theme-founder .walkout-tunnel{--walkout-beam:#eaca8a;background:radial-gradient(ellipse at 50% 46%,#51e9d35c,#073534 28%,#031013 76%)}
 .opening.theme-founder .walkout-clue-label,.opening.theme-founder .revealbadge{color:#f2d696;text-shadow:0 0 18px #78f6e8}
@@ -107,9 +109,9 @@
  --card-info-width:18%;
  --card-portrait-left:31%;
  --card-portrait-right:5%;
- --card-portrait-top:17%;
- --card-portrait-height:50%;
- --card-name-top:60%;
+ --card-portrait-top:15%;
+ --card-portrait-height:52%;
+ --card-name-top:61%;
 }
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-top{top:19.5%!important}
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-top:before{content:none}
@@ -122,14 +124,16 @@
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-league{width:9.5cqw!important;height:9.5cqw!important}
 .founder-shell .custom-card.founder .face:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 55% 59%,#f9e4a37d,transparent 58%);filter:blur(4cqw);pointer-events:none}
 .founder-shell .custom-card.founder .face img{position:relative;z-index:1;filter:drop-shadow(0 1cqw 1.4cqw #010d0ce0)}
-:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-bottom{left:16%!important;right:15%!important;bottom:8%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .card-bottom{left:13%!important;right:12%!important;bottom:8%!important}
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .pname{
- width:85%!important;height:20%!important;margin:0 auto!important;
- background:linear-gradient(90deg,#d2a454,#ffe6a5 9%,#103c38 11%,#07544c 51%,#103c38 89%,#ffe6a5 91%,#d2a454)!important;
- border:2px solid #f5d58d!important;
+ width:100%!important;height:27%!important;margin:0 auto!important;
+ background:linear-gradient(90deg,#052622,#104b43 50%,#052622)!important;
+ border:1px solid #e7c77e!important;
  clip-path:polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%);
  font-family:Georgia,"Times New Roman",serif!important;font-weight:700!important;text-transform:none!important;
  text-shadow:0 1px 3px #000!important;
 }
-:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .stats{top:27%!important;bottom:auto!important;height:28%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder .stats{top:36%!important;bottom:auto!important;height:26%!important}
 .founder-shell .custom-card.founder .stats span{border-right:1px solid #c2a16c8f}
+@media(max-width:560px){.player-detail-card .founder-shell{width:min(52vw,190px)}}
+#pitch .slot .mini .founder-shell{width:108%;margin-left:-4%}

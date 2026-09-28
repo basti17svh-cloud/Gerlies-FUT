@@ -62,5 +62,6 @@ test('Founder uses the blank crystal artwork while position and attributes remai
  assert.match(striker,/<small>TEM<\/small><b>91<\/b>/);
  assert.doesNotMatch(striker,/chem-dots|official-card/);
  assert.match(css,/url\("\.\/assets\/footera\/founder-frame\.webp"\)/);
- assert.match(css,/\.founder-shell \.custom-card\.founder \.card-bottom/);
+ assert.match(css,/:is\(\.founder-shell,[^)]*\) \.custom-card\.founder \.card-bottom/);
+ assert.match(css,/\.card-shell \.custom-card\.founder:before\{content:none\}/);
 });
