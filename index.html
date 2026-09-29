@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.53</title>
+<title>Footera V19.54</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1254,7 +1254,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.53</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.54</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2664,7 +2664,7 @@ function cardClass(p,item){if(isFounderItem(item))return"founder";if(isMomentumI
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
 function displayBase(item){const b=itemBase(item);if(!b)return null;const momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null,eventStats=Array.isArray(item?.eventStats)?item.eventStats:null;let out={...b,ovr:itemRating(item),position:momentum?.position||item?.overridePosition||b.position};if(momentum){if(momentum.name)out.name=momentum.name;if(momentum.stats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];if(momentum.position)out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}if(eventStats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=Number(eventStats[index]??out[k]??0);const extra=item?.evoStats||{};if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}return out}
-function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0,displayRating=Number(opts.displayRating||0),eventStats=Array.isArray(opts.eventStats)?opts.eventStats.map(Number):null;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",eventType:opts.eventType||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",displayRating:Number.isFinite(displayRating)&&displayRating>0?displayRating:0,eventStats,rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||"")}}
+function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0,displayRating=Number(opts.displayRating||0),eventStats=Array.isArray(opts.eventStats)?opts.eventStats.map(Number):null;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",eventType:opts.eventType||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",displayRating:Number.isFinite(displayRating)&&displayRating>0?displayRating:0,eventStats,rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||""),clubGoals:Math.max(0,Number(opts.clubGoals||0)),clubAssists:Math.max(0,Number(opts.clubAssists||0))}}
 function portraitFallback(p){return""}
 const COUNTRY_CODES={
 germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",turkiye:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US","united states of america":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR","korea republic":"KR",ghana:"GH","ivory coast":"CI","cote d ivoire":"CI","cote divoire":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA",bosnia:"BA","czech republic":"CZ",czechia:"CZ","republic of ireland":"IE",ireland:"IE","north macedonia":"MK",
@@ -3269,10 +3269,10 @@ function openBiography(item,index,fallbackBase=null){
  if(!item)return;
  const shown=displayBase(item),base=shown||(fallbackBase?{...fallbackBase,ovr:Math.min(99,Number(fallbackBase.ovr||0)+Number(item.boost||0)),position:item.overridePosition||fallbackBase.position}:null);
  if(!base)return;
- const b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem";
+ const b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem",clubPerf=playerClubPerformance(item);
  ensurePlayerAffiliationAssets(b);
  $("bioDetailSub").textContent=`${isFounderItem(item)?"FOUNDER · ":isMomentumItem(item)?"MOMENTUM · ":""}${playerContextLine(b)}`;
- $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(isFounderItem(item)?b.fullName:b.name)}</h2>${isFounderItem(item)?'<span class="bio-founder-label">FOOTERA FOUNDER</span>':""}<p data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div>${isFounderItem(item)?`<div class="bio-stat"><strong>${Number(b.height)||172} cm</strong><span>Größe</span></div>`:""}<div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(isFounderItem(item)?"Deutschland":nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;
+ $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(isFounderItem(item)?b.fullName:b.name)}</h2>${isFounderItem(item)?'<span class="bio-founder-label">FOOTERA FOUNDER</span>':""}<p data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div>${isFounderItem(item)?`<div class="bio-stat"><strong>${Number(b.height)||172} cm</strong><span>Größe</span></div>`:""}<div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(isFounderItem(item)?"Deutschland":nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b))}</strong><span>Spielerrolle</span></div><div class="bio-stat"><strong>${clubPerf.goals}</strong><span>Tore für deinen Verein</span></div><div class="bio-stat"><strong>${clubPerf.assists}</strong><span>Vorlagen für deinen Verein</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div></div>`;
  showUiLayer("bioModal","bio")
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
@@ -3944,10 +3944,11 @@ function openSlotPickerForItem(itemUid){
 function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
 function purchaseInfoHTML(item){const paid=Number(item?.purchasePrice||0);if(!(paid>0))return"";return `<div class="item-purchase-info"><span>Item gekauft für</span><strong>${currencyAmountHTML("coins",paid,"compact")}</strong></div>`}
+function playerClubPerformance(item){return{goals:Math.max(0,Number(item?.clubGoals||0)),assists:Math.max(0,Number(item?.clubAssists||0))}}
 function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){
  b=resolvedPlayer(b);ensurePlayerAffiliationAssets(b);
- const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem");
- return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:""}</div>${isFounderItem(item)?"":detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}</div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
+ const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem"),clubPerf=playerClubPerformance(item);
+ return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:""}</div>${isFounderItem(item)?"":detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}<div class="fc27-info"><b>${clubPerf.goals}</b><span>Tore für deinen Verein</span></div><div class="fc27-info"><b>${clubPerf.assists}</b><span>Vorlagen für deinen Verein</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
 }
 
 function openPlayerDetails(item,index=null,fromPreview=false){
@@ -5576,7 +5577,7 @@ function startMatch(mode,opponent=null){
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:state.tactic||"balanced",redCards:[],
   subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],
   injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
-  extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyWinner:null,pensHome:null,pensAway:null
+  extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyWinner:null,pensHome:null,pensAway:null,playerStatsApplied:false
  };
  $("match").classList.add("active");
  pushUiState("match",{mode});
@@ -5681,7 +5682,7 @@ function goalCreation(){
 }
 function logGoal(side,scorer,assist,type){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
- const event={side,minute,scorer:scorer?.name||"Spieler",assist:assist?.name||"",type};
+ const event={side,minute,scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,scorerUid:side==="home"?String(scorer?.uid||""):"",assistUid:side==="home"?String(assist?.uid||""):""};
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
  if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`);return}
  if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`);return}
@@ -5933,11 +5934,26 @@ $("matchSpeedBtn").addEventListener("click",()=>{
  if(match&&!match.paused&&!match.finished)startMatchTimer()
 });
 
+function applyClubGoalStats(){
+ if(!match||match.playerStatsApplied)return;
+ match.playerStatsApplied=true;
+ for(const event of match.goalEvents||[]){
+  if(event?.side!=="home")continue;
+  if(event.scorerUid){
+   const scorer=state.club.find(item=>String(item.uid)===String(event.scorerUid));
+   if(scorer)scorer.clubGoals=Math.max(0,Number(scorer.clubGoals||0))+1
+  }
+  if(event.assistUid){
+   const assister=state.club.find(item=>String(item.uid)===String(event.assistUid));
+   if(assister)assister.clubAssists=Math.max(0,Number(assister.clubAssists||0))+1
+  }
+ }
+}
 function finishMatch(){
  if(!match||match.finished)return;
  ensureObjectiveWindows();
  stopMatchTimer();
- match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();
+ match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();
  state.stats.matches++;
  const isFriendly=String(match.mode).startsWith("friendly");
  const decidedByPens=match.home===match.away&&!!match.penaltyWinner;
@@ -6428,7 +6444,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.53";
+const GFUT_BUILD="V19.54";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
