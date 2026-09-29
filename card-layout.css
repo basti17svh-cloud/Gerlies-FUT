@@ -238,13 +238,13 @@
 
 /* Metallic surfaces approved for the four regular card families. The SVGs are
    blank skins: cardHTML continues to provide every field and player portrait. */
-.card-shell .custom-card:is(.gold,.silver,.bronze,.totw){
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon){
  clip-path:polygon(3.5% 12%,8% 8%,16% 5.5%,41% 5.4%,46.7% 3.1%,50% 0%,53.3% 3.1%,59% 5.4%,84% 5.5%,92% 8%,96.5% 12%,96.5% 85%,88.5% 92%,50% 100%,11.5% 92%,3.5% 85%);
  background-position:center;
  background-size:100% 100%;
  background-repeat:no-repeat;
 }
-.card-shell .custom-card:is(.gold,.silver,.bronze,.totw):before{content:none}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon):before{content:none}
 .card-shell .custom-card.gold{
  background-image:url("./assets/footera/card-gold-metallic.svg");
  color:#fff1c7;
@@ -293,14 +293,32 @@
  --card-value-color:#fff2c3;
  --card-rail-border:#c99e3c;
 }
-.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .card-top:before{
+.card-shell .custom-card.icon{
+ background-image:url("./assets/footera/card-icon-heritage.svg");
+ color:#263638;
+ --card-column-fill:linear-gradient(180deg,#faf6e9f0,#e4dcc9e8 75%,#c5b99fe8);
+ --card-name-fill:linear-gradient(90deg,#132a31,#31484a 50%,#132a31);
+ --card-name-border:#c6a66a;
+ --card-name-color:#fdf2d4;
+ --card-stats-fill:linear-gradient(180deg,#162c34ed,#101f29f5);
+ --card-stats-color:#d1bf91;
+ --card-value-color:#fff4d6;
+ --card-rail-border:#987849;
+}
+.card-shell .custom-card.icon:after{
+ content:"ICON";position:absolute;z-index:8;top:9%;right:10%;padding:1.1cqw 2cqw;
+ border:1px solid #b89b65;border-radius:2cqw;
+ background:#f3ecdcbf;color:#334444;
+ font-size:3.2cqw;font-weight:900;letter-spacing:.14em;box-shadow:none;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .card-top:before{
  border-color:var(--card-rail-border);
  box-shadow:inset 0 0 2cqw #0008,0 0 .7cqw #0009;
 }
-.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .pname{
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .pname{
  clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);
 }
-.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .stats span{
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .stats span{
  border-color:var(--card-rail-border);
 }
 /* The older rare badge sat in the now cut-away top corner. */

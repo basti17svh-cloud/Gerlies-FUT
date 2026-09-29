@@ -28,7 +28,7 @@ function line(...players){return players.concat(Array(Math.max(0,11-players.leng
 
 test('every current Icon has a nation, including separate British football nations',()=>{
  const{api}=setup();
- assert.equal(api.MID_ICON_BASES.length,134);
+ assert.equal(api.MID_ICON_BASES.length,136);
  assert.deepEqual(Array.from(api.MID_ICON_BASES.filter(icon=>!icon.nation),icon=>icon.name),[]);
  const byName=name=>api.MID_ICON_BASES.find(icon=>icon.name===name);
  assert.equal(byName('George Best').nation,'Northern Ireland');

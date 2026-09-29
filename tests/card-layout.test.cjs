@@ -52,7 +52,12 @@ test('regular card skins are blank, cached surfaces with one geometry; event sha
   assert.ok(outline,type);
   if(geometry)assert.equal(outline[1],geometry,type);else geometry=outline[1];
  }
- assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw\):before\{content:none\}/);
+ const iconArt=fs.readFileSync(path.join(__dirname,'../assets/footera/card-icon-heritage.svg'),'utf8');
+ assert.match(css,/\.custom-card\.icon\{[\s\S]*?card-icon-heritage\.svg/);
+ assert.ok(sw.includes('./assets/footera/card-icon-heritage.svg'));
+ assert.equal(iconArt.match(/<path d="(M350 3[^\"]+)" fill="url\(#rim\)"/)[1],geometry);
+ assert.doesNotMatch(iconArt,/<(?:image|text|foreignObject)\b|MID ICON/i);
+ assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw,\.icon\):before\{content:none\}/);
  assert.match(legacy,/\.legacy-shell:before\{[\s\S]*?legacy-event-aura\.svg/);
  assert.ok(sw.includes('./assets/footera/legacy-event-aura.svg'));
 });

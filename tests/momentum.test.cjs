@@ -47,7 +47,8 @@ test('board and walkout reveal choose the real lead item; regular modes stay reg
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.match(source,/footera-v19-61-root-shell/);assert.match(source,/momentum-card\.css/);
+ const build=html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/);
+ assert.ok(build);assert.ok(source.includes(`footera-v${build[1]}-${build[2]}-root-shell`));assert.match(source,/momentum-card\.css/);
  assert.match(css,/\.momentum-shell \.custom-card\.momentum/);
  assert.doesNotMatch(css,/momentum-master\.jpg/);
 });
