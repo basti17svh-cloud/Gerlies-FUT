@@ -6,7 +6,7 @@ const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const code=html.slice(html.indexOf('function settleAuctions('),html.indexOf('function renderTransferWatch('))+'\n'+
- html.slice(html.indexOf('function buyMarketListing('),html.indexOf('function resetMarketFilters('));
+ html.slice(html.indexOf('function buyMarketObject('),html.indexOf('function resetMarketFilters('));
 
 function setup(){
  const math=Object.create(Math);math.random=()=>1;

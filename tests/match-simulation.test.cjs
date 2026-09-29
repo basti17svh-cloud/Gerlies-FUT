@@ -22,7 +22,9 @@ function simulator(){
   matchHomeTeamName:()=>"Footera Club",matchAwayTeamName:()=>"Gegner",
   $(){return{textContent:'',classList:{add(){}}}}
  };
- vm.createContext(ctx);vm.runInContext(engine,ctx);
+ vm.createContext(ctx);
+ vm.runInContext(extract('const FORMATIONS={','const ROLE_OPTIONS='),ctx);
+ vm.runInContext(engine,ctx);
  function sample({rating,chem,opponentRating,opponentChem,speed=550,count=2000}){
   ctx.matchSpeed=speed;
   let wins=0,draws=0,goalless=0,goals=0,conceded=0,halftimes=0;

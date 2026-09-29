@@ -49,8 +49,8 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  assert.equal(api.seasonInfo(seasonBoundary).name,'HALLOWEEN');
  assert.equal(api.seasonInfo(new Date('2026-09-27T12:00:00Z')).name,'THE BEGINNING');
  assert.equal(api.objectiveWindow('daily',new Date(dailyBoundary.getTime()-1000)).end.getTime(),dailyBoundary.getTime());
- assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
- assert.equal(api.objectiveWindow('season',new Date('2026-09-23T20:00:00Z')).tasks.length,4);
+ assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,6);
+ assert.equal(api.objectiveWindow('season',new Date('2026-09-23T20:00:00Z')).tasks.length,12);
  assert.notDeepEqual(api.objectiveWindow('daily',new Date('2026-09-23T20:00:00Z')).tasks.map(t=>t.id),api.objectiveWindow('daily',new Date('2026-09-24T20:00:00Z')).tasks.map(t=>t.id));
 });
 
@@ -60,7 +60,11 @@ test('progress counts only actions in the active window and resets on rotation',
  state.stats.packs=8;
  api.ensureObjectiveWindows(first);
  const pack=api.objectiveWindow('weekly',first).tasks.find(t=>t.stat==='packs');
- if(pack){assert.equal(api.objectiveProgress(pack),0);state.stats.packs+=3;assert.equal(api.objectiveProgress(pack),pack.target)}
+ if(pack){
+  assert.equal(api.objectiveProgress(pack),0);
+  state.stats.packs+=3;assert.equal(api.objectiveProgress(pack),Math.min(3,pack.target));
+  state.stats.packs+=pack.target;assert.equal(api.objectiveProgress(pack),pack.target);
+ }
  const daily=api.objectiveWindow('daily',first).tasks[0];
  state.stats[daily.stat]+=daily.target;
  assert.equal(api.objectiveProgress(daily),daily.target);
@@ -121,12 +125,17 @@ test('claiming a rotating objective and the weekly set bonus grants each only on
  app.click('taskList','[data-objective-claim]',{objectiveClaim:task.key});
  assert.equal(state.sp,sp);
  const week=api.objectiveWindow('weekly');
- for(const goal of week.tasks)state.objectiveClaims[goal.key]=true;
+ assert.equal(week.tasks.length,6);
+ for(const goal of week.tasks.slice(0,4))state.objectiveClaims[goal.key]=true;
  app.click('taskList','[data-objective-bonus]',{objectiveBonus:week.key});
- assert.equal(state.sp,sp+500);
+ assert.equal(state.sp,sp);
+ assert.equal(state.packs.gold,undefined);
+ state.objectiveClaims[week.tasks[4].key]=true;
+ app.click('taskList','[data-objective-bonus]',{objectiveBonus:week.key});
+ assert.equal(state.sp,sp+750);
  assert.equal(state.packs.gold,1);
  app.click('taskList','[data-objective-bonus]',{objectiveBonus:week.key});
- assert.equal(state.sp,sp+500);
+ assert.equal(state.sp,sp+750);
  assert.equal(state.packs.gold,1);
 });
 
