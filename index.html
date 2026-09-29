@@ -1663,8 +1663,11 @@ async function loadFounderBastianStaticCard(){
   }));
   const joined=parts.join("");
   if(joined.length!==27784||!joined.startsWith("UklGR"))throw new Error("Founder-Kartendaten unvollständig");
-  const src=`data:image/webp;base64,${joined}`;
-  await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=()=>reject(new Error("Founder-Karte konnte nicht dekodiert werden"));probe.src=src});
+  const raw=atob(joined),bytes=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+  const src=URL.createObjectURL(new Blob([bytes],{type:"image/webp"}));
+  try{await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=()=>reject(new Error("Founder-Karte konnte nicht dekodiert werden"));probe.src=src})}
+  catch(err){URL.revokeObjectURL(src);throw err}
   FOUNDER_BASTIAN_STATIC_SRC=src;
   renderAll()
  }catch(err){console.warn("B. Gerlach Founder-Karte:",err)}
@@ -6497,6 +6500,6 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script>boot();loadFounderBastianStaticCard();</script>
+<script>boot().finally(()=>loadFounderBastianStaticCard());</script>
 </body>
 </html>
