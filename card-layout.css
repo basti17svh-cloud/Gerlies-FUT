@@ -188,7 +188,7 @@
 .opening.theme-founder-rangers .reveal .card-shell{filter:drop-shadow(0 0 30px #ffbf258c)!important}
 
 
-/* V19.55 — B. Gerlach Founder: finale 1:1-Kartengrafik.
+/* V19.56 — B. Gerlach Founder: finale 1:1-Kartengrafik.
    The shell keeps the universal Footera sizing; the finished artwork scales as one unit. */
 .bastian-static-founder-shell{
  aspect-ratio:2/3!important;
@@ -214,4 +214,16 @@
 }
 :is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
  transform-origin:center center;
+}
+/* The finished artwork already contains its complete frame. Do not apply the old
+   120% Founder enlargement that was needed by the layered renderer. */
+#pitch .slot .mini .founder-shell.bastian-static-founder-shell{
+ width:100%!important;
+ margin-left:0!important;
+ transform:none!important;
+}
+.friend-pitch .friend-slot .mini .founder-shell.bastian-static-founder-shell,
+.match-manager-slot .mini .founder-shell.bastian-static-founder-shell{
+ width:100%!important;
+ margin-left:0!important;
 }
