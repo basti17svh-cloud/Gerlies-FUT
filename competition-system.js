@@ -161,8 +161,9 @@ function battleSpecialOpponent(kind,key){
   while(rows.length<18&&fillers.length){const pick=deterministicPick(fillers,key+"|filler-"+rows.length);rows.push({player:pick,item:null});fillers.splice(fillers.indexOf(pick),1)}
  }
  const squad=rows.map(x=>x.player),items=rows.map(x=>x.item),rating=Math.round(squad.slice(0,11).reduce((n,p)=>n+Number(p?.ovr||0),0)/11);
- return{kind:"generated",name:kind==="event"?`${event.name} ${event.subtitle||""}`.trim():totwDisplayName(LIVE_TOTW.name),formation,rating,chem:33,squad,items,
-  tier:kind==="event"?(eventPackIsActive(event)?"Event-Team":"Event-Team · Archiv"):"Team der Woche",strengthId:kind,battleId:`${key}:${kind}`,rewards:{win:850,loss:330},sp:100,power:rating+33*.12}
+ const chem=typeof opponentChemistryTotal==="function"?opponentChemistryTotal(squad,formation,items):0;
+ return{kind:"generated",name:kind==="event"?`${event.name} ${event.subtitle||""}`.trim():totwDisplayName(LIVE_TOTW.name),formation,rating,chem,squad,items,
+  tier:kind==="event"?(eventPackIsActive(event)?"Event-Team":"Event-Team · Archiv"):"Team der Woche",strengthId:kind,battleId:`${key}:${kind}`,rewards:{win:850,loss:330},sp:100,power:rating+chem*.12}
 }
 
 function rewardLabel(row){
