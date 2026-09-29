@@ -60,3 +60,17 @@ test('EA API fields weakFootAbility and numeric preferredFoot are parsed',()=>{
  assert.equal(a.preferredFoot,'Left');
  assert.equal(ctx.normEAAsset({preferredFoot:1}).preferredFoot,'Right');
 });
+
+test('common football names replace abbreviated names, including older cached players',()=>{
+ const ctx=setup();
+ ctx.isExclusiveFounderBase=p=>String(p.id||'').startsWith('footera-founder-');
+ const gabriel=ctx.normCSV({sofifa_id:'232580',short_name:'G. dos S.',common_name:'Gabriel',long_name:'Gabriel dos Santos Magalhães',positions:'CB'});
+ assert.equal(gabriel.name,'Gabriel');
+ assert.equal(gabriel.fullName,'Gabriel dos Santos Magalhães');
+ const ea=ctx.normEAAsset({id:'207865',name:'M. Aoás C.',commonName:'Marquinhos'});
+ assert.equal(ea.name,'Marquinhos');
+ const cached=[{id:'232580',name:'G. dos S.'},{id:'207865',name:'M. Aoás C.'},{id:'123',name:'Gabriel Jesus'},
+  {id:'footera-founder-marco-gerlach',name:'M. Gerlach',commonName:'Marco'}];
+ ctx.applyPreferredPlayerNames(cached);
+ assert.deepEqual(cached.map(p=>p.name),['Gabriel','Marquinhos','Gabriel Jesus','M. Gerlach']);
+});

@@ -5,7 +5,7 @@
  --card-info-width:23%;
  --card-portrait-left:29%;
  --card-portrait-right:5%;
- --card-portrait-top:19%;
+ --card-portrait-top:17%;
  --card-portrait-height:52%;
  --card-name-top:70%;
 }
@@ -85,7 +85,7 @@
 .card-shell .custom-card .face .face-fallback{font-size:24cqw!important}
 
 /* Give portraits room in the biography and slightly enlarge squad cards. */
-.bio-card .card-shell{--card-portrait-top:15%;--card-portrait-height:54%}
+.bio-card .card-shell:not(.founder-shell){--card-portrait-top:12%;--card-portrait-height:54%}
 #pitch .slot{width:19%}
 
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-bottom{
@@ -263,7 +263,7 @@
  --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
  --card-club-size:10cqw;--card-league-size:9cqw;
  --card-portrait-left:29%;--card-portrait-right:5%;
- --card-portrait-top:14.5%;--card-portrait-height:50%;
+ --card-portrait-top:11%;--card-portrait-height:50%;
  --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
  --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
  --card-stats-left:3%;--card-stats-right:3%;
@@ -301,7 +301,7 @@
 .card-shell .custom-card.icon{
  background:transparent url("./assets/footera/card-icon-approved.webp") center / 100% 100% no-repeat;
  color:#fff0c4;
- --card-portrait-top:13%;--card-portrait-height:54%;
+ --card-portrait-top:10%;--card-portrait-height:54%;
  --card-name-top:65%;--card-bottom-bottom:15%;--card-name-height:38%;--card-stats-top:43%;
  --card-name-color:#fdf2d4;
  --card-stats-color:#e9d2a0;

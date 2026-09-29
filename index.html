@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.68</title>
+<title>Footera V19.69</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1378,7 +1378,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.68</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.69</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2658,14 +2658,18 @@ function parseCSV(text){const lines=String(text||"").replace(/^\uFEFF/,"").split
 function sofifaFace(id){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/27_120.png`}
 function normCSV(raw){
  const id=String(first(raw,"sofifa_id","player_id","ea_id","id"));
- const name=String(first(raw,"short_name","common_name","name","long_name")).trim();
+ const commonName=String(first(raw,"common_name","commonName")).trim();
+ const name=commonName||String(first(raw,"short_name","name","long_name")).trim();
  const fullName=String(first(raw,"long_name","full_name","player_name","name","common_name","short_name")).trim()||name;
  const positions=String(first(raw,"positions","player_positions","position")).split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
  const face=String(first(raw,"player_face_url","player_face","face_url","image_url"));
  const team=String(first(raw,"club_name","team_name","club","team")).trim();
  const rawLeague=String(first(raw,"league_name","league")).trim(),leagueId=String(first(raw,"league_id","competition_id")),gender=String(first(raw,"gender","sex","player_gender"));
- return{id,name,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physical","physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),preferredFoot:preferredFootName(first(raw,"preferred_foot","preferredFoot")),weakFoot:cleanNum(first(raw,"weak_foot","weakFoot")),skillMoves:cleanNum(first(raw,"skill_moves","skillMoves")),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId,gender,"fc27-open-data"),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender,baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
+ return{id,name,commonName,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physical","physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),preferredFoot:preferredFootName(first(raw,"preferred_foot","preferredFoot")),weakFoot:cleanNum(first(raw,"weak_foot","weakFoot")),skillMoves:cleanNum(first(raw,"skill_moves","skillMoves")),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId,gender,"fc27-open-data"),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender,baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
+const COMMON_PLAYER_NAMES_BY_ID=Object.freeze({"232580":"Gabriel","207865":"Marquinhos"});
+function preferredPlayerName(p){return COMMON_PLAYER_NAMES_BY_ID[String(p?.id||"")]||String(p?.commonName||p?.name||"").trim()}
+function applyPreferredPlayerNames(players){for(const p of players){if(!p||isExclusiveFounderBase(p))continue;const name=preferredPlayerName(p);if(name)p.name=name}}
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function eaObject(raw,key){
  const v=raw?.[key];
@@ -2683,7 +2687,7 @@ function normEAAsset(raw){
  const lastName=String(deepFirst(raw,"lastName","last_name","player.lastName")).trim();
  const builtName=[firstName,lastName].filter(Boolean).join(" ").trim();
  const commonName=String(deepFirst(raw,"commonName","common_name")).trim();
- const name=String(deepFirst(raw,"name","Name","fullName","full_name","playerName","shortName")||commonName||builtName).trim();
+ const name=String(commonName||deepFirst(raw,"name","Name","fullName","full_name","playerName","shortName")||builtName).trim();
  const url=String(deepFirst(raw,"url","URL","playerUrl","player_url"));
  const urlId=(url.match(/\/(\d+)(?:\?.*)?$/)||[])[1]||"";
  const rawId=String(deepFirst(raw,"eaId","eaID","playerId","playerID","player_id","ea_id","athleteId","athlete_id","id","ID"));
@@ -2713,7 +2717,7 @@ function normEAAsset(raw){
  const nation=String(natV?.name||deepFirst(raw,"nation","Nation","nationName","nation_name","country","countryName","country_name")).trim();
 
  return {
-  id,name,fullName:builtName||String(deepFirst(raw,"fullName","full_name")||name).trim(),firstName,lastName,team,league,url,
+  id,name,commonName,fullName:builtName||String(deepFirst(raw,"fullName","full_name")||name).trim(),firstName,lastName,team,league,url,
   ovr:cleanNum(deepFirst(raw,"ovr","OVR","overall","overallRating","overall_rating","rating")),
   pac:cleanNum(deepFirst(raw,"pac","PAC","pace","Pace","stats.pace","stats.pac")),
   sho:cleanNum(deepFirst(raw,"sho","SHO","shooting","Shooting","stats.shooting","stats.sho")),
@@ -2828,6 +2832,7 @@ async function enrichPlayersWithEaAssets(players){
 
   const p=merged[idx],next={...p};
   if(a.name)next.name=a.name;
+  if(a.commonName)next.commonName=a.commonName;
   if(a.fullName)next.fullName=a.fullName;
   if(a.firstName)next.firstName=a.firstName;
   if(a.lastName)next.lastName=a.lastName;
@@ -2948,7 +2953,7 @@ function normalizePlayerAffiliations(players){
   p.leagueLogo=String(a?.leagueLogo||"").trim();
  }
  return players
-}function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
+}function resolvedPlayer(p){if(!p)return p;const a=resolvedAffiliation(p);return {...a,name:isExclusiveFounderBase(a)?a.name:preferredPlayerName(a),nation:nationLabel(a.nation),pac:statValue(a,'pac'),sho:statValue(a,'sho'),pas:statValue(a,'pas'),dri:statValue(a,'dri'),def:statValue(a,'def'),phy:statValue(a,'phy')}}
 function emblemsHTML(p){return `<div class="card-icons"><div class="card-flag" title="${esc(nationLabel(p.nation)||'Nation')}">${flagAsset(p)}</div><div class="card-club" title="${esc(p.team||'Verein')}">${badgeAsset('club',p,clubShort(p.team))}</div><div class="card-league" title="${esc(p.league||'Liga')}">${badgeAsset('league',p,leagueShort(p.league))}</div></div>`}
 function playerClubLabel(p){const a=resolvedAffiliation(p);return String(a?.team||"").trim()||"Vereinslos"}
 function playerLeagueLabel(p){
@@ -3875,11 +3880,12 @@ async function enrichEaAssetsInBackground(){
  EA_ASSET_ENRICH_RUNNING=true;
  try{
   const enrichedResult=await enrichPlayersWithEaAssets(PLAYERS),enriched=Array.isArray(enrichedResult)?enrichedResult:enrichedResult?.players;
-  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched.filter(p=>!isExclusiveFounderBase(p));applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll()}
+  if(Array.isArray(enriched)&&enriched.length===PLAYERS.length){PLAYERS=enriched.filter(p=>!isExclusiveFounderBase(p));applyPreferredPlayerNames(PLAYERS);applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();rebuildMarketFilterIndex();P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();await savePlayers(PLAYERS);EA_ASSET_ENRICH_DONE=true;fillLeagueFilter();renderAll()}
  }catch(e){console.warn("EA portrait enrichment failed",e)}finally{EA_ASSET_ENRICH_RUNNING=false}
 }
 function finishDbLoad(full=true){
  PLAYERS=PLAYERS.filter(p=>!isExclusiveFounderBase(p));
+ applyPreferredPlayerNames(PLAYERS);
  applyPlayerTraits(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();applyBadgeCacheToPlayers();rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
  if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();scheduleIdleTask(enrichVisibleSquadAssets,2200);setTimeout(startIconPortraitPrewarm,1200);scheduleIdleTask(prewarmLiveTotw,4500)},250)}
@@ -6865,7 +6871,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.68";
+const GFUT_BUILD="V19.69";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6883,7 +6889,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1968",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1969",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

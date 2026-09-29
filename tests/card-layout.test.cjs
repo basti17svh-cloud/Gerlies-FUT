@@ -115,3 +115,11 @@ test('Rangers Founder uses the same renderer with its yellow-and-black 2:3 artwo
  assert.match(css,/\.rangers-founder[\s\S]*?founder-marco-frame\.webp/);
  assert.match(css,/\.custom-card \.face\{[\s\S]*?overflow:hidden!important/);
 });
+
+test('non-Founder portraits end above the nameplate while Founder geometry stays separate',()=>{
+ assert.match(css,/\.card-shell\{[\s\S]*?--card-portrait-top:17%;[\s\S]*?--card-name-top:70%/);
+ assert.match(css,/\.bio-card \.card-shell:not\(\.founder-shell\)\{--card-portrait-top:12%/);
+ assert.match(css,/\.founder-shell\{[\s\S]*?--card-portrait-top:15%;[\s\S]*?--card-portrait-height:52%/);
+ assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw,\.icon\)\{[\s\S]*?--card-portrait-top:11%;--card-portrait-height:50%;[\s\S]*?--card-name-top:61\.5%/);
+ assert.match(css,/\.custom-card\.icon\{[\s\S]*?--card-portrait-top:10%;--card-portrait-height:54%;[\s\S]*?--card-name-top:65%/);
+});

@@ -14,7 +14,7 @@ const finishCode=between('function finishPack(){','function packFxLayer(){');
 const OWNER='GF-9AE6CDDEFE8A458D',PID='footera-founder-bastian-gerlach',PACK='founder-bastian';
 const MARCO_OWNER='GF-7D87D08A06104571',MARCO_PID='footera-founder-marco-gerlach',MARCO_PACK='founder-marco';
 function saveState(id=OWNER){return{profile:{saveId:id},packs:{},club:[],sbcStorage:[],transferList:[],transferSales:[],auctions:[],pendingPack:[],pendingResolved:[],squad:Array(23).fill(null),squadPresets:[],coins:3572,stats:{packs:12}}}
-function setup(){const ctx={Date,Map,Set,state:null,pendingPack:[],PLAYERS:[],P_BY_ID:new Map(),PACKS:[],MID_ICON_BASES:[],LIVE_TOTW_BASE_CACHE:new Map()};vm.createContext(ctx);vm.runInContext(founderCode+'\n'+packCode+'\n'+revealPlanCode,ctx);return ctx}
+function setup(){const ctx={Date,Map,Set,state:null,pendingPack:[],PLAYERS:[],P_BY_ID:new Map(),PACKS:[],MID_ICON_BASES:[],LIVE_TOTW_BASE_CACHE:new Map()};vm.createContext(ctx);vm.runInContext(founderCode+'\n'+between('const COMMON_PLAYER_NAMES_BY_ID=','function keyNameTeam(')+'\n'+packCode+'\n'+revealPlanCode,ctx);return ctx}
 const call=(ctx,expr)=>vm.runInContext(expr,ctx);
 
 test('the fixed profile alone gets one unopened Founder Pack; a foreign profile cannot open or keep it',()=>{
