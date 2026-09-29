@@ -46,3 +46,12 @@
 .legacy-shell .custom-card.legacy .pname{color:#ffe7b1;text-shadow:0 1px 3px #000}
 .legacy-shell .custom-card.legacy .stats{color:#e7c281}
 .legacy-shell .custom-card.legacy .stats b{color:#ffe6a8;text-shadow:0 1px 2px #000}
+
+/* The crystalline extensions belong to the event shell, never to base/TOTW. */
+.legacy-shell{isolation:isolate;overflow:visible}
+.legacy-shell:before{
+ content:"";position:absolute;z-index:0;inset:-3% -7%;pointer-events:none;
+ background:url("./assets/footera/legacy-event-aura.svg") center / 100% 100% no-repeat;
+ filter:drop-shadow(0 0 .8cqw #db103f) drop-shadow(0 0 2cqw #d787394d);
+}
+.legacy-shell .custom-card.legacy{z-index:1}

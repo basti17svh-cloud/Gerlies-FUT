@@ -39,6 +39,24 @@ test('all card types share the Founder information order and visible name/stat g
  assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
 });
 
+test('regular card skins are blank, cached surfaces with one geometry; event shards stay on Legacy',()=>{
+ const sw=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
+ const legacy=fs.readFileSync(path.join(__dirname,'../legacy-card.css'),'utf8');
+ let geometry='';
+ for(const type of ['gold','silver','bronze','totw']){
+  const filename=`card-${type}-metallic.svg`,art=fs.readFileSync(path.join(__dirname,'../assets/footera',filename),'utf8');
+  assert.match(css,new RegExp(`\\.custom-card\\.${type}\\{[\\s\\S]*?${filename}`));
+  assert.ok(sw.includes(`./assets/footera/${filename}`),type);
+  assert.doesNotMatch(art,/<(?:image|text|foreignObject)\b|B\. Gerlach|Ronaldo/i,type);
+  const outline=art.match(/<path d="(M350 3[^\"]+)" fill="url\(#rim\)"/);
+  assert.ok(outline,type);
+  if(geometry)assert.equal(outline[1],geometry,type);else geometry=outline[1];
+ }
+ assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw\):before\{content:none\}/);
+ assert.match(legacy,/\.legacy-shell:before\{[\s\S]*?legacy-event-aura\.svg/);
+ assert.ok(sw.includes('./assets/footera/legacy-event-aura.svg'));
+});
+
 test('goalkeepers use the same geometry with six keeper stats, long names fit the plate',()=>{
  const ctx=context();
  const keeper=ctx.cardHTML({...gerlach,name:'Thibaut Courtois',position:'GK'},null,true);

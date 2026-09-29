@@ -235,3 +235,71 @@
  margin:0 auto!important;
  transform:none!important;
 }
+
+/* Metallic surfaces approved for the four regular card families. The SVGs are
+   blank skins: cardHTML continues to provide every field and player portrait. */
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw){
+ clip-path:polygon(3.5% 12%,8% 8%,16% 5.5%,41% 5.4%,46.7% 3.1%,50% 0%,53.3% 3.1%,59% 5.4%,84% 5.5%,92% 8%,96.5% 12%,96.5% 85%,88.5% 92%,50% 100%,11.5% 92%,3.5% 85%);
+ background-position:center;
+ background-size:100% 100%;
+ background-repeat:no-repeat;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw):before{content:none}
+.card-shell .custom-card.gold{
+ background-image:url("./assets/footera/card-gold-metallic.svg");
+ color:#fff1c7;
+ --card-column-fill:linear-gradient(180deg,#0d0a07f2,#271908ed 75%,#0b0908f5);
+ --card-name-fill:linear-gradient(90deg,#211408f5,#61431add 50%,#211408f5);
+ --card-name-border:#e0b966;
+ --card-name-color:#fff0c4;
+ --card-stats-fill:linear-gradient(180deg,#120c08d9,#100b07eb);
+ --card-stats-color:#ebce8b;
+ --card-value-color:#fff3ca;
+ --card-rail-border:#bd8c3c;
+}
+.card-shell .custom-card.silver{
+ background-image:url("./assets/footera/card-silver-metallic.svg");
+ color:#f5fbff;
+ --card-column-fill:linear-gradient(180deg,#0b131bf2,#1d2b35ef 75%,#0a1118f5);
+ --card-name-fill:linear-gradient(90deg,#16212af5,#425668e0 50%,#16212af5);
+ --card-name-border:#bfd3df;
+ --card-name-color:#f7fcff;
+ --card-stats-fill:linear-gradient(180deg,#0c151edb,#0d141bee);
+ --card-stats-color:#c1d8e4;
+ --card-value-color:#f5fbff;
+ --card-rail-border:#8daebf;
+}
+.card-shell .custom-card.bronze{
+ background-image:url("./assets/footera/card-bronze-metallic.svg");
+ color:#ffe0bd;
+ --card-column-fill:linear-gradient(180deg,#180e0af2,#352014ec 75%,#170d09f5);
+ --card-name-fill:linear-gradient(90deg,#28160ff5,#714027e1 50%,#28160ff5);
+ --card-name-border:#cc8f61;
+ --card-name-color:#ffe1bd;
+ --card-stats-fill:linear-gradient(180deg,#1a0e0be1,#160d0aef);
+ --card-stats-color:#dbad84;
+ --card-value-color:#ffe2c4;
+ --card-rail-border:#a96940;
+}
+.card-shell .custom-card.totw{
+ background-image:url("./assets/footera/card-totw-metallic.svg");
+ color:#fff0ba;
+ --card-column-fill:linear-gradient(180deg,#020303f7,#131311f0 75%,#030404f7);
+ --card-name-fill:linear-gradient(90deg,#070807f5,#382b13e5 50%,#070807f5);
+ --card-name-border:#edc864;
+ --card-name-color:#fff0b6;
+ --card-stats-fill:linear-gradient(180deg,#040505e5,#050606f5);
+ --card-stats-color:#e6c76c;
+ --card-value-color:#fff2c3;
+ --card-rail-border:#c99e3c;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .card-top:before{
+ border-color:var(--card-rail-border);
+ box-shadow:inset 0 0 2cqw #0008,0 0 .7cqw #0009;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .pname{
+ clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .stats span{
+ border-color:var(--card-rail-border);
+}

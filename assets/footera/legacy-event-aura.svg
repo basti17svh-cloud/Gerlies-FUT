@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 1100" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="ruby" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#ffecad"/>
+      <stop offset=".18" stop-color="#ff4155"/>
+      <stop offset=".55" stop-color="#670313"/>
+      <stop offset=".86" stop-color="#e5183c"/>
+      <stop offset="1" stop-color="#ffd68a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#fff0b6"/><stop offset=".35" stop-color="#9d5420"/>
+      <stop offset=".7" stop-color="#ffe7a7"/><stop offset="1" stop-color="#683517"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#ruby)" stroke="url(#gold)" stroke-width="2">
+    <path d="M76 164 8 79 49 274 83 324 69 212Z"/>
+    <path d="M67 342 0 270 49 533 78 581 90 452Z"/>
+    <path d="M72 577 4 519 42 807 88 749Z"/>
+    <path d="M82 767 18 827 118 984 161 947Z"/>
+    <path d="M123 933 90 1052 277 1031 270 998Z"/>
+    <path d="M764 164 832 79 791 274 757 324 771 212Z"/>
+    <path d="M773 342 840 270 791 533 762 581 750 452Z"/>
+    <path d="M768 577 836 519 798 807 752 749Z"/>
+    <path d="M758 767 822 827 722 984 679 947Z"/>
+    <path d="M717 933 750 1052 563 1031 570 998Z"/>
+  </g>
+  <g fill="url(#gold)" opacity=".85">
+    <path d="M30 433 55 394 49 533Z"/><path d="M810 433 785 394 791 533Z"/>
+    <path d="M26 693 56 648 42 807Z"/><path d="M814 693 784 648 798 807Z"/>
+    <path d="M120 934 193 985 90 1052Z"/><path d="M720 934 647 985 750 1052Z"/>
+  </g>
+  <g fill="none" stroke="#fff0b9" stroke-width="2" opacity=".58">
+    <path d="M8 79 69 212 83 324M0 270 78 581M4 519 88 749M18 827 161 947M90 1052 270 998"/>
+    <path d="M832 79 771 212 757 324M840 270 762 581M836 519 752 749M822 827 679 947M750 1052 570 998"/>
+  </g>
+</svg>
