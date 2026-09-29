@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.69</title>
+<title>Footera V19.70</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1325,6 +1325,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./legacy-card.css">
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css">
+<link rel="stylesheet" href="./friend-online.css">
 </head>
 <body>
 
@@ -1378,7 +1379,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.69</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.70</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1578,6 +1579,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Der Profilcode enthält nur dein Profil sowie aktive Aufstellung und Bank – nicht deinen gesamten Verein. Den Teamnamen änderst du unter Extras.</p><textarea id="myFriendCode" readonly></textarea><button id="refreshFriendCode" class="secondary" style="width:100%;margin-top:7px">Profilcode aktualisieren</button></div>
     <div class="profile-card"><h3>Freund hinzufügen</h3><p>Profilcode einfügen und den aktuellen Freundeskader speichern.</p><textarea id="friendCodeInput" placeholder="Profilcode hier einfügen"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div>
     <div class="profile-card"><h3>Freundesliste</h3><div class="online-note">Tippe auf „Aufstellung“, um ausschließlich Startelf und Bank des Freundes im gleichen Team-Layout wie bei dir zu sehen.</div><div id="friendList" class="friend-list"></div></div>
+    <div id="onlinePanel" class="profile-card" hidden><h3>Live-Duelle</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div><div id="onlineComparison"></div></div>
   </div>
 </div></section>
 
@@ -1625,6 +1627,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerbiografie</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
 <div id="campaignModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="campaignModalTitle">Campaign Hub</h3><div style="font-size:7px;color:#87958f">Fortschritt und nächste Schritte</div></div><button id="campaignModalClose" class="secondary">Schließen</button></div><div id="campaignModalBody" class="campaign-detail-grid"></div></div></div>
 <div id="friendTeamModal" class="modal friend-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="friendTeamModalTitle">Freundes-Mannschaft</h3><div id="friendTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="friendTeamModalClose" class="secondary">Schließen</button></div><div id="friendTeamModalBody"></div></div></div>
+<div id="onlineDuelModal" class="modal online-duel-modal"><div class="modalinner"><div class="modalhead"><h3 id="onlineDuelModalTitle">Freundesduell · Live-Matchday</h3><button id="onlineDuelModalClose" class="secondary">Schließen</button></div><div id="onlineDuelBody"></div></div></div>
 <div id="usernameRequiredModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Benutzername festlegen</h3><div style="font-size:7px;color:#87958f">Dein Footera-Profil ist noch nicht vollständig</div></div></div>
   <div class="team-management-grid">
     <div style="font-size:9px;color:#c9d7d1;line-height:1.55">Für dein Vereinsprofil, Freundesfunktionen und persönliche Belohnungen brauchst du einen Benutzernamen.</div>
@@ -6673,7 +6676,8 @@ $("squadBattleModalBody").addEventListener("click",e=>{
 
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
- const payload={v:2,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
+ const onlineUid=window.FooteraOnline?.registered?window.FooteraOnline.userId:"";
+ const payload={v:onlineUid?3:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
@@ -6690,13 +6694,14 @@ function renderSocial(){
  if($("profileClubName"))$("profileClubName").value=state.profile.clubName||"Footera Club";
  if($("profileSaveId"))$("profileSaveId").value=state.profile.saveId;
  if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Footera Club";$("myFriendCode").value=encodeFriendProfile();
- $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button><button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>'
+ $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button>${window.FooteraOnline?.ready&&f.onlineUid?`<button class="primary" data-friend-live="${i}">Live-Duell</button><button class="secondary" data-friend-compare="${i}">Vergleich</button>`:""}<button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>';
+ window.FooteraOnline?.render();if(window.FooteraOnline?.available&&!window.FooteraOnline.ready)window.FooteraOnline.init();else if(window.FooteraOnline?.ready&&!window.FooteraOnline.registered)window.FooteraOnline.syncProfile().then(ok=>{if(ok)renderSocial()}).catch(console.warn)
 }
-$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;state.profile.clubName=$("profileClubName").value.trim()||`${username} FC`;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();toast("Vereinsprofil gespeichert.")});
+$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;state.profile.clubName=$("profileClubName").value.trim()||`${username} FC`;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Vereinsprofil gespeichert.")});
 $("copyProfileSaveId")?.addEventListener("click",async()=>{if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();try{await navigator.clipboard.writeText(state.profile.saveId);toast("Vereins-ID kopiert.")}catch(e){const el=$("profileSaveId");el?.focus();el?.select();toast(`Vereins-ID: ${state.profile.saveId}`)}});
 $("refreshFriendCode").addEventListener("click",()=>{$("myFriendCode").value=encodeFriendProfile();toast("Profilcode aktualisiert.")});
-$("addFriendCode").addEventListener("click",()=>{const f=decodeFriendProfile($("friendCodeInput").value);if(!f||!Array.isArray(f.squad))return toast("Profilcode ungültig.");const key=(f.clubName||"Freund")+"|"+(f.rating||0)+"|"+(f.division||10),idx=state.friends.findIndex(x=>x._key===key);f._key=key;if(idx>=0)state.friends[idx]=f;else state.friends.push(f);save();$("friendCodeInput").value="";renderSocial();renderPlay();toast("Freundesprofil gespeichert.")});
-$("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
+$("addFriendCode").addEventListener("click",()=>{const f=decodeFriendProfile($("friendCodeInput").value);if(!f||!Array.isArray(f.squad))return toast("Profilcode ungültig.");const key=f.onlineUid||((f.clubName||"Freund")+"|"+(f.rating||0)+"|"+(f.division||10)),idx=state.friends.findIndex(x=>x._key===key||(f.onlineUid&&x.onlineUid===f.onlineUid));f._key=key;if(idx>=0)state.friends[idx]=f;else state.friends.push(f);save();$("friendCodeInput").value="";renderSocial();renderPlay();toast("Freundesprofil gespeichert.")});
+$("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]"),live=e.target.closest("[data-friend-live]"),compare=e.target.closest("[data-friend-compare]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(live){window.FooteraOnline?.invite(state.friends[Number(live.dataset.friendLive)]);return}if(compare){window.FooteraOnline?.showComparison(state.friends[Number(compare.dataset.friendCompare)]);return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
 $("friendTeamModalClose").addEventListener("click",()=>closeUiLayer("friendTeamModal","friend-team"));
 $("friendTeamModalBody").addEventListener("click",e=>{const b=e.target.closest("[data-friend-modal-play]");if(!b)return;const idx=Number(b.dataset.friendModalPlay),fr=state.friends[idx];if(!fr)return;$("friendTeamModal").classList.remove("active");replaceUiState("view",{view:"playView"});switchView("playView",{push:false});$("friendlyFriendSelect").value=String(idx);renderPlay();renderMatchPreview("friendly-friend",friendAsOpponent(fr))});
 
@@ -6871,7 +6876,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.69";
+const GFUT_BUILD="V19.70";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6889,7 +6894,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1969",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1970",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
@@ -6902,6 +6907,8 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script>boot();</script>
+<script src="./online-config.js"></script>
+<script src="./friend-online.js"></script>
+<script>boot().then(()=>{if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()});</script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+.friend-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#onlinePanel h4{margin:14px 0 7px;font-size:13px}
+#onlinePanel p{font-size:11px;line-height:1.45}
+.online-duel-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding:9px;border:1px solid #31423c;border-radius:10px;background:#101c18;font-size:11px}
+.online-duel-row span{flex:1;min-width:140px}.online-duel-row small{display:block;margin-top:3px;color:#9aa9a3}
+.online-duel-row button{min-height:38px;font-size:11px}
+.online-table-wrap{overflow-x:auto;margin-top:9px}
+.online-table{width:100%;border-collapse:collapse;min-width:445px;font-size:11px;font-variant-numeric:tabular-nums}
+.online-table th,.online-table td{padding:8px 5px;text-align:center;border-bottom:1px solid #304139;white-space:nowrap}
+.online-table th:first-child{text-align:left}.online-table tbody tr:first-child{color:#dbff62;background:#d8ff3e0d}
+.online-duel-modal .modalinner{width:min(95vw,740px);max-height:90vh;overflow:auto}
+.online-matchday{display:grid;gap:12px;font-size:13px}
+.online-live-pill{justify-self:center;padding:6px 12px;border:1px solid #95db80;border-radius:99px;background:#123023;color:#d8ff84;font-weight:900;letter-spacing:.1em}
+.online-score{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;text-align:center}
+.online-score span{font-size:clamp(12px,2.7vw,18px);font-weight:900;overflow-wrap:anywhere}
+.online-score strong{font-size:clamp(26px,7vw,48px);white-space:nowrap}
+.online-match-pitch{position:relative;display:grid;place-items:center;min-height:140px;padding:18px;border:2px solid #78b49a;border-radius:19px;background:repeating-linear-gradient(0deg,#075b3d 0 35px,#086947 35px 70px);box-shadow:inset 0 0 0 14px #ffffff0a;color:#fff;text-align:center;text-shadow:0 2px 4px #001c12}
+.online-match-pitch:before{content:"";position:absolute;inset:13px;border:1px solid #ffffff55;pointer-events:none}
+.online-match-pitch:after{content:"";position:absolute;top:50%;left:14px;right:14px;border-top:1px solid #ffffff55;pointer-events:none}
+.online-match-pitch span{position:relative;z-index:2;padding:8px;border-radius:8px;background:#0b231bd8;font-weight:850}
+.online-pitch-middle{position:absolute;top:22%;left:50%;transform:translateX(-50%);z-index:1;font-size:30px}
+.online-goal-card{display:grid;justify-items:center;gap:6px;padding:12px;border:1px solid #d5bf66;border-radius:16px;background:radial-gradient(circle at 50% 30%,#614119,#171912 75%);text-align:center}
+.online-goal-card>span{font-size:12px;color:#ffde81;font-weight:900}
+.online-goal-card .card-shell{width:min(38vw,160px);margin:auto}
+.online-goal-card>strong{font-size:16px}
+.online-matches-controls{display:grid;gap:9px;padding:11px;border:1px solid #34443d;border-radius:14px;background:#101a16}
+.online-matches-controls label{display:grid;gap:5px;font-weight:800}
+.online-matches-controls select{min-height:42px;min-width:0;padding:7px;border:1px solid #485b50;border-radius:8px;background:#111d18;color:#fff;font-size:14px}
+.online-sub{display:grid;grid-template-columns:1fr 1fr;gap:6px}.online-sub span{grid-column:1/-1;font-weight:900}.online-sub button{grid-column:1/-1;min-height:42px}
+.online-timeline{max-height:220px;overflow:auto;border:1px solid #304039;border-radius:12px;padding:9px}.online-timeline h4{margin:0 0 7px}
+.online-event{display:flex;gap:10px;padding:6px 2px;border-top:1px solid #ffffff14}.online-event b{min-width:48px;color:#c5e9ba}
+.online-result{margin:0;padding:10px;border:1px solid #688851;border-radius:10px;color:#e4f8c5;font-weight:800}
+@media(max-width:560px){.online-duel-modal .modalinner{width:100%;max-height:94vh}.online-sub{grid-template-columns:1fr}.online-score{gap:4px}.online-score span{font-size:12px}}
