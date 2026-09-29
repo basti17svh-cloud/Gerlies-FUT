@@ -101,9 +101,37 @@ test('pregame defensive tactic reaches the match simulation',()=>{
  const node=id=>{if(!elements.has(id))elements.set(id,{classList:{add(){},remove(){}},value:'',textContent:''});return elements.get(id)};
  const state={squad:Array.from({length:18},(_,i)=>`p${i}`),club:[],formation:'4-4-2',tactic:'defensive'};
  const ctx={state,match:null,squadMetrics:()=>({filled:18,rating:83,chem:26}),$:node,
-  pushUiState:()=>{},addLog:message=>logs.push(message),updateMatchUI:()=>{},setMatchPill:()=>{},startMatchTimer:()=>{},matchHomeTeamName:()=>"Footera Club",matchAwayTeamName:()=>"Gegner"};
+  pushUiState:()=>{},addLog:message=>logs.push(message),updateMatchUI:()=>{},setMatchPill:()=>{},startMatchTimer:()=>{},resetMatchPresentation:()=>{},recordMatchScene:()=>{},matchHomeTeamName:()=>"Footera Club",matchAwayTeamName:()=>"Gegner"};
  vm.createContext(ctx);vm.runInContext(kickoff,ctx);
  ctx.startMatch('rivals',{name:'RIVALS XI',power:85});
  assert.equal(ctx.match.tactic,'defensive');
  assert.match(logs[0],/Taktik: Defensiv/);
+});
+
+test('a goal shows the real scorer card and resumes only after the celebration',()=>{
+ const elements=new Map(),classes=new Set(),cards=[];
+ const node=id=>{if(!elements.has(id))elements.set(id,{textContent:'',innerHTML:'',classList:{add(name){classes.add(name)},remove(name){classes.delete(name)}}});return elements.get(id)};
+ const homeItem={uid:'striker-1',variant:'special',eventName:'MOMENTUM'},awayItem={uid:'opponent-1',variant:'special'};
+ let stopped=0,resumed=0;
+ const ctx={match:{clubIndex:new Map([['striker-1',homeItem]]),opponentProfile:{squad:[{id:'away-1',name:'Gastspieler'}],items:[awayItem]},power:86,opp:85,home:1,away:0,paused:false,finished:false},state:{club:[]},matchHighlightTimer:null,
+  $:node,displayBase:item=>({name:item.uid==='striker-1'?'Stürmer':'Gastspieler'}),opponentMatchBase:entry=>entry,friendCard:()=>'',
+  cardHTML:(base,item,mini)=>{cards.push({base,item,mini});return `<div class="real-card">${base.name}</div>`},
+  stopMatchTimer:()=>stopped++,startMatchTimer:()=>resumed++,setMatchPill:()=>{},setTimeout:()=>17,clearTimeout:()=>{}};
+ vm.createContext(ctx);
+ vm.runInContext(extract('function dismissMatchGoalMoment(', '$("matchGoalSkip").addEventListener'),ctx);
+ ctx.showMatchGoalMoment({side:'home',scorer:'Stürmer',assist:'Vorlagengeber',type:'assist',minute:32},{uid:'striker-1'});
+ assert.equal(cards[0].item,homeItem);
+ assert.equal(cards[0].mini,false);
+ assert.match(node('matchGoalCard').innerHTML,/Stürmer/);
+ assert.equal(node('matchGoalScorer').textContent,'Stürmer');
+ assert.equal(node('matchGoalAssist').textContent,'Vorlage: Vorlagengeber');
+ assert.equal(ctx.match.highlightActive,true);assert.equal(stopped,1);assert.equal(resumed,0);
+ ctx.dismissMatchGoalMoment();
+ assert.equal(ctx.match.highlightActive,false);assert.equal(resumed,1);
+ ctx.match.away=1;
+ ctx.showMatchGoalMoment({side:'away',scorer:'Gastspieler',type:'solo',minute:64},{index:0});
+ assert.equal(cards[1].item,awayItem);
+ assert.equal(node('matchGoalScore').textContent,'1 : 1');
+ ctx.match.paused=true;ctx.dismissMatchGoalMoment();
+ assert.equal(resumed,1,'a manager pause does not restart the clock');
 });

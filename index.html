@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.65</title>
+<title>Footera V19.66</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1213,6 +1213,95 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  }
 
 
+/* V19.66 — Matchday broadcast */
+#match.match{background:linear-gradient(180deg,rgba(5,7,8,.88),#070b09 420px),url("./assets/footera/stadion.webp") center top / 100% auto no-repeat,#070b09;padding:calc(16px + env(safe-area-inset-top)) 12px calc(30px + env(safe-area-inset-bottom))}
+#match .matchinner{max-width:680px}
+#match .match-broadcast-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 2px 10px;color:#b5c8bf;font-size:11px;font-weight:950;letter-spacing:.13em}
+#match .match-broadcast-head b{color:var(--lime)}
+#match #matchCompetition{max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e3e9e5;text-align:right;font-size:10px;letter-spacing:.04em}
+#match .scoreboard{padding:14px;border-radius:20px;border-color:#425e4e;background:linear-gradient(150deg,rgba(19,38,30,.97),rgba(8,17,15,.97) 70%);box-shadow:0 20px 38px #0008,inset 0 1px #ffffff19}
+#match .match-score-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#match .match-running-pill{font-size:9px;padding:7px 10px}
+#match .minute{font-size:16px;padding:5px 10px;border-radius:8px;background:#d8ff3e18;font-variant-numeric:tabular-nums}
+#match .match-score-line{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;margin:14px 0 12px}
+#match .match-team-name{min-width:0;color:#e7efea;font-size:clamp(12px,3.1vw,17px);font-weight:950;line-height:1.18;overflow-wrap:anywhere;text-align:left}
+#match #oppName{text-align:right}
+#match .score{font-size:clamp(38px,11vw,62px);line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.055em;text-shadow:0 3px 16px #000}
+#match .matchstats{gap:7px;margin-top:12px}
+#match .mstat{padding:10px 4px;border-radius:11px;background:#08120f;border-color:#304639}
+#match .mstat strong{font-size:clamp(15px,4vw,21px);font-variant-numeric:tabular-nums}
+#match .mstat span{font-size:10px;color:#a9b9ae;letter-spacing:.04em}
+#match .match-card-events{margin:7px 0 0}
+#match .match-timeline-wrap{position:relative;margin:11px 0;overflow:hidden}
+#match .match-timeline{display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 2px 5px}
+#match .match-timeline::-webkit-scrollbar{display:none}
+#match .match-timeline-start,#match .match-timeline-event{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:5px 10px;border:1px solid #476053;border-radius:99px;background:#11201a;color:#dce9e0;font-size:10px;font-weight:850;white-space:nowrap}
+#match .match-timeline-event.goal{border-color:#c3da4b;color:#ebff9d;background:#293319}
+#match .match-timeline-event.red,#match .match-timeline-event.injury{border-color:#a75762;color:#ffd3d8;background:#341a21}
+#match .match-timeline-event.break{border-color:#947c43;color:#ffe3a4;background:#322b1a}
+#match .match-timeline-event.sub{border-color:#4c9e81;color:#b2ffe0}
+#match .match-live-stage{position:relative;overflow:hidden;border:1px solid #487158;border-radius:20px;background:linear-gradient(180deg,#12291e,#091811);box-shadow:0 18px 35px #0009,inset 0 1px #ffffff22}
+#match .match-stage-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;color:#b5ebc4;font-size:10px;font-weight:950;letter-spacing:.13em}
+#match #matchSceneMinute{color:var(--lime);font-size:13px;font-variant-numeric:tabular-nums}
+#match .match-scene-pitch{height:clamp(150px,37vw,230px);padding:4px 14px}
+#match .match-pitch-lines{position:relative;width:100%;height:100%;overflow:visible;border:2px solid #c7edcf77;border-radius:2px;background:repeating-linear-gradient(90deg,#115b3b 0 12.5%,#0d5035 12.5% 25%);box-shadow:0 0 0 6px #0a2819,inset 0 0 35px #001a0c55}
+#match .match-pitch-lines:before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px solid #d2f3d576}
+#match .match-pitch-center{position:absolute;width:19%;aspect-ratio:1;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #d2f3d576;border-radius:50%}
+#match .match-pitch-box{position:absolute;width:15%;height:54%;top:23%;border:2px solid #d2f3d576}
+#match .match-pitch-box.home{left:0;border-left:0}
+#match .match-pitch-box.away{right:0;border-right:0}
+#match .match-pitch-goal{position:absolute;top:39%;height:22%;width:2.5%;border:2px solid #d2f3d576}
+#match .match-pitch-goal.home{right:100%;border-right:0}
+#match .match-pitch-goal.away{left:100%;border-left:0}
+#match .match-ball{position:absolute;z-index:2;left:50%;top:50%;width:17px;height:17px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:50%;background:#13271d;box-shadow:0 0 0 7px #e0ffe33c,0 0 20px #d8ff3ecc}
+#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-ball{animation:matchDriveHome .7s ease-out both}
+#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-ball{animation:matchDriveAway .7s ease-out both;box-shadow:0 0 0 7px #ff8d7c42,0 0 20px #ff9988}
+#match [data-scene$="-goal"] .match-ball{box-shadow:0 0 0 12px #f4ff9266,0 0 40px #d8ff3e}
+#match .match-scene-caption{display:flex;align-items:center;gap:10px;min-height:49px;padding:9px 14px;background:#081610;border-top:1px solid #ffffff1c}
+#match #matchSceneType{flex:none;color:var(--lime);font-size:9px;font-weight:1000;letter-spacing:.08em}
+#match #matchSceneText{min-width:0;font-size:12px;line-height:1.25;font-weight:800;overflow-wrap:anywhere}
+#match .match-goal-moment{position:absolute;z-index:6;inset:0;display:grid;grid-template-columns:minmax(105px,39%) minmax(0,1fr);align-items:center;gap:12px;padding:12px 20px;background:radial-gradient(circle at 25% 50%,#daff4340,transparent 48%),linear-gradient(120deg,#082014f8,#09120ef9);opacity:0;visibility:hidden;transform:scale(.97);transition:opacity .22s,transform .22s,visibility .22s}
+#match .match-goal-moment.active{opacity:1;visibility:visible;transform:scale(1)}
+#match .match-goal-card{width:min(100%,143px);margin:auto}
+#match .match-goal-card .card-shell{width:100%;filter:drop-shadow(0 0 15px #d8ff3e55)}
+#match .match-goal-copy{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:8px}
+#match .match-goal-copy>span:first-child{color:var(--lime);font-size:clamp(15px,5vw,26px);font-weight:1000;letter-spacing:.07em}
+#match .match-goal-copy strong{font-size:clamp(17px,5vw,27px);line-height:1.05;overflow-wrap:anywhere;text-transform:uppercase}
+#match #matchGoalAssist{color:#c7d5ca;font-size:11px;line-height:1.3}
+#match #matchGoalScore{color:#fff;font-size:clamp(19px,6vw,32px);font-variant-numeric:tabular-nums}
+#match #matchGoalSkip{min-height:34px;padding:6px 11px;border:1px solid #d8ff3e88;border-radius:8px;background:#233315;color:#e8ffaf;font-size:11px;font-weight:950}
+#match .match-controls{gap:9px;margin-top:11px}
+#match .match-controls button{min-height:48px;font-size:12px}
+#match .match-chronicle{margin:12px 0 0;border:1px solid #365044;border-radius:12px;background:#0d1913}
+#match .match-chronicle summary{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 13px;cursor:pointer;font-size:12px;font-weight:950;list-style:none}
+#match .match-chronicle summary::-webkit-details-marker{display:none}
+#match .match-chronicle summary:after{content:"⌄";font-size:18px;line-height:1;color:#d8ff3e}
+#match .match-chronicle[open] summary:after{content:"⌃"}
+#match .match-chronicle summary span{margin-left:auto;color:#a4b5aa;font-size:10px;font-weight:700}
+#match .logbox{margin:0 8px 8px;min-height:80px;max-height:220px;border-radius:8px}
+#match .logline{font-size:11px;line-height:1.45;padding:8px 3px}
+#match .event-banner{font-size:12px}
+#match .manager-panel{border-radius:18px;padding:14px}
+#match .manager-panel h3{font-size:18px}
+#match .manager-panel p{font-size:11px;line-height:1.45}
+#match .match-manager-head span,#match .match-manager-head strong{font-size:11px}
+#match .match-manager-bench-title strong{font-size:12px}
+#match .match-manager-bench-title span{font-size:9px}
+#match .match-manager-tip{font-size:10px}
+#match .manager-grid.match-settings label{font-size:10px}
+#match .match-break-summary{margin:8px 0 13px;padding:12px;border:1px solid #657a49;border-radius:12px;background:linear-gradient(135deg,#23321b,#101b16)}
+#match .match-break-summary[hidden]{display:none}
+#match .match-break-summary strong{display:block;color:#edffb1;font-size:18px}
+#match .match-break-summary span{display:block;margin-top:5px;color:#cbd6c5;font-size:11px;line-height:1.45}
+#match .result{font-size:12px}
+#match #matchResultTitle{font-size:25px}
+#match #matchResultText{font-size:12px!important;line-height:1.5}
+@keyframes matchDriveHome{from{left:43%}to{left:85%}}
+@keyframes matchDriveAway{from{left:57%}to{left:15%}}
+#match [data-scene$="-chance"] .match-ball{animation-duration:.45s}
+#match [data-scene$="-goal"] .match-ball{animation-duration:.45s}
+@media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
+@media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-goal-moment{transition:none}}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./legacy-card.css">
@@ -1271,7 +1360,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.65</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.66</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1545,13 +1634,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div id="match" class="match">
  <div class="matchinner">
+  <div class="match-broadcast-head"><span>FOOTERA <b>MATCHDAY</b></span><span id="matchCompetition">Live-Spiel</span></div>
   <div class="scoreboard">
-   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-    <div id="matchStatePill" class="match-running-pill"><i></i><span>Simulation läuft</span></div>
-    <div id="matchMinute" class="minute">0'</div>
-   </div>
-   <div id="matchScore" class="score">0 : 0</div>
-   <div class="teams"><span id="matchHomeName">FOOTERA CLUB</span><span id="oppName">RIVALS XI</span></div>
+   <div class="match-score-meta"><div id="matchStatePill" class="match-running-pill"><i></i><span>Simulation läuft</span></div><div id="matchMinute" class="minute">0'</div></div>
+   <div class="match-score-line"><div id="matchHomeName" class="match-team-name">FOOTERA CLUB</div><div id="matchScore" class="score" aria-live="polite">0 : 0</div><div id="oppName" class="match-team-name">RIVALS XI</div></div>
    <div id="matchCardEvents" class="match-card-events" aria-live="polite"></div>
    <div class="matchstats">
     <div class="mstat"><strong id="matchPoss">50 : 50</strong><span>Ballbesitz</span></div>
@@ -1560,17 +1646,27 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    </div>
   </div>
 
-  <div id="matchLog" class="logbox"></div>
+  <div class="match-timeline-wrap"><div id="matchTimeline" class="match-timeline" aria-label="Wichtige Spielereignisse"><span class="match-timeline-start">Anpfiff</span></div></div>
+
+  <section id="matchLiveStage" class="match-live-stage" data-scene="idle" aria-label="Live-Spielszenen">
+   <div class="match-stage-head"><span>LIVE-SPIELFELD</span><span id="matchSceneMinute">0'</span></div>
+   <div class="match-scene-pitch" aria-hidden="true"><div class="match-pitch-lines"><i class="match-pitch-center"></i><i class="match-pitch-box home"></i><i class="match-pitch-box away"></i><i class="match-pitch-goal home"></i><i class="match-pitch-goal away"></i><i class="match-ball"></i></div></div>
+   <div class="match-scene-caption"><span id="matchSceneType">ANPFIFF</span><strong id="matchSceneText">Das Spiel läuft.</strong></div>
+   <div id="matchGoalMoment" class="match-goal-moment" role="status" aria-live="polite"><div id="matchGoalCard" class="match-goal-card"></div><div class="match-goal-copy"><span id="matchGoalEyebrow">TOR · 0'</span><strong id="matchGoalScorer">Torschütze</strong><span id="matchGoalAssist"></span><b id="matchGoalScore">1 : 0</b><button id="matchGoalSkip" type="button">Weiterspielen</button></div></div>
+  </section>
 
   <div class="match-controls">
    <button id="manageTeamBtn" class="secondary">Team-Management</button>
    <button id="matchSpeedBtn" class="secondary">Tempo: Normal</button>
   </div>
 
+  <details id="matchChronicle" class="match-chronicle"><summary>Spielverlauf <span>Alle Meldungen ansehen</span></summary><div id="matchLog" class="logbox"></div></details>
+
   <div id="eventBanner" class="event-banner"></div>
 
   <div id="managerPanel" class="manager-panel">
    <h3>Team-Management</h3>
+   <div id="matchBreakSummary" class="match-break-summary" hidden></div>
    <p>Ziehe Spieler per Drag & Drop zwischen Startelf und Bank. Änderungen sind zunächst nur ein Entwurf und werden erst nach deiner Bestätigung wirksam.</p>
    <div class="match-manager-head"><span id="matchManagerStatus">Aktuelle Aufstellung</span><strong id="matchSubsMeta">0/5 Wechsel</strong></div>
    <div id="matchManagerPitch" class="match-manager-pitch"></div>
@@ -5660,7 +5756,7 @@ document.addEventListener("pointerup",e=>{
 document.addEventListener("pointercancel",()=>{clearSbcDragVisuals();sbcDragState=null});
 
 
-let matchTimer=null,matchSpeed=550;
+let matchTimer=null,matchSpeed=550,matchHighlightTimer=null;
 
 function renderPlay(){
  const m=squadMetrics(),ready=m.filled===18,friendSel=$("friendlyFriendSelect"),old=friendSel?.value||"";
@@ -5714,12 +5810,12 @@ function stopMatchTimer(){
 }
 function startMatchTimer(){
  stopMatchTimer();
- if(!match||match.finished||match.paused)return;
+ if(!match||match.finished||match.paused||match.highlightActive)return;
  matchTimer=setInterval(simTick,matchSpeed)
 }
 function setMatchPill(paused){
  const pill=$("matchStatePill");
- pill.innerHTML=match?.finished?'<i></i><span>Abpfiff</span>':match?.halftimeActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Halbzeit</span>':match?.extraTimeManagementActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Vor Verlängerung</span>':paused?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Simulation pausiert</span>':'<i></i><span>Simulation läuft</span>'
+ pill.innerHTML=match?.finished?'<i></i><span>Abpfiff</span>':match?.halftimeActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Halbzeit</span>':match?.extraTimeManagementActive?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Vor Verlängerung</span>':paused?'<i style="background:#ffd463;box-shadow:0 0 10px #ffd463"></i><span>Simulation pausiert</span>':match?.highlightActive?'<i></i><span>Torjubel</span>':'<i></i><span>Simulation läuft</span>'
 }
 function matchHomeTeamName(){return String(state.profile?.clubName||"Footera Club").trim()||"Footera Club"}
 function matchAwayTeamName(){return String(match?.opponentName||"Gegner").trim()||"Gegner"}
@@ -5743,7 +5839,7 @@ function startMatch(mode,opponent=null){
  battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],formation:state.formation,tactic:state.tactic||"balanced",redCards:[],
-  subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],
+  subsUsed:0,subbedOut:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],timeline:[],lastScene:null,highlightActive:false,
   injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
   extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyWinner:null,pensHome:null,pensAway:null,playerStatsApplied:false
  };
@@ -5753,10 +5849,13 @@ function startMatch(mode,opponent=null){
  $("matchResult").classList.remove("active");
  $("managerPanel").classList.remove("active");
  $("eventBanner").classList.remove("active");
+ resetMatchPresentation();
  $("matchHomeName").textContent=matchHomeTeamName();$("oppName").textContent=name;
+ $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="squad"?"Squad Battles":"Freundschaftsspiel";
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
+ recordMatchScene("idle","Anpfiff · Das Spiel läuft.");
  updateMatchUI();setMatchPill(false);startMatchTimer()
 }
 function addLog(t){
@@ -5776,8 +5875,80 @@ function updateMatchUI(){
  $("matchShots").textContent=`${match.shotsHome} : ${match.shotsAway}`;
  $("matchXg").textContent=`${match.xgHome.toFixed(1)} : ${match.xgAway.toFixed(1)}`
 }
+function resetMatchPresentation(){
+ clearTimeout(matchHighlightTimer);matchHighlightTimer=null;
+ $("matchGoalMoment").classList.remove("active");
+ $("matchBreakSummary").hidden=true;
+ $("matchTimeline").innerHTML='<span class="match-timeline-start">Anpfiff</span>';
+ $("matchLiveStage").dataset.scene="idle";
+ $("matchSceneType").textContent="ANPFIFF";
+ $("matchSceneText").textContent="Das Spiel läuft.";
+ $("matchSceneMinute").textContent="0'";
+ $("matchChronicle")?.removeAttribute("open")
+}
+function renderMatchTimeline(){
+ if(!match)return;
+ const timeline=$("matchTimeline");
+ timeline.innerHTML='<span class="match-timeline-start">Anpfiff</span>'+(match.timeline||[]).map(e=>`<span class="match-timeline-event ${e.kind}" title="${esc(e.text)}">${e.kind==="goal"?"⚽":e.kind==="red"?"🟥":e.kind==="injury"?"✚":e.kind==="sub"?"↔":"◦"} ${e.minute}' · ${esc(e.text)}</span>`).join("");
+ timeline.scrollLeft=timeline.scrollWidth
+}
+function renderMatchScene(){
+ if(!match?.lastScene)return;
+ const scene=match.lastScene,kind=scene.kind;
+ $("matchLiveStage").dataset.scene=kind;
+ $("matchSceneMinute").textContent=`${scene.minute}'`;
+ $("matchSceneType").textContent=kind.endsWith("-goal")?"TOR":kind.endsWith("-chance")?"TORSCHUSS":kind.endsWith("-attack")?"ANGRIFF":kind.endsWith("-card")?"ROTE KARTE":kind.endsWith("-injury")?"VERLETZUNG":"SPIEL LÄUFT";
+ $("matchSceneText").textContent=scene.text;
+ const ball=$("matchLiveStage").querySelector(".match-ball");
+ ball.style.animation="none";void ball.offsetWidth;ball.style.animation=""
+}
+function dismissMatchGoalMoment(resume=true){
+ const wasActive=!!match?.highlightActive;
+ clearTimeout(matchHighlightTimer);matchHighlightTimer=null;
+ if(match)match.highlightActive=false;
+ $("matchGoalMoment").classList.remove("active");
+ if(wasActive)setMatchPill(!!match?.paused);
+ if(wasActive&&resume&&match&&!match.paused&&!match.finished)startMatchTimer()
+}
+function showMatchGoalMoment(event,scorer){
+ if(!match)return;
+ let card="";
+ if(event.side==="home"){
+  const item=match.clubIndex?.get(scorer?.uid)||state.club.find(x=>x.uid===scorer?.uid);
+  const base=item?displayBase(item):scorer?.base;
+  if(base)card=cardHTML(base,item||null,false)
+ }else{
+  const entry=match.opponentProfile?.squad?.[scorer?.index],base=opponentMatchBase(entry)||scorer?.base;
+  const item=match.opponentProfile?.items?.[scorer?.index]||null;
+  if(match.opponentProfile?.kind==="friend"&&entry)card=friendCard(entry,base?.position||"ST",false);
+  else if(base)card=cardHTML(base,item,false)
+ }
+ if(!card){const generic={id:"match-opponent",name:event.scorer,ovr:Math.round(event.side==="home"?match.power:match.opp),position:"ST"};card=cardHTML(generic,null,false)}
+ $("matchGoalCard").innerHTML=card;
+ $("matchGoalEyebrow").textContent=`TOR · ${event.minute}'`;
+ $("matchGoalScorer").textContent=event.scorer;
+ $("matchGoalAssist").textContent=event.type==="assist"&&event.assist?`Vorlage: ${event.assist}`:event.type==="solo"?"Einzelaktion":event.type==="freekick"?"Direkter Freistoß":event.type==="penalty"?"Elfmeter":"";
+ $("matchGoalScore").textContent=`${match.home} : ${match.away}`;
+ $("matchGoalMoment").classList.add("active");
+ match.highlightActive=true;stopMatchTimer();setMatchPill(false);
+ clearTimeout(matchHighlightTimer);
+ const current=match;
+ matchHighlightTimer=setTimeout(()=>{if(match===current)dismissMatchGoalMoment()},2700)
+}
+$("matchGoalSkip").addEventListener("click",()=>dismissMatchGoalMoment());
 function eventChance(base){
  return Math.random()<base
+}
+function recordMatchEvent(kind,side,text){
+ if(!match)return;
+ match.timeline=match.timeline||[];
+ match.timeline.push({kind,side,text,minute:Math.min(120,Math.floor(match.minute))});
+ if(typeof document!=="undefined")renderMatchTimeline()
+}
+function recordMatchScene(kind,text){
+ if(!match)return;
+ match.lastScene={kind,text,minute:Math.min(120,Math.floor(match.minute))};
+ if(typeof document!=="undefined")renderMatchScene()
 }
 function matchTeamPower(){
  // Chemistry is fixed at kickoff; substitutions still change the on-field rating and positional fit.
@@ -5852,6 +6023,9 @@ function logGoal(side,scorer,assist,type){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
  const event={side,minute,scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,scorerUid:side==="home"?String(scorer?.uid||""):"",assistUid:side==="home"?String(assist?.uid||""):""};
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
+ recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
+ recordMatchScene(`${side}-goal`,`${event.scorer} trifft für ${team}!`);
+ if(typeof document!=="undefined")showMatchGoalMoment(event,scorer);
  if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`);return}
  if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`);return}
  if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`);return}
@@ -5859,6 +6033,8 @@ function logGoal(side,scorer,assist,type){
  addLog(`TOR! ${event.scorer} trifft für ${team}.`)
 }
 function simAttack(homeSide){
+ const side=homeSide?"home":"away",team=homeSide?matchHomeTeamName():matchAwayTeamName();
+ recordMatchScene(`${side}-attack`,`${team} greift an.`);
  const mods=tacticMods(match.tactic);
  const myPower=matchTeamPower();
  const edge=(myPower-match.opp)/18;
@@ -5872,8 +6048,9 @@ function simAttack(homeSide){
     const scorer=chooseScorer(match.lineup),type=goalCreation(),assist=type==="assist"?chooseHomeAssist(scorer.uid):null;
     match.home++;
     logGoal("home",scorer,assist,type);
-   }else if(Math.random()<.33){
-    addLog(`Gute Chance für ${matchHomeTeamName()}, aber kein Tor.`);
+   }else{
+    recordMatchScene("home-chance",`${team} kommt zum Abschluss – kein Tor.`);
+    if(Math.random()<.33)addLog(`Gute Chance für ${team}, aber kein Tor.`);
    }
   }
  }else{
@@ -5887,8 +6064,9 @@ function simAttack(homeSide){
     const scorer=chooseOpponentScorer(),type=goalCreation(),assist=type==="assist"?chooseOpponentAssist(scorer.index):null;
     match.away++;
     logGoal("away",scorer,assist,type);
-   }else if(Math.random()<.3){
-    addLog(`${matchAwayTeamName()} kommt zum Abschluss, ohne Erfolg.`);
+   }else{
+    recordMatchScene("away-chance",`${team} kommt zum Abschluss – kein Tor.`);
+    if(Math.random()<.3)addLog(`${team} kommt zum Abschluss, ohne Erfolg.`);
    }
   }
  }
@@ -5899,6 +6077,7 @@ function sendOffPlayer(){
  if(!candidates.length)return false;
  const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Spieler",minute=Math.floor(match.minute);
  match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute});match.redCardSlot=i;
+ recordMatchEvent("red","home",name);recordMatchScene("home-card",`Rote Karte für ${name}.`);
  addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`);
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
@@ -5909,6 +6088,7 @@ function matchNeedsWinner(){
 function beginExtraTime(){
  if(!match||match.extraTimeStarted)return;
  match.extraTimeStarted=true;match.extraTimeBreakLogged=false;match.extraTimeManagementActive=true;match.minute=90;
+ recordMatchEvent("break","", "Verlängerung");
  addLog("Nach 90 Minuten steht es unentschieden. Vor der Verlängerung ist Team-Management möglich.");
  updateMatchUI();
  pauseForManagement("90 Minuten gespielt – passe jetzt Aufstellung, Wechsel, Formation oder Taktik für die Verlängerung an.")
@@ -5924,6 +6104,7 @@ function runPenaltyShootout(){
  while(home===away&&sudden<20){if(Math.random()<homeChance)home++;if(Math.random()<awayChance)away++;sudden++}
  if(home===away){if(Math.random()<.5)home++;else away++}
  match.pensHome=home;match.pensAway=away;match.penaltyWinner=home>away?"home":"away";
+ recordMatchEvent("break","",`Elfmeter ${home}:${away}`);
  addLog(`Elfmeterschießen: ${match.penaltyWinner==="home"?matchHomeTeamName():matchAwayTeamName()} gewinnt ${home}:${away}.`);
  finishMatch()
 }
@@ -5931,6 +6112,7 @@ function resolveEndOfPhase(){
  if(!match||match.finished)return true;
  if(!match.halftimeLogged&&match.minute>=45){
   match.halftimeLogged=true;match.halftimeActive=true;match.minute=45;updateMatchUI();addLog("Halbzeit.");
+  recordMatchEvent("break","", "Halbzeit");
   pauseForManagement("Halbzeit – passe jetzt Aufstellung, Wechsel, Formation oder Taktik für die zweite Halbzeit an.");
   return true
  }
@@ -5941,6 +6123,7 @@ function resolveEndOfPhase(){
  }
  if(match.extraTimeStarted&&!match.extraTimeBreakLogged&&match.minute>=105){
   match.extraTimeBreakLogged=true;match.minute=105;updateMatchUI();addLog("Halbzeit der Verlängerung.");
+  recordMatchEvent("break","", "105 Minuten");
   return true
  }
  if(match.extraTimeStarted&&match.minute>=120){
@@ -5967,7 +6150,9 @@ function simTick(){
  // Chances are per match minute, so changing animation speed cannot change the result distribution.
  const opportunities=step*.42;
  if(Math.random()<Math.min(1,opportunities))simAttack(Math.random()<match.poss/100);
- if(opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
+ if(!match.highlightActive&&opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
+
+ if(match.highlightActive){updateMatchUI();return}
 
  const min=Math.floor(match.minute);
  // Management events are limited to regulation time; extra time itself remains uninterrupted.
@@ -5977,6 +6162,7 @@ function simTick(){
   if(starter){
    match.forcedOut=starter;
    const b=currentMatchBase(starter);
+   recordMatchEvent("injury","home",b?.name||"Spieler");recordMatchScene("home-injury",`${b?.name||"Ein Spieler"} hat sich verletzt.`);
    pauseForManagement(`${b?.name||"Ein Spieler"} hat sich verletzt. Eine Auswechslung ist möglich.`);
    return
   }
@@ -6070,14 +6256,17 @@ function endMatchManagerDrag(e){const d=matchManagerDrag;if(!d)return;const acti
 document.addEventListener("pointerdown",startMatchManagerDrag,{passive:true});document.addEventListener("pointermove",moveMatchManagerDrag,{passive:false});document.addEventListener("pointerup",endMatchManagerDrag,{passive:true});document.addEventListener("pointercancel",()=>{clearMatchManagerDrag();document.body.style.userSelect=""},{passive:true});
 function fillManagerSelectors(){renderMatchManager()}
 function pauseForManagement(reason="Team-Management geöffnet."){
- if(!match||match.finished)return;match.paused=true;stopMatchTimer();initMatchManagerDraft();$("matchFormationSelect").value=matchManagerDraft.formation;$("matchTacticSelect").value=matchManagerDraft.tactic;renderMatchManager();$("managerPanel").classList.add("active");$("eventBanner").textContent=reason;$("eventBanner").classList.add("active");
+ if(!match||match.finished)return;match.paused=true;stopMatchTimer();dismissMatchGoalMoment(false);initMatchManagerDraft();$("matchFormationSelect").value=matchManagerDraft.formation;$("matchTacticSelect").value=matchManagerDraft.tactic;renderMatchManager();$("managerPanel").classList.add("active");$("eventBanner").textContent=reason;$("eventBanner").classList.add("active");
  const halftime=!!match.halftimeActive,extraTime=!!match.extraTimeManagementActive;
+ $("managerPanel").querySelector("h3").textContent=halftime?"Halbzeit · Team-Management":extraTime?"Vor der Verlängerung":"Team-Management";
+ const summary=$("matchBreakSummary");summary.hidden=!halftime&&!extraTime;
+ if(!summary.hidden)summary.innerHTML=`<strong>${esc(matchHomeTeamName())} ${match.home}:${match.away} ${esc(matchAwayTeamName())}</strong><span>${halftime?"Halbzeit":"90 Minuten"} · Schüsse ${match.shotsHome}:${match.shotsAway} · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)} · Ballbesitz ${Math.round(match.poss)}:${100-Math.round(match.poss)}. Passe jetzt Aufstellung oder Taktik an.</span>`;
  $("confirmSubBtn").textContent=halftime?"Änderungen übernehmen & 2. Halbzeit starten":extraTime?"Änderungen übernehmen & Verlängerung starten":"Übernehmen & weiterspielen";
  $("resumeMatchBtn").textContent=halftime?"Ohne Änderungen in die 2. Halbzeit":extraTime?"Ohne Änderungen in die Verlängerung":"Änderungen verwerfen";
- setMatchPill(true)
+ setMatchPill(true);requestAnimationFrame(()=>$("managerPanel").scrollIntoView({behavior:"smooth",block:"start"}))
 }
 function resumeMatch(){
- if(!match||match.finished)return;const fromHalftime=!!match.halftimeActive,fromExtraTime=!!match.extraTimeManagementActive;matchManagerDraft=null;match.paused=false;match.forcedOut=null;match.halftimeActive=false;match.extraTimeManagementActive=false;$("managerPanel").classList.remove("active");$("eventBanner").classList.remove("active");$("confirmSubBtn").textContent="Übernehmen & weiterspielen";$("resumeMatchBtn").textContent="Änderungen verwerfen";if(fromHalftime)addLog("2. Halbzeit angepfiffen.");if(fromExtraTime)addLog("Verlängerung angepfiffen.");setMatchPill(false);startMatchTimer()
+ if(!match||match.finished)return;const fromHalftime=!!match.halftimeActive,fromExtraTime=!!match.extraTimeManagementActive;matchManagerDraft=null;match.paused=false;match.forcedOut=null;match.halftimeActive=false;match.extraTimeManagementActive=false;$("managerPanel").classList.remove("active");$("eventBanner").classList.remove("active");$("confirmSubBtn").textContent="Übernehmen & weiterspielen";$("resumeMatchBtn").textContent="Änderungen verwerfen";if(fromHalftime){addLog("2. Halbzeit angepfiffen.");recordMatchScene("idle","2. Halbzeit angepfiffen.")}if(fromExtraTime){addLog("Verlängerung angepfiffen.");recordMatchScene("idle","Verlängerung angepfiffen.")}setMatchPill(false);$("matchLiveStage").scrollIntoView({behavior:"smooth",block:"center"});startMatchTimer()
 }
 function confirmMatchManagerChanges(){
  if(!match)return;const d=getMatchManagerDraft();if(!d)return;
@@ -6087,7 +6276,7 @@ function confirmMatchManagerChanges(){
  match.formation=d.formation;match.tactic=d.tactic;
  let committed=[...d.lineup];if(outgoing.length)committed=committed.map(uid=>outgoing.includes(uid)?null:uid);
  match.lineup=committed;match.subsUsed=(match.subsUsed||0)+pending;if(!Array.isArray(match.subbedOut))match.subbedOut=[];outgoing.forEach(uid=>{if(uid&&!match.subbedOut.includes(uid))match.subbedOut.push(uid)});
- if(pending){const inNames=incoming.map(uid=>currentMatchBase(uid)?.name).filter(Boolean).join(", "),outNames=outgoing.map(uid=>currentMatchBase(uid)?.name).filter(Boolean).join(", ");addLog(`Wechsel bestätigt: ${inNames||pending+" Spieler"} rein · ${outNames||pending+" Spieler"} raus.`)}
+ if(pending){const inNames=incoming.map(uid=>currentMatchBase(uid)?.name).filter(Boolean).join(", "),outNames=outgoing.map(uid=>currentMatchBase(uid)?.name).filter(Boolean).join(", ");addLog(`Wechsel bestätigt: ${inNames||pending+" Spieler"} rein · ${outNames||pending+" Spieler"} raus.`);recordMatchEvent("sub","home",`${inNames||pending+" Spieler"} eingewechselt`)}
  addLog(`Formation: ${match.formation} · Taktik: ${$("matchTacticSelect").selectedOptions[0]?.textContent||"Ausgeglichen"}.`);resumeMatch()
 }
 $("manageTeamBtn").addEventListener("click",()=>pauseForManagement("Du hast die Simulation für Team-Management pausiert."));
@@ -6121,7 +6310,9 @@ function finishMatch(){
  if(!match||match.finished)return;
  ensureObjectiveWindows();
  stopMatchTimer();
+ dismissMatchGoalMoment(false);
  match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();
+ recordMatchEvent("break","", "Abpfiff");
  state.stats.matches++;
  const isFriendly=String(match.mode).startsWith("friendly");
  const decidedByPens=match.home===match.away&&!!match.penaltyWinner;
@@ -6161,7 +6352,7 @@ function finishMatch(){
  $("matchReward").textContent=isFriendly?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
  renderCompetitionProgress(competitionProgress);
  setMatchPill(true);
- renderAll()
+ renderAll();requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
 }
 $("matchClose").addEventListener("click",()=>{
  if(history.state?.gfut&&history.state.kind==="match")history.back();
@@ -6656,7 +6847,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.65";
+const GFUT_BUILD="V19.66";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6674,7 +6865,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1962",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1966",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
