@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.58</title>
+<title>Footera V19.59</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1206,6 +1206,11 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
  width:100%!important;max-width:100%!important;aspect-ratio:.7!important;
  margin:0 auto!important;transform:none!important;
 }
+:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini > .card-shell.bastian-static-founder-shell > img.founder-static-card{
+ inset:auto!important;left:50%!important;top:-4%!important;
+ width:110%!important;height:116%!important;max-width:none!important;max-height:none!important;
+ transform:translateX(-50%)!important;
+ }
 
 
 </style>
@@ -1266,7 +1271,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.58</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.59</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1663,27 +1668,7 @@ function migrateLegacyEventState(s){
 // opponent, market, TOTW or base-card generator can select him.
 const FOUNDER_SAVE_ID="GF-9AE6CDDEFE8A458D",FOUNDER_PLAYER_ID="footera-founder-bastian-gerlach",FOUNDER_PACK_ID="founder-bastian";
 const FOUNDER_BASE=Object.freeze({id:FOUNDER_PLAYER_ID,name:"B. Gerlach",fullName:"Bastian Gerlach",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"FC Gerlies",league:"Footera",height:172,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,face:"./assets/footera/founder-bastian-portrait.webp",clubLogo:"./assets/footera/fc-gerlies.svg",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
-let FOUNDER_BASTIAN_STATIC_SRC="";
-const FOUNDER_BASTIAN_CARD_PARTS=Object.freeze(Array.from({length:7},(_,i)=>`./assets/footera/founder-bastian-card-${i}.txt`));
-async function loadFounderBastianStaticCard(){
- if(FOUNDER_BASTIAN_STATIC_SRC)return;
- try{
-  const parts=await Promise.all(FOUNDER_BASTIAN_CARD_PARTS.map(async src=>{
-   const res=await fetch(src,{cache:"force-cache"});
-   if(!res.ok)throw new Error(`Founder-Karte Teil nicht verfügbar: ${res.status}`);
-   return (await res.text()).trim()
-  }));
-  const joined=parts.join("");
-  if(joined.length!==27784||!joined.startsWith("UklGR"))throw new Error("Founder-Kartendaten unvollständig");
-  const raw=atob(joined),bytes=new Uint8Array(raw.length);
-  for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
-  const src=URL.createObjectURL(new Blob([bytes],{type:"image/webp"}));
-  try{await new Promise((resolve,reject)=>{const probe=new Image();probe.onload=resolve;probe.onerror=()=>reject(new Error("Founder-Karte konnte nicht dekodiert werden"));probe.src=src})}
-  catch(err){URL.revokeObjectURL(src);throw err}
-  FOUNDER_BASTIAN_STATIC_SRC=src;
-  renderAll()
- }catch(err){console.warn("B. Gerlach Founder-Karte:",err)}
-}
+const FOUNDER_BASTIAN_STATIC_SRC="./assets/footera/founder-bastian-card-hd.webp";
 const MARCO_FOUNDER_SAVE_ID="GF-7D87D08A06104571",MARCO_FOUNDER_PLAYER_ID="footera-founder-marco-gerlach",MARCO_FOUNDER_PACK_ID="founder-marco";
 const MARCO_FOUNDER_BASE=Object.freeze({id:MARCO_FOUNDER_PLAYER_ID,name:"M. Gerlach",fullName:"Marco Gerlach",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"Schweinfurt Rangers 09",league:"Footera",height:178,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,face:"./assets/footera/founder-marco-portrait.webp",clubLogo:"./assets/footera/schweinfurt-rangers-09.webp",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
 function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
@@ -6481,7 +6466,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.58";
+const GFUT_BUILD="V19.59";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6512,6 +6497,6 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script>boot().finally(()=>loadFounderBastianStaticCard());</script>
+<script>boot();</script>
 </body>
 </html>
