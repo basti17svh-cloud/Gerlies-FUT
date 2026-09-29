@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.70</title>
+<title>Footera V19.71</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1379,7 +1379,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.70</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.71</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3493,7 +3493,7 @@ function openTransferOfferModal(item,{packIndex=null}={}){
  const inClub=state.club.some(x=>x.uid===item.uid),inSquad=inClub&&transferSalePlayerInSquad(item.uid),active=inClub&&activeTransferSaleForUid(item.uid),p=transferSuggestedPrices(item);
  transferOfferContext={uid:item.uid,packIndex:Number.isInteger(packIndex)?packIndex:null};
  $("transferOfferSub").textContent=`${base.name} · ${playerClubLabel(base)}`;
- $("transferOfferBody").innerHTML=`<div class="transfer-offer-player"><div class="transfer-offer-card">${cardHTML(base,item,true)}</div><div><h3>${esc(base.name)}</h3><p>Lege Startpreis, Sofortkauf und Angebotsdauer fest.</p>${inSquad?'<div class="transfer-offer-warning">Der Spieler steckt in einer gespeicherten Mannschaft. Entferne ihn zuerst aus allen Teams.</div>':""}${active?'<div class="transfer-offer-warning">Dieser Spieler ist bereits aktiv auf dem Transfermarkt.</div>':""}${!item.tradeable?'<div class="transfer-offer-warning">Dieses Item ist untauschbar.</div>':""}</div></div><div class="transfer-offer-form"><label>Startpreis<input id="directSellStart" type="number" min="150" step="50" value="${Number(p.start||150)}"></label><label>Sofortkauf<input id="directSellBuy" type="number" min="200" step="50" value="${Number(p.buy||200)}"></label><label>Dauer<select id="directSellDuration"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button id="directSellConfirm" class="primary" ${(!item.tradeable||inSquad||active)?"disabled":""}>Jetzt aktiv anbieten</button></div>`;
+ $("transferOfferBody").innerHTML=`<div class="transfer-offer-player"><div class="transfer-offer-card">${cardHTML(base,item,true)}</div><div><h3>${esc(base.name)}</h3><p>Lege Startpreis, Sofortkauf und Angebotsdauer fest.</p>${inSquad?'<div class="transfer-offer-warning">Beim Anbieten wird der Spieler aus allen gespeicherten Mannschaften entfernt.</div>':""}${active?'<div class="transfer-offer-warning">Dieser Spieler ist bereits aktiv auf dem Transfermarkt.</div>':""}${!item.tradeable?'<div class="transfer-offer-warning">Dieses Item ist untauschbar.</div>':""}</div></div><div class="transfer-offer-form"><label>Startpreis<input id="directSellStart" type="number" min="150" step="50" value="${Number(p.start||150)}"></label><label>Sofortkauf<input id="directSellBuy" type="number" min="200" step="50" value="${Number(p.buy||200)}"></label><label>Dauer<select id="directSellDuration"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button id="directSellConfirm" class="primary" ${(!item.tradeable||active)?"disabled":""}>Jetzt aktiv anbieten</button></div>`;
  showUiLayer("transferOfferModal","transfer-offer")
 }
 function movePackItemToTransferList(k){
@@ -5130,13 +5130,17 @@ function removeTransferItemFromSquads(uid){
 function createTransferSale(uid,startPrice,buyNow,duration){
  const item=state.club.find(i=>i.uid===uid);if(!item||isFounderItem(item)||!item.tradeable){toast("Spieler ist nicht tauschbar.");return false}
  if(activeTransferSaleForUid(uid)){toast("Spieler ist bereits aktiv angeboten.");return false}
+ if(transferSalePlayerInSquad(uid)){
+  const teams=(state.squadPresets||[]).filter(p=>p?.squad?.includes(uid)).map(p=>p.name||"Team");
+  if(!confirm(`${displayBase(item)?.name||"Spieler"} steht in ${teams.length?teams.join(", "):"deiner Mannschaft"}. Beim Anbieten wird er aus allen Teams entfernt. Jetzt anbieten?`))return false
+ }
  const removedFromSquads=removeTransferItemFromSquads(uid);
  startPrice=marketRoundPrice(Math.max(150,Number(startPrice||0)));buyNow=marketRoundPrice(Math.max(startPrice+50,Number(buyNow||0)));duration=Math.max(3600,Number(duration||3600));
  state.transferSales=state.transferSales||[];state.transferSales=state.transferSales.filter(s=>!(String(s.uid)===String(uid)&&s.status==="unsold"));
  const suggested=transferSuggestedPrices(item).buy,ratio=buyNow/Math.max(1,suggested),chance=ratio<=1.05?.82:ratio<=1.25?.6:ratio<=1.55?.3:.1,willSell=Math.random()<chance,now=Date.now(),ends=now+duration*1000;
  const planned=Math.min(buyNow,Math.max(startPrice,marketRoundPrice(suggested*(.92+Math.random()*.12))));
  state.transferSales.push({id:uid+"-"+now,uid,item:{...item},startPrice,buyNow,currentBid:startPrice,createdAt:now,ends,status:"active",saleAt:willSell?Math.min(ends-5000,now+18000+Math.floor(Math.random()*65000)):0,plannedPrice:planned});
- sellEditorUid=null;save();renderTransferWatch();renderTransferHubSummary();toast(`${displayBase(item)?.name||"Spieler"} angeboten.${removedFromSquads?" Aus Mannschaft entfernt.":""}`);return true
+ sellEditorUid=null;renderAll();toast(`${displayBase(item)?.name||"Spieler"} angeboten.${removedFromSquads?" Aus Mannschaft entfernt.":""}`);return true
 }
 function settleTransferSales(){
  let changed=false,now=Date.now();state.transferSales=state.transferSales||[];
@@ -6876,7 +6880,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.70";
+const GFUT_BUILD="V19.71";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6894,7 +6898,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1970",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1971",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
