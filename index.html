@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.67</title>
+<title>Footera V19.68</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1253,9 +1253,27 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 #match .match-pitch-goal{position:absolute;top:39%;height:22%;width:2.5%;border:2px solid #d2f3d576}
 #match .match-pitch-goal.home{right:100%;border-right:0}
 #match .match-pitch-goal.away{left:100%;border-left:0}
-#match .match-ball{position:absolute;z-index:2;left:50%;top:50%;width:17px;height:17px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:50%;background:#13271d;box-shadow:0 0 0 7px #e0ffe33c,0 0 20px #d8ff3ecc}
-#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-ball{animation:matchDriveHome .7s ease-out both}
-#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-ball{animation:matchDriveAway .7s ease-out both;box-shadow:0 0 0 7px #ff8d7c42,0 0 20px #ff9988}
+#match .match-players{position:absolute;inset:0;pointer-events:none}
+#match .match-players i{position:absolute;z-index:1;left:calc(var(--x) + var(--move,0%));top:var(--y);width:11px;height:11px;transform:translate(-50%,-50%);border:2px solid #f5fff0;border-radius:50%;background:#d8ff3e;box-shadow:0 2px 5px #000b;transition:left .7s ease-out,box-shadow .3s}
+#match .match-players.away i{background:#ff897c;border-color:#ffe4df}
+#match .match-players i:nth-child(1){--x:17%;--y:30%}
+#match .match-players i:nth-child(2){--x:17%;--y:70%}
+#match .match-players i:nth-child(3){--x:34%;--y:40%}
+#match .match-players i:nth-child(4){--x:34%;--y:64%}
+#match .match-players i:nth-child(5){--x:48%;--y:50%}
+#match .match-players.away i:nth-child(1),#match .match-players.away i:nth-child(2){--x:83%}
+#match .match-players.away i:nth-child(3),#match .match-players.away i:nth-child(4){--x:66%}
+#match .match-players.away i:nth-child(5){--x:52%}
+#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-players{--move:9%}
+#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-players{--move:-9%}
+#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-players.home i:last-child{left:73%;box-shadow:0 0 0 5px #d8ff3e33,0 0 14px #d8ff3e}
+#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-players.away i:last-child{left:27%;box-shadow:0 0 0 5px #ff897c33,0 0 14px #ff897c}
+#match .match-lane{position:absolute;z-index:2;left:50%;top:50%;width:32%;height:2px;transform-origin:left center;transform:rotate(-9deg);background:linear-gradient(90deg,transparent,#d8ff3e);box-shadow:0 0 10px #d8ff3e;opacity:0;pointer-events:none}
+#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-lane{opacity:.8}
+#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-lane{opacity:.8;transform:rotate(189deg);background:linear-gradient(90deg,transparent,#ff897c);box-shadow:0 0 10px #ff897c}
+#match .match-ball{position:absolute;z-index:3;left:50%;top:50%;width:17px;height:17px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:50%;background:#13271d;box-shadow:0 0 0 7px #e0ffe33c,0 0 20px #d8ff3ecc}
+#match :is([data-scene="home-attack"],[data-scene="home-chance"],[data-scene="home-goal"]) .match-ball{left:85%;top:45%;animation:matchDriveHome .7s ease-out both}
+#match :is([data-scene="away-attack"],[data-scene="away-chance"],[data-scene="away-goal"]) .match-ball{left:15%;top:55%;animation:matchDriveAway .7s ease-out both;box-shadow:0 0 0 7px #ff8d7c42,0 0 20px #ff9988}
 #match [data-scene$="-goal"] .match-ball{box-shadow:0 0 0 12px #f4ff9266,0 0 40px #d8ff3e}
 #match .match-scene-caption{display:flex;align-items:center;gap:10px;min-height:49px;padding:9px 14px;background:#081610;border-top:1px solid #ffffff1c}
 #match #matchSceneType{flex:none;color:var(--lime);font-size:9px;font-weight:1000;letter-spacing:.08em}
@@ -1296,12 +1314,12 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 #match .result{font-size:12px}
 #match #matchResultTitle{font-size:25px}
 #match #matchResultText{font-size:12px!important;line-height:1.5}
-@keyframes matchDriveHome{from{left:43%}to{left:85%}}
-@keyframes matchDriveAway{from{left:57%}to{left:15%}}
+@keyframes matchDriveHome{from{left:43%;top:50%}to{left:85%;top:45%}}
+@keyframes matchDriveAway{from{left:57%;top:50%}to{left:15%;top:55%}}
 #match [data-scene$="-chance"] .match-ball{animation-duration:.45s}
 #match [data-scene$="-goal"] .match-ball{animation-duration:.45s}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
-@media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-goal-moment{transition:none}}
+@media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./legacy-card.css">
@@ -1360,7 +1378,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.67</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.68</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1650,7 +1668,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
   <section id="matchLiveStage" class="match-live-stage" data-scene="idle" aria-label="Live-Spielszenen">
    <div class="match-stage-head"><span>LIVE-SPIELFELD</span><span id="matchSceneMinute">0'</span></div>
-   <div class="match-scene-pitch" aria-hidden="true"><div class="match-pitch-lines"><i class="match-pitch-center"></i><i class="match-pitch-box home"></i><i class="match-pitch-box away"></i><i class="match-pitch-goal home"></i><i class="match-pitch-goal away"></i><i class="match-ball"></i></div></div>
+   <div class="match-scene-pitch" aria-hidden="true"><div class="match-pitch-lines"><i class="match-pitch-center"></i><i class="match-pitch-box home"></i><i class="match-pitch-box away"></i><i class="match-pitch-goal home"></i><i class="match-pitch-goal away"></i><div class="match-players home"><i></i><i></i><i></i><i></i><i></i></div><div class="match-players away"><i></i><i></i><i></i><i></i><i></i></div><i class="match-lane"></i><i class="match-ball"></i></div></div>
    <div class="match-scene-caption"><span id="matchSceneType">ANPFIFF</span><strong id="matchSceneText">Das Spiel läuft.</strong></div>
    <div id="matchGoalMoment" class="match-goal-moment" role="status" aria-live="polite"><div id="matchGoalCard" class="match-goal-card"></div><div class="match-goal-copy"><span id="matchGoalEyebrow">TOR · 0'</span><strong id="matchGoalScorer">Torschütze</strong><span id="matchGoalAssist"></span><b id="matchGoalScore">1 : 0</b><button id="matchGoalSkip" type="button">Weiterspielen</button></div></div>
   </section>
@@ -6847,7 +6865,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.67";
+const GFUT_BUILD="V19.68";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6865,7 +6883,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1967",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1968",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
