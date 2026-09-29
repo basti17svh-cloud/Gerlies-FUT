@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.51</title>
+<title>Footera V19.52</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1254,7 +1254,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.51</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.52</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5620,6 +5620,28 @@ function chooseScorer(lineup){
  const b=currentMatchBase(uid);
  return b?.name||"Spieler"
 }
+function opponentMatchBase(entry){
+ if(!entry)return null;
+ if(typeof entry==="object"){
+  if(entry.base&&typeof entry.base==="object")return resolvedPlayer(entry.base);
+  if(entry.pid){const itemBaseResolved=displayBase(entry);if(itemBaseResolved)return resolvedPlayer(itemBaseResolved)}
+  if(entry.id||entry.name)return resolvedPlayer(entry)
+ }
+ return P_BY_ID.get(String(entry))||null
+}
+function chooseOpponentScorer(){
+ const profile=match?.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"];
+ const candidates=squad.slice(0,11).map((entry,i)=>({base:opponentMatchBase(entry),slot:form[i]?.p||""})).filter(x=>x.base);
+ if(!candidates.length)return "Gegenspieler";
+ const weighted=candidates.map(x=>{
+  const slot=x.slot,attackWeight=slot==="ST"||slot==="CF"?5:slot==="LW"||slot==="RW"||slot==="LM"||slot==="RM"?3.8:slot==="CAM"?3.5:slot==="CM"?2.1:slot==="CDM"?1.25:slot==="LB"||slot==="RB"||slot==="CB"?0.55:0.18;
+  const shooting=Math.max(35,Number(x.base.sho||x.base.ovr||65));
+  return{x,weight:attackWeight*(.65+shooting/100)}
+ });
+ let roll=Math.random()*weighted.reduce((n,row)=>n+row.weight,0);
+ for(const row of weighted){roll-=row.weight;if(roll<=0)return row.x.base.name||"Gegenspieler"}
+ return weighted[weighted.length-1]?.x?.base?.name||"Gegenspieler"
+}
 function simAttack(homeSide){
  const mods=tacticMods(match.tactic);
  const myPower=matchTeamPower();
@@ -5645,8 +5667,9 @@ function simAttack(homeSide){
    const xg=Math.max(.06,Math.min(.52,.14+Math.random()*.26+concedeEdge*.095));
    match.xgAway+=xg;
    if(eventChance(xg)){
+    const scorer=chooseOpponentScorer();
     match.away++;
-    addLog(`Tor für ${matchAwayTeamName()}. ${matchAwayTeamName()} nutzt die Chance.`);
+    addLog(`TOR! ${scorer} trifft für ${matchAwayTeamName()}.`);
    }else if(Math.random()<.3){
     addLog(`${matchAwayTeamName()} kommt zum Abschluss, ohne Erfolg.`);
    }
@@ -6357,7 +6380,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.51";
+const GFUT_BUILD="V19.52";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
