@@ -47,7 +47,7 @@ test('board and walkout reveal choose the real lead item; regular modes stay reg
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.match(source,/footera-v19-48-root-shell/);assert.match(source,/momentum-card\.css/);
+ assert.match(source,/footera-v19-57-root-shell/);assert.match(source,/momentum-card\.css/);
  assert.match(css,/\.momentum-shell \.custom-card\.momentum/);
  assert.doesNotMatch(css,/momentum-master\.jpg/);
 });
@@ -72,11 +72,11 @@ test('MOMENTUM changes the light theme only; board and walkout timings match ord
 });
 
 test('market offers use 14 fixed identities, target ratings and preserve event type on purchase',()=>{
- const c=context({totwInfo:()=>null,marketPriceForRating:r=>r*100,marketRoundPrice:n=>Math.round(n),activeTotwWeek:()=>null,MARKET_PRICE_CURVE:{},rarityOf:()=> 'gold',uid:()=> 'purchase',isBaseRare:()=>false});
+ const c=context({totwInfo:()=>null,marketPriceForRating:r=>r*100,marketRoundPrice:n=>Math.round(n),activeTotwWeek:()=>null,MARKET_PRICE_CURVE:{},rarityOf:()=> 'gold',uid:()=> 'purchase',isBaseRare:()=>false,promoWindowKey:()=> 'test-window'});
  const players=vm.runInContext('MOMENTUM_EVENT.players',c);
  const bases=players.map(p=>({id:p.pid,name:p.name,fullName:p.name,ovr:p.baseOvr,position:p.position,team:p.team,league:'Test Liga',nation:p.nation}));
  c.P_BY_ID=new Map(bases.map(p=>[p.id,p]));
- vm.runInContext(section('function createMarketListing(base,filters){','const PLAYER_SEARCH_TEXT_CACHE='),c);
+ vm.runInContext(section('function createMarketListing(base,filters,offerIndex=0){','const PLAYER_SEARCH_TEXT_CACHE=')+section('function marketSnapshotHash(v){','function marketSnapshotBases('),c);
  vm.runInContext(section('function listingRating(x){','function auctionTime('),c);
  vm.runInContext(section('function listingToClubItem(x,paidPrice=0){','function settleAuctions(){'),c);
  vm.runInContext(section('function makeItem(','function portraitFallback('),c);

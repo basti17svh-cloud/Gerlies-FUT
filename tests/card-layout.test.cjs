@@ -10,7 +10,7 @@ const emblemsCode=html.slice(html.indexOf('function emblemsHTML('),html.indexOf(
 const rendererCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
 const css=fs.readFileSync(path.join(__dirname,'../card-layout.css'),'utf8');
 function context(){
- const ctx={esc:String,MARCO_FOUNDER_PLAYER_ID:'footera-founder-marco-gerlach',resolvedPlayer:p=>p,isFounderItem:i=>['footera-founder-bastian-gerlach','footera-founder-marco-gerlach'].includes(i?.pid),isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
+ const ctx={esc:String,FOUNDER_PLAYER_ID:'footera-founder-bastian-gerlach',FOUNDER_BASTIAN_STATIC_SRC:'',MARCO_FOUNDER_PLAYER_ID:'footera-founder-marco-gerlach',resolvedPlayer:p=>p,isFounderItem:i=>['footera-founder-bastian-gerlach','footera-founder-marco-gerlach'].includes(i?.pid),isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
   positionLabel:p=>p==='GK'?'TW':p,cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
@@ -64,6 +64,15 @@ test('Founder uses the blank crystal artwork while position and attributes remai
  assert.match(css,/url\("\.\/assets\/footera\/founder-frame\.webp"\)/);
  assert.match(css,/:is\(\.founder-shell,[^)]*\) \.custom-card\.founder \.card-bottom/);
  assert.match(css,/\.card-shell \.custom-card\.founder:before\{content:none\}/);
+});
+
+test('the final Bastian image stays inside a normal centered mobile lineup slot',()=>{
+ const ctx=context();ctx.FOUNDER_BASTIAN_STATIC_SRC='data:image/webp;base64,test';
+ const card=ctx.cardHTML({...gerlach,id:ctx.FOUNDER_PLAYER_ID},{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder'},true,'ZOM');
+ assert.match(card,/class="mini"><div class="card-shell founder-shell bastian-static-founder-shell"><img class="founder-static-card"/);
+ assert.match(html,/:is\(#pitch \.slot,\.friend-pitch \.friend-slot,\.match-manager-slot\) \.mini > \.card-shell\.bastian-static-founder-shell\{[\s\S]*?width:100%!important;max-width:100%!important;aspect-ratio:\.7!important;[\s\S]*?margin:0 auto!important;transform:none!important/);
+ assert.match(html,/\.card-shell\.bastian-static-founder-shell > img\.founder-static-card\{[\s\S]*?position:absolute!important;inset:0;[\s\S]*?max-height:100%!important/);
+ assert.match(css,/\.bastian-static-founder-shell \.founder-static-card\{[\s\S]*?position:absolute;[\s\S]*?object-fit:contain/);
 });
 
 test('Rangers Founder uses the same renderer with its yellow-and-black 2:3 artwork',()=>{
