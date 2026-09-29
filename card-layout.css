@@ -186,3 +186,32 @@
 .opening.theme-founder-rangers .walkout-tunnel{--walkout-beam:#ffe27d;background:radial-gradient(ellipse at 50% 46%,#ffd53c70,#5b3909 28%,#100b02 76%)}
 .opening.theme-founder-rangers .walkout-clue-label,.opening.theme-founder-rangers .revealbadge{color:#fff1bb;text-shadow:0 0 18px #ffe064}
 .opening.theme-founder-rangers .reveal .card-shell{filter:drop-shadow(0 0 30px #ffbf258c)!important}
+
+
+/* V19.55 — B. Gerlach Founder: finale 1:1-Kartengrafik.
+   The shell keeps the universal Footera sizing; the finished artwork scales as one unit. */
+.bastian-static-founder-shell{
+ aspect-ratio:2/3!important;
+ position:relative;
+ overflow:visible!important;
+ background:transparent!important;
+}
+.bastian-static-founder-shell .founder-static-card{
+ display:block;
+ width:100%;
+ height:100%;
+ max-width:100%;
+ object-fit:contain;
+ object-position:center;
+ user-select:none;
+ -webkit-user-drag:none;
+ pointer-events:none;
+ filter:drop-shadow(0 1.5cqw 2.4cqw rgba(0,0,0,.48));
+}
+/* Keep the final Founder artwork proportional in every context instead of reflowing its internals. */
+:is(.player-detail-card,.bio-card,.club-card-preview,.market-row-card,.picker-preview-card,.sbc-slot-card-large) .bastian-static-founder-shell{
+ max-width:100%;
+}
+:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
+ transform-origin:center center;
+}
