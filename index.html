@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.61</title>
+<title>Footera V19.62</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1271,7 +1271,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.61</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.62</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3816,6 +3816,30 @@ function squadChemistry(items){
   return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
  })
 }
+function opponentSquadChemistry(squad,formation="4-3-3",items=[]){
+ const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],xi=(Array.isArray(squad)?squad:[]).slice(0,11).map((raw,i)=>{
+  const base=raw?.player?raw.player:raw;
+  if(!base||posFit(base,form[i]?.p)<=0)return null;
+  const item=Array.isArray(items)?items[i]:null,icon=!!(base.isIcon||item?.variant==="icon-mid"||(item&&isFounderItem(item)));
+  return{base,icon}
+ });
+ const clubs=new Map(),nations=new Map(),leagues=new Map();let icons=0;
+ const add=(map,key)=>{if(key)map.set(key,(map.get(key)||0)+1)};
+ for(const entry of xi){
+  if(!entry)continue;
+  const {base,icon}=entry,nation=chemNationKey(base.nation);
+  add(nations,nation);
+  if(icon){icons++;continue}
+  add(clubs,base.team);add(leagues,base.league)
+ }
+ return xi.map(entry=>{
+  if(!entry)return 0;
+  if(entry.icon)return 3;
+  const b=entry.base,club=clubs.get(b.team)||0,nation=nations.get(chemNationKey(b.nation))||0,league=(leagues.get(b.league)||0)+(b.league?icons:0);
+  return Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))
+ })
+}
+function opponentChemistryTotal(squad,formation="4-3-3",items=[]){return opponentSquadChemistry(squad,formation,items).reduce((sum,value)=>sum+value,0)}
 function playerChem(index,items){return index>=0&&index<11?squadChemistry(items)[index]||0:0}
 function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0,chemScores=squadChemistry(items),chem=chemScores.reduce((total,value)=>total+value,0);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem,chemScores}}
 function slotHTML(item,i,chem=0){
@@ -5588,8 +5612,10 @@ function startMatch(mode,opponent=null){
   const idx=Number($("friendlyFriendSelect").value);const fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");opponentProfile=friendAsOpponent(fr);opp=opponentProfile.power;name=opponentProfile.name;
  }else if(mode==="friendly-random"){
   const o=oneOffOpponent(mode);opponentProfile=o;opp=o.power;name=o.name;
+ }else if(mode==="rivals"){
+  const o=oneOffOpponent(mode);opponentProfile=o;opp=o.power;name=o.name;
  }else{
-  opp=Math.max(55,Math.min(94,Math.round(power+(mode==="rivals"?Math.random()*5-1:Math.random()*4-4))));name=mode==="rivals"?"RIVALS XI":"SQUAD BATTLE XI";
+  opp=Math.max(55,Math.min(94,Math.round(power+(Math.random()*4-4))));name="SQUAD BATTLE XI";
  }
  matchManagerDraft=null;
  match={
@@ -6143,9 +6169,37 @@ const SB_TIERS=[
  {id:"elite",label:"Sehr gut",target:88,chem:33,win:1030,draw:655,loss:375,sp:120,names:["Galácticos XI","Champions Club","Ultimate XI"]}
 ];
 function deterministicPick(arr,key){return arr.length?arr[hashNum(key)%arr.length]:null}
-function opponentPlayerForSlot(slot,target,seed,used){let pool=indexedPositionCandidates(slot,target,2,used);if(!pool.length)pool=indexedPositionCandidates(slot,target,5,used);if(!pool.length)pool=indexedPositionCandidates(slot,50,used);const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
+function opponentPlayerForSlot(slot,target,seed,used,preferredLeague=""){
+ let pool=indexedPositionCandidates(slot,target,2,used);
+ if(!pool.length)pool=indexedPositionCandidates(slot,target,5,used);
+ if(preferredLeague){
+  let leaguePool=pool.filter(p=>p.league===preferredLeague);
+  if(!leaguePool.length)leaguePool=indexedPositionCandidates(slot,target,7,used).filter(p=>p.league===preferredLeague);
+  if(leaguePool.length)pool=leaguePool
+ }
+ if(!pool.length)pool=indexedPositionCandidates(slot,target,50,used);
+ const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b
+}
+function opponentAnchorLeague(target,seed,used){
+ const pool=indexedRatingCandidates(target,4,used),counts=new Map();
+ for(const p of pool){if(p?.league)counts.set(p.league,(counts.get(p.league)||0)+1)}
+ const viable=[...counts.entries()].filter(([,count])=>count>=8).sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]),"de")).slice(0,10).map(([league])=>league);
+ return deterministicPick(viable,seed)||""
+}
+function opponentLeagueSlots(chemTarget){
+ const c=Math.max(0,Math.min(33,Number(chemTarget||0)));
+ return c>=30?10:c>=27?9:c>=24?8:c>=20?7:c>=16?6:c>=12?5:c>=8?4:3
+}
 function opponentBenchPlayer(target,seed,used){let pool=indexedRatingCandidates(target,4,used);if(!pool.length)pool=PLAYERS.filter(p=>!used.has(String(p.id)));const b=deterministicPick(pool,seed);if(b)used.add(String(b.id));return b}
-function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier="",rewards=null,sp=0}){const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],used=new Set(),squad=[];form.forEach((slot,i)=>squad.push(opponentPlayerForSlot(slot.p,target,`${seed}|xi|${i}`,used)));for(let i=0;i<7;i++)squad.push(opponentBenchPlayer(target-1,`${seed}|bench|${i}`,used));const xi=squad.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((n,p)=>n+Number(p.ovr||0),0)/xi.length):target;return{kind:"generated",name,formation,rating,chem,squad,tier,rewards,sp,power:rating+chem*.12}}
+function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier="",rewards=null,sp=0}){
+ const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],used=new Set(),squad=[],chemTarget=Math.max(0,Math.min(33,Number(chem||0)));
+ const preferredLeague=opponentAnchorLeague(target,`${seed}|league`,used),leagueSlots=opponentLeagueSlots(chemTarget);
+ form.forEach((slot,i)=>squad.push(opponentPlayerForSlot(slot.p,target,`${seed}|xi|${i}`,used,i<leagueSlots?preferredLeague:"")));
+ for(let i=0;i<7;i++)squad.push(opponentBenchPlayer(target-1,`${seed}|bench|${i}`,used));
+ const xi=squad.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((n,p)=>n+Number(p.ovr||0),0)/xi.length):target;
+ const actualChem=opponentChemistryTotal(squad,formation);
+ return{kind:"generated",name,formation,rating,chem:actualChem,squad,tier,rewards,sp,power:rating+actualChem*.12}
+}
 function getSquadBattleOpponents(){
  syncCompetitionWeeks();
  const sb=state.squadBattle,block=Math.min(2,Math.floor(sb.played/4)),key=`${sb.week}|${sb.played<12?block:"special"}`;
@@ -6159,7 +6213,23 @@ function getSquadBattleOpponents(){
  squadBattleOpponentCache={key,list};return list
 }
 function friendAsOpponent(fr){return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[fr.formation]?fr.formation:"4-3-3",rating:Number(fr.rating||70),chem:Number(fr.chem||0),squad:Array.isArray(fr.squad)?fr.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,(fr.rating||70)+(fr.chem||0)*.12)),rewards:null,sp:0}}
-function oneOffOpponent(mode){const m=squadMetrics(),base=Math.max(62,m.rating||72),stamp=Date.now();if(mode==="rivals")return buildGeneratedOpponent({name:"RIVALS XI",target:Math.max(68,Math.min(90,Math.round(base+1))),chem:Math.max(24,Math.min(33,m.chem||28)),formation:"4-2-3-1",seed:`rivals|${stamp}`,tier:"Division Rivals"});return buildGeneratedOpponent({name:["CITY XI","UNITED XI","ATHLETIC CLUB","RACING XI","FUT ALLSTARS"][hashNum(String(stamp))%5],target:Math.max(62,Math.min(87,Math.round(base+(Math.random()*6-3)))),chem:Math.max(14,Math.min(29,Math.round((m.chem||22)+(Math.random()*8-4)))),formation:"4-3-3",seed:`friendly|${stamp}`,tier:"Freundschaft"})}
+const RIVALS_OPPONENT_LEVELS=Object.freeze({
+ 10:{min:72,max:76,chem:7},9:{min:74,max:78,chem:10},8:{min:76,max:80,chem:13},7:{min:78,max:82,chem:16},6:{min:79,max:83,chem:18},
+ 5:{min:81,max:84,chem:20},4:{min:82,max:85,chem:22},3:{min:83,max:86,chem:24},2:{min:84,max:87,chem:27},1:{min:85,max:89,chem:29},0:{min:87,max:91,chem:31}
+});
+function rivalsOpponentLevel(){
+ const division=Math.max(0,Math.min(10,Number(state.rivals?.division??10))),cfg=RIVALS_OPPONENT_LEVELS[division]||RIVALS_OPPONENT_LEVELS[10];
+ return{division,...cfg}
+}
+function oneOffOpponent(mode){
+ const m=squadMetrics(),base=Math.max(62,m.rating||72),stamp=Date.now();
+ if(mode==="rivals"){
+  const level=rivalsOpponentLevel(),seed=`rivals|d${level.division}|${stamp}`,span=Math.max(0,level.max-level.min);
+  const target=level.min+(hashNum(seed+"|rating")%(span+1)),formations=["4-3-3","4-4-2","4-2-3-1"],formation=formations[hashNum(seed+"|formation")%formations.length];
+  return buildGeneratedOpponent({name:"RIVALS XI",target,chem:level.chem,formation,seed,tier:level.division===0?"Division Rivals · Elite":`Division Rivals · Division ${level.division}`})
+ }
+ return buildGeneratedOpponent({name:["CITY XI","UNITED XI","ATHLETIC CLUB","RACING XI","FUT ALLSTARS"][hashNum(String(stamp))%5],target:Math.max(62,Math.min(87,Math.round(base+(Math.random()*6-3)))),chem:Math.max(14,Math.min(29,Math.round((m.chem||22)+(Math.random()*8-4)))),formation:"4-3-3",seed:`friendly|${stamp}`,tier:"Freundschaft"})
+}
 function ownLineupHTML(){
  const m=squadMetrics(),form=currentFormation(),items=squadItems();
  const card=(item,i,label)=>{const b=item?displayBase(item):null;return `<button type="button" class="preview-lineup-slot ${previewSwapFrom===i?'swap-source':''}" data-preview-slot="${i}" aria-label="${esc(label)}: ${esc(b?.name||'Platz frei')}">${b?cardHTML(b,item,true,i<11&&posFit(b,form[i].p)>0?form[i].p:b.position):`<div class="emptyslot">${esc(label)}<br>+</div>`}</button>`};
@@ -6466,7 +6536,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.61";
+const GFUT_BUILD="V19.62";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
