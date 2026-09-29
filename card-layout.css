@@ -89,13 +89,13 @@
 #pitch .slot{width:19%}
 
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-bottom{
- position:absolute!important;left:7%!important;right:7%!important;top:var(--card-name-top)!important;bottom:5%!important;height:auto!important;padding:0!important;margin:0!important;clip-path:none!important;z-index:10!important;background:var(--card-stats-fill)!important;text-align:center!important;
+ position:absolute!important;left:var(--card-bottom-left,7%)!important;right:var(--card-bottom-right,7%)!important;top:var(--card-name-top)!important;bottom:var(--card-bottom-bottom,5%)!important;height:auto!important;padding:0!important;margin:0!important;clip-path:none!important;z-index:10!important;background:var(--card-stats-fill)!important;text-align:center!important;
 }
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .pname{
- display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:39%!important;margin:0!important;padding:0 1cqw!important;border:1px solid var(--card-name-border)!important;background:var(--card-name-fill)!important;color:var(--card-name-color)!important;line-height:1!important;font-size:max(3.5px,calc(8cqw * var(--card-name-scale,1)))!important;letter-spacing:0!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;text-shadow:0 1px 3px #000!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:var(--card-name-height,39%)!important;margin:0!important;padding:0 1cqw!important;border:1px solid var(--card-name-border)!important;background:var(--card-name-fill)!important;color:var(--card-name-color)!important;line-height:1!important;font-size:max(3.5px,calc(8cqw * var(--card-name-scale,1)))!important;letter-spacing:0!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;text-shadow:0 1px 3px #000!important;
 }
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .stats{
- position:absolute!important;left:0!important;right:0!important;top:43%!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:0!important;padding:0!important;align-items:center!important;color:var(--card-stats-color)!important;line-height:1!important;text-align:center!important;font-size:max(3px,2.8cqw)!important;
+ position:absolute!important;left:0!important;right:0!important;top:var(--card-stats-top,43%)!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:0!important;padding:0!important;align-items:center!important;color:var(--card-stats-color)!important;line-height:1!important;text-align:center!important;font-size:max(3px,2.8cqw)!important;
 }
 .card-shell .custom-card .stats span{min-width:0;border-right:1px solid #ffffff3b}
 .card-shell .custom-card .stats span:last-child{border-right:0}
@@ -236,94 +236,80 @@
  transform:none!important;
 }
 
-/* Metallic surfaces approved for the four regular card families. The SVGs are
-   blank skins: cardHTML continues to provide every field and player portrait. */
+/* Approved blank card skins. The shared renderer supplies every player field. */
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon){
- clip-path:polygon(3.5% 12%,8% 8%,16% 5.5%,41% 5.4%,46.7% 3.1%,50% 0%,53.3% 3.1%,59% 5.4%,84% 5.5%,92% 8%,96.5% 12%,96.5% 85%,88.5% 92%,50% 100%,11.5% 92%,3.5% 85%);
- background-position:center;
- background-size:100% 100%;
- background-repeat:no-repeat;
+ clip-path:none;
+ --card-info-left:9%;--card-info-width:21%;
+ --card-portrait-left:29%;--card-portrait-right:5%;
+ --card-portrait-top:14.5%;--card-portrait-height:50%;
+ --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon):before{content:none}
 .card-shell .custom-card.gold{
- background-image:url("./assets/footera/card-gold-metallic.svg");
+ background:transparent url("./assets/footera/card-gold-approved.webp") center / 100% 100% no-repeat;
  color:#fff1c7;
- --card-column-fill:linear-gradient(180deg,#0d0a07f2,#271908ed 75%,#0b0908f5);
- --card-name-fill:linear-gradient(90deg,#211408f5,#61431add 50%,#211408f5);
- --card-name-border:#e0b966;
  --card-name-color:#fff0c4;
- --card-stats-fill:linear-gradient(180deg,#120c08d9,#100b07eb);
  --card-stats-color:#ebce8b;
  --card-value-color:#fff3ca;
- --card-rail-border:#bd8c3c;
 }
 .card-shell .custom-card.silver{
- background-image:url("./assets/footera/card-silver-metallic.svg");
+ background:transparent url("./assets/footera/card-silver-approved.webp") center / 100% 100% no-repeat;
  color:#f5fbff;
- --card-column-fill:linear-gradient(180deg,#0b131bf2,#1d2b35ef 75%,#0a1118f5);
- --card-name-fill:linear-gradient(90deg,#16212af5,#425668e0 50%,#16212af5);
- --card-name-border:#bfd3df;
  --card-name-color:#f7fcff;
- --card-stats-fill:linear-gradient(180deg,#0c151edb,#0d141bee);
  --card-stats-color:#c1d8e4;
  --card-value-color:#f5fbff;
- --card-rail-border:#8daebf;
 }
 .card-shell .custom-card.bronze{
- background-image:url("./assets/footera/card-bronze-metallic.svg");
+ background:transparent url("./assets/footera/card-bronze-approved.webp") center / 100% 100% no-repeat;
  color:#ffe0bd;
- --card-column-fill:linear-gradient(180deg,#180e0af2,#352014ec 75%,#170d09f5);
- --card-name-fill:linear-gradient(90deg,#28160ff5,#714027e1 50%,#28160ff5);
- --card-name-border:#cc8f61;
  --card-name-color:#ffe1bd;
- --card-stats-fill:linear-gradient(180deg,#1a0e0be1,#160d0aef);
  --card-stats-color:#dbad84;
  --card-value-color:#ffe2c4;
- --card-rail-border:#a96940;
 }
 .card-shell .custom-card.totw{
- background-image:url("./assets/footera/card-totw-metallic.svg");
+ background:transparent url("./assets/footera/card-totw-approved.webp") center / 100% 100% no-repeat;
  color:#fff0ba;
- --card-column-fill:linear-gradient(180deg,#020303f7,#131311f0 75%,#030404f7);
- --card-name-fill:linear-gradient(90deg,#070807f5,#382b13e5 50%,#070807f5);
- --card-name-border:#edc864;
  --card-name-color:#fff0b6;
- --card-stats-fill:linear-gradient(180deg,#040505e5,#050606f5);
  --card-stats-color:#e6c76c;
  --card-value-color:#fff2c3;
- --card-rail-border:#c99e3c;
 }
 .card-shell .custom-card.icon{
- background-image:url("./assets/footera/card-icon-heritage.svg");
- color:#263638;
- --card-column-fill:linear-gradient(180deg,#faf6e9f0,#e4dcc9e8 75%,#c5b99fe8);
- --card-name-fill:linear-gradient(90deg,#132a31,#31484a 50%,#132a31);
- --card-name-border:#c6a66a;
+ background:transparent url("./assets/footera/card-icon-approved.webp") center / 100% 100% no-repeat;
+ color:#fff0c4;
+ --card-portrait-top:13%;--card-portrait-height:54%;
+ --card-name-top:65%;--card-bottom-bottom:15%;--card-name-height:38%;--card-stats-top:43%;
  --card-name-color:#fdf2d4;
- --card-stats-fill:linear-gradient(180deg,#162c34ed,#101f29f5);
- --card-stats-color:#d1bf91;
+ --card-stats-color:#e9d2a0;
  --card-value-color:#fff4d6;
- --card-rail-border:#987849;
 }
 .card-shell .custom-card.icon:after{
- content:"ICON";position:absolute;z-index:8;top:9%;right:10%;padding:1.1cqw 2cqw;
- border:1px solid #b89b65;border-radius:2cqw;
- background:#f3ecdcbf;color:#334444;
- font-size:3.2cqw;font-weight:900;letter-spacing:.14em;box-shadow:none;
+ content:"ICON";position:absolute;z-index:8;top:9%;right:10%;padding:0;
+ border:0;border-bottom:1px solid #9a7a42;border-radius:0;
+ background:transparent;color:#473828;
+ font-family:Georgia,"Times New Roman",serif;font-size:3.2cqw;font-weight:800;letter-spacing:.12em;box-shadow:none;
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .card-top:before{
- border-color:var(--card-rail-border);
- box-shadow:inset 0 0 2cqw #0008,0 0 .7cqw #0009;
+ content:none;
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .pname{
- clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%);
+ clip-path:none;
+ text-shadow:0 1px 2px #000b!important;
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon) .stats span{
- border-color:var(--card-rail-border);
+ border-color:transparent;
 }
-/* The older rare badge sat in the now cut-away top corner. */
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .face img{filter:drop-shadow(0 .6cqw 1cqw #0009)}
+.card-shell .custom-card.icon .face img{filter:sepia(.55) contrast(1.1) drop-shadow(0 .6cqw 1cqw #453a2c70)}
+.card-shell .custom-card.totw:after{
+ top:10%;right:9%;padding:.8cqw 1.5cqw;
+ border:1px solid #d4ab51;border-radius:2cqw;background:#14120dce;color:#f9df9a;
+ font-size:max(3px,2.6cqw);box-shadow:none;
+}
+/* Keep the rare badge inside the shoulder of the approved frame. */
 .card-shell .custom-card:is(.gold,.silver,.bronze).base-rare .rare-mark{
- top:8%!important;right:8%!important;
+ top:10%!important;right:9%!important;
  width:auto!important;height:auto!important;
  padding:.8cqw 1.5cqw!important;
  font-size:max(3px,2.6cqw)!important;
