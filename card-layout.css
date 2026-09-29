@@ -303,3 +303,12 @@
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .stats span{
  border-color:var(--card-rail-border);
 }
+/* The older rare badge sat in the now cut-away top corner. */
+.card-shell .custom-card:is(.gold,.silver,.bronze).base-rare .rare-mark{
+ top:8%!important;right:8%!important;
+ width:auto!important;height:auto!important;
+ padding:.8cqw 1.5cqw!important;
+ font-size:max(3px,2.6cqw)!important;
+ line-height:1!important;
+ white-space:nowrap;
+}
