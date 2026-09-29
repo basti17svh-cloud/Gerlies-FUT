@@ -269,3 +269,42 @@ body{
 @media(prefers-reduced-motion:reduce){.competition-result,.competition-result.promoted b{animation:none}.competition-bar i{transition:none}}
 
 /* V19.51 — Preisvergleich und Marktsuche verwenden dieselben echten, handelbaren Listings. */
+
+
+/* V19.73 — Spielbericht 2.0 */
+.match-report{display:grid;gap:14px;margin:16px 0 18px;text-align:left}
+.match-report-kicker{font-size:7px;font-weight:1000;letter-spacing:.18em;color:#7ff0ba;text-transform:uppercase}
+.match-report-statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.match-report-statgrid>div{display:grid;grid-template-columns:1fr auto;align-items:end;gap:3px 8px;padding:11px 12px;border:1px solid rgba(128,170,151,.2);border-radius:13px;background:linear-gradient(145deg,rgba(17,34,29,.82),rgba(9,15,13,.9))}
+.match-report-statgrid span{grid-column:1/-1;font-size:6px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7f928a}
+.match-report-statgrid b{font-size:18px;line-height:1;color:#f5f8f6}
+.match-report-statgrid small{font-size:10px;font-weight:900;color:#71817b}
+.match-potm{display:grid;grid-template-columns:118px 1fr;gap:14px;align-items:center;padding:14px;border:1px solid rgba(218,181,84,.34);border-radius:16px;background:linear-gradient(135deg,rgba(59,46,17,.42),rgba(11,20,17,.94) 48%,rgba(10,15,14,.96))}
+.match-potm-card{width:118px;max-width:100%;margin:auto}.match-potm-card .card-shell{width:100%!important;max-width:100%!important}
+.match-potm-copy{min-width:0}.match-potm-copy>span{display:block;font-size:6px;font-weight:1000;letter-spacing:.16em;color:#e2c36b}
+.match-potm-copy>strong{display:block;margin-top:5px;font-size:18px;line-height:1.05;color:#fff}
+.match-potm-copy>small{display:block;margin-top:3px;font-size:7px;color:#84948d}
+.match-potm-copy>div{display:flex;align-items:baseline;gap:6px;margin-top:9px}.match-potm-copy>div b{font-size:28px;line-height:1;color:#ffe07a}.match-potm-copy>div em{font-style:normal;font-size:7px;color:#9aaaA3;text-transform:uppercase}
+.match-potm-copy p{margin:8px 0 0;font-size:7px;color:#c9d4cf}
+.match-report-section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:8px}
+.match-report-section-title strong{font-size:10px;color:#f4f7f5}.match-report-section-title span{font-size:6px;color:#74847e;text-transform:uppercase;letter-spacing:.08em}
+.match-report-events,.match-report-team{padding:13px;border:1px solid rgba(128,170,151,.18);border-radius:15px;background:rgba(9,18,15,.8)}
+.match-report-event-list{display:grid;gap:5px}
+.match-report-event{display:grid;grid-template-columns:34px 20px 1fr;gap:6px;align-items:center;padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.025)}
+.match-report-event.home{border-left:2px solid rgba(92,232,156,.65)}.match-report-event.away{border-left:2px solid rgba(229,102,123,.65)}
+.match-report-event time{font-size:7px;font-weight:1000;color:#a8b7b1}.match-report-event i{font-style:normal;font-size:11px;text-align:center}
+.match-report-event strong{display:block;font-size:7px;color:#eef4f1}.match-report-event span{display:block;margin-top:2px;font-size:6px;color:#81918b}
+.match-report-empty{padding:9px;font-size:7px;color:#7d8b86}
+.match-report-teams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match-performance-list{display:grid;gap:4px}
+.match-performance-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,28px) 42px;gap:4px;align-items:center;min-height:37px;padding:5px 6px;border-radius:9px;background:rgba(255,255,255,.025)}
+.match-performance-player{min-width:0}.match-performance-player strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;color:#f1f5f3}.match-performance-player span{display:block;margin-top:1px;font-size:5px;color:#76867f}
+.match-performance-row>div:not(.match-performance-player):not(.match-rating){text-align:center}.match-performance-row>div b{display:block;font-size:8px;color:#eef3f0}.match-performance-row>div span{display:block;font-size:5px;color:#718078}
+.match-rating{display:flex;align-items:center;justify-content:center;height:27px;border-radius:7px;font-size:9px;font-weight:1000;background:#202b27;color:#d8e1dd}.match-rating.good{background:#173b2b;color:#80eab2}.match-rating.elite{background:#514015;color:#ffe27a}
+.match-yellow-card,.match-red-card{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;font-size:6px;font-weight:900;margin:2px}.match-yellow-card{background:rgba(255,214,67,.14);color:#ffe170;border:1px solid rgba(255,214,67,.28)}.match-red-card{background:rgba(255,77,94,.14);color:#ff8996;border:1px solid rgba(255,77,94,.28)}
+@media(max-width:680px){
+ .match-report-statgrid{grid-template-columns:1fr 1fr}
+ .match-report-teams{grid-template-columns:1fr}
+ .match-potm{grid-template-columns:92px 1fr;padding:11px}.match-potm-card{width:92px}
+ .match-performance-row{grid-template-columns:minmax(0,1fr) repeat(3,25px) 38px}
+}
