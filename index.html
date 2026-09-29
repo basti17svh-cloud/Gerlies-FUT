@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.71</title>
+<title>Footera V19.72</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1379,7 +1379,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.71</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.72</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1614,6 +1614,11 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <label class="picker-field">Position<select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH</option><option value="CB">IV</option><option value="RB">RV</option><option value="LB">LV</option><option value="RWB">RAV</option><option value="LWB">LAV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="RM">RM</option><option value="RW">RF</option><option value="LM">LM</option><option value="LW">LF</option><option value="CF">MS</option><option value="ST">ST</option></select></label>
       <label class="picker-field">Sortieren nach<select id="pickerSort"><option value="fit">Passung zur Position</option><option value="rating">Rating: hoch zuerst</option><option value="rating-asc">Rating: niedrig zuerst</option><option value="name">Spielername A–Z</option></select></label>
     </div>
+    <div class="picker-fields">
+      <label class="picker-field">Liga<select id="pickerLeagueFilter"><option value="">Alle Ligen</option></select></label>
+      <label class="picker-field">Verein<select id="pickerClubFilter"><option value="">Alle Vereine</option></select></label>
+    </div>
+    <label class="picker-field">Kartenqualität<select id="pickerQualityFilter"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select></label>
     <div class="picker-range"><label class="picker-field">Min. Rating<input id="pickerRatingMin" type="number" inputmode="numeric" min="0" max="99" value="0"></label><label class="picker-field">Max. Rating<input id="pickerRatingMax" type="number" inputmode="numeric" min="0" max="99" value="99"></label></div>
     <label class="picker-check"><input id="pickerOnlyUntradeable" type="checkbox"> Nur untauschbare Items</label>
     <button class="primary" type="submit">Spieler suchen</button>
@@ -4130,7 +4135,7 @@ function renderRoles(items){
 }
 $("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
 $("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
-let pickerFilterPosition="",pickerSortMode="fit",pickerSearchTerm="",pickerMinRating=0,pickerMaxRating=99,pickerOnlyUntradeable=false,pickerPage=0,pickerStage="filters";
+let pickerFilterPosition="",pickerFilterLeague="",pickerFilterClub="",pickerFilterQuality="",pickerSortMode="fit",pickerSearchTerm="",pickerMinRating=0,pickerMaxRating=99,pickerOnlyUntradeable=false,pickerPage=0,pickerStage="filters";
 const PICKER_PAGE_SIZE=20;
 function pickerSlotLabel(i){return i<11?positionLabel(currentFormation()[i].p):i<18?`Bank ${i-10}`:`Reserve ${i-17}`}
 function renderPickerPreview(){
@@ -4138,13 +4143,39 @@ function renderPickerPreview(){
  const b=item?displayBase(item):null,label=pickerMode==="slot"?"SPIELER EINFÜGEN":`KADERPLATZ · ${pickerSlotLabel(pickerIndex)}`;
  $("pickerPreview").innerHTML=`<div class="picker-preview-card">${b?cardHTML(b,item,true):'<div class="picker-empty-card">+</div>'}</div><div class="picker-preview-copy"><small>${esc(label)}</small><strong>${b?esc(b.name):"Platz frei"}</strong><span>${pickerMode==="slot"?"Wähle einen Platz in deiner Aufstellung.":b?"Wähle einen Ersatz aus deinem Verein.":"Suche einen Spieler aus deinem Verein."}</span></div>`
 }
+function pickerItemQuality(item,base=displayBase(item)){
+ const cls=cardClass(base,item);
+ return ["gold","silver","bronze"].includes(cls)?cls:"special"
+}
+function pickerAffiliationOptions(){
+ const rows=state.club.map(item=>{const base=displayBase(item);if(!base)return null;const a=resolvedAffiliation(base);return{league:String(a?.league||"").trim(),club:String(a?.team||"").trim()}}).filter(Boolean);
+ return{leagues:[...new Set(rows.map(x=>x.league).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),rows}
+}
+function populatePickerClubFilter(league="",preferredClub=""){
+ const select=$("pickerClubFilter");if(!select)return;
+ const {rows}=pickerAffiliationOptions(),clubs=[...new Set(rows.filter(x=>!league||x.league===league).map(x=>x.club).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ select.innerHTML='<option value="">Alle Vereine</option>'+clubs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ select.value=clubs.includes(preferredClub)?preferredClub:""
+}
+function populatePickerAffiliationFilters(){
+ const leagueSelect=$("pickerLeagueFilter");if(!leagueSelect)return;
+ const {leagues}=pickerAffiliationOptions();
+ leagueSelect.innerHTML='<option value="">Alle Ligen</option>'+leagues.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ leagueSelect.value=leagues.includes(pickerFilterLeague)?pickerFilterLeague:"";
+ if(leagueSelect.value!==pickerFilterLeague)pickerFilterLeague="";
+ populatePickerClubFilter(leagueSelect.value,pickerFilterClub);
+ if($("pickerClubFilter").value!==pickerFilterClub)pickerFilterClub=""
+}
 function pickerCandidates(){
   const i=pickerIndex,slot=i<11?currentFormation()[i].p:(i<18?"BANK":"RESERVE"),used=new Set(state.squad.filter(Boolean)),query=normalizeKey(pickerSearchTerm);
   const list=state.club.filter(it=>{
    const b=displayBase(it);if(!b||used.has(it.uid))return false;
-  const rating=itemRating(it);
-  return rating>=pickerMinRating&&rating<=pickerMaxRating&&(!pickerOnlyUntradeable||!it.tradeable)
+   const rating=itemRating(it),a=resolvedAffiliation(b),quality=pickerItemQuality(it,b);
+   return rating>=pickerMinRating&&rating<=pickerMaxRating&&(!pickerOnlyUntradeable||!it.tradeable)
    &&(!pickerFilterPosition||playerPositions(b).includes(pickerFilterPosition))
+   &&(!pickerFilterLeague||String(a?.league||"")===pickerFilterLeague)
+   &&(!pickerFilterClub||String(a?.team||"")===pickerFilterClub)
+   &&(!pickerFilterQuality||quality===pickerFilterQuality)
    &&(!query||normalizeKey(b.name).includes(query))
  });
  list.sort((a,b)=>{
@@ -4190,9 +4221,10 @@ function setPickerStage(stage){
 function openPicker(i){
  ensureSquadSlots();if(!Number.isInteger(i)||i<0||i>=state.squad.length)return;
  pickerMode="player";pickerSourceUid=null;pickerIndex=i;pickerPage=0;
- pickerFilterPosition="";pickerSortMode="fit";pickerSearchTerm="";pickerMinRating=0;pickerMaxRating=99;pickerOnlyUntradeable=false;
+ pickerFilterPosition="";pickerFilterLeague="";pickerFilterClub="";pickerFilterQuality="";pickerSortMode="fit";pickerSearchTerm="";pickerMinRating=0;pickerMaxRating=99;pickerOnlyUntradeable=false;
  $("pickerTitle").textContent="Vereinssuche";$("pickerSub").textContent=`${pickerSlotLabel(i)} · Spieler auswählen`;
- $("pickerName").value="";$("pickerPositionFilter").value="";$("pickerSort").value="fit";$("pickerRatingMin").value="0";$("pickerRatingMax").value="99";$("pickerOnlyUntradeable").checked=false;
+ $("pickerName").value="";$("pickerPositionFilter").value="";$("pickerSort").value="fit";$("pickerQualityFilter").value="";$("pickerRatingMin").value="0";$("pickerRatingMax").value="99";$("pickerOnlyUntradeable").checked=false;
+ populatePickerAffiliationFilters();
  renderPickerPreview();setPickerStage("filters");showUiLayer("picker","picker")
 }
 function putItemIntoSlot(itemUid,toIndex){
@@ -4255,6 +4287,7 @@ $("pitch").addEventListener("click",squadClick);
 $("bench").addEventListener("click",squadClick);
 $("pickerClose").addEventListener("click",()=>{if(pickerMode==="player"&&pickerStage==="results")setPickerStage("filters");else closeUiLayer("picker","picker")});
 $("pickerEditFilters").addEventListener("click",()=>setPickerStage("filters"));
+$("pickerLeagueFilter").addEventListener("change",e=>populatePickerClubFilter(e.target.value,$("pickerClubFilter").value));
 $("pickerControls").addEventListener("submit",e=>{
  e.preventDefault();
  if(pickerMode!=="player")return;
@@ -4262,6 +4295,7 @@ $("pickerControls").addEventListener("submit",e=>{
  const max=Math.max(0,Math.min(99,Number($("pickerRatingMax").value||99)));
  if(min>max){toast("Das minimale Rating muss unter dem maximalen Rating liegen.");return}
  pickerSearchTerm=$("pickerName").value.trim();pickerFilterPosition=$("pickerPositionFilter").value;
+ pickerFilterLeague=$("pickerLeagueFilter").value;pickerFilterClub=$("pickerClubFilter").value;pickerFilterQuality=$("pickerQualityFilter").value;
  pickerSortMode=$("pickerSort").value;pickerMinRating=min;pickerMaxRating=max;
  pickerOnlyUntradeable=$("pickerOnlyUntradeable").checked;pickerPage=0;
  setPickerStage("results")
@@ -6880,7 +6914,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.71";
+const GFUT_BUILD="V19.72";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -6898,7 +6932,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1971",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1972",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
