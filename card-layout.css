@@ -69,13 +69,13 @@
 :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .ovr{font-size:20cqw!important;line-height:.93!important;letter-spacing:-.05em!important}
 :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .pos{font-size:7.3cqw!important;line-height:1!important;margin-top:1.3cqw!important;transform:none!important}
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .card-icons{
- position:absolute!important;inset:auto!important;left:var(--card-info-left)!important;top:40%!important;width:var(--card-info-width)!important;height:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:3.5cqw!important;z-index:9!important;pointer-events:none!important;
+ position:absolute!important;inset:auto!important;left:var(--card-info-left)!important;top:var(--card-emblems-top,40%)!important;width:var(--card-info-width)!important;height:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:var(--card-emblems-gap,3.5cqw)!important;z-index:9!important;pointer-events:none!important;
 }
 :is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card :is(.card-flag,.card-club,.card-league){position:static!important;display:grid!important;place-items:center!important;transform:none!important;flex:none!important;margin:0!important;padding:0!important;line-height:1!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
 :is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-flag{width:12cqw!important;height:8cqw!important;font-size:8cqw!important}
 :is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-flag-img{width:12cqw!important;height:8cqw!important;max-width:100%!important;object-fit:cover!important}
-:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-club{width:11cqw!important;height:11cqw!important;font-size:3.4cqw!important}
-:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-league{width:10cqw!important;height:10cqw!important;font-size:3.4cqw!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-club{width:var(--card-club-size,11cqw)!important;height:var(--card-club-size,11cqw)!important;font-size:3.4cqw!important}
+:is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .card-league{width:var(--card-league-size,10cqw)!important;height:var(--card-league-size,10cqw)!important;font-size:3.4cqw!important}
 :is(.card-shell,#bench .card-shell,#reserve .card-shell) .custom-card .badge-img{width:100%!important;height:100%!important;object-fit:contain!important}
 
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .face{
@@ -260,6 +260,8 @@
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon){
  clip-path:none;box-shadow:none;
  --card-info-left:9%;--card-info-width:21%;
+ --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
  --card-portrait-left:29%;--card-portrait-right:5%;
  --card-portrait-top:14.5%;--card-portrait-height:50%;
  --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
