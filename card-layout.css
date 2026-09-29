@@ -95,7 +95,7 @@
  display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:var(--card-name-height,39%)!important;margin:0!important;padding:0 1cqw!important;border:1px solid var(--card-name-border)!important;background:var(--card-name-fill)!important;color:var(--card-name-color)!important;line-height:1!important;font-size:max(3.5px,calc(8cqw * var(--card-name-scale,1)))!important;letter-spacing:0!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;text-shadow:0 1px 3px #000!important;
 }
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card .stats{
- position:absolute!important;left:0!important;right:0!important;top:var(--card-stats-top,43%)!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:0!important;padding:0!important;align-items:center!important;color:var(--card-stats-color)!important;line-height:1!important;text-align:center!important;font-size:max(3px,2.8cqw)!important;
+ position:absolute!important;left:var(--card-stats-left,0)!important;right:var(--card-stats-right,0)!important;top:var(--card-stats-top,43%)!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:0!important;padding:0!important;align-items:center!important;color:var(--card-stats-color)!important;line-height:1!important;text-align:center!important;font-size:max(3px,2.8cqw)!important;
 }
 .card-shell .custom-card .stats span{min-width:0;border-right:1px solid #ffffff3b}
 .card-shell .custom-card .stats span:last-child{border-right:0}
@@ -211,6 +211,21 @@
  pointer-events:none;
  filter:drop-shadow(0 1.5cqw 2.4cqw rgba(0,0,0,.48));
 }
+/* The finished artwork has a small fixed rating. Cover only those pixels in its
+   dark rail and draw the live rating at the same scale as the other cards. */
+.bastian-static-founder-shell:before{
+ content:"";position:absolute;z-index:2;pointer-events:none;
+ left:var(--founder-rating-cover-left,19%);top:var(--founder-rating-cover-top,22%);
+ width:var(--founder-rating-cover-width,14%);height:var(--founder-rating-cover-height,7%);
+ background:#01110e;box-shadow:0 0 1cqw .4cqw #01110e;
+}
+.bastian-static-founder-shell:after{
+ content:attr(data-rating);position:absolute;z-index:3;pointer-events:none;
+ left:var(--founder-rating-left,16%);top:var(--founder-rating-top,18.5%);
+ width:20%;height:11%;display:grid;place-items:center;
+ color:#f9e6af;font:1000 20cqw/1 Arial,sans-serif;letter-spacing:-.045em;
+ text-shadow:0 1px 2px #573c1e;
+}
 /* Keep the final Founder artwork proportional in every context instead of reflowing its internals. */
 :is(.player-detail-card,.bio-card,.club-card-preview,.market-row-card,.picker-preview-card,.sbc-slot-card-large) .bastian-static-founder-shell{
  max-width:100%;
@@ -227,6 +242,11 @@
  margin:0 auto!important;
  transform:none!important;
 }
+:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
+ --founder-rating-cover-left:16%;--founder-rating-cover-top:21.5%;
+ --founder-rating-cover-width:14%;--founder-rating-cover-height:7.5%;
+ --founder-rating-left:13.5%;--founder-rating-top:17%;
+}
 .friend-pitch .friend-slot .mini .founder-shell.bastian-static-founder-shell,
 .match-manager-slot .mini .founder-shell.bastian-static-founder-shell{
  width:100%!important;
@@ -238,12 +258,13 @@
 
 /* Approved blank card skins. The shared renderer supplies every player field. */
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon){
- clip-path:none;
+ clip-path:none;box-shadow:none;
  --card-info-left:9%;--card-info-width:21%;
  --card-portrait-left:29%;--card-portrait-right:5%;
  --card-portrait-top:14.5%;--card-portrait-height:50%;
  --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
  --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-stats-left:3%;--card-stats-right:3%;
  --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.icon):before{content:none}

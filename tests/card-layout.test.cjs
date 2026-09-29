@@ -51,6 +51,9 @@ test('approved clean skins are cached and the shared stats fit inside the card',
   assert.ok(art.length<350000,type);
  }
  assert.match(css,/--card-bottom-left:8%;--card-bottom-right:8%/);
+ assert.match(css,/--card-stats-left:3%;--card-stats-right:3%/);
+ assert.match(css,/left:var\(--card-stats-left,0\)!important;right:var\(--card-stats-right,0\)!important/);
+ assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw,\.icon\)\{\s*clip-path:none;box-shadow:none/);
  assert.match(css,/--card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%/);
  assert.match(css,/--card-name-top:65%;--card-bottom-bottom:15%;--card-name-height:38%;--card-stats-top:43%/);
  assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw,\.icon\):before\{content:none\}/);
@@ -88,7 +91,7 @@ test('Founder uses the blank crystal artwork while position and attributes remai
 test('the final Bastian image stays inside a normal centered mobile lineup slot',()=>{
  const ctx=context();ctx.FOUNDER_BASTIAN_STATIC_SRC='data:image/webp;base64,test';
  const card=ctx.cardHTML({...gerlach,id:ctx.FOUNDER_PLAYER_ID},{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder'},true,'ZOM');
- assert.match(card,/class="mini"><div class="card-shell founder-shell bastian-static-founder-shell"><img class="founder-static-card"/);
+ assert.match(card,/class="mini"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="88"><img class="founder-static-card"/);
  assert.match(html,/const FOUNDER_BASTIAN_STATIC_SRC="\.\/assets\/footera\/founder-bastian-card-hd\.webp"/);
  const art=fs.readFileSync(path.join(__dirname,'../assets/footera/founder-bastian-card-hd.webp'));
  assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');assert.equal(art.toString('ascii',12,16),'VP8L');
@@ -97,6 +100,8 @@ test('the final Bastian image stays inside a normal centered mobile lineup slot'
  assert.match(html,/\.card-shell\.bastian-static-founder-shell > img\.founder-static-card\{[\s\S]*?position:absolute!important;inset:0;[\s\S]*?max-height:100%!important/);
  assert.match(html,/\.mini > \.card-shell\.bastian-static-founder-shell > img\.founder-static-card\{[\s\S]*?width:110%!important;height:116%!important;[\s\S]*?transform:translateX\(-50%\)!important/);
  assert.match(css,/\.bastian-static-founder-shell \.founder-static-card\{[\s\S]*?position:absolute;[\s\S]*?object-fit:contain/);
+ assert.match(css,/\.bastian-static-founder-shell:before\{[\s\S]*?background:#01110e/);
+ assert.match(css,/\.bastian-static-founder-shell:after\{[\s\S]*?content:attr\(data-rating\)[\s\S]*?20cqw/);
 });
 
 test('Rangers Founder uses the same renderer with its yellow-and-black 2:3 artwork',()=>{
