@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.91</title>
+<title>Footera V19.92</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,7 +1470,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.91</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.92</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1610,7 +1610,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </div>
 
   <div id="marketSearchShell" class="market-detail-shell" hidden>
-    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Spieler finden und kaufen</span></div></div>
+    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Position+ berücksichtigt Haupt- und Nebenpositionen</span></div></div>
     <div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
     <div class="market-filter-panel">
       <div class="market-filter-grid">
@@ -1618,7 +1618,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
         <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
         <div class="market-field"><label>Verein</label><select id="marketClub"><option value="">Alle Vereine</option></select></div>
         <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
-        <div class="market-field"><label>Position</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select></div>
+        <div class="market-field"><label>Position+</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select></div>
         <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
         <div class="market-field" id="marketSpecialTypeWrap"><label>Kartentyp</label><select id="marketSpecialType"><option value="">Alle Kartentypen</option><option value="base">Basis-Karten</option><option value="totw">Team der Woche</option><option value="icon">Ikonen</option><option value="legacy">Legacy Event</option><option value="momentum">MOMENTUM</option></select></div>
         <div class="range-card">
@@ -1656,7 +1656,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="clubView" class="view"><div class="headline"><h2>Mein Club</h2><p>Alle gezogenen, gekauften und entwickelten Spieleritems.</p></div><div class="section">
   <div class="filters club-filters">
-    <select id="clubPosition"><option value="">Alle Positionen</option><option value="GK">TW</option><option value="CB">IV</option><option value="LB">LV</option><option value="RB">RV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="LM">LM</option><option value="RM">RM</option><option value="LW">LF</option><option value="RW">RF</option><option value="ST">ST</option></select>
+    <select id="clubPosition" aria-label="Position+ inklusive Nebenpositionen"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select>
     <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
     <select id="clubLeague"><option value="">Alle Ligen</option></select>
     <select id="clubClub"><option value="">Alle Vereine</option></select>
@@ -1702,7 +1702,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     <h4 class="picker-search-heading">Im Verein suchen</h4>
     <label class="picker-field">Spielername<input id="pickerName" type="search" placeholder="Name eingeben" autocomplete="off"></label>
     <div class="picker-fields">
-      <label class="picker-field">Position<select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH</option><option value="CB">IV</option><option value="RB">RV</option><option value="LB">LV</option><option value="RWB">RAV</option><option value="LWB">LAV</option><option value="CDM">ZDM</option><option value="CM">ZM</option><option value="CAM">ZOM</option><option value="RM">RM</option><option value="RW">RF</option><option value="LM">LM</option><option value="LW">LF</option><option value="CF">MS</option><option value="ST">ST</option></select></label>
+      <label class="picker-field">Position+<select id="pickerPositionFilter"><option value="">Alle Positionen</option><option value="GK">TW / TH+</option><option value="CB">IV+</option><option value="RB">RV+</option><option value="LB">LV+</option><option value="RWB">RAV+</option><option value="LWB">LAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="RM">RM+</option><option value="RW">RF+</option><option value="LM">LM+</option><option value="LW">LF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select></label>
       <label class="picker-field">Sortieren nach<select id="pickerSort"><option value="fit">Passung zur Position</option><option value="rating">Rating: hoch zuerst</option><option value="rating-asc">Rating: niedrig zuerst</option><option value="name">Spielername A–Z</option></select></label>
     </div>
     <div class="picker-fields">
@@ -4460,7 +4460,11 @@ function openSlotPickerForItem(itemUid){
  $("pickerTitle").textContent="Kaderplatz wählen";$("pickerSub").textContent="Tippe auf einen freien oder besetzten Platz.";
  renderPickerPreview();setPickerStage("results");showUiLayer("picker","picker")
 }
-function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].filter(Boolean))]}
+function playerPositions(p){return [...new Set([p?.position,...String(p?.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)].map(x=>String(x||"").trim().toUpperCase()).filter(Boolean))]}
+function positionPlusMatch(p,position,primaryOverride=""){
+ const wanted=String(position||"").trim().toUpperCase();if(!wanted)return true;
+ return [...new Set([primaryOverride,...playerPositions(p)].map(x=>String(x||"").trim().toUpperCase()).filter(Boolean))].includes(wanted)
+}
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
 function purchaseInfoHTML(item){const paid=Number(item?.purchasePrice||0);if(!(paid>0))return"";return `<div class="item-purchase-info"><span>Item gekauft für</span><strong>${currencyAmountHTML("coins",paid,"compact")}</strong></div>`}
 function playerClubPerformance(item){return{goals:Math.max(0,Number(item?.clubGoals||0)),assists:Math.max(0,Number(item?.clubAssists||0))}}
@@ -5026,7 +5030,7 @@ $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendi
 function quickSell(i){if(isFounderItem(i))return 0;if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function clubFilterItems(){
  const listed=new Set(state.transferList||[]);
- return (state.club||[]).filter(i=>!listed.has(i.uid)).map(item=>{const b=displayBase(item);if(!b)return null;const a=resolvedAffiliation(b);return{item,b,a,rating:itemRating(item),positions:[b.position,...String(b.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)]}}).filter(Boolean)
+ return (state.club||[]).filter(i=>!listed.has(i.uid)).map(item=>{const b=displayBase(item);if(!b)return null;const a=resolvedAffiliation(b);return{item,b,a,rating:itemRating(item),positions:playerPositions(b)}}).filter(Boolean)
 }
 let clubFilterOptionsSignature="";
 function syncClubFilterOptions(rows=clubFilterItems()){
@@ -5196,7 +5200,7 @@ const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,momentumIsActive()])}
-function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&(!f.position||p.position===f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
+function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
  if(pool.length<=MARKET_SNAPSHOT_LIMIT)return pool.slice();
@@ -5218,8 +5222,8 @@ function buildMarketSnapshot(f){
 }
 function ensureMarketSnapshot(f){const key=marketSnapshotCoreKey(f);if(!marketInventory.length||marketSnapshotKey!==key)buildMarketSnapshot(f)}
 function marketListingMatchesFilters(x,f){
- const p=x.base||{},rating=listingRating(x),pos=x.overridePosition||p.position,league=String(p?.league||resolvedAffiliation(p)?.league||"");
- if(f.name&&!playerSearchText(p).includes(f.name))return false;if(f.league&&league!==f.league)return false;if(f.club&&p.team!==f.club)return false;if(f.nation&&p.nation!==f.nation)return false;if(f.position&&pos!==f.position)return false;
+ const p=x.base||{},rating=listingRating(x),league=String(p?.league||resolvedAffiliation(p)?.league||"");
+ if(f.name&&!playerSearchText(p).includes(f.name))return false;if(f.league&&league!==f.league)return false;if(f.club&&p.team!==f.club)return false;if(f.nation&&p.nation!==f.nation)return false;if(!positionPlusMatch(p,f.position,x.overridePosition||""))return false;
  if(rating<f.ratingMin||rating>f.ratingMax)return false;if(f.quality&&listingQuality(x)!==f.quality)return false;
  if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;if(f.specialType==="momentum"&&!isMomentumItem(x))return false;
  if(f.priceMin&&Number(x.price||0)<f.priceMin)return false;if(f.priceMax&&Number(x.price||0)>f.priceMax)return false;return true
@@ -5843,7 +5847,7 @@ function sbcPickerHTML(){
  if(!sbcPickerState)return"";normalizeSbcPickerClub();rememberSbcPickerFilters();const rows=sbcPickerCandidates(),leagues=sbcPickerLeagues(),clubs=sbcPickerClubs(),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
  return `<div class="sbc-player-picker" id="sbcPlayerPicker"><div class="sbc-player-picker-inner"><div class="sbc-picker-head"><div><h3>Vereinssuche</h3><p>${esc(sbcPickerTargetLabel())} · Spieler auswählen</p></div><button type="button" class="secondary" data-sbc-picker-close>×</button></div><div class="sbc-picker-filters">
   <div class="sbc-picker-field full"><label>Spielername</label><input id="sbcPickerName" type="search" value="${esc(sbcPickerState.query||"")}" placeholder="Spielername eingeben" autocomplete="off"></div>
-  <div class="sbc-picker-field"><label>Position</label><select id="sbcPickerPosition"><option value="">Beliebig</option>${["GK","CB","LB","RB","CDM","CM","CAM","LM","RM","LW","RW","ST"].map(p=>`<option value="${p}" ${sbcPickerState.position===p?"selected":""}>${positionLabel(p)}</option>`).join("")}</select></div>
+  <div class="sbc-picker-field"><label>Position+</label><select id="sbcPickerPosition"><option value="">Beliebig</option>${["GK","CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"].map(p=>`<option value="${p}" ${sbcPickerState.position===p?"selected":""}>${positionLabel(p)}+</option>`).join("")}</select></div>
   <div class="sbc-picker-field"><label>Qualität</label><select id="sbcPickerQuality"><option value="">Alle Qualitäten</option><option value="gold" ${sbcPickerState.quality==="gold"?"selected":""}>Gold</option><option value="silver" ${sbcPickerState.quality==="silver"?"selected":""}>Silber</option><option value="bronze" ${sbcPickerState.quality==="bronze"?"selected":""}>Bronze</option><option value="special" ${sbcPickerState.quality==="special"?"selected":""}>Spezial</option></select></div>
   <div class="sbc-picker-field"><label>Liga</label><select id="sbcPickerLeague"><option value="">Alle Ligen</option>${leagues.map(v=>`<option value="${esc(v)}" ${sbcPickerState.league===v?"selected":""}>${esc(v)}</option>`).join("")}</select></div>
   <div class="sbc-picker-field"><label>Verein</label><select id="sbcPickerClub"><option value="">Alle Vereine</option>${clubs.map(v=>`<option value="${esc(v)}" ${sbcPickerState.club===v?"selected":""}>${esc(v)}</option>`).join("")}</select></div>
@@ -7340,7 +7344,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.91";
+const GFUT_BUILD="V19.92";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7358,7 +7362,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1991",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1992",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
