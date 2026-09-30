@@ -18,7 +18,10 @@ function premiumTierReward(level){
 for(const tier of SEASON_REWARDS)tier.premium=premiumTierReward(tier.level);
 for(let level=11;level<=30;level++)SEASON_REWARDS.push({level,sp:13500+(level-10)*650,reward:FREE_EXTRA[level-11],premium:premiumTierReward(level)});
 function seasonTierReward(tier,which,seasonKey=seasonInfo().key){
- if(which==="free"&&seasonKey==="s1"&&(tier.level===15||tier.level===30))return{story:`s1-${tier.level}`};
+ if(seasonKey==="s1"&&(tier.level===15||tier.level===30)){
+  if(which==="free")return{story:`s1-${tier.level}`};
+  if(which==="premium")return{...(tier.premium||{}),story:`s1-premium-${tier.level}`}
+ }
  return which==="premium"?tier.premium:tier.reward
 }
 
@@ -148,9 +151,9 @@ function settleExpiredPass(pass){
  const oldSp=Math.max(0,Number(state.sp||0));
  for(const tier of SEASON_REWARDS){
   if(oldSp<tier.sp)continue;
-  const free=seasonTierReward(tier,"free",pass.key);
+  const free=seasonTierReward(tier,"free",pass.key),premium=seasonTierReward(tier,"premium",pass.key);
   if(!pass.freeClaims?.[tier.level]||free.story)grantSeasonOnly(free);
-  if(pass.premium&&!pass.premiumClaims?.[tier.level])grantSeasonOnly(seasonTierReward(tier,"premium",pass.key))
+  if(pass.premium&&(!pass.premiumClaims?.[tier.level]||premium.story))grantSeasonOnly(premium)
  }
 }
 function syncSeasonState(at=new Date()){
