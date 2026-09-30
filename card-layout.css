@@ -353,3 +353,29 @@
  line-height:1!important;
  white-space:nowrap;
 }
+
+/* Extra playable positions occupy the free strip below the shared stats. */
+.card-shell .card-alt-positions{
+ position:absolute;z-index:14;left:10%;right:10%;bottom:var(--card-alt-bottom,6%);
+ color:var(--card-value-color,#ffe7ae);text-align:center;
+ font-size:max(4px,4.4cqw);font-weight:900;line-height:1.2;letter-spacing:.025em;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 1px 2px #000c;pointer-events:none;
+}
+.card-shell .custom-card:is(.gold,.silver,.bronze,.totw,.story){--card-alt-bottom:13%}
+.card-shell .custom-card:is(.icon,.momentum){--card-alt-bottom:10.5%}
+.card-shell .custom-card:is(.legacy,.special):has(>.card-alt-positions){--card-bottom-bottom:12%}
+.card-shell .custom-card.founder{--card-alt-bottom:13%}
+.bastian-static-founder-shell>.card-alt-positions{bottom:var(--founder-alt-bottom,18%);left:17%;right:17%;color:#ffe7ae}
+/* Match the live position to the rail of the finished Founder artwork. */
+.bastian-static-founder-shell>.founder-live-position{
+ position:absolute;z-index:3;left:var(--founder-position-left,19%);top:var(--founder-position-top,30%);
+ width:var(--founder-position-width,17%);height:var(--founder-position-height,5%);
+ display:grid;place-items:center;background:#01110e;color:#f9e6af;
+ font-size:max(5px,6cqw);font-weight:1000;line-height:1;
+ box-shadow:0 0 .3cqw .2cqw #01110e;pointer-events:none;
+}
+:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
+ --founder-alt-bottom:9%;--founder-position-left:16%;--founder-position-top:30.8%;
+ --founder-position-width:19%;--founder-position-height:5.8%;
+}

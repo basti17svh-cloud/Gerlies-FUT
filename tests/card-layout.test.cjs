@@ -8,14 +8,16 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const classCode=html.slice(html.indexOf('function cardClass('),html.indexOf('function itemBase('));
 const emblemsCode=html.slice(html.indexOf('function emblemsHTML('),html.indexOf('function playerClubLabel('));
 const rendererCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
+const positionsCode=html.slice(html.indexOf('function playerPositions('),html.indexOf('function detailChemHTML('));
+const positionLabelCode=html.split('\n').find(line=>line.startsWith('function positionLabel('));
 const css=fs.readFileSync(path.join(__dirname,'../card-layout.css'),'utf8');
 function context(){
  const ctx={esc:String,FOUNDER_PLAYER_ID:'footera-founder-bastian-gerlach',FOUNDER_BASTIAN_STATIC_SRC:'',MARCO_FOUNDER_PLAYER_ID:'footera-founder-marco-gerlach',resolvedPlayer:p=>p,isFounderItem:i=>['footera-founder-bastian-gerlach','footera-founder-marco-gerlach'].includes(i?.pid),isMomentumItem:i=>i?.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
-  positionLabel:p=>p==='GK'?'TW':p,cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
+  playerGender:()=> 'male',cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
   portraitHTML:()=>'<img src="portrait.png">',activeEvolutionForUid:()=>null};
- vm.createContext(ctx);vm.runInContext(classCode+emblemsCode+rendererCode,ctx);
+ vm.createContext(ctx);vm.runInContext(classCode+emblemsCode+positionsCode+positionLabelCode+rendererCode,ctx);
  return ctx;
 }
 const gerlach={id:'founder-preview',name:'B. Gerlach',position:'ST',ovr:88,nation:'Deutschland',team:'FC Gerlies',league:'Footera-Liga'};
@@ -37,6 +39,23 @@ test('all card types share the Founder information order and visible name/stat g
  }
  assert.match(css,/container-type:inline-size/);
  assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
+});
+
+test('extra positions use German labels, omit the displayed position and stay absent without alternatives',()=>{
+ const ctx=context(),p={...gerlach,position:'RW',alt:'LW, CAM, RW, LW'};
+ for(const item of [null,{variant:'special',eventName:'Team of the Week 3'},{variant:'special',eventName:'Legacy Event'},{variant:'special',eventType:'momentum'},{variant:'icon-mid'},{variant:'story'},{pid:ctx.MARCO_FOUNDER_PLAYER_ID,variant:'founder'}]){
+  const markup=ctx.cardHTML(p,item,true);
+  assert.match(markup,/class="card-alt-positions"[^>]*>LF · ZOM<\/div>/);
+  assert.ok(markup.indexOf('class="stats"')<markup.indexOf('class="card-alt-positions"'));
+ }
+ assert.match(ctx.cardHTML(p,null,true,'CAM'),/class="card-alt-positions"[^>]*>RF · LF<\/div>/);
+ assert.doesNotMatch(ctx.cardHTML({...p,alt:'RW, RW'},null,true),/card-alt-positions/);
+ assert.doesNotMatch(ctx.cardHTML({...gerlach,position:'GK'},null,true),/card-alt-positions/);
+ ctx.FOUNDER_BASTIAN_STATIC_SRC='data:image/webp;base64,test';
+ assert.match(ctx.cardHTML({...gerlach,id:ctx.FOUNDER_PLAYER_ID,alt:'CAM'},{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder'},true),/class="card-alt-positions"[^>]*>ZOM<\/div>/);
+ const founderOnCam=ctx.cardHTML({...gerlach,id:ctx.FOUNDER_PLAYER_ID,alt:'CAM'},{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder'},true,'CAM');
+ assert.match(founderOnCam,/class="founder-live-position">ZOM<\/span>/);
+ assert.match(founderOnCam,/class="card-alt-positions"[^>]*>ST<\/div>/);
 });
 
 test('approved clean skins are cached and the shared stats fit inside the card',()=>{
