@@ -61,7 +61,7 @@
  .home-hero-card[data-theme="momentum"]{min-height:330px}
 }
 @media(max-width:640px){
- .home-hero-card[data-theme="momentum"]{min-height:438px}
+ .home-hero-card[data-theme="momentum"]{min-height:360px}
  .home-momentum-roster{gap:4px}
  .home-momentum-count{margin-top:1px;font-size:8px}
 }
