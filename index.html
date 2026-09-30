@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.92</title>
+<title>Footera V19.93</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,7 +1470,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.92</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.93</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1997,6 +1997,8 @@ const PACKS=[
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0}
 ];
+// This account-only gift shares the ordinary pack's name, artwork and description.
+PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
 const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",fallback:{id:"277643",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",ovr:91,position:"RW",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/277643.png",pac:87,sho:85,pas:88,dri:94,def:40,phy:63,source:"fc27-totw-verified"}},{names:["David Raya","David Raya Martin","David Raya Martín"],eaId:"220901",ovr:89,position:"GK",fallback:{id:"220901",name:"David Raya",fullName:"David Raya Martín",ovr:89,position:"GK",team:"Arsenal FC",league:"Premier League",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/220901.png",pac:88,sho:87,pas:89,dri:89,def:60,phy:88,source:"fc27-totw-verified"}},{names:["Melchie Dumornay","Melchie Daëlle Dumornay"],eaId:"265898",ovr:89,position:"LW",fallback:{id:"265898",name:"Melchie Dumornay",fullName:"Melchie Dumornay",ovr:88,position:"LW",team:"OL Lyonnes",league:"Arkema Première Ligue",nation:"Haiti",face:"https://cdn.futwiz.com/assets/img/fc27/faces/265898.png",pac:93,sho:86,pas:81,dri:91,def:62,phy:75,source:"fc27-totw-verified"}},
  {names:["Lucy Bronze"],eaId:"227246",ovr:86,position:"CB",fallback:{id:"227246",name:"Lucy Bronze",fullName:"Lucy Bronze",ovr:85,position:"CB",team:"Chelsea",league:"Barclays Women's Super League",nation:"England",face:"https://cdn.futwiz.com/assets/img/fc27/faces/227246.png",pac:73,sho:70,pas:82,dri:82,def:86,phy:88,source:"fc27-totw-verified"}},{names:["marcus thuram"],ovr:86,position:"ST"},{names:["felix nmecha"],ovr:86,position:"CM"},{names:["Esmee Brugts"],eaId:"267530",ovr:85,position:"LB",fallback:{id:"267530",name:"Esmee Brugts",fullName:"Esmee Brugts",ovr:84,position:"LB",team:"FC Barcelona",league:"Liga F Moeve",nation:"Netherlands",face:"https://cdn.futwiz.com/assets/img/fc27/faces/267530.png",pac:88,sho:75,pas:80,dri:82,def:82,phy:76,source:"fc27-totw-verified"}},
@@ -4736,6 +4738,7 @@ function generatePack(id,tradeable=true){
   return[{...source.item,uid:uid(),tradeable,acquired:Date.now()}]
  }
  const p=PACKS.find(x=>x.id===id),arr=[],used=new Set();if(!p)return[];
+ if(p.recipientSaveId)return generateMarcoSurprisePack(p);
  const take=(min,max)=>{for(let tries=0;tries<120;tries++){const b=weightedPlayer(min,max);if(b&&!used.has(String(b.id))){used.add(String(b.id));return b}}const b=PLAYERS.find(x=>x.ovr>=min&&x.ovr<=max&&!used.has(String(x.id)));if(b)used.add(String(b.id));return b||null};
  const specs=Array.isArray(p.composition)&&p.composition.length?p.composition.flatMap(c=>Array.from({length:c.count},()=>({min:c.min,max:c.max,quality:c.quality}))):Array.from({length:p.count},()=>({min:p.min,max:p.max,quality:p.type}));
  let guaranteeSlot=-1;if(p.guarantee){guaranteeSlot=specs.findIndex(x=>x.max>=p.guarantee);if(guaranteeSlot<0)guaranteeSlot=0}
@@ -4743,6 +4746,17 @@ function generatePack(id,tradeable=true){
  if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase();if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,tradeable)}}
  let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
  return arr.slice(0,p.count)
+}
+function generateMarcoSurprisePack(pack){
+ if(state.profile?.saveId!==pack.recipientSaveId||Number(state.packs[pack.id]||0)!==1)return[];
+ const henry=MID_ICON_BASES.find(p=>p.futwizId==="1625"),matthaus=MID_ICON_BASES.find(p=>p.futwizId==="238435"),olise=P_BY_ID.get("247827");
+ if(!henry||!matthaus||!olise)return[];
+ const fixed=[makeMidIconItem(henry,true),makeMidIconItem(matthaus,true),makeMomentumItem(olise,true)];
+ if(fixed.some(item=>!item))return[];
+ const guaranteedIds=new Set(fixed.map(item=>String(item.pid)));
+ const random=generatePack("goldplayers",true).filter(item=>!guaranteedIds.has(String(item.pid))).slice(0,9);
+ if(random.length!==9)return[];
+ return [...fixed,...random]
 }
 function renderStore(){
  const promo=storeTab==="promo",reset=nextPromoReset(new Date(),19);
@@ -4763,11 +4777,11 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!founderRuleForPack(p.id)||state.profile?.saveId===founderRuleForPack(p.id).saveId));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||state.profile?.saveId===founderRuleForPack(p.id).saveId));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
 $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(state.profile?.saveId!==rule.saveId||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||state.profile?.saveId!==rule.saveId||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");pendingPack=items;pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();if(founder)flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||state.profile?.saveId!==rule.saveId||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");pendingPack=items;pendingResolved=new Set();if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();if(founder||PACKS.find(p=>p.id===id)?.recipientSaveId)flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -7174,7 +7188,8 @@ $("friendTeamModalBody").addEventListener("click",e=>{const b=e.target.closest("
 
 
 const DIRECT_REWARDS=Object.freeze({
- "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"}]
+ "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"}],
+ "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 function grantDirectRewards(){
  const saveId=String(state.profile?.saveId||"").trim().toUpperCase(),rewards=DIRECT_REWARDS[saveId]||[];
@@ -7192,7 +7207,7 @@ function grantDirectRewards(){
    granted.push(reward)
   }
  }
- if(granted.length)save();
+ if(granted.length){save();flushSave()}
  return granted
 }
 
@@ -7344,7 +7359,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.92";
+const GFUT_BUILD="V19.93";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7362,7 +7377,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1992",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1993",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

@@ -22,7 +22,7 @@ function app(saved=new Map()){
   generatePack:()=>[{uid:'pack-1',pid:'1',tradeable:true},{uid:'pack-2',pid:'2',tradeable:true}],
   ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},resetBoardIntro(){},resetWalkoutTunnel(){},PACKS:[{id:'gold',name:'Gold Pack'}],
   $:el,packDuplicateMap:()=>new Map([[0,false],[1,false]]),displayBase:item=>({name:`Spieler ${item.pid}`,ovr:75}),
-  cardHTML:()=>'<div>Karte</div>',quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
+  cardHTML:player=>`<div>${player.name}</div>`,quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
   FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',founderRuleForPack:()=>undefined,isFounderItem:()=>false,
  };
  vm.createContext(ctx);
