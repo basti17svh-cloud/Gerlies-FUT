@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.85</title>
+<title>Footera V19.86</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1447,7 +1447,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.85</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.86</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1939,10 +1939,12 @@ const SEASON_REWARDS=[
  {level:4,sp:1800,reward:{pack:"gold",qty:1}},{level:5,sp:2800,reward:{points:100}},{level:6,sp:4000,reward:{pack:"82",qty:1}},
  {level:7,sp:5500,reward:{coins:4000}},{level:8,sp:7500,reward:{pack:"goldplayers",qty:1}},{level:9,sp:10000,reward:{points:150}},{level:10,sp:13500,reward:{coins:12000,pack:"gold",qty:1}}
 ];
-// Season 1's two unique, free-track Story players. Later seasons get their own cast.
+// Season 1 Story players. Free and Premium tracks each get an exclusive player at levels 15 and 30.
 const STORY_PASS_PLAYERS=Object.freeze({
- "s1-15":{season:"s1",level:15,name:"Ermedin Demirović",chapter:"Aufbruch",rating:84,position:"ST",stats:[78,84,75,81,44,82]},
- "s1-30":{season:"s1",level:30,name:"Kobbie Mainoo",chapter:"Durchbruch",rating:85,position:"CM",stats:[75,72,82,86,78,78]}
+ "s1-15":{season:"s1",track:"free",level:15,name:"Ermedin Demirović",chapter:"Aufbruch",rating:84,position:"ST",stats:[78,84,75,81,44,82]},
+ "s1-premium-15":{season:"s1",track:"premium",level:15,name:"Antonio Nusa",aliases:["Antonio Eromonsele Nordby Nusa"],chapter:"Tempo",rating:85,position:"LW",stats:[91,82,82,89,44,72]},
+ "s1-30":{season:"s1",track:"free",level:30,name:"Kobbie Mainoo",chapter:"Durchbruch",rating:85,position:"CM",stats:[75,72,82,86,78,78]},
+ "s1-premium-30":{season:"s1",track:"premium",level:30,name:"Renato Veiga",aliases:["Renato Palma Veiga"],chapter:"Vollendung",rating:86,position:"CB",stats:[80,72,83,82,87,88]}
 });
 const EVOLUTION_POOL=[{"id":"breakthrough","name":"Breakthrough","subtitle":"Basis-Karte entwickeln","group":"core","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":79,"statCaps":{"pac":83,"sho":80,"pas":80,"dri":83,"def":78,"phy":80},"req":{"maxOvr":74,"maxPac":88,"maxPlaystyles":6},"stages":[{"matches":3,"wins":0,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2,"phy":2},"playstyle":"Quick Step","label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 3"}]},{"id":"engine_room","name":"Engine Room","subtitle":"Kompletter Mittelfeldmotor","group":"core","signupDays":7,"completionDays":14,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":84,"sho":81,"pas":85,"dri":84,"def":82,"phy":83},"req":{"maxOvr":79,"positions":["CM","CDM","CAM","LM","RM"],"maxPac":88,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":0,"stats":{"pac":1,"pas":2,"def":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":1,"pas":2,"dri":2,"phy":1},"playstyle":"Tiki Taka","label":"Stufe 3"}]},{"id":"finisher","name":"Kaltschnäuziger Abschluss","subtitle":"Stürmer-Evolution","group":"attack","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":88,"sho":86,"pas":79,"dri":85,"def":55,"phy":82},"req":{"maxOvr":79,"positions":["ST","CF"],"maxPac":89,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"sho":2,"dri":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pac":1,"sho":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":2,"phy":2},"playstyle":"Finesse Shot","label":"Stufe 3"}]},{"id":"wide_threat","name":"Flügelgefahr","subtitle":"Schneller Flügelspieler","group":"attack","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":90,"sho":81,"pas":82,"dri":86,"def":65,"phy":76},"req":{"maxOvr":78,"positions":["LW","RW","LM","RM"],"maxPac":90,"maxPlaystyles":6},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"playstyle":"Rapid","label":"Stufe 3"}]},{"id":"aerial_nine","name":"Lufthoheit","subtitle":"Kopfballstarker Neuner","group":"attack","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":82,"sho":84,"pas":75,"dri":79,"def":58,"phy":86},"req":{"maxOvr":76,"positions":["ST"],"maxPac":84,"maxPlaystyles":6},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"phy":2,"sho":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"sho":2,"phy":2},"playstyle":"Power Header","label":"Stufe 2"}]},{"id":"box_to_box","name":"Box-to-Box Projekt","subtitle":"Allrounder im Zentrum","group":"mid","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":83,"sho":80,"pas":84,"dri":83,"def":83,"phy":85},"req":{"maxOvr":79,"positions":["CM","CDM"],"maxPac":86,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"pas":1,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"dri":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":2,"pas":2,"dri":1,"def":1},"playstyle":"Relentless","label":"Stufe 3"}]},{"id":"creator","name":"Kreativzentrale","subtitle":"Spielmacher-Evolution","group":"mid","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":82,"sho":80,"pas":87,"dri":86,"def":70,"phy":77},"req":{"maxOvr":79,"positions":["CM","CAM"],"maxPac":86,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2,"sho":1},"playstyle":"Incisive Pass","label":"Stufe 2"}]},{"id":"holding_mid","name":"Anker im Mittelfeld","subtitle":"Defensiver Sechser","group":"mid","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":80,"sho":72,"pas":81,"dri":78,"def":85,"phy":85},"req":{"maxOvr":77,"positions":["CDM","CM"],"maxPac":84,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pac":1,"def":2,"phy":1},"playstyle":"Intercept","label":"Stufe 3"}]},{"id":"defensive_wall","name":"Defensive Wall","subtitle":"Innenverteidiger aufwerten","group":"def","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":82,"sho":65,"pas":79,"dri":77,"def":87,"phy":87},"req":{"maxOvr":79,"positions":["CB"],"maxPac":84,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pac":1,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pas":2,"def":2},"playstyle":"Anticipate","label":"Stufe 3"}]},{"id":"fullback_lab","name":"Schienenläufer","subtitle":"Außenverteidiger modernisieren","group":"def","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":89,"sho":73,"pas":82,"dri":83,"def":83,"phy":81},"req":{"maxOvr":78,"positions":["LB","RB","LWB","RWB"],"maxPac":90,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pac":1,"pas":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"dri":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"pas":1,"def":1},"playstyle":"Whipped Pass","label":"Stufe 3"}]},{"id":"keeper_project","name":"Letzte Instanz","subtitle":"Torwart-Evolution","group":"def","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":80,"sho":80,"pas":81,"dri":84,"def":80,"phy":84},"req":{"maxOvr":77,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"dri":2,"phy":1},"playstyle":"Footwork","label":"Stufe 3"}]}];
 const EVOLUTIONS=EVOLUTION_POOL;
@@ -3014,8 +3016,12 @@ function displayBase(item){const b=itemBase(item);if(!b)return null;const moment
 function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0,displayRating=Number(opts.displayRating||0),eventStats=Array.isArray(opts.eventStats)?opts.eventStats.map(Number):null;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",eventType:opts.eventType||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",overridePosition:opts.overridePosition||"",displayRating:Number.isFinite(displayRating)&&displayRating>0?displayRating:0,eventStats,rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||""),clubGoals:Math.max(0,Number(opts.clubGoals||0)),clubAssists:Math.max(0,Number(opts.clubAssists||0))}}
 function storyBase(key){
  const spec=STORY_PASS_PLAYERS[key];if(!spec)return null;
- const wanted=normalizeKey(spec.name);
- return PLAYERS.find(p=>normalizeKey(p.fullName)===wanted||normalizeKey(p.name)===wanted)||null
+ const aliases=[spec.name,...(spec.aliases||[])].map(normalizeKey).filter(Boolean);
+ const exact=PLAYERS.find(p=>{const keys=[p.fullName,p.name,[p.firstName,p.lastName].filter(Boolean).join(" ")].map(normalizeKey).filter(Boolean);return aliases.some(a=>keys.includes(a))});
+ if(exact)return exact;
+ const surname=normalizeKey(spec.name).split(" ").filter(Boolean).pop();if(!surname)return null;
+ const matches=PLAYERS.filter(p=>[p.fullName,p.name].map(normalizeKey).some(k=>k===surname||k.endsWith(" "+surname)));
+ return matches.length===1?matches[0]:null
 }
 function storyPreviewCard(key){
  const spec=STORY_PASS_PLAYERS[key],base=storyBase(key);if(!spec)return"";
@@ -3044,7 +3050,8 @@ function grantStoryPassPlayer(key){
 }
 function reconcileStoryPassPlayers(){
  for(const [key,spec] of Object.entries(STORY_PASS_PLAYERS)){
-  if(state.seasonPass?.key===spec.season&&state.seasonPass.freeClaims?.[spec.level])grantStoryPassPlayer(key)
+  const track=spec.track==="premium"?"premium":"free",claims=track==="premium"?state.seasonPass?.premiumClaims:state.seasonPass?.freeClaims;
+  if(state.seasonPass?.key===spec.season&&claims?.[spec.level])grantStoryPassPlayer(key)
  }
  deliverStoryPassRewards()
 }
@@ -7200,7 +7207,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.85";
+const GFUT_BUILD="V19.86";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7218,7 +7225,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1985",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1986",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
