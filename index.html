@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.86</title>
+<title>Footera V19.87</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -203,6 +203,23 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .sbc-feature-footer{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 15px 11px 17px;border-top:1px solid #263b36;background:rgba(3,8,7,.28)}.sbc-feature-footer span{color:#a0ada8;font-size:7px}.sbc-feature-footer b{color:#f2f7f4;font-size:8px}.sbc-feature-arrow{font-size:20px;color:#d9ff3e;font-weight:400}
 .sbc-feature-card.detail{cursor:default}.sbc-feature-card.detail .sbc-feature-arrow{display:none}.sbc-set-detail-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px}.sbc-set-detail-nav button{width:40px;height:40px;border:1px solid #34463f;border-radius:10px;background:#101915;color:#fff;font-size:21px}.sbc-set-detail-nav strong{display:block;font-size:14px}.sbc-set-detail-nav span{display:block;margin-top:2px;color:#879791;font-size:7px}.sbc-set-list{display:grid;gap:9px}
 @media(max-width:560px){.sbc-feature-main{grid-template-columns:minmax(0,1fr) 128px;min-height:210px;padding:13px 12px 11px 14px}.sbc-feature-copy h3{font-size:17px}.sbc-feature-player .card-shell{width:122px}.sbc-feature-pack img{width:104px}.sbc-feature-footer{padding-left:14px;padding-right:12px}}
+/* V19.87 — SBC-Gruppendetails: klare Teil-SBCs, Anforderungen, Fortschritt und Rewards. */
+.sbc-set-summary{position:relative;margin-bottom:11px;padding:13px 14px;border:1px solid #355048;border-radius:15px;background:radial-gradient(circle at 100% 0,rgba(78,241,185,.09),transparent 38%),linear-gradient(145deg,#101a17,#0a1210);overflow:hidden}
+.sbc-set-summary.top-partien{border-color:#5d522f;background:radial-gradient(circle at 100% 0,rgba(255,224,120,.10),transparent 38%),linear-gradient(145deg,#1b180f,#0b1210)}
+.sbc-set-summary:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#4ef1b9,#d8ff3e)}.sbc-set-summary.top-partien:before{background:linear-gradient(#ffe078,#d8ff3e)}
+.sbc-set-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.sbc-set-summary-kicker{display:block;color:#86f6bf;font-size:6px;font-weight:1000;letter-spacing:.1em}.sbc-set-summary.top-partien .sbc-set-summary-kicker{color:#ffe078}
+.sbc-set-summary h3{margin:4px 0 3px;font-size:16px}.sbc-set-summary p{margin:0;color:#8ea099;font-size:7px;line-height:1.45}.sbc-set-expiry{flex:0 0 auto;padding:6px 8px;border-radius:999px;border:1px solid #3e5c50;background:#10231b;color:#a9f7c7;font-size:6px;font-weight:1000;white-space:nowrap}.sbc-set-summary.top-partien .sbc-set-expiry{border-color:#685c31;background:#29220f;color:#ffe7a1}
+.sbc-set-progress{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-top:11px}.sbc-set-progress strong{font-size:11px}.sbc-set-progress span{font-size:6px;color:#879991}.sbc-set-progress-bar{height:7px;border-radius:99px;background:#2e3d37;overflow:hidden}.sbc-set-progress-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4ef1b9,#d8ff3e)}
+.sbc-set-bonus{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.07)}.sbc-set-bonus div{min-width:0}.sbc-set-bonus small{display:block;color:#8a9a93;font-size:5.5px;font-weight:900;letter-spacing:.08em}.sbc-set-bonus b{display:block;margin-top:2px;color:#f4f7f5;font-size:7.5px}.sbc-set-bonus em{font-style:normal;color:#99efb8;font-size:6px;font-weight:1000;text-align:right}
+.sbc-part-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:11px;align-items:center;padding:13px;border:1px solid #30443c;border-radius:14px;background:linear-gradient(145deg,#101915,#0b1210);overflow:hidden}
+.sbc-part-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#53645c}.sbc-part-card.ready:before{background:#d8ff3e}.sbc-part-card.completed:before{background:#4ef1b9}.sbc-part-card.completed{border-color:#315e49;background:linear-gradient(145deg,#102019,#0b1511);opacity:.82}
+.sbc-part-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.sbc-part-index{padding:4px 6px;border-radius:999px;border:1px solid #3c5047;background:#142019;color:#9fafaa;font-size:5.5px;font-weight:1000}.sbc-part-state{padding:4px 6px;border-radius:999px;border:1px solid #43534c;background:#141d19;color:#9eaaa5;font-size:5.5px;font-weight:1000}.sbc-part-state.ready{border-color:#6d7f26;background:#262d0f;color:#e7ff77}.sbc-part-state.done{border-color:#2f7655;background:#0f281b;color:#9df2bd}
+.sbc-part-copy h3{margin:7px 0 3px;font-size:13px}.sbc-part-copy p{margin:0;color:#84948d;font-size:6.5px;line-height:1.4}
+.sbc-part-req-title{margin-top:9px;color:#76877f;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.sbc-part-reqs{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.sbc-part-req{padding:5px 6px;border-radius:8px;border:1px solid #344940;background:#111d18;color:#c7d2cd;font-size:6px;font-weight:850}.sbc-part-req.ok{border-color:#347454;background:#10251a;color:#9cf1b9}
+.sbc-part-prep{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;margin-top:9px}.sbc-part-prep span,.sbc-part-prep b{font-size:5.8px}.sbc-part-prep span{color:#82928b}.sbc-part-prep b{color:#c8d5cf}.sbc-part-prep-track{height:5px;border-radius:99px;background:#2b3833;overflow:hidden}.sbc-part-prep-track i{display:block;height:100%;background:linear-gradient(90deg,#4e8570,#d8ff3e);border-radius:inherit}
+.sbc-part-reward{display:grid;gap:6px;place-items:center;text-align:center}.sbc-part-reward img{width:80px;max-height:100px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.35))}.sbc-part-reward strong{font-size:6.5px;line-height:1.25;color:#ffe79a}.sbc-part-reward button{width:100%;min-height:35px;font-size:6.5px}.sbc-part-reward .done-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid #3c775c;background:#123021;color:#a8f7c7;font-size:16px}
+@media(max-width:560px){.sbc-set-summary{padding:11px 11px 11px 13px}.sbc-set-summary h3{font-size:14px}.sbc-set-summary-top{gap:8px}.sbc-set-expiry{font-size:5.5px}.sbc-part-card{grid-template-columns:minmax(0,1fr) 94px;gap:8px;padding:11px}.sbc-part-copy h3{font-size:11.5px}.sbc-part-reward img{width:68px;max-height:86px}.sbc-part-req{font-size:5.5px;padding:4px 5px}}
+
 .sbc-builder{max-width:760px;margin:0 auto}.sbc-builder-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-bottom:10px}.sbc-builder-back{width:40px;height:40px;border:1px solid #34454d;border-radius:9px;background:#101a1e;color:#fff;font-size:19px}.sbc-builder-title strong{display:block;font-size:14px}.sbc-builder-title span{display:block;margin-top:3px;color:#85959d;font-size:7px}.sbc-builder-reward{padding:6px 8px;border-radius:8px;border:1px solid #5f5230;background:#1c190f;color:#ffe28a;font-size:7px;font-weight:950;text-align:right}
 .sbc-condition-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:5px;margin-bottom:8px}.sbc-condition{padding:7px 8px;border:1px solid #34444c;border-radius:8px;background:#0d161a}.sbc-condition b{display:block;font-size:9px}.sbc-condition span{display:block;margin-top:2px;color:#80919a;font-size:5.5px;text-transform:uppercase}.sbc-condition.ok{border-color:#336f53;background:#0e2118}.sbc-condition.ok b{color:#9df4b8}
 .sbc-editor-pitch{position:relative;aspect-ratio:.72;min-height:510px;border:1px solid #2e6061;border-radius:17px;overflow:hidden;background:radial-gradient(circle at 50% 49%,transparent 0 13%,rgba(255,255,255,.14) 13.3% 13.8%,transparent 14.1%),linear-gradient(90deg,transparent 49.7%,rgba(255,255,255,.15) 49.7% 50.3%,transparent 50.3%),repeating-linear-gradient(0deg,#08634c 0 11%,#07563f 11% 22%);box-shadow:inset 0 0 34px rgba(0,0,0,.28)}
@@ -1447,7 +1464,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.86</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.87</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5651,8 +5668,32 @@ function sbcRewardPackLabel(reward){
  if(reward?.pack)return sbcPackName(reward.pack);
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
 }
+function sbcRequirementChips(s,stats){
+ const raw=String(s.req||"").split("·").map(x=>x.trim()).filter(Boolean);
+ if(!raw.length)return"";
+ const summary=sbcRequirementSummary(s,stats),statusByLabel=new Map(summary.map(x=>[x.label,x.ok]));
+ return raw.map((label,index)=>{
+  let ok=false;
+  if(/^11 Spieler/i.test(label)||/^11×/i.test(label))ok=stats.count===s.count;
+  else if(/GES/i.test(label))ok=stats.avgOk&&stats.count===s.count;
+  else if(/Liga/i.test(label)&&s.sameLeague)ok=stats.leagueOk&&stats.count===s.count;
+  else if(/Ligen/i.test(label))ok=stats.minLeaguesOk;
+  else if(/Vereine/i.test(label))ok=stats.minClubsOk;
+  else if(/selten/i.test(label))ok=stats.minRareOk;
+  else if(/Gold/i.test(label))ok=stats.minGoldOk;
+  else if(/gleicher Verein/i.test(label))ok=stats.maxSameClubOk;
+  else if(index===0)ok=stats.count===s.count;
+  return `<span class="sbc-part-req ${ok?"ok":""}">${ok?"✓ ":""}${esc(label)}</span>`
+ }).join("")
+}
 function sbcOverviewCard(s){
- const stats=sbcDraftStats(s),pct=Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100),rewardName=sbcRewardPackLabel(s.reward),done=sbcIsCompleted(s);
+ const stats=sbcDraftStats(s),done=sbcIsCompleted(s),ready=!done&&stats.ok,pct=done?100:Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100),rewardName=sbcRewardPackLabel(s.reward);
+ if(s.groupSet){
+  const rows=allActiveSBCs().filter(x=>x.groupSet===s.groupSet),idx=Math.max(0,rows.findIndex(x=>x.id===s.id)),total=Math.max(1,rows.length);
+  const rewardVisual=s.reward?.pack?`<img src="${packArtSrc(s.reward.pack)}" alt="${esc(rewardName)}" loading="lazy">`:"";
+  const stateClass=done?"done":ready?"ready":"",stateText=done?"ABGESCHLOSSEN":ready?"ABGABEBEREIT":"OFFEN";
+  return `<article class="sbc-part-card ${done?"completed":ready?"ready":""}"><div class="sbc-part-copy"><div class="sbc-part-head"><span class="sbc-part-index">TEIL-SBC ${idx+1}/${total}</span><span class="sbc-part-state ${stateClass}">${stateText}</span>${s.live&&s.expiresAt&&!done?`<span class="sbc-part-state">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-part-req-title">ANFORDERUNGEN</div><div class="sbc-part-reqs">${sbcRequirementChips(s,stats)}</div><div class="sbc-part-prep"><span>Vorbereitung</span><div class="sbc-part-prep-track"><i style="width:${pct}%"></i></div><b>${done?"✓":`${stats.count}/${s.count}`}</b></div></div><div class="sbc-part-reward">${done?'<span class="done-mark">✓</span>':rewardVisual}<strong>${esc(rewardName)}</strong><button class="${ready?"primary":"secondary"}" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":ready?"Abgeben":"Öffnen"}</button></div></article>`
+ }
  const rewardArt=s.reward?.pack?`<div class="sbc-hub-pack"><img src="${packArtSrc(s.reward.pack)}" alt="${esc(rewardName)}" loading="lazy"></div><span class="sbc-reward-name">${esc(rewardName)}</span>`:`<span class="sbc-reward-name">${esc(rewardName)}</span>`;
  return `<article class="sbc-hub-card ${done?"completed":""}"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta"><span class="sbc-hub-chip">${esc(s.req)}</span><span class="sbc-hub-chip ${stats.ok||done?"done":""}">${done?"Abgeschlossen":`${stats.count}/${s.count} Spieler`}</span><span class="sbc-hub-chip">${done?"✓":`${pct}% vorbereitet`}</span>${s.live&&s.expiresAt&&!done?`<span class="sbc-hub-chip">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div></div><div class="sbc-hub-reward">${rewardArt}<button class="secondary" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":"Öffnen"}</button></div></article>`
 }
@@ -5856,8 +5897,10 @@ function sbcGroupedRows(rows){
 }
 function sbcSetDetailHTML(rows){
  if(!rows?.length)return"";
- const sample=rows[0],title=sample.eventSbc?(sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien";
- return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${rows.filter(sbcIsCompleted).length}/${rows.length} SBCs abgeschlossen</span></div></div>${sbcFeatureGroupCard(rows,true)}<div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
+ const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
+ const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
+ const bonusState=claimed?"ERHALTEN":done>=total?"FREIGESCHALTET":`NOCH ${total-done} SBC${total-done===1?"":"s"}`;
+ return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
 }
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
@@ -7207,7 +7250,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.86";
+const GFUT_BUILD="V19.87";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7225,7 +7268,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1986",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1987",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
