@@ -2197,8 +2197,8 @@ function mergeTotwWeekBase(team,base,a,index){
   nationFlag:fallback.nationFlag||base?.nationFlag||"",nationCode:fallback.nationCode||base?.nationCode||"",
   clubLogo:fallback.clubLogo||base?.clubLogo||"",teamId:fallback.teamId||base?.teamId||"",
   leagueLogo:fallback.leagueLogo||base?.leagueLogo||"",leagueId:fallback.leagueId||base?.leagueId||"",
-  pac:Number(fallback.pac||base?.pac||0),sho:Number(fallback.sho||base?.sho||0),pas:Number(fallback.pas||base?.pas||0),
-  dri:Number(fallback.dri||base?.dri||0),def:Number(fallback.def||base?.def||0),phy:Number(fallback.phy||base?.phy||0),
+  pac:Number(info.stats?.[0]??fallback.pac??base?.pac??0),sho:Number(info.stats?.[1]??fallback.sho??base?.sho??0),pas:Number(info.stats?.[2]??fallback.pas??base?.pas??0),
+  dri:Number(info.stats?.[3]??fallback.dri??base?.dri??0),def:Number(info.stats?.[4]??fallback.def??base?.def??0),phy:Number(info.stats?.[5]??fallback.phy??base?.phy??0),
   source:fallback.source||base?.source||"fc27-totw-preview"
  };
  const tagged={...seed,_totwWeekId:team?.id||0,_totwWeekName:team?.name||"Team of the Week",_totwRating:Number(info.ovr||seed.ovr||0),_totwPosition:info.position||seed.position};
