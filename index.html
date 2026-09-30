@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.81</title>
+<title>Footera V19.82</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1418,7 +1418,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.81</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.82</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7094,9 +7094,11 @@ function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();if
 function protectLockedBack(message,kind){history.pushState(uiState(kind),"",location.href);toast(message)}
 function handleAppBack(targetState){
   if($("usernameRequiredModal")?.classList.contains("active")&&!String(state.profile?.username||"").trim()){protectLockedBack("Bitte zuerst einen Benutzernamen festlegen.","username-required");return true}
+  // Modale Detailansichten (z. B. Spielerprofil aus einem geöffneten Pack) haben Vorrang:
+  // Zurück schließt zuerst die aktuelle Detailansicht und kehrt sofort zu den Pack-Ergebnissen zurück.
+  if(closeTopUiLayer())return true;
   if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
   if($("results")?.classList.contains("active")&&pendingResolved.size!==pendingPack.length){protectLockedBack("Pack-Inhalt zuerst vollständig zuweisen.","pack-results");return true}
-  if(closeTopUiLayer())return true;
  if(currentViewId()==="sbcView"&&activeSbcId){
   pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcId=null;renderSBC();return true
  }
@@ -7161,7 +7163,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.81";
+const GFUT_BUILD="V19.82";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
