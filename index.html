@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.84</title>
+<title>Footera V19.85</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1191,6 +1191,35 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .pass-slide-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-66%);width:30px;height:42px;border:0;background:rgba(4,9,7,.36);color:#edf5f0;font-size:24px;border-radius:9px}.pass-slide-arrow.prev{left:0}.pass-slide-arrow.next{right:0}.pass-slide-dots{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;gap:6px}.pass-slide-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#53615b}.pass-slide-dots button.active{background:var(--lime);box-shadow:0 0 9px rgba(216,255,62,.5)}
 .pass-level-card-action{display:flex;justify-content:center;margin-top:6px}.pass-claim-button{width:100%;max-width:330px}.pass-claim-state{display:grid;place-items:center;min-height:34px;color:#82928a;font-size:7px;font-style:normal;font-weight:1000;letter-spacing:.05em}.pass-claim-state.done{color:#8df2b6}
 @media(max-width:600px){.pass-level-row{grid-template-columns:40px minmax(0,1fr);gap:7px}.pass-level-rail span{width:34px;height:34px;font-size:12px}.pass-level-card{padding:10px}.pass-reward-slide{padding-left:12px;padding-right:12px}.pass-reward-player .card-shell{width:164px}.pass-reward-visual{min-height:128px}.pass-reward-player{min-height:226px}.pass-reward-currency .currency-icon{width:46px;height:46px}.pass-reward-currency .currency-amount{font-size:25px}.pass-slide-arrow{width:27px;height:38px;font-size:21px}}
+/* V19.85 — Season Pass Feinschliff: pro Stufe nur ein sichtbarer Pfad, klare Swipe-Rewards. */
+.pass-level-card{padding:0;border-color:#35483f;background:linear-gradient(155deg,#111b17,#0b1210);overflow:hidden}
+.pass-level-card.story-level{border-color:#6b54ae;background:radial-gradient(circle at 50% 0,rgba(160,111,255,.12),transparent 36%),linear-gradient(155deg,#171326,#0b1210)}
+.pass-level-card-head{padding:11px 12px 8px;margin:0}.pass-level-card-head .story-badge{border-color:#674ea7;background:#22183a;color:#dccbff}
+.pass-path-toggle{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:0 10px 9px}
+.pass-path-toggle button{min-height:34px;border:1px solid #34473f;border-radius:9px;background:#111a16;color:#8ea098;font-size:7px;font-weight:1000;letter-spacing:.04em}
+.pass-path-toggle button.active{border-color:#4e7862;background:#173126;color:#a9ffd0;box-shadow:inset 0 0 0 1px rgba(126,255,191,.08)}
+.pass-path-toggle button[data-pass-path-toggle="premium"].active{border-color:#786936;background:#2b2512;color:#ffe48c;box-shadow:inset 0 0 0 1px rgba(255,224,120,.08)}
+.pass-path-panels{min-width:0}.pass-path-panel{display:none;min-width:0;padding:10px 10px 11px;border-top:1px solid rgba(255,255,255,.06);background:radial-gradient(circle at 50% 0,rgba(78,241,185,.055),transparent 42%)}
+.pass-path-panel.active{display:block}.pass-path-panel.premium{background:radial-gradient(circle at 50% 0,rgba(255,220,104,.085),transparent 44%)}.pass-path-panel.story-reward{background:radial-gradient(circle at 50% 0,rgba(164,115,255,.13),transparent 45%)}
+.pass-path-panel.claimed{opacity:.76}.pass-path-panel.locked .pass-reward-visual{filter:saturate(.78);opacity:.78}
+.pass-reward-slider{padding-bottom:27px}.pass-reward-slide{padding-top:0}.pass-reward-visual{min-height:128px}.pass-reward-name{font-size:12px}.pass-reward-sub{font-size:6.5px}
+.pass-reward-pack{min-height:134px}.pass-reward-pack img{width:122px;max-height:148px}.pass-reward-currency{min-height:124px}.pass-reward-sp{min-height:124px}
+.pass-reward-player{min-height:225px}.pass-reward-player .card-shell{width:172px}
+.pass-slide-footer{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;min-height:16px}
+.pass-slide-dots{position:static;left:auto;bottom:auto;transform:none}.pass-slide-count{color:#7f9088;font-size:6px;font-weight:900;min-width:19px}
+.pass-slide-arrow{top:48%;background:rgba(4,9,7,.5);border:1px solid rgba(255,255,255,.06)}.pass-slide-arrow:disabled{opacity:.3}
+.pass-level-card-action{margin-top:4px}.pass-claim-button{min-height:38px}.pass-claim-state{min-height:35px}
+.pass-level-row.current .pass-level-card{border-color:#8ea743;box-shadow:0 0 0 1px rgba(216,255,62,.08),0 12px 28px rgba(0,0,0,.2)}
+.pass-level-row.current .pass-level-rail span{background:#65702d;color:#f7ffd7}
+@media(min-width:720px){.pass-level-cards{max-width:520px}.pass-level-row{grid-template-columns:52px minmax(0,520px)}}
+@media(max-width:600px){
+ .pass-panel{padding:11px}.pass-top h3{font-size:18px}.pass-top p{font-size:8px}.pass-time{font-size:7px}.pass-status{font-size:7px;align-items:flex-start}
+ .pass-level-row{grid-template-columns:38px minmax(0,1fr);gap:6px;padding-bottom:11px}.pass-level-rail:before{bottom:-11px}.pass-level-rail span{width:32px;height:32px;font-size:11px;top:84px}
+ .pass-level-card-head{padding:9px 10px 7px}.pass-level-card-head>div span{font-size:11px}.pass-path-toggle{padding:0 8px 8px}.pass-path-toggle button{min-height:32px;font-size:6.5px}
+ .pass-path-panel{padding:8px 8px 9px}.pass-reward-player{min-height:212px}.pass-reward-player .card-shell{width:158px}.pass-reward-pack img{width:112px}.pass-reward-name{font-size:11px}
+ .pass-slide-arrow{width:26px;height:36px;font-size:20px}.pass-upgrade{padding:10px}.pass-upgrade strong{font-size:10px}.pass-upgrade p{font-size:7px}
+}
+
 
 .home-action.season{--tile:#ffda72;border-color:rgba(255,218,114,.32);background:radial-gradient(circle at 10% 50%,rgba(255,218,114,.13),transparent 42%),linear-gradient(145deg,#18190e,#0a100e)}
 .home-action .ready-count,.more-item .ready-count{position:absolute;top:6px;right:6px;z-index:4;display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:#dfff45;color:#152012;font-size:10px;font-weight:1000;box-shadow:0 2px 10px #0007}
@@ -1418,7 +1447,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.84</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.85</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7171,7 +7200,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.84";
+const GFUT_BUILD="V19.85";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7189,7 +7218,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1979",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1985",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
