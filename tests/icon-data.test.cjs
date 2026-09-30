@@ -13,6 +13,7 @@ function setup(){
  vm.createContext(ctx);
  vm.runInContext([
   html.match(/^function normalizeKey\(v\).*$/m)[0],
+  html.match(/^const MARKET_PRICE_CURVE=.*$/m)[0],
   between('const MID_ICON_DATA=','function randomMidIconBase()'),
   between('function restoreSyntheticPlayerIds()','function bestEaTotwAsset('),
   between('function marketPlayStyleCount(','function marketPreviewItem('),
@@ -24,7 +25,7 @@ function setup(){
  ].join('\n'),ctx);
  ctx.displayBase=item=>ctx.P_BY_ID.get(item.pid);
  ctx.itemRating=item=>ctx.P_BY_ID.get(item.pid)?.ovr||0;
- return{ctx,api:vm.runInContext('({MID_ICON_BASES,ICON_LEGACY_ALIASES,restoreSyntheticPlayerIds,marketPriceForRating,portraitCandidates,createMarketListing,transferSuggestedPrices})',ctx)};
+ return{ctx,api:vm.runInContext('({MID_ICON_BASES,ICON_LEGACY_ALIASES,ICON_PRICE_ANCHORS,MARKET_MAX_PRICE,restoreSyntheticPlayerIds,marketPriceForRating,marketRoundPrice,portraitCandidates,createMarketListing,transferSuggestedPrices})',ctx)};
 }
 const stats=p=>[p.pac,p.sho,p.pas,p.dri,p.def,p.phy];
 
@@ -53,19 +54,42 @@ test('old acquired Icons keep working through changed names and the retired Klui
  assert.ok(!api.MID_ICON_BASES.some(p=>p.name==='Patrick Kluivert'));
 });
 
-test('Icon guide prices are stable across listings and keep Vieira above weaker cards',()=>{
+test('all 136 Icons have individual stable Futbin guides, including expensive 88-rated cards',()=>{
  const{api}=setup();api.restoreSyntheticPlayerIds();
  const byName=name=>api.MID_ICON_BASES.find(p=>p.name===name),guide=p=>api.marketPriceForRating(p.ovr,true,p);
  const vieira=byName('Patrick Vieira'),gattuso=byName('Gennaro Gattuso');
- assert.equal(guide(vieira),1500000);
- assert.equal(guide(gattuso),110000);
- assert.ok(guide(vieira)>10*guide(gattuso));
- assert.ok(Math.max(...api.MID_ICON_BASES.filter(p=>p.ovr===88).map(guide))<=1500000);
+ assert.equal(Object.keys(api.ICON_PRICE_ANCHORS).length,136);
+ for(const p of api.MID_ICON_BASES){
+  const key=p.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,'-');
+  assert.ok(Object.hasOwn(api.ICON_PRICE_ANCHORS,key),p.name);
+  assert.ok(guide(p)>0&&guide(p)<=api.MARKET_MAX_PRICE,p.name);
+  assert.equal(guide(p),guide(p),p.name);
+ }
+ assert.equal(guide(vieira),2040000);
+ assert.equal(guide(gattuso),259000);
+ assert.equal(guide(byName('Franck Ribéry')),1110000);
+ assert.equal(guide(byName('Ronaldo')),13400000);
+ assert.ok(guide(byName('Gareth Bale'))>10*guide(gattuso));
  const listing=api.createMarketListing(vieira,{specialType:'icon'});
  assert.equal(listing.variant,'icon-mid');
  assert.equal(listing.eventName,'Icon');
  assert.ok(listing.price>=guide(vieira)*.88&&listing.price<=guide(vieira)*1.14);
- assert.ok(api.createMarketListing(gattuso,{specialType:'icon'}).price<200000);
+ assert.ok(api.createMarketListing(gattuso,{specialType:'icon'}).price<300000);
  assert.equal(api.transferSuggestedPrices({pid:vieira.id,variant:'icon-mid'}).buy,guide(vieira));
  assert.equal(api.transferSuggestedPrices({pid:gattuso.id,variant:'icon-mid'}).buy,guide(gattuso));
+});
+
+test('meta and special multipliers and offer spreads cannot exceed 15 million',()=>{
+ const{ctx,api}=setup();
+ ctx.marketMetaFactor=()=>10.5;ctx.marketMetaPercentile=()=>1;
+ assert.equal(api.marketPriceForRating(99,true,{ovr:99}),15000000);
+ assert.equal(api.marketRoundPrice(15000999),15000000);
+ assert.equal(api.marketRoundPrice(Infinity),15000000);
+ assert.equal(api.marketRoundPrice(NaN),150);
+ const ronaldo=api.MID_ICON_BASES.find(p=>p.name==='Ronaldo');
+ ctx.marketSnapshotHash=()=>259;
+ const offer=api.createMarketListing(ronaldo,{specialType:'icon'});
+ assert.equal(offer.price,15000000);
+ assert.ok(offer.startPrice<=15000000&&offer.bid<=15000000);
+ assert.ok(api.transferSuggestedPrices({pid:ronaldo.id,variant:'icon-mid'}).buy<=15000000);
 });
