@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.94</title>
+<title>Footera V19.95</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -625,7 +625,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .pack-result-section{margin-top:10px}.pack-result-section:first-child{margin-top:0}.pack-result-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}.pack-result-head h3{margin:0;font-size:14px}.pack-result-head span{font-size:8px;color:#8d9b96}.pack-result-head.duplicate h3{color:#ffb65c}.pack-result-head.duplicate span{color:#d6a36c}
 .result-items-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.result-items-grid .card-shell{width:100%}.pack-profile-card{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;position:relative}
 .result-item.duplicate{border-color:#6f4d2d;background:radial-gradient(circle at 100% 0,rgba(255,178,83,.10),transparent 38%),#15110d}.duplicate-pill{display:inline-flex;margin:5px 0 0;padding:4px 7px;border-radius:999px;background:#2b1c0e;border:1px solid #7e542d;color:#ffc47c;font-size:6px;font-weight:1000}.duplicate-note{margin-top:5px;color:#bfa486;font-size:6.5px;line-height:1.35}
-.results-actions{grid-template-columns:1fr 1fr 1fr}.results-actions .danger{border-color:#7a3e49}.result-section-empty{padding:14px;border:1px dashed #34423d;border-radius:12px;color:#8f9d98;font-size:8px;text-align:center}
+.results-actions{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.results-actions .danger{border-color:#7a3e49}.result-section-empty{padding:14px;border:1px dashed #34423d;border-radius:12px;color:#8f9d98;font-size:8px;text-align:center}
 @media(max-width:560px){.result-items-grid{grid-template-columns:repeat(2,1fr)}.results-actions{grid-template-columns:1fr}}
 
 
@@ -1470,7 +1470,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.94</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.95</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1746,7 +1746,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
-<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Nicht-Duplikate zuerst zuweisen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
+<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Karten zum Verein hinzufügen oder den verbleibenden Pack-Inhalt schnellverkaufen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellDuplicates" class="secondary">Duplikate schnellverkaufen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
 
 <div id="match" class="match">
@@ -4989,10 +4989,23 @@ function resolvePackSell(k){
  else toast(duplicate?"Untauschbares Duplikat abgestoßen.":"Untauschbarer Spieler abgestoßen.");
  pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();packResultsRefresh();return true
 }
+function packSellBatch(duplicatesOnly=false){
+ const dupMap=duplicatesOnly?packDuplicateMap():null;
+ return pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)&&!isFounderItem(x.i)&&(!duplicatesOnly||dupMap.get(x.k)))
+}
+function resolvePackSellBatch(duplicatesOnly=false){
+ const items=packSellBatch(duplicatesOnly);if(!items.length)return false;
+ const total=items.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0),untradeable=items.filter(x=>!x.i.tradeable).length;
+ const label=duplicatesOnly?"Duplikate":"verbleibenden Pack-Karten";
+ const wording=untradeable?`Wirklich alle ${items.length} ${label} auflösen? ${items.length-untradeable} tauschbare Karten werden für ${fmt(total)} Coins schnellverkauft. ${untradeable} untauschbare Karten werden für 0 Coins abgestoßen.`:`Wirklich alle ${items.length} ${label} für ${fmt(total)} Coins schnellverkaufen?`;
+ if(!confirm(wording))return false;
+ state.coins+=total;items.forEach(x=>pendingResolved.add(x.k));state.pendingResolved=[...pendingResolved];save();toast(total?`+${fmt(total)} Coins`:"Karten abgestoßen.");
+ packResultsRefresh();return true
+}
 function renderPackResults(){
  state.pendingResolved=[...pendingResolved];save();
  const hint=$("resultHint"),founder=pendingPack.find(isFounderItem);
- if(founder&&pendingResolved.has(pendingPack.indexOf(founder))){if(hint)hint.textContent="Founder-Karte wurde deinem Verein hinzugefügt.";$("resultGrid").innerHTML=`<section class="pack-result-section founder-result"><div class="pack-result-head"><h3>FOOTERA FOUNDER</h3><span>Einmalige Karte</span></div><div class="founder-result-card">${cardHTML(displayBase(founder),founder)}<strong>${esc(displayBase(founder)?.name||"Founder")} ist jetzt in deinem Verein.</strong></div></section>`;$("resultAllClub").style.display="none";$("resultQuickSellAll").style.display="none";$("resultDone").textContent="Zum Verein";$("resultDone").disabled=false;$("resultDone").style.display="";return}
+ if(founder&&pendingResolved.has(pendingPack.indexOf(founder))){if(hint)hint.textContent="Founder-Karte wurde deinem Verein hinzugefügt.";$("resultGrid").innerHTML=`<section class="pack-result-section founder-result"><div class="pack-result-head"><h3>FOOTERA FOUNDER</h3><span>Einmalige Karte</span></div><div class="founder-result-card">${cardHTML(displayBase(founder),founder)}<strong>${esc(displayBase(founder)?.name||"Founder")} ist jetzt in deinem Verein.</strong></div></section>`;$("resultAllClub").style.display="none";$("resultQuickSellAll").style.display="none";$("resultQuickSellDuplicates").style.display="none";$("resultDone").textContent="Zum Verein";$("resultDone").disabled=false;$("resultDone").style.display="";return}
  const dupMap=packDuplicateMap(),normal=[],dups=[];
  pendingPack.forEach((i,k)=>{if(pendingResolved.has(k))return;(dupMap.get(k)?dups:normal).push({i,k})});
  if(hint){const total=normal.length+dups.length;hint.textContent=total?`Noch ${total} Karte${total===1?"":"n"} offen · ${normal.length} neu · ${dups.length} Duplikat${dups.length===1?"":"e"}. Profil und Transferoptionen über den jeweiligen Button öffnen.`:"Alle Pack-Karten wurden zugewiesen."}
@@ -5007,11 +5020,13 @@ function renderPackResults(){
  };
  const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?"duplicate":""}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?"":"n"}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join("")}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;
  $("resultGrid").innerHTML=(normal.length?section("Pack-Inhalt",normal,false):"")+(dups.length?section("Duplikate",dups,true):"");
- const duplicateTotal=dups.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0);
+ const allSellable=packSellBatch(),duplicatesSellable=packSellBatch(true),total=allSellable.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0),duplicateTotal=duplicatesSellable.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0);
  $("resultAllClub").textContent="Zum Verein hinzufügen";
  $("resultAllClub").disabled=!normal.length;$("resultAllClub").style.display=normal.length?"":"none";
- $("resultQuickSellAll").textContent=dups.length?`Duplikate schnellverkaufen / abstoßen${duplicateTotal?` · +${fmt(duplicateTotal)} Coins`:""}`:"";
- $("resultQuickSellAll").disabled=!dups.length;$("resultQuickSellAll").style.display=dups.length?"":"none";
+ $("resultQuickSellDuplicates").textContent=duplicatesSellable.length?`Duplikate schnellverkaufen / abstoßen${duplicateTotal?` · +${fmt(duplicateTotal)} Coins`:""}`:"";
+ $("resultQuickSellDuplicates").disabled=!duplicatesSellable.length;$("resultQuickSellDuplicates").style.display=duplicatesSellable.length?"":"none";
+ $("resultQuickSellAll").textContent=allSellable.length?`${allSellable.every(x=>!x.i.tradeable)?"Alles abstoßen":allSellable.some(x=>!x.i.tradeable)?"Alles schnellverkaufen / abstoßen":"Alles schnellverkaufen"}${total?` · +${fmt(total)} Coins`:""}`:"";
+ $("resultQuickSellAll").disabled=!allSellable.length;$("resultQuickSellAll").style.display=allSellable.length?"":"none";
  $("resultDone").disabled=true;$("resultDone").style.display="none"
 }
 $("resultGrid").addEventListener("click",e=>{
@@ -5030,15 +5045,8 @@ $("resultAllClub").addEventListener("click",()=>{
  if(!added)return;state.pendingResolved=[...pendingResolved];save();toast(added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
  packResultsRefresh()
 });
-$("resultQuickSellAll").addEventListener("click",()=>{
- const dupMap=packDuplicateMap(),duplicates=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)&&dupMap.get(x.k));
- if(!duplicates.length||duplicates.some(x=>isFounderItem(x.i)))return;
- const total=duplicates.filter(x=>x.i.tradeable).reduce((s,x)=>s+quickSell(x.i),0),untradeable=duplicates.filter(x=>!x.i.tradeable).length;
- const wording=untradeable?`Wirklich alle ${duplicates.length} Duplikate auflösen? Untauschbare Duplikate werden abgestoßen.`:`Wirklich alle ${duplicates.length} Duplikate für ${fmt(total)} Coins schnellverkaufen?`;
- if(!confirm(wording))return;
- state.coins+=total;duplicates.forEach(x=>pendingResolved.add(x.k));state.pendingResolved=[...pendingResolved];save();toast(total?`+${fmt(total)} Coins`:"Duplikate abgestoßen.");
- packResultsRefresh()
-});
+$("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());
+$("resultQuickSellDuplicates").addEventListener("click",()=>resolvePackSellBatch(true));
 $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
 function quickSell(i){if(isFounderItem(i))return 0;if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
@@ -7517,7 +7525,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.94";
+const GFUT_BUILD="V19.95";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;

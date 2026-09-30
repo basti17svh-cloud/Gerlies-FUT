@@ -8,7 +8,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
 const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let storeTab='));
 const packCode=html.slice(html.indexOf('let pendingResolved='),html.indexOf('function packIsSpecial('));
-const resultCode=html.slice(html.indexOf('function renderPackResults(){'),html.indexOf('$("resultGrid").addEventListener'));
+const resultCode=html.slice(html.indexOf('function packSellBatch('),html.indexOf('$("resultGrid").addEventListener'));
 const finishCode=html.slice(html.indexOf('function finishPack(){'),html.indexOf('function packFxLayer('));
 
 function app(saved=new Map()){
