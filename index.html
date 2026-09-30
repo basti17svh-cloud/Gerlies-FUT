@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.73</title>
+<title>Footera V19.74</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1379,7 +1379,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.73</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.74</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1929,7 +1929,27 @@ const TOTW_WEEK_2={id:2,name:"Team of the Week 2",releaseDate:"2026-09-23",activ
  {names:["Jack Moylan"],ovr:80,position:"CAM"},
  {names:["Chiara Hahn"],ovr:80,position:"CDM"}
 ]};
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2];
+const TOTW_WEEK_3={id:3,name:"Team of the Week 3",releaseDate:"2026-09-30",activeUntil:"07.10.2026 18:59",players:[
+ {names:["Konstantinos Tzolakis"],ovr:82,position:"GK",stats:[84,80,78,86,54,83]},
+ {names:["Gregor Kobel"],ovr:88,position:"GK",stats:[88,86,84,90,55,87]},
+ {names:["Zachary Athekame"],ovr:81,position:"RB",stats:[88,59,79,81,78,77]},
+ {names:["Alessandro Bastoni"],ovr:87,position:"CB",stats:[76,58,83,80,89,84]},
+ {names:["Michael Kayode"],ovr:82,position:"RB",stats:[89,68,78,82,79,81]},
+ {names:["Nico Elvedi"],ovr:83,position:"CB",stats:[75,57,73,71,84,82]},
+ {names:["Trent Alexander-Arnold","Trent Alexander Arnold"],ovr:87,position:"RB",stats:[78,71,91,84,80,75]},
+ {names:["Mikkel Damsgaard"],ovr:84,position:"CAM",stats:[80,79,88,87,57,67]},
+ {names:["Dimitris Kourbelis"],ovr:81,position:"CDM",stats:[68,75,77,75,83,84]},
+ {names:["Alex Baena","Álex Baena","Alejandro Baena Rodriguez","Alejandro Baena Rodríguez"],ovr:87,position:"CAM",stats:[81,83,89,88,65,72]},
+ {names:["Leo Walta"],ovr:78,position:"CM",stats:[75,82,80,79,61,69]},
+ {names:["Michael Olise","Michael Akpovie Olise"],ovr:91,position:"RM",stats:[88,88,90,93,55,70]},
+ {names:["Remo Freuler"],ovr:83,position:"CM",stats:[67,76,84,80,82,79]},
+ {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",stats:[89,88,90,95,40,64]},
+ {names:["Erling Haaland","Erling Braut Haaland"],ovr:92,position:"ST",stats:[88,94,73,82,48,91]},
+ {names:["Joel Pohjanpalo"],ovr:82,position:"ST",stats:[72,87,72,78,37,84]},
+ {names:["Mexx Meerdink"],ovr:80,position:"ST",stats:[78,84,70,80,35,80]},
+ {names:["Zeki Amdouni","Mohamed Zeki Amdouni"],ovr:84,position:"ST",stats:[82,86,79,84,41,78]}
+]};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -2186,7 +2206,7 @@ function mergeTotwWeekBase(team,base,a,index){
  return {...tagged,id:a.id||tagged.id,name:fallback.name||a.name||tagged.name,fullName:fallback.fullName||a.fullName||tagged.fullName,firstName:fallback.firstName||a.firstName||tagged.firstName,lastName:fallback.lastName||a.lastName||tagged.lastName,
   team:a.team||tagged.team,league:a.league||tagged.league,nation:a.nation||tagged.nation,face:a.face||tagged.face,nationFlag:a.nationFlag||tagged.nationFlag,nationCode:a.nationCode||tagged.nationCode,
   clubLogo:a.clubLogo||tagged.clubLogo,teamId:a.teamId||tagged.teamId,leagueLogo:a.leagueLogo||tagged.leagueLogo,leagueId:a.leagueId||tagged.leagueId,
-  ovr:a.ovr||tagged.ovr,pac:a.pac||tagged.pac,sho:a.sho||tagged.sho,pas:a.pas||tagged.pas,dri:a.dri||tagged.dri,def:a.def||tagged.def,phy:a.phy||tagged.phy}
+  ovr:a.ovr||tagged.ovr,pac:info.stats?.[0]??a.pac??tagged.pac,sho:info.stats?.[1]??a.sho??tagged.sho,pas:info.stats?.[2]??a.pas??tagged.pas,dri:info.stats?.[3]??a.dri??tagged.dri,def:info.stats?.[4]??a.def??tagged.def,phy:info.stats?.[5]??a.phy??tagged.phy}
 }
 function mergeTotwBase(base,a,index){return mergeTotwWeekBase(LIVE_TOTW,base,a,index)}
 const TOTW_ARCHIVE_BASE_CACHE=new Map();
@@ -7022,7 +7042,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.73";
+const GFUT_BUILD="V19.74";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7040,7 +7060,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1973",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1974",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
