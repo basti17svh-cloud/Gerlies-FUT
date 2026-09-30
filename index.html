@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.95</title>
+<title>Footera V19.96</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,7 +1470,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.95</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.96</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5008,6 +5008,8 @@ function renderPackResults(){
  if(founder&&pendingResolved.has(pendingPack.indexOf(founder))){if(hint)hint.textContent="Founder-Karte wurde deinem Verein hinzugefügt.";$("resultGrid").innerHTML=`<section class="pack-result-section founder-result"><div class="pack-result-head"><h3>FOOTERA FOUNDER</h3><span>Einmalige Karte</span></div><div class="founder-result-card">${cardHTML(displayBase(founder),founder)}<strong>${esc(displayBase(founder)?.name||"Founder")} ist jetzt in deinem Verein.</strong></div></section>`;$("resultAllClub").style.display="none";$("resultQuickSellAll").style.display="none";$("resultQuickSellDuplicates").style.display="none";$("resultDone").textContent="Zum Verein";$("resultDone").disabled=false;$("resultDone").style.display="";return}
  const dupMap=packDuplicateMap(),normal=[],dups=[];
  pendingPack.forEach((i,k)=>{if(pendingResolved.has(k))return;(dupMap.get(k)?dups:normal).push({i,k})});
+ const sortPackRows=rows=>rows.sort((a,b)=>(Number(packIsSpecial(b.i))-Number(packIsSpecial(a.i)))||(itemRating(b.i)-itemRating(a.i))||(a.k-b.k));
+ sortPackRows(normal);sortPackRows(dups);
  if(hint){const total=normal.length+dups.length;hint.textContent=total?`Noch ${total} Karte${total===1?"":"n"} offen · ${normal.length} neu · ${dups.length} Duplikat${dups.length===1?"":"e"}. Profil und Transferoptionen über den jeweiligen Button öffnen.`:"Alle Pack-Karten wurden zugewiesen."}
  const card=({i,k},duplicate)=>{
   const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
@@ -7525,7 +7527,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.95";
+const GFUT_BUILD="V19.96";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
