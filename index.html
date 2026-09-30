@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.82</title>
+<title>Footera V19.83</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -600,10 +600,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 /* V18.33 pack results: duplicate section + profile tap + bulk quick sell */
 .resultgrid{display:block}
 .pack-result-section{margin-top:10px}.pack-result-section:first-child{margin-top:0}.pack-result-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}.pack-result-head h3{margin:0;font-size:14px}.pack-result-head span{font-size:8px;color:#8d9b96}.pack-result-head.duplicate h3{color:#ffb65c}.pack-result-head.duplicate span{color:#d6a36c}
-.result-items-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.result-items-grid .card-shell{width:100%}.pack-profile-tap{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;position:relative}.pack-profile-tap:after{content:'Profil ansehen';position:absolute;left:50%;bottom:6px;transform:translateX(-50%);padding:4px 7px;border-radius:999px;background:rgba(4,8,7,.83);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:5.5px;font-weight:900;opacity:0;transition:.15s;white-space:nowrap;pointer-events:none}.pack-profile-tap:active:after,.pack-profile-tap:focus-visible:after{opacity:1}
+.result-items-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.result-items-grid .card-shell{width:100%}.pack-profile-card{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;position:relative}
 .result-item.duplicate{border-color:#6f4d2d;background:radial-gradient(circle at 100% 0,rgba(255,178,83,.10),transparent 38%),#15110d}.duplicate-pill{display:inline-flex;margin:5px 0 0;padding:4px 7px;border-radius:999px;background:#2b1c0e;border:1px solid #7e542d;color:#ffc47c;font-size:6px;font-weight:1000}.duplicate-note{margin-top:5px;color:#bfa486;font-size:6.5px;line-height:1.35}
 .results-actions{grid-template-columns:1fr 1fr 1fr}.results-actions .danger{border-color:#7a3e49}.result-section-empty{padding:14px;border:1px dashed #34423d;border-radius:12px;color:#8f9d98;font-size:8px;text-align:center}
-@media(max-width:560px){.result-items-grid{grid-template-columns:repeat(2,1fr)}.results-actions{grid-template-columns:1fr}.pack-profile-tap:after{opacity:.75}}
+@media(max-width:560px){.result-items-grid{grid-template-columns:repeat(2,1fr)}.results-actions{grid-template-columns:1fr}}
 
 
 /* V18.34 — Evolutions hub, Extras, duplicate storage */
@@ -1418,7 +1418,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.82</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.83</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4811,10 +4811,12 @@ function renderPackResults(){
  pendingPack.forEach((i,k)=>{if(pendingResolved.has(k))return;(dupMap.get(k)?dups:normal).push({i,k})});
  const card=({i,k},duplicate)=>{
   const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
+  const profileAction=`<button class="primary" data-pack-open="${k}">Profil & Transferoptionen</button>`;
   const duplicateActions=canTransfer
-   ?`<button class="primary" data-pack-open="${k}">Profil & Transferoptionen</button><button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
-   :`<button class="primary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}<button class="secondary" data-pack-sell="${k}">Abstoßen</button>`;
-  return `<div class="result-item ${duplicate?"duplicate":""}" data-result-item="${k}"><button class="pack-profile-tap" data-pack-open="${k}" aria-label="${esc(b.name)} Profil ansehen">${cardHTML(b,i)}</button>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':""}<div class="result-item-actions">${duplicate?duplicateActions:`<button class="primary" data-pack-club="${k}">In den Verein</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button><button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`}</div>${duplicate?'<div class="duplicate-note">Duplikat zuerst auflösen, bevor du fortfährst.</div>':""}</div>`
+   ?`${profileAction}<button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
+   :`${profileAction}<button class="secondary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}<button class="secondary" data-pack-sell="${k}">Abstoßen</button>`;
+  const normalActions=`${profileAction}<button class="secondary" data-pack-club="${k}">In den Verein</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button><button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`;
+  return `<div class="result-item ${duplicate?"duplicate":""}" data-result-item="${k}"><div class="pack-profile-card">${cardHTML(b,i)}</div>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':""}<div class="result-item-actions">${duplicate?duplicateActions:normalActions}</div>${duplicate?'<div class="duplicate-note">Duplikat zuerst auflösen, bevor du fortfährst.</div>':""}</div>`
  };
  const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?"duplicate":""}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?"":"n"}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join("")}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;
  $("resultGrid").innerHTML=(normal.length?section("Pack-Inhalt",normal,false):"")+(dups.length?section("Duplikate",dups,true):"");
@@ -7163,7 +7165,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.82";
+const GFUT_BUILD="V19.83";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
