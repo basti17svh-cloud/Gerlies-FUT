@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.83</title>
+<title>Footera V19.84</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1418,7 +1418,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.83</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.84</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1694,7 +1694,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
 
-<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p>Spielerkarte antippen für Profil. Duplikate werden separat unten angezeigt.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
+<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Nicht-Duplikate zuerst zuweisen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
 
 <div id="match" class="match">
@@ -4377,10 +4377,14 @@ function openPlayerDetails(item,index=null,fromPreview=false){
 function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
 function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
 function openPackPlayerDetails(k){
- const item=pendingPack[k];if(!item)return;const b=displayBase(item);if(!b)return;
- $("playerDetailSub").textContent=`Pack · ${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;
- const transferActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack passiv auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Item direkt mit Startpreis und Sofortkauf anbieten.</small></span><b>›</b></button>`:'';
- $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:"Pack-Inhalt"})}<div class="detail-menu"><button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${transferActions}<button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
+ const item=pendingPack[k];if(!item||pendingResolved.has(k))return;const b=displayBase(item);if(!b)return;
+ const duplicate=!!packDuplicateMap().get(k),twin=duplicate&&!item.tradeable?tradeableClubTwinForPackItem(item):null;
+ $("playerDetailSub").textContent=`Pack · ${duplicate?"DUPLIKAT · ":""}${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;
+ const normalActions=!duplicate?`<button class="menu-action" data-pack-profile-club="${k}"><span><span>In den Verein</span><small>Spieler deinem Verein hinzufügen.</small></span><b>›</b></button><button class="menu-action" data-pack-profile-insert="${k}"><span><span>In Mannschaft</span><small>Spieler hinzufügen und direkt einen Kaderplatz auswählen.</small></span><b>›</b></button>`:"";
+ const tradeActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Startpreis, Sofortkauf und Dauer festlegen.</small></span><b>›</b></button>`:"";
+ const duplicateUntradeable=duplicate&&!item.tradeable?`<button class="menu-action" data-pack-profile-sbcstore="${k}"><span><span>In SBC-Speicher</span><small>Untauschbares Duplikat für spätere SBCs sichern.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
+ const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Münzen auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateUntradeable}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player")
 }
 let suppressSquadClick=false;
@@ -4462,11 +4466,21 @@ $("playerDetailBody").addEventListener("click",e=>{
        marketCompare=e.target.closest("[data-market-price-compare]"),
        packCompare=e.target.closest("[data-pack-price-compare]"),
        packDirectSell=e.target.closest("[data-pack-direct-sell]"),
-       packTransfer=e.target.closest("[data-pack-transfer-profile]");
- if(packBio){const k=Number(packBio.dataset.packBio),item=pendingPack[k];if(item)openBiography(item,-1);return;}
- if(packCompare){const k=Number(packCompare.dataset.packPriceCompare),item=pendingPack[k];if(item)openPriceComparison(item);return;}
- if(packDirectSell){const k=Number(packDirectSell.dataset.packDirectSell),item=pendingPack[k];if(item)openTransferOfferModal(item,{packIndex:k});return;}
+       packTransfer=e.target.closest("[data-pack-transfer-profile]"),
+       packProfileClub=e.target.closest("[data-pack-profile-club]"),
+       packProfileInsert=e.target.closest("[data-pack-profile-insert]"),
+       packProfileStore=e.target.closest("[data-pack-profile-sbcstore]"),
+       packProfileSwap=e.target.closest("[data-pack-profile-swap]"),
+       packProfileSell=e.target.closest("[data-pack-profile-sell]");
+ if(packBio){const k=Number(packBio.dataset.packBio),item=pendingPack[k];if(item&&!pendingResolved.has(k))openBiography(item,-1);return;}
+ if(packCompare){const k=Number(packCompare.dataset.packPriceCompare),item=pendingPack[k];if(item&&!pendingResolved.has(k))openPriceComparison(item);return;}
+ if(packDirectSell){const k=Number(packDirectSell.dataset.packDirectSell),item=pendingPack[k];if(item&&!pendingResolved.has(k))openTransferOfferModal(item,{packIndex:k});return;}
  if(packTransfer){const k=Number(packTransfer.dataset.packTransferProfile);if(movePackItemToTransferList(k)){removeUiLayer("playerModal");toast("Auf Transferliste verschoben.");if(finishPackIfResolved())return;renderPackResults();renderAll()}return;}
+ if(packProfileClub){const k=Number(packProfileClub.dataset.packProfileClub);removeUiLayer("playerModal");resolvePackToClub(k);return;}
+ if(packProfileInsert){const k=Number(packProfileInsert.dataset.packProfileInsert);removeUiLayer("playerModal");resolvePackToSquad(k);return;}
+ if(packProfileStore){const k=Number(packProfileStore.dataset.packProfileSbcstore);removeUiLayer("playerModal");resolvePackToSbcStorage(k);return;}
+ if(packProfileSwap){const k=Number(packProfileSwap.dataset.packProfileSwap);removeUiLayer("playerModal");resolvePackSwapTradeable(k);return;}
+ if(packProfileSell){const k=Number(packProfileSell.dataset.packProfileSell);removeUiLayer("playerModal");resolvePackSell(k);return;}
  if(marketCompare){const i=Number(marketCompare.dataset.marketPriceCompare),x=marketListings[i];if(x)openPriceComparison(marketPreviewItem(x),x.base);return;}
  if(directSell){const item=state.club.find(x=>x.uid===directSell.dataset.directSell);if(item)openTransferOfferModal(item);return;}
  if(priceCompare){const item=state.club.find(x=>x.uid===priceCompare.dataset.priceCompare);if(item)openPriceComparison(item);return;}
@@ -4803,12 +4817,57 @@ function finishPackIfResolved(){
  if(unresolved)return false;
  closeResolvedPackResults();return true
 }
+function packResultsRefresh(){
+ if(finishPackIfResolved())return true;
+ renderPackResults();renderAll();return false
+}
+function resolvePackToClub(k){
+ const i=pendingPack[k],dup=packDuplicateMap().get(k);
+ if(!i||isFounderItem(i)||pendingResolved.has(k)||dup)return false;
+ if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);
+ pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();toast("Spieler zum Verein hinzugefügt.");
+ packResultsRefresh();return true
+}
+function resolvePackToSquad(k){
+ const i=pendingPack[k],dup=packDuplicateMap().get(k);
+ if(!i||isFounderItem(i)||pendingResolved.has(k)||dup)return false;
+ if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);
+ pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();
+ const finished=finishPackIfResolved();if(!finished){renderPackResults();renderAll()}
+ openSlotPickerForItem(i.uid);return true
+}
+function resolvePackToSbcStorage(k){
+ const i=pendingPack[k],dup=packDuplicateMap().get(k);
+ if(!i||isFounderItem(i)||pendingResolved.has(k)||i.tradeable||!dup)return false;
+ state.sbcStorage=state.sbcStorage||[];if(state.sbcStorage.length>=100){toast("SBC-Speicher voll (100/100).");return false}
+ state.sbcStorage.push(i);pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();toast("Duplikat im SBC-Speicher abgelegt.");
+ packResultsRefresh();return true
+}
+function resolvePackSwapTradeable(k){
+ const incoming=pendingPack[k],dup=packDuplicateMap().get(k);
+ if(!incoming||pendingResolved.has(k)||incoming.tradeable||!dup)return false;
+ const existing=tradeableClubTwinForPackItem(incoming);if(!existing){toast("Keine tauschbare Vereinskarte verfügbar.");return false}
+ const clubIndex=state.club.findIndex(x=>x.uid===existing.uid);if(clubIndex<0)return false;
+ state.club[clubIndex]=incoming;state.squad=state.squad.map(id=>id===existing.uid?incoming.uid:id);
+ (state.squadPresets||[]).forEach(p=>{if(p?.squad)p.squad=p.squad.map(id=>id===existing.uid?incoming.uid:id)});
+ replaceActiveEvolutionUid(existing.uid,incoming.uid);
+ pendingPack[k]=existing;state.pendingPack=pendingPack;state.pendingResolved=[...pendingResolved];save();
+ toast("Getauscht: Die tauschbare Vereinskarte kann jetzt verkauft werden.");renderPackResults();renderAll();return true
+}
+function resolvePackSell(k){
+ const i=pendingPack[k];if(!i||pendingResolved.has(k)||isFounderItem(i))return false;
+ const duplicate=!!packDuplicateMap().get(k);
+ if(i.tradeable){const value=quickSell(i);state.coins+=value;toast(`+${fmt(value)} Coins`)}
+ else toast(duplicate?"Untauschbares Duplikat abgestoßen.":"Untauschbarer Spieler abgestoßen.");
+ pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();packResultsRefresh();return true
+}
 function renderPackResults(){
  state.pendingResolved=[...pendingResolved];save();
- const founder=pendingPack.find(isFounderItem);
- if(founder&&pendingResolved.has(pendingPack.indexOf(founder))){$("resultGrid").innerHTML=`<section class="pack-result-section founder-result"><div class="pack-result-head"><h3>FOOTERA FOUNDER</h3><span>Einmalige Karte</span></div><div class="founder-result-card">${cardHTML(displayBase(founder),founder)}<strong>${esc(displayBase(founder)?.name||"Founder")} ist jetzt in deinem Verein.</strong></div></section>`;$("resultAllClub").style.display="none";$("resultQuickSellAll").style.display="none";$("resultDone").textContent="Zum Verein";$("resultDone").disabled=false;$("resultDone").style.display="";return}
+ const hint=$("resultHint"),founder=pendingPack.find(isFounderItem);
+ if(founder&&pendingResolved.has(pendingPack.indexOf(founder))){if(hint)hint.textContent="Founder-Karte wurde deinem Verein hinzugefügt.";$("resultGrid").innerHTML=`<section class="pack-result-section founder-result"><div class="pack-result-head"><h3>FOOTERA FOUNDER</h3><span>Einmalige Karte</span></div><div class="founder-result-card">${cardHTML(displayBase(founder),founder)}<strong>${esc(displayBase(founder)?.name||"Founder")} ist jetzt in deinem Verein.</strong></div></section>`;$("resultAllClub").style.display="none";$("resultQuickSellAll").style.display="none";$("resultDone").textContent="Zum Verein";$("resultDone").disabled=false;$("resultDone").style.display="";return}
  const dupMap=packDuplicateMap(),normal=[],dups=[];
  pendingPack.forEach((i,k)=>{if(pendingResolved.has(k))return;(dupMap.get(k)?dups:normal).push({i,k})});
+ if(hint){const total=normal.length+dups.length;hint.textContent=total?`Noch ${total} Karte${total===1?"":"n"} offen · ${normal.length} neu · ${dups.length} Duplikat${dups.length===1?"":"e"}. Profil und Transferoptionen über den jeweiligen Button öffnen.`:"Alle Pack-Karten wurden zugewiesen."}
  const card=({i,k},duplicate)=>{
   const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
   const profileAction=`<button class="primary" data-pack-open="${k}">Profil & Transferoptionen</button>`;
@@ -4820,90 +4879,37 @@ function renderPackResults(){
  };
  const section=(title,rows,duplicate=false)=>`<section class="pack-result-section"><div class="pack-result-head ${duplicate?"duplicate":""}"><h3>${title}</h3><span>${rows.length} Karte${rows.length===1?"":"n"}</span></div>${rows.length?`<div class="result-items-grid">${rows.map(x=>card(x,duplicate)).join("")}</div>`:'<div class="result-section-empty">Keine Karten in diesem Bereich.</div>'}</section>`;
  $("resultGrid").innerHTML=(normal.length?section("Pack-Inhalt",normal,false):"")+(dups.length?section("Duplikate",dups,true):"");
- const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));
- const tradeableTotal=unresolved.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0);
+ const duplicateTotal=dups.filter(x=>x.i.tradeable).reduce((sum,x)=>sum+quickSell(x.i),0);
  $("resultAllClub").textContent="Zum Verein hinzufügen";
- $("resultAllClub").disabled=!normal.length;
- $("resultAllClub").style.display=normal.length?"":"none";
- $("resultQuickSellAll").textContent=unresolved.length?`Alles schnellverkaufen / abstoßen${tradeableTotal?` · +${fmt(tradeableTotal)} Coins`:""}`:"";
- $("resultQuickSellAll").disabled=!unresolved.length;
- $("resultQuickSellAll").style.display=unresolved.length?"":"none";
- $("resultDone").disabled=true;
- $("resultDone").style.display="none"
+ $("resultAllClub").disabled=!normal.length;$("resultAllClub").style.display=normal.length?"":"none";
+ $("resultQuickSellAll").textContent=dups.length?`Duplikate schnellverkaufen / abstoßen${duplicateTotal?` · +${fmt(duplicateTotal)} Coins`:""}`:"";
+ $("resultQuickSellAll").disabled=!dups.length;$("resultQuickSellAll").style.display=dups.length?"":"none";
+ $("resultDone").disabled=true;$("resultDone").style.display="none"
 }
 $("resultGrid").addEventListener("click",e=>{
  const c=e.target.closest("[data-pack-club]"),ins=e.target.closest("[data-pack-insert]"),q=e.target.closest("[data-pack-sell]"),o=e.target.closest("[data-pack-open]"),store=e.target.closest("[data-pack-sbcstore]"),tr=e.target.closest("[data-pack-transfer]"),swap=e.target.closest("[data-pack-swap-tradeable]");
- if(c){
-  const k=Number(c.dataset.packClub),i=pendingPack[k],dup=packDuplicateMap().get(k);
-  if(!i||isFounderItem(i)||pendingResolved.has(k)||dup)return;
-  state.club.push(i);pendingResolved.add(k);save();
-  if(finishPackIfResolved())return;
-  renderPackResults();renderAll();return
- }
- if(ins){
-  const k=Number(ins.dataset.packInsert),i=pendingPack[k],dup=packDuplicateMap().get(k);
-  if(!i||isFounderItem(i)||pendingResolved.has(k)||dup)return;
-  if(!state.club.find(x=>x.uid===i.uid))state.club.push(i);
-  pendingResolved.add(k);save();renderPackResults();renderAll();openSlotPickerForItem(i.uid);return
- }
- if(store){
-  const k=Number(store.dataset.packSbcstore),i=pendingPack[k];
-  if(!i||isFounderItem(i)||pendingResolved.has(k)||i.tradeable)return;
-  state.sbcStorage=state.sbcStorage||[];
-  if(state.sbcStorage.length>=100)return toast("SBC-Speicher voll (100/100).");
-  state.sbcStorage.push(i);pendingResolved.add(k);save();toast("Duplikat im SBC-Speicher abgelegt.");
-  if(finishPackIfResolved())return;
-  renderPackResults();renderAll();return
- }
- if(tr){
-  const k=Number(tr.dataset.packTransfer),i=pendingPack[k];
-  if(!i||isFounderItem(i)||pendingResolved.has(k)||!i.tradeable)return;
-  state.club.push(i);state.transferList=state.transferList||[];state.transferList.push(i.uid);pendingResolved.add(k);save();toast("Duplikat auf die Transferliste verschoben.");
-  if(finishPackIfResolved())return;
-  renderPackResults();renderAll();return
- }
- if(swap){
-  const k=Number(swap.dataset.packSwapTradeable),incoming=pendingPack[k];
-  if(!incoming||pendingResolved.has(k)||incoming.tradeable)return;
-  const existing=tradeableClubTwinForPackItem(incoming);
-  if(!existing)return toast("Keine tauschbare Vereinskarte verfügbar.");
-  const clubIndex=state.club.findIndex(x=>x.uid===existing.uid);
-  if(clubIndex<0)return;
-  state.club[clubIndex]=incoming;
-  state.squad=state.squad.map(id=>id===existing.uid?incoming.uid:id);
-  (state.squadPresets||[]).forEach(p=>{if(p?.squad)p.squad=p.squad.map(id=>id===existing.uid?incoming.uid:id)});
-  replaceActiveEvolutionUid(existing.uid,incoming.uid);
-  pendingPack[k]=existing;state.pendingPack=pendingPack;save();
-  toast("Getauscht: Die tauschbare Vereinskarte kann jetzt verkauft werden.");
-  renderPackResults();renderAll();return
- }
- if(q){
-  const k=Number(q.dataset.packSell),i=pendingPack[k];
-  if(!i||pendingResolved.has(k)||isFounderItem(i))return;
-  if(i.tradeable){const value=quickSell(i);state.coins+=value;toast(`+${fmt(value)} Coins`)}
-  else toast("Untauschbares Duplikat abgestoßen.");
-  pendingResolved.add(k);save();
-  if(finishPackIfResolved())return;
-  renderPackResults();renderAll();return
- }
+ if(c){resolvePackToClub(Number(c.dataset.packClub));return}
+ if(ins){resolvePackToSquad(Number(ins.dataset.packInsert));return}
+ if(store){resolvePackToSbcStorage(Number(store.dataset.packSbcstore));return}
+ if(tr){const k=Number(tr.dataset.packTransfer);if(movePackItemToTransferList(k)){toast("Duplikat auf die Transferliste verschoben.");packResultsRefresh()}return}
+ if(swap){resolvePackSwapTradeable(Number(swap.dataset.packSwapTradeable));return}
+ if(q){resolvePackSell(Number(q.dataset.packSell));return}
  if(o){const k=Number(o.dataset.packOpen);openPackPlayerDetails(k)}
 });
 $("resultAllClub").addEventListener("click",()=>{
  const dupMap=packDuplicateMap();let added=0;
- pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)&&!isFounderItem(i)){state.club.push(i);pendingResolved.add(k);added++}});
- if(!added)return;
- save();toast(added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
- if(finishPackIfResolved())return;
- renderPackResults();renderAll()
+ pendingPack.forEach((i,k)=>{if(!pendingResolved.has(k)&&!dupMap.get(k)&&!isFounderItem(i)){if(!state.club.some(x=>x.uid===i.uid))state.club.push(i);pendingResolved.add(k);added++}});
+ if(!added)return;state.pendingResolved=[...pendingResolved];save();toast(added===1?"Spieler zum Verein hinzugefügt.":`${added} Spieler zum Verein hinzugefügt.`);
+ packResultsRefresh()
 });
 $("resultQuickSellAll").addEventListener("click",()=>{
- const unresolved=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k));
- if(!unresolved.length||unresolved.some(x=>isFounderItem(x.i)))return;
- const total=unresolved.filter(x=>x.i.tradeable).reduce((s,x)=>s+quickSell(x.i),0),untradeable=unresolved.filter(x=>!x.i.tradeable).length;
- const wording=untradeable?`Wirklich alle ${unresolved.length} verbleibenden Karten auflösen? Untauschbare Karten werden abgestoßen.`:`Wirklich alle ${unresolved.length} verbleibenden Karten für ${fmt(total)} Coins schnellverkaufen?`;
+ const dupMap=packDuplicateMap(),duplicates=pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)&&dupMap.get(x.k));
+ if(!duplicates.length||duplicates.some(x=>isFounderItem(x.i)))return;
+ const total=duplicates.filter(x=>x.i.tradeable).reduce((s,x)=>s+quickSell(x.i),0),untradeable=duplicates.filter(x=>!x.i.tradeable).length;
+ const wording=untradeable?`Wirklich alle ${duplicates.length} Duplikate auflösen? Untauschbare Duplikate werden abgestoßen.`:`Wirklich alle ${duplicates.length} Duplikate für ${fmt(total)} Coins schnellverkaufen?`;
  if(!confirm(wording))return;
- state.coins+=total;unresolved.forEach(x=>pendingResolved.add(x.k));save();toast(total?`+${fmt(total)} Coins`:"Karten abgestoßen.");
- finishPackIfResolved()
+ state.coins+=total;duplicates.forEach(x=>pendingResolved.add(x.k));state.pendingResolved=[...pendingResolved];save();toast(total?`+${fmt(total)} Coins`:"Duplikate abgestoßen.");
+ packResultsRefresh()
 });
 $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
@@ -7165,7 +7171,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.83";
+const GFUT_BUILD="V19.84";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
