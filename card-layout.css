@@ -327,7 +327,7 @@
 .card-shell .custom-card.icon .face img{filter:sepia(.55) contrast(1.1) drop-shadow(0 .6cqw 1cqw #453a2c70)}
 .card-shell .custom-card.momentum{
  --card-info-left:10%;--card-info-width:19%;
- --card-emblems-top:35%;--card-emblems-gap:2cqw;
+ --card-emblems-top:38.5%;--card-emblems-gap:1.5cqw;
  --card-club-size:11cqw;--card-league-size:10cqw;
  --card-portrait-left:30%;--card-portrait-right:6%;
  --card-portrait-top:11%;--card-portrait-height:51%;
