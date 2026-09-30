@@ -26,7 +26,7 @@
 }
 .card-shell .custom-card.totw{--card-name-border:#d9bd65;--card-name-fill:linear-gradient(90deg,#111b,#42371de8,#111b);--card-stats-color:#eadb9f}
 .card-shell .custom-card.legacy{--card-column-fill:linear-gradient(180deg,#190205e8,#38070cb9);--card-name-fill:linear-gradient(90deg,#240407,#671321,#240407);--card-name-border:#d9a650;--card-stats-fill:linear-gradient(180deg,#180206e8,#080103);--card-name-color:#ffe7b1;--card-stats-color:#e7c281;--card-value-color:#ffe6a8}
-.card-shell .custom-card.momentum{--card-column-fill:linear-gradient(180deg,#001628f5,#002c4bd9);--card-name-fill:linear-gradient(90deg,#001626,#053c56,#001626);--card-name-border:#4ee5ff;--card-stats-fill:linear-gradient(180deg,#001727f5,#001021f9);--card-name-color:#e5fcff;--card-stats-color:#9de8f6;--card-value-color:#e9ffff}
+.card-shell .custom-card.momentum{--card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;--card-name-color:#f1faff;--card-stats-color:#aac9e9;--card-value-color:#f7fbff}
 .card-shell .custom-card.founder{
  color:#ffe7ae;
  background:url("./assets/footera/founder-frame.webp") center / 100% 100% no-repeat;
@@ -325,6 +325,20 @@
 }
 .card-shell .custom-card:is(.gold,.silver,.bronze,.totw) .face img{filter:drop-shadow(0 .6cqw 1cqw #0009)}
 .card-shell .custom-card.icon .face img{filter:sepia(.55) contrast(1.1) drop-shadow(0 .6cqw 1cqw #453a2c70)}
+.card-shell .custom-card.momentum{
+ --card-info-left:10%;--card-info-width:19%;
+ --card-emblems-top:35%;--card-emblems-gap:2cqw;
+ --card-club-size:11cqw;--card-league-size:10cqw;
+ --card-portrait-left:30%;--card-portrait-right:6%;
+ --card-portrait-top:11%;--card-portrait-height:51%;
+ --card-name-top:62%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:16%;--card-name-height:35%;--card-stats-top:43%;
+ --card-stats-left:3%;--card-stats-right:3%;
+}
+.card-shell .custom-card.momentum .card-top{top:16.5%!important}
+.card-shell .custom-card.momentum .card-top:before{content:none}
+.card-shell .custom-card.momentum .pname{clip-path:none;border:0!important}
+.card-shell .custom-card.momentum .stats span{border-color:#80c9ea55}
 .card-shell .custom-card.totw:after{
  top:10%;right:9%;padding:.8cqw 1.5cqw;
  border:1px solid #d4ab51;border-radius:2cqw;background:#14120dce;color:#f9df9a;

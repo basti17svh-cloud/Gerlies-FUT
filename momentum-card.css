@@ -1,28 +1,25 @@
-/* A clean crystal skin follows the shared card geometry at every size. */
+/* Reusable MOMENTUM artwork: the shared renderer supplies every player field. */
 .momentum-shell{container-type:inline-size}
 .momentum-shell .custom-card.momentum{
- clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);
- background:
-  linear-gradient(145deg,transparent 25%,#81faff2b 26%,transparent 28% 62%,#2ce7ff25 63%,transparent 65%),
-  conic-gradient(from 210deg at 74% 38%,transparent 0 32deg,#15adca44 45deg,transparent 76deg 216deg,#7efaff36 231deg,transparent 254deg),
-  radial-gradient(ellipse at 63% 39%,#1184b58c,transparent 44%),
-  linear-gradient(155deg,#041329 4%,#0a3359 46%,#021020 100%);
- box-shadow:inset 0 0 0 1.5cqw #62eefa,inset 0 0 15cqw #079cda73;
- color:#e0fbff;
+ clip-path:none;
+ overflow:visible;
+ background:transparent url("./assets/footera/card-momentum-v2.webp") center / 100% 100% no-repeat;
+ box-shadow:none;
+ color:#f1faff;
 }
-.momentum-shell .custom-card.momentum:before{inset:2.2cqw;border:1px solid #b8fcffad;opacity:.8;pointer-events:none}
+.momentum-shell .custom-card.momentum:before{content:none}
 .momentum-shell .custom-card.momentum:after{
- content:"MOMENTUM";position:absolute;z-index:3;top:7%;right:12%;
- padding:.5cqw 2cqw;border:1px solid #79edff9c;border-radius:2cqw;
- background:#031c32d9;color:#d9fbff;font-size:max(3px,4cqw);font-weight:900;
- letter-spacing:.08em;text-shadow:0 0 5px #27e9ff;
+ content:"MOMENTUM";position:absolute;z-index:8;top:11%;right:10%;
+ padding:.8cqw 1.3cqw;border:1px solid #8bdcff;border-radius:1cqw;
+ background:#06172be8;color:#e8fbff;font-size:max(3px,3.1cqw);font-weight:900;
+ letter-spacing:.075em;white-space:nowrap;text-shadow:0 0 4px #39d9ff;
 }
 
-/* The central card layout supplies all coordinates; only the cyan theme is local. */
+/* Only the event lighting is local; card field positions stay in card-layout.css. */
 .momentum-shell .custom-card.momentum .ovr{color:#eaffff;text-shadow:0 1px 4px #00192f,0 0 11px #46f4ff}
 .momentum-shell .custom-card.momentum .pos{color:#c9f8ff;text-shadow:0 1px 4px #00182c}
-.momentum-shell .custom-card.momentum .face img{filter:drop-shadow(0 5px 6px #001229c9)}
-.momentum-shell .custom-card.momentum .pname{color:#e5fcff;text-shadow:0 2px 4px #000,0 0 8px #0ff}
+.momentum-shell .custom-card.momentum .face img{filter:drop-shadow(0 .8cqw 1.2cqw #001229c9)}
+.momentum-shell .custom-card.momentum .pname{color:#e5fcff;text-shadow:0 2px 4px #000,0 0 6px #0ff}
 .momentum-shell .custom-card.momentum .stats{color:#9de8f6;text-shadow:0 1px 3px #00121c}
 .momentum-shell .custom-card.momentum .stats b{color:#e9ffff}
 
