@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.80</title>
+<title>Footera V19.81</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1168,6 +1168,30 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .pass-ladder{display:flex;gap:9px;overflow-x:auto;scroll-snap-type:x proximity;padding:5px 0 10px;scrollbar-color:#718a61 #17231b}.pass-tier{flex:0 0 172px;scroll-snap-align:start;border:1px solid #34453a;border-radius:12px;padding:9px;background:#101a14}.pass-tier.reached{border-color:#a4bf55}.pass-tier-header{display:flex;justify-content:space-between;color:#deedcc;font-size:9px;font-weight:900;margin-bottom:8px}.pass-tier-header small{color:#94a79b;font-size:8px}.pass-reward{min-height:89px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;padding:9px;border-radius:9px;border:1px solid #34483b;background:#16241b;margin-top:5px}.pass-reward.premium{border-color:#6d633e;background:#211f15}.pass-reward b{font-size:8px;color:#a6f7c6}.pass-reward.premium b{color:#ffde83}.pass-reward span{font-size:9px;line-height:1.25;color:#e7efdf}.pass-reward button{min-height:30px;font-size:9px}.pass-reward em{font-size:8px;color:#8ca496;font-style:normal}
 .objective-tabs{display:flex;gap:7px;overflow-x:auto;margin:18px 0 10px}.objective-tabs button{min-height:36px;white-space:nowrap;padding:0 12px;border-radius:18px;border:1px solid #365044;background:#13221a;color:#bcd1c2;font-size:10px;font-weight:800}.objective-tabs button.active{background:var(--lime);border-color:var(--lime);color:#132014}.objective-summary{font-size:10px;color:#b3c4ba;margin-bottom:10px}.objective-group-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:13px 0 7px}.objective-group-head strong{font-size:13px}.objective-group-head span{font-size:9px;color:#94aaa0}.objective-bonus{border:1px solid #5b6d3e;border-radius:12px;padding:11px;margin-top:8px;background:#1a2317;display:flex;justify-content:space-between;align-items:center;gap:10px}.objective-bonus b{font-size:10px;color:#e3f4b3}.objective-bonus small{display:block;color:#a5b2a0;margin-top:4px;font-size:8px}.objective-bonus button{min-height:34px;font-size:9px}
 @media(max-width:600px){.pass-panel{padding:12px}.pass-top{display:block}.pass-time{display:block;margin-top:7px}.pass-tier{flex-basis:155px}.pass-upgrade-actions{width:100%}.pass-upgrade-actions button{flex:1 1 130px}}
+/* V19.81 — Season Pass: EA-style vertical track, Footera reward cards and swipeable multi-rewards. */
+.pass-panel{padding:14px;overflow:hidden}.pass-upgrade{margin:13px 0 16px}.pass-upgrade-actions button{display:inline-flex;align-items:center;justify-content:center;gap:7px}.pass-upgrade-actions .currency-icon{width:18px;height:18px;object-fit:contain}
+.pass-level-stack{display:grid;gap:0;overflow:visible;padding:0 0 8px;scroll-snap-type:none}
+.pass-level-row{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;padding:0 0 14px}
+.pass-level-rail{position:relative;display:flex;justify-content:center;min-height:100%}.pass-level-rail:before{content:"";position:absolute;top:0;bottom:-14px;left:50%;width:3px;transform:translateX(-50%);border-radius:99px;background:linear-gradient(#66716c,#3a4640)}
+.pass-level-row.reached .pass-level-rail:before{background:linear-gradient(#d8ff3e,#4ef1b9)}.pass-level-row:last-child .pass-level-rail:before{bottom:50%}
+.pass-level-rail span{position:sticky;top:92px;z-index:2;width:38px;height:38px;display:grid;place-items:center;border-radius:50%;border:2px solid #56615c;background:#28302d;color:#f3f7f5;font-size:13px;font-weight:1000;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.pass-level-row.reached .pass-level-rail span{border-color:#b9dc42;background:#58602d;color:#f3ffd0}.pass-level-row.current .pass-level-rail span{box-shadow:0 0 0 4px rgba(216,255,62,.12),0 7px 20px rgba(0,0,0,.35)}
+.pass-level-cards{display:grid;gap:9px;min-width:0}
+.pass-level-card{position:relative;min-width:0;padding:12px;border:1px solid #33483f;border-radius:16px;background:radial-gradient(circle at 90% 0,rgba(78,241,185,.08),transparent 36%),linear-gradient(155deg,#13221b,#0b1310);overflow:hidden;box-shadow:0 11px 28px rgba(0,0,0,.2)}
+.pass-level-card.premium{border-color:#6e6238;background:radial-gradient(circle at 90% 0,rgba(255,220,104,.09),transparent 36%),linear-gradient(155deg,#252113,#13160f)}.pass-level-card.story-reward{border-color:#6f55b8;background:radial-gradient(circle at 50% 6%,rgba(164,115,255,.16),transparent 36%),linear-gradient(155deg,#19152a,#0b1110)}
+.pass-level-card.claimed{opacity:.78}.pass-level-card.locked{filter:saturate(.83)}
+.pass-level-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}.pass-level-card-head>div span{display:block;font-size:12px;font-weight:1000}.pass-level-card-head>div small{display:block;margin-top:2px;color:#93a29c;font-size:7px}.pass-level-card-head>b{padding:5px 7px;border:1px solid #3f5c4f;border-radius:999px;background:#102219;color:#90f3bc;font-size:6px;letter-spacing:.05em}.pass-level-card.premium .pass-level-card-head>b{border-color:#76652e;background:#28200e;color:#ffe58a}.pass-level-card.story-reward .pass-level-card-head>b{border-color:#654ba5;background:#211838;color:#dac8ff}
+.pass-reward-slider{position:relative;min-width:0;padding:0 0 23px}.pass-reward-slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;overscroll-behavior-x:contain;touch-action:pan-x pan-y}.pass-reward-slides::-webkit-scrollbar{display:none}
+.pass-reward-slide{flex:0 0 100%;min-width:100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px 18px 0}
+.pass-reward-visual{width:100%;min-height:135px;display:grid;place-items:center}.pass-reward-name{display:block;margin-top:5px;color:#f5f8f6;font-size:13px;line-height:1.25}.pass-reward-sub{display:block;margin-top:4px;color:#889a91;font-size:7px;line-height:1.35}
+.pass-reward-currency{min-height:130px;display:grid;place-items:center;align-content:center;gap:9px}.pass-reward-currency .currency-amount{display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:1000}.pass-reward-currency .currency-icon{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 7px 10px rgba(0,0,0,.34))}.pass-reward-currency.boost small{font-size:11px;color:#c9d5cf;font-weight:900}
+.pass-reward-sp{min-height:130px;display:grid;place-items:center;align-content:center;gap:4px}.pass-reward-sp strong{width:72px;height:72px;display:grid;place-items:center;border-radius:18px;border:1px solid #52644f;background:linear-gradient(145deg,#203426,#0e1712);color:var(--lime);font-size:27px}.pass-reward-sp b{font-size:18px}
+.pass-reward-pack{position:relative;min-height:140px;display:grid;place-items:center}.pass-reward-pack img{width:112px;max-height:142px;object-fit:contain;filter:drop-shadow(0 11px 13px rgba(0,0,0,.38))}.pass-reward-pack span{position:absolute;right:calc(50% - 68px);bottom:9px;display:grid;place-items:center;min-width:34px;height:28px;padding:0 7px;border-radius:999px;background:#f3f6f4;color:#0c1410;font-size:10px;font-weight:1000;box-shadow:0 5px 12px rgba(0,0,0,.3)}
+.pass-reward-player{min-height:244px;display:grid;place-items:center}.pass-reward-player .card-shell{width:176px;max-width:100%;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}
+.pass-slide-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-66%);width:30px;height:42px;border:0;background:rgba(4,9,7,.36);color:#edf5f0;font-size:24px;border-radius:9px}.pass-slide-arrow.prev{left:0}.pass-slide-arrow.next{right:0}.pass-slide-dots{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;gap:6px}.pass-slide-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#53615b}.pass-slide-dots button.active{background:var(--lime);box-shadow:0 0 9px rgba(216,255,62,.5)}
+.pass-level-card-action{display:flex;justify-content:center;margin-top:6px}.pass-claim-button{width:100%;max-width:330px}.pass-claim-state{display:grid;place-items:center;min-height:34px;color:#82928a;font-size:7px;font-style:normal;font-weight:1000;letter-spacing:.05em}.pass-claim-state.done{color:#8df2b6}
+@media(max-width:600px){.pass-level-row{grid-template-columns:40px minmax(0,1fr);gap:7px}.pass-level-rail span{width:34px;height:34px;font-size:12px}.pass-level-card{padding:10px}.pass-reward-slide{padding-left:12px;padding-right:12px}.pass-reward-player .card-shell{width:164px}.pass-reward-visual{min-height:128px}.pass-reward-player{min-height:226px}.pass-reward-currency .currency-icon{width:46px;height:46px}.pass-reward-currency .currency-amount{font-size:25px}.pass-slide-arrow{width:27px;height:38px;font-size:21px}}
+
 .home-action.season{--tile:#ffda72;border-color:rgba(255,218,114,.32);background:radial-gradient(circle at 10% 50%,rgba(255,218,114,.13),transparent 42%),linear-gradient(145deg,#18190e,#0a100e)}
 .home-action .ready-count,.more-item .ready-count{position:absolute;top:6px;right:6px;z-index:4;display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:#dfff45;color:#152012;font-size:10px;font-weight:1000;box-shadow:0 2px 10px #0007}
 .more-item{position:relative}.ready-count[hidden]{display:none!important}
@@ -1394,7 +1418,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.80</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.81</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7137,7 +7161,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.80";
+const GFUT_BUILD="V19.81";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
