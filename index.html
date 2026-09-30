@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.87</title>
+<title>Footera V19.88</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1464,7 +1464,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.87</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.88</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1983,6 +1983,10 @@ const PACKS=[
  {id:"primegold",name:"Prime Goldspieler-Pack",coins:35000,points:500,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 6 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0017,dailyLimit:10,resetHour:19},
  {id:"electrum",name:"Premium Electrum Spieler-Pack",coins:25000,points:350,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.0012,dailyLimit:10,resetHour:19},
  {id:"raremixed",name:"Seltenes Gemischtes Spieler-Pack",coins:20000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · Gold/Silber/Bronze gemischt · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
+ {id:"jumbo-gold",name:"Jumbo-Gold-Pack",coins:null,points:null,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],rareCount:3,store:false,reward:true,desc:"12 Goldspieler · 3 selten",iconChance:0.0005},
+ {id:"premium-electrum-reward",name:"Premium-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],rareCount:3,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 3 selten",iconChance:0.0007},
+ {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
+ {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
  {id:"event-sbc-player",name:"MOMENTUM SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer MOMENTUM SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0}
@@ -2579,9 +2583,24 @@ const LIVE_SBC_TEMPLATES=[
 ];
 
 const MARQUEE_ROTATIONS=[
- ["Bundesliga-Duell","Premier-League-Duell","LaLiga-Abend","Europäisches Topspiel"],
- ["Serie-A-Duell","Ligue-1-Duell","Bundesliga-Abend","Premier-League-Topspiel"],
- ["LaLiga-Duell","Serie-A-Abend","Ligue-1-Topspiel","Europäischer Kracher"]
+ [
+  {name:"Bayern München – Borussia Dortmund",league:"Bundesliga",nation:"Germany",clubs:[["Bayern München","FC Bayern München","Bayern Munich"],["Borussia Dortmund","Dortmund"]]},
+  {name:"Liverpool – Chelsea",league:"Premier League",nation:"England",clubs:[["Liverpool","Liverpool FC"],["Chelsea","Chelsea FC"]]},
+  {name:"Real Madrid – FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",clubs:[["Real Madrid","Real Madrid CF"],["FC Barcelona","Barcelona"]]},
+  {name:"Inter – AC Milan",league:"Serie A",nation:"Italy",clubs:[["Inter","Inter Milan","Internazionale"],["Milan","AC Milan"]]}
+ ],
+ [
+  {name:"Juventus – Napoli",league:"Serie A",nation:"Italy",clubs:[["Juventus","Juventus FC"],["Napoli","SSC Napoli"]]},
+  {name:"Paris Saint-Germain – Marseille",league:"Ligue 1",nation:"France",clubs:[["Paris Saint-Germain","Paris SG","PSG"],["Olympique de Marseille","Marseille"]]},
+  {name:"Leverkusen – RB Leipzig",league:"Bundesliga",nation:"Germany",clubs:[["Bayer 04 Leverkusen","Bayer Leverkusen","Leverkusen"],["RB Leipzig","Leipzig"]]},
+  {name:"Arsenal – Manchester City",league:"Premier League",nation:"England",clubs:[["Arsenal","Arsenal FC"],["Manchester City","Man City"]]}
+ ],
+ [
+  {name:"Atlético Madrid – Real Madrid",league:"LALIGA EA SPORTS",nation:"Spain",clubs:[["Atletico de Madrid","Atlético Madrid","Atletico Madrid"],["Real Madrid","Real Madrid CF"]]},
+  {name:"Roma – Lazio",league:"Serie A",nation:"Italy",clubs:[["Roma","AS Roma"],["Lazio","SS Lazio"]]},
+  {name:"Monaco – Paris Saint-Germain",league:"Ligue 1",nation:"France",clubs:[["AS Monaco","Monaco"],["Paris Saint-Germain","Paris SG","PSG"]]},
+  {name:"Manchester United – Liverpool",league:"Premier League",nation:"England",clubs:[["Manchester United","Man United","Man Utd"],["Liverpool","Liverpool FC"]]}
+ ]
 ];
 
 function sbcDateKey(d){const p=berlinParts(d);return `${p.year}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}`}
@@ -2596,15 +2615,17 @@ function activeDailySBCs(now=new Date()){
  const key=promoWindowKey(now,19),end=nextPromoReset(now,19),ranked=[...LIVE_SBC_TEMPLATES].sort((a,b)=>hashNum(key+"|"+a.key)-hashNum(key+"|"+b.key)).slice(0,3);
  return ranked.map((t,i)=>({...t,id:`live_${key}_${t.key}`,group:"Live 19 Uhr",once:true,live:true,expiresAt:end.getTime(),releaseKey:key,order:i}))
 }
+function marqueeClubMatch(team,aliases){const key=normalizeKey(team||"");return (aliases||[]).some(a=>normalizeKey(a)===key)}
+function marqueeLeagueMatch(league,target){const a=normalizeKey(league||""),b=normalizeKey(target||"");return !!a&&!!b&&(a===b||a.startsWith(b+" ")||b.startsWith(a+" "))}
 function activeMarqueeSBCs(now=new Date()){
  const key=sbcWeeklyWindowKey(now),end=nextSbcWeeklyReset(now),rotation=MARQUEE_ROTATIONS[hashNum(key)%MARQUEE_ROTATIONS.length],groupSet=`top_partien_${key}`,groupReward={pack:"primegold",qty:1};
- const defs=[
-  {req:"11 Spieler · Ø GES 74 · min. 3 Ligen · max. 4 gleicher Verein",minAvg:74,minLeagues:3,maxSameClub:4,reward:{pack:"silver",qty:1}},
-  {req:"11 Spieler · Ø GES 76 · min. 5 Vereine · min. 1 selten",minAvg:76,minClubs:5,minRare:1,reward:{pack:"mixed6",qty:1}},
-  {req:"11 Spieler · Ø GES 78 · min. 3 Ligen · min. 6 Vereine · min. 1 selten",minAvg:78,minLeagues:3,minClubs:6,minRare:1,reward:{pack:"electrum",qty:1}},
-  {req:"11 Spieler · Ø GES 80 · min. 2 selten · max. 3 gleicher Verein",minAvg:80,minRare:2,maxSameClub:3,reward:{pack:"goldplayers",qty:1}}
- ];
- return defs.map((d,i)=>({group:"Top-Partien",id:`${groupSet}_${i+1}`,name:rotation[i],desc:`Top-Partien Aufgabe ${i+1}/4 · wöchentlich erneuert.`,filter:b=>true,count:11,...d,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i}))
+ return rotation.map((match,i)=>{
+  const common={group:"Top-Partien",id:`${groupSet}_${i+1}`,name:match.name,desc:`Top-Partien Aufgabe ${i+1}/4 · wöchentlich erneuert.`,filter:b=>true,count:11,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i,matchLeague:match.league,matchNation:match.nation,matchClubs:match.clubs};
+  if(i===0)return{...common,req:`11 Spieler · min. 1 ${nationLabel(match.nation)} · min. 3 Ligen · max. 4 gleicher Verein · Ø GES 74 · 14 Chemie`,requiredNation:match.nation,minLeagues:3,maxSameClub:4,minAvg:74,minChem:14,reward:{pack:"jumbo-gold",qty:1}};
+  if(i===1)return{...common,req:`11 Spieler · min. 2 aus ${match.league} · min. 3 Nationen · min. 5 Vereine · Ø GES 76 · 18 Chemie`,minMatchLeaguePlayers:2,minNations:3,minClubs:5,minAvg:76,minChem:18,reward:{pack:"premium-electrum-reward",qty:1}};
+  if(i===2)return{...common,req:`11 Spieler · min. 1 aus einem beteiligten Verein · max. 4 Nationen · min. 3 aus ${match.league} · min. 1 selten · Ø GES 78 · 22 Chemie`,minEitherMatchClub:1,maxNations:4,minMatchLeaguePlayers:3,minRare:1,minAvg:78,minChem:22,reward:{pack:"small-prime-gold",qty:1}};
+  return{...common,req:`11 Spieler · min. 1 aus beiden beteiligten Vereinen · min. 2 selten · Ø GES 80 · 26 Chemie`,requireBothMatchClubs:true,minRare:2,minAvg:80,minChem:26,reward:{pack:"prime-electrum-reward",qty:1}}
+ })
 }
 function activeEventPlayerSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now),out=[];
@@ -5632,16 +5653,27 @@ function sbcPlaceUid(id,uid,area,index){
 function sbcRemoveUid(id,area,index){
  const draft=sbcDraft(id);if(!sbcSlotUid(draft,area,index))return false;sbcSetSlotUid(draft,area,index,null);sbcSetDraft(id,draft);return true
 }
+function sbcDraftChemistry(sbc,draft,map){
+ const form=FORMATIONS["4-3-3"],xi=draft.squad.map((uid,i)=>{const item=uid?map.get(String(uid))?.item:null,base=item?displayBase(item):null;return base&&inPosition(base,form[i]?.p)?{base,icon:!!(base.isIcon||item.variant==="icon-mid"||isFounderItem(item))}:null});
+ const clubs=new Map(),nations=new Map(),leagues=new Map();let icons=0;const add=(m,k)=>{if(k)m.set(k,(m.get(k)||0)+1)};
+ for(const entry of xi){if(!entry)continue;const {base,icon}=entry;add(nations,chemNationKey(base.nation));if(icon){icons++;continue}add(clubs,base.team);add(leagues,base.league)}
+ return xi.reduce((sum,entry)=>{if(!entry)return sum;if(entry.icon)return sum+3;const b=entry.base,club=clubs.get(b.team)||0,nation=nations.get(chemNationKey(b.nation))||0,league=(leagues.get(b.league)||0)+(b.league?icons:0);return sum+Math.min(3,chemThreshold(club,2,4,7)+chemThreshold(nation,2,5,8)+chemThreshold(league,3,5,8))},0)
+}
 function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
  const map=sbcSourceMap(),items=draft.squad.map(uid=>uid?map.get(String(uid))?.item:null).filter(Boolean),count=items.length;
  const avg=count?items.reduce((n,i)=>n+itemRating(i),0)/count:0,allRule=count===sbc.count&&items.every(i=>sbc.filter(displayBase(i)));
- const affiliations=items.map(i=>resolvedAffiliation(displayBase(i))),leagues=[...new Set(affiliations.map(a=>a?.league).filter(Boolean))],clubs=[...new Set(affiliations.map(a=>a?.team).filter(Boolean))],allHaveLeague=items.every(i=>!!resolvedAffiliation(displayBase(i))?.league);
+ const bases=items.map(i=>displayBase(i)),affiliations=bases.map(b=>resolvedAffiliation(b)),leagues=[...new Set(affiliations.map(a=>a?.league).filter(Boolean))],clubs=[...new Set(affiliations.map(a=>a?.team).filter(Boolean))],nations=[...new Set(bases.map(b=>chemNationKey(b?.nation)).filter(Boolean))],allHaveLeague=items.every(i=>!!resolvedAffiliation(displayBase(i))?.league);
  const clubCounts={};for(const a of affiliations){const club=String(a?.team||"");if(club)clubCounts[club]=(clubCounts[club]||0)+1}
- const maxSameClub=Math.max(0,...Object.values(clubCounts)),rareCount=items.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length,goldCount=items.filter(i=>rarityOf(displayBase(i))==="gold"||!!i.variant||!!i.evo).length;
+ const maxSameClub=Math.max(0,...Object.values(clubCounts)),rareCount=items.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length,goldCount=items.filter(i=>rarityOf(displayBase(i))==="gold"||!!i.variant||!!i.evo).length,chem=sbcDraftChemistry(sbc,draft,map);
  const avgOk=(!sbc.maxAvg||avg<=sbc.maxAvg)&&(!sbc.minAvg||avg>=sbc.minAvg),leagueOk=!sbc.sameLeague||(count===sbc.count&&allHaveLeague&&leagues.length===1);
  const minLeaguesOk=!sbc.minLeagues||leagues.length>=sbc.minLeagues,minClubsOk=!sbc.minClubs||clubs.length>=sbc.minClubs,maxSameClubOk=!sbc.maxSameClub||maxSameClub<=sbc.maxSameClub,minRareOk=!sbc.minRare||rareCount>=sbc.minRare,minGoldOk=!sbc.minGold||goldCount>=sbc.minGold;
- const extrasOk=minLeaguesOk&&minClubsOk&&maxSameClubOk&&minRareOk&&minGoldOk;
- return{items,count,avg,leagues,clubs,maxSameClub,rareCount,goldCount,allRule,avgOk,leagueOk,minLeaguesOk,minClubsOk,maxSameClubOk,minRareOk,minGoldOk,extrasOk,ok:count===sbc.count&&allRule&&avgOk&&leagueOk&&extrasOk}
+ const requiredNationKey=chemNationKey(sbc.requiredNation||""),requiredNationCount=requiredNationKey?bases.filter(b=>chemNationKey(b?.nation)===requiredNationKey).length:0,requiredNationOk=!sbc.requiredNation||requiredNationCount>=1;
+ const matchLeaguePlayers=sbc.matchLeague?affiliations.filter(a=>marqueeLeagueMatch(a?.league,sbc.matchLeague)).length:0,minMatchLeaguePlayersOk=!sbc.minMatchLeaguePlayers||matchLeaguePlayers>=sbc.minMatchLeaguePlayers;
+ const minNationsOk=!sbc.minNations||nations.length>=sbc.minNations,maxNationsOk=!sbc.maxNations||nations.length<=sbc.maxNations;
+ const matchClubCounts=(sbc.matchClubs||[]).map(aliases=>affiliations.filter(a=>marqueeClubMatch(a?.team,aliases)).length),eitherMatchClubCount=matchClubCounts.reduce((a,b)=>a+b,0),minEitherMatchClubOk=!sbc.minEitherMatchClub||eitherMatchClubCount>=sbc.minEitherMatchClub,requireBothMatchClubsOk=!sbc.requireBothMatchClubs||matchClubCounts.every(n=>n>=1);
+ const minChemOk=!sbc.minChem||chem>=sbc.minChem;
+ const extrasOk=minLeaguesOk&&minClubsOk&&maxSameClubOk&&minRareOk&&minGoldOk&&requiredNationOk&&minMatchLeaguePlayersOk&&minNationsOk&&maxNationsOk&&minEitherMatchClubOk&&requireBothMatchClubsOk&&minChemOk;
+ return{items,count,avg,leagues,clubs,nations,maxSameClub,rareCount,goldCount,chem,requiredNationCount,matchLeaguePlayers,matchClubCounts,eitherMatchClubCount,allRule,avgOk,leagueOk,minLeaguesOk,minClubsOk,maxSameClubOk,minRareOk,minGoldOk,requiredNationOk,minMatchLeaguePlayersOk,minNationsOk,maxNationsOk,minEitherMatchClubOk,requireBothMatchClubsOk,minChemOk,extrasOk,ok:count===sbc.count&&allRule&&avgOk&&leagueOk&&extrasOk}
 }
 function sbcRequirementSummary(sbc,stats){
  const reqs=[{label:"Spieler",value:`${stats.count}/${sbc.count}`,ok:stats.count===sbc.count}];
@@ -5653,6 +5685,13 @@ function sbcRequirementSummary(sbc,stats){
  if(sbc.minRare)reqs.push({label:"Seltene",value:`${stats.rareCount}/${sbc.minRare}`,ok:stats.minRareOk});
  if(sbc.minGold)reqs.push({label:"Gold",value:`${stats.goldCount}/${sbc.minGold}`,ok:stats.minGoldOk});
  if(sbc.maxSameClub)reqs.push({label:"Max. gleicher Verein",value:`${stats.maxSameClub}/${sbc.maxSameClub}`,ok:stats.maxSameClubOk});
+ if(sbc.requiredNation)reqs.push({label:"Passende Nation",value:`${stats.requiredNationCount}/1`,ok:stats.requiredNationOk});
+ if(sbc.minMatchLeaguePlayers)reqs.push({label:sbc.matchLeague||"Liga-Spieler",value:`${stats.matchLeaguePlayers}/${sbc.minMatchLeaguePlayers}`,ok:stats.minMatchLeaguePlayersOk});
+ if(sbc.minNations)reqs.push({label:"Nationen",value:`${stats.nations.length}/${sbc.minNations}`,ok:stats.minNationsOk});
+ if(sbc.maxNations)reqs.push({label:"Max. Nationen",value:`${stats.nations.length}/${sbc.maxNations}`,ok:stats.maxNationsOk});
+ if(sbc.minEitherMatchClub)reqs.push({label:"Beteiligter Verein",value:`${stats.eitherMatchClubCount}/${sbc.minEitherMatchClub}`,ok:stats.minEitherMatchClubOk});
+ if(sbc.requireBothMatchClubs)reqs.push({label:"Beide Vereine",value:`${stats.matchClubCounts.filter(n=>n>0).length}/2`,ok:stats.requireBothMatchClubsOk});
+ if(sbc.minChem)reqs.push({label:"Chemie",value:`${stats.chem}/${sbc.minChem}`,ok:stats.minChemOk});
  if(reqs.length===1)reqs.push({label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule});
  return reqs
 }
@@ -5676,6 +5715,13 @@ function sbcRequirementChips(s,stats){
   let ok=false;
   if(/^11 Spieler/i.test(label)||/^11×/i.test(label))ok=stats.count===s.count;
   else if(/GES/i.test(label))ok=stats.avgOk&&stats.count===s.count;
+  else if(/Chemie/i.test(label))ok=stats.minChemOk;
+  else if(/beiden beteiligten Vereinen/i.test(label))ok=stats.requireBothMatchClubsOk;
+  else if(/beteiligten Verein/i.test(label))ok=stats.minEitherMatchClubOk;
+  else if(/aus Bundesliga|aus Premier League|aus LALIGA|aus Serie A|aus Ligue 1/i.test(label))ok=stats.minMatchLeaguePlayersOk;
+  else if(/max\. .*Nationen/i.test(label))ok=stats.maxNationsOk;
+  else if(/Nationen/i.test(label))ok=stats.minNationsOk;
+  else if(/Deutschland|England|Spanien|Italien|Frankreich|Germany|Spain|Italy|France/i.test(label))ok=stats.requiredNationOk;
   else if(/Liga/i.test(label)&&s.sameLeague)ok=stats.leagueOk&&stats.count===s.count;
   else if(/Ligen/i.test(label))ok=stats.minLeaguesOk;
   else if(/Vereine/i.test(label))ok=stats.minClubsOk;
@@ -7250,7 +7296,7 @@ window.addEventListener("appinstalled",()=>{
 $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
-const GFUT_BUILD="V19.87";
+const GFUT_BUILD="V19.88";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7268,7 +7314,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1987",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=1988",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
