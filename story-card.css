@@ -1,0 +1,44 @@
+/* Story uses the shared card renderer and a blank Season Pass artwork. */
+.card-shell .custom-card.story{
+ background:transparent url("./assets/footera/card-story-v1.webp") center / 100% 100% no-repeat;
+ color:#ffe9d6;clip-path:none;box-shadow:none;
+ --card-info-left:9%;--card-info-width:21%;
+ --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
+ --card-portrait-left:29%;--card-portrait-right:5%;
+ --card-portrait-top:11%;--card-portrait-height:50%;
+ --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-stats-left:3%;--card-stats-right:3%;
+ --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
+ --card-name-color:#ffe6d0;
+ --card-stats-color:#deb6a3;
+ --card-value-color:#fff0df;
+}
+.card-shell .custom-card.story:before,.card-shell .custom-card.story .card-top:before{content:none}
+.card-shell .custom-card.story .pname{clip-path:none;text-shadow:0 1px 2px #000b!important}
+.card-shell .custom-card.story:after{
+ content:"STORY";position:absolute;z-index:8;top:10%;right:10%;
+ padding:.7cqw 1.5cqw;border:1px solid #d79b83;border-radius:1cqw;
+ background:#241323d9;color:#ffe9d8;font-size:max(3px,3cqw);font-weight:900;
+ letter-spacing:.08em;text-shadow:0 1px 3px #000;
+}
+.card-shell .custom-card.story .ovr{color:#fff0dc;text-shadow:0 1px 4px #1b0818}
+.card-shell .custom-card.story .pos{color:#f9d5bd}
+.card-shell .custom-card.story .face img{filter:drop-shadow(0 .7cqw 1cqw #190a19b0)}
+.card-shell .custom-card.story .stats span{border-color:transparent}
+
+.pass-story-chapters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+.pass-story-chapter{min-width:0;display:grid;grid-template-columns:115px minmax(0,1fr);align-items:center;gap:10px;padding:12px;border:1px solid #9b6b69;border-radius:15px;background:radial-gradient(circle at 20% 15%,#9a5b6844,transparent 56%),linear-gradient(125deg,#261522,#101116);box-shadow:inset 0 0 0 1px #d89c7540}
+.pass-story-visual{display:grid;place-items:center;min-width:0}
+.pass-story-visual .card-shell{width:min(100%,105px);filter:drop-shadow(0 6px 12px #0009)}
+.pass-story-copy{min-width:0}.pass-story-copy small{display:block;color:#efae96;font-size:9px;font-weight:900;letter-spacing:.08em}
+.pass-story-copy strong{display:block;margin:5px 0;color:#ffe9d7;font-size:15px;line-height:1.1}
+.pass-story-copy p{margin:0 0 9px;color:#cdaeb8;font-size:9px;line-height:1.4}
+.pass-story-copy button{min-height:34px;padding:7px 10px;border:1px solid #d39b82;border-radius:9px;background:#2b1927;color:#ffddc3;font-size:9px;font-weight:900}
+.pass-tier.story-tier{border-color:#ae7c75;background:linear-gradient(155deg,#311b2b,#141017)}
+.pass-reward.story-reward{border-color:#c18d7b;background:linear-gradient(130deg,#372031,#1b1723)}
+.pass-reward.story-reward b{color:#ffc5a6}.pass-reward.story-reward span{font-weight:850}
+.pass-story-note{margin:-8px 0 12px;color:#c2a8b4;font-size:9px;line-height:1.45}
+@media(max-width:700px){.pass-story-chapter{grid-template-columns:1fr;justify-items:center;text-align:center;gap:5px}.pass-story-visual .card-shell{width:min(100%,116px)}.pass-story-copy strong{font-size:12px}}
+@media(max-width:400px){.pass-story-chapters{gap:6px}.pass-story-chapter{padding:8px 5px}.pass-story-visual .card-shell{width:min(100%,98px)}.pass-story-copy small{font-size:7px}.pass-story-copy p{font-size:8px}}

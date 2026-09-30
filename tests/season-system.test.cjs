@@ -18,13 +18,15 @@ function setup(initial={}){
   return elements.get(id)
  }
  const state={coins:60000,points:1000,sp:0,packs:{},seasonClaims:{},seasonPass:null,
+  storyGrants:[],
   stats:{competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,market:0,sbcs:0},
   claims:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},...initial};
  const ctx={state,SEASON_REWARDS:structuredClone(firstTen),TASKS:[{id:'starter',title:'Starter',desc:'Start',stat:'packs',target:1,reward:{coins:100}}],
   $:element,save(){},renderAll(){},renderHome(){},toast(){},confirm(){return true},
   fmt:n=>String(n),esc:s=>String(s),rewardText:r=>JSON.stringify(r),setInterval(){},
   grant:r=>{state.coins+=r.coins||0;state.sp+=r.sp||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1)},
-  grantSeasonOnly:r=>{state.coins+=r.coins||0;state.points+=r.points||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1)},
+  grantSeasonOnly:r=>{state.coins+=r.coins||0;state.points+=r.points||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)state.storyGrants.push(r.story)},
+  STORY_PASS_PLAYERS:{'s1-15':{name:'Ermedin Demirović',chapter:'Aufbruch',rating:84},'s1-30':{name:'Kobbie Mainoo',chapter:'Durchbruch',rating:85}},storyPreviewCard:()=>'<div class="card-shell story-shell"></div>',
   claimSeasonRewards(){}
  };
  vm.createContext(ctx);
@@ -52,6 +54,18 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,6);
  assert.equal(api.objectiveWindow('season',new Date('2026-09-23T20:00:00Z')).tasks.length,12);
  assert.notDeepEqual(api.objectiveWindow('daily',new Date('2026-09-23T20:00:00Z')).tasks.map(t=>t.id),api.objectiveWindow('daily',new Date('2026-09-24T20:00:00Z')).tasks.map(t=>t.id));
+});
+
+test('Season 1 Story players replace only free levels 15 and 30 and claim once',()=>{
+ const app=setup({sp:26500});const{state,ctx}=app;
+ const rewards=vm.runInContext('({at15:seasonTierReward(SEASON_REWARDS[14],"free"),at30:seasonTierReward(SEASON_REWARDS[29],"free"),premium:seasonTierReward(SEASON_REWARDS[14],"premium"),nextSeason:seasonTierReward(SEASON_REWARDS[14],"free","s2")})',ctx);
+ assert.equal(rewards.at15.story,'s1-15');assert.equal(rewards.at30.story,'s1-30');
+ assert.ok(!rewards.premium.story);assert.ok(!rewards.nextSeason.story);
+ app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'15'});
+ app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'30'});
+ app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'15'});
+ assert.deepEqual(state.storyGrants,['s1-15','s1-30']);
+ assert.equal(state.packs['82'],undefined);
 });
 
 test('progress counts only actions in the active window and resets on rotation',()=>{
@@ -114,6 +128,26 @@ test('objective notice counts only objectives while Pass rewards appear separate
  assert.equal(api.availablePassRewardsCount(),2);
 });
 
+test('unclaimed completed goals and weekly bonus appear once above every category',()=>{
+ const app=setup();const{state,api}=app;
+ const week=api.objectiveWindow('weekly'),ready=week.tasks.find(t=>t.stat!=='packs');
+ state.stats.packs=1;state.stats[ready.stat]+=ready.target;
+ api.renderTasks();
+ let html=app.elements.get('taskList').innerHTML;
+ assert.ok(html.indexOf('Jetzt abholen')<html.indexOf('Foundations</strong>'));
+ assert.ok(html.indexOf('Starter</h4>')<html.indexOf('Foundations</strong>'));
+ assert.equal(html.split(`data-objective-claim="${ready.key}"`).length-1,1);
+ state.claims.starter=true;state.objectiveClaims[ready.key]=true;
+ for(const task of week.tasks.slice(0,5))state.objectiveClaims[task.key]=true;
+ api.renderTasks();html=app.elements.get('taskList').innerHTML;
+ assert.ok(html.indexOf('Wochenmeister')<html.indexOf('Foundations</strong>'));
+ assert.equal(html.split(`data-objective-bonus="${week.key}"`).length-1,1);
+ state.objectiveBonuses[week.key]=true;api.renderTasks();
+ html=app.elements.get('taskList').innerHTML;
+ assert.ok(html.indexOf('Wochenmeister')>html.indexOf('Wöchentlich</strong>'));
+ assert.ok(!html.includes(`data-objective-bonus="${week.key}"`));
+});
+
 test('claiming a rotating objective and the weekly set bonus grants each only once',()=>{
  const app=setup();
  const{state,api}=app;
@@ -151,6 +185,14 @@ test('season change settles earned rewards once and resets premium and SP',()=>{
  api.ensureObjectiveWindows(new Date('2026-10-30T18:01:00Z'));
  assert.equal(state.coins,4000);
  assert.equal(state.packs.gold,2);
+});
+
+test('season rollover honors Story entitlement even when old free tiers were already claimed',()=>{
+ const app=setup({sp:26500,seasonPass:{key:'s1',premium:false,freeClaims:{15:true,30:true},premiumClaims:{}},objectiveWindows:{}});
+ app.api.ensureObjectiveWindows(new Date('2026-10-30T18:00:00Z'));
+ assert.deepEqual(app.state.storyGrants,['s1-15','s1-30']);
+ app.api.ensureObjectiveWindows(new Date('2026-10-30T18:01:00Z'));
+ assert.equal(app.state.storyGrants.length,2);
 });
 
 test('Berlin week boundaries retain 09:00 wall time through winter and summer time',()=>{
