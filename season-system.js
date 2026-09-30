@@ -221,12 +221,35 @@ renderAll=function(){const changed=ensureObjectiveWindows();originalRenderAll();
 let objectiveTab="all";
 const WEEKLY_BONUS={sp:750,pack:"gold"};
 function passDate(date,weekday=false){return date?new Intl.DateTimeFormat("de-DE",{timeZone:FOOTERA_TIME_ZONE,...(weekday?{weekday:"long"}:{}),day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(date):"Termin folgt"}
+function passRewardItems(reward){
+ const out=[];
+ if(reward?.story){
+  const spec=STORY_PASS_PLAYERS[reward.story];
+  if(spec)out.push({type:"story",label:`${spec.rating} ${spec.name}`,sub:"Story-Spieler · einmalig · untauschbar",visual:`<div class="pass-reward-player">${storyPreviewCard(reward.story)}</div>`})
+ }
+ if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Münzen`,sub:"Footera Münzen",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
+ if(reward?.points)out.push({type:"points",label:`${fmt(reward.points)} Footera Points`,sub:"Footera Points",visual:`<div class="pass-reward-currency">${currencyAmountHTML("points",reward.points,"pass-currency-hero")}</div>`});
+ if(reward?.sp)out.push({type:"sp",label:`${fmt(reward.sp)} Season Points`,sub:"Season Points",visual:`<div class="pass-reward-sp"><strong>SP</strong><b>${fmt(reward.sp)}</b></div>`});
+ if(reward?.pack){
+  const pack=PACKS.find(p=>p.id===reward.pack),qty=Math.max(1,Number(reward.qty||1)),name=pack?.name||"Pack";
+  out.push({type:"pack",label:`${qty>1?`${qty}× `:""}${name}`,sub:pack?.desc||"Pack-Belohnung",visual:`<div class="pass-reward-pack"><img src="${packArtSrc(reward.pack)}" alt="${esc(name)}" loading="lazy">${qty>1?`<span>${qty}×</span>`:""}</div>`})
+ }
+ if(reward?.coinBoost){
+  const games=Math.max(0,Number(reward.coinBoost.games||0)),amount=Math.max(0,Number(reward.coinBoost.amount||0));
+  out.push({type:"boost",label:`+${fmt(amount)} Münzen × ${games} Spiele`,sub:"Coin-Boost",visual:`<div class="pass-reward-currency boost">${currencyAmountHTML("coins",amount,"pass-currency-hero")}<small>× ${games} Spiele</small></div>`})
+ }
+ return out.length?out:[{type:"reward",label:"Belohnung",sub:"Season Pass",visual:'<div class="pass-reward-sp"><strong>★</strong></div>'}]
+}
+function passRewardSlider(reward,tier,which){
+ const items=passRewardItems(reward),key=`${which}-${tier.level}`,multi=items.length>1;
+ return `<div class="pass-reward-slider" data-pass-carousel="${key}"><div class="pass-reward-slides">${items.map((item,index)=>`<div class="pass-reward-slide" data-pass-slide="${index}"><div class="pass-reward-visual">${item.visual}</div><strong class="pass-reward-name">${esc(item.label)}</strong><span class="pass-reward-sub">${esc(item.sub)}</span></div>`).join("")}</div>${multi?`<button type="button" class="pass-slide-arrow prev" data-pass-slide-nav="-1" aria-label="Vorherige Belohnung">‹</button><button type="button" class="pass-slide-arrow next" data-pass-slide-nav="1" aria-label="Nächste Belohnung">›</button><div class="pass-slide-dots">${items.map((_,index)=>`<button type="button" class="${index===0?"active":""}" data-pass-slide-dot="${index}" aria-label="Belohnung ${index+1}"></button>`).join("")}</div>`:""}</div>`
+}
 function rewardCell(tier,which){
  const premium=which==="premium",unlocked=Number(state.sp||0)>=tier.sp,owned=!premium||state.seasonPass.premium,claimed=!!passClaims(which)[tier.level];
- const reward=seasonTierReward(tier,which);
- const action=claimed?'<em>ABGEHOLT</em>':unlocked&&owned?`<button class="primary" data-pass-claim="${which}" data-pass-level="${tier.level}">Abholen</button>`:
-  `<em>${!owned?"PREMIUM":unlocked?"BEREIT":`${fmt(tier.sp)} SP nötig`}</em>`;
- return `<div class="pass-reward ${premium?"premium":""} ${reward.story?"story-reward":""}"><b>${reward.story?"STORY · NUR IM PASS":premium?"PREMIUM":"KOSTENLOS"}</b><span>${esc(rewardText(reward))}</span>${action}</div>`
+ const reward=seasonTierReward(tier,which),items=passRewardItems(reward),story=!!reward.story;
+ const action=claimed?'<em class="pass-claim-state done">ABGEHOLT</em>':unlocked&&owned?`<button class="primary pass-claim-button" data-pass-claim="${which}" data-pass-level="${tier.level}">${items.length>1?"Belohnungen abholen":"Abholen"}</button>`:
+  `<em class="pass-claim-state">${!owned?"PREMIUM GESPERRT":unlocked?"BEREIT":`${fmt(tier.sp)} SP NÖTIG`}</em>`;
+ return `<div class="pass-level-card ${premium?"premium":"free"} ${story?"story-reward":""} ${claimed?"claimed":""} ${!owned?"locked":""}"><div class="pass-level-card-head"><div><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div><b>${story?"STORY":premium?"PREMIUM":"KOSTENLOS"}${!owned?" · 🔒":""}</b></div>${passRewardSlider(reward,tier,which)}<div class="pass-level-card-action">${action}</div></div>`
 }
 function storyPassChapters(info){
  if(info.key!=="s1")return"";
@@ -240,12 +263,10 @@ function renderSeasonPass(){
  const host=$("seasonPass");if(!host)return;
  if(ensureObjectiveWindows())save();
  const info=seasonInfo(),sp=Math.max(0,Number(state.sp||0)),max=SEASON_REWARDS[SEASON_REWARDS.length-1].sp;
- const next=SEASON_REWARDS.find(t=>t.sp>sp),level=SEASON_REWARDS.filter(t=>sp>=t.sp).length;
- const previous=host.querySelector(".pass-ladder"),previousScroll=previous?.scrollLeft||0;
+ const next=SEASON_REWARDS.find(t=>t.sp>sp),level=Math.max(1,SEASON_REWARDS.filter(t=>sp>=t.sp).length);
  const upgrade=state.seasonPass.premium?'<strong>✓ Premium aktiviert</strong><p>Beide Spuren verwenden dieselben Season Points. Bereits erreichte Premium-Stufen können abgeholt werden.</p>':
-  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar. Nur Guthaben aus Footera.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${fmt(PASS_PRICE.coins)} Coins</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${fmt(PASS_PRICE.points)} Footera Points</button></div>`;
- host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON ${info.number} · ${esc(info.name)}</span><h3>${esc(info.name)}</h3><p>Kostenloser und Premium-Pfad · 30 Stufen · regelmäßige Spieler können Level 30 rund 14 Tage vor Saisonende erreichen.</p></div><span class="pass-time">Start ${passDate(info.start)}<br>${info.end?`Endet ${passDate(info.end,true)}<br>`:""}<strong>${seasonCountdown(info.end)}</strong></span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(Math.min(sp,max))} / ${fmt(max)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div>${storyPassChapters(info)}<div class="pass-upgrade">${upgrade}</div><div class="pass-ladder" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<div class="pass-tier ${sp>=tier.sp?"reached":""} ${seasonTierReward(tier,"free").story?"story-tier":""}" data-pass-tier="${tier.level}"><div class="pass-tier-header"><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${rewardCell(tier,"free")}${rewardCell(tier,"premium")}</div>`).join("")}</div></div>`;
- host.querySelector(".pass-ladder").scrollLeft=previousScroll
+  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${currencyIconHTML("coins")}${fmt(PASS_PRICE.coins)}</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${currencyIconHTML("points")}${fmt(PASS_PRICE.points)}</button></div>`;
+ host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON ${info.number} · ${esc(info.name)}</span><h3>${esc(info.name)}</h3><p>30 Stufen · kostenloser und Premium-Pfad · Belohnungen direkt im Pass.</p></div><span class="pass-time">Start ${passDate(info.start)}<br>${info.end?`Endet ${passDate(info.end,true)}<br>`:""}<strong>${seasonCountdown(info.end)}</strong></span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(Math.min(sp,max))} / ${fmt(max)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder pass-level-stack" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<section class="pass-level-row ${sp>=tier.sp?"reached":""} ${tier.level===level?"current":""}" data-pass-tier="${tier.level}"><div class="pass-level-rail"><span>${tier.level}</span></div><div class="pass-level-cards">${rewardCell(tier,"free")}${rewardCell(tier,"premium")}</div></section>`).join("")}</div></div>`
 }
 function objectiveCard(task,group,featured=false){
  const foundation=group==="foundation",value=foundation?Math.min(task.target,Number(state.stats[task.stat]||0)):objectiveProgress(task);
@@ -302,7 +323,12 @@ $("objectiveTabs").addEventListener("click",event=>{
  objectiveTab=button.dataset.objectiveTab;renderTasks()
 });
 $("seasonPass").addEventListener("click",event=>{
- const jump=event.target.closest("[data-pass-jump]");if(jump){$("seasonPass").querySelector(`[data-pass-tier="${jump.dataset.passJump}"]`)?.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});return}
+ const nav=event.target.closest("[data-pass-slide-nav]"),dot=event.target.closest("[data-pass-slide-dot]");
+ if(nav||dot){
+  const slider=(nav||dot).closest(".pass-reward-slider"),track=slider?.querySelector(".pass-reward-slides");if(!track)return;
+  const slides=[...track.children],current=Math.round(track.scrollLeft/Math.max(1,track.clientWidth)),target=dot?Number(dot.dataset.passSlideDot):Math.max(0,Math.min(slides.length-1,current+Number(nav.dataset.passSlideNav||0)));
+  track.scrollTo({left:target*track.clientWidth,behavior:"smooth"});return
+ }
  const buy=event.target.closest("[data-pass-buy]"),claim=event.target.closest("[data-pass-claim]");
  if(buy){
   ensureObjectiveWindows();
@@ -319,6 +345,12 @@ $("seasonPass").addEventListener("click",event=>{
  passClaims(which)[level]=true;grantSeasonOnly(seasonTierReward(tier,which));
  save();renderAll();toast(`Level ${level}: Belohnung abgeholt.`)
 });
+$("seasonPass").addEventListener("scroll",event=>{
+ const track=event.target?.classList?.contains("pass-reward-slides")?event.target:null;if(!track)return;
+ const slider=track.closest(".pass-reward-slider"),dots=[...slider.querySelectorAll("[data-pass-slide-dot]")];if(!dots.length)return;
+ const index=Math.max(0,Math.min(dots.length-1,Math.round(track.scrollLeft/Math.max(1,track.clientWidth))));
+ dots.forEach((dot,i)=>dot.classList.toggle("active",i===index))
+},true);
 $("taskList").addEventListener("click",event=>{
  const taskButton=event.target.closest("[data-objective-claim]"),bonus=event.target.closest("[data-objective-bonus]");
  if(!taskButton&&!bonus)return;
