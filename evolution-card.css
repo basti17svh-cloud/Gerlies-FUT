@@ -5,7 +5,7 @@
  background:transparent url("./assets/footera/card-evolution-v1.webp") center / 100% 100% no-repeat;
  clip-path:none;box-shadow:none;color:#e2fff4;
  --card-info-left:16%;--card-info-width:18%;
- --card-emblems-top:35.5%;--card-emblems-gap:2.3cqw;
+ --card-emblems-top:37.5%;--card-emblems-gap:2.3cqw;
  --card-club-size:11cqw;--card-league-size:9cqw;
  --card-portrait-left:31%;--card-portrait-right:18%;
  --card-portrait-top:13%;--card-portrait-height:51%;
@@ -19,12 +19,13 @@
 .card-shell .custom-card.evolution:before,
 .card-shell .custom-card.evolution:after,
 .card-shell .custom-card.evolution .card-top:before{content:none}
-.card-shell .custom-card.evolution .card-top{top:17%!important}
-.card-shell .custom-card.evolution .ovr{
+/* Match the shared layout's bench/reserve specificity in every context. */
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution .card-top{top:17%!important}
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution .ovr{
  font-size:16cqw!important;color:#e3fff8;
  text-shadow:0 1px 4px #001d17,0 0 1.2cqw #42dcbc70;
 }
-.card-shell .custom-card.evolution .pos{font-size:6.5cqw!important;margin-top:1.5cqw!important;color:#d3fff0}
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution .pos{font-size:6.5cqw!important;margin-top:1.5cqw!important;color:#d3fff0}
 .card-shell .custom-card.evolution .face img{filter:drop-shadow(0 .7cqw 1cqw #001e1bc9)}
 .card-shell .custom-card.evolution .pname{border:0!important;clip-path:none;text-shadow:0 1px 3px #00140e!important}
 .card-shell .custom-card.evolution .stats span{border-color:#6eefc755}

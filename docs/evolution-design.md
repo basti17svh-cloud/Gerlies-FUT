@@ -1,6 +1,6 @@
-# Evolution-Kartendesign V20.06
+# Evolution-Kartendesign V20.07
 
-Alle Evolution-Vorschauen, aktive Spieler ab dem Start und abgeschlossene Upgrades verwenden die gemeinsame Karte mit der freigestellten Vorlage. Bestehende Evolutions werden anhand ihrer Upgrades erkannt. Die Spielerfelder bleiben dynamisch, einschließlich Torwartwerten und Nebenpositionen. Die grüne Sanduhr kennzeichnet weiterhin eine aktive Evolution.
+Alle Evolution-Vorschauen, aktive Spieler ab dem Start und abgeschlossene Upgrades verwenden die gemeinsame Karte mit der freigestellten Vorlage. Bestehende Evolutions werden anhand ihrer Upgrades erkannt. Die Spielerfelder bleiben dynamisch, einschließlich Torwartwerten und Nebenpositionen. Die grüne Sanduhr kennzeichnet weiterhin eine aktive Evolution. Die Größen für Rating und Position berücksichtigen die gemeinsamen Regeln für Bank und Reserve, damit die Flagge in jeder Ansicht ausreichend Abstand hält.
 
 Asset: `assets/footera/card-evolution-v1.webp` (1086 × 1448, transparent, ca. 280 KiB).
 
