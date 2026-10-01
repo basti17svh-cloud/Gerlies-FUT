@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.10</title>
+<title>Footera V20.11</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1440,7 +1440,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:650px){.evo-summary{grid-template-columns:1fr}}
 
 
-/* V20.10 — cleaner Matchday + live player performance */
+/* V20.11 — cleaner Matchday + live player performance */
 #match #matchLog[hidden]{display:none!important}
 #match .match-performance-strip{margin:0 0 10px;padding:9px;border:1px solid #31463b;border-radius:12px;background:#0b1511}
 #match .match-performance-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
@@ -1538,7 +1538,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.10</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.11</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7097,6 +7097,8 @@ function renderMatchReport(){
  const poss=Math.max(32,Math.min(68,Math.round(match.poss))),potm=matchReportPotm(),timeline=matchReportTimelineRows(),homeRows=matchReportPerformanceRows("home"),awayRows=matchReportPerformanceRows("away");
  const potmTeam=potm?.side==="home"?matchHomeTeamName():matchAwayTeamName(),potmCard=potm?matchReportPlayerCard(potm):"";
  const cardsHome=(match.yellowCards||[]).filter(x=>x.side==="home").length+(match.redCards||[]).length,cardsAway=(match.yellowCards||[]).filter(x=>x.side==="away").length;
+ const homeTop=homeRows[0]||null,homeLow=homeRows.length?homeRows[homeRows.length-1]:null,homeAvg=homeRows.length?homeRows.reduce((n,row)=>n+Number(row.rating||0),0)/homeRows.length:0;
+ const performanceSummary=homeTop?`<div class="match-report-performance-summary"><span><b>Top</b> ${esc(homeTop.name)} <strong>${homeTop.rating.toFixed(1)}</strong></span><span><b>Ø Team</b> <strong>${homeAvg.toFixed(1)}</strong></span>${homeLow?`<span><b>Schwächster</b> ${esc(homeLow.name)} <strong>${homeLow.rating.toFixed(1)}</strong></span>`:""}</div>`:"";
  root.innerHTML=`<div class="match-report-kicker">SPIELBERICHT 2.0</div>
  <div class="match-report-statgrid">
   <div><span>Ballbesitz</span><b>${poss}%</b><small>${100-poss}%</small></div>
@@ -7106,7 +7108,7 @@ function renderMatchReport(){
  </div>
  ${potm?`<section class="match-potm"><div class="match-potm-card">${potmCard}</div><div class="match-potm-copy"><span>SPIELER DES SPIELS</span><strong>${esc(potm.name)}</strong><small>${esc(potmTeam)}</small><div><b>${potm.rating.toFixed(1)}</b><em>Matchrating</em></div><p>${potm.goals} Tor${potm.goals===1?"":"e"} · ${potm.assists} Vorlage${potm.assists===1?"":"n"} · ${potm.shots} Schüsse</p></div></section>`:""}
  <section class="match-report-events"><div class="match-report-section-title"><strong>Timeline</strong><span>Tore, Karten, Wechsel</span></div><div class="match-report-event-list">${timeline.length?timeline.map(e=>`<div class="match-report-event ${e.side} ${e.kind}"><time>${e.minute}'</time><i>${e.icon}</i><div><strong>${esc(e.title)}</strong><span>${esc(e.detail)}</span></div></div>`).join(""):'<div class="match-report-empty">Keine besonderen Ereignisse.</div>'}</div></section>
- <div class="match-report-teams">${matchReportPerformanceHTML(matchHomeTeamName(),homeRows)}${matchReportPerformanceHTML(matchAwayTeamName(),awayRows)}</div>`
+ <details class="match-report-performance-details"><summary><div><strong>Spielerleistungen</strong><span>${esc(matchHomeTeamName())} · Bewertungen & Statistiken</span></div><i aria-hidden="true">⌄</i></summary>${performanceSummary}<div class="match-report-teams">${matchReportPerformanceHTML(matchHomeTeamName(),homeRows)}${matchReportPerformanceHTML(matchAwayTeamName(),awayRows)}</div></details>`
 }
 function applyClubGoalStats(){
  if(!match||match.playerStatsApplied)return;
@@ -7702,7 +7704,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.10";
+const GFUT_BUILD="V20.11";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7720,7 +7722,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2010",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2011",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

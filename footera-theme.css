@@ -296,6 +296,19 @@ body{
 .match-report-event strong{display:block;font-size:7px;color:#eef4f1}.match-report-event span{display:block;margin-top:2px;font-size:6px;color:#81918b}
 .match-report-empty{padding:9px;font-size:7px;color:#7d8b86}
 .match-report-teams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match-report-performance-details{border:1px solid rgba(128,170,151,.2);border-radius:15px;background:rgba(9,18,15,.82);overflow:hidden}
+.match-report-performance-details>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;padding:12px 14px;cursor:pointer;list-style:none;user-select:none}
+.match-report-performance-details>summary::-webkit-details-marker{display:none}
+.match-report-performance-details>summary>div{min-width:0}
+.match-report-performance-details>summary strong{display:block;font-size:11px;color:#f4f7f5}
+.match-report-performance-details>summary span{display:block;margin-top:3px;font-size:6px;color:#75867f}
+.match-report-performance-details>summary i{font-style:normal;font-size:17px;line-height:1;color:#7ff0ba;transition:transform .18s ease}
+.match-report-performance-details[open]>summary i{transform:rotate(180deg)}
+.match-report-performance-summary{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px}
+.match-report-performance-summary>span{display:inline-flex;align-items:center;gap:4px;min-height:26px;padding:5px 8px;border:1px solid rgba(128,170,151,.18);border-radius:999px;background:rgba(255,255,255,.025);font-size:6px;color:#9eaea7}
+.match-report-performance-summary b{color:#75867f;text-transform:uppercase;letter-spacing:.05em}
+.match-report-performance-summary strong{font-size:7px;color:#e7f1ec}
+.match-report-performance-details .match-report-teams{padding:0 12px 12px}
 .match-performance-list{display:grid;gap:4px}
 .match-performance-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,28px) 42px;gap:4px;align-items:center;min-height:37px;padding:5px 6px;border-radius:9px;background:rgba(255,255,255,.025)}
 .match-performance-player{min-width:0}.match-performance-player strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;color:#f1f5f3}.match-performance-player span{display:block;margin-top:1px;font-size:5px;color:#76867f}
@@ -305,6 +318,9 @@ body{
 @media(max-width:680px){
  .match-report-statgrid{grid-template-columns:1fr 1fr}
  .match-report-teams{grid-template-columns:1fr}
+ .match-report-performance-details>summary{padding:11px 12px}
+ .match-report-performance-summary{padding:0 12px 10px}
+ .match-report-performance-details .match-report-teams{padding:0 10px 10px}
  .match-potm{grid-template-columns:92px 1fr;padding:11px}.match-potm-card{width:92px}
  .match-performance-row{grid-template-columns:minmax(0,1fr) repeat(3,25px) 38px}
 }
