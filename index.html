@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.02</title>
+<title>Footera V20.03</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1411,7 +1411,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 
-/* V20.02 — cinematic Footera boot intro */
+/* V20.03 — cinematic Footera boot intro */
 .boot-intro{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#000;display:grid;place-items:center;opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease}
 .boot-intro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(101,0,0,.18),transparent 52%),#000;pointer-events:none}
 .boot-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;background:#000;opacity:0;transition:opacity .22s ease;z-index:1}
@@ -1441,7 +1441,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(prefers-reduced-motion:reduce){.splash-emblem-image{animation:none!important}}
 
 
-/* V20.02 — tradeability: club, profile and club search only */
+/* V20.03 — tradeability: club, profile and club search only */
 .club-card-preview{position:relative}
 .club-untradeable-badge{position:absolute;z-index:8;top:17px;right:max(7px,calc((100% - 150px)/2 + 4px));width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(12,15,17,.92);border:1px solid rgba(255,120,137,.75);color:#ff899b;box-shadow:0 4px 13px rgba(0,0,0,.45)}
 .club-untradeable-badge svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
@@ -1512,20 +1512,21 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       </div>
     </div>
     <div id="leagueStep" style="display:none">
-      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1>Gründe deinen Club</h1><p>Wähle die Liga deines Startersets. Die Karten behalten ihre echten FC‑27-Ratings. 3 Gold, 4 Silber und 11 Bronze.</p></div>
+      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1>Gründe deinen Club</h1><p>Wähle die Liga deines Startersets. Die Karten behalten ihre echten FC‑27-Ratings. 3 Gold, 4 Silber und 11 Bronze. Fehlende Bronze-Spieler werden aus weiteren Ligen ergänzt.</p></div>
       <div id="leagueGrid" class="leaguegrid"></div>
     </div>
     <div id="starterStage" class="starterstage">
-      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1 id="starterTitle">Starterset</h1><p id="starterInfo">18 echte Spieler aus deiner gewählten Liga.</p></div>
+      <div class="gatebrand"><div class="mark" role="img" aria-label="Footera"></div><h1 id="starterTitle">Starterset</h1><p id="starterInfo">18 echte Spieler mit Gold- und Silberkarten aus deiner gewählten Liga.</p></div>
       <div id="starterPack" class="starterpack"><img src="./assets/footera/promo.webp" alt="Footera Starter-Paket" /><span>Starter-Paket</span></div>
       <button id="starterOpen" class="primary" style="width:100%">Starterset öffnen</button>
+      <button id="starterBack" class="secondary" style="width:100%;margin-top:10px">Zurück zur Ligaauswahl</button>
     </div>
   </div>
 </div>
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.02</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.03</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4179,10 +4180,12 @@ function leagueChoice(id){return LEAGUE_CHOICES.find(x=>x.id===id)||LEAGUE_CHOIC
 function leaguePool(id){const c=leagueChoice(id);if(!c)return[];const canonical=c.label==="Serie A"?"Serie A":c.label==="Ligue 1"?"Ligue 1":c.label;return PLAYERS.filter(p=>p.league===canonical)}
 function buildStarter(id){
  const pool=leaguePool(id).filter(p=>p&&p.id&&Number.isFinite(Number(p.ovr)));
+ const poolIds=new Set(pool.map(p=>String(p.id)));
+ const bronzeFallback=PLAYERS.filter(p=>p&&p.id&&Number.isFinite(Number(p.ovr))&&Number(p.ovr)<65&&!poolIds.has(String(p.id))).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de"));
  const tiers=[
   pool.filter(p=>Number(p.ovr)>=75&&Number(p.ovr)<=80).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de")),
   pool.filter(p=>Number(p.ovr)>=65&&Number(p.ovr)<75).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de")),
-  pool.filter(p=>Number(p.ovr)<65).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de"))
+  pool.filter(p=>Number(p.ovr)<65).sort((a,b)=>b.ovr-a.ovr||String(a.name).localeCompare(String(b.name),"de")).concat(bronzeFallback)
  ];
  const targets=[["ST","CM","RW"],["GK","CB","CM","LW"],["LB","CB","RB","CM","LW","RW","ST","CDM","CB","LM","RM"]];
  if(tiers.some((rows,i)=>rows.length<targets[i].length))return null;
@@ -4228,7 +4231,7 @@ $("saveFirstUsername").addEventListener("click",()=>{
  toast(`Willkommen, ${username}. Dein Team heißt ${state.profile.clubName}.`)
 });
 
-function renderLeagueChoices(){$("leagueGrid").innerHTML=LEAGUE_CHOICES.map(c=>{const pool=leaguePool(c.id),g=pool.filter(p=>p.ovr>=75&&p.ovr<=80).length,si=pool.filter(p=>rarityOf(p)==="silver").length,b=pool.filter(p=>rarityOf(p)==="bronze").length;return`<button class="leaguebtn" data-league="${c.id}" ${pool.length<18?'disabled':''}><div><strong>${esc(c.label)}</strong><span>${g} Starter-Gold · ${si} Silber · ${b} Bronze verfügbar</span></div><b>›</b></button>`}).join("")}
+function renderLeagueChoices(){$("leagueGrid").innerHTML=LEAGUE_CHOICES.map(c=>{const pool=leaguePool(c.id),g=pool.filter(p=>p.ovr>=75&&p.ovr<=80).length,si=pool.filter(p=>rarityOf(p)==="silver").length,b=pool.filter(p=>rarityOf(p)==="bronze").length;return`<button class="leaguebtn" data-league="${c.id}" ${buildStarter(c.id)?'':'disabled'}><div><strong>${esc(c.label)}</strong><span>${g} Starter-Gold · ${si} Silber · ${b} Bronze verfügbar${b<11?" · Bronze aus weiteren Ligen":""}</span></div><b>›</b></button>`}).join("")}
 function posFit(p,slot){
  if(!p)return 0;
  const vals=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim().toUpperCase()).filter(Boolean)];
@@ -4283,7 +4286,8 @@ $("clearSquad").addEventListener("click",()=>{
  if(!confirm("Aufstellung leeren? Deine Spieler bleiben im Verein."))return;
  state.squad=Array(23).fill(null);state.roles={};state.focus={};save();renderAll();toast("Aufstellung geleert.")
 });
-$("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b||b.disabled)return;state.starterLeague=b.dataset.league;const c=leagueChoice(state.starterLeague);$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${c?.label||state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten (75–80) · 4 echte Silberkarten · 11 echte Bronzekarten · Ratings werden nie verändert.":"Für diese Auswahl konnte kein valider 18er-Starterkader gebildet werden."})
+$("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b||b.disabled)return;state.starterLeague=b.dataset.league;const c=leagueChoice(state.starterLeague);$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${c?.label||state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten (75–80) · 4 echte Silberkarten · 11 echte Bronzekarten · Fehlende Bronze-Spieler kommen aus weiteren Ligen. Ratings werden nie verändert.":"Für diese Auswahl konnte kein valider 18er-Starterkader gebildet werden."})
+$("starterBack").addEventListener("click",prepareOnboarding);
 $("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=arrangeSquad(items,state.formation);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
 
 function renderWallet(){$("coins").textContent=fmt(state.coins);$("points").textContent=fmt(state.points)}
@@ -7592,7 +7596,7 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V20.02 — startup video -> Footera logo -> existing loading gate */
+/* V20.03 — startup video -> Footera logo -> existing loading gate */
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
@@ -7623,7 +7627,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.02";
+const GFUT_BUILD="V20.03";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;

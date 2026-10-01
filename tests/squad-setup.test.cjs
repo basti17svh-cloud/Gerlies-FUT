@@ -10,7 +10,7 @@ const starterCode=html.slice(html.indexOf('function buildStarter('),html.indexOf
 const lineupCode=html.slice(html.indexOf('function posFit('),html.indexOf('$("formationSelect").addEventListener('));
 
 function setup(){
- const ctx={leaguePool:()=>ctx.pool,displayBase:item=>ctx.byId.get(item.pid),itemRating:item=>ctx.byId.get(item.pid)?.ovr||0,pool:[]};
+ const ctx={leaguePool:()=>ctx.pool,displayBase:item=>ctx.byId.get(item.pid),itemRating:item=>ctx.byId.get(item.pid)?.ovr||0,pool:[],PLAYERS:[]};
  vm.createContext(ctx);vm.runInContext([formCode,starterCode,lineupCode].join('\n'),ctx);
  return ctx
 }
@@ -50,4 +50,26 @@ test('auto lineup adapts to formations and short clubs without losing cards',()=
  assert.equal(short.length,23);
  assert.equal(new Set(short.filter(Boolean)).size,5);
  assert.equal(short.slice(0,11).filter(Boolean).length,5);
+});
+
+test('a starter league with only four bronze players is completed with real bronze cards from other leagues',()=>{
+ const ctx=setup(),full=makePool();
+ ctx.pool=full.filter(p=>p.ovr>=65||Number(p.id.split('-')[1])<4).map(p=>({...p,league:'Bundesliga'}));
+ ctx.PLAYERS=[...ctx.pool,...full.filter(p=>p.ovr<65).map(p=>({...p,id:`other-${p.id}`,league:'Other League'}))];
+ const picked=ctx.buildStarter('bundesliga');
+ assert.ok(picked,'league bronze scarcity must not block onboarding');
+ assert.equal(picked.length,18);
+ assert.deepEqual([picked.filter(p=>p.ovr>=75).length,picked.filter(p=>p.ovr>=65&&p.ovr<75).length,picked.filter(p=>p.ovr<65).length],[3,4,11]);
+ assert.ok(picked.filter(p=>p.ovr>=65).every(p=>p.league==='Bundesliga'));
+ assert.equal(new Set(picked.map(p=>p.id)).size,18);
+ assert.ok(picked.every(p=>ctx.PLAYERS.some(base=>base.id===p.id&&base.ovr===p.ovr)),'real ratings stay unchanged');
+ ctx.byId=new Map(picked.map(p=>[p.id,p]));
+ const squad=ctx.arrangeSquad(picked.map(p=>({uid:p.id,pid:p.id})),'4-3-3');
+ assert.equal(squad.slice(0,18).filter(Boolean).length,18);
+ assert.equal(ctx.byId.get(squad[0]).position,'GK');
+});
+
+test('starter creation remains unavailable when the entire database lacks eleven real bronze cards',()=>{
+ const ctx=setup();ctx.pool=makePool().filter(p=>p.ovr>=65||Number(p.id.split('-')[1])<4);ctx.PLAYERS=ctx.pool;
+ assert.equal(ctx.buildStarter('bundesliga'),null);
 });
