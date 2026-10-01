@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.09</title>
+<title>Footera V20.10</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1439,6 +1439,27 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .evo-lane.low{color:#8ff0b7;background:#10291e}.evo-lane.mid{color:#8ed8ff;background:#102334}.evo-lane.high{color:#ffd37a;background:#33250d}
 @media(max-width:650px){.evo-summary{grid-template-columns:1fr}}
 
+
+/* V20.10 — cleaner Matchday + live player performance */
+#match #matchLog[hidden]{display:none!important}
+#match .match-performance-strip{margin:0 0 10px;padding:9px;border:1px solid #31463b;border-radius:12px;background:#0b1511}
+#match .match-performance-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+#match .match-performance-label strong{font-size:8px;letter-spacing:.1em;color:#d9ff8c}
+#match .match-performance-label span,#match .match-performance-empty{color:#8fa198;font-size:7px}
+#match .match-performance-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#match .match-performance-card{min-width:0;padding:7px 8px;border:1px solid #2b3b34;border-radius:9px;background:#101a16}
+#match .match-performance-card>span{display:block;color:#8fa097;font-size:5.5px;font-weight:950;text-transform:uppercase;letter-spacing:.08em}
+#match .match-performance-card strong{display:block;margin-top:2px;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#match .match-performance-card strong b{color:#e9f2ed;font-size:10px}
+#match .match-performance-card small{display:block;margin-top:2px;color:#82928a;font-size:5.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#match .match-performance-card.best{border-color:#507a45;background:#142116}#match .match-performance-card.best strong b{color:#d9ff72}
+#match .match-performance-card.poor{border-color:#704048;background:#211317}#match .match-performance-card.poor strong b{color:#ff9aa8}
+#match .match-manager-slot .match-live-rating,#match .match-manager-bench button .match-live-rating{position:absolute;z-index:14;right:-5px;top:-5px;min-width:25px;height:25px;padding:0 5px;display:grid;place-items:center;border-radius:999px;border:2px solid #132019;background:#18231e;color:#eef7f2;font-size:8px;font-weight:1000;line-height:1;box-shadow:0 4px 9px #0009}
+#match .match-live-rating.excellent{background:#29431c;color:#e5ff9b;border-color:#91c45d}#match .match-live-rating.good{background:#173629;color:#a8f0c9;border-color:#3f8663}#match .match-live-rating.poor{background:#421b23;color:#ffb1bd;border-color:#a64c5b}#match .match-live-rating.unused{background:#1a1f1d;color:#89958f;border-color:#414a46}
+#match .match-manager-slot .match-live-fitness,#match .match-manager-bench button .match-live-fitness{position:absolute;z-index:13;left:-3px;bottom:-4px;padding:3px 5px;border-radius:999px;background:#0a1210e8;border:1px solid #3d5047;color:#c4d1cb;font-size:5.5px;font-weight:950;line-height:1}
+#match .match-manager-bench button{position:relative}
+@media(max-width:560px){#match .match-performance-cards{grid-template-columns:1fr}#match .match-performance-card{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:5px}#match .match-performance-card>span,#match .match-performance-card strong,#match .match-performance-card small{margin:0}#match .match-performance-card small{text-align:right}}
+
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./legacy-card.css">
@@ -1517,7 +1538,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.09</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.10</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1825,7 +1846,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    <button id="matchSpeedBtn" class="secondary">Tempo: Normal</button>
   </div>
 
-  <details id="matchChronicle" class="match-chronicle"><summary>Spielverlauf <span>Alle Meldungen ansehen</span></summary><div id="matchLog" class="logbox"></div></details>
+  <div id="matchLog" hidden aria-hidden="true"></div>
 
   <div id="eventBanner" class="event-banner"></div>
 
@@ -1834,6 +1855,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    <div id="matchBreakSummary" class="match-break-summary" hidden></div>
    <p>Ziehe Spieler per Drag & Drop zwischen Startelf und Bank. Änderungen sind zunächst nur ein Entwurf und werden erst nach deiner Bestätigung wirksam.</p>
    <div class="match-manager-head"><span id="matchManagerStatus">Aktuelle Aufstellung</span><strong id="matchSubsMeta">0/5 Wechsel</strong></div>
+   <div id="matchPerformanceStrip" class="match-performance-strip" aria-live="polite"></div>
    <div id="matchManagerPitch" class="match-manager-pitch"></div>
    <div class="match-manager-bench-wrap"><div class="match-manager-bench-title"><strong>Ersatzbank</strong><span>Hin und zurück ziehen bis du bestätigst</span></div><div id="matchManagerBench" class="match-manager-bench"></div></div>
    <div id="matchUsedSubs" class="match-manager-used"></div>
@@ -6391,7 +6413,7 @@ document.addEventListener("pointerup",e=>{
 document.addEventListener("pointercancel",()=>{clearSbcDragVisuals();sbcDragState=null});
 
 
-let matchTimer=null,matchSpeed=550,matchHighlightTimer=null;
+let matchTimer=null,matchSpeed=800,matchHighlightTimer=null;
 
 function renderPlay(){
  const m=squadMetrics(),ready=m.filled===18,friendSel=$("friendlyFriendSelect"),old=friendSel?.value||"";
@@ -6798,7 +6820,7 @@ function resolveEndOfPhase(){
 function simTick(){
  if(!match||match.finished||match.paused)return;
  if(resolveEndOfPhase())return;
- const baseStep=matchSpeed<=300?2.6:1.7;
+ const baseStep=matchSpeed<=300?2.6:1.25;
  const boundary=!match.halftimeLogged?45:!match.extraTimeStarted?90:!match.extraTimeBreakLogged?105:120;
  const step=Math.min(boundary-match.minute,baseStep);
  if(step<=0){resolveEndOfPhase();return}
@@ -6837,6 +6859,59 @@ function simTick(){
  updateMatchUI();
  resolveEndOfPhase()
 }
+function matchPlayerMinutes(uid){
+ if(!match||!uid)return 0;
+ const now=Math.max(0,Math.min(120,Number(match.minute||0))),events=Array.isArray(match.substitutionEvents)?match.substitutionEvents:[];
+ let start=(match.initialStarters||[]).includes(uid)?0:null,end=now;
+ for(const ev of events){
+  const minute=Math.max(0,Math.min(120,Number(ev.minute||0)));
+  if((ev.incoming||[]).some(x=>String(x.uid)===String(uid))&&(start==null||minute<start))start=minute;
+  if((ev.outgoing||[]).some(x=>String(x.uid)===String(uid)))end=Math.min(end,minute)
+ }
+ return start==null?0:Math.max(0,end-start)
+}
+function matchPlayerLivePerformance(uid){
+ const base=currentMatchBase(uid);if(!base)return{rating:null,fitness:100,minutes:0,goals:0,assists:0,shots:0,xg:0,yellows:0,reds:0};
+ const minutes=matchPlayerMinutes(uid),goals=(match.goalEvents||[]).filter(e=>e.side==="home"&&String(e.scorerUid||"")===String(uid)).length,assists=(match.goalEvents||[]).filter(e=>e.side==="home"&&String(e.assistUid||"")===String(uid)).length;
+ const shots=(match.shotEvents||[]).filter(e=>e.side==="home"&&String(e.shooterUid||"")===String(uid)),xg=shots.reduce((n,e)=>n+Number(e.xg||0),0);
+ const yellows=(match.yellowCards||[]).filter(e=>e.side==="home"&&String(e.uid||"")===String(uid)).length,reds=(match.redCards||[]).filter(e=>String(e.uid||"")===String(uid)).length;
+ const currentIndex=(match.lineup||[]).indexOf(uid),startIndex=(match.initialStarters||[]).indexOf(uid),index=currentIndex>=0?currentIndex:startIndex,form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],pos=String(form[index]?.p||base.position||"").toUpperCase();
+ let rating=6.05+goals*1.25+assists*.7+Math.min(.18,shots.length*.045)+(goals-xg)*.34-yellows*.16-reds*1.35;
+ if(minutes>=18){
+  const diff=Math.max(-3,Math.min(3,Number(match.home||0)-Number(match.away||0)));
+  if(["ST","CF","LW","RW","LM","RM","CAM"].includes(pos)){rating+=diff*.055;if(!goals&&!assists&&!shots.length)rating-=Math.min(.32,(minutes-18)/72*.32)}
+  else if(["CM","CDM"].includes(pos)){rating+=diff*.04+(Number(match.poss||50)-50)*.008}
+  else if(["CB","LB","RB","LWB","RWB"].includes(pos)){rating+=diff*.035-Number(match.away||0)*.16;if(Number(match.away||0)===0&&minutes>=40)rating+=.14}
+  else if(pos==="GK"){rating+=diff*.03-Number(match.away||0)*.22;if(Number(match.away||0)===0&&minutes>=40)rating+=.18}
+ }
+ if(minutes<8&&!goals&&!assists)rating=6;
+ rating=Math.max(4,Math.min(10,rating));
+ const phy=Math.max(40,Math.min(99,Number(resolvedPlayer(base)?.phy||70))),tacticDrain=match.tactic==="attacking"?.045:match.tactic==="defensive"?-.015:0,drain=Math.max(.22,.36+(78-phy)*.0035+tacticDrain);
+ const fitness=Math.max(35,Math.min(100,Math.round(100-minutes*drain)));
+ return{rating:Number(rating.toFixed(1)),fitness,minutes:Math.round(minutes),goals,assists,shots:shots.length,xg:Number(xg.toFixed(2)),yellows,reds}
+}
+function matchRatingClass(rating){return rating>=7.5?"excellent":rating>=6.7?"good":rating<6?"poor":"average"}
+function matchLiveBadgeHTML(uid){
+ const p=matchPlayerLivePerformance(uid);if(p.rating==null)return"";
+ const played=p.minutes>0||p.goals||p.assists;
+ return `<span class="match-live-rating ${played?matchRatingClass(p.rating):"unused"}" title="Live-Bewertung">${played?p.rating.toFixed(1):"–"}</span><span class="match-live-fitness" title="Kondition">${p.fitness}%</span>`
+}
+function renderMatchPerformanceStrip(){
+ const box=$("matchPerformanceStrip");if(!box||!match)return;
+ const ids=[...new Set((match.lineup||[]).slice(0,11).filter(Boolean))],rows=ids.map(uid=>({uid,base:currentMatchBase(uid),p:matchPlayerLivePerformance(uid)})).filter(x=>x.base&&x.p.rating!=null),established=rows.filter(x=>x.p.minutes>=12);
+ if(!established.length){box.innerHTML='<span class="match-performance-empty">Live-Bewertungen erscheinen nach den ersten Spielminuten.</span>';return}
+ const best=[...established].sort((a,b)=>b.p.rating-a.p.rating)[0],watch=[...established].sort((a,b)=>a.p.rating-b.p.rating).slice(0,2);
+ const detail=x=>{const extras=[x.p.goals?`${x.p.goals} Tor${x.p.goals>1?"e":""}`:"",x.p.assists?`${x.p.assists} Assist${x.p.assists>1?"s":""}`:"",x.p.shots?`${x.p.shots} Schüsse`:""].filter(Boolean).join(" · ");return extras||`${x.p.fitness}% Kondition`};
+ box.innerHTML=`<div class="match-performance-label"><strong>LIVE-LEISTUNG</strong><span>Bewertung · Kondition</span></div><div class="match-performance-cards"><div class="match-performance-card best"><span>Top</span><strong>${esc(best.base.name)} <b>${best.p.rating.toFixed(1)}</b></strong><small>${esc(detail(best))}</small></div>${watch.map(x=>`<div class="match-performance-card ${x.p.rating<6?"poor":""}"><span>Beobachten</span><strong>${esc(x.base.name)} <b>${x.p.rating.toFixed(1)}</b></strong><small>${x.p.fitness}% Kondition · ${x.p.shots} Schüsse</small></div>`).join("")}</div>`
+}
+function matchBreakPerformanceText(){
+ if(!match)return"";
+ const rows=(match.lineup||[]).slice(0,11).filter(Boolean).map(uid=>({base:currentMatchBase(uid),p:matchPlayerLivePerformance(uid)})).filter(x=>x.base&&x.p.minutes>=12);
+ if(!rows.length)return"";
+ const best=[...rows].sort((a,b)=>b.p.rating-a.p.rating)[0],low=[...rows].sort((a,b)=>a.p.rating-b.p.rating)[0];
+ return ` · Top: ${best.base.name} ${best.p.rating.toFixed(1)} · Auffällig: ${low.base.name} ${low.p.rating.toFixed(1)}`
+}
+
 let matchManagerDraft=null;
 function initMatchManagerDraft(){
  if(!match)return null;
@@ -6860,15 +6935,16 @@ function matchManagerSlotHTML(uid,i,d=getMatchManagerDraft()){
  const form=FORMATIONS[d?.formation||match?.formation]||FORMATIONS["4-3-3"],slot=form[i],b=uid?currentMatchBase(uid):null,out=b&&posFit(b,slot.p)<=0,forced=uid&&match?.forcedOut===uid;
  const pendingIn=uid&&d?.baseLineup?.slice(11).includes(uid);
  const redEmpty=!uid&&match?.redCardSlot===i;
- return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""} ${redEmpty?"red-card-empty":""}" data-match-slot="${i}" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${redEmpty?"🟥<br>ROT":positionLabel(slot.p)}</div>`}${out?'<div class="poswarn">!</div>':''}</button>`
+ return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""} ${redEmpty?"red-card-empty":""}" data-match-slot="${i}" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${redEmpty?"🟥<br>ROT":positionLabel(slot.p)}</div>`}${b?matchLiveBadgeHTML(uid):""}${out?'<div class="poswarn">!</div>':''}</button>`
 }
 function matchManagerBenchHTML(uid,i,d=getMatchManagerDraft()){
  const b=uid?currentMatchBase(uid):null,item=uid?state.club.find(x=>x.uid===uid):null;
  const pendingOut=uid&&d?.baseLineup?.slice(0,11).includes(uid)&&!d.lineup.slice(0,11).includes(uid);
- return `<button class="${pendingOut?"pending-out":""}" data-match-slot="${i}">${b?cardHTML(b,item,true,b.position):'<div class="emptyslot">FREI</div>'}</button>`
+ return `<button class="${pendingOut?"pending-out":""}" data-match-slot="${i}">${b?cardHTML(b,item,true,b.position):'<div class="emptyslot">FREI</div>'}${b?matchLiveBadgeHTML(uid):""}</button>`
 }
 function renderMatchManager(){
  if(!match)return;const d=getMatchManagerDraft();if(!d)return;
+ renderMatchPerformanceStrip();
  const form=FORMATIONS[d.formation]||FORMATIONS["4-3-3"];
  $("matchManagerPitch").innerHTML=d.lineup.slice(0,11).map((uid,i)=>matchManagerSlotHTML(uid,i,d)).join("");
  $("matchManagerBench").innerHTML=d.lineup.slice(11,18).map((uid,k)=>matchManagerBenchHTML(uid,11+k,d)).join("");
@@ -6922,7 +6998,7 @@ function pauseForManagement(reason="Team-Management geöffnet."){
  const halftime=!!match.halftimeActive,extraTime=!!match.extraTimeManagementActive;
  $("managerPanel").querySelector("h3").textContent=halftime?"Halbzeit · Team-Management":extraTime?"Vor der Verlängerung":"Team-Management";
  const summary=$("matchBreakSummary");summary.hidden=!halftime&&!extraTime;
- if(!summary.hidden)summary.innerHTML=`<strong>${esc(matchHomeTeamName())} ${match.home}:${match.away} ${esc(matchAwayTeamName())}</strong><span>${halftime?"Halbzeit":"90 Minuten"} · Schüsse ${match.shotsHome}:${match.shotsAway} · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)} · Ballbesitz ${Math.round(match.poss)}:${100-Math.round(match.poss)}. Passe jetzt Aufstellung oder Taktik an.</span>`;
+ if(!summary.hidden)summary.innerHTML=`<strong>${esc(matchHomeTeamName())} ${match.home}:${match.away} ${esc(matchAwayTeamName())}</strong><span>${halftime?"Halbzeit":"90 Minuten"} · Schüsse ${match.shotsHome}:${match.shotsAway} · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)} · Ballbesitz ${Math.round(match.poss)}:${100-Math.round(match.poss)}${esc(matchBreakPerformanceText())}. Passe jetzt Aufstellung oder Taktik an.</span>`;
  $("confirmSubBtn").textContent=halftime?"Änderungen übernehmen & 2. Halbzeit starten":extraTime?"Änderungen übernehmen & Verlängerung starten":"Übernehmen & weiterspielen";
  $("resumeMatchBtn").textContent=halftime?"Ohne Änderungen in die 2. Halbzeit":extraTime?"Ohne Änderungen in die Verlängerung":"Änderungen verwerfen";
  setMatchPill(true);requestAnimationFrame(()=>$("managerPanel").scrollIntoView({behavior:"smooth",block:"start"}))
@@ -6954,8 +7030,8 @@ $("matchTacticSelect").addEventListener("change",()=>{const d=getMatchManagerDra
 $("confirmSubBtn").addEventListener("click",confirmMatchManagerChanges);
 
 $("matchSpeedBtn").addEventListener("click",()=>{
- if(matchSpeed===550){matchSpeed=250;$("matchSpeedBtn").textContent="Tempo: Schnell"}
- else{matchSpeed=550;$("matchSpeedBtn").textContent="Tempo: Normal"}
+ if(matchSpeed===800){matchSpeed=250;$("matchSpeedBtn").textContent="Tempo: Schnell"}
+ else{matchSpeed=800;$("matchSpeedBtn").textContent="Tempo: Normal"}
  if(match&&!match.paused&&!match.finished)startMatchTimer()
 });
 
@@ -7626,7 +7702,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.09";
+const GFUT_BUILD="V20.10";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7644,7 +7720,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2008",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2010",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
