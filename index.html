@@ -5986,7 +5986,7 @@ function sbcDraftChemistry(sbc,draft,map){
 }
 function sbcDisplayedSquadRating(avg){
  const value=Math.max(0,Number(avg)||0),whole=Math.floor(value),fraction=value-whole;
- return whole+(fraction>=.8?1:0)
+ return whole+(fraction>=.8-1e-9?1:0)
 }
 function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
  const map=sbcSourceMap(),items=draft.squad.map(uid=>uid?map.get(String(uid))?.item:null).filter(Boolean),count=items.length;
