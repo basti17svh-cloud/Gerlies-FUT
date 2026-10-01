@@ -6916,7 +6916,7 @@ function runPenaltyShootout(){
   renderPenaltyShootout(event);
   const winner=penaltyDecision();
   if(winner){
-   match.penaltyWinner=winner;match.penaltyActive=false;match.paused=false;
+   match.penaltyWinner=winner;match.penaltyActive=true;match.paused=true;
    recordMatchEvent("break","",`Elfmeter ${match.pensHome}:${match.pensAway}`);
    addLog(`Elfmeterschießen: ${winner==="home"?matchHomeTeamName():matchAwayTeamName()} gewinnt ${match.pensHome}:${match.pensAway}.`);
    renderPenaltyShootout(event,true);setMatchPill(true);
@@ -7329,6 +7329,7 @@ function finishMatch(){
  if(!match||match.finished)return;
  ensureObjectiveWindows();
  clearTimeout(penaltyShootoutTimer);penaltyShootoutTimer=null;
+ match.penaltyActive=false;match.paused=false;
  const penaltyPanel=$("penaltyShootoutPanel");if(penaltyPanel)penaltyPanel.hidden=true;
  stopMatchTimer();
  dismissMatchGoalMoment(false);
