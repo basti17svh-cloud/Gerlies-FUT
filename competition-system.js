@@ -245,6 +245,30 @@ function rivalsPostMatchHtml(snapshot){
   mainAxis+streak+weeklyProgressHtml(b.weekly,a.weekly)+
   '<div class="post-progress-foot">Reset Donnerstag 09:00 · '+esc(competitionCountdown("rivals"))+'</div>'
 }
+let postMatchProgressAnimationTimer=null;
+function startPostMatchProgressAnimation(body){
+ clearTimeout(postMatchProgressAnimationTimer);
+ const axes=[...body.querySelectorAll(".post-progress-axis")];
+ axes.forEach(axis=>{
+  axis.classList.remove("animate","is-animating");
+  const fill=axis.querySelector(".post-progress-fill"),cursor=axis.querySelector(".post-progress-cursor");
+  if(fill)fill.style.width="var(--from)";
+  if(cursor)cursor.style.left="var(--from)"
+ });
+ // Force one fully painted frame at the old value before the movement starts.
+ void body.offsetWidth;
+ postMatchProgressAnimationTimer=setTimeout(()=>{
+  axes.forEach((axis,index)=>{
+   setTimeout(()=>{
+    const fill=axis.querySelector(".post-progress-fill"),cursor=axis.querySelector(".post-progress-cursor");
+    axis.classList.add("animate","is-animating");
+    if(fill)fill.style.width="";
+    if(cursor)cursor.style.left="";
+    setTimeout(()=>axis.classList.remove("is-animating"),2050)
+   },index*180)
+  })
+ },420)
+}
 function showPostMatchProgress(snapshot){
  const screen=$("postMatchProgress"),body=$("postMatchProgressBody");
  if(!screen||!body||!snapshot)return false;
@@ -252,14 +276,17 @@ function showPostMatchProgress(snapshot){
  $("postMatchProgressTitle").textContent="Dein Fortschritt";
  $("postMatchProgressSubtitle").textContent=snapshot.mode==="squad"?"Rang und Battle-Punkte nach diesem Spiel":"Division, Stufe und Wochenfortschritt nach diesem Spiel";
  body.innerHTML=snapshot.mode==="squad"?squadPostMatchHtml(snapshot):rivalsPostMatchHtml(snapshot);
+ body.querySelectorAll(".post-progress-axis").forEach(axis=>axis.classList.remove("animate","is-animating"));
  screen.classList.add("active");screen.setAttribute("aria-hidden","false");screen.scrollTop=0;
- requestAnimationFrame(()=>requestAnimationFrame(()=>body.querySelectorAll(".post-progress-axis").forEach(x=>x.classList.add("animate"))));
+ requestAnimationFrame(()=>requestAnimationFrame(()=>startPostMatchProgressAnimation(body)));
  setTimeout(()=>$("postMatchProgressClose")?.focus(),120);
  return true
 }
 function hidePostMatchProgress(){
+ clearTimeout(postMatchProgressAnimationTimer);postMatchProgressAnimationTimer=null;
  const screen=$("postMatchProgress");if(!screen)return;
- screen.classList.remove("active");screen.setAttribute("aria-hidden","true")
+ screen.classList.remove("active");screen.setAttribute("aria-hidden","true");
+ $("postMatchProgressBody")?.querySelectorAll(".post-progress-axis").forEach(x=>x.classList.remove("animate","is-animating"))
 }
 
 document.addEventListener("click",e=>{const button=e.target.closest("[data-claim-competition]");if(button)claimCompetitionReward(button.dataset.claimCompetition,button.dataset.competitionWeek)});
