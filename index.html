@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.18</title>
+<title>Footera V20.19</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1539,7 +1539,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.18</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.19</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5201,7 +5201,59 @@ $("clubRatingMax")?.addEventListener("input",()=>changeClubRating("max"));
 $("clubGrid").addEventListener("click",e=>{const more=e.target.closest("[data-club-more]"),open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(more){clubRenderLimit+=CLUB_RENDER_BATCH;renderClub();return}if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||isFounderItem(i)||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
-const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:900,75:1000,76:1200,77:1500,78:1900,79:2500,80:3200,81:4500,82:6500,83:9000,84:14000,85:22000,86:40000,87:75000,88:140000,89:260000,90:500000,91:900000,92:1300000,93:1800000,94:2400000,95:3200000,96:4200000,97:5500000,98:7000000,99:9000000};
+// FC27 early-cycle market baseline, calibrated against public console-price snapshots on 2026-10-01.
+// Rating is only the floor: player-specific demand/meta can still move cards far above fodder value.
+const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:850,75:900,76:950,77:1000,78:1050,79:1100,80:1200,81:1300,82:1450,83:1700,84:2100,85:2800,86:4000,87:6000,88:9000,89:14000,90:23000,91:38000,92:65000,93:100000,94:150000,95:220000,96:320000,97:450000,98:650000,99:900000};
+const TOTW_PRICE_CURVE={75:10500,76:10500,77:10500,78:10500,79:10500,80:10500,81:11000,82:12000,83:14000,84:18000,85:26000,86:40000,87:65000,88:105000,89:175000,90:300000,91:575000,92:900000,93:1300000,94:1800000,95:2400000,96:3200000,97:4200000,98:5500000,99:7000000};
+// Real-market anchors stop elite/meta golds from being priced like generic cards of the same rating.
+const BASE_GOLD_PRICE_ANCHORS_BY_ID={
+ "231747":3740000, // Kylian Mbappé 91
+ "239085":117000,  // Erling Haaland 91
+ "231443":1899000, // Ousmane Dembélé 90
+ "277643":293000,  // Lamine Yamal 90
+ "252371":256000,  // Jude Bellingham 90
+ "247827":375000,  // Michael Olise 90
+ "251854":197000,  // Pedri 90
+ "241667":268000,  // Aitana Bonmatí 90
+ "255253":140000,  // Vitinha 90
+ "202126":36000,   // Harry Kane 90
+ "231866":32500,   // Rodri 90
+ "192119":87500,   // Thibaut Courtois 90
+ "238794":1060000, // Vini Jr. 89
+ "262531":1389000, // Claudia Pina 89
+ "227102":580000,  // Caroline Graham Hansen 89
+ "158023":81500,   // Lionel Messi 89
+ "212198":13500,   // Bruno Fernandes 89
+ "235212":194000,  // Achraf Hakimi 88
+ "243715":160000,  // William Saliba 88
+ "203376":31000,   // Virgil van Dijk 88
+ "234378":15500,   // Declan Rice 88
+ "272834":23000,   // João Neves 88
+ "236479":9200,    // Mapi León 88
+ "212622":13750,   // Joshua Kimmich 88
+ "209331":21500,   // Mohamed Salah 87
+ "246420":70500,   // Jérémy Doku 84
+ "257289":34000,   // Hugo Ekitiké 85
+ "256630":12250,   // Florian Wirtz 86
+ "231447":6500,    // Donyell Malen 83
+ "251517":6600,    // Joško Gvardiol 85
+ "245037":40000,   // Eric García 85
+ "245830":9000,    // Yui Hasegawa 88
+ "227095":2200     // Manuela Giugliano 85
+};
+const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
+ "nuno-mendes":346000,
+ "khvicha-kvaratskhelia":289000,
+ "mariona":69500,
+ "ewa-pajor":36000,
+ "temwa-chawinga":34000,
+ "gianluigi-donnarumma":61000
+};
+const TOTW_PRICE_ANCHORS={
+ "277643|91":1641000, // Lamine Yamal
+ "247827|91":1575000, // Michael Olise
+ "220901|89":256000   // David Raya
+};
 let MARKET_META_PERCENTILE=new Map(),MARKET_META_BUCKETS=new Map(),MARKET_META_MODEL_SIZE=0;
 function marketPlayStyleCount(base){const raw=[base?.playstyles,base?.playstylesPlus].filter(Boolean).join(',');return raw?raw.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).length:0}
 function marketPositionGroup(base){const p=String(base?.position||"").toUpperCase();if(p==="GK")return"GK";if(["CB","LB","RB","LWB","RWB"].includes(p))return"DEF";if(["CM","CDM"].includes(p))return"MID";if(["CAM","LM","RM","LW","RW","CF","ST"].includes(p))return"ATT";return"OTHER"}
@@ -5261,7 +5313,7 @@ function marketDemandMultiplier(base){
 function marketMetaFactor(base){return Math.max(.65,Math.min(10.5,marketDemandMultiplier(base)))}
 const MARKET_MAX_PRICE=15000000;
 function marketPriceWithinLimit(value,min=150){const n=Number(value);return Number.isFinite(n)&&n>=min&&n<=MARKET_MAX_PRICE}
-function marketRoundPrice(v){v=Number(v);if(Number.isNaN(v))v=150;v=Math.max(150,Math.min(MARKET_MAX_PRICE,v));const step=v>=100000?1000:v>=10000?250:50;return Math.max(150,Math.min(MARKET_MAX_PRICE,Math.round(v/step)*step))}
+function marketRoundPrice(v){v=Number(v);if(Number.isNaN(v))v=150;v=Math.max(150,Math.min(MARKET_MAX_PRICE,v));const step=v>=100000?1000:v>=50000?500:v>=10000?250:v>=1000?100:50;return Math.max(150,Math.min(MARKET_MAX_PRICE,Math.round(v/step)*step))}
 // Futbin FC 27 snapshot, 2026-09-30. Sources and unavailable-base fallbacks: docs/icon-prices-2026-09-30.json.
 // Fixed Footera guide prices; individual offers retain their normal spread.
 const ICON_PRICE_CURVE={87:85000,88:145000,89:250000,90:420000,91:650000,92:950000,93:1400000,94:2100000,95:3000000};
@@ -5409,13 +5461,28 @@ function iconMarketPrice(base){
  const factor=Math.max(.58,Math.min(1.85,.78+(score-75)*.043));
  return marketRoundPrice(ICON_PRICE_CURVE[rating]*factor)
 }
-function marketPriceForRating(r,special=false,base=null){
+function marketBaseGoldAnchor(base){
+ const id=String(base?.id||"");if(id&&BASE_GOLD_PRICE_ANCHORS_BY_ID[id])return BASE_GOLD_PRICE_ANCHORS_BY_ID[id];
+ const names=[base?.name,base?.fullName].filter(Boolean).map(iconSlug);
+ for(const name of names)if(BASE_GOLD_PRICE_ANCHORS_BY_NAME[name])return BASE_GOLD_PRICE_ANCHORS_BY_NAME[name];
+ return 0
+}
+function marketPriceForRating(r,special=false,base=null,kind=""){
  if(base?.isIcon)return iconMarketPrice(base);
- const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);
- const pct=base?marketMetaPercentile(base):.5,meta=base?marketMetaFactor(base):1,specialMult=special?(1.45+Math.max(0,pct-.75)*1.8):1,variation=.93+Math.random()*.14;
- let value=basePrice*meta*specialMult*variation;
- if(pct>=.995)value=Math.max(value,basePrice*6.5);else if(pct>=.985)value=Math.max(value,basePrice*5.1);else if(pct>=.97)value=Math.max(value,basePrice*4.0);else if(pct>=.94)value=Math.max(value,basePrice*3.1);else if(pct>=.88)value=Math.max(value,basePrice*2.35);
- return marketRoundPrice(value)
+ const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),baseRating=Math.max(0,Math.min(99,Math.round(Number(base?.ovr||rr))));
+ const pct=base?marketMetaPercentile(base):.5,meta=base?marketMetaFactor(base):1,anchor=base?marketBaseGoldAnchor(base):0;
+ if(kind==="totw"){
+  const exact=TOTW_PRICE_ANCHORS[`${String(base?.id||"")}|${rr}`];if(exact)return marketRoundPrice(exact);
+  const curve=TOTW_PRICE_CURVE[Math.max(75,rr)]||TOTW_PRICE_CURVE[99],goldGuide=anchor||marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,baseRating)]||MARKET_PRICE_CURVE[99])*meta);
+  const upgrade=Math.max(0,rr-baseRating),demand=.82+Math.min(1.55,pct*1.45)+upgrade*.10;
+  return marketRoundPrice(Math.max(10500,curve*demand,goldGuide*(1.18+upgrade*.13)))
+ }
+ if(!special&&anchor)return marketRoundPrice(anchor);
+ const curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);
+ if(!special)return marketRoundPrice(basePrice*meta);
+ const goldGuide=anchor||marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,baseRating)]||MARKET_PRICE_CURVE[99])*meta);
+ const upgrade=Math.max(0,rr-baseRating),specialDemand=1.18+Math.max(0,pct-.55)*1.15+upgrade*.14;
+ return marketRoundPrice(Math.max(basePrice*meta*1.15,goldGuide*specialDemand))
 }
 function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",overridePosition:x.overridePosition||"",legacyEvent:isLegacyEventName(x.eventName)}}
 function listingRating(x){const info=isMomentumItem(x)?MOMENTUM_BY_ID.get(String(x.base?.id)):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
@@ -5435,10 +5502,11 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
  const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
- const guide=marketPriceForRating(r,special,base);
+ const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind);
  const offerSeed=marketSnapshotHash(`${base?.id||base?.name||"player"}|${variant}|${eventType}|${eventName}|${boost}|${overridePosition}|${offerIndex}|${promoWindowKey(new Date(),19)}`);
- const spread=.88+(offerSeed%260)/1000;let price=Math.max(200,marketRoundPrice(guide*spread));if(isTotw)price=Math.max(10500,price);
- const start=isTotw?Math.max(9000,marketRoundPrice(price*(.68+((offerSeed>>5)%13)/100))):Math.max(150,marketRoundPrice(price*(.68+((offerSeed>>5)%16)/100)));
+ // EA-like market: same card clusters close to its guide price instead of jumping by ~25% between offers.
+ const spread=.96+(offerSeed%81)/1000;let price=Math.max(200,marketRoundPrice(guide*spread));if(isTotw)price=Math.max(10500,price);
+ const start=isTotw?Math.max(9000,marketRoundPrice(price*(.76+((offerSeed>>5)%10)/100))):Math.max(150,marketRoundPrice(price*(.76+((offerSeed>>5)%12)/100)));
  const initialBid=Math.max(start,marketRoundPrice(start*(1+((offerSeed>>9)%8)/100)));
  return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,boost,overridePosition,price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
 }
@@ -5563,8 +5631,9 @@ function renderMyAuctions(){
 }
 function transferSuggestedPrices(item){
  const b=displayBase(item);if(!b)return{start:150,buy:200};
- const special=!!item.variant||!!item.evo;let buy=marketPriceForRating(itemRating(item),special,b);
- if(item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"))buy=Math.max(10500,buy);
+ const special=!!item.variant||!!item.evo,isTotw=item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"),kind=isTotw?"totw":item.eventType==="momentum"?"momentum":special?"special":"base";
+ let buy=marketPriceForRating(itemRating(item),special,b,kind);
+ if(isTotw)buy=Math.max(10500,buy);
  buy=Math.max(200,marketRoundPrice(buy));const start=Math.max(150,marketRoundPrice(buy*.82));return{start,buy}
 }
 function transferSaleItem(sale){return state.club.find(i=>i.uid===sale.uid)||sale.item||null}
@@ -7945,7 +8014,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.18";
+const GFUT_BUILD="V20.19";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7963,7 +8032,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2018",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2019",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

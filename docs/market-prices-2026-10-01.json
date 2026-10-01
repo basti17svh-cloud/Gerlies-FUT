@@ -1,0 +1,156 @@
+{
+  "title": "Footera FC27 market calibration snapshot",
+  "captured_at": "2026-10-01",
+  "platform_basis": "Console-market references where available; prices are guide anchors, not live API values.",
+  "notes": [
+    "FUTBIN FC27 public player index is available but its crawl currently exposes 0/blank market prices for many FC27 cards.",
+    "Current FC27 console-market references were therefore cross-checked with FCUTeam, FC27Investor and FUTWIZ where public price pages were available.",
+    "Footera uses these anchors plus a meta/rating interpolation model. Individual listings vary only about ±4% around the guide price.",
+    "Maximum Footera transfer price remains 15,000,000 coins."
+  ],
+  "sources": [
+    "https://www.futbin.com/27/players",
+    "https://fc27investor.com/en/karten",
+    "https://fcuteam.com/en",
+    "https://www.futwiz.com/fc27/player/kylian-mbappe/119992"
+  ],
+  "base_gold_anchors": {
+    "202126": {
+      "name": "Harry Kane",
+      "rating": 90,
+      "price": 36000
+    },
+    "203376": {
+      "name": "Virgil van Dijk",
+      "rating": 88,
+      "price": 31000
+    },
+    "227102": {
+      "name": "Caroline Graham Hansen",
+      "rating": 89,
+      "price": 580000
+    },
+    "231443": {
+      "name": "Ousmane Dembélé",
+      "rating": 90,
+      "price": 1899000
+    },
+    "231447": {
+      "name": "Donyell Malen",
+      "rating": 83,
+      "price": 6500
+    },
+    "231747": {
+      "name": "Kylian Mbappé",
+      "rating": 91,
+      "price": 3740000
+    },
+    "231866": {
+      "name": "Rodri",
+      "rating": 90,
+      "price": 32500
+    },
+    "234378": {
+      "name": "Declan Rice",
+      "rating": 88,
+      "price": 15500
+    },
+    "235212": {
+      "name": "Achraf Hakimi",
+      "rating": 88,
+      "price": 194000
+    },
+    "236479": {
+      "name": "Mapi León",
+      "rating": 88,
+      "price": 9200
+    },
+    "238794": {
+      "name": "Vini Jr.",
+      "rating": 89,
+      "price": 1060000
+    },
+    "239085": {
+      "name": "Erling Haaland",
+      "rating": 91,
+      "price": 117000
+    },
+    "241667": {
+      "name": "Aitana Bonmatí",
+      "rating": 90,
+      "price": 268000
+    },
+    "243715": {
+      "name": "William Saliba",
+      "rating": 88,
+      "price": 160000
+    },
+    "246420": {
+      "name": "Jérémy Doku",
+      "rating": 84,
+      "price": 70500
+    },
+    "247827": {
+      "name": "Michael Olise",
+      "rating": 90,
+      "price": 375000
+    },
+    "251854": {
+      "name": "Pedri",
+      "rating": 90,
+      "price": 197000
+    },
+    "252371": {
+      "name": "Jude Bellingham",
+      "rating": 90,
+      "price": 256000
+    },
+    "255253": {
+      "name": "Vitinha",
+      "rating": 90,
+      "price": 140000
+    },
+    "256630": {
+      "name": "Florian Wirtz",
+      "rating": 86,
+      "price": 12250
+    },
+    "257289": {
+      "name": "Hugo Ekitiké",
+      "rating": 85,
+      "price": 34000
+    },
+    "262531": {
+      "name": "Claudia Pina",
+      "rating": 89,
+      "price": 1389000
+    },
+    "272834": {
+      "name": "João Neves",
+      "rating": 88,
+      "price": 23000
+    },
+    "277643": {
+      "name": "Lamine Yamal",
+      "rating": 90,
+      "price": 293000
+    }
+  },
+  "totw_anchors": {
+    "277643|91": {
+      "name": "Lamine Yamal",
+      "rating": 91,
+      "price": 1641000
+    },
+    "247827|91": {
+      "name": "Michael Olise",
+      "rating": 91,
+      "price": 1575000
+    },
+    "220901|89": {
+      "name": "David Raya",
+      "rating": 89,
+      "price": 256000
+    }
+  }
+}
