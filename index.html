@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.05</title>
+<title>Footera V20.06</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1411,7 +1411,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 
-/* V20.05 — cinematic Footera boot intro */
+/* V20.06 — cinematic Footera boot intro */
 .boot-intro{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#000;display:grid;place-items:center;opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease}
 .boot-intro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(101,0,0,.18),transparent 52%),#000;pointer-events:none}
 .boot-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;background:#000;opacity:0;transition:opacity .22s ease;z-index:1}
@@ -1441,7 +1441,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(prefers-reduced-motion:reduce){.splash-emblem-image{animation:none!important}}
 
 
-/* V20.05 — tradeability: club, profile and club search only */
+/* V20.06 — tradeability: club, profile and club search only */
 .club-card-preview{position:relative}
 .club-untradeable-badge{position:absolute;z-index:8;top:17px;right:max(7px,calc((100% - 150px)/2 + 4px));width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(12,15,17,.92);border:1px solid rgba(255,120,137,.75);color:#ff899b;box-shadow:0 4px 13px rgba(0,0,0,.45)}
 .club-untradeable-badge svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
@@ -1455,6 +1455,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css">
 <link rel="stylesheet" href="./story-card.css">
+<link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 </head>
 <body>
@@ -1526,7 +1527,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.05</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.06</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3112,7 +3113,8 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.evo||item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
+function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
 function displayBase(item){
@@ -3793,7 +3795,7 @@ function openBiography(item,index,fallbackBase=null){
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
   if(!p)return"";p=resolvedPlayer(p);if(!mini&&item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?(itemRating(item)||Number(item.displayRating)||Number(p.ovr)||0):p.ovr,pos=shownPosition||p.position;
-  const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.evo;
+  const baseRare=isCardRare(p,item)&&!item?.variant&&cls!=="evolution";
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const fullName=String(p.name||"Spieler").trim(),parts=fullName.split(/\s+/),shortName=fullName.length>19&&parts.length>1?`${parts[0][0]}. ${parts.slice(1).join(" ")}`:fullName;
   const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;
@@ -3810,7 +3812,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
    </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"&&p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}</div></div>`
+ const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}</div></div>`
 }
 function cardAltPositionsHTML(p,shownPosition=p?.position){
  const shown=positionLabel(shownPosition,p),positions=[...new Set(playerPositions(p).map(x=>positionLabel(x,p)))].filter(x=>x&&x!==shown);
@@ -5752,7 +5754,7 @@ function evoCostHTML(evo){const coins=Number(evo?.cost?.coins||0),points=Number(
 function evoEligible(item,evo){const b=displayBase(item);if(!b||isFounderItem(item)||isStoryItem(item)||activeEvolutionForUid(item.uid))return false;const r=evo.req||{},positions=playerPositions(b);if(r.maxOvr&&b.ovr>r.maxOvr)return false;if(evo.maxFinalOvr&&itemRating(item)+evoTotalOvrGain(evo)>evo.maxFinalOvr)return false;if(r.positions?.length&&!r.positions.some(p=>positions.includes(p)))return false;if(r.maxPac&&Number(resolvedPlayer(b).pac||0)>r.maxPac)return false;if(r.maxPlaystyles!=null&&parsePlayStyles(b,item).length>r.maxPlaystyles)return false;return !(state.transferList||[]).includes(item.uid)}
 function eligibleEvoPlayers(evo){return(state.club||[]).filter(i=>evoEligible(i,evo)).sort((a,b)=>itemRating(b)-itemRating(a))}
 function evoPreviewItem(item,evo,stageIndex,baseline=null){const clone={...item,evo:Number(baseline?.evo??item.evo??0),evoStats:{...(baseline?.evoStats||item.evoStats||{})},evoPlaystyles:[...(baseline?.evoPlaystyles||item.evoPlaystyles||[])]};if(baseline&&Object.prototype.hasOwnProperty.call(baseline,"overridePosition"))clone.overridePosition=baseline.overridePosition||"";for(let i=0;i<=stageIndex;i++)applyEvoStage(clone,evo.stages[i],evo);return clone}
-function applyEvoStage(item,stage,evo){const beforeRating=itemRating(item),remaining=Math.max(0,Number(evo?.maxFinalOvr||99)-beforeRating);item.evo=Number(item.evo||0)+Math.min(Number(stage.ovr||0),remaining);item.evoStats=item.evoStats||{};const caps=evo?.statCaps||{},current=resolvedPlayer(displayBase(item));for(const[k,v]of Object.entries(stage.stats||{})){const now=Number(current[k]||0),cap=Number(caps[k]??99),inc=Math.max(0,Math.min(Number(v||0),cap-now));item.evoStats[k]=Number(item.evoStats[k]||0)+inc}item.evoPlaystyles=item.evoPlaystyles||[];if(stage.playstyle&&!item.evoPlaystyles.includes(stage.playstyle))item.evoPlaystyles.push(stage.playstyle);if(stage.position)item.overridePosition=stage.position}
+function applyEvoStage(item,stage,evo){item.evoDesign=true;const beforeRating=itemRating(item),remaining=Math.max(0,Number(evo?.maxFinalOvr||99)-beforeRating);item.evo=Number(item.evo||0)+Math.min(Number(stage.ovr||0),remaining);item.evoStats=item.evoStats||{};const caps=evo?.statCaps||{},current=resolvedPlayer(displayBase(item));for(const[k,v]of Object.entries(stage.stats||{})){const now=Number(current[k]||0),cap=Number(caps[k]??99),inc=Math.max(0,Math.min(Number(v||0),cap-now));item.evoStats[k]=Number(item.evoStats[k]||0)+inc}item.evoPlaystyles=item.evoPlaystyles||[];if(stage.playstyle&&!item.evoPlaystyles.includes(stage.playstyle))item.evoPlaystyles.push(stage.playstyle);if(stage.position)item.overridePosition=stage.position}
 function stageUpgradeText(st,evo=null){const keeper=evo?.req?.positions?.includes("GK"),map=keeper?{pac:"HEC",sho:"BSI",pas:"ABS",dri:"REF",def:"TMP",phy:"POS"}:{pac:"TEM",sho:"SCH",pas:"PAS",dri:"DRI",def:"DEF",phy:"PHY"},a=Object.entries(st.stats||{}).map(([k,v])=>`+${v} ${map[k]||k.toUpperCase()}`);if(st.ovr)a.unshift(`+${st.ovr} GES`);if(st.playstyle)a.push(`PlayStyle: ${st.playstyle}`);if(st.position)a.push(`Position: ${positionLabel(st.position)}`);return a.join(" · ")}
 function stageGoalText(st){const a=[];if(st.matches)a.push(`${st.matches} Spiele`);if(st.wins)a.push(`${st.wins} Siege`);return a.join(" · ")}
 function evoProgressPct(st,prog){const parts=[];if(st.matches)parts.push(Math.min(1,Number(prog.matches||0)/st.matches));if(st.wins)parts.push(Math.min(1,Number(prog.wins||0)/st.wins));return parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length*100):100}
@@ -7597,7 +7599,7 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V20.05 — startup video -> Footera logo -> existing loading gate */
+/* V20.06 — startup video -> Footera logo -> existing loading gate */
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
@@ -7628,7 +7630,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.05";
+const GFUT_BUILD="V20.06";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;

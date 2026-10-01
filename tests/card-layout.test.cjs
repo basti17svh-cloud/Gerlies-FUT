@@ -16,17 +16,52 @@ function context(){
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
   playerGender:()=> 'male',cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
-  portraitHTML:()=>'<img src="portrait.png">',activeEvolutionForUid:()=>null};
+  portraitHTML:()=>'<img src="portrait.png">',ensureEaPlayerAssets(){},activeEvolutionForUid:()=>null};
  vm.createContext(ctx);vm.runInContext(classCode+emblemsCode+positionsCode+positionLabelCode+rendererCode,ctx);
  return ctx;
 }
 const gerlach={id:'founder-preview',name:'B. Gerlach',position:'ST',ovr:88,nation:'Deutschland',team:'FC Gerlies',league:'Footera-Liga'};
 
+test('active Evolutions have the shared skin before the first claim and keep live player fields',()=>{
+ const ctx=context();ctx.isCardRare=()=>true;ctx.activeEvolutionForUid=uid=>uid==='active-player'?{uid}:null;
+ const item={uid:'active-player',evo:0,evoStats:{}};
+ for(const mini of [false,true]){
+  const card=ctx.cardHTML({...gerlach,name:'Real Evolution Player',alt:'CAM,LM'},item,mini);
+  assert.match(card,/class="card-shell evolution-shell"/);assert.match(card,/class="custom-card evolution"/);
+  assert.match(card,/class="evo-active-marker"/);assert.doesNotMatch(card,/rare-mark|base-rare/);
+  assert.match(card,/title="Real Evolution Player"/);assert.match(card,/ZOM · LM/);
+  assert.equal((card.match(/<small>(?:TEM|SCH|PAS|DRI|DEF|PHY)<\/small>/g)||[]).length,6);
+  assert.doesNotMatch(card,/A\. VOSS|84.*CM/);
+ }
+ assert.equal(ctx.cardClass(gerlach,{uid:'ordinary',evo:0,evoStats:{},evoPlaystyles:[]}), 'gold');
+});
+
+test('completed and legacy Evolutions replace their original event skin without requiring an OVR boost',()=>{
+ const ctx=context();
+ for(const item of [{evo:2},{evo:0,evoStats:{pas:3}},{evo:0,evoPlaystyles:['Pass']},{evo:0,evoPlaystyle:'Pass'},{evo:0,evoDesign:true},{variant:'special',eventType:'momentum',evo:1},{variant:'special',eventName:'Legacy Event',evo:1},{variant:'special',eventName:'Team of the Week 3',evo:1}]){
+  const card=ctx.cardHTML({...gerlach,position:'GK'},item);
+  assert.match(card,/class="custom-card evolution"/);assert.doesNotMatch(card,/evo-active-marker|legacy-facets|momentum-shell/);
+  assert.match(card,/<small>HEC<\/small><b>80<\/b>/);
+ }
+ assert.equal(ctx.cardClass(gerlach,{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder',evo:1}),'founder');
+ assert.equal(ctx.cardClass(gerlach,{variant:'story',evo:1}),'story');
+});
+
+test('the reusable Evolution artwork and stylesheet are available in the offline shell',()=>{
+ const skin=fs.readFileSync(path.join(__dirname,'../evolution-card.css'),'utf8');
+ const art=fs.readFileSync(path.join(__dirname,'../assets/footera/card-evolution-v1.webp'));
+ const sw=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
+ assert.ok(html.includes('href="./evolution-card.css"'));
+ assert.ok(sw.includes('"./evolution-card.css"'));assert.ok(sw.includes('"./assets/footera/card-evolution-v1.webp"'));
+ assert.match(skin,/\.custom-card\.evolution\{[\s\S]*?card-evolution-v1\.webp/);
+ assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');assert.ok(art.length<350000);
+});
+
 test('all card types share the Founder information order and visible name/stat grid',()=>{
  const ctx=context();
  const samples=[['bronze',{...gerlach,rarity:'bronze'},null],['silver',{...gerlach,rarity:'silver'},null],['gold',gerlach,null],
   ['totw',gerlach,{variant:'special',eventName:'Team of the Week 1'}],['legacy',gerlach,{variant:'special',eventName:'Legacy Event'}],
-  ['momentum',gerlach,{variant:'special',eventType:'momentum'}],['icon',gerlach,{variant:'icon-mid'}],['founder',gerlach,{pid:'footera-founder-bastian-gerlach',variant:'founder'}]];
+  ['momentum',gerlach,{variant:'special',eventType:'momentum'}],['icon',gerlach,{variant:'icon-mid'}],['evolution',gerlach,{evo:2}],['founder',gerlach,{pid:'footera-founder-bastian-gerlach',variant:'founder'}]];
  for(const [theme,player,item] of samples){
   const markup=ctx.cardHTML(player,item,true);
   assert.match(markup,new RegExp(`class="custom-card ${theme}(?: |")`),theme);
@@ -43,7 +78,7 @@ test('all card types share the Founder information order and visible name/stat g
 
 test('extra positions use German labels, omit the displayed position and stay absent without alternatives',()=>{
  const ctx=context(),p={...gerlach,position:'RW',alt:'LW, CAM, RW, LW'};
- for(const item of [null,{variant:'special',eventName:'Team of the Week 3'},{variant:'special',eventName:'Legacy Event'},{variant:'special',eventType:'momentum'},{variant:'icon-mid'},{variant:'story'},{pid:ctx.MARCO_FOUNDER_PLAYER_ID,variant:'founder'}]){
+ for(const item of [null,{variant:'special',eventName:'Team of the Week 3'},{variant:'special',eventName:'Legacy Event'},{variant:'special',eventType:'momentum'},{variant:'icon-mid'},{variant:'story'},{evo:2},{pid:ctx.MARCO_FOUNDER_PLAYER_ID,variant:'founder'}]){
   const markup=ctx.cardHTML(p,item,true);
   assert.match(markup,/class="card-alt-positions"[^>]*>LF · ZOM<\/div>/);
   assert.ok(markup.indexOf('class="stats"')<markup.indexOf('class="card-alt-positions"'));

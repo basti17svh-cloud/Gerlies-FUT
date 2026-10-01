@@ -1,0 +1,33 @@
+/* The approved Evolution reference is a blank skin. cardHTML supplies live
+   player data in the same fields used by every other Footera card. */
+.evolution-shell{aspect-ratio:3/4;container-type:inline-size}
+.card-shell .custom-card.evolution{
+ background:transparent url("./assets/footera/card-evolution-v1.webp") center / 100% 100% no-repeat;
+ clip-path:none;box-shadow:none;color:#e2fff4;
+ --card-info-left:16%;--card-info-width:18%;
+ --card-emblems-top:35.5%;--card-emblems-gap:2.3cqw;
+ --card-club-size:11cqw;--card-league-size:9cqw;
+ --card-portrait-left:31%;--card-portrait-right:18%;
+ --card-portrait-top:13%;--card-portrait-height:51%;
+ --card-name-top:64.5%;--card-bottom-left:15%;--card-bottom-right:15%;
+ --card-bottom-bottom:16.5%;--card-name-height:41%;--card-stats-top:54%;
+ --card-stats-left:0;--card-stats-right:0;--card-alt-bottom:10.5%;
+ --card-column-fill:transparent;--card-name-fill:transparent;
+ --card-name-border:transparent;--card-stats-fill:transparent;
+ --card-name-color:#e8fff8;--card-stats-color:#abe5dc;--card-value-color:#eafff8;
+}
+.card-shell .custom-card.evolution:before,
+.card-shell .custom-card.evolution:after,
+.card-shell .custom-card.evolution .card-top:before{content:none}
+.card-shell .custom-card.evolution .card-top{top:17%!important}
+.card-shell .custom-card.evolution .ovr{
+ font-size:16cqw!important;color:#e3fff8;
+ text-shadow:0 1px 4px #001d17,0 0 1.2cqw #42dcbc70;
+}
+.card-shell .custom-card.evolution .pos{font-size:6.5cqw!important;margin-top:1.5cqw!important;color:#d3fff0}
+.card-shell .custom-card.evolution .face img{filter:drop-shadow(0 .7cqw 1cqw #001e1bc9)}
+.card-shell .custom-card.evolution .pname{border:0!important;clip-path:none;text-shadow:0 1px 3px #00140e!important}
+.card-shell .custom-card.evolution .stats span{border-color:#6eefc755}
+.card-shell .custom-card.evolution .stats small{font-size:max(3px,3cqw)}
+.card-shell .custom-card.evolution .stats b{font-size:max(5px,6.5cqw)!important}
+.evolution-shell>.evo-active-marker{right:8%;bottom:7%}

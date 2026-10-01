@@ -88,3 +88,19 @@ test('loading a legacy save releases an evolution whose player has already been 
  assert.equal(c.activeEvolutionCount(),1);assert.equal(c.state.activeEvos[0].uid,'remaining');
  assert.equal(c.state.evoProgress[lostKey],undefined);assert.equal(c.state.coins,45000);
 });
+
+test('every Evolution preview and claimed stage keeps the common design through serialization',()=>{
+ const c=setup();const definitions=vm.runInContext('EVOLUTION_POOL',c);
+ for(const evo of definitions){
+  const item=c.item(evo.id,evo.req.positions?.[0]||'CM'),original=JSON.stringify(item);
+  for(let stage=0;stage<evo.stages.length;stage++){
+   const preview=c.evoPreviewItem(item,evo,stage);
+   assert.equal(preview.evoDesign,true,`${evo.id} stage ${stage}`);assert.equal(JSON.stringify(item),original);
+  }
+  for(const stage of evo.stages)c.applyEvoStage(item,stage,evo);
+  assert.equal(JSON.parse(JSON.stringify(item)).evoDesign,true,evo.id);
+ }
+ const capped=c.item('capped');capped.base.ovr=99;
+ c.applyEvoStage(capped,{ovr:1,stats:{}},{maxFinalOvr:99});
+ assert.equal(capped.evo,0);assert.equal(capped.evoDesign,true);
+});
