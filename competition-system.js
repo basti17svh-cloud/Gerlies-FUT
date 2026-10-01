@@ -196,6 +196,72 @@ function renderCompetitionProgress(snapshot){
   host.innerHTML=`<div class="competition-result ${up?"promoted":""}"><small>DIVISION RIVALS · ${snapshot.result==="win"?"SIEG":snapshot.result==="draw"?"REMIS":"NIEDERLAGE"}</small><strong>+${snapshot.earned} WOCHENPUNKTE</strong><p>${b.weekly} → ${a.weekly}/35</p><b>${up?`AUFSTIEG · DIVISION ${a.division||"ELITE"}`:esc(rivalsStageLabel(a))}</b>${a.division!==0?`<span>STUFE ${b.step} → ${a.step} · CHECKPOINT ${a.checkpoint||"OFFEN"}</span>`:""}<div class="competition-bar"><i style="width:${Math.min(100,Math.round(a.weekly/35*100))}%"></i></div><span>RESET DONNERSTAG 09:00 · ${competitionCountdown("rivals")}</span>${a.streak>=2?`<em>SIEGESSERIE ×${a.streak}</em>`:""}${protectedStep?"<em>CHECKPOINT AKTIV · KEIN RÜCKFALL</em>":""}</div>`
  }
 }
+
+function progressClamp(value){return Math.max(0,Math.min(100,Number(value)||0))}
+function progressAxisHtml(markers,fromPct,toPct){
+ const markerHtml=markers.map(m=>'<span class="post-progress-marker '+(m.kind||'')+'" style="left:'+progressClamp(m.pct)+'%"><i></i><b>'+esc(m.label)+'</b>'+(m.sub?'<small>'+esc(m.sub)+'</small>':'')+'</span>').join("");
+ return '<div class="post-progress-axis" style="--from:'+progressClamp(fromPct)+'%;--to:'+progressClamp(toPct)+'%"><div class="post-progress-track"><i class="post-progress-fill"></i><b class="post-progress-cursor"></b></div><div class="post-progress-markers">'+markerHtml+'</div></div>'
+}
+function weeklyProgressHtml(before,after){
+ const from=progressClamp(before/35*100),to=progressClamp(after/35*100);
+ return '<div class="post-progress-weekly"><div class="post-progress-section-head"><span>WOCHENFORTSCHRITT</span><strong>'+before+' → '+after+'/35</strong></div>'+progressAxisHtml([{pct:0,label:'0'},{pct:15/35*100,label:'15',sub:'Reward'},{pct:100,label:'35',sub:'Upgrade'}],from,to)+'</div>'
+}
+function squadPostMatchHtml(snapshot){
+ const b=snapshot.before,a=snapshot.after,beforeIndex=Math.max(0,SB_RANKS.findIndex(x=>x.name===b.rank)),afterIndex=Math.max(0,SB_RANKS.findIndex(x=>x.name===a.rank));
+ const startIndex=Math.max(0,Math.min(beforeIndex,afterIndex)-1),markerEnd=Math.min(SB_RANKS.length-1,Math.max(beforeIndex,afterIndex)+1);
+ const axisMin=SB_RANKS[startIndex].min,axisMax=markerEnd===SB_RANKS.length-1?Math.max(SB_RANKS[markerEnd].min+3000,a.points,b.points+1):SB_RANKS[markerEnd].min;
+ const pct=v=>axisMax===axisMin?100:(v-axisMin)/(axisMax-axisMin)*100;
+ const markers=SB_RANKS.slice(startIndex,markerEnd+1).map(row=>({pct:pct(row.min),label:row.name,sub:fmt(row.min)+' BP',kind:row.name===a.rank?'current':''}));
+ const promoted=a.rank!==b.rank;
+ return '<div class="post-progress-summary"><small>SQUAD BATTLES</small><strong>+'+fmt(snapshot.earned)+' BP</strong><span>'+fmt(b.points)+' → '+fmt(a.points)+' Battle-Punkte</span></div>'+
+  (promoted?'<div class="post-progress-promotion">RANGAUFSTIEG · '+esc(a.rank.toUpperCase())+'</div>':'')+
+  '<div class="post-progress-status"><span>VORHER<b>'+esc(b.rank)+'</b></span><i>→</i><span>AKTUELL<b>'+esc(a.rank)+'</b></span></div>'+
+  '<div class="post-progress-section-head"><span>RANGFORTSCHRITT</span><strong>'+fmt(a.points)+' BP</strong></div>'+
+  progressAxisHtml(markers,pct(b.points),pct(a.points))+
+  '<div class="post-progress-foot">'+a.played+'/14 gewertete Spiele · Reset Montag 09:00</div>'+
+  (!snapshot.eligible?'<div class="post-progress-note">Dieses Spiel gab keine weiteren Battle-Punkte.</div>':'')
+}
+function rivalsPostMatchHtml(snapshot){
+ const b=snapshot.before,a=snapshot.after,up=a.division<b.division,eliteBefore=b.division===0;
+ let mainAxis="",status="";
+ if(eliteBefore){
+  const min=Math.max(0,Math.min(b.skill,a.skill)-100),max=Math.max(min+200,Math.max(b.skill,a.skill)+100),pct=v=>(v-min)/(max-min)*100;
+  mainAxis=progressAxisHtml([{pct:0,label:String(min)},{pct:pct(500),label:'500',sub:'Elite Start'},{pct:100,label:String(max)}],pct(b.skill),pct(a.skill));
+  status='<div class="post-progress-status"><span>VORHER<b>'+b.skill+' SR</b></span><i>→</i><span>AKTUELL<b>'+a.skill+' SR</b></span></div>'
+ }else{
+  const total=(RIVALS_LADDER[b.division]||[1,0])[0],checkpoint=(RIVALS_LADDER[b.division]||[1,0])[1],stepPct=step=>(Math.max(1,step)-1)/Math.max(1,total)*100;
+  const markers=[];
+  for(let step=1;step<=total;step++)markers.push({pct:stepPct(step),label:'Stufe '+step,sub:step===checkpoint?'Checkpoint':'',kind:step===checkpoint?'checkpoint':''});
+  markers.push({pct:100,label:a.division<b.division?'AUFSTIEG':'Aufstieg',sub:b.division===1?'Elite':'Division '+Math.max(0,b.division-1),kind:'promotion'});
+  mainAxis=progressAxisHtml(markers,stepPct(b.step),up?100:stepPct(a.step));
+  const beforeLabel='DIV '+b.division+' · STUFE '+b.step,afterLabel=a.division===0?'ELITE · '+a.skill+' SR':'DIV '+a.division+' · STUFE '+a.step;
+  status='<div class="post-progress-status"><span>VORHER<b>'+beforeLabel+'</b></span><i>→</i><span>AKTUELL<b>'+afterLabel+'</b></span></div>'
+ }
+ const promoted=up?'<div class="post-progress-promotion">AUFSTIEG · '+(a.division===0?'ELITE':'DIVISION '+a.division)+'</div>':'';
+ const streak=a.streak>=2?'<div class="post-progress-note accent">Siegesserie ×'+a.streak+(a.streak>=3?' · Siege geben +2 Stufen':'')+'</div>':'';
+ return '<div class="post-progress-summary"><small>DIVISION RIVALS</small><strong>+'+snapshot.earned+' WP</strong><span>'+b.weekly+' → '+a.weekly+'/35 Wochenpunkte</span></div>'+
+  promoted+status+
+  '<div class="post-progress-section-head"><span>'+(eliteBefore?'SKILL-RATING':'DIVISIONSFORTSCHRITT')+'</span><strong>'+esc(rivalsStageLabel(a))+'</strong></div>'+
+  mainAxis+streak+weeklyProgressHtml(b.weekly,a.weekly)+
+  '<div class="post-progress-foot">Reset Donnerstag 09:00 · '+esc(competitionCountdown("rivals"))+'</div>'
+}
+function showPostMatchProgress(snapshot){
+ const screen=$("postMatchProgress"),body=$("postMatchProgressBody");
+ if(!screen||!body||!snapshot)return false;
+ $("postMatchProgressKicker").textContent=snapshot.mode==="squad"?"SQUAD BATTLES":"DIVISION RIVALS";
+ $("postMatchProgressTitle").textContent="Dein Fortschritt";
+ $("postMatchProgressSubtitle").textContent=snapshot.mode==="squad"?"Rang und Battle-Punkte nach diesem Spiel":"Division, Stufe und Wochenfortschritt nach diesem Spiel";
+ body.innerHTML=snapshot.mode==="squad"?squadPostMatchHtml(snapshot):rivalsPostMatchHtml(snapshot);
+ screen.classList.add("active");screen.setAttribute("aria-hidden","false");screen.scrollTop=0;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>body.querySelectorAll(".post-progress-axis").forEach(x=>x.classList.add("animate"))));
+ setTimeout(()=>$("postMatchProgressClose")?.focus(),120);
+ return true
+}
+function hidePostMatchProgress(){
+ const screen=$("postMatchProgress");if(!screen)return;
+ screen.classList.remove("active");screen.setAttribute("aria-hidden","true")
+}
+
 document.addEventListener("click",e=>{const button=e.target.closest("[data-claim-competition]");if(button)claimCompetitionReward(button.dataset.claimCompetition,button.dataset.competitionWeek)});
 syncCompetitionWeeks();
 setInterval(()=>{
