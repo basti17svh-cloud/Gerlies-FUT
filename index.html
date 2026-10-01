@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.12</title>
+<title>Footera V20.13</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1539,7 +1539,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.12</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.13</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2653,8 +2653,8 @@ const TASKS=[
 const SBCS=[
  {group:"Grundlagen",id:"bronze",name:"Platz zum Wachsen",desc:"11 Bronze-Spieler abgeben.",req:"11× Bronze · max. GES 64",filter:b=>rarityOf(b)==="bronze",count:11,reward:{pack:"silver",qty:1}},
  {group:"Grundlagen",id:"silver",name:"Spielaufbau",desc:"11 Silber-Spieler abgeben.",req:"11× Silber · GES 65–74",filter:b=>rarityOf(b)==="silver",count:11,reward:{pack:"gold",qty:1}},
- {group:"Verbesserungen",id:"gold",name:"Volle Stärke",desc:"11 Gold-Spieler abgeben.",req:"11× Gold · Durchschnitt max. 85",filter:b=>rarityOf(b)==="gold",count:11,maxAvg:85,reward:{pack:"82",qty:1}},
- {group:"Verbesserungen",id:"83squad",name:"83er-Team",desc:"11 Spieler mit hohem Durchschnitt.",req:"11 Spieler · Durchschnitt mindestens 83",filter:b=>b.ovr>=75,count:11,minAvg:83,reward:{pack:"goldplayers",qty:1}},
+ {group:"Verbesserungen",id:"gold",name:"Gold-Upgrade",desc:"Tausche überschüssige Goldkarten gegen zwei 82+-Packs.",req:"11× Gold · min. 2 selten",filter:b=>rarityOf(b)==="gold",count:11,minRare:2,reward:{pack:"82",qty:2}},
+ {group:"Verbesserungen",id:"83squad",name:"82+ Upgrade",desc:"Ein günstigeres Upgrade für gemischte Vereinsbestände.",req:"11 Spieler · min. 6 Gold · Ø GES 78 · min. 1 selten",filter:b=>true,count:11,minGold:6,minAvg:78,minRare:1,reward:{pack:"82",qty:1}},
  {group:"Ligen",id:"sameleague",name:"Ligaverbindung",desc:"11 Goldspieler aus einer Liga.",req:"11 Gold · gleiche Liga",filter:b=>rarityOf(b)==="gold",count:11,sameLeague:true,reward:{coins:3500,pack:"82",qty:1}}
 ];
 
@@ -7798,7 +7798,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.12";
+const GFUT_BUILD="V20.13";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7816,7 +7816,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2011",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2013",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
