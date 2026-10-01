@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.03</title>
+<title>Footera V20.04</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1411,7 +1411,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 
-/* V20.03 — cinematic Footera boot intro */
+/* V20.04 — cinematic Footera boot intro */
 .boot-intro{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#000;display:grid;place-items:center;opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease}
 .boot-intro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(101,0,0,.18),transparent 52%),#000;pointer-events:none}
 .boot-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;background:#000;opacity:0;transition:opacity .22s ease;z-index:1}
@@ -1441,7 +1441,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(prefers-reduced-motion:reduce){.splash-emblem-image{animation:none!important}}
 
 
-/* V20.03 — tradeability: club, profile and club search only */
+/* V20.04 — tradeability: club, profile and club search only */
 .club-card-preview{position:relative}
 .club-untradeable-badge{position:absolute;z-index:8;top:17px;right:max(7px,calc((100% - 150px)/2 + 4px));width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(12,15,17,.92);border:1px solid rgba(255,120,137,.75);color:#ff899b;box-shadow:0 4px 13px rgba(0,0,0,.45)}
 .club-untradeable-badge svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
@@ -1526,7 +1526,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.03</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.04</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5729,11 +5729,11 @@ function renderTasks(){const ordered=[...TASKS].sort((a,b)=>{const av=Math.min(a
 $("taskList").addEventListener("click",e=>{const b=e.target.closest("[data-claim]");if(!b)return;const t=TASKS.find(x=>x.id===b.dataset.claim);if(!t||state.claims[t.id])return;state.claims[t.id]=true;grant(t.reward);save();renderAll();toast("Belohnung abgeholt.")})
 
 let activeEvoTab="available",evoFocusPlayerUid=null,evoPickerContext=null;
-function evoWeekStart(date=new Date()){const d=new Date(date),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);d.setHours(19,0,0,0);if(date<d)d.setDate(d.getDate()-7);return d}
-function evoWeekIndex(date=new Date()){const epoch=new Date(2026,8,21,19,0,0,0);return Math.floor((evoWeekStart(date)-epoch)/(7*86400000))}
+function evoWeekStart(date=new Date()){return berlinWeekStart(date,1,19)}
+function evoWeekIndex(date=new Date()){const p=berlinParts(evoWeekStart(date));return Math.round((Date.UTC(p.year,p.month-1,p.day)-Date.UTC(2026,8,21))/(7*86400000))}
 function activeEvolutionDefinitions(date=new Date()){const wi=evoWeekIndex(date),pick=(group)=>{const a=EVOLUTION_POOL.filter(x=>x.group===group);return a[((wi%a.length)+a.length)%a.length]};return[...EVOLUTION_POOL.filter(x=>x.group==="core"),pick("attack"),pick("mid"),pick("def")]}
-function evolutionSchedule(evo,date=new Date(),weekShift=0){const start=evoWeekStart(date);start.setDate(start.getDate()+weekShift*7);const signupEnd=new Date(start.getTime()+Number(evo.signupDays||7)*86400000),completionEnd=new Date(start.getTime()+Number(evo.completionDays||14)*86400000);return{start,signupEnd,completionEnd,key:`${evo.id}@${start.toISOString().slice(0,10)}`}}
-function evoDate(d){return d.toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+function evolutionSchedule(evo,date=new Date(),weekShift=0){const start=berlinShiftDays(evoWeekStart(date),weekShift*7,19),signupEnd=berlinShiftDays(start,Number(evo.signupDays||7),19),completionEnd=berlinShiftDays(start,Number(evo.completionDays||14),19);return{start,signupEnd,completionEnd,key:`${evo.id}@${start.toISOString().slice(0,10)}`}}
+function evoDate(d){return d.toLocaleString("de-DE",{timeZone:FOOTERA_TIME_ZONE,day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
 function evoTimeLeft(d){const ms=d-Date.now();if(ms<=0)return"abgelaufen";const days=Math.floor(ms/86400000),hrs=Math.floor(ms%86400000/3600000);return days?`${days} T ${hrs} Std`:`${Math.max(1,hrs)} Std`}
 function evoRequirementText(evo){const r=evo.req||{},a=[];if(r.positions?.length)a.push(r.positions.map(positionLabel).join(" / "));if(r.maxOvr)a.push(`max. ${r.maxOvr} GES`);if(evo.maxFinalOvr)a.push(`Ziel max. ${evo.maxFinalOvr} GES`);if(r.maxPac)a.push(`max. ${r.maxPac} TEM`);if(r.maxPlaystyles!=null)a.push(`max. ${r.maxPlaystyles} PlayStyles`);return a.join(" · ")||"Keine Zusatzbedingungen"}
 const MAX_ACTIVE_EVOLUTIONS=3;
@@ -5776,7 +5776,7 @@ function migrateLegacyEvo(){
 }
 function expireActiveEvolutionIfNeeded(){
  migrateLegacyEvo();const now=Date.now(),expired=[];
- for(const row of activeEvolutionEntries()){const end=Number(row.completionEnd||0);if(end&&now>end)expired.push(row)}
+ for(const row of activeEvolutionEntries()){const end=Number(row.completionEnd||0);if(end&&now>=end)expired.push(row)}
  if(!expired.length)return false;
  state.evoHistory=state.evoHistory||[];
  for(const row of expired){state.evoHistory.unshift({evoId:row.evoId,uid:row.uid,status:"expired",at:now});if(row.instanceKey)delete state.evoProgress?.[row.instanceKey]}
@@ -5821,7 +5821,7 @@ function startEvolution(evoId,uid,payment="free"){
  const evo=EVOLUTION_POOL.find(x=>x.id===evoId),item=state.club.find(x=>x.uid===uid);
  if(!evo||!item||!evoEligible(item,evo))return toast("Dieser Spieler erfüllt die Voraussetzungen nicht.");
  const active=activeEvolutionDefinitions().some(x=>x.id===evo.id),sch=evolutionSchedule(evo);
- if(!active||Date.now()>sch.signupEnd)return toast("Diese Evolution kann nicht mehr gestartet werden.");
+ if(!active||Date.now()>=sch.signupEnd)return toast("Diese Evolution kann nicht mehr gestartet werden.");
  const coins=Number(evo?.cost?.coins||0),points=Number(evo?.cost?.points||0),free=!coins&&!points;
  let paidWith="free",paidAmount=0;
  if(!free){
@@ -5857,7 +5857,7 @@ function showEvoClaimReveal(beforeItem,afterItem,evo,stageIndex,isFinal){
 }
 function claimEvolutionStage(instanceKey=""){
  expireActiveEvolutionIfNeeded();
- const entry=activeEvolutionForInstance(instanceKey)||(activeEvolutionCount()===1?activeEvolutionEntries()[0]:null);if(!entry)return;
+ const entry=instanceKey?activeEvolutionForInstance(instanceKey):(activeEvolutionCount()===1?activeEvolutionEntries()[0]:null);if(!entry)return;
  const evo=EVOLUTION_POOL.find(x=>x.id===entry.evoId),item=state.club.find(x=>x.uid===entry.uid);if(!evo||!item)return;
  const stage=Number(entry.stage||0),st=evo.stages[stage],key=entry.instanceKey,prog=state.evoProgress[key]||{};
  if(!st||!evoStageDone(st,prog))return toast("Die Ziele dieser Stufe sind noch nicht vollständig erreicht.");
@@ -6057,13 +6057,13 @@ function sbcTeamUsageForUid(uid){
 }
 function sbcSubmissionRisks(sbc){
  const stats=sbcDraftStats(sbc),risks=[];
- for(const item of stats.items){const teams=sbcTeamUsageForUid(item.uid);if(teams.length)risks.push({item,teams})}
+ for(const item of stats.items){const teams=sbcTeamUsageForUid(item.uid),evolution=activeEvolutionForUid(item.uid);if(teams.length||evolution)risks.push({item,teams,evolution})}
  return risks
 }
 function sbcWarningHTML(sbc){
  if(!pendingSbcSubmissionId||pendingSbcSubmissionId!==sbc.id)return"";
  const risks=sbcSubmissionRisks(sbc);if(!risks.length)return"";
- return `<div class="sbc-team-warning" role="dialog" aria-modal="true" aria-label="SBC Sicherheitsabfrage"><div class="sbc-team-warning-card"><div class="sbc-team-warning-head"><div class="sbc-warning-icon">!</div><div><h3>Spieler aus deinen Teams ausgewählt</h3><p>Mindestens ein Spieler dieser SBC ist Bestandteil einer deiner drei Mannschaften. Wenn du fortfährst, wird die Karte dauerhaft abgegeben und der entsprechende Kaderplatz in jedem betroffenen Team frei.</p></div></div><div class="sbc-warning-list">${risks.map(r=>{const b=displayBase(r.item);return `<div class="sbc-warning-player"><div>${cardHTML(b,r.item,true)}</div><div><strong>${esc(b?.name||"Spieler")} · ${itemRating(r.item)} ${esc(positionLabel(b?.position,b))}</strong><small>Wird aus folgenden Mannschaften entfernt:</small><div>${r.teams.map(t=>`<span class="sbc-warning-team-pill">${esc(t)}</span>`).join("")}</div></div></div>`}).join("")}</div><div class="sbc-warning-actions"><button type="button" class="secondary" data-sbc-warning-replace>Spieler austauschen</button><button type="button" class="danger-confirm" data-sbc-warning-confirm>Trotzdem abgeben</button><button type="button" class="sbc-warning-cancel" data-sbc-warning-cancel>Abbrechen und SBC weiter bearbeiten</button></div></div></div>`
+ return `<div class="sbc-team-warning" role="dialog" aria-modal="true" aria-label="SBC Sicherheitsabfrage"><div class="sbc-team-warning-card"><div class="sbc-team-warning-head"><div class="sbc-warning-icon">!</div><div><h3>Spieler aus deinen Teams oder einer Evolution ausgewählt</h3><p>Wenn du fortfährst, werden diese Karten dauerhaft abgegeben. Betroffene Kaderplätze werden frei und aktive Evolutionen dieser Spieler beendet.</p></div></div><div class="sbc-warning-list">${risks.map(r=>{const b=displayBase(r.item);return `<div class="sbc-warning-player"><div>${cardHTML(b,r.item,true)}</div><div><strong>${esc(b?.name||"Spieler")} · ${itemRating(r.item)} ${esc(positionLabel(b?.position,b))}</strong>${r.teams.length?`<small>Wird aus folgenden Mannschaften entfernt:</small><div>${r.teams.map(t=>`<span class="sbc-warning-team-pill">${esc(t)}</span>`).join("")}</div>`:""}${r.evolution?`<small>Aktive Evolution wird beendet. Nicht abgeholte Upgrades gehen verloren.</small>`:""}</div></div>`}).join("")}</div><div class="sbc-warning-actions"><button type="button" class="secondary" data-sbc-warning-replace>Spieler austauschen</button><button type="button" class="danger-confirm" data-sbc-warning-confirm>Trotzdem abgeben</button><button type="button" class="sbc-warning-cancel" data-sbc-warning-cancel>Abbrechen und SBC weiter bearbeiten</button></div></div></div>`
 }
 function sbcPickerFacetRows(){
  if(!sbcPickerState)return[];const source=String(sbcPickerState.source||""),quality=String(sbcPickerState.quality||""),pos=String(sbcPickerState.position||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
@@ -6292,6 +6292,7 @@ function finalizeSbcSubmission(id){
   const roles={...preset.roles},focus={...preset.focus};for(let i=0;i<11;i++)if(!squad[i]){delete roles[i];delete focus[i]}
   return{...preset,squad,roles,focus}
  });
+ for(const uid of ids)removeActiveEvolutionForUid(uid);
  state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
  grant(sbc.reward);state.stats.sbcs++;state.sbcCompletions=state.sbcCompletions||{};if(sbc.once)state.sbcCompletions[sbc.id]=true;const groupMessage=maybeGrantSbcGroupReward(sbc);
  delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});const rewardPack=queuedSbcGroupRewardPack;queuedSbcGroupRewardPack=null;save();renderAll();if(rewardPack)openPack(rewardPack.packId,rewardPack.items);toast((teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")+groupMessage)
@@ -7596,7 +7597,7 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V20.03 — startup video -> Footera logo -> existing loading gate */
+/* V20.04 — startup video -> Footera logo -> existing loading gate */
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
@@ -7627,7 +7628,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.03";
+const GFUT_BUILD="V20.04";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;

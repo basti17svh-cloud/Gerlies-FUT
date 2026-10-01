@@ -8,6 +8,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const previewCode=html.slice(html.indexOf('function ownLineupHTML(){'),html.indexOf('function renderSquadBattleSelection('));
 const imageCode=html.slice(html.indexOf('function officialCardCandidates('),html.indexOf('function playerGender('));
 const cardCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
+const positionsCode=html.slice(html.indexOf('function playerPositions('),html.indexOf('function detailChemHTML('));
 const swapCode=html.slice(html.indexOf('function swapPreviewSlots('),html.indexOf('let previewDrag=null'));
 
 test('pre-match preview exposes XI, bench and reserve slots and responds to squad changes',()=>{
@@ -56,7 +57,7 @@ test('a secondary position uses the shared card and preserves its position label
  const ctx={prioritizeCached:arr=>arr,imageCacheKey:()=>'',esc:String,imgCandidatesAttr:JSON.stringify,
   resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,emblemsHTML:()=>'',portraitHTML:()=>'<img src="portrait.png">',
   positionLabel:pos=>({CAM:'ZOM',RM:'RM'})[pos]||pos,cardStatPairs:()=>[]};
- vm.createContext(ctx);vm.runInContext(`${imageCode}\n${cardCode}`,ctx);
+ vm.createContext(ctx);vm.runInContext(`${imageCode}\n${positionsCode}\n${cardCode}`,ctx);
  const palmer={id:'257498',name:'C. Palmer',ovr:85,position:'CAM',alt:'RM',team:'Chelsea FC'};
  const card=ctx.cardHTML(palmer,null,true,'RM');
  assert.match(card,/class="pos">RM/);
@@ -69,7 +70,7 @@ test('new club items show their real rating when displayRating has its default z
  const ctx={esc:String,resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,
   itemRating:()=>78,officialCardHTML:()=>'',emblemsHTML:()=>'',portraitHTML:()=>'',
   positionLabel:p=>p,cardStatPairs:()=>[],activeEvolutionForUid:()=>null};
- vm.createContext(ctx);vm.runInContext(cardCode,ctx);
+ vm.createContext(ctx);vm.runInContext(positionsCode+cardCode,ctx);
  const player={id:'starter',name:'Starter',ovr:78,position:'ST',team:'Club'};
  const card=ctx.cardHTML(player,{pid:'starter',uid:'test',displayRating:0},true);
  assert.match(card,/class="ovr">78<\/div>/);

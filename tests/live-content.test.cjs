@@ -16,7 +16,10 @@ test('Team der Woche wechselt mittwochs um 19 Uhr Berliner Zeit und läuft eine 
  assert.equal(current('2026-09-23T16:59:59Z'),1);
  assert.equal(current('2026-09-23T17:00:00Z'),2);
  assert.equal(current('2026-09-30T16:59:59Z'),2);
- assert.equal(current('2026-09-30T17:00:00Z'),null);
- assert.equal(ctx.totwIsActive(new Date('2026-09-30T17:00:00Z')),false);
+ assert.equal(current('2026-09-30T17:00:00Z'),3);
+ assert.equal(current('2026-10-07T16:59:59Z'),3);
+ assert.equal(current('2026-10-07T17:00:00Z'),null);
+ assert.equal(ctx.totwIsActive(new Date('2026-09-30T17:00:00Z')),true);
  assert.equal(ctx.totwDisplayName('Team of the Week 2'),'Team der Woche 2');
+ assert.equal(ctx.totwDisplayName('Team of the Week 3'),'Team der Woche 3');
 });

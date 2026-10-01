@@ -56,11 +56,11 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  assert.notDeepEqual(api.objectiveWindow('daily',new Date('2026-09-23T20:00:00Z')).tasks.map(t=>t.id),api.objectiveWindow('daily',new Date('2026-09-24T20:00:00Z')).tasks.map(t=>t.id));
 });
 
-test('Season 1 Story players replace only free levels 15 and 30 and claim once',()=>{
+test('Season 1 Story players occupy free and Premium levels 15 and 30 and free cards claim once',()=>{
  const app=setup({sp:26500});const{state,ctx}=app;
  const rewards=vm.runInContext('({at15:seasonTierReward(SEASON_REWARDS[14],"free"),at30:seasonTierReward(SEASON_REWARDS[29],"free"),premium:seasonTierReward(SEASON_REWARDS[14],"premium"),nextSeason:seasonTierReward(SEASON_REWARDS[14],"free","s2")})',ctx);
  assert.equal(rewards.at15.story,'s1-15');assert.equal(rewards.at30.story,'s1-30');
- assert.ok(!rewards.premium.story);assert.ok(!rewards.nextSeason.story);
+ assert.equal(rewards.premium.story,'s1-premium-15');assert.ok(!rewards.nextSeason.story);
  app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'15'});
  app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'30'});
  app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'15'});

@@ -19,7 +19,7 @@ function setup(){
  const ctx={state,ensureSquadSlots:()=>{},currentFormation:()=>Array.from({length:11},(_,i)=>({p:i===0?'ST':'CM'})),
   displayBase:item=>item,itemRating:item=>item.ovr,posFit:(item,slot)=>item?.position===slot?1:0,
   positionLabel:x=>x,normalizeKey:x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
-  esc:x=>x};
+  resolvedAffiliation:item=>({league:item?.league||'',team:item?.team||''}),cardClass:p=>p.ovr>=75?'gold':p.ovr>=65?'silver':'bronze',esc:x=>x};
  vm.createContext(ctx);vm.runInContext(code,ctx);
  return{ctx,state}
 }

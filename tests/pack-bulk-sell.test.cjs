@@ -8,6 +8,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
 const duplicateCode=html.slice(html.indexOf('function packItemKey('),html.indexOf('function openPackPlayerDetails('));
 const resultCode=html.slice(html.indexOf('function closeResolvedPackResults('),html.indexOf('function clubFilterItems('));
+const specialCode=html.slice(html.indexOf('function packIsSpecial('),html.indexOf('function packIsWalkout('));
 const card=(uid,pid,rating=60,tradeable=true,extra={})=>({uid,pid,rating,tradeable,...extra});
 
 function app(initial={},saved=new Map()){
@@ -27,7 +28,7 @@ function app(initial={},saved=new Map()){
   confirm(message){prompts.push(message);return ctx.approve}
  };
  vm.createContext(ctx);
- vm.runInContext(`${stateCode}\nlet state=loadState(),pendingPack=state.pendingPack,pendingResolved=new Set(state.pendingResolved);\n${duplicateCode}\n${resultCode}`,ctx);
+ vm.runInContext(`${stateCode}\nlet state=loadState(),pendingPack=state.pendingPack,pendingResolved=new Set(state.pendingResolved);\n${duplicateCode}\n${specialCode}\n${resultCode}`,ctx);
  const read=expression=>vm.runInContext(expression,ctx);
  el('results');read('renderPackResults();flushSave()');
  return{ctx,elements,prompts,saved,read,json:expression=>JSON.parse(read(`JSON.stringify(${expression})`)),click:id=>elements.get(id).handlers.click(),persist:()=>read('flushSave()')}

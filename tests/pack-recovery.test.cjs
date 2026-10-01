@@ -10,6 +10,7 @@ const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let
 const packCode=html.slice(html.indexOf('let pendingResolved='),html.indexOf('function packIsSpecial('));
 const resultCode=html.slice(html.indexOf('function packSellBatch('),html.indexOf('$("resultGrid").addEventListener'));
 const finishCode=html.slice(html.indexOf('function finishPack(){'),html.indexOf('function packFxLayer('));
+const specialCode=html.slice(html.indexOf('function packIsSpecial('),html.indexOf('function packIsWalkout('));
 
 function app(saved=new Map()){
  const elements=new Map(),el=id=>{
@@ -22,11 +23,11 @@ function app(saved=new Map()){
   generatePack:()=>[{uid:'pack-1',pid:'1',tradeable:true},{uid:'pack-2',pid:'2',tradeable:true}],
   ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},resetBoardIntro(){},resetWalkoutTunnel(){},PACKS:[{id:'gold',name:'Gold Pack'}],
   $:el,packDuplicateMap:()=>new Map([[0,false],[1,false]]),displayBase:item=>({name:`Spieler ${item.pid}`,ovr:75}),
-  cardHTML:player=>`<div>${player.name}</div>`,quickSell:()=>100,fmt:String,esc:String,saveCalled:0,
+  cardHTML:player=>`<div>${player.name}</div>`,quickSell:()=>100,itemRating:()=>75,fmt:String,esc:String,saveCalled:0,
   FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',founderRuleForPack:()=>undefined,isFounderItem:()=>false,
  };
  vm.createContext(ctx);
- vm.runInContext(`${stateCode}\n${artCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${resultCode}\n${finishCode}`,ctx);
+ vm.runInContext(`${stateCode}\n${artCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${specialCode}\n${resultCode}\n${finishCode}`,ctx);
  return{ctx,elements,saved,read:expr=>vm.runInContext(expr,ctx)}
 }
 
