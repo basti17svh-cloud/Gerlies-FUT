@@ -155,3 +155,26 @@
  #match .post-progress-fill,#match .post-progress-cursor{transition:none!important}
  #match .post-progress-promotion{animation:none!important}
 }
+
+/* V20.18 — penalty shootout presentation + controlled mobile drag scrolling */
+#match .penalty-shootout{margin:12px 0;padding:16px;border:1px solid #526746;border-radius:16px;background:radial-gradient(circle at 100% 0,#31411655,transparent 34%),linear-gradient(145deg,#111b15,#090f0c);box-shadow:0 18px 42px #0007}
+#match .penalty-shootout[hidden]{display:none}
+#match .penalty-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #314139}
+#match .penalty-head span{color:#b5d69a;font-size:10px;font-weight:1000;letter-spacing:.14em}
+#match .penalty-head strong{color:#e5ff74;font-size:30px}
+#match .penalty-team{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #ffffff0b}
+#match .penalty-team b{font-size:12px}
+#match .penalty-dots{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+#match .penalty-dots i{width:22px;height:22px;display:grid;place-items:center;border:1px solid #394940;border-radius:50%;background:#0b110e;color:#6f7c76;font-size:11px;font-style:normal;font-weight:1000}
+#match .penalty-dots i.goal{border-color:#8bc453;background:#17301b;color:#cfff88;animation:penaltyDotIn .25s ease-out}
+#match .penalty-dots i.miss{border-color:#8b4551;background:#30151a;color:#ff9aa8;animation:penaltyDotIn .25s ease-out}
+#match .penalty-live{margin-top:13px;padding:13px;border:1px solid #304038;border-radius:12px;background:#0b120f}
+#match .penalty-live small{display:block;color:#82938b;font-size:8px;font-weight:900;letter-spacing:.08em}
+#match .penalty-live strong{display:block;margin-top:4px;font-size:18px}
+#match .penalty-live span{display:block;margin-top:5px;color:#c7d2cc;font-size:11px}
+#match .penalty-live.goal strong{color:#dfff79}#match .penalty-live.miss strong{color:#ff9bac}
+#match .penalty-winner{margin-top:12px;padding:12px;border:1px solid #a9cf50;border-radius:11px;background:#253214;color:#ebff9b;text-align:center;font-size:14px;font-weight:1000}
+#match.match-manager-dragging{overscroll-behavior:none;touch-action:none;scroll-behavior:auto}
+#match.match-manager-dragging #managerPanel,#match.match-manager-dragging #managerPanel *{touch-action:none!important}
+@keyframes penaltyDotIn{from{transform:scale(.55);opacity:.25}to{transform:scale(1);opacity:1}}
+@media(max-width:560px){#match .penalty-shootout{padding:13px}#match .penalty-head strong{font-size:26px}#match .penalty-dots i{width:20px;height:20px}}

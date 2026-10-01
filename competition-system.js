@@ -62,7 +62,8 @@ if(!PACKS.some(p=>p.id==="totw-reward"))PACKS.push({id:"totw-reward",name:"TOTW-
 for(const rank of SB_RANKS){if(rank.primary)ratingRewardPack(...rank.primary);if(rank.bonus)ratingRewardPack(...rank.bonus)}
 
 function ensureCompetitionState(){
- state.squadBattle=state.squadBattle||{week:"",points:0,played:0,playedIds:[],difficulty:"pro"};
+ state.squadBattle=state.squadBattle||{week:"",points:0,played:0,playedIds:[],difficulty:"pro",refreshesUsed:0,setSeq:0,setPlayed:0};
+ const sb=state.squadBattle;sb.refreshesUsed??=0;sb.setSeq??=Math.floor(Math.max(0,Number(sb.played||0))/4);sb.setPlayed??=0;
  state.rivals=state.rivals||{division:10,points:0};
  state.rivals.step??=Math.min((RIVALS_LADDER[state.rivals.division]||[1])[0],1+Math.floor(Math.max(0,Number(state.rivals.points||0))/3));
  state.rivals.checkpoint??=(RIVALS_LADDER[state.rivals.division]&&state.rivals.step>=RIVALS_LADDER[state.rivals.division][1]?RIVALS_LADDER[state.rivals.division][1]:0);
@@ -79,7 +80,7 @@ function syncCompetitionWeeks(at=new Date()){
   if(sb.week&&sb.played>0&&!state.weeklyRewards.some(x=>x.mode==="squad"&&x.week===sb.week)){
    const rank=sbRank(sb.points);state.weeklyRewards.push({mode:"squad",week:sb.week,rank:rank.name,points:sb.points,reward:sbRankReward(rank.name),claimed:false});
   }
-  sb.week=sw.key;sb.points=0;sb.played=0;sb.playedIds=[];changed=true
+  sb.week=sw.key;sb.points=0;sb.played=0;sb.playedIds=[];sb.refreshesUsed=0;sb.setSeq=0;sb.setPlayed=0;changed=true
  }
  const rv=state.rivals,rw=competitionWindow("rivals",at);
  if(rv.week!==rw.key){
@@ -119,8 +120,22 @@ function recordRivalsResult(result){
 function recordSquadBattleResult(result,home,away,opponent,difficulty=state.squadBattle.difficulty){
  const sb=state.squadBattle,before={points:sb.points,rank:sbRank(sb.points).name,played:sb.played},key=String(opponent?.battleId||""),eligible=sb.played<14&&key&&!sb.playedIds.includes(key);
  const earned=eligible?sbBattlePoints(result,home,away,difficulty,opponent?.strengthId):0;
- if(eligible){sb.played++;sb.points+=earned;sb.playedIds.push(key)}
+ if(eligible){
+  sb.played++;sb.points+=earned;sb.playedIds.push(key);
+  if(Number.isInteger(opponent?.battleSet)&&Number(opponent.battleSet)===Number(sb.setSeq)){
+   sb.setPlayed=Math.max(0,Number(sb.setPlayed||0))+1;
+   if(sb.setPlayed>=4){sb.setSeq=Math.max(0,Number(sb.setSeq||0))+1;sb.setPlayed=0}
+  }
+ }
  return{mode:"squad",result,before,after:{points:sb.points,rank:sbRank(sb.points).name,played:sb.played},earned,eligible}
+}
+function squadBattleRefreshRemaining(){ensureCompetitionState();return Math.max(0,4-Number(state.squadBattle.refreshesUsed||0))}
+function refreshSquadBattleOpponents(){
+ syncCompetitionWeeks();const sb=state.squadBattle;
+ if(sb.played>=12||squadBattleRefreshRemaining()<=0)return false;
+ sb.refreshesUsed=Math.max(0,Number(sb.refreshesUsed||0))+1;sb.setSeq=Math.max(0,Number(sb.setSeq||0))+1;sb.setPlayed=0;
+ if(typeof squadBattleOpponentCache!=="undefined")squadBattleOpponentCache={key:"",list:[]};
+ save();return true
 }
 function recordCompetitionMatch(mode,result,home,away,opponent,difficulty){
  if(!COMPETITION_WEEK[mode])return null;
