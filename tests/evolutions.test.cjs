@@ -79,3 +79,12 @@ test('expiry releases its slot at the deadline and preserves already earned upgr
  c.setNow(new Date(row.completionEnd).toISOString());assert.equal(c.expireActiveEvolutionIfNeeded(),true);
  assert.equal(c.activeEvolutionCount(),0);assert.equal(c.state.evoProgress[key],undefined);assert.equal(item.evo,2);
 });
+
+test('loading a legacy save releases an evolution whose player has already been consumed',()=>{
+ const c=setup();c.item('missing');c.item('remaining');
+ c.startEvolution('breakthrough','missing');c.startEvolution('engine_room','remaining','coins');
+ const lostKey=c.state.activeEvos.find(e=>e.uid==='missing').instanceKey;
+ c.state.club=c.state.club.filter(i=>i.uid!=='missing');c.migrateLegacyEvo();
+ assert.equal(c.activeEvolutionCount(),1);assert.equal(c.state.activeEvos[0].uid,'remaining');
+ assert.equal(c.state.evoProgress[lostKey],undefined);assert.equal(c.state.coins,45000);
+});
