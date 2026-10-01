@@ -142,20 +142,21 @@ test('Founder uses the blank crystal artwork while position and attributes remai
  assert.match(css,/\.card-shell \.custom-card\.founder:before\{content:none\}/);
 });
 
-test('the final Bastian image stays inside a normal centered mobile lineup slot',()=>{
+test('the final Bastian image and live overlays share one proportional art layer in every slot',()=>{
  const ctx=context();ctx.FOUNDER_BASTIAN_STATIC_SRC='data:image/webp;base64,test';
  const card=ctx.cardHTML({...gerlach,id:ctx.FOUNDER_PLAYER_ID},{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder'},true,'ZOM');
- assert.match(card,/class="mini"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="88"><img class="founder-static-card"/);
+ assert.match(card,/class="mini"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="88"><div class="founder-card-art" data-rating="88"><img class="founder-static-card"/);
  assert.match(html,/const FOUNDER_BASTIAN_STATIC_SRC="\.\/assets\/footera\/founder-bastian-card-hd\.webp"/);
  const art=fs.readFileSync(path.join(__dirname,'../assets/footera/founder-bastian-card-hd.webp'));
  assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');assert.equal(art.toString('ascii',12,16),'VP8L');
  const size=art.readUInt32LE(21);assert.equal((size&0x3fff)+1,1024);assert.equal(((size>>>14)&0x3fff)+1,1536);
- assert.match(html,/:is\(#pitch \.slot,\.friend-pitch \.friend-slot,\.match-manager-slot\) \.mini > \.card-shell\.bastian-static-founder-shell\{[\s\S]*?width:100%!important;max-width:100%!important;aspect-ratio:\.7!important;[\s\S]*?margin:0 auto!important;transform:none!important/);
- assert.match(html,/\.card-shell\.bastian-static-founder-shell > img\.founder-static-card\{[\s\S]*?position:absolute!important;inset:0;[\s\S]*?max-height:100%!important/);
- assert.match(html,/\.mini > \.card-shell\.bastian-static-founder-shell > img\.founder-static-card\{[\s\S]*?width:110%!important;height:116%!important;[\s\S]*?transform:translateX\(-50%\)!important/);
+ assert.match(css,/\.bastian-static-founder-shell\{[\s\S]*?aspect-ratio:\.7!important/);
+ assert.match(css,/\.bastian-static-founder-shell>\.founder-card-art\{[\s\S]*?container-type:inline-size/);
+ assert.match(card,/<div class="founder-card-art" data-rating="88"><img[\s\S]*?<span class="founder-live-position">ZOM<\/span>/);
  assert.match(css,/\.bastian-static-founder-shell \.founder-static-card\{[\s\S]*?position:absolute;[\s\S]*?object-fit:contain/);
- assert.match(css,/\.bastian-static-founder-shell:before\{[\s\S]*?background:#01110e/);
- assert.match(css,/\.bastian-static-founder-shell:after\{[\s\S]*?content:attr\(data-rating\)[\s\S]*?20cqw/);
+ assert.match(css,/\.founder-card-art:before\{[\s\S]*?background:#01110e/);
+ assert.match(css,/\.founder-card-art:after\{[\s\S]*?content:attr\(data-rating\)[\s\S]*?20cqw/);
+ assert.doesNotMatch(html,/card-shell\.bastian-static-founder-shell > img\.founder-static-card/);
 });
 
 test('Rangers Founder uses the same renderer with its yellow-and-black 2:3 artwork',()=>{

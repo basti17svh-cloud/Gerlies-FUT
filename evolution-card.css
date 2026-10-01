@@ -1,7 +1,11 @@
 /* The approved Evolution reference is a blank skin. cardHTML supplies live
    player data in the same fields used by every other Footera card. */
-.evolution-shell{aspect-ratio:3/4;container-type:inline-size}
+.evolution-shell{aspect-ratio:.7;container-type:inline-size}
 .card-shell .custom-card.evolution{
+ /* The 3:4 art has wider transparent borders than the standard skins. Keep its
+    native proportions while matching their visible frame inside a normal slot. */
+ inset:auto;left:-5.65%;top:-1.45%;width:111.3%;height:103.88%;
+ container-type:inline-size;
  background:transparent url("./assets/footera/card-evolution-v1.webp") center / 100% 100% no-repeat;
  clip-path:none;box-shadow:none;color:#e2fff4;
  --card-info-left:16%;--card-info-width:18%;

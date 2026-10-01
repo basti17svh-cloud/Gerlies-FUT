@@ -191,10 +191,16 @@
 /* B. Gerlach Founder: finale 1:1-Kartengrafik.
    The shell keeps the universal Footera sizing; the finished artwork scales as one unit. */
 .bastian-static-founder-shell{
- aspect-ratio:2/3!important;
+ aspect-ratio:.7!important;
  position:relative;
  overflow:visible!important;
  background:transparent!important;
+}
+/* The finished 2:3 art includes empty space below its tip. Scale the entire art
+   layer, including live overlays, equally on the pitch, bench and reserve. */
+.bastian-static-founder-shell>.founder-card-art{
+ position:absolute;left:-3.25%;top:-2.54%;width:106.5%;height:111.825%;
+ container-type:inline-size;
 }
 .bastian-static-founder-shell .founder-static-card{
  display:block;
@@ -213,13 +219,13 @@
 }
 /* The finished artwork has a small fixed rating. Cover only those pixels in its
    dark rail and draw the live rating at the same scale as the other cards. */
-.bastian-static-founder-shell:before{
+.founder-card-art:before{
  content:"";position:absolute;z-index:2;pointer-events:none;
  left:var(--founder-rating-cover-left,19%);top:var(--founder-rating-cover-top,22%);
  width:var(--founder-rating-cover-width,14%);height:var(--founder-rating-cover-height,7%);
  background:#01110e;box-shadow:0 0 1cqw .4cqw #01110e;
 }
-.bastian-static-founder-shell:after{
+.founder-card-art:after{
  content:attr(data-rating);position:absolute;z-index:3;pointer-events:none;
  left:var(--founder-rating-left,16%);top:var(--founder-rating-top,18.5%);
  width:20%;height:11%;display:grid;place-items:center;
@@ -230,22 +236,14 @@
 :is(.player-detail-card,.bio-card,.club-card-preview,.market-row-card,.picker-preview-card,.sbc-slot-card-large) .bastian-static-founder-shell{
  max-width:100%;
 }
-:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
- transform-origin:center center;
-}
-/* The finished artwork already contains its complete frame; only its transparent
-   padding is compensated in the lineup, while the shell keeps normal slot size. */
+/* Preserve ordinary slot widths; the common art layer handles padding in every
+   context instead of enlarging only lineup cards. */
 #pitch .slot .mini .founder-shell.bastian-static-founder-shell{
  width:100%!important;
  max-width:100%!important;
  aspect-ratio:.7!important;
  margin:0 auto!important;
  transform:none!important;
-}
-:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
- --founder-rating-cover-left:16%;--founder-rating-cover-top:21.5%;
- --founder-rating-cover-width:14%;--founder-rating-cover-height:7.5%;
- --founder-rating-left:13.5%;--founder-rating-top:17%;
 }
 .friend-pitch .friend-slot .mini .founder-shell.bastian-static-founder-shell,
 .match-manager-slot .mini .founder-shell.bastian-static-founder-shell{
@@ -366,16 +364,12 @@
 .card-shell .custom-card:is(.icon,.momentum){--card-alt-bottom:10.5%}
 .card-shell .custom-card:is(.legacy,.special):has(>.card-alt-positions){--card-bottom-bottom:12%}
 .card-shell .custom-card.founder{--card-alt-bottom:13%}
-.bastian-static-founder-shell>.card-alt-positions{bottom:var(--founder-alt-bottom,18%);left:17%;right:17%;color:#ffe7ae}
+.founder-card-art>.card-alt-positions{bottom:18%;left:17%;right:17%;color:#ffe7ae}
 /* Match the live position to the rail of the finished Founder artwork. */
-.bastian-static-founder-shell>.founder-live-position{
+.founder-card-art>.founder-live-position{
  position:absolute;z-index:3;left:var(--founder-position-left,19%);top:var(--founder-position-top,30%);
  width:var(--founder-position-width,17%);height:var(--founder-position-height,5%);
  display:grid;place-items:center;background:#01110e;color:#f9e6af;
  font-size:max(5px,6cqw);font-weight:1000;line-height:1;
  box-shadow:0 0 .3cqw .2cqw #01110e;pointer-events:none;
-}
-:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini .bastian-static-founder-shell{
- --founder-alt-bottom:9%;--founder-position-left:16%;--founder-position-top:30.8%;
- --founder-position-width:19%;--founder-position-height:5.8%;
 }

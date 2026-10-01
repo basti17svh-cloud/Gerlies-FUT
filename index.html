@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.08</title>
+<title>Footera V20.09</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -405,7 +405,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .preview-lineup-slot{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:center;cursor:pointer;touch-action:manipulation}.squad-battle-preview .friend-slot{pointer-events:none}.squad-battle-preview .friend-slot .preview-lineup-slot{pointer-events:auto}.preview-lineup-slot .mini .card-shell{width:100%}.preview-lineup-slot.swap-source{border-radius:8px;outline:2px solid var(--lime);box-shadow:0 0 15px #d8ff3e55}.preview-lineup-slot:focus-visible{outline:2px solid var(--lime);border-radius:8px}
 .official-assigned-position{display:none;position:absolute;z-index:25;left:4%;top:30%;padding:2px 5px;border-radius:4px;background:linear-gradient(135deg,#f9e5a2,#c99e48);color:#2a210e;font-size:9px;font-weight:1000;box-shadow:0 2px 5px #33250d66;pointer-events:none}.card-shell:has(.official-card.loaded)>.official-assigned-position{display:block}.mini .official-assigned-position{padding:1px 3px;font-size:6px}.card-shell:has(>.custom-card.silver)>.official-assigned-position{background:linear-gradient(135deg,#f5f8f5,#a9b4b2);color:#19211e}.card-shell:has(>.custom-card.bronze)>.official-assigned-position{background:linear-gradient(135deg,#e6a879,#a35f37);color:#28170d}
 .card-shell:has(>.official-card.loaded)>.custom-card{visibility:hidden}.card-shell>.official-card{left:-9%;top:-9%;width:118%;height:118%}
-.match-manager-slot .custom-card,.squad-battle-preview .friend-slot .custom-card{transform:scale(1.08)}
+.match-manager-slot :is(.custom-card,.founder-card-art),.squad-battle-preview .friend-slot :is(.custom-card,.founder-card-art){transform:scale(1.08)}
 .preview-tactic-control{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:11px 12px;border:1px solid #52755a;border-radius:12px;background:#13241b}.preview-tactic-control span{display:block;font-size:11px;font-weight:900}.preview-tactic-control small{display:block;margin-top:3px;font-size:8px;color:#a7bdae}.preview-tactic-control select{min-width:144px;min-height:42px;border:1px solid #688d68;border-radius:9px;background:#0b1712;color:#f3fff1;padding:8px;font-size:12px;font-weight:850}
 .preview-lineup-slot{touch-action:none;user-select:none}.preview-lineup-slot.drag-source{opacity:.35}.preview-lineup-slot.drop-target{outline:2px solid var(--lime);border-radius:8px;box-shadow:0 0 15px #d8ff3e77}.preview-dragghost{position:fixed;z-index:9999;pointer-events:none;width:82px;transform:translate(-50%,-50%);filter:drop-shadow(0 12px 22px #000b)}.preview-dragghost .card-shell{width:82px}
 .match-card-events{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:7px 0 3px}.match-card-events:empty{display:none}.match-red-card{display:inline-flex;gap:5px;align-items:center;padding:5px 8px;border:1px solid #a95460;border-radius:8px;background:#37151b;color:#ffe3e3;font-size:10px;font-weight:900}.match-red-card:before{content:"";width:9px;height:13px;border-radius:1px;background:#f13b45;box-shadow:0 1px 5px #ff354d99}.match-manager-slot.red-card-empty .emptyslot{border-color:#fa7782;color:#ffb8bf;background:#3a151baa}
@@ -1285,24 +1285,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .club-item,.market-row{content-visibility:auto;contain-intrinsic-size:320px}
 .club-more{grid-column:1/-1;width:100%;margin-top:4px}
 
-/* Keep the Founder image inside the same mobile lineup slot even while a prior
-   service worker still serves an older external stylesheet. */
-.card-shell.bastian-static-founder-shell > img.founder-static-card{
- position:absolute!important;inset:0;display:block!important;
- width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
- object-fit:contain!important;
-}
-:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini > .card-shell.bastian-static-founder-shell{
- width:100%!important;max-width:100%!important;aspect-ratio:.7!important;
- margin:0 auto!important;transform:none!important;
-}
-:is(#pitch .slot,.friend-pitch .friend-slot,.match-manager-slot) .mini > .card-shell.bastian-static-founder-shell > img.founder-static-card{
- inset:auto!important;left:50%!important;top:-4%!important;
- width:110%!important;height:116%!important;max-width:none!important;max-height:none!important;
- transform:translateX(-50%)!important;
- }
-
-
 /* V19.66 — Matchday broadcast */
 #match.match{background:linear-gradient(180deg,rgba(5,7,8,.88),#070b09 420px),url("./assets/footera/stadion.webp") center top / 100% auto no-repeat,#070b09;padding:calc(16px + env(safe-area-inset-top)) 12px calc(30px + env(safe-area-inset-bottom))}
 #match .matchinner{max-width:680px}
@@ -1535,7 +1517,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.08</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.09</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3811,7 +3793,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;
   if(cls==="founder"&&String(p.id||"")===FOUNDER_PLAYER_ID&&FOUNDER_BASTIAN_STATIC_SRC){
    const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";
-   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}${evoMarker}</div></div>`
+   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}</div></div>`
   }
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
     <path fill="#b10931" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
@@ -7644,7 +7626,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.08";
+const GFUT_BUILD="V20.09";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
