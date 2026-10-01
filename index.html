@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V19.99</title>
+<title>Footera V20.00</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1411,7 +1411,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 
-/* V19.99 — cinematic Footera boot intro */
+/* V20.00 — cinematic Footera boot intro */
 .boot-intro{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#000;display:grid;place-items:center;opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease}
 .boot-intro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(101,0,0,.18),transparent 52%),#000;pointer-events:none}
 .boot-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;background:#000;opacity:0;transition:opacity .22s ease;z-index:1}
@@ -1429,8 +1429,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .boot-intro-loader i{display:block;width:42%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ed1b3a,#fff,#ed1b3a);animation:boot-intro-load 1s ease-in-out infinite}
 .boot-intro.logo-phase{background:radial-gradient(circle at 50% 44%,#3b070d 0%,#120507 38%,#030303 72%)}
 .boot-intro.logo-phase .boot-intro-video,.boot-intro.logo-phase .boot-intro-shade{opacity:0}
-.boot-intro.logo-phase .boot-intro-flash{animation:boot-intro-flash .62s ease-out both}
-.boot-intro.logo-phase .boot-intro-logo{animation:boot-intro-logo .78s .2s cubic-bezier(.18,.78,.22,1) both}
+.boot-intro.logo-phase .boot-intro-flash{display:none}
+.boot-intro.logo-phase .boot-intro-logo{animation:boot-intro-logo .56s .08s cubic-bezier(.18,.78,.22,1) both}
 .boot-intro.boot-out{opacity:0;visibility:hidden;pointer-events:none}
 .boot-intro-skip{position:absolute;right:max(14px,calc(10px + env(safe-area-inset-right)));top:max(14px,calc(10px + env(safe-area-inset-top)));z-index:7;min-height:34px;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,0,0,.46);backdrop-filter:blur(8px);color:#fff;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:0;pointer-events:none;transition:opacity .2s ease}
 .boot-intro-skip.visible{opacity:.92;pointer-events:auto}
@@ -1516,7 +1516,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V19.99</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.00</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7574,7 +7574,7 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V19.99 — startup video -> Footera logo -> existing loading gate */
+/* V20.00 — startup video -> Footera logo -> existing loading gate */
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
@@ -7584,8 +7584,8 @@ updatePwaInstallUi();
   if(logoStarted)return;logoStarted=true;clearTimeout(safety);
   try{video.pause()}catch(e){}
   intro.classList.add("logo-phase");
-  setTimeout(()=>intro.classList.add("boot-out"),1550);
-  setTimeout(()=>{try{video.removeAttribute("src");video.load()}catch(e){}intro.remove()},2050)
+  setTimeout(()=>intro.classList.add("boot-out"),1280);
+  setTimeout(()=>{try{video.removeAttribute("src");video.load()}catch(e){}intro.remove()},1720)
  }
  video.addEventListener("playing",()=>intro.classList.add("is-playing"),{once:true});
  video.addEventListener("ended",finish,{once:true});
@@ -7596,7 +7596,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V19.99";
+const GFUT_BUILD="V20.00";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
