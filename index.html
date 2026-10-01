@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.01</title>
+<title>Footera V20.02</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1411,7 +1411,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(max-width:420px){#match.match{padding-left:8px;padding-right:8px}#match .scoreboard{padding:12px}#match .match-score-line{gap:5px}#match .match-team-name{font-size:12px}#match .match-goal-moment{grid-template-columns:minmax(100px,42%) minmax(0,1fr);gap:7px;padding:10px}#match .match-goal-card{width:min(100%,125px)}#match .match-goal-copy{gap:6px}#match #matchSceneText{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#match .match-ball{animation:none!important}#match .match-players i{transition:none}#match .match-goal-moment{transition:none}}
 
-/* V20.01 — cinematic Footera boot intro */
+/* V20.02 — cinematic Footera boot intro */
 .boot-intro{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#000;display:grid;place-items:center;opacity:1;visibility:visible;transition:opacity .45s ease,visibility .45s ease}
 .boot-intro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(101,0,0,.18),transparent 52%),#000;pointer-events:none}
 .boot-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;background:#000;opacity:0;transition:opacity .22s ease;z-index:1}
@@ -1439,6 +1439,15 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @media(orientation:landscape){.boot-intro-video{object-fit:contain;background:#000}.boot-intro-logo img{width:min(24vw,210px)}}
 @media(max-width:520px){.splash-emblem-image{width:104px;height:104px;margin-bottom:24px}}
 @media(prefers-reduced-motion:reduce){.splash-emblem-image{animation:none!important}}
+
+
+/* V20.02 — tradeability: club, profile and club search only */
+.club-card-preview{position:relative}
+.club-untradeable-badge{position:absolute;z-index:8;top:17px;right:max(7px,calc((100% - 150px)/2 + 4px));width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(12,15,17,.92);border:1px solid rgba(255,120,137,.75);color:#ff899b;box-shadow:0 4px 13px rgba(0,0,0,.45)}
+.club-untradeable-badge svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.fc27-pill.trade-status{display:inline-flex;align-items:center;gap:5px;font-weight:950}.fc27-pill.trade-status svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.fc27-pill.trade-status.tradeable{border-color:#3b8064;color:#9af0c5;background:#10271e}.fc27-pill.trade-status.untradeable{border-color:#75404b;color:#ff9cad;background:#2b141a}
+.picker-trade-toggle{position:relative;justify-content:space-between;min-height:50px;padding:8px 11px 8px 13px;border:1px solid #40574b;border-radius:11px;background:#111e1b;color:#f0f6f2;font-size:12px;font-weight:850;cursor:pointer}.picker-trade-toggle input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}.picker-toggle-track{position:relative;flex:none;width:46px;height:27px;border-radius:999px;background:#3a4540;border:1px solid #59645f;transition:.18s ease}.picker-toggle-track i{position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;background:#f4f7f5;box-shadow:0 2px 5px rgba(0,0,0,.35);transition:.18s ease}.picker-trade-toggle input:checked+.picker-toggle-track{background:#bfe95d;border-color:#d8ff79}.picker-trade-toggle input:checked+.picker-toggle-track i{transform:translateX(19px);background:#07100b}.picker-trade-toggle input:focus-visible+.picker-toggle-track{outline:2px solid var(--lime);outline-offset:2px}
+@media(max-width:560px){.club-untradeable-badge{top:14px;right:max(5px,calc((100% - 150px)/2 + 2px))}}
 
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
@@ -1516,7 +1525,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.01</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.02</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1706,6 +1715,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
     <select id="clubLeague"><option value="">Alle Ligen</option></select>
     <select id="clubClub"><option value="">Alle Vereine</option></select>
+    <select id="clubTradeability" aria-label="Tauschbarkeit"><option value="">Alle Items</option><option value="tradeable">Nur tauschbar</option><option value="untradeable">Nur untauschbar</option></select>
     <select id="clubSort"><option value="rating-desc">Rating: hoch → niedrig</option><option value="rating-asc">Rating: niedrig → hoch</option><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option></select>
     <div class="club-rating-card"><div class="club-rating-head"><strong>GES-Bereich</strong><span id="clubRatingLabel">0–99 GES</span></div><div class="club-rating-sliders"><input id="clubRatingMin" type="range" min="0" max="99" step="1" value="0" aria-label="Minimales Rating"><input id="clubRatingMax" type="range" min="0" max="99" step="1" value="99" aria-label="Maximales Rating"></div></div>
   </div><div id="clubGrid" class="itemgrid"></div>
@@ -1757,7 +1767,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </div>
     <label class="picker-field">Kartenqualität<select id="pickerQualityFilter"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select></label>
     <div class="picker-range"><label class="picker-field">Min. Rating<input id="pickerRatingMin" type="number" inputmode="numeric" min="0" max="99" value="0"></label><label class="picker-field">Max. Rating<input id="pickerRatingMax" type="number" inputmode="numeric" min="0" max="99" value="99"></label></div>
-    <label class="picker-check"><input id="pickerOnlyUntradeable" type="checkbox"> Nur untauschbare Items</label>
+    <label class="picker-check picker-trade-toggle"><span>Nur untauschbare Items</span><input id="pickerOnlyUntradeable" type="checkbox"><span class="picker-toggle-track" aria-hidden="true"><i></i></span></label>
     <button class="primary" type="submit">Spieler suchen</button>
   </form>
   <div id="pickerResults" class="picker-results" hidden><div class="picker-results-head"><div><strong id="pickerResultTitle">Spieler im Verein</strong><small id="pickerResultCount"></small></div><button id="pickerEditFilters" class="secondary" type="button">Filter ändern</button></div><div id="pickList" class="picklist"></div><div id="pickerPages" class="picker-pages" hidden><button id="pickerPrev" class="secondary" type="button">← Vorherige</button><span id="pickerPageLabel"></span><button id="pickerNext" class="secondary" type="button">Nächste →</button></div></div>
@@ -4516,10 +4526,18 @@ function positionPlusMatch(p,position,primaryOverride=""){
 function detailChemHTML(chem,label="Chemie"){if(chem==null)return"";return`<div class="detail-chem"><div><strong>${esc(label)}</strong><small>${chem}/3 Chemie-Punkte</small></div><div class="detail-chem-diamonds">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div></div>`}
 function purchaseInfoHTML(item){const paid=Number(item?.purchasePrice||0);if(!(paid>0))return"";return `<div class="item-purchase-info"><span>Item gekauft für</span><strong>${currencyAmountHTML("coins",paid,"compact")}</strong></div>`}
 function playerClubPerformance(item){return{goals:Math.max(0,Number(item?.clubGoals||0)),assists:Math.max(0,Number(item?.clubAssists||0))}}
+function itemTradeabilityChipHTML(item){
+ if(!item||typeof item.tradeable!=="boolean")return"";
+ const tradeable=!!item.tradeable;
+ const icon=tradeable
+  ?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12m0 0-3-3m3 3-3 3M18 17H6m0 0 3 3m-3-3 3-3"/></svg>'
+  :'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
+ return `<span class="fc27-pill trade-status ${tradeable?"tradeable":"untradeable"}">${icon}${tradeable?"Tauschbar":"Untauschbar"}</span>`
+}
 function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){
  b=resolvedPlayer(b);ensurePlayerAffiliationAssets(b);
  const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem"),clubPerf=playerClubPerformance(item);
- return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:isStoryItem(item)?`<span class="fc27-pill">STORY · NUR IM PASS</span>`:""}</div>${isFounderItem(item)?"":detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}<div class="fc27-info"><b>${clubPerf.goals}</b><span>Tore für deinen Verein</span></div><div class="fc27-info"><b>${clubPerf.assists}</b><span>Vorlagen für deinen Verein</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
+ return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${itemTradeabilityChipHTML(item)}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:isStoryItem(item)?`<span class="fc27-pill">STORY · NUR IM PASS</span>`:""}</div>${isFounderItem(item)?"":detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}<div class="fc27-info"><b>${clubPerf.goals}</b><span>Tore für deinen Verein</span></div><div class="fc27-info"><b>${clubPerf.assists}</b><span>Vorlagen für deinen Verein</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div></div></div>`
 }
 
 function openPlayerDetails(item,index=null,fromPreview=false){
@@ -5124,16 +5142,16 @@ const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;
 function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
  const rows=clubFilterItems();syncClubFilterOptions(rows);
- const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
+ const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,trade=$("clubTradeability")?.value||"",min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
  updateClubRatingLabel();
- let arr=rows.filter(x=>(!rar||cardClass(x.b,x.item)===rar)&&(!pos||x.positions.includes(pos))&&(!league||String(x.a?.league||"")===league)&&(!club||String(x.a?.team||"")===club)&&x.rating>=min&&x.rating<=max);
+ let arr=rows.filter(x=>(!rar||cardClass(x.b,x.item)===rar)&&(!pos||x.positions.includes(pos))&&(!league||String(x.a?.league||"")===league)&&(!club||String(x.a?.team||"")===club)&&(!trade||(trade==="tradeable"?!!x.item.tradeable:!x.item.tradeable))&&x.rating>=min&&x.rating<=max);
  arr.sort((a,b)=>{if(sort==="new")return Number(b.item.acquired||0)-Number(a.item.acquired||0);if(sort==="old")return Number(a.item.acquired||0)-Number(b.item.acquired||0);if(sort==="rating-asc")return a.rating-b.rating;return b.rating-a.rating});
- const signature=[rar,pos,sort,league,club,min,max,rows.length,(state.transferList||[]).length].join("|");if(signature!==clubRenderSignature){clubRenderSignature=signature;clubRenderLimit=CLUB_RENDER_BATCH}
+ const signature=[rar,pos,sort,league,club,trade,min,max,rows.length,(state.transferList||[]).length].join("|");if(signature!==clubRenderSignature){clubRenderSignature=signature;clubRenderLimit=CLUB_RENDER_BATCH}
  const shown=arr.slice(0,clubRenderLimit);
- $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tradeable":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
+ $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}${i.tradeable?"":'<span class="club-untradeable-badge" title="Untauschbar" aria-label="Untauschbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tauschbar":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
-["clubPosition","clubRarity","clubLeague","clubClub","clubSort"].forEach(id=>$(id)?.addEventListener("change",renderClub));
+["clubPosition","clubRarity","clubLeague","clubClub","clubTradeability","clubSort"].forEach(id=>$(id)?.addEventListener("change",renderClub));
 function changeClubRating(which){
  const minEl=$("clubRatingMin"),maxEl=$("clubRatingMax");if(!minEl||!maxEl)return;
  let min=Number(minEl.value),max=Number(maxEl.value);
@@ -7574,7 +7592,7 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V20.01 — startup video -> Footera logo -> existing loading gate */
+/* V20.02 — startup video -> Footera logo -> existing loading gate */
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
@@ -7605,7 +7623,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.01";
+const GFUT_BUILD="V20.02";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -7623,7 +7641,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=1993",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2002",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;
