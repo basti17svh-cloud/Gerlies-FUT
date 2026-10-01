@@ -30,7 +30,7 @@ function simulator(){
   let wins=0,draws=0,goalless=0,goals=0,conceded=0,halftimes=0;
   for(let i=0;i<count;i++){
    ctx.match={mode:'rivals',basePower:rating+1.4,chem,opp:opponentRating+opponentChem*.12,
-    lineup:Array(18).fill(1),formation:'4-3-3',tactic:'balanced',
+    lineup:Array.from({length:18},(_,i)=>`p${i}`),formation:'4-3-3',tactic:'balanced',
     minute:0,home:0,away:0,shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
     injuryTriggered:true,redTriggered:true,yellowCards:[],goalEvents:[],shotEvents:[],timeline:[]};
    let ticks=0;
