@@ -91,7 +91,7 @@ const OBJECTIVE_POOLS={
  ]
 };
 const OBJECTIVE_GROUPS=["daily","weekly","season","squad","rivals"];
-const OBJECTIVE_GROUP_NAMES={daily:"Täglich",weekly:"Wöchentlich",season:"Saison",squad:"Squad Battles",rivals:"Division Rivals",catchup1:"Aufholen · Phase 1",catchup2:"Aufholen · Finale"};
+const OBJECTIVE_GROUP_NAMES={event:"Events",daily:"Täglich",weekly:"Wöchentlich",season:"Saison",squad:"Squad Battles",rivals:"Division Rivals",catchup1:"Aufholen · Phase 1",catchup2:"Aufholen · Finale"};
 const OBJECTIVE_GROUP_SIZE={daily:3,weekly:6,season:12,squad:5,rivals:5,catchup1:6,catchup2:6};
 const OBJECTIVE_STATS=["competitiveMatches","competitiveWins","rivalsMatches","rivalsWins","squadMatches","squadWins","packs","market","sbcs"];
 
@@ -193,10 +193,14 @@ function ensureObjectiveWindows(at=new Date()){
  return changed
 }
 function objectiveProgress(task){
+ if(task.group==="event")return eventObjectiveProgress(task);
  const base=Number(state.objectiveWindows[task.group]?.baseline?.[task.stat]||0);
  return Math.min(task.target,Math.max(0,Number(state.stats[task.stat]||0)-base))
 }
-function activeObjectiveGroups(at=new Date()){return activeObjectiveGroupKeys(at).map(group=>objectiveWindow(group,at)).filter(Boolean)}
+function activeObjectiveGroups(at=new Date()){
+ const eventGroups=activeEventObjectives(at).map(task=>({key:task.key,start:new Date(task.activeFrom),end:new Date(task.activeUntilAt),tasks:[task]}));
+ return [...eventGroups,...activeObjectiveGroupKeys(at).map(group=>objectiveWindow(group,at)).filter(Boolean)]
+}
 function weeklyBonusReady(week=objectiveWindow("weekly")){
  if(!week)return false;
  return week.tasks.filter(task=>!!state.objectiveClaims[task.key]).length>=Math.min(5,week.tasks.length)
@@ -276,10 +280,13 @@ function renderSeasonPass(){
  host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON ${info.number} · ${esc(info.name)}</span><h3>${esc(info.name)}</h3><p>30 Stufen · eine Belohnung im Fokus · bei mehreren Inhalten nach links oder rechts wischen.</p></div><span class="pass-time">Start ${passDate(info.start)}<br>${info.end?`Endet ${passDate(info.end,true)}<br>`:""}<strong>${seasonCountdown(info.end)}</strong></span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(Math.min(sp,max))} / ${fmt(max)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder pass-level-stack" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<section class="pass-level-row ${sp>=tier.sp?"reached":""} ${tier.level===level?"current":""}" data-pass-tier="${tier.level}"><div class="pass-level-rail"><span>${tier.level}</span></div><div class="pass-level-cards">${passLevelCard(tier)}</div></section>`).join("")}</div></div>`
 }
 function objectiveCard(task,group,featured=false){
- const foundation=group==="foundation",value=foundation?Math.min(task.target,Number(state.stats[task.stat]||0)):objectiveProgress(task);
+ const foundation=group==="foundation",event=group==="event",value=foundation?Math.min(task.target,Number(state.stats[task.stat]||0)):objectiveProgress(task);
  const done=foundation?!!state.claims[task.id]:!!state.objectiveClaims[task.key],ready=value>=task.target;
  const claim=foundation?`data-claim="${task.id}"`:`data-objective-claim="${esc(task.key)}"`;
- return `<div class="task ${ready&&!done?"claimable":done?"completed":""}"><div class="tasktop"><div>${featured?`<small class="objective-category">${esc(group==="foundation"?"Foundations":OBJECTIVE_GROUP_NAMES[group])}</small>`:""}<h4>${esc(task.title)}</h4><p>${esc(task.desc)}</p><span class="task-state ${done?"done":ready?"ready":""}">${done?"ABGEHOLT":ready?"ABGESCHLOSSEN":"IN ARBEIT"}</span></div><div class="reward">${esc(rewardText(task.reward))}</div></div><div class="progress" style="margin-top:7px"><div style="width:${Math.min(100,Math.round(value/task.target*100))}%"></div></div><div class="taskfoot"><small>${value}/${task.target}</small>${done?'<span style="font-size:9px;color:#79f2a9">ERLEDIGT</span>':`<button class="primary" ${claim} ${ready?"":"disabled"}>Abholen</button>`}</div></div>`
+ const preview=event?makeEventObjectiveItem(task):null;
+ const reward=preview?`<button type="button" class="objective-player-preview" data-event-objective-bio="${esc(task.id)}" aria-label="${esc(task.player.name)} Spielerbiografie öffnen">${cardHTML(displayBase(preview),preview)}</button><span class="objective-player-label">${esc(rewardText(task.reward))} · untauschbar</span>`:esc(rewardText(task.reward));
+ const expiry=event?`<p class="objective-expiry">${seasonCountdown(new Date(task.activeUntilAt))} · Bis ${passDate(new Date(task.activeUntilAt))}</p>`:"";
+ return `<div class="task ${event?"event-objective ":""}${ready&&!done?"claimable":done?"completed":""}" ${event?`data-event-objective="${esc(task.id)}"`:""}><div class="tasktop"><div>${featured?`<small class="objective-category">${esc(group==="foundation"?"Foundations":OBJECTIVE_GROUP_NAMES[group])}</small>`:""}<h4>${esc(task.title)}</h4><p>${esc(task.desc)}</p>${expiry}<span class="task-state ${done?"done":ready?"ready":""}">${done?(event?"ABGESCHLOSSEN":"ABGEHOLT"):ready?(event?"ABHOLBEREIT":"ABGESCHLOSSEN"):"IN ARBEIT"}</span></div><div class="reward">${reward}</div></div><div class="progress" style="margin-top:7px"><div style="width:${Math.min(100,Math.round(value/task.target*100))}%"></div></div><div class="taskfoot"><small>${event?`${value} / ${task.target}`:`${value}/${task.target}`}</small>${done?'<span style="font-size:9px;color:#79f2a9">ERLEDIGT</span>':`<button class="primary" ${claim} ${ready?"":"disabled"}>Abholen</button>`}</div></div>`
 }
 function weeklyBonusCard(window){
  const claimedCount=window.tasks.filter(task=>state.objectiveClaims[task.key]).length,complete=weeklyBonusReady(window),claimed=!!state.objectiveBonuses[window.key];
@@ -288,7 +295,7 @@ function weeklyBonusCard(window){
 function renderTasks(){
  const changed=ensureObjectiveWindows();if(changed)save();
  const groups=activeObjectiveGroups(),hasCatchup=groups.some(w=>String(w.tasks[0]?.group||"").startsWith("catchup"));
- const options=[["all","Alle"],["foundation","Foundations"],["daily","Täglich"],["weekly","Wöchentlich"],["season","Saison"],["squad","Squad Battles"],["rivals","Rivals"],...(hasCatchup?[["catchup","Aufholen"]]:[])];
+ const options=[["all","Alle"],["foundation","Foundations"],...(groups.some(w=>w.tasks[0]?.group==="event")?[["event","Events"]]:[]),["daily","Täglich"],["weekly","Wöchentlich"],["season","Saison"],["squad","Squad Battles"],["rivals","Rivals"],...(hasCatchup?[["catchup","Aufholen"]]:[])];
  if(!options.some(([key])=>key===objectiveTab))objectiveTab="all";
  $("objectiveTabs").innerHTML=options.map(([key,label])=>`<button type="button" data-objective-tab="${key}" class="${objectiveTab===key?"active":""}">${label}</button>`).join("");
  const pending=availableRotatingObjectiveRewardsCount()+TASKS.filter(t=>!state.claims[t.id]&&Number(state.stats[t.stat]||0)>=t.target).length;
@@ -367,12 +374,15 @@ $("seasonPass").addEventListener("scroll",event=>{
  const count=slider.querySelector(".pass-slide-count");if(count)count.textContent=`${index+1}/${dots.length}`
 },true);
 $("taskList").addEventListener("click",event=>{
+ const preview=event.target.closest("[data-event-objective-bio]");
+ if(preview){const task=activeEventObjectives().find(t=>t.id===preview.dataset.eventObjectiveBio),item=task&&makeEventObjectiveItem(task);if(item)openBiography(item,null);return}
  const taskButton=event.target.closest("[data-objective-claim]"),bonus=event.target.closest("[data-objective-bonus]");
  if(!taskButton&&!bonus)return;
  ensureObjectiveWindows();
  if(taskButton){
   const task=activeObjectiveGroups().flatMap(window=>window.tasks).find(t=>t.key===taskButton.dataset.objectiveClaim);
   if(!task||state.objectiveClaims[task.key]||objectiveProgress(task)<task.target)return;
+  if(task.group==="event"){if(!claimEventObjective(task))return;renderAll();toast("Zielbelohnung abgeholt.");return}
   state.objectiveClaims[task.key]=true;grant(task.reward);save();renderAll();toast("Zielbelohnung abgeholt.");return
  }
  const week=objectiveWindow("weekly");

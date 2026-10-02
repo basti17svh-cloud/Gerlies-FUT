@@ -74,7 +74,7 @@ test('event stats, ratings, club identity and alternate positions survive acquis
 
 test('an open app schedules the exact deadline and refreshes home/hub/opponent without granting another rated SB slot',()=>{
  const {c,run,setTime}=app(),calls=[],timers=[];
- Object.assign(c,{setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length},clearTimeout(){},homeHeroSlide:2,squadBattleOpponentCache:{key:'old',list:[1]},eventSelectedId:'momentum-team-1',state:{squadBattle:{week:'week'}},$:()=>({classList:{contains:()=>false},querySelector:()=>null}),renderHome:()=>calls.push('home'),renderEvents:()=>calls.push('events'),currentViewId:()=> 'eventsView'});
+ Object.assign(c,{setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length},clearTimeout(){},homeHeroSlide:2,squadBattleOpponentCache:{key:'old',list:[1]},eventSelectedId:'momentum-team-1',state:{squadBattle:{week:'week'}},$:()=>({classList:{contains:()=>false},querySelector:()=>null}),renderHome:()=>calls.push('home'),renderEvents:()=>calls.push('events'),updateObjectiveIndicators(){},currentViewId:()=> 'eventsView'});
  vm.runInContext(section('let promoEventClockId=','const TASKS='),c);c.startPromoEventClock();assert.equal(timers.at(-1).ms,60000);
  setTime('2026-10-02T18:59:59.500+02:00');c.schedulePromoEventClock();assert.equal(timers.at(-1).ms,500);
  setTime('2026-10-02T19:00:00+02:00');timers.at(-1).fn();

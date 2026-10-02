@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.21</title>
+<title>Footera V20.22</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -184,6 +184,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 /* objectives */
 .tasklist{display:grid;gap:8px}.task{padding:11px;border:1px solid #293630;border-radius:11px;background:#0f1714}.tasktop{display:flex;justify-content:space-between;gap:8px}.task h4{margin:0 0 3px;font-size:10px}.task p{margin:0;color:#87958f;font-size:7px}.reward{color:#ffd86c;font-size:7px;font-weight:900;white-space:nowrap}.taskfoot{display:flex;justify-content:space-between;align-items:center;margin-top:7px}.taskfoot small{font-size:7px;color:#899791}
 .objective-ready-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 13px;border:1px solid #49aac0;border-radius:11px;background:linear-gradient(110deg,#10323b,#0a191b);color:#d9faff}.objective-ready-head strong{font-size:12px}.objective-ready-head span{font-size:9px;color:#92e4f1}.objective-category{display:block;margin-bottom:4px;color:#85d9e8;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.task.event-objective{padding:14px;border-color:#37849a}.task.event-objective .tasktop{display:block}.task.event-objective h4{font-size:17px}.task.event-objective p{font-size:13px;line-height:1.45}.task.event-objective .objective-expiry{font-size:11px;color:#93bbce}.task.event-objective .task-state{font-size:10px;padding:5px 8px}.task.event-objective .reward{display:block;font-size:12px;text-align:center;white-space:normal}.objective-player-preview{display:block;width:190px;margin:12px auto 8px;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}.objective-player-preview .card-shell{width:100%}.objective-player-label{display:block}.task.event-objective .taskfoot{margin-top:12px}.task.event-objective .taskfoot small{font-size:13px}.task.event-objective .taskfoot .primary{min-height:44px;padding:10px 19px;font-size:13px}
 /* sbc */
 .sbc{padding:12px;border:1px solid #2c3934;border-radius:12px;background:#0f1714}.sbc h3{margin:0 0 4px;font-size:12px}.sbc p{margin:0;color:#899691;font-size:7px;line-height:1.4}.sbcreq{margin:8px 0;color:var(--lime);font-size:8px;font-weight:900}.sbclist{max-height:265px;overflow:auto;margin-top:7px;border-top:1px solid #26322e}.sbcp{display:flex;align-items:center;gap:7px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.05)}.sbcp input{width:18px;height:18px}.sbcp strong{font-size:8px}.sbcp small{display:block;color:#81908a;font-size:6px}
 
@@ -1539,7 +1540,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.21</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.22</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2370,6 +2371,7 @@ function restoreSyntheticPlayerIds(){
  P_BY_ID.set(MARCO_FOUNDER_PLAYER_ID,MARCO_FOUNDER_BASE);
  for(const base of LIVE_TOTW_BASE_CACHE.values())if(base?.id)P_BY_ID.set(String(base.id),base);
  for(const info of MOMENTUM_BY_ID.values())if(!P_BY_ID.has(info.pid)){const base=momentumFallbackBase(info);applyPlayerTraits([base]);P_BY_ID.set(info.pid,base)}
+ for(const task of EVENT_OBJECTIVES)eventObjectivePlayerBase(task);
 }
 function bestEaTotwAsset(info,rows){
  const assets=(rows||[]).map(normEAAsset).filter(Boolean);
@@ -2523,6 +2525,48 @@ const MOMENTUM_TEAM_2={id:"momentum-team-2",name:"MOMENTUM",shortName:"MOMENTUM 
 ]};
 MOMENTUM_EVENT.shortName="MOMENTUM · TEAM 1";
 const MOMENTUM_RELEASES=[MOMENTUM_EVENT,MOMENTUM_TEAM_2];
+// Extra objective rewards are a separate catalogue: never add them to a regular team or pack pool.
+const EVENT_OBJECTIVES=[{
+ id:"momentum-haraldsson",key:"event:momentum-haraldsson",group:"event",title:"MOMENTUM: Haraldsson",desc:"Gewinne 8 Squad-Battles-Partien auf mindestens Profi.",
+ eventName:"MOMENTUM",eventType:"momentum-objective",releaseId:"momentum-objective-haraldsson",activeFrom:"2026-10-02T19:00:00+02:00",activeUntilAt:"2026-10-09T19:00:00+02:00",
+ mode:"squad",minDifficulty:"pro",target:8,reward:{eventObjective:"momentum-haraldsson"},
+ player:{pid:"262088",name:"Hákon Haraldsson",ovr:84,baseOvr:78,position:"CAM",alt:"CM,LW",baseAlt:"LM,CM,LW",baseStats:[77,67,75,81,57,70],team:"LOSC Lille",nation:"Iceland",league:"Ligue 1",stats:[86,80,84,87,63,76],dynamicFace:"assets/footera/events/momentum/objectives/haraldsson.webp"}
+}];
+function activeEventObjectives(at=Date.now()){return EVENT_OBJECTIVES.filter(task=>eventPackIsActive(task,at))}
+function eventObjectiveProgress(task){return Math.min(task.target,Math.max(0,Number(state.eventObjectives?.[task.id]?.progress||0)))}
+function eventObjectivePlayerBase(task){
+ const info=task?.player;if(!info)return null;
+ let base=P_BY_ID.get(info.pid);
+ if(!base){base=momentumFallbackBase({...info,stats:info.baseStats,alt:info.baseAlt});applyPlayerTraits([base]);P_BY_ID.set(info.pid,base)}
+ return base
+}
+function makeEventObjectiveItem(task){
+ const base=eventObjectivePlayerBase(task),info=task?.player;if(!base||!info)return null;
+ const item=makeItem(base,false,{variant:"special",eventType:task.eventType,eventName:task.eventName,eventReleaseId:task.releaseId,dynamicFace:info.dynamicFace,overridePosition:info.position,displayRating:info.ovr,eventStats:info.stats,rare:true,acquisitionSource:"Objective"});
+ item.objectiveRewardKey=task.id;return item
+}
+function recordEventObjectiveMatch(completed,result,at=Date.now()){
+ if(!completed?.finished||!completed.resultId||result!=="win")return false;
+ const difficulty=SB_DIFFICULTIES[completed.battleDifficulty];let changed=false;
+ for(const task of activeEventObjectives(at)){
+  const minimum=SB_DIFFICULTIES[task.minDifficulty];
+  if(completed.mode!==task.mode||!difficulty||!minimum||difficulty.factor<minimum.factor)continue;
+  state.eventObjectives=state.eventObjectives||{};
+  const row=state.eventObjectives[task.id]||(state.eventObjectives[task.id]={progress:0,matchIds:[],claimed:false});
+  if(row.claimed||row.progress>=task.target||row.matchIds.includes(completed.resultId))continue;
+  row.matchIds.push(completed.resultId);row.progress=Math.min(task.target,Number(row.progress||0)+1);changed=true
+ }
+ if(changed){save();flushSave()}
+ return changed
+}
+function claimEventObjective(task,at=Date.now()){
+ if(!activeEventObjectives(at).some(t=>t.id===task?.id)||eventObjectiveProgress(task)<task.target)return false;
+ const row=state.eventObjectives?.[task.id];
+ if(!row||row.claimed||state.objectiveClaims?.[task.key])return false;
+ const item=makeEventObjectiveItem(task);if(!item)return false;
+ row.claimed=true;state.objectiveClaims=state.objectiveClaims||{};state.objectiveClaims[task.key]=true;state.club.push(item);
+ save();flushSave();return true
+}
 const MOMENTUM_BY_ID=new Map(MOMENTUM_RELEASES.flatMap(event=>event.players.map(info=>[info.pid,info])));
 const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,teamSize:18,keepers:2,maxPlayersPerClub:1,allowExtraClubPlayer:true,avoidRecentSpecialRepeats:true,considerContent:["totw","events","sbc","objectives","season","evolutions"]};
 // The Halloween window is published here; its player team is released only when its roster is defined.
@@ -2534,6 +2578,8 @@ function activePromoEvent(at=Date.now()){return EVENT_PROMO_RELEASES.find(e=>eve
 function activeMomentumEvent(at=Date.now()){return MOMENTUM_RELEASES.find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
 function momentumIsActive(at=Date.now()){return !!activeMomentumEvent(at)}
 function promoItemInfo(item){
+ const objective=EVENT_OBJECTIVES.find(task=>task.releaseId===item?.eventReleaseId&&task.player.pid===String(item?.pid));
+ if(objective)return objective.player;
  const event=EVENT_PROMO_RELEASES.find(e=>e.id===item?.eventReleaseId);
  if(event)return (event.players||[]).find(p=>String(p.pid||p.eaId)===String(item.pid))||null;
  return isMomentumItem(item)?MOMENTUM_BY_ID.get(String(item.pid)):null
@@ -2685,10 +2731,10 @@ function makeLivePackItem(base,tradeable=true){
  const team=activeTotwWeek(),info=totwInfo(base);
  return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position,rare:true}):makeItem(base,tradeable)
 }
-let promoEventClockId=null,promoEventClockTimer=0;
+let promoEventClockId=null,promoObjectiveClockId="",promoEventClockTimer=0;
 function schedulePromoEventClock(){
  clearTimeout(promoEventClockTimer);
- const now=Date.now(),boundaries=EVENT_PROMO_RELEASES.flatMap(e=>[Date.parse(e.activeFrom),Date.parse(e.activeUntilAt)]).filter(t=>Number.isFinite(t)&&t>now),next=boundaries.length?Math.min(...boundaries):Infinity;
+ const now=Date.now(),boundaries=[...EVENT_PROMO_RELEASES,...EVENT_OBJECTIVES].flatMap(e=>[Date.parse(e.activeFrom),Date.parse(e.activeUntilAt)]).filter(t=>Number.isFinite(t)&&t>now),next=boundaries.length?Math.min(...boundaries):Infinity;
  promoEventClockTimer=setTimeout(syncPromoEventClock,Math.max(1,Math.min(60000,next-now)))
 }
 function syncPromoEventClock(){
@@ -2711,9 +2757,14 @@ function syncPromoEventClock(){
    else if($("opponentTeamModalBody")?.dataset.battleEventRelease===previous)openOpponentTeam(battleSpecialOpponent("event",state.squadBattle.week))
   }
  }
+ const objectiveKey=activeEventObjectives().map(t=>t.id).join("|");
+ if(objectiveKey!==promoObjectiveClockId){
+  promoObjectiveClockId=objectiveKey;updateObjectiveIndicators();
+  if(currentViewId()==="objectivesView")renderTasks()
+ }
  schedulePromoEventClock()
 }
-function startPromoEventClock(){promoEventClockId=activePromoEvent()?.id||"";schedulePromoEventClock()}
+function startPromoEventClock(){promoEventClockId=activePromoEvent()?.id||"";promoObjectiveClockId=activeEventObjectives().map(t=>t.id).join("|");schedulePromoEventClock()}
 
 const TASKS=[
  {id:"starter",title:"Club gegründet",desc:"Öffne dein Starterset.",stat:"starter",target:1,reward:{coins:750,sp:250}},
@@ -2847,7 +2898,7 @@ function sbcGroupBannerHTML(group,rows){
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
 function baseState(){return{
  version:123,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
- stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},
+ stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
  roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
@@ -3221,7 +3272,7 @@ function displayBase(item){
  const changed=!!momentum||!!eventStats||Number(item?.displayRating||0)>0||Number(item?.boost||0)!==0||Number(item?.evo||0)!==0||!!item?.dynamicFace||!!item?.eventFace||!!item?.overridePosition||Object.keys(extra).length>0;
  if(!changed)return b;
  let out={...b,ovr:itemRating(item),position:momentum?.position||item?.overridePosition||b.position};
- if(momentum){if(momentum.name)out.name=momentum.name;if(momentum.team&&item.eventReleaseId===MOMENTUM_TEAM_2.id){out.team=momentum.team;out.league=leagueFromClub(momentum.team,"","","male","fc27-open-data");out.nation=momentum.nation}if(momentum.stats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];if(momentum.position)out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim()),...String(momentum.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}
+ if(momentum){if(momentum.name)out.name=momentum.name;if(momentum.team&&(item.eventReleaseId===MOMENTUM_TEAM_2.id||item.eventType==="momentum-objective")){out.team=momentum.team;out.league=momentum.league||leagueFromClub(momentum.team,"","","male","fc27-open-data");out.nation=momentum.nation}if(momentum.stats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];if(momentum.position)out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim()),...String(momentum.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}
  const promo=promoItemInfo(item);if(promo||item.dynamicFace||item.eventFace){out.dynamicFace=item.dynamicFace||item.eventFace||promo?.dynamicFace||promo?.eventFace||"";out.eventReleaseId=item.eventReleaseId||""}
  if(eventStats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=Number(eventStats[index]??out[k]??0);
  if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}
@@ -3274,7 +3325,7 @@ const COUNTRY_CODES={
 germany:"DE",deutschland:"DE",france:"FR",french:"FR",england:"GB",spain:"ES",italy:"IT",brazil:"BR",argentina:"AR",netherlands:"NL",holland:"NL",belgium:"BE",portugal:"PT",norway:"NO",sweden:"SE",denmark:"DK",poland:"PL",croatia:"HR",serbia:"RS",switzerland:"CH",austria:"AT",turkey:"TR",turkiye:"TR",morocco:"MA",nigeria:"NG",cameroon:"CM",senegal:"SN",usa:"US","united states":"US","united states of america":"US",mexico:"MX",uruguay:"UY",colombia:"CO",japan:"JP",korea:"KR","south korea":"KR","korea republic":"KR",ghana:"GH","ivory coast":"CI","cote d ivoire":"CI","cote divoire":"CI",egypt:"EG","bosnia and herzegovina":"BA","bosnia-herzegovina":"BA",bosnia:"BA","czech republic":"CZ",czechia:"CZ","republic of ireland":"IE",ireland:"IE","north macedonia":"MK",
 "burkina faso":"BF",albania:"AL",algeria:"DZ",andorra:"AD",angola:"AO",armenia:"AM",azerbaijan:"AZ",bahrain:"BH",belarus:"BY",benin:"BJ",bolivia:"BO",botswana:"BW",bulgaria:"BG",burundi:"BI","cape verde":"CV","cabo verde":"CV","central african republic":"CF",chad:"TD",chile:"CL",china:"CN","china pr":"CN","chinese pr":"CN","costa rica":"CR",cuba:"CU",curacao:"CW",cyprus:"CY","democratic republic of congo":"CD","dr congo":"CD","congo dr":"CD",congo:"CG",ecuador:"EC","el salvador":"SV","equatorial guinea":"GQ",eritrea:"ER",estonia:"EE",eswatini:"SZ",ethiopia:"ET","faroe islands":"FO",fiji:"FJ",finland:"FI",gabon:"GA",gambia:"GM",georgia:"GE",greece:"GR",guatemala:"GT",guinea:"GN","guinea bissau":"GW","guinea-bissau":"GW",guyana:"GY",haiti:"HT",honduras:"HN","hong kong":"HK",hungary:"HU",iceland:"IS",india:"IN",indonesia:"ID",iran:"IR",iraq:"IQ",israel:"IL",jamaica:"JM",jordan:"JO",kazakhstan:"KZ",kenya:"KE",kosovo:"XK",kuwait:"KW",kyrgyzstan:"KG",latvia:"LV",lebanon:"LB",lesotho:"LS",liberia:"LR",libya:"LY",liechtenstein:"LI",lithuania:"LT",luxembourg:"LU",madagascar:"MG",malawi:"MW",malaysia:"MY",mali:"ML",malta:"MT",mauritania:"MR",mauritius:"MU",moldova:"MD",monaco:"MC",montenegro:"ME",mozambique:"MZ",namibia:"NA",nepal:"NP","new zealand":"NZ",nicaragua:"NI",niger:"NE","north korea":"KP","korea dpr":"KP","northern ireland":"GB",oman:"OM",pakistan:"PK",palestine:"PS",panama:"PA",paraguay:"PY",peru:"PE",philippines:"PH","puerto rico":"PR",qatar:"QA",romania:"RO",russia:"RU",rwanda:"RW","saudi arabia":"SA","san marino":"SM",scotland:"GB",seychelles:"SC","sierra leone":"SL",singapore:"SG",slovakia:"SK",slovenia:"SI","south africa":"ZA","south sudan":"SS","sri lanka":"LK",sudan:"SD",suriname:"SR",syria:"SY",tajikistan:"TJ",tanzania:"TZ",thailand:"TH",togo:"TG","trinidad and tobago":"TT",tunisia:"TN",turkmenistan:"TM",uganda:"UG",ukraine:"UA","united arab emirates":"AE",uae:"AE",uzbekistan:"UZ",venezuela:"VE",vietnam:"VN",wales:"GB",yemen:"YE",zambia:"ZM",zimbabwe:"ZW"
 };
-const COUNTRY_NAMES={DE:"Germany",FR:"France",GB:"England",ES:"Spain",IT:"Italy",BR:"Brazil",AR:"Argentina",NL:"Netherlands",BE:"Belgium",PT:"Portugal",NO:"Norway",SE:"Sweden",DK:"Denmark",PL:"Poland",HR:"Croatia",RS:"Serbia",CH:"Switzerland",AT:"Austria",TR:"Turkey",MA:"Morocco",NG:"Nigeria",CM:"Cameroon",SN:"Senegal",US:"United States",MX:"Mexico",UY:"Uruguay",CO:"Colombia",JP:"Japan",KR:"South Korea",GH:"Ghana",CI:"Ivory Coast",EG:"Egypt",BA:"Bosnia and Herzegovina",CZ:"Czech Republic",IE:"Republic of Ireland",MK:"North Macedonia"};
+const COUNTRY_NAMES={DE:"Germany",FR:"France",GB:"England",ES:"Spain",IT:"Italy",BR:"Brazil",AR:"Argentina",NL:"Netherlands",BE:"Belgium",PT:"Portugal",NO:"Norway",SE:"Sweden",DK:"Denmark",PL:"Poland",HR:"Croatia",RS:"Serbia",CH:"Switzerland",AT:"Austria",TR:"Turkey",MA:"Morocco",NG:"Nigeria",CM:"Cameroon",SN:"Senegal",US:"United States",MX:"Mexico",UY:"Uruguay",CO:"Colombia",JP:"Japan",KR:"South Korea",GH:"Ghana",CI:"Ivory Coast",EG:"Egypt",BA:"Bosnia and Herzegovina",CZ:"Czech Republic",IE:"Republic of Ireland",MK:"North Macedonia",IS:"Island"};
 function countryCode(name){const str=String(name||"").trim();if(/^[A-Z]{2}$/.test(str))return str;const key=normalizeKey(str);return COUNTRY_CODES[key]||String(str).slice(0,2).toUpperCase()}
 function nationLabel(name){const raw=String(name||"").trim();if(["england","scotland","wales","northern ireland"].includes(normalizeKey(raw)))return raw;const code=countryCode(raw);return COUNTRY_NAMES[code]||raw||code}
 function flagEmoji(name){
@@ -5894,7 +5945,7 @@ function updateMarketCountdowns(){
 }
 setInterval(updateMarketCountdowns,1000);
 
-function rewardText(r){const a=[];if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`Story-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
+function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${task.player.ovr} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`Story-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
 function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);claimSeasonRewards()}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
@@ -6657,7 +6708,7 @@ function startMatch(mode,opponent=null){
  matchManagerDraft=null;
  match={
  mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
- battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
+ resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
   lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],initialFormation:state.formation,formation:state.formation,tactic:state.tactic||"balanced",redCards:[],yellowCards:[],
   subsUsed:0,subbedOut:[],substitutionEvents:[],fitnessLoss:{home:{},away:{}},defensiveEvents:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],shotEvents:[],timeline:[],lastScene:null,highlightActive:false,
@@ -7506,6 +7557,7 @@ function finishMatch(){
  state.coins+=reward+boostCoins;
  const squadSp=match.mode==="squad"&&match.opponentProfile?.sp?Math.round(match.opponentProfile.sp*(resultKey==="win"?1:resultKey==="draw"?.7:.45)):80;state.sp=(state.sp||0)+(isFriendly?0:(match.mode==="rivals"?120:squadSp));
  progressEvolution(resultKey);claimSeasonRewards();save();
+ recordEventObjectiveMatch(match,resultKey);
  $("managerPanel").classList.remove("active");
  $("eventBanner").classList.remove("active");
  $("matchResult").classList.add("active");
@@ -8086,7 +8138,7 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.21";
+const GFUT_BUILD="V20.22";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
@@ -8104,7 +8156,7 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2021",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2022",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    if(packFlowInProgress())return;
    const key="gfut-sw-reloaded-"+GFUT_BUILD;

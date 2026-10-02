@@ -22,7 +22,7 @@ function setup(initial={}){
   stats:{competitiveMatches:0,competitiveWins:0,rivalsMatches:0,squadMatches:0,packs:0,market:0,sbcs:0},
   claims:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},...initial};
  const ctx={state,SEASON_REWARDS:structuredClone(firstTen),TASKS:[{id:'starter',title:'Starter',desc:'Start',stat:'packs',target:1,reward:{coins:100}}],
-  $:element,save(){},renderAll(){},renderHome(){},toast(){},confirm(){return true},
+  $:element,save(){},renderAll(){},renderHome(){},toast(){},confirm(){return true},activeEventObjectives:()=>[],
   fmt:n=>String(n),esc:s=>String(s),rewardText:r=>JSON.stringify(r),setInterval(){},
   grant:r=>{state.coins+=r.coins||0;state.sp+=r.sp||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1)},
   grantSeasonOnly:r=>{state.coins+=r.coins||0;state.points+=r.points||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)state.storyGrants.push(r.story)},

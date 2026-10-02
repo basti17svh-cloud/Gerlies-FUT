@@ -7,7 +7,7 @@ const vm=require('node:vm');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const between=(start,end)=>html.slice(html.indexOf(start),html.indexOf(end));
 function setup(){
- const ctx={MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map(),
+ const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map(),
   ICON_PORTRAIT_CACHE:{},isWholeCardAsset:()=>false,futwizFaceCandidates:id=>[`https://cdn.futwiz.com/assets/img/fc27/faces/${id}.png`],
   sofifaFaceCandidates:()=>[],fifaRostersFaceCandidates:()=>[],marketSnapshotHash:()=>100,promoWindowKey:()=>'',totwInfo:()=>null};
  vm.createContext(ctx);

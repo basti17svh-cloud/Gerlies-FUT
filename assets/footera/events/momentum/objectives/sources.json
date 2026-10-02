@@ -1,0 +1,31 @@
+{
+  "event": "MOMENTUM",
+  "objective": "momentum-haraldsson",
+  "images": [
+    {
+      "pid": "262088",
+      "name": "Hákon Haraldsson",
+      "club": "LOSC Lille",
+      "asset": "haraldsson.webp",
+      "sourcePage": "https://www.fut.gg/players/262088-hakon-arnar-haraldsson/26-50593736/",
+      "sourceImage": "https://cdn.futwiz.com/assets/img/fc26/faces/50593736.png",
+      "originalSize": [
+        649,
+        900
+      ],
+      "crop": [
+        67,
+        184,
+        583,
+        843
+      ],
+      "size": [
+        470,
+        600
+      ],
+      "bytes": 91100,
+      "format": "WebP RGBA",
+      "quality": 85
+    }
+  ]
+}
