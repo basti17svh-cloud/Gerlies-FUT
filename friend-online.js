@@ -2,11 +2,11 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",init,render,invite,showComparison,syncProfile};
+ const online={available,ready:false,registered:false,userId:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile};
  window.FooteraOnline=online;
  if(!available)return;
  $("onlinePanel").hidden=false;
- let client=null,started=null,channel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="";
+ let client=null,started=null,channel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="";
  const escape=s=>esc(String(s??""));
  const team=(d,side)=>d?.[`${side}_profile`]?.club_name||"Footera Club";
  const sideOf=d=>d?.home_user===online.userId?"home":"away";
@@ -40,12 +40,35 @@
    }catch(e){online.ready=false;started=null;const node=$("onlineStatus");if(node)node.textContent=`Online-Verbindung: ${errorText(e)}`;console.warn("Footera online:",e)}
   })();return started
  }
+
  async function syncProfile(){
   if(!online.ready)return false;
-  const snapshot=decodeFriendProfile(encodeFriendProfile()),m=squadMetrics();
+  const snapshot=decodeFriendProfile(encodeFriendProfile()),m=squadMetrics(),teams=typeof friendOnlineTeamsSnapshot==="function"?friendOnlineTeamsSnapshot():[];
   if(!snapshot||m.filled<18||snapshot.squad.some(x=>!x)){online.registered=false;return false}
-  const profile={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:snapshot.squad,updated_at:new Date().toISOString()};
-  const {error}=await client.from("footera_online_profiles").upsert(profile,{onConflict:"user_id"});if(error)throw error;online.registered=true;return true
+  const sharedTeams=teams.filter(team=>team&&team.filled===18&&Array.isArray(team.squad)&&team.squad.length===18).slice(0,3).map(team=>({slot:Number(team.slot||0),name:String(team.name||"Team").slice(0,24),active:!!team.active,formation:team.formation,rating:Number(team.rating||0),chem:Number(team.chem||0),squad:team.squad}));
+  const stable={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:snapshot.squad,squads:sharedTeams,active_preset:Number(state.activeSquadPreset||0)};
+  const signature=JSON.stringify(stable);if(signature===lastProfileSignature&&online.registered)return true;
+  let profile={...stable,updated_at:new Date().toISOString()},result=await client.from("footera_online_profiles").upsert(profile,{onConflict:"user_id"});
+  if(result.error&&(result.error.code==="PGRST204"||/squads|active_preset/i.test(String(result.error.message||"")))){
+   const legacy={user_id:stable.user_id,username:stable.username,club_name:stable.club_name,rating:stable.rating,chem:stable.chem,formation:stable.formation,squad:stable.squad,updated_at:profile.updated_at};
+   result=await client.from("footera_online_profiles").upsert(legacy,{onConflict:"user_id"})
+  }
+  if(result.error)throw result.error;lastProfileSignature=signature;online.registered=true;return true
+ }
+ function queueProfileSync(delay=700){
+  if(!online.ready)return;clearTimeout(profileSyncTimer);
+  profileSyncTimer=setTimeout(()=>{profileSyncTimer=null;syncProfile().catch(e=>console.warn("Online-Profil:",e))},Math.max(200,Number(delay)||700))
+ }
+ async function fetchFriendProfile(friend){
+  if(!online.ready||!validUid(friend?.onlineUid))return null;
+  const {data,error}=await client.rpc("footera_friend_profile",{p_friend:friend.onlineUid});
+  if(error){
+   if(error.code==="PGRST202"||error.code==="42883"||/footera_friend_profile/i.test(String(error.message||"")))return null;
+   throw error
+  }
+  if(!data||typeof data!=="object")return null;
+  const teams=Array.isArray(data.squads)?data.squads:Array.isArray(friend.teams)?friend.teams:[];
+  return{username:data.username||friend.username||"",clubName:data.club_name||friend.clubName||"Footera Club",rating:Number(data.rating||friend.rating||0),chem:Number(data.chem||friend.chem||0),formation:data.formation||friend.formation||"4-3-3",squad:Array.isArray(data.squad)?data.squad:friend.squad,teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
  }
  async function refresh(){
   if(!online.ready)return;
