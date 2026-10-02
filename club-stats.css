@@ -10,3 +10,9 @@
 .club-stat-card-btn>.mini{display:block!important;width:96px!important;min-height:138px}
 .club-stat-card-btn>.mini>.card-shell{display:block!important;width:96px!important;height:auto!important;aspect-ratio:.7}
 .club-stat-leader{overflow:visible}
+
+
+/* V20.27 — zwei Leaderkarten, korrekter Kartenwrapper */
+.club-stat-leaders{grid-template-columns:repeat(2,minmax(0,1fr))}
+.club-stat-card-btn>.mini{display:block!important;width:96px!important;min-height:138px}
+.club-stat-card-btn>.mini>.card-shell{display:block!important;width:96px!important;height:auto!important;aspect-ratio:.7}
