@@ -16,7 +16,7 @@ function context(){
   rarityOf:p=>p.rarity||'gold',isCardRare:()=>false,itemRating:i=>i.displayRating||88,
   playerGender:()=> 'male',cardStatPairs:p=>p.position==='GK'?[['HEC',80],['BSI',81],['ABS',82],['REF',83],['TMP',84],['POS',85]]:[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],
   nationLabel:n=>n,flagAsset:()=>'<span>DE</span>',badgeAsset:k=>`<span>${k}</span>`,leagueShort:()=>'',clubShort:()=>'',
-  portraitHTML:()=>'<img src="portrait.png">',ensureEaPlayerAssets(){},activeEvolutionForUid:()=>null};
+  eventDynamicFace:()=>"",portraitHTML:()=>'<img src="portrait.png">',ensureEaPlayerAssets(){},activeEvolutionForUid:()=>null};
  vm.createContext(ctx);vm.runInContext(classCode+emblemsCode+positionsCode+positionLabelCode+rendererCode,ctx);
  return ctx;
 }

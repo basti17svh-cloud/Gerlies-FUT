@@ -8,7 +8,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'../momentum-card.css'),'utf8');
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 function context(extra={}){
- const c={Date,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',founderRuleForPack:()=>undefined,isFounderItem:()=>false,...extra};vm.createContext(c);
+ const c={Date,Math,Map,Set,normalizeKey:s=>String(s).toLowerCase(),eventPackIsActive:(e,at)=>at>=Date.parse(e.activeFrom)&&at<Date.parse(e.activeUntilAt),FOUNDER_PACK_ID:'founder-bastian',founderRuleForPack:()=>undefined,isFounderItem:()=>false,...extra};vm.createContext(c);
  vm.runInContext(section('const MOMENTUM_EVENT=','let eventSelectedId='),c);
  return c
 }

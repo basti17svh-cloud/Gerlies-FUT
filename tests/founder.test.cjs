@@ -47,7 +47,7 @@ test('walkout is mandatory; claim, reload and duplicate save data leave exactly 
 test('the synthetic player stays out of the live database, normal pack pool and generated market',()=>{
  const ctx=setup();const ordinary={id:'100',name:'Other',ovr:80,league:'Bundesliga'};
  ctx.PLAYERS=[ordinary,{id:'101',name:'Bastian Gerlach',fullName:'Bastian Gerlach',ovr:88}];
- Object.assign(ctx,{applyPlayerTraits(){},normalizePlayerAffiliations(){},rebuildPlayerRuntimeIndexes(){},applyBadgeCacheToPlayers(){},rebuildMarketFilterIndex(){},restoreSyntheticPlayerIds(){ctx.P_BY_ID.set(PID,call(ctx,'FOUNDER_BASE'))},renderHeaderClubName(){},$(){return{style:{},classList:{add(){}},textContent:''}}});
+ Object.assign(ctx,{startPromoEventClock(){},applyPlayerTraits(){},normalizePlayerAffiliations(){},rebuildPlayerRuntimeIndexes(){},applyBadgeCacheToPlayers(){},rebuildMarketFilterIndex(){},restoreSyntheticPlayerIds(){ctx.P_BY_ID.set(PID,call(ctx,'FOUNDER_BASE'))},renderHeaderClubName(){},$(){return{style:{},classList:{add(){}},textContent:''}}});
  vm.runInContext(between('function finishDbLoad(','async function boot('),ctx);call(ctx,'finishDbLoad')(false);
  assert.deepEqual(Array.from(ctx.PLAYERS,p=>p.name),['Other']);assert.equal(ctx.P_BY_ID.get(PID).fullName,'Bastian Gerlach');
  ctx.state=call(ctx,'reconcileFounderState')(saveState('GF-OTHER'));ctx.pendingPack=[];
@@ -125,7 +125,7 @@ test('Marco uses his original assets and exact profile values without entering t
  assert.equal(sha('schweinfurt-rangers-09-original.jpg'),'04c1c20b7caa8ae0a1b3c53004fa19d5ad54ad6cb6caab1418900a3591852fa2');
  assert.equal(b.leagueLogo,'./assets/footera/emblem.png');assert.equal(item.variant,'founder');
  ctx.PLAYERS=[{id:'1',name:'Normal',ovr:70},{id:'2',name:'Marco Gerlach',ovr:88},{id:'3',fullName:'Bastian Gerlach',ovr:88}];
- Object.assign(ctx,{applyPlayerTraits(){},normalizePlayerAffiliations(){},rebuildPlayerRuntimeIndexes(){},applyBadgeCacheToPlayers(){},rebuildMarketFilterIndex(){},restoreSyntheticPlayerIds(){},renderHeaderClubName(){},$(){return{style:{},classList:{add(){}},textContent:''}}});
+ Object.assign(ctx,{startPromoEventClock(){},applyPlayerTraits(){},normalizePlayerAffiliations(){},rebuildPlayerRuntimeIndexes(){},applyBadgeCacheToPlayers(){},rebuildMarketFilterIndex(){},restoreSyntheticPlayerIds(){},renderHeaderClubName(){},$(){return{style:{},classList:{add(){}},textContent:''}}});
  vm.runInContext(between('function finishDbLoad(','async function boot('),ctx);call(ctx,'finishDbLoad')(false);
  assert.deepEqual(Array.from(ctx.PLAYERS,p=>p.name),['Normal']);
 });

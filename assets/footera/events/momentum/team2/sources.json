@@ -1,0 +1,402 @@
+{
+  "release": "momentum-team-2",
+  "description": "Genuine football cutouts; visually checked player and club. Normal face is retained separately as the fallback.",
+  "images": [
+    {
+      "pid": "256790",
+      "club": "Bayern München",
+      "asset": "musiala.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/jamal-musiala-bayern-munich-bundesliga-germany-german-footballers-7669",
+      "sourceImage": "https://uniqrenders.com/Uploads/6-3-2025/7669/jamal-musiala-bayern-munich-bundesliga-germany-german-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        993,
+        1700
+      ],
+      "crop": [
+        10,
+        10,
+        964,
+        1565
+      ],
+      "size": [
+        368,
+        600
+      ],
+      "bytes": 43926
+    },
+    {
+      "pid": "271421",
+      "club": "Paris Saint-Germain",
+      "asset": "doue.webp",
+      "sourcePage": "https://www.footyrenders.com/ligue-1/psg/desire-doue-2/",
+      "sourceImage": "https://www.footyrenders.com/render/desire-doue-1.png",
+      "sourceSize": [
+        1125,
+        2352
+      ],
+      "crop": [
+        0,
+        0,
+        1125,
+        1294
+      ],
+      "size": [
+        474,
+        600
+      ],
+      "bytes": 53608
+    },
+    {
+      "pid": "233731",
+      "club": "Liverpool",
+      "asset": "isak.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/alexander-isak-liverpool-premier-league-sweden-swedish-footballers-9913",
+      "sourceImage": "https://uniqrenders.com/Uploads/23-10-2025/9913/alexander-isak-liverpool-premier-league-sweden-swedish-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1192,
+        1816
+      ],
+      "crop": [
+        0,
+        0,
+        1192,
+        1816
+      ],
+      "size": [
+        394,
+        600
+      ],
+      "bytes": 42142
+    },
+    {
+      "pid": "246191",
+      "club": "Atlético Madrid",
+      "asset": "alvarez.webp",
+      "sourcePage": "https://www.footyrenders.com/la-liga/atletico-madrid/julian-alvarez-11/",
+      "sourceImage": "https://www.footyrenders.com/render/julian-alvarez-9.png",
+      "sourceSize": [
+        2766,
+        3511
+      ],
+      "crop": [
+        387,
+        1,
+        2481,
+        2037
+      ],
+      "size": [
+        480,
+        467
+      ],
+      "bytes": 37752
+    },
+    {
+      "pid": "224232",
+      "club": "Inter",
+      "asset": "barella.webp",
+      "sourcePage": "https://www.footyrenders.com/serie-a/inter/nicolo-barella-8/",
+      "sourceImage": "https://www.footyrenders.com/render/nicolo-barella-6.png",
+      "sourceSize": [
+        823,
+        977
+      ],
+      "crop": [
+        0,
+        0,
+        823,
+        928
+      ],
+      "size": [
+        480,
+        541
+      ],
+      "bytes": 47396
+    },
+    {
+      "pid": "215698",
+      "club": "AC Milan",
+      "asset": "maignan.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/mike-maignan-ac-milan-serie-a-france-french-footballers-4136",
+      "sourceImage": "https://uniqrenders.com/Uploads/15-11-2023/4136/mike-maignan-ac-milan-serie-a-france-french-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1074,
+        2001
+      ],
+      "crop": [
+        10,
+        0,
+        1071,
+        1401
+      ],
+      "size": [
+        440,
+        600
+      ],
+      "bytes": 45116
+    },
+    {
+      "pid": "256079",
+      "club": "Chelsea",
+      "asset": "caicedo.webp",
+      "sourcePage": "https://www.footyrenders.com/premier-league/chelsea/moises-caicedo-6/",
+      "sourceImage": "https://www.footyrenders.com/render/moises-caicedo-4.png",
+      "sourceSize": [
+        586,
+        1402
+      ],
+      "crop": [
+        1,
+        1,
+        585,
+        841
+      ],
+      "size": [
+        294,
+        600
+      ],
+      "bytes": 31416
+    },
+    {
+      "pid": "278046",
+      "club": "FC Barcelona",
+      "asset": "cubarsi.webp",
+      "sourcePage": "https://www.footyrenders.com/la-liga/barcelona/pau-cubarsi/",
+      "sourceImage": "https://www.footyrenders.com/render/pau-cubarsi.png",
+      "sourceSize": [
+        806,
+        1875
+      ],
+      "crop": [
+        0,
+        2,
+        806,
+        1070
+      ],
+      "size": [
+        453,
+        600
+      ],
+      "bytes": 43258
+    },
+    {
+      "pid": "251570",
+      "club": "Manchester City",
+      "asset": "cherki.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/rayan-cherki-manchester-city-premier-league-france-french-footballers-footballers-9997",
+      "sourceImage": "https://uniqrenders.com/Uploads/8-11-2025/9997/rayan-cherki-manchester-city-premier-league-france-french-footballers-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1302,
+        1807
+      ],
+      "crop": [
+        0,
+        0,
+        1302,
+        1644
+      ],
+      "size": [
+        475,
+        600
+      ],
+      "bytes": 48084
+    },
+    {
+      "pid": "277954",
+      "club": "Juventus",
+      "asset": "yildiz.webp",
+      "sourcePage": "https://www.footyrenders.com/serie-a/juventus/kenan-yildiz-4/",
+      "sourceImage": "https://www.footyrenders.com/render/kenan-yildiz-3.png",
+      "sourceSize": [
+        3339,
+        2391
+      ],
+      "crop": [
+        500,
+        2,
+        2800,
+        2391
+      ],
+      "size": [
+        480,
+        499
+      ],
+      "bytes": 40490
+    },
+    {
+      "pid": "235794",
+      "club": "Arsenal",
+      "asset": "eze.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/eberechi-eze-arsenal-premier-league-england-english-footballers-9949",
+      "sourceImage": "https://uniqrenders.com/Uploads/30-10-2025/9949/eberechi-eze-arsenal-premier-league-england-english-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1394,
+        1928
+      ],
+      "crop": [
+        0,
+        0,
+        1394,
+        1928
+      ],
+      "size": [
+        434,
+        600
+      ],
+      "bytes": 48890
+    },
+    {
+      "pid": "234577",
+      "club": "FC Porto",
+      "asset": "costa.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/diogo-costa-fc-porto-primeira-liga-portugal-portuguese-footballers-4245",
+      "sourceImage": "https://uniqrenders.com/Uploads/25-11-2023/4245/diogo-costa-fc-porto-primeira-liga-portugal-portuguese-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        955,
+        1897
+      ],
+      "crop": [
+        4,
+        0,
+        953,
+        1518
+      ],
+      "size": [
+        375,
+        600
+      ],
+      "bytes": 42958
+    },
+    {
+      "pid": "270964",
+      "club": "Borussia Dortmund",
+      "asset": "bellingham.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/jobe-bellingham-borussia-dortmund-bundesliga-england-english-footballers-9252",
+      "sourceImage": "https://uniqrenders.com/Uploads/22-7-2025/9252/jobe-bellingham-borussia-dortmund-bundesliga-england-english-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1316,
+        1735
+      ],
+      "crop": [
+        0,
+        0,
+        1312,
+        1735
+      ],
+      "size": [
+        454,
+        600
+      ],
+      "bytes": 56172
+    },
+    {
+      "pid": "260592",
+      "club": "Manchester United",
+      "asset": "sesko.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/benjamin-sesko-manchester-united-premier-league-slovenia-slovenian-footballers-9444",
+      "sourceImage": "https://uniqrenders.com/Uploads/21-8-2025/9444/benjamin-sesko-manchester-united-premier-league-slovenia-slovenian-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1086,
+        1868
+      ],
+      "crop": [
+        0,
+        0,
+        1086,
+        1401
+      ],
+      "size": [
+        461,
+        600
+      ],
+      "bytes": 51166
+    },
+    {
+      "pid": "247263",
+      "club": "Bayer Leverkusen",
+      "asset": "tapsoba.webp",
+      "sourcePage": "https://www.futwiz.com/fc26/player/edmond-tapsoba/21003",
+      "sourceImage": "https://cdn.futwiz.com/assets/img/fc26/faces/50578911.png",
+      "sourceSize": [
+        649,
+        900
+      ],
+      "crop": [
+        73,
+        165,
+        577,
+        837
+      ],
+      "size": [
+        450,
+        600
+      ],
+      "bytes": 85228
+    },
+    {
+      "pid": "239380",
+      "club": "Napoli",
+      "asset": "lang.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/noa-lang-ssc-napoli-serie-a-netherlands-dutch-footballers-10078",
+      "sourceImage": "https://uniqrenders.com/Uploads/26-11-2025/10078/noa-lang-ssc-napoli-serie-a-netherlands-dutch-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1457,
+        1773
+      ],
+      "crop": [
+        0,
+        0,
+        1457,
+        1773
+      ],
+      "size": [
+        480,
+        584
+      ],
+      "bytes": 50380
+    },
+    {
+      "pid": "250723",
+      "club": "AS Roma",
+      "asset": "kone.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/manu-kone-as-roma-serie-a-france-french-footballers-9526",
+      "sourceImage": "https://uniqrenders.com/Uploads/31-8-2025/9526/manu-kone-as-roma-serie-a-france-french-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1274,
+        1808
+      ],
+      "crop": [
+        0,
+        0,
+        1274,
+        1808
+      ],
+      "size": [
+        423,
+        600
+      ],
+      "bytes": 36824
+    },
+    {
+      "pid": "251470",
+      "club": "Atalanta",
+      "asset": "de-ketelaere.webp",
+      "sourcePage": "https://uniqrenders.com/athletes/football/charles-de-ketelaere-atalanta-serie-a-belgium-belgian-footballers-10138",
+      "sourceImage": "https://uniqrenders.com/Uploads/9-12-2025/10138/charles-de-ketelaere-atalanta-serie-a-belgium-belgian-footballers-uniqrenders.com.png",
+      "sourceSize": [
+        1420,
+        1751
+      ],
+      "crop": [
+        0,
+        0,
+        1420,
+        1751
+      ],
+      "size": [
+        480,
+        592
+      ],
+      "bytes": 45830
+    }
+  ]
+}

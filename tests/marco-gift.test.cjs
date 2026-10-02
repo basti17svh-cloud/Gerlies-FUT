@@ -24,7 +24,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
  players.push({id:'247827',name:'M. Olise',ovr:90,position:'RM',alt:'RW,CAM',nation:'France',team:'Bayern München',league:'Bundesliga',pac:83,sho:82,pas:89,dri:91,def:47,phy:69});
  const state=saved?JSON.parse(saved):{profile:{saveId:owner},packs:{goldplayers:2},directClaims:{basti_86plus_20260925:{claimedAt:1}},club:[],rewardPackQueue:[],pendingPack:[],pendingResolved:[],stats:{packs:0},coins:500000,points:500};
  const ctx={Date:Clock,Math:randomMath,Map,Set,state,pendingPack:state.pendingPack,PLAYERS:players,P_BY_ID:new Map(players.map(p=>[p.id,p])),
-  uid:()=>`item-${++nextUid}`,rarityOf:()=> 'gold',isActiveEventSbcBase:()=>false,activePromoPackEntry:()=>null,activeTotwWeek:()=>null,totwInfo:()=>null,
+  eventPackIsActive:(e,at)=>at>=Date.parse(e.activeFrom)&&at<Date.parse(e.activeUntilAt),uid:()=>`item-${++nextUid}`,rarityOf:()=> 'gold',isActiveEventSbcBase:()=>false,activePromoPackEntry:()=>null,activeTotwWeek:()=>null,totwInfo:()=>null,
   $:get,window:{addEventListener(){}},document:{querySelectorAll:()=>tabs,addEventListener(){}},esc:String,fmt:String,currencyAmountHTML:(_currency,value)=>String(value),packCompositionText:p=>`${p.count} Goldspieler`,
   nextPromoReset:()=>new Clock(now+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),updateStoreCountdown:()=>{},
   activePromoPacks:()=>vm.runInContext('PACKS.filter(p=>p.rotation).slice(0,3)',ctx),activeStorePacks:()=>vm.runInContext('PACKS.filter(p=>p.store)',ctx),
@@ -125,7 +125,7 @@ test('missing fixed players or too few random cards leave the pack unopened',()=
 });
 
 test('the promised Momentum card remains guaranteed after the event window has closed',()=>{
- const a=app({at:'2026-10-03T12:00:00Z'});assert.equal(a.run('momentumIsActive()'),false);a.run('grantDirectRewards()');
+ const a=app({at:'2026-10-10T12:00:00Z'});assert.equal(a.run('momentumIsActive()'),false);a.run('grantDirectRewards()');
  const items=a.run(`generatePack('${PACK}')`);assert.equal(items.length,12);assert.equal(items[2].eventType,'momentum');assert.equal(items[2].displayRating,89)
 });
 

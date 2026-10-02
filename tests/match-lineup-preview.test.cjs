@@ -55,7 +55,7 @@ test('preview drag swap changes lineup and refreshes the displayed team',()=>{
 
 test('a secondary position uses the shared card and preserves its position label',()=>{
  const ctx={prioritizeCached:arr=>arr,imageCacheKey:()=>'',esc:String,imgCandidatesAttr:JSON.stringify,
-  resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,emblemsHTML:()=>'',portraitHTML:()=>'<img src="portrait.png">',
+  resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,emblemsHTML:()=>'',eventDynamicFace:()=>"",portraitHTML:()=>'<img src="portrait.png">',
   positionLabel:pos=>({CAM:'ZOM',RM:'RM'})[pos]||pos,cardStatPairs:()=>[]};
  vm.createContext(ctx);vm.runInContext(`${imageCode}\n${positionsCode}\n${cardCode}`,ctx);
  const palmer={id:'257498',name:'C. Palmer',ovr:85,position:'CAM',alt:'RM',team:'Chelsea FC'};
@@ -68,7 +68,7 @@ test('a secondary position uses the shared card and preserves its position label
 
 test('new club items show their real rating when displayRating has its default zero',()=>{
  const ctx={esc:String,resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,
-  itemRating:()=>78,officialCardHTML:()=>'',emblemsHTML:()=>'',portraitHTML:()=>'',
+  itemRating:()=>78,officialCardHTML:()=>'',emblemsHTML:()=>'',eventDynamicFace:()=>"",portraitHTML:()=>'',
   positionLabel:p=>p,cardStatPairs:()=>[],activeEvolutionForUid:()=>null};
  vm.createContext(ctx);vm.runInContext(positionsCode+cardCode,ctx);
  const player={id:'starter',name:'Starter',ovr:78,position:'ST',team:'Club'};

@@ -163,8 +163,10 @@ function battleSpecialOpponent(kind,key){
  if(kind==="event"&&!event)return null;
  const entries=kind==="event"?promoEventEntries(event):liveTotwTeamEntries();
  if(!entries.length)return null;
- const used=new Set(),formation="4-3-3",slots=FORMATIONS[formation],xi=[];
- for(const slot of slots){
+ const used=new Set(),formation=event?.id==="momentum-team-2"?"4-2-3-1":"4-3-3",slots=FORMATIONS[formation],xi=[];
+ if(event?.id==="momentum-team-2"){
+  const lineup=momentumTeamLineup(entries,slots);for(const entry of lineup.xi){if(entry){xi.push(entry);used.add(entry)}}
+ }else for(const slot of slots){
   const entry=entries.find(x=>!used.has(x)&&posFit(x.player,slot.p)>0)||entries.find(x=>!used.has(x));
   if(entry){xi.push(entry);used.add(entry)}
  }
@@ -177,7 +179,7 @@ function battleSpecialOpponent(kind,key){
  }
  const squad=rows.map(x=>x.player),items=rows.map(x=>x.item),rating=Math.round(squad.slice(0,11).reduce((n,p)=>n+Number(p?.ovr||0),0)/11);
  const chem=typeof opponentChemistryTotal==="function"?opponentChemistryTotal(squad,formation,items):0;
- return{kind:"generated",name:kind==="event"?`${event.name} ${event.subtitle||""}`.trim():totwDisplayName(LIVE_TOTW.name),formation,rating,chem,squad,items,
+ return{kind:"generated",eventReleaseId:event?.id||"",name:kind==="event"?`${event.name} ${event.subtitle||""}`.trim():totwDisplayName(LIVE_TOTW.name),formation,rating,chem,squad,items,
   tier:kind==="event"?(eventPackIsActive(event)?"Event-Team":"Event-Team · Archiv"):"Team der Woche",strengthId:kind,battleId:`${key}:${kind}`,rewards:{win:850,loss:330},sp:100,power:rating+chem*.12}
 }
 
