@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.28</title>
+<title>Footera V20.29</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1541,7 +1541,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.28</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.29</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3908,7 +3908,7 @@ function renderPriceComparison(){
  const cheapest=offers[0]?.price||0,shown=displayBase(item)||base;
  $("priceCompareTitle").textContent=`Preisvergleich · ${base.name}`;
  $("priceCompareSub").textContent=`${isMomentumItem(item)?"MOMENTUM · ":""}${playerClubLabel(base)} · ${positionLabel(base.position,base)} · GES ${Number(shown.ovr||base.ovr||0)}`;
- const list=offers.length?offers.map((o,i)=>{const st=marketAuctionState(o),next=nextMarketBid(o),time=o.settled?"Abgelaufen":auctionTime(o)+"s";return `<div class="price-compare-row ${st.key}" data-price-compare-offer="${i}"><span class="price-compare-rank">#${i+1}</span><div><small>Startpreis</small><b>${currencyAmountHTML("coins",o.startPrice||o.bid,"compact")}</b></div><div><small>Akt. Gebot</small><b>${currencyAmountHTML("coins",o.bid,"compact")}</b></div><div><small>Sofortkauf</small><b>${currencyAmountHTML("coins",o.price,"compact")}</b></div><div><small>Restzeit</small><b>${time}</b></div><div class="price-compare-actions"><button class="secondary" data-price-compare-details="${i}">Details</button><button class="secondary" data-price-compare-bid="${i}" ${(o.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"compact")}`}</button><button class="primary" data-price-compare-buy="${i}" ${o.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",o.price,"compact")}</button></div></div>`}).join(""):'<div class="transfer-empty">Aktuell gibt es keine aktiven Angebote für genau diese Karten-Version.</div>';
+ const list=offers.length?offers.map((o,i)=>{const st=marketAuctionState(o),next=nextMarketBid(o),time=o.settled?"Abgelaufen":auctionTime(o)+"s";return `<div class="price-compare-row ${st.key}" data-price-compare-offer="${i}"><span class="price-compare-rank">#${i+1}</span><div class="price-compare-info"><div class="price-compare-cell"><small>Startpreis</small><b>${currencyAmountHTML("coins",o.startPrice||o.bid,"compact")}</b></div><div class="price-compare-cell"><small>Akt. Gebot</small><b>${currencyAmountHTML("coins",o.bid,"compact")}</b></div><div class="price-compare-cell"><small>Sofortkauf</small><b>${currencyAmountHTML("coins",o.price,"compact")}</b></div><div class="price-compare-cell"><small>Restzeit</small><b data-price-compare-time="${i}">${time}</b></div></div><div class="price-compare-actions"><button class="secondary" data-price-compare-details="${i}">Details</button><button class="secondary" data-price-compare-bid="${i}" ${(o.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"compact")}`}</button><button class="primary" data-price-compare-buy="${i}" ${o.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",o.price,"compact")}</button></div></div>`}).join(""):'<div class="transfer-empty">Aktuell gibt es keine aktiven Angebote für genau diese Karten-Version.</div>';
  $("priceCompareBody").innerHTML=`<div class="price-compare-hero"><div class="price-compare-card">${cardHTML(shown,item||makeItem(base,true),true)}</div><div><span>Günstigster Sofortkauf</span><strong>${offers.length?currencyAmountHTML("coins",cheapest,"price-compare-best"):"–"}</strong><small>${offers.length} echte Marktangebote ausschließlich für ${esc(base.name)}</small></div></div><div class="price-compare-list">${list}</div>`
 }
 function openPriceComparison(item,fallbackBase=null){
@@ -5687,8 +5687,11 @@ function applyMarketPage(page=1){const pages=marketPageCount();marketPage=Math.m
 function updateMarketResultMeta(){const total=marketAllListings.length,pages=marketPageCount();$("marketResultMeta").innerHTML=total?("<span>"+fmt(total)+" Angebote gefunden · "+fmt(marketListings.length)+" auf dieser Seite</span><span>Seite "+marketPage+" von "+pages+" · Bot-Markt aktiv</span>"):("<span>Keine Angebote für diese Filter gefunden.</span><span>DB: "+fmt(PLAYERS.length)+" Spieler geladen</span>")}
 function renderMarketPagination(){const el=$("marketPagination");if(!el)return;const pages=marketPageCount();if(marketAllListings.length<=MARKET_PAGE_SIZE){el.hidden=true;el.innerHTML="";return}el.hidden=false;el.innerHTML="<button class=\"secondary\" data-market-page=\"prev\" "+(marketPage<=1?"disabled":"")+">‹ Zurück</button><div class=\"market-page-status\"><strong>Seite "+marketPage+"</strong><span>von "+pages+"</span></div><button class=\"secondary\" data-market-page=\"next\" "+(marketPage>=pages?"disabled":"")+">Weiter ›</button>"}
 function setMarketPage(page){const next=Math.max(1,Math.min(marketPageCount(),Number(page)||1));if(next===marketPage)return;applyMarketPage(next);renderMarket();setTimeout(()=>$("marketResultMeta")?.scrollIntoView({behavior:"smooth",block:"start"}),40)}
+function activeMarketListings(listings,now=Date.now()){
+ return listings.filter(x=>!x.settled&&Number(x.ends)>now).sort((a,b)=>Number(a.ends)-Number(b.ends))
+}
 function refreshMarket(){
- const f=marketFilters();ensureMarketSnapshot(f);marketAllListings=marketInventory.filter(x=>marketListingMatchesFilters(x,f));applyMarketPage(1);renderMarket()
+ const f=marketFilters();ensureMarketSnapshot(f);marketAllListings=activeMarketListings(marketInventory.filter(x=>marketListingMatchesFilters(x,f)));applyMarketPage(1);renderMarket()
 }
 function bidIncrement(amount){return Math.max(50,Math.round(Number(amount||0)*.05/50)*50)}
 function nextMarketBid(x){
@@ -5817,6 +5820,7 @@ function queueMarketPortraitWarmup(){const token=++MARKET_PORTRAIT_WARM_TOKEN;sc
 function renderMarket(){
  processBotOutbids();settleAuctions();settleTransferSales();
  if(marketSection==="search"){
+  marketAllListings=activeMarketListings(marketAllListings);applyMarketPage(marketPage);
   $("marketGrid").innerHTML=marketListings.length?marketListings.map((x,i)=>marketRowHTML(x,i,false)).join(""):'<div class="online-note">Keine Angebote für diese Filter gefunden. Preisbereich oder Filter etwas erweitern.</div>';
   updateMarketResultMeta();renderMarketPagination();if(marketListings.length)queueMarketPortraitWarmup()
  }else if(marketSection==="bids")renderMyAuctions();
@@ -5934,10 +5938,11 @@ $("transferWatchList").addEventListener("click",e=>{
 })
 let MARKET_BACKGROUND_TICK=0;
 function updateMarketCountdowns(){
- const marketActive=document.getElementById("marketView")?.classList.contains("active"),now=Date.now();
+ const marketActive=document.getElementById("marketView")?.classList.contains("active"),compareActive=document.getElementById("priceCompareModal")?.classList.contains("active"),now=Date.now();
+ if(compareActive)document.querySelectorAll("[data-price-compare-time]").forEach(el=>{const x=priceCompareListings[Number(el.dataset.priceCompareTime)];if(x)el.textContent=x.settled||now>=x.ends?"Abgelaufen":`${auctionTime(x)}s`});
  if(!marketActive&&now-MARKET_BACKGROUND_TICK<15000)return;
  MARKET_BACKGROUND_TICK=now;
- const botChanged=processBotOutbids(),expired=marketListings.some(x=>!x.settled&&now>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
+ const botChanged=processBotOutbids(),expired=marketAllListings.some(x=>!x.settled&&now>=x.ends),settled=settleAuctions(),salesChanged=settleTransferSales();
  if(!marketActive)return;
  document.querySelectorAll("[data-auction-time]").forEach(el=>{const x=marketListings[Number(el.dataset.auctionTime)];if(x&&!x.settled)el.textContent=`${auctionTime(x)}s`});
  document.querySelectorAll("[data-my-auction-time]").forEach(el=>{const x=(state.auctions||[])[Number(el.dataset.myAuctionTime)];if(x&&!x.settled)el.textContent=`${auctionTime(x)}s`});
@@ -8149,7 +8154,7 @@ const GERLIES_UPDATE_RESUME=takeGerliesUpdateResume();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.28";
+const GFUT_BUILD="V20.29";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
@@ -8200,7 +8205,7 @@ async function checkForGerliesUpdate(){
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
   let previousController=navigator.serviceWorker.controller;
-  navigator.serviceWorker.register("./service-worker.js?v=2028",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  navigator.serviceWorker.register("./service-worker.js?v=2029",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
    const previous=previousController;previousController=navigator.serviceWorker.controller;
    // The first cache claim and an unchanged worker URL do not require a second app start.
