@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.29</title>
+<title>Footera V20.30</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1475,7 +1475,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <body>
 
 <div id="bootIntro" class="boot-intro" role="dialog" aria-label="Footera Startintro">
-  <video id="bootIntroVideo" class="boot-intro-video" autoplay muted playsinline preload="auto" aria-label="Footera Fußball-Intro">
+  <video id="bootIntroVideo" class="boot-intro-video" muted playsinline preload="auto" aria-label="Footera Fußball-Intro">
     <source src="./assets/footera/intro-mobile-v1.mp4" type="video/mp4">
   </video>
   <div class="boot-intro-shade" aria-hidden="true"></div>
@@ -1541,7 +1541,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.29</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -8113,7 +8113,12 @@ $("extrasInstallBtn")?.addEventListener("click",triggerPwaInstall);
 updatePwaInstallUi();
 
 
-/* V20.08 — startup video -> Footera logo -> existing loading gate */
+/* V20.30 — smooth startup: preload first, play after scripts are ready, defer heavy boot work */
+let resolveFooteraIntroDone=null;
+const FOOTERA_INTRO_DONE=new Promise(resolve=>{resolveFooteraIntroDone=resolve});
+function completeFooteraIntroGate(){
+ if(resolveFooteraIntroDone){const done=resolveFooteraIntroDone;resolveFooteraIntroDone=null;done()}
+}
 function takeGerliesUpdateResume(){
  try{
   const saved=sessionStorage.getItem("gfut-update-resume");sessionStorage.removeItem("gfut-update-resume");
@@ -8123,38 +8128,59 @@ function takeGerliesUpdateResume(){
  }catch(e){return null}
 }
 const GERLIES_UPDATE_RESUME=takeGerliesUpdateResume();
-(function initFooteraBootIntro(){
+function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
- if(!intro||!video)return;
- if(GERLIES_UPDATE_RESUME){try{video.pause()}catch(e){}intro.remove();return}
- let logoStarted=false;
- const safety=setTimeout(()=>finish(),9500);
+ if(!intro||!video){completeFooteraIntroGate();return}
+ if(GERLIES_UPDATE_RESUME){try{video.pause()}catch(e){}intro.remove();completeFooteraIntroGate();return}
+ let logoStarted=false,playRequested=false,removed=false,frameHandle=0;
+ const safety=setTimeout(()=>finish(),10000);
  function finish(){
   if(logoStarted)return;logoStarted=true;clearTimeout(safety);
+  try{if(frameHandle&&typeof video.cancelVideoFrameCallback==="function")video.cancelVideoFrameCallback(frameHandle)}catch(e){}
   try{video.pause()}catch(e){}
   intro.classList.add("logo-phase");
   setTimeout(()=>intro.classList.add("boot-out"),1280);
-  setTimeout(()=>{try{video.removeAttribute("src");video.load()}catch(e){}intro.remove()},1720)
+  setTimeout(()=>{
+   if(removed)return;removed=true;
+   try{video.removeAttribute("src");video.load()}catch(e){}
+   intro.remove();completeFooteraIntroGate()
+  },1720)
  }
- video.addEventListener("playing",()=>{
+ function nearOutro(){
+  const duration=Number(video.duration),current=Number(video.currentTime);
+  return Number.isFinite(duration)&&duration>0&&Number.isFinite(current)&&duration-current<=1.30
+ }
+ function watchFrames(){
+  if(logoStarted)return;
+  if(nearOutro()){finish();return}
+  if(typeof video.requestVideoFrameCallback==="function")frameHandle=video.requestVideoFrameCallback(watchFrames)
+ }
+ function onPlaying(){
   intro.classList.add("is-playing");
-  const scheduleLogo=()=>{
-   const duration=Number(video.duration),current=Number(video.currentTime);
-   if(!Number.isFinite(duration)||duration<=0)return;
-   const wait=Math.max(0,(duration-current-1.30)*1000);
-   setTimeout(finish,wait)
-  };
-  scheduleLogo()
- },{once:true});
+  if(typeof video.requestVideoFrameCallback==="function")watchFrames()
+ }
+ function requestPlay(){
+  if(playRequested||logoStarted)return;playRequested=true;
+  const p=video.play();
+  if(p&&typeof p.catch==="function")p.catch(()=>{playRequested=false;setTimeout(()=>{if(!logoStarted)finish()},450)})
+ }
+ video.addEventListener("playing",onPlaying,{once:true});
+ video.addEventListener("timeupdate",()=>{if(!logoStarted&&nearOutro())finish()});
  video.addEventListener("ended",finish,{once:true});
  video.addEventListener("error",finish,{once:true});
  skip?.addEventListener("click",finish);
  setTimeout(()=>skip?.classList.add("visible"),900);
- const play=video.play();
- if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
-})();
 
-const GFUT_BUILD="V20.29";
+ // The MP4 has already been preloading while the page/scripts were parsed.
+ // Start only with a useful buffer; fall back after a short grace period.
+ if(video.readyState>=3)requestPlay();
+ else{
+  video.addEventListener("canplay",requestPlay,{once:true});
+  setTimeout(requestPlay,1100)
+ }
+}
+
+const GFUT_BUILD="V20.30";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
@@ -8204,16 +8230,18 @@ async function checkForGerliesUpdate(){
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  let previousController=navigator.serviceWorker.controller;
-  navigator.serviceWorker.register("./service-worker.js?v=2029",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{
-   const previous=previousController;previousController=navigator.serviceWorker.controller;
-   // The first cache claim and an unchanged worker URL do not require a second app start.
-   if(!previous||!previousController||previous.scriptURL===previousController.scriptURL)return;
-   requestGerliesUpdate("gfut-sw-reloaded-"+GFUT_BUILD)
-  });
+  FOOTERA_INTRO_DONE.then(()=>{
+   let previousController=navigator.serviceWorker.controller;
+   navigator.serviceWorker.register("./service-worker.js?v=2030",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    const previous=previousController;previousController=navigator.serviceWorker.controller;
+    // The first cache claim and an unchanged worker URL do not require a second app start.
+    if(!previous||!previousController||previous.scriptURL===previousController.scriptURL)return;
+    requestGerliesUpdate("gfut-sw-reloaded-"+GFUT_BUILD)
+   });
+  })
  });
-}else window.addEventListener("load",checkForGerliesUpdate);
+}else window.addEventListener("load",()=>FOOTERA_INTRO_DONE.then(checkForGerliesUpdate));
 
 </script>
 <script src="./season-system.js"></script>
@@ -8225,7 +8253,8 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&promoEventClockId!==null)syncPromoEventClock()});
-boot().then(()=>{completeGerliesStartup();if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()});
+initFooteraBootIntro();
+FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()});
 </script>
 </body>
 </html>
