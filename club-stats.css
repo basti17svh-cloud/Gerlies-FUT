@@ -16,3 +16,12 @@
 .club-stat-leaders{grid-template-columns:repeat(2,minmax(0,1fr))}
 .club-stat-card-btn>.mini{display:block!important;width:96px!important;min-height:138px}
 .club-stat-card-btn>.mini>.card-shell{display:block!important;width:96px!important;height:auto!important;aspect-ratio:.7}
+
+
+/* V20.28 — Leaderkarten ohne Button-Layout rendern */
+.club-stat-card-btn{display:none!important}
+.club-stat-card-visual{display:grid!important;place-items:center!important;width:112px!important;min-height:160px!important;margin:7px auto 4px!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;cursor:pointer}
+.club-stat-card-visual>.mini{display:block!important;width:104px!important;min-width:104px!important;max-width:104px!important;height:auto!important;overflow:visible!important}
+.club-stat-card-visual>.mini>.card-shell{display:block!important;position:relative!important;width:104px!important;min-width:104px!important;max-width:104px!important;height:auto!important;aspect-ratio:.7!important;margin:0 auto!important;overflow:visible!important}
+.club-stat-card-visual .custom-card{display:block!important;visibility:visible!important;opacity:1!important}
+.club-stat-card-visual .founder-card-art,.club-stat-card-visual .founder-static-card{display:block!important;visibility:visible!important;opacity:1!important}

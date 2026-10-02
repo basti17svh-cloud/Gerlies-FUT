@@ -68,7 +68,7 @@
  function activeRows(mode=statsMode){return statRows(mode).filter(r=>r.matches||r.goals||r.assists||r.cards||r.saves||r.cleanSheets)}
  function topRow(rows,key,min=0){return [...rows].filter(r=>num(r[key])>=min).sort((a,b)=>num(b[key])-num(a[key])||b.scorer-a.scorer||b.matches-a.matches)[0]||null}
  function fmtRate(v){return v?Number(v).toFixed(1).replace(".",","):"–"}
- function playerCardButton(row,extra=""){if(!row)return'<div class="club-stats-empty-leader">Noch keine Daten</div>';return `<button class="club-stats-card-btn ${extra}" type="button" data-club-stat-player="${esc(row.item.uid)}">${cardHTML(row.base,row.item,true,row.base.position)}</button>`}
+ function playerCardButton(row,extra=""){if(!row)return '<div class="club-stats-empty-leader">Noch keine Daten</div>';return '<div class="club-stat-card-visual '+esc(extra)+'" role="button" tabindex="0" aria-label="'+esc(row.base.name)+' öffnen" data-club-stat-player="'+esc(row.item.uid)+'">'+cardHTML(row.base,row.item,true,row.base.position)+'</div>'}
  function leaderCard(label,row,value){return `<article class="club-stat-leader"><span>${label}</span>${playerCardButton(row)}<strong>${row?esc(row.base.name):"–"}</strong><b>${row?value:"Keine Daten"}</b></article>`}
  function renderHub(){
   const hub=$("clubStatsHub");if(!hub)return;
