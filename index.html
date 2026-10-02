@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.30</title>
+<title>Footera V20.31</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1541,7 +1541,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.31</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3439,9 +3439,9 @@ const IMAGE_FAILURE_CACHE=(()=>{try{return new Map(Object.entries(JSON.parse(loc
 let IMAGE_CACHE_SAVE_TIMER=0;
 function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_SAVE_TIMER=setTimeout(()=>{try{localStorage.setItem("gfutImageSourceCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}},600)}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
-function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<86400000}
-function prioritizeCached(arr,key){arr=arr.filter(u=>!imageFailedRecently(u));const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;return [hit,...arr.filter(x=>x!==hit)]}
-function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none'}}
+function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<120000}
+function prioritizeCached(arr,key){const available=arr.filter(u=>!imageFailedRecently(u));arr=available.length?available:arr.slice();const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;return [hit,...arr.filter(x=>x!==hit)]}
+function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){stopPortraitWatch(el);const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none'}}
 function sofifaFaceByVersion(id,version){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/${version}_120.png`}
 function sofifaFaceCandidates(id){return[27,26,25,24].map(v=>sofifaFaceByVersion(id,v)).filter(Boolean)}
 function futwizFaceCandidates(id){const raw=String(id||"").replace(/\D/g,"");if(!raw)return[];return[27,26,25].map(v=>`https://cdn.futwiz.com/assets/img/fc${v}/faces/${raw}.png`)}
@@ -3451,9 +3451,10 @@ function fifaRostersFaceCandidates(id,version=27){const raw=String(id||"").repla
 function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:FC27|FC26)\/(?:components\/items|full\/player-shields)/i.test(String(url||""))}
 function portraitCandidates(p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};
- const canonical=P_BY_ID.get(String(p?.id||""));if(canonical&&canonical!==p){add(canonical.face);add(canonical.portrait);add(canonical.headshot)}
- if(p?.isIcon){add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
- add(p?.face);add(p?.portrait);add(p?.headshot);sofifaFaceCandidates(p?.id).forEach(add);futwizFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr
+ const canonical=P_BY_ID.get(String(p?.id||"")),faces=[...(canonical&&canonical!==p?[canonical.face,canonical.portrait,canonical.headshot]:[]),p?.face,p?.portrait,p?.headshot];
+ if(p?.isIcon){faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
+ const legacy=u=>/https?:\/\/(?:cdn\.sofifa\.net|ratings-images-prod\.pulse\.ea\.com)\//i.test(String(u||""));
+ faces.filter(u=>!legacy(u)).forEach(add);futwizFaceCandidates(p?.id).forEach(add);faces.filter(legacy).forEach(add);sofifaFaceCandidates(p?.id).forEach(add);fifaRostersFaceCandidates(p?.id,27).forEach(add);return arr
 }
 const API_SPORTS_LEAGUE_IDS={
  "bundesliga":78,"premier league":39,"laliga ea sports":140,"la liga":140,"serie a":135,"ligue 1":61,
@@ -3841,12 +3842,40 @@ function emblemCandidates(kind,p){
  return arr
 }
 function imgCandidatesAttr(arr){return esc(JSON.stringify(arr))}
-function advanceImg(el){try{const arr=JSON.parse(el.dataset.candidates||'[]'),failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());const candidate=arr[Number(el.dataset.idx||0)];if(candidate)IMAGE_FAILURE_CACHE.set(candidate,Date.now());persistImageCaches()}let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];return}if(el.dataset.iconName)queueIconPortrait({name:el.dataset.iconName,isIcon:true},true);el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
+function advanceImg(el){try{const arr=JSON.parse(el.dataset.candidates||'[]'),failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());const candidate=arr[Number(el.dataset.idx||0)];if(candidate)IMAGE_FAILURE_CACHE.set(candidate,Date.now());persistImageCaches()}let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];if(el.closest?.('.face'))watchVisiblePortrait(el);return}if(el.closest?.('.face'))stopPortraitWatch(el);if(el.dataset.iconName)queueIconPortrait({name:el.dataset.iconName,isIcon:true},true);el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
 function eventDynamicFace(p,item){
  if(item?.variant!=="special"||String(item.eventName||"").startsWith("Team of the Week")||String(item.eventType||"").startsWith("totw"))return"";
  const info=promoItemInfo(item);return String(item.dynamicFace||item.eventFace||info?.dynamicFace||info?.eventFace||p?.dynamicFace||p?.eventFace||"").trim()
 }
-function portraitHTML(p,deferred=false,item=null){const dynamic=eventDynamicFace(p,item),key=imageCacheKey(dynamic?`event-portrait:${dynamic}`:'portrait',p),fallback=prioritizeCached(portraitCandidates(p),imageCacheKey('portrait',p)),arr=[...new Set([...(dynamic&&!imageFailedRecently(dynamic)?[dynamic]:[]),...fallback])];if(!arr.length){if(p?.isIcon)queueIconPortrait(p,true);return'<span class="face-fallback" style="display:flex">👤</span>'}return `<img ${deferred?`data-pending-src="${esc(arr[0])}" style="display:none"`:`src="${esc(arr[0])}"`} loading="lazy" decoding="async" fetchpriority="low" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" ${p?.isIcon?`data-icon-name="${esc(p.name)}"`:''} referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback" ${deferred?'style="display:flex"':''}>👤</span>`}
+function portraitHTML(p,deferred=false,item=null){const dynamic=eventDynamicFace(p,item),key=imageCacheKey(dynamic?`event-portrait:${dynamic}`:'portrait',p),fallback=prioritizeCached(portraitCandidates(p),imageCacheKey('portrait',p)),arr=[...new Set([...(dynamic&&!imageFailedRecently(dynamic)?[dynamic]:[]),...fallback])];if(!arr.length){if(p?.isIcon)queueIconPortrait(p,true);return'<span class="face-fallback" style="display:flex">👤</span>'}return `<img ${deferred?`data-pending-src="${esc(arr[0])}" style="display:none"`:`src="${esc(arr[0])}"`} loading="lazy" decoding="async" fetchpriority="auto" data-cache-key="${esc(key)}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" ${p?.isIcon?`data-icon-name="${esc(p.name)}"`:''} referrerpolicy="no-referrer" alt="${esc(p.name||'Spieler')}" onload="rememberLoadedImage(this)" onerror="advanceImg(this)"><span class="face-fallback" ${deferred?'style="display:flex"':''}>👤</span>`}
+const PORTRAIT_LOAD_TIMERS=new WeakMap(),VISIBLE_PORTRAITS=new WeakSet();
+function stopPortraitWatch(el){clearTimeout(PORTRAIT_LOAD_TIMERS.get(el));PORTRAIT_LOAD_TIMERS.delete(el)}
+function watchVisiblePortrait(el){
+ stopPortraitWatch(el);
+ if(!VISIBLE_PORTRAITS.has(el)||!el.isConnected||!el.getAttribute("src")||el.style.display==="none"||(el.complete&&el.naturalWidth>0))return;
+ const src=el.getAttribute("src");
+ const pending=[...(document.querySelectorAll?.(".face img")||[])].filter(im=>VISIBLE_PORTRAITS.has(im)&&im.isConnected&&im.style.display!=="none"&&!(im.complete&&im.naturalWidth>0)).length;
+ const budget=8000+Math.min(22000,Math.max(0,pending-1)*2000);
+ PORTRAIT_LOAD_TIMERS.set(el,setTimeout(()=>{
+  PORTRAIT_LOAD_TIMERS.delete(el);
+  if(el.isConnected&&VISIBLE_PORTRAITS.has(el)&&el.getAttribute("src")===src&&!(el.complete&&el.naturalWidth>0))advanceImg(el)
+ },budget))
+}
+function initializePortraitLoading(){
+ if(typeof IntersectionObserver!=="function")return;
+ const visible=new IntersectionObserver(entries=>{
+  for(const entry of entries){const el=entry.target;
+   if(entry.isIntersecting){VISIBLE_PORTRAITS.add(el);el.fetchPriority="high";el.loading="eager"}
+   else{VISIBLE_PORTRAITS.delete(el);stopPortraitWatch(el)}
+  }
+  for(const entry of entries)if(entry.isIntersecting)watchVisiblePortrait(entry.target)
+ },{rootMargin:"150px"});
+ const images=node=>node.nodeType===1?[...(node.matches(".face img")?[node]:[]),...node.querySelectorAll(".face img")]:[];
+ const added=node=>{for(const el of images(node))visible.observe(el)};
+ const removed=node=>{for(const el of images(node)){visible.unobserve(el);VISIBLE_PORTRAITS.delete(el);stopPortraitWatch(el)}};
+ new MutationObserver(records=>{for(const r of records){r.removedNodes.forEach(removed);r.addedNodes.forEach(added)}}).observe(document.body,{childList:true,subtree:true});
+ added(document.body)
+}
 function badgeAsset(kind,p,fallbackText){
  const key=imageCacheKey(kind,p),arr=prioritizeCached(emblemCandidates(kind,p),key);
  const fallbackClass=kind==="league"?"league-badge-fallback":"club-badge-fallback",fallbackTextHtml=esc(fallbackText||"");
@@ -5950,6 +5979,7 @@ function updateMarketCountdowns(){
  if(botChanged||settled||expired||salesChanged)renderMarket()
 }
 setInterval(updateMarketCountdowns,1000);
+initializePortraitLoading();
 
 function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${task.player.ovr} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`Story-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
@@ -8180,7 +8210,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.30";
+const GFUT_BUILD="V20.31";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
@@ -8232,7 +8262,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2030",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2031",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
