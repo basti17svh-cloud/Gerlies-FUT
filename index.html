@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.24</title>
+<title>Footera V20.25</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1541,7 +1541,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.24</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.25</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -8109,9 +8109,19 @@ updatePwaInstallUi();
 
 
 /* V20.08 — startup video -> Footera logo -> existing loading gate */
+function takeGerliesUpdateResume(){
+ try{
+  const saved=sessionStorage.getItem("gfut-update-resume");sessionStorage.removeItem("gfut-update-resume");
+  const raw=JSON.parse(saved||"null");
+  const age=Date.now()-Number(raw?.at);
+  return raw&&age>=0&&age<120000&&typeof raw.view==="string"?raw:null
+ }catch(e){return null}
+}
+const GERLIES_UPDATE_RESUME=takeGerliesUpdateResume();
 (function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video)return;
+ if(GERLIES_UPDATE_RESUME){try{video.pause()}catch(e){}intro.remove();return}
  let logoStarted=false;
  const safety=setTimeout(()=>finish(),9500);
  function finish(){
@@ -8139,30 +8149,63 @@ updatePwaInstallUi();
  if(play&&typeof play.catch==="function")play.catch(()=>setTimeout(finish,350))
 })();
 
-const GFUT_BUILD="V20.24";
+const GFUT_BUILD="V20.25";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
+let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
+function newerGerliesBuild(remote){
+ const parsed=/^V(\d+)\.(\d+)$/.exec(String(remote||"")),local=/^V(\d+)\.(\d+)$/.exec(GFUT_BUILD);
+ return !!parsed&&!!local&&(Number(parsed[1])>Number(local[1])||(Number(parsed[1])===Number(local[1])&&Number(parsed[2])>Number(local[2])))
+}
+function gerliesUpdateBlocked(){
+ const reg=gerliesUpdateRegistration;
+ return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
+}
+function applyGerliesUpdate(){
+ clearTimeout(gerliesUpdateTimer);gerliesUpdateTimer=0;
+ if(!gerliesUpdatePending?.size||gerliesUpdateReloading)return;
+ if(gerliesUpdateBlocked()){gerliesUpdateTimer=setTimeout(applyGerliesUpdate,500);return}
+ try{
+  flushSave();
+  sessionStorage.setItem("gfut-update-resume",JSON.stringify({at:Date.now(),view:currentViewId(),scrollY:window.scrollY||0}));
+  for(const key of gerliesUpdatePending)sessionStorage.setItem(key,"1");
+  gerliesUpdateReloading=true;
+  const fresh=new URL("./",location.href);fresh.searchParams.set("_gfut_updated",Date.now().toString());location.replace(fresh.href)
+ }catch(e){gerliesUpdateReloading=false;console.warn("Update konnte nicht angewendet werden",e)}
+}
+function requestGerliesUpdate(key){
+ if(gerliesUpdateReloading||sessionStorage.getItem(key))return;
+ gerliesUpdatePending=gerliesUpdatePending||new Set();gerliesUpdatePending.add(key);applyGerliesUpdate()
+}
+function completeGerliesStartup(){
+ gerliesStartupReady=true;
+ const resume=GERLIES_UPDATE_RESUME,view=resume&&$(resume.view);
+ if(view?.classList.contains("view")){
+  switchView(resume.view,{push:false,scroll:false});replaceUiState("view",{view:resume.view});
+  requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,Number(resume.scrollY)||0),behavior:"auto"}))
+ }
+ applyGerliesUpdate()
+}
 async function checkForGerliesUpdate(){
  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
  try{
   const url=new URL("./index.html",location.href);url.searchParams.set("_gfut_update",Date.now().toString());
   const res=await fetch(url,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
   if(!res.ok)return;const html=await res.text(),match=html.match(/<title>Footera (V[\d.]+)<\/title>/),remote=match?.[1]||"";
-  if(remote&&remote!==GFUT_BUILD&&!sessionStorage.getItem("gfut-update-"+remote)){
-   if(packFlowInProgress())return;
-   sessionStorage.setItem("gfut-update-"+remote,"1");
+  if(newerGerliesBuild(remote)&&!sessionStorage.getItem("gfut-update-"+remote)){
    try{const reg=await navigator.serviceWorker?.getRegistration("./");await reg?.update()}catch(e){}
-   const fresh=new URL("./",location.href);fresh.searchParams.set("_gfut_updated",Date.now().toString());location.replace(fresh.href)
+   requestGerliesUpdate("gfut-update-"+remote)
   }
  }catch(e){console.warn("Update-Prüfung:",e)}
 }
 if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
  window.addEventListener("load",()=>{
-  navigator.serviceWorker.register("./service-worker.js?v=2024",{scope:"./"}).then(async reg=>{await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+  let previousController=navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("./service-worker.js?v=2025",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
-   if(packFlowInProgress())return;
-   const key="gfut-sw-reloaded-"+GFUT_BUILD;
-   if(sessionStorage.getItem(key))return;
-   sessionStorage.setItem(key,"1");location.reload()
+   const previous=previousController;previousController=navigator.serviceWorker.controller;
+   // The first cache claim and an unchanged worker URL do not require a second app start.
+   if(!previous||!previousController||previous.scriptURL===previousController.scriptURL)return;
+   requestGerliesUpdate("gfut-sw-reloaded-"+GFUT_BUILD)
   });
  });
 }else window.addEventListener("load",checkForGerliesUpdate);
@@ -8177,7 +8220,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&promoEventClockId!==null)syncPromoEventClock()});
-boot().then(()=>{if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()});
+boot().then(()=>{completeGerliesStartup();if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()});
 </script>
 </body>
 </html>
