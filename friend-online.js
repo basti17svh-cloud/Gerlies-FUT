@@ -152,7 +152,7 @@
   const snapshot=decodeFriendProfile(encodeFriendProfile()),m=squadMetrics(),teams=typeof friendOnlineTeamsSnapshot==="function"?friendOnlineTeamsSnapshot():[];
   if(!snapshot||m.filled<18||snapshot.squad.some(x=>!x)){online.registered=false;return false}
   const sharedTeams=teams.filter(team=>team&&team.filled===18&&Array.isArray(team.squad)&&team.squad.length===18).slice(0,3).map(team=>({slot:Number(team.slot||0),name:String(team.name||"Team").slice(0,24),active:!!team.active,formation:team.formation,rating:Number(team.rating||0),chem:Number(team.chem||0),squad:team.squad}));
-  const stable={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:snapshot.squad,squads:sharedTeams,active_preset:Number(state.activeSquadPreset||0)};
+  const identity=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null;const stable={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),club_short_name:String(state.profile.clubShortName||"FTR").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4)||"FTR",club_identity:identity,rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:snapshot.squad,squads:sharedTeams,active_preset:Number(state.activeSquadPreset||0)};
   const signature=JSON.stringify(stable);if(signature===lastProfileSignature&&online.registered)return true;
   let profile={...stable,updated_at:new Date().toISOString()},result=await client.from("footera_online_profiles").upsert(profile,{onConflict:"user_id"});
   if(result.error&&(result.error.code==="PGRST204"||/squads|active_preset/i.test(String(result.error.message||"")))){
@@ -187,7 +187,7 @@
   if(error)throw error;
   if(!data||typeof data!=="object")return null;
   const teams=Array.isArray(data.squads)?data.squads:[];
-  return{v:4,onlineUid:data.user_id||"",username:data.username||"",clubName:data.club_name||"Footera Club",rating:Number(data.rating||0),chem:Number(data.chem||0),formation:data.formation||"4-3-3",division:10,record:{w:0,d:0,l:0},squad:Array.isArray(data.squad)?data.squad:[],teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
+  return{v:5,onlineUid:data.user_id||"",username:data.username||"",clubName:data.club_name||"Footera Club",clubShortName:data.club_short_name||"FTR",clubIdentity:data.club_identity&&typeof data.club_identity==="object"?data.club_identity:null,rating:Number(data.rating||0),chem:Number(data.chem||0),formation:data.formation||"4-3-3",division:10,record:{w:0,d:0,l:0},squad:Array.isArray(data.squad)?data.squad:[],teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
  }
  async function fetchFriendProfile(friend){
   if(!online.ready||!validUid(friend?.onlineUid))return null;
@@ -198,7 +198,7 @@
   }
   if(!data||typeof data!=="object")return null;
   const teams=Array.isArray(data.squads)?data.squads:Array.isArray(friend.teams)?friend.teams:[];
-  return{username:data.username||friend.username||"",clubName:data.club_name||friend.clubName||"Footera Club",rating:Number(data.rating||friend.rating||0),chem:Number(data.chem||friend.chem||0),formation:data.formation||friend.formation||"4-3-3",squad:Array.isArray(data.squad)?data.squad:friend.squad,teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
+  return{username:data.username||friend.username||"",clubName:data.club_name||friend.clubName||"Footera Club",clubShortName:data.club_short_name||friend.clubShortName||"FTR",clubIdentity:data.club_identity&&typeof data.club_identity==="object"?data.club_identity:(friend.clubIdentity||null),rating:Number(data.rating||friend.rating||0),chem:Number(data.chem||friend.chem||0),formation:data.formation||friend.formation||"4-3-3",squad:Array.isArray(data.squad)?data.squad:friend.squad,teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
  }
  async function refresh(){
   if(!online.ready)return;
