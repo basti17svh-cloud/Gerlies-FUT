@@ -2,17 +2,125 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode};
+ const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount};
  window.FooteraOnline=online;
  if(!available)return;
  $("onlinePanel").hidden=false;
- let client=null,started=null,channel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="";
+ let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0;const unreadCounts=new Map(),duelStatus=new Map();
  const escape=s=>esc(String(s??""));
  const team=(d,side)=>d?.[`${side}_profile`]?.club_name||"Footera Club";
  const sideOf=d=>d?.home_user===online.userId?"home":"away";
  const currentView=()=>document.querySelector(".view.active")?.id;
  const validUid=v=>/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(v||"");
  function errorText(e){return String(e?.message||"Online-Dienst nicht erreichbar.").replace(/^.*?:\s*/,"").slice(0,160)}
+ function friendByUid(uid){return (state.friends||[]).find(f=>f?.onlineUid===uid)||null}
+ function unreadCount(uid){return Number(unreadCounts.get(uid)||0)}
+ function ensureCommsUi(){
+  if(!$("footeraMessageNotice")){
+   document.body.insertAdjacentHTML("beforeend",`
+    <button id="footeraMessageNotice" class="footera-message-notice" type="button" aria-live="polite">
+     <span class="footera-message-icon">F</span><span><strong id="footeraMessageNoticeTitle">Neue Nachricht</strong><small id="footeraMessageNoticeBody"></small></span>
+    </button>
+    <div id="incomingInviteModal" class="modal incoming-invite-modal" role="dialog" aria-modal="true" aria-labelledby="incomingInviteTitle">
+     <div class="incoming-invite-card"><div class="incoming-invite-pulse">⚽</div><small>FOOTERA LIVE</small><h2 id="incomingInviteTitle">Spieleinladung</h2><p id="incomingInviteClub">Ein Freund möchte spielen.</p><div class="incoming-invite-actions"><button id="incomingInviteDecline" class="incoming-decline" type="button">Ablehnen</button><button id="incomingInviteAccept" class="incoming-accept" type="button">Annehmen</button></div></div>
+    </div>
+    <div id="footeraChatModal" class="modal footera-chat-modal" role="dialog" aria-modal="true" aria-labelledby="footeraChatTitle">
+     <div class="modalinner footera-chat-inner">
+      <div class="footera-chat-head"><div><small>FOOTERA NACHRICHTEN</small><h3 id="footeraChatTitle">Chat</h3></div><button id="footeraChatClose" class="secondary" type="button">Schließen</button></div>
+      <div id="footeraChatMessages" class="footera-chat-messages"><p>Nachrichten werden geladen …</p></div>
+      <div class="footera-chat-compose"><textarea id="footeraChatInput" maxlength="500" rows="2" placeholder="Nachricht schreiben …"></textarea><button id="footeraChatSend" class="primary" type="button">Senden</button></div>
+     </div>
+    </div>`);
+   $("footeraMessageNotice")?.addEventListener("click",()=>{const uid=$("footeraMessageNotice")?.dataset.uid,friend=friendByUid(uid);hideNotice();if(friend)openChat(friend)});
+   $("incomingInviteAccept")?.addEventListener("click",()=>{const id=$("incomingInviteModal")?.dataset.duelId;if(id){hideIncomingInvite();respond(id,true)}});
+   $("incomingInviteDecline")?.addEventListener("click",()=>{const id=$("incomingInviteModal")?.dataset.duelId;if(id){hideIncomingInvite();respond(id,false)}});
+   $("footeraChatClose")?.addEventListener("click",()=>{chatFriend=null;closeUiLayer("footeraChatModal","friend-chat")});
+   $("footeraChatSend")?.addEventListener("click",sendChatMessage);
+   $("footeraChatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
+  }
+ }
+ async function systemNotify(title,body,tag){
+  if(document.visibilityState==="visible"||!("Notification" in window)||Notification.permission!=="granted")return;
+  try{const reg=await navigator.serviceWorker?.getRegistration("./");if(reg?.showNotification)await reg.showNotification(title,{body,tag,icon:"./icon-192.png",badge:"./icon-192.png"})}catch(e){}
+ }
+ function hideNotice(){const el=$("footeraMessageNotice");if(el){el.classList.remove("active");el.dataset.uid=""}clearTimeout(noticeTimer);noticeTimer=0}
+ function showNotice(title,body,friend=null){
+  ensureCommsUi();const el=$("footeraMessageNotice");if(!el)return;
+  $("footeraMessageNoticeTitle").textContent=title;$("footeraMessageNoticeBody").textContent=body;
+  el.dataset.uid=friend?.onlineUid||"";el.classList.add("active");clearTimeout(noticeTimer);noticeTimer=setTimeout(hideNotice,5200);
+  systemNotify(title,body,"footera-"+(friend?.onlineUid||title)).catch(()=>{})
+ }
+ function showIncomingInvite(d){
+  ensureCommsUi();if(!d||d.away_user!==online.userId||d.status!=="invited")return;
+  const modal=$("incomingInviteModal");if(!modal)return;
+  modal.dataset.duelId=d.id;$("incomingInviteClub").textContent=`${team(d,"home")} möchte ein Live-Duell mit dir starten.`;
+  showUiLayer("incomingInviteModal","incoming-invite",{},"none");
+  try{navigator.vibrate?.([250,120,250,120,450])}catch(e){}
+  systemNotify("Footera · Spieleinladung",`${team(d,"home")} fordert dich heraus.`,"footera-invite-"+d.id).catch(()=>{})
+ }
+ function hideIncomingInvite(){try{navigator.vibrate?.(0)}catch(e){}removeUiLayer("incomingInviteModal")}
+ async function loadUnreadCounts(){
+  unreadCounts.clear();
+  const {data,error}=await client.from("footera_messages").select("sender_user").eq("recipient_user",online.userId).is("read_at",null).limit(500);
+  if(error){if(error.code!=="42P01"&&error.code!=="PGRST205")console.warn("Ungelesene Nachrichten:",error);return}
+  for(const row of data||[])unreadCounts.set(row.sender_user,(unreadCounts.get(row.sender_user)||0)+1);
+  if(currentView()==="socialView")renderSocial()
+ }
+ async function markConversationRead(friendUid){
+  if(!validUid(friendUid))return;
+  const {error}=await client.from("footera_messages").update({read_at:new Date().toISOString()}).eq("recipient_user",online.userId).eq("sender_user",friendUid).is("read_at",null);
+  if(error)console.warn("Nachrichten gelesen:",error);
+  unreadCounts.set(friendUid,0);if(currentView()==="socialView")renderSocial()
+ }
+ async function loadConversation(friend){
+  const a=online.userId,b=friend.onlineUid;
+  const filter=`and(sender_user.eq.${a},recipient_user.eq.${b}),and(sender_user.eq.${b},recipient_user.eq.${a})`;
+  const {data,error}=await client.from("footera_messages").select("id,sender_user,recipient_user,body,created_at,read_at").or(filter).order("created_at",{ascending:true}).limit(120);
+  if(error)throw error;chatMessages=data||[];renderChat();await markConversationRead(b)
+ }
+ function renderChat(){
+  const box=$("footeraChatMessages");if(!box||!chatFriend)return;
+  $("footeraChatTitle").textContent=chatFriend.clubName||chatFriend.username||"Freund";
+  box.innerHTML=chatMessages.length?chatMessages.map(m=>{const own=m.sender_user===online.userId,t=(()=>{try{return new Date(m.created_at).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}catch(e){return""}})();return `<div class="footera-chat-row ${own?"own":"other"}"><div class="footera-chat-bubble"><span>${escape(m.body)}</span><small>${escape(t)}${own&&m.read_at?" · gelesen":""}</small></div></div>`}).join(""):'<div class="footera-chat-empty">Noch keine Nachrichten. Schreib die erste Nachricht.</div>';
+  requestAnimationFrame(()=>{box.scrollTop=box.scrollHeight})
+ }
+ async function openChat(friend){
+  if(!online.ready||!validUid(friend?.onlineUid))return toast("Nachrichten sind erst mit einem aktuellen Freundescode verfügbar.");
+  ensureCommsUi();chatFriend=friend;chatMessages=[];$("footeraChatMessages").innerHTML="<p>Nachrichten werden geladen …</p>";showUiLayer("footeraChatModal","friend-chat");
+  try{await loadConversation(friend)}catch(e){$("footeraChatMessages").textContent="Nachrichten konnten nicht geladen werden.";console.warn(e)}
+ }
+ async function sendChatMessage(){
+  if(!chatFriend||!client)return;const input=$("footeraChatInput"),body=String(input?.value||"").trim();if(!body)return;
+  if(body.length>500)return toast("Nachrichten dürfen höchstens 500 Zeichen lang sein.");
+  const button=$("footeraChatSend");if(button)button.disabled=true;
+  try{
+   const {data,error}=await client.from("footera_messages").insert({sender_user:online.userId,recipient_user:chatFriend.onlineUid,body}).select("id,sender_user,recipient_user,body,created_at,read_at").single();
+   if(error)throw error;chatMessages.push(data);if(input)input.value="";renderChat()
+  }catch(e){toast("Nachricht konnte nicht gesendet werden.");console.warn(e)}
+  finally{if(button)button.disabled=false;input?.focus()}
+ }
+ async function handleIncomingMessage(message){
+  if(!message||message.recipient_user!==online.userId)return;
+  const friend=friendByUid(message.sender_user);
+  if(chatFriend?.onlineUid===message.sender_user&&$("footeraChatModal")?.classList.contains("active")){
+   if(!chatMessages.some(m=>m.id===message.id))chatMessages.push(message);renderChat();await markConversationRead(message.sender_user);return
+  }
+  unreadCounts.set(message.sender_user,(unreadCounts.get(message.sender_user)||0)+1);
+  if(currentView()==="socialView")renderSocial();
+  showNotice(friend?.clubName||friend?.username||"Neue Footera-Nachricht",String(message.body||"").slice(0,120),friend)
+ }
+ function handleDuelRealtime(payload){
+  const d=payload?.new;if(!d?.id)return;
+  const previous=duelStatus.get(d.id);duelStatus.set(d.id,d.status);
+  if(d.status==="invited"&&d.away_user===online.userId&&!notified.has(d.id)){notified.add(d.id);showIncomingInvite(d)}
+  if(previous&&previous!==d.status&&d.home_user===online.userId){
+   const friend=friendByUid(d.away_user);
+   if(d.status==="live")showNotice("Spieleinladung angenommen",`${team(d,"away")} ist bereit für das Live-Duell.`,friend);
+   else if(d.status==="declined")showNotice("Spieleinladung abgelehnt",`${team(d,"away")} hat die Einladung abgelehnt.`,friend)
+  }
+  if(active?.id===d.id)applyMatch(d);
+  refresh().catch(console.warn)
+ }
  async function loadSdk(){
   if(window.supabase?.createClient)return window.supabase;
   await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";script.onload=resolve;script.onerror=()=>reject(new Error("Online-Bibliothek konnte nicht geladen werden"));document.head.append(script)});
@@ -28,12 +136,10 @@
     let {data:{session},error}=await client.auth.getSession();if(error)throw error;
     if(!session){const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
-    online.ready=true;
-    await syncProfile();await refresh();
-    channel=client.channel(`footera-duels-${online.userId}`).on("postgres_changes",{event:"*",schema:"public",table:"footera_duels"},payload=>{
-     if(payload.new?.id&&active?.id===payload.new.id)applyMatch(payload.new);
-     refresh().catch(console.warn)
-    }).subscribe();
+    online.ready=true;ensureCommsUi();
+    await syncProfile();await refresh();await loadUnreadCounts();
+    channel=client.channel(`footera-duels-${online.userId}`).on("postgres_changes",{event:"*",schema:"public",table:"footera_duels"},handleDuelRealtime).subscribe();
+    messageChannel=client.channel(`footera-messages-${online.userId}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"footera_messages",filter:`recipient_user=eq.${online.userId}`},payload=>handleIncomingMessage(payload.new).catch(console.warn)).subscribe();
     pollTimer=setInterval(()=>{if(document.visibilityState==="visible"&&(currentView()==="socialView"||$("onlineDuelModal").classList.contains("active")))refresh().catch(console.warn)},15000);
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresh().catch(console.warn)});
     if(currentView()==="socialView")renderSocial()
@@ -98,7 +204,7 @@
   if(!online.ready)return;
   const {data,error}=await client.from("footera_duels").select("*").order("created_at",{ascending:false}).limit(60);
   if(error)throw error;rows=data||[];
-  for(const d of rows)if(d.status==="invited"&&d.away_user===online.userId&&!notified.has(d.id)){notified.add(d.id);if(currentView()!=="socialView")toast(`${team(d,"home")} fordert dich zum Live-Duell heraus.`)}
+  for(const d of rows){duelStatus.set(d.id,d.status);if(d.status==="invited"&&d.away_user===online.userId&&!notified.has(d.id)){notified.add(d.id);showIncomingInvite(d)}}
   if(active){const fresh=rows.find(r=>r.id===active.id);if(fresh)applyMatch(fresh)}
   render()
  }
@@ -119,6 +225,7 @@
  }
  async function respond(id,accept){
   try{
+   hideIncomingInvite();
    if(accept&&!await syncProfile())return toast("Für ein Live-Duell brauchst du 11 Starter und 7 Bankspieler.");const {data,error}=await client.rpc("footera_respond",{p_id:id,p_accept:accept});if(error)throw error;
    if(accept){active=data;seenGoal="";draftSubOut="";draftSubIn="";showUiLayer("onlineDuelModal","online-duel");renderMatch()}
    await refresh()
