@@ -31,3 +31,40 @@
 .online-event{display:flex;gap:10px;padding:6px 2px;border-top:1px solid #ffffff14}.online-event b{min-width:48px;color:#c5e9ba}
 .online-result{margin:0;padding:10px;border:1px solid #688851;border-radius:10px;color:#e4f8c5;font-weight:800}
 @media(max-width:560px){.online-duel-modal .modalinner{width:100%;max-height:94vh}.online-sub{grid-template-columns:1fr}.online-score{gap:4px}.online-score span{font-size:12px}}
+
+
+/* V20.35 — short-code controls + permanent friend ranking */
+.friend-code-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.friend-code-actions button{min-height:42px}
+#myFriendCode{font-size:18px;font-weight:900;letter-spacing:.12em;text-align:center;min-height:52px;resize:none}
+.online-ranking{display:grid;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid #31423c}
+.online-ranking-head{display:flex;align-items:end;justify-content:space-between;gap:10px}
+.online-ranking-head small{display:block;color:#9fb0a7;font-size:10px;letter-spacing:.12em;font-weight:850}
+.online-ranking-head h4{margin:2px 0 0!important;font-size:17px!important}
+.online-ranking-count{padding:5px 8px;border:1px solid #52685d;border-radius:999px;background:#14211c;color:#dbe8e1;font-size:10px;font-weight:850;white-space:nowrap}
+.online-h2h{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.online-h2h>div{display:grid;gap:3px;padding:10px 7px;border:1px solid #34463e;border-radius:11px;background:#101b17;text-align:center}
+.online-h2h strong{font-size:20px;line-height:1}
+.online-h2h span{font-size:9px;color:#a9b7b0;line-height:1.25}
+.online-table tbody tr.is-me th{font-weight:950}
+.online-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.online-form-grid>div{padding:10px;border:1px solid #33443c;border-radius:11px;background:#101a16}
+.online-form-grid>div>span{display:block;margin-bottom:6px;font-size:11px;font-weight:900}
+.online-form-grid small{display:block;margin-top:7px;color:#a9b7b0;font-size:10px}
+.online-form{display:flex;align-items:center;gap:5px;min-height:27px;font-size:10px;color:#aab7b0}
+.online-form-badge,.online-history-result{display:grid;place-items:center;width:27px;height:27px;border-radius:8px;font-size:11px;font-weight:950}
+.online-form-badge.win,.online-history-result.win{background:#17492f;color:#aaffc8;border:1px solid #2d7e52}
+.online-form-badge.draw,.online-history-result.draw{background:#48431c;color:#fff0a2;border:1px solid #756b2e}
+.online-form-badge.loss,.online-history-result.loss{background:#522325;color:#ffb8ba;border:1px solid #844044}
+.online-ranking-rules{padding:9px;border-radius:9px;background:#ffffff08;color:#aebbb5;font-size:10px;line-height:1.4}
+.online-history{display:grid;gap:6px}
+.online-history h4{margin:0 0 2px!important}
+.online-history-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px;border:1px solid #304139;border-radius:10px;background:#101a16}
+.online-history-row>span:first-child{min-width:0;flex:1}
+.online-history-row strong{display:block;font-size:11px;overflow-wrap:anywhere}
+.online-history-row small{display:block;margin-top:3px;color:#91a198;font-size:9px}
+@media(max-width:560px){
+ .online-h2h{grid-template-columns:1fr 1fr}
+ .online-form-grid{grid-template-columns:1fr}
+ .friend-code-actions{grid-template-columns:1fr 1fr}
+}
