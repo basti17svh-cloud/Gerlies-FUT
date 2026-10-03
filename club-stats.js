@@ -1,4 +1,4 @@
-/* Footera V20.23 — Verein-Hub + karteninstanzbezogene Statistiken */
+/* Footera V20.43 — Verein-Hub + Vereinsidentität + karteninstanzbezogene Statistiken */
 (()=>{
  const STAT_VERSION=1;
  const STAT_MODE_LABELS={all:"Gesamt",squad:"Squad Battles",rivals:"Division Rivals",friendly:"Freundschaft",weekend:"Weekend League"};
@@ -119,16 +119,24 @@
  }
  function showArea(area){
   clubArea=area;const hub=$("clubStatsHub"),pros=$("clubProsPanel"),storage=$("clubStoragePanel"),stats=$("clubStatsPanel"),headline=$("clubView")?.querySelector(":scope > .headline h2"),desc=$("clubView")?.querySelector(":scope > .headline p");
-  if(hub)hub.hidden=area!=="hub";if(pros)pros.hidden=area!=="pros";if(storage)storage.hidden=area!=="storage";if(stats)stats.hidden=area!=="stats";
-  const copy={hub:["Verein","Dein Club, deine Karten und deine Statistiken."],pros:["Profis","Alle gezogenen, gekauften und entwickelten Spieleritems."],storage:["SBC-Speicher","Untauschbare Duplikate für spätere Squad Building Challenges."],stats:["Statistiken","Jede einzelne Karteninstanz führt ihre eigene Vereinskarriere."]}[area]||[];
+  const usesProsPanel=area==="pros"||area==="identity";
+  if(hub)hub.hidden=area!=="hub";if(pros)pros.hidden=!usesProsPanel;if(storage)storage.hidden=area!=="storage";if(stats)stats.hidden=area!=="stats";
+  const copy={hub:["Verein","Dein Club, deine Karten und deine Statistiken."],pros:["Profis","Alle gezogenen, gekauften und entwickelten Spieleritems."],identity:["Vereinsidentität","Vereinsname, Wappen, Farben und Trikots gestalten."],storage:["SBC-Speicher","Untauschbare Duplikate für spätere Squad Building Challenges."],stats:["Statistiken","Jede einzelne Karteninstanz führt ihre eigene Vereinskarriere."]}[area]||[];
   if(headline)headline.textContent=copy[0]||"Verein";if(desc)desc.textContent=copy[1]||"";
+  if(usesProsPanel){
+   clubSection=area==="identity"?"identity":"players";
+   if(area==="identity"&&typeof makeClubIdentityDraft==="function")clubIdentityDraft=makeClubIdentityDraft();
+   if(typeof syncClubSectionUi==="function")syncClubSectionUi();
+   originalRenderClub()
+  }
   if(area==="storage")renderStorage();if(area==="stats")renderStatistics();renderHub();window.scrollTo({top:0,behavior:"smooth"})
  }
  function initUi(){
   const view=$("clubView");if(!view||$("clubStatsHub"))return;const pros=view.querySelector(":scope > .section");if(!pros)return;
   pros.id="clubProsPanel";pros.classList.add("club-area-panel");pros.hidden=true;
   pros.insertAdjacentHTML("afterbegin",'<button type="button" class="club-area-back" data-club-area="hub">← Verein</button>');
-  const hub=document.createElement("div");hub.id="clubStatsHub";hub.className="club-hub";hub.innerHTML=`<button type="button" class="club-hub-card club-hub-pros" data-club-area="pros"><span class="club-hub-kicker">KADER</span><strong>Profis</strong><small id="clubHubProsCount">0 Items</small><i>›</i></button><div class="club-hub-grid"><button type="button" class="club-hub-card" data-club-area="storage"><span class="club-hub-icon">▣</span><strong>SBC-Speicher</strong><small id="clubHubStorageCount">0/100</small><i>›</i></button><button type="button" class="club-hub-card club-hub-stats" data-club-area="stats"><span class="club-hub-icon">▥</span><strong>Statistiken</strong><small id="clubHubStatsCount">Noch keine Spiele</small><i>›</i></button></div>`;
+  const tabs=pros.querySelector(".club-section-tabs");if(tabs)tabs.hidden=true;
+  const hub=document.createElement("div");hub.id="clubStatsHub";hub.className="club-hub";hub.innerHTML=`<button type="button" class="club-hub-card club-hub-pros" data-club-area="pros"><span class="club-hub-kicker">KADER</span><strong>Profis</strong><small id="clubHubProsCount">0 Items</small><i>›</i></button><button type="button" class="club-hub-card club-hub-identity" data-club-area="identity"><span class="club-hub-kicker">CLUB</span><strong>Vereinsidentität</strong><small>Vereinsname · Wappen · Farben · Trikots</small><i>›</i></button><div class="club-hub-grid"><button type="button" class="club-hub-card" data-club-area="storage"><span class="club-hub-icon">▣</span><strong>SBC-Speicher</strong><small id="clubHubStorageCount">0/100</small><i>›</i></button><button type="button" class="club-hub-card club-hub-stats" data-club-area="stats"><span class="club-hub-icon">▥</span><strong>Statistiken</strong><small id="clubHubStatsCount">Noch keine Spiele</small><i>›</i></button></div>`;
   view.insertBefore(hub,pros);
   const storage=document.createElement("div");storage.id="clubStoragePanel";storage.className="section club-area-panel";storage.hidden=true;storage.innerHTML='<button type="button" class="club-area-back" data-club-area="hub">← Verein</button><div class="club-area-head"><div><span>SBC-SPEICHER</span><h3>Gesicherte Duplikate</h3></div><b id="clubStorageMeta">0/100 Plätze belegt</b></div><div id="clubStorageGrid" class="club-storage-grid"></div>';
   const stats=document.createElement("div");stats.id="clubStatsPanel";stats.className="section club-area-panel";stats.hidden=true;stats.innerHTML='<button type="button" class="club-area-back" data-club-area="hub">← Verein</button><div id="clubStatsFilters" class="club-stat-filters"></div><div id="clubStatsTabs" class="club-stat-tabs"></div><div id="clubStatsContent"></div>';
