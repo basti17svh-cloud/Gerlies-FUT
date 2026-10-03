@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.43</title>
+<title>Footera V20.44</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1542,7 +1542,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.42</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.44</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1727,11 +1727,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </div></div></section>
 
 <section id="clubView" class="view"><div class="headline"><h2>Verein</h2><p>Spieler verwalten und deinen Club gestalten.</p></div><div class="section">
-  <div class="club-section-tabs" role="tablist" aria-label="Vereinsbereiche">
-    <button class="active" type="button" data-club-section="players">Spieler</button>
-    <button type="button" data-club-section="identity">Vereinsidentität</button>
-  </div>
-
   <div id="clubPlayersSection">
     <div class="filters club-filters">
       <select id="clubPosition" aria-label="Position+ inklusive Nebenpositionen"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select>
@@ -1772,7 +1767,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <div class="crest-builder">
         <div class="crest-preview-wrap"><div id="identityCrestPreview"></div></div>
         <div>
-          <label class="identity-field">Initialen<input id="identityCrestInitials" maxlength="4" placeholder="F"></label>
+          <label class="identity-field">Eigene Zeichen (max. 5)<input id="identityCrestInitials" maxlength="5" placeholder="FCS05" autocomplete="off" autocapitalize="characters"></label>
           <div style="height:10px"></div>
           <div class="identity-field"><span>Form</span><div class="crest-option-grid" id="identityCrestShapes">
             <button type="button" data-crest-shape="shield">Schild</button><button type="button" data-crest-shape="round">Rund</button><button type="button" data-crest-shape="hex">Hex</button><button type="button" data-crest-shape="point">Spitz</button><button type="button" data-crest-shape="modern">Modern</button>
@@ -1780,6 +1775,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
           <div style="height:10px"></div>
           <div class="identity-field"><span>Symbol</span><div class="crest-option-grid" id="identityCrestSymbols">
             <button type="button" data-crest-symbol="star">★ Stern</button><button type="button" data-crest-symbol="ball">⚽ Ball</button><button type="button" data-crest-symbol="bolt">⚡ Blitz</button><button type="button" data-crest-symbol="diamond">◆ Diamant</button><button type="button" data-crest-symbol="crown">♛ Krone</button><button type="button" data-crest-symbol="f">F</button>
+            <button type="button" data-crest-symbol="eagle">🦅 Adler</button><button type="button" data-crest-symbol="lion">🦁 Löwe</button><button type="button" data-crest-symbol="wolf">🐺 Wolf</button><button type="button" data-crest-symbol="flame">🔥 Flamme</button><button type="button" data-crest-symbol="trophy">🏆 Pokal</button><button type="button" data-crest-symbol="anchor">⚓ Anker</button>
+            <button type="button" data-crest-symbol="castle">♜ Burg</button><button type="button" data-crest-symbol="sun">☀ Sonne</button><button type="button" data-crest-symbol="moon">☾ Mond</button><button type="button" data-crest-symbol="cross">✚ Kreuz</button><button type="button" data-crest-symbol="comet">✦ Komet</button><button type="button" data-crest-symbol="skull">☠ Totenkopf</button>
           </div></div>
         </div>
       </div>
@@ -2994,7 +2991,7 @@ function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value|
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
  const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
- return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
+ return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
 }
 function ensureClubIdentityState(){
  state.profile=state.profile||{};
@@ -5452,7 +5449,7 @@ function renderClub(){
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
 let clubSection="players",identityTab="general",clubIdentityDraft=null;
-const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F"};
+const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F",eagle:"🦅",lion:"🦁",wolf:"🐺",flame:"🔥",trophy:"🏆",anchor:"⚓",castle:"♜",sun:"☀",moon:"☾",cross:"✚",comet:"✦",skull:"☠"};
 function makeClubIdentityDraft(){ensureClubIdentityState();return{clubName:String(state.profile.clubName||"Footera Club"),clubShortName:String(state.profile.clubShortName||"FTR"),identity:clubIdentitySnapshot()}}
 function crestHTML(identity,mini=false){
  const x=cleanClubIdentity(identity),c=x.crest,g=CREST_SYMBOLS[c.symbol]||"★";
@@ -5503,7 +5500,7 @@ $("identityCrestSymbols")?.addEventListener("click",e=>{const b=e.target.closest
 function bindIdentityInput(id,apply,event="input"){$(id)?.addEventListener(event,e=>{if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();apply(e.target.value,clubIdentityDraft);renderClubIdentityPreview()})}
 bindIdentityInput("identityClubName",(v,d)=>d.clubName=String(v).slice(0,30));
 bindIdentityInput("identityClubShortName",(v,d)=>d.clubShortName=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
-bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
+bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5));
 bindIdentityInput("identityColorPrimary",(v,d)=>{d.identity.colors.primary=v;d.identity.crest.primary=v});
 bindIdentityInput("identityColorSecondary",(v,d)=>{d.identity.colors.secondary=v;d.identity.crest.secondary=v});
 bindIdentityInput("identityColorAccent",(v,d)=>{d.identity.colors.accent=v;d.identity.crest.accent=v});
@@ -8483,7 +8480,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.43";
+const GFUT_BUILD="V20.44";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8536,7 +8533,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2043",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2044",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
