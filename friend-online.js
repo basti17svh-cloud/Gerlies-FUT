@@ -217,7 +217,7 @@
  }
  async function invite(friend){
   if(!online.ready){toast("Online-Verbindung noch nicht bereit.");return}
-  if(!validUid(friend?.onlineUid)){toast("Bitte einen neuen Profilcode deines Freundes hinzufügen.");return}
+  if(!validUid(friend?.onlineUid)){toast("Bitte den aktuellen Freundescode deines Freundes hinzufügen.");return}
   try{
    if(!await syncProfile())return toast("Für ein Live-Duell brauchst du 11 Starter und 7 Bankspieler.");const {data,error}=await client.rpc("footera_invite",{p_away:friend.onlineUid});if(error)throw error;
    active=data;seenGoal="";draftSubOut="";draftSubIn="";showUiLayer("onlineDuelModal","online-duel");renderMatch();await refresh()
@@ -248,7 +248,7 @@
  function render(){
   if(!online.ready)return;
   const status=$("onlineStatus"),list=$("onlineDuelList");if(!status||!list)return;
-  status.textContent=online.registered?"Online · Einladungen und Ergebnisse werden synchronisiert. Freundescodes nach dem ersten Online-Start erneut austauschen.":"Online verbunden · Für Live-Duelle und einen neuen Profilcode fehlen noch 11 Starter und 7 Bankspieler.";
+  status.textContent=online.registered?"Online · Nachrichten, Spieleinladungen und Ergebnisse werden synchronisiert.":"Online verbunden · Für Live-Duelle und deinen Freundescode fehlen noch 11 Starter und 7 Bankspieler.";
   const pending=rows.filter(d=>d.status==="invited"),recent=rows.filter(d=>d.status!=="declined").slice(0,8);
   list.innerHTML=(pending.length?`<h4>Einladungen</h4>${pending.map(d=>`<div class="online-duel-row"><span>${escape(team(d,"home"))} – ${escape(team(d,"away"))}</span>${d.away_user===online.userId?`<button class="primary" data-online-accept="${d.id}">Annehmen</button><button class="secondary" data-online-decline="${d.id}">Ablehnen</button>`:`<span>Wartet auf Antwort</span><button class="secondary" data-online-decline="${d.id}">Zurückziehen</button>`}</div>`).join("")}`:"")+
    (recent.length?`<h4>Letzte Duelle</h4>${recent.map(d=>`<div class="online-duel-row"><span>${escape(team(d,"home"))} ${d.home_score}:${d.away_score} ${escape(team(d,"away"))}<small>${d.status==="finished"?"Abpfiff":d.status==="abandoned"?"Abgebrochen":d.status==="halftime"?"Halbzeit":d.status==="invited"?"Einladung":"Live · "+d.minute+"′"}</small></span><button class="secondary" data-online-open="${d.id}">${d.status==="finished"?"Ergebnis":"Matchday"}</button></div>`).join("")}`:"<p>Noch keine Live-Duelle. Wähle einen Freund mit aktuellem Profilcode aus.</p>");
