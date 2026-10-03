@@ -1,4 +1,4 @@
-/* Footera V20.42 — Vereinsidentität */
+/* Footera V20.44 — Vereinsidentität */
 .club-section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .club-section-tabs button,.identity-tabs button{min-height:42px;border:1px solid #33473e;border-radius:11px;background:#101a16;color:#b8c7bf;font-weight:900;font-size:10px}
 .club-section-tabs button.active,.identity-tabs button.active{border-color:#d8ff3e;background:#27351e;color:#efffc6;box-shadow:inset 0 0 0 1px #d8ff3e44}
@@ -25,8 +25,8 @@
 .club-crest.shape-point{clip-path:polygon(8% 0,92% 0,100% 12%,82% 78%,50% 100%,18% 78%,0 12%)}
 .club-crest.shape-modern{clip-path:polygon(15% 0,100% 0,88% 82%,50% 100%,4% 75%,0 12%)}
 .club-crest-symbol{position:relative;z-index:2;color:var(--crest-accent);font-size:42px;font-weight:1000;line-height:1;text-shadow:0 2px 5px #0008}
-.club-crest-initials{position:absolute;z-index:3;bottom:21px;left:50%;transform:translateX(-50%);max-width:72px;color:var(--crest-accent);font-size:13px;font-weight:1000;letter-spacing:.08em;white-space:nowrap}
-.crest-option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.crest-option-grid button{min-height:45px;border:1px solid #34483e;border-radius:10px;background:#101a16;color:#e9f2ed;font-size:10px;font-weight:900}.crest-option-grid button.active{border-color:#d8ff3e;background:#2a371f;color:#f0ffc3}
+.club-crest-initials{position:absolute;z-index:3;bottom:21px;left:50%;transform:translateX(-50%);width:86px;max-width:86px;color:var(--crest-accent);font-size:12px;font-weight:1000;letter-spacing:.055em;white-space:nowrap;overflow:hidden;text-align:center}
+.crest-option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.crest-option-grid button{min-height:48px;border:1px solid #34483e;border-radius:10px;background:#101a16;color:#e9f2ed;font-size:10px;font-weight:900}.crest-option-grid button.active{border-color:#d8ff3e;background:#2a371f;color:#f0ffc3}
 .identity-colors-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.identity-color-chip{min-height:56px;border-radius:12px;border:1px solid #ffffff24;box-shadow:inset 0 1px #ffffff18}
 .kit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.kit-card{padding:12px;border:1px solid #33453d;border-radius:14px;background:#101915}.kit-card h4{margin:0 0 9px;font-size:12px}
 .kit-preview{display:grid;place-items:center;min-height:150px;margin-bottom:10px;border-radius:12px;background:radial-gradient(circle,#213128,#0b120f 70%)}
@@ -41,3 +41,6 @@
 .kit-mini{width:38px;height:42px}
 .identity-future-note{padding:10px;border:1px dashed #3c5548;border-radius:11px;color:#9eb0a6;font-size:9px;line-height:1.45}
 @media(max-width:620px){.identity-hero{grid-template-columns:auto minmax(0,1fr)}.identity-hero-kits{grid-column:1/-1;justify-content:flex-end}.identity-tabs{grid-template-columns:1fr 1fr}.crest-builder{grid-template-columns:1fr}.identity-fields,.kit-grid{grid-template-columns:1fr}.kit-meta{grid-template-columns:1fr 1fr}}
+
+#identityCrestSymbols button{font-size:9px;line-height:1.2;padding:7px 5px}
+@media(max-width:430px){#identityCrestSymbols{grid-template-columns:repeat(2,minmax(0,1fr))}}
