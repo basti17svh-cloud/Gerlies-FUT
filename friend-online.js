@@ -2,7 +2,7 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile};
+ const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode};
  window.FooteraOnline=online;
  if(!available)return;
  $("onlinePanel").hidden=false;
@@ -53,11 +53,35 @@
    const legacy={user_id:stable.user_id,username:stable.username,club_name:stable.club_name,rating:stable.rating,chem:stable.chem,formation:stable.formation,squad:stable.squad,updated_at:profile.updated_at};
    result=await client.from("footera_online_profiles").upsert(legacy,{onConflict:"user_id"})
   }
-  if(result.error)throw result.error;lastProfileSignature=signature;online.registered=true;return true
+  if(result.error)throw result.error;lastProfileSignature=signature;online.registered=true;
+  try{
+   const codeResult=await client.rpc("footera_my_friend_code");
+   if(!codeResult.error&&codeResult.data)online.friendCode=String(codeResult.data).toUpperCase()
+  }catch(e){}
+  return true
  }
  function queueProfileSync(delay=700){
   if(!online.ready)return;clearTimeout(profileSyncTimer);
   profileSyncTimer=setTimeout(()=>{profileSyncTimer=null;syncProfile().catch(e=>console.warn("Online-Profil:",e))},Math.max(200,Number(delay)||700))
+ }
+ async function getFriendCode(){
+  if(!online.ready)return "";
+  if(!online.registered){const ok=await syncProfile();if(!ok)return ""}
+  if(online.friendCode)return online.friendCode;
+  const {data,error}=await client.rpc("footera_my_friend_code");
+  if(error)throw error;
+  online.friendCode=String(data||"").toUpperCase();
+  return online.friendCode
+ }
+ async function resolveFriendCode(code){
+  if(!online.ready)return null;
+  const normalized=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(!/^[A-HJ-NP-Z2-9]{8}$/.test(normalized))return null;
+  const {data,error}=await client.rpc("footera_friend_by_code",{p_code:normalized});
+  if(error)throw error;
+  if(!data||typeof data!=="object")return null;
+  const teams=Array.isArray(data.squads)?data.squads:[];
+  return{v:4,onlineUid:data.user_id||"",username:data.username||"",clubName:data.club_name||"Footera Club",rating:Number(data.rating||0),chem:Number(data.chem||0),formation:data.formation||"4-3-3",division:10,record:{w:0,d:0,l:0},squad:Array.isArray(data.squad)?data.squad:[],teams,activeSquadPreset:Number(data.active_preset||0),_liveUpdatedAt:data.updated_at||new Date().toISOString()}
  }
  async function fetchFriendProfile(friend){
   if(!online.ready||!validUid(friend?.onlineUid))return null;
