@@ -17,3 +17,10 @@ Anonyme Konten sind an die lokale Browser-Anmeldung gebunden. Werden die Browser
 ## V20.32 – aktuelle Mannschaften von Freunden
 
 Bei bestehenden Supabase-Projekten einmal `online/footera-friend-squads-v20.32.sql` im SQL Editor ausführen. Danach veröffentlicht Footera bei Änderungen automatisch die aktuell aktive Mannschaft und zusätzlich alle weiteren vollständig besetzten Teams (maximal drei). In der Freundesansicht wird der aktuelle Online-Stand geladen; das aktive Team steht zuerst. Die bisherige Einzel-`squad`-Spalte bleibt für Live-Duelle und Abwärtskompatibilität erhalten.
+
+
+## V20.34 – kurze Freundescodes
+
+Supabase vergibt jetzt automatisch einen eindeutigen 8-stelligen Freundescode pro Online-Profil. In der App wird er lesbar als `ABCD-EFGH` angezeigt. Beim Hinzufügen eines Freundes wird der Code serverseitig aufgelöst und der aktuelle Kader direkt aus Supabase geladen. Die bisherigen langen Base64-Profilcodes bleiben als Fallback kompatibel.
+
+Bestehende Supabase-Projekte: `online/footera-short-friend-codes-v20.34.sql` einmal ausführen. Im verbundenen Footera-Projekt wurde diese Migration bereits angewendet.
