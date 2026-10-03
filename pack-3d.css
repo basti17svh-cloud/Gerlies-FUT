@@ -1,0 +1,18 @@
+.pack-webgl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pack-preload{position:fixed;left:-4000px;top:0;width:390px;visibility:hidden;pointer-events:none}
+.walkout-tunnel.webgl-active:before,.walkout-tunnel.webgl-active:after,.walkout-tunnel.webgl-active>.walkout-gate{display:none!important}
+.walkout-tunnel.webgl-active .walkout-clue-art{border-color:#ffd99488;box-shadow:0 0 24px #ffd99455;background:#0a0e16de}
+.walkout-tunnel.webgl-active .walkout-clue-label{color:#ffe6a9}
+.opening.theme-momentum .walkout-tunnel.webgl-active .walkout-clue-label{color:#80ddff}
+.walkout-tunnel .stadium-doors{position:absolute;inset:0;z-index:1;display:flex;justify-content:center;align-items:center;pointer-events:none;perspective:700px}
+.stadium-doors i{height:45%;width:25%;max-width:170px;background:repeating-linear-gradient(90deg,#121a26 0 12px,#202a36 13px 15px);border:2px solid #ffe198;box-shadow:0 0 22px #f4c36a55;transition:transform .95s ease,opacity .95s ease}
+.walkout-tunnel.webgl-active .stadium-doors{display:none}
+.walkout-tunnel.doors-open .stadium-doors i:first-child{transform:translateX(-110%);opacity:0}
+.walkout-tunnel.doors-open .stadium-doors i:last-child{transform:translateX(110%);opacity:0}
+.opening.pack-cinematic .walkout-clue{transition:opacity .35s}
+.opening.pack-cinematic .walkout-clue.departing{opacity:0}
+.opening.pack-cinematic .reveal-cards{perspective:850px;animation:stadiumCardEntrance 1.15s cubic-bezier(.17,.7,.25,1) both!important}
+.opening.pack-cinematic .reveal-second:not(:empty){animation:stadiumSecondEntrance 1s ease both!important}
+@keyframes stadiumCardEntrance{from{opacity:0;transform:translateY(35px) scale(.38) rotateY(-22deg)}to{opacity:1;transform:translateY(0) scale(1) rotateY(0)}}
+@keyframes stadiumSecondEntrance{from{opacity:0;transform:translateX(45px) scale(.7) rotateY(20deg)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.opening.pack-cinematic .reveal-cards,.opening.pack-cinematic .reveal-second:not(:empty){animation:none!important}.stadium-doors i{transition:none}}
