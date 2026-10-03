@@ -16,8 +16,11 @@ void main(){
   float gap=door*2.9;
   if(abs(hit.x)<gap){
    c=vec3(.035,.09,.075)+vec3(.28,.38,.36)*exp(-length(uv*vec2(1.,1.4))*2.);
-   float grass=step(hit.y,-.8);c=mix(c,vec3(.03,.15,.08),grass);
-   float lamps=exp(-abs(hit.y-1.45)*22.);c+=vec3(.8,.9,1.)*lamps;
+   float grass=step(hit.y,-.8);
+   float mowing=step(.5,fract(hit.x*2.));c=mix(c,vec3(.025,.13+.03*mowing,.065),grass);
+   float stand=step(.8,abs(hit.x))*step(-.75,hit.y)*step(hit.y,1.15);
+   float rows=step(.72,fract(hit.y*9.));c=mix(c,vec3(.025,.045,.06)+tone*rows*.07,stand);
+   float lamps=exp(-abs(hit.y-1.45)*22.)*step(.4,fract(hit.x*3.));c+=vec3(.8,.9,1.)*lamps;
   }else{
    float rib=step(.88,fract((abs(hit.x)-gap)*5.));c=vec3(.07,.085,.12)+rib*.04;
    glow=exp(-abs(abs(hit.x)-gap)*20.)+exp(-abs(hit.y-2.3)*24.);
