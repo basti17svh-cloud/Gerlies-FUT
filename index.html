@@ -2077,8 +2077,10 @@ const PACKS=[
  {id:"silver",name:"Silber-Pack",coins:1500,points:50,type:"silver",count:5,min:65,max:74,store:true,reward:true,desc:"5 Silber-Spieler",iconChance:0,standard:true},
  {id:"gold",name:"Premium Gold Pack",coins:7500,points:150,type:"gold",count:5,min:75,max:99,store:true,reward:true,desc:"5 Gold-Spieler · unbegrenzt verfügbar",tag:"PREMIUM",iconChance:0.0002,standard:true},
  {id:"82",name:"82+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:82,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 82+",iconChance:0.0002},
+ {id:"83",name:"83+ Players Pack",coins:null,points:null,type:"special",count:1,min:83,max:99,guarantee:83,store:false,reward:true,desc:"1 Spieler · garantiert 83+",iconChance:0.0005},
  {id:"85",name:"85+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:85,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 85+",iconChance:0.002},
  {id:"86",name:"86+ Players Pack",coins:null,points:null,type:"special",count:1,min:86,max:99,guarantee:86,store:false,reward:true,desc:"1 Spieler · garantiert 86+",iconChance:0.004},
+ {id:"2x86",name:"2× 86+ Players Pack",coins:null,points:null,type:"special",count:2,min:86,max:99,guarantee:86,store:false,reward:true,desc:"2 Spieler · beide garantiert 86+",iconChance:0.006},
  {id:"goldplayers",name:"Premium Goldspieler-Pack",coins:25000,points:350,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:3,store:true,reward:true,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 3 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0015,dailyLimit:10,resetHour:19},
  {id:"mixed6",name:"Gemischtes Spieler-Set",coins:12500,points:200,type:"mixed",count:6,composition:[{quality:"gold",count:3,min:75,max:99},{quality:"silver",count:2,min:65,max:74},{quality:"bronze",count:1,min:0,max:64}],guarantee:81,rareCount:3,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"6 Spieler · 3 Gold, 2 Silber, 1 Bronze · 3 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"primegold",name:"Prime Goldspieler-Pack",coins:35000,points:500,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 6 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0017,dailyLimit:10,resetHour:19},
@@ -8072,7 +8074,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const tab=e.target.closest
 
 
 const DIRECT_REWARDS=Object.freeze({
- "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"}],
+ "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 function grantDirectRewards(){
@@ -8311,7 +8313,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.36";
+const GFUT_BUILD="V20.37";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
