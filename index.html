@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.45</title>
+<title>Footera V20.46</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1542,7 +1542,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.45</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.46</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1617,7 +1617,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
   <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
-  <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
+  <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
   <div class="squad-stage">
     <div id="pitch" class="pitch"></div>
     <div class="squad-drawer-tabs">
@@ -1953,7 +1953,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    <div class="manager-grid match-settings">
     <label>Formation
      <select id="matchFormationSelect">
-      <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option>
+      <option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option>
      </select>
     </label>
     <label>Taktik
@@ -2098,14 +2098,34 @@ const FORMATIONS={
 "4-3-3":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
  {p:"CM",x:25,y:50},{p:"CM",x:50,y:44},{p:"CM",x:75,y:50},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+"4-3-3 (2)":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CDM",x:50,y:57},{p:"CM",x:28,y:45},{p:"CM",x:72,y:45},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+"4-3-3 (3)":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CDM",x:34,y:55},{p:"CDM",x:66,y:55},{p:"CM",x:50,y:39},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+"4-3-3 (4)":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CM",x:31,y:52},{p:"CM",x:69,y:52},{p:"CAM",x:50,y:36},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
 "4-4-2":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
  {p:"LM",x:16,y:47},{p:"CM",x:40,y:50},{p:"CM",x:60,y:50},{p:"RM",x:84,y:47},{p:"ST",x:39,y:18},{p:"ST",x:61,y:18}],
 "4-2-3-1":[
  {p:"GK",x:50,y:89},{p:"LB",x:12,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:88,y:69},
- {p:"CDM",x:38,y:54},{p:"CDM",x:62,y:54},{p:"CAM",x:50,y:36},{p:"LM",x:17,y:34},{p:"RM",x:83,y:34},{p:"ST",x:50,y:14}]
+ {p:"CDM",x:38,y:54},{p:"CDM",x:62,y:54},{p:"CAM",x:50,y:36},{p:"LM",x:17,y:34},{p:"RM",x:83,y:34},{p:"ST",x:50,y:14}],
+"4-1-2-1-2 (2)":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CDM",x:50,y:58},{p:"CM",x:31,y:46},{p:"CM",x:69,y:46},{p:"CAM",x:50,y:32},{p:"ST",x:38,y:17},{p:"ST",x:62,y:17}],
+"4-2-2-2":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CDM",x:36,y:55},{p:"CDM",x:64,y:55},{p:"CAM",x:24,y:35},{p:"CAM",x:76,y:35},{p:"ST",x:39,y:17},{p:"ST",x:61,y:17}],
+"4-2-4":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"CM",x:38,y:50},{p:"CM",x:62,y:50},{p:"LW",x:13,y:23},{p:"ST",x:39,y:16},{p:"ST",x:61,y:16},{p:"RW",x:87,y:23}],
+"3-5-2":[
+ {p:"GK",x:50,y:89},{p:"CB",x:25,y:70},{p:"CB",x:50,y:73},{p:"CB",x:75,y:70},
+ {p:"LM",x:12,y:47},{p:"CDM",x:38,y:54},{p:"CDM",x:62,y:54},{p:"RM",x:88,y:47},{p:"CAM",x:50,y:34},{p:"ST",x:39,y:17},{p:"ST",x:61,y:17}]
 };
-
 
 const ROLE_OPTIONS={
  GK:["Goalkeeper","Ball Playing","Sweeper Keeper"],CB:["Defender","Stopper","Wide Back","Ball Playing Defender"],
@@ -4051,10 +4071,10 @@ function openPriceComparison(item,fallbackBase=null){
 }
 function openTransferOfferModal(item,{packIndex=null}={}){
  if(!item||isFounderItem(item))return;const base=displayBase(item);if(!base)return;
- const inClub=state.club.some(x=>x.uid===item.uid),inSquad=inClub&&transferSalePlayerInSquad(item.uid),active=inClub&&activeTransferSaleForUid(item.uid),p=transferSuggestedPrices(item);
+ const inClub=state.club.some(x=>x.uid===item.uid),inSquad=inClub&&transferSalePlayerInSquad(item.uid),active=inClub&&activeTransferSaleForUid(item.uid),p=transferSuggestedPrices(item),special=isSpecialPricedItem(item),minStart=special?SPECIAL_START_MIN:150,minBuy=special?SPECIAL_MARKET_MIN:200;
  transferOfferContext={uid:item.uid,packIndex:Number.isInteger(packIndex)?packIndex:null};
  $("transferOfferSub").textContent=`${base.name} · ${playerClubLabel(base)}`;
- $("transferOfferBody").innerHTML=`<div class="transfer-offer-player"><div class="transfer-offer-card">${cardHTML(base,item,true)}</div><div><h3>${esc(base.name)}</h3><p>Lege Startpreis, Sofortkauf und Angebotsdauer fest.</p>${inSquad?'<div class="transfer-offer-warning">Beim Anbieten wird der Spieler aus allen gespeicherten Mannschaften entfernt.</div>':""}${active?'<div class="transfer-offer-warning">Dieser Spieler ist bereits aktiv auf dem Transfermarkt.</div>':""}${!item.tradeable?'<div class="transfer-offer-warning">Dieses Item ist untauschbar.</div>':""}</div></div><div class="transfer-offer-form"><label>Startpreis<input id="directSellStart" type="number" min="150" max="${MARKET_MAX_PRICE-50}" step="50" value="${Number(p.start||150)}"></label><label>Sofortkauf<input id="directSellBuy" type="number" min="200" max="${MARKET_MAX_PRICE}" step="50" value="${Number(p.buy||200)}"></label><label>Dauer<select id="directSellDuration"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button id="directSellConfirm" class="primary" ${(!item.tradeable||active)?"disabled":""}>Jetzt aktiv anbieten</button></div>`;
+ $("transferOfferBody").innerHTML=`<div class="transfer-offer-player"><div class="transfer-offer-card">${cardHTML(base,item,true)}</div><div><h3>${esc(base.name)}</h3><p>Lege Startpreis, Sofortkauf und Angebotsdauer fest.</p>${inSquad?'<div class="transfer-offer-warning">Beim Anbieten wird der Spieler aus allen gespeicherten Mannschaften entfernt.</div>':""}${active?'<div class="transfer-offer-warning">Dieser Spieler ist bereits aktiv auf dem Transfermarkt.</div>':""}${!item.tradeable?'<div class="transfer-offer-warning">Dieses Item ist untauschbar.</div>':""}</div></div><div class="transfer-offer-form"><label>Startpreis<input id="directSellStart" type="number" min="${minStart}" max="${MARKET_MAX_PRICE-50}" step="50" value="${Math.max(minStart,Number(p.start||minStart))}"></label><label>Sofortkauf<input id="directSellBuy" type="number" min="${minBuy}" max="${MARKET_MAX_PRICE}" step="50" value="${Math.max(minBuy,Number(p.buy||minBuy))}"></label><label>Dauer<select id="directSellDuration"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button id="directSellConfirm" class="primary" ${(!item.tradeable||active)?"disabled":""}>Jetzt aktiv anbieten</button></div>`;
  showUiLayer("transferOfferModal","transfer-offer")
 }
 function movePackItemToTransferList(k){
@@ -5410,7 +5430,9 @@ $("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());
 $("resultQuickSellDuplicates").addEventListener("click",()=>resolvePackSellBatch(true));
 $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
-function quickSell(i){if(isFounderItem(i))return 0;if(i?.variant==="special"&&String(i?.eventName||"").startsWith("Team of the Week"))return 9000;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
+const SPECIAL_MARKET_MIN=10000,SPECIAL_START_MIN=9000,SPECIAL_QUICK_SELL=9000;
+function isSpecialPricedItem(i){return !!i&&!isFounderItem(i)&&(packIsSpecial(i)||i.variant==="story"||isEvolutionItem(i))}
+function quickSell(i){if(isFounderItem(i))return 0;if(isSpecialPricedItem(i))return SPECIAL_QUICK_SELL;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function clubFilterItems(){
  const listed=new Set(state.transferList||[]);
  return (state.club||[]).filter(i=>!listed.has(i.uid)).map(item=>{const b=displayBase(item);if(!b)return null;const a=resolvedAffiliation(b);return{item,b,a,rating:itemRating(item),positions:playerPositions(b)}}).filter(Boolean)
@@ -5535,7 +5557,8 @@ $("clubGrid").addEventListener("click",e=>{const more=e.target.closest("[data-cl
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
 // FC27 early-cycle market baseline, calibrated against public console-price snapshots on 2026-10-01.
 // Rating is only the floor: player-specific demand/meta can still move cards far above fodder value.
-const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:850,75:900,76:950,77:1000,78:1050,79:1100,80:1200,81:1300,82:1450,83:1700,84:2100,85:2800,86:4000,87:6000,88:9000,89:14000,90:23000,91:38000,92:65000,93:100000,94:150000,95:220000,96:320000,97:450000,98:650000,99:900000};
+const MARKET_PRICE_CURVE={64:300,65:400,66:450,67:500,68:550,69:600,70:650,71:700,72:750,73:800,74:850,75:900,76:950,77:1000,78:1100,79:1200,80:1350,81:1550,82:1850,83:2300,84:3000,85:4300,86:6500,87:9500,88:14500,89:22000,90:35000,91:55000,92:85000,93:130000,94:195000,95:285000,96:410000,97:575000,98:800000,99:1100000};
+const SPECIAL_PRICE_CURVE={75:10000,76:10000,77:10000,78:10000,79:10000,80:10500,81:11000,82:12000,83:13500,84:16500,85:22000,86:32000,87:48000,88:75000,89:115000,90:180000,91:280000,92:430000,93:650000,94:950000,95:1400000,96:2000000,97:2800000,98:3900000,99:5200000};
 const TOTW_PRICE_CURVE={75:10500,76:10500,77:10500,78:10500,79:10500,80:10500,81:11000,82:12000,83:14000,84:18000,85:26000,86:40000,87:65000,88:105000,89:175000,90:300000,91:575000,92:900000,93:1300000,94:1800000,95:2400000,96:3200000,97:4200000,98:5500000,99:7000000};
 // Real-market anchors stop elite/meta golds from being priced like generic cards of the same rating.
 const BASE_GOLD_PRICE_ANCHORS_BY_ID={
@@ -5813,8 +5836,9 @@ function marketPriceForRating(r,special=false,base=null,kind=""){
  const curveKey=Math.max(64,rr),basePrice=rr<64?200:(MARKET_PRICE_CURVE[curveKey]||MARKET_PRICE_CURVE[99]);
  if(!special)return marketRoundPrice(basePrice*meta);
  const goldGuide=anchor||marketRoundPrice((MARKET_PRICE_CURVE[Math.max(64,baseRating)]||MARKET_PRICE_CURVE[99])*meta);
- const upgrade=Math.max(0,rr-baseRating),specialDemand=1.18+Math.max(0,pct-.55)*1.15+upgrade*.14;
- return marketRoundPrice(Math.max(basePrice*meta*1.15,goldGuide*specialDemand))
+ const upgrade=Math.max(0,rr-baseRating),specialCurve=SPECIAL_PRICE_CURVE[Math.max(75,rr)]||SPECIAL_PRICE_CURVE[99];
+ const specialDemand=.9+Math.max(0,pct-.4)*.9+upgrade*.1;
+ return marketRoundPrice(Math.max(SPECIAL_MARKET_MIN,specialCurve*specialDemand,goldGuide*(1.15+upgrade*.12)))
 }
 function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",legacyEvent:isLegacyEventName(x.eventName)}}
 function listingRating(x){const info=isMomentumItem(x)?promoItemInfo({...x,pid:x.base?.id}):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
@@ -5837,8 +5861,8 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
  const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind);
  const offerSeed=marketSnapshotHash(`${base?.id||base?.name||"player"}|${variant}|${eventType}|${eventName}|${boost}|${overridePosition}|${offerIndex}|${promoWindowKey(new Date(),19)}`);
  // EA-like market: same card clusters close to its guide price instead of jumping by ~25% between offers.
- const spread=.96+(offerSeed%81)/1000;let price=Math.max(200,marketRoundPrice(guide*spread));if(isTotw)price=Math.max(10500,price);
- const start=isTotw?Math.max(9000,marketRoundPrice(price*(.76+((offerSeed>>5)%10)/100))):Math.max(150,marketRoundPrice(price*(.76+((offerSeed>>5)%12)/100)));
+ const spread=.96+(offerSeed%81)/1000;let price=Math.max(special?SPECIAL_MARKET_MIN:200,marketRoundPrice(guide*spread));if(isTotw)price=Math.max(10500,price);
+ const start=special?Math.max(SPECIAL_START_MIN,marketRoundPrice(price*(.76+((offerSeed>>5)%10)/100))):Math.max(150,marketRoundPrice(price*(.76+((offerSeed>>5)%12)/100)));
  const initialBid=Math.max(start,marketRoundPrice(start*(1+((offerSeed>>9)%8)/100)));
  const promo=eventType==="momentum"?MOMENTUM_RELEASES.find(e=>e.id===filters.eventReleaseId)||MOMENTUM_RELEASES.find(e=>e.players.some(p=>p.pid===String(base.id))):null;
  return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,eventReleaseId:promo?.id||"",boost,overridePosition,price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
@@ -5967,15 +5991,15 @@ function renderMyAuctions(){
 }
 function transferSuggestedPrices(item){
  const b=displayBase(item);if(!b)return{start:150,buy:200};
- const special=!!item.variant||!!item.evo,isTotw=item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"),kind=isTotw?"totw":item.eventType==="momentum"?"momentum":special?"special":"base";
+ const special=isSpecialPricedItem(item),isTotw=item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"),kind=isTotw?"totw":item.eventType==="momentum"?"momentum":special?"special":"base";
  let buy=marketPriceForRating(itemRating(item),special,b,kind);
  if(isTotw)buy=Math.max(10500,buy);
- buy=Math.max(200,marketRoundPrice(buy));const start=Math.max(150,marketRoundPrice(buy*.82));return{start,buy}
+ buy=Math.max(special?SPECIAL_MARKET_MIN:200,marketRoundPrice(buy));const start=Math.max(special?SPECIAL_START_MIN:150,marketRoundPrice(buy*.82));return{start,buy}
 }
 function transferSaleItem(sale){return state.club.find(i=>i.uid===sale.uid)||sale.item||null}
 function transferSellEditorHTML(item,defaults=null){
- const p=defaults||transferSuggestedPrices(item),uid=item.uid;
- return `<div class="transfer-sell-editor"><label>Startpreis<input data-sell-start="${esc(uid)}" type="number" min="150" max="${MARKET_MAX_PRICE-50}" step="50" value="${Number(p.start||p.startPrice||150)}"></label><label>Sofortkauf<input data-sell-buy="${esc(uid)}" type="number" min="200" max="${MARKET_MAX_PRICE}" step="50" value="${Number(p.buy||p.buyNow||200)}"></label><label>Dauer<select data-sell-duration="${esc(uid)}"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button class="primary" data-transfer-confirm-sell="${esc(uid)}">Jetzt anbieten</button></div>`
+ const p=defaults||transferSuggestedPrices(item),uid=item.uid,special=isSpecialPricedItem(item),minStart=special?SPECIAL_START_MIN:150,minBuy=special?SPECIAL_MARKET_MIN:200;
+ return `<div class="transfer-sell-editor"><label>Startpreis<input data-sell-start="${esc(uid)}" type="number" min="${minStart}" max="${MARKET_MAX_PRICE-50}" step="50" value="${Math.max(minStart,Number(p.start||p.startPrice||minStart))}"></label><label>Sofortkauf<input data-sell-buy="${esc(uid)}" type="number" min="${minBuy}" max="${MARKET_MAX_PRICE}" step="50" value="${Math.max(minBuy,Number(p.buy||p.buyNow||minBuy))}"></label><label>Dauer<select data-sell-duration="${esc(uid)}"><option value="3600">1 Stunde</option><option value="10800">3 Stunden</option><option value="21600">6 Stunden</option></select></label><button class="primary" data-transfer-confirm-sell="${esc(uid)}">Jetzt anbieten</button></div>`
 }
 function transferSaleRowHTML(sale,kind){
  const item=transferSaleItem(sale),b=item?displayBase(item):null;if(!item||!b)return"";
@@ -6081,8 +6105,9 @@ function createTransferSale(uid,startPrice,buyNow,duration){
  const item=state.club.find(i=>i.uid===uid);if(!item||isFounderItem(item)||!item.tradeable){toast("Spieler ist nicht tauschbar.");return false}
  if(activeTransferSaleForUid(uid)){toast("Spieler ist bereits aktiv angeboten.");return false}
  startPrice=Number(startPrice);buyNow=Number(buyNow);
- if(!marketPriceWithinLimit(startPrice)||startPrice>MARKET_MAX_PRICE-50||!marketPriceWithinLimit(buyNow,200)){toast("Maximalpreis: "+fmt(MARKET_MAX_PRICE)+" Coins. Startpreis muss darunter liegen.");return false}
- startPrice=Math.min(MARKET_MAX_PRICE-50,marketRoundPrice(startPrice));buyNow=Math.max(startPrice+50,marketRoundPrice(Math.max(startPrice+50,buyNow)));
+ const special=isSpecialPricedItem(item),minStart=special?SPECIAL_START_MIN:150,minBuy=special?SPECIAL_MARKET_MIN:200;
+ if(!marketPriceWithinLimit(startPrice,minStart)||startPrice>MARKET_MAX_PRICE-50||!marketPriceWithinLimit(buyNow,minBuy)){toast(special?"Spezialkarten: Startpreis mindestens "+fmt(SPECIAL_START_MIN)+" und Sofortkauf mindestens "+fmt(SPECIAL_MARKET_MIN)+" Coins.":"Maximalpreis: "+fmt(MARKET_MAX_PRICE)+" Coins. Startpreis muss darunter liegen.");return false}
+ startPrice=Math.max(minStart,Math.min(MARKET_MAX_PRICE-50,marketRoundPrice(startPrice)));buyNow=Math.max(minBuy,startPrice+50,marketRoundPrice(Math.max(startPrice+50,buyNow)));
  if(transferSalePlayerInSquad(uid)){
   const teams=(state.squadPresets||[]).filter(p=>p?.squad?.includes(uid)).map(p=>p.name||"Team");
   if(!confirm(`${displayBase(item)?.name||"Spieler"} steht in ${teams.length?teams.join(", "):"deiner Mannschaft"}. Beim Anbieten wird er aus allen Teams entfernt. Jetzt anbieten?`))return false
@@ -6100,6 +6125,12 @@ function settleTransferSales(){
  for(const sale of state.transferSales){
   if(sale.status==="active"||sale.status==="unsold"){
    for(const key of ["startPrice","buyNow","currentBid","plannedPrice"]){const limit=key==="startPrice"?MARKET_MAX_PRICE-50:MARKET_MAX_PRICE;if(Number(sale[key])>limit){sale[key]=limit;changed=true}}
+   if(isSpecialPricedItem(sale.item)){
+    if(Number(sale.startPrice||0)<SPECIAL_START_MIN){sale.startPrice=SPECIAL_START_MIN;changed=true}
+    if(Number(sale.buyNow||0)<SPECIAL_MARKET_MIN){sale.buyNow=SPECIAL_MARKET_MIN;changed=true}
+    if(Number(sale.currentBid||0)<SPECIAL_START_MIN){sale.currentBid=SPECIAL_START_MIN;changed=true}
+    if(Number(sale.plannedPrice||0)>0&&Number(sale.plannedPrice)<SPECIAL_MARKET_MIN){sale.plannedPrice=SPECIAL_MARKET_MIN;changed=true}
+   }
   }
   if(sale.status!=="active")continue;
   if(sale.saleAt&&now>=sale.saleAt){
@@ -8480,7 +8511,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.45";
+const GFUT_BUILD="V20.46";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8533,7 +8564,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2045",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2046",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
