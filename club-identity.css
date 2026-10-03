@@ -1,0 +1,43 @@
+/* Footera V20.42 — Vereinsidentität */
+.club-section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.club-section-tabs button,.identity-tabs button{min-height:42px;border:1px solid #33473e;border-radius:11px;background:#101a16;color:#b8c7bf;font-weight:900;font-size:10px}
+.club-section-tabs button.active,.identity-tabs button.active{border-color:#d8ff3e;background:#27351e;color:#efffc6;box-shadow:inset 0 0 0 1px #d8ff3e44}
+.club-identity-shell{display:grid;gap:12px}
+.identity-hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px;border:1px solid #385246;border-radius:18px;background:radial-gradient(circle at 12% 20%,#1c3b2a 0,transparent 34%),linear-gradient(145deg,#111b17,#09100d)}
+.identity-hero-copy{min-width:0}.identity-hero-copy small{display:block;color:#93a59c;font-size:9px;font-weight:900;letter-spacing:.14em}.identity-hero-copy h3{margin:4px 0 2px;font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.identity-hero-copy p{margin:0;color:#afbeb6;font-size:10px}
+.identity-hero-kits{display:flex;gap:7px}
+.identity-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.identity-panel{display:none;padding:14px;border:1px solid #304139;border-radius:15px;background:#0d1612}.identity-panel.active{display:block}
+.identity-panel h3{margin:0 0 4px;font-size:15px}.identity-panel>p{margin:0 0 13px;color:#8fa099;font-size:9px;line-height:1.45}
+.identity-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.identity-field{display:grid;gap:5px;color:#91a199;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.identity-field input,.identity-field select{width:100%;min-height:44px;padding:9px 10px;border:1px solid #3a4c44;border-radius:10px;background:#0a120f;color:#fff;font-size:13px;text-transform:none;letter-spacing:normal}
+.identity-field input[type="color"]{padding:4px;height:44px}
+.identity-save{width:100%;margin-top:12px;min-height:46px}
+.crest-builder{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:start}
+.crest-preview-wrap{display:grid;place-items:center;min-height:190px;border:1px solid #2f4038;border-radius:14px;background:radial-gradient(circle,#1b2b23,#0a100e 70%)}
+.club-crest{--crest-primary:#d8ff3e;--crest-secondary:#173627;--crest-accent:#fff;position:relative;display:grid;place-items:center;width:112px;height:128px;background:var(--crest-primary);filter:drop-shadow(0 10px 16px #0007);overflow:hidden}
+.club-crest::before{content:"";position:absolute;inset:6px;background:var(--crest-secondary);clip-path:inherit}
+.club-crest::after{content:"";position:absolute;inset:13px;border:2px solid var(--crest-accent);opacity:.62;clip-path:inherit}
+.club-crest.shape-shield{clip-path:polygon(10% 0,90% 0,100% 18%,88% 76%,50% 100%,12% 76%,0 18%)}
+.club-crest.shape-round{clip-path:circle(49% at 50% 50%)}
+.club-crest.shape-hex{clip-path:polygon(25% 0,75% 0,100% 22%,88% 78%,50% 100%,12% 78%,0 22%)}
+.club-crest.shape-point{clip-path:polygon(8% 0,92% 0,100% 12%,82% 78%,50% 100%,18% 78%,0 12%)}
+.club-crest.shape-modern{clip-path:polygon(15% 0,100% 0,88% 82%,50% 100%,4% 75%,0 12%)}
+.club-crest-symbol{position:relative;z-index:2;color:var(--crest-accent);font-size:42px;font-weight:1000;line-height:1;text-shadow:0 2px 5px #0008}
+.club-crest-initials{position:absolute;z-index:3;bottom:21px;left:50%;transform:translateX(-50%);max-width:72px;color:var(--crest-accent);font-size:13px;font-weight:1000;letter-spacing:.08em;white-space:nowrap}
+.crest-option-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.crest-option-grid button{min-height:45px;border:1px solid #34483e;border-radius:10px;background:#101a16;color:#e9f2ed;font-size:10px;font-weight:900}.crest-option-grid button.active{border-color:#d8ff3e;background:#2a371f;color:#f0ffc3}
+.identity-colors-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.identity-color-chip{min-height:56px;border-radius:12px;border:1px solid #ffffff24;box-shadow:inset 0 1px #ffffff18}
+.kit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.kit-card{padding:12px;border:1px solid #33453d;border-radius:14px;background:#101915}.kit-card h4{margin:0 0 9px;font-size:12px}
+.kit-preview{display:grid;place-items:center;min-height:150px;margin-bottom:10px;border-radius:12px;background:radial-gradient(circle,#213128,#0b120f 70%)}
+.kit-shirt{--kit-a:#d8ff3e;--kit-b:#173627;position:relative;width:104px;height:112px;clip-path:polygon(26% 0,41% 7%,59% 7%,74% 0,100% 18%,86% 39%,75% 31%,75% 100%,25% 100%,25% 31%,14% 39%,0 18%);background:var(--kit-a);filter:drop-shadow(0 7px 12px #0006)}
+.kit-shirt.pattern-stripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 18px,var(--kit-b) 18px 36px)}
+.kit-shirt.pattern-hoops{background:repeating-linear-gradient(0deg,var(--kit-a) 0 18px,var(--kit-b) 18px 36px)}
+.kit-shirt.pattern-diagonal{background:linear-gradient(135deg,var(--kit-a) 0 43%,var(--kit-b) 44% 58%,var(--kit-a) 59% 100%)}
+.kit-shirt.pattern-halves{background:linear-gradient(90deg,var(--kit-a) 0 50%,var(--kit-b) 50% 100%)}
+.kit-shirt.pattern-sleeves{background:linear-gradient(90deg,var(--kit-b) 0 23%,var(--kit-a) 23% 77%,var(--kit-b) 77%)}
+.kit-badge-mini{position:absolute;top:34px;left:58px;width:17px;height:19px;transform:scale(.86)}
+.kit-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kit-mini{width:38px;height:42px}
+.identity-future-note{padding:10px;border:1px dashed #3c5548;border-radius:11px;color:#9eb0a6;font-size:9px;line-height:1.45}
+@media(max-width:620px){.identity-hero{grid-template-columns:auto minmax(0,1fr)}.identity-hero-kits{grid-column:1/-1;justify-content:flex-end}.identity-tabs{grid-template-columns:1fr 1fr}.crest-builder{grid-template-columns:1fr}.identity-fields,.kit-grid{grid-template-columns:1fr}.kit-meta{grid-template-columns:1fr 1fr}}
