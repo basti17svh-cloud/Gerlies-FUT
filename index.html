@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.40</title>
+<title>Footera V20.42</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1471,6 +1471,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
 <link rel="stylesheet" href="./club-stats.css">
+<link rel="stylesheet" href="./club-identity.css?v=20.42">
 </head>
 <body>
 
@@ -1718,23 +1719,105 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </div>
 </div></section>
 
-<section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Vereinsidentität, Promocode und App-Einstellungen an einem Ort.</p></div><div class="section"><div class="extras-grid">
-  <div class="extras-card"><span class="extras-kicker">VEREIN</span><h3>Vereinsprofil</h3><p>Benutzername und Teamname sind frei wählbar. Persönliche Belohnungen werden ausschließlich über deine unveränderliche Vereins-ID zugeordnet.</p><label>Benutzername<input id="profileUsername" maxlength="20" placeholder="Benutzername" autocomplete="off"></label><label>Teamname<input id="profileClubName" maxlength="30" placeholder="Teamname"></label><label>Vereins-ID<input id="profileSaveId" readonly aria-label="Eindeutige Vereins-ID"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><button id="saveProfileName" class="primary">Profil speichern</button><button id="copyProfileSaveId" class="secondary" type="button">ID kopieren</button></div></div>
+<section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Account, Promocode und App-Einstellungen.</p></div><div class="section"><div class="extras-grid">
+  <div class="extras-card"><span class="extras-kicker">ACCOUNT</span><h3>Footera-Profil</h3><p>Hier verwaltest du deinen Benutzernamen und deine unveränderliche Vereins-ID. Vereinsname, Wappen, Farben und Trikots findest du unter <b>Verein → Vereinsidentität</b>.</p><label>Benutzername<input id="profileUsername" maxlength="20" placeholder="Benutzername" autocomplete="off"></label><label>Vereins-ID<input id="profileSaveId" readonly aria-label="Eindeutige Vereins-ID"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><button id="saveProfileName" class="primary">Benutzername speichern</button><button id="copyProfileSaveId" class="secondary" type="button">ID kopieren</button></div></div>
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 
-<section id="clubView" class="view"><div class="headline"><h2>Mein Club</h2><p>Alle gezogenen, gekauften und entwickelten Spieleritems.</p></div><div class="section">
-  <div class="filters club-filters">
-    <select id="clubPosition" aria-label="Position+ inklusive Nebenpositionen"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select>
-    <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
-    <select id="clubLeague"><option value="">Alle Ligen</option></select>
-    <select id="clubClub"><option value="">Alle Vereine</option></select>
-    <select id="clubTradeability" aria-label="Tauschbarkeit"><option value="">Alle Items</option><option value="tradeable">Nur tauschbar</option><option value="untradeable">Nur untauschbar</option></select>
-    <select id="clubSort"><option value="rating-desc">Rating: hoch → niedrig</option><option value="rating-asc">Rating: niedrig → hoch</option><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option></select>
-    <div class="club-rating-card"><div class="club-rating-head"><strong>GES-Bereich</strong><span id="clubRatingLabel">0–99 GES</span></div><div class="club-rating-sliders"><input id="clubRatingMin" type="range" min="0" max="99" step="1" value="0" aria-label="Minimales Rating"><input id="clubRatingMax" type="range" min="0" max="99" step="1" value="99" aria-label="Maximales Rating"></div></div>
-  </div><div id="clubGrid" class="itemgrid"></div>
+<section id="clubView" class="view"><div class="headline"><h2>Verein</h2><p>Spieler verwalten und deinen Club gestalten.</p></div><div class="section">
+  <div class="club-section-tabs" role="tablist" aria-label="Vereinsbereiche">
+    <button class="active" type="button" data-club-section="players">Spieler</button>
+    <button type="button" data-club-section="identity">Vereinsidentität</button>
+  </div>
+
+  <div id="clubPlayersSection">
+    <div class="filters club-filters">
+      <select id="clubPosition" aria-label="Position+ inklusive Nebenpositionen"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="CF">MS+</option><option value="ST">ST+</option></select>
+      <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
+      <select id="clubLeague"><option value="">Alle Ligen</option></select>
+      <select id="clubClub"><option value="">Alle Vereine</option></select>
+      <select id="clubTradeability" aria-label="Tauschbarkeit"><option value="">Alle Items</option><option value="tradeable">Nur tauschbar</option><option value="untradeable">Nur untauschbar</option></select>
+      <select id="clubSort"><option value="rating-desc">Rating: hoch → niedrig</option><option value="rating-asc">Rating: niedrig → hoch</option><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option></select>
+      <div class="club-rating-card"><div class="club-rating-head"><strong>GES-Bereich</strong><span id="clubRatingLabel">0–99 GES</span></div><div class="club-rating-sliders"><input id="clubRatingMin" type="range" min="0" max="99" step="1" value="0" aria-label="Minimales Rating"><input id="clubRatingMax" type="range" min="0" max="99" step="1" value="99" aria-label="Maximales Rating"></div></div>
+    </div>
+    <div id="clubGrid" class="itemgrid"></div>
+  </div>
+
+  <div id="clubIdentitySection" class="club-identity-shell" hidden>
+    <div class="identity-hero">
+      <div id="identityHeroCrest"></div>
+      <div class="identity-hero-copy"><small>VEREINSIDENTITÄT</small><h3 id="identityHeroName">Footera Club</h3><p><span id="identityHeroShort">FTR</span> · Wappen, Farben und Trikots</p></div>
+      <div class="identity-hero-kits"><div id="identityHeroHomeKit"></div><div id="identityHeroAwayKit"></div></div>
+    </div>
+
+    <div class="identity-tabs" role="tablist" aria-label="Vereinsidentität bearbeiten">
+      <button class="active" type="button" data-identity-tab="general">Allgemein</button>
+      <button type="button" data-identity-tab="crest">Wappen</button>
+      <button type="button" data-identity-tab="colors">Farben</button>
+      <button type="button" data-identity-tab="kits">Trikots</button>
+    </div>
+
+    <div class="identity-panel active" data-identity-panel="general">
+      <h3>Allgemein</h3><p>Name und Kurzname werden künftig unter anderem für Ranglisten, Scoreboards und 3D-Matches verwendet.</p>
+      <div class="identity-fields">
+        <label class="identity-field">Vereinsname<input id="identityClubName" maxlength="30" placeholder="Vereinsname"></label>
+        <label class="identity-field">Kurzname<input id="identityClubShortName" maxlength="4" placeholder="FTR" autocapitalize="characters"></label>
+      </div>
+    </div>
+
+    <div class="identity-panel" data-identity-panel="crest">
+      <h3>Vereinswappen</h3><p>Das Wappen ist frei wählbar und kein Pack-Item.</p>
+      <div class="crest-builder">
+        <div class="crest-preview-wrap"><div id="identityCrestPreview"></div></div>
+        <div>
+          <label class="identity-field">Initialen<input id="identityCrestInitials" maxlength="4" placeholder="F"></label>
+          <div style="height:10px"></div>
+          <div class="identity-field"><span>Form</span><div class="crest-option-grid" id="identityCrestShapes">
+            <button type="button" data-crest-shape="shield">Schild</button><button type="button" data-crest-shape="round">Rund</button><button type="button" data-crest-shape="hex">Hex</button><button type="button" data-crest-shape="point">Spitz</button><button type="button" data-crest-shape="modern">Modern</button>
+          </div></div>
+          <div style="height:10px"></div>
+          <div class="identity-field"><span>Symbol</span><div class="crest-option-grid" id="identityCrestSymbols">
+            <button type="button" data-crest-symbol="star">★ Stern</button><button type="button" data-crest-symbol="ball">⚽ Ball</button><button type="button" data-crest-symbol="bolt">⚡ Blitz</button><button type="button" data-crest-symbol="diamond">◆ Diamant</button><button type="button" data-crest-symbol="crown">♛ Krone</button><button type="button" data-crest-symbol="f">F</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="identity-panel" data-identity-panel="colors">
+      <h3>Vereinsfarben</h3><p>Drei zentrale Farben bilden die Grundlage für Wappen und spätere Club-Darstellungen.</p>
+      <div class="identity-colors-preview"><div id="identityColorChipPrimary" class="identity-color-chip"></div><div id="identityColorChipSecondary" class="identity-color-chip"></div><div id="identityColorChipAccent" class="identity-color-chip"></div></div>
+      <div class="identity-fields">
+        <label class="identity-field">Hauptfarbe<input id="identityColorPrimary" type="color"></label>
+        <label class="identity-field">Zweitfarbe<input id="identityColorSecondary" type="color"></label>
+        <label class="identity-field">Akzentfarbe<input id="identityColorAccent" type="color"></label>
+      </div>
+    </div>
+
+    <div class="identity-panel" data-identity-panel="kits">
+      <h3>Trikots</h3><p>Heim- und Auswärtstrikot werden bereits so gespeichert, dass sie später für 3D-Matches genutzt werden können.</p>
+      <div class="kit-grid">
+        <div class="kit-card"><h4>Heimtrikot</h4><div class="kit-preview"><div id="identityHomeKitPreview"></div></div><div class="kit-meta">
+          <label class="identity-field">Muster<select id="identityHomePattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option></select></label>
+          <label class="identity-field">Hauptfarbe<input id="identityHomePrimary" type="color"></label>
+          <label class="identity-field">Zweitfarbe<input id="identityHomeSecondary" type="color"></label>
+          <label class="identity-field">Hose<input id="identityHomeShorts" type="color"></label>
+          <label class="identity-field">Stutzen<input id="identityHomeSocks" type="color"></label>
+        </div></div>
+        <div class="kit-card"><h4>Auswärtstrikot</h4><div class="kit-preview"><div id="identityAwayKitPreview"></div></div><div class="kit-meta">
+          <label class="identity-field">Muster<select id="identityAwayPattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option></select></label>
+          <label class="identity-field">Hauptfarbe<input id="identityAwayPrimary" type="color"></label>
+          <label class="identity-field">Zweitfarbe<input id="identityAwaySecondary" type="color"></label>
+          <label class="identity-field">Hose<input id="identityAwayShorts" type="color"></label>
+          <label class="identity-field">Stutzen<input id="identityAwaySocks" type="color"></label>
+        </div></div>
+      </div>
+      <div class="identity-future-note">Vorbereitet für später: Third-Kit, Torwarttrikot, Nummern-/Namensfarben und direkte Nutzung im 3D-Match.</div>
+    </div>
+
+    <button id="saveClubIdentity" class="primary identity-save" type="button">Vereinsidentität speichern</button>
+  </div>
 </div></section>
 
 <section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Freunde über einen kurzen Footera-Code hinzufügen. Mannschaften und Live-Duelle werden über den Online-Dienst synchronisiert.</p></div><div class="section">
@@ -1800,16 +1883,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="team-management-grid">
     <div style="font-size:9px;color:#c9d7d1;line-height:1.55">Für dein Vereinsprofil, Freundesfunktionen und persönliche Belohnungen brauchst du einen Benutzernamen.</div>
     <label>Benutzername<input id="requiredUsername" maxlength="20" placeholder="z. B. CR7Goat" autocomplete="nickname"></label>
-    <div style="font-size:8px;color:#87958f;line-height:1.5">Den Namen kannst du später unter <b>Extras → Vereinsprofil</b> jederzeit ändern. Deine eindeutige Vereins-ID bleibt dabei unverändert.</div>
+    <div style="font-size:8px;color:#87958f;line-height:1.5">Den Benutzernamen kannst du später unter <b>Extras → Footera-Profil</b> jederzeit ändern. Deinen Vereinsnamen bearbeitest du unter <b>Verein → Vereinsidentität</b>.</div>
     <button id="saveRequiredUsername" class="primary" style="width:100%">Benutzername speichern</button>
   </div>
 </div></div>
-<div id="teamManagementModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Team Management</h3><div style="font-size:7px;color:#87958f">Profil und Vereinsidentität</div></div><button id="teamManagementClose" class="secondary">Schließen</button></div>
+<div id="teamManagementModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Team Management</h3><div style="font-size:7px;color:#87958f">Footera-Profil</div></div><button id="teamManagementClose" class="secondary">Schließen</button></div>
   <div class="team-management-grid">
     <label>Benutzername<input id="teamUsername" maxlength="20" placeholder="Benutzername"></label>
-    <label>Teamname<input id="teamClubName" maxlength="30" placeholder="Teamname"></label>
-    <div style="font-size:8px;color:#87958f;line-height:1.45">Wenn du keinen Teamnamen einträgst, wird automatisch „Benutzername FC“ verwendet.</div>
-    <button id="saveTeamManagement" class="primary" style="width:100%">Änderungen speichern</button>
+    <div style="font-size:8px;color:#87958f;line-height:1.45">Vereinsname, Wappen, Farben und Trikots werden zentral unter <b>Verein → Vereinsidentität</b> verwaltet.</div>
+    <button id="saveTeamManagement" class="primary" style="width:100%">Benutzername speichern</button>
+    <button id="openClubIdentityFromTeam" class="secondary" style="width:100%" type="button">Vereinsidentität öffnen</button>
   </div>
 </div></div>
 <div id="squadBattleModal" class="modal friend-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="matchPreviewModalTitle">Spielvorschau</h3><div id="squadBattleModalSub" style="font-size:7px;color:#87958f">Deine Aufstellung vor dem Spiel</div></div><button id="squadBattleModalClose" class="secondary">Schließen</button></div><div id="squadBattleModalBody" class="squad-battle-preview"></div></div></div>
@@ -2899,10 +2982,33 @@ function sbcGroupBannerHTML(group,rows){
 }
 
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
+function defaultClubIdentity(){return{
+ crest:{shape:"shield",symbol:"star",primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff",initials:"F"},
+ colors:{primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff"},
+ kits:{
+  home:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"},
+  away:{pattern:"diagonal",shirtPrimary:"#f1f4f2",shirtSecondary:"#173627",shorts:"#f1f4f2",socks:"#173627"}
+ }
+}}
+function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
+function cleanClubIdentity(raw){
+ const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
+ const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
+ return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
+}
+function ensureClubIdentityState(){
+ state.profile=state.profile||{};
+ state.profile.clubIdentity=cleanClubIdentity(state.profile.clubIdentity);
+ let short=String(state.profile.clubShortName||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+ if(short.length<2){const parts=String(state.profile.clubName||"Footera Club").trim().split(/\s+/).filter(Boolean);short=(parts.map(x=>x[0]).join("")||"FTR").toUpperCase().slice(0,4);if(short.length<2)short="FC"}
+ state.profile.clubShortName=short;
+ return state.profile.clubIdentity
+}
+function clubIdentitySnapshot(){ensureClubIdentityState();return JSON.parse(JSON.stringify(state.profile.clubIdentity))}
 function baseState(){return{
  version:123,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
- roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
@@ -5333,6 +5439,8 @@ function updateClubRatingLabel(){
 const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
 function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
+ syncClubSectionUi();
+ if(clubSection==="identity"){renderClubIdentity();return}
  const rows=clubFilterItems();syncClubFilterOptions(rows);
  const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,trade=$("clubTradeability")?.value||"",min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
  updateClubRatingLabel();
@@ -5343,6 +5451,79 @@ function renderClub(){
  $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}${i.tradeable?"":'<span class="club-untradeable-badge" title="Untauschbar" aria-label="Untauschbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tauschbar":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
+let clubSection="players",identityTab="general",clubIdentityDraft=null;
+const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F"};
+function makeClubIdentityDraft(){ensureClubIdentityState();return{clubName:String(state.profile.clubName||"Footera Club"),clubShortName:String(state.profile.clubShortName||"FTR"),identity:clubIdentitySnapshot()}}
+function crestHTML(identity,mini=false){
+ const x=cleanClubIdentity(identity),c=x.crest,g=CREST_SYMBOLS[c.symbol]||"★";
+ return `<div class="club-crest shape-${c.shape}${mini?" kit-badge-mini":""}" style="--crest-primary:${c.primary};--crest-secondary:${c.secondary};--crest-accent:${c.accent}"><span class="club-crest-symbol">${esc(g)}</span><span class="club-crest-initials">${esc(c.initials)}</span></div>`
+}
+function kitHTML(kit,mini=false){
+ const k=kit||defaultClubIdentity().kits.home;
+ return `<div class="kit-shirt pattern-${esc(k.pattern)}${mini?" kit-mini":""}" style="--kit-a:${safeClubHex(k.shirtPrimary,"#d8ff3e")};--kit-b:${safeClubHex(k.shirtSecondary,"#173627")}"></div>`
+}
+function syncClubSectionUi(){
+ const players=$("clubPlayersSection"),identity=$("clubIdentitySection");if(players)players.hidden=clubSection!=="players";if(identity)identity.hidden=clubSection!=="identity";
+ document.querySelectorAll("[data-club-section]").forEach(b=>b.classList.toggle("active",b.dataset.clubSection===clubSection))
+}
+function syncIdentityTabs(){
+ document.querySelectorAll("[data-identity-tab]").forEach(b=>b.classList.toggle("active",b.dataset.identityTab===identityTab));
+ document.querySelectorAll("[data-identity-panel]").forEach(p=>p.classList.toggle("active",p.dataset.identityPanel===identityTab))
+}
+function renderClubIdentityPreview(){
+ if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();
+ const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
+ if($("identityHeroCrest"))$("identityHeroCrest").innerHTML=crestHTML(x);
+ if($("identityCrestPreview"))$("identityCrestPreview").innerHTML=crestHTML(x);
+ if($("identityHeroName"))$("identityHeroName").textContent=d.clubName||"Footera Club";
+ if($("identityHeroShort"))$("identityHeroShort").textContent=d.clubShortName||"FTR";
+ if($("identityHeroHomeKit"))$("identityHeroHomeKit").innerHTML=kitHTML(x.kits.home,true);
+ if($("identityHeroAwayKit"))$("identityHeroAwayKit").innerHTML=kitHTML(x.kits.away,true);
+ if($("identityHomeKitPreview"))$("identityHomeKitPreview").innerHTML=kitHTML(x.kits.home);
+ if($("identityAwayKitPreview"))$("identityAwayKitPreview").innerHTML=kitHTML(x.kits.away);
+ if($("identityColorChipPrimary"))$("identityColorChipPrimary").style.background=x.colors.primary;
+ if($("identityColorChipSecondary"))$("identityColorChipSecondary").style.background=x.colors.secondary;
+ if($("identityColorChipAccent"))$("identityColorChipAccent").style.background=x.colors.accent;
+ document.querySelectorAll("[data-crest-shape]").forEach(b=>b.classList.toggle("active",b.dataset.crestShape===x.crest.shape));
+ document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol))
+}
+function renderClubIdentity(){
+ if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
+ const set=(id,val)=>{const el=$(id);if(el&&document.activeElement!==el)el.value=val};
+ set("identityClubName",d.clubName);set("identityClubShortName",d.clubShortName);set("identityCrestInitials",x.crest.initials);
+ set("identityColorPrimary",x.colors.primary);set("identityColorSecondary",x.colors.secondary);set("identityColorAccent",x.colors.accent);
+ set("identityHomePattern",x.kits.home.pattern);set("identityHomePrimary",x.kits.home.shirtPrimary);set("identityHomeSecondary",x.kits.home.shirtSecondary);set("identityHomeShorts",x.kits.home.shorts);set("identityHomeSocks",x.kits.home.socks);
+ set("identityAwayPattern",x.kits.away.pattern);set("identityAwayPrimary",x.kits.away.shirtPrimary);set("identityAwaySecondary",x.kits.away.shirtSecondary);set("identityAwayShorts",x.kits.away.shorts);set("identityAwaySocks",x.kits.away.socks);
+ syncIdentityTabs();renderClubIdentityPreview()
+}
+document.querySelector(".club-section-tabs")?.addEventListener("click",e=>{const b=e.target.closest("[data-club-section]");if(!b)return;clubSection=b.dataset.clubSection;if(clubSection==="identity")clubIdentityDraft=makeClubIdentityDraft();renderClub()});
+document.querySelector(".identity-tabs")?.addEventListener("click",e=>{const b=e.target.closest("[data-identity-tab]");if(!b)return;identityTab=b.dataset.identityTab;syncIdentityTabs()});
+$("identityCrestShapes")?.addEventListener("click",e=>{const b=e.target.closest("[data-crest-shape]");if(!b||!clubIdentityDraft)return;clubIdentityDraft.identity.crest.shape=b.dataset.crestShape;renderClubIdentityPreview()});
+$("identityCrestSymbols")?.addEventListener("click",e=>{const b=e.target.closest("[data-crest-symbol]");if(!b||!clubIdentityDraft)return;clubIdentityDraft.identity.crest.symbol=b.dataset.crestSymbol;renderClubIdentityPreview()});
+function bindIdentityInput(id,apply,event="input"){$(id)?.addEventListener(event,e=>{if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();apply(e.target.value,clubIdentityDraft);renderClubIdentityPreview()})}
+bindIdentityInput("identityClubName",(v,d)=>d.clubName=String(v).slice(0,30));
+bindIdentityInput("identityClubShortName",(v,d)=>d.clubShortName=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
+bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
+bindIdentityInput("identityColorPrimary",(v,d)=>{d.identity.colors.primary=v;d.identity.crest.primary=v});
+bindIdentityInput("identityColorSecondary",(v,d)=>{d.identity.colors.secondary=v;d.identity.crest.secondary=v});
+bindIdentityInput("identityColorAccent",(v,d)=>{d.identity.colors.accent=v;d.identity.crest.accent=v});
+for(const side of ["Home","Away"]){
+ const key=side.toLowerCase();
+ bindIdentityInput("identity"+side+"Pattern",(v,d)=>d.identity.kits[key].pattern=v,"change");
+ bindIdentityInput("identity"+side+"Primary",(v,d)=>d.identity.kits[key].shirtPrimary=v);
+ bindIdentityInput("identity"+side+"Secondary",(v,d)=>d.identity.kits[key].shirtSecondary=v);
+ bindIdentityInput("identity"+side+"Shorts",(v,d)=>d.identity.kits[key].shorts=v);
+ bindIdentityInput("identity"+side+"Socks",(v,d)=>d.identity.kits[key].socks=v)
+}
+$("saveClubIdentity")?.addEventListener("click",()=>{
+ if(!clubIdentityDraft)return;
+ const name=String(clubIdentityDraft.clubName||"").trim(),short=String(clubIdentityDraft.clubShortName||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+ if(name.length<2)return toast("Bitte einen Vereinsnamen mit mindestens 2 Zeichen eingeben.");
+ if(short.length<2)return toast("Der Kurzname braucht 2 bis 4 Zeichen.");
+ state.profile.clubName=name;state.profile.clubShortName=short;state.profile.clubIdentity=cleanClubIdentity(clubIdentityDraft.identity);save();flushSave();
+ renderHeaderClubName();renderSocial();window.FooteraOnline?.queueProfileSync?.(200);toast("Vereinsidentität gespeichert.")
+});
+
 ["clubPosition","clubRarity","clubLeague","clubClub","clubTradeability","clubSort"].forEach(id=>$(id)?.addEventListener("change",renderClub));
 function changeClubRating(which){
  const minEl=$("clubRatingMin"),maxEl=$("clubRatingMax");if(!minEl||!maxEl)return;
@@ -7717,7 +7898,6 @@ $("requiredUsername")?.addEventListener("keydown",e=>{if(e.key==="Enter")$("save
 function openTeamManagement(){
  if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();
  $("teamUsername").value=state.profile.username||"";
- $("teamClubName").value=state.profile.clubName||((state.profile.username||"Gerlies")+" FC");
  showUiLayer("teamManagementModal","team-management")
 }
 $("openTeamManagement")?.addEventListener("click",openTeamManagement);
@@ -7725,14 +7905,11 @@ $("teamManagementClose").addEventListener("click",()=>closeUiLayer("teamManageme
 $("saveTeamManagement").addEventListener("click",()=>{
  const username=$("teamUsername").value.trim();
  if(username.length<2)return toast("Bitte einen gültigen Benutzernamen eingeben.");
- const clubName=$("teamClubName").value.trim()||`${username} FC`;
- state.profile.username=username;
- state.profile.clubName=clubName;
- save();
- renderHome();renderSocial();
+ state.profile.username=username;save();renderHome();renderSocial();window.FooteraOnline?.queueProfileSync?.(200);
  if(history.state?.gfut&&history.state.kind==="team-management")history.back();else $("teamManagementModal").classList.remove("active");
- toast(`Team Management gespeichert: ${clubName}`)
+ toast("Benutzername gespeichert.")
 });
+$("openClubIdentityFromTeam")?.addEventListener("click",()=>{removeUiLayer("teamManagementModal");clubSection="identity";clubIdentityDraft=makeClubIdentityDraft();switchView("clubView");renderClub()});
 
 let pendingMatchContext=null,previewSwapFrom=-1;
 let squadBattleOpponentCache={key:"",list:[]};
@@ -7942,7 +8119,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
  const onlineUid=window.FooteraOnline?.registered?window.FooteraOnline.userId:"";
- const payload={v:onlineUid?3:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
+ ensureClubIdentityState();const payload={v:onlineUid?5:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",clubShortName:state.profile.clubShortName||"FTR",clubIdentity:clubIdentitySnapshot(),rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
@@ -8010,7 +8187,6 @@ async function openFriendTeam(index){
 function renderSocial(){
  if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();
  if($("profileUsername"))$("profileUsername").value=state.profile.username||"";
- if($("profileClubName"))$("profileClubName").value=state.profile.clubName||"Footera Club";
  if($("profileSaveId"))$("profileSaveId").value=state.profile.saveId;
  if($("socialClubName"))$("socialClubName").textContent=state.profile.clubName||"Footera Club";
  const codeBox=$("myFriendCode");
@@ -8022,7 +8198,7 @@ function renderSocial(){
  $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button>${window.FooteraOnline?.ready&&f.onlineUid?`<button class="secondary friend-message-btn" data-friend-chat="${i}">Nachricht${window.FooteraOnline?.unreadCount?.(f.onlineUid)?` <span class="friend-unread-badge">${window.FooteraOnline.unreadCount(f.onlineUid)}</span>`:""}</button><button class="primary" data-friend-live="${i}">Live-Duell</button><button class="secondary" data-friend-compare="${i}">Rangliste</button>`:""}<button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>';
  window.FooteraOnline?.render();if(window.FooteraOnline?.available&&!window.FooteraOnline.ready)window.FooteraOnline.init();else if(window.FooteraOnline?.ready&&!window.FooteraOnline.registered)window.FooteraOnline.syncProfile().then(ok=>{if(ok)renderSocial()}).catch(console.warn)
 }
-$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;state.profile.clubName=$("profileClubName").value.trim()||`${username} FC`;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Vereinsprofil gespeichert.")});
+$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Benutzername gespeichert.")});
 $("copyProfileSaveId")?.addEventListener("click",async()=>{if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();try{await navigator.clipboard.writeText(state.profile.saveId);toast("Vereins-ID kopiert.")}catch(e){const el=$("profileSaveId");el?.focus();el?.select();toast(`Vereins-ID: ${state.profile.saveId}`)}});
 $("copyFriendCode")?.addEventListener("click",async()=>{
  const box=$("myFriendCode"),code=String(box?.value||"").trim();
@@ -8307,7 +8483,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.41";
+const GFUT_BUILD="V20.42";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
@@ -8359,7 +8535,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2041",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2042",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
