@@ -5430,7 +5430,7 @@ $("resultQuickSellAll").addEventListener("click",()=>resolvePackSellBatch());
 $("resultQuickSellDuplicates").addEventListener("click",()=>resolvePackSellBatch(true));
 $("resultDone").addEventListener("click",()=>{if(!pendingPack.some((_,k)=>!pendingResolved.has(k)))closeResolvedPackResults()})
 
-const SPECIAL_MARKET_MIN=10000,SPECIAL_START_MIN=9000,SPECIAL_QUICK_SELL=9000;
+const SPECIAL_MARKET_MIN=10000,SPECIAL_START_MIN=10000,SPECIAL_QUICK_SELL=9000;
 function isSpecialPricedItem(i){return !!i&&!isFounderItem(i)&&(packIsSpecial(i)||i.variant==="story"||isEvolutionItem(i))}
 function quickSell(i){if(isFounderItem(i))return 0;if(isSpecialPricedItem(i))return SPECIAL_QUICK_SELL;const r=itemRating(i);return r>=90?5000:r>=85?2000:r>=80?500:r>=75?250:r>=65?150:75}
 function clubFilterItems(){
