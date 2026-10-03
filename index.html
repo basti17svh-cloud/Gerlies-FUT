@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.33</title>
+<title>Footera V20.36</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -997,6 +997,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @keyframes packConfettiFall{0%{transform:translate3d(0,-10px,0) rotate(0);opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(760deg);opacity:.15}}
 @keyframes packSpark{0%{transform:translate(0,0) scale(.2);opacity:0}15%{opacity:1}100%{transform:translate(var(--sx),var(--sy)) scale(1.2);opacity:0}}
 @keyframes floorPulse{to{opacity:.72;transform:scaleX(1.35)}}
+.pack-webgl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.walkout-tunnel.webgl-active:before,.walkout-tunnel.webgl-active:after,.walkout-tunnel.webgl-active>.walkout-gate{display:none}
 /* Walkout: a moving tunnel introduces nation, position and club before the existing card reveal. */
 .walkout-tunnel{--walkout-beam:#d8ff3e;position:absolute;inset:0;z-index:3;display:none;overflow:hidden;perspective:650px;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#b7fc5a3d 0,#14291a 11%,#07100c 37%,#010403 78%)}
 .walkout-tunnel.active{display:block}
@@ -1541,7 +1543,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.33</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge">V20.36</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1913,6 +1915,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
+<script src="./pack-3d.js"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -5111,10 +5114,12 @@ function showBoardCue(kind,base){
  void cue.offsetWidth;cue.classList.add("active")
 }
 function resetWalkoutTunnel(){
+ window.FooteraPack3D?.stop();
  $("walkoutTunnel").classList.remove("active");
  const clue=$("walkoutClue");clue.classList.remove("active");clue.innerHTML=""
 }
 function showWalkoutClue(kind,base){
+ window.FooteraPack3D?.cue(kind);
  const clue=$("walkoutClue");let label,art,name;
  if(kind==="nation"){
   label="NATION";art=flagAsset(base);name=packRevealNationName(base.nation)
@@ -5161,6 +5166,7 @@ async function runPackReveal(plan){
  addPackFloorLights();
  $("openStage").style.display="none";
  $("walkoutTunnel").classList.add("active");
+ window.FooteraPack3D?.start($("walkoutTunnel"),{special:plan.mode==="special"||isMomentumItem(plan.cards[0]),founder:isFounderItem(plan.cards[0])});
  await sleep(1200);
  showWalkoutClue("nation",firstBase);await sleep(1000);
  showWalkoutClue("position",firstBase);await sleep(900);
@@ -8305,7 +8311,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.35";
+const GFUT_BUILD="V20.36";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){

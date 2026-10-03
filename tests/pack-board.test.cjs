@@ -21,7 +21,7 @@ test('nation, position and club pop up in the short pack intro before the card',
  };
  for(const id of ['opening','openPackBtn','openStage','bigPack','packCountdown','flash','boardIntro','boardCue','walkoutTunnel','walkoutClue','reveal','revealBadge','revealCard','revealSecondCard','walkoutTitle','results'])nodes.set(id,el(id));
  const $=id=>nodes.get(id),frames=[];
- const ctx={$,displayBase:()=>({name:'Testspieler',position:'CM',nation:'Germany',team:'Testverein'}),cardHTML:()=>'<div class="card-shell">Karte</div>',positionLabel:()=> 'ZM',
+ const ctx={window:{},$,displayBase:()=>({name:'Testspieler',position:'CM',nation:'Germany',team:'Testverein'}),cardHTML:()=>'<div class="card-shell">Karte</div>',positionLabel:()=> 'ZM',
   flagAsset:()=>'<span>🇩🇪</span>',badgeAsset:()=>'<img alt="Testverein">',clubShort:()=> 'TV',
   normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
   addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,isFounderItem:()=>false,pendingPack:[],

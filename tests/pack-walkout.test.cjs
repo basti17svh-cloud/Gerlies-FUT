@@ -23,6 +23,7 @@ test('walkout travels through nation, position and club before revealing the pla
  const get=id=>elements.get(id),snapshots=[];
  const base={name:'Testspieler',position:'ST',nation:'Germany',team:'FC Gerlies'};
  const ctx={
+  window:{},
   $:get,displayBase:()=>base,cardHTML:()=>'<div class="card-shell">Spielerkarte</div>',
   positionLabel:()=> 'ST',flagAsset:()=>'<span>🇩🇪</span>',badgeAsset:()=>'<img alt="FC Gerlies">',clubShort:()=> 'FC',
   normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
