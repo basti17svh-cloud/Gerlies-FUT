@@ -155,12 +155,31 @@
   }
   return [...ranks.values()].sort((a,b)=>b.pkt-a.pkt||(b.tore-b.gt)-(a.tore-a.gt)||b.tore-a.tore||a.name.localeCompare(b.name,"de"))
  }
+ function gameResultFor(game,userId){
+  if(game.status!=="finished")return"";
+  const home=game.home_user===userId,own=home?Number(game.home_score):Number(game.away_score),opp=home?Number(game.away_score):Number(game.home_score);
+  return own>opp?"S":own<opp?"N":"U"
+ }
+ function formFor(games,userId,count=5){return games.slice(0,count).map(g=>gameResultFor(g,userId)).filter(Boolean)}
+ function currentSeries(games,userId){
+  const results=games.map(g=>gameResultFor(g,userId)).filter(Boolean);if(!results.length)return"–";
+  const first=results[0];let count=0;for(const r of results){if(r!==first)break;count++}
+  return `${count}× ${first==="S"?"Sieg":first==="N"?"Niederlage":"Remis"}`
+ }
+ function directSummary(games,self,opp){
+  let selfWins=0,oppWins=0,draws=0,selfGoals=0,oppGoals=0;
+  for(const g of games){
+   const selfHome=g.home_user===self,sg=selfHome?Number(g.home_score):Number(g.away_score),og=selfHome?Number(g.away_score):Number(g.home_score);
+   selfGoals+=sg;oppGoals+=og;if(sg>og)selfWins++;else if(sg<og)oppWins++;else draws++
+  }
+  return{selfWins,oppWins,draws,selfGoals,oppGoals}
+ }
  async function showComparison(friend){
-  if(!online.ready||!validUid(friend?.onlineUid))return toast("Für diesen Freund fehlt noch ein aktueller Online-Profilcode.");
+  if(!online.ready||!validUid(friend?.onlineUid))return toast("Für diesen Freund fehlt noch ein aktueller Online-Freundescode.");
   comparing=friend.onlineUid;comparison={friend,rows:[],loading:true};renderComparison();
   try{
    const all=[];let from=0;while(from<5000){
-    const {data,error}=await client.from("footera_duels").select("id,home_user,away_user,home_score,away_score,status,finished_at,home_profile,away_profile")
+    const {data,error}=await client.from("footera_duels").select("id,home_user,away_user,home_score,away_score,status,finished_at,created_at,home_profile,away_profile")
      .eq("status","finished").in("home_user",[online.userId,friend.onlineUid]).in("away_user",[online.userId,friend.onlineUid]).order("finished_at",{ascending:false}).range(from,from+499);
     if(error)throw error;all.push(...(data||[]));if(!data||data.length<500)break;from+=500
    }
@@ -169,11 +188,29 @@
  }
  function renderComparison(){
   const el=$("onlineComparison");if(!el||!comparison)return;
-  if(comparison.loading){el.innerHTML="<p>Direkter Vergleich wird geladen …</p>";return}
-  if(comparison.error){el.textContent=comparison.error;return}
+  if(comparison.loading){el.innerHTML='<div class="online-ranking"><h4>Online-Rangliste</h4><p>Rangliste wird geladen …</p></div>';return}
+  if(comparison.error){el.innerHTML='<div class="online-ranking"><h4>Online-Rangliste</h4><p>'+escape(comparison.error)+'</p></div>';return}
   const {friend,rows:games}=comparison,self=online.userId,opp=friend.onlineUid;
-  const ranks=rankRows(games,self,opp,state.profile.clubName||"Mein Team",friend.clubName||"Freund");
-  el.innerHTML=`<h4>Freundesliga · direkter Vergleich mit ${escape(friend.clubName||"Freund")}</h4><div class="online-table-wrap"><table class="online-table"><thead><tr><th>Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff</th><th>Pkt</th></tr></thead><tbody>${ranks.map((r,i)=>`<tr><th>${i+1}. ${escape(r.name)}</th><td>${r.sp}</td><td>${r.s}</td><td>${r.u}</td><td>${r.n}</td><td>${r.tore}:${r.gt}</td><td>${r.tore-r.gt>0?"+":""}${r.tore-r.gt}</td><td><strong>${r.pkt}</strong></td></tr>`).join("")}</tbody></table></div><p>${games.length} gemeinsame Live-Duelle · Sieg 3, Remis 1, Niederlage 0 Punkte.</p>${games.slice(0,5).map(g=>`<div class="online-duel-row">${escape(team(g,"home"))} ${g.home_score}:${g.away_score} ${escape(team(g,"away"))}</div>`).join("")}`
+  const selfName=state.profile.clubName||"Mein Team",friendName=friend.clubName||"Freund",ranks=rankRows(games,self,opp,selfName,friendName);
+  const summary=directSummary(games,self,opp),selfForm=formFor(games,self),oppForm=formFor(games,opp);
+  const badge=r=>'<span class="online-form-badge '+(r==="S"?"win":r==="N"?"loss":"draw")+'">'+r+'</span>';
+  const dateText=g=>{try{return new Date(g.finished_at||g.created_at).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})}catch(e){return""}};
+  el.innerHTML=`<div class="online-ranking">
+   <div class="online-ranking-head"><div><small>GEGEN ${escape(friendName)}</small><h4>Online-Rangliste</h4></div><span class="online-ranking-count">${games.length} Spiele</span></div>
+   <div class="online-h2h">
+    <div><strong>${summary.selfWins}</strong><span>Deine Siege</span></div>
+    <div><strong>${summary.draws}</strong><span>Remis</span></div>
+    <div><strong>${summary.oppWins}</strong><span>Siege ${escape(friendName)}</span></div>
+    <div><strong>${summary.selfGoals}:${summary.oppGoals}</strong><span>Gesamttore</span></div>
+   </div>
+   <div class="online-table-wrap"><table class="online-table"><thead><tr><th>Team</th><th>Sp</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>Diff</th><th>Pkt</th></tr></thead><tbody>${ranks.map((r,i)=>`<tr class="${r.id===self?"is-me":""}"><th>${i+1}. ${escape(r.name)}</th><td>${r.sp}</td><td>${r.s}</td><td>${r.u}</td><td>${r.n}</td><td>${r.tore}:${r.gt}</td><td>${r.tore-r.gt>0?"+":""}${r.tore-r.gt}</td><td><strong>${r.pkt}</strong></td></tr>`).join("")}</tbody></table></div>
+   <div class="online-form-grid">
+    <div><span>Deine Form</span><div class="online-form">${selfForm.length?selfForm.map(badge).join(""):"Noch kein Spiel"}</div><small>Serie: ${escape(currentSeries(games,self))}</small></div>
+    <div><span>${escape(friendName)}</span><div class="online-form">${oppForm.length?oppForm.map(badge).join(""):"Noch kein Spiel"}</div><small>Serie: ${escape(currentSeries(games,opp))}</small></div>
+   </div>
+   <div class="online-ranking-rules">Sieg 3 Punkte · Remis 1 Punkt · Niederlage 0 Punkte · Abgebrochene Duelle zählen nicht.</div>
+   <div class="online-history"><h4>Ergebnis-Historie</h4>${games.length?games.map(g=>`<div class="online-history-row"><span><strong>${escape(team(g,"home"))} ${g.home_score}:${g.away_score} ${escape(team(g,"away"))}</strong><small>${escape(dateText(g))}</small></span><span class="online-history-result ${gameResultFor(g,self)==="S"?"win":gameResultFor(g,self)==="N"?"loss":"draw"}">${gameResultFor(g,self)}</span></div>`).join(""):'<p>Noch keine beendeten Live-Duelle. Das erste Ergebnis erscheint hier automatisch.</p>'}</div>
+  </div>`
  }
  function renderMatch(){
   const d=active,el=$("onlineDuelBody");if(!d||!el)return;maybeTick();
