@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.46</title>
+<title>Footera V20.47</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1542,7 +1542,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.46</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.47</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1617,7 +1617,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
   <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
-  <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
+  <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
   <div class="squad-stage">
     <div id="pitch" class="pitch"></div>
     <div class="squad-drawer-tabs">
@@ -1953,7 +1953,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    <div class="manager-grid match-settings">
     <label>Formation
      <select id="matchFormationSelect">
-      <option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option>
+      <option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option>
      </select>
     </label>
     <label>Taktik
@@ -2097,19 +2097,22 @@ let PLAYERS=[],P_BY_ID=new Map(),state=reconcileFounderState(loadState()),picker
 const FORMATIONS={
 "4-3-3":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
- {p:"CM",x:25,y:50},{p:"CM",x:50,y:44},{p:"CM",x:75,y:50},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+ {p:"CM",x:24,y:49},{p:"CM",x:50,y:46},{p:"CM",x:76,y:49},{p:"LW",x:15,y:22},{p:"ST",x:50,y:14},{p:"RW",x:85,y:22}],
 "4-3-3 (2)":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
- {p:"CDM",x:50,y:57},{p:"CM",x:28,y:45},{p:"CM",x:72,y:45},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+ {p:"CDM",x:50,y:61},{p:"CM",x:27,y:43},{p:"CM",x:73,y:43},{p:"LW",x:14,y:21},{p:"ST",x:50,y:13},{p:"RW",x:86,y:21}],
 "4-3-3 (3)":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
- {p:"CDM",x:34,y:55},{p:"CDM",x:66,y:55},{p:"CM",x:50,y:39},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+ {p:"CDM",x:31,y:59},{p:"CDM",x:69,y:59},{p:"CM",x:50,y:38},{p:"LW",x:15,y:21},{p:"ST",x:50,y:13},{p:"RW",x:85,y:21}],
 "4-3-3 (4)":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
- {p:"CM",x:31,y:52},{p:"CM",x:69,y:52},{p:"CAM",x:50,y:36},{p:"LW",x:16,y:22},{p:"ST",x:50,y:14},{p:"RW",x:84,y:22}],
+ {p:"CM",x:32,y:55},{p:"CM",x:68,y:55},{p:"CAM",x:50,y:31},{p:"LW",x:14,y:20},{p:"ST",x:50,y:12},{p:"RW",x:86,y:20}],
 "4-4-2":[
  {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
  {p:"LM",x:16,y:47},{p:"CM",x:40,y:50},{p:"CM",x:60,y:50},{p:"RM",x:84,y:47},{p:"ST",x:39,y:18},{p:"ST",x:61,y:18}],
+"4-4-1-1":[
+ {p:"GK",x:50,y:89},{p:"LB",x:13,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:87,y:69},
+ {p:"LM",x:15,y:49},{p:"CM",x:39,y:52},{p:"CM",x:61,y:52},{p:"RM",x:85,y:49},{p:"CF",x:50,y:31},{p:"ST",x:50,y:14}],
 "4-2-3-1":[
  {p:"GK",x:50,y:89},{p:"LB",x:12,y:69},{p:"CB",x:37,y:73},{p:"CB",x:63,y:73},{p:"RB",x:88,y:69},
  {p:"CDM",x:38,y:54},{p:"CDM",x:62,y:54},{p:"CAM",x:50,y:36},{p:"LM",x:17,y:34},{p:"RM",x:83,y:34},{p:"ST",x:50,y:14}],
@@ -2132,7 +2135,7 @@ const ROLE_OPTIONS={
  LB:["Fullback","Wingback","Falseback","Inverted Wingback","Attacking Wingback"],RB:["Fullback","Wingback","Falseback","Inverted Wingback","Attacking Wingback"],
  CDM:["Holding","Deep Lying Playmaker","Box Crasher","Centre Half","Wide Half"],CM:["Box to Box","Playmaker","Deep Lying Playmaker","Holding","Half Winger"],
  CAM:["Shadow Striker","Playmaker","Classic 10","Half Winger"],LM:["Inside Forward","Winger","Wide Playmaker","Wide Midfielder"],RM:["Inside Forward","Winger","Wide Playmaker","Wide Midfielder"],
- LW:["Inside Forward","Winger","Wide Playmaker"],RW:["Inside Forward","Winger","Wide Playmaker"],ST:["Advanced Forward","Target Forward","Poacher","False 9"]
+ LW:["Inside Forward","Winger","Wide Playmaker"],RW:["Inside Forward","Winger","Wide Playmaker"],CF:["Shadow Striker","Playmaker","False 9"],ST:["Advanced Forward","Target Forward","Poacher","False 9"]
 };
 const FOCUS_OPTIONS=["Balanced","Attack","Build-Up","Defend"];
 const ROLE_LABELS={
@@ -8511,7 +8514,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.46";
+const GFUT_BUILD="V20.47";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
