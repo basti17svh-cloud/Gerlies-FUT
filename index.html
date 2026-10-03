@@ -1739,7 +1739,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Freunde über einen kurzen Footera-Code hinzufügen. Mannschaften und Live-Duelle werden über den Online-Dienst synchronisiert.</p></div><div class="section">
   <div class="social-grid">
-    <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Dein kurzer Freundescode ist mit deinem Online-Profil verknüpft. Mannschaftsänderungen werden automatisch synchronisiert.</p><textarea id="myFriendCode" readonly></textarea><button id="refreshFriendCode" class="secondary" style="width:100%;margin-top:7px">Freundescode aktualisieren</button></div>
+    <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Dein kurzer Freundescode ist mit deinem Online-Profil verknüpft. Mannschaftsänderungen werden automatisch synchronisiert.</p><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div>
     <div class="profile-card"><h3>Freund hinzufügen</h3><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div>
     <div class="profile-card"><h3>Freundesliste</h3><div class="online-note">Tippe auf „Aufstellung“, um ausschließlich Startelf und Bank des Freundes im gleichen Team-Layout wie bei dir zu sehen.</div><div id="friendList" class="friend-list"></div></div>
     <div id="onlinePanel" class="profile-card" hidden><h3>Live-Duelle</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div><div id="onlineComparison"></div></div>
@@ -8022,6 +8022,12 @@ function renderSocial(){
 }
 $("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;state.profile.clubName=$("profileClubName").value.trim()||`${username} FC`;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Vereinsprofil gespeichert.")});
 $("copyProfileSaveId")?.addEventListener("click",async()=>{if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();try{await navigator.clipboard.writeText(state.profile.saveId);toast("Vereins-ID kopiert.")}catch(e){const el=$("profileSaveId");el?.focus();el?.select();toast(`Vereins-ID: ${state.profile.saveId}`)}});
+$("copyFriendCode")?.addEventListener("click",async()=>{
+ const box=$("myFriendCode"),code=String(box?.value||"").trim();
+ if(!code||/wird aufgebaut|nicht verfügbar/i.test(code))return toast("Freundescode ist noch nicht verfügbar.");
+ try{await navigator.clipboard.writeText(code);toast("Freundescode kopiert.")}
+ catch(e){box?.focus();box?.select();toast("Freundescode markiert – bitte kopieren.")}
+});
 $("refreshFriendCode").addEventListener("click",async()=>{
  if(window.FooteraOnline?.available){
   try{
@@ -8299,7 +8305,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.34";
+const GFUT_BUILD="V20.35";
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
 function newerGerliesBuild(remote){
