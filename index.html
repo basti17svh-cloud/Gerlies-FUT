@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.50</title>
+<title>Footera V20.51</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -131,7 +131,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 /* home */
 .hero{margin:13px;border:1px solid rgba(216,255,62,.2);border-radius:20px;padding:21px;background:radial-gradient(circle at 92% 12%,rgba(78,241,185,.18),transparent 34%),linear-gradient(135deg,rgba(216,255,62,.12),transparent 43%),#101814}.hero small{color:var(--lime);font-size:7px;font-weight:950;letter-spacing:.15em;text-transform:uppercase}.hero h2{margin:6px 0;font-size:29px;line-height:.95;text-transform:uppercase;font-style:italic}.hero p{margin:0;color:#a2afaa;font-size:9px;line-height:1.5}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.kpi{padding:9px 4px;border-radius:10px;border:1px solid #27332f;background:#0c1311;text-align:center}.kpi strong{display:block;font-size:16px}.kpi span{display:block;color:var(--muted);font-size:6px;text-transform:uppercase;margin-top:2px}
 /* dashboard home — premium FC27-inspired pass */
-.home-dashboard{display:grid;gap:12px;position:relative}.home-dashboard:before{content:"";position:fixed;z-index:-1;inset:70px 0 70px;background:radial-gradient(circle at 14% 9%,rgba(78,241,185,.08),transparent 21%),radial-gradient(circle at 92% 35%,rgba(216,255,62,.045),transparent 25%);pointer-events:none}
+.home-dashboard{display:grid;gap:12px;position:relative}.home-unread-messages{display:grid;gap:7px}.home-unread-messages[hidden]{display:none}.home-unread-message{width:100%;min-height:58px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 11px;border:1px solid rgba(78,241,185,.48);border-radius:13px;background:linear-gradient(120deg,rgba(78,241,185,.12),rgba(216,255,62,.055)),#0b1512;color:#f4f8f6;text-align:left}.home-unread-message-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#15251f;border:1px solid #31584a;color:var(--mint);font-size:20px;font-weight:950}.home-unread-message-copy{min-width:0}.home-unread-message-copy strong,.home-unread-message-copy small{display:block}.home-unread-message-copy strong{font-size:10px;line-height:1.3}.home-unread-message-copy small{margin-top:3px;color:#9db0a8;font-size:7px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-unread-message-action{font-size:8px;font-weight:950;color:var(--lime);white-space:nowrap}.home-unread-message:active{transform:scale(.99)}.home-dashboard:before{content:"";position:fixed;z-index:-1;inset:70px 0 70px;background:radial-gradient(circle at 14% 9%,rgba(78,241,185,.08),transparent 21%),radial-gradient(circle at 92% 35%,rgba(216,255,62,.045),transparent 25%);pointer-events:none}
 .home-hero-card{--hero-accent:#d8ff3e;--hero-accent-rgb:216,255,62;position:relative;min-height:310px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(190px,.95fr);align-items:center;gap:14px;padding:24px;border:1px solid rgba(var(--hero-accent-rgb),.48);border-radius:22px;background:radial-gradient(circle at 74% 48%,rgba(var(--hero-accent-rgb),.12),transparent 21%),radial-gradient(ellipse at 72% 118%,rgba(var(--hero-accent-rgb),.18),transparent 45%),linear-gradient(110deg,#07100d 0%,#0d1713 42%,#080b09 75%,#12120c 100%);overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.05)}
 .home-hero-card[data-theme="gold"]{--hero-accent:#ffd966;--hero-accent-rgb:255,217,102}.home-hero-card[data-theme="violet"]{--hero-accent:#bc75ff;--hero-accent-rgb:188,117,255}
 .home-hero-card:before{content:"";position:absolute;inset:-15%;background:repeating-linear-gradient(118deg,transparent 0 44px,rgba(255,255,255,.026) 45px 46px),linear-gradient(90deg,rgba(255,255,255,.025),transparent 38%);transform:skewX(-8deg);pointer-events:none}.home-hero-card:after{content:"";position:absolute;width:480px;height:180px;right:-70px;bottom:-125px;border:1px solid rgba(var(--hero-accent-rgb),.28);border-radius:50%;box-shadow:0 0 0 26px rgba(var(--hero-accent-rgb),.028),0 0 0 54px rgba(var(--hero-accent-rgb),.02);transform:rotate(-8deg);pointer-events:none}
@@ -1542,7 +1542,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.50</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.51</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1550,6 +1550,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="homeView" class="view active">
   <div class="section">
     <div class="home-dashboard">
+      <div id="homeUnreadMessages" class="home-unread-messages" hidden aria-live="polite"></div>
       <div id="homeHeroCard" class="home-hero-card" data-theme="gold">
         <div class="home-hero-copy">
           <small id="homeHeroKicker">LIVE HUB</small>
@@ -7885,7 +7886,15 @@ function renderHomeProgress(){
 }
 function headerClubName(){const club=String(state.profile?.clubName||"").trim(),user=String(state.profile?.username||"").trim();return club||(user?`${user} FC`:"DEIN CLUB")}
 function renderHeaderClubName(){const el=$("dbIndicator");if(!el)return;const name=headerClubName();el.textContent=name;el.title=name==="DEIN CLUB"?"Dein Team":name}
-function renderHome(){const m=squadMetrics();renderHeaderClubName();$("homeRating").textContent=m.rating||"–";$("homeChem").textContent=`${m.chem}/33`;$("homePlayers").textContent=state.club.length;renderHomeHero();renderCompetitionHome();renderHomeRewards();renderHomeProgress()}
+function renderHomeMessages(){
+ const box=$("homeUnreadMessages");if(!box)return;
+ const rows=window.FooteraOnline?.unreadSummary?.()||[];
+ if(!rows.length){box.hidden=true;box.innerHTML="";return}
+ box.hidden=false;
+ box.innerHTML=rows.map(row=>`<button type="button" class="home-unread-message" data-home-message-uid="${esc(row.uid)}"><span class="home-unread-message-icon">✉</span><span class="home-unread-message-copy"><strong>${row.count===1?"Neue Nachricht":"Neue Nachrichten"} von ${esc(row.name||"Freund")}</strong><small>${row.count===1?"1 ungelesene Nachricht":`${row.count} ungelesene Nachrichten`} · Tippen, um den Chat zu öffnen</small></span><span class="home-unread-message-action">ÖFFNEN ›</span></button>`).join("")
+}
+function renderHome(){const m=squadMetrics();renderHeaderClubName();renderHomeMessages();$("homeRating").textContent=m.rating||"–";$("homeChem").textContent=`${m.chem}/33`;$("homePlayers").textContent=state.club.length;renderHomeHero();renderCompetitionHome();renderHomeRewards();renderHomeProgress()}
+document.addEventListener("click",e=>{const btn=e.target.closest("[data-home-message-uid]");if(!btn)return;const friend=(state.friends||[]).find(f=>f?.onlineUid===btn.dataset.homeMessageUid);if(friend)window.FooteraOnline?.openChat?.(friend)})
 function renderSeason(){const sp=state.sp||0,next=SEASON_REWARDS.find(x=>sp<x.sp),max=SEASON_REWARDS[SEASON_REWARDS.length-1].sp,seasonSpEl=$("seasonSp"),seasonBarEl=$("seasonBar"),seasonTrackEl=$("seasonTrack");if(seasonSpEl)seasonSpEl.textContent=`${fmt(sp)} SP`;if(seasonBarEl)seasonBarEl.style.width=`${Math.min(100,sp/max*100)}%`;if(seasonTrackEl)seasonTrackEl.innerHTML=SEASON_REWARDS.map(x=>`<div class="season-level ${state.seasonClaims[x.level]?"done":next?.level===x.level?"current":""}"><strong>Level ${x.level} · ${fmt(x.sp)} SP</strong><span>${rewardText(seasonTierReward(x,"free"))}</span></div>`).join("")}
 function renderCampaigns(){const completedTasks=TASKS.filter(t=>(state.stats[t.stat]||0)>=t.target).length,grid=$("campaignGrid");if(grid)grid.innerHTML=CAMPAIGNS.map((c,i)=>`<div class="campaign-card" data-campaign="${i}"><h3>${c.title}</h3><p>${c.text}</p><b>${c.key==="season"?`Saison ${seasonInfo().number} · ${fmt(state.sp||0)} SP`:c.key==="evo"?(activeEvolutionCount()?`${activeEvolutionCount()}/3 Evolutionen aktiv`:"Keine Evolution aktiv"):`${completedTasks}/${TASKS.length} Objectives abgeschlossen`}</b></div>`).join("")}
 function foundationTaskMini(){return [...TASKS].sort((a,b)=>{const av=Math.min(a.target,state.stats[a.stat]||0)/a.target,bv=Math.min(b.target,state.stats[b.stat]||0)/b.target;return bv-av}).slice(0,5).map(t=>{const v=Math.min(t.target,state.stats[t.stat]||0),done=v>=t.target;return`<div class="campaign-task-row"><div><strong>${esc(t.title)}</strong><span>${v}/${t.target} · ${esc(t.desc)}</span></div><b>${done?"FERTIG":`${Math.round(v/t.target*100)}%`}</b></div>`}).join("")}
@@ -8526,7 +8535,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.50";
+const GFUT_BUILD="V20.51";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
