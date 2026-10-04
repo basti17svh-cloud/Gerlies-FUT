@@ -67,6 +67,13 @@ test('central affiliation enrichment cannot replace the locally verified POTM le
  const {potm,c}=app();for(const r of potm.releases){const display=c.displayBase(potm.itemFor(r));const enriched={...display,leagueLogo:'https://external.example/incorrect.png'};assert.equal(c.emblemCandidates('league',enriched)[0],`./assets/footera/events/potm/logos/${r.theme}.png`)}
  assert.equal(c.emblemCandidates('league',{id:'normal',leagueLogo:'existing.png'})[0],'normal-league');
 });
+test('late DOM affiliation refresh preserves POTM release club and league assets',()=>{
+ const {potm,c}=app();const cards=potm.releases.map(r=>{const item=potm.itemFor(r,true);return {dataset:{playerId:item.pid,eventReleaseId:r.id},classList:{contains:k=>k==='potm'},club:{dataset:{}},league:{dataset:{}},querySelector(s){return s==='.card-club'?this.club:s==='.card-league'?this.league:null}}});
+ c.document={querySelectorAll:s=>s==='.custom-card[data-player-id]'?cards:[],querySelector:()=>null};
+ c.resolvedPlayer=p=>({...p,team:'Old club',league:'Old league',leagueLogo:'https://external.example/logo.png'});c.discoveredBadge=()=>'';c.apiSportsTeamLogo=()=>'';c.apiSportsLeagueLogo=()=>'';c.clubShort=c.leagueShort=String;c.badgeAsset=(kind,p)=>c.emblemCandidates(kind,p)[0];
+ const start=html.indexOf('function refreshAffiliationDom('),end=html.indexOf('const EA_PLAYER_DETAIL_PENDING',start);vm.runInContext(html.slice(start,end),c);c.refreshAffiliationDom();
+ for(const [i,r] of potm.releases.entries()){assert.equal(cards[i].club.innerHTML,r.clubLogo);assert.equal(cards[i].league.innerHTML,`./assets/footera/events/potm/logos/${r.theme}.png`);assert.equal(cards[i].club.title,r.team);assert.equal(cards[i].league.title,r.league)}
+});
 test('all original portraits, five vector frames and five league logos exist in the offline shell',()=>{
  const {potm}=app(),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  for(const r of potm.releases){const bytes=fs.readFileSync(path.join(root,r.face));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.length>50000);assert.ok(sw.includes('./'+r.face))}

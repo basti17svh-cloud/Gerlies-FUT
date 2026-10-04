@@ -94,7 +94,7 @@
  function back(){if(review){review=null;renderSBC();return true}if(detailId){detailId="";if(history.state?.kind==="potm-sbc")replaceUiState("view",{view:"sbcView"});renderSBC();window.scrollTo({top:overviewScrollY,behavior:"auto"});return true}return false}
  function restore(h){review=null;detailId=h?.kind==="potm-sbc"&&release(h.potmId)?h.potmId:"";if(detailId){activeSbcGroup="POTM";activeSbcId=null;activeSbcSet=null;renderSBC()}}
  function handleBack(h){if(review){review=null;renderSBC();return true}if(h?.kind==="potm-sbc"&&h.potmId===detailId)return false;if(detailId){detailId="";if(h?.view!=="sbcView")return false;renderSBC();return true}return false}
- globalThis.FooteraPotm={releases,scoreForRating,info,isActive,activeSBCs,itemFor,progress,planSubmission,commitSubmission,render,handleBack,restore,busy:()=>!!(review||detailId)&&currentViewId()==="sbcView"};
+ globalThis.FooteraPotm={releases,scoreForRating,info,isActive,activeSBCs,itemFor,progress,planSubmission,commitSubmission,render,handleBack,restore,affiliationForCard:(p,id)=>{const r=release(id);return r&&String(p?.id)===r.pid?{...p,team:r.team,nation:r.nation,league:r.league,clubLogo:r.clubLogo,leagueLogo:"./"+asset+"logos/"+r.theme+".png",potmTheme:r.theme}:p},busy:()=>!!(review||detailId)&&currentViewId()==="sbcView"};
  // Theme and metadata are scoped to the SBC item, never its normal base card.
  if(typeof cardClass==="function"){
   const originalClass=cardClass,originalBase=itemBase,originalDisplay=displayBase,originalEmblems=emblemCandidates;
