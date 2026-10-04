@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.54</title>
+<title>Footera V20.55</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1473,6 +1473,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css">
 <link rel="stylesheet" href="./play-hub.css">
+<link rel="stylesheet" href="./friends-hub.css">
 </head>
 <body>
 
@@ -1543,7 +1544,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.54</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.55</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1856,13 +1857,19 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </div>
 </div></section>
 
-<section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Freunde über einen kurzen Footera-Code hinzufügen. Mannschaften und Live-Duelle werden über den Online-Dienst synchronisiert.</p></div><div class="section">
-  <div class="social-grid">
-    <div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Dein kurzer Freundescode ist mit deinem Online-Profil verknüpft. Mannschaftsänderungen werden automatisch synchronisiert.</p><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div>
-    <div class="profile-card"><h3>Freund hinzufügen</h3><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div>
-    <div class="profile-card"><h3>Freundesliste</h3><div class="online-note">Schreibe Nachrichten, starte Live-Duelle oder öffne eure Rangliste. Neue Nachrichten erscheinen direkt als In-App-Benachrichtigung.</div><div id="friendList" class="friend-list"></div></div>
-    <div id="onlinePanel" class="profile-card" hidden><h3>Live-Duelle</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div><div id="onlineComparison"></div></div>
-  </div>
+<section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Dein Freundeskreis. Eure Teams, Nachrichten und gemeinsamen Duelle.</p></div><div class="section friends-content">
+ <section class="friends-hero" aria-labelledby="friendsHubTitle"><span class="friends-eyebrow">Dein Netzwerk</span><h3 id="friendsHubTitle">Freunde</h3><p id="friendsOnlineNote"></p><div id="friendsHubCounts" class="friends-metrics"></div><button type="button" class="friends-hero-action" data-friends-open="add">Freund hinzufügen <span aria-hidden="true">↗</span></button></section>
+ <div class="friends-toolbar"><h3>Deine Freunde</h3><div class="friends-filters" aria-label="Freundeliste filtern"><button type="button" data-friends-filter="all" aria-pressed="true">Alle</button><button type="button" data-friends-filter="online" aria-pressed="false">Online</button></div></div>
+ <input id="friendsSearch" class="friends-search" type="search" placeholder="Freund oder Verein suchen" aria-label="Freund oder Verein suchen" autocomplete="off">
+ <div id="friendList" class="friend-list"></div>
+ <div class="friends-tile-grid">
+  <button type="button" class="friends-tile friends-tile-ranking" data-friends-open="duels"><span class="friends-eyebrow">Wettbewerb</span><strong>Rangliste &amp; Statistik</strong><small>Eure Punkte, direkte Bilanz und letzten Live-Duelle.</small><span class="friends-tile-arrow" aria-hidden="true">›</span></button>
+  <button type="button" class="friends-tile" data-friends-open="add"><span class="friends-eyebrow">Verbinden</span><strong>Freund hinzufügen</strong><small>Code eingeben und gemeinsam loslegen.</small><span class="friends-tile-arrow" aria-hidden="true">›</span></button>
+  <button type="button" class="friends-tile friends-tile-code" data-friends-open="code"><span class="friends-eyebrow">Dein Profil</span><strong>Mein Freundescode</strong><small>Deinen Code ansehen und teilen.</small><span class="friends-tile-arrow" aria-hidden="true">›</span></button>
+ </div>
+ <details id="friendsPanelDuels" class="friends-panel"><summary>Rangliste, Statistik &amp; Live-Duelle</summary><h4 class="friends-subheading">Deine letzten Live-Duelle</h4><div id="friendsLiveStats" class="friends-metrics"></div><p id="friendsStatsNote"></p><h4 class="friends-subheading">Direkter Vergleich</h4><label for="friendsRankingSelect">Gegen welchen Freund?</label><select id="friendsRankingSelect"></select><button type="button" id="friendsRankingOpen" class="primary">Rangliste ansehen</button><p>Im direkten Vergleich siehst du eure Punkte, Tore, Form und die Ergebnis-Historie.</p><div id="onlinePanel" class="profile-card" hidden><h3>Live-Duelle</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div><div id="onlineComparison"></div></div></details>
+ <details id="friendsPanelAdd" class="friends-panel"><summary>Freund hinzufügen</summary><div class="profile-card"><h3>Freund hinzufügen</h3><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div></details>
+ <details id="friendsPanelCode" class="friends-panel"><summary>Mein Profil &amp; Freundescode</summary><div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Dein kurzer Freundescode ist mit deinem Online-Profil verknüpft. Mannschaftsänderungen werden automatisch synchronisiert.</p><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></details>
 </div></section>
 
 </main>
@@ -8288,7 +8295,7 @@ function renderSocial(){
   const loadCode=()=>window.FooteraOnline?.getFriendCode?.().then(code=>{if(codeBox&&code)codeBox.value=code.slice(0,4)+"-"+code.slice(4)}).catch(e=>{if(codeBox)codeBox.value="Freundescode derzeit nicht verfügbar";console.warn(e)});
   if(window.FooteraOnline.ready)loadCode();else window.FooteraOnline.init()?.then(loadCode).catch(console.warn)
  }else if(codeBox)codeBox.value=encodeFriendProfile();
- $("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button>${window.FooteraOnline?.ready&&f.onlineUid?`<button class="secondary friend-message-btn" data-friend-chat="${i}">Nachricht${window.FooteraOnline?.unreadCount?.(f.onlineUid)?` <span class="friend-unread-badge">${window.FooteraOnline.unreadCount(f.onlineUid)}</span>`:""}</button><button class="primary" data-friend-live="${i}">Live-Duell</button><button class="secondary" data-friend-compare="${i}">Rangliste</button>`:""}<button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>';
+ if(!window.FooteraFriendsHub)$("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button>${window.FooteraOnline?.ready&&f.onlineUid?`<button class="secondary friend-message-btn" data-friend-chat="${i}">Nachricht${window.FooteraOnline?.unreadCount?.(f.onlineUid)?` <span class="friend-unread-badge">${window.FooteraOnline.unreadCount(f.onlineUid)}</span>`:""}</button><button class="primary" data-friend-live="${i}">Live-Duell</button><button class="secondary" data-friend-compare="${i}">Rangliste</button>`:""}<button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>';
  window.FooteraOnline?.render();if(window.FooteraOnline?.available&&!window.FooteraOnline.ready)window.FooteraOnline.init();else if(window.FooteraOnline?.ready&&!window.FooteraOnline.registered)window.FooteraOnline.syncProfile().then(ok=>{if(ok)renderSocial()}).catch(console.warn)
 }
 $("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Benutzername gespeichert.")});
@@ -8577,7 +8584,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.54";
+const GFUT_BUILD="V20.55";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8630,7 +8637,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2054",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2055",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8648,6 +8655,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./friend-online.js"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
+<script src="./friends-hub.js"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});

@@ -2,12 +2,13 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary};
+ const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary,presence,refreshPresence,duelStats};
  window.FooteraOnline=online;
- const unreadCounts=new Map(),duelStatus=new Map();
+ const unreadCounts=new Map(),duelStatus=new Map(),presenceRows=new Map();
+ let presenceBusy=false,presenceLastAttempt=-Infinity,presenceKey="",presenceTimer=null;
  if(!available)return;
  $("onlinePanel").hidden=false;
- let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;
+ let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],rowsLoaded=false,comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;
  const escape=s=>esc(String(s??""));
  const team=(d,side)=>d?.[`${side}_profile`]?.club_name||"Footera Club";
  const sideOf=d=>d?.home_user===online.userId?"home":"away";
@@ -17,6 +18,36 @@
  function friendByUid(uid){return (state.friends||[]).find(f=>f?.onlineUid===uid)||null}
  function unreadCount(uid){return Number(unreadCounts.get(uid)||0)}
  function unreadSummary(){if(!available)return[];return [...unreadCounts.entries()].filter(([,count])=>Number(count)>0).map(([uid,count])=>{const friend=friendByUid(uid);return friend?{uid,count:Number(count),name:friend.clubName||friend.username||"Freund"}:null}).filter(Boolean).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"))}
+ function presence(uid){
+  if(!available||!online.ready||!uid||document.visibilityState!=="visible"||navigator.onLine===false)return "unknown";
+  const row=presenceRows.get(uid),now=performance.now();
+  if(!row||now-row.checkedAt>45000)return "unknown";
+  return row.isOnline&&now<row.expiresAt?"online":row.isOnline===null?"unknown":"offline"
+ }
+ async function refreshPresence(force=false){
+  if(!online.ready||document.visibilityState!=="visible")return;
+  const ids=[...new Set((state.friends||[]).map(f=>f.onlineUid).filter(validUid))].slice(0,1000),key=ids.join(",");
+  if(presenceBusy||(!force&&key===presenceKey&&performance.now()-presenceLastAttempt<15000))return;
+  presenceBusy=true;presenceKey=key;presenceLastAttempt=performance.now();
+  try{
+   if(!ids.length){presenceRows.clear();return}
+   const {data,error}=await client.rpc("footera_friend_statuses",{p_friends:ids});if(error)throw error;
+   presenceRows.clear();const now=performance.now();
+   for(const row of data||[])presenceRows.set(row.user_id,{isOnline:typeof row.is_online==="boolean"?row.is_online:null,checkedAt:now,expiresAt:presenceLastAttempt+Math.min(90,Math.max(0,Number(row.expires_in)||0))*1000});
+  }catch(e){presenceRows.clear();console.warn("Freundesstatus:",e)}
+  finally{presenceBusy=false;if(currentView()==="socialView")window.FooteraFriendsHub?.render()}
+ }
+ async function heartbeat(){
+  if(!online.ready||!online.registered||document.visibilityState!=="visible")return;
+  try{const {error}=await client.rpc("footera_presence_heartbeat");if(error)throw error}catch(e){console.warn("Aktivitätsstatus:",e)}
+ }
+ function duelStats(){
+  if(!online.ready||!rowsLoaded)return null;
+  const friends=new Set((state.friends||[]).map(f=>f.onlineUid).filter(Boolean)),games=rows.filter(g=>g.status==="finished"&&(g.home_user===online.userId&&friends.has(g.away_user)||g.away_user===online.userId&&friends.has(g.home_user)));
+  const stats={matches:games.length,wins:0,draws:0,losses:0,goals:0,conceded:0};
+  for(const g of games){const home=g.home_user===online.userId,own=Number(home?g.home_score:g.away_score)||0,opp=Number(home?g.away_score:g.home_score)||0;stats.goals+=own;stats.conceded+=opp;if(own>opp)stats.wins++;else if(own<opp)stats.losses++;else stats.draws++}
+  return stats
+ }
  function ensureCommsUi(){
   if(!$("footeraMessageNotice")){
    document.body.insertAdjacentHTML("beforeend",`
@@ -157,10 +188,14 @@
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
     online.ready=true;ensureCommsUi();
     await syncProfile();await refresh();await loadUnreadCounts();
+    heartbeat();refreshPresence();
+    clearInterval(presenceTimer);presenceTimer=setInterval(()=>{heartbeat();if(currentView()==="socialView")refreshPresence(true)},25000);
     channel=client.channel(`footera-duels-${online.userId}`).on("postgres_changes",{event:"*",schema:"public",table:"footera_duels"},handleDuelRealtime).subscribe();
     messageChannel=client.channel(`footera-messages-${online.userId}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"footera_messages",filter:`recipient_user=eq.${online.userId}`},payload=>handleIncomingMessage(payload.new).catch(console.warn)).subscribe();
     pollTimer=setInterval(()=>{if(document.visibilityState==="visible"&&(currentView()==="socialView"||$("onlineDuelModal").classList.contains("active")))refresh().catch(console.warn)},15000);
-    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresh().catch(console.warn)});
+    document.addEventListener("visibilitychange",()=>{presenceRows.clear();if(document.visibilityState==="visible"){heartbeat();refreshPresence(true);refresh().catch(console.warn)}else if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
+    window.addEventListener("offline",()=>{presenceRows.clear();if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
+    window.addEventListener("online",()=>{heartbeat();refreshPresence(true)});
     if(currentView()==="socialView")renderSocial()
    }catch(e){online.ready=false;started=null;const node=$("onlineStatus");if(node)node.textContent=`Online-Verbindung: ${errorText(e)}`;console.warn("Footera online:",e)}
   })();return started
@@ -222,10 +257,10 @@
  async function refresh(){
   if(!online.ready)return;
   const {data,error}=await client.from("footera_duels").select("*").order("created_at",{ascending:false}).limit(60);
-  if(error)throw error;rows=data||[];
+  if(error)throw error;rows=data||[];rowsLoaded=true;
   for(const d of rows){duelStatus.set(d.id,d.status);if(d.status==="invited"&&d.away_user===online.userId&&!notified.has(d.id)){notified.add(d.id);showIncomingInvite(d)}}
   if(active){const fresh=rows.find(r=>r.id===active.id);if(fresh)applyMatch(fresh)}
-  render()
+  render();if(currentView()==="socialView")window.FooteraFriendsHub?.render()
  }
  function clearOnlineGoalMoment(){
   goalMomentUntil=0;
@@ -319,6 +354,7 @@
  }
  async function showComparison(friend){
   if(!online.ready||!validUid(friend?.onlineUid))return toast("Für diesen Freund fehlt noch ein aktueller Online-Freundescode.");
+  if(currentView()==="socialView")window.FooteraFriendsHub?.open("duels");
   comparing=friend.onlineUid;comparison={friend,rows:[],loading:true};renderComparison();
   try{
    const all=[];let from=0;while(from<5000){
