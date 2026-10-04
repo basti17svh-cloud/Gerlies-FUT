@@ -1,6 +1,7 @@
-/* Footera V20.55 — friends first, with separate areas for duels, comparison and codes. */
+/* Footera V20.56 — friends first, with separate areas for duels, comparison and codes. */
 (()=>{
- let filter="all",query="";
+ const AREAS={duels:"Rangliste & Statistik",add:"Freund hinzufügen",code:"Mein Freundescode"};
+ let filter="all",query="",area="hub";
  const metric=(value,label)=>`<div class="friends-metric"><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
  function orderedFriends(friends,statusFor){
   return friends.map((friend,index)=>({friend,index,status:statusFor(friend.onlineUid)})).sort((a,b)=>(b.status==="online")-(a.status==="online")||a.index-b.index);
@@ -21,7 +22,7 @@
   const shown=items.filter(x=>(filter!=="online"||x.status==="online")&&`${x.friend.clubName||""} ${x.friend.username||""}`.toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de")));
   const list=$("friendList"),opened=new Set([...list.querySelectorAll("details[open]")].map(el=>el.dataset.friendOptions)),focused=document.activeElement;
   const focusAction=focused&&list.contains(focused)?Object.entries(focused.dataset).find(([key])=>key.startsWith("friend")&&key!=="friendOptions"):null;
-  list.innerHTML=shown.length?shown.map(friendHTML).join(""):`<div class="friends-empty"><span aria-hidden="true">＋</span><h3>${items.length?"Keine passenden Freunde":"Dein Freundeskreis beginnt hier"}</h3><p>${items.length?"Ändere die Suche oder zeige alle Freunde an.":"Teile deinen Code oder füge einen Freund hinzu. Danach könnt ihr chatten und gegeneinander spielen."}</p>${items.length?"":'<button type="button" class="primary" data-friends-open="add">Freund hinzufügen</button>'}</div>`;
+  list.innerHTML=shown.length?shown.map(friendHTML).join(""):`<div class="friends-empty"><p>${items.length?"Keine passenden Freunde. Ändere die Suche oder zeige alle an.":"Noch keine Freunde. Füge unten einen Freund hinzu oder teile deinen Code."}</p></div>`;
   for(const el of list.querySelectorAll("details"))el.open=opened.has(el.dataset.friendOptions);
   if(focusAction){const [key,value]=focusAction;const attr="data-"+key.replace(/[A-Z]/g,c=>"-"+c.toLowerCase());list.querySelector(`[${attr}="${Number(value)}"]`)?.focus({preventScroll:true})}
   document.querySelectorAll("[data-friends-filter]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.friendsFilter===filter)));
@@ -34,18 +35,32 @@
   $("friendsStatsNote").textContent=stats?`Beendete Spiele gegen deine gespeicherten Freunde aus den letzten 60 Live-Duellen. Tore ${stats.goals}:${stats.conceded}.`:"Deine Live-Bilanz wird geladen, sobald der Online-Dienst verbunden ist.";
   online?.refreshPresence?.();
  }
- function open(area){
-  const panel=$("friendsPanel"+area[0].toUpperCase()+area.slice(1));if(!panel)return;
-  panel.open=true;panel.scrollIntoView({behavior:"smooth",block:"start"});panel.querySelector("summary")?.focus({preventScroll:true});
+ function show(next,{push=true,focus=true}={}){
+  const chosen=AREAS[next]?next:"hub",changed=area!==chosen;area=chosen;
+  $("friendsHub").hidden=area!=="hub";$("friendsDetail").hidden=area==="hub";
+  document.querySelectorAll("[data-friends-panel]").forEach(panel=>panel.hidden=panel.dataset.friendsPanel!==area);
+  $("friendsDetailTitle").textContent=AREAS[area]||"";
+  if(push&&changed)pushUiState(area==="hub"?"view":"friends-area",{view:"socialView",friendsArea:area});
+  if(focus){window.scrollTo({top:0,behavior:"smooth"});if(area!=="hub")$("friendsDetailTitle").focus({preventScroll:true})}
  }
+ function open(next){if(area!==next)show(next)}
+ function focusTile(previous){document.querySelector(`[data-friends-open="${previous}"]`)?.focus({preventScroll:true})}
  const originalSocial=renderSocial;
- renderSocial=function(){originalSocial();render()};
- window.FooteraFriendsHub={render,open};
+ renderSocial=function(){originalSocial();render();show(area,{push:false,focus:false})};
+ window.FooteraFriendsHub={render,open,restore:target=>{if(target?.view==="socialView")show(target.friendsArea||"hub",{push:false})},handleBack:target=>{
+  if(area==="hub")return false;
+  if(target?.gfut&&target.view!=="socialView"){area="hub";return false}
+  const previous=area;show(target?.friendsArea||"hub",{push:false});if(area==="hub")focusTile(previous);return true
+ }};
  $("friendsSearch").addEventListener("input",event=>{query=event.target.value;render()});
  $("socialView").addEventListener("click",event=>{
   const tile=event.target.closest("[data-friends-open]");if(tile){open(tile.dataset.friendsOpen);return}
+  if(event.target.closest("[data-friends-back]")){
+   const previous=area;if(history.state?.kind==="friends-area")history.back();else{show("hub",{push:false});replaceUiState("view",{view:"socialView"});focusTile(previous)}return
+  }
   const tab=event.target.closest("[data-friends-filter]");if(tab){filter=tab.dataset.friendsFilter;render();return}
   if(event.target.closest("#friendsRankingOpen")){const selected=$("friendsRankingSelect").value,friend=selected!==""?state.friends[Number(selected)]:null;if(friend?.onlineUid){open("duels");window.FooteraOnline?.showComparison(friend)}}
  });
- if(typeof module!=="undefined")module.exports={orderedFriends};
+ show("hub",{push:false,focus:false});
+ if(typeof module!=="undefined")module.exports={orderedFriends,show};
 })();

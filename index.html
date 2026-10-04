@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.55</title>
+<title>Footera V20.56</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1544,7 +1544,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.55</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.56</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1857,9 +1857,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </div>
 </div></section>
 
-<section id="socialView" class="view"><div class="headline"><h2>Freunde</h2><p>Dein Freundeskreis. Eure Teams, Nachrichten und gemeinsamen Duelle.</p></div><div class="section friends-content">
- <section class="friends-hero" aria-labelledby="friendsHubTitle"><span class="friends-eyebrow">Dein Netzwerk</span><h3 id="friendsHubTitle">Freunde</h3><p id="friendsOnlineNote"></p><div id="friendsHubCounts" class="friends-metrics"></div><button type="button" class="friends-hero-action" data-friends-open="add">Freund hinzufügen <span aria-hidden="true">↗</span></button></section>
- <div class="friends-toolbar"><h3>Deine Freunde</h3><div class="friends-filters" aria-label="Freundeliste filtern"><button type="button" data-friends-filter="all" aria-pressed="true">Alle</button><button type="button" data-friends-filter="online" aria-pressed="false">Online</button></div></div>
+<section id="socialView" class="view"><div class="section friends-content">
+ <div id="friendsHub" class="friends-content"> <section class="friends-hero" aria-labelledby="friendsHubTitle"><span class="friends-eyebrow">Dein Netzwerk</span><h2 id="friendsHubTitle">Freunde</h2><p id="friendsOnlineNote"></p><div id="friendsHubCounts" class="friends-metrics"></div></section>
+ <div class="friends-toolbar"><div class="friends-filters" aria-label="Freundeliste filtern"><button type="button" data-friends-filter="all" aria-pressed="true">Alle</button><button type="button" data-friends-filter="online" aria-pressed="false">Online</button></div></div>
  <input id="friendsSearch" class="friends-search" type="search" placeholder="Freund oder Verein suchen" aria-label="Freund oder Verein suchen" autocomplete="off">
  <div id="friendList" class="friend-list"></div>
  <div class="friends-tile-grid">
@@ -1867,9 +1867,17 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <button type="button" class="friends-tile" data-friends-open="add"><span class="friends-eyebrow">Verbinden</span><strong>Freund hinzufügen</strong><small>Code eingeben und gemeinsam loslegen.</small><span class="friends-tile-arrow" aria-hidden="true">›</span></button>
   <button type="button" class="friends-tile friends-tile-code" data-friends-open="code"><span class="friends-eyebrow">Dein Profil</span><strong>Mein Freundescode</strong><small>Deinen Code ansehen und teilen.</small><span class="friends-tile-arrow" aria-hidden="true">›</span></button>
  </div>
- <details id="friendsPanelDuels" class="friends-panel"><summary>Rangliste, Statistik &amp; Live-Duelle</summary><h4 class="friends-subheading">Deine letzten Live-Duelle</h4><div id="friendsLiveStats" class="friends-metrics"></div><p id="friendsStatsNote"></p><h4 class="friends-subheading">Direkter Vergleich</h4><label for="friendsRankingSelect">Gegen welchen Freund?</label><select id="friendsRankingSelect"></select><button type="button" id="friendsRankingOpen" class="primary">Rangliste ansehen</button><p>Im direkten Vergleich siehst du eure Punkte, Tore, Form und die Ergebnis-Historie.</p><div id="onlinePanel" class="profile-card" hidden><h3>Live-Duelle</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div><div id="onlineComparison"></div></div></details>
- <details id="friendsPanelAdd" class="friends-panel"><summary>Freund hinzufügen</summary><div class="profile-card"><h3>Freund hinzufügen</h3><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div></details>
- <details id="friendsPanelCode" class="friends-panel"><summary>Mein Profil &amp; Freundescode</summary><div class="profile-card"><h3>Mein Profil</h3><p><strong id="socialClubName">Footera Club</strong><br>Dein kurzer Freundescode ist mit deinem Online-Profil verknüpft. Mannschaftsänderungen werden automatisch synchronisiert.</p><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></details>
+</div>
+ <div id="friendsDetail" class="friends-content" hidden>
+  <div class="friends-detail-heading"><button type="button" class="secondary friends-back" data-friends-back>← Zurück zu Freunden</button><h2 id="friendsDetailTitle" tabindex="-1"></h2></div>
+  <section id="friendsPanelDuels" class="friends-panel" data-friends-panel="duels" hidden>
+   <div class="friends-box"><h3>Deine letzten Live-Duelle</h3><div id="friendsLiveStats" class="friends-metrics"></div><p id="friendsStatsNote"></p></div>
+   <div class="friends-box"><h3>Direkter Vergleich</h3><label for="friendsRankingSelect">Gegen welchen Freund?</label><select id="friendsRankingSelect"></select><button type="button" id="friendsRankingOpen" class="primary">Rangliste ansehen</button><p>Punkte, Tore, Form und Ergebnis-Historie aus euren gemeinsamen Live-Duellen.</p><div id="onlineComparison"></div></div>
+   <div id="onlinePanel" class="profile-card friends-box" hidden><h3>Live-Duelle &amp; Einladungen</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div></div>
+  </section>
+  <section id="friendsPanelAdd" class="friends-panel" data-friends-panel="add" hidden><div class="profile-card"><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><label class="friends-field-label" for="friendCodeInput">Freundescode</label><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div></section>
+  <section id="friendsPanelCode" class="friends-panel" data-friends-panel="code" hidden><div class="profile-card"><p><strong id="socialClubName">Footera Club</strong><br>Teile diesen Code, damit Freunde dich hinzufügen können. Dein Team wird automatisch synchronisiert.</p><label class="friends-field-label" for="myFriendCode">Dein Freundescode</label><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></section>
+ </div>
 </div></section>
 
 </main>
@@ -8460,9 +8468,10 @@ function handleAppBack(targetState){
   protectLockedBack("Das laufende Spiel bleibt geöffnet. Beende zuerst die Partie.","match");return true
  }
  if(currentViewId()==="playView"&&window.FooteraPlayHub?.handleBack(targetState))return true;
+ if(currentViewId()==="socialView"&&window.FooteraFriendsHub?.handleBack(targetState))return true;
  return false
 }
-window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view){switchView(e.state.view,{push:false});window.FooteraPlayHub?.restore(e.state)}}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
+window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view){switchView(e.state.view,{push:false});window.FooteraPlayHub?.restore(e.state);window.FooteraFriendsHub?.restore(e.state)}}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
 if(!history.state?.gfut)replaceUiState("view",{view:currentViewId()});
 
 function moreTray(){return $("moreTray")}
@@ -8584,7 +8593,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.55";
+const GFUT_BUILD="V20.56";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8637,7 +8646,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2055",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2056",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

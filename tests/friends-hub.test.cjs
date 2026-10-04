@@ -41,3 +41,28 @@ test('live statistics include finished duels against saved friends in both direc
  ]});
  assert.deepEqual(JSON.parse(JSON.stringify(ctx.duelStats())),{matches:3,wins:1,draws:1,losses:1,goals:5,conceded:5});
 });
+
+function navigation(){
+ const nodes=new Map(),events=new Map(),history=[];
+ const panels=['duels','add','code'].map(area=>({dataset:{friendsPanel:area},hidden:true}));
+ const el=id=>{if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',value:'',hidden:false,disabled:false,querySelectorAll:()=>[],contains:()=>false,addEventListener:(name,fn)=>events.set(id+':'+name,fn),focus(){ctx.document.activeElement=this}});return nodes.get(id)};
+ const ctx={state:{friends:[]},$:el,esc:String,renderSocial(){},pushUiState:(kind,data)=>history.push({gfut:true,kind,...data}),replaceUiState(){},history:{state:null,back(){}},window:{scrollTo(){}},document:{activeElement:null,querySelectorAll:()=>panels,querySelector:selector=>el(selector)}};
+ // Filters and panels have different selectors in the real DOM.
+ ctx.document.querySelectorAll=selector=>selector==='[data-friends-panel]'?panels:[];
+ vm.createContext(ctx);vm.runInContext(hub,ctx);return{ctx,el,panels,history,api:ctx.window.FooteraFriendsHub};
+}
+test('each friends tile opens one screen; background refresh retains it without duplicate history',()=>{
+ const n=navigation();assert.equal(n.el('friendsHub').hidden,false);assert.ok(n.panels.every(p=>p.hidden));
+ for(const area of ['duels','add','code']){
+  n.api.open(area);assert.equal(n.el('friendsHub').hidden,true);assert.equal(n.el('friendsDetail').hidden,false);
+  assert.deepEqual(n.panels.filter(p=>!p.hidden).map(p=>p.dataset.friendsPanel),[area]);
+  const count=n.history.length;n.api.open(area);n.ctx.renderSocial();assert.equal(n.history.length,count);assert.equal(n.el('friendsHub').hidden,true);
+ }
+});
+test('friends navigation supports Android back, forward restoration and leaving for another view',()=>{
+ const n=navigation();n.api.open('add');assert.equal(n.history[0].friendsArea,'add');
+ assert.equal(n.api.handleBack({gfut:true,view:'socialView'}),true);assert.equal(n.el('friendsHub').hidden,false);assert.ok(n.panels.every(p=>p.hidden));
+ n.api.restore({gfut:true,view:'socialView',friendsArea:'add'});assert.equal(n.panels[1].hidden,false);
+ assert.equal(n.api.handleBack({gfut:true,view:'homeView'}),false);n.ctx.renderSocial();assert.equal(n.el('friendsHub').hidden,false);
+ n.api.restore({view:'socialView',friendsArea:'missing'});assert.equal(n.el('friendsDetail').hidden,true);
+});

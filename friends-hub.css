@@ -1,19 +1,17 @@
-/* Footera V20.55 — scoped friends hub. */
+/* Footera V20.56 — scoped friends hub. */
 #socialView [hidden]{display:none!important}
 #socialView .friends-content{display:grid;gap:16px}
 #socialView .friends-hero,#socialView .friends-tile{position:relative;isolation:isolate;overflow:hidden;border:1px solid #3f6259;border-radius:22px;color:#f4faf8;box-shadow:inset 0 1px #ffffff12,0 12px 26px #0003;background:radial-gradient(ellipse at 90% 10%,#317f7650,transparent 65%),linear-gradient(140deg,#102520,#122a32)}
 #socialView .friends-hero{padding:27px 24px;min-height:242px;display:flex;flex-direction:column;justify-content:center;gap:12px}
 #socialView .friends-hero:after,#socialView .friends-tile:after{content:"";position:absolute;z-index:-1;right:-70px;bottom:-100px;width:270px;height:270px;border:1px solid #91efdc30;border-radius:50%;box-shadow:0 0 0 32px #91efdc07,0 0 0 64px #91efdc04;pointer-events:none}
 #socialView .friends-eyebrow{font-size:11px;font-weight:850;letter-spacing:.14em;color:#87e7ed;text-transform:uppercase}
-#socialView .friends-hero h3{font-size:29px;margin:0;line-height:1.15}
+#socialView .friends-hero h2{font-size:29px;margin:0;line-height:1.15}
 #socialView .friends-hero>p{font-size:12px;line-height:1.55;color:#b4c8c4;margin:0;max-width:480px}
 #socialView .friends-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 #socialView .friends-metric{padding:12px 9px;border-radius:12px;background:#070f115e;border:1px solid #8cdbd81c;min-width:0}
 #socialView .friends-metric strong{display:block;font-size:22px;color:#eaffde;line-height:1.15}
 #socialView .friends-metric span{display:block;margin-top:4px;font-size:10px;color:#afc1bd;overflow-wrap:anywhere}
-#socialView .friends-hero .friends-hero-action{align-self:flex-start;padding:8px 0;font-size:12px;font-weight:800;background:none;border:0;color:#d9ff80}
-#socialView .friends-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
-#socialView .friends-toolbar h3{margin:0;font-size:18px}
+#socialView .friends-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:flex-end}
 #socialView .friends-filters{display:flex;gap:6px}
 #socialView .friends-filters button{font-size:11px;padding:8px 12px;border:1px solid #3d514b;border-radius:20px;color:#a6b8b1;background:#101b17}
 #socialView .friends-filters button[aria-pressed="true"]{color:#deffad;background:#283f29;border-color:#729252}
@@ -37,11 +35,8 @@
 #socialView .friend-actions button{font-size:11px;min-height:42px;white-space:normal;overflow-wrap:anywhere}
 #socialView .friends-more summary{margin-top:12px;color:#a8beb6;font-size:11px;cursor:pointer;padding:6px 0}
 #socialView .friends-remove{color:#ffacb9}
-#socialView .friends-empty{padding:29px 20px;border:1px dashed #4c6960;border-radius:19px;text-align:center;background:#10211ac9}
-#socialView .friends-empty>span{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 14px;border:1px solid #6ea69155;border-radius:15px;font-size:27px;color:#b0efcf;background:#213c30}
-#socialView .friends-empty h3{margin:0;font-size:17px}
-#socialView .friends-empty p{font-size:12px;line-height:1.6;color:#a3b9af;margin:10px 0 17px}
-#socialView .friends-empty button{padding:13px 18px;font-size:12px}
+#socialView .friends-empty{padding:14px 16px;border:1px dashed #4c6960;border-radius:19px;text-align:center;background:#10211ac9}
+#socialView .friends-empty p{font-size:12px;line-height:1.6;color:#a3b9af;margin:0}
 #socialView .friends-tile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 #socialView .friends-tile{min-height:180px;padding:21px 18px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:10px;cursor:pointer}
 #socialView .friends-tile strong{font-size:20px;line-height:1.2;overflow-wrap:anywhere}
@@ -50,9 +45,7 @@
 #socialView .friends-tile-ranking{grid-column:1/-1;min-height:208px;border-color:#5d5075;background:radial-gradient(ellipse at 90% 5%,#71538955,transparent 65%),linear-gradient(145deg,#211a2c,#142631)}
 #socialView .friends-tile-ranking .friends-eyebrow{color:#d0abff}
 #socialView .friends-tile-code{border-color:#5d6550;background:radial-gradient(ellipse at 90% 5%,#7d81413a,transparent 65%),linear-gradient(145deg,#222c1c,#11211d)}
-#socialView .friends-panel{padding:19px;border:1px solid #3d514c;border-radius:20px;background:linear-gradient(145deg,#15231f,#11181a);min-width:0;scroll-margin-top:95px}
-#socialView .friends-panel>summary{font-size:17px;font-weight:800;cursor:pointer;line-height:1.4}
-#socialView .friends-panel[open]>summary{margin-bottom:18px}
+#socialView .friends-panel{display:grid;gap:14px;padding:19px;border:1px solid #3d514c;border-radius:20px;background:linear-gradient(145deg,#15231f,#11181a);min-width:0}
 #socialView .friends-panel p,#socialView .friends-panel .online-note{font-size:12px;line-height:1.6;color:#adbbb5;margin:10px 0}
 #socialView .friends-panel .profile-card{padding:0;background:none;border:0}
 #socialView .friends-panel .profile-card h3{font-size:16px}
@@ -64,3 +57,11 @@
 #socialView button:focus-visible,#socialView summary:focus-visible{outline:2px solid #9cebd1;outline-offset:4px}
 @media(min-width:700px){#socialView .friend-list{grid-template-columns:repeat(2,minmax(0,1fr))}#socialView .friends-hero{min-height:280px}#socialView .friends-tile-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#socialView .friends-tile-ranking{grid-column:auto}}
 @media(max-width:350px){#socialView .friends-hero{padding:22px 18px}#socialView .friends-tile-grid{grid-template-columns:1fr}#socialView .friends-tile strong{font-size:21px}#socialView .friends-person{padding:14px}}
+#socialView .friends-detail-heading{display:grid;gap:15px}
+#socialView .friends-detail-heading h2{font-size:25px;line-height:1.2;margin:0;overflow-wrap:anywhere}
+#socialView .friends-back{justify-self:start;padding:11px 14px;font-size:12px;min-height:43px}
+#socialView #friendsPanelDuels{padding:0;background:none;border:0}
+#socialView .friends-box{padding:19px;border:1px solid #3d514c;border-radius:20px;background:linear-gradient(145deg,#15231f,#11181a);min-width:0}
+#socialView .friends-panel .friends-box{padding:19px;border:1px solid #3d514c;background:linear-gradient(145deg,#15231f,#11181a)}
+#socialView .friends-box h3{font-size:17px;margin:0 0 12px}
+#socialView .friends-field-label{display:block;font-size:12px;color:#c5d5cd;margin-top:16px}
