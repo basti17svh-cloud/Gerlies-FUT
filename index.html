@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.57</title>
+<title>Footera V20.58</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1545,7 +1545,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.57</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.58</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1682,7 +1682,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><div id="ownedPacks"></div></div></section>
 
-<section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Grundlagen-Herausforderungen mit Spielern aus deinem Verein und dem SBC-Speicher.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
+<section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Tausche Spieler aus deinem Verein und SBC-Speicher gegen Belohnungen.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
 <section id="objectivesView" class="view"><div class="headline"><h2>Ziele</h2><p>Tägliche, wöchentliche, Saison-, Squad-Battles-, Rivals- und spätere Aufholziele bringen SP und Belohnungen.</p></div><div class="section"><button class="pass-link" data-go="seasonPassView">Season Pass ansehen →</button><div id="objectiveTabs" class="objective-tabs"></div><div id="objectiveSummary" class="objective-summary"></div><div id="taskList" class="tasklist"></div></div></section>
 <section id="seasonPassView" class="view"><div class="headline"><h2>Season Pass</h2><p>Spiele, erfülle Ziele und hole Belohnungen auf dem kostenlosen und Premium-Pfad ab.</p></div><div class="section"><button class="pass-link" data-go="objectivesView">Ziele für Season Points ansehen →</button><div id="seasonPass"></div></div></section>
@@ -8596,7 +8596,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.57";
+const GFUT_BUILD="V20.58";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8649,7 +8649,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2057",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2058",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

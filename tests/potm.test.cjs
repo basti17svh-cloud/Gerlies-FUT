@@ -63,6 +63,10 @@ test('POTM skins and current affiliations do not alter normal items; Evolutions 
 test('normal squad SBC submission cannot bypass the separate score workflow',()=>{
  const begin=html.indexOf('function finalizeSbcSubmission('),end=html.indexOf('$("sbcTabs").addEventListener(',begin),c={getActiveSbcById:()=>({scoreSbc:true}),toast:()=>{},sbcDraftStats:()=>{throw Error('Classic consumption must never run')}};vm.createContext(c);vm.runInContext(html.slice(begin,end),c);assert.doesNotThrow(()=>c.submitSbcById('potm'));assert.doesNotThrow(()=>c.finalizeSbcSubmission('potm'));
 });
+test('central affiliation enrichment cannot replace the locally verified POTM league logos',()=>{
+ const {potm,c}=app();for(const r of potm.releases){const display=c.displayBase(potm.itemFor(r));const enriched={...display,leagueLogo:'https://external.example/incorrect.png'};assert.equal(c.emblemCandidates('league',enriched)[0],`./assets/footera/events/potm/logos/${r.theme}.png`)}
+ assert.equal(c.emblemCandidates('league',{id:'normal',leagueLogo:'existing.png'})[0],'normal-league');
+});
 test('all original portraits, five vector frames and five league logos exist in the offline shell',()=>{
  const {potm}=app(),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  for(const r of potm.releases){const bytes=fs.readFileSync(path.join(root,r.face));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.length>50000);assert.ok(sw.includes('./'+r.face))}
