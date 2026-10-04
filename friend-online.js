@@ -2,7 +2,7 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount};
+ const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary};
  window.FooteraOnline=online;
  if(!available)return;
  $("onlinePanel").hidden=false;
@@ -15,6 +15,7 @@
  function errorText(e){return String(e?.message||"Online-Dienst nicht erreichbar.").replace(/^.*?:\s*/,"").slice(0,160)}
  function friendByUid(uid){return (state.friends||[]).find(f=>f?.onlineUid===uid)||null}
  function unreadCount(uid){return Number(unreadCounts.get(uid)||0)}
+ function unreadSummary(){return [...unreadCounts.entries()].filter(([,count])=>Number(count)>0).map(([uid,count])=>{const friend=friendByUid(uid);return friend?{uid,count:Number(count),name:friend.clubName||friend.username||"Freund"}:null}).filter(Boolean).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"))}
  function ensureCommsUi(){
   if(!$("footeraMessageNotice")){
    document.body.insertAdjacentHTML("beforeend",`
@@ -64,13 +65,13 @@
   const {data,error}=await client.from("footera_messages").select("sender_user").eq("recipient_user",online.userId).is("read_at",null).limit(500);
   if(error){if(error.code!=="42P01"&&error.code!=="PGRST205")console.warn("Ungelesene Nachrichten:",error);return}
   for(const row of data||[])unreadCounts.set(row.sender_user,(unreadCounts.get(row.sender_user)||0)+1);
-  if(currentView()==="socialView")renderSocial()
+  if(currentView()==="socialView")renderSocial();if(currentView()==="homeView")renderHome()
  }
  async function markConversationRead(friendUid){
   if(!validUid(friendUid))return;
   const {error}=await client.from("footera_messages").update({read_at:new Date().toISOString()}).eq("recipient_user",online.userId).eq("sender_user",friendUid).is("read_at",null);
   if(error)console.warn("Nachrichten gelesen:",error);
-  unreadCounts.set(friendUid,0);if(currentView()==="socialView")renderSocial()
+  unreadCounts.set(friendUid,0);if(currentView()==="socialView")renderSocial();if(currentView()==="homeView")renderHome()
  }
  async function loadConversation(friend){
   const a=online.userId,b=friend.onlineUid;
@@ -123,7 +124,7 @@
    if(!chatMessages.some(m=>m.id===message.id))chatMessages.push(message);renderChat();await markConversationRead(message.sender_user);return
   }
   unreadCounts.set(message.sender_user,(unreadCounts.get(message.sender_user)||0)+1);
-  if(currentView()==="socialView")renderSocial();
+  if(currentView()==="socialView")renderSocial();if(currentView()==="homeView")renderHome();
   showNotice(friend?.clubName||friend?.username||"Neue Footera-Nachricht",String(message.body||"").slice(0,120),friend)
  }
  function handleDuelRealtime(payload){
