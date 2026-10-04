@@ -4,9 +4,10 @@
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
  const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary};
  window.FooteraOnline=online;
+ const unreadCounts=new Map(),duelStatus=new Map();
  if(!available)return;
  $("onlinePanel").hidden=false;
- let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;const unreadCounts=new Map(),duelStatus=new Map();
+ let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;
  const escape=s=>esc(String(s??""));
  const team=(d,side)=>d?.[`${side}_profile`]?.club_name||"Footera Club";
  const sideOf=d=>d?.home_user===online.userId?"home":"away";
@@ -15,7 +16,7 @@
  function errorText(e){return String(e?.message||"Online-Dienst nicht erreichbar.").replace(/^.*?:\s*/,"").slice(0,160)}
  function friendByUid(uid){return (state.friends||[]).find(f=>f?.onlineUid===uid)||null}
  function unreadCount(uid){return Number(unreadCounts.get(uid)||0)}
- function unreadSummary(){return [...unreadCounts.entries()].filter(([,count])=>Number(count)>0).map(([uid,count])=>{const friend=friendByUid(uid);return friend?{uid,count:Number(count),name:friend.clubName||friend.username||"Freund"}:null}).filter(Boolean).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"))}
+ function unreadSummary(){if(!available)return[];return [...unreadCounts.entries()].filter(([,count])=>Number(count)>0).map(([uid,count])=>{const friend=friendByUid(uid);return friend?{uid,count:Number(count),name:friend.clubName||friend.username||"Freund"}:null}).filter(Boolean).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,"de"))}
  function ensureCommsUi(){
   if(!$("footeraMessageNotice")){
    document.body.insertAdjacentHTML("beforeend",`
