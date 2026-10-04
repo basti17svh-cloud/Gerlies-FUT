@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
+const stateCode=html.match(/^const SQUAD_FORMATION_NAMES=.*;$/m)[0]+'\n'+html.slice(html.indexOf('function defaultClubIdentity(){'),html.indexOf('function toast(t){'));
 const controlsCode=html.slice(html.indexOf('function squadPresetTabsHTML(){'),html.indexOf('function renderSquad(){'));
 const club=Array.from({length:21},(_,i)=>({uid:`p${i}`,pid:`p${i}`}));
 function app(saved=new Map()){

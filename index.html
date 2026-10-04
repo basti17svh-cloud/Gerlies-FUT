@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.52</title>
+<title>Footera V20.53</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1542,7 +1542,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.52</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.53</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2093,6 +2093,8 @@ function reconcileFounderState(s){
  s.squadPresets=(s.squadPresets||[]).map(p=>p?{...p,squad:(p.squad||[]).map(remap)}:p);
  return s
 }
+// loadState() validates saved teams immediately; initialize its formation list first.
+const SQUAD_FORMATION_NAMES=["4-3-3","4-3-3 (2)","4-3-3 (3)","4-3-3 (4)","4-4-2","4-4-1-1","4-2-3-1","4-1-2-1-2 (2)","4-2-2-2","4-2-4","3-5-2"];
 let PLAYERS=[],P_BY_ID=new Map(),state=reconcileFounderState(loadState()),pickerIndex=-1,pickerMode='player',pickerSourceUid=null,pendingPack=state.pendingPack,marketListings=[],sellEditorUid=null,sbcSelections={},match=null;
 
 const FORMATIONS={
@@ -3037,7 +3039,6 @@ function loadState(){
   return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:123,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
  }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
-const SQUAD_FORMATION_NAMES=["4-3-3","4-3-3 (2)","4-3-3 (3)","4-3-3 (4)","4-4-2","4-4-1-1","4-2-3-1","4-1-2-1-2 (2)","4-2-2-2","4-2-4","3-5-2"];
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
 function cleanSquadPreset(raw,clubIds,index){
  const seen=new Set(),squad=Array.from({length:23},(_,i)=>{
@@ -8537,7 +8538,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.52";
+const GFUT_BUILD="V20.53";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8590,7 +8591,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2052",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2053",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

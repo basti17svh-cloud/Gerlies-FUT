@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-const stateCode=html.slice(html.indexOf('function baseState(){'),html.indexOf('function toast(t){'));
+const stateCode=html.match(/^const SQUAD_FORMATION_NAMES=.*;$/m)[0]+'\n'+html.slice(html.indexOf('function defaultClubIdentity(){'),html.indexOf('function toast(t){'));
 const duplicateCode=html.slice(html.indexOf('function packItemKey('),html.indexOf('function openPackPlayerDetails('));
 const resultCode=html.slice(html.indexOf('function closeResolvedPackResults('),html.indexOf('function clubFilterItems('));
 const specialCode=html.slice(html.indexOf('function packIsSpecial('),html.indexOf('function packIsWalkout('));
