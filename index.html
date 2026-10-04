@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.56</title>
+<title>Footera V20.57</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1474,6 +1474,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./club-identity.css">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
+<link rel="stylesheet" href="./potm.css">
 </head>
 <body>
 
@@ -1544,7 +1545,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.56</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.57</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3019,7 +3020,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -6790,8 +6791,9 @@ function sbcSetDetailHTML(rows){
 }
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
- const rows=allActiveSBCs(),preferred=["Profis","Live 19 Uhr","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
+ const rows=allActiveSBCs(),preferred=["POTM","Profis","Live 19 Uhr","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
+ if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
  if(active&&!sbcIsCompleted(active)){
   $("sbcTabs").innerHTML="";$("sbcGrid").innerHTML=renderSbcEditor(active);return
@@ -6824,7 +6826,7 @@ function maybeGrantSbcGroupReward(sbc){
  grant(sbc.groupReward);return ` Gruppenbelohnung: ${sbcRewardText(sbc.groupReward)}.`
 }
 function finalizeSbcSubmission(id){
- const sbc=getActiveSbcById(id);if(!sbc)return;if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
+ const sbc=getActiveSbcById(id);if(!sbc)return;if(sbc.scoreSbc)return toast("Öffne diese POTM-SBC über die Punkteabgabe.");if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
  if(stats.items.some(isFounderItem)||stats.items.some(isStoryItem))return toast("Founder- und Story-Karten können nicht in SBCs abgegeben werden.");
  ensureObjectiveWindows();const ids=new Set(stats.items.map(i=>i.uid));persistActiveSquadPreset(state);
  const teams=[...new Set((state.squadPresets||[]).filter(p=>p?.squad?.some(uid=>ids.has(uid))).map(p=>p.name).filter(Boolean))];
@@ -6840,7 +6842,7 @@ function finalizeSbcSubmission(id){
  delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;sbcAssistantState=null;sbcSlotDetailState=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});const rewardPack=queuedSbcGroupRewardPack;queuedSbcGroupRewardPack=null;save();renderAll();if(rewardPack)openPack(rewardPack.packId,rewardPack.items);toast((teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")+groupMessage)
 }
 function submitSbcById(id){
- const sbc=getActiveSbcById(id);if(!sbc)return;if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
+ const sbc=getActiveSbcById(id);if(!sbc)return;if(sbc.scoreSbc)return toast("Öffne diese POTM-SBC über die Punkteabgabe.");if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
  const risks=sbcSubmissionRisks(sbc);if(risks.length){pendingSbcSubmissionId=id;renderSBC();return}
  finalizeSbcSubmission(id)
 }
@@ -8468,10 +8470,11 @@ function handleAppBack(targetState){
   protectLockedBack("Das laufende Spiel bleibt geöffnet. Beende zuerst die Partie.","match");return true
  }
  if(currentViewId()==="playView"&&window.FooteraPlayHub?.handleBack(targetState))return true;
+ if(currentViewId()==="sbcView"&&window.FooteraPotm?.handleBack(targetState))return true;
  if(currentViewId()==="socialView"&&window.FooteraFriendsHub?.handleBack(targetState))return true;
  return false
 }
-window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view){switchView(e.state.view,{push:false});window.FooteraPlayHub?.restore(e.state);window.FooteraFriendsHub?.restore(e.state)}}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
+window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view){switchView(e.state.view,{push:false});window.FooteraPlayHub?.restore(e.state);window.FooteraFriendsHub?.restore(e.state);window.FooteraPotm?.restore(e.state)}}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
 if(!history.state?.gfut)replaceUiState("view",{view:currentViewId()});
 
 function moreTray(){return $("moreTray")}
@@ -8593,7 +8596,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.56";
+const GFUT_BUILD="V20.57";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8603,7 +8606,7 @@ function newerGerliesBuild(remote){
 }
 function gerliesUpdateBlocked(){
  const reg=gerliesUpdateRegistration;
- return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
+ return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
 }
 function applyGerliesUpdate(){
  clearTimeout(gerliesUpdateTimer);gerliesUpdateTimer=0;
@@ -8646,7 +8649,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2056",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2057",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8665,6 +8668,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
+<script src="./potm.js"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});

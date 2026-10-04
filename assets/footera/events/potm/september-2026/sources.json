@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-04",
+  "images": [
+    {
+      "name": "olise",
+      "itemId": 84133907,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p84133907.png",
+      "asset": "olise.png",
+      "bytes": 299955
+    },
+    {
+      "name": "gross",
+      "itemId": 84076845,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p84076845.png",
+      "asset": "gross.png",
+      "bytes": 358882
+    },
+    {
+      "name": "raphinha",
+      "itemId": 84119499,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p84119499.png",
+      "asset": "raphinha.png",
+      "bytes": 397621
+    },
+    {
+      "name": "malen",
+      "itemId": 50563095,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p50563095.png",
+      "asset": "malen.png",
+      "bytes": 380534
+    }
+  ]
+}

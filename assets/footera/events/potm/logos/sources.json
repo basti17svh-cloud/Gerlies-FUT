@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-04",
+  "images": [
+    {
+      "league": "Bundesliga",
+      "asset": "bundesliga.png",
+      "source": "https://game-assets.fut.gg/2027/league/19.2052e58944544251cec9a9c60ef432ace07775c8a00e407b147046d54c930776.png"
+    },
+    {
+      "league": "Premier League",
+      "asset": "premier-league.png",
+      "source": "https://game-assets.fut.gg/2027/league/13.c4f460c893b66c36c0bcd7b29919107d36f618772343eaedb21f946f16d80c96.png"
+    },
+    {
+      "league": "LALIGA EA SPORTS",
+      "asset": "laliga.png",
+      "source": "https://game-assets.fut.gg/2027/league/53.adf7c6700978e91b81c4fd4b4a82187dfea2d3074a907efa14caebfaffa461eb.png"
+    },
+    {
+      "league": "Serie A",
+      "asset": "serie-a.png",
+      "source": "https://game-assets.fut.gg/2027/league/31.b1950cc3e90e9a2e75be5bbbf06967a217db45e22180c84bac2e5588ede83541.png"
+    },
+    {
+      "league": "Ligue 1",
+      "asset": "ligue-1.png",
+      "source": "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/16.png"
+    }
+  ]
+}

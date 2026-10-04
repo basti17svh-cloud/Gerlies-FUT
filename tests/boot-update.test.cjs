@@ -8,6 +8,7 @@ function app({resume,controller=null,remote=BUILD,storageFails=false}={}){
  if(resume!==undefined)storage.set('gfut-update-resume',typeof resume==='string'?resume:JSON.stringify(resume));
  function node(id){if(!nodes.has(id)){const classes=new Set();nodes.set(id,{id,style:{display:id==='dbGate'?'none':''},removed:false,listeners:{},classList:{add:x=>classes.add(x),contains:x=>classes.has(x)},addEventListener(t,fn){this.listeners[t]=fn},remove(){this.removed=true;nodes.delete(id)},pause(){this.pauses=(this.pauses||0)+1},play(){this.plays=(this.plays||0)+1;return Promise.resolve()},removeAttribute(){},load(){}})}return nodes.get(id)}
  node('bootIntro');node('bootIntroVideo');node('bootIntroSkip');
+ node('bootIntroVideo').readyState=3;
  const serviceWorker={controller,listeners:{},addEventListener(t,fn){this.listeners[t]=fn},registration:{active:{state:'activated'},async update(){this.updates=(this.updates||0)+1}},async register(){return this.registration},async getRegistration(){return this.registration}};
  const c={Date,Set,URL,Number,Math,pendingPack:[],activeSbcId:null,$:id=>nodes.get(id)||node(id),
   sessionStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(storageFails)throw Error('Storage unavailable');storage.set(k,v)},removeItem:k=>storage.delete(k)},
@@ -20,24 +21,28 @@ function app({resume,controller=null,remote=BUILD,storageFails=false}={}){
  };
  // A removed intro must really be absent for the update guard.
  c.$=id=>nodes.get(id)||(['bootIntro','bootIntroVideo','bootIntroSkip'].includes(id)?null:node(id));
- vm.createContext(c);vm.runInContext(section('function takeGerliesUpdateResume()','</script>'),c);
- const run=code=>vm.runInContext(code,c),tick=()=>{const [id,timer]=[...timers.entries()].filter(([,v])=>v.ms===500).at(-1)||[];if(timer){timers.delete(id);timer.fn()}},ready=()=>{nodes.delete('bootIntro');c.completeGerliesStartup()};
+ vm.createContext(c);vm.runInContext(section('let resolveFooteraIntroDone=null;','</script>'),c);
+ // The actual page initializes the intro in its final startup script, after
+ // the external modules. Mirror that call instead of testing an unstarted page.
+ vm.runInContext('initFooteraBootIntro();',c);
+ const run=code=>vm.runInContext(code,c),tick=()=>{const [id,timer]=[...timers.entries()].filter(([,v])=>v.ms===500).at(-1)||[];if(timer){timers.delete(id);timer.fn()}},ready=()=>{nodes.delete('bootIntro');c.completeFooteraIntroGate();c.completeGerliesStartup()};
  return{c,storage,nodes,serviceWorker,listeners,timers,navigations,restored,warnings,run,tick,ready,flushes:()=>flushes};
 }
 
 test('fresh launch plays one normal intro; the first real worker claim does not reload the app',async()=>{
  const a=app();assert.equal(a.nodes.get('bootIntroVideo').plays,1);assert.equal(a.nodes.get('bootIntro').removed,false);
- a.listeners.load();await new Promise(r=>setImmediate(r));a.ready();a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();
+ a.listeners.load();a.ready();await new Promise(r=>setImmediate(r));a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();
  assert.equal(a.navigations.length,0);assert.equal(a.storage.has('gfut-update-resume'),false);assert.equal(a.flushes(),0);
 });
 
 test('an existing worker with the same release URL cannot trigger another app start',async()=>{
- const old={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER},a=app({controller:old});a.listeners.load();await new Promise(r=>setImmediate(r));a.ready();
+ const old={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER},a=app({controller:old});a.listeners.load();a.ready();await new Promise(r=>setImmediate(r));
  a.serviceWorker.controller={scriptURL:old.scriptURL};a.serviceWorker.listeners.controllerchange();assert.equal(a.navigations.length,0);
 });
 
 test('a genuine worker update waits for the intro and startup and preserves the current screen',async()=>{
  const a=app({controller:{scriptURL:'https://footera.test/game/service-worker.js?v=2024'}});a.listeners.load();await new Promise(r=>setImmediate(r));
+ assert.equal(a.serviceWorker.listeners.controllerchange,undefined);a.c.completeFooteraIntroGate();await new Promise(r=>setImmediate(r));
  a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();assert.equal(a.navigations.length,0);assert.ok([...a.timers.values()].some(t=>t.ms===500));
  a.ready();assert.equal(a.navigations.length,1);assert.equal(a.flushes(),1);const resume=JSON.parse(a.storage.get('gfut-update-resume'));assert.equal(resume.view,'objectivesView');assert.equal(resume.scrollY,210);
  assert.equal(a.storage.get('gfut-sw-reloaded-'+BUILD),'1');assert.match(a.navigations[0],/^https:\/\/footera.test\/game\/\?_gfut_updated=/);
@@ -52,11 +57,12 @@ test('two simultaneous update sources coalesce into one refresh after the unfini
 });
 
 test('updates are retained while playing, opening a pack, editing an SBC or using a modal/input',()=>{
- for(const mode of ['match','pack','results','pendingPack','sbc','modal','input','database']){
+ for(const mode of ['match','pack','results','pendingPack','sbc','potm','modal','input','database']){
   const a=app();a.ready();let blocked=true;
   if(mode==='match'||mode==='pack'||mode==='results'){const id={match:'match',pack:'opening',results:'results'}[mode];a.c.$(id).classList.contains=()=>blocked;}
   if(mode==='pendingPack')a.c.pendingPack=[{uid:'unassigned'}];
   if(mode==='sbc')a.c.activeSbcId='sbc-in-progress';
+  if(mode==='potm')a.c.FooteraPotm={busy:()=>blocked};
   if(mode==='modal')a.c.document.querySelector=()=>blocked?{}:null;
   if(mode==='input')a.c.document.activeElement.matches=()=>blocked;
   if(mode==='database')a.c.$('dbGate').style.display='grid';
