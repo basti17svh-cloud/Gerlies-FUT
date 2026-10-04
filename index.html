@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.53</title>
+<title>Footera V20.54</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1472,6 +1472,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./matchday.css">
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css">
+<link rel="stylesheet" href="./play-hub.css">
 </head>
 <body>
 
@@ -1542,7 +1543,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.53</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.54</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1633,12 +1634,49 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
-<section id="playView" class="view"><div class="headline"><h2>Spielen</h2><p>Wähle den Spielmodus. Für alle Modi brauchst du eine komplette Startelf und Bank.</p></div><div class="section"><div class="play-squad-selector"><strong>Mit welchem Team möchtest du spielen?</strong><div id="playSquadPresets" class="squad-preset-tabs"></div></div><div class="modegrid">
-  <div class="mode"><span class="mode-tag">WETTBEWERB</span><h3>Division Rivals</h3><p>Spiele gegen einen deinem Kader angepassten Rivalen und arbeite dich durch die Divisionen.</p><div id="rvRecord" class="record"></div><div id="rvWeeklyCard"></div><button class="primary startmode" data-mode="rivals" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
-  <div class="mode"><span class="mode-tag">KI</span><h3>Squad Battles</h3><p>Spiele gegen KI-Mannschaften und erhalte Coins und Season-Fortschritt.</p><div id="sbRecord" class="record"></div><div id="sbWeeklyCard"></div><button class="primary startmode" data-mode="squad" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
-  <div class="mode friendly-mode"><span class="mode-tag">FRIENDLY</span><h3>Zufälliger Gegner</h3><p>Freundschaftsspiel gegen einen zufällig erzeugten Gegner auf deinem ungefähren Teamniveau.</p><div id="randomFriendlyRecord" class="record"></div><button class="primary startmode" data-mode="friendly-random" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
-  <div class="mode friendly-mode"><span class="mode-tag">FREUNDE</span><h3>Gegen Freund</h3><p>Wähle einen gespeicherten Freund und spiele gegen dessen aktive Mannschaft.</p><div class="friendly-select"><select id="friendlyFriendSelect"><option value="">Kein Freund gespeichert</option></select><button id="friendlyFriendSquad" class="secondary">Team</button></div><div id="friendFriendlyRecord" class="record"></div><button class="primary startmode" data-mode="friendly-friend" style="width:100%;margin-top:8px">Aufstellung ansehen</button></div>
-</div><div id="playLock" style="margin-top:8px;color:#ff94a4;font-size:8px"></div></div></section>
+<section id="playView" class="view">
+ <div class="headline"><h2>Spielen</h2><p>Deine Wettbewerbe, dein Fortschritt und dein nächstes Spiel.</p></div>
+ <div class="section play-content">
+  <div class="play-team-box"><div class="play-squad-selector"><strong>Dein Team für das nächste Spiel</strong><div id="playSquadPresets" class="squad-preset-tabs"></div></div><p id="playLock" class="play-lock" aria-live="polite"></p></div>
+  <div id="playModeHub" class="play-hub" aria-label="Spielmodi">
+   <button type="button" class="play-hub-tile play-rivals" data-play-mode="rivals"><span class="play-kicker">WETTBEWERB</span><strong>Division Rivals</strong><span class="play-tile-copy">Dein Weg durch die Divisionen</span><span id="playRivalsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">DR</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
+   <button type="button" class="play-hub-tile play-squad" data-play-mode="squad"><span class="play-kicker">WOCHENWETTBEWERB</span><strong>Squad Battles</strong><span class="play-tile-copy">Dein Team gegen die KI</span><span id="playSquadSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">SB</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
+   <button type="button" class="play-hub-tile play-random" data-play-mode="friendly-random"><span class="play-kicker">FREUNDSCHAFTSSPIEL</span><strong>Zufälliger Gegner</strong><span class="play-tile-copy">Teste dein Team ohne Rangdruck</span><span id="playRandomSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">VS</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
+   <button type="button" class="play-hub-tile play-friends" data-play-mode="friendly-friend"><span class="play-kicker">DEINE FREUNDE</span><strong>Gegen Freund</strong><span class="play-tile-copy">Teams vergleichen und Duelle spielen</span><span id="playFriendsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">DUO</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
+  </div>
+  <div id="playModeDetail" hidden>
+   <button type="button" class="play-back" data-play-back>← Alle Spielmodi</button>
+   <div class="play-detail-heading"><span class="play-kicker">DEIN MODUS</span><h3 id="playDetailTitle" tabindex="-1"></h3></div>
+   <div class="modegrid play-panels">
+    <article class="mode play-mode-panel" data-play-panel="rivals" hidden>
+     <section class="play-box play-standing"><span class="play-kicker">DEIN STAND</span><div id="rvRecord" class="record"></div></section>
+     <section class="play-box"><h4>Wochenbelohnungen</h4><div id="rvWeeklyCard"></div></section>
+     <section class="play-box"><h4>Deine Statistik</h4><div id="playRivalsStats"></div></section>
+     <section class="play-box"><details><summary>Divisionen &amp; Aufstieg</summary><div id="playRivalsRanks" class="play-rank-list"></div></details></section>
+     <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Bereit für deinen Rivalen?</h4><p>Prüfe deine Aufstellung und Taktik vor dem Anpfiff.</p><button class="primary startmode" data-mode="rivals">Aufstellung ansehen</button></section>
+    </article>
+    <article class="mode play-mode-panel" data-play-panel="squad" hidden>
+     <section class="play-box play-standing"><span class="play-kicker">DEIN WOCHENRANG</span><div id="sbRecord" class="record"></div></section>
+     <section class="play-box"><h4>Wochenbelohnungen</h4><div id="sbWeeklyCard"></div></section>
+     <section class="play-box"><h4>Deine Statistik</h4><div id="playSquadStats"></div></section>
+     <section class="play-box"><details><summary>Alle Ränge &amp; Battle-Punkte</summary><div id="playSquadRanks" class="play-rank-list"></div></details></section>
+     <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Wähle deinen Gegner</h4><p>Schwierigkeit und Gegner wählst du in der Spielvorschau.</p><button class="primary startmode" data-mode="squad">Gegner &amp; Aufstellung ansehen</button></section>
+    </article>
+    <article class="mode play-mode-panel" data-play-panel="friendly-random" hidden>
+     <section class="play-box play-standing"><span class="play-kicker">OHNE RANGDRUCK</span><h4>Dein Testspiel</h4><p>Ein zufälliger Gegner auf deinem ungefähren Teamniveau. Freundschaftsspiele bringen keine Wochenpunkte.</p><div id="randomFriendlyRecord" class="record"></div></section>
+     <section class="play-box"><h4>Freundschaftsstatistik</h4><div id="playRandomStats"></div></section>
+     <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Teste deine Mannschaft</h4><p>Prüfe Aufstellung und Taktik, bevor du das Spiel startest.</p><button class="primary startmode" data-mode="friendly-random">Aufstellung ansehen</button></section>
+    </article>
+    <article class="mode friendly-mode play-mode-panel" data-play-panel="friendly-friend" hidden>
+     <section class="play-box play-standing"><span class="play-kicker">GEGNER AUSWÄHLEN</span><h4>Gegen wen spielst du?</h4><label for="friendlyFriendSelect" class="play-note">Gespeicherter Freund</label><div class="friendly-select"><select id="friendlyFriendSelect"><option value="">Kein Freund gespeichert</option></select><button id="friendlyFriendSquad" class="secondary">Team ansehen</button></div><div id="friendFriendlyRecord" class="record"></div></section>
+     <section class="play-box"><h4>Eure Online-Rangliste</h4><p class="play-note" id="playFriendRankingNote"></p><button type="button" id="playFriendRanking" class="secondary">Online-Rangliste ansehen</button><button type="button" class="play-text-link" data-go="socialView">Freunde verwalten →</button></section>
+     <section class="play-box"><h4>Freundschaftsstatistik</h4><div id="playFriendsStats"></div></section>
+     <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Gegen die Mannschaft deines Freundes</h4><p>Du spielst gegen die gespeicherte Mannschaft. Live-Duelle findest du im Freunde-Bereich.</p><button class="primary startmode" data-mode="friendly-friend">Aufstellung ansehen</button></section>
+    </article>
+   </div>
+  </div>
+ </div>
+</section>
 
 <section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><div id="ownedPacks"></div></div></section>
 
@@ -8292,9 +8330,9 @@ $("addFriendCode").addEventListener("click",async()=>{
  if(idx>=0)state.friends[idx]={...state.friends[idx],...f,_key:key};else state.friends.push(f);
  save();$("friendCodeInput").value="";renderSocial();renderPlay();toast("Freundesprofil gespeichert.")
 });
-$("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]"),chat=e.target.closest("[data-friend-chat]"),live=e.target.closest("[data-friend-live]"),compare=e.target.closest("[data-friend-compare]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(chat){window.FooteraOnline?.openChat(state.friends[Number(chat.dataset.friendChat)]);return}if(live){window.FooteraOnline?.invite(state.friends[Number(live.dataset.friendLive)]);return}if(compare){window.FooteraOnline?.showComparison(state.friends[Number(compare.dataset.friendCompare)]);return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
+$("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]"),chat=e.target.closest("[data-friend-chat]"),live=e.target.closest("[data-friend-live]"),compare=e.target.closest("[data-friend-compare]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(chat){window.FooteraOnline?.openChat(state.friends[Number(chat.dataset.friendChat)]);return}if(live){window.FooteraOnline?.invite(state.friends[Number(live.dataset.friendLive)]);return}if(compare){window.FooteraOnline?.showComparison(state.friends[Number(compare.dataset.friendCompare)]);return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();window.FooteraPlayHub?.open("friendly-friend");toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
 $("friendTeamModalClose").addEventListener("click",()=>closeUiLayer("friendTeamModal","friend-team"));
-$("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.closest("[data-friend-player]");if(player){const friendIndex=Number(player.dataset.friendIndex),teamIndex=Number(player.dataset.friendTeam),playerIndex=Number(player.dataset.friendPlayer),fr=state.friends[friendIndex],team=fr?friendProfileTeams(fr)[teamIndex]:null,fp=team?.squad?.[playerIndex];if(fp){const form=FORMATIONS[team.formation]||FORMATIONS["4-3-3"],slot=playerIndex<11?(form[playerIndex]?.p||""):"BANK";openFriendBiography(fp,slot)}return}const tab=e.target.closest("[data-friend-team-tab]");if(tab){renderFriendTeamModal(Number(tab.dataset.friendIndex),Number(tab.dataset.friendTeamTab));return}const b=e.target.closest("[data-friend-modal-play]");if(!b)return;const idx=Number(b.dataset.friendModalPlay),fr=state.friends[idx];if(!fr)return;$("friendTeamModal").classList.remove("active");replaceUiState("view",{view:"playView"});switchView("playView",{push:false});$("friendlyFriendSelect").value=String(idx);renderPlay();renderMatchPreview("friendly-friend",friendAsOpponent(fr))});
+$("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.closest("[data-friend-player]");if(player){const friendIndex=Number(player.dataset.friendIndex),teamIndex=Number(player.dataset.friendTeam),playerIndex=Number(player.dataset.friendPlayer),fr=state.friends[friendIndex],team=fr?friendProfileTeams(fr)[teamIndex]:null,fp=team?.squad?.[playerIndex];if(fp){const form=FORMATIONS[team.formation]||FORMATIONS["4-3-3"],slot=playerIndex<11?(form[playerIndex]?.p||""):"BANK";openFriendBiography(fp,slot)}return}const tab=e.target.closest("[data-friend-team-tab]");if(tab){renderFriendTeamModal(Number(tab.dataset.friendIndex),Number(tab.dataset.friendTeamTab));return}const b=e.target.closest("[data-friend-modal-play]");if(!b)return;const idx=Number(b.dataset.friendModalPlay),fr=state.friends[idx];if(!fr)return;$("friendTeamModal").classList.remove("active");replaceUiState("view",{view:"playView"});switchView("playView",{push:false});$("friendlyFriendSelect").value=String(idx);renderPlay();window.FooteraPlayHub?.open("friendly-friend");renderMatchPreview("friendly-friend",friendAsOpponent(fr))});
 
 
 
@@ -8414,9 +8452,10 @@ function handleAppBack(targetState){
   if($("matchResult")?.classList.contains("active")){stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;if(targetState?.gfut&&targetState.view)switchView(targetState.view,{push:false});return true}
   protectLockedBack("Das laufende Spiel bleibt geöffnet. Beende zuerst die Partie.","match");return true
  }
+ if(currentViewId()==="playView"&&window.FooteraPlayHub?.handleBack(targetState))return true;
  return false
 }
-window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view)switchView(e.state.view,{push:false})}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
+window.addEventListener("popstate",e=>{uiHistoryApplying=true;try{if(handleAppBack(e.state))return;if(e.state?.gfut&&e.state.view){switchView(e.state.view,{push:false});window.FooteraPlayHub?.restore(e.state)}}finally{setTimeout(()=>{uiHistoryApplying=false},0)}});
 if(!history.state?.gfut)replaceUiState("view",{view:currentViewId()});
 
 function moreTray(){return $("moreTray")}
@@ -8538,7 +8577,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.53";
+const GFUT_BUILD="V20.54";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8591,7 +8630,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2053",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2054",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8608,6 +8647,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
 <script src="./club-stats.js"></script>
+<script src="./play-hub.js"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
