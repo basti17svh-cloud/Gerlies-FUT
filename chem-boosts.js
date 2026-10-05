@@ -14,7 +14,13 @@
   {id:"abfangjaeger",name:"Abfangjäger",color:"#60ef8b",symbol:"abfangen",dropWeight:1,arrows:{pac:3,def:3}},
   {id:"bollwerk",name:"Bollwerk",color:"#f3c45c",symbol:"festung",dropWeight:.4,arrows:{def:3,phy:3}},
   {id:"stratege",name:"Stratege",color:"#c58aff",symbol:"taktik",dropWeight:1,arrows:{pas:3,dri:3}},
-  {id:"allrounder",name:"Allrounder",color:"#cbd6e1",symbol:"balance",dropWeight:1,arrows:{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}}
+  {id:"allrounder",name:"Allrounder",color:"#cbd6e1",symbol:"balance",dropWeight:1,arrows:{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}},
+  {id:"torjaeger",name:"Torjäger",color:"#ff7a3d",symbol:"torjaeger",dropWeight:.85,arrows:{sho:3,dri:3}},
+  {id:"kraftpaket",name:"Kraftpaket",color:"#d88a3d",symbol:"kraftpaket",dropWeight:.9,arrows:{sho:3,phy:3}},
+  {id:"motor",name:"Motor",color:"#47d6c9",symbol:"motor",dropWeight:1,arrows:{pas:3,phy:3}},
+  {id:"fluegelstuermer",name:"Flügelstürmer",color:"#38d4ff",symbol:"fluegel",dropWeight:.85,arrows:{pac:3,pas:3}},
+  {id:"brecher",name:"Brecher",color:"#ff9b3d",symbol:"brecher",dropWeight:.7,arrows:{pac:2,sho:2,phy:2}},
+  {id:"dirigent",name:"Dirigent",color:"#e178ff",symbol:"dirigent",dropWeight:.9,arrows:{sho:2,pas:2,dri:2}}
  ].map(d=>Object.freeze({...d,arrows:Object.freeze(d.arrows)})));
  const byId=new Map(DEFINITIONS.map(d=>[d.id,d]));
  const num=v=>Number.isFinite(Number(v))?Number(v):0;
@@ -90,7 +96,13 @@
   abfangen:'<path d="m4 3 5 3 6-2 5 3-4 3 5 2-6 3-2 7-4-5-6-1 2-5-3-3 4-1zM10 9l4 1-2 2"/>',
   festung:'<path d="m12 2 9 4-2 9-7 7-7-7-2-9zM7 9V6h3v3h4V6h3v9H7zM11 15v-4h2v4"/>',
   taktik:'<circle cx="5" cy="17" r="2"/><circle cx="19" cy="5" r="2"/><path d="m4 3 4 4m0-4L4 7m12 9 4 4m0-4-4 4M6 14l3-4 6 2 2-4m-5 2 3 2-2 3"/>',
-  balance:'<path d="M12 12C5 2 1 7 1 12s4 10 11 0S23 7 23 12s-4 10-11 0Z"/>'
+  balance:'<path d="M12 12C5 2 1 7 1 12s4 10 11 0S23 7 23 12s-4 10-11 0Z"/>',
+  torjaeger:'<path d="M4 20 8 9l4-5 4 5 4 11M8 15h8M6 20h12"/><circle cx="12" cy="9" r="2.5"/>',
+  kraftpaket:'<path d="M4 18V8l4-3 4 4 4-4 4 3v10l-4 3H8zM8 13h8M12 9v8"/>',
+  motor:'<circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4M5 5l3 3m8 8 3 3M19 5l-3 3m-8 8-3 3"/><circle cx="12" cy="12" r="2"/>',
+  fluegel:'<path d="M3 15c4-8 9-10 18-9-4 3-7 5-9 9m-9 0c4-2 7-2 10 0m-10 0 4 5m6-5 3 5"/>',
+  brecher:'<path d="M3 12h5l2-7 4 14 2-7h5M5 5l14 14M19 5 5 19"/>',
+  dirigent:'<path d="M4 18c5-8 11-10 16-12M6 7l3 3m3-6 2 4m4 2-3 2"/><circle cx="5" cy="19" r="2"/><circle cx="20" cy="5" r="2"/>'
  };
  function icon(id){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[id]||paths.schild}</svg>`}
  function arrowsHTML(n){return`<span class="cb-arrows" aria-label="${n} Pfeil${n===1?"":"e"}">${"↑".repeat(n)}</span>`}
