@@ -16,8 +16,13 @@ function simulator(){
  let seed=3951741;
  const math=Object.create(Math);
  math.random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
- const ctx={Math:math,match:null,matchSpeed:550,
-  matchPower:()=>ctx.match.basePower,currentMatchBase:()=>({name:'Spieler'}),
+ const player=rating=>({name:'Spieler',position:'CM',ovr:rating,pac:rating,sho:rating,pas:rating,dri:rating,def:rating,phy:rating});
+ const ctx={Math:math,match:null,matchSpeed:550,state:{roles:{},focus:{}},P_BY_ID:new Map(),
+  matchPower:()=>ctx.match.basePower,currentMatchBase:()=>player(ctx.match?.homeRating||70),
+  resolvedPlayer:x=>x,displayBase:x=>x,
+  roleFocusContext:()=>({attack:0,defense:0,poss:0,scorer:1,assist:1,defender:1,drain:1}),
+  teamRoleFocusMods:()=>({attack:1,defense:1,poss:0}),
+  recordMatchScene(){},recordMatchEvent(){},
   addLog(){},updateMatchUI(){},finishMatch(){ctx.match.finished=true},pauseForManagement(){},
   matchHomeTeamName:()=>"Footera Club",matchAwayTeamName:()=>"Gegner",
   $(){return{textContent:'',classList:{add(){}}}}
@@ -29,8 +34,9 @@ function simulator(){
   ctx.matchSpeed=speed;
   let wins=0,draws=0,goalless=0,goals=0,conceded=0,halftimes=0;
   for(let i=0;i<count;i++){
-   ctx.match={mode:'rivals',basePower:rating+1.4,chem,opp:opponentRating+opponentChem*.12,
-    lineup:Array.from({length:18},(_,i)=>`p${i}`),formation:'4-3-3',tactic:'balanced',
+   ctx.match={mode:'rivals',basePower:rating+1.2,homeRating:rating,chem,opp:opponentRating+1.2+opponentChem*.12,
+    opponentProfile:{formation:'4-3-3',tactic:'balanced',roles:{},focus:{},squad:Array.from({length:11},()=>player(opponentRating))},
+    lineup:Array.from({length:18},(_,i)=>`p${i}`),formation:'4-3-3',tactic:'balanced',roles:{},focus:{},
     minute:0,home:0,away:0,shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
     injuryTriggered:true,redTriggered:true,yellowCards:[],goalEvents:[],shotEvents:[],timeline:[]};
    let ticks=0;
@@ -64,6 +70,18 @@ test('a similar opponent remains competitive and chemistry changes results',()=>
  const lowChem=sample({rating:84,chem:0,opponentRating:84,opponentChem:16});
  const highChem=sample({rating:84,chem:33,opponentRating:84,opponentChem:16});
  assert.ok(highChem.win>lowChem.win+.04,`chemistry impact ${lowChem.win} vs ${highChem.win}`);
+});
+
+test('rating advantages scale without making normal underdogs irrelevant',()=>{
+ const{sample}=simulator();
+ const two=sample({rating:84,chem:20,opponentRating:82,opponentChem:20,count:3000});
+ const six=sample({rating:88,chem:20,opponentRating:82,opponentChem:20,count:3000});
+ const ten=sample({rating:88,chem:20,opponentRating:78,opponentChem:20,count:3000});
+ assert.ok(two.win>.42&&two.win<.57,`+2 GES win rate ${two.win}`);
+ assert.ok(six.win>.55&&six.win<.75,`+6 GES win rate ${six.win}`);
+ assert.ok(ten.win>.65&&ten.win<.84,`+10 GES win rate ${ten.win}`);
+ assert.ok(two.win<six.win&&six.win<ten.win,'larger rating gaps should increase the favorite win rate');
+ assert.ok(1-ten.win-ten.draw>.07,`+10 GES upset rate ${1-ten.win-ten.draw}`);
 });
 
 test('the fast setting preserves the match outcome distribution and halftime',()=>{
