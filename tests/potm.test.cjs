@@ -19,13 +19,45 @@ function app(saved){
  return{c,state,potm,add,setTime:t=>now=Date.parse(t)}
 }
 
-test('all four published POTMs have original scores, stats, eligibility and precise 28-day UTC windows',()=>{
- const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.target,r.minRating]),[['247827',91,700000,45],['190765',84,18750,45],['233419',89,1300000,45],['231447',85,90000,45]]);
+test('all four POTMs cost 70 percent of original scores with unchanged eligibility and 28-day UTC windows',()=>{
+ const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.eaTarget,r.target,r.minRating]),[['247827',91,700000,490000,45],['190765',84,18750,13125,45],['233419',89,1300000,910000,45],['231447',85,90000,63000,45]]);
  for(const r of potm.releases){assert.equal(Date.parse(r.until)-Date.parse(r.from),28*86400000);assert.equal(potm.isActive(r,Date.parse(r.from)-1),false);assert.equal(potm.isActive(r,Date.parse(r.from)),true);assert.equal(potm.isActive(r,Date.parse(r.until)-1),true);assert.equal(potm.isActive(r,Date.parse(r.until)),false);assert.ok(r.stats.length===6&&r.stats.every(n=>n>0&&n<=99))}
  assert.equal(potm.activeSBCs(new Date('2026-10-04')).length,4);assert.equal(potm.activeSBCs(new Date('2026-10-31')).length,0);assert.ok(potm.activeSBCs(new Date('2026-10-04')).every(r=>r.scoreSbc&&r.once));assert.equal(potm.releases.some(r=>r.theme==='ligue-1'),false);
 });
 test('published EA OVR table handles every boundary and rejects invalid ratings',()=>{
  const {potm}=app();for(const [r,points] of [[44,0],[45,20],[64,20],[65,35],[74,35],[75,90],[83,410],[84,830],[85,2100],[86,4100],[87,5500],[88,8300],[89,11000],[90,14000],[91,19000],[92,20000],[93,25000],[94,30000],[95,40000],[96,55000],[97,85000],[98,90000],[99,100000],[100,0],[84.5,0],[NaN,0]])assert.equal(potm.scoreForRating(r),points,String(r));
+});
+test('discounted targets are exposed to the SBC hub and old partial progress keeps its full value',()=>{
+ const {potm,state}=app(),r=potm.releases[1];
+ assert.deepEqual(Array.from(potm.activeSBCs(new Date('2026-10-04')),r=>r.scoreTarget),[490000,13125,910000,63000]);
+ state.potmProgress={[r.id]:{score:10000,submittedCount:11,claimedAt:null}};
+ assert.equal(potm.progress(r).score,10000);assert.equal(r.target-potm.progress(r).score,3125);
+ assert.equal(potm.planSubmission(r.id,[]).ok,false);assert.equal(state.potmProgress[r.id].score,10000);
+});
+test('previous progress at or above the discounted target claims once without consuming additional items',()=>{
+ for(const score of [13125,18000,18750]){
+  const {potm,c,state,add}=app(),r=potm.releases[1],item=add('keep',84);
+  state.potmProgress={[r.id]:{score,submittedCount:13,claimedAt:null}};
+  state.squad[0]=item.uid;state.roles[0]='CM';state.focus[0]='attack';state.squadPresets[0].squad[0]=item.uid;state.activeEvos=[{uid:item.uid}];
+  const before=JSON.stringify([state.club,state.sbcStorage,state.squad,state.roles,state.focus,state.squadPresets,state.activeEvos]);
+  const p=potm.planSubmission(r.id,['keep']);assert.equal(p.ok,true);assert.equal(p.points,0);assert.equal(p.rows.length,0);assert.equal(p.remaining,0);assert.equal(p.complete,true);
+  assert.equal(potm.commitSubmission(p),true);assert.equal(state.potmProgress[r.id].submittedCount,13);assert.equal(state.stats.sbcs,1);
+  assert.equal(JSON.stringify([state.club,state.sbcStorage,state.squad,state.roles,state.focus,state.squadPresets,state.activeEvos]),before);
+  assert.equal(c.saves.at(-1).pendingPack[0].eventReleaseId,r.id);assert.equal(c.packs.length,1);assert.equal(potm.commitSubmission(p),false);
+  assert.equal(app(c.saves.at(-1)).potm.planSubmission(r.id,[]).ok,false);
+ }
+});
+test('claim after a target reduction still respects open packs and expiry',()=>{
+ const {potm,c,state,setTime}=app(),r=potm.releases[1];state.potmProgress={[r.id]:{score:14000,submittedCount:8}};
+ const p=potm.planSubmission(r.id,[]);c.pendingPack=[{uid:'previous'}];assert.equal(potm.commitSubmission(p),false);
+ assert.equal(state.potmProgress[r.id].score,14000);assert.equal(state.stats.sbcs,0);assert.equal(c.saves.length,0);
+ c.pendingPack=[];setTime(r.until);assert.equal(potm.commitSubmission(p),false);assert.equal(c.packs.length,0);
+});
+test('an interrupted zero-item reward reveal leaves the discounted claim recoverable',()=>{
+ const {potm,c,state}=app(),r=potm.releases[1];state.potmProgress={[r.id]:{score:15000,submittedCount:9}};
+ const p=potm.planSubmission(r.id,[]);c.openPack=()=>{throw Error('Reveal interrupted')};
+ assert.throws(()=>potm.commitSubmission(p),/interrupted/);assert.equal(c.saves.at(-1).pendingPack[0].eventReleaseId,r.id);
+ assert.equal(c.saves.at(-1).potmProgress[r.id].submittedCount,9);assert.equal(c.saves.at(-1).sbcCompletions[r.id],true);
 });
 test('item scores distinguish normal rarity, campaign items and Icons and round each card once',()=>{
  const {potm,c,add}=app();
@@ -81,8 +113,8 @@ test('expiry after review, missing items and changed risk context block stale co
  }
 });
 test('completion saves a recoverable untradeable reward once before opening the pack',()=>{
- const {potm,c,state,add}=app(),r=potm.releases[1];add('a',91);const p=potm.planSubmission(r.id,['a']);assert.equal(p.points,19000);assert.equal(p.excess,250);assert.equal(p.complete,true);assert.equal(potm.commitSubmission(p),true);
- assert.equal(state.potmProgress[r.id].score,18750);assert.equal(state.sbcCompletions[r.id],true);assert.equal(state.stats.sbcs,1);assert.equal(c.packs[0].id,'potm-sbc-player');assert.equal(c.packs[0].items[0].tradeable,false);assert.equal(c.saves.at(-1).pendingPack[0].eventReleaseId,r.id);assert.equal(c.packs[0].items[0].displayRating,84);
+ const {potm,c,state,add}=app(),r=potm.releases[1];add('a',91);const p=potm.planSubmission(r.id,['a']);assert.equal(p.points,19000);assert.equal(p.excess,5875);assert.equal(p.complete,true);assert.equal(potm.commitSubmission(p),true);
+ assert.equal(state.potmProgress[r.id].score,13125);assert.equal(state.sbcCompletions[r.id],true);assert.equal(state.stats.sbcs,1);assert.equal(c.packs[0].id,'potm-sbc-player');assert.equal(c.packs[0].items[0].tradeable,false);assert.equal(c.saves.at(-1).pendingPack[0].eventReleaseId,r.id);assert.equal(c.packs[0].items[0].displayRating,84);
  assert.equal(potm.commitSubmission(p),false);assert.equal(c.packs.length,1);assert.equal(state.stats.sbcs,1);const restored=app(c.saves.at(-1));assert.equal(restored.potm.planSubmission(r.id,['a']).ok,false);
 });
 test('an unresolved pack prevents another claim and a failed reveal still leaves its reward saved',()=>{
