@@ -8,7 +8,7 @@ window.QA_SAVE_MAP=new Map();window.QA_PLAYERS=fixturePlayers;
 let source='';
 const fixtureCode=`
 const localStorage={getItem:k=>window.parent.QA_SAVE_MAP.get(k)||null,setItem:(k,v)=>window.parent.QA_SAVE_MAP.set(k,String(v)),removeItem:k=>window.parent.QA_SAVE_MAP.delete(k)};
-window.addEventListener('error',e=>window.parent.postMessage({qaError:e.message},location.origin));
+window.addEventListener('error',e=>window.parent.postMessage({qaError:e.message},window.parent.location.origin));
 `;
 const bootCode=`
 boot=async function(){
@@ -17,7 +17,7 @@ boot=async function(){
  if(!state.onboarded){state=baseState();state.onboarded=true;state.profile.username='ChemieBoostQA';state.profile.clubName='Chemie-Boost Testverein';state.profile.saveId='GF-CB-ISOLATED';state.coins=0;state.points=0;state.club=PLAYERS.map((p,i)=>({uid:'qa-card-'+i,pid:p.id,tradeable:false,evo:0,boost:0,acquired:1,chemBoost:i===9?{id:'vollstrecker',appliedAt:1}:null}));state.squad=state.club.slice(0,23).map(x=>x.uid);state.chemBoostInventory=Object.fromEntries(FooteraChemBoosts.DEFINITIONS.map(d=>[d.id,4]));}
  pendingPack=state.pendingPack;pendingResolved=new Set(state.pendingResolved||[]);
  $('dbGate').style.display='none';$('onboard').classList.remove('active');renderAll();switchView('clubView',{push:false});document.querySelector('[data-club-area="boosts"]')?.click();save();flushSave();
- if(pendingPack.length||state.pendingChemBoosts.length)finishPack();window.parent.postMessage({qaReady:true},location.origin);
+ if(pendingPack.length||state.pendingChemBoosts.length)finishPack();window.parent.postMessage({qaReady:true},window.parent.location.origin);
 };
 window.addEventListener('message',e=>{if(e.source!==window.parent||!e.data.qaAction)return;const action=e.data.qaAction;
  if(action==='inventory'){switchView('clubView',{push:false});document.querySelector('[data-club-area="boosts"]')?.click();}
@@ -35,7 +35,7 @@ function render(){
  document.getElementById('status').textContent='Testverein wird geladen …';document.getElementById('game').srcdoc=page;
 }
 window.addEventListener('message',e=>{if(e.source!==document.getElementById('game').contentWindow)return;if(e.data.qaError)document.getElementById('status').textContent='Fehler: '+e.data.qaError;if(e.data.qaReady)document.getElementById('status').textContent='Testverein bereit · Speicher isoliert';});
-document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>document.getElementById('game').contentWindow.postMessage({qaAction:b.dataset.action},location.origin));
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>document.getElementById('game').contentWindow.postMessage({qaAction:b.dataset.action},window.parent.location.origin));
 document.getElementById('width').onchange=e=>document.getElementById('game').style.width=e.target.value+'px';document.getElementById('reload').onclick=render;document.getElementById('reset').onclick=()=>{window.QA_SAVE_MAP.clear();render()};
 fetch('../index.html',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('Testquelle fehlt');return r.text()}).then(s=>{source=s;render()}).catch(e=>document.getElementById('status').textContent=e.message);
 </script></html>

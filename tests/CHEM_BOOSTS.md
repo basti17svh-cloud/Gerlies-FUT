@@ -1,4 +1,4 @@
-# Chemie-Boosts – V20.78
+# Chemie-Boosts – V20.79
 
 Die sechs Definitionen und alle Zahlen stehen in `chem-boosts.js`.
 Ein Pfeil entspricht maximal +2, zwei +4 und drei +6. Individuelle Chemie

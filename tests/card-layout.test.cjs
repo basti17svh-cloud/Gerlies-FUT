@@ -178,3 +178,12 @@ test('non-Founder portraits end above the nameplate while Founder geometry stays
  assert.match(css,/\.custom-card:is\(\.gold,\.silver,\.bronze,\.totw,\.icon\)\{[\s\S]*?--card-portrait-top:11%;--card-portrait-height:50%;[\s\S]*?--card-name-top:61\.5%/);
  assert.match(css,/\.custom-card\.icon\{[\s\S]*?--card-portrait-top:10%;--card-portrait-height:54%;[\s\S]*?--card-name-top:65%/);
 });
+
+test('a chemie-boost adds an external footer badge without changing any master card field',()=>{
+ const ctx=context();ctx.FooteraChemBoosts=require('../chem-boosts.js');const base={...gerlach,name:'Lukas Maximilian Alexander König',pac:86,sho:84,pas:84,dri:87,def:65,phy:78};
+ for(const mini of [false,true])for(const variant of ['', 'special','icon-mid','story','founder']){
+  const item={uid:'boost-card',variant,displayRating:88},before=ctx.cardHTML(base,item,mini),after=ctx.cardHTML(base,{...item,chemBoost:{id:'vollstrecker'}},mini);
+  const badge=ctx.FooteraChemBoosts.badgeHTML({chemBoost:{id:'vollstrecker'}},mini);assert.equal(after.replace(badge,''),before);assert.match(after,/Chemie-Boost: Vollstrecker/);
+ }
+ const css=fs.readFileSync(path.join(__dirname,'../chem-boosts.css'),'utf8');assert.match(css,/#clubIdentitySection\[hidden\].*display:none!important/);
+});
