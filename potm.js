@@ -146,7 +146,7 @@
  });
  $("sbcGrid")?.addEventListener("input",e=>{
   const id=e.target.id;if(id==="potmSearch"){setFilters({query:e.target.value});updatePicker();return}
-  if(["potmRatingMin","potmRatingMax"].includes(id)){const f=filters(),value=Number(e.target.value);setFilters(id==="potmRatingMin"?{min:value,max:Math.max(value,f.max)}:{max:value,min:Math.min(value,f.min)});syncFilterControls()}
+  if(["potmRatingMin","potmRatingMax","potmRatingMinNumber","potmRatingMaxNumber"].includes(id)){const f=filters(),value=Number(e.target.value);if(!Number.isInteger(value)||value<45||value>99||!e.target.value)return;setFilters(id.includes("Min")?{min:value,max:Math.max(value,f.max)}:{max:value,min:Math.min(value,f.min)});syncFilterControls()}
  });
  $("sbcGrid")?.addEventListener("change",e=>{
   const id=e.target.id;if(id==="potmProtected"){setFilters({showProtected:e.target.checked});updatePicker();return}
