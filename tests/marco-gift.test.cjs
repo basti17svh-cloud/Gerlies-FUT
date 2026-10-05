@@ -26,7 +26,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
  const ctx={Date:Clock,Math:randomMath,Map,Set,state,pendingPack:state.pendingPack,PLAYERS:players,P_BY_ID:new Map(players.map(p=>[p.id,p])),
   eventPackIsActive:(e,at)=>at>=Date.parse(e.activeFrom)&&at<Date.parse(e.activeUntilAt),uid:()=>`item-${++nextUid}`,rarityOf:()=> 'gold',isActiveEventSbcBase:()=>false,activePromoPackEntry:()=>null,activeTotwWeek:()=>null,totwInfo:()=>null,
   $:get,window:{addEventListener(){}},document:{querySelectorAll:()=>tabs,addEventListener(){}},esc:String,fmt:String,currencyAmountHTML:(_currency,value)=>String(value),packCompositionText:p=>`${p.count} Goldspieler`,
-  nextPromoReset:()=>new Clock(now+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),updateStoreCountdown:()=>{},
+  sbcDateKey:()=>"",PROMO_PACK_RELEASE:{key:"2026-10-05"},nextPromoReset:()=>new Clock(now+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),updateStoreCountdown:()=>{},
   activePromoPacks:()=>vm.runInContext('PACKS.filter(p=>p.rotation).slice(0,3)',ctx),activeStorePacks:()=>vm.runInContext('PACKS.filter(p=>p.store)',ctx),
   consumePromoPurchase:()=>true,renderWallet(){},toast:message=>ctx.lastToast=message,
   ensureObjectiveWindows(){},updateObjectiveIndicators(){},resetBoardIntro(){},resetWalkoutTunnel(){},persistActiveSquadPreset(){},

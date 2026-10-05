@@ -1,0 +1,30 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><title>Footera · Promo-Shop Testvorschau</title>
+<style>body{margin:0;padding:16px;background:#16191c;color:#eee;font:14px system-ui}header{margin:auto auto 16px;max-width:540px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}select{padding:8px}iframe{display:block;width:390px;height:844px;margin:auto;border:1px solid #54616a;border-radius:12px;background:#000}</style>
+<header><strong>Shop-Testvorschau · keine Käufe</strong><label>Breite <select id="width"><option>320</option><option selected>390</option><option>430</option></select></label><label>Testzeit <select id="at"><option value="2026-10-05T16:59:59Z">05.10. · 18:59:59</option><option value="2026-10-05T17:00:00Z" selected>05.10. · 19:00</option><option value="2026-10-06T17:00:00Z">06.10. · 19:00</option></select></label></header>
+<iframe id="game" title="Shop mit fester Testzeit"></iframe>
+<script>
+(async()=>{
+ const [html,time]=await Promise.all(['../index.html','../footera-time.js'].map(async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('Testquelle fehlt');return r.text()}));
+ const section=(from,to)=>{const a=html.indexOf(from),b=html.indexOf(to,a+from.length);if(a<0||b<0)throw new Error('Testquelle geändert: '+from);return html.slice(a,b)};
+ const line=pattern=>{const m=html.match(pattern);if(!m)throw new Error('Testfunktion fehlt');return m[0]};
+ const script=[
+ 'const FOUNDER_PACK_ID="preview-founder",MARCO_FOUNDER_PACK_ID="preview-marco";',
+ 'const state={coins:0,points:0,packs:{},packLimits:{}};const founderRuleForPack=()=>null;function save(){}function currentViewId(){return "storeView"}',
+ section('const $=id=>','const sleep='),line(/^const esc=.*$/m),
+ time,line(/^function sbcDateKey\(d\).*$/m),line(/^function hashNum\(v\).*$/m),
+ section('const PACKS=[','const TOTW_WEEK_1='),
+ section('function promoWindowKey(','function generatePack('),
+ section('function renderStore(){','$("storeView").addEventListener("click",'),
+ 'renderStore();document.querySelectorAll("[data-buy]").forEach(b=>{b.disabled=true;b.title="Testvorschau – Käufe deaktiviert"});'
+ ].join('\n');
+ const head=section('<head>','</head>').replace('<head>','').replace('<title>Footera','<title>Testvorschau Footera');
+ const shop=section('<section id="storeView"','<section id="').replace('class="view"','class="view active"');
+ function render(){
+  const now=Date.parse(document.getElementById('at').value),base=new URL('../',location.href).href;
+  const clock='const NativeDate=Date;window.Date=class extends NativeDate{constructor(...a){super(...(a.length?a:['+now+']))}static now(){return '+now+'}};';
+  document.getElementById('game').srcdoc='<!doctype html><html lang="de"><head><base href="'+base+'">'+head+'</head><body><div class="app"><main>'+shop+'</main></div><script>'+clock+script+'<'+ '/script></body></html>';
+ }
+ document.getElementById('width').addEventListener('change',e=>{document.getElementById('game').style.width=e.target.value+'px'});
+ document.getElementById('at').addEventListener('change',render);render();
+})().catch(e=>{document.querySelector('header').textContent=e.message});
+</script></html>

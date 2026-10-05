@@ -19,8 +19,8 @@ function store(){
  const ctx={
   FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',founderRuleForPack:()=>undefined,state:{coins:3000,points:100,packs:{}},document:{querySelectorAll:()=>tabElements},
   $:get,fmt:String,esc:String,currencyAmountHTML:(_currency,amount)=>String(amount),packCompositionText:p=>p.type,updateStoreCountdown:()=>{},
-  nextPromoReset:()=>new Date(Date.now()+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),
-  generatePack:()=>[{uid:'test'}],consumePromoPurchase:()=>true,
+  sbcDateKey:()=>"",PROMO_PACK_RELEASE:{key:"2026-10-05"},nextPromoReset:()=>new Date(Date.now()+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),
+  generatePack:()=>Array.from({length:5},(_,i)=>({uid:`test-${i}`})),consumePromoPurchase:()=>true,
   renderWallet:()=>{},save:()=>{},toast:()=>{},
   openPack:(id,items)=>{ctx.opened={id,items}}
  };
@@ -66,7 +66,7 @@ test('bronze cannot be purchased with points; other currencies deduct their actu
  buy(app,'bronze','coins');
  assert.equal(app.ctx.state.coins,2250);
  assert.equal(app.ctx.opened.id,'bronze');
- assert.equal(app.ctx.opened.items.length,1);
+ assert.equal(app.ctx.opened.items.length,5);
  buy(app,'silver','points');
  assert.equal(app.ctx.state.points,50);
  assert.equal(app.ctx.opened.id,'silver');
