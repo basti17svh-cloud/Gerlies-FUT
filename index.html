@@ -2285,12 +2285,34 @@ function matchFallbackActor(side,name){
 }
 function matchPositionPhaseWeight(slot,phase){
  if(phase==="build"){
-  if(slot==="GK")return.35;if(slot==="CB")return.65;if(["LB","RB","LWB","RWB"].includes(slot))return.8;if(slot==="CDM")return1.2;if(slot==="CM"||slot==="CAM")return1.45;if(["LM","RM","LW","RW"].includes(slot))return1.2;if(slot==="ST"||slot==="CF")return.8;return1
+  if(slot==="GK")return 0.35;
+  if(slot==="CB")return 0.65;
+  if(["LB","RB","LWB","RWB"].includes(slot))return 0.8;
+  if(slot==="CDM")return 1.2;
+  if(slot==="CM"||slot==="CAM")return 1.45;
+  if(["LM","RM","LW","RW"].includes(slot))return 1.2;
+  if(slot==="ST"||slot==="CF")return 0.8;
+  return 1
  }
  if(phase==="defense"){
-  if(slot==="GK")return1.1;if(slot==="CB")return1.5;if(["LB","RB","LWB","RWB"].includes(slot))return1.25;if(slot==="CDM")return1.35;if(slot==="CM")return.85;if(slot==="CAM")return.5;if(["LM","RM","LW","RW"].includes(slot))return.42;if(slot==="ST"||slot==="CF")return.25;return.7
+  if(slot==="GK")return 1.1;
+  if(slot==="CB")return 1.5;
+  if(["LB","RB","LWB","RWB"].includes(slot))return 1.25;
+  if(slot==="CDM")return 1.35;
+  if(slot==="CM")return 0.85;
+  if(slot==="CAM")return 0.5;
+  if(["LM","RM","LW","RW"].includes(slot))return 0.42;
+  if(slot==="ST"||slot==="CF")return 0.25;
+  return 0.7
  }
- if(slot==="ST"||slot==="CF")return1.55;if(["LW","RW","LM","RM"].includes(slot))return1.35;if(slot==="CAM")return1.3;if(slot==="CM")return.85;if(slot==="CDM")return.45;if(["LB","RB","LWB","RWB"].includes(slot))return.3;if(slot==="CB")return.2;return.08
+ if(slot==="ST"||slot==="CF")return 1.55;
+ if(["LW","RW","LM","RM"].includes(slot))return 1.35;
+ if(slot==="CAM")return 1.3;
+ if(slot==="CM")return 0.85;
+ if(slot==="CDM")return 0.45;
+ if(["LB","RB","LWB","RWB"].includes(slot))return 0.3;
+ if(slot==="CB")return 0.2;
+ return 0.08
 }
 function matchWeightedAverage(rows,phase,score){
  let total=0,weight=0;
@@ -2317,7 +2339,7 @@ function chooseMatchAttacker(side){
  return weightedMatchPick(weighted)||matchFallbackActor(side,side==="home"?"Spieler":"Gegenspieler")
 }
 function matchDefensiveSkill(row){
- if(!row)return70;const a=row.attrs||matchAttributes(row.base);if(row.slot==="GK")return a.ovr;
+ if(!row)return 70;const a=row.attrs||matchAttributes(row.base);if(row.slot==="GK")return a.ovr;
  return a.def*.58+a.phy*.27+a.pac*.15
 }
 function matchBuildSkill(row){const a=row?.attrs||matchAttributes(row?.base);return a.pas*.68+a.dri*.32}
