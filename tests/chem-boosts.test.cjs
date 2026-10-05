@@ -3,11 +3,14 @@ const C=require('../chem-boosts.js'),html=fs.readFileSync(require('node:path').j
 const base=Object.freeze({name:'L. König',ovr:88,position:'CAM',pac:86,sho:84,pas:84,dri:87,def:65,phy:78});
 const fresh=()=>({club:[{uid:'one',pid:'one',eventStats:[86,84,84,87,65,78]}],chemBoostInventory:Object.fromEntries(C.DEFINITIONS.map(d=>[d.id,4]))});
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
-test('six centralized definitions match German labels, colors and reference arrows',()=>{
- assert.equal(C.DEFINITIONS.length,6);assert.deepEqual(C.ATTRIBUTES.map(x=>x.short),['TEM','SCH','PAS','DRI','DEF','PHY']);
- const arrows=[{pac:3,sho:3},{pac:2,pas:2,dri:2},{pac:3,def:3},{def:3,phy:3},{pas:3,dri:3},{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}];
+test('twelve centralized definitions match German labels, colors and reference arrows',()=>{
+ assert.equal(C.DEFINITIONS.length,12);assert.deepEqual(C.ATTRIBUTES.map(x=>x.short),['TEM','SCH','PAS','DRI','DEF','PHY']);
+ const arrows=[
+  {pac:3,sho:3},{pac:2,pas:2,dri:2},{pac:3,def:3},{def:3,phy:3},{pas:3,dri:3},{pac:1,sho:1,pas:1,dri:1,def:1,phy:1},
+  {sho:3,dri:3},{sho:3,phy:3},{pas:3,phy:3},{pac:3,pas:3},{pac:2,sho:2,phy:2},{sho:2,pas:2,dri:2}
+ ];
  C.DEFINITIONS.forEach((d,i)=>{assert.deepEqual(d.arrows,arrows[i]);const card=C.cardHTML(d.id);assert.match(card,/CHEMIE-BOOST/);assert.match(card,new RegExp(d.name.toUpperCase()));assert.doesNotMatch(card,/PAC|SHO|STYLE|SPIELSTIL/);for(const a of C.ATTRIBUTES)if(d.arrows[a.key]){assert.ok(card.includes(a.name.toUpperCase()));assert.ok(card.includes('↑'.repeat(d.arrows[a.key])))} });
- assert.equal(new Set(C.DEFINITIONS.map(d=>d.symbol)).size,6);assert.equal(new Set(C.DEFINITIONS.map(d=>d.color)).size,6);
+ assert.equal(new Set(C.DEFINITIONS.map(d=>d.symbol)).size,12);assert.equal(new Set(C.DEFINITIONS.map(d=>d.color)).size,12);
 });
 for(const d of C.DEFINITIONS)test(`${d.name}: zero, reduced, middle and full chemistry leave bases and OVR intact`,()=>{
  const item=Object.freeze({chemBoost:Object.freeze({id:d.id})}),snapshot=JSON.stringify(base);
@@ -45,7 +48,7 @@ test('extra pack slots stack items separately, survive reload and prevent duplic
  reloaded.pendingChemBoosts=C.rollPack({id:'promo',promo:true},()=>0,()=>`boost${n++}`);assert.equal(C.collectAll(reloaded),2);assert.equal(C.count(reloaded,'vollstrecker'),3);assert.equal(reloaded.pendingPack.length,12);
  assert.equal(C.rollPack(pack,()=>.999).length,0);assert.equal(C.rollPack({id:'bronze',type:'bronze'},()=>0).length,0);assert.equal(C.rollPack({id:'founder-bastian',type:'founder'},()=>0).length,0);
 });
-test('all six definitions can actually drop with weighted rarity',()=>{
+test('all twelve definitions can actually drop with weighted rarity',()=>{
  const total=C.DEFINITIONS.reduce((sum,d)=>sum+(d.dropWeight||1),0);let before=0;
  for(const d of C.DEFINITIONS){
   const midpoint=(before+(d.dropWeight||1)/2)/total;let calls=0;
@@ -54,12 +57,13 @@ test('all six definitions can actually drop with weighted rarity',()=>{
  }
 });
 
-test('Vollstrecker and Bollwerk are clearly rarer than the other Chemie-Boosts',()=>{
+test('Vollstrecker and Bollwerk remain the two rarest Chemie-Boosts',()=>{
  const weights=Object.fromEntries(C.DEFINITIONS.map(d=>[d.id,d.dropWeight||1]));
  assert.equal(weights.vollstrecker,.4);assert.equal(weights.bollwerk,.4);
- for(const id of ['dynamo','abfangjaeger','stratege','allrounder'])assert.equal(weights[id],1);
+ const nextSmallest=Math.min(...Object.entries(weights).filter(([id])=>!['vollstrecker','bollwerk'].includes(id)).map(([,w])=>w));
+ assert.ok(nextSmallest>.4);
  const total=Object.values(weights).reduce((a,b)=>a+b,0);
- assert.ok(weights.vollstrecker/total<.1);assert.ok(weights.bollwerk/total<.1);
+ assert.ok(weights.vollstrecker/total<.05);assert.ok(weights.bollwerk/total<.05);
 });
 test('profile highlights only improved attributes, shows base → effective and unchanged OVR',()=>{
  const markup=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},3);assert.match(markup,/86 <i>→<\/i> 92/);assert.match(markup,/84 <i>→<\/i> 90/);assert.equal((markup.match(/cb-value improved/g)||[]).length,2);assert.match(markup,/3\/3 individuelle Chemie/);assert.match(markup,/Gesamtwertung bleibt 88/);
