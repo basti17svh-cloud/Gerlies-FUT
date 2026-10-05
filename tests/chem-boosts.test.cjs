@@ -45,8 +45,21 @@ test('extra pack slots stack items separately, survive reload and prevent duplic
  reloaded.pendingChemBoosts=C.rollPack({id:'promo',promo:true},()=>0,()=>`boost${n++}`);assert.equal(C.collectAll(reloaded),2);assert.equal(C.count(reloaded,'vollstrecker'),3);assert.equal(reloaded.pendingPack.length,12);
  assert.equal(C.rollPack(pack,()=>.999).length,0);assert.equal(C.rollPack({id:'bronze',type:'bronze'},()=>0).length,0);assert.equal(C.rollPack({id:'founder-bastian',type:'founder'},()=>0).length,0);
 });
-test('all six definitions can actually drop, including explicit future consumable slots',()=>{
- C.DEFINITIONS.forEach((d,i)=>{let calls=0;const rows=C.rollPack({chemBoostSlots:{slots:1,chance:1}},()=>calls++===0?0:(i+.5)/6,()=>d.id);assert.equal(rows[0].chemBoostId,d.id)});
+test('all six definitions can actually drop with weighted rarity',()=>{
+ const total=C.DEFINITIONS.reduce((sum,d)=>sum+(d.dropWeight||1),0);let before=0;
+ for(const d of C.DEFINITIONS){
+  const midpoint=(before+(d.dropWeight||1)/2)/total;let calls=0;
+  const rows=C.rollPack({chemBoostSlots:{slots:1,chance:1}},()=>calls++===0?0:midpoint,()=>d.id);
+  assert.equal(rows[0].chemBoostId,d.id);before+=d.dropWeight||1
+ }
+});
+
+test('Vollstrecker and Bollwerk are clearly rarer than the other Chemie-Boosts',()=>{
+ const weights=Object.fromEntries(C.DEFINITIONS.map(d=>[d.id,d.dropWeight||1]));
+ assert.equal(weights.vollstrecker,.4);assert.equal(weights.bollwerk,.4);
+ for(const id of ['dynamo','abfangjaeger','stratege','allrounder'])assert.equal(weights[id],1);
+ const total=Object.values(weights).reduce((a,b)=>a+b,0);
+ assert.ok(weights.vollstrecker/total<.1);assert.ok(weights.bollwerk/total<.1);
 });
 test('profile highlights only improved attributes, shows base → effective and unchanged OVR',()=>{
  const markup=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},3);assert.match(markup,/86 <i>→<\/i> 92/);assert.match(markup,/84 <i>→<\/i> 90/);assert.equal((markup.match(/cb-value improved/g)||[]).length,2);assert.match(markup,/3\/3 individuelle Chemie/);assert.match(markup,/Gesamtwertung bleibt 88/);
