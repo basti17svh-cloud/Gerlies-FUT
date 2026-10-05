@@ -11,7 +11,7 @@
  const DEFINITIONS=Object.freeze([
   {id:"vollstrecker",name:"Vollstrecker",color:"#ff465c",symbol:"abschluss",dropWeight:.4,arrows:{pac:3,sho:3}},
   {id:"dynamo",name:"Dynamo",color:"#44b9ff",symbol:"dynamik",dropWeight:1,arrows:{pac:2,pas:2,dri:2}},
-  {id:"abfangjaeger",name:"Abfangjäger",color:"#60ef8b",symbol:"abfangen",dropWeight:1,arrows:{pac:3,def:3}},
+  {id:"abfangjaeger",name:"Abfangjäger",color:"#60ef8b",symbol:"abfangen",dropWeight:.6,arrows:{pac:3,def:3}},
   {id:"bollwerk",name:"Bollwerk",color:"#f3c45c",symbol:"festung",dropWeight:.4,arrows:{def:3,phy:3}},
   {id:"stratege",name:"Stratege",color:"#c58aff",symbol:"taktik",dropWeight:1,arrows:{pas:3,dri:3}},
   {id:"allrounder",name:"Allrounder",color:"#cbd6e1",symbol:"balance",dropWeight:1,arrows:{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}},
