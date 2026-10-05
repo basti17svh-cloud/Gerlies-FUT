@@ -1,4 +1,4 @@
-# Chemie-Boosts – V20.79
+# Chemie-Boosts – V20.80
 
 Die sechs Definitionen und alle Zahlen stehen in `chem-boosts.js`.
 Ein Pfeil entspricht maximal +2, zwei +4 und drei +6. Individuelle Chemie
@@ -48,3 +48,20 @@ Die Matchday-Fixtures wurden um die in main bereits vorhandenen Rollen- und
 Attributfunktionen ergänzt. Der Schussblock-Test verwendet den aktuellen
 Wahrscheinlichkeitsbereich. Die Update-Fixture enthält die neuen offenen
 Verbrauchsitems und prüft, dass ein PWA-Update deren Zuweisung abwartet.
+
+## Mobile Bedienprüfung
+
+Im Browser geprüft: sechs sichtbare deutsche Boost-Karten; Bestand ×4;
+Austausch Vollstrecker → Dynamo mit vorheriger Warnung; Abbruch ohne Verbrauch;
+Bestätigung mit genau einem Item; Neuladen erhält Dynamo und den Bestand;
+Profil zeigt Tempo 86 → 90, Passspiel 84 → 88 und Dribbling 87 → 91,
+OVR bleibt 88. Erstanwendung von Stratege auf einen Bankspieler mit 0 Chemie
+ändert keine Attribute. Pack-Ergebnis zeigt zwölf Spieler plus sechs getrennte
+Boosts; Einzel- und Sammelabholung ergeben stapelbare Stückzahlen.
+
+Aufstellung: Boost-Symbol liegt außerhalb des unveränderten Kartenrahmens.
+320-Pixel-Ansicht: Karten, Attributzeilen und Dialog haben keine horizontale
+Überschreitung. Der Dialog beginnt nach der Spielerauswahl immer oben, damit
+Warnung und Vorschau sichtbar bleiben. Die neuen Ressourcen tragen die
+Buildnummer im URL und werden unter denselben URLs offline vorgeladen;
+eine alte PWA kann dadurch keine frühere Boost-Oberfläche anzeigen.

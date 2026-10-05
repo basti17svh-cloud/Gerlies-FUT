@@ -18,7 +18,7 @@
   if(locked())return toast("Chemie-Boosts können vor dem nächsten Spiel angewendet werden.");
   choice=C.definition(id);if(!choice||C.count(state,id)<1)return toast("Dieser Chemie-Boost ist nicht im Besitz.");
   ensureModal();targetUid=player;expected=null;page=0;renderPlayers();showUiLayer("chemBoostModal","chem-boost");
-  if(player)preview(player)
+  if(player)preview(player);$("chemBoostModal").scrollTop=0
  }
  function renderPlayers(){
   const search=$("chemBoostSearch")?.value||"",q=search.toLocaleLowerCase("de-DE");
@@ -35,7 +35,7 @@
   const prospective={...item,chemBoost:{id:choice.id},chemBoostId:null},e=C.effect(resolvedPlayer(b),prospective,chemBoostPlayerChem(item));
   const same=expected===choice.id;
   $("chemBoostDialogBody").innerHTML=`<h3>${esc(b.name)} · ${itemRating(item)} GES</h3><p>${e.chem}/3 individuelle Chemie · Neuer Chemie-Boost: <b>${esc(choice.name)}</b></p>${previous?`<p class="cb-replace-warning">${same?`Dieser Spieler besitzt bereits den Chemie-Boost ‚${esc(previous.name)}‘. Kein weiteres Item erforderlich.`:`Dieser Spieler besitzt bereits den Chemie-Boost ‚${esc(previous.name)}‘. Möchtest du ihn durch ‚${esc(choice.name)}‘ ersetzen?`}</p>`:'<p>Nach Bestätigung wird genau ein Verbrauchsitem verwendet.</p>'}${C.profileHTML(resolvedPlayer(b),prospective,e.chem)}<div class="cb-confirm-actions"><button type="button" class="secondary" data-cb-back>Anderen Spieler wählen</button><button type="button" class="primary" data-cb-confirm ${same?"disabled":""}>${previous?"Boost ersetzen":"Boost anwenden"}</button></div>`;
-  $("chemBoostDialogBody").style.setProperty("--cb-accent",choice.color)
+  $("chemBoostDialogBody").style.setProperty("--cb-accent",choice.color);$("chemBoostModal").scrollTop=0
  }
  function confirmApply(){
   if(!$("chemBoostModal")?.classList.contains("active")||!choice||!targetUid)return;
@@ -55,7 +55,7 @@
   ensureModal();targetUid=uid;choice=null;
   const owned=C.DEFINITIONS.filter(d=>C.count(state,d.id)>0);
   $("chemBoostDialogBody").innerHTML=`<p>Chemie-Boost für diesen Spieler auswählen.</p>${owned.map(d=>`<button type="button" class="cb-player-option" data-cb-pick-owned="${d.id}" data-cb-target="${esc(uid)}"><strong>${esc(d.name)} ×${C.count(state,d.id)}</strong><small>${C.ATTRIBUTES.filter(a=>d.arrows[a.key]).map(a=>`${a.name} ${"↑".repeat(d.arrows[a.key])}`).join(" · ")}</small></button>`).join("")||'<p>Keine Chemie-Boosts im Besitz. Du kannst sie zusätzlich in Gold- und Promo-Packs ziehen.</p>'}`;
-  showUiLayer("chemBoostModal","chem-boost")
+  showUiLayer("chemBoostModal","chem-boost");$("chemBoostModal").scrollTop=0
  }
  function renderPack(){
   const items=C.pending(state);if(!items.length)return;

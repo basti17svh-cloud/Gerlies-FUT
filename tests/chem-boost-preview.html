@@ -4,10 +4,11 @@
 <p>Originale Footera-Oberfläche mit erfundenen Testdaten. Speicher ausschließlich im Arbeitsspeicher dieser Testseite; kein Onlinekonto, keine Käufe und keine Änderungen am eigenen Verein.</p><iframe id="game" title="Footera Chemie-Boosts bei mobiler Breite"></iframe><p id="status">Test wird geladen …</p>
 <script>
 const fixturePlayers=Array.from({length:28},(_,i)=>({id:'cb-qa-'+i,name:i===0?'Lukas Maximilian Alexander König':i===9?'L. König':'Testspieler '+(i+1),ovr:88,position:['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM','CB','ST','CM','RB','LW','CM','ST','CB','GK','CM'][i],alt:'',team:'Footera QA',league:'Testliga',nation:'DE',pac:86,sho:84,pas:84,dri:87,def:65,phy:78,face:'',isIcon:false}));
-window.QA_SAVE_MAP=new Map();window.QA_PLAYERS=fixturePlayers;
+window.QA_SAVE_MAP=new Map();window.QA_SESSION_MAP=new Map();window.QA_PLAYERS=fixturePlayers;
 let source='';
 const fixtureCode=`
 const localStorage={getItem:k=>window.parent.QA_SAVE_MAP.get(k)||null,setItem:(k,v)=>window.parent.QA_SAVE_MAP.set(k,String(v)),removeItem:k=>window.parent.QA_SAVE_MAP.delete(k)};
+const sessionStorage={getItem:k=>window.parent.QA_SESSION_MAP.get(k)||null,setItem:(k,v)=>window.parent.QA_SESSION_MAP.set(k,String(v)),removeItem:k=>window.parent.QA_SESSION_MAP.delete(k)};
 window.addEventListener('error',e=>window.parent.postMessage({qaError:e.message},window.parent.location.origin));
 `;
 const bootCode=`

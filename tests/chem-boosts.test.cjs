@@ -66,6 +66,6 @@ test('unresolved consumables keep pack results open; collected-only pack finishe
 });
 test('new scripts and stylesheet are available offline and versioned consistently',()=>{
  const sw=fs.readFileSync(require('node:path').join(__dirname,'../service-worker.js'),'utf8'),manifest=JSON.parse(fs.readFileSync(require('node:path').join(__dirname,'../manifest.webmanifest'))),version=html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/);
- for(const file of ['chem-boosts.js','chem-boosts-ui.js','chem-boosts.css'])assert.ok(sw.includes(`"./${file}"`),file);
+ for(const file of ['chem-boosts.js','chem-boosts-ui.js','chem-boosts.css'])assert.ok(sw.includes(`"./${file}?v=${version[1]}${version[2]}"`),file);
  assert.ok(manifest.start_url.endsWith(`${version[1]}.${version[2]}`));assert.ok(sw.includes(`v${version[1]}-${version[2]}-`));assert.ok(html.includes(`service-worker.js?v=${version[1]}${version[2]}`));
 });
