@@ -77,6 +77,16 @@ test('Icon adds exactly one link to its own nation, and wrong position removes b
  assert.equal(api.playerChem(1,line(icon,german)),0);
 });
 
+test('four in-position Icons follow FC 27 +1-every-league chemistry and do not auto-full every isolated teammate',()=>{
+ const{api,formation}=setup();
+ for(let i=0;i<11;i++)formation[i].p='CM';
+ const icons=Array.from({length:4},(_,i)=>({name:`Icon ${i+1}`,position:'CM',nation:'',league:'Icons',team:'Icons',isIcon:true}));
+ const regulars=Array.from({length:7},(_,i)=>ordinary('CM','',`Liga ${i+1}`,`Verein ${i+1}`));
+ const scores=api.squadChemistry(line(...icons,...regulars));
+ assert.deepEqual(Array.from(scores.slice(0,4)),[3,3,3,3]);
+ assert.deepEqual(Array.from(scores.slice(4,11)),[2,2,2,2,2,2,2]);
+});
+
 test('Founder always has 3/3 on ST and ZOM while preserving Icon-like teammate links',()=>{
  const{api,formation}=setup();
  const founder={pid:'footera-founder-bastian-gerlach',position:'ST',alt:'CAM',nation:'Germany',team:'FC Gerlies',league:'Footera'};
