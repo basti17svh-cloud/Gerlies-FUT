@@ -4,8 +4,9 @@
 .card-shell .custom-card.potm{
  --potm-accent:#e2c7ce;--potm-face-width:162%;--potm-face-left:-35%;--potm-face-top:-42%;
  --card-column-fill:linear-gradient(180deg,#0009,#0003);--card-name-fill:linear-gradient(90deg,#10050a,#3b1020,#10050a);
- --card-name-border:var(--potm-accent);--card-stats-fill:linear-gradient(180deg,#040710e6,#03040af5);
+ --card-name-border:var(--potm-accent);--card-stats-fill:transparent;
  --card-name-color:#f8f5f8;--card-stats-color:var(--potm-accent);--card-value-color:#f8f5f8;
+ --card-bottom-left:10%;--card-bottom-right:10%;--card-stats-left:3%;--card-stats-right:3%;
  --card-bottom-bottom:12%;--card-alt-bottom:6.5%;
  color:#f8edf1;background:transparent url("./assets/footera/events/potm/frames/bundesliga.svg") center / 100% 100% no-repeat;
  clip-path:none;box-shadow:none;overflow:hidden;
