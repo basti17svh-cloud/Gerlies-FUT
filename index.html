@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.72</title>
+<title>Footera V20.73</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1545,7 +1545,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.72</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.73</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2321,12 +2321,12 @@ function matchWeightedAverage(rows,phase,score){
 }
 function matchTeamAttributeProfile(side){
  const rows=matchActorRows(side);
- if(!rows.length){const a=matchFallbackActor(side,"Team").attrs;return{build:(a.pas*.68+a.dri*.32),transition:(a.pac*.55+a.dri*.45),finish:(a.sho*.72+a.dri*.18+a.phy*.10),defense:(a.def*.62+a.phy*.23+a.pac*.15)}}
+ if(!rows.length){const a=matchFallbackActor(side,"Team").attrs;return{build:(a.pas*.68+a.dri*.32),transition:(a.pac*.55+a.dri*.45),finish:(a.sho*.72+a.dri*.18+a.phy*.10),defense:(a.def*.60+a.phy*.20+a.pac*.20)}}
  return{
   build:matchWeightedAverage(rows,"build",r=>r.attrs.pas*.68+r.attrs.dri*.32),
   transition:matchWeightedAverage(rows,"attack",r=>r.attrs.pac*.55+r.attrs.dri*.45),
   finish:matchWeightedAverage(rows,"attack",r=>r.attrs.sho*.72+r.attrs.dri*.18+r.attrs.phy*.10),
-  defense:matchWeightedAverage(rows,"defense",r=>r.slot==="GK"?r.attrs.ovr:r.attrs.def*.62+r.attrs.phy*.23+r.attrs.pac*.15)
+  defense:matchWeightedAverage(rows,"defense",r=>r.slot==="GK"?r.attrs.ovr:r.attrs.def*.60+r.attrs.phy*.20+r.attrs.pac*.20)
  }
 }
 function chooseMatchCreator(side,exclude=null){
@@ -2340,16 +2340,16 @@ function chooseMatchAttacker(side){
 }
 function matchDefensiveSkill(row){
  if(!row)return 70;const a=row.attrs||matchAttributes(row.base);if(row.slot==="GK")return a.ovr;
- return a.def*.58+a.phy*.27+a.pac*.15
+ return a.def*.60+a.phy*.20+a.pac*.20
 }
 function matchBuildSkill(row){const a=row?.attrs||matchAttributes(row?.base);return a.pas*.68+a.dri*.32}
 function matchBreakthroughSkill(row){const a=row?.attrs||matchAttributes(row?.base);return a.dri*.44+a.pac*.34+a.phy*.22}
 function matchGoalkeeperFactor(defendingSide){
  const gk=matchActorRows(defendingSide).find(r=>r.slot==="GK"),rating=gk?.attrs?.ovr??(defendingSide==="home"?match?.power:match?.opp)??78;
- return matchClamp(1-(Number(rating)-78)*.012,.84,1.16)
+ return matchClamp(1-(Number(rating)-78)*.009,.84,1.16)
 }
 function matchFinishingChance(xg,attacker,defendingSide){
- const shooting=attacker?.attrs?.sho??70,fitness=attacker?.fitness??100,finish=matchClamp(1+(shooting-75)*.012,.72,1.30),freshness=.90+matchClamp(fitness,35,100)*.001;
+ const shooting=attacker?.attrs?.sho??70,fitness=attacker?.fitness??100,finish=matchClamp(1+(shooting-75)*.015,.72,1.30),freshness=.90+matchClamp(fitness,35,100)*.001;
  return matchClamp(xg*finish*freshness*matchGoalkeeperFactor(defendingSide),.02,.70)
 }
 const SEASON_REWARDS=[
@@ -7402,10 +7402,10 @@ function simAttack(homeSide){
  const side=homeSide?"home":"away",defendingSide=homeSide?"away":"home",team=homeSide?matchHomeTeamName():matchAwayTeamName();
  const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced")),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic);
  const attackRoles=teamRoleFocusMods(side),defenseRoles=teamRoleFocusMods(defendingSide),attackProfile=matchTeamAttributeProfile(side),defenseProfile=matchTeamAttributeProfile(defendingSide);
- const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(homeSide?myPower-opponentPower:opponentPower-myPower)/18;
+ const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(homeSide?myPower-opponentPower:opponentPower-myPower)/28;
  const creator=chooseMatchCreator(side),buildDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const buildAttack=matchBuildSkill(creator),buildDefense=buildDefender?matchDefensiveSkill(buildDefender):defenseProfile.defense;
- const buildChance=matchClamp(.72+(buildAttack-buildDefense)*.0055+(attackProfile.build-defenseProfile.defense)*.0018+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.018,.42,.90);
+ const buildChance=matchClamp(.72+(buildAttack-buildDefense)*.0035+(attackProfile.build-defenseProfile.defense)*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014,.42,.90);
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
  if(!eventChance(buildChance)){
   const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);
@@ -7414,14 +7414,14 @@ function simAttack(homeSide){
  }
  const attacker=chooseMatchAttacker(side),duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const duelAttack=matchBreakthroughSkill(attacker),duelDefense=duelDefender?matchDefensiveSkill(duelDefender):defenseProfile.defense;
- const duelChance=matchClamp(.60+(duelAttack-duelDefense)*.006+(attackProfile.transition-defenseProfile.defense)*.0018+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.022,.28,.86);
+ const duelChance=matchClamp(.60+(duelAttack-duelDefense)*.0038+(attackProfile.transition-defenseProfile.defense)*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016,.28,.86);
  if(!eventChance(duelChance)){
   const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);
   if(action)recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);
   return
  }
  const buildMargin=buildAttack-buildDefense,duelMargin=duelAttack-duelDefense;
- const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0015+duelMargin*.0022+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.025,.05,.52);
+ const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0009+duelMargin*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014,.05,.52);
  const shot={side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:attacker.attrs.sho,creator:creator.name,defenderIndex:duelDefender?.index??-1,goal:false};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
@@ -7443,7 +7443,7 @@ function simTick(){
  advanceMatchFitness(step);match.minute+=step;
  const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower();
- match.poss+=((powerNow-matchOpponentPower())*.015+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02+(homeAttributes.build-awayAttributes.build)*.010)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
+ match.poss+=((powerNow-matchOpponentPower())*.007+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02+(homeAttributes.build-awayAttributes.build)*.004)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
  match.poss=Math.max(34,Math.min(66,match.poss));
 
  // Each opportunity now resolves build-up -> duel -> chance -> finish from player attributes.
@@ -7611,49 +7611,6 @@ function resolveEndOfPhase(){
   runPenaltyShootout();return true
  }
  return false
-}
-function simTick(){
- if(!match||match.finished||match.paused)return;
- if(resolveEndOfPhase())return;
- // Tempo only changes real-time playback. Every event uses the same virtual-minute step.
- const baseStep=1.25;
- const boundary=!match.halftimeLogged?45:!match.extraTimeStarted?90:!match.extraTimeBreakLogged?105:120;
- const step=Math.min(boundary-match.minute,baseStep);
- if(step<=0){resolveEndOfPhase();return}
- advanceMatchFitness(step);match.minute+=step;
- const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away");
- const powerNow=matchTeamPower();
- match.poss+=((powerNow-matchOpponentPower())*.015+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
- match.poss=Math.max(34,Math.min(66,match.poss));
-
- // Chances are per match minute, so changing animation speed cannot change the result distribution.
- const opportunities=step*.42;
- if(Math.random()<Math.min(1,opportunities))simAttack(Math.random()<match.poss/100);
- if(!match.highlightActive&&opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
-
- if(match.highlightActive){updateMatchUI();return}
-
- const min=Math.floor(match.minute);
- if(min>=8&&(match.yellowCards||[]).length<6&&Math.random()<.028)maybeBookPlayer();
- // Management events are limited to regulation time; extra time itself remains uninterrupted.
- if(!match.extraTimeStarted&&min>=50&&!match.injuryTriggered&&Math.random()<.0035){
-  match.injuryTriggered=true;
-  const starters=match.lineup.slice(0,11).filter(Boolean),starter=starters[Math.floor(Math.random()*starters.length)];
-  if(starter){
-   match.forcedOut=starter;
-   const b=currentMatchBase(starter);
-   recordMatchEvent("injury","home",b?.name||"Spieler");recordMatchScene("home-injury",`${b?.name||"Ein Spieler"} hat sich verletzt.`);
-   pauseForManagement(`${b?.name||"Ein Spieler"} hat sich verletzt. Eine Auswechslung ist möglich.`);
-   return
-  }
- }
- if(!match.extraTimeStarted&&min>=60&&!match.redTriggered&&Math.random()<.0017){
-  match.redTriggered=sendOffPlayer();
-  return
- }
-
- updateMatchUI();
- resolveEndOfPhase()
 }
 function matchPlayerWindow(uid){
  if(!match||!uid)return{start:null,end:0,minutes:0};
@@ -8755,7 +8712,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.72";
+const GFUT_BUILD="V20.73";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8808,7 +8765,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2072",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2073",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
