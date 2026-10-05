@@ -57,13 +57,14 @@ test('all twelve definitions can actually drop with weighted rarity',()=>{
  }
 });
 
-test('Vollstrecker and Bollwerk remain the two rarest Chemie-Boosts',()=>{
+test('Vollstrecker and Bollwerk remain rarest; Abfangjäger is the next-rarest Chemie-Boost',()=>{
  const weights=Object.fromEntries(C.DEFINITIONS.map(d=>[d.id,d.dropWeight||1]));
- assert.equal(weights.vollstrecker,.4);assert.equal(weights.bollwerk,.4);
- const nextSmallest=Math.min(...Object.entries(weights).filter(([id])=>!['vollstrecker','bollwerk'].includes(id)).map(([,w])=>w));
- assert.ok(nextSmallest>.4);
+ assert.equal(weights.vollstrecker,.4);assert.equal(weights.bollwerk,.4);assert.equal(weights.abfangjaeger,.6);
+ const others=Object.entries(weights).filter(([id])=>!['vollstrecker','bollwerk','abfangjaeger'].includes(id)).map(([,w])=>w);
+ assert.ok(Math.min(...others)>.6);
  const total=Object.values(weights).reduce((a,b)=>a+b,0);
  assert.ok(weights.vollstrecker/total<.05);assert.ok(weights.bollwerk/total<.05);
+ assert.ok(weights.abfangjaeger/total>.055&&weights.abfangjaeger/total<.07);
 });
 test('profile highlights only improved attributes, shows base → effective and unchanged OVR',()=>{
  const markup=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},3);assert.match(markup,/86 <i>→<\/i> 92/);assert.match(markup,/84 <i>→<\/i> 90/);assert.equal((markup.match(/cb-value improved/g)||[]).length,2);assert.match(markup,/3\/3 individuelle Chemie/);assert.match(markup,/Gesamtwertung bleibt 88/);
