@@ -107,5 +107,5 @@ test('saved filters normalize invalid bounds and unknown sort/quality values saf
 });
 test('POTM overview contains only active releases and picker has no dropdown controls',()=>{
  assert.ok(!source.includes('Für September ist noch keine POTM-SBC'));assert.ok(!source.includes('potm-awaiting'));
- assert.ok(source.includes('<dialog id="potmPickerDialog"'));assert.ok(source.includes('data-potm-picker-open'));assert.ok(!source.includes('<select'));assert.ok(source.includes('id="potmRatingMin"'));assert.ok(source.includes('id="potmRatingMax"'));
+ assert.ok(source.includes('<dialog id="potmPickerDialog"'));assert.ok(source.includes('data-potm-picker-open'));assert.ok(!source.includes('<select'));assert.ok(source.includes('id="potmRatingMin"'));assert.ok(source.includes('id="potmRatingMax"'));assert.ok(!source.includes('data-potm-rating'));assert.ok(!source.includes('potmRatingMinNumber'));
 });
