@@ -1,0 +1,30 @@
+.footera-playstyles{margin-top:12px}
+.playstyles-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.playstyles-head h4{margin:0;font-size:10px}
+.playstyles-head span{font-size:6px;color:#82928c;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+.playstyles-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.playstyle-entry{border:1px solid #2d3b36;border-radius:10px;background:#0e1613;overflow:hidden}
+.playstyle-entry.plus{border-color:#7e9b3d;background:linear-gradient(145deg,#162016,#0d1511)}
+.playstyle-entry summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:48px;padding:8px;cursor:pointer}
+.playstyle-entry summary::-webkit-details-marker{display:none}
+.playstyle-icon{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:9px;border:1px solid #3b5047;background:#17231e;color:#cfe9dc;font-size:8px;font-weight:1000;letter-spacing:-.02em}
+.playstyle-entry.plus .playstyle-icon{border-color:#a6c953;background:#263419;color:#e9ff95;box-shadow:0 0 12px rgba(216,255,62,.12)}
+.playstyle-copy{min-width:0;display:block;flex:1}
+.playstyle-copy strong{display:block;font-size:8px;color:#eff6f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.playstyle-entry.plus .playstyle-copy strong{color:#e6ff8b}
+.playstyle-copy small{display:block;margin-top:2px;color:#7f9089;font-size:6px}
+.playstyle-chevron{font-size:17px;color:#789087;transition:transform .18s ease}
+.playstyle-entry[open] .playstyle-chevron{transform:rotate(90deg)}
+.playstyle-entry p{margin:0;padding:0 9px 9px 46px;color:#9aaba4;font-size:7px;line-height:1.5}
+.playstyle-chip-row{display:flex;flex-wrap:wrap;gap:5px}
+.playstyle-chip{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border-radius:999px;border:1px solid #30423a;background:#121d18;color:#d9e8e1;font-size:6.5px;font-weight:900}
+.playstyle-chip b{width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#203028;color:#bde5d2;font-size:5.5px}
+.playstyle-chip.plus{border-color:#829d43;color:#e7ff8c;background:#1b2516}
+.playstyle-chip.plus b{background:#33451e;color:#efffb4}
+.card-shell>.playstyle-plus-card-badge{position:absolute;z-index:35;right:-5px;bottom:23px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;border:1px solid #a1c84b;background:linear-gradient(145deg,#253517,#0d160c);color:#edff9b;box-shadow:0 4px 9px #0009,0 0 10px rgba(216,255,62,.18);pointer-events:none}
+.playstyle-plus-card-badge b{font-size:6px;line-height:1}
+.playstyle-plus-card-badge i{position:absolute;right:-3px;top:-5px;width:12px;height:12px;display:grid;place-items:center;border-radius:50%;background:#d8ff3e;color:#07100d;font-size:8px;font-style:normal;font-weight:1000;border:1px solid #0c160e}
+.mini .card-shell>.playstyle-plus-card-badge{right:-3px;bottom:14px;width:16px;height:16px}
+.mini .playstyle-plus-card-badge b{font-size:4px}
+.mini .playstyle-plus-card-badge i{right:-3px;top:-5px;width:9px;height:9px;font-size:6px}
+@media(max-width:560px){.playstyles-list{grid-template-columns:1fr}.playstyle-entry summary{min-height:45px}.playstyle-entry p{font-size:7.5px}.playstyle-chip{font-size:7px}}
