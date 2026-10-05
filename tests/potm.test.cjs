@@ -19,17 +19,30 @@ function app(saved){
  return{c,state,potm,add,setTime:t=>now=Date.parse(t)}
 }
 
-test('all four POTMs cost 70 percent of original scores with unchanged eligibility and 28-day UTC windows',()=>{
- const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.eaTarget,r.target,r.minRating]),[['247827',91,700000,490000,45],['190765',84,18750,13125,45],['233419',89,1300000,910000,45],['231447',85,90000,63000,45]]);
+test('published POTMs apply Early Bird prices except Gross with unchanged eligibility and 28-day UTC windows',()=>{
+ const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.eaTarget,r.target,r.minRating]),[['247827',91,700000,294000,45],['190765',84,18750,13125,45],['233419',89,1300000,546000,45],['231447',85,90000,37800,45]]);
  for(const r of potm.releases){assert.equal(Date.parse(r.until)-Date.parse(r.from),28*86400000);assert.equal(potm.isActive(r,Date.parse(r.from)-1),false);assert.equal(potm.isActive(r,Date.parse(r.from)),true);assert.equal(potm.isActive(r,Date.parse(r.until)-1),true);assert.equal(potm.isActive(r,Date.parse(r.until)),false);assert.ok(r.stats.length===6&&r.stats.every(n=>n>0&&n<=99))}
  assert.equal(potm.activeSBCs(new Date('2026-10-04')).length,4);assert.equal(potm.activeSBCs(new Date('2026-10-31')).length,0);assert.ok(potm.activeSBCs(new Date('2026-10-04')).every(r=>r.scoreSbc&&r.once));assert.equal(potm.releases.some(r=>r.theme==='ligue-1'),false);
 });
 test('published EA OVR table handles every boundary and rejects invalid ratings',()=>{
  const {potm}=app();for(const [r,points] of [[44,0],[45,20],[64,20],[65,35],[74,35],[75,90],[83,410],[84,830],[85,2100],[86,4100],[87,5500],[88,8300],[89,11000],[90,14000],[91,19000],[92,20000],[93,25000],[94,30000],[95,40000],[96,55000],[97,85000],[98,90000],[99,100000],[100,0],[84.5,0],[NaN,0]])assert.equal(potm.scoreForRating(r),points,String(r));
 });
+test('Early Bird takes 40 percent off current Footera prices while Gross remains unchanged',()=>{
+ const {potm}=app();
+ assert.deepEqual(Array.from(potm.releases,r=>[r.standardTarget,r.earlyBird,r.target]),[[490000,true,294000],[13125,false,13125],[910000,true,546000],[63000,true,37800]]);
+});
+test('previous partial submissions reaching an Early Bird target claim without more cards',()=>{
+ for(const index of [0,2,3]){
+  const {potm,c,state,add}=app(),r=potm.releases[index];add('keep',84);
+  const oldScore=Math.floor((r.standardTarget+r.target)/2);state.potmProgress={[r.id]:{score:oldScore,submittedCount:12}};
+  const plan=potm.planSubmission(r.id,[]);assert.equal(plan.ok,true);assert.equal(plan.rows.length,0);assert.equal(plan.remaining,0);
+  assert.equal(potm.commitSubmission(plan),true);assert.equal(state.club.length,1);assert.equal(state.potmProgress[r.id].submittedCount,12);
+  assert.equal(c.packs[0].items[0].eventReleaseId,r.id);assert.equal(c.saves.at(-1).sbcCompletions[r.id],true);assert.equal(potm.commitSubmission(plan),false);
+ }
+});
 test('discounted targets are exposed to the SBC hub and old partial progress keeps its full value',()=>{
  const {potm,state}=app(),r=potm.releases[1];
- assert.deepEqual(Array.from(potm.activeSBCs(new Date('2026-10-04')),r=>r.scoreTarget),[490000,13125,910000,63000]);
+ assert.deepEqual(Array.from(potm.activeSBCs(new Date('2026-10-04')),r=>r.scoreTarget),[294000,13125,546000,37800]);
  state.potmProgress={[r.id]:{score:10000,submittedCount:11,claimedAt:null}};
  assert.equal(potm.progress(r).score,10000);assert.equal(r.target-potm.progress(r).score,3125);
  assert.equal(potm.planSubmission(r.id,[]).ok,false);assert.equal(state.potmProgress[r.id].score,10000);
