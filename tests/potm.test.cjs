@@ -27,6 +27,38 @@ test('all four published POTMs have original scores, stats, eligibility and prec
 test('published EA OVR table handles every boundary and rejects invalid ratings',()=>{
  const {potm}=app();for(const [r,points] of [[44,0],[45,20],[64,20],[65,35],[74,35],[75,90],[83,410],[84,830],[85,2100],[86,4100],[87,5500],[88,8300],[89,11000],[90,14000],[91,19000],[92,20000],[93,25000],[94,30000],[95,40000],[96,55000],[97,85000],[98,90000],[99,100000],[100,0],[84.5,0],[NaN,0]])assert.equal(potm.scoreForRating(r),points,String(r));
 });
+test('item scores distinguish normal rarity, campaign items and Icons and round each card once',()=>{
+ const {potm,c,add}=app();
+ for(const [rating,normal,special,icon] of [[83,410,513,615],[84,830,1038,1245],[85,2100,2625,3150],[86,4100,5125,6150],[92,20000,25000,30000],[94,30000,37500,45000]]){
+  assert.equal(potm.scoreForItem(add('base-'+rating,rating,{rare:true})),normal);
+  assert.equal(potm.scoreForItem(add('totw-'+rating,rating,{variant:'special',eventName:'Team of the Week 3'})),special);
+  assert.equal(potm.scoreForItem(add('promo-'+rating,rating,{variant:'special',eventType:'momentum'})),special);
+  assert.equal(potm.scoreForItem(add('icon-'+rating,rating,{variant:'icon-mid'})),icon);
+ }
+ const icon=add('base-icon',92);c.P_BY_ID.get(icon.pid).isIcon=true;assert.equal(potm.scoreForItem(icon),30000);
+ assert.equal(potm.scoreForItem(null),0);assert.equal(potm.scoreForItem({pid:'missing'}),0);assert.equal(potm.scoreForItem(add('invalid',44,{variant:'special'})),0);
+});
+test('Evolutions score their current rating while retaining the underlying item type',()=>{
+ const {potm,c,add}=app();
+ c.itemRating=i=>Math.min(99,(i.displayRating||c.itemBase(i)?.ovr||0)+Number(i.evo||0));
+ assert.equal(potm.scoreForItem(add('base-evo',83,{evo:1,evoDesign:true})),830);
+ assert.equal(potm.scoreForItem(add('totw-evo',83,{evo:1,variant:'special'})),1038);
+ assert.equal(potm.scoreForItem(add('icon-evo',83,{evo:1,variant:'icon-mid'})),1245);
+ assert.equal(potm.scoreForItem(add('fixed-promo-evo',75,{evo:1,displayRating:85,variant:'special'})),5125);
+});
+test('rounded special contributions from both sources are actually credited and saved',()=>{
+ const {potm,c,state,add}=app(),r=potm.releases[1];
+ add('a',84,{variant:'special'});add('b',84,{variant:'special'},'sbcStorage');add('c',84,{variant:'icon-mid'});
+ state.potmProgress={[r.id]:{score:100,submittedCount:1,claimedAt:null}};
+ const p=potm.planSubmission(r.id,['a','b','c']);assert.equal(p.points,3321);assert.deepEqual(Array.from(p.rows,x=>x.points),[1038,1038,1245]);
+ assert.equal(potm.commitSubmission(p),true);assert.equal(state.potmProgress[r.id].score,3421);assert.equal(state.potmProgress[r.id].submittedCount,4);
+ assert.equal(app(c.saves.at(-1)).potm.progress(r).score,3421);assert.equal(state.club.length,0);assert.equal(state.sbcStorage.length,0);
+});
+test('changing a selected item rarity before confirmation cannot credit a stale score',()=>{
+ const {potm,state,add}=app(),r=potm.releases[1],item=add('a',84),p=potm.planSubmission(r.id,['a']);
+ item.variant='special';assert.equal(potm.commitSubmission(p),false);assert.equal(state.club.length,1);assert.equal(state.potmProgress,undefined);
+ const fresh=potm.planSubmission(r.id,['a']);assert.equal(fresh.points,1038);assert.equal(potm.commitSubmission(fresh),true);assert.equal(state.potmProgress[r.id].score,1038);
+});
 test('partial submissions accept duplicate players with unique UIDs from club/storage and survive saving',()=>{
  const {potm,c,state,add}=app(),r=potm.releases[1];add('a',84,{pid:'same-player'});add('b',84,{pid:'same-player'},'sbcStorage');
  const p=potm.planSubmission(r.id,['a','b','a']);assert.equal(p.ok,true);assert.equal(p.points,1660);assert.equal(p.rows.length,2);assert.equal(p.complete,false);assert.equal(potm.commitSubmission(p),true);
