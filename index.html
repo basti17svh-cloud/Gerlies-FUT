@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.70</title>
+<title>Footera V20.71</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1545,7 +1545,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.70</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.71</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2207,6 +2207,62 @@ const ROLE_LABELS={
 const FOCUS_LABELS={"Balanced":"Ausgewogen","Attack":"Offensiv","Build-Up":"Aufbauspiel","Defend":"Defensiv"};
 function roleLabel(v){return ROLE_LABELS[v]||v}
 function focusLabel(v){return FOCUS_LABELS[v]||v}
+
+/* V20.71 — Rollen und Fokus greifen jetzt direkt in die Matchsimulation ein.
+   Teameffekte werden gemittelt; dadurch entstehen Trade-offs statt eines pauschalen Stärke-Bonus. */
+const ROLE_EFFECTS=Object.freeze({
+ "Goalkeeper":{defense:.012,defender:1.06,drain:.98},
+ "Ball Playing":{defense:.004,poss:.8,assist:1.05,defender:1.02,drain:1.01},
+ "Sweeper Keeper":{defense:.009,poss:.4,defender:1.08,drain:1.04},
+ "Defender":{attack:-.004,defense:.018,defender:1.14},
+ "Stopper":{defense:.022,poss:-.2,defender:1.22,drain:1.05},
+ "Wide Back":{defense:.012,poss:.35,assist:1.06,defender:1.10,drain:1.03},
+ "Ball Playing Defender":{defense:.008,poss:.75,assist:1.10,defender:1.06},
+ "Fullback":{defense:.012,poss:.2,assist:1.03,defender:1.08},
+ "Wingback":{attack:.010,defense:-.004,poss:.35,scorer:1.03,assist:1.16,defender:.96,drain:1.08},
+ "Falseback":{defense:.006,poss:.75,assist:1.08,defender:1.05},
+ "Inverted Wingback":{attack:.006,defense:.004,poss:.65,assist:1.10,defender:1.02,drain:1.05},
+ "Attacking Wingback":{attack:.016,defense:-.012,poss:.25,scorer:1.08,assist:1.18,defender:.92,drain:1.12},
+ "Holding":{attack:-.006,defense:.020,poss:.15,scorer:.82,assist:.96,defender:1.20,drain:.98},
+ "Deep Lying Playmaker":{attack:.002,defense:.006,poss:.90,scorer:.90,assist:1.18,defender:1.05,drain:.99},
+ "Box Crasher":{attack:.014,defense:-.006,poss:.10,scorer:1.22,assist:1.04,defender:.96,drain:1.10},
+ "Centre Half":{attack:-.010,defense:.024,poss:.20,scorer:.72,assist:.92,defender:1.28,drain:1.02},
+ "Wide Half":{attack:.003,defense:.010,poss:.45,scorer:.90,assist:1.08,defender:1.12,drain:1.05},
+ "Box to Box":{attack:.008,defense:.008,poss:.20,scorer:1.12,assist:1.10,defender:1.10,drain:1.10},
+ "Playmaker":{attack:.004,defense:-.002,poss:.80,scorer:.94,assist:1.24,defender:.94,drain:1.02},
+ "Half Winger":{attack:.012,defense:-.005,poss:.35,scorer:1.08,assist:1.15,defender:.92,drain:1.07},
+ "Shadow Striker":{attack:.018,defense:-.008,poss:-.10,scorer:1.28,assist:.90,defender:.85,drain:1.08},
+ "Classic 10":{attack:.012,defense:-.010,poss:.65,scorer:1.10,assist:1.20,defender:.80,drain:.97},
+ "Inside Forward":{attack:.016,defense:-.007,poss:-.10,scorer:1.22,assist:.92,defender:.85,drain:1.07},
+ "Winger":{attack:.012,defense:-.004,poss:.25,scorer:.96,assist:1.24,defender:.90,drain:1.08},
+ "Wide Playmaker":{attack:.006,defense:-.003,poss:.80,scorer:.90,assist:1.22,defender:.90,drain:1.02},
+ "Wide Midfielder":{attack:.003,defense:.009,poss:.35,scorer:.90,assist:1.08,defender:1.14,drain:1.04},
+ "Advanced Forward":{attack:.018,defense:-.008,poss:-.15,scorer:1.20,assist:.98,defender:.75,drain:1.06},
+ "Target Forward":{attack:.012,defense:-.004,poss:.20,scorer:1.12,assist:1.12,defender:.82,drain:1.05},
+ "Poacher":{attack:.016,defense:-.010,poss:-.35,scorer:1.30,assist:.78,defender:.70,drain:1.02},
+ "False 9":{attack:.006,defense:-.004,poss:.85,scorer:.94,assist:1.24,defender:.82,drain:1.01}
+});
+const FOCUS_EFFECTS=Object.freeze({
+ "Balanced":{},
+ "Attack":{attack:.012,defense:-.008,poss:-.10,scorer:1.08,assist:1.04,defender:.90,drain:1.07},
+ "Build-Up":{attack:.004,defense:-.002,poss:.80,scorer:.96,assist:1.10,defender:.98,drain:1.03},
+ "Defend":{attack:-.008,defense:.012,poss:-.15,scorer:.90,assist:.96,defender:1.12,drain:1.03}
+});
+function effectNumber(obj,key,fallback){const value=Number(obj?.[key]);return Number.isFinite(value)?value:fallback}
+function roleFocusContext(side,index,position){
+ const home=side==="home",profile=home?match:match?.opponentProfile,roles=home?(match?.roles||state.roles||{}):(profile?.roles||{}),focuses=home?(match?.focus||state.focus||{}):(profile?.focus||{});
+ const options=ROLE_OPTIONS[position]||[],requested=String(roles?.[index]||""),role=options.includes(requested)?requested:(options[0]||""),requestedFocus=String(focuses?.[index]||"Balanced"),focus=FOCUS_OPTIONS.includes(requestedFocus)?requestedFocus:"Balanced";
+ const r=ROLE_EFFECTS[role]||{},f=FOCUS_EFFECTS[focus]||{};
+ return{role,focus,attack:effectNumber(r,"attack",0)+effectNumber(f,"attack",0),defense:effectNumber(r,"defense",0)+effectNumber(f,"defense",0),poss:effectNumber(r,"poss",0)+effectNumber(f,"poss",0),scorer:effectNumber(r,"scorer",1)*effectNumber(f,"scorer",1),assist:effectNumber(r,"assist",1)*effectNumber(f,"assist",1),defender:effectNumber(r,"defender",1)*effectNumber(f,"defender",1),drain:effectNumber(r,"drain",1)*effectNumber(f,"drain",1)}
+}
+function teamRoleFocusMods(side){
+ if(!match)return{attack:1,defense:1,poss:0};
+ const home=side==="home",profile=match.opponentProfile,form=FORMATIONS[home?match.formation:profile?.formation]||FORMATIONS["4-3-3"],lineup=home?(match.lineup||[]):(profile?.squad||[]);
+ let attack=0,defense=0,poss=0,count=0;
+ lineup.slice(0,11).forEach((entry,index)=>{if(!entry)return;const ctx=roleFocusContext(side,index,form[index]?.p||"");attack+=ctx.attack;defense+=ctx.defense;poss+=ctx.poss;count++});
+ if(!count)return{attack:1,defense:1,poss:0};
+ return{attack:Math.max(.92,Math.min(1.08,1+attack/count)),defense:Math.max(.92,Math.min(1.08,1+defense/count)),poss:Math.max(-2.5,Math.min(2.5,poss/count))}
+}
 const SEASON_REWARDS=[
  {level:1,sp:0,reward:{coins:500}},{level:2,sp:500,reward:{pack:"silver",qty:1}},{level:3,sp:1000,reward:{coins:1500}},
  {level:4,sp:1800,reward:{pack:"gold",qty:1}},{level:5,sp:2800,reward:{points:100}},{level:6,sp:4000,reward:{pack:"82",qty:1}},
@@ -6984,7 +7040,7 @@ function matchPower(lineup,formation,tactic){
  base-=Math.max(0,11-valid)*3.6;
  if(tactic==="attacking")base+=1.3;
  if(tactic==="defensive")base+=.7;
- let roleBonus=0;xi.forEach((uid,i)=>{if(!uid)return;const b=currentMatchBase(uid),slot=form[i].p;if(b&&posFit(b,slot)>0)roleBonus+=.22;if(state.roles[i])roleBonus+=.08});return base+fitBonus/11+roleBonus
+ return base+fitBonus/11
 }
 function tacticMods(t){
  if(t==="attacking")return{attack:1.11,defense:.92,poss:2.5};
@@ -7025,7 +7081,7 @@ function startMatch(mode,opponent=null){
  mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
-  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],initialFormation:state.formation,formation:state.formation,tactic:state.tactic||"balanced",redCards:[],yellowCards:[],
+  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],initialFormation:state.formation,formation:state.formation,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},redCards:[],yellowCards:[],
   subsUsed:0,subbedOut:[],substitutionEvents:[],fitnessLoss:{home:{},away:{}},defensiveEvents:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],shotEvents:[],timeline:[],lastScene:null,highlightActive:false,
   injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
   extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyActive:false,penaltyState:null,penaltyEvents:[],penaltyWinner:null,pensHome:null,pensAway:null,playerStatsApplied:false
@@ -7136,18 +7192,18 @@ $("matchGoalSkip").addEventListener("click",()=>dismissMatchGoalMoment());
 function eventChance(base){
  return Math.random()<base
 }
-function matchFitnessDrain(base,position,tactic){
+function matchFitnessDrain(base,position,tactic,roleDrain=1){
  const player=typeof resolvedPlayer==="function"?resolvedPlayer(base):base;
  const phy=Math.max(40,Math.min(99,Number(player?.phy||70)));
  const intensity=tactic==="attacking"?.045:tactic==="defensive"?-.015:0;
- return Math.max(.22,.36+(78-phy)*.0035+intensity)*(position==="GK"?.48:1)
+ return Math.max(.22,.36+(78-phy)*.0035+intensity)*(position==="GK"?.48:1)*Math.max(.88,Math.min(1.16,Number(roleDrain)||1))
 }
 function advanceMatchFitness(minutes){
  if(!match)return;
  const loss=match.fitnessLoss||(match.fitnessLoss={home:{},away:{}});
  const homeForm=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],profile=match.opponentProfile,awayForm=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"];
- (match.lineup||[]).slice(0,11).forEach((uid,i)=>{if(uid)loss.home[String(uid)]=(loss.home[String(uid)]||0)+minutes*matchFitnessDrain(currentMatchBase(uid),homeForm[i]?.p,match.tactic)});
- for(let i=0;i<11;i++)loss.away[i]=(loss.away[i]||0)+minutes*matchFitnessDrain(opponentMatchBase(profile?.squad?.[i]),awayForm[i]?.p,profile?.tactic||"balanced")
+ (match.lineup||[]).slice(0,11).forEach((uid,i)=>{if(uid){const pos=homeForm[i]?.p||"",ctx=roleFocusContext("home",i,pos);loss.home[String(uid)]=(loss.home[String(uid)]||0)+minutes*matchFitnessDrain(currentMatchBase(uid),pos,match.tactic,ctx.drain)}});
+ for(let i=0;i<11;i++){const entry=profile?.squad?.[i];if(!entry)continue;const pos=awayForm[i]?.p||"",ctx=roleFocusContext("away",i,pos);loss.away[i]=(loss.away[i]||0)+minutes*matchFitnessDrain(opponentMatchBase(entry),pos,profile?.tactic||"balanced",ctx.drain)}
 }
 function matchPlayerFitness(uid,side="home",index=-1){
  const loss=Number(match?.fitnessLoss?.[side]?.[side==="home"?String(uid):index]||0);
@@ -7163,9 +7219,9 @@ function matchDefendingPlayers(side){
  const lineup=home?(match.lineup||[]):(profile?.squad||[]);
  return lineup.slice(0,11).map((entry,index)=>{
   const base=home?currentMatchBase(entry):opponentMatchBase(entry);if(!entry||!base)return null;
-  const position=form[index]?.p||base.position,player=typeof resolvedPlayer==="function"?resolvedPlayer(base):base;
+  const position=form[index]?.p||base.position,player=typeof resolvedPlayer==="function"?resolvedPlayer(base):base,ctx=roleFocusContext(side,index,position);
   const roleWeight=position==="CB"?5:position==="CDM"?4:["LB","RB","LWB","RWB"].includes(position)?3:position==="CM"?1.5:.4;
-  return{uid:home?String(entry):"",index,base,name:base.name||"Spieler",position,weight:roleWeight*(.5+Number(player?.def||65)/100)*matchPlayerFitness(entry,side,index)/100}
+  return{uid:home?String(entry):"",index,base,name:base.name||"Spieler",position,weight:roleWeight*(.5+Number(player?.def||65)/100)*ctx.defender*matchPlayerFitness(entry,side,index)/100}
  }).filter(Boolean)
 }
 function recordMatchDefense(attackingSide,kind,xg=0){
@@ -7216,8 +7272,8 @@ function chooseScorer(lineup){
  const form=FORMATIONS[match?.formation]||FORMATIONS["4-3-3"];
  const rows=(lineup||[]).slice(0,11).map((uid,i)=>{
   const base=currentMatchBase(uid);if(!uid||!base)return null;
-  const shooting=Math.max(35,Number(base.sho||base.ovr||65));
-  return{uid,index:i,base,name:base.name||"Spieler",weight:scorerSlotWeight(form[i]?.p||"")*(.65+shooting/100)*matchPlayerFitness(uid)/100}
+  const slot=form[i]?.p||"",shooting=Math.max(35,Number(base.sho||base.ovr||65)),ctx=roleFocusContext("home",i,slot);
+  return{uid,index:i,base,name:base.name||"Spieler",weight:scorerSlotWeight(slot)*(.65+shooting/100)*ctx.scorer*matchPlayerFitness(uid)/100}
  }).filter(Boolean);
  return weightedMatchPick(rows)||{uid:null,index:-1,base:null,name:"Spieler",weight:1}
 }
@@ -7225,8 +7281,8 @@ function chooseHomeAssist(excludeUid){
  const form=FORMATIONS[match?.formation]||FORMATIONS["4-3-3"];
  const rows=(match?.lineup||[]).slice(0,11).map((uid,i)=>{
   const base=currentMatchBase(uid);if(!uid||uid===excludeUid||!base)return null;
-  const passing=Math.max(35,Number(base.pas||base.ovr||65));
-  return{uid,index:i,base,name:base.name||"Spieler",weight:assistSlotWeight(form[i]?.p||"")*(.62+passing/100)*matchPlayerFitness(uid)/100}
+  const slot=form[i]?.p||"",passing=Math.max(35,Number(base.pas||base.ovr||65)),ctx=roleFocusContext("home",i,slot);
+  return{uid,index:i,base,name:base.name||"Spieler",weight:assistSlotWeight(slot)*(.62+passing/100)*ctx.assist*matchPlayerFitness(uid)/100}
  }).filter(Boolean);
  return weightedMatchPick(rows)
 }
@@ -7243,8 +7299,8 @@ function chooseOpponentScorer(){
  const profile=match?.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"];
  const rows=squad.slice(0,11).map((entry,i)=>{
   const base=opponentMatchBase(entry);if(!base)return null;
-  const shooting=Math.max(35,Number(base.sho||base.ovr||65));
-  return{entry,index:i,base,name:base.name||"Gegenspieler",weight:scorerSlotWeight(form[i]?.p||"")*(.65+shooting/100)*matchPlayerFitness("","away",i)/100}
+  const slot=form[i]?.p||"",shooting=Math.max(35,Number(base.sho||base.ovr||65)),ctx=roleFocusContext("away",i,slot);
+  return{entry,index:i,base,name:base.name||"Gegenspieler",weight:scorerSlotWeight(slot)*(.65+shooting/100)*ctx.scorer*matchPlayerFitness("","away",i)/100}
  }).filter(Boolean);
  return weightedMatchPick(rows)||{entry:null,index:-1,base:null,name:"Gegenspieler",weight:1}
 }
@@ -7252,8 +7308,8 @@ function chooseOpponentAssist(excludeIndex){
  const profile=match?.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"];
  const rows=squad.slice(0,11).map((entry,i)=>{
   if(i===excludeIndex)return null;const base=opponentMatchBase(entry);if(!base)return null;
-  const passing=Math.max(35,Number(base.pas||base.ovr||65));
-  return{entry,index:i,base,name:base.name||"Gegenspieler",weight:assistSlotWeight(form[i]?.p||"")*(.62+passing/100)*matchPlayerFitness("","away",i)/100}
+  const slot=form[i]?.p||"",passing=Math.max(35,Number(base.pas||base.ovr||65)),ctx=roleFocusContext("away",i,slot);
+  return{entry,index:i,base,name:base.name||"Gegenspieler",weight:assistSlotWeight(slot)*(.62+passing/100)*ctx.assist*matchPlayerFitness("","away",i)/100}
  }).filter(Boolean);
  return weightedMatchPick(rows)
 }
@@ -7288,11 +7344,10 @@ function logGoal(side,scorer,assist,type){
 function simAttack(homeSide){
  const side=homeSide?"home":"away",team=homeSide?matchHomeTeamName():matchAwayTeamName();
  recordMatchScene(`${side}-attack`,`${team} greift an.`);
- const mods=tacticMods(match.tactic);
- const myPower=matchTeamPower();
- const opponentPower=matchOpponentPower(),edge=(myPower-opponentPower)/18;
+ const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away");
+ const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(myPower-opponentPower)/18;
  if(homeSide){
-  const shotProb=Math.max(.14,Math.min(.36,.26+edge*.045))*mods.attack;
+  const shotProb=Math.max(.14,Math.min(.36,.26+edge*.045))*homeTactic.attack*homeRoles.attack/awayRoles.defense;
   if(eventChance(shotProb)){
    const shooter=chooseScorer(match.lineup);
    match.shotsHome++;
@@ -7308,7 +7363,7 @@ function simAttack(homeSide){
   }else if(Math.random()<.65){const action=recordMatchDefense("home",Math.random()<.5?"tackle":"interception");if(action)recordMatchScene("away-defense",`${action.name} ${action.kind==="tackle"?"gewinnt den Zweikampf":"fängt den Pass ab"}.`)}
  }else{
   const concedeEdge=(opponentPower-myPower)/18;
-  const shotProb=Math.max(.14,Math.min(.36,.26+concedeEdge*.045))/mods.defense;
+  const shotProb=Math.max(.14,Math.min(.36,.26+concedeEdge*.045))*awayTactic.attack*awayRoles.attack/(homeTactic.defense*homeRoles.defense);
   if(eventChance(shotProb)){
    const shooter=chooseOpponentScorer();
    match.shotsAway++;
@@ -7470,9 +7525,9 @@ function simTick(){
  const step=Math.min(boundary-match.minute,baseStep);
  if(step<=0){resolveEndOfPhase();return}
  advanceMatchFitness(step);match.minute+=step;
- const mods=tacticMods(match.tactic);
+ const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away");
  const powerNow=matchTeamPower();
- match.poss+=((powerNow-matchOpponentPower())*.015+mods.poss*.02)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
+ match.poss+=((powerNow-matchOpponentPower())*.015+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
  match.poss=Math.max(34,Math.min(66,match.poss));
 
  // Chances are per match minute, so changing animation speed cannot change the result distribution.
@@ -8068,7 +8123,10 @@ function getSquadBattleOpponents(){
   });
  squadBattleOpponentCache={key,list};return list
 }
-function friendAsOpponent(fr){return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[fr.formation]?fr.formation:"4-3-3",rating:Number(fr.rating||70),chem:Number(fr.chem||0),squad:Array.isArray(fr.squad)?fr.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,(fr.rating||70)+(fr.chem||0)*.12)),rewards:null,sp:0}}
+function friendAsOpponent(fr){
+ const team=friendProfileTeams(fr)[0]||fr,rating=Number(team.rating||fr.rating||70),chem=Number(team.chem||fr.chem||0);
+ return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[team.formation]?team.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||fr.roles||{})},focus:{...(team.focus||fr.focus||{})},rating,chem,squad:Array.isArray(team.squad)?team.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,rating+chem*.12)),rewards:null,sp:0}
+}
 const RIVALS_OPPONENT_LEVELS=Object.freeze({
  10:{min:72,max:76,chem:7},9:{min:74,max:78,chem:10},8:{min:76,max:80,chem:13},7:{min:78,max:82,chem:16},6:{min:79,max:83,chem:18},
  5:{min:81,max:84,chem:20},4:{min:82,max:85,chem:22},3:{min:83,max:86,chem:24},2:{min:84,max:87,chem:27},1:{min:85,max:89,chem:29},0:{min:87,max:91,chem:31}
@@ -8223,7 +8281,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
  const onlineUid=window.FooteraOnline?.registered?window.FooteraOnline.userId:"";
- ensureClubIdentityState();const payload={v:onlineUid?5:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",clubShortName:state.profile.clubShortName||"FTR",clubIdentity:clubIdentitySnapshot(),rating:m.rating,chem:m.chem,formation:form,division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
+ ensureClubIdentityState();const payload={v:onlineUid?5:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",clubShortName:state.profile.clubShortName||"FTR",clubIdentity:clubIdentitySnapshot(),rating:m.rating,chem:m.chem,formation:form,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||""}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
@@ -8238,8 +8296,8 @@ function friendTeamSnapshotForPreset(preset,indexSlot,isActive){
  const items=Array.from({length:23},(_,i)=>state.club.find(x=>x.uid===ids[i])||null),filled=items.slice(0,18).filter(Boolean).length;
  if(!filled)return null;
  const xi=items.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((sum,it)=>sum+itemRating(it),0)/xi.length):0;
- const bases=items.map(it=>it?displayBase(it):null),chem=opponentChemistryTotal(bases,formation,items);
- return{slot:indexSlot,name:squadPresetName((isActive?state.squadPresets?.[indexSlot]?.name:preset?.name)||"",indexSlot),active:!!isActive,formation,rating,chem,filled,squad:items.slice(0,18).map(friendSnapshotItem)}
+ const bases=items.map(it=>it?displayBase(it):null),chem=opponentChemistryTotal(bases,formation,items),roles={...(isActive?state.roles:preset?.roles||{})},focus={...(isActive?state.focus:preset?.focus||{})},tactic=isActive?state.tactic:(preset?.tactic||"balanced");
+ return{slot:indexSlot,name:squadPresetName((isActive?state.squadPresets?.[indexSlot]?.name:preset?.name)||"",indexSlot),active:!!isActive,formation,tactic,roles,focus,rating,chem,filled,squad:items.slice(0,18).map(friendSnapshotItem)}
 }
 function friendOnlineTeamsSnapshot(){
  persistActiveSquadPreset(state);
@@ -8249,7 +8307,7 @@ function friendOnlineTeamsSnapshot(){
  return[active,...extras].filter(Boolean).slice(0,3)
 }
 function friendProfileTeams(friend){
- const legacy={slot:Number(friend?.activeSquadPreset||0),name:"Aktuelles Team",active:true,formation:FORMATIONS[friend?.formation]?friend.formation:"4-3-3",rating:Number(friend?.rating||0),chem:Number(friend?.chem||0),filled:Array.isArray(friend?.squad)?friend.squad.filter(Boolean).length:0,squad:Array.isArray(friend?.squad)?friend.squad:Array(18).fill(null)};
+ const legacy={slot:Number(friend?.activeSquadPreset||0),name:"Aktuelles Team",active:true,formation:FORMATIONS[friend?.formation]?friend.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(friend?.tactic)?friend.tactic:"balanced",roles:{...(friend?.roles||{})},focus:{...(friend?.focus||{})},rating:Number(friend?.rating||0),chem:Number(friend?.chem||0),filled:Array.isArray(friend?.squad)?friend.squad.filter(Boolean).length:0,squad:Array.isArray(friend?.squad)?friend.squad:Array(18).fill(null)};
  const raw=Array.isArray(friend?.teams)?friend.teams.filter(team=>team&&Array.isArray(team.squad)):[];
  if(!raw.length)return[legacy];
  const activeSlot=Number.isFinite(Number(friend?.activeSquadPreset))?Number(friend.activeSquadPreset):Number(friend?.active_preset||0);
@@ -8601,7 +8659,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.70";
+const GFUT_BUILD="V20.71";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8654,7 +8712,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2070",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2071",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
