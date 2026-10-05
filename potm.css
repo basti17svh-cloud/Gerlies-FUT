@@ -1,20 +1,21 @@
-/* All five POTM skins use the existing master card and its emblem slots. */
+/* Selected Signature skins: Bundesliga A, PL1 Purple Chrome, LL3 Ruby Black,
+   SA3 Midnight Silver and L2 Lime Edge. Existing master size and live fields remain. */
 .card-shell:has(>.custom-card.potm){--card-emblems-gap:2.8cqw;--card-club-size:10.5cqw;--card-league-size:10.5cqw;filter:drop-shadow(0 0 7px #0008)}
 .card-shell .custom-card.potm{
- --potm-accent:#eacb77;--potm-face-width:162%;--potm-face-left:-35%;--potm-face-top:-42%;
- --card-column-fill:linear-gradient(180deg,#0009,#0003);--card-name-fill:linear-gradient(90deg,#06070fe8,#101829ed,#06070fe8);
+ --potm-accent:#e2c7ce;--potm-face-width:162%;--potm-face-left:-35%;--potm-face-top:-42%;
+ --card-column-fill:linear-gradient(180deg,#0009,#0003);--card-name-fill:linear-gradient(90deg,#10050a,#3b1020,#10050a);
  --card-name-border:var(--potm-accent);--card-stats-fill:linear-gradient(180deg,#040710e6,#03040af5);
- --card-name-color:#fff8df;--card-stats-color:var(--potm-accent);--card-value-color:#fff8df;
+ --card-name-color:#f8f5f8;--card-stats-color:var(--potm-accent);--card-value-color:#f8f5f8;
  --card-bottom-bottom:12%;--card-alt-bottom:6.5%;
- color:#fff4cc;background:transparent url("./assets/footera/events/potm/frames/bundesliga.svg") center / 100% 100% no-repeat;
+ color:#f8edf1;background:transparent url("./assets/footera/events/potm/frames/bundesliga.svg") center / 100% 100% no-repeat;
  clip-path:none;box-shadow:none;overflow:hidden;
 }
-.card-shell .custom-card.potm:before{content:none}
-.card-shell .custom-card.potm:after{content:"POTM";position:absolute;z-index:8;top:7.5%;left:41%;right:22%;padding:1cqw .8cqw;border:1px solid var(--potm-accent);background:#030716db;color:var(--potm-accent);font-size:max(3px,5.5cqw);font-weight:1000;line-height:1;text-align:center;letter-spacing:.05em;pointer-events:none}
-.card-shell .custom-card.potm.potm-premier-league{--potm-accent:#82f5ff;background-image:url("./assets/footera/events/potm/frames/premier-league.svg");color:#f2eaff;--card-name-color:#f2eaff;--card-value-color:#f2eaff}
-.card-shell .custom-card.potm.potm-laliga{--potm-accent:#ffd38c;background-image:url("./assets/footera/events/potm/frames/laliga.svg");--card-name-fill:linear-gradient(90deg,#28040a,#731b21,#28040a)}
-.card-shell .custom-card.potm.potm-serie-a{--potm-accent:#aadaff;background-image:url("./assets/footera/events/potm/frames/serie-a.svg");color:#eff7ff;--card-name-color:#eff7ff;--card-value-color:#eff7ff}
-.card-shell .custom-card.potm.potm-ligue-1{--potm-accent:#daf14d;background-image:url("./assets/footera/events/potm/frames/ligue-1.svg")}
+.card-shell .custom-card.potm:before{content:"";position:absolute;inset:auto;top:1.8%;left:43%;width:14%;height:10%;z-index:8;background:url("./assets/footera/emblem.png") center / contain no-repeat;border:0;clip-path:none;pointer-events:none}
+.card-shell .custom-card.potm:after{content:"POTM";position:absolute;z-index:8;top:12%;left:38%;right:38%;padding:.6cqw .4cqw;border:1px solid var(--potm-accent);background:#050811e8;color:var(--potm-accent);font-size:max(3px,4cqw);font-weight:1000;line-height:1;text-align:center;letter-spacing:.05em;pointer-events:none}
+.card-shell .custom-card.potm.potm-premier-league{--potm-accent:#b5e4f5;--card-name-fill:linear-gradient(90deg,#10071f,#301446,#10071f);background-image:url("./assets/footera/events/potm/frames/premier-league.svg");color:#f2eaff;--card-name-color:#f2eaff;--card-value-color:#f2eaff}
+.card-shell .custom-card.potm.potm-laliga{--potm-accent:#e2c5ce;background-image:url("./assets/footera/events/potm/frames/laliga.svg");--card-name-fill:linear-gradient(90deg,#10060b,#35101c,#10060b)}
+.card-shell .custom-card.potm.potm-serie-a{--potm-accent:#c5d4e4;--card-name-fill:linear-gradient(90deg,#030910,#152538,#030910);background-image:url("./assets/footera/events/potm/frames/serie-a.svg");color:#eff7ff;--card-name-color:#eff7ff;--card-value-color:#eff7ff}
+.card-shell .custom-card.potm.potm-ligue-1{--potm-accent:#cfec63;--card-name-fill:linear-gradient(90deg,#040c14,#162333,#040c14);background-image:url("./assets/footera/events/potm/frames/ligue-1.svg")}
 .card-shell .custom-card.potm[data-player-id="247827"]{--potm-face-width:186%;--potm-face-left:-61%;--potm-face-top:-40%}
 .card-shell .custom-card.potm[data-player-id="190765"]{--potm-face-width:162%;--potm-face-left:-33%;--potm-face-top:-43%}
 .card-shell .custom-card.potm[data-player-id="233419"]{--potm-face-width:152%;--potm-face-left:-33%;--potm-face-top:-43%}
