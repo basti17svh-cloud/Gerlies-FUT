@@ -80,3 +80,32 @@ test('all original portraits, five vector frames and five league logos exist in 
  for(const theme of ['bundesliga','premier-league','laliga','serie-a','ligue-1']){for(const file of [`assets/footera/events/potm/frames/${theme}.svg`,`assets/footera/events/potm/logos/${theme}.png`]){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes('./'+file))}}
  for(const file of ['potm.js','potm.css'])assert.ok(sw.includes('./'+file));assert.ok(html.indexOf('src="./potm.js"')<html.indexOf('initFooteraBootIntro();'));
 });
+
+test('rating filters find exact 84s from both sources and sort numerically in both directions',()=>{
+ const {potm,c,state,add}=app(),r=potm.releases[1];add('a',84);add('b',83);add('c',85);add('d',84,{},'sbcStorage');
+ const exact=potm.matchingRows(r,{min:84,max:84});assert.deepEqual(Array.from(exact,x=>x.item.uid),['a','d']);
+ assert.deepEqual(Array.from(potm.matchingRows(r,{min:83,max:85,sort:'low'}),x=>x.item.uid),['b','a','d','c']);
+ assert.deepEqual(Array.from(potm.matchingRows(r,{min:83,max:85,sort:'high'}),x=>x.item.uid),['c','a','d','b']);
+ assert.deepEqual(Array.from(potm.matchingRows(r,{min:84,max:84,source:'storage'}),x=>x.item.uid),['d']);
+ state.potmDrafts={[r.id]:['b']};state.potmPickerFilters={min:84,max:84,sort:'high'};
+ assert.deepEqual(Array.from(potm.matchingRows(r),x=>x.item.uid),['a','d']);assert.deepEqual(state.potmDrafts[r.id],['b']);
+ const restored=app(JSON.parse(JSON.stringify(state)));for(const [id,b] of c.P_BY_ID)restored.c.P_BY_ID.set(id,{...b});assert.deepEqual(Array.from(restored.potm.matchingRows(restored.potm.releases[1]),x=>x.item.uid),['a','d']);
+});
+test('quality, team protection, source and query filters combine without hiding special types as gold',()=>{
+ const {potm,c,state,add}=app(),r=potm.releases[1];c.cardClass=(b,i)=>i.variant||i.evo?'special':b.ovr<65?'bronze':b.ovr<75?'silver':'gold';
+ add('bronze',64);add('silver',74);add('gold',84);add('totw',84,{variant:'special'});add('icon',84,{variant:'icon-mid'});add('evo',84,{evo:1});add('team',84);state.squadPresets[0].squad[0]='team';add('storage',84,{},'sbcStorage');add('listed',84);state.transferList=['listed'];
+ assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'gold'}),x=>x.item.uid),['gold','storage']);
+ assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'special'}),x=>x.item.uid),['evo','icon','totw']);
+ assert.equal(potm.matchingRows(r,{quality:'silver'})[0].item.uid,'silver');assert.equal(potm.matchingRows(r,{quality:'bronze'})[0].item.uid,'bronze');
+ assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'gold',min:84,max:84,source:'club',query:'TEAM',showProtected:true}),x=>x.item.uid),['team']);
+ assert.equal(potm.matchingRows(r,{query:'listed',showProtected:true}).length,0);
+});
+test('saved filters normalize invalid bounds and unknown sort/quality values safely',()=>{
+ const {potm}=app();const f=potm.normalizeFilters({min:110,max:20,sort:'unknown',quality:'unknown',source:'unknown',query:'x'.repeat(150),showProtected:'true'});
+ assert.equal(f.min,45);assert.equal(f.max,99);assert.equal(f.sort,'low');assert.equal(f.quality,'');assert.equal(f.source,'');assert.equal(f.showProtected,false);assert.equal(f.query.length,120);
+ assert.equal(potm.normalizeFilters({min:83.7,max:84.4}).min,84);assert.equal(potm.normalizeFilters({min:83.7,max:84.4}).max,84);
+});
+test('POTM overview contains only active releases and picker has no dropdown controls',()=>{
+ assert.ok(!source.includes('Für September ist noch keine POTM-SBC'));assert.ok(!source.includes('potm-awaiting'));
+ assert.ok(source.includes('<dialog id="potmPickerDialog"'));assert.ok(source.includes('data-potm-picker-open'));assert.ok(!source.includes('<select'));assert.ok(source.includes('id="potmRatingMin"'));assert.ok(source.includes('id="potmRatingMax"'));
+});
