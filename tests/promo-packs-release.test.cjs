@@ -62,14 +62,14 @@ test('all advertised player-only packs are generated, rare, unique and within th
  }
 });
 
-test('Mega Pack keeps all 30 players and adds two guaranteed Chemie-Boosts separately',()=>{
+test('Mega Pack keeps all 12 players and adds two guaranteed Chemie-Boosts separately',()=>{
  const a=app('2026-10-05T17:00:00Z'),pack=a.run('PACKS.find(p=>p.id==="mega")');
- assert.equal(pack.count,30);assert.equal(pack.rareCount,18);assert.equal(pack.guarantee,82);assert.equal(pack.dailyLimit,20);
+ assert.equal(pack.count,12);assert.equal(pack.rareCount,6);assert.equal(pack.guarantee,82);assert.equal(pack.dailyLimit,20);
  assert.deepEqual(pack.chemBoostSlots,{slots:2,chance:1});
  for(let n=0;n<12;n++){
-  const items=a.ctx.generatePack('mega',false);assert.equal(items.length,30);assert.equal(new Set(items.map(i=>i.pid)).size,30);
+  const items=a.ctx.generatePack('mega',false);assert.equal(items.length,12);assert.equal(new Set(items.map(i=>i.pid)).size,12);
   assert.ok(items.every(i=>i.tradeable===false));
-  assert.ok(items.filter(i=>i.rare||i.variant).length>=18);
+  assert.ok(items.filter(i=>i.rare||i.variant).length>=6);
   const bases=items.map(i=>a.ctx.PLAYERS.find(p=>String(p.id)===i.pid));assert.ok(bases.every(b=>b.ovr>=75));assert.ok(bases.some(b=>b.ovr>=82));
  }
  let uid=0;const boosts=C.rollPack(pack,()=>0,()=>`mega-boost-${++uid}`);
@@ -103,7 +103,7 @@ test('the shop announces the release before 19:00 and displays all three packs a
  const markup=a.get('packGrid').innerHTML;assert.equal((markup.match(/class="store-pack /g)||[]).length,4);
  for(const id of IDS){assert.match(markup,new RegExp(`data-buy="${id}" data-cur="coins"`));assert.match(markup,new RegExp(`data-buy="${id}" data-cur="points"`))}
  assert.match(markup,/30 selten/);assert.match(markup,/24 selten/);assert.match(markup,/12 selten/);
- assert.match(markup,/18 selten/);assert.match(markup,/2 Chemie-Boosts garantiert/);assert.match(markup,/20 Käufen übrig/);
+ assert.match(markup,/6 selten/);assert.match(markup,/2 Chemie-Boosts garantiert/);assert.match(markup,/20 Käufen übrig/);
 });
 
 // The reduced fallback database has no silver/bronze cards: never charge for a partial pack.
