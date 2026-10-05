@@ -10,7 +10,7 @@ function app({resume,controller=null,remote=BUILD,storageFails=false}={}){
  node('bootIntro');node('bootIntroVideo');node('bootIntroSkip');
  node('bootIntroVideo').readyState=3;
  const serviceWorker={controller,listeners:{},addEventListener(t,fn){this.listeners[t]=fn},registration:{active:{state:'activated'},async update(){this.updates=(this.updates||0)+1}},async register(){return this.registration},async getRegistration(){return this.registration}};
- const c={Date,Set,URL,Number,Math,pendingPack:[],activeSbcId:null,$:id=>nodes.get(id)||node(id),
+ const c={Date,Set,URL,Number,Math,pendingPack:[],state:{pendingChemBoosts:[]},activeSbcId:null,$:id=>nodes.get(id)||node(id),
   sessionStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(storageFails)throw Error('Storage unavailable');storage.set(k,v)},removeItem:k=>storage.delete(k)},
   navigator:{serviceWorker},location:{protocol:'https:',hostname:'footera.test',href:'https://footera.test/game/',replace:url=>navigations.push(url)},
   window:{scrollY:210,addEventListener:(t,fn)=>listeners[t]=fn,scrollTo:opts=>restored.push({scroll:opts.top})},
@@ -57,17 +57,18 @@ test('two simultaneous update sources coalesce into one refresh after the unfini
 });
 
 test('updates are retained while playing, opening a pack, editing an SBC or using a modal/input',()=>{
- for(const mode of ['match','pack','results','pendingPack','sbc','potm','modal','input','database']){
+ for(const mode of ['match','pack','results','pendingPack','pendingBoost','sbc','potm','modal','input','database']){
   const a=app();a.ready();let blocked=true;
   if(mode==='match'||mode==='pack'||mode==='results'){const id={match:'match',pack:'opening',results:'results'}[mode];a.c.$(id).classList.contains=()=>blocked;}
   if(mode==='pendingPack')a.c.pendingPack=[{uid:'unassigned'}];
+  if(mode==='pendingBoost')a.c.state.pendingChemBoosts=[{uid:'boost-unassigned'}];
   if(mode==='sbc')a.c.activeSbcId='sbc-in-progress';
   if(mode==='potm')a.c.FooteraPotm={busy:()=>blocked};
   if(mode==='modal')a.c.document.querySelector=()=>blocked?{}:null;
   if(mode==='input')a.c.document.activeElement.matches=()=>blocked;
   if(mode==='database')a.c.$('dbGate').style.display='grid';
   a.c.requestGerliesUpdate('gfut-update-'+NEXT);a.tick();assert.equal(a.navigations.length,0,mode);assert.equal(a.storage.has('gfut-update-resume'),false,mode);
-  blocked=false;a.c.pendingPack=[];a.c.activeSbcId=null;a.c.$('dbGate').style.display='none';a.tick();assert.equal(a.navigations.length,1,mode);
+  blocked=false;a.c.pendingPack=[];a.c.state.pendingChemBoosts=[];a.c.activeSbcId=null;a.c.$('dbGate').style.display='none';a.tick();assert.equal(a.navigations.length,1,mode);
  }
 });
 

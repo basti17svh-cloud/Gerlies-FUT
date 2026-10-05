@@ -20,7 +20,7 @@ function fixture(seed=20261001){
   addLog(){},updateMatchUI(){},finishMatch(){ctx.match.finished=true},pauseForManagement(){ctx.match.paused=true},
   matchHomeTeamName:()=>"Heim",matchAwayTeamName:()=>"Gast",toast:message=>{ctx.lastToast=message}};
  vm.createContext(ctx);
- vm.runInContext(extract('const FORMATIONS={','const ROLE_OPTIONS='),ctx);
+ vm.runInContext(extract('const FORMATIONS={','const SEASON_REWARDS='),ctx);
  vm.runInContext(extract('function matchPower(','function stopMatchTimer(')+'\n'+extract('function eventChance(','let matchManagerDraft=null;'),ctx);
  vm.runInContext(extract('function matchReportPerformanceRows(','function matchReportTimelineRows('),ctx);
  ctx.match={mode:'rivals',minute:0,home:0,away:0,chem:26,formation:'4-3-3',initialFormation:'4-3-3',tactic:'balanced',
@@ -90,7 +90,7 @@ test('a saved shot records the actual defending goalkeeper and does not add a go
  assert.equal(shot.outcome,'save');assert.equal(shot.onTarget,true);
  assert.equal(ctx.match.defensiveEvents[0].uid,'p0');assert.equal(ctx.match.defensiveEvents[0].xg,.35);
  assert.equal(ctx.match.home,0);assert.equal(ctx.match.away,0);assert.match(ctx.match.lastScene.text,/Heim 0 pariert/);
- ctx.Math.random=()=>.72;ctx.resolveMissedMatchShot({...shot},'Gast');
+ ctx.Math.random=()=>.5;ctx.resolveMissedMatchShot({...shot},'Gast');
  const block=ctx.match.defensiveEvents.at(-1);assert.equal(block.kind,'block');assert.notEqual(block.uid,'p0');
 });
 

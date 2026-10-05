@@ -1,0 +1,41 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><title>Footera · Chemie-Boost Testverein</title>
+<style>body{margin:0;padding:16px;background:#16191c;color:#eee;font:14px system-ui}header{max-width:650px;margin:0 auto 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}button,select{padding:9px;font:inherit}iframe{display:block;width:390px;height:844px;margin:auto;border:1px solid #54616a;border-radius:12px;background:#000}p{max-width:650px;margin:10px auto;color:#ccc}</style>
+<header><strong>Chemie-Boosts · isolierter Testverein</strong><label>Breite <select id="width"><option>320</option><option selected>390</option><option>430</option></select></label><button data-action="inventory">Inventar</button><button data-action="squad">Aufstellung</button><button data-action="profile">Spielerprofil</button><button data-action="pack">Pack-Ergebnis</button><button id="reload">Neuladen</button><button id="reset">Test zurücksetzen</button></header>
+<p>Originale Footera-Oberfläche mit erfundenen Testdaten. Speicher ausschließlich im Arbeitsspeicher dieser Testseite; kein Onlinekonto, keine Käufe und keine Änderungen am eigenen Verein.</p><iframe id="game" title="Footera Chemie-Boosts bei mobiler Breite"></iframe><p id="status">Test wird geladen …</p>
+<script>
+const fixturePlayers=Array.from({length:28},(_,i)=>({id:'cb-qa-'+i,name:i===0?'Lukas Maximilian Alexander König':i===9?'L. König':'Testspieler '+(i+1),ovr:88,position:['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM','CB','ST','CM','RB','LW','CM','ST','CB','GK','CM'][i],alt:'',team:'Footera QA',league:'Testliga',nation:'DE',pac:86,sho:84,pas:84,dri:87,def:65,phy:78,face:'',isIcon:false}));
+window.QA_SAVE_MAP=new Map();window.QA_PLAYERS=fixturePlayers;
+let source='';
+const fixtureCode=`
+const localStorage={getItem:k=>window.parent.QA_SAVE_MAP.get(k)||null,setItem:(k,v)=>window.parent.QA_SAVE_MAP.set(k,String(v)),removeItem:k=>window.parent.QA_SAVE_MAP.delete(k)};
+window.addEventListener('error',e=>window.parent.postMessage({qaError:e.message},location.origin));
+`;
+const bootCode=`
+boot=async function(){
+ PLAYERS=window.parent.QA_PLAYERS.map(x=>({...x}));P_BY_ID=new Map(PLAYERS.map(x=>[x.id,x]));rebuildPlayerRuntimeIndexes();
+ ensureEaPlayerAssets=()=>{};scheduleIdleTask=()=>{};startIconPortraitPrewarm=()=>{};
+ if(!state.onboarded){state=baseState();state.onboarded=true;state.profile.username='ChemieBoostQA';state.profile.clubName='Chemie-Boost Testverein';state.profile.saveId='GF-CB-ISOLATED';state.coins=0;state.points=0;state.club=PLAYERS.map((p,i)=>({uid:'qa-card-'+i,pid:p.id,tradeable:false,evo:0,boost:0,acquired:1,chemBoost:i===9?{id:'vollstrecker',appliedAt:1}:null}));state.squad=state.club.slice(0,23).map(x=>x.uid);state.chemBoostInventory=Object.fromEntries(FooteraChemBoosts.DEFINITIONS.map(d=>[d.id,4]));}
+ pendingPack=state.pendingPack;pendingResolved=new Set(state.pendingResolved||[]);
+ $('dbGate').style.display='none';$('onboard').classList.remove('active');renderAll();switchView('clubView',{push:false});document.querySelector('[data-club-area="boosts"]')?.click();save();flushSave();
+ if(pendingPack.length||state.pendingChemBoosts.length)finishPack();window.parent.postMessage({qaReady:true},location.origin);
+};
+window.addEventListener('message',e=>{if(e.source!==window.parent||!e.data.qaAction)return;const action=e.data.qaAction;
+ if(action==='inventory'){switchView('clubView',{push:false});document.querySelector('[data-club-area="boosts"]')?.click();}
+ if(action==='squad')switchView('squadView',{push:false});
+ if(action==='profile')openPlayerDetails(state.club.find(i=>i.uid==='qa-card-9'),9);
+ if(action==='pack'){pendingPack=PLAYERS.slice(0,12).map((p,i)=>({uid:'qa-pack-player-'+i,pid:p.id,tradeable:true}));pendingResolved=new Set();state.pendingPack=pendingPack;state.pendingResolved=[];state.pendingChemBoosts=FooteraChemBoosts.DEFINITIONS.map((d,i)=>({uid:'qa-pack-boost-'+i,kind:'chem-boost',chemBoostId:d.id}));save();flushSave();finishPack();}
+});
+`;
+function render(){
+ const base=new URL('../',location.href).href;
+ let page=source.replace('<head>','<head><base href="'+base+'"><script>'+fixtureCode+'<'+ '/script>');
+ page=page.replace(/<script src="\.\/friend-online\.js"><\/script>/,'');
+ page=page.replace('if("serviceWorker" in navigator &&','if(false &&');
+ page=page.replace('FOOTERA_INTRO_DONE.then(()=>boot())',bootCode+'\nFOOTERA_INTRO_DONE.then(()=>boot())');
+ document.getElementById('status').textContent='Testverein wird geladen …';document.getElementById('game').srcdoc=page;
+}
+window.addEventListener('message',e=>{if(e.source!==document.getElementById('game').contentWindow)return;if(e.data.qaError)document.getElementById('status').textContent='Fehler: '+e.data.qaError;if(e.data.qaReady)document.getElementById('status').textContent='Testverein bereit · Speicher isoliert';});
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>document.getElementById('game').contentWindow.postMessage({qaAction:b.dataset.action},location.origin));
+document.getElementById('width').onchange=e=>document.getElementById('game').style.width=e.target.value+'px';document.getElementById('reload').onclick=render;document.getElementById('reset').onclick=()=>{window.QA_SAVE_MAP.clear();render()};
+fetch('../index.html',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('Testquelle fehlt');return r.text()}).then(s=>{source=s;render()}).catch(e=>document.getElementById('status').textContent=e.message);
+</script></html>
