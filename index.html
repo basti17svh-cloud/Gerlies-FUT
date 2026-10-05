@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.87</title>
+<title>Footera V20.88</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1475,8 +1475,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2087">
-<link rel="stylesheet" href="./playstyles.css?v=2087">
+<link rel="stylesheet" href="./chem-boosts.css?v=2088">
+<link rel="stylesheet" href="./playstyles.css?v=2088">
+<link rel="stylesheet" href="./player-profile.css?v=2088">
 </head>
 <body>
 
@@ -1547,7 +1548,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.87</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.88</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1930,7 +1931,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="priceCompareModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="priceCompareTitle">Preisvergleich</h3><div id="priceCompareSub" style="font-size:7px;color:#87958f">Aktuelle Marktangebote</div></div><button id="priceCompareClose" class="secondary">Schließen</button></div><div id="priceCompareBody"></div></div></div>
 <div id="transferOfferModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Auf Transfermarkt anbieten</h3><div id="transferOfferSub" style="font-size:7px;color:#87958f"></div></div><button id="transferOfferClose" class="secondary">Schließen</button></div><div id="transferOfferBody"></div></div></div>
 <div id="evoPickerModal" class="modal"><div class="modalinner evo-modalinner"><div class="modalhead"><div><h3 id="evoPickerTitle">Evolution</h3><div id="evoPickerSub" style="font-size:7px;color:#87958f"></div></div><button id="evoPickerClose" class="secondary">Schließen</button></div><div id="evoPickerBody"></div></div></div>
-<div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerbiografie</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
+<div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerprofil</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
 <div id="campaignModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="campaignModalTitle">Campaign Hub</h3><div style="font-size:7px;color:#87958f">Fortschritt und nächste Schritte</div></div><button id="campaignModalClose" class="secondary">Schließen</button></div><div id="campaignModalBody" class="campaign-detail-grid"></div></div></div>
 <div id="friendTeamModal" class="modal friend-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="friendTeamModalTitle">Freundes-Mannschaft</h3><div id="friendTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="friendTeamModalClose" class="secondary">Schließen</button></div><div id="friendTeamModalBody"></div></div></div>
 <div id="onlineDuelModal" class="modal online-duel-modal"><div class="modalinner"><div class="modalhead"><h3 id="onlineDuelModalTitle">Freundesduell · Live-Matchday</h3><button id="onlineDuelModalClose" class="secondary">Schließen</button></div><div id="onlineDuelBody"></div></div></div>
@@ -2051,8 +2052,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./chem-boosts.js?v=2087"></script>
-<script src="./playstyles.js?v=2087"></script>
+<script src="./chem-boosts.js?v=2088"></script>
+<script src="./playstyles.js?v=2088"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -4311,14 +4312,67 @@ function toggleTransferList(uid){
  if(isOnTransferList(uid))state.transferList=state.transferList.filter(x=>x!==uid);else state.transferList.push(uid);
  save();return true
 }
+function playerProfileTypeLabel(item,friend=false){
+ if(friend)return"FREUNDESKARTE";
+ if(isFounderItem(item))return"FOOTERA FOUNDER";
+ if(isStoryItem(item))return"STORY";
+ if(isMomentumItem(item))return"MOMENTUM";
+ if(item?.variant==="icon-mid")return"ICON";
+ if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"TEAM OF THE WEEK";
+ if(item?.variant==="special")return String(item?.eventName||"SPEZIALKARTE").toUpperCase();
+ return"SPIELERPROFIL"
+}
+function playerBiographyHTML(b,item,{shownPosition=null,clubPerf=null,friend=false}={}){
+ const alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),founder=isFounderItem(item),name=founder?b.fullName:b.name;
+ const typeLabel=playerProfileTypeLabel(item,friend),nation=founder?"Deutschland":nationLabel(b.nation),position=positionLabel(b.position,b);
+ const info=[["Starker Fuß",playerFoot(b)],["Skills",stars(skillStars(b))],["Schwacher Fuß",stars(weakFootStars(b))],["Workrates",workRates(b)],["Spielerrolle",positionRoleLabel(b)]];
+ if(founder)info.splice(1,0,["Größe",`${Number(b.height)||172} cm`]);
+ const positions=[b.position,...alts].filter(Boolean),attributes=cardStatPairs(b);
+ const performance=clubPerf?`<section class="bio-panel bio-performance"><div class="bio-panel-head"><div><span class="bio-panel-kicker">DEIN VEREIN</span><h4>Vereinsleistung</h4></div><small>Nur Einsätze für deinen Club</small></div><div class="bio-performance-grid"><div><strong>${clubPerf.goals}</strong><span>Tore</span></div><div><strong>${clubPerf.assists}</strong><span>Vorlagen</span></div></div></section>`:"";
+ const playstyles=typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.profileHTML(item,b):"";
+ const chem=!friend&&typeof FooteraChemBoosts!=="undefined"?chemBoostProfileHTML(item,b):"";
+ return`<div class="bio-layout bio-profile-v2">
+  <section class="bio-hero">
+   <div class="bio-hero-card">${cardHTML(b,item,false,shownPosition||b.position)}</div>
+   <div class="bio-identity">
+    <span class="bio-eyebrow">${esc(typeLabel)}</span>
+    <h2>${esc(name)}</h2>
+    <p class="bio-context" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>
+    <div class="bio-hero-kpis">
+     <div><strong>${b.ovr}</strong><span>GES</span></div>
+     <div><strong>${esc(position)}</strong><span>Position</span></div>
+     <div><strong>${flagEmoji(b.nation)} ${esc(nation)}</strong><span>Nation</span></div>
+    </div>
+    ${playerAffiliationHTML(b,true)}
+   </div>
+  </section>
+  <div class="bio-profile-grid">
+   <section class="bio-panel">
+    <div class="bio-panel-head"><div><span class="bio-panel-kicker">EINSATZ</span><h4>Positionen & Rolle</h4></div></div>
+    <div class="bio-position-list">${positions.map((x,i)=>`<span class="bio-position-pill ${i===0?"primary":""}">${esc(positionLabel(x,b))}</span>`).join("")}</div>
+    <div class="bio-role-card"><span>Spielerrolle</span><strong>${esc(positionRoleLabel(b))}</strong></div>
+   </section>
+   <section class="bio-panel">
+    <div class="bio-panel-head"><div><span class="bio-panel-kicker">PROFIL</span><h4>Spielerdaten</h4></div></div>
+    <div class="bio-info-grid">${info.map(([label,value])=>`<div class="bio-info-item"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("")}</div>
+   </section>
+  </div>
+  <section class="bio-panel bio-attributes-panel">
+   <div class="bio-panel-head"><div><span class="bio-panel-kicker">KERNWERTE</span><h4>Attribute</h4></div><small>Aktuelle Kartenwerte</small></div>
+   <div class="bio-attributes-grid">${attributes.map(([label,value])=>{const n=Math.max(0,Math.min(99,Number(value)||0));return`<div class="bio-attribute"><span>${esc(label)}</span><strong>${value}</strong><i><b style="width:${n}%"></b></i></div>`}).join("")}</div>
+  </section>
+  ${performance}
+  <div class="bio-feature-stack">${playstyles}${chem}</div>
+ </div>`
+}
 function openBiography(item,index,fallbackBase=null){
  if(!item)return;
  const shown=displayBase(item),base=shown||(fallbackBase?{...fallbackBase,ovr:Math.min(99,Number(fallbackBase.ovr||0)+Number(item.boost||0)),position:item.overridePosition||fallbackBase.position}:null);
  if(!base)return;
- const b=resolvedPlayer(base),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem",clubPerf=playerClubPerformance(item);
+ const b=resolvedPlayer(base),slot=index!=null&&index>=0?(index<11?currentFormation()[index].p:"BANK"):"Vereinsitem",clubPerf=playerClubPerformance(item),shownPosition=index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position;
  ensurePlayerAffiliationAssets(b);
- $("bioDetailSub").textContent=`${isFounderItem(item)?"FOUNDER · ":isStoryItem(item)?"STORY · ":isMomentumItem(item)?"MOMENTUM · ":""}${playerContextLine(b)}`;
- $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,index!=null&&index>=0&&index<11&&inPosition(b,slot)?slot:b.position)}</div><div class="bio-headline"><h2>${esc(isFounderItem(item)?b.fullName:b.name)}</h2>${isFounderItem(item)?'<span class="bio-founder-label">FOOTERA FOUNDER</span>':""}<p data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div>${isFounderItem(item)?`<div class="bio-stat"><strong>${Number(b.height)||172} cm</strong><span>Größe</span></div>`:""}<div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(isFounderItem(item)?"Deutschland":nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b))}</strong><span>Spielerrolle</span></div><div class="bio-stat"><strong>${clubPerf.goals}</strong><span>Tore für deinen Verein</span></div><div class="bio-stat"><strong>${clubPerf.assists}</strong><span>Vorlagen für deinen Verein</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div>${typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.profileHTML(item,b):""}${typeof FooteraChemBoosts!=="undefined"?chemBoostProfileHTML(item,b):""}</div>`;
+ $("bioDetailSub").textContent=`${playerProfileTypeLabel(item)} · ${playerContextLine(b)}`;
+ $("bioDetailBody").innerHTML=playerBiographyHTML(b,item,{shownPosition,clubPerf});
  showUiLayer("bioModal","bio")
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null){
@@ -8420,10 +8474,10 @@ function friendCard(fp,slot,mini=true){
 }
 function openFriendBiography(fp,slot=""){
  const raw=friendBase(fp);if(!raw)return;
- const item=friendItem(fp,raw),b=resolvedPlayer(raw),alts=String(b.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean),shown=slot&&slot!=="BANK"&&friendFits(b,slot)?slot:b.position;
+ const item=friendItem(fp,raw),b=resolvedPlayer(raw),shown=slot&&slot!=="BANK"&&friendFits(b,slot)?slot:b.position;
  ensurePlayerAffiliationAssets(b);
- $("bioDetailSub").textContent=`FREUND · ${playerContextLine(b)}`;
- $("bioDetailBody").innerHTML=`<div class="bio-layout"><div class="bio-top"><div class="bio-card">${cardHTML(b,item,false,shown)}</div><div class="bio-headline"><h2>${esc(isFounderItem(item)?b.fullName:b.name)}</h2>${isFounderItem(item)?'<span class="bio-founder-label">FOOTERA FOUNDER</span>':""}<p data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</p>${playerAffiliationHTML(b)}<div class="bio-stats"><div class="bio-stat"><strong>${esc(positionLabel(b.position,b))}</strong><span>Hauptposition</span></div><div class="bio-stat"><strong>${b.ovr}</strong><span>Gesamtwertung</span></div><div class="bio-stat"><strong>${flagEmoji(b.nation)} ${esc(isFounderItem(item)?"Deutschland":nationLabel(b.nation))}</strong><span>Nationalität</span></div><div class="bio-stat"><strong>${esc(playerFoot(b))}</strong><span>Starker Fuß</span></div><div class="bio-stat"><strong>${stars(skillStars(b))}</strong><span>Skills</span></div><div class="bio-stat"><strong>${stars(weakFootStars(b))}</strong><span>Schwacher Fuß</span></div><div class="bio-stat"><strong>${esc(workRates(b))}</strong><span>Workrates</span></div><div class="bio-stat"><strong>${esc(positionRoleLabel(b))}</strong><span>Spielerrolle</span></div></div></div></div><div class="bio-section"><h4>Spielbare Positionen</h4><div class="bio-chips"><span class="bio-chip">${esc(positionLabel(b.position,b))}</span>${alts.map(x=>`<span class="bio-chip">${esc(positionLabel(x,b))}</span>`).join("")||""}</div></div><div class="bio-section"><h4>Attribute</h4><div class="attrgrid">${cardStatPairs(b).map(a=>`<div class="attr"><b>${a[1]}</b><span>${a[0]}</span></div>`).join("")}</div></div>${typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.profileHTML(item,b):""}</div>`;
+ $("bioDetailSub").textContent=`FREUNDESKARTE · ${playerContextLine(b)}`;
+ $("bioDetailBody").innerHTML=playerBiographyHTML(b,item,{shownPosition:shown,friend:true});
  showUiLayer("bioModal","bio")
 }
 function renderFriendTeamModal(index,selectedIndex=0){
@@ -8751,7 +8805,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.87";
+const GFUT_BUILD="V20.88";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8804,7 +8858,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2087",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2088",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8820,7 +8874,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./competition-system.js"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./chem-boosts-ui.js?v=2087"></script>
+<script src="./chem-boosts-ui.js?v=2088"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
