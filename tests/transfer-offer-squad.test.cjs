@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const {pricingCode}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const offerCode=html.slice(html.indexOf('function openTransferOfferModal('),html.indexOf('function movePackItemToTransferList('));
 const saleCode=html.slice(html.indexOf('function transferSalePlayerInSquad('),html.indexOf('function settleTransferSales('));
@@ -21,7 +22,7 @@ function setup(){
   displayBase:()=>({name:'I. Konaté'}),playerClubLabel:()=> 'Real Madrid',cardHTML:()=>'<card>',esc:String,transferSuggestedPrices:()=>({start:20000,buy:24500}),
   isFounderItem:()=>false,activeTransferSaleForUid:uid=>state.transferSales.find(s=>s.uid===uid&&s.status==='active'),
   fmt:String,renderAll:()=>{renders++},toast(){},showUiLayer(){}};
- vm.createContext(ctx);vm.runInContext(priceCode+'\n'+offerCode+'\n'+saleCode,ctx);
+ vm.createContext(ctx);vm.runInContext(pricingCode+'\n'+priceCode+'\n'+offerCode+'\n'+saleCode,ctx);
  return{ctx,item,state,elements,prompts,approve:()=>{accept=true},renderCount:()=>renders}
 }
 

@@ -58,7 +58,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
 
 test('only Marcos fixed profile gets this gift once, including after reload',()=>{
  for(const owner of ['GF-OTHER','GF-9AE6CDDEFE8A458D']){
-  const foreign=app({owner});assert.equal(foreign.run('grantDirectRewards().length'),0);assert.equal(foreign.ctx.state.packs[PACK],undefined)
+  const foreign=app({owner});assert.equal(foreign.run(`grantDirectRewards().some(reward=>reward.id==='${CLAIM}')`),false);assert.equal(foreign.ctx.state.packs[PACK],undefined)
  }
  const first=app();assert.equal(first.run('grantDirectRewards().length'),1);assert.equal(first.ctx.state.packs[PACK],1);
  assert.equal(first.run('grantDirectRewards().length'),0);

@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const {pricingCode}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const code=html.slice(html.indexOf('const MARKET_MAX_PRICE='),html.indexOf('// Futbin FC 27 snapshot'))+'\n'+
  html.slice(html.indexOf('function bidIncrement('),html.indexOf('function listingToClubItem('))+'\n'+
@@ -13,12 +14,12 @@ const code=html.slice(html.indexOf('const MARKET_MAX_PRICE='),html.indexOf('// F
 function setup(){
  const math=Object.create(Math);math.random=()=>1;
  const base={id:'17',name:'Testspieler'},listing={base,price:850,bid:500,myBid:0,ends:Date.now()+60000};
- const ctx={Math:math,Date,PLAYERS:[base],P_BY_ID:new Map([['17',base]]),marketListings:[listing],
+ const ctx={isFounderItem:()=>false,Math:math,Date,PLAYERS:[base],P_BY_ID:new Map([['17',base]]),marketListings:[listing],
   state:{coins:1000,club:[],stats:{market:0},auctions:[]},
   ensureObjectiveWindows(){},listingToClubItem:x=>({pid:String(x.base.id)}),
   toast(){},save(){},updateObjectiveIndicators(){},renderWallet(){},renderAll(){},renderMarket(){},
   bidIncrement:()=>50,fmt:String,esc:String,auctionTime:()=>60,$:()=>({innerHTML:''})};
- vm.createContext(ctx);vm.runInContext(code,ctx);
+ vm.createContext(ctx);vm.runInContext(pricingCode+'\n'+code,ctx);
  return{ctx,listing}
 }
 

@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const {line}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'../momentum-card.css'),'utf8');
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
@@ -77,7 +78,7 @@ test('market offers use 14 fixed identities, target ratings and preserve event t
  const players=vm.runInContext('MOMENTUM_EVENT.players',c);
  const bases=players.map(p=>({id:p.pid,name:p.name,fullName:p.name,ovr:p.baseOvr,position:p.position,team:p.team,league:'Test Liga',nation:p.nation}));
  c.P_BY_ID=new Map(bases.map(p=>[p.id,p]));
- vm.runInContext(section('function createMarketListing(base,filters,offerIndex=0){','const PLAYER_SEARCH_TEXT_CACHE=')+section('function marketSnapshotHash(v){','function marketSnapshotBases('),c);
+ vm.runInContext(line('const SPECIAL_MARKET_MIN=')+'\n'+section('function createMarketListing(base,filters,offerIndex=0){','const PLAYER_SEARCH_TEXT_CACHE=')+section('function marketSnapshotHash(v){','function marketSnapshotBases('),c);
  vm.runInContext(section('function listingRating(x){','function auctionTime('),c);
  vm.runInContext(section('function listingToClubItem(x,paidPrice=0){','function settleAuctions(){'),c);
  vm.runInContext(section('function makeItem(','function portraitFallback('),c);

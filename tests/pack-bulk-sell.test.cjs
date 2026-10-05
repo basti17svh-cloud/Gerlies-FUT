@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const {evolutionCode}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const stateCode=html.match(/^const SQUAD_FORMATION_NAMES=.*;$/m)[0]+'\n'+html.slice(html.indexOf('function defaultClubIdentity(){'),html.indexOf('function toast(t){'));
 const duplicateCode=html.slice(html.indexOf('function packItemKey('),html.indexOf('function openPackPlayerDetails('));
@@ -28,7 +29,7 @@ function app(initial={},saved=new Map()){
   confirm(message){prompts.push(message);return ctx.approve}
  };
  vm.createContext(ctx);
- vm.runInContext(`${stateCode}\nlet state=loadState(),pendingPack=state.pendingPack,pendingResolved=new Set(state.pendingResolved);\n${duplicateCode}\n${specialCode}\n${resultCode}`,ctx);
+ vm.runInContext(`${stateCode}\nlet state=loadState(),pendingPack=state.pendingPack,pendingResolved=new Set(state.pendingResolved);\n${evolutionCode}\n${duplicateCode}\n${specialCode}\n${resultCode}`,ctx);
  const read=expression=>vm.runInContext(expression,ctx);
  el('results');read('renderPackResults();flushSave()');
  return{ctx,elements,prompts,saved,read,json:expression=>JSON.parse(read(`JSON.stringify(${expression})`)),click:id=>elements.get(id).handlers.click(),persist:()=>read('flushSave()')}

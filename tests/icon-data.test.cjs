@@ -4,14 +4,15 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
+const {line,pricingCode}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const between=(start,end)=>html.slice(html.indexOf(start),html.indexOf(end));
 function setup(){
- const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map(),
+ const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map(),
   ICON_PORTRAIT_CACHE:{},isWholeCardAsset:()=>false,futwizFaceCandidates:id=>[`https://cdn.futwiz.com/assets/img/fc27/faces/${id}.png`],
   sofifaFaceCandidates:()=>[],fifaRostersFaceCandidates:()=>[],marketSnapshotHash:()=>100,promoWindowKey:()=>'',totwInfo:()=>null};
  vm.createContext(ctx);
- vm.runInContext([
+ vm.runInContext([pricingCode,line('const SPECIAL_PRICE_CURVE='),line('const TOTW_PRICE_CURVE='),
   html.match(/^function normalizeKey\(v\).*$/m)[0],
   html.match(/^const MARKET_PRICE_CURVE=.*$/m)[0],
   between('const MID_ICON_DATA=','function randomMidIconBase()'),
@@ -81,13 +82,13 @@ test('all 136 Icons have individual stable Futbin guides, including expensive 88
 
 test('meta and special multipliers and offer spreads cannot exceed 15 million',()=>{
  const{ctx,api}=setup();
- ctx.marketMetaFactor=()=>10.5;ctx.marketMetaPercentile=()=>1;
+ ctx.marketMetaFactor=()=>20;ctx.marketMetaPercentile=()=>1;
  assert.equal(api.marketPriceForRating(99,true,{ovr:99}),15000000);
  assert.equal(api.marketRoundPrice(15000999),15000000);
  assert.equal(api.marketRoundPrice(Infinity),15000000);
  assert.equal(api.marketRoundPrice(NaN),150);
  const ronaldo=api.MID_ICON_BASES.find(p=>p.name==='Ronaldo');
- ctx.marketSnapshotHash=()=>259;
+ ctx.iconMarketPrice=()=>15000000;ctx.marketSnapshotHash=()=>80;
  const offer=api.createMarketListing(ronaldo,{specialType:'icon'});
  assert.equal(offer.price,15000000);
  assert.ok(offer.startPrice<=15000000&&offer.bid<=15000000);

@@ -12,10 +12,11 @@ function fixture(seed=20261001){
  const bases=new Map(club.map(p=>[p.uid,p]));
  const away=positions.slice(0,11).map((position,i)=>({id:`a${i}`,name:`Gast ${i}`,position,ovr:84,phy:70,sho:80,pas:80,def:75}));
  const math=Object.create(Math);math.random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
- const elements=new Map(),node=id=>{if(!elements.has(id))elements.set(id,{textContent:'',value:'',addEventListener(){}});return elements.get(id)};
+ const elements=new Map(),node=id=>{if(!elements.has(id))elements.set(id,{textContent:'',value:'',scrollIntoView(){},addEventListener(){}});return elements.get(id)};
  const ctx={Math:math,match:null,matchSpeed:800,state:{club,roles:[]},resolvedPlayer:p=>p,displayBase:p=>p,
   currentMatchBase:uid=>bases.get(uid)||null,currentMatchRating:uid=>bases.get(uid)?.ovr||0,
   posFit:(base,pos)=>base?.position===pos?1:0,positionLabel:p=>p,esc:String,P_BY_ID:new Map(),$:node,
+  stopMatchTimer(){},dismissMatchGoalMoment(){},setMatchPill(){},penaltyShootoutTimer:null,requestAnimationFrame:fn=>fn(),clearTimeout(){},timers:[],setTimeout:fn=>ctx.timers.push(fn),
   addLog(){},updateMatchUI(){},finishMatch(){ctx.match.finished=true},pauseForManagement(){ctx.match.paused=true},
   matchHomeTeamName:()=>"Heim",matchAwayTeamName:()=>"Gast",toast:message=>{ctx.lastToast=message}};
  vm.createContext(ctx);
@@ -109,7 +110,7 @@ test('normal and fast playback give identical seeded results, bookings, injuries
 
 test('tap selection prepares a reversible substitution and still enforces keeper and five-sub limits',()=>{
  const{ctx}=fixture();ctx.match.paused=true;ctx.document={querySelectorAll:()=>[]};
- vm.runInContext(extract('let matchManagerDraft=null;','let matchManagerDrag=null;'),ctx);
+ vm.runInContext(extract('let matchManagerDraft=null;','let matchManagerDrag=null,'),ctx);
  ctx.renderMatchManager=()=>{};
  assert.equal(ctx.selectMatchManagerSlot(9),true);assert.equal(ctx.selectMatchManagerSlot(12),true);
  const draft=ctx.getMatchManagerDraft();assert.equal(draft.lineup[9],'p12');assert.equal(ctx.match.lineup[9],'p9','a tap cannot commit the match lineup');
@@ -133,7 +134,11 @@ test('pauses stop the clock and fitness; a tied friendly reaches extra time and 
  while(ctx.match.minute<90)ctx.simTick();
  assert.equal(ctx.match.extraTimeStarted,true);assert.equal(ctx.match.extraTimeManagementActive,true);assert.equal(ctx.match.paused,true);
  ctx.match.paused=false;ctx.match.extraTimeManagementActive=false;
- let ticks=0;while(!ctx.match.finished&&ticks++<40)ctx.simTick();
+ let ticks=0;while(!ctx.match.penaltyActive&&ticks++<40)ctx.simTick();
+ assert.equal(ctx.match.penaltyActive,true);assert.equal(ctx.match.finished,false,'the shootout waits for timed kicks');
+ // Deterministic home goals and away misses, including the outcome-text draw.
+ let draws=0;ctx.Math.random=()=>Math.floor(draws++/2)%2===0?.1:.99;
+ let callbacks=0;while(ctx.timers.length&&callbacks++<30)ctx.timers.shift()();
  assert.equal(ctx.match.minute,120);assert.equal(ctx.match.finished,true);
  assert.equal(ctx.match.extraTimeBreakLogged,true);assert.notEqual(ctx.match.pensHome,ctx.match.pensAway);assert.ok(ctx.match.penaltyWinner);
  assert.ok(ctx.matchPlayerFitness('p5')<fitness);
