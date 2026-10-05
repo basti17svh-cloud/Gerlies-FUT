@@ -3,9 +3,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
+const C=require('../chem-boosts.js');
 const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
-const IDS=['ultimate','jumbo-rare','rare-mixed'];
+const IDS=['ultimate','jumbo-rare','rare-mixed','mega'];
 function app(at){
  let now=Date.parse(at),sequence=0,seed=17;
  class Clock extends Date{constructor(...args){super(...(args.length?args:[now]))}static now(){return now}}
@@ -48,7 +49,7 @@ test('scheduled packs cannot be purchased early or after the shop window',()=>{
  }
 });
 
-test('all advertised players are generated, rare, unique and within their quality tiers',()=>{
+test('all advertised player-only packs are generated, rare, unique and within their quality tiers',()=>{
  const a=app('2026-10-05T17:00:00Z');
  for(const [id,count,guarantee] of [['ultimate',30,84],['jumbo-rare',24,83],['rare-mixed',12,81]]){
   for(let n=0;n<12;n++){
@@ -61,7 +62,21 @@ test('all advertised players are generated, rare, unique and within their qualit
  }
 });
 
-test('Coins and Points share the ten-purchase limit; rejected purchases charge nothing',()=>{
+test('Mega Pack keeps all 30 players and adds two guaranteed Chemie-Boosts separately',()=>{
+ const a=app('2026-10-05T17:00:00Z'),pack=a.run('PACKS.find(p=>p.id==="mega")');
+ assert.equal(pack.count,30);assert.equal(pack.rareCount,18);assert.equal(pack.guarantee,82);assert.equal(pack.dailyLimit,20);
+ assert.deepEqual(pack.chemBoostSlots,{slots:2,chance:1});
+ for(let n=0;n<12;n++){
+  const items=a.ctx.generatePack('mega',false);assert.equal(items.length,30);assert.equal(new Set(items.map(i=>i.pid)).size,30);
+  assert.ok(items.every(i=>i.tradeable===false));
+  assert.ok(items.filter(i=>i.rare||i.variant).length>=18);
+  const bases=items.map(i=>a.ctx.PLAYERS.find(p=>String(p.id)===i.pid));assert.ok(bases.every(b=>b.ovr>=75));assert.ok(bases.some(b=>b.ovr>=82));
+ }
+ let uid=0;const boosts=C.rollPack(pack,()=>0,()=>`mega-boost-${++uid}`);
+ assert.equal(boosts.length,2);assert.ok(boosts.every(i=>i.kind==='chem-boost'));assert.equal(new Set(boosts.map(i=>i.uid)).size,2);
+});
+
+test('Coins and Points share the ten-purchase limit on standard promos; rejected purchases charge nothing',()=>{
  const a=app('2026-10-05T17:00:00Z');
  for(const [id,coins,points] of [['ultimate',125000,2500],['jumbo-rare',100000,2000],['rare-mixed',20000,300]]){
   const before={...a.ctx.state};
@@ -73,12 +88,22 @@ test('Coins and Points share the ten-purchase limit; rejected purchases charge n
  a.clock('2026-10-06T17:00:00Z');assert.equal(a.ctx.promoUsage(a.run('PACKS.find(p=>p.id==="ultimate")')).remaining,10);
 });
 
+test('Mega Pack has one shared twenty-purchase limit across Coins and Points',()=>{
+ const a=app('2026-10-05T17:00:00Z'),beforeCoins=a.ctx.state.coins,beforePoints=a.ctx.state.points;
+ for(let n=0;n<20;n++)a.buy('mega',n%2?'points':'coins');
+ assert.equal(a.ctx.state.coins,beforeCoins-10*65000);assert.equal(a.ctx.state.points,beforePoints-10*1000);
+ assert.equal(a.ctx.promoUsage(a.run('PACKS.find(p=>p.id==="mega")')).remaining,0);
+ const afterCoins=a.ctx.state.coins,afterPoints=a.ctx.state.points;a.buy('mega');a.buy('mega','points');
+ assert.equal(a.ctx.state.coins,afterCoins);assert.equal(a.ctx.state.points,afterPoints);
+});
+
 test('the shop announces the release before 19:00 and displays all three packs afterwards',()=>{
- const a=app('2026-10-05T16:59:59Z');a.ctx.renderStore();assert.match(a.get('storeContext').textContent,/Heute ab 19:00 Uhr: Ultimatives Pack/);assert.doesNotMatch(a.get('packGrid').innerHTML,/data-buy="ultimate"/);
+ const a=app('2026-10-05T16:59:59Z');a.ctx.renderStore();assert.match(a.get('storeContext').textContent,/Heute ab 19:00 Uhr: Ultimatives Pack/);assert.match(a.get('storeContext').textContent,/Mega Pack/);assert.doesNotMatch(a.get('packGrid').innerHTML,/data-buy="ultimate"/);
  a.clock('2026-10-05T17:00:00Z');a.ctx.renderStore();assert.doesNotMatch(a.get('storeContext').textContent,/Heute ab/);
- const markup=a.get('packGrid').innerHTML;assert.equal((markup.match(/class="store-pack /g)||[]).length,3);
+ const markup=a.get('packGrid').innerHTML;assert.equal((markup.match(/class="store-pack /g)||[]).length,4);
  for(const id of IDS){assert.match(markup,new RegExp(`data-buy="${id}" data-cur="coins"`));assert.match(markup,new RegExp(`data-buy="${id}" data-cur="points"`))}
  assert.match(markup,/30 selten/);assert.match(markup,/24 selten/);assert.match(markup,/12 selten/);
+ assert.match(markup,/18 selten/);assert.match(markup,/2 Chemie-Boosts garantiert/);assert.match(markup,/20 Käufen übrig/);
 });
 
 // The reduced fallback database has no silver/bronze cards: never charge for a partial pack.
