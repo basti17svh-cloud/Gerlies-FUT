@@ -5,6 +5,7 @@
  const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary,presence,refreshPresence,duelStats};
  window.FooteraOnline=online;
  const unreadCounts=new Map(),duelStatus=new Map(),presenceRows=new Map();
+ let reconnectBusy=false,connectionError="",comparisonRequest=0,comparisonSyncKey="";
  let presenceBusy=false,presenceLastAttempt=-Infinity,presenceKey="",presenceTimer=null;
  if(!available)return;
  $("onlinePanel").hidden=false;
@@ -108,8 +109,8 @@
  async function loadConversation(friend){
   const a=online.userId,b=friend.onlineUid;
   const filter=`and(sender_user.eq.${a},recipient_user.eq.${b}),and(sender_user.eq.${b},recipient_user.eq.${a})`;
-  const {data,error}=await client.from("footera_messages").select("id,sender_user,recipient_user,body,created_at,read_at").or(filter).order("created_at",{ascending:true}).limit(120);
-  if(error)throw error;chatMessages=data||[];renderChat();await markConversationRead(b)
+  const {data,error}=await client.from("footera_messages").select("id,sender_user,recipient_user,body,created_at,read_at").or(filter).order("created_at",{ascending:false}).limit(120);
+  if(error)throw error;if(chatFriend?.onlineUid!==b)return;chatMessages=(data||[]).slice().reverse();renderChat();await markConversationRead(b)
  }
  function renderChat(){
   const box=$("footeraChatMessages");if(!box||!chatFriend)return;
@@ -190,12 +191,12 @@
     await syncProfile();await refresh();await loadUnreadCounts();
     heartbeat();refreshPresence();
     clearInterval(presenceTimer);presenceTimer=setInterval(()=>{heartbeat();if(currentView()==="socialView")refreshPresence(true)},25000);
-    channel=client.channel(`footera-duels-${online.userId}`).on("postgres_changes",{event:"*",schema:"public",table:"footera_duels"},handleDuelRealtime).subscribe();
-    messageChannel=client.channel(`footera-messages-${online.userId}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"footera_messages",filter:`recipient_user=eq.${online.userId}`},payload=>handleIncomingMessage(payload.new).catch(console.warn)).subscribe();
+    channel=client.channel(`footera-duels-${online.userId}`).on("postgres_changes",{event:"*",schema:"public",table:"footera_duels"},handleDuelRealtime).subscribe(status=>{if(status==="SUBSCRIBED")recoverOnline()});
+    messageChannel=client.channel(`footera-messages-${online.userId}`).on("postgres_changes",{event:"INSERT",schema:"public",table:"footera_messages",filter:`recipient_user=eq.${online.userId}`},payload=>handleIncomingMessage(payload.new).catch(console.warn)).subscribe(status=>{if(status==="SUBSCRIBED")recoverOnline()});
     pollTimer=setInterval(()=>{if(document.visibilityState==="visible"&&(currentView()==="socialView"||$("onlineDuelModal").classList.contains("active")))refresh().catch(console.warn)},15000);
-    document.addEventListener("visibilitychange",()=>{presenceRows.clear();if(document.visibilityState==="visible"){heartbeat();refreshPresence(true);refresh().catch(console.warn)}else if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
-    window.addEventListener("offline",()=>{presenceRows.clear();if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
-    window.addEventListener("online",()=>{heartbeat();refreshPresence(true)});
+    document.addEventListener("visibilitychange",()=>{presenceRows.clear();if(document.visibilityState==="visible")recoverOnline();else if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
+    window.addEventListener("offline",()=>{presenceRows.clear();stopTick();render();if(currentView()==="socialView")window.FooteraFriendsHub?.render()});
+    window.addEventListener("online",recoverOnline);
     if(currentView()==="socialView")renderSocial()
    }catch(e){online.ready=false;started=null;const node=$("onlineStatus");if(node)node.textContent=`Online-Verbindung: ${errorText(e)}`;console.warn("Footera online:",e)}
   })();return started
@@ -257,10 +258,25 @@
  async function refresh(){
   if(!online.ready)return;
   const {data,error}=await client.from("footera_duels").select("*").order("created_at",{ascending:false}).limit(60);
-  if(error)throw error;rows=data||[];rowsLoaded=true;
+  if(error){connectionError=errorText(error);presenceRows.clear();render();throw error}connectionError="";rows=data||[];rowsLoaded=true;
   for(const d of rows){duelStatus.set(d.id,d.status);if(d.status==="invited"&&d.away_user===online.userId&&!notified.has(d.id)){notified.add(d.id);showIncomingInvite(d)}}
   if(active){const fresh=rows.find(r=>r.id===active.id);if(fresh)applyMatch(fresh)}
-  render();if(currentView()==="socialView")window.FooteraFriendsHub?.render()
+  render();if(currentView()==="socialView")window.FooteraFriendsHub?.render();
+  if(comparison&&!comparison.loading){
+   const key=JSON.stringify(rows.filter(d=>d.status==="finished"&&[d.home_user,d.away_user].includes(comparing)).map(d=>[d.id,d.home_score,d.away_score]));
+   if(key!==comparisonSyncKey){comparisonSyncKey=key;await loadComparison(comparison.friend)}
+  }
+ }
+ async function recoverOnline(){
+  if(reconnectBusy||!online.ready||document.visibilityState!=="visible"||navigator.onLine===false)return;
+  reconnectBusy=true;
+  try{
+   await refresh();await loadUnreadCounts();
+   await Promise.all([heartbeat(),refreshPresence(true)]);
+   if(chatFriend&&$("footeraChatModal")?.classList.contains("active"))await loadConversation(chatFriend);
+   if(comparison&&!comparison.loading)await loadComparison(comparison.friend)
+  }catch(e){connectionError=errorText(e);presenceRows.clear();render();console.warn("Online-Wiederverbindung:",e)}
+  finally{reconnectBusy=false}
  }
  function clearOnlineGoalMoment(){
   goalMomentUntil=0;
@@ -310,7 +326,7 @@
  }
  async function tick(){
   if(!active||!$("onlineDuelModal").classList.contains("active")){stopTick();return}
-  if(active.status!=="live"||document.visibilityState!=="visible")return;
+  if(active.status!=="live"||document.visibilityState!=="visible"||navigator.onLine===false)return;
   try{const {data,error}=await client.rpc("footera_tick",{p_id:active.id});if(error)throw error;if(data)applyMatch(data)}
   catch(e){stopTick();toast(`Matchday: ${errorText(e)}`)}
  }
@@ -319,7 +335,7 @@
  function render(){
   if(!online.ready)return;
   const status=$("onlineStatus"),list=$("onlineDuelList");if(!status||!list)return;
-  status.textContent=online.registered?"Online · Nachrichten, Spieleinladungen und Ergebnisse werden synchronisiert.":"Online verbunden · Für Live-Duelle und deinen Freundescode fehlen noch 11 Starter und 7 Bankspieler.";
+  status.textContent=navigator.onLine===false?"Offline · Ergebnisse und Nachrichten werden nach der Wiederverbindung nachgeladen.":connectionError?`Online-Verbindung unterbrochen · ${connectionError}`:online.registered?"Online · Nachrichten, Spieleinladungen und Ergebnisse werden synchronisiert.":"Online verbunden · Für Live-Duelle und deinen Freundescode fehlen noch 11 Starter und 7 Bankspieler.";
   const pending=rows.filter(d=>d.status==="invited"),recent=rows.filter(d=>d.status!=="declined").slice(0,8);
   list.innerHTML=(pending.length?`<h4>Einladungen</h4>${pending.map(d=>`<div class="online-duel-row"><span>${escape(team(d,"home"))} – ${escape(team(d,"away"))}</span>${d.away_user===online.userId?`<button class="primary" data-online-accept="${d.id}">Annehmen</button><button class="secondary" data-online-decline="${d.id}">Ablehnen</button>`:`<span>Wartet auf Antwort</span><button class="secondary" data-online-decline="${d.id}">Zurückziehen</button>`}</div>`).join("")}`:"")+
    (recent.length?`<h4>Letzte Duelle</h4>${recent.map(d=>`<div class="online-duel-row"><span>${escape(team(d,"home"))} ${d.home_score}:${d.away_score} ${escape(team(d,"away"))}<small>${d.status==="finished"?"Abpfiff":d.status==="abandoned"?"Abgebrochen":d.status==="halftime"?"Halbzeit":d.status==="invited"?"Einladung":"Live · "+d.minute+"′"}</small></span><button class="secondary" data-online-open="${d.id}">${d.status==="finished"?"Ergebnis":"Matchday"}</button></div>`).join("")}`:"<p>Noch keine Live-Duelle. Wähle einen Freund mit aktuellem Profilcode aus.</p>");
@@ -355,15 +371,20 @@
  async function showComparison(friend){
   if(!online.ready||!validUid(friend?.onlineUid))return toast("Für diesen Freund fehlt noch ein aktueller Online-Freundescode.");
   if(currentView()==="socialView")window.FooteraFriendsHub?.open("duels");
-  comparing=friend.onlineUid;comparison={friend,rows:[],loading:true};renderComparison();
+  comparing=friend.onlineUid;comparisonSyncKey="";comparison={friend,rows:[],loading:true};renderComparison();
+  await loadComparison(friend)
+ }
+ async function loadComparison(friend){
+  const request=++comparisonRequest;
   try{
    const all=[];let from=0;while(from<5000){
     const {data,error}=await client.from("footera_duels").select("id,home_user,away_user,home_score,away_score,status,finished_at,created_at,home_profile,away_profile")
      .eq("status","finished").in("home_user",[online.userId,friend.onlineUid]).in("away_user",[online.userId,friend.onlineUid]).order("finished_at",{ascending:false}).range(from,from+499);
     if(error)throw error;all.push(...(data||[]));if(!data||data.length<500)break;from+=500
    }
-   comparison={friend,rows:all,loading:false};renderComparison()
-  }catch(e){comparison={friend,rows:[],loading:false,error:errorText(e)};renderComparison()}
+   if(request!==comparisonRequest||comparing!==friend.onlineUid)return;
+   comparison={friend,rows:[...new Map(all.map(game=>[game.id,game])).values()],loading:false};renderComparison()
+  }catch(e){if(request!==comparisonRequest||comparing!==friend.onlineUid)return;comparison={friend,rows:[],loading:false,error:errorText(e)};renderComparison()}
  }
  function renderComparison(){
   const el=$("onlineComparison");if(!el||!comparison)return;

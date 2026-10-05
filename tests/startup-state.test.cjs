@@ -51,3 +51,9 @@ test('unreadable save fallback can initialize without another startup exception'
  const state=start({gerliesFutV9:'{broken json'});
  assert.equal(state.coins,5000);assert.equal(state.squad.length,23);
 });
+
+test('an update preserves partial POTM submissions, claimed rewards and frozen weekly rewards',()=>{
+ const saved={...fixture,potmProgress:{'potm-2026-09-olise':{score:310000,submittedCount:18,claimedAt:null},'potm-2026-09-gross':{score:13125,submittedCount:12,claimedAt:12345}},sbcCompletions:{'potm-2026-09-gross':true},weeklyRewards:[{mode:'squad',week:'old-week',rank:'Elite 3',claimed:false,reward:{coins:15000,packs:[]}}],squadBattle:{week:'new-week',points:0,played:0,playedIds:[]}};
+ const loaded=start({gerliesFutV9:JSON.stringify(saved)});
+ for(const field of ['club','coins','points','potmProgress','sbcCompletions','weeklyRewards','squadBattle'])assert.deepEqual(JSON.parse(JSON.stringify(loaded[field])),saved[field]);
+});
