@@ -10,7 +10,7 @@ function extract(from,to){
  assert.ok(start>=0&&end>start,`Match simulation section: ${from}`);
  return html.slice(start,end)
 }
-const engine=extract('function tacticMods(', 'function stopMatchTimer(')+'\n'+extract('function eventChance(', 'let matchManagerDraft=null;');
+const engine=extract('function matchClamp(', 'const SEASON_REWARDS=')+'\n'+extract('function tacticMods(', 'function stopMatchTimer(')+'\n'+extract('function eventChance(', 'let matchManagerDraft=null;');
 
 function simulator(){
  let seed=3951741;
