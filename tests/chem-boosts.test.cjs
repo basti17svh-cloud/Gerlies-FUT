@@ -66,9 +66,10 @@ test('Vollstrecker and Bollwerk remain rarest; Abfangjäger is the next-rarest C
  assert.ok(weights.vollstrecker/total<.05);assert.ok(weights.bollwerk/total<.05);
  assert.ok(weights.abfangjaeger/total>.055&&weights.abfangjaeger/total<.07);
 });
-test('profile highlights only improved attributes, shows base → effective and unchanged OVR',()=>{
- const markup=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},3);assert.match(markup,/86 <i>→<\/i> 92/);assert.match(markup,/84 <i>→<\/i> 90/);assert.equal((markup.match(/cb-value improved/g)||[]).length,2);assert.match(markup,/3\/3 individuelle Chemie/);assert.match(markup,/Gesamtwertung bleibt 88/);
- assert.equal((C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},0).match(/cb-value improved/g)||[]).length,0);
+test('profile shows only attributes configured for the active boost, with base → effective and unchanged OVR',()=>{
+ const markup=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},3);assert.match(markup,/86 <i>→<\/i> 92/);assert.match(markup,/84 <i>→<\/i> 90/);assert.equal((markup.match(/class="cb-value /g)||[]).length,2);assert.equal((markup.match(/cb-value improved/g)||[]).length,2);assert.doesNotMatch(markup,/Passspiel|Dribbling|Defensive|Physis/);assert.match(markup,/3\/3 individuelle Chemie/);assert.match(markup,/Gesamtwertung bleibt 88/);
+ const zero=C.profileHTML(base,{chemBoost:{id:'vollstrecker'}},0);assert.equal((zero.match(/class="cb-value /g)||[]).length,2);assert.equal((zero.match(/cb-value improved/g)||[]).length,0);assert.doesNotMatch(zero,/Passspiel|Dribbling|Defensive|Physis/);
+ const allrounder=C.profileHTML(base,{chemBoost:{id:'allrounder'}},3);assert.equal((allrounder.match(/class="cb-value /g)||[]).length,6);
  assert.equal(C.badgeHTML({}), '');assert.match(C.badgeHTML({chemBoost:{id:'dynamo'}},true),/cb-symbol-only/);
 });
 test('real local match adapters use effective attributes on both sides with frozen chemistry; bench has zero',()=>{
