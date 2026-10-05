@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.80</title>
+<title>Footera V20.81</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1475,7 +1475,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2080">
+<link rel="stylesheet" href="./chem-boosts.css?v=2081">
 </head>
 <body>
 
@@ -1546,7 +1546,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.80</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.81</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2050,7 +2050,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./chem-boosts.js?v=2080"></script>
+<script src="./chem-boosts.js?v=2081"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -2396,6 +2396,7 @@ const PACKS=[
  {id:"ultimate",name:"Ultimatives Pack",coins:125000,points:2500,type:"gold",count:30,composition:[{quality:"gold",count:30,min:75,max:99}],guarantee:84,rareCount:30,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"30 Goldspieler · alle selten · mind. 1× 84+",tag:"PROMO",iconChance:0.004,dailyLimit:10,resetHour:19},
  {id:"jumbo-rare",name:"Jumbo-Seltene-Spieler-Pack",coins:100000,points:2000,type:"gold",count:24,composition:[{quality:"gold",count:24,min:75,max:99}],guarantee:83,rareCount:24,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"24 Goldspieler · alle selten · mind. 1× 83+",tag:"PROMO",iconChance:0.003,dailyLimit:10,resetHour:19},
  {id:"rare-mixed",name:"Seltenes Gemischtes Spieler-Pack",coins:20000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
+ {id:"mega",name:"Mega Pack",coins:65000,points:1000,type:"gold",count:30,composition:[{quality:"gold",count:30,min:75,max:99}],guarantee:82,rareCount:18,store:true,reward:false,promo:true,rotation:true,packKind:"mega",chemBoostSlots:{slots:2,chance:1},desc:"30 Goldspieler · 18 selten · mind. 1× 82+ · 2 Chemie-Boosts garantiert",tag:"PROMO",iconChance:0.002,dailyLimit:20,resetHour:19},
  {id:"jumbo-gold",name:"Jumbo-Gold-Pack",coins:null,points:null,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],rareCount:3,store:false,reward:true,desc:"12 Goldspieler · 3 selten",iconChance:0.0005},
  {id:"premium-electrum-reward",name:"Premium-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],rareCount:3,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 3 selten",iconChance:0.0007},
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
@@ -5314,7 +5315,7 @@ function promoUsage(pack){if(!pack?.dailyLimit)return{used:0,remaining:Infinity,
 function consumePromoPurchase(pack){if(!pack?.dailyLimit)return true;const u=promoUsage(pack);if(u.remaining<=0)return false;state.packLimits[pack.id]={key:u.key,count:u.used+1};return true}
 function packChanceLabel(v){if(!v)return"0 %";return `${(v*100).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})} %`}
 // Scheduled shop window: 5 October, 19:00 to 6 October, 19:00 Europe/Berlin.
-const PROMO_PACK_RELEASE={key:"2026-10-05",startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed"]};
+const PROMO_PACK_RELEASE={key:"2026-10-05",startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]};
 function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],ids=key===PROMO_PACK_RELEASE.key?PROMO_PACK_RELEASE.ids:sets[cycle]||sets[0];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
@@ -5358,7 +5359,7 @@ function renderStore(){
  const promo=storeTab==="promo",reset=nextPromoReset(new Date(),19);
  storePromoKey=promoWindowKey(new Date(),19);
  for(const tab of document.querySelectorAll("#storeView [data-store-tab]")){const active=tab.dataset.storeTab===storeTab;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active))}
- $("storeContext").textContent=promo?(sbcDateKey(new Date())===PROMO_PACK_RELEASE.key&&Date.now()<Date.parse(PROMO_PACK_RELEASE.startsAt)?"Heute ab 19:00 Uhr: Ultimatives Pack, Jumbo-Seltene-Spieler-Pack und Seltenes Gemischtes Spieler-Pack.":"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.";
+ $("storeContext").textContent=promo?(sbcDateKey(new Date())===PROMO_PACK_RELEASE.key&&Date.now()<Date.parse(PROMO_PACK_RELEASE.startsAt)?"Heute ab 19:00 Uhr: Ultimatives Pack, Jumbo-Seltene-Spieler-Pack, Seltenes Gemischtes Spieler-Pack und Mega Pack.":"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.";
  const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
  $("packGrid").innerHTML=purch.map(p=>{
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
@@ -5366,7 +5367,7 @@ function renderStore(){
   return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}</div>
+   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
    <div class="store-pack-prices ${p.points==null?"coins-only":""}">${button("coins","Footera Coins")}${button("points","Footera Points")}</div>
@@ -8746,7 +8747,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.80";
+const GFUT_BUILD="V20.81";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8799,7 +8800,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2080",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2081",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8815,7 +8816,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./competition-system.js"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./chem-boosts-ui.js?v=2080"></script>
+<script src="./chem-boosts-ui.js?v=2081"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
