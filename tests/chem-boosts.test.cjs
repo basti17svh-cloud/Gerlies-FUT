@@ -64,6 +64,14 @@ test('unresolved consumables keep pack results open; collected-only pack finishe
  const ctx={pendingPack:[],pendingResolved:new Set(),state:{pendingChemBoosts:[{uid:'x'}]},closed:0,closeResolvedPackResults(){ctx.closed++}};
  vm.createContext(ctx);vm.runInContext(section('function finishPackIfResolved(','function packResultsRefresh('),ctx);assert.equal(ctx.finishPackIfResolved(),false);assert.equal(ctx.closed,0);ctx.state.pendingChemBoosts=[];assert.equal(ctx.finishPackIfResolved(),true);assert.equal(ctx.closed,1);
 });
+test('pack-result Chemie-Boost cards use the same responsive grid density as player cards',()=>{
+ const css=fs.readFileSync(require('node:path').join(__dirname,'../chem-boosts.css'),'utf8');
+ assert.match(css,/\.cb-pack-items\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\);gap:6px\}/);
+ assert.match(css,/@media\(max-width:560px\)[\s\S]*?\.cb-pack-items\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\);gap:6px\}/);
+ assert.match(css,/\.cb-pack-item \.cb-card\{[^}]*aspect-ratio:\.72/);
+ assert.match(css,/\.cb-pack-item \.cb-card-inner\{height:100%;min-height:0/);
+});
+
 test('new scripts and stylesheet are available offline and versioned consistently',()=>{
  const sw=fs.readFileSync(require('node:path').join(__dirname,'../service-worker.js'),'utf8'),manifest=JSON.parse(fs.readFileSync(require('node:path').join(__dirname,'../manifest.webmanifest'))),version=html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/);
  for(const file of ['chem-boosts.js','chem-boosts-ui.js','chem-boosts.css'])assert.ok(sw.includes(`"./${file}?v=${version[1]}${version[2]}"`),file);
