@@ -9,12 +9,12 @@
  const CONFIG=Object.freeze({arrowBonus:Object.freeze([0,2,4,6]),chemScale:Object.freeze([0,1/3,2/3,1]),maxAttribute:99,
   drops:Object.freeze({gold:Object.freeze({slots:1,chance:.25}),promo:Object.freeze({slots:2,chance:.30})})});
  const DEFINITIONS=Object.freeze([
-  {id:"vollstrecker",name:"Vollstrecker",color:"#ff465c",symbol:"abschluss",arrows:{pac:3,sho:3}},
-  {id:"dynamo",name:"Dynamo",color:"#44b9ff",symbol:"dynamik",arrows:{pac:2,pas:2,dri:2}},
-  {id:"abfangjaeger",name:"Abfangjäger",color:"#60ef8b",symbol:"abfangen",arrows:{pac:3,def:3}},
-  {id:"bollwerk",name:"Bollwerk",color:"#f3c45c",symbol:"festung",arrows:{def:3,phy:3}},
-  {id:"stratege",name:"Stratege",color:"#c58aff",symbol:"taktik",arrows:{pas:3,dri:3}},
-  {id:"allrounder",name:"Allrounder",color:"#cbd6e1",symbol:"balance",arrows:{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}}
+  {id:"vollstrecker",name:"Vollstrecker",color:"#ff465c",symbol:"abschluss",dropWeight:.4,arrows:{pac:3,sho:3}},
+  {id:"dynamo",name:"Dynamo",color:"#44b9ff",symbol:"dynamik",dropWeight:1,arrows:{pac:2,pas:2,dri:2}},
+  {id:"abfangjaeger",name:"Abfangjäger",color:"#60ef8b",symbol:"abfangen",dropWeight:1,arrows:{pac:3,def:3}},
+  {id:"bollwerk",name:"Bollwerk",color:"#f3c45c",symbol:"festung",dropWeight:.4,arrows:{def:3,phy:3}},
+  {id:"stratege",name:"Stratege",color:"#c58aff",symbol:"taktik",dropWeight:1,arrows:{pas:3,dri:3}},
+  {id:"allrounder",name:"Allrounder",color:"#cbd6e1",symbol:"balance",dropWeight:1,arrows:{pac:1,sho:1,pas:1,dri:1,def:1,phy:1}}
  ].map(d=>Object.freeze({...d,arrows:Object.freeze(d.arrows)})));
  const byId=new Map(DEFINITIONS.map(d=>[d.id,d]));
  const num=v=>Number.isFinite(Number(v))?Number(v):0;
@@ -57,10 +57,16 @@
   if(pack.type==="gold"||pack.type==="special"||(pack.composition||[]).some(x=>x.quality==="gold"))return CONFIG.drops.gold;
   return null
  }
+ function randomDefinition(random=Math.random){
+  const total=DEFINITIONS.reduce((sum,d)=>sum+Math.max(0,num(d.dropWeight||1)),0);
+  let pick=Math.max(0,Math.min(.999999999,Number(random())||0))*total;
+  for(const d of DEFINITIONS){pick-=Math.max(0,num(d.dropWeight||1));if(pick<0)return d}
+  return DEFINITIONS[DEFINITIONS.length-1]
+ }
  function rollPack(pack,random=Math.random,makeUid=()=>String(Date.now())+"-"+random()){
   const rule=packRule(pack);if(!rule)return[];const rows=[];
   for(let i=0;i<Math.max(0,Math.min(4,Math.floor(num(rule.slots))));i++)if(random()<num(rule.chance)){
-   const d=DEFINITIONS[Math.max(0,Math.min(DEFINITIONS.length-1,Math.floor(random()*DEFINITIONS.length)))];
+   const d=randomDefinition(random);
    rows.push({uid:makeUid(),kind:"chem-boost",chemBoostId:d.id,acquired:Date.now()})
   }
   return rows
@@ -97,6 +103,6 @@
   return`<section class="cb-profile" style="--cb-accent:${d.color}"><div class="cb-profile-head"><h3>AKTIVER CHEMIE-BOOST</h3><span>✓ Ausgerüstet</span></div><div class="cb-equipped"><div class="cb-equipped-symbol">${icon(d.symbol)}</div><div><h4>${safe(d.name)}</h4><p>${e.chem}/3 individuelle Chemie · ${e.chem===0?"kein Bonus aktiv":"Boost aktiv"}</p></div></div><div class="cb-maximum"><strong>Maximale Wirkung bei 3 Chemie</strong>${boostRowsHTML(d)}</div>${attributeTableHTML(e)}<p class="cb-note">Die Gesamtwertung bleibt ${safe(base.ovr)}. Ein neuer Chemie-Boost ersetzt den aktuellen.</p></section>`
  }
  function attributeTableHTML(e){return`<div class="cb-values"><div class="cb-values-head"><span>Attribut</span><span>Basis → Mit Boost</span><span>Max.</span></div>${e.rows.map(a=>`<div class="cb-value ${a.bonus?"improved":""}"><span>${icon(a.icon)}${safe(a.name)}</span><strong>${a.base} <i>→</i> ${a.value}${a.bonus?` <small>+${a.bonus}</small>`:""}</strong><span>+${a.maxBonus}</span></div>`).join("")}</div>`}
- const api={ATTRIBUTES,CONFIG,DEFINITIONS,definition,active,chemistry,effect,inventory,count,apply,packRule,rollPack,pending,collect,collectAll,icon,cardHTML,badgeHTML,profileHTML,attributeTableHTML,safe};
+ const api={ATTRIBUTES,CONFIG,DEFINITIONS,definition,active,chemistry,effect,inventory,count,apply,packRule,randomDefinition,rollPack,pending,collect,collectAll,icon,cardHTML,badgeHTML,profileHTML,attributeTableHTML,safe};
  root.FooteraChemBoosts=api;if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof globalThis!=="undefined"?globalThis:this);
