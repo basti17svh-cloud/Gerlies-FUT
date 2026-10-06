@@ -34,7 +34,7 @@ function kitColors(event){
 function skinTone(name='',offset=0){const tones=['#f1c7a5','#dca17d','#bd7b59','#8d5a3e','#6d422e'];let n=offset;for(const c of name)n=(n*33+c.charCodeAt(0))>>>0;return tones[n%tones.length]}
 function makeScene(renderer,event,weak=false){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#071018');scene.fog=new THREE.FogExp2('#08111a',.017);
- const camera=new THREE.PerspectiveCamera(52,1,.1,170);
+ const camera=new THREE.PerspectiveCamera(34,1,.1,180);
  const resources=new Set(),track=o=>(resources.add(o),o);
  try{
   const geometry=new Map(),materials=new Map();
@@ -51,10 +51,12 @@ function makeScene(renderer,event,weak=false){
   function line(points,color='#eef7ef',opacity=.78,parent=scene){const g=track(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))));const m=track(new THREE.LineBasicMaterial({color,transparent:true,opacity}));const o=new THREE.Line(g,m);parent.add(o);return o}
   function canvasTexture(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');draw(ctx,w,h);const tex=track(new THREE.CanvasTexture(c));tex.colorSpace=THREE.SRGBColorSpace;return tex}
 
-  scene.add(new THREE.HemisphereLight('#dcecff','#13231a',2.6));
-  const moon=new THREE.DirectionalLight('#eef5ff',3.25);moon.position.set(-16,28,8);scene.add(moon);
-  const warm=new THREE.DirectionalLight('#fff0d7',1.45);warm.position.set(20,14,-36);scene.add(warm);
-  const rim=new THREE.DirectionalLight('#95ffb2',.65);rim.position.set(-24,7,-28);scene.add(rim);
+  scene.add(new THREE.HemisphereLight('#dcecff','#13231a',2.15));
+  const moon=new THREE.DirectionalLight('#eef5ff',3.2);moon.position.set(-18,28,7);moon.castShadow=!weak;
+  if(!weak){moon.shadow.mapSize.set(1024,1024);moon.shadow.camera.left=-18;moon.shadow.camera.right=18;moon.shadow.camera.top=18;moon.shadow.camera.bottom=-18;moon.shadow.camera.near=1;moon.shadow.camera.far=75;moon.shadow.bias=-.00045}
+  scene.add(moon);
+  const warm=new THREE.DirectionalLight('#fff0d7',1.35);warm.position.set(21,15,-35);scene.add(warm);
+  const rim=new THREE.DirectionalLight('#95ffb2',.55);rim.position.set(-24,8,-27);scene.add(rim);
 
   const grass=canvasTexture(256,256,(ctx,w,h)=>{
    ctx.fillStyle='#176037';ctx.fillRect(0,0,w,h);
@@ -63,7 +65,7 @@ function makeScene(renderer,event,weak=false){
   });
   grass.wrapS=grass.wrapT=THREE.RepeatWrapping;grass.repeat.set(7,10);grass.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy?.()||1);
   const pitchMat=track(new THREE.MeshStandardMaterial({map:grass,roughness:.98,metalness:0,color:'#ffffff'}));
-  const pitch=mesh(track(new THREE.PlaneGeometry(52,82)),pitchMat);pitch.rotation.x=-Math.PI/2;pitch.position.set(0,-.015,1);
+  const pitch=mesh(track(new THREE.PlaneGeometry(52,82)),pitchMat);pitch.rotation.x=-Math.PI/2;pitch.position.set(0,-.015,1);pitch.receiveShadow=!weak;
 
   const y=.025;
   line([[-24,y,-32],[24,y,-32],[24,y,34],[-24,y,34],[-24,y,-32]],'#e7f3e8',.72);
@@ -112,54 +114,68 @@ function makeScene(renderer,event,weak=false){
   function player(colorHex,shortsHex='#151b24',name='',keeper=false){
    const root=new THREE.Group();scene.add(root);const rig=new THREE.Group();root.add(rig);
    const skin=skinTone(name,keeper?3:0),hair=name&&name.charCodeAt(0)%3===0?'#211c19':'#100e0d';
-   const torso=cyl(.29,.38,.7,colorHex,rig,{roughness:.62});torso.position.y=1.3;
-   const chest=box(.66,.12,.4,colorHex,0,1.56,0,rig,{roughness:.62});chest.rotation.z=.01;
-   const shorts=cyl(.34,.37,.3,shortsHex,rig,{roughness:.78});shorts.position.y=.82;
-   const neck=cyl(.095,.095,.12,skin,rig,{roughness:.9});neck.position.y=1.7;
-   const head=sphere(.205,skin,0,1.9,0,rig,{roughness:.88});head.scale.set(.205*.94,.205*1.08,.205*.91);
-   const hairCap=sphere(.21,hair,0,2.0,.012,rig,{roughness:.96});hairCap.scale.set(.21*.95,.21*.48,.21*.92);
-   sphere(.045,skin,0,1.89,-.185,rig,{roughness:.9});
+   const torso=sphere(1,colorHex,0,1.34,0,rig,{roughness:.62});torso.scale.set(.31,.43,.20);
+   const shoulders=sphere(1,colorHex,0,1.57,0,rig,{roughness:.62});shoulders.scale.set(.35,.15,.21);
+   const shorts=cyl(.28,.34,.28,shortsHex,rig,{roughness:.78});shorts.position.y=.84;
+   const neck=cyl(.07,.07,.13,skin,rig,{roughness:.9});neck.position.y=1.75;
+   const head=sphere(1,skin,0,1.94,0,rig,{roughness:.88});head.scale.set(.12,.155,.115);
+   const hairCap=sphere(1,hair,0,2.045,.012,rig,{roughness:.96});hairCap.scale.set(.123,.07,.118);
+   sphere(.025,skin,0,1.93,-.115,rig,{roughness:.9});
    const arms=[],legs=[];
    for(const side of [-1,1]){
-    const arm=new THREE.Group();arm.position.set(side*.35,1.55,0);rig.add(arm);
-    const upper=cyl(.075,.085,.3,colorHex,arm,{roughness:.7});upper.position.y=-.15;
-    const fore=cyl(.062,.07,.27,skin,arm,{roughness:.9});fore.position.y=-.435;
-    sphere(keeper?.09:.07,keeper?'#edf6ef':skin,0,-.61,0,arm,{roughness:.8});arms.push(arm);
-    const leg=new THREE.Group();leg.position.set(side*.16,.68,0);rig.add(leg);
-    const thigh=cyl(.09,.105,.36,skinTone(name,side>0?1:2),leg,{roughness:.9});thigh.position.y=-.18;
-    const sock=cyl(.072,.082,.3,colorHex,leg,{roughness:.82});sock.position.y=-.51;
-    const boot=box(.17,.12,.38,'#0a0d12',0,-.67,-.09,leg,{roughness:.52});boot.rotation.x=-.05;legs.push(leg);
+    const arm=new THREE.Group();arm.position.set(side*.33,1.55,0);rig.add(arm);
+    const upper=cyl(.052,.064,.34,colorHex,arm,{roughness:.7});upper.position.y=-.17;
+    sphere(.062,skin,0,-.36,0,arm,{roughness:.88});
+    const fore=cyl(.045,.054,.31,skin,arm,{roughness:.9});fore.position.y=-.53;
+    sphere(keeper?.078:.058,keeper?'#eef5ef':skin,0,-.71,0,arm,{roughness:.8});arms.push(arm);
+    const leg=new THREE.Group();leg.position.set(side*.15,.73,0);rig.add(leg);
+    const thigh=cyl(.075,.095,.43,skin,leg,{roughness:.9});thigh.position.y=-.22;
+    sphere(.078,skin,0,-.46,0,leg,{roughness:.9});
+    const sock=cyl(.06,.073,.39,colorHex,leg,{roughness:.82});sock.position.y=-.68;
+    const boot=box(.15,.09,.34,'#090c10',0,-.91,-.09,leg,{roughness:.5});boot.rotation.x=-.08;legs.push(leg);
    }
-   const shadowMat=track(new THREE.MeshBasicMaterial({color:'#020504',transparent:true,opacity:.34,depthWrite:false}));const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.6,20)),shadowMat,root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.018;shadow.scale.y=.58;
+   const shadowMat=track(new THREE.MeshBasicMaterial({color:'#020504',transparent:true,opacity:.28,depthWrite:false}));const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.52,20)),shadowMat,root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.016;shadow.scale.y=.55;
+   if(!weak)root.traverse(o=>{if(o.isMesh&&o!==shadow){o.castShadow=true;o.receiveShadow=true}});
    return{root,rig,arms,legs,head};
   }
   const [attackColor,defendColor]=kitColors(event);
-  const attacker=player(attackColor,'#141922',event.playerName),passer=player(attackColor,'#141922','team mate 1'),defender=player(defendColor,'#eceef1','defender 1'),defender2=player(defendColor,'#eceef1','defender 2'),keeper=player('#f07728','#ea6b1e','keeper',true);
+  const attacker=player(attackColor,'#141922',event.playerName),
+   passer=player(attackColor,'#141922','team mate 1'),
+   supportLeft=player(attackColor,'#141922','team mate 2'),
+   supportRight=player(attackColor,'#141922','team mate 3'),
+   defender=player(defendColor,'#eceef1','defender 1'),
+   defender2=player(defendColor,'#eceef1','defender 2'),
+   defender3=player(defendColor,'#eceef1','defender 3'),
+   defender4=player(defendColor,'#eceef1','defender 4'),
+   keeper=player('#f07728','#ea6b1e',event.keeperName||'keeper',true);
 
   const ball=new THREE.Group();scene.add(ball);sphere(.205,'#f8f8f4',0,0,0,ball,{roughness:.54});
   for(const [x,yy,z] of [[0,.18,0],[0,-.18,0],[.18,0,0],[-.18,0,0],[0,0,.18],[0,0,-.18]])sphere(.052,'#20262e',x,yy,z,ball,{roughness:.7});
 
   const camVariant=cameraIndex(event),side=camVariant===1?-1:1;
-  const startCam=camVariant===2?[1.5,2.35,-7.0]:[side*5.2,2.55,-8.2];
+  // TV/telephoto broadcast camera: elevated, wide enough for striker, keeper and goal.
+  const startCam=[side*24.5,8.9,-5.8],endCam=[side*23.2,8.35,-11.4];
   const camPos=new THREE.Vector3(),camTarget=new THREE.Vector3(),tmp=new THREE.Vector3();
-  function pose(p,x,z,time,amount=1){p.root.position.set(x,0,z);const step=Math.sin(time*10.5)*.62*amount;p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;p.arms[0].rotation.x=-step*.72;p.arms[1].rotation.x=step*.72;p.rig.rotation.x=-.05*amount;p.rig.position.y=Math.abs(Math.sin(time*10.5))*.045*amount}
+  function pose(p,x,z,time,amount=1){p.root.position.set(x,0,z);const step=Math.sin(time*10.2)*.54*amount;p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;p.arms[0].rotation.x=-step*.66;p.arms[1].rotation.x=step*.66;p.rig.rotation.x=-.035*amount;p.rig.position.y=Math.abs(Math.sin(time*10.2))*.035*amount}
   function update(time){
    const build=clamp(time/SHOT_TIME);pose(attacker,mix(-1.1,0,build),mix(-12,-20.12,build),time,time<SHOT_TIME?1:.08);
-   pose(passer,mix(-8,-6,clamp(time/1.55)),mix(-10,-15.2,clamp(time/1.55)),time,time<1.6?.95:.06);
+   pose(passer,mix(-8,-6,clamp(time/1.55)),mix(-10,-15.2,clamp(time/1.55)),time,time<1.6?.88:.06);
+   pose(supportLeft,mix(-10,-7.5,build),mix(-18,-23.2,build),time,.55);pose(supportRight,mix(8.5,6.2,build),mix(-15.5,-22.2,build),time,.58);
    pose(defender,mix(3.2,1.9,build),mix(-18.7,-22.6,build),time,.72);pose(defender2,mix(-5,-3.7,build),mix(-24,-25.5,build),time,.48);
-   if(time>=2.75&&time<3.42){const kick=Math.sin(clamp((time-2.75)/.67)*Math.PI);attacker.legs[1].rotation.x=-kick*1.35;attacker.rig.rotation.x=-.16*kick}
+   pose(defender3,mix(8,5.5,build),mix(-23,-27,build),time,.42);pose(defender4,mix(-9,-7,build),mix(-20,-24.5,build),time,.46);
+   if(time>=2.75&&time<3.42){const kick=Math.sin(clamp((time-2.75)/.67)*Math.PI);attacker.legs[1].rotation.x=-kick*1.35;attacker.rig.rotation.x=-.14*kick}
    const dive=smooth((time-3.38)/.92);const keeperTarget=event.type==='big_chance_saved'?1.75:event.type==='shot_post'?1.45:1.1;
    keeper.root.position.set(mix(0,keeperTarget,dive),mix(0,.34,dive),-30.75);keeper.rig.rotation.z=-dive*1.18;keeper.arms[0].rotation.z=-dive*1.9;keeper.arms[1].rotation.z=-dive*.65;keeper.legs[0].rotation.z=dive*.25;keeper.legs[1].rotation.z=-dive*.3;
    const bp=ballPosition(event.type,time);ball.position.set(...bp);ball.rotation.x=time*10.5;ball.rotation.z=time*5.4;
    if(event.type==='goal'&&time>4.45){const cheer=smooth((time-4.45)/.72),runOn=clamp((time-4.7)/2.4);attacker.root.position.z=mix(-20.12,-23.5,runOn);attacker.arms[0].rotation.z=cheer*1.68;attacker.arms[1].rotation.z=-cheer*1.68;attacker.arms[0].rotation.x=-.55;attacker.arms[1].rotation.x=-.55;attacker.rig.position.y=Math.abs(Math.sin(time*7))*.08;netMesh.position.z=-Math.sin((time-4.45)*15)*.07*Math.max(0,1-(time-4.45)/1.4)}
 
-   const follow=smooth(time/3.1);camPos.set(mix(startCam[0],side*4.2,follow),mix(startCam[1],2.42,follow),mix(startCam[2],-13.4,follow));
-   camTarget.set(mix(-.2,.5,follow),mix(1.15,1.25,follow),mix(-21.5,-27.7,follow));
-   if(time>3.15){const shot=smooth((time-3.15)/1.0);tmp.set(side*4.7,2.7,-14.2);camPos.lerp(tmp,shot);tmp.set(1.1,1.22,-31.2);camTarget.lerp(tmp,shot)}
-   if(event.type==='goal'&&time>5.2){const celeb=smooth((time-5.2)/1.5);tmp.set(side*3.7,2.25,-15.6);camPos.lerp(tmp,celeb);tmp.set(attacker.root.position.x,1.35,attacker.root.position.z-3.8);camTarget.lerp(tmp,celeb)}
+   const follow=smooth(time/3.7);camPos.set(mix(startCam[0],endCam[0],follow),mix(startCam[1],endCam[1],follow),mix(startCam[2],endCam[2],follow));
+   camTarget.set(mix(-.5,.65,follow),mix(1.15,1.2,follow),mix(-20.5,-26.8,follow));
+   if(time>3.15){const shot=smooth((time-3.15)/1.25);tmp.set(side*22.8,8.15,-12.2);camPos.lerp(tmp,shot*.58);tmp.set(1.0,1.25,-29.6);camTarget.lerp(tmp,shot*.78)}
+   if(event.type==='goal'&&time>5.2){const celeb=smooth((time-5.2)/1.7);tmp.set(side*22.2,8.0,-13.4);camPos.lerp(tmp,celeb*.45);tmp.set(attacker.root.position.x,1.25,-25.7);camTarget.lerp(tmp,celeb*.55)}
    camera.position.copy(camPos);camera.lookAt(camTarget);renderer.render(scene,camera);
   }
-  function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
+  function resize(width,height){camera.aspect=width/height;camera.fov=width/height<.72?38:34;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
   return{update,resize,dispose};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
@@ -191,7 +207,7 @@ export function play(event,signal){
   try{
    const weak=(navigator.deviceMemory||8)<=4||(navigator.hardwareConcurrency||8)<=4;
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1:1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
+   renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1:1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
    world=makeScene(renderer,event,weak);
    const resize=()=>{const r=layer.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
    function frame(now){
@@ -201,7 +217,7 @@ export function play(event,signal){
      if(last&&now-last>45)slowFrames++;last=now;frames++;
      if(frames===40&&slowFrames>14){renderer.setPixelRatio(1);resize()}
      world.update(elapsed);
-     if(elapsed>=REVEAL_TIME&&!name.textContent){name.textContent=event.playerName;detail.textContent=`${LABELS[event.type]} · ${event.minute}'`}
+     if(elapsed>=REVEAL_TIME&&!name.textContent){name.textContent=event.playerName;const eventLabel=event.type==='big_chance_saved'?(event.keeperName?`PARIERT VON ${event.keeperName.toUpperCase()}`:'SCHUSS GEHALTEN'):LABELS[event.type];detail.textContent=`${eventLabel} · ${event.minute}'`}
      hud.classList.toggle('visible',elapsed>=REVEAL_TIME&&elapsed<8.15);
      if(elapsed>=DURATION){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
