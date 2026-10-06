@@ -172,7 +172,7 @@ export function makeScene(renderer,event,weak=false,high=false){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#b6c7cc');scene.fog=new THREE.Fog('#b6c7cc',160,290);
  const camera=new THREE.PerspectiveCamera(30,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
- const direction=event.attackDirection===-1?-1:1;
+ const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence);
  // All match-space objects, pitch markings and both goals share one transform.
  const field=new THREE.Group();field.rotation.y=direction===1?0:Math.PI;scene.add(field);
  try{
@@ -186,15 +186,16 @@ export function makeScene(renderer,event,weak=false,high=false){
   function canvasTexture(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const tex=track(new THREE.CanvasTexture(c));tex.colorSpace=THREE.SRGBColorSpace;return tex}
   const shirtMaterials=new Map();
   function shirtMaterial(kit){
-   const key=[kit.shirt,kit.shirtSecondary,kit.pattern].join(':');if(shirtMaterials.has(key))return shirtMaterials.get(key);
+   const primary=hex(kit?.shirt,'#e9ecf3'),secondary=hex(kit?.shirtSecondary,primary),pattern=['solid','stripes','hoops','diagonal','halves','sleeves'].includes(kit?.pattern)?kit.pattern:'solid';
+   const key=[primary,secondary,pattern].join(':');if(shirtMaterials.has(key))return shirtMaterials.get(key);
    const tex=canvasTexture(128,128,(ctx,w,h)=>{
-    ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,w,h);ctx.fillStyle=kit.shirtSecondary;
-    if(kit.pattern==='stripes')for(let x=0;x<w;x+=32)ctx.fillRect(x,0,14,h);
-    else if(kit.pattern==='hoops')for(let y=8;y<h;y+=32)ctx.fillRect(0,y,w,14);
-    else if(kit.pattern==='diagonal'){ctx.save();ctx.translate(w/2,h/2);ctx.rotate(-.55);ctx.fillRect(-18,-h,36,h*2);ctx.restore()}
-    else if(kit.pattern==='halves')ctx.fillRect(w/2,0,w/2,h);
+    ctx.fillStyle=primary;ctx.fillRect(0,0,w,h);ctx.fillStyle=secondary;
+    if(pattern==='stripes')for(let x=0;x<w;x+=32)ctx.fillRect(x,0,14,h);
+    else if(pattern==='hoops')for(let y=8;y<h;y+=32)ctx.fillRect(0,y,w,14);
+    else if(pattern==='diagonal'){ctx.save();ctx.translate(w/2,h/2);ctx.rotate(-.55);ctx.fillRect(-18,-h,36,h*2);ctx.restore()}
+    else if(pattern==='halves')ctx.fillRect(w/2,0,w/2,h);
    });tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
-   const material=track(new THREE.MeshStandardMaterial({map:tex,color:'#ffffff',roughness:.78}));shirtMaterials.set(key,material);return material
+   const material=track(new THREE.MeshStandardMaterial({map:tex,color:'#ffffff',roughness:.74}));shirtMaterials.set(key,material);return material
   }
   const hemi=new THREE.HemisphereLight('#e2efff','#657644',2.2);scene.add(hemi);
   const sun=new THREE.DirectionalLight('#fff4d8',2.8);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
@@ -265,11 +266,19 @@ export function makeScene(renderer,event,weak=false,high=false){
   function bodyPartMaterial(top,bottom,height,material,parent,x,y,z,sx=1,sz=1){return part(geo(`body:${top}:${bottom}`,()=>new THREE.CylinderGeometry(top,bottom,1,weak?8:high?14:12)),material,parent,x,y,z,sx,height,sz)}
   function rounded(w,h,d,color,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),mat(color),parent,x,y,z,w,h,d)}
   function roundedMaterial(w,h,d,material,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),material,parent,x,y,z,w,h,d)}
+  function shirtDetail(parent,kit){
+   const secondary=hex(kit?.shirtSecondary,kit?.shirt||'#ffffff');if(secondary.toLowerCase()===String(kit?.shirt||'').toLowerCase())return;
+   const detail=mat(secondary),g=geo('kit-detail',()=>new THREE.BoxGeometry(1,1,1)),add=(x,y,z,w,h,d,rot=0)=>{const n=part(g,detail,parent,x,y,z,w,h,d);n.rotation.z=rot;return n};
+   if(kit.pattern==='stripes')for(const x of [-.13,0,.13]){add(x,1.28,-.119,.045,.38,.012);add(x,1.28,.119,.045,.38,.012)}
+   else if(kit.pattern==='hoops')for(const y of [1.18,1.34,1.47]){add(0,y,-.119,.35,.045,.012);add(0,y,.119,.35,.045,.012)}
+   else if(kit.pattern==='halves'){add(.11,1.29,-.119,.19,.39,.012);add(-.11,1.29,.119,.19,.39,.012)}
+   else if(kit.pattern==='diagonal'){add(0,1.31,-.121,.065,.5,.012,.55);add(0,1.31,.121,.065,.5,.012,.55)}
+  }
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
    const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=kit.pattern==='sleeves'?mat(kit.shirtSecondary):shirt;
    // Athletic 1.82 m silhouette; saved shirt pattern is rendered on the torso.
-   bodyPartMaterial(.22,.153,.48,shirt,rig,0,1.27,0,1,.6);roundedMaterial(.215,.09,.125,shirt,rig,0,1.455,0);
+   bodyPartMaterial(.22,.153,.48,shirt,rig,0,1.27,0,1,.6);roundedMaterial(.215,.09,.125,shirt,rig,0,1.455,0);shirtDetail(rig,kit);
    bodyPart(.155,.185,.2,kit.shorts,rig,0,.98,0,1,.75);
    bodyPart(.058,.065,.095,skin,rig,0,1.555,0);
    rounded(.095,.118,.1,skin,rig,0,1.70,-.012);rounded(.097,.043,.102,hair,rig,0,1.785,.003);
@@ -292,7 +301,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:'footballer '+i));
-  const keeper=player({shirt:kits.keeper,shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true);
+  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true);
   const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({color:'#fffdf3',roughness:.38,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.13);ball.position.set(0,.13,0);ball.castShadow=!weak;
   // Ground cue and physical shadow keep the ball readable without scaling it like an arcade marker.
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.25,.34,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
@@ -326,10 +335,11 @@ export function makeScene(renderer,event,weak=false,high=false){
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   function update(time){
-   players.forEach((p,i)=>{const [x,z]=runPosition(i,time),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04)),next=runPosition(i,time+.04),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
+   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04),sequence),next=runPosition(i,time+.04,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
-   if(time>=1.8&&time<=2.18){const passer=players[1];passer.legs[1].rotation.x=Math.sin((time-1.8)/.38*Math.PI)*.85}
+   const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:[[1.8,2.18]];
+   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1];passer.legs[1].rotation.x=Math.sin((time-from)/(to-from)*Math.PI)*.9}
    const kp=keeperPose(event.type,time);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    keeper.rig.position.y=-.14*kp.anticipation*(1-kp.dive)+.13*kp.land;
@@ -337,7 +347,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    keeper.legs[0].rotation.z=.18+kp.dive*.32;keeper.legs[1].rotation.z=-.18-kp.dive*.15;
    keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=-.3*(1-kp.dive));
    if(kp.dive>.05){keeper.elbows.forEach(e=>e.rotation.x=0);aimArm(keeper.arms[0],[2.52,1.14,-50.6]);aimArm(keeper.arms[1],[2.52,1.14,-50.6]);}
-   const bp=ballPosition(event.type,time);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
+   const bp=ballPosition(event.type,time,sequence);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    if(time>SHOT_TIME){const chase=smooth((time-SHOT_TIME)/1.8);for(const i of [8,9,10,11,12,14,15])players[i].root.position.z-=chase*(.35+hash(i+200)*.8)}
    const reaction=smooth((time-IMPACT_TIME)/.72);
@@ -345,7 +355,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,-lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],influence=Math.exp(-((x-2.65)**2+(y-1.08)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
-   const cam=cameraState(direction,time,camera.aspect,event.type);camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
+   const cam=cameraState(direction,time,camera.aspect,event.type,sequence);camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
@@ -355,7 +365,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
   function inspect(){
    const project=p=>p.clone().project(camera),visible=players.filter(p=>{const q=project(p.root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,1,0)));return Math.abs(q.x)<.98&&Math.abs(q.y)<.98&&q.z<1}).length;
-   return{direction,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',goalScreenX:project(new THREE.Vector3(...worldPosition([0,0,-52.5],direction))).x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ball.getWorldPosition(new THREE.Vector3()).toArray()};
+   return{direction,sequence,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',goalScreenX:project(new THREE.Vector3(...worldPosition([0,0,-52.5],direction))).x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ball.getWorldPosition(new THREE.Vector3()).toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
