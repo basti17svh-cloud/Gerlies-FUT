@@ -143,3 +143,37 @@ test('pauses stop the clock and fitness; a tied friendly reaches extra time and 
  assert.equal(ctx.match.extraTimeBreakLogged,true);assert.notEqual(ctx.match.pensHome,ctx.match.pensAway);assert.ok(ctx.match.penaltyWinner);
  assert.ok(ctx.matchPlayerFitness('p5')<fitness);
 });
+
+
+test('matchday team management keeps wrong-position warning visible and moves chemistry/boost metadata outside card art',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'../matchday.css'),'utf8');
+ const slot=extract('function matchManagerSlotHTML(','function matchManagerBenchHTML(');
+ const managerMeta=extract('function matchManagerChemLevel(','function renderMatchPerformanceStrip(');
+ const squadSlot=extract('function slotHTML(','function benchHTML(');
+ const overview=extract('function playerOverviewHTML(','function openPlayerDetails(');
+ assert.match(slot,/class="poswarn" title="Falsche Position"/);
+ assert.match(slot,/matchManagerMetaHTML\(uid\)/);
+ assert.match(managerMeta,/match-manager-chem/);
+ assert.match(managerMeta,/match-manager-boost/);
+ assert.match(css,/match-manager-slot\.out \.poswarn\{[\s\S]*?left:-7px;right:auto;top:-7px/);
+ assert.match(css,/match-manager-slot>\.mini>\.cb-player-badge[\s\S]*?display:none/);
+ assert.match(css,/match-manager-card-meta\{/);
+ assert.match(css,/match-manager-bench \.match-live-fitness\{display:none\}/);
+ assert.match(css,/manager-panel\.active\{padding-bottom:calc\(170px/);
+ assert.doesNotMatch(squadSlot,/isFounderItem\(item\).*chem-dots/);
+ assert.match(squadSlot,/Individuelle Chemie:/);
+ assert.doesNotMatch(overview,/isFounderItem\(item\)\?"":detailChemHTML/);
+ assert.match(overview,/\$\{detailChemHTML\(chem\)\}/);
+});
+
+test('match manager chemistry follows kickoff chemistry and substitutes get zero',()=>{
+ const{ctx}=fixture();ctx.match.chemBoostChem=[3,2,1,3,2,1,3,2,1,3,2];
+ ctx.FooteraChemBoosts={active:()=>null,icon:()=>''};ctx.esc=String;
+ vm.runInContext(extract('function matchManagerChemLevel(','function renderMatchPerformanceStrip('),ctx);
+ assert.equal(ctx.matchManagerChemLevel('p0'),3);
+ assert.equal(ctx.matchManagerChemLevel('p1'),2);
+ assert.equal(ctx.matchManagerChemLevel('p10'),2);
+ assert.equal(ctx.matchManagerChemLevel('p11'),0,'bench/substitutes carry zero in-match chemistry');
+ ctx.match.lineup[9]='p11';
+ assert.equal(ctx.matchManagerChemLevel('p11'),0,'an incoming substitute stays at zero chemistry');
+});
