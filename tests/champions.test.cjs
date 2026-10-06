@@ -3,6 +3,7 @@ const root=path.join(__dirname,"..");
 const champions=fs.readFileSync(path.join(root,"champions-system.js"),"utf8");
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const hub=fs.readFileSync(path.join(root,"play-hub.js"),"utf8");
+const competition=fs.readFileSync(path.join(root,"competition-system.js"),"utf8");
 const css=fs.readFileSync(path.join(root,"play-hub.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 const manifest=fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8");
@@ -13,13 +14,32 @@ test("Champions scripts parse and V20.97 shell wires the mode",()=>{
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
  assert.match(html,/champions-system\.js\?v=2097/);
- assert.match(html,/const GFUT_BUILD="V20\.96"/);
+ assert.match(html,/const GFUT_BUILD="V20\.97"/);
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
- assert.match(sw,/footera-v20-96-root-shell/);
+ assert.match(sw,/footera-v20-97-root-shell/);
  assert.match(sw,/champions-system\.js\?v=2097/);
  assert.equal(JSON.parse(manifest).start_url,"./index.html?v=20.97");
+});
+
+test("Champions has one play-menu entry and qualification progress stays informational inside Rivals",()=>{
+ assert.equal((html.match(/data-play-mode="champions"/g)||[]).length,1,"Champions darf im Spielen-Menü nur einmal vorkommen");
+ const rivalsPanel=html.slice(html.indexOf('data-play-panel="rivals"'),html.indexOf('data-play-panel="champions"'));
+ assert.doesNotMatch(rivalsPanel,/data-mode="champions"/,"Rivals darf keinen zweiten Champions-Start enthalten");
+ assert.match(hub,/play-tile-qual/);
+ assert.match(hub,/rivals-champions-status/);
+ assert.match(hub,/Champions-Qualifikation/);
+ assert.match(css,/\.play-tile-qual/);
+ assert.match(css,/\.rivals-champions-status/);
+});
+
+test("Rivals result snapshots expose Champions CP before, after and earned for post-match UI",()=>{
+ assert.match(champions,/snapshot\.championsQualification=\{before,after,earned:gain,target:CHAMPIONS_ENTRY_POINTS/);
+ assert.match(competition,/function championsQualificationPostHtml\(snapshot\)/);
+ assert.match(competition,/CHAMPIONS-QUALIFIKATION/);
+ assert.match(competition,/CHAMPIONS QUALIFIZIERT/);
+ assert.match(competition,/CHAMPIONS · \+\$\{fmt\(q\.earned\)\} CP/);
 });
 
 test("Champions has 1000 CP qualification, 15 matches and the approved rank ladder",()=>{
