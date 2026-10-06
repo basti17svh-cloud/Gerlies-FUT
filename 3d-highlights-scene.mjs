@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=76;
+export const MIN_CAMERA_DISTANCE=66;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -31,8 +31,12 @@ export function ballPosition(type,time){
  // The passer carries it out of midfield, releases to the forward, who takes two touches.
  if(time<2){const u=clamp(time/2),t=smooth(u);return lerp([-13,.12,-21.6],[-10,.12,-28.6],t)}
  if(time<3.1){const u=clamp((time-2)/1.1),t=smooth(u),p=lerp([-10,.12,-28.6],[-1,.12,-32],t);p[1]+=.12*Math.sin(u*Math.PI);return p}
- if(time<4.9){const u=clamp((time-3.1)/1.8),t=smooth(u),p=lerp([-1,.12,-32],contact,t);p[1]=.12+.04*Math.abs(Math.sin(u*3*Math.PI));return p}
- if(time<SHOT_TIME)return lerp([contact[0],.12,contact[2]],contact,(time-4.9)/.5);
+ const carryPoint=t=>{
+  const [sx,sz]=runPosition(0,t),u=clamp((t-3.1)/(SHOT_TIME-3.1));
+  return[sx+mix(0,.08,u),.12+.045*Math.abs(Math.sin(u*4*Math.PI)),sz-mix(.8,.58,u)]
+ };
+ if(time<SHOT_TIME-.24)return carryPoint(time);
+ if(time<SHOT_TIME)return lerp(carryPoint(SHOT_TIME-.24),contact,smooth((time-(SHOT_TIME-.24))/.24));
  const impact=type==='big_chance_saved'?[2.52,1.14,-50.6]:type==='shot_post'?[3.52,1.25,-52.5]:type==='big_chance_missed'?[5.1,1.5,-53.4]:[2.65,1.08,-54.25];
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
  if(t<1){const p=lerp(contact,impact,t);p[1]+=.65*Math.sin(t*Math.PI);return p}
@@ -44,22 +48,24 @@ export function ballPosition(type,time){
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
 export function cameraState(direction,time,aspect=1.3,type='goal'){
- const phase=smooth(time/6.4),finish=smooth((time-3.8)/2.8),bp=worldPosition(ballPosition(type,time),direction);
- // Broadcast 2.0: same fixed TV touchline, but the frame now follows the action
- // laterally and vertically instead of only sliding along a fixed centre line.
- const baseZ=mix(-25,-39,phase)*direction,follow=mix(.46,.8,finish);
- const z=mix(baseZ,bp[2],follow),x=bp[0]*mix(.12,.34,finish);
- const distance=Math.max(MIN_CAMERA_DISTANCE,mix(88,78,finish),80/Math.max(.98,aspect));
- const sideline=80,height=mix(58,53,finish),trail=mix(12,9,finish),length=Math.hypot(sideline,height,trail),scale=distance/length;
- return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,mix(.58,.84,finish),z],fov:33,distance};
+ const phase=smooth(time/6.4),bp=worldPosition(ballPosition(type,time),direction);
+ // Broadcast 3.0: permanently closer and lower. The camera pans with play but
+ // does not zoom in for the shot, so the whole highlight keeps one TV scale.
+ const baseZ=mix(-25,-40,phase)*direction,z=mix(baseZ,bp[2],.7),x=bp[0]*.28;
+ const distance=Math.max(MIN_CAMERA_DISTANCE,68,66/Math.max(.96,aspect));
+ const sideline=74,height=46,trail=7,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,.78,z],fov:32,distance};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
 export function kitColors(event){
- const home={shirt:hex(event.homeColor,'#971d42'),shorts:hex(event.homeShorts,'#f3f4ee'),socks:hex(event.homeSocks,'#971d42')};
- let away={shirt:hex(event.awayColor,'#f2f3f4'),shorts:hex(event.awayShorts,'#172b49'),socks:hex(event.awaySocks,'#f2f3f4')};
+ const validPattern=v=>['solid','stripes','hoops','diagonal','halves','sleeves'].includes(String(v))?String(v):'solid';
+ const home={shirt:hex(event.homeColor,'#971d42'),shirtSecondary:hex(event.homeSecondary,event.homeColor||'#971d42'),pattern:validPattern(event.homePattern),shorts:hex(event.homeShorts,'#f3f4ee'),socks:hex(event.homeSocks,'#971d42')};
+ let away={shirt:hex(event.awayColor,'#f2f3f4'),shirtSecondary:hex(event.awaySecondary,event.awayColor||'#f2f3f4'),pattern:validPattern(event.awayPattern),shorts:hex(event.awayShorts,'#172b49'),socks:hex(event.awaySocks,'#f2f3f4')};
  const h=new THREE.Color(home.shirt),a=new THREE.Color(away.shirt);
- if(Math.hypot(h.r-a.r,h.g-a.g,h.b-a.b)<.5)away=(h.r+h.g+h.b)>1.2?{shirt:'#153564',shorts:'#153564',socks:'#153564'}:{shirt:'#f7f3db',shorts:'#f7f3db',socks:'#f7f3db'};
+ // Never repaint a saved opponent kit. Generated opponents without an identity
+ // still receive a contrast fallback so the configured user kit remains exact.
+ if(Math.hypot(h.r-a.r,h.g-a.g,h.b-a.b)<.5&&!event.awayKitConfigured)away=(h.r+h.g+h.b)>1.2?{shirt:'#153564',shirtSecondary:'#d7e7ff',pattern:'solid',shorts:'#153564',socks:'#153564'}:{shirt:'#f7f3db',shirtSecondary:'#263940',pattern:'solid',shorts:'#f7f3db',socks:'#f7f3db'};
  const keeper=['#f4b52b','#10bda7','#bc63e8'].find(c=>{const k=new THREE.Color(c);return [h,new THREE.Color(away.shirt)].every(t=>Math.hypot(k.r-t.r,k.g-t.g,k.b-t.b)>.55)})||'#42e2ee';
  return{home,away,keeper};
 }
@@ -87,7 +93,11 @@ export const RUNS=Object.freeze([
 ]);
 export function runPosition(index,time){
  const r=RUNS[index];
- if(index===0){if(time<3.1)return lerp([-2,-26],[-1,-31.2],smooth(time/3.1));return lerp([-1,-31.2],[0,-37],smooth((time-3.1)/1.8))}
+ if(index===0){
+  if(time<3.1)return lerp([-2,-26],[-1,-31.2],smooth(time/3.1));
+  if(time<=SHOT_TIME){const u=clamp((time-3.1)/(SHOT_TIME-3.1)),t=u<.18?smooth(u/.18)*.18:u;return lerp([-1,-31.2],[0,-37],t)}
+  return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+ }
  if(index===1){if(time<2)return lerp(r.from,r.to,smooth(time/2));return lerp(r.to,[-8,-35],smooth((time-2)/5.2))}
  const u=clamp(time/6.9),p=lerp(r.from,r.to,smooth(u)),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
  p[0]+=bend;p[1]+=Math.sin(u*Math.PI*2+hash(index+91)*Math.PI)*.2*Math.sin(u*Math.PI);
@@ -117,6 +127,18 @@ export function makeScene(renderer,event,weak=false,high=false){
   function cylinder(top,bottom,height,color,x,y,z,parent=field){const key=`c:${top}:${bottom}`;const o=mesh(geo(key,()=>new THREE.CylinderGeometry(top,bottom,1,10)),mat(color),parent);o.scale.y=height;o.position.set(x,y,z);return o}
   function ellipsoid(w,h,d,color,x,y,z,parent=field){const o=mesh(geo('sphere',()=>new THREE.SphereGeometry(1,12,10)),mat(color),parent);o.scale.set(w,h,d);o.position.set(x,y,z);return o}
   function canvasTexture(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const tex=track(new THREE.CanvasTexture(c));tex.colorSpace=THREE.SRGBColorSpace;return tex}
+  const shirtMaterials=new Map();
+  function shirtMaterial(kit){
+   const key=[kit.shirt,kit.shirtSecondary,kit.pattern].join(':');if(shirtMaterials.has(key))return shirtMaterials.get(key);
+   const tex=canvasTexture(128,128,(ctx,w,h)=>{
+    ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,w,h);ctx.fillStyle=kit.shirtSecondary;
+    if(kit.pattern==='stripes')for(let x=0;x<w;x+=32)ctx.fillRect(x,0,14,h);
+    else if(kit.pattern==='hoops')for(let y=8;y<h;y+=32)ctx.fillRect(0,y,w,14);
+    else if(kit.pattern==='diagonal'){ctx.save();ctx.translate(w/2,h/2);ctx.rotate(-.55);ctx.fillRect(-18,-h,36,h*2);ctx.restore()}
+    else if(kit.pattern==='halves')ctx.fillRect(w/2,0,w/2,h);
+   });tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
+   const material=track(new THREE.MeshStandardMaterial({map:tex,color:'#ffffff',roughness:.78}));shirtMaterials.set(key,material);return material
+  }
   const hemi=new THREE.HemisphereLight('#e2efff','#657644',2.2);scene.add(hemi);
   const sun=new THREE.DirectionalLight('#fff4d8',2.8);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00025;sun.shadow.normalBias=.02;
@@ -183,19 +205,21 @@ export function makeScene(renderer,event,weak=false,high=false){
   const batches=new Map(),parts=[];
   function part(g,m,parent,x=0,y=0,z=0,sx=1,sy=1,sz=1){const node=new THREE.Object3D();node.position.set(x,y,z);node.scale.set(sx,sy,sz);parent.add(node);const key=g.uuid+':'+m.uuid;if(!batches.has(key))batches.set(key,{g,m,nodes:[]});batches.get(key).nodes.push(node);parts.push(node);return node}
   function bodyPart(top,bottom,height,color,parent,x,y,z,sx=1,sz=1){return part(geo(`body:${top}:${bottom}`,()=>new THREE.CylinderGeometry(top,bottom,1,weak?8:high?14:12)),mat(color),parent,x,y,z,sx,height,sz)}
+  function bodyPartMaterial(top,bottom,height,material,parent,x,y,z,sx=1,sz=1){return part(geo(`body:${top}:${bottom}`,()=>new THREE.CylinderGeometry(top,bottom,1,weak?8:high?14:12)),material,parent,x,y,z,sx,height,sz)}
   function rounded(w,h,d,color,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),mat(color),parent,x,y,z,w,h,d)}
+  function roundedMaterial(w,h,d,material,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),material,parent,x,y,z,w,h,d)}
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
-   const skin=skinTone(name),hair='#26201a';
-   // Athletic 1.82 m silhouette with a real shoulder line instead of one tapered tube.
-   bodyPart(.22,.153,.48,kit.shirt,rig,0,1.27,0,1,.6);rounded(.215,.09,.125,kit.shirt,rig,0,1.455,0);
+   const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=kit.pattern==='sleeves'?mat(kit.shirtSecondary):shirt;
+   // Athletic 1.82 m silhouette; saved shirt pattern is rendered on the torso.
+   bodyPartMaterial(.22,.153,.48,shirt,rig,0,1.27,0,1,.6);roundedMaterial(.215,.09,.125,shirt,rig,0,1.455,0);
    bodyPart(.155,.185,.2,kit.shorts,rig,0,.98,0,1,.75);
    bodyPart(.058,.065,.095,skin,rig,0,1.555,0);
    rounded(.095,.118,.1,skin,rig,0,1.70,-.012);rounded(.097,.043,.102,hair,rig,0,1.785,.003);
    const arms=[],elbows=[],legs=[],knees=[],gloves=[];
    for(const side of [-1,1]){
     const arm=new THREE.Group();arm.position.set(side*.215,1.45,0);rig.add(arm);arms.push(arm);
-    bodyPart(.055,.05,.17,kit.shirt,arm,0,-.065,0);bodyPart(.048,.04,.16,skin,arm,0,-.225,0);
+    bodyPartMaterial(.055,.05,.17,sleeve,arm,0,-.065,0);bodyPart(.048,.04,.16,skin,arm,0,-.225,0);
     const elbow=new THREE.Group();elbow.position.y=-.30;arm.add(elbow);elbows.push(elbow);
     bodyPart(.039,.029,.265,skin,elbow,0,-.132,0);
     gloves.push(rounded(keeper?.047:.033,.065,.029,keeper?'#f3f4e9':skin,elbow,0,-.30,0));
@@ -245,7 +269,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   function update(time){
-   players.forEach((p,i)=>{const [x,z]=runPosition(i,time),moving=time<(i===0?4.9:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04)),next=runPosition(i,time+.04),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.16,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
+   players.forEach((p,i)=>{const [x,z]=runPosition(i,time),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04)),next=runPosition(i,time+.04),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
    if(time>=1.8&&time<=2.18){const passer=players[1];passer.legs[1].rotation.x=Math.sin((time-1.8)/.38*Math.PI)*.85}
