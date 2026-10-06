@@ -38,6 +38,21 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   check("Founder has the same chemistry indicator",await page.locator('[data-match-slot="9"] .match-manager-chem i.on').count()===3);
   check("equipped Chemie-Boost is external to card art",await page.locator('[data-match-slot="10"] .match-manager-card-meta .match-manager-boost').count()===1);
   check("embedded Chemie-Boost badge is hidden in match manager",await page.locator('[data-match-slot="10"] > .mini > .cb-player-badge').evaluate(el=>getComputedStyle(el).display==="none"));
+  const managerCardSizes=await page.evaluate(()=>{
+   const boosted=document.querySelector('[data-match-slot="10"] .card-shell')?.getBoundingClientRect(),plain=document.querySelector('[data-match-slot="8"] .card-shell')?.getBoundingClientRect();
+   const dragSize=selector=>{
+    const el=document.querySelector(selector),r=el.getBoundingClientRect();
+    startMatchManagerDrag({target:el,clientX:r.left+r.width/2,clientY:r.top+r.height/2});
+    moveMatchManagerDrag({clientX:r.left+r.width/2+18,clientY:r.top+r.height/2+18,preventDefault(){}});
+    const ghost=document.querySelector(".match-manager-dragghost"),card=ghost?.querySelector(".card-shell"),box=card?.getBoundingClientRect();
+    const result={width:box?.width||0,height:box?.height||0,children:ghost?.children.length||0,boostBadge:!!ghost?.querySelector(".cb-player-badge"),meta:!!ghost?.querySelector(".match-manager-card-meta")};
+    clearMatchManagerDrag();document.body.style.userSelect="";return result
+   };
+   return{boosted:{width:boosted?.width||0,height:boosted?.height||0},plain:{width:plain?.width||0,height:plain?.height||0},boostDrag:dragSize('[data-match-slot="10"]'),plainDrag:dragSize('[data-match-slot="8"]')}
+  });
+  check("Chemie-Boost does not change the resting manager card size",Math.abs(managerCardSizes.boosted.width-managerCardSizes.plain.width)<=1&&Math.abs(managerCardSizes.boosted.height-managerCardSizes.plain.height)<=1);
+  check("Chemie-Boost drag preview stays the same fixed size as a normal card",Math.abs(managerCardSizes.boostDrag.width-managerCardSizes.plainDrag.width)<=1&&managerCardSizes.boostDrag.width>=68&&managerCardSizes.boostDrag.width<=72);
+  check("drag preview contains only the card and no Chemie-Boost sizing wrapper",managerCardSizes.boostDrag.children===1&&!managerCardSizes.boostDrag.boostBadge&&!managerCardSizes.boostDrag.meta);
   check("all seven bench slots remain rendered",await page.locator("#matchManagerBench [data-match-slot]").count()===7);
   check("unused bench rating and redundant 100 percent fitness badges are hidden",await page.evaluate(()=>[...document.querySelectorAll("#matchManagerBench .match-live-fitness,#matchManagerBench .match-live-rating.unused")].every(el=>getComputedStyle(el).display==="none")));
   for(const width of [360,390,412]){
@@ -52,7 +67,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    check(`${width}: last bench card can scroll fully above fixed actions`,geometry.benchClear);
   }
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:path.join(output,"matchday-manager-v2099-390.png"),fullPage:true});
+  await page.screenshot({path:path.join(output,"matchday-manager-v2109-390.png"),fullPage:true});
   check("no uncaught JavaScript errors in team management",errors.length===0);
  }finally{await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});

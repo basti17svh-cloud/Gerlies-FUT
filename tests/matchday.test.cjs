@@ -166,6 +166,16 @@ test('matchday team management keeps wrong-position warning visible and moves ch
  assert.match(overview,/\$\{detailChemHTML\(chem\)\}/);
 });
 
+test('match manager drag preview clones only the card so Chemie-Boost wrappers cannot enlarge it',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'../matchday.css'),'utf8');
+ const drag=extract('function startMatchManagerDrag(e){','function endMatchManagerDrag(e){');
+ assert.match(drag,/querySelector\("\.card-shell"\)\?\.cloneNode\(true\)/);
+ assert.doesNotMatch(drag,/g\.innerHTML=src\?\.innerHTML/);
+ assert.match(css,/V21\.09 — team-management cards keep one fixed size/);
+ assert.match(css,/\.match-manager-dragghost>\.card-shell\{[\s\S]*?width:70px!important/);
+ assert.match(css,/match-manager-slot>\.mini[\s\S]*?width:100%/);
+});
+
 test('match manager chemistry follows kickoff chemistry and substitutes get zero',()=>{
  const{ctx}=fixture();ctx.match.chemBoostChem=[3,2,1,3,2,1,3,2,1,3,2];
  ctx.FooteraChemBoosts={active:()=>null,icon:()=>''};ctx.esc=String;

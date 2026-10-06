@@ -282,3 +282,28 @@
  .squad-battle-preview .preview-role-row select{min-height:38px;padding:0 5px;font-size:9px}
  .squad-battle-preview .preview-role-player span{font-size:9px}
 }
+
+
+/* V21.09 — team-management cards keep one fixed size; Chemie-Boost metadata never sizes the drag preview. */
+#match .match-manager-slot>.mini,
+#match .match-manager-bench button>.mini{
+ width:100%;
+ max-width:100%;
+ display:block;
+}
+#match .match-manager-slot>.mini>.card-shell,
+#match .match-manager-bench button>.mini>.card-shell{
+ width:100%!important;
+ max-width:100%!important;
+}
+.match-manager-dragghost{
+ width:70px!important;
+ max-width:70px!important;
+}
+.match-manager-dragghost>.card-shell{
+ width:70px!important;
+ max-width:70px!important;
+}
+.match-manager-dragghost :is(.cb-player-badge,.match-manager-card-meta,.match-live-rating,.match-live-fitness,.poswarn){
+ display:none!important;
+}
