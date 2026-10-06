@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=62;
+export const MIN_CAMERA_DISTANCE=54.5;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -30,15 +30,19 @@ export const PLAY_SEQUENCES=Object.freeze(['central','one_two','through_ball','d
 export function normalizeSequence(value){return PLAY_SEQUENCES.includes(String(value))?String(value):'central'}
 const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_right')?1:1;
 function movingBall(a,b,u,arc=0){const t=smooth(u),p=lerp(a,b,t);p[1]=mix(a[1],b[1],t)+arc*Math.sin(clamp(u)*Math.PI);return p}
+function carriedBall(index,time,sequence,lead=.56){
+ const [x,z]=runPosition(index,time,sequence),before=runPosition(index,Math.max(0,time-.1),sequence),after=runPosition(index,time+.1,sequence);
+ const dx=after[0]-before[0],dz=after[1]-before[1],length=Math.max(.001,Math.hypot(dx,dz)),ux=dx/length,uz=dz/length;
+ const cadence=7.4+Math.min(2.2,length*7),touch=Math.sin(time*cadence)*.11;
+ return[x+ux*lead-uz*touch,.12+.035*Math.abs(Math.sin(time*cadence)),z+uz*lead+ux*touch];
+}
 export function ballPosition(type,time,sequence='central'){
  const contact=shotFootPosition(),seq=normalizeSequence(sequence);
  if(time<SHOT_TIME){
   if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
-   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*23,.12,-20.5],wideEnd=[side*(cutback?27:25.5),.12,cutback?-48:-44.5];
-   // Start with the winger visibly in possession. There is no unseen incoming
-   // pass and no 30-metre sideways relocation before the actual attack.
-   if(time<3.65){const u=time/3.65,p=movingBall(wideStart,wideEnd,u,0);p[1]=.12+.035*Math.abs(Math.sin(u*7*Math.PI));return p}
-   const deliveryStart=wideEnd,deliveryEnd=[contact[0],cutback?.14:.35,contact[2]+.45];
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback');
+   if(time<3.65)return carriedBall(1,time,seq,.56);
+   const deliveryStart=carriedBall(1,3.65,seq,.56),deliveryEnd=[contact[0],cutback?.14:.35,contact[2]+.45];
    if(time<SHOT_TIME-.2)return movingBall(deliveryStart,deliveryEnd,(time-3.65)/(SHOT_TIME-.2-3.65),cutback?.08:2.15);
    return movingBall(deliveryEnd,contact,(time-(SHOT_TIME-.2))/.2,cutback?.02:.08)
   }
@@ -54,14 +58,14 @@ export function ballPosition(type,time,sequence='central'){
    return movingBall([-.4,.12,-35.7],contact,(time-4.65)/(SHOT_TIME-4.65),.025)
   }
   if(seq==='dribble'){
-   const [sx,sz]=runPosition(0,time,seq),u=clamp(time/SHOT_TIME);
-   const p=[sx+Math.sin(u*6*Math.PI)*.12,.12+.04*Math.abs(Math.sin(u*7*Math.PI)),sz-.62];if(time<SHOT_TIME-.2)return p;
+   const carryTime=Math.min(time,SHOT_TIME-.2),p=carriedBall(0,carryTime,seq,.58);
+   if(time<SHOT_TIME-.2)return p;
    return movingBall(p,contact,(time-(SHOT_TIME-.2))/.2,.02)
   }
   // Central combination retained as one of several possible build-ups.
   if(time<2){const u=time/2;return movingBall([-13,.12,-21.6],[-10,.12,-28.6],u,0)}
   if(time<3.1)return movingBall([-10,.12,-28.6],[-1,.12,-32],(time-2)/1.1,.12);
-  const [sx,sz]=runPosition(0,time,seq),u=clamp((time-3.1)/(SHOT_TIME-3.1)),carry=[sx+mix(0,.08,u),.12+.045*Math.abs(Math.sin(u*4*Math.PI)),sz-mix(.8,.58,u)];
+  const carryTime=Math.min(time,SHOT_TIME-.24),carry=carriedBall(0,carryTime,seq,mix(.68,.56,clamp((carryTime-3.1)/(SHOT_TIME-3.1))));
   if(time<SHOT_TIME-.24)return carry;
   return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
  }
@@ -76,13 +80,13 @@ export function ballPosition(type,time,sequence='central'){
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
 export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central'){
- const phase=smooth(time/6.4),bp=worldPosition(ballPosition(type,time,sequence),direction);
- // Broadcast 3.0: permanently closer and lower. The camera pans with play but
- // does not zoom in for the shot, so the whole highlight keeps one TV scale.
- const baseZ=mix(-25,-40,phase)*direction,z=mix(baseZ,bp[2],.7),x=bp[0]*.28;
- const distance=Math.max(MIN_CAMERA_DISTANCE,64,62/Math.max(.96,aspect));
- const sideline=71,height=44,trail=7,length=Math.hypot(sideline,height,trail),scale=distance/length;
- return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,.78,z],fov:32,distance};
+ const phase=smooth(time/6.15),bp=worldPosition(ballPosition(type,time,sequence),direction);
+ const pushIn=smooth((time-1.75)/3.45),settle=smooth((time-7.25)/2.15),push=pushIn*(1-.22*settle);
+ const baseZ=mix(-24.5,-40.5,phase)*direction,z=mix(baseZ,bp[2],.76),x=bp[0]*.34;
+ const portraitPad=Math.max(0,1.06-aspect)*8;
+ const distance=mix(62+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.45,push);
+ const sideline=69,height=41,trail=6.5,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,mix(.76,1.02,push),z],fov:mix(31.5,29.4,push),distance};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -312,9 +316,9 @@ export function makeScene(renderer,event,weak=false,high=false){
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:'footballer '+i));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true);
-  const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({color:'#fffdf3',roughness:.38,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.13);ball.position.set(0,.13,0);ball.castShadow=!weak;
-  // Ground cue and physical shadow keep the ball readable without scaling it like an arcade marker.
-  const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.25,.34,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
+  const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({color:'#fffdf3',roughness:.38,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.14);ball.position.set(0,.13,0);ball.castShadow=!weak;
+  // A restrained ground cue keeps the real-size ball readable on a phone.
+  const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
   for(const batch of batches.values()){batch.mesh=new THREE.InstancedMesh(batch.g,batch.m,batch.nodes.length);batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);batch.mesh.castShadow=!weak;batch.mesh.receiveShadow=!weak;batch.mesh.frustumCulled=false;scene.add(batch.mesh);track(batch.mesh)}
   // Merge stadium structures by material into static instance batches as well.
@@ -329,7 +333,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;
    p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.9*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.9*speed;
    p.arms[0].rotation.x=-step*.68;p.arms[1].rotation.x=step*.68;p.arms[0].rotation.z=.05+.035*speed;p.arms[1].rotation.z=-.05-.035*speed;for(const elbow of p.elbows)elbow.rotation.x=-.6;
-   p.rig.rotation.x=-.05*speed;p.rig.rotation.z=Math.sin(phase)*.026*speed+clamp(turn,-.12,.12);p.rig.position.y=Math.abs(Math.sin(phase))*.028*speed;
+   p.rig.rotation.x=-.055*speed;p.rig.rotation.y=clamp(turn*.72,-.11,.11);p.rig.rotation.z=Math.sin(phase)*.024*speed+clamp(turn,-.16,.16);p.rig.position.y=Math.abs(Math.sin(phase))*.03*speed;
   }
   const camTarget=new THREE.Vector3();
   // Aim an arm's local -Y axis at a field-space interception point.
@@ -345,7 +349,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   function update(time){
-   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.08),sequence),next=runPosition(i,time+.08,sequence),farPrev=runPosition(i,Math.max(0,time-.2),sequence),farNext=runPosition(i,time+.2,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.32,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y,early=Math.atan2(-(prev[0]-farPrev[0]),-(prev[1]-farPrev[1])),late=Math.atan2(-(farNext[0]-next[0]),-(farNext[1]-next[1])),turn=moving?Math.atan2(Math.sin(late-early),Math.cos(late-early))*.22:0;pose(p,x,z,time+i*.29,speed,heading,turn)});
+   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.12),sequence),next=runPosition(i,time+.12,sequence),farPrev=runPosition(i,Math.max(0,time-.28),sequence),farNext=runPosition(i,time+.28,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.48,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y,early=Math.atan2(-(prev[0]-farPrev[0]),-(prev[1]-farPrev[1])),late=Math.atan2(-(farNext[0]-next[0]),-(farNext[1]-next[1])),turn=moving?Math.atan2(Math.sin(late-early),Math.cos(late-early))*.25:0;pose(p,x,z,time+i*.29,speed,heading,turn)});
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
    const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:sequence==='dribble'?[]:[[1.8,2.18]];

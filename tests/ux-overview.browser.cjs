@@ -1,4 +1,4 @@
-/* V21.07 usability/mobile visual smoke test. */
+/* V21.08 usability/mobile visual smoke test. */
 const {chromium}=require("playwright"),http=require("node:http"),fs=require("node:fs"),path=require("node:path"),assert=require("node:assert/strict");
 const root=path.join(__dirname,".."),output=path.join(root,"test-artifacts");fs.mkdirSync(output,{recursive:true});
 const mime={".js":"text/javascript",".mjs":"text/javascript",".html":"text/html",".css":"text/css",".json":"application/json",".webp":"image/webp",".png":"image/png",".svg":"image/svg+xml",".webmanifest":"application/manifest+json"};
@@ -36,7 +36,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    const geometry=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth,status:document.getElementById("clubOverviewStrip")?.scrollWidth,statusClient:document.getElementById("clubOverviewStrip")?.clientWidth,toggle:document.getElementById("clubFilterToggle")?.scrollWidth,toggleClient:document.getElementById("clubFilterToggle")?.clientWidth}));
    check(`${width}: club overview has no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.status<=geometry.statusClient+1&&geometry.toggle<=geometry.toggleClient+1);
   }
-  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,"ux-overview-v2107-club-390.png"),fullPage:false});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,"ux-overview-v2108-club-390.png"),fullPage:false});
 
   await page.evaluate(()=>{switchView("marketView");renderMarket()});
   await page.locator('[data-market-section="search"]').click();
@@ -50,7 +50,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    const geometry=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth,toggle:document.getElementById("marketFilterToggle")?.scrollWidth,toggleClient:document.getElementById("marketFilterToggle")?.clientWidth}));
    check(`${width}: market compact filters have no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.toggle<=geometry.toggleClient+1);
   }
-  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,"ux-overview-v2107-market-390.png"),fullPage:false});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,"ux-overview-v2108-market-390.png"),fullPage:false});
   check("no uncaught JavaScript errors in usability flow",errors.length===0);
  }finally{await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
