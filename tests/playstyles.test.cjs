@@ -54,14 +54,16 @@ assert((cardBadge.match(/playstyle-card-icon/g)||[]).length===3,"Alle aktiven Pl
 assert(!/playstyle-plus-card-badge/.test(cardBadge),"Der alte einzelne Buchstaben-Kreis darf nicht mehr erscheinen");
 const playstyleCss=fs.readFileSync(path.join(root,"playstyles.css"),"utf8");
 assert(/below the stats/.test(playstyleCss)&&/card-alt-positions/.test(playstyleCss),"PlayStyle-Symbole müssen getrennt von Stats und Nebenpositionen liegen");
+assert(/background:rgba\(4,8,11,.84\);color:#f7fbff/.test(playstyleCss),"Normale PlayStyle-Icons brauchen neutralen Hochkontrast statt Ton-in-Ton");
+assert(/\.mini \.card-shell>\.playstyle-card-row \.playstyle-card-icon/.test(playstyleCss),"Aufstellungs-Icons brauchen eine eigene kompakte Darstellung");
 
 const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
 assert(index.includes("./playstyles.js?v=2093"),"PlayStyle-Script ist nicht eingebunden");
-assert(index.includes("./playstyles.css?v=2093"),"PlayStyle-CSS ist nicht eingebunden");
+assert(index.includes("./playstyles.css?v=2094"),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");
 assert(index.includes("FooteraPlayStyles.profileHTML(item,b)"),"Spielerbiografie zeigt PlayStyles nicht an");
-assert(index.includes('const GFUT_BUILD="V20.93"'),"Build wurde nicht auf V20.93 erhöht");
+assert(index.includes('const GFUT_BUILD="V20.94"'),"Build wurde nicht auf V20.93 erhöht");
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
-assert(sw.includes("./playstyles.js?v=2093")&&sw.includes("./playstyles.css?v=2093"),"Service Worker cached PlayStyle-Dateien nicht");
+assert(sw.includes("./playstyles.js?v=2093")&&sw.includes("./playstyles.css?v=2094"),"Service Worker cached PlayStyle-Dateien nicht");
 console.log("PlayStyle-System: 36 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");
