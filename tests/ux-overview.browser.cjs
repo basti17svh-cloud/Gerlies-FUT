@@ -20,6 +20,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    state.club=PLAYERS.map(p=>makeItem(p,false));state.transferList=[state.club[0].uid,state.club[1].uid];state.sbcStorage=state.club.slice(2,7).map(x=>({...x,uid:x.uid+"-sbc"}));state.activeEvos=[];
    switchView("clubView");renderClub();
   });
+  await page.locator('[data-club-area="pros"]').click();
   check("club status strip is visible",await page.locator("#clubOverviewStrip").isVisible());
   check("club status reflects current club size",await page.locator("#clubUxPlayers").textContent()==="30");
   check("club mobile filter panel starts compact",!(await page.locator("#clubFilterPanel").isVisible()));
