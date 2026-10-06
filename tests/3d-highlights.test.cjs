@@ -103,7 +103,7 @@ test('presentation choreography has distinct football actions without changing t
  assert.ok(M.ballPosition('goal',4.35,'wing_left')[1]>1.2,'cross must travel through the air');
  assert.ok(M.ballPosition('goal',4.35,'cutback_left')[1]<.5,'cutback stays low');
  assert.notDeepEqual(paths.get('one_two'),paths.get('through_ball'));
- assert.ok(Math.abs(M.runPosition(0,3,'dribble')[0])>1,'dribble must change lane before cutting inside');
+ const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
  for(const seq of sequences)assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'all build-ups reach the same authoritative finish');
 });
 test('snapshot preserves the selected build-up and creator context',()=>{
