@@ -2,8 +2,8 @@
   "id": "./",
   "name": "Footera",
   "short_name": "Footera",
-  "description": "Footera V21.01 – Fußballteam, Packs, Transfers und Evolutions.",
-  "start_url": "./index.html?v=21.01",
+  "description": "Footera V21.02 – Fußballteam, Packs, Transfers und Evolutions.",
+  "start_url": "./index.html?v=21.02",
   "scope": "./",
   "display": "standalone",
   "display_override": [
