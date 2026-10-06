@@ -190,7 +190,7 @@ export function play(event,signal){
   timer=setTimeout(()=>finish('fallback'),12000);
   try{
    const weak=(navigator.deviceMemory||8)<=4||(navigator.hardwareConcurrency||8)<=4;
-   renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:'high-performance',failIfMajorPerformanceCaveat:true});
+   renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
    renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1:1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
    world=makeScene(renderer,event,weak);
    const resize=()=>{const r=layer.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
