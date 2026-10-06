@@ -38,7 +38,7 @@ function queueMatchGoal3D(event){
 }
 function queueMatchChance3D(shot){
  if(!shot.highlightType)return false;
- return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter});
+ return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||""});
 }
 (function(){
  const selects=document.querySelectorAll('[data-highlight-mode]');
