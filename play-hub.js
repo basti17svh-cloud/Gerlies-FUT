@@ -1,6 +1,6 @@
-/* Footera V20.54 — Spielmodi mit eigener Übersicht. Existing match/reward handlers stay in place. */
+/* Footera V20.95 — Spielmodi mit eigener Übersicht inkl. Footera Champions. Existing match/reward handlers stay in place. */
 (()=>{
- const MODES={rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
+ const MODES={rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},champions:{title:"Footera Champions",summary:"playChampionsSummary",stats:"playChampionsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
  let area="hub";
  const num=value=>Math.max(0,Number(value)||0);
  const put=(id,html)=>{const el=$(id);if(el)el.innerHTML=html};
@@ -10,8 +10,8 @@
  const rewardCopy=reward=>esc(rewardLabel({reward}));
 
  function statsFor(mode){
-  const key=mode.startsWith("friendly")?"friendly":mode,stats=state.stats||{};
-  const matches=num(key==="friendly"?stats.friendlies:key==="squad"?stats.squadMatches:stats.rivalsMatches),wins=num(key==="friendly"?stats.friendlyWins:key==="squad"?stats.squadWins:stats.rivalsWins);
+  const key=mode.startsWith("friendly")?"friendly":mode==="champions"?"weekend":mode,stats=state.stats||{};
+  const matches=num(key==="friendly"?stats.friendlies:key==="squad"?stats.squadMatches:key==="weekend"?stats.championsMatches:stats.rivalsMatches),wins=num(key==="friendly"?stats.friendlyWins:key==="squad"?stats.squadWins:key==="weekend"?stats.championsWins:stats.rivalsWins);
   const history=(state.clubMatchHistory||[]).filter(row=>row.mode===key);
   return{matches,wins,rate:matches?Math.round(wins/matches*100):0,history,goals:history.reduce((sum,row)=>sum+num(row.gf),0),conceded:history.reduce((sum,row)=>sum+num(row.ga),0)};
  }
@@ -35,6 +35,26 @@
   put("sbWeeklyCard",`<div class="play-reward-tier"><div><strong>Dein aktueller Rang</strong><b>${esc(rank.name)}</b></div><p>${rewardCopy(sbRankReward(rank.name))}</p></div>${next?`<div class="play-reward-tier"><div><strong>Nächster Rang</strong><b>${esc(next.name)}</b></div><p>${rewardCopy(sbRankReward(next.name))}</p></div>`:""}<p class="play-note">Am Montag wird dein Endrang gesichert. ${sb.played?"Deine Belohnung ist danach abholbar.":"Spiele mindestens eine gewertete Partie, um eine Wochenbelohnung zu erhalten."}</p>${competitionClaimButtons("squad")}`);
   put("playSquadRanks",SB_RANKS.map(row=>`<div class="play-rank-row ${row.name===rank.name?"is-current":""}"${row.name===rank.name?' aria-current="true"':""}><strong>${esc(row.name)}</strong><span>${fmt(row.min)} BP${row.name===rank.name?" · Dein Rang":""}</span><small>${rewardCopy(sbRankReward(row.name))}</small></div>`).join(""));
  }
+ function renderChampions(){
+  syncChampionsCompetition();const c=ensureChampionsState(),w=championsWindow(),rank=championsRank(c.wins),remaining=Math.max(0,CHAMPIONS_MAX_GAMES-c.games),pending=competitionPending("champions"),qualified=c.qualPoints>=CHAMPIONS_ENTRY_POINTS;
+  const active=c.active&&c.week===w.key&&w.open,finished=c.week===w.key&&c.completed,ready=squadMetrics().filled===18,next=CHAMPIONS_RANKS.slice().reverse().find(row=>row.min>c.wins);
+  put("playChampionsSummary",`<b>${active?`${c.wins}-${c.losses} · ${esc(rank.name)}`:pending.length?"Belohnung abholbereit":qualified?"Qualifiziert":`${fmt(c.qualPoints)} / ${fmt(CHAMPIONS_ENTRY_POINTS)} CP`}</b><small>${active?`${remaining} Spiele übrig · ${esc(championsWindowText())}`:esc(championsWindowText())}</small>${pending.length?'<em>Champions-Rewards warten</em>':""}`);
+  put("championsRecord",`<div class="play-standing-title"><h4>${active?`${c.wins}-${c.losses}`:esc(rank.name)}</h4><span>${active?`${remaining} Spiele übrig`:finished?"Teilnahme beendet":w.open?"Finals geöffnet":"Finals geschlossen"}</span></div><div class="play-metrics">${metric(active?rank.name:(c.lastRank||"–"),"Aktueller / letzter Rang")}${metric(championsBestRecordText(),"Bester Record")}${metric(fmt(c.participations),"Teilnahmen")}</div><div class="champions-window"><strong>Freitag 19:00 – Montag 09:00</strong><span>${esc(championsWindowText())}</span></div>${active&&next?`<p class="play-note">Noch ${Math.max(0,next.min-c.wins)} Siege bis ${esc(next.name)}.</p>`:""}`);
+  const cp=Math.min(CHAMPIONS_ENTRY_POINTS,c.qualPoints);
+  put("championsQualification",`<div class="champions-qual"><div><strong>${fmt(c.qualPoints)} / ${fmt(CHAMPIONS_ENTRY_POINTS)} CP</strong><span>${qualified?"Qualifikation erreicht":"Champions-Punkte aus Division Rivals"}</span></div>${meter(cp,CHAMPIONS_ENTRY_POINTS,"Champions-Qualifikation")}<p class="play-note">Rivals: Sieg +200 CP · Remis +100 CP · Niederlage +40 CP. Eine Teilnahme kostet 1.000 CP.</p></div>`);
+  put("championsRewards",`<div class="play-reward-tier"><div><strong>${active?"Dein aktueller Rang":c.lastRank?"Letzter Rang":"Start-Rang"}</strong><b>${esc(active?rank.name:(c.lastRank||rank.name))}</b></div><p>${rewardCopy(championsRewardForWins(active?c.wins:Math.max(0,c.bestWins||0)))}</p></div><p class="play-note">Nach Spiel 15 oder am Montag um 09:00 wird dein Endrang festgeschrieben.</p>${competitionClaimButtons("champions")}`);
+  put("championsRanks",CHAMPIONS_RANKS.map(row=>`<div class="play-rank-row ${row.name===rank.name&&active?"is-current":""}"><strong>${esc(row.name)}</strong><span>${row.min===row.max?`${row.min} Siege`:`${row.min}–${row.max} Siege`}</span><small>${rewardCopy(championsRewardForWins(row.min))}</small></div>`).join("")+`<p class="play-note">15 Spiele pro Wochenende · Verlängerung und Elfmeterschießen bei Gleichstand · die Gegnerstärke reagiert auf deinen laufenden Record.</p>`);
+  const button=document.querySelector('.startmode[data-mode="champions"]');
+  if(button){
+   let label="Champions öffnen",disabled=!ready;
+   if(active){label="Aufstellung ansehen"}
+   else if(finished){label="Teilnahme beendet";disabled=true}
+   else if(!w.open){label="Champions öffnet Freitag";disabled=true}
+   else if(!qualified){label=`Noch ${fmt(CHAMPIONS_ENTRY_POINTS-c.qualPoints)} CP`;disabled=true}
+   else label="Teilnahme starten";
+   button.textContent=label;button.disabled=disabled
+  }
+ }
  function selectedFriend(){const value=$("friendlyFriendSelect")?.value;return value!==""&&value!==undefined?state.friends[Number(value)]:null}
  function renderFriends(){
   const stats=statsFor("friendly-random");
@@ -45,7 +65,7 @@
   if($("playFriendRankingNote"))$("playFriendRankingNote").textContent=available?`Siege, Punkte und Tore aus euren Live-Duellen gegen ${friend.clubName||"deinen Freund"}.`:friend?"Für die Online-Rangliste benötigst du einen Freund mit aktuellem Online-Code.":"Wähle einen Online-Freund, um eure Tabelle und direkte Bilanz anzusehen.";
  }
  function renderOverview(){
-  renderRivals();renderSquad();renderFriends();
+  renderRivals();renderChampions();renderSquad();renderFriends();
   for(const [mode,config]of Object.entries(MODES))put(config.stats,statsHTML(mode));
  }
  function show(mode,{push=true,focus=true}={}){
@@ -60,7 +80,7 @@
  const originalStatus=renderCompetitionModeStatus;
  renderCompetitionModeStatus=function(){originalStatus();renderOverview()};
  const originalPlay=renderPlay;
- renderPlay=function(){originalPlay();renderFriends();show(area,{push:false,focus:false})};
+ renderPlay=function(){originalPlay();renderChampions();renderFriends();show(area,{push:false,focus:false})};
  window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView")show(target.playMode||"hub",{push:false})},handleBack:target=>{
   if(area==="hub")return false;
   if(target?.gfut&&target.view!=="playView"){area="hub";return false}
