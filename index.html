@@ -4950,7 +4950,7 @@ function playerChem(index,items){return index>=0&&index<11?squadChemistry(items)
 function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0,chemScores=squadChemistry(items),chem=chemScores.reduce((total,value)=>total+value,0);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem,chemScores}}
 function slotHTML(item,i,chem=0){
  const s=currentFormation()[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
- return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${isFounderItem(item)?"":`<div class="chem-dots">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`}</button>`
+ return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${base?`<div class="chem-dots" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`:""}</button>`
 }
 function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Bankplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
 function reserveHTML(item,i){const b=item?displayBase(item):null;return`<div class="reserveslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Reserveplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">RES<br>+</div>'}</button></div>`}
@@ -5139,7 +5139,7 @@ function itemTradeabilityChipHTML(item){
 function playerOverviewHTML(b,item,{shownPosition=null,slot=null,fits=true,chem=null,context=""}={}){
  b=resolvedPlayer(b);ensurePlayerAffiliationAssets(b);
  const shown=shownPosition||b.position,positions=playerPositions(b),attrs=cardStatPairs(b),shownLabel=positionLabel(shown,b),mainLabel=positionLabel(b.position,b),slotLabel=slot&&slot!=="BANK"&&slot!=="RESERVE"?positionLabel(slot,b):slot,status=slot&&slot!=="BANK"&&slot!=="RESERVE"?(fits?`Auf ${slotLabel} spielbar`:`Nicht auf ${slotLabel} spielbar`):(slot==="BANK"?"Ersatzbank":slot==="RESERVE"?"Reserve":"Vereinsitem"),clubPerf=playerClubPerformance(item);
- return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${itemTradeabilityChipHTML(item)}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:isStoryItem(item)?`<span class="fc27-pill">STORY · NUR IM PASS</span>`:""}</div>${isFounderItem(item)?"":detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}<div class="fc27-info"><b>${clubPerf.goals}</b><span>Tore für deinen Verein</span></div><div class="fc27-info"><b>${clubPerf.assists}</b><span>Vorlagen für deinen Verein</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div>${typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.compactHTML(item,b):""}${typeof FooteraChemBoosts!=="undefined"?chemBoostProfileHTML(item,b,chem):""}</div></div>`
+ return`<div class="player-detail-overview"><div class="player-detail-card">${cardHTML(b,item,false,shown)}</div><div class="player-detail-summary"><h2>${esc(isFounderItem(item)?b.fullName||b.name:b.name)}</h2><div class="subline" data-player-context-id="${esc(b.id||"")}">${esc(playerContextLine(b))}</div>${playerAffiliationHTML(b,true)}${purchaseInfoHTML(item)}<div class="fc27-status"><span class="fc27-pill ${fits?"good":"bad"}">${esc(status)}</span>${context?`<span class="fc27-pill">${esc(context)}</span>`:""}${itemTradeabilityChipHTML(item)}${isMomentumItem(item)?`<span class="fc27-pill momentum">MOMENTUM</span>`:isFounderItem(item)?`<span class="fc27-pill">FOUNDER</span>`:isStoryItem(item)?`<span class="fc27-pill">STORY · NUR IM PASS</span>`:""}</div>${detailChemHTML(chem)}<div class="fc27-info-grid"><div class="fc27-info"><b>${esc(shownLabel)}</b><span>Aktuelle Position</span></div><div class="fc27-info"><b>${esc(mainLabel)}</b><span>Hauptposition</span></div><div class="fc27-info"><b>${esc(playerFoot(b))}</b><span>Starker Fuß</span></div><div class="fc27-info"><b>${stars(skillStars(b))} / ${stars(weakFootStars(b))}</b><span>Skills / Schwacher Fuß</span></div>${isFounderItem(item)?`<div class="fc27-info"><b>${Number(b.height)||172} cm</b><span>Größe</span></div><div class="fc27-info"><b>Deutschland</b><span>Nationalität</span></div>`:""}<div class="fc27-info"><b>${clubPerf.goals}</b><span>Tore für deinen Verein</span></div><div class="fc27-info"><b>${clubPerf.assists}</b><span>Vorlagen für deinen Verein</span></div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Spielbare Positionen</strong><small>FC27 Positionslogik</small></div><div class="position-chips">${positions.map((p,i)=>`<span class="position-chip ${i===0?"primary":""} ${p===shown?"current":""}">${esc(positionLabel(p,b))}</span>`).join("")}</div></div><div class="fc27-section"><div class="fc27-section-head"><strong>Attribute</strong><small>${esc(positionLabel(shown,b))}</small></div><div class="detail-attributes">${attrs.map(([k,v])=>`<div class="detail-attribute"><b>${v}</b><span>${k}</span></div>`).join("")}</div></div>${typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.compactHTML(item,b):""}${typeof FooteraChemBoosts!=="undefined"?chemBoostProfileHTML(item,b,chem):""}</div></div>`
 }
 
 function openPlayerDetails(item,index=null,fromPreview=false){
@@ -7783,6 +7783,27 @@ function matchLiveBadgeHTML(uid){
  const played=p.minutes>0||p.goals||p.assists;
  return `<span class="match-live-rating ${played?matchRatingClass(p.rating):"unused"}" title="Live-Bewertung">${played?p.rating.toFixed(1):"–"}</span><span class="match-live-fitness ${p.fitness<=55?"low":p.fitness<=70?"tired":""}" title="Kondition · wirkt auf die Spielstärke">${p.fitness}%</span>`
 }
+function matchManagerChemLevel(uid){
+ if(!uid||!match)return 0;
+ const kickoffIndex=(match.initialStarters||[]).indexOf(uid);
+ return kickoffIndex>=0&&kickoffIndex<11?Math.max(0,Math.min(3,Number(match.chemBoostChem?.[kickoffIndex]||0))):0
+}
+function matchManagerChemHTML(uid){
+ const chem=matchManagerChemLevel(uid);
+ return `<span class="match-manager-chem" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</span>`
+}
+function matchManagerBoostHTML(uid){
+ if(!uid||typeof FooteraChemBoosts==="undefined")return"";
+ const item=match?.clubIndex?.get(uid)||state.club.find(x=>x.uid===uid),boost=FooteraChemBoosts.active(item);
+ if(!boost)return"";
+ const chem=matchManagerChemLevel(uid),inactive=chem<=0?" inactive":"";
+ return `<span class="match-manager-boost${inactive}" style="--cb-accent:${boost.color}" title="Chemie-Boost: ${esc(boost.name)} · ${chem}/3 Chemie" aria-label="Chemie-Boost ${esc(boost.name)}, ${chem} von 3 Chemie">${FooteraChemBoosts.icon(boost.symbol)}</span>`
+}
+function matchManagerMetaHTML(uid,{chem=true}={}){
+ if(!uid)return"";
+ const chemistry=chem?matchManagerChemHTML(uid):"",boost=matchManagerBoostHTML(uid);
+ return chemistry||boost?`<span class="match-manager-card-meta">${chemistry}${boost}</span>`:""
+}
 function renderMatchPerformanceStrip(){
  const box=$("matchPerformanceStrip");if(!box||!match)return;
  const ids=[...new Set((match.lineup||[]).slice(0,11).filter(Boolean))],rows=ids.map(uid=>({uid,base:currentMatchBase(uid),p:matchPlayerLivePerformance(uid)})).filter(x=>x.base&&x.p.rating!=null),established=rows.filter(x=>x.p.minutes>=12);
@@ -7829,12 +7850,12 @@ function matchManagerSlotHTML(uid,i,d=getMatchManagerDraft()){
  const form=FORMATIONS[d?.formation||match?.formation]||FORMATIONS["4-3-3"],slot=form[i],b=uid?currentMatchBase(uid):null,out=b&&posFit(b,slot.p)<=0,forced=uid&&match?.forcedOut===uid;
  const pendingIn=uid&&d?.baseLineup?.slice(11).includes(uid);
  const redEmpty=!uid&&match?.redCardSlot===i;
- return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""} ${redEmpty?"red-card-empty":""}" data-match-slot="${i}" aria-label="${esc(matchManagerPlayerLabel(uid,slot.p))}" aria-pressed="false" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${redEmpty?"🟥<br>ROT":positionLabel(slot.p)}</div>`}${b?matchLiveBadgeHTML(uid):""}${out?'<div class="poswarn">!</div>':''}</button>`
+ return `<button class="match-manager-slot ${out?"out":""} ${forced?"forced":""} ${pendingIn?"pending-in":""} ${redEmpty?"red-card-empty":""}" data-match-slot="${i}" aria-label="${esc(matchManagerPlayerLabel(uid,slot.p))}" aria-pressed="false" style="left:${slot.x}%;top:${slot.y}%">${b?cardHTML(b,state.club.find(x=>x.uid===uid)||null,true,out?b.position:slot.p):`<div class="emptyslot">${redEmpty?"🟥<br>ROT":positionLabel(slot.p)}</div>`}${b?matchLiveBadgeHTML(uid):""}${b?matchManagerMetaHTML(uid):""}${out?'<div class="poswarn" title="Falsche Position" aria-label="Falsche Position">!</div>':''}</button>`
 }
 function matchManagerBenchHTML(uid,i,d=getMatchManagerDraft()){
  const b=uid?currentMatchBase(uid):null,item=uid?state.club.find(x=>x.uid===uid):null;
  const pendingOut=uid&&d?.baseLineup?.slice(0,11).includes(uid)&&!d.lineup.slice(0,11).includes(uid);
- return `<button class="${pendingOut?"pending-out":""}" data-match-slot="${i}" aria-label="${esc(matchManagerPlayerLabel(uid,b?.position||"Bank"))}" aria-pressed="false">${b?cardHTML(b,item,true,b.position):'<div class="emptyslot">FREI</div>'}${b?matchLiveBadgeHTML(uid):""}</button>`
+ return `<button class="${pendingOut?"pending-out":""}" data-match-slot="${i}" aria-label="${esc(matchManagerPlayerLabel(uid,b?.position||"Bank"))}" aria-pressed="false">${b?cardHTML(b,item,true,b.position):'<div class="emptyslot">FREI</div>'}${b?matchLiveBadgeHTML(uid):""}${b?matchManagerMetaHTML(uid,{chem:false}):""}</button>`
 }
 function renderMatchManager(){
  if(!match)return;const d=getMatchManagerDraft();if(!d)return;
