@@ -39,6 +39,14 @@ if(require.main===module)(async()=>{
   await page.route('**/*',route=>route.request().url().startsWith(url)?route.continue():route.abort());
   await page.goto(url,{waitUntil:'load'});check('app initializes without JS errors',errors.length===0);
   check('3D stays unloaded before first highlight',await page.evaluate(()=>!performance.getEntriesByType('resource').some(r=>r.name.includes('three.module'))));
+  await fixture(page);
+  const kickoffKitFreeze=await page.evaluate(()=>{
+   const before=JSON.stringify(match.kickoffKits?.home||null);
+   state.profile.clubIdentity.kits.home={pattern:'solid',shirtPrimary:'#ffffff',shirtSecondary:'#ffffff',shorts:'#ffffff',socks:'#ffffff'};
+   return{before,after:JSON.stringify(match.kickoffKits?.home||null),live:JSON.stringify(state.profile.clubIdentity.kits.home)}
+  });
+  check('kickoff kit is frozen and cannot be replaced by a later profile edit',kickoffKitFreeze.before===kickoffKitFreeze.after&&kickoffKitFreeze.after!==kickoffKitFreeze.live);
+  await page.evaluate(()=>stopMatchTimer());
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});await fixture(page);const before=await force(page,'goal');
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
