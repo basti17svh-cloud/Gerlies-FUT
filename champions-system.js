@@ -90,7 +90,7 @@ function championsCanStartMatch(at=new Date()){
  syncChampionsCompetition(at);const c=ensureChampionsState(),w=championsWindow(at);
  return !!(w.open&&c.active&&c.week===w.key&&c.games<CHAMPIONS_MAX_GAMES)
 }
-function championsQualificationGain(result){return result==="win"?200:result==="draw"?100:40}
+function championsQualificationGain(result){return result==="win"?200:result==="draw"?100:0}
 function championsMatchCoins(result){return result==="win"?850:425}
 function recordChampionsResult(result){
  syncChampionsCompetition();const c=ensureChampionsState(),w=championsWindow(),eligible=championsCanStartMatch(),before={games:c.games,wins:c.wins,losses:c.losses,rank:championsRank(c.wins).name,streak:c.streak};
