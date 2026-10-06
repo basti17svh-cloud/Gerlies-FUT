@@ -209,8 +209,9 @@ function renderCompetitionProgress(snapshot){
   const a=snapshot.after,b=snapshot.before,rank=sbRank(a.points),next=SB_RANKS.find(x=>x.min>a.points),pct=next?Math.max(0,Math.min(100,Math.round((a.points-rank.min)/(next.min-rank.min)*100))):100;
   host.innerHTML=`<div class="competition-result ${a.rank!==b.rank?"promoted":""}"><small>SQUAD BATTLES · ${snapshot.result==="win"?"SIEG":"NIEDERLAGE"}</small><strong>+${fmt(snapshot.earned)} BATTLE-PUNKTE</strong><p>${fmt(b.points)} → ${fmt(a.points)} BP</p><b>${esc(b.rank)} ${b.rank!==a.rank?"→ "+esc(a.rank):""}</b><div class="competition-bar"><i style="width:${pct}%"></i></div><span>${a.played}/14 GEWERTETE SPIELE · RESET MONTAG 09:00</span>${!snapshot.eligible?"<em>Weiterhin Coins und Ziele · keine weiteren BP</em>":""}</div>`
  }else{
-  const a=snapshot.after,b=snapshot.before,up=a.division<b.division,protectedStep=snapshot.result==="loss"&&b.step===a.step&&a.checkpoint>0;
-  host.innerHTML=`<div class="competition-result ${up?"promoted":""}"><small>DIVISION RIVALS · ${snapshot.result==="win"?"SIEG":snapshot.result==="draw"?"REMIS":"NIEDERLAGE"}</small><strong>+${snapshot.earned} WOCHENPUNKTE</strong><p>${b.weekly} → ${a.weekly}/35</p><b>${up?`AUFSTIEG · DIVISION ${a.division||"ELITE"}`:esc(rivalsStageLabel(a))}</b>${a.division!==0?`<span>STUFE ${b.step} → ${a.step} · CHECKPOINT ${a.checkpoint||"OFFEN"}</span>`:""}<div class="competition-bar"><i style="width:${Math.min(100,Math.round(a.weekly/35*100))}%"></i></div><span>RESET DONNERSTAG 09:00 · ${competitionCountdown("rivals")}</span>${a.streak>=2?`<em>SIEGESSERIE ×${a.streak}</em>`:""}${protectedStep?"<em>CHECKPOINT AKTIV · KEIN RÜCKFALL</em>":""}</div>`
+  const a=snapshot.after,b=snapshot.before,up=a.division<b.division,protectedStep=snapshot.result==="loss"&&b.step===a.step&&a.checkpoint>0,q=snapshot.championsQualification;
+  const championsLine=q?`<em>CHAMPIONS · +${fmt(q.earned)} CP · ${fmt(q.before)} → ${fmt(q.after)} / ${fmt(q.target)}${q.qualifiedAfter&&!q.qualifiedBefore?" · QUALIFIZIERT":""}</em>`:"";
+  host.innerHTML=`<div class="competition-result ${up?"promoted":""}"><small>DIVISION RIVALS · ${snapshot.result==="win"?"SIEG":snapshot.result==="draw"?"REMIS":"NIEDERLAGE"}</small><strong>+${snapshot.earned} WOCHENPUNKTE</strong><p>${b.weekly} → ${a.weekly}/35</p><b>${up?`AUFSTIEG · DIVISION ${a.division||"ELITE"}`:esc(rivalsStageLabel(a))}</b>${a.division!==0?`<span>STUFE ${b.step} → ${a.step} · CHECKPOINT ${a.checkpoint||"OFFEN"}</span>`:""}<div class="competition-bar"><i style="width:${Math.min(100,Math.round(a.weekly/35*100))}%"></i></div><span>RESET DONNERSTAG 09:00 · ${competitionCountdown("rivals")}</span>${championsLine}${a.streak>=2?`<em>SIEGESSERIE ×${a.streak}</em>`:""}${protectedStep?"<em>CHECKPOINT AKTIV · KEIN RÜCKFALL</em>":""}</div>`
  }
 }
 
@@ -222,6 +223,15 @@ function progressAxisHtml(markers,fromPct,toPct){
 function weeklyProgressHtml(before,after){
  const from=progressClamp(before/35*100),to=progressClamp(after/35*100);
  return '<div class="post-progress-weekly"><div class="post-progress-section-head"><span>WOCHENFORTSCHRITT</span><strong>'+before+' → '+after+'/35</strong></div>'+progressAxisHtml([{pct:0,label:'0'},{pct:15/35*100,label:'15',sub:'Reward'},{pct:100,label:'35',sub:'Upgrade'}],from,to)+'</div>'
+}
+function championsQualificationPostHtml(snapshot){
+ const q=snapshot?.championsQualification;if(!q)return"";
+ const target=Math.max(1,Number(q.target||1000)),before=Math.max(0,Number(q.before||0)),after=Math.max(0,Number(q.after||0)),earned=Math.max(0,Number(q.earned||0));
+ const from=progressClamp(Math.min(target,before)/target*100),to=progressClamp(Math.min(target,after)/target*100),qualifiedNow=!!q.qualifiedAfter&&!q.qualifiedBefore;
+ return '<div class="post-progress-weekly post-progress-champions"><div class="post-progress-section-head"><span>CHAMPIONS-QUALIFIKATION</span><strong>+'+fmt(earned)+' CP · '+fmt(before)+' → '+fmt(after)+' / '+fmt(target)+'</strong></div>'+
+  progressAxisHtml([{pct:0,label:'0'},{pct:100,label:fmt(target),sub:'Qualifiziert'}],from,to)+
+  (qualifiedNow?'<div class="post-progress-promotion">CHAMPIONS QUALIFIZIERT</div>':'')+
+  '<div class="post-progress-note">Rivals: Sieg +200 CP · Remis +100 CP · Niederlage +0 CP</div></div>'
 }
 function squadPostMatchHtml(snapshot){
  const b=snapshot.before,a=snapshot.after,beforeIndex=Math.max(0,SB_RANKS.findIndex(x=>x.name===b.rank)),afterIndex=Math.max(0,SB_RANKS.findIndex(x=>x.name===a.rank));
@@ -259,7 +269,7 @@ function rivalsPostMatchHtml(snapshot){
  return '<div class="post-progress-summary"><small>DIVISION RIVALS</small><strong>+'+snapshot.earned+' WP</strong><span>'+b.weekly+' → '+a.weekly+'/35 Wochenpunkte</span></div>'+
   promoted+status+
   '<div class="post-progress-section-head"><span>'+(eliteBefore?'SKILL-RATING':'DIVISIONSFORTSCHRITT')+'</span><strong>'+esc(rivalsStageLabel(a))+'</strong></div>'+
-  mainAxis+streak+weeklyProgressHtml(b.weekly,a.weekly)+
+  mainAxis+streak+weeklyProgressHtml(b.weekly,a.weekly)+championsQualificationPostHtml(snapshot)+
   '<div class="post-progress-foot">Reset Donnerstag 09:00 · '+esc(competitionCountdown("rivals"))+'</div>'
 }
 let postMatchProgressAnimationTimer=null;
