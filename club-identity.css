@@ -1,4 +1,4 @@
-/* Footera V20.44 — Vereinsidentität */
+/* Footera V21.05 — Vereinsidentität: Wappenrand, Farbtransfer und neue Trikotmuster */
 .club-section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .club-section-tabs button,.identity-tabs button{min-height:42px;border:1px solid #33473e;border-radius:11px;background:#101a16;color:#b8c7bf;font-weight:900;font-size:10px}
 .club-section-tabs button.active,.identity-tabs button.active{border-color:#d8ff3e;background:#27351e;color:#efffc6;box-shadow:inset 0 0 0 1px #d8ff3e44}
@@ -44,3 +44,35 @@
 
 #identityCrestSymbols button{font-size:9px;line-height:1.2;padding:7px 5px}
 @media(max-width:430px){#identityCrestSymbols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* V21.05 — erweiterter Vereinsdesigner */
+.crest-border-fields{margin-top:10px}
+.club-crest{--crest-border:var(--crest-primary);--crest-border-size:7px;background:var(--crest-border)}
+.club-crest::before{inset:var(--crest-border-size);background:var(--crest-secondary)}
+.club-crest::after{inset:calc(var(--crest-border-size) + 7px)}
+.club-crest.border-thin{--crest-border-size:4px}
+.club-crest.border-medium{--crest-border-size:7px}
+.club-crest.border-strong{--crest-border-size:10px}
+.club-crest.border-massive{--crest-border-size:13px}
+.club-crest.kit-badge-mini{--crest-border-size:2px!important}
+.club-crest.kit-badge-mini::after{inset:4px;border-width:1px}
+.kit-shirt.pattern-center{background:linear-gradient(90deg,var(--kit-a) 0 36%,var(--kit-b) 36% 64%,var(--kit-a) 64% 100%)}
+.kit-shirt.pattern-pinstripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 11px,var(--kit-b) 11px 14px,var(--kit-a) 14px 25px)}
+.kit-shirt.pattern-quarters{background:conic-gradient(from 90deg at 50% 50%,var(--kit-a) 0 25%,var(--kit-b) 0 50%,var(--kit-a) 0 75%,var(--kit-b) 0)}
+.kit-shirt.pattern-chevron{background:linear-gradient(145deg,transparent 0 42%,var(--kit-b) 43% 53%,transparent 54%),linear-gradient(215deg,transparent 0 42%,var(--kit-b) 43% 53%,transparent 54%),var(--kit-a)}
+.kit-shirt.pattern-chestband{background:linear-gradient(0deg,var(--kit-a) 0 38%,var(--kit-b) 38% 58%,var(--kit-a) 58% 100%)}
+.kit-shirt.pattern-shoulders{background:linear-gradient(180deg,var(--kit-b) 0 24%,var(--kit-a) 24% 100%)}
+.kit-shirt.pattern-sidepanels{background:linear-gradient(90deg,var(--kit-b) 0 18%,var(--kit-a) 18% 82%,var(--kit-b) 82% 100%)}
+.identity-color-field{position:relative;transition:outline-color .12s,background .12s}
+.identity-color-transfer{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:7px;min-height:36px;margin-top:2px;padding:5px 7px;border:1px solid #354a40;border-radius:9px;background:#0c1511;color:#dce8e2;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;text-transform:none;letter-spacing:normal}
+.identity-color-transfer:active,.identity-color-transfer.dragging{cursor:grabbing;opacity:.82}
+.identity-color-transfer i{width:24px;height:24px;border-radius:7px;background:var(--transfer-color);border:1px solid #ffffff38;box-shadow:inset 0 1px #ffffff26}
+.identity-color-transfer b{font-size:9px;letter-spacing:.04em}
+.identity-color-transfer small{color:#84958d;font-size:7px;font-weight:800;white-space:nowrap}
+.identity-color-transfer.clipboard-source{border-color:var(--lime);box-shadow:0 0 0 1px #d8ff3e33;background:#182019}
+.identity-color-field.color-drop-target{outline:2px solid var(--lime);outline-offset:3px;border-radius:11px;background:#182019}
+.identity-color-drag-ghost{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);min-width:105px;padding:8px 9px 8px 31px;border:1px solid #ffffff55;border-radius:10px;background:#0d1713;color:#fff;font-size:9px;font-weight:1000;box-shadow:0 12px 30px #000a}
+.identity-color-drag-ghost::before{content:"";position:absolute;left:7px;top:50%;width:17px;height:17px;transform:translateY(-50%);border-radius:5px;background:var(--transfer-color);border:1px solid #ffffff55}
+@media(max-width:620px){.crest-border-fields{grid-template-columns:1fr 1fr}.identity-color-transfer{grid-template-columns:22px minmax(0,1fr) auto}.identity-color-transfer i{width:22px;height:22px}}
+@media(max-width:390px){.identity-color-transfer small{display:none}}

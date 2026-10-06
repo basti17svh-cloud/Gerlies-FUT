@@ -86,7 +86,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
 export function kitColors(event){
- const validPattern=v=>['solid','stripes','hoops','diagonal','halves','sleeves'].includes(String(v))?String(v):'solid';
+ const validPattern=v=>['solid','stripes','hoops','diagonal','halves','sleeves','center','pinstripes','quarters','chevron','chestband','shoulders','sidepanels'].includes(String(v))?String(v):'solid';
  const home={shirt:hex(event.homeColor,'#971d42'),shirtSecondary:hex(event.homeSecondary,event.homeColor||'#971d42'),pattern:validPattern(event.homePattern),shorts:hex(event.homeShorts,'#f3f4ee'),socks:hex(event.homeSocks,'#971d42')};
  let away={shirt:hex(event.awayColor,'#f2f3f4'),shirtSecondary:hex(event.awaySecondary,event.awayColor||'#f2f3f4'),pattern:validPattern(event.awayPattern),shorts:hex(event.awayShorts,'#172b49'),socks:hex(event.awaySocks,'#f2f3f4')};
  const h=new THREE.Color(home.shirt),a=new THREE.Color(away.shirt);
@@ -276,10 +276,17 @@ export function makeScene(renderer,event,weak=false,high=false){
    else if(pattern==='hoops')for(const y of [1.17,1.32,1.47]){add(0,y,-.124,.35,.035,.014);add(0,y,.124,.35,.035,.014)}
    else if(pattern==='halves'){add(.105,1.29,-.124,.18,.39,.014);add(-.105,1.29,.124,.18,.39,.014)}
    else if(pattern==='diagonal'){add(0,1.30,-.126,.05,.52,.014,-.66);add(0,1.30,.126,.05,.52,.014,-.66)}
+   else if(pattern==='center'){add(0,1.29,-.125,.105,.39,.014);add(0,1.29,.125,.105,.39,.014)}
+   else if(pattern==='pinstripes')for(const x of [-.16,-.08,0,.08,.16]){add(x,1.29,-.125,.015,.39,.014);add(x,1.29,.125,.015,.39,.014)}
+   else if(pattern==='quarters'){add(.09,1.39,-.125,.17,.19,.014);add(-.09,1.19,-.125,.17,.19,.014);add(-.09,1.39,.125,.17,.19,.014);add(.09,1.19,.125,.17,.19,.014)}
+   else if(pattern==='chevron'){for(const z of [-.126,.126]){add(-.075,1.36,z,.045,.23,.014,-.72);add(.075,1.36,z,.045,.23,.014,.72)}}
+   else if(pattern==='chestband'){add(0,1.33,-.126,.35,.085,.014);add(0,1.33,.126,.35,.085,.014)}
+   else if(pattern==='shoulders'){add(0,1.445,-.126,.35,.09,.014);add(0,1.445,.126,.35,.09,.014)}
+   else if(pattern==='sidepanels')for(const x of [-.16,.16]){add(x,1.29,-.124,.045,.39,.014);add(x,1.29,.124,.045,.39,.014)}
   }
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
-   const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=kit.pattern==='sleeves'?mat(kit.shirtSecondary):shirt;
+   const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=['sleeves','shoulders'].includes(kit.pattern)?mat(kit.shirtSecondary):shirt;
    // Athletic 1.82 m silhouette; saved shirt pattern is rendered on the torso.
    bodyPartMaterial(.22,.153,.48,shirt,rig,0,1.27,0,1,.6);roundedMaterial(.215,.09,.125,shirt,rig,0,1.455,0);shirtDetail(rig,kit);
    bodyPart(.155,.185,.2,kit.shorts,rig,0,.98,0,1,.75);

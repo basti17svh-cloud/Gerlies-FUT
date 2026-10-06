@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.04</title>
+<title>Footera V21.05</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,15 +1470,15 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2104">
+<link rel="stylesheet" href="./3d-highlights.css?v=2105">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css">
+<link rel="stylesheet" href="./club-identity.css?v=2105">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2104">
-<link rel="stylesheet" href="./playstyles.css?v=2104">
-<link rel="stylesheet" href="./player-profile.css?v=2104">
+<link rel="stylesheet" href="./chem-boosts.css?v=2105">
+<link rel="stylesheet" href="./playstyles.css?v=2105">
+<link rel="stylesheet" href="./player-profile.css?v=2105">
 </head>
 <body>
 
@@ -1549,7 +1549,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.04</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.05</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1823,7 +1823,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <div class="crest-builder">
         <div class="crest-preview-wrap"><div id="identityCrestPreview"></div></div>
         <div>
-          <label class="identity-field">Eigene Zeichen (max. 5)<input id="identityCrestInitials" maxlength="5" placeholder="FCS05" autocomplete="off" autocapitalize="characters"></label>
+          <label class="identity-field">Eigene Zeichen (max. 5)<input id="identityCrestInitials" maxlength="5" placeholder="FCS05" autocomplete="off" autocapitalize="characters"></label><div class="identity-fields crest-border-fields"><label class="identity-field">Randfarbe<input id="identityCrestBorderColor" type="color"></label><label class="identity-field">Randstärke<select id="identityCrestBorderWidth"><option value="thin">Dünn</option><option value="medium">Standard</option><option value="strong">Stark</option><option value="massive">Extra stark</option></select></label></div>
           <div style="height:10px"></div>
           <div class="identity-field"><span>Form</span><div class="crest-option-grid" id="identityCrestShapes">
             <button type="button" data-crest-shape="shield">Schild</button><button type="button" data-crest-shape="round">Rund</button><button type="button" data-crest-shape="hex">Hex</button><button type="button" data-crest-shape="point">Spitz</button><button type="button" data-crest-shape="modern">Modern</button>
@@ -1832,14 +1832,14 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
           <div class="identity-field"><span>Symbol</span><div class="crest-option-grid" id="identityCrestSymbols">
             <button type="button" data-crest-symbol="star">★ Stern</button><button type="button" data-crest-symbol="ball">⚽ Ball</button><button type="button" data-crest-symbol="bolt">⚡ Blitz</button><button type="button" data-crest-symbol="diamond">◆ Diamant</button><button type="button" data-crest-symbol="crown">♛ Krone</button><button type="button" data-crest-symbol="f">F</button>
             <button type="button" data-crest-symbol="eagle">🦅 Adler</button><button type="button" data-crest-symbol="lion">🦁 Löwe</button><button type="button" data-crest-symbol="wolf">🐺 Wolf</button><button type="button" data-crest-symbol="flame">🔥 Flamme</button><button type="button" data-crest-symbol="trophy">🏆 Pokal</button><button type="button" data-crest-symbol="anchor">⚓ Anker</button>
-            <button type="button" data-crest-symbol="castle">♜ Burg</button><button type="button" data-crest-symbol="sun">☀ Sonne</button><button type="button" data-crest-symbol="moon">☾ Mond</button><button type="button" data-crest-symbol="cross">✚ Kreuz</button><button type="button" data-crest-symbol="comet">✦ Komet</button><button type="button" data-crest-symbol="skull">☠ Totenkopf</button>
+            <button type="button" data-crest-symbol="castle">♜ Burg</button><button type="button" data-crest-symbol="sun">☀ Sonne</button><button type="button" data-crest-symbol="moon">☾ Mond</button><button type="button" data-crest-symbol="cross">✚ Kreuz</button><button type="button" data-crest-symbol="comet">✦ Komet</button><button type="button" data-crest-symbol="skull">☠ Totenkopf</button><button type="button" data-crest-symbol="bull">🐂 Stier</button><button type="button" data-crest-symbol="bear">🐻 Bär</button><button type="button" data-crest-symbol="fox">🦊 Fuchs</button><button type="button" data-crest-symbol="horse">♞ Pferd</button><button type="button" data-crest-symbol="dragon">🐉 Drache</button><button type="button" data-crest-symbol="shark">🦈 Hai</button><button type="button" data-crest-symbol="snake">🐍 Schlange</button><button type="button" data-crest-symbol="owl">🦉 Eule</button><button type="button" data-crest-symbol="scorpion">🦂 Skorpion</button><button type="button" data-crest-symbol="swords">⚔ Schwerter</button><button type="button" data-crest-symbol="shieldmark">🛡 Schild</button><button type="button" data-crest-symbol="fleur">⚜ Lilie</button><button type="button" data-crest-symbol="gear">⚙ Zahnrad</button><button type="button" data-crest-symbol="mountain">▲ Berg</button><button type="button" data-crest-symbol="trident">♆ Dreizack</button><button type="button" data-crest-symbol="target">◎ Ziel</button><button type="button" data-crest-symbol="waves">≋ Wellen</button><button type="button" data-crest-symbol="ram">🐏 Widder</button>
           </div></div>
         </div>
       </div>
     </div>
 
     <div class="identity-panel" data-identity-panel="colors">
-      <h3>Vereinsfarben</h3><p>Drei zentrale Farben bilden die Grundlage für Wappen und spätere Club-Darstellungen.</p>
+      <h3>Vereinsfarben</h3><p>Drei zentrale Farben bilden die Grundlage für Wappen und Club-Darstellungen. Farbplättchen ziehen oder antippen: Quelle wählen, danach die Zielfarbe antippen.</p>
       <div class="identity-colors-preview"><div id="identityColorChipPrimary" class="identity-color-chip"></div><div id="identityColorChipSecondary" class="identity-color-chip"></div><div id="identityColorChipAccent" class="identity-color-chip"></div></div>
       <div class="identity-fields">
         <label class="identity-field">Hauptfarbe<input id="identityColorPrimary" type="color"></label>
@@ -1852,21 +1852,21 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <h3>Trikots</h3><p>Heim- und Auswärtstrikot werden bereits so gespeichert, dass sie später für 3D-Matches genutzt werden können.</p>
       <div class="kit-grid">
         <div class="kit-card"><h4>Heimtrikot</h4><div class="kit-preview"><div id="identityHomeKitPreview"></div></div><div class="kit-meta">
-          <label class="identity-field">Muster<select id="identityHomePattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option></select></label>
+          <label class="identity-field">Muster<select id="identityHomePattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option></select></label>
           <label class="identity-field">Hauptfarbe<input id="identityHomePrimary" type="color"></label>
           <label class="identity-field">Zweitfarbe<input id="identityHomeSecondary" type="color"></label>
           <label class="identity-field">Hose<input id="identityHomeShorts" type="color"></label>
           <label class="identity-field">Stutzen<input id="identityHomeSocks" type="color"></label>
         </div></div>
         <div class="kit-card"><h4>Auswärtstrikot</h4><div class="kit-preview"><div id="identityAwayKitPreview"></div></div><div class="kit-meta">
-          <label class="identity-field">Muster<select id="identityAwayPattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option></select></label>
+          <label class="identity-field">Muster<select id="identityAwayPattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option></select></label>
           <label class="identity-field">Hauptfarbe<input id="identityAwayPrimary" type="color"></label>
           <label class="identity-field">Zweitfarbe<input id="identityAwaySecondary" type="color"></label>
           <label class="identity-field">Hose<input id="identityAwayShorts" type="color"></label>
           <label class="identity-field">Stutzen<input id="identityAwaySocks" type="color"></label>
         </div></div>
       </div>
-      <div class="identity-future-note">Vorbereitet für später: Third-Kit, Torwarttrikot, Nummern-/Namensfarben und direkte Nutzung im 3D-Match.</div>
+      <div class="identity-future-note">Farben lassen sich zwischen Vereinsfarben, Wappenrand sowie Heim- und Auswärtstrikot exakt kopieren. Die Trikotmuster werden auch in den 3D-Highlights verwendet.</div>
     </div>
 
     <button id="saveClubIdentity" class="primary identity-save" type="button">Vereinsidentität speichern</button>
@@ -2064,9 +2064,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2104"></script>
-<script src="./chem-boosts.js?v=2104"></script>
-<script src="./playstyles.js?v=2104"></script>
+<script src="./3d-highlights.js?v=2105"></script>
+<script src="./chem-boosts.js?v=2105"></script>
+<script src="./playstyles.js?v=2105"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -3230,7 +3230,7 @@ function sbcGroupBannerHTML(group,rows){
 
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
 function defaultClubIdentity(){return{
- crest:{shape:"shield",symbol:"star",primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff",initials:"F"},
+ crest:{shape:"shield",symbol:"star",primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff",borderColor:"#d8ff3e",borderWidth:"medium",initials:"F"},
  colors:{primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff"},
  kits:{
   home:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"},
@@ -3240,8 +3240,8 @@ function defaultClubIdentity(){return{
 function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
- const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
- return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
+ const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
+ return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
 }
 function ensureClubIdentityState(){
  state.profile=state.profile||{};
@@ -5761,12 +5761,12 @@ function renderClub(){
  $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}${i.tradeable?"":'<span class="club-untradeable-badge" title="Untauschbar" aria-label="Untauschbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tauschbar":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
-let clubSection="players",identityTab="general",clubIdentityDraft=null;
-const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F",eagle:"🦅",lion:"🦁",wolf:"🐺",flame:"🔥",trophy:"🏆",anchor:"⚓",castle:"♜",sun:"☀",moon:"☾",cross:"✚",comet:"✦",skull:"☠"};
+let clubSection="players",identityTab="general",clubIdentityDraft=null,identityColorClipboard=null,identityColorPointer=null,identityColorSuppressTapUntil=0;
+const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F",eagle:"🦅",lion:"🦁",wolf:"🐺",flame:"🔥",trophy:"🏆",anchor:"⚓",castle:"♜",sun:"☀",moon:"☾",cross:"✚",comet:"✦",skull:"☠",bull:"🐂",bear:"🐻",fox:"🦊",horse:"♞",dragon:"🐉",shark:"🦈",snake:"🐍",owl:"🦉",scorpion:"🦂",swords:"⚔",shieldmark:"🛡",fleur:"⚜",gear:"⚙",mountain:"▲",trident:"♆",target:"◎",waves:"≋",ram:"🐏"};
 function makeClubIdentityDraft(){ensureClubIdentityState();return{clubName:String(state.profile.clubName||"Footera Club"),clubShortName:String(state.profile.clubShortName||"FTR"),identity:clubIdentitySnapshot()}}
 function crestHTML(identity,mini=false){
  const x=cleanClubIdentity(identity),c=x.crest,g=CREST_SYMBOLS[c.symbol]||"★";
- return `<div class="club-crest shape-${c.shape}${mini?" kit-badge-mini":""}" style="--crest-primary:${c.primary};--crest-secondary:${c.secondary};--crest-accent:${c.accent}"><span class="club-crest-symbol">${esc(g)}</span><span class="club-crest-initials">${esc(c.initials)}</span></div>`
+ return `<div class="club-crest shape-${c.shape} border-${c.borderWidth}${mini?" kit-badge-mini":""}" style="--crest-primary:${c.primary};--crest-secondary:${c.secondary};--crest-accent:${c.accent};--crest-border:${c.borderColor}"><span class="club-crest-symbol">${esc(g)}</span><span class="club-crest-initials">${esc(c.initials)}</span></div>`
 }
 function kitHTML(kit,mini=false){
  const k=kit||defaultClubIdentity().kits.home;
@@ -5795,12 +5795,12 @@ function renderClubIdentityPreview(){
  if($("identityColorChipSecondary"))$("identityColorChipSecondary").style.background=x.colors.secondary;
  if($("identityColorChipAccent"))$("identityColorChipAccent").style.background=x.colors.accent;
  document.querySelectorAll("[data-crest-shape]").forEach(b=>b.classList.toggle("active",b.dataset.crestShape===x.crest.shape));
- document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol))
+ document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol));renderIdentityColorTools()
 }
 function renderClubIdentity(){
  if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
  const set=(id,val)=>{const el=$(id);if(el&&document.activeElement!==el)el.value=val};
- set("identityClubName",d.clubName);set("identityClubShortName",d.clubShortName);set("identityCrestInitials",x.crest.initials);
+ set("identityClubName",d.clubName);set("identityClubShortName",d.clubShortName);set("identityCrestInitials",x.crest.initials);set("identityCrestBorderColor",x.crest.borderColor);set("identityCrestBorderWidth",x.crest.borderWidth);
  set("identityColorPrimary",x.colors.primary);set("identityColorSecondary",x.colors.secondary);set("identityColorAccent",x.colors.accent);
  set("identityHomePattern",x.kits.home.pattern);set("identityHomePrimary",x.kits.home.shirtPrimary);set("identityHomeSecondary",x.kits.home.shirtSecondary);set("identityHomeShorts",x.kits.home.shorts);set("identityHomeSocks",x.kits.home.socks);
  set("identityAwayPattern",x.kits.away.pattern);set("identityAwayPrimary",x.kits.away.shirtPrimary);set("identityAwaySecondary",x.kits.away.shirtSecondary);set("identityAwayShorts",x.kits.away.shorts);set("identityAwaySocks",x.kits.away.socks);
@@ -5813,8 +5813,8 @@ $("identityCrestSymbols")?.addEventListener("click",e=>{const b=e.target.closest
 function bindIdentityInput(id,apply,event="input"){$(id)?.addEventListener(event,e=>{if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();apply(e.target.value,clubIdentityDraft);renderClubIdentityPreview()})}
 bindIdentityInput("identityClubName",(v,d)=>d.clubName=String(v).slice(0,30));
 bindIdentityInput("identityClubShortName",(v,d)=>d.clubShortName=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
-bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5));
-bindIdentityInput("identityColorPrimary",(v,d)=>{d.identity.colors.primary=v;d.identity.crest.primary=v});
+bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5));bindIdentityInput("identityCrestBorderColor",(v,d)=>d.identity.crest.borderColor=v);bindIdentityInput("identityCrestBorderWidth",(v,d)=>d.identity.crest.borderWidth=v,"change");
+bindIdentityInput("identityColorPrimary",(v,d)=>{const old=d.identity.colors.primary;if(d.identity.crest.borderColor===old)d.identity.crest.borderColor=v;d.identity.colors.primary=v;d.identity.crest.primary=v});
 bindIdentityInput("identityColorSecondary",(v,d)=>{d.identity.colors.secondary=v;d.identity.crest.secondary=v});
 bindIdentityInput("identityColorAccent",(v,d)=>{d.identity.colors.accent=v;d.identity.crest.accent=v});
 for(const side of ["Home","Away"]){
@@ -5825,6 +5825,37 @@ for(const side of ["Home","Away"]){
  bindIdentityInput("identity"+side+"Shorts",(v,d)=>d.identity.kits[key].shorts=v);
  bindIdentityInput("identity"+side+"Socks",(v,d)=>d.identity.kits[key].socks=v)
 }
+function identityColorFieldInput(node){const field=node?.closest?.(".identity-field");return field?.querySelector?.('input[type="color"]')||null}
+function applyIdentityTransferredColor(input,color){
+ const value=safeClubHex(color,"");if(!input||input.type!=="color"||!value)return false;
+ input.value=value;input.dispatchEvent(new Event("input",{bubbles:true}));renderIdentityColorTools();return true
+}
+function clearIdentityColorDropTargets(){document.querySelectorAll("#clubIdentitySection .identity-color-field.color-drop-target").forEach(x=>x.classList.remove("color-drop-target"))}
+function renderIdentityColorTools(){
+ document.querySelectorAll("#clubIdentitySection input[type='color']").forEach(input=>{
+  const field=input.closest(".identity-field");if(!field)return;field.classList.add("identity-color-field");
+  let chip=field.querySelector(".identity-color-transfer[data-color-id='"+input.id+"']");
+  if(!chip){
+   chip=document.createElement("span");chip.className="identity-color-transfer";chip.dataset.colorId=input.id;chip.draggable=true;chip.tabIndex=0;chip.setAttribute("role","button");chip.setAttribute("aria-label","Farbe ziehen oder antippen zum Kopieren");
+   chip.innerHTML='<i aria-hidden="true"></i><b></b><small>Ziehen / tippen</small>';field.append(chip)
+  }
+  const value=safeClubHex(input.value,"#000000");chip.style.setProperty("--transfer-color",value);chip.querySelector("b").textContent=value.toUpperCase();chip.classList.toggle("clipboard-source",identityColorClipboard?.sourceId===input.id)
+ })
+}
+const identityColorShell=$("clubIdentitySection");
+identityColorShell?.addEventListener("dragstart",e=>{const chip=e.target.closest(".identity-color-transfer");if(!chip)return;const input=$(chip.dataset.colorId),color=safeClubHex(input?.value,"");if(!color)return;e.dataTransfer.effectAllowed="copy";e.dataTransfer.setData("text/x-footera-color",color);e.dataTransfer.setData("text/plain",color);chip.classList.add("dragging")});
+identityColorShell?.addEventListener("dragend",e=>{e.target.closest(".identity-color-transfer")?.classList.remove("dragging");clearIdentityColorDropTargets()});
+identityColorShell?.addEventListener("dragover",e=>{const input=identityColorFieldInput(e.target);if(!input)return;e.preventDefault();clearIdentityColorDropTargets();input.closest(".identity-color-field")?.classList.add("color-drop-target");if(e.dataTransfer)e.dataTransfer.dropEffect="copy"});
+identityColorShell?.addEventListener("drop",e=>{const input=identityColorFieldInput(e.target);if(!input)return;e.preventDefault();const color=e.dataTransfer?.getData("text/x-footera-color")||e.dataTransfer?.getData("text/plain");clearIdentityColorDropTargets();if(applyIdentityTransferredColor(input,color)){identityColorClipboard=null;toast("Farbe exakt übernommen.")}});
+identityColorShell?.addEventListener("click",e=>{const chip=e.target.closest(".identity-color-transfer");if(!chip||Date.now()<identityColorSuppressTapUntil)return;e.preventDefault();e.stopPropagation();const input=$(chip.dataset.colorId),color=safeClubHex(input?.value,"");if(!color)return;if(!identityColorClipboard){identityColorClipboard={sourceId:input.id,color};toast(color.toUpperCase()+" kopiert · Zielfarbe antippen.");renderIdentityColorTools();return}if(identityColorClipboard.sourceId===input.id){identityColorClipboard=null;toast("Farbkopie abgebrochen.");renderIdentityColorTools();return}const copied=identityColorClipboard.color;identityColorClipboard=null;if(applyIdentityTransferredColor(input,copied))toast(copied.toUpperCase()+" übernommen.")});
+identityColorShell?.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".identity-color-transfer")){e.preventDefault();e.target.click()}});
+identityColorShell?.addEventListener("pointerdown",e=>{const chip=e.target.closest(".identity-color-transfer");if(!chip||e.pointerType==="mouse")return;e.preventDefault();const input=$(chip.dataset.colorId),color=safeClubHex(input?.value,"");if(!color)return;identityColorPointer={pointerId:e.pointerId,sourceId:input.id,color,startX:e.clientX,startY:e.clientY,moved:false,ghost:null};chip.setPointerCapture?.(e.pointerId)});
+identityColorShell?.addEventListener("pointermove",e=>{const d=identityColorPointer;if(!d||d.pointerId!==e.pointerId)return;const dx=e.clientX-d.startX,dy=e.clientY-d.startY;if(!d.moved&&Math.hypot(dx,dy)>9){d.moved=true;d.ghost=document.createElement("div");d.ghost.className="identity-color-drag-ghost";d.ghost.style.setProperty("--transfer-color",d.color);d.ghost.textContent=d.color.toUpperCase();document.body.append(d.ghost)}if(!d.moved)return;e.preventDefault();d.ghost.style.left=e.clientX+"px";d.ghost.style.top=e.clientY+"px";clearIdentityColorDropTargets();identityColorFieldInput(document.elementFromPoint(e.clientX,e.clientY))?.closest(".identity-color-field")?.classList.add("color-drop-target")},{passive:false});
+function finishIdentityColorPointer(e){
+ const d=identityColorPointer;if(!d||d.pointerId!==e.pointerId)return;if(d.moved){const input=identityColorFieldInput(document.elementFromPoint(e.clientX,e.clientY));if(input&&input.id!==d.sourceId&&applyIdentityTransferredColor(input,d.color))toast(d.color.toUpperCase()+" übernommen.");identityColorSuppressTapUntil=Date.now()+450}
+ d.ghost?.remove();clearIdentityColorDropTargets();identityColorPointer=null
+}
+identityColorShell?.addEventListener("pointerup",finishIdentityColorPointer);identityColorShell?.addEventListener("pointercancel",finishIdentityColorPointer);
 $("saveClubIdentity")?.addEventListener("click",()=>{
  if(!clubIdentityDraft)return;
  const name=String(clubIdentityDraft.clubName||"").trim(),short=String(clubIdentityDraft.clubShortName||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
@@ -8882,7 +8913,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.04";
+const GFUT_BUILD="V21.05";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8935,7 +8966,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2104",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2105",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8949,11 +8980,11 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2104"></script>
+<script src="./champions-system.js?v=2105"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2104"></script>
-<script src="./chem-boosts-ui.js?v=2104"></script>
+<script src="./3d-highlights-match.js?v=2105"></script>
+<script src="./chem-boosts-ui.js?v=2105"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
