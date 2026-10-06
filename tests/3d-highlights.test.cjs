@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.00 shell includes Champions without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.01 shell includes Champions without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2100','3d-highlights-match.js?v=2100','3d-highlights-scene.mjs?v=2100','3d-highlights.css?v=2100','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-00'));assert.ok(html.includes('service-worker.js?v=2100'));
+ for(const file of ['3d-highlights.js?v=2101','3d-highlights-match.js?v=2101','3d-highlights-scene.mjs?v=2101','3d-highlights.css?v=2101','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-01'));assert.ok(html.includes('service-worker.js?v=2101'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -74,18 +74,24 @@ test('period flags control sides, including stoppage time, with no per-highlight
  }
  for(const period of [1,2,3,4])assert.equal(H.getAttackDirection('home',period),-H.getAttackDirection('away',period));
 });
-test('the whole match space rotates together; all camera distances and quality-independent paths stay wide',async()=>{
+test('the whole match space rotates together; the permanent broadcast camera stays close without shot zoom',async()=>{
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=90);assert.ok(c.position[0]>58&&c.position[1]>38);assert.equal(c.fov,33);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=72);assert.ok(c.position[0]>54&&c.position[1]>32);assert.equal(c.fov,32);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
- const early=cameraState(1,0,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(late.distance<early.distance);assert.notEqual(late.target[0],early.target[0]);
+ const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(Math.abs(early.distance-shot.distance)<.001&&Math.abs(shot.distance-late.distance)<.001);assert.notEqual(late.target[0],early.target[0]);
+ const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
  assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
  assert.ok(keeperPose('big_chance_saved',6.65).dive>.95);
  assert.equal(keeperPose('big_chance_saved',8).land,1);
  assert.ok(keeperPose('big_chance_saved',9.5).tilt<.2);
  for(let i=0;i<RUNS.length;i++)assert.notDeepEqual(runPosition(i,0),runPosition(i,4));
+});
+test('configured kit pattern and all saved colours survive the immutable highlight snapshot',()=>{
+ const snap=H.snapshot({...event(),homeColor:'#123456',homeSecondary:'#abcdef',homePattern:'stripes',homeShorts:'#654321',homeSocks:'#111111',homeKitConfigured:true,awayColor:'#eeeeee',awaySecondary:'#222222',awayPattern:'halves',awayShorts:'#333333',awaySocks:'#444444',awayKitConfigured:true});
+ assert.deepEqual({homeColor:snap.homeColor,homeSecondary:snap.homeSecondary,homePattern:snap.homePattern,homeShorts:snap.homeShorts,homeSocks:snap.homeSocks,homeKitConfigured:snap.homeKitConfigured},{homeColor:'#123456',homeSecondary:'#abcdef',homePattern:'stripes',homeShorts:'#654321',homeSocks:'#111111',homeKitConfigured:true});
+ assert.deepEqual({awayColor:snap.awayColor,awaySecondary:snap.awaySecondary,awayPattern:snap.awayPattern,awayShorts:snap.awayShorts,awaySocks:snap.awaySocks,awayKitConfigured:snap.awayKitConfigured},{awayColor:'#eeeeee',awaySecondary:'#222222',awayPattern:'halves',awayShorts:'#333333',awaySocks:'#444444',awayKitConfigured:true});
 });
 test('similar team colours select contrasting complete kits',async()=>{
  const {kitColors}=await import('../3d-highlights-scene.mjs');
