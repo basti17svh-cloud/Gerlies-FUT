@@ -49,5 +49,13 @@ function queueMatchChance3D(shot){
  });
  // Hidden tabs must not leave a suspended animation blocking the match.
  document.addEventListener('visibilitychange',()=>{if(document.hidden)match3DQueue?.skip()});
- window.addEventListener('pagehide',cancelMatch3D);
+ window.addEventListener('pagehide',()=>{
+  const pending=!!match?.highlight3DPending;cancelMatch3D();
+  if(pending&&match){match.highlightActive=false;match.highlight3DResume=true}
+ });
+ window.addEventListener('pageshow',()=>{
+  if(!match?.highlight3DResume)return;delete match.highlight3DResume;
+  updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!match.paused);
+  if(!match.paused&&!match.finished)startMatchTimer();
+ });
 })();

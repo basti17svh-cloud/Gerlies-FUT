@@ -67,6 +67,9 @@ async function force(page,type){
   await fixture(page);await force(page,'big_chance_saved');await page.waitForSelector('.fh3d canvas');
   await page.locator('.fh3d canvas').evaluate(c=>c.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
   await page.waitForSelector('.fh3d',{state:'detached'});check('WebGL context failure resumes fallback',await page.evaluate(()=>!match.highlight3DPending&&matchTimer!==null&&match.home===0));
+  await fixture(page);await force(page,'goal');await page.waitForSelector('.fh3d canvas');
+  await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.dispatchEvent(new Event('pageshow'))});
+  await page.waitForSelector('.fh3d',{state:'detached'});check('back/forward page restore cannot strand an active goal',await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&matchTimer!==null&&match.home===1));
   // No supported WebGL context at all (separate page so the prototype can be restored safely).
   const fallback=await context.newPage();await fallback.route('**/*',route=>route.request().url().startsWith(url)?route.continue():route.abort());
   await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args)}});
