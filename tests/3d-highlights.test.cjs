@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V20.97 shell includes Champions without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V20.98 shell includes Champions without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2097','3d-highlights-match.js?v=2097','3d-highlights-scene.mjs?v=2097','3d-highlights.css?v=2097','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v20-97'));assert.ok(html.includes('service-worker.js?v=2097'));
+ for(const file of ['3d-highlights.js?v=2098','3d-highlights-match.js?v=2098','3d-highlights-scene.mjs?v=2098','3d-highlights.css?v=2098','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v20-98'));assert.ok(html.includes('service-worker.js?v=2098'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -78,7 +78,7 @@ test('the whole match space rotates together; all camera distances and quality-i
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  const c=cameraState(d,t,aspect);assert.ok(c.distance>=MIN_CAMERA_DISTANCE);assert.ok(c.position[0]>70&&c.position[1]>50);assert.equal(c.fov,30);
+  const c=cameraState(d,t,aspect);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=92);assert.ok(c.position[0]>60&&c.position[1]>42);assert.equal(c.fov,32);
   for(const type of H.TYPES){const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
  assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
