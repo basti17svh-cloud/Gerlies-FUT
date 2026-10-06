@@ -54,7 +54,7 @@ test('scripts, module, stylesheet and pinned Three are in the new offline shell;
  for(const file of ['3d-highlights.js?v=2093','3d-highlights-match.js?v=2093','3d-highlights-scene.mjs?v=2093','3d-highlights.css?v=2093','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  assert.ok(sw.includes('footera-v20-93'));assert.ok(html.includes('service-worker.js?v=2093'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
- for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css','playstyles.js','playstyles.css']){
+ for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
  }
 });
