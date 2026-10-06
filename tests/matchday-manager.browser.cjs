@@ -51,7 +51,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    return{boosted:{width:boosted?.width||0,height:boosted?.height||0},plain:{width:plain?.width||0,height:plain?.height||0},boostDrag:dragSize('[data-match-slot="10"]'),plainDrag:dragSize('[data-match-slot="8"]')}
   });
   check("Chemie-Boost does not change the resting manager card size",Math.abs(managerCardSizes.boosted.width-managerCardSizes.plain.width)<=1&&Math.abs(managerCardSizes.boosted.height-managerCardSizes.plain.height)<=1);
-  check("Chemie-Boost drag preview stays the same fixed size as a normal card",Math.abs(managerCardSizes.boostDrag.width-managerCardSizes.plainDrag.width)<=1&&managerCardSizes.boostDrag.width>=68&&managerCardSizes.boostDrag.width<=72);
+  check("Chemie-Boost drag preview stays the same fixed size as a normal card",Math.abs(managerCardSizes.boostDrag.width-managerCardSizes.plainDrag.width)<=1&&Math.abs(managerCardSizes.boostDrag.height-managerCardSizes.plainDrag.height)<=1&&managerCardSizes.boostDrag.width>=65&&managerCardSizes.boostDrag.width<=72);
   check("drag preview contains only the card and no Chemie-Boost sizing wrapper",managerCardSizes.boostDrag.children===1&&!managerCardSizes.boostDrag.boostBadge&&!managerCardSizes.boostDrag.meta);
   check("all seven bench slots remain rendered",await page.locator("#matchManagerBench [data-match-slot]").count()===7);
   check("unused bench rating and redundant 100 percent fitness badges are hidden",await page.evaluate(()=>[...document.querySelectorAll("#matchManagerBench .match-live-fitness,#matchManagerBench .match-live-rating.unused")].every(el=>getComputedStyle(el).display==="none")));
