@@ -60,9 +60,9 @@ function queueMatch3D(event){
   });
  }
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
- const home=identity?.kits?.home;
+ const home=current.kickoffKits?.home||identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
- const away=opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
+ const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const presentation={...event};
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});

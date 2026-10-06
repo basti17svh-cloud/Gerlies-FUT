@@ -16,8 +16,12 @@ const out=path.join(__dirname,'../test-artifacts');
   async function capture(name,type,time,period=1,width=1280,configuredKits=false){
    await page.setViewportSize({width,height:1000});await fixture(page);
    if(configuredKits)await page.evaluate(()=>{
-    state.profile.clubIdentity.kits.home={pattern:'stripes',shirtPrimary:'#b20d35',shirtSecondary:'#f5f2e7',shorts:'#101820',socks:'#b20d35'};
-    match.opponentProfile.clubIdentity={kits:{away:{pattern:'halves',shirtPrimary:'#1260aa',shirtSecondary:'#f0cf3d',shorts:'#1260aa',socks:'#f0cf3d'}}};
+    // Reproduce the saved FC Gerlies-style dark green/bordeaux diagonal kit at
+    // kickoff; V21.04 intentionally ignores later profile mutations mid-match.
+    match.kickoffKits={
+     home:{pattern:'diagonal',shirtPrimary:'#053300',shirtSecondary:'#800000',shorts:'#111714',socks:'#ffffff'},
+     away:{pattern:'halves',shirtPrimary:'#f1f4f2',shirtSecondary:'#173627',shorts:'#f1f4f2',socks:'#173627'}
+    };
    });
    await page.evaluate(p=>{match.halftimeLogged=p>1;match.extraTimeStarted=p>2;match.extraTimeBreakLogged=p>3;match.minute=p===1?38:p===2?67:p===3?98:113;updateMatchUI();qaFrames.clear();qaHold=true},period);
    // The real simulation fixture creates the immutable authoritative event.
@@ -40,7 +44,7 @@ const out=path.join(__dirname,'../test-artifacts');
   await capture('06-home-second-half','goal',4.8,2);
   await capture('07-mobile-open-play-390','goal',2,1,390);
   await capture('08-mobile-save-390','big_chance_saved',6.82,2,390);
-  await capture('09-mobile-configured-kits-390','goal',4.8,1,390,true);
+  await capture('09-mobile-configured-kits-390','goal',2.7,1,390,true);
   }
   // High-DPI quality is verified by the captures above. The software-only CI GPU
   // is not representative of a capable handset for a real-time DPR 2 run, so the
@@ -60,7 +64,7 @@ const out=path.join(__dirname,'../test-artifacts');
   // Independently inspect actual rendered meshes, projection and glove contact.
   const checks=await page.evaluate(async()=>{
    const originalRandom=Math.random;let randomCalls=0;Math.random=()=>{randomCalls++;return originalRandom()};
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2103'),rows=[];
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2104'),rows=[];
    const canvas=document.createElement('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(1);
    for(const weak of [true,false])for(const period of [1,2,3,4]){
     const event=FooteraHighlights.snapshot({id:'qa',type:'big_chance_saved',playerName:'Jamal Musiala',keeperName:'Mike Maignan',team:'home',period});
