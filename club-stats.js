@@ -1,7 +1,7 @@
-/* Footera V20.44 — Verein-Hub + Vereinsidentität + karteninstanzbezogene Statistiken */
+/* Footera V20.95 — Verein-Hub + Vereinsidentität + karteninstanzbezogene Statistiken */
 (()=>{
  const STAT_VERSION=1;
- const STAT_MODE_LABELS={all:"Gesamt",squad:"Squad Battles",rivals:"Division Rivals",friendly:"Freundschaft",weekend:"Weekend League"};
+ const STAT_MODE_LABELS={all:"Gesamt",squad:"Squad Battles",rivals:"Division Rivals",friendly:"Freundschaft",weekend:"Champions"};
  const EMPTY_STAT=()=>({matches:0,starts:0,subApps:0,minutes:0,goals:0,assists:0,ratingTotal:0,ratedMatches:0,motm:0,yellow:0,red:0,saves:0,conceded:0,cleanSheets:0});
  let clubArea="hub",statsMode="all",statsTab="players",statsMetric="goals";
 
