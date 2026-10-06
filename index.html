@@ -8344,6 +8344,13 @@ function ownLineupHTML(){
  const reserve=items.slice(18,23).map((item,k)=>card(item,k+18,`Reserve ${k+1}`)).join('');
  return{m,pitch,bench,reserve}
 }
+function previewRolesHTML(){
+ const form=currentFormation(),items=squadItems();
+ return items.slice(0,11).map((item,i)=>{
+  const base=item?displayBase(item):null,slot=form[i]?.p||"",roles=ROLE_OPTIONS[slot]||["Balanced"],role=state.roles[i]&&roles.includes(state.roles[i])?state.roles[i]:roles[0],focus=FOCUS_OPTIONS.includes(state.focus[i])?state.focus[i]:"Balanced";
+  return `<div class="preview-role-row"><div class="preview-role-player"><b>${esc(positionLabel(slot,base))}</b><span>${base?esc(base.name):"Leer"}</span></div><label><span>Rolle</span><select data-preview-role="${i}" ${base?"":"disabled"}>${roles.map(r=>`<option value="${esc(r)}" ${r===role?"selected":""}>${esc(roleLabel(r))}</option>`).join("")}</select></label><label><span>Fokus</span><select data-preview-focus="${i}" ${base?"":"disabled"}>${FOCUS_OPTIONS.map(f=>`<option value="${esc(f)}" ${f===focus?"selected":""}>${esc(focusLabel(f))}</option>`).join("")}</select></label></div>`
+ }).join("")
+}
 function refreshOpenMatchPreview(){
  if(squadBattleStage!=="preview"||!pendingMatchContext||!$("squadBattleModal").classList.contains("active"))return;
  const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
@@ -8351,7 +8358,8 @@ function refreshOpenMatchPreview(){
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
  const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${replay?" · BEREITS GEWERTET · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><label class="preview-tactic-control" for="previewTacticSelect"><span>Taktik vor dem Anpfiff<small>Für diese Mannschaft gespeichert und im Spiel jederzeit anpassbar.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ const formationOptions=Object.keys(FORMATIONS).map(key=>`<option value="${esc(key)}" ${key===state.formation?"selected":""}>${esc(key)}</option>`).join("");
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
  pendingMatchContext={mode,opponent};previewSwapFrom=-1;squadBattleStage="preview";
@@ -8424,9 +8432,25 @@ document.addEventListener("pointerup",e=>{
 document.addEventListener("pointercancel",e=>{if(previewDrag?.pointerId===e.pointerId)clearPreviewDrag()},{passive:true});
 $("squadBattleModalBody").addEventListener("change",e=>{
  if(e.target.id==="sbDifficulty"){state.squadBattle.difficulty=e.target.value in SB_DIFFICULTIES?e.target.value:"pro";save();return}
- if(e.target.id!=="previewTacticSelect")return;
- state.tactic=["balanced","attacking","defensive"].includes(e.target.value)?e.target.value:"balanced";
- save();toast(`Taktik: ${e.target.selectedOptions[0]?.textContent||"Ausgeglichen"}.`)
+ if(e.target.id==="previewFormationSelect"){
+  const formation=e.target.value;if(!FORMATIONS[formation])return;
+  const selected=squadItems().filter(Boolean);
+  state.formation=formation;state.roles={};state.focus={};state.squad=arrangeSquad(selected,formation);
+  previewSwapFrom=-1;save();renderAll();refreshOpenMatchPreview();toast(`Formation ${formation} eingestellt.`);return
+ }
+ if(e.target.id==="previewTacticSelect"){
+  state.tactic=["balanced","attacking","defensive"].includes(e.target.value)?e.target.value:"balanced";
+  save();toast(`Taktik: ${e.target.selectedOptions[0]?.textContent||"Ausgeglichen"}.`);return
+ }
+ const role=e.target.closest("[data-preview-role]"),focus=e.target.closest("[data-preview-focus]");
+ if(role){
+  const index=Number(role.dataset.previewRole),slot=currentFormation()[index]?.p||"",roles=ROLE_OPTIONS[slot]||[];
+  if(Number.isInteger(index)&&roles.includes(role.value)){state.roles[index]=role.value;save();toast(`Rolle: ${roleLabel(role.value)}.`)}return
+ }
+ if(focus){
+  const index=Number(focus.dataset.previewFocus);
+  if(Number.isInteger(index)&&FOCUS_OPTIONS.includes(focus.value)){state.focus[index]=focus.value;save();toast(`Fokus: ${focusLabel(focus.value)}.`)}
+ }
 });
 $("squadBattleModalBody").addEventListener("click",e=>{
  if(suppressPreviewClick)return;
