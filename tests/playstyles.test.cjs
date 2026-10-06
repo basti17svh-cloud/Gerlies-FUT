@@ -62,7 +62,7 @@ assert(index.includes("./playstyles.js?v=2093"),"PlayStyle-Script ist nicht eing
 assert(index.includes("./playstyles.css?v=2094"),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");
 assert(index.includes("FooteraPlayStyles.profileHTML(item,b)"),"Spielerbiografie zeigt PlayStyles nicht an");
-assert(index.includes('const GFUT_BUILD="V20.94"'),"Build wurde nicht auf V20.93 erhöht");
+assert(index.includes('const GFUT_BUILD="V20.94"'),"Build wurde nicht auf V20.94 erhöht");
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 assert(sw.includes("./playstyles.js?v=2093")&&sw.includes("./playstyles.css?v=2094"),"Service Worker cached PlayStyle-Dateien nicht");
