@@ -38,7 +38,7 @@
 /* V20.98: full live picture with overlay HUD; no reserved empty footer. */
 .fh3d canvas{top:54px;bottom:0;height:calc(100% - 54px)}
 .fh3d::before{background:linear-gradient(180deg,#132329 0 45px,transparent 54px,transparent 72%,#07101870 100%)}
-.fh3d::after{box-shadow:none}
+.fh3d::after{box-shadow:inset 0 0 48px #00000032,inset 0 -24px 42px #00000024}
 #match.highlight3d-pending .match-live-stage{height:clamp(390px,calc(43vw + 54px),560px);min-height:390px}
 @media(max-width:560px){
  #match.highlight3d-pending .match-live-stage{height:clamp(370px,104vw,455px);min-height:370px;max-height:455px}
