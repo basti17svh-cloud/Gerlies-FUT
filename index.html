@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.94</title>
+<title>Footera V20.95</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1646,6 +1646,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="play-team-box"><div class="play-squad-selector"><strong>Dein Team für das nächste Spiel</strong><div id="playSquadPresets" class="squad-preset-tabs"></div></div><p id="playLock" class="play-lock" aria-live="polite"></p></div>
   <div id="playModeHub" class="play-hub" aria-label="Spielmodi">
    <button type="button" class="play-hub-tile play-rivals" data-play-mode="rivals"><span class="play-kicker">WETTBEWERB</span><strong>Division Rivals</strong><span class="play-tile-copy">Dein Weg durch die Divisionen</span><span id="playRivalsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">DR</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
+   <button type="button" class="play-hub-tile play-champions" data-play-mode="champions"><span class="play-kicker">FINALS</span><strong>Footera Champions</strong><span class="play-tile-copy">15 Spiele. Ein Wochenende. Dein Rang.</span><span id="playChampionsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">CH</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-squad" data-play-mode="squad"><span class="play-kicker">WOCHENWETTBEWERB</span><strong>Squad Battles</strong><span class="play-tile-copy">Dein Team gegen die KI</span><span id="playSquadSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">SB</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-random" data-play-mode="friendly-random"><span class="play-kicker">FREUNDSCHAFTSSPIEL</span><strong>Zufälliger Gegner</strong><span class="play-tile-copy">Teste dein Team ohne Rangdruck</span><span id="playRandomSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">VS</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-friends" data-play-mode="friendly-friend"><span class="play-kicker">DEINE FREUNDE</span><strong>Gegen Freund</strong><span class="play-tile-copy">Teams vergleichen und Duelle spielen</span><span id="playFriendsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">DUO</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
@@ -1660,6 +1661,14 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
      <section class="play-box"><h4>Deine Statistik</h4><div id="playRivalsStats"></div></section>
      <section class="play-box"><details><summary>Divisionen &amp; Aufstieg</summary><div id="playRivalsRanks" class="play-rank-list"></div></details></section>
      <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Bereit für deinen Rivalen?</h4><p>Prüfe deine Aufstellung und Taktik vor dem Anpfiff.</p><button class="primary startmode" data-mode="rivals">Aufstellung ansehen</button></section>
+    </article>
+    <article class="mode play-mode-panel champions-mode" data-play-panel="champions" hidden>
+     <section class="play-box play-standing champions-standing"><span class="play-kicker">CHAMPIONS FINALS</span><div id="championsRecord" class="record"></div></section>
+     <section class="play-box"><h4>Qualifikation</h4><div id="championsQualification"></div></section>
+     <section class="play-box"><h4>Belohnungen</h4><div id="championsRewards"></div></section>
+     <section class="play-box"><h4>Deine Statistik</h4><div id="playChampionsStats"></div></section>
+     <section class="play-box"><details><summary>Alle Ränge &amp; Rewards</summary><div id="championsRanks" class="play-rank-list"></div></details></section>
+     <section class="play-box play-start-box champions-start"><span class="play-kicker">FREITAG 19:00 – MONTAG 09:00</span><h4>Dein Champions-Run</h4><p>15 Spiele. Kein Unentschieden. Die KI passt sich deinem laufenden Record an.</p><button class="primary startmode" data-mode="champions">Champions öffnen</button></section>
     </article>
     <article class="mode play-mode-panel" data-play-panel="squad" hidden>
      <section class="play-box play-standing"><span class="play-kicker">DEIN WOCHENRANG</span><div id="sbRecord" class="record"></div></section>
@@ -3245,7 +3254,7 @@ function ensureClubIdentityState(){
 function clubIdentitySnapshot(){ensureClubIdentityState();return JSON.parse(JSON.stringify(state.profile.clubIdentity))}
 function baseState(){return{
  version:123,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
- stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
+ stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,championsMatches:0,championsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},champions:null,squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
  roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],chemBoostInventory:{},pendingChemBoosts:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
@@ -7282,7 +7291,7 @@ function startMatch(mode,opponent=null){
  $("eventBanner").classList.remove("active");
  resetMatchPresentation();
  $("matchHomeName").textContent=matchHomeTeamName();$("oppName").textContent=name;
- $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="squad"?"Squad Battles":"Freundschaftsspiel";
+ $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":"Freundschaftsspiel";
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
@@ -8066,17 +8075,18 @@ function finishMatch(){
  let reward=0,resultKey="loss";
  if(homeWon){
   resultKey="win";state.stats.wins++;if(isFriendly)state.stats.friendlyWins=(state.stats.friendlyWins||0)+1;
-  reward=isFriendly?0:(match.mode==="rivals"?750:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:700));
+  reward=isFriendly?0:(match.mode==="rivals"?750:match.mode==="champions"?championsMatchCoins("win"):(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:700));
   // Division progression and weekly points are recorded once below.
  }else if(!awayWon){
   resultKey="draw";state.stats.draws++;reward=match.mode==="rivals"?610:0
  }else{
-  state.stats.losses++;reward=isFriendly?0:(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.loss:465)
+  state.stats.losses++;reward=isFriendly?0:(match.mode==="champions"?championsMatchCoins("loss"):(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.loss:465))
  }
  if(!isFriendly){
   state.stats.competitiveMatches=(state.stats.competitiveMatches||0)+1;
   if(resultKey==="win")state.stats.competitiveWins=(state.stats.competitiveWins||0)+1;
   if(match.mode==="rivals"){state.stats.rivalsMatches=(state.stats.rivalsMatches||0)+1;if(resultKey==="win")state.stats.rivalsWins=(state.stats.rivalsWins||0)+1}
+  if(match.mode==="champions"){state.stats.championsMatches=(state.stats.championsMatches||0)+1;if(resultKey==="win")state.stats.championsWins=(state.stats.championsWins||0)+1}
   if(match.mode==="squad"){state.stats.squadMatches=(state.stats.squadMatches||0)+1;if(resultKey==="win")state.stats.squadWins=(state.stats.squadWins||0)+1}
  }
  const competitionProgress=recordCompetitionMatch(match.mode,resultKey,match.home,match.away,match.opponentProfile,match.battleDifficulty);
@@ -8085,7 +8095,7 @@ function finishMatch(){
  if(!isFriendly&&(!state.coinBoost||state.coinBoost.games<=0)&&state.coinBoostQueue?.length)state.coinBoost=state.coinBoostQueue.shift();
  if(!isFriendly&&state.coinBoost?.games>0&&state.coinBoost?.amount>0){boostCoins=Number(state.coinBoost.amount||0);state.coinBoost.games=Math.max(0,Number(state.coinBoost.games||0)-1)}
  state.coins+=reward+boostCoins;
- const squadSp=match.mode==="squad"&&match.opponentProfile?.sp?Math.round(match.opponentProfile.sp*(resultKey==="win"?1:resultKey==="draw"?.7:.45)):80;state.sp=(state.sp||0)+(isFriendly?0:(match.mode==="rivals"?120:squadSp));
+ const squadSp=match.mode==="squad"&&match.opponentProfile?.sp?Math.round(match.opponentProfile.sp*(resultKey==="win"?1:resultKey==="draw"?.7:.45)):80;state.sp=(state.sp||0)+(isFriendly?0:(match.mode==="rivals"?120:match.mode==="champions"?150:squadSp));
  progressEvolution(resultKey);claimSeasonRewards();save();
  recordEventObjectiveMatch(match,resultKey);
  $("managerPanel").classList.remove("active");
@@ -8297,6 +8307,7 @@ function rivalsOpponentLevel(){
 }
 function oneOffOpponent(mode){
  const m=squadMetrics(),base=Math.max(62,m.rating||72),stamp=Date.now();
+ if(mode==="champions")return championsOpponent();
  if(mode==="rivals"){
   const level=rivalsOpponentLevel(),seed=`rivals|d${level.division}|${stamp}`,span=Math.max(0,level.max-level.min);
   const target=level.min+(hashNum(seed+"|rating")%(span+1)),formations=["4-3-3","4-4-2","4-2-3-1"],formation=formations[hashNum(seed+"|formation")%formations.length];
@@ -8314,7 +8325,7 @@ function ownLineupHTML(){
 }
 function refreshOpenMatchPreview(){
  if(squadBattleStage!=="preview"||!pendingMatchContext||!$("squadBattleModal").classList.contains("active"))return;
- const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={rivals:"Division Rivals",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
+ const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
@@ -8347,7 +8358,7 @@ function renderSquadBattleSelection(historyMode="push"){
  <div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button>${playButton}</div>`;
  squadBattleStage="selection";showUiLayer("squadBattleModal","squad-selection",{},historyMode)
 }
-function openModeEntry(mode){const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
+function openModeEntry(mode){const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="champions"){if(!championsCanStartMatch()){const started=startChampionsRun();if(!started.ok)return toast(started.reason)}if(!championsCanStartMatch())return toast("Champions ist aktuell nicht spielbar.");renderMatchPreview(mode,championsOpponent());return}if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
 function openOpponentTeam(opponent){if(!opponent)return;$("opponentTeamModalBody").dataset.battleEventRelease=opponent.eventReleaseId||"";const formation=FORMATIONS[opponent.formation]?opponent.formation:"4-3-3",form=FORMATIONS[formation],sq=Array.isArray(opponent.squad)?opponent.squad:Array(18).fill(null);$("opponentTeamModalTitle").textContent=opponent.name||"Gegner";$("opponentTeamModalSub").textContent=`${formation} · Rating ${opponent.rating||0} · Chemie ${opponent.chem||0}/33`;const pitch=sq.slice(0,11).map((pl,i)=>{const slot=form[i];if(!pl)return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%"><div class="emptyslot">${slot.p}</div></div>`;const card=opponent.kind==="friend"?friendCard(pl,slot.p,true):cardHTML(pl,opponent.items?.[i]||null,true,opponent.eventReleaseId&&posFit(pl,slot.p)<=0?pl.position:slot.p);return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%">${card}</div>`}).join(""),bench=sq.slice(11,18).map((pl,k)=>`<div>${pl?(opponent.kind==="friend"?friendCard(pl,"BANK",true):cardHTML(pl,opponent.items?.[k+11]||null,true,pl.position)):'<div class="emptyslot">BANK</div>'}</div>`).join("");$("opponentTeamModalBody").innerHTML=`<div class="friend-team-summary"><div class="kpi"><strong>${opponent.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${opponent.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>${opponent.rewards?`<div class="opponent-note">Squad-Battles-Belohnung: Sieg ${fmt(opponent.rewards.win)} Coins · Remis ${fmt(opponent.rewards.draw)} · Niederlage ${fmt(opponent.rewards.loss)}.</div>`:""}`;showUiLayer("opponentTeamModal","opponent-team")}
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
@@ -8820,7 +8831,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.94";
+const GFUT_BUILD="V20.95";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8873,7 +8884,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2094",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2095",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8887,6 +8898,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
+<script src="./champions-system.js?v=2095"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
 <script src="./3d-highlights-match.js?v=2094"></script>
