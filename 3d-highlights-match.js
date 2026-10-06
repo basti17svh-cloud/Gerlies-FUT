@@ -38,8 +38,11 @@ function queueMatch3D(event){
  }
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
  const home=identity?.kits?.home;
- const away=current.opponentProfile?.clubIdentity?.kits?.away;
- const queued=match3DQueue.enqueue({...event,period:FooteraHighlights.getMatchPeriod(current),homeColor:home?.shirtPrimary,awayColor:away?.shirtPrimary,homeShorts:home?.shorts,awayShorts:away?.shorts,homeSocks:home?.socks,awaySocks:away?.socks});
+ const opponentIdentity=current.opponentProfile?.clubIdentity;
+ const away=opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
+ const queued=match3DQueue.enqueue({...event,period:FooteraHighlights.getMatchPeriod(current),
+  homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
+  awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  // The simulation is already authoritative at enqueue time. Keep score, shots
  // and xG synchronized while the presentation layer is playing.
  if(queued){if(typeof updateMatchUI==='function')updateMatchUI(true);const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`}
