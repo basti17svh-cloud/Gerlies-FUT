@@ -147,8 +147,12 @@ export function runPosition(index,time,sequence='central'){
  }
  if(index===1){
   if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
-   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),target=[side*(cutback?27:25.5),cutback?-48:-44.5];
-   if(time<3.65)return lerp([side*18,-23.5],target,smooth(time/3.65));return lerp(target,[side*(cutback?26.2:24.8),target[1]-.8],smooth((time-3.65)/2.4))
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*18,-23.5],target=[side*(cutback?27:25.5),cutback?-48:-44.5];
+   // The winger owns the ball from frame one. The old path started the player
+   // at wideStart while the ball began centrally, which looked like a pass from nobody.
+   if(time<1.65)return lerp([-11,-20.5],wideStart,smooth(time/1.65));
+   if(time<3.65)return lerp(wideStart,target,smooth((time-1.65)/2));
+   return lerp(target,[side*(cutback?26.2:24.8),target[1]-.8],smooth((time-3.65)/2.4))
   }
   if(seq==='one_two'){if(time<2.65)return lerp([-12,-22],[-8,-32.6],smooth(time/2.65));return lerp([-8,-32.6],[-5,-38],smooth((time-2.65)/3.7))}
   if(seq==='through_ball'){if(time<2.35)return lerp([-13,-21.5],[-9,-28.2],smooth(time/2.35));return lerp([-9,-28.2],[-7,-34],smooth((time-2.35)/4.2))}
@@ -186,16 +190,12 @@ export function makeScene(renderer,event,weak=false,high=false){
   function canvasTexture(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const tex=track(new THREE.CanvasTexture(c));tex.colorSpace=THREE.SRGBColorSpace;return tex}
   const shirtMaterials=new Map();
   function shirtMaterial(kit){
-   const primary=hex(kit?.shirt,'#e9ecf3'),secondary=hex(kit?.shirtSecondary,primary),pattern=['solid','stripes','hoops','diagonal','halves','sleeves'].includes(kit?.pattern)?kit.pattern:'solid';
-   const key=[primary,secondary,pattern].join(':');if(shirtMaterials.has(key))return shirtMaterials.get(key);
-   const tex=canvasTexture(128,128,(ctx,w,h)=>{
-    ctx.fillStyle=primary;ctx.fillRect(0,0,w,h);ctx.fillStyle=secondary;
-    if(pattern==='stripes')for(let x=0;x<w;x+=32)ctx.fillRect(x,0,14,h);
-    else if(pattern==='hoops')for(let y=8;y<h;y+=32)ctx.fillRect(0,y,w,14);
-    else if(pattern==='diagonal'){ctx.save();ctx.translate(w/2,h/2);ctx.rotate(-.55);ctx.fillRect(-18,-h,36,h*2);ctx.restore()}
-    else if(pattern==='halves')ctx.fillRect(w/2,0,w/2,h);
-   });tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
-   const material=track(new THREE.MeshStandardMaterial({map:tex,color:'#ffffff',roughness:.74}));shirtMaterials.set(key,material);return material
+   // Keep the torso itself in the exact saved primary colour. Patterns are
+   // separate geometry below; cylinder UV wrapping made diagonal/striped kits
+   // look like a different solid shirt at broadcast distance.
+   const primary=hex(kit?.shirt,'#e9ecf3'),key=primary;if(shirtMaterials.has(key))return shirtMaterials.get(key);
+   const material=track(new THREE.MeshStandardMaterial({color:primary,roughness:.72,metalness:0,emissive:primary,emissiveIntensity:.055}));
+   shirtMaterials.set(key,material);return material
   }
   const hemi=new THREE.HemisphereLight('#e2efff','#657644',2.2);scene.add(hemi);
   const sun=new THREE.DirectionalLight('#fff4d8',2.8);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
@@ -267,12 +267,15 @@ export function makeScene(renderer,event,weak=false,high=false){
   function rounded(w,h,d,color,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),mat(color),parent,x,y,z,w,h,d)}
   function roundedMaterial(w,h,d,material,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:high?18:16,weak?8:high?14:12)),material,parent,x,y,z,w,h,d)}
   function shirtDetail(parent,kit){
-   const secondary=hex(kit?.shirtSecondary,kit?.shirt||'#ffffff');if(secondary.toLowerCase()===String(kit?.shirt||'').toLowerCase())return;
-   const detail=mat(secondary),g=geo('kit-detail',()=>new THREE.BoxGeometry(1,1,1)),add=(x,y,z,w,h,d,rot=0)=>{const n=part(g,detail,parent,x,y,z,w,h,d);n.rotation.z=rot;return n};
-   if(kit.pattern==='stripes')for(const x of [-.13,0,.13]){add(x,1.28,-.119,.045,.38,.012);add(x,1.28,.119,.045,.38,.012)}
-   else if(kit.pattern==='hoops')for(const y of [1.18,1.34,1.47]){add(0,y,-.119,.35,.045,.012);add(0,y,.119,.35,.045,.012)}
-   else if(kit.pattern==='halves'){add(.11,1.29,-.119,.19,.39,.012);add(-.11,1.29,.119,.19,.39,.012)}
-   else if(kit.pattern==='diagonal'){add(0,1.31,-.121,.065,.5,.012,.55);add(0,1.31,.121,.065,.5,.012,.55)}
+   const primary=hex(kit?.shirt,'#ffffff'),secondary=hex(kit?.shirtSecondary,primary),pattern=String(kit?.pattern||'solid');
+   if(secondary.toLowerCase()===primary.toLowerCase()||pattern==='solid'||pattern==='sleeves')return;
+   const detail=mat(secondary,{roughness:.72}),g=geo('kit-detail',()=>new THREE.BoxGeometry(1,1,1)),add=(x,y,z,w,h,d,rot=0)=>{const n=part(g,detail,parent,x,y,z,w,h,d);n.rotation.z=rot;return n};
+   // Match the club-identity preview: secondary areas are deliberately narrow
+   // enough that the saved primary remains recognisable on a small mobile player.
+   if(pattern==='stripes')for(const x of [-.135,0,.135]){add(x,1.29,-.124,.038,.39,.014);add(x,1.29,.124,.038,.39,.014)}
+   else if(pattern==='hoops')for(const y of [1.17,1.32,1.47]){add(0,y,-.124,.35,.035,.014);add(0,y,.124,.35,.035,.014)}
+   else if(pattern==='halves'){add(.105,1.29,-.124,.18,.39,.014);add(-.105,1.29,.124,.18,.39,.014)}
+   else if(pattern==='diagonal'){add(0,1.30,-.126,.05,.52,.014,-.66);add(0,1.30,.126,.05,.52,.014,-.66)}
   }
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
