@@ -49,12 +49,12 @@ const html=ps.profileHTML({},raw);
 assert(/PlayStyles/.test(html)&&/Technik/.test(html),"Spielerprofil muss PlayStyles darstellen");
 
 const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
-assert(index.includes("./playstyles.js?v=2091"),"PlayStyle-Script ist nicht eingebunden");
-assert(index.includes("./playstyles.css?v=2091"),"PlayStyle-CSS ist nicht eingebunden");
+assert(index.includes("./playstyles.js?v=2092"),"PlayStyle-Script ist nicht eingebunden");
+assert(index.includes("./playstyles.css?v=2092"),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");
 assert(index.includes("FooteraPlayStyles.profileHTML(item,b)"),"Spielerbiografie zeigt PlayStyles nicht an");
-assert(index.includes('const GFUT_BUILD="V20.91"'),"Build wurde nicht auf V20.91 erhöht");
+assert(index.includes('const GFUT_BUILD="V20.92"'),"Build wurde nicht auf V20.92 erhöht");
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
-assert(sw.includes("./playstyles.js?v=2091")&&sw.includes("./playstyles.css?v=2091"),"Service Worker cached PlayStyle-Dateien nicht");
+assert(sw.includes("./playstyles.js?v=2092")&&sw.includes("./playstyles.css?v=2092"),"Service Worker cached PlayStyle-Dateien nicht");
 console.log("PlayStyle-System: 36 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");
