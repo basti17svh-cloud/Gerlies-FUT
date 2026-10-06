@@ -1,10 +1,10 @@
 name: Footera 3D Highlights
 on:
   pull_request:
-    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'matchday.css', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', 'tests/matchday*', 'tests/player-profile.test.cjs', 'tests/playstyles.test.cjs', 'tests/chem-boosts.test.cjs', '.github/workflows/highlights-tests.yml']
+    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'matchday.css', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', 'tests/matchday*', 'tests/prematch-editor*', 'tests/player-profile.test.cjs', 'tests/playstyles.test.cjs', 'tests/chem-boosts.test.cjs', '.github/workflows/highlights-tests.yml']
   push:
     branches: [main]
-    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'matchday.css', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', 'tests/matchday*', 'tests/player-profile.test.cjs', 'tests/playstyles.test.cjs', 'tests/chem-boosts.test.cjs', '.github/workflows/highlights-tests.yml']
+    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'matchday.css', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', 'tests/matchday*', 'tests/prematch-editor*', 'tests/player-profile.test.cjs', 'tests/playstyles.test.cjs', 'tests/chem-boosts.test.cjs', '.github/workflows/highlights-tests.yml']
 permissions:
   contents: read
 jobs:
@@ -31,6 +31,7 @@ jobs:
           node tests/3d-highlights.browser.cjs
           node tests/champions.browser.cjs
           node tests/matchday-manager.browser.cjs
+          node tests/prematch-editor.browser.cjs
           node tests/3d-highlights.render.cjs
       - uses: actions/upload-artifact@v4
         if: always()
