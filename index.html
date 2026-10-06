@@ -7268,10 +7268,16 @@ function startMatch(mode,opponent=null){
   opp=Math.max(55,Math.min(94,Math.round(power+(Math.random()*4-4))));name="SQUAD BATTLE XI";
  }
  if(opponentProfile?.squad&&typeof opponentSquadChemistry==="function")opponentProfile={...opponentProfile,chemScores:opponentSquadChemistry(opponentProfile.squad.map(opponentMatchBase),opponentProfile.formation,opponentProfile.items||opponentProfile.squad)};
+ const kickoffHomeIdentity=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null;
+ const kickoffAwayIdentity=opponentProfile?.clubIdentity?cleanClubIdentity(opponentProfile.clubIdentity):null;
+ const kickoffKits={
+  home:kickoffHomeIdentity?.kits?.home?{...kickoffHomeIdentity.kits.home}:null,
+  away:kickoffAwayIdentity?.kits?.away?{...kickoffAwayIdentity.kits.away}:kickoffAwayIdentity?.kits?.home?{...kickoffAwayIdentity.kits.home}:null
+ };
  if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
- mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
+ mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,finished:false,paused:false,
  chemBoostChem:[...(m.chemScores||[])],
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
