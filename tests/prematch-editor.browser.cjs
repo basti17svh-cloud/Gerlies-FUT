@@ -47,7 +47,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    check(`${width}: pre-match editor has no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.editor<=geometry.editorClient+1&&geometry.controls<=geometry.controlsClient+1&&geometry.rowsOk);
   }
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:path.join(output,"prematch-editor-v2103-390.png"),fullPage:true});
+  await page.screenshot({path:path.join(output,"prematch-editor-v2104-390.png"),fullPage:true});
   await page.locator("#squadBattleKickoff").click();
   await page.evaluate(()=>stopMatchTimer());
   check("kickoff uses edited formation, tactic, role and focus",await page.evaluate(()=>match?.formation==="4-2-2-2"&&match?.tactic==="attacking"&&match?.roles?.[5]==="Deep Lying Playmaker"&&match?.focus?.[5]==="Defend"));
