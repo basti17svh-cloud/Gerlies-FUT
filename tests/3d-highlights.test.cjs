@@ -66,6 +66,7 @@ test('3D players use human proportions and the camera stays in tele-broadcast ra
  assert.match(scene,/camera\.fov=width\/height<\.72\?38:34/);
  assert.doesNotMatch(scene,/side\*4\.7,2\.7,-14\.2/);
  assert.match(scene,/supportLeft/);assert.match(scene,/defender4/);assert.match(scene,/shadowMap\.enabled=!weak/);
+ assert.match(scene,/TV\/telephoto broadcast camera/);
  assert.match(scene,/PARIERT VON/);
 });
 test('saved-chance snapshots keep the goalkeeper without giving him the shot',()=>{
