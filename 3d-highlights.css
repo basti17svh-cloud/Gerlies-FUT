@@ -35,10 +35,13 @@
 }
 @media(max-height:720px){#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{min-height:66px;bottom:10px}}
 @media(prefers-reduced-motion:reduce){.fh3d-hud{transition:none}}
-/* V20.95: broadcast picture has its own wide aperture; HUD never hides play. */
-.fh3d canvas{top:54px;bottom:96px;height:calc(100% - 150px)}
-.fh3d::before{background:linear-gradient(180deg,#132329 0 45px,transparent 54px,transparent calc(100% - 96px),#132329 calc(100% - 86px))}
+/* V20.98: full live picture with overlay HUD; no reserved empty footer. */
+.fh3d canvas{top:54px;bottom:0;height:calc(100% - 54px)}
+.fh3d::before{background:linear-gradient(180deg,#132329 0 45px,transparent 54px,transparent 72%,#07101870 100%)}
 .fh3d::after{box-shadow:none}
-#match.highlight3d-pending .match-live-stage{height:clamp(410px,calc(52vw + 150px),620px);min-height:410px}
-@media(max-width:560px){#match.highlight3d-pending .match-live-stage{height:calc(82vw + 150px);min-height:430px;max-height:540px}}
-@media(max-height:520px) and (orientation:landscape){#match.highlight3d-pending .match-live-stage{height:420px;min-height:420px}}
+#match.highlight3d-pending .match-live-stage{height:clamp(390px,calc(43vw + 54px),560px);min-height:390px}
+@media(max-width:560px){
+ #match.highlight3d-pending .match-live-stage{height:clamp(370px,104vw,455px);min-height:370px;max-height:455px}
+ .fh3d-hud{bottom:12px}
+}
+@media(max-height:520px) and (orientation:landscape){#match.highlight3d-pending .match-live-stage{height:370px;min-height:370px}}
