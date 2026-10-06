@@ -220,3 +220,65 @@
  #match .match-manager-bench{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:12px;row-gap:28px}
  #match .manager-panel.active{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
 }
+
+
+/* V21.01 — full pre-match editor; intentionally isolated from 3D highlight presentation. */
+.squad-battle-preview .preview-team-editor{
+ margin:12px 0;padding:12px;border:1px solid #3b5147;border-radius:15px;
+ background:linear-gradient(180deg,#0d1915,#09120f)
+}
+.squad-battle-preview .preview-team-controls{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+}
+.squad-battle-preview .preview-team-controls>label{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(118px,.75fr);align-items:center;gap:10px;
+ padding:10px 11px;border:1px solid #33473e;border-radius:11px;background:#101c18
+}
+.squad-battle-preview .preview-team-controls>label>span{
+ color:#edf6f1;font-size:11px;font-weight:900
+}
+.squad-battle-preview .preview-team-controls small{
+ display:block;margin-top:3px;color:#839b90;font-size:7px;font-weight:700;line-height:1.35
+}
+.squad-battle-preview .preview-team-controls select,
+.squad-battle-preview .preview-role-row select{
+ width:100%;min-width:0;min-height:40px;padding:0 9px;border:1px solid #4b6358;border-radius:9px;
+ background:#111b18;color:#fff;font-size:11px;font-weight:800;color-scheme:dark
+}
+.squad-battle-preview .preview-role-editor{
+ margin-top:10px;border-top:1px solid #304239;padding-top:9px
+}
+.squad-battle-preview .preview-role-editor>summary{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+ list-style:none;padding:4px 1px;color:#d8ff8b;font-size:11px;font-weight:950
+}
+.squad-battle-preview .preview-role-editor>summary::-webkit-details-marker{display:none}
+.squad-battle-preview .preview-role-editor>summary small{
+ color:#839b90;font-size:7px;font-weight:750
+}
+.squad-battle-preview .preview-role-list{display:grid;gap:7px;margin-top:10px}
+.squad-battle-preview .preview-role-row{
+ display:grid;grid-template-columns:minmax(92px,.85fr) minmax(0,1.2fr) minmax(0,1fr);align-items:end;gap:8px;
+ padding:8px;border:1px solid #2d4037;border-radius:10px;background:#0b1511
+}
+.squad-battle-preview .preview-role-player{min-width:0;padding:0 2px 5px}
+.squad-battle-preview .preview-role-player b{
+ display:inline-flex;min-width:26px;color:#d8ff3e;font-size:9px
+}
+.squad-battle-preview .preview-role-player span{
+ display:block;margin-top:3px;color:#edf5f1;font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.squad-battle-preview .preview-role-row label{min-width:0}
+.squad-battle-preview .preview-role-row label>span{
+ display:block;margin:0 0 4px;color:#789087;font-size:7px;font-weight:850;text-transform:uppercase;letter-spacing:.07em
+}
+@media(max-width:560px){
+ .squad-battle-preview .preview-team-editor{padding:10px}
+ .squad-battle-preview .preview-team-controls{grid-template-columns:1fr}
+ .squad-battle-preview .preview-team-controls>label{grid-template-columns:minmax(0,1fr) 132px}
+ .squad-battle-preview .preview-role-row{
+  grid-template-columns:minmax(88px,.8fr) minmax(0,1.15fr) minmax(0,.9fr);gap:5px;padding:7px 6px
+ }
+ .squad-battle-preview .preview-role-row select{min-height:38px;padding:0 5px;font-size:9px}
+ .squad-battle-preview .preview-role-player span{font-size:9px}
+}
