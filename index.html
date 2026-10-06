@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.05</title>
+<title>Footera V21.06</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,15 +1470,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2105">
+<link rel="stylesheet" href="./3d-highlights.css?v=2106">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=2105">
+<link rel="stylesheet" href="./club-identity.css?v=2106">
+<link rel="stylesheet" href="./ux-overview.css?v=2106">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2105">
-<link rel="stylesheet" href="./playstyles.css?v=2105">
-<link rel="stylesheet" href="./player-profile.css?v=2105">
+<link rel="stylesheet" href="./chem-boosts.css?v=2106">
+<link rel="stylesheet" href="./playstyles.css?v=2106">
+<link rel="stylesheet" href="./player-profile.css?v=2106">
 </head>
 <body>
 
@@ -1549,7 +1550,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.05</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.06</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1738,7 +1739,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div id="marketSearchShell" class="market-detail-shell" hidden>
     <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Position+ berücksichtigt Haupt- und Nebenpositionen</span></div></div>
     <div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
-    <div class="market-filter-panel">
+    <button id="marketFilterToggle" class="ux-filter-toggle" type="button" aria-expanded="true" aria-controls="marketFilterPanel"><span><strong>Suchfilter</strong><small id="marketFilterSummary">Alle Spieler · 65–99 GES</small></span><b aria-hidden="true">⌄</b></button>
+    <div class="market-filter-panel ux-filter-panel" id="marketFilterPanel">
       <div class="market-filter-grid">
         <div class="market-field full market-name-field"><label>Spielername</label><div class="market-name-wrap"><input id="marketName" type="search" placeholder="z. B. Bellingham, Modrić, Musiala …" autocomplete="off"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div></div>
         <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
@@ -1783,6 +1785,14 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <section id="clubView" class="view"><div class="headline"><h2>Verein</h2><p>Spieler verwalten und deinen Club gestalten.</p></div><div class="section">
   <div id="clubPlayersSection">
+    <div id="clubOverviewStrip" class="ux-status-strip" aria-label="Vereinsübersicht">
+      <div><strong id="clubUxPlayers">0</strong><span>Spieler</span></div>
+      <div><strong id="clubUxTransfer">0</strong><span>Transferliste</span></div>
+      <div><strong id="clubUxSbc">0</strong><span>SBC-Speicher</span></div>
+      <div><strong id="clubUxEvos">0/3</strong><span>Evolutions</span></div>
+    </div>
+    <button id="clubFilterToggle" class="ux-filter-toggle" type="button" aria-expanded="false" aria-controls="clubFilterPanel"><span><strong>Spieler filtern</strong><small id="clubFilterSummary">Alle Spieler</small></span><b aria-hidden="true">⌄</b></button>
+    <div id="clubFilterPanel" class="ux-filter-panel">
     <div class="filters club-filters">
       <select id="clubPosition" aria-label="Position+ inklusive Nebenpositionen"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="ST">ST+</option></select>
       <select id="clubRarity"><option value="">Alle Qualitäten</option><option value="gold">Gold</option><option value="silver">Silber</option><option value="bronze">Bronze</option><option value="special">Spezial</option></select>
@@ -1791,6 +1801,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <select id="clubTradeability" aria-label="Tauschbarkeit"><option value="">Alle Items</option><option value="tradeable">Nur tauschbar</option><option value="untradeable">Nur untauschbar</option></select>
       <select id="clubSort"><option value="rating-desc">Rating: hoch → niedrig</option><option value="rating-asc">Rating: niedrig → hoch</option><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option></select>
       <div class="club-rating-card"><div class="club-rating-head"><strong>GES-Bereich</strong><span id="clubRatingLabel">0–99 GES</span></div><div class="club-rating-sliders"><input id="clubRatingMin" type="range" min="0" max="99" step="1" value="0" aria-label="Minimales Rating"><input id="clubRatingMax" type="range" min="0" max="99" step="1" value="99" aria-label="Maximales Rating"></div></div>
+    </div>
     </div>
     <div id="clubGrid" class="itemgrid"></div>
   </div>
@@ -2064,9 +2075,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2105"></script>
-<script src="./chem-boosts.js?v=2105"></script>
-<script src="./playstyles.js?v=2105"></script>
+<script src="./3d-highlights.js?v=2106"></script>
+<script src="./chem-boosts.js?v=2106"></script>
+<script src="./playstyles.js?v=2106"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -5745,10 +5756,38 @@ function updateClubRatingLabel(){
  const min=Math.max(0,Math.min(99,Number($("clubRatingMin")?.value||0))),max=Math.max(0,Math.min(99,Number($("clubRatingMax")?.value||99)));
  if($("clubRatingLabel"))$("clubRatingLabel").textContent=`${min}–${max} GES`
 }
+const UX_COMPACT_MEDIA=window.matchMedia?.("(max-width:620px)");
+let clubFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches,marketFiltersCollapsed=false;
+function uxSelectedText(id,fallback=""){const el=$(id),opt=el?.selectedOptions?.[0];return String(opt?.textContent||fallback).trim()}
+function setUxFilterPanel(panelId,toggleId,collapsed){
+ const panel=$(panelId),toggle=$(toggleId);if(!panel||!toggle)return;
+ panel.classList.toggle("collapsed",!!collapsed);toggle.classList.toggle("collapsed",!!collapsed);toggle.setAttribute("aria-expanded",collapsed?"false":"true")
+}
+function clubFilterSummaryText(){
+ const parts=[],pos=$("clubPosition")?.value,rar=$("clubRarity")?.value,league=$("clubLeague")?.value,club=$("clubClub")?.value,trade=$("clubTradeability")?.value,min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
+ if(pos)parts.push(uxSelectedText("clubPosition"));if(rar)parts.push(uxSelectedText("clubRarity"));if(league)parts.push(league);if(club)parts.push(club);if(trade)parts.push(uxSelectedText("clubTradeability"));if(min>0||max<99)parts.push(`${min}–${max} GES`);
+ return parts.length?parts.join(" · "):"Alle Spieler"
+}
+function renderClubUx(){
+ if($("clubUxPlayers"))$("clubUxPlayers").textContent=fmt((state.club||[]).length);
+ if($("clubUxTransfer"))$("clubUxTransfer").textContent=fmt((state.transferList||[]).length);
+ if($("clubUxSbc"))$("clubUxSbc").textContent=`${(state.sbcStorage||[]).length}/100`;
+ if($("clubUxEvos"))$("clubUxEvos").textContent=`${activeEvolutionCount()}/3`;
+ if($("clubFilterSummary"))$("clubFilterSummary").textContent=clubFilterSummaryText();
+ setUxFilterPanel("clubFilterPanel","clubFilterToggle",clubFiltersCollapsed)
+}
+function marketFilterSummaryText(){
+ const parts=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
+ if(name)parts.push(name);if(type)parts.push(uxSelectedText("marketSpecialType"));else if(quality)parts.push(uxSelectedText("marketQuality"));if(pos)parts.push(uxSelectedText("marketPosition"));if(league)parts.push(league);if(club)parts.push(club);if(nation)parts.push(nation);if(min>65||max<99)parts.push(`${min}–${max} GES`);if(pmin||pmax)parts.push(`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`);
+ return parts.length?parts.join(" · "):"Alle Spieler · 65–99 GES"
+}
+function renderMarketUx(){if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)}
+$("clubFilterToggle")?.addEventListener("click",()=>{clubFiltersCollapsed=!clubFiltersCollapsed;renderClubUx()});
+$("marketFilterToggle")?.addEventListener("click",()=>{marketFiltersCollapsed=!marketFiltersCollapsed;renderMarketUx()});
 const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
 function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
- syncClubSectionUi();
+ syncClubSectionUi();renderClubUx();
  if(clubSection==="identity"){renderClubIdentity();return}
  if(clubSection==="boosts"){window.FooteraChemBoostUI?.renderInventory();return}
  const rows=clubFilterItems();syncClubFilterOptions(rows);
@@ -6380,7 +6419,7 @@ function renderMarket(){
   updateMarketResultMeta();renderMarketPagination();if(marketListings.length)queueMarketPortraitWarmup()
  }else if(marketSection==="bids")renderMyAuctions();
  else if(marketSection==="list")renderTransferWatch();
- renderTransferHubSummary();applyMarketSection()
+ renderTransferHubSummary();applyMarketSection();renderMarketUx()
 }
 function openMarketPlayerDetails(i){
  const x=marketListings[Number(i)];if(!x)return;const pi=marketPreviewItem(x),base=displayBase(pi)||x.base,b=resolvedPlayer(base),shown=x.overridePosition||b.position,next=nextMarketBid(x),inc=next==null?0:next-Number(x.bid);
@@ -6465,9 +6504,9 @@ function settleTransferSales(){
 }
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("marketPagination").addEventListener("click",e=>{const b=e.target.closest("[data-market-page]");if(!b||b.disabled)return;if(b.dataset.marketPage==="prev")setMarketPage(marketPage-1);if(b.dataset.marketPage==="next")setMarketPage(marketPage+1)});
-$("refreshMarket").addEventListener("click",()=>{refreshMarket();const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
+$("refreshMarket").addEventListener("click",()=>{refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
-$("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket()}else if(e.key==="Escape")hideMarketNameSuggestions()});
+$("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}}else if(e.key==="Escape")hideMarketNameSuggestions()});
 $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;
  const type=b.dataset.marketNameType||($("marketSpecialType").value==="momentum"&&MOMENTUM_BY_ID.has(String(p.id))?"momentum":"");
  $("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";
@@ -8913,7 +8952,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.05";
+const GFUT_BUILD="V21.06";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8966,7 +9005,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2105",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2106",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8980,11 +9019,11 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2105"></script>
+<script src="./champions-system.js?v=2106"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2105"></script>
-<script src="./chem-boosts-ui.js?v=2105"></script>
+<script src="./3d-highlights-match.js?v=2106"></script>
+<script src="./chem-boosts-ui.js?v=2106"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>

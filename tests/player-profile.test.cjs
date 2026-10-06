@@ -12,7 +12,7 @@ assert.match(html,/bio-attributes-grid/);
 assert.match(html,/bio-performance-grid/);
 assert.match(html,/playerBiographyHTML\(b,item,\{shownPosition,clubPerf\}\)/);
 assert.match(html,/playerBiographyHTML\(b,item,\{shownPosition:shown,friend:true\}\)/);
-assert.match(html,/\.\/player-profile\.css\?v=2105/);
+assert.match(html,/\.\/player-profile\.css\?v=2106/);
 assert.match(html,/const GFUT_BUILD="V21\.05"/);
 assert.match(css,/#bioModal \.bio-hero\{display:grid/);
 assert.match(css,/#bioModal \.bio-attributes-grid\{display:grid;grid-template-columns:repeat\(6/);
@@ -20,4 +20,4 @@ assert.match(css,/@media\(max-width:560px\)[\s\S]*?#bioModal \.bio-profile-grid\
 assert.match(css,/@media\(max-width:560px\)[\s\S]*?#bioModal \.bio-attributes-grid\{grid-template-columns:repeat\(3/);
 assert.doesNotMatch(css,/^\.custom-card\s*\{/m);
 assert.doesNotMatch(css,/^\.card-shell\s*\{/m);
-console.log("Spielerprofil V21.05: Struktur, Mobile und Renderer-Isolation OK");
+console.log("Spielerprofil V21.06: Struktur, Mobile und Renderer-Isolation OK");

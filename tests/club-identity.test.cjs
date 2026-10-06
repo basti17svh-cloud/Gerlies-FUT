@@ -38,4 +38,4 @@ test("new kit patterns survive the 3D kit normalizer",async()=>{
   assert.equal(kits.home.pattern,pattern);
  }
 });
-console.log("V21.05 Vereinsdesigner: Wappenrand, 36 Symbole, 13 Trikotmuster und Farbtransfer OK");
+console.log("V21.06 Vereinsdesigner: Wappenrand, 36 Symbole, 13 Trikotmuster und Farbtransfer OK");

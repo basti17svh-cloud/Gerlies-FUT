@@ -1,0 +1,93 @@
+/* Footera V21.06 — Übersichtlichkeit: kompakte Status- und Filtersteuerung */
+.ux-status-strip{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:7px;
+ margin:0 0 11px;
+}
+.ux-status-strip>div{
+ min-width:0;
+ padding:10px 11px;
+ border-radius:12px;
+ background:linear-gradient(145deg,rgba(18,27,23,.94),rgba(10,16,13,.94));
+ border:1px solid rgba(104,139,122,.26);
+}
+.ux-status-strip strong{
+ display:block;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ font-size:16px;
+ line-height:1.05;
+ color:#eef7f2;
+}
+.ux-status-strip span{
+ display:block;
+ margin-top:4px;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ color:#87978f;
+ font-size:7px;
+ font-weight:850;
+ text-transform:uppercase;
+ letter-spacing:.055em;
+}
+.ux-filter-toggle{
+ display:none;
+ width:100%;
+ min-height:50px;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ padding:9px 11px;
+ margin:0 0 8px;
+ border:1px solid #34483e;
+ border-radius:12px;
+ background:#101915;
+ color:#edf5f1;
+ text-align:left;
+}
+.ux-filter-toggle>span{min-width:0}
+.ux-filter-toggle strong{display:block;font-size:10px}
+.ux-filter-toggle small{
+ display:block;
+ max-width:100%;
+ margin-top:3px;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ color:#8f9f97;
+ font-size:7px;
+ line-height:1.2;
+}
+.ux-filter-toggle>b{
+ flex:0 0 auto;
+ display:grid;
+ place-items:center;
+ width:27px;
+ height:27px;
+ border-radius:8px;
+ background:#18241e;
+ color:#b9c8c0;
+ font-size:16px;
+ font-weight:900;
+ transition:transform .16s ease;
+}
+.ux-filter-toggle.collapsed>b{transform:rotate(-90deg)}
+.ux-filter-panel.collapsed{display:none}
+#marketSearchShell .ux-filter-toggle{border-color:#5a3a43;background:#191316}
+#marketSearchShell .ux-filter-toggle>b{background:#2a1b20;color:#ff93a3}
+#marketSearchShell .ux-filter-panel{margin-bottom:10px}
+
+@media(max-width:620px){
+ .ux-status-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .ux-status-strip>div{padding:9px 10px}
+ .ux-status-strip strong{font-size:15px}
+ .ux-filter-toggle{display:flex}
+ #clubFilterPanel>.club-filters{margin-bottom:8px}
+ #marketFilterPanel.market-filter-panel{margin-top:0}
+}
+@media(min-width:621px){
+ .ux-filter-panel.collapsed{display:block!important}
+}

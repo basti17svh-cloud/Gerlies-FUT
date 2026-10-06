@@ -1,0 +1,32 @@
+const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
+const root=path.join(__dirname,"..");
+const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const css=fs.readFileSync(path.join(root,"ux-overview.css"),"utf8");
+const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
+
+test("V21.06 wires the focused usability layer without replacing existing hubs",()=>{
+ assert.match(html,/<title>Footera V21\.06<\/title>/);
+ assert.match(html,/ux-overview\.css\?v=2106/);
+ assert.match(html,/id="clubOverviewStrip"/);
+ for(const id of ["clubUxPlayers","clubUxTransfer","clubUxSbc","clubUxEvos","clubFilterToggle","clubFilterSummary","clubFilterPanel","marketFilterToggle","marketFilterSummary","marketFilterPanel"])assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/function renderClubUx\(/);
+ assert.match(html,/function renderMarketUx\(/);
+ assert.match(html,/marketFiltersCollapsed=true/);
+ assert.match(html,/function renderTasks\(\)\{const ordered=\[\.\.\.TASKS\]\.sort/);
+ assert.match(html,/id="playModeHub"/);
+});
+
+test("compact filters are mobile-only and desktop keeps the full filter surface",()=>{
+ assert.match(css,/\.ux-filter-toggle\{[\s\S]*?display:none/);
+ assert.match(css,/@media\(max-width:620px\)[\s\S]*?\.ux-filter-toggle\{display:flex\}/);
+ assert.match(css,/@media\(min-width:621px\)[\s\S]*?\.ux-filter-panel\.collapsed\{display:block!important\}/);
+ assert.match(css,/\.ux-status-strip\{[\s\S]*?grid-template-columns:repeat\(4/);
+ assert.match(css,/@media\(max-width:620px\)[\s\S]*?\.ux-status-strip\{grid-template-columns:repeat\(2/);
+});
+
+test("offline shell contains the usability stylesheet and new build cache",()=>{
+ assert.ok(sw.includes('footera-v21-06-root-shell'));
+ assert.ok(sw.includes('./ux-overview.css?v=2106'));
+ assert.ok(sw.includes('./3d-highlights.js?v=2106'));
+});
+console.log("V21.06 Übersichtlichkeit: Verein-Status und kompakte Mobile-Filter strukturell OK");
