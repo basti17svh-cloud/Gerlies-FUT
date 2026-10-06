@@ -44,7 +44,7 @@ if(require.main===module)(async()=>{
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
-   check(`${width}: no result spoiler before shot`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='0 : 0'&&!document.querySelector('.fh3d-name').textContent));
+   check(`${width}: authoritative score is synchronized while result label stays hidden`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
    const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,width:innerWidth}});
    check(`${width}: no horizontal scroll; canvas and skip inside viewport`,!geometry.overflow&&geometry.left>=0&&geometry.right<=geometry.width+1&&geometry.button>=44);
    await page.waitForSelector('.fh3d-hud.visible');
