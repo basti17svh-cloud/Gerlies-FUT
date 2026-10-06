@@ -37,7 +37,7 @@ test("Champions has 1000 CP qualification, 15 matches and the approved rank ladd
 });
 
 test("Champions rewards, qualification and record-based AI are integrated without owning results",()=>{
- assert.match(champions,/championsQualificationGain\(result\)\{return result==="win"\?200:result==="draw"\?100:40\}/);
+ assert.match(champions,/championsQualificationGain\(result\)\{return result==="win"\?200:result==="draw"\?100:0\}/);
  assert.match(champions,/recordCompetitionMatch=function\(mode,result/);
  assert.match(champions,/if\(mode==="champions"\)return recordChampionsResult\(result\)/);
  assert.match(champions,/const base=Math\.round\(82\+diff\*1\.15\+c\.games\*\.12\)/);
