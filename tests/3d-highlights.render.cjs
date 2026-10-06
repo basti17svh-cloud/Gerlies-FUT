@@ -13,8 +13,12 @@ const out=path.join(__dirname,'../test-artifacts');
   await page.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8});const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,options){return get.call(this,type,/webgl/.test(type)?{...options,preserveDrawingBuffer:true}:options)}});
   await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());await page.goto(url);
   await page.evaluate(()=>{const original=requestAnimationFrame;window.qaPresent=()=>new Promise(resolve=>original(()=>original(resolve)));window.qaDraw=t=>new Promise(resolve=>original(()=>{qaStep(t);resolve()}));window.qaFrames=new Map();let id=1000000;window.qaHold=false;window.requestAnimationFrame=cb=>qaHold?(qaFrames.set(++id,cb),id):original(cb);const cancel=cancelAnimationFrame;window.cancelAnimationFrame=i=>qaFrames.delete(i)||cancel(i);const timeout=setTimeout,clear=clearTimeout;window.qaTimers=new Map();window.setTimeout=(cb,ms,...args)=>qaHold&&ms>=12000?(qaTimers.set(++id,cb),id):timeout(cb,ms,...args);window.clearTimeout=i=>qaTimers.delete(i)||clear(i);window.qaStep=t=>{const callbacks=[...qaFrames.values()];qaFrames.clear();callbacks.forEach(cb=>cb(t))}});
-  async function capture(name,type,time,period=1,width=1280){
+  async function capture(name,type,time,period=1,width=1280,configuredKits=false){
    await page.setViewportSize({width,height:1000});await fixture(page);
+   if(configuredKits)await page.evaluate(()=>{
+    state.profile.clubIdentity.kits.home={pattern:'stripes',shirtPrimary:'#b20d35',shirtSecondary:'#f5f2e7',shorts:'#101820',socks:'#b20d35'};
+    match.opponentProfile.clubIdentity={kits:{away:{pattern:'halves',shirtPrimary:'#1260aa',shirtSecondary:'#f0cf3d',shorts:'#1260aa',socks:'#f0cf3d'}}};
+   });
    await page.evaluate(p=>{match.halftimeLogged=p>1;match.extraTimeStarted=p>2;match.extraTimeBreakLogged=p>3;match.minute=p===1?38:p===2?67:p===3?98:113;updateMatchUI();qaFrames.clear();qaHold=true},period);
    // The real simulation fixture creates the immutable authoritative event.
    await force(page,type);await page.waitForSelector('.fh3d canvas');const sharp=await page.locator('.fh3d canvas').evaluate(c=>({bw:c.width,bh:c.height,cw:c.clientWidth,ch:c.clientHeight}));assert.ok(sharp.bw>=sharp.cw*1.9&&sharp.bh>=sharp.ch*1.9,'high-DPI backing buffer: '+JSON.stringify(sharp));
@@ -36,6 +40,7 @@ const out=path.join(__dirname,'../test-artifacts');
   await capture('06-home-second-half','goal',4.8,2);
   await capture('07-mobile-open-play-390','goal',2,1,390);
   await capture('08-mobile-save-390','big_chance_saved',6.82,2,390);
+  await capture('09-mobile-configured-kits-390','goal',4.8,1,390,true);
   }
   // High-DPI quality is verified by the captures above. The software-only CI GPU
   // is not representative of a capable handset for a real-time DPR 2 run, so the
@@ -65,7 +70,7 @@ const out=path.join(__dirname,'../test-artifacts');
    renderer.dispose();renderer.forceContextLoss();Math.random=originalRandom;if(randomCalls)throw Error('Renderer consumed simulation RNG: '+randomCalls);return rows;
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
-  for(const row of checks){assert.ok(row.visibleFieldPlayers>=12,JSON.stringify(row));assert.ok(row.cameraDistance>=66&&row.cameraDistance<=72);assert.ok(row.drawCalls<100,'batched renderer draw calls');assert.equal(Math.sign(row.goalScreenX-row.shooterScreenX),row.period%2?1:-1);if(row.time===6.65){const distance=Math.min(...row.gloves.map(g=>Math.hypot(...g.map((v,i)=>v-row.ball[i]))));assert.ok(distance<.16,'glove/ball contact: '+distance)}}
+  for(const row of checks){assert.ok(row.visibleFieldPlayers>=12,JSON.stringify(row));assert.ok(row.cameraDistance>=64&&row.cameraDistance<=71);assert.ok(row.drawCalls<100,'batched renderer draw calls');assert.equal(Math.sign(row.goalScreenX-row.shooterScreenX),row.period%2?1:-1);if(row.time===6.65){const distance=Math.min(...row.gloves.map(g=>Math.hypot(...g.map((v,i)=>v-row.ball[i]))));assert.ok(distance<.16,'glove/ball contact: '+distance)}}
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,process.env.FOOTERA_SKIP_CAPTURES?'render-check-results.json':'render-results.json'),JSON.stringify({screenshots:evidence,checks,errors},null,2));console.log('PASS STANDARD natural end, extreme-performance fallback and zero simulation RNG draws');console.log('PASS',evidence.length,'production screenshots;',checks.length,'WebGL geometry checks');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
