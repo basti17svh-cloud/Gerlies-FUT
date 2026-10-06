@@ -11,7 +11,7 @@ async function fixture(page,mode='important'){
   cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
   for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
   const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM'];
-  PLAYERS=positions.map((position,i)=>({id:'qa-'+i,name:'Musiala',fullName:'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:'Germany',team:'FC Bayern München',league:'Bundesliga'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
+  PLAYERS=positions.map((position,i)=>{const keeper=position==='GK'&&i===0;return{id:'qa-'+i,name:keeper?'Maignan':'Musiala',fullName:keeper?'Mike Maignan':'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:keeper?'France':'Germany',team:keeper?'AC Milan':'FC Bayern München',league:keeper?'Serie A':'Bundesliga'}});P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
   state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.tactic='balanced';
   FooteraHighlights.setMode(mode);document.querySelectorAll('[data-highlight-mode]').forEach(s=>s.value=mode);
   startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:PLAYERS.slice(0,11)});stopMatchTimer();
@@ -57,7 +57,7 @@ async function force(page,type){
   for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
    await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
    await page.waitForSelector('.fh3d-hud.visible');await page.screenshot({path:path.join(output,type+'.png')});
-   check(`${type}: correct event label`,(await page.locator('.fh3d-event').innerText()).includes({big_chance_saved:'PARADE',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));
+   const eventText=await page.locator('.fh3d-event').innerText();check(`${type}: correct event label`,eventText.includes({big_chance_saved:'PARIERT VON MIKE MAIGNAN',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));if(type==='big_chance_saved')check('saved chance keeps shooter as primary actor',await page.locator('.fh3d-name').innerText()==='Jamal Musiala');
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
   }
