@@ -58,3 +58,11 @@ test('scripts, module, stylesheet and pinned Three are in the new offline shell;
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
  }
 });
+
+test('3D player head and hair keep the intended human-scale sphere radius',()=>{
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(scene,/head\.scale\.set\(\.205\*\.94,\.205\*1\.08,\.205\*\.91\)/);
+ assert.match(scene,/hairCap\.scale\.set\(\.21\*\.95,\.21\*\.48,\.21\*\.92\)/);
+ assert.doesNotMatch(scene,/head\.scale\.set\(\.94,1\.08,\.91\)/);
+ assert.doesNotMatch(scene,/hairCap\.scale\.set\(\.95,\.48,\.92\)/);
+});
