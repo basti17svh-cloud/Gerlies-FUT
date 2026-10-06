@@ -112,25 +112,25 @@ function makeScene(renderer,event,weak=false){
   function player(colorHex,shortsHex='#151b24',name='',keeper=false){
    const root=new THREE.Group();scene.add(root);const rig=new THREE.Group();root.add(rig);
    const skin=skinTone(name,keeper?3:0),hair=name&&name.charCodeAt(0)%3===0?'#211c19':'#100e0d';
-   const torso=cyl(.31,.42,.9,colorHex,rig,{roughness:.62});torso.position.y=1.32;
-   const chest=box(.7,.14,.42,colorHex,0,1.62,0,rig,{roughness:.62});chest.rotation.z=.01;
-   const shorts=cyl(.37,.4,.34,shortsHex,rig,{roughness:.78});shorts.position.y=.75;
-   const neck=cyl(.105,.105,.16,skin,rig,{roughness:.9});neck.position.y=1.83;
-   const head=sphere(.255,skin,0,2.08,0,rig,{roughness:.88});head.scale.set(.93,1.08,.9);
-   const hairCap=sphere(.258,hair,0,2.2,.015,rig,{roughness:.96});hairCap.scale.set(.94,.48,.91);
-   sphere(.055,skin,0,2.06,-.23,rig,{roughness:.9});
+   const torso=cyl(.29,.38,.7,colorHex,rig,{roughness:.62});torso.position.y=1.3;
+   const chest=box(.66,.12,.4,colorHex,0,1.56,0,rig,{roughness:.62});chest.rotation.z=.01;
+   const shorts=cyl(.34,.37,.3,shortsHex,rig,{roughness:.78});shorts.position.y=.82;
+   const neck=cyl(.095,.095,.12,skin,rig,{roughness:.9});neck.position.y=1.7;
+   const head=sphere(.205,skin,0,1.9,0,rig,{roughness:.88});head.scale.set(.94,1.08,.91);
+   const hairCap=sphere(.21,hair,0,2.0,.012,rig,{roughness:.96});hairCap.scale.set(.95,.48,.92);
+   sphere(.045,skin,0,1.89,-.185,rig,{roughness:.9});
    const arms=[],legs=[];
    for(const side of [-1,1]){
-    const arm=new THREE.Group();arm.position.set(side*.39,1.62,0);rig.add(arm);
-    const upper=cyl(.085,.095,.44,colorHex,arm,{roughness:.7});upper.position.y=-.22;
-    const fore=cyl(.07,.08,.38,skin,arm,{roughness:.9});fore.position.y=-.63;
-    const hand=sphere(keeper?.105:.085,keeper?'#edf6ef':skin,0,-.86,0,arm,{roughness:.8});arms.push(arm);
-    const leg=new THREE.Group();leg.position.set(side*.18,.72,0);rig.add(leg);
-    const thigh=cyl(.105,.125,.5,skinTone(name,side>0?1:2),leg,{roughness:.9});thigh.position.y=-.25;
-    const sock=cyl(.085,.095,.48,colorHex,leg,{roughness:.82});sock.position.y=-.72;
-    const boot=box(.19,.13,.42,'#0a0d12',0,-1.01,-.1,leg,{roughness:.52});boot.rotation.x=-.05;legs.push(leg);
+    const arm=new THREE.Group();arm.position.set(side*.35,1.55,0);rig.add(arm);
+    const upper=cyl(.075,.085,.3,colorHex,arm,{roughness:.7});upper.position.y=-.15;
+    const fore=cyl(.062,.07,.27,skin,arm,{roughness:.9});fore.position.y=-.435;
+    sphere(keeper?.09:.07,keeper?'#edf6ef':skin,0,-.61,0,arm,{roughness:.8});arms.push(arm);
+    const leg=new THREE.Group();leg.position.set(side*.16,.68,0);rig.add(leg);
+    const thigh=cyl(.09,.105,.36,skinTone(name,side>0?1:2),leg,{roughness:.9});thigh.position.y=-.18;
+    const sock=cyl(.072,.082,.3,colorHex,leg,{roughness:.82});sock.position.y=-.51;
+    const boot=box(.17,.12,.38,'#0a0d12',0,-.67,-.09,leg,{roughness:.52});boot.rotation.x=-.05;legs.push(leg);
    }
-   const shadowMat=track(new THREE.MeshBasicMaterial({color:'#020504',transparent:true,opacity:.34,depthWrite:false}));const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.66,20)),shadowMat,root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.018;shadow.scale.y=.58;
+   const shadowMat=track(new THREE.MeshBasicMaterial({color:'#020504',transparent:true,opacity:.34,depthWrite:false}));const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.6,20)),shadowMat,root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.018;shadow.scale.y=.58;
    return{root,rig,arms,legs,head};
   }
   const [attackColor,defendColor]=kitColors(event);
