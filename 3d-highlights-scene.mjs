@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=90;
+export const MIN_CAMERA_DISTANCE=78;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -44,10 +44,13 @@ export function ballPosition(type,time){
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
 export function cameraState(direction,time,aspect=1.3){
- const z=mix(-28,-32,smooth(time/6))*direction;
- const distance=Math.max(MIN_CAMERA_DISTANCE,101,101/Math.max(.85,aspect));
+ const phase=smooth(time/6.4),z=mix(-27,-40,phase)*direction;
+ // Keep the same TV touchline, but move materially closer as the attack reaches
+ // the box. Narrow mobile viewports receive a small distance guard instead of
+ // falling back to a distant full-pitch shot.
+ const distance=Math.max(MIN_CAMERA_DISTANCE,mix(90,82,phase),84/Math.max(.95,aspect));
  const length=Math.hypot(82,58,12),scale=distance/length;
- return{position:[82*scale,58*scale,z+12*scale],target:[0,0,z],fov:30,distance};
+ return{position:[82*scale,58*scale,z+12*scale],target:[0,.65,z],fov:32,distance};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -119,7 +122,7 @@ export function makeScene(renderer,event,weak=false){
   const grass=canvasTexture(512,512,(ctx,w,h)=>{
    ctx.fillStyle='#447a37';ctx.fillRect(0,0,w,h);
    const pixels=ctx.getImageData(0,0,w,h);for(let i=0;i<w*h;i++){const n=(hash(i)-.5)*25;pixels.data[i*4]=64+n;pixels.data[i*4+1]=112+n;pixels.data[i*4+2]=48+n*.7}ctx.putImageData(pixels,0,0);
-  });grass.wrapS=grass.wrapT=THREE.RepeatWrapping;grass.repeat.set(12,18);grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  });grass.wrapS=grass.wrapT=THREE.RepeatWrapping;grass.repeat.set(12,18);grass.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
   const mowing=mat('#b9d48e',{transparent:true,opacity:.085,depthWrite:false});
   for(let z=-52.5;z<52.5;z+=14){const stripe=mesh(geo('stripe',()=>new THREE.PlaneGeometry(68,7)),mowing);stripe.rotation.x=-Math.PI/2;stripe.position.set(0,.002,z+3.5)}
@@ -175,8 +178,8 @@ export function makeScene(renderer,event,weak=false){
   // Player draw calls are batched below. Each bone retains its own articulation.
   const batches=new Map(),parts=[];
   function part(g,m,parent,x=0,y=0,z=0,sx=1,sy=1,sz=1){const node=new THREE.Object3D();node.position.set(x,y,z);node.scale.set(sx,sy,sz);parent.add(node);const key=g.uuid+':'+m.uuid;if(!batches.has(key))batches.set(key,{g,m,nodes:[]});batches.get(key).nodes.push(node);parts.push(node);return node}
-  function bodyPart(top,bottom,height,color,parent,x,y,z,sx=1,sz=1){return part(geo(`body:${top}:${bottom}`,()=>new THREE.CylinderGeometry(top,bottom,1,10)),mat(color),parent,x,y,z,sx,height,sz)}
-  function rounded(w,h,d,color,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,12,10)),mat(color),parent,x,y,z,w,h,d)}
+  function bodyPart(top,bottom,height,color,parent,x,y,z,sx=1,sz=1){return part(geo(`body:${top}:${bottom}`,()=>new THREE.CylinderGeometry(top,bottom,1,weak?8:12)),mat(color),parent,x,y,z,sx,height,sz)}
+  function rounded(w,h,d,color,parent,x,y,z){return part(geo('sphere',()=>new THREE.SphereGeometry(1,weak?10:16,weak?8:12)),mat(color),parent,x,y,z,w,h,d)}
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
    const skin=skinTone(name),hair='#26201a';
@@ -205,9 +208,9 @@ export function makeScene(renderer,event,weak=false){
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:'footballer '+i));
   const keeper=player({shirt:kits.keeper,shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true);
-  const ball=ellipsoid(.12,.12,.12,'#ffffff',0,.12,0);ball.castShadow=!weak;
+  const ball=ellipsoid(.13,.13,.13,'#ffffff',0,.13,0);ball.castShadow=!weak;
   // At TV distance a subtle white ground marker locates the ball without enlarging it.
-  const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.22,.28,20)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
+  const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.25,.34,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   for(const batch of batches.values()){batch.mesh=new THREE.InstancedMesh(batch.g,batch.m,batch.nodes.length);batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);batch.mesh.castShadow=!weak;batch.mesh.receiveShadow=!weak;batch.mesh.frustumCulled=false;scene.add(batch.mesh);track(batch.mesh)}
   // Merge stadium structures by material into static instance batches as well.
   scene.updateMatrixWorld(true);
@@ -248,7 +251,7 @@ export function makeScene(renderer,event,weak=false){
    keeper.legs[0].rotation.z=.18+kp.dive*.32;keeper.legs[1].rotation.z=-.18-kp.dive*.15;
    keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=-.3*(1-kp.dive));
    if(kp.dive>.05){keeper.elbows.forEach(e=>e.rotation.x=0);aimArm(keeper.arms[0],[2.52,1.14,-50.6]);aimArm(keeper.arms[1],[2.52,1.14,-50.6]);}
-   const bp=ballPosition(event.type,time);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<SHOT_TIME;
+   const bp=ballPosition(event.type,time);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
    if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=1.75;p.arms[1].rotation.z=-1.75;p.root.position.z-=Math.min(3,t)*.6;p.rig.position.y=Math.abs(Math.sin(t*7))*.025}}
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],influence=Math.exp(-((x-2.65)**2+(y-1.08)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
@@ -292,9 +295,9 @@ export function play(event,signal){
   skip.addEventListener('click',()=>finish('skipped'));signal.addEventListener('abort',onAbort,{once:true});canvas.addEventListener('webglcontextlost',onLost);window.addEventListener('keydown',onKey);
   timer=setTimeout(()=>finish('fallback'),16000);
   try{
-   const weak=(navigator.deviceMemory||8)<=4||(navigator.hardwareConcurrency||8)<=4;
+   const weak=(navigator.deviceMemory||8)<=4||(navigator.hardwareConcurrency||8)<=4;let quality=weak?'low':'standard';
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1:1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+   renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1.25:2.25));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
    world=makeScene(renderer,event,weak);
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
    function frame(now){
@@ -303,9 +306,9 @@ export function play(event,signal){
      if(start===undefined)start=now;const elapsed=(now-start)/1000;
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
-     if(frames===40&&slowFrames>14){renderer.setPixelRatio(1);world.reduceQuality();resize()}
+     if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.35));world.reduceQuality();resize()}
      world.update(elapsed);
-     layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=weak?'low':'standard';
+     layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      if(elapsed>=REVEAL_TIME&&!name.textContent){name.textContent=event.playerName;const eventLabel=event.type==='big_chance_saved'?(event.keeperName?`PARIERT VON ${event.keeperName.toUpperCase()}`:'SCHUSS GEHALTEN'):LABELS[event.type];detail.textContent=`${eventLabel} · ${event.minute}'`}
      hud.classList.toggle('visible',elapsed>=REVEAL_TIME&&elapsed<DURATION-.2);
      if(elapsed>=DURATION){finish('played');return}raf=requestAnimationFrame(frame);
