@@ -11,10 +11,11 @@ async function fixture(page,mode='important'){
   cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
   for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
   const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM'];
-  PLAYERS=positions.map((position,i)=>{const keeper=position==='GK'&&i===0;return{id:'qa-'+i,name:keeper?'Maignan':'Musiala',fullName:keeper?'Mike Maignan':'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:keeper?'France':'Germany',team:keeper?'AC Milan':'FC Bayern München',league:keeper?'Serie A':'Bundesliga'}});P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
+  PLAYERS=positions.map((position,i)=>({id:'qa-'+i,name:'Musiala',fullName:'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:'Germany',team:'FC Bayern München',league:'Bundesliga'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
   state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.tactic='balanced';
   FooteraHighlights.setMode(mode);document.querySelectorAll('[data-highlight-mode]').forEach(s=>s.value=mode);
-  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:PLAYERS.slice(0,11)});stopMatchTimer();
+  const awaySquad=PLAYERS.slice(0,11).map((p,i)=>i===0?{...p,id:'away-gk',name:'Maignan',fullName:'Mike Maignan',nation:'France',team:'AC Milan',league:'Serie A'}:{...p,id:'away-'+i});
+  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad});stopMatchTimer();
   match.minute=41;match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;updateMatchUI();document.getElementById('match').scrollTop=0;
  },mode);
 }
