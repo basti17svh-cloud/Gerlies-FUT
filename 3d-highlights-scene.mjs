@@ -338,7 +338,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04),sequence),next=runPosition(i,time+.04,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
-   const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:[[1.8,2.18]];
+   const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:sequence==='dribble'?[]:[[1.8,2.18]];
    for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1];passer.legs[1].rotation.x=Math.sin((time-from)/(to-from)*Math.PI)*.9}
    const kp=keeperPose(event.type,time);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
