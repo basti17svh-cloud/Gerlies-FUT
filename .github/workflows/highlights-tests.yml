@@ -1,0 +1,36 @@
+name: Footera 3D Highlights
+on:
+  pull_request:
+    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'service-worker.js', '.github/workflows/highlights-tests.yml']
+  push:
+    branches: [main]
+    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', '.github/workflows/highlights-tests.yml']
+permissions:
+  contents: read
+jobs:
+  highlights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Simulation, queue, cards, chemistry and PlayStyles regressions
+        run: node --test tests/3d-highlights.test.cjs tests/matchday.test.cjs tests/chem-boosts.test.cjs tests/playstyles.test.cjs tests/card-layout.test.cjs tests/player-profile.test.cjs tests/boot-update.test.cjs
+      - name: Install isolated browser test dependency
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Real WebGL and mobile matchflow tests
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/3d-highlights.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-3d-mobile-evidence
+          path: test-artifacts/
+          retention-days: 7

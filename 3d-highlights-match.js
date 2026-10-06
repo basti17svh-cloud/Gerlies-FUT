@@ -1,0 +1,53 @@
+/* The only bridge to Footera's authoritative simulation. */
+let match3DQueue=null;
+function cancelMatch3D(){
+ match3DQueue?.cancel();match3DQueue=null;
+ if(match)match.highlight3DPending=false;
+ document.getElementById('match')?.classList.remove('highlight3d-pending');
+}
+function queueMatch3D(event){
+ if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
+ const current=match;
+ if(!match3DQueue){
+  match3DQueue=new FooteraHighlights.Queue({
+   onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending')},
+   onIdle(){
+    if(match!==current)return;
+    current.highlight3DPending=false;current.highlightActive=false;
+    document.getElementById('match')?.classList.remove('highlight3d-pending');
+    updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);
+    const fallback=current.highlight3DFallback;delete current.highlight3DFallback;
+    if(fallback?.type==='goal'&&!current.paused&&!current.finished){
+     const goal=current.goalEvents.find(g=>g.minute===fallback.minute&&g.side===fallback.team&&(g.playerName||g.scorer)===fallback.playerName);
+     if(goal){showMatchGoalMoment(goal,{uid:goal.scorerUid,index:goal.scorerIndex});return}
+    }
+    if(!current.paused&&!current.finished)startMatchTimer();
+   },
+   onFallback(event){if(match===current)current.highlight3DFallback=event}
+  });
+ }
+ const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
+ const away=current.opponentProfile?.clubIdentity?.kits?.away;
+ return match3DQueue.enqueue({...event,homeColor:identity?.kits?.home?.shirtPrimary,awayColor:away?.shirtPrimary});
+}
+function queueMatchGoal3D(event){
+ const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer});
+ // Keep the original goal tick's early return (including its RNG consumption).
+ if(queued)match.highlightActive=true;
+ return queued;
+}
+function queueMatchChance3D(shot){
+ if(!shot.highlightType)return false;
+ return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter});
+}
+(function(){
+ const selects=document.querySelectorAll('[data-highlight-mode]');
+ selects.forEach(select=>{
+  for(const [value,label] of Object.entries(FooteraHighlights.MODES)){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option)}
+  select.value=FooteraHighlights.getMode();
+  select.addEventListener('change',()=>{const value=FooteraHighlights.setMode(select.value);selects.forEach(other=>other.value=value);if(value==='off')match3DQueue?.skip()});
+ });
+ // Hidden tabs must not leave a suspended animation blocking the match.
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)match3DQueue?.skip()});
+ window.addEventListener('pagehide',cancelMatch3D);
+})();

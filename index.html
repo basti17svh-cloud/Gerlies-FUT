@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V20.88</title>
+<title>Footera V20.89</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,14 +1470,15 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
+<link rel="stylesheet" href="./3d-highlights.css?v=2089">
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2088">
-<link rel="stylesheet" href="./playstyles.css?v=2088">
-<link rel="stylesheet" href="./player-profile.css?v=2088">
+<link rel="stylesheet" href="./chem-boosts.css?v=2089">
+<link rel="stylesheet" href="./playstyles.css?v=2089">
+<link rel="stylesheet" href="./player-profile.css?v=2089">
 </head>
 <body>
 
@@ -1548,7 +1549,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.88</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V20.89</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1767,6 +1768,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="extras-card"><span class="extras-kicker">ACCOUNT</span><h3>Footera-Profil</h3><p>Hier verwaltest du deinen Benutzernamen und deine unveränderliche Vereins-ID. Vereinsname, Wappen, Farben und Trikots findest du unter <b>Verein → Vereinsidentität</b>.</p><label>Benutzername<input id="profileUsername" maxlength="20" placeholder="Benutzername" autocomplete="off"></label><label>Vereins-ID<input id="profileSaveId" readonly aria-label="Eindeutige Vereins-ID"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><button id="saveProfileName" class="primary">Benutzername speichern</button><button id="copyProfileSaveId" class="secondary" type="button">ID kopieren</button></div></div>
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
+  <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>3D Highlights</h3><p>Kurze Live-Szenen für Tore und große Chancen. Bei nicht unterstützten Geräten läuft die gewohnte Spieldarstellung weiter.</p><label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights"></select></label></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 
@@ -1989,6 +1991,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
    <div id="matchGoalMoment" class="match-goal-moment" role="status" aria-live="polite"><div id="matchGoalCard" class="match-goal-card"></div><div class="match-goal-copy"><span id="matchGoalEyebrow">TOR · 0'</span><strong id="matchGoalScorer">Torschütze</strong><span id="matchGoalAssist"></span><b id="matchGoalScore">1 : 0</b><button id="matchGoalSkip" type="button">Weiterspielen</button></div></div>
   </section>
 
+  <label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights im Match"></select></label>
   <div class="match-controls match-primary-controls">
    <button id="manageTeamBtn" class="secondary">Team-Management</button>
    <button id="matchSpeedBtn" class="secondary">Tempo: Normal</button>
@@ -2052,8 +2055,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./chem-boosts.js?v=2088"></script>
-<script src="./playstyles.js?v=2088"></script>
+<script src="./3d-highlights.js?v=2089"></script>
+<script src="./chem-boosts.js?v=2089"></script>
+<script src="./playstyles.js?v=2089"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -7230,7 +7234,7 @@ function stopMatchTimer(){
 }
 function startMatchTimer(){
  stopMatchTimer();
- if(!match||match.finished||match.paused||match.highlightActive)return;
+ if(!match||match.finished||match.paused||match.highlightActive||match.highlight3DPending)return;
  matchTimer=setInterval(simTick,matchSpeed)
 }
 function setMatchPill(paused){
@@ -7255,6 +7259,7 @@ function startMatch(mode,opponent=null){
   opp=Math.max(55,Math.min(94,Math.round(power+(Math.random()*4-4))));name="SQUAD BATTLE XI";
  }
  if(opponentProfile?.squad&&typeof opponentSquadChemistry==="function")opponentProfile={...opponentProfile,chemScores:opponentSquadChemistry(opponentProfile.squad.map(opponentMatchBase),opponentProfile.formation,opponentProfile.items||opponentProfile.squad)};
+ if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
  mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,finished:false,paused:false,
@@ -7292,7 +7297,7 @@ function addLog(t){
  $("matchLog").prepend(d)
 }
 function updateMatchUI(){
- if(!match)return;
+ if(!match||match.highlight3DPending)return;
  $("matchMinute").textContent=`${Math.min(120,Math.floor(match.minute))}'`;
  $("matchScore").textContent=`${match.home} : ${match.away}`;
  const yellows=(match.yellowCards||[]).map(card=>`<span class="match-yellow-card">${esc(card.name)} · ${card.minute}'</span>`).join("");
@@ -7320,22 +7325,23 @@ function resetMatchPresentation(){
  $("matchChronicle")?.removeAttribute("open")
 }
 function renderMatchTimeline(){
- if(!match)return;
+ if(!match||match.highlight3DPending)return;
  const timeline=$("matchTimeline");
  timeline.innerHTML='<span class="match-timeline-start">Anpfiff</span>'+(match.timeline||[]).map(e=>`<span class="match-timeline-event ${e.kind}" title="${esc(e.text)}">${e.kind==="goal"?"⚽":e.kind==="yellow"?"🟨":e.kind==="red"?"🟥":e.kind==="injury"?"✚":e.kind==="sub"?"↔":"◦"} ${e.minute}' · ${esc(e.text)}</span>`).join("");
  timeline.scrollLeft=timeline.scrollWidth
 }
 function renderMatchScene(){
- if(!match?.lastScene)return;
+ if(!match?.lastScene||match.highlight3DPending)return;
  const scene=match.lastScene,kind=scene.kind;
  $("matchLiveStage").dataset.scene=kind;
  $("matchSceneMinute").textContent=`${scene.minute}'`;
- $("matchSceneType").textContent=kind.endsWith("-goal")?"TOR":kind.endsWith("-save")?"PARADE":kind.endsWith("-block")?"GEBLOCKT":kind.endsWith("-defense")?"BALLGEWINN":kind.endsWith("-chance")?"TORSCHUSS":kind.endsWith("-attack")?"ANGRIFF":kind.endsWith("-card")?"ROTE KARTE":kind.endsWith("-injury")?"VERLETZUNG":"SPIEL LÄUFT";
+ $("matchSceneType").textContent=kind.endsWith("-goal")?"TOR":kind.endsWith("-save")?"PARADE":kind.endsWith("-post")?"PFOSTEN":kind.endsWith("-block")?"GEBLOCKT":kind.endsWith("-defense")?"BALLGEWINN":kind.endsWith("-chance")?"TORSCHUSS":kind.endsWith("-attack")?"ANGRIFF":kind.endsWith("-card")?"ROTE KARTE":kind.endsWith("-injury")?"VERLETZUNG":"SPIEL LÄUFT";
  $("matchSceneText").textContent=scene.text;
  const ball=$("matchLiveStage").querySelector(".match-ball");
  ball.style.animation="none";void ball.offsetWidth;ball.style.animation=""
 }
 function dismissMatchGoalMoment(resume=true){
+ if(!resume&&typeof cancelMatch3D==="function")cancelMatch3D();
  const wasActive=!!match?.highlightActive;
  clearTimeout(matchHighlightTimer);matchHighlightTimer=null;
  if(match)match.highlightActive=false;
@@ -7414,10 +7420,15 @@ function resolveMissedMatchShot(shot,team){
  const accuracy=matchClamp(.50+(Number(shot.shooting||70)-65)*.006+Number(shot.xg||0)*.24,.42,.82),roll=Math.random(),saveCut=accuracy*.72,blockCut=Math.min(.92,saveCut+.22),kind=roll<saveCut?"save":roll<blockCut?"block":"wide";
  const action=kind==="wide"?null:recordMatchDefense(shot.side,kind,shot.xg,shot.defenderIndex);
  shot.outcome=action?kind:"wide";shot.onTarget=shot.outcome==="save";
+ // Refine only the presentation of already missed shots using the EXISTING roll.
+ // No extra random draw, goal check, shot, xG or defensive action is introduced.
+ shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":Number(shot.xg)>=.16?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
+ if(typeof queueMatchChance3D==="function")queueMatchChance3D(shot);
  if(action){
   const text=kind==="save"?`${action.name} pariert den Abschluss von ${shot.shooter}!`:`${action.name} blockt den Schuss von ${shot.shooter}.`;
   recordMatchScene(`${action.side}-${kind}`,text);addLog(text)
- }else recordMatchScene(`${shot.side}-chance`,`${shot.shooter} schießt vorbei · ${team}.`)
+ }else if(shot.highlightType==="shot_post")recordMatchScene(`${shot.side}-post`,`${shot.shooter} trifft den Pfosten · ${team}.`);
+ else recordMatchScene(`${shot.side}-chance`,`${shot.shooter} schießt vorbei · ${team}.`)
 }
 function recordMatchEvent(kind,side,text){
  if(!match)return;
@@ -7474,7 +7485,7 @@ function goalCreation(){
 function logGoal(side,scorer,assist,type){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
  const event={
-  side,minute,at:match.minute,scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
+  side,minute,at:match.minute,playerName:scorer?.base?.fullName||[scorer?.base?.firstName,scorer?.base?.lastName].filter(Boolean).join(" ")||scorer?.name||"Spieler",scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
   scorerUid:side==="home"?String(scorer?.uid||""):"",
   assistUid:side==="home"?String(assist?.uid||""):"",
   scorerIndex:side==="away"?Number(scorer?.index??-1):-1,
@@ -7482,9 +7493,10 @@ function logGoal(side,scorer,assist,type){
   scoreHome:match.home,scoreAway:match.away
  };
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
+ const in3D=typeof queueMatchGoal3D==="function"&&queueMatchGoal3D(event);
  recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
  recordMatchScene(`${side}-goal`,`${event.scorer} trifft für ${team}!`);
- if(typeof document!=="undefined")showMatchGoalMoment(event,scorer);
+ if(typeof document!=="undefined"&&!in3D)showMatchGoalMoment(event,scorer);
  if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`);return}
  if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`);return}
  if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`);return}
@@ -7514,7 +7526,7 @@ function simAttack(homeSide){
   return
  }
  const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0009+duelMargin*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014,.05,.52);
- const shot={side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:attacker.attrs.sho,creator:creator.name,defenderIndex:duelDefender?.index??-1,goal:false};
+ const shot={side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:attacker.base?.fullName||[attacker.base?.firstName,attacker.base?.lastName].filter(Boolean).join(" ")||attacker.name,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:attacker.attrs.sho,creator:creator.name,defenderIndex:duelDefender?.index??-1,goal:false};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
  const goalChance=matchFinishingChance(xg,attacker,defendingSide);
@@ -7525,7 +7537,7 @@ function simAttack(homeSide){
  }else resolveMissedMatchShot(shot,team)
 }
 function simTick(){
- if(!match||match.finished||match.paused)return;
+ if(!match||match.finished||match.paused||match.highlightActive||match.highlight3DPending)return;
  if(resolveEndOfPhase())return;
  // Tempo only changes real-time playback. Every event uses the same virtual-minute step.
  const baseStep=1.25;
@@ -7679,7 +7691,7 @@ function runPenaltyShootout(){
 }
 
 function resolveEndOfPhase(){
- if(!match||match.finished)return true;
+ if(!match||match.finished||match.highlight3DPending)return true;
  if(!match.halftimeLogged&&match.minute>=45){
   match.halftimeLogged=true;match.halftimeActive=true;match.minute=45;updateMatchUI();addLog("Halbzeit.");
   recordMatchEvent("break","", "Halbzeit");
@@ -8805,7 +8817,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V20.88";
+const GFUT_BUILD="V20.89";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8858,7 +8870,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2088",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2089",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -8874,7 +8886,8 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./competition-system.js"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./chem-boosts-ui.js?v=2088"></script>
+<script src="./3d-highlights-match.js?v=2089"></script>
+<script src="./chem-boosts-ui.js?v=2089"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
