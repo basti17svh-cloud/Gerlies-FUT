@@ -20,4 +20,4 @@ assert.match(css,/@media\(max-width:560px\)[\s\S]*?#bioModal \.bio-profile-grid\
 assert.match(css,/@media\(max-width:560px\)[\s\S]*?#bioModal \.bio-attributes-grid\{grid-template-columns:repeat\(3/);
 assert.doesNotMatch(css,/^\.custom-card\s*\{/m);
 assert.doesNotMatch(css,/^\.card-shell\s*\{/m);
-console.log("Spielerprofil V20.93: Struktur, Mobile und Renderer-Isolation OK");
+console.log("Spielerprofil V20.94: Struktur, Mobile und Renderer-Isolation OK");
