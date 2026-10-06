@@ -5,6 +5,15 @@ function cancelMatch3D(){
  if(match)match.highlight3DPending=false;
  document.getElementById('match')?.classList.remove('highlight3d-pending');
 }
+function preserveMatch3DScroll(stage,before){
+ if(!stage||!before||before.top>=0||before.bottom<=0)return;
+ const ratio=Math.max(0,Math.min(1,-before.top/Math.max(1,before.height)));
+ requestAnimationFrame(()=>{
+  if(!stage.isConnected)return;
+  const after=stage.getBoundingClientRect(),wantedTop=-ratio*after.height,delta=after.top-wantedTop;
+  if(Math.abs(delta)>1)window.scrollBy(0,delta);
+ });
+}
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -13,9 +22,10 @@ function queueMatch3D(event){
    onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending')},
    onIdle(){
     if(match!==current)return;
+    const stage=document.getElementById('matchLiveStage'),before=stage?.getBoundingClientRect();
     current.highlight3DPending=false;current.highlightActive=false;
     document.getElementById('match')?.classList.remove('highlight3d-pending');
-    updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);
+    updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);preserveMatch3DScroll(stage,before);
     const fallback=current.highlight3DFallback;delete current.highlight3DFallback;
     if(fallback?.type==='goal'&&!current.paused&&!current.finished){
      const goal=current.goalEvents.find(g=>g.minute===fallback.minute&&g.side===fallback.team&&(g.playerName||g.scorer)===fallback.playerName);
@@ -30,9 +40,9 @@ function queueMatch3D(event){
  const home=identity?.kits?.home;
  const away=current.opponentProfile?.clubIdentity?.kits?.away;
  const queued=match3DQueue.enqueue({...event,period:FooteraHighlights.getMatchPeriod(current),homeColor:home?.shirtPrimary,awayColor:away?.shirtPrimary,homeShorts:home?.shorts,awayShorts:away?.shorts,homeSocks:home?.socks,awaySocks:away?.socks});
- // The general UI intentionally hides the new score until playback ends. Advance
- // only its clock here, otherwise the previous tick (e.g. 37') stays above 38'.
- if(queued){const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`}
+ // The simulation is already authoritative at enqueue time. Keep score, shots
+ // and xG synchronized while the presentation layer is playing.
+ if(queued){if(typeof updateMatchUI==='function')updateMatchUI(true);const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`}
  return queued;
 }
 function queueMatchGoal3D(event){
