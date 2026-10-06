@@ -13,7 +13,7 @@
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),homeColor:String(event.homeColor||'#961e43'),awayColor:String(event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2090'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2091'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
