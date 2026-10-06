@@ -116,8 +116,8 @@ function makeScene(renderer,event,weak=false){
    const chest=box(.66,.12,.4,colorHex,0,1.56,0,rig,{roughness:.62});chest.rotation.z=.01;
    const shorts=cyl(.34,.37,.3,shortsHex,rig,{roughness:.78});shorts.position.y=.82;
    const neck=cyl(.095,.095,.12,skin,rig,{roughness:.9});neck.position.y=1.7;
-   const head=sphere(.205,skin,0,1.9,0,rig,{roughness:.88});head.scale.set(.94,1.08,.91);
-   const hairCap=sphere(.21,hair,0,2.0,.012,rig,{roughness:.96});hairCap.scale.set(.95,.48,.92);
+   const head=sphere(.205,skin,0,1.9,0,rig,{roughness:.88});head.scale.set(.205*.94,.205*1.08,.205*.91);
+   const hairCap=sphere(.21,hair,0,2.0,.012,rig,{roughness:.96});hairCap.scale.set(.21*.95,.21*.48,.21*.92);
    sphere(.045,skin,0,1.89,-.185,rig,{roughness:.9});
    const arms=[],legs=[];
    for(const side of [-1,1]){
