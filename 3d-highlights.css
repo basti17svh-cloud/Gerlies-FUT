@@ -1,23 +1,37 @@
-/* Isolated Footera broadcast layer; no card styles. */
+/* Footera broadcast layer. Isolated from player-card rendering. */
 .highlight-mode{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;color:#eee;font-size:12px;min-width:0}
 .highlight-mode select{min-width:0;width:190px;max-width:65%;min-height:44px;background:#211a20;color:#fff;border:1px solid #693044;border-radius:9px;padding:8px;font-size:12px}
-.fh3d{position:absolute;inset:0;z-index:20;overflow:hidden;border-radius:inherit;background:#11121a;color:#fff;isolation:isolate}
-.fh3d canvas{display:block;width:100%;height:100%;touch-action:pan-y}
-.fh3d-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none}
-.fh3d-brand{font:800 10px/1.3 system-ui;letter-spacing:2px;color:#fff;text-shadow:0 2px 5px #000}
-.fh3d-brand small{display:block;font-size:8px;letter-spacing:1px;opacity:.7;margin-top:3px}
-.fh3d-skip{pointer-events:auto;min-height:44px;padding:8px 12px;border:1px solid #ffffff45;background:#16131ce6;border-radius:8px;color:white;font:600 11px system-ui;cursor:pointer}
-.fh3d-loading{position:absolute;inset:45% 12px auto;text-align:center;font:600 12px system-ui;letter-spacing:1px}
-.fh3d-hud{position:absolute;bottom:12px;left:12px;right:12px;min-height:58px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:10px 13px;background:linear-gradient(110deg,#761b36f5,#20151df5 70%);border:1px solid #b1456455;border-left:3px solid #dc5674;box-shadow:0 8px 28px #0008;transform:translateY(18px);opacity:0;transition:transform .35s ease,opacity .35s ease;pointer-events:none}
-.fh3d-hud.visible{opacity:1;transform:translateY(0)}
-.fh3d-mark{font:900 italic 27px system-ui;color:#fff;border-right:1px solid #ffffff30;padding-right:12px}
-.fh3d-copy{min-width:0;flex:1}
-.fh3d-name{display:block;font:800 clamp(12px,3.5vw,17px)/1.2 system-ui;letter-spacing:.4px;overflow-wrap:anywhere;text-transform:uppercase}
-.fh3d-event{display:block;margin-top:5px;font:700 10px/1.3 system-ui;letter-spacing:1.4px;color:#f1b8c7}
-#match.highlight3d-pending .match-live-stage{height:clamp(310px,56vh,440px);min-height:310px;position:relative}
+.fh3d{position:absolute;inset:0;z-index:80;overflow:hidden;border-radius:inherit;background:#071018;color:#fff;isolation:isolate}
+.fh3d canvas{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;touch-action:pan-y}
+.fh3d::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,#0006 0%,transparent 22%,transparent 66%,#0206079e 100%)}
+.fh3d::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 56px #0008,inset 0 -70px 90px #0005}
+.fh3d-top{position:absolute;z-index:3;top:14px;left:15px;right:15px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.fh3d-brand{font:900 11px/1.25 system-ui;letter-spacing:2.2px;color:#fff;text-shadow:0 2px 8px #000}
+.fh3d-brand::first-letter{color:#69ff7f}
+.fh3d-brand small{display:block;font-size:8px;letter-spacing:1.2px;opacity:.78;margin-top:4px}
+.fh3d-skip{pointer-events:auto;min-height:44px;padding:9px 13px;border:1px solid #ffffff42;background:#090d12d9;border-radius:10px;color:white;font:700 11px system-ui;backdrop-filter:blur(8px);cursor:pointer}
+.fh3d-loading{position:absolute;z-index:3;inset:46% 12px auto;text-align:center;font:800 12px system-ui;letter-spacing:1.6px;color:#eaf4ee}
+.fh3d-hud{position:absolute;z-index:4;bottom:18px;left:16px;right:16px;min-height:78px;box-sizing:border-box;display:grid;grid-template-columns:58px minmax(0,1fr) 18px;align-items:center;gap:11px;padding:10px 18px 10px 14px;background:linear-gradient(112deg,#081515f7 0%,#101820f7 58%,#0b1618f7 100%);border:1px solid #63ff78;clip-path:polygon(3% 0,97% 0,100% 18%,97% 100%,3% 100%,0 82%);filter:drop-shadow(0 10px 22px #000c);transform:translateY(22px) scale(.985);opacity:0;transition:transform .34s ease,opacity .34s ease;pointer-events:none}
+.fh3d-hud::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,#5cff7819 0 24%,transparent 24% 65%,#5cff780d 65% 76%,transparent 76%);pointer-events:none}
+.fh3d-hud::after{content:"";width:7px;height:7px;border-top:2px solid #63ff78;border-right:2px solid #63ff78;justify-self:end;transform:rotate(45deg);opacity:.9}
+.fh3d-hud.visible{opacity:1;transform:translateY(0) scale(1)}
+.fh3d-mark{position:relative;z-index:1;font:950 italic 34px/1 system-ui;color:#65ff7b;border-right:1px solid #ffffff2b;padding:2px 12px 2px 4px;text-shadow:0 0 18px #5cff7860}
+.fh3d-copy{position:relative;z-index:1;min-width:0;text-align:center}
+.fh3d-name{display:block;font:900 clamp(15px,4.5vw,22px)/1.05 system-ui;letter-spacing:.8px;overflow-wrap:anywhere;text-transform:uppercase;text-shadow:0 2px 8px #000}
+.fh3d-event{display:block;margin-top:7px;font:750 10px/1.2 system-ui;letter-spacing:2px;color:#c9d8d1;text-transform:uppercase}
+#match.highlight3d-pending .match-live-stage{height:clamp(430px,64svh,620px);min-height:430px;position:relative;border-color:#4c7558;background:#071018;box-shadow:0 20px 44px #000b,inset 0 1px #ffffff22}
 #match.highlight3d-pending .match-live-stage> :not(.fh3d){visibility:hidden}
 #match.highlight3d-pending .match-timeline-wrap{visibility:hidden}
 #match.highlight3d-pending #matchStatePill span{font-size:0}
 #match.highlight3d-pending #matchStatePill span::after{content:'Live-Chance';font-size:10px}
-#match.highlight3d-pending #manageTeamBtn{pointer-events:none;opacity:.5}
+#match.highlight3d-pending .match-primary-controls{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#match.highlight3d-pending #manageTeamBtn,#match.highlight3d-pending #matchSpeedBtn{pointer-events:none!important}
+@media(max-width:560px){
+ .fh3d-top{top:12px;left:12px;right:12px}
+ .fh3d-hud{left:10px;right:10px;bottom:12px;grid-template-columns:50px minmax(0,1fr) 14px;min-height:72px;padding:9px 13px 9px 11px}
+ .fh3d-mark{font-size:30px;padding-right:9px}
+ .fh3d-name{font-size:clamp(15px,5vw,20px)}
+ #match.highlight3d-pending .match-live-stage{height:min(64svh,560px);min-height:440px;border-radius:18px}
+}
+@media(max-height:720px){#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{min-height:66px;bottom:10px}}
 @media(prefers-reduced-motion:reduce){.fh3d-hud{transition:none}}
