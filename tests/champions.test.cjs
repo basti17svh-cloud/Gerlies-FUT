@@ -14,12 +14,12 @@ test("Champions scripts parse and V21.08 shell wires the mode",()=>{
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
  assert.match(html,/champions-system\.js\?v=2108/);
- assert.match(html,/const GFUT_BUILD="V21\.07"/);
- assert.match(html,/<title>Footera V21\.07<\/title>/);
+ assert.match(html,/const GFUT_BUILD="V21\.08"/);
+ assert.match(html,/<title>Footera V21\.08<\/title>/);
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
- assert.match(sw,/footera-v21-07-root-shell/);
+ assert.match(sw,/footera-v21-08-root-shell/);
  assert.match(sw,/champions-system\.js\?v=2108/);
  assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.08");
 });
