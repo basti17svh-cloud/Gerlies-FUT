@@ -40,8 +40,11 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   check("role, focus and tactic are saved before kickoff",await page.evaluate(()=>state.roles[5]==="Deep Lying Playmaker"&&state.focus[5]==="Defend"&&state.tactic==="attacking"));
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
-   const geometry=await page.evaluate(()=>{const modal=document.getElementById("squadBattleModal"),body=document.getElementById("squadBattleModalBody");return{doc:document.documentElement.scrollWidth,view:innerWidth,modal:modal.scrollWidth,body:body.scrollWidth,bodyClient:body.clientWidth}});
-   check(`${width}: pre-match editor has no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.modal<=geometry.view+1&&geometry.body<=geometry.bodyClient+1);
+   const geometry=await page.evaluate(()=>{
+    const editor=document.querySelector(".preview-team-editor"),controls=document.querySelector(".preview-team-controls"),rows=[...document.querySelectorAll(".preview-role-row")];
+    return{doc:document.documentElement.scrollWidth,view:innerWidth,editor:editor.scrollWidth,editorClient:editor.clientWidth,controls:controls.scrollWidth,controlsClient:controls.clientWidth,rowsOk:rows.every(row=>row.scrollWidth<=row.clientWidth+1)}
+   });
+   check(`${width}: pre-match editor has no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.editor<=geometry.editorClient+1&&geometry.controls<=geometry.controlsClient+1&&geometry.rowsOk);
   }
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:path.join(output,"prematch-editor-v2102-390.png"),fullPage:true});
