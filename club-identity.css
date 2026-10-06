@@ -49,8 +49,8 @@
 /* V21.05 — erweiterter Vereinsdesigner */
 .crest-border-fields{margin-top:10px}
 .club-crest{--crest-border:var(--crest-primary);--crest-border-size:7px;background:var(--crest-border)}
-.club-crest::before{inset:var(--crest-border-size);background:var(--crest-secondary)}
-.club-crest::after{inset:calc(var(--crest-border-size) + 7px)}
+.club-crest::before{inset:var(--crest-border-size);background:var(--crest-primary)}
+.club-crest::after{inset:calc(var(--crest-border-size) + 7px);background:var(--crest-secondary);opacity:1}
 .club-crest.border-thin{--crest-border-size:4px}
 .club-crest.border-medium{--crest-border-size:7px}
 .club-crest.border-strong{--crest-border-size:10px}
