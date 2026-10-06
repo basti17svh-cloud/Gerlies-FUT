@@ -1,6 +1,6 @@
 "use strict";
 
-/* Footera V20.95 — Champions competition layer.
+/* Footera V20.97 — Champions competition layer.
    Match results stay owned by the existing Footera simulation; this file only
    handles qualification, weekend state, rank/reward progression and AI profile selection. */
 const CHAMPIONS_ENTRY_POINTS=1000;
@@ -131,7 +131,10 @@ recordCompetitionMatch=function(mode,result,home,away,opponent,difficulty){
  if(mode==="champions")return recordChampionsResult(result);
  const snapshot=footeraBaseRecordCompetitionMatch(mode,result,home,away,opponent,difficulty);
  if(mode==="rivals"&&snapshot){
-  const c=ensureChampionsState(),gain=championsQualificationGain(result);c.qualPoints+=gain;snapshot.championsPointsEarned=gain;save()
+  const c=ensureChampionsState(),before=Math.max(0,Number(c.qualPoints||0)),gain=championsQualificationGain(result),after=before+gain;
+  c.qualPoints=after;snapshot.championsPointsEarned=gain;
+  snapshot.championsQualification={before,after,earned:gain,target:CHAMPIONS_ENTRY_POINTS,qualifiedBefore:before>=CHAMPIONS_ENTRY_POINTS,qualifiedAfter:after>=CHAMPIONS_ENTRY_POINTS};
+  save()
  }
  return snapshot
 };
