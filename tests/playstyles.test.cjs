@@ -47,14 +47,21 @@ assert(evo.styles.length<=8,"Evolution darf maximal 8 PlayStyles haben");
 
 const html=ps.profileHTML({},raw);
 assert(/PlayStyles/.test(html)&&/Technik/.test(html),"Spielerprofil muss PlayStyles darstellen");
+assert(/playstyle-glyph/.test(html),"Spielerprofil muss symbolische PlayStyle-Icons verwenden");
+const cardBadge=ps.badgeHTML({},raw,false);
+assert(/playstyle-card-row/.test(cardBadge)&&/playstyle-card-icon/.test(cardBadge),"Karten brauchen eine dezente Symbolreihe");
+assert((cardBadge.match(/playstyle-card-icon/g)||[]).length===3,"Alle aktiven PlayStyles müssen auf der Karte symbolisch sichtbar sein");
+assert(!/playstyle-plus-card-badge/.test(cardBadge),"Der alte einzelne Buchstaben-Kreis darf nicht mehr erscheinen");
+const playstyleCss=fs.readFileSync(path.join(root,"playstyles.css"),"utf8");
+assert(/below the stats/.test(playstyleCss)&&/card-alt-positions/.test(playstyleCss),"PlayStyle-Symbole müssen getrennt von Stats und Nebenpositionen liegen");
 
 const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
-assert(index.includes("./playstyles.js?v=2092"),"PlayStyle-Script ist nicht eingebunden");
-assert(index.includes("./playstyles.css?v=2092"),"PlayStyle-CSS ist nicht eingebunden");
+assert(index.includes("./playstyles.js?v=2093"),"PlayStyle-Script ist nicht eingebunden");
+assert(index.includes("./playstyles.css?v=2093"),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");
 assert(index.includes("FooteraPlayStyles.profileHTML(item,b)"),"Spielerbiografie zeigt PlayStyles nicht an");
-assert(index.includes('const GFUT_BUILD="V20.92"'),"Build wurde nicht auf V20.92 erhöht");
+assert(index.includes('const GFUT_BUILD="V20.93"'),"Build wurde nicht auf V20.93 erhöht");
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
-assert(sw.includes("./playstyles.js?v=2092")&&sw.includes("./playstyles.css?v=2092"),"Service Worker cached PlayStyle-Dateien nicht");
+assert(sw.includes("./playstyles.js?v=2093")&&sw.includes("./playstyles.css?v=2093"),"Service Worker cached PlayStyle-Dateien nicht");
 console.log("PlayStyle-System: 36 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");
