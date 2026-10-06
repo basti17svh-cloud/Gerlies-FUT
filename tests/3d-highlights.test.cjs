@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),H=require('../3d-highlights.js');
-const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala'});
+const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
  assert.equal(H.getMode(),'important');for(const type of H.TYPES){assert.equal(H.accepts(type,'off'),false);assert.equal(H.accepts(type,'important'),true);assert.equal(H.accepts(type,'all'),true);assert.equal(H.accepts(type,'goals'),type==='goal')}
@@ -45,24 +45,31 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
   const fixture=vm.runInNewContext('(function fixture('+fixtureSource+')',{vm,extract,assert});const {ctx}=fixture(seed);
   let ticks=0;while(!ctx.match.finished&&ticks++<160){if(ctx.match.paused){ctx.match.paused=false;ctx.match.halftimeActive=false;ctx.match.forcedOut=null}ctx.simTick()}
   assert.ok(ctx.match.finished);const m=ctx.match;
-  return JSON.parse(JSON.stringify({home:m.home,away:m.away,minute:m.minute,shots:m.shotEvents,goals:m.goalEvents,defense:m.defensiveEvents,red:m.redCards,yellow:m.yellowCards,fitness:m.fitnessLoss,nextRandom:ctx.Math.random()},(key,value)=>['highlightType','playerName'].includes(key)?undefined:value));
+  return JSON.parse(JSON.stringify({home:m.home,away:m.away,minute:m.minute,shots:m.shotEvents,goals:m.goalEvents,defense:m.defensiveEvents,red:m.redCards,yellow:m.yellowCards,fitness:m.fitnessLoss,nextRandom:ctx.Math.random()},(key,value)=>['highlightType','playerName','goalkeeperName'].includes(key)?undefined:value));
  }
  for(let seed=1;seed<=24;seed++)assert.deepEqual(run(current,seed),run(old,seed),'seed '+seed);
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2091','3d-highlights-match.js?v=2091','3d-highlights-scene.mjs?v=2091','3d-highlights.css?v=2091','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v20-91'));assert.ok(html.includes('service-worker.js?v=2091'));
+ for(const file of ['3d-highlights.js?v=2092','3d-highlights-match.js?v=2092','3d-highlights-scene.mjs?v=2092','3d-highlights.css?v=2092','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v20-92'));assert.ok(html.includes('service-worker.js?v=2092'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css','playstyles.js','playstyles.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
  }
 });
 
-test('3D player head and hair keep the intended human-scale sphere radius',()=>{
+test('3D players use human proportions and the camera stays in tele-broadcast range',()=>{
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(scene,/head\.scale\.set\(\.205\*\.94,\.205\*1\.08,\.205\*\.91\)/);
- assert.match(scene,/hairCap\.scale\.set\(\.21\*\.95,\.21\*\.48,\.21\*\.92\)/);
- assert.doesNotMatch(scene,/head\.scale\.set\(\.94,1\.08,\.91\)/);
- assert.doesNotMatch(scene,/hairCap\.scale\.set\(\.95,\.48,\.92\)/);
+ assert.match(scene,/head\.scale\.set\(\.12,\.155,\.115\)/);
+ assert.match(scene,/const startCam=\[side\*24\.5,8\.9,-5\.8\],endCam=\[side\*23\.2,8\.35,-11\.4\]/);
+ assert.match(scene,/camera\.fov=width\/height<\.72\?38:34/);
+ assert.doesNotMatch(scene,/side\*4\.7,2\.7,-14\.2/);
+ assert.match(scene,/PARIERT VON/);
+});
+test('saved-chance snapshots keep the goalkeeper without giving him the shot',()=>{
+ const snap=H.snapshot(event('big_chance_saved'));
+ assert.equal(snap.playerName,'Jamal Musiala');
+ assert.equal(snap.keeperName,'Mike Maignan');
+ assert.equal(snap.type,'big_chance_saved');
 });
