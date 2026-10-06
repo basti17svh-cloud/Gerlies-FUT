@@ -64,7 +64,7 @@ const out=path.join(__dirname,'../test-artifacts');
   // Independently inspect actual rendered meshes, projection and glove contact.
   const checks=await page.evaluate(async()=>{
    const originalRandom=Math.random;let randomCalls=0;Math.random=()=>{randomCalls++;return originalRandom()};
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2103'),rows=[];
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2104'),rows=[];
    const canvas=document.createElement('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(1);
    for(const weak of [true,false])for(const period of [1,2,3,4]){
     const event=FooteraHighlights.snapshot({id:'qa',type:'big_chance_saved',playerName:'Jamal Musiala',keeperName:'Mike Maignan',team:'home',period});
