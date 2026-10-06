@@ -177,3 +177,35 @@ test('match manager chemistry follows kickoff chemistry and substitutes get zero
  ctx.match.lineup[9]='p11';
  assert.equal(ctx.matchManagerChemLevel('p11'),0,'an incoming substitute stays at zero chemistry');
 });
+
+
+test('every match preview exposes formation, tactic, roles and focus before kickoff',()=>{
+ const preview=extract('function previewRolesHTML(','function renderMatchPreview(');
+ const previewEvents=extract('$("squadBattleModalBody").addEventListener("change"', '$("squadBattleModalBody").addEventListener("click"');
+ const modeEntry=extract('function openModeEntry(','function openOpponentTeam(');
+ const start=extract('function startMatch(','function addLog(');
+ assert.match(preview,/id="previewFormationSelect"/);
+ assert.match(preview,/id="previewTacticSelect"/);
+ assert.match(preview,/data-preview-role=/);
+ assert.match(preview,/data-preview-focus=/);
+ assert.match(preview,/Rollen & Fokus/);
+ assert.match(previewEvents,/previewFormationSelect/);
+ assert.match(previewEvents,/state\.formation=formation/);
+ assert.match(previewEvents,/state\.roles=\{\};state\.focus=\{\}/);
+ assert.match(previewEvents,/state\.squad=arrangeSquad\(selected,formation\)/);
+ assert.match(previewEvents,/data-preview-role/);
+ assert.match(previewEvents,/data-preview-focus/);
+ assert.match(modeEntry,/mode==="champions"[\s\S]*renderMatchPreview\(mode,championsOpponent\(\)\)/);
+ assert.match(modeEntry,/mode==="squad"[\s\S]*renderSquadBattleSelection\(\)/);
+ assert.match(modeEntry,/mode==="friendly-friend"[\s\S]*renderMatchPreview\(mode,friendAsOpponent\(fr\)\)/);
+ assert.match(modeEntry,/renderMatchPreview\(mode,oneOffOpponent\(mode\)\)/);
+ assert.match(start,/formation:state\.formation,tactic:state\.tactic\|\|"balanced",roles:\{\.\.\.state\.roles\},focus:\{\.\.\.state\.focus\}/);
+});
+
+test('pre-match editor styles stay isolated from 3D highlight CSS',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'../matchday.css'),'utf8');
+ assert.match(css,/V21\.01 — full pre-match editor/);
+ assert.match(css,/\.squad-battle-preview \.preview-team-editor/);
+ assert.match(css,/\.squad-battle-preview \.preview-role-row/);
+ assert.doesNotMatch(css,/three|webgl|3d-highlight|highlight-canvas/i);
+});
