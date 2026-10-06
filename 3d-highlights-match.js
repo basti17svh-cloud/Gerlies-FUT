@@ -14,6 +14,29 @@ function preserveMatch3DScroll(stage,before){
   if(Math.abs(delta)>1)window.scrollBy(0,delta);
  });
 }
+function match3DStableNumber(value){
+ let n=2166136261;for(const ch of String(value||'')){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0
+}
+function match3DActorSlot(side,{uid='',index=-1,name=''}={}){
+ if(typeof matchActorRows!=='function')return'';
+ const rows=matchActorRows(side)||[];
+ const row=side==='home'?(uid?rows.find(r=>String(r.uid)===String(uid)):null):(Number(index)>=0?rows.find(r=>Number(r.index)===Number(index)):null);
+ const byName=row||rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===String(name||'').toLowerCase());
+ return String(byName?.slot||'').toUpperCase()
+}
+function match3DSequence(event){
+ const wideLeft=new Set(['LB','LWB','LM','LW']),wideRight=new Set(['RB','RWB','RM','RW']);
+ if(['freekick','penalty'].includes(event.creationType))return'central';
+ if(event.creationType==='solo')return'dribble';
+ if(wideLeft.has(event.creatorSlot)||wideRight.has(event.creatorSlot)){
+  const side=wideLeft.has(event.creatorSlot)?'left':'right';
+  return match3DStableNumber(event.id+event.minute)%2?`wing_${side}`:`cutback_${side}`
+ }
+ if(wideLeft.has(event.scorerSlot)||wideRight.has(event.scorerSlot))return'dribble';
+ const cycle=['one_two','through_ball','central','dribble'];
+ return cycle[match3DStableNumber(event.id+':'+event.minute+':'+event.playerName)%cycle.length]
+}
+
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -40,7 +63,11 @@ function queueMatch3D(event){
  const home=identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
- const queued=match3DQueue.enqueue({...event,period:FooteraHighlights.getMatchPeriod(current),
+ const presentation={...event};
+ presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
+ presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
+ presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
+ const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  // The simulation is already authoritative at enqueue time. Keep score, shots
@@ -49,14 +76,16 @@ function queueMatch3D(event){
  return queued;
 }
 function queueMatchGoal3D(event){
- const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer});
+ const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
+  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||''});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
  return queued;
 }
 function queueMatchChance3D(shot){
  if(!shot.highlightType)return false;
- return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||""});
+ return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
+  creatorName:shot.creator||'',creationType:'chance'});
 }
 (function(){
  const selects=document.querySelectorAll('[data-highlight-mode]');
