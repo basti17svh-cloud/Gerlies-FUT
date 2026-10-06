@@ -65,7 +65,7 @@ test('all advertised player-only packs are generated, rare, unique and within th
 test('Mega Pack keeps all 12 players and adds two guaranteed Chemie-Boosts separately',()=>{
  const a=app('2026-10-05T17:00:00Z'),pack=a.run('PACKS.find(p=>p.id==="mega")');
  assert.equal(pack.count,12);assert.equal(pack.rareCount,6);assert.equal(pack.guarantee,82);assert.equal(pack.dailyLimit,20);
- assert.deepEqual(pack.chemBoostSlots,{slots:2,chance:1});
+ assert.deepEqual({...pack.chemBoostSlots},{slots:2,chance:1});
  for(let n=0;n<12;n++){
   const items=a.ctx.generatePack('mega',false);assert.equal(items.length,12);assert.equal(new Set(items.map(i=>i.pid)).size,12);
   assert.ok(items.every(i=>i.tradeable===false));

@@ -8,12 +8,18 @@
  try{const saved=root.localStorage?.getItem(KEY);if(saved in MODES)mode=saved}catch(_){}
  function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')}
  function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}return mode}
+ // Period is captured at enqueue time from the simulator's existing lifecycle flags.
+ // In particular 45+/90+/105+ belong to the current period until its break is logged.
+ function getMatchPeriod(state){return state.extraTimeStarted?(state.extraTimeBreakLogged?4:3):(state.halftimeLogged?2:1)}
+ function getAttackDirection(team,period){return (team==='away'?-1:1)*([2,4].includes(Number(period))?-1:1)}
  function snapshot(event){
   // Copy only display data. Never pass a live player, match or saved state to WebGL.
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
-   playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),homeColor:String(event.homeColor||'#961e43'),awayColor:String(event.awayColor||'#e9ecf3')});
+   period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:getAttackDirection(event.team,event.period),
+   playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),homeColor:String(event.homeColor||'#961e43'),awayColor:String(event.awayColor||'#e9ecf3'),
+   homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2094'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2096'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -29,7 +35,7 @@
   finally{remove();signal.removeEventListener('abort',remove)}
  }
  class Queue{
-  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=14000}={}){
+  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=18000}={}){
    this.play=play||defaultPlay;
    this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
   }
@@ -56,6 +62,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,Queue,accepts,snapshot,setMode,getMode:()=>mode};
+ const api={TYPES,MODES,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

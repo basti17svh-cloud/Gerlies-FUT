@@ -65,12 +65,12 @@ test('Founder identity, card text, icon-like chemistry and bio values are exact'
  assert.deepEqual([b.name,b.fullName,b.ovr,b.position,b.alt,b.nation,b.team,b.league,b.height,b.preferredFoot,b.skillMoves,b.weakFoot],['B. Gerlach','Bastian Gerlach',88,'ST','CAM','Germany','FC Gerlies','Footera',172,'Right',5,5]);
  assert.deepEqual([b.pac,b.sho,b.pas,b.dri,b.def,b.phy],[91,89,82,88,45,84]);
  const required=['FOUNDER','Bastian Gerlach','172 cm','Rechts','ZOM','Starker Fuß','Skills','Schwacher Fuß'];
- const bio=between('function openBiography(','function cardHTML(');
+ const bio=between('function playerProfileTypeLabel(','function cardHTML(');
  const elements=new Map();Object.assign(ctx,{$:id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:''});return elements.get(id)},displayBase:()=>b,resolvedPlayer:x=>x,ensurePlayerAffiliationAssets(){},isMomentumItem:()=>false,playerContextLine:()=> 'FC Gerlies · Footera · Germany',playerClubPerformance:()=>({goals:0,assists:0}),cardHTML:()=>'<div class="card-shell">B. Gerlach</div>',inPosition:()=>true,playerAffiliationHTML:()=>'',positionLabel:x=>x==='CAM'?'ZOM':x,flagEmoji:()=> '🇩🇪',nationLabel:()=> 'Germany',playerFoot:()=> 'Rechts',stars:n=>'★'.repeat(n),skillStars:()=>5,weakFootStars:()=>5,workRates:()=> '–',positionRoleLabel:()=> '–',cardStatPairs:()=>[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],esc:String,showUiLayer(){}});
  vm.runInContext(bio,ctx);call(ctx,'openBiography')(item,-1);
  const markup=elements.get('bioDetailBody').innerHTML;
  for(const token of required)assert.ok(markup.includes(token),token);
- for(const n of [91,89,82,88,45,84])assert.ok(markup.includes(`<b>${n}</b>`));
+ for(const n of [91,89,82,88,45,84])assert.ok(markup.includes(`<strong>${n}</strong>`));
  assert.match(markup,/★{5}/);assert.match(markup,/FC Gerlies · Footera/);
 });
 
@@ -142,8 +142,8 @@ test('Marco remains protected against forged SBC, transfer and quick-sell flags'
 test('Marco biography lists his full name, 178 cm, right foot, five stars, ZOM and six attributes',()=>{
  const ctx=setup(),b=call(ctx,'MARCO_FOUNDER_BASE'),item=call(ctx,'marcoFounderItem')();
  const els=new Map();Object.assign(ctx,{$:id=>{if(!els.has(id))els.set(id,{innerHTML:'',textContent:''});return els.get(id)},displayBase:()=>b,resolvedPlayer:x=>x,ensurePlayerAffiliationAssets(){},isMomentumItem:()=>false,playerContextLine:()=> 'Schweinfurt Rangers 09 · Footera · Deutschland',playerClubPerformance:()=>({goals:0,assists:0}),cardHTML:()=>'<div class="card-shell founder-shell">M. Gerlach</div>',inPosition:()=>true,playerAffiliationHTML:()=>'',positionLabel:x=>x==='CAM'?'ZOM':x,flagEmoji:()=> '🇩🇪',nationLabel:()=> 'Deutschland',playerFoot:()=> 'Rechts',stars:n=>'★'.repeat(n),skillStars:()=>5,weakFootStars:()=>5,workRates:()=> '–',positionRoleLabel:()=> '–',cardStatPairs:()=>[['TEM',91],['SCH',89],['PAS',82],['DRI',88],['DEF',45],['PHY',84]],esc:String,showUiLayer(){}});
- vm.runInContext(between('function openBiography(','function cardHTML('),ctx);call(ctx,'openBiography')(item,-1);
+ vm.runInContext(between('function playerProfileTypeLabel(','function cardHTML('),ctx);call(ctx,'openBiography')(item,-1);
  const markup=els.get('bioDetailBody').innerHTML;
  for(const token of ['Marco Gerlach','FOOTERA FOUNDER','178 cm','Rechts','ZOM','Schweinfurt Rangers 09 · Footera','★★★★★'])assert.ok(markup.includes(token),token);
- for(const n of [91,89,82,88,45,84])assert.ok(markup.includes(`<b>${n}</b>`));
+ for(const n of [91,89,82,88,45,84])assert.ok(markup.includes(`<strong>${n}</strong>`));
 });

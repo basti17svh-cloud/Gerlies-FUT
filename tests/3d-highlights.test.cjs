@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V20.95 shell includes Champions without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V20.96 shell includes Champions without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -24,20 +24,23 @@ test('load failures, context failures and watchdog timeouts return to fallback w
 test('cancelling an old match prevents a stale completion resuming a new match',async()=>{
  let idle=0,resolve;const q=new H.Queue({play:()=>new Promise(r=>resolve=r),onIdle:()=>idle++});q.enqueue(event());await turn();q.cancel();resolve('played');await turn();assert.equal(idle,0);assert.equal(q.busy,false);
 });
-test('four trajectories share the entire build-up and have distinct physical endings',async()=>{
- const {ballPosition,cameraIndex}=await import('../3d-highlights-scene.mjs');
- for(const t of [0,1,2,3.09])for(const type of H.TYPES)assert.deepEqual(ballPosition(type,t),ballPosition('goal',t));
- const goal=ballPosition('goal',5),save=ballPosition('big_chance_saved',5.7),miss=ballPosition('big_chance_missed',5.7),post=ballPosition('shot_post',4.35),rebound=ballPosition('shot_post',5.7);
- assert.ok(goal[2]<-32&&goal[2]>-34&&Math.abs(goal[0])<3.66&&goal[1]<2.44);
- assert.ok(save[2]>-32);assert.ok(miss[0]>3.66&&miss[2]<-32);assert.ok(Math.abs(post[0]-3.66)<.2&&Math.abs(post[2]+32)<.2);assert.ok(rebound[2]>-32);
- for(const type of H.TYPES)assert.equal(cameraIndex(event(type)),cameraIndex(event('goal')),'camera must not disclose result');
+test('all finishes share build-up; foot contact precedes flight; rebound follows physical impact',async()=>{
+ const {ballPosition,SHOT_TIME,IMPACT_TIME,shotFootPosition}=await import('../3d-highlights-scene.mjs');
+ for(const t of [0,1,2,3.09,4.9,SHOT_TIME])for(const type of H.TYPES)assert.deepEqual(ballPosition(type,t),ballPosition('goal',t));
+ assert.deepEqual(ballPosition('goal',SHOT_TIME),shotFootPosition());
+ assert.ok(Math.hypot(...ballPosition('goal',SHOT_TIME+.001).map((v,i)=>v-shotFootPosition()[i]))<.03,'continuous foot release');
+ const goal=ballPosition('goal',7.5),save=ballPosition('big_chance_saved',8),miss=ballPosition('big_chance_missed',8),post=ballPosition('shot_post',IMPACT_TIME),rebound=ballPosition('shot_post',8);
+ assert.ok(goal[2]<-52.5&&goal[2]>-54.4&&Math.abs(goal[0])<3.66&&goal[1]<2.44);
+ assert.ok(save[2]>-52.5);assert.ok(miss[0]>3.66&&miss[2]<-52.5);
+ assert.ok(Math.abs(post[0]-3.66)<.15&&Math.abs(post[2]+52.5)<.01);assert.ok(rebound[2]>-52.5);
+ for(const type of H.TYPES){const impact=ballPosition(type,IMPACT_TIME);for(const t of [IMPACT_TIME-.00001,IMPACT_TIME+.00001])assert.ok(Math.hypot(...ballPosition(type,t).map((v,i)=>v-impact[i]))<.001,'continuous impact '+type)}
 });
 test('Three resource UUIDs cannot consume the simulation random stream',async()=>{
  let calls=0;const original=Math.random;Math.random=()=>{calls++;return .5};
  try{const T=await import('../vendor/three/three.module.min.js');new T.Scene();new T.BoxGeometry();new T.MeshLambertMaterial();assert.equal(calls,0)}finally{Math.random=original}
 });
 test('current simulation reproduces pre-integration goals, shots, cards, fitness and RNG for 24 seeds',()=>{
- const old=require('node:child_process').execFileSync('git',['show','a5094f7:index.html'],{cwd:root,encoding:'utf8',maxBuffer:3e6});
+ const old=require('node:child_process').execFileSync('git',['show','e35e439:index.html'],{cwd:root,encoding:'utf8',maxBuffer:3e6});
  const current=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const fixtureSource=fs.readFileSync(path.join(__dirname,'matchday.test.cjs'),'utf8').split('function fixture(')[1].split("\ntest('")[0];
  function run(html,seed){
@@ -51,23 +54,43 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2094','3d-highlights-match.js?v=2094','3d-highlights-scene.mjs?v=2094','3d-highlights.css?v=2094','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v20-95'));assert.ok(html.includes('service-worker.js?v=2095'));
+ for(const file of ['3d-highlights.js?v=2096','3d-highlights-match.js?v=2096','3d-highlights-scene.mjs?v=2096','3d-highlights.css?v=2096','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v20-96'));assert.ok(html.includes('service-worker.js?v=2096'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
  }
 });
 
-test('3D players use human proportions and the camera stays in tele-broadcast range',()=>{
- const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(scene,/head\.scale\.set\(\.12,\.155,\.115\)/);
- assert.match(scene,/const startCam=\[side\*24\.5,8\.9,-5\.8\],endCam=\[side\*23\.2,8\.35,-11\.4\]/);
- assert.match(scene,/camera\.fov=width\/height<\.72\?38:34/);
- assert.doesNotMatch(scene,/side\*4\.7,2\.7,-14\.2/);
- assert.match(scene,/supportLeft/);assert.match(scene,/defender4/);assert.match(scene,/shadowMap\.enabled=!weak/);
- assert.match(scene,/TV\/telephoto broadcast camera/);
- assert.match(scene,/PARIERT VON/);
+test('period flags control sides, including stoppage time, with no per-highlight random reflection',()=>{
+ for(const [flags,period] of [[{},1],[{halftimeLogged:true},2],[{halftimeLogged:true,extraTimeStarted:true},3],[{halftimeLogged:true,extraTimeStarted:true,extraTimeBreakLogged:true},4]]){
+  for(const minute of [1,44,45,48,67,90,95,105,109,120]){
+   assert.equal(H.getMatchPeriod({...flags,minute}),period);
+   for(const team of ['home','away'])for(const type of H.TYPES){
+    const e=H.snapshot({...event(type,`${minute}-${type}`),team,minute,period});
+    assert.equal(e.attackDirection,(team==='home'?1:-1)*(period%2?1:-1));
+   }
+  }
+ }
+ for(const period of [1,2,3,4])assert.equal(H.getAttackDirection('home',period),-H.getAttackDirection('away',period));
+});
+test('the whole match space rotates together; all camera distances and quality-independent paths stay wide',async()=>{
+ const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
+ assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
+ for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
+  const c=cameraState(d,t,aspect);assert.ok(c.distance>=MIN_CAMERA_DISTANCE);assert.ok(c.position[0]>70&&c.position[1]>50);assert.equal(c.fov,30);
+  for(const type of H.TYPES){const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+ }
+ assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
+ assert.ok(keeperPose('big_chance_saved',6.65).dive>.95);
+ assert.equal(keeperPose('big_chance_saved',8).land,1);
+ for(let i=0;i<RUNS.length;i++)assert.notDeepEqual(runPosition(i,0),runPosition(i,4));
+});
+test('similar team colours select contrasting complete kits',async()=>{
+ const {kitColors}=await import('../3d-highlights-scene.mjs');
+ for(const color of ['#111111','#ffffff','#91203e','#7a94a0']){
+  const kits=kitColors({homeColor:color,awayColor:color});assert.notEqual(kits.home.shirt,kits.away.shirt);assert.notEqual(kits.keeper,kits.home.shirt);assert.notEqual(kits.keeper,kits.away.shirt);
+ }
 });
 test('saved-chance snapshots keep the goalkeeper without giving him the shot',()=>{
  const snap=H.snapshot(event('big_chance_saved'));

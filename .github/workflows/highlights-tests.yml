@@ -30,6 +30,7 @@ jobs:
         run: |
           node tests/3d-highlights.browser.cjs
           node tests/champions.browser.cjs
+          node tests/3d-highlights.render.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

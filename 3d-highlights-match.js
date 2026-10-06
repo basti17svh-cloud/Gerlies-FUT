@@ -27,8 +27,13 @@ function queueMatch3D(event){
   });
  }
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
+ const home=identity?.kits?.home;
  const away=current.opponentProfile?.clubIdentity?.kits?.away;
- return match3DQueue.enqueue({...event,homeColor:identity?.kits?.home?.shirtPrimary,awayColor:away?.shirtPrimary});
+ const queued=match3DQueue.enqueue({...event,period:FooteraHighlights.getMatchPeriod(current),homeColor:home?.shirtPrimary,awayColor:away?.shirtPrimary,homeShorts:home?.shorts,awayShorts:away?.shorts,homeSocks:home?.socks,awaySocks:away?.socks});
+ // The general UI intentionally hides the new score until playback ends. Advance
+ // only its clock here, otherwise the previous tick (e.g. 37') stays above 38'.
+ if(queued){const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`}
+ return queued;
 }
 function queueMatchGoal3D(event){
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer});
