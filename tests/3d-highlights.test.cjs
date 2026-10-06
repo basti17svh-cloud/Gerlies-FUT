@@ -106,6 +106,13 @@ test('presentation choreography has distinct football actions without changing t
  const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
  for(const seq of sequences)assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'all build-ups reach the same authoritative finish');
 });
+test('wing and cutback highlights start with a visible ball carrier',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ for(const seq of ['wing_left','wing_right','cutback_left','cutback_right'])for(const time of [0,.6,1.2,1.64,2.4,3.4]){
+  const ball=M.ballPosition('goal',time,seq),passer=M.runPosition(1,time,seq),distance=Math.hypot(ball[0]-passer[0],ball[2]-passer[1]);
+  assert.ok(distance<.2,`${seq} @ ${time}: first ball movement must belong to the visible winger, distance=${distance}`);
+ }
+});
 test('snapshot preserves the selected build-up and creator context',()=>{
  const snap=H.snapshot({...event(),sequence:'wing_left',assistName:'Creator',creatorName:'Creator',creationType:'assist',scorerSlot:'ST',creatorSlot:'LW'});
  assert.equal(snap.sequence,'wing_left');assert.equal(snap.creatorSlot,'LW');assert.equal(snap.scorerSlot,'ST');assert.equal(snap.assistName,'Creator');
