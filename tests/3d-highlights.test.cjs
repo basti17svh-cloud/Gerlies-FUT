@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.06 shell includes Champions without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.07 shell includes Champions without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2106','3d-highlights-match.js?v=2106','3d-highlights-scene.mjs?v=2106','3d-highlights.css?v=2106','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-06'));assert.ok(html.includes('service-worker.js?v=2106'));
+ for(const file of ['3d-highlights.js?v=2107','3d-highlights-match.js?v=2107','3d-highlights-scene.mjs?v=2107','3d-highlights.css?v=2107','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-07'));assert.ok(html.includes('service-worker.js?v=2107'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -78,7 +78,7 @@ test('the whole match space rotates together; the permanent broadcast camera sta
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=72);assert.ok(c.position[0]>54&&c.position[1]>32);assert.equal(c.fov,32);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=68);assert.ok(c.position[0]>51&&c.position[1]>30);assert.equal(c.fov,32);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
  const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(Math.abs(early.distance-shot.distance)<.001&&Math.abs(shot.distance-late.distance)<.001);assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
@@ -106,11 +106,16 @@ test('presentation choreography has distinct football actions without changing t
  const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
  for(const seq of sequences)assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'all build-ups reach the same authoritative finish');
 });
-test('wing and cutback highlights start with a visible ball carrier',async()=>{
+test('wing and cutback highlights start with a visible ball carrier and no sideways skating',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- for(const seq of ['wing_left','wing_right','cutback_left','cutback_right'])for(const time of [0,.6,1.2,1.64,2.4,3.4]){
-  const ball=M.ballPosition('goal',time,seq),passer=M.runPosition(1,time,seq),distance=Math.hypot(ball[0]-passer[0],ball[2]-passer[1]);
-  assert.ok(distance<.2,`${seq} @ ${time}: first ball movement must belong to the visible winger, distance=${distance}`);
+ for(const seq of ['wing_left','wing_right','cutback_left','cutback_right']){
+  for(const time of [0,.6,1.2,1.64,2.4,3.4]){
+   const ball=M.ballPosition('goal',time,seq),passer=M.runPosition(1,time,seq),distance=Math.hypot(ball[0]-passer[0],ball[2]-passer[1]);
+   assert.ok(distance<.2,`${seq} @ ${time}: ball must stay with the visible winger before delivery, distance=${distance}`);
+  }
+  const start=M.runPosition(1,0,seq),after=M.runPosition(1,1.2,seq),lateral=Math.abs(after[0]-start[0]),forward=Math.abs(after[1]-start[1]);
+  assert.ok(Math.abs(start[0])>=22,'wide attack must begin with the winger already on the flank');
+  assert.ok(forward>lateral*3,`${seq}: winger must run downfield instead of gliding sideways`);
  }
 });
 test('snapshot preserves the selected build-up and creator context',()=>{

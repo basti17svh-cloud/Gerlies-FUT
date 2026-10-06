@@ -1,18 +1,25 @@
 /* The only bridge to Footera's authoritative simulation. */
-let match3DQueue=null;
+let match3DQueue=null,match3DScrollLock=null;
+function lockMatch3DViewport(){
+ if(match3DScrollLock)return;
+ const body=document.body,stage=document.getElementById('matchLiveStage');
+ stage?.scrollIntoView({block:'center',behavior:'auto'});
+ const y=Math.max(0,window.scrollY||document.documentElement.scrollTop||0);
+ match3DScrollLock={y,position:body.style.position,top:body.style.top,left:body.style.left,right:body.style.right,width:body.style.width,overflow:body.style.overflow};
+ document.documentElement.classList.add('fh3d-scroll-lock');
+ body.style.position='fixed';body.style.top=`-${y}px`;body.style.left='0';body.style.right='0';body.style.width='100%';body.style.overflow='hidden';
+}
+function unlockMatch3DViewport(){
+ const lock=match3DScrollLock;if(!lock)return;
+ const body=document.body;
+ body.style.position=lock.position;body.style.top=lock.top;body.style.left=lock.left;body.style.right=lock.right;body.style.width=lock.width;body.style.overflow=lock.overflow;
+ document.documentElement.classList.remove('fh3d-scroll-lock');match3DScrollLock=null;
+ window.scrollTo({top:lock.y,behavior:'auto'});
+}
 function cancelMatch3D(){
  match3DQueue?.cancel();match3DQueue=null;
  if(match)match.highlight3DPending=false;
- document.getElementById('match')?.classList.remove('highlight3d-pending');
-}
-function preserveMatch3DScroll(stage,before){
- if(!stage||!before||before.top>=0||before.bottom<=0)return;
- const ratio=Math.max(0,Math.min(1,-before.top/Math.max(1,before.height)));
- requestAnimationFrame(()=>{
-  if(!stage.isConnected)return;
-  const after=stage.getBoundingClientRect(),wantedTop=-ratio*after.height,delta=after.top-wantedTop;
-  if(Math.abs(delta)>1)window.scrollBy(0,delta);
- });
+ document.getElementById('match')?.classList.remove('highlight3d-pending');unlockMatch3DViewport();
 }
 function match3DStableNumber(value){
  let n=2166136261;for(const ch of String(value||'')){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0
@@ -42,13 +49,12 @@ function queueMatch3D(event){
  const current=match;
  if(!match3DQueue){
   match3DQueue=new FooteraHighlights.Queue({
-   onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending')},
+   onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending');lockMatch3DViewport()},
    onIdle(){
-    if(match!==current)return;
-    const stage=document.getElementById('matchLiveStage'),before=stage?.getBoundingClientRect();
+    if(match!==current){unlockMatch3DViewport();return}
     current.highlight3DPending=false;current.highlightActive=false;
     document.getElementById('match')?.classList.remove('highlight3d-pending');
-    updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);preserveMatch3DScroll(stage,before);
+    updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);unlockMatch3DViewport();
     const fallback=current.highlight3DFallback;delete current.highlight3DFallback;
     if(fallback?.type==='goal'&&!current.paused&&!current.finished){
      const goal=current.goalEvents.find(g=>g.minute===fallback.minute&&g.side===fallback.team&&(g.playerName||g.scorer)===fallback.playerName);

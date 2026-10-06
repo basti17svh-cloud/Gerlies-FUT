@@ -53,8 +53,9 @@ if(require.main===module)(async()=>{
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
    check(`${width}: authoritative score is synchronized while result label stays hidden`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
-   const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,width:innerWidth}});
-   check(`${width}: no horizontal scroll; canvas and skip inside viewport`,!geometry.overflow&&geometry.left>=0&&geometry.right<=geometry.width+1&&geometry.button>=44);
+   const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect(),canvas=layer.querySelector('canvas').getBoundingClientRect(),body=getComputedStyle(document.body);return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,buttonBottom:button.bottom,canvasTop:canvas.top,width:innerWidth,locked:document.documentElement.classList.contains('fh3d-scroll-lock')&&body.position==='fixed',touch:getComputedStyle(layer.querySelector('canvas')).touchAction}});
+   check(`${width}: no horizontal scroll; skip stays entirely in broadcast bar`,!geometry.overflow&&geometry.left>=0&&geometry.right<=geometry.width+1&&geometry.button>=44&&geometry.buttonBottom<=geometry.canvasTop+1);
+   check(`${width}: live scene locks document scrolling and canvas panning`,geometry.locked&&geometry.touch==='none');
    await page.waitForSelector('.fh3d-hud.visible');
    check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
    const hud=await page.locator('.fh3d-hud').evaluate(h=>({name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent}));
@@ -62,6 +63,7 @@ if(require.main===module)(async()=>{
    check(`${width}: full event name, minute, type and no rating`,hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.event==="TOR · 41'"&&!/84|GES|OVR/.test(hud.text));
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
    check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
+   check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));
    await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});
   }
   await page.setViewportSize({width:390,height:844});

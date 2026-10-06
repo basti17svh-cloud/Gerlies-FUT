@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=66;
+export const MIN_CAMERA_DISTANCE=62;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -34,9 +34,10 @@ export function ballPosition(type,time,sequence='central'){
  const contact=shotFootPosition(),seq=normalizeSequence(sequence);
  if(time<SHOT_TIME){
   if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
-   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*18,.12,-23.5],wideEnd=[side*(cutback?27:25.5),.12,cutback?-48:-44.5];
-   if(time<1.65)return movingBall([-11,.12,-20.5],wideStart,time/1.65,.1);
-   if(time<3.65){const u=(time-1.65)/2,p=movingBall(wideStart,wideEnd,u,0);p[1]=.12+.035*Math.abs(Math.sin(u*5*Math.PI));return p}
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*23,.12,-20.5],wideEnd=[side*(cutback?27:25.5),.12,cutback?-48:-44.5];
+   // Start with the winger visibly in possession. There is no unseen incoming
+   // pass and no 30-metre sideways relocation before the actual attack.
+   if(time<3.65){const u=time/3.65,p=movingBall(wideStart,wideEnd,u,0);p[1]=.12+.035*Math.abs(Math.sin(u*7*Math.PI));return p}
    const deliveryStart=wideEnd,deliveryEnd=[contact[0],cutback?.14:.35,contact[2]+.45];
    if(time<SHOT_TIME-.2)return movingBall(deliveryStart,deliveryEnd,(time-3.65)/(SHOT_TIME-.2-3.65),cutback?.08:2.15);
    return movingBall(deliveryEnd,contact,(time-(SHOT_TIME-.2))/.2,cutback?.02:.08)
@@ -79,8 +80,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // Broadcast 3.0: permanently closer and lower. The camera pans with play but
  // does not zoom in for the shot, so the whole highlight keeps one TV scale.
  const baseZ=mix(-25,-40,phase)*direction,z=mix(baseZ,bp[2],.7),x=bp[0]*.28;
- const distance=Math.max(MIN_CAMERA_DISTANCE,68,66/Math.max(.96,aspect));
- const sideline=74,height=46,trail=7,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ const distance=Math.max(MIN_CAMERA_DISTANCE,64,62/Math.max(.96,aspect));
+ const sideline=71,height=44,trail=7,length=Math.hypot(sideline,height,trail),scale=distance/length;
  return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,.78,z],fov:32,distance};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
@@ -147,11 +148,10 @@ export function runPosition(index,time,sequence='central'){
  }
  if(index===1){
   if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
-   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*18,-23.5],target=[side*(cutback?27:25.5),cutback?-48:-44.5];
-   // The winger owns the ball from frame one. The old path started the player
-   // at wideStart while the ball began centrally, which looked like a pass from nobody.
-   if(time<1.65)return lerp([-11,-20.5],wideStart,smooth(time/1.65));
-   if(time<3.65)return lerp(wideStart,target,smooth((time-1.65)/2));
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*23,-20.5],target=[side*(cutback?27:25.5),cutback?-48:-44.5];
+   // The winger now runs predominantly forward along the touchline. This removes
+   // the sideways skating caused by translating him from a central spawn.
+   if(time<3.65)return lerp(wideStart,target,smooth(time/3.65));
    return lerp(target,[side*(cutback?26.2:24.8),target[1]-.8],smooth((time-3.65)/2.4))
   }
   if(seq==='one_two'){if(time<2.65)return lerp([-12,-22],[-8,-32.6],smooth(time/2.65));return lerp([-8,-32.6],[-5,-38],smooth((time-2.65)/3.7))}
@@ -194,7 +194,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    // separate geometry below; cylinder UV wrapping made diagonal/striped kits
    // look like a different solid shirt at broadcast distance.
    const primary=hex(kit?.shirt,'#e9ecf3'),key=primary;if(shirtMaterials.has(key))return shirtMaterials.get(key);
-   const material=track(new THREE.MeshStandardMaterial({color:primary,roughness:.72,metalness:0,emissive:primary,emissiveIntensity:.055}));
+   const material=track(new THREE.MeshStandardMaterial({color:primary,roughness:.68,metalness:0,emissive:primary,emissiveIntensity:.18}));
    shirtMaterials.set(key,material);return material
   }
   const hemi=new THREE.HemisphereLight('#e2efff','#657644',2.2);scene.add(hemi);
@@ -269,7 +269,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   function shirtDetail(parent,kit){
    const primary=hex(kit?.shirt,'#ffffff'),secondary=hex(kit?.shirtSecondary,primary),pattern=String(kit?.pattern||'solid');
    if(secondary.toLowerCase()===primary.toLowerCase()||pattern==='solid'||pattern==='sleeves')return;
-   const detail=mat(secondary,{roughness:.72}),g=geo('kit-detail',()=>new THREE.BoxGeometry(1,1,1)),add=(x,y,z,w,h,d,rot=0)=>{const n=part(g,detail,parent,x,y,z,w,h,d);n.rotation.z=rot;return n};
+   const detail=track(new THREE.MeshStandardMaterial({color:secondary,roughness:.68,metalness:0,emissive:secondary,emissiveIntensity:.16})),g=geo('kit-detail',()=>new THREE.BoxGeometry(1,1,1)),add=(x,y,z,w,h,d,rot=0)=>{const n=part(g,detail,parent,x,y,z,w,h,d);n.rotation.z=rot;return n};
    // Match the club-identity preview: secondary areas are deliberately narrow
    // enough that the saved primary remains recognisable on a small mobile player.
    if(pattern==='stripes')for(const x of [-.135,0,.135]){add(x,1.29,-.124,.038,.39,.014);add(x,1.29,.124,.038,.39,.014)}
@@ -323,13 +323,13 @@ export function makeScene(renderer,event,weak=false,high=false){
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);for(const b of [...p.arms,...p.elbows,...p.legs,...p.knees])b.rotation.set(0,0,0)}
-  function pose(p,x,z,time,speed,heading=0){
+  function pose(p,x,z,time,speed,heading=0,turn=0){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
    const cadence=7.2+speed*2.5,phase=time*cadence,step=Math.sin(phase)*.6*speed;
    p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;
    p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.9*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.9*speed;
    p.arms[0].rotation.x=-step*.68;p.arms[1].rotation.x=step*.68;p.arms[0].rotation.z=.05+.035*speed;p.arms[1].rotation.z=-.05-.035*speed;for(const elbow of p.elbows)elbow.rotation.x=-.6;
-   p.rig.rotation.x=-.05*speed;p.rig.rotation.z=Math.sin(phase)*.026*speed;p.rig.position.y=Math.abs(Math.sin(phase))*.028*speed;
+   p.rig.rotation.x=-.05*speed;p.rig.rotation.z=Math.sin(phase)*.026*speed+clamp(turn,-.12,.12);p.rig.position.y=Math.abs(Math.sin(phase))*.028*speed;
   }
   const camTarget=new THREE.Vector3();
   // Aim an arm's local -Y axis at a field-space interception point.
@@ -345,7 +345,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   function update(time){
-   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.04),sequence),next=runPosition(i,time+.04,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.18,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y;pose(p,x,z,time+i*.29,speed,heading)});
+   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.08),sequence),next=runPosition(i,time+.08,sequence),farPrev=runPosition(i,Math.max(0,time-.2),sequence),farNext=runPosition(i,time+.2,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/.32,.13,1):.06,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y,early=Math.atan2(-(prev[0]-farPrev[0]),-(prev[1]-farPrev[1])),late=Math.atan2(-(farNext[0]-next[0]),-(farNext[1]-next[1])),turn=moving?Math.atan2(Math.sin(late-early),Math.cos(late-early))*.22:0;pose(p,x,z,time+i*.29,speed,heading,turn)});
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
    const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:sequence==='dribble'?[]:[[1.8,2.18]];
