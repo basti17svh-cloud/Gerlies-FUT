@@ -4,7 +4,7 @@ on:
     paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'service-worker.js', '.github/workflows/highlights-tests.yml']
   push:
     branches: [main]
-    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', '.github/workflows/highlights-tests.yml']
+    paths: ['3d-highlights*', 'vendor/three/**', 'tests/3d-highlights*', 'index.html', 'matchday.css', 'service-worker.js', 'champions-system.js', 'play-hub.js', 'play-hub.css', 'club-stats.js', 'manifest.webmanifest', 'tests/champions*', 'tests/matchday*', '.github/workflows/highlights-tests.yml']
 permissions:
   contents: read
 jobs:
@@ -30,6 +30,7 @@ jobs:
         run: |
           node tests/3d-highlights.browser.cjs
           node tests/champions.browser.cjs
+          node tests/matchday-manager.browser.cjs
           node tests/3d-highlights.render.cjs
       - uses: actions/upload-artifact@v4
         if: always()
