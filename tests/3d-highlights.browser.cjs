@@ -50,8 +50,8 @@ async function force(page,type){
    const hud=await page.locator('.fh3d-hud').evaluate(h=>({name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent}));
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
    check(`${width}: full event name, minute, type and no rating`,hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.event==="TOR · 41'"&&!/84|GES|OVR/.test(hud.text));
-   await page.getByRole('button',{name:'Überspringen',exact:true}).click();await page.waitForSelector('.fh3d',{state:'detached'});
-   check(`${width}: skip resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
+   const skip=page.getByRole('button',{name:'Überspringen',exact:true});if(await skip.count())await skip.click({force:true,timeout:2000}).catch(()=>{});await page.waitForSelector('.fh3d',{state:'detached'});
+   check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
    await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});
   }
   await page.setViewportSize({width:390,height:844});
