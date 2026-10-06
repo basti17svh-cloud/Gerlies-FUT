@@ -4,27 +4,88 @@
 .playstyles-head span{font-size:6px;color:#82928c;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
 .playstyles-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .playstyle-entry{border:1px solid #2d3b36;border-radius:10px;background:#0e1613;overflow:hidden}
-.playstyle-entry.plus{border-color:#7e9b3d;background:linear-gradient(145deg,#162016,#0d1511)}
+.playstyle-entry.plus{border-color:#75693a;background:linear-gradient(145deg,#171912,#0d1411)}
 .playstyle-entry summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:48px;padding:8px;cursor:pointer}
 .playstyle-entry summary::-webkit-details-marker{display:none}
-.playstyle-icon{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:9px;border:1px solid #3b5047;background:#17231e;color:#cfe9dc;font-size:8px;font-weight:1000;letter-spacing:-.02em}
-.playstyle-entry.plus .playstyle-icon{border-color:#a6c953;background:#263419;color:#e9ff95;box-shadow:0 0 12px rgba(216,255,62,.12)}
+.playstyle-icon{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:9px;border:1px solid #3b5047;background:#17231e;color:#cfe9dc}
+.playstyle-entry.plus .playstyle-icon{border-color:#a58b46;background:#282313;color:#f0d984;box-shadow:0 0 10px rgba(229,198,102,.10)}
+.playstyle-glyph{display:block;width:72%;height:72%;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
 .playstyle-copy{min-width:0;display:block;flex:1}
 .playstyle-copy strong{display:block;font-size:8px;color:#eff6f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.playstyle-entry.plus .playstyle-copy strong{color:#e6ff8b}
+.playstyle-entry.plus .playstyle-copy strong{color:#f3df9a}
 .playstyle-copy small{display:block;margin-top:2px;color:#7f9089;font-size:6px}
 .playstyle-chevron{font-size:17px;color:#789087;transition:transform .18s ease}
 .playstyle-entry[open] .playstyle-chevron{transform:rotate(90deg)}
 .playstyle-entry p{margin:0;padding:0 9px 9px 46px;color:#9aaba4;font-size:7px;line-height:1.5}
+
 .playstyle-chip-row{display:flex;flex-wrap:wrap;gap:5px}
 .playstyle-chip{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border-radius:999px;border:1px solid #30423a;background:#121d18;color:#d9e8e1;font-size:6.5px;font-weight:900}
-.playstyle-chip b{width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#203028;color:#bde5d2;font-size:5.5px}
-.playstyle-chip.plus{border-color:#829d43;color:#e7ff8c;background:#1b2516}
-.playstyle-chip.plus b{background:#33451e;color:#efffb4}
-.card-shell>.playstyle-plus-card-badge{position:absolute;z-index:35;right:-5px;bottom:23px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;border:1px solid #a1c84b;background:linear-gradient(145deg,#253517,#0d160c);color:#edff9b;box-shadow:0 4px 9px #0009,0 0 10px rgba(216,255,62,.18);pointer-events:none}
-.playstyle-plus-card-badge b{font-size:6px;line-height:1}
-.playstyle-plus-card-badge i{position:absolute;right:-3px;top:-5px;width:12px;height:12px;display:grid;place-items:center;border-radius:50%;background:#d8ff3e;color:#07100d;font-size:8px;font-style:normal;font-weight:1000;border:1px solid #0c160e}
-.mini .card-shell>.playstyle-plus-card-badge{right:-3px;bottom:14px;width:16px;height:16px}
-.mini .playstyle-plus-card-badge b{font-size:4px}
-.mini .playstyle-plus-card-badge i{right:-3px;top:-5px;width:9px;height:9px;font-size:6px}
-@media(max-width:560px){.playstyles-list{grid-template-columns:1fr}.playstyle-entry summary{min-height:45px}.playstyle-entry p{font-size:7.5px}.playstyle-chip{font-size:7px}}
+.playstyle-chip b{width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#203028;color:#bde5d2}
+.playstyle-chip b .playstyle-glyph{width:72%;height:72%}
+.playstyle-chip.plus{border-color:#75693a;color:#f0dc98;background:#1b1c13}
+.playstyle-chip.plus b{background:#302a16;color:#f0d984}
+
+/* Card display: symbols only. They live below the stats, never on top of them. */
+.card-shell>.playstyle-card-row{
+ position:absolute;z-index:34;left:10.5%;right:10.5%;bottom:7.4%;
+ display:flex;align-items:center;justify-content:center;gap:max(1px,1.25cqw);
+ height:8cqw;margin:0;padding:0;pointer-events:none;opacity:.82;
+}
+.card-shell:has(.card-alt-positions)>.playstyle-card-row{bottom:9.4%}
+.card-shell>.playstyle-card-row .playstyle-card-icon{
+ position:relative;flex:0 0 7.2cqw;width:7.2cqw;height:7.2cqw;
+ display:grid;place-items:center;box-sizing:border-box;
+ border:1px solid rgba(226,237,233,.34);border-radius:1.2cqw;
+ background:rgba(5,10,10,.46);color:rgba(235,244,240,.86);
+ transform:rotate(45deg);box-shadow:0 .5cqw 1.4cqw rgba(0,0,0,.20);
+}
+.card-shell>.playstyle-card-row .playstyle-card-icon .playstyle-glyph{
+ width:70%;height:70%;transform:rotate(-45deg);stroke-width:1.7;
+}
+.card-shell>.playstyle-card-row .playstyle-card-icon.plus{
+ border-color:rgba(239,208,113,.80);background:rgba(29,24,10,.62);color:#f2dc91;
+ box-shadow:0 0 2.7cqw rgba(233,201,96,.15),0 .5cqw 1.4cqw rgba(0,0,0,.25);
+}
+.card-shell>.playstyle-card-row .playstyle-card-icon.plus:after{
+ content:"";position:absolute;right:-.8cqw;top:-.8cqw;width:1.8cqw;height:1.8cqw;
+ background:#efd374;border-radius:.3cqw;box-shadow:0 0 1.5cqw rgba(239,211,116,.36);
+}
+.card-shell:has(>.playstyle-card-row) .custom-card .card-alt-positions{
+ bottom:2.8%!important;font-size:max(3.5px,3.9cqw);
+}
+/* The static Founder art already reserves a lower strip for alternate positions. */
+.bastian-static-founder-shell>.playstyle-card-row{bottom:7.2%}
+.bastian-static-founder-shell:has(>.playstyle-card-row) .founder-card-art>.card-alt-positions{bottom:17%}
+
+/* Slight card-specific tinting, without adding opaque bars or covering artwork. */
+.card-shell:has(>.custom-card.gold)>.playstyle-card-row .playstyle-card-icon,
+.card-shell:has(>.custom-card.icon)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(23,17,8,.43);border-color:rgba(248,224,165,.38);color:#f3dfaa;
+}
+.card-shell:has(>.custom-card.silver)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(10,17,21,.46);border-color:rgba(218,238,248,.42);color:#deedf4;
+}
+.card-shell:has(>.custom-card.bronze)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(28,15,8,.48);border-color:rgba(238,189,139,.40);color:#ebc49c;
+}
+.card-shell:has(>.custom-card.totw)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(9,9,7,.54);border-color:rgba(231,204,116,.40);color:#ead89b;
+}
+.card-shell:has(>.custom-card.momentum)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(3,14,24,.50);border-color:rgba(121,210,248,.42);color:#b8e7fb;
+}
+.card-shell:has(>.custom-card.founder)>.playstyle-card-row .playstyle-card-icon{
+ background:rgba(10,8,3,.50);border-color:rgba(236,199,107,.42);color:#ecd38e;
+}
+
+/* Mini XI cards use the same visual language, only lighter and quieter. */
+.mini .card-shell>.playstyle-card-row{opacity:.72;gap:max(.5px,1cqw)}
+.mini .card-shell>.playstyle-card-row .playstyle-card-icon{box-shadow:none}
+.mini .card-shell>.playstyle-card-row .playstyle-card-icon.plus{box-shadow:0 0 1.5cqw rgba(233,201,96,.12)}
+
+@media(max-width:560px){
+ .playstyles-list{grid-template-columns:1fr}
+ .playstyle-entry summary{min-height:45px}
+ .playstyle-entry p{font-size:7.5px}
+ .playstyle-chip{font-size:7px}
+}
