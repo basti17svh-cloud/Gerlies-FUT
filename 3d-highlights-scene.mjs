@@ -26,17 +26,44 @@ export function shotFootPosition(time=SHOT_TIME){
  const {hip,knee}=kickPose(time);
  return [.105,.94-.43*Math.cos(hip)-.43*Math.cos(hip+knee)-.045,-37-.43*Math.sin(hip)-.43*Math.sin(hip+knee)-.24];
 }
-export function ballPosition(type,time){
- const contact=shotFootPosition();
- // The passer carries it out of midfield, releases to the forward, who takes two touches.
- if(time<2){const u=clamp(time/2),t=smooth(u);return lerp([-13,.12,-21.6],[-10,.12,-28.6],t)}
- if(time<3.1){const u=clamp((time-2)/1.1),t=smooth(u),p=lerp([-10,.12,-28.6],[-1,.12,-32],t);p[1]+=.12*Math.sin(u*Math.PI);return p}
- const carryPoint=t=>{
-  const [sx,sz]=runPosition(0,t),u=clamp((t-3.1)/(SHOT_TIME-3.1));
-  return[sx+mix(0,.08,u),.12+.045*Math.abs(Math.sin(u*4*Math.PI)),sz-mix(.8,.58,u)]
- };
- if(time<SHOT_TIME-.24)return carryPoint(time);
- if(time<SHOT_TIME)return lerp(carryPoint(SHOT_TIME-.24),contact,smooth((time-(SHOT_TIME-.24))/.24));
+export const PLAY_SEQUENCES=Object.freeze(['central','one_two','through_ball','dribble','wing_left','wing_right','cutback_left','cutback_right']);
+export function normalizeSequence(value){return PLAY_SEQUENCES.includes(String(value))?String(value):'central'}
+const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_right')?1:1;
+function movingBall(a,b,u,arc=0){const t=smooth(u),p=lerp(a,b,t);p[1]=mix(a[1],b[1],t)+arc*Math.sin(clamp(u)*Math.PI);return p}
+export function ballPosition(type,time,sequence='central'){
+ const contact=shotFootPosition(),seq=normalizeSequence(sequence);
+ if(time<SHOT_TIME){
+  if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*18,.12,-23.5],wideEnd=[side*(cutback?27:25.5),.12,cutback?-48:-44.5];
+   if(time<1.65)return movingBall([-11,.12,-20.5],wideStart,time/1.65,.1);
+   if(time<3.65){const u=(time-1.65)/2,p=movingBall(wideStart,wideEnd,u,0);p[1]=.12+.035*Math.abs(Math.sin(u*5*Math.PI));return p}
+   const deliveryStart=wideEnd,deliveryEnd=[contact[0],cutback?.14:.35,contact[2]+.45];
+   if(time<SHOT_TIME-.2)return movingBall(deliveryStart,deliveryEnd,(time-3.65)/(SHOT_TIME-.2-3.65),cutback?.08:2.15);
+   return movingBall(deliveryEnd,contact,(time-(SHOT_TIME-.2))/.2,cutback?.02:.08)
+  }
+  if(seq==='one_two'){
+   if(time<1.8)return movingBall([-12,.12,-22],[-2,.12,-29.6],time/1.8,.1);
+   if(time<2.65)return movingBall([-2,.12,-29.6],[-8,.12,-32.6],(time-1.8)/.85,.08);
+   if(time<4.65)return movingBall([-8,.12,-32.6],[-.4,.12,-36.25],(time-2.65)/2,.13);
+   return movingBall([-.4,.12,-36.25],contact,(time-4.65)/(SHOT_TIME-4.65),.03)
+  }
+  if(seq==='through_ball'){
+   if(time<2.35){const u=time/2.35,p=movingBall([-13,.12,-21.5],[-9,.12,-28.2],u,0);p[1]+=.025*Math.abs(Math.sin(u*4*Math.PI));return p}
+   if(time<4.65)return movingBall([-9,.12,-28.2],[-.4,.12,-35.7],(time-2.35)/2.3,.18);
+   return movingBall([-.4,.12,-35.7],contact,(time-4.65)/(SHOT_TIME-4.65),.025)
+  }
+  if(seq==='dribble'){
+   const [sx,sz]=runPosition(0,time,seq),u=clamp(time/SHOT_TIME);
+   const p=[sx+Math.sin(u*6*Math.PI)*.12,.12+.04*Math.abs(Math.sin(u*7*Math.PI)),sz-.62];if(time<SHOT_TIME-.2)return p;
+   return movingBall(p,contact,(time-(SHOT_TIME-.2))/.2,.02)
+  }
+  // Central combination retained as one of several possible build-ups.
+  if(time<2){const u=time/2;return movingBall([-13,.12,-21.6],[-10,.12,-28.6],u,0)}
+  if(time<3.1)return movingBall([-10,.12,-28.6],[-1,.12,-32],(time-2)/1.1,.12);
+  const [sx,sz]=runPosition(0,time,seq),u=clamp((time-3.1)/(SHOT_TIME-3.1)),carry=[sx+mix(0,.08,u),.12+.045*Math.abs(Math.sin(u*4*Math.PI)),sz-mix(.8,.58,u)];
+  if(time<SHOT_TIME-.24)return carry;
+  return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
+ }
  const impact=type==='big_chance_saved'?[2.52,1.14,-50.6]:type==='shot_post'?[3.52,1.25,-52.5]:type==='big_chance_missed'?[5.1,1.5,-53.4]:[2.65,1.08,-54.25];
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
  if(t<1){const p=lerp(contact,impact,t);p[1]+=.65*Math.sin(t*Math.PI);return p}
@@ -47,8 +74,8 @@ export function ballPosition(type,time){
 }
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
-export function cameraState(direction,time,aspect=1.3,type='goal'){
- const phase=smooth(time/6.4),bp=worldPosition(ballPosition(type,time),direction);
+export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central'){
+ const phase=smooth(time/6.4),bp=worldPosition(ballPosition(type,time,sequence),direction);
  // Broadcast 3.0: permanently closer and lower. The camera pans with play but
  // does not zoom in for the shot, so the whole highlight keeps one TV scale.
  const baseZ=mix(-25,-40,phase)*direction,z=mix(baseZ,bp[2],.7),x=bp[0]*.28;
@@ -91,15 +118,45 @@ export const RUNS=Object.freeze([
  {role:'chaser',team:'defend',from:[-17,-25],to:[-14,-32]},
  {role:'second-line',team:'defend',from:[-7,-16],to:[-6,-27]}
 ]);
-export function runPosition(index,time){
- const r=RUNS[index];
+export function runPosition(index,time,sequence='central'){
+ const r=RUNS[index],seq=normalizeSequence(sequence);
  if(index===0){
+  if(seq==='dribble'){
+   const u=clamp(time/SHOT_TIME),z=mix(-25.5,-37,u),x=u<.35?mix(-7,-3,smooth(u/.35)):u<.7?mix(-3,2.4,smooth((u-.35)/.35)):mix(2.4,0,smooth((u-.7)/.3));
+   if(time<=SHOT_TIME)return[x,z];return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+  }
+  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
+   if(time<3.25)return lerp([1,-26],[1,-31.2],smooth(time/3.25));
+   if(time<=SHOT_TIME)return lerp([1,-31.2],[0,-37],smooth((time-3.25)/(SHOT_TIME-3.25)));
+   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+  }
+  if(seq==='one_two'){
+   if(time<1.8)return lerp([-2,-26],[-2,-29.3],smooth(time/1.8));
+   if(time<2.65)return lerp([-2,-29.3],[-1,-30.6],smooth((time-1.8)/.85));
+   if(time<=SHOT_TIME)return lerp([-1,-30.6],[0,-37],smooth((time-2.65)/(SHOT_TIME-2.65)));
+   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+  }
+  if(seq==='through_ball'){
+   if(time<2.35)return lerp([-2,-25.5],[-1.8,-29],smooth(time/2.35));
+   if(time<=SHOT_TIME)return lerp([-1.8,-29],[0,-37],smooth((time-2.35)/(SHOT_TIME-2.35)));
+   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+  }
   if(time<3.1)return lerp([-2,-26],[-1,-31.2],smooth(time/3.1));
   if(time<=SHOT_TIME){const u=clamp((time-3.1)/(SHOT_TIME-3.1)),t=u<.18?smooth(u/.18)*.18:u;return lerp([-1,-31.2],[0,-37],t)}
   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
  }
- if(index===1){if(time<2)return lerp(r.from,r.to,smooth(time/2));return lerp(r.to,[-8,-35],smooth((time-2)/5.2))}
+ if(index===1){
+  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
+   const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),target=[side*(cutback?27:25.5),cutback?-48:-44.5];
+   if(time<3.65)return lerp([side*18,-23.5],target,smooth(time/3.65));return lerp(target,[side*(cutback?26.2:24.8),target[1]-.8],smooth((time-3.65)/2.4))
+  }
+  if(seq==='one_two'){if(time<2.65)return lerp([-12,-22],[-8,-32.6],smooth(time/2.65));return lerp([-8,-32.6],[-5,-38],smooth((time-2.65)/3.7))}
+  if(seq==='through_ball'){if(time<2.35)return lerp([-13,-21.5],[-9,-28.2],smooth(time/2.35));return lerp([-9,-28.2],[-7,-34],smooth((time-2.35)/4.2))}
+  if(seq==='dribble')return lerp([-12,-23],[-8,-34],smooth(time/6.2));
+  if(time<2)return lerp(r.from,r.to,smooth(time/2));return lerp(r.to,[-8,-35],smooth((time-2)/5.2))
+ }
  const u=clamp(time/6.9),p=lerp(r.from,r.to,smooth(u)),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
+ if(seq.startsWith('wing_')||seq.startsWith('cutback_')){const side=sequenceSide(seq);if(r.team==='attack'&&[2,3,4,5].includes(index))p[0]+=side*(index%2?.8:1.6)*Math.sin(u*Math.PI)}
  p[0]+=bend;p[1]+=Math.sin(u*Math.PI*2+hash(index+91)*Math.PI)*.2*Math.sin(u*Math.PI);
  return p;
 }
