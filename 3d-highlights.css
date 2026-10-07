@@ -28,7 +28,9 @@
 .fh3d-minute{position:relative;z-index:1;min-width:45px;padding:0 10px;border-left:1px solid #76ff7750;color:#cfff45;font:950 25px/1 system-ui;text-align:center}
 .fh3d-team-crest{position:relative;z-index:1;width:44px;height:44px;display:grid;place-items:center}
 .fh3d-team-crest:empty{display:none}
-.fh3d-team-crest .club-crest{width:44px!important;height:44px!important;min-width:44px!important;transform:none!important}
+.fh3d-team-crest .club-crest{position:relative;inset:auto;width:44px!important;height:44px!important;min-width:44px!important;transform:none!important}
+.fh3d-team-crest .club-crest-symbol{font-size:21px;line-height:1}
+.fh3d-team-crest .club-crest-initials{bottom:6px;width:34px;max-width:34px;font-size:7px;letter-spacing:0}
 .fh3d-hud-goal .fh3d-goal-meta{align-self:stretch;flex-direction:column;justify-content:space-between;gap:8px;padding:7px 0 5px}
 .fh3d-hud-goal .fh3d-minute{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:27px;padding:5px 8px;border:1px solid #76ff7740;border-radius:8px;background:#172719d9;color:#d5ff4b;font:950 14px/1 system-ui;text-align:center;box-shadow:inset 0 1px #ffffff0f}
 .fh3d-hud-goal .fh3d-team-crest{width:48px;height:48px;margin-top:auto;opacity:.72;filter:saturate(.9) brightness(.9)}

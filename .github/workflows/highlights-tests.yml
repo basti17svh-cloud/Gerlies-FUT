@@ -33,7 +33,11 @@ jobs:
           node tests/matchday-manager.browser.cjs
           node tests/prematch-editor.browser.cjs
           node tests/ux-overview.browser.cjs
-          node tests/3d-highlights.render.cjs
+      - name: Production graphics captures and geometry
+        if: always()
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/3d-highlights.render.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

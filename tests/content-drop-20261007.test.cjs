@@ -5,10 +5,10 @@ const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest")
 
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 
-test("V21.21 schedules the 7 October 19:00 content drop",()=>{
- assert.match(html,/<title>Footera V21\.20<\/title>/);
- assert.equal(manifest.start_url,"./index.html?v=21.21");
- assert.match(html,/const GFUT_BUILD="V21\.20"/);
+test("V21.22 schedules the 7 October 19:00 content drop",()=>{
+ assert.match(html,/<title>Footera V21\.22<\/title>/);
+ assert.equal(manifest.start_url,"./index.html?v=21.22");
+ assert.match(html,/const GFUT_BUILD="V21\.22"/);
 });
 
 test("TOTW 4 is admin-approved for Wednesday 7 October at 19:00 with the Footera 18-card structure",()=>{
@@ -47,4 +47,4 @@ test("Ultimate and Jumbo Rare are the only special shop rotation for the 7 Octob
  assert.match(packs,/id:"jumbo-rare"[\s\S]*?dailyLimit:10,resetHour:19/);
 });
 
-console.log("V21.21 Content Drop 07.10.: Kubo SBC, TOTW 4 und Ultimate/Jumbo Rare 19:00 geplant");
+console.log("V21.22 Content Drop 07.10.: Kubo SBC, TOTW 4 und Ultimate/Jumbo Rare 19:00 geplant");
