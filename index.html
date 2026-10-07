@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.09</title>
+<title>Footera V21.10</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1470,16 +1470,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2109">
+<link rel="stylesheet" href="./3d-highlights.css?v=2110">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=2109">
-<link rel="stylesheet" href="./ux-overview.css?v=2109">
+<link rel="stylesheet" href="./club-identity.css?v=2110">
+<link rel="stylesheet" href="./ux-overview.css?v=2110">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2109">
-<link rel="stylesheet" href="./playstyles.css?v=2109">
-<link rel="stylesheet" href="./player-profile.css?v=2109">
+<link rel="stylesheet" href="./chem-boosts.css?v=2110">
+<link rel="stylesheet" href="./playstyles.css?v=2110">
+<link rel="stylesheet" href="./player-profile.css?v=2110">
 </head>
 <body>
 
@@ -1550,7 +1550,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.09</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.10</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2075,9 +2075,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2109"></script>
-<script src="./chem-boosts.js?v=2109"></script>
-<script src="./playstyles.js?v=2109"></script>
+<script src="./3d-highlights.js?v=2110"></script>
+<script src="./chem-boosts.js?v=2110"></script>
+<script src="./playstyles.js?v=2110"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -2488,7 +2488,27 @@ const TOTW_WEEK_3={id:3,name:"Team of the Week 3",releaseDate:"2026-09-30",activ
  {names:["Mexx Meerdink"],ovr:80,position:"ST",stats:[78,84,70,80,35,80]},
  {names:["Zeki Amdouni","Mohamed Zeki Amdouni"],ovr:84,position:"ST",stats:[82,86,79,84,41,78]}
 ]};
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3];
+const TOTW_WEEK_4={id:4,name:"Team of the Week 4",releaseDate:"2026-10-07",activeUntil:"14.10.2026 18:59",sourceStatus:"pre-release-leak",players:[
+ {names:["Alexia Putellas","Alexia Putellas Segura"],ovr:92,position:"CM",stats:[82,91,92,93,74,77]},
+ {names:["Jude Bellingham"],ovr:91,position:"CAM",stats:[80,87,85,90,80,86]},
+ {names:["Gianluigi Donnarumma"],ovr:90,position:"GK",stats:[91,84,73,91,48,89]},
+ {names:["Ewa Pajor","Ewa Pajor"],ovr:90,position:"ST",stats:[94,92,68,90,23,74]},
+ {names:["Lauren Hemp"],ovr:88,position:"LM",stats:[93,79,84,88,65,71]},
+ {names:["Debinha","Debora Cristiane de Oliveira","Débora Cristiane de Oliveira"],ovr:88,position:"CAM",stats:[86,81,86,90,47,60]},
+ {names:["Kevin De Bruyne"],ovr:86,position:"CAM",stats:[76,84,90,85,68,71]},
+ {names:["Robert Lewandowski"],ovr:85,position:"ST",stats:[70,86,81,81,45,81]},
+ {names:["Joao Cancelo","João Cancelo","Joao Pedro Cavaco Cancelo"],ovr:84,position:"LB",stats:[85,73,85,86,78,73]},
+ {names:["Omar Marmoush"],ovr:84,position:"LW",stats:[89,85,78,85,37,72]},
+ {names:["Milos Kerkez","Miloš Kerkez"],ovr:83,position:"LB",stats:[86,63,77,80,80,81]},
+ {names:["Cornelia Kramer","Kramer"],ovr:80,position:"ST",stats:[83,82,61,77,50,76]},
+ {names:["Troy Parrott"],ovr:80,position:"ST",stats:[77,82,68,79,47,76]},
+ {names:["Nico Elvedi"],ovr:80,position:"CB",stats:[73,41,65,66,81,81]},
+ {names:["Ciaron Brown","Brown"],ovr:80,position:"CB",stats:[76,57,67,71,80,86]},
+ {names:["Cavan Sullivan","Sullivan"],ovr:80,position:"RM",stats:[96,74,73,83,50,73]},
+ {names:["Orri Oskarsson","Orri Óskarsson","Óskarsson"],ovr:80,position:"ST",stats:[80,81,69,76,37,79]},
+ {names:["Annabel Schasching","Schasching"],ovr:80,position:"CM",stats:[81,70,79,77,75,75]}
+]};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -2847,7 +2867,7 @@ const MOMENTUM_EVENT={id:"momentum-team-1",name:"MOMENTUM",shortName:"MOMENTUM",
  {pid:"277432",name:"Patrick Dorgu",ovr:85,position:"LB",baseOvr:78,team:"Manchester United",nation:"Denmark",alt:"LM",stats:[90,77,78,82,81,80]},
  {pid:"204970",name:"Florian Thauvin",ovr:84,position:"RW",baseOvr:82,team:"RC Lens",nation:"France",alt:"ST,RM,CAM",stats:[74,83,86,86,48,70]}
 ]};
-const MOMENTUM_TEAM_2={id:"momentum-team-2",name:"MOMENTUM",shortName:"MOMENTUM · TEAM 2",subtitle:"TEAM 2",theme:"momentum",activeFrom:"2026-10-02T19:00:00+02:00",activeUntilAt:"2026-10-09T19:00:00+02:00",activeUntil:"09.10.2026 · 19:00",players:[
+const MOMENTUM_TEAM_2={id:"momentum-team-2",name:"MOMENTUM",shortName:"MOMENTUM · TEAM 2",subtitle:"TEAM 2",theme:"momentum",activeFrom:"2026-10-02T19:00:00+02:00",activeUntilAt:"2026-10-09T19:00:00+02:00",activeUntil:"09.10.2026 · 19:00",sbcPlayer:{id:"momentum-kubo-86",pid:"237681",name:"Takefusa Kubo",names:["Takefusa Kubo","Kubo"],ovr:86,position:"RW",baseOvr:80,team:"Real Sociedad",nation:"Japan",league:"LALIGA EA SPORTS",alt:"RM,LW,CAM",stats:[91,84,86,90,49,70],releaseAt:"2026-10-07T19:00:00+02:00",activeUntilAt:"2026-10-09T19:00:00+02:00",activeUntil:"09.10.2026 · 19:00",packEligible:false},players:[
  {pid:"256790",dynamicFace:"assets/footera/events/momentum/team2/musiala.webp",name:"Jamal Musiala",ovr:89,position:"CAM",baseOvr:87,team:"Bayern München",nation:"Germany",alt:"LM,LW",stats:[92,86,87,92,66,78]},
  {pid:"271421",dynamicFace:"assets/footera/events/momentum/team2/doue.webp",name:"Désiré Doué",ovr:89,position:"LW",baseOvr:86,team:"Paris Saint-Germain",nation:"France",alt:"CAM,RW,CM,RM,LM",stats:[94,83,86,92,63,78]},
  {pid:"233731",dynamicFace:"assets/footera/events/momentum/team2/isak.webp",name:"Alexander Isak",ovr:88,position:"ST",baseOvr:86,team:"Liverpool",nation:"Sweden",alt:"",stats:[90,92,78,88,42,83]},
@@ -3208,6 +3228,10 @@ function sbcTimeLeft(ts){
  const ms=Math.max(0,Number(ts||0)-Date.now()),mins=Math.ceil(ms/60000),days=Math.floor(mins/1440),hours=Math.floor((mins%1440)/60),m=mins%60;
  return days?`${days} T ${hours} Std`:`${hours} Std ${m} Min`
 }
+function sbcReleaseScheduleLabel(iso){
+ const d=new Date(iso);if(!Number.isFinite(d.getTime()))return"19:00";
+ return new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(",","").toUpperCase()
+}
 function sbcGroupProgress(groupSet){
  const rows=allActiveSBCs().filter(x=>x.groupSet===groupSet),done=rows.filter(sbcIsCompleted).length;return{rows,done,total:rows.length}
 }
@@ -3232,7 +3256,7 @@ function sbcGroupBannerHTML(group,rows){
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  if(group==="Profis"&&sample.eventSbc){
   const def=sample.eventPlayer,reward=`${def.ovr} MOMENTUM ${def.name}`;
-  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · DIENSTAG 19:00</span><h3>MOMENTUM · ${esc(def.name)}</h3><p>Schließe beide Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare MOMENTUM-Karte über ein Spieler-Pack mit MOMENTUM-Reveal.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
+  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · ${esc(sbcReleaseScheduleLabel(def.releaseAt))}</span><h3>MOMENTUM · ${esc(def.name)}</h3><p>Schließe beide Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare MOMENTUM-Karte über ein Spieler-Pack mit MOMENTUM-Reveal.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
  }
  if(group!=="Top-Partien")return"";
  const reward=sbcRewardText(sample.groupReward);
@@ -5396,9 +5420,14 @@ function nextPromoReset(now=new Date(),hour=19){const p=berlinParts(now),boundar
 function promoUsage(pack){if(!pack?.dailyLimit)return{used:0,remaining:Infinity,key:""};state.packLimits=state.packLimits||{};const key=promoWindowKey(new Date(),pack.resetHour??19),cur=state.packLimits[pack.id];if(!cur||cur.key!==key){state.packLimits[pack.id]={key,count:0};save()}const used=Number(state.packLimits[pack.id]?.count||0);return{used,remaining:Math.max(0,pack.dailyLimit-used),key}}
 function consumePromoPurchase(pack){if(!pack?.dailyLimit)return true;const u=promoUsage(pack);if(u.remaining<=0)return false;state.packLimits[pack.id]={key:u.key,count:u.used+1};return true}
 function packChanceLabel(v){if(!v)return"0 %";return `${(v*100).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})} %`}
-// Scheduled shop window: 5 October, 19:00 to 6 October, 19:00 Europe/Berlin.
-const PROMO_PACK_RELEASE={key:"2026-10-05",startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]};
-function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],ids=key===PROMO_PACK_RELEASE.key?PROMO_PACK_RELEASE.ids:sets[cycle]||sets[0];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
+// Scheduled 19:00 shop drops. A dated release overrides the normal daily promo rotation for that 19:00-to-19:00 window.
+const PROMO_PACK_RELEASES=Object.freeze({
+ "2026-10-05":{startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]},
+ "2026-10-07":{startsAt:"2026-10-07T19:00:00+02:00",ids:["ultimate","jumbo-rare"]}
+});
+function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
+function promoPackReleaseLabel(release){return (release?.ids||[]).map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
+function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg"};
@@ -5441,7 +5470,8 @@ function renderStore(){
  const promo=storeTab==="promo",reset=nextPromoReset(new Date(),19);
  storePromoKey=promoWindowKey(new Date(),19);
  for(const tab of document.querySelectorAll("#storeView [data-store-tab]")){const active=tab.dataset.storeTab===storeTab;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active))}
- $("storeContext").textContent=promo?(sbcDateKey(new Date())===PROMO_PACK_RELEASE.key&&Date.now()<Date.parse(PROMO_PACK_RELEASE.startsAt)?"Heute ab 19:00 Uhr: Ultimatives Pack, Jumbo-Seltene-Spieler-Pack, Seltenes Gemischtes Spieler-Pack und Mega Pack.":"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.";
+ const todayRelease=promoPackReleaseForKey(sbcDateKey(new Date()));
+ $("storeContext").textContent=promo?(todayRelease&&Date.now()<Date.parse(todayRelease.startsAt)?`Heute ab 19:00 Uhr: ${promoPackReleaseLabel(todayRelease)}.`:"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.";
  const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
  $("packGrid").innerHTML=purch.map(p=>{
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
@@ -8952,7 +8982,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.09";
+const GFUT_BUILD="V21.10";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9005,7 +9035,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2109",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2110",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9019,11 +9049,11 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2109"></script>
+<script src="./champions-system.js?v=2110"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2109"></script>
-<script src="./chem-boosts-ui.js?v=2109"></script>
+<script src="./3d-highlights-match.js?v=2110"></script>
+<script src="./chem-boosts-ui.js?v=2110"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
