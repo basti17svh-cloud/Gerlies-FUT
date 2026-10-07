@@ -8,20 +8,20 @@ const css=fs.readFileSync(path.join(root,"play-hub.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 const manifest=fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8");
 
-test("Champions scripts parse and V21.21 shell wires the mode",()=>{
+test("Champions scripts parse and V21.22 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(champions));
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
  assert.match(html,/champions-system\.js\?v=2114/);
- assert.match(html,/const GFUT_BUILD="V21\.21"/);
- assert.match(html,/<title>Footera V21\.21<\/title>/);
+ assert.match(html,/const GFUT_BUILD="V21\.22"/);
+ assert.match(html,/<title>Footera V21\.22<\/title>/);
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
- assert.match(sw,/footera-v21-21-root-shell/);
+ assert.match(sw,/footera-v21-22-root-shell/);
  assert.match(sw,/champions-system\.js\?v=2114/);
- assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.21");
+ assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.22");
 });
 
 test("Champions has one play-menu entry and qualification progress stays informational inside Rivals",()=>{
@@ -83,4 +83,4 @@ test("Rank rewards match the approved 15-game structure",()=>{
  assert.match(champions,/Rang VIII",min:0,max:2,coins:5000,rated:\[\[80,1\]\],totw:0/);
 });
 
-console.log("Footera Champions V21.21: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");
+console.log("Footera Champions V21.22: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");

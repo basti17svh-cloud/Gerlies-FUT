@@ -277,8 +277,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    });map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
    const material=track(new THREE.MeshStandardMaterial({map,roughness:.92,metalness:0}));shirtMaterials.set(key,material);return material;
   }
-  const hemi=new THREE.HemisphereLight('#dce9f7','#31422a',1.15);scene.add(hemi);
-  const sun=new THREE.DirectionalLight('#fff5df',2.55);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
+  const hemi=new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
+  const sun=new THREE.DirectionalLight('#fff5df',2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00018;sun.shadow.normalBias=.018;
   const fill=new THREE.DirectionalLight('#c6ddff',weak?.24:.48);fill.position.set(40,18,-50);scene.add(fill);
 
@@ -289,11 +289,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const wx=x/w*78-39,wz=(1-y/h)*119-59.5,inside=Math.abs(wx)<34&&Math.abs(wz)<52.5;
     const stripe=inside?(Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
-    const broad=Math.sin(x*.018+y*.011)*1.7+Math.sin(y*.053-x*.021)*1.3;
-    const fibre=(hash(y*w+x)-.5)*18,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*6;
+    const broad=Math.sin(x*.018+y*.011)*1.0+Math.sin(y*.053-x*.021)*1.1;
+    const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
     const n=stripe+broad+fibre+tuft-wear,i=(y*w+x)*4;
-    data[i]=51+n*.67;data[i+1]=102+n;data[i+2]=32+n*.45;data[i+3]=255;
+    data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
@@ -373,7 +373,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    box(2,.14,119,'#202c31',side*55.9,9.55,0,scene);box(79,.14,2,'#202c31',0,9.55,side*76.1,scene);
   }
   const animatedShare=weak?.22:mobileStandard?.44:high?.76:.62;
-  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.98+hash(i*37+5)*.30,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
+  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.32+hash(i*37+5)*.24,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
   const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
   function fanPalette(team){
@@ -382,7 +382,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
-   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[-.12,.20,.13],[.17,.25,.14],[.255,.22,.12],[.295,.075,.07]],8)),mat('#ffffff'),specs.length);
+   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),mat('#ffffff'),specs.length);
    const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),mat('#ffffff',{vertexColors:true}),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6)),mat('#ffffff'),specs.length*2);
    const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6)),mat('#ffffff'),specs.length*2);
@@ -395,7 +395,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.35+spec.loop*.41)+spec.phase):0;
    const cheerBeat=group.dynamic?Math.abs(Math.sin(time*(4.25+spec.loop*.55)+spec.phase)):0;
    const jump=cheerBeat*positive*.34,bob=wave*.045+jump+reaction.suspense*.055;
-   const bodyY=spec.y+spec.lift+bob+.16,lean=wave*.055+negative*.09,yaw=Math.atan2(-spec.x,-spec.z),lx=Math.cos(yaw),lz=-Math.sin(yaw);
+   const bodyY=spec.y-.25+.64*spec.height+bob,lean=wave*.055+negative*.09,yaw=Math.atan2(-spec.x,-spec.z),lx=Math.cos(yaw),lz=-Math.sin(yaw);
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,yaw,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,yaw,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
    const despair=negative;
@@ -485,7 +485,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    bodyPart(.058,.066,.112,skin,rig,0,1.576,0);
    part(anatomy('athletic-head',[[1.623,.045,.054],[1.648,.066,.076],[1.69,.092,.089],[1.75,.097,.095],[1.798,.079,.083],[1.823,.033,.045]]),mat(skin),rig,0,0,-.013);
    part(anatomy('athletic-hair',[[1.762,.097,.094],[1.799,.082,.087],[1.828,.044,.053],[1.835,.008,.01]]),mat(hair,{roughness:1}),rig,0,0,-.008);
-   const arms=[],elbows=[],legs=[],knees=[],gloves=[];
+   const arms=[],elbows=[],legs=[],knees=[],gloves=[],feet=[];
    for(const side of [-1,1]){
     const arm=new THREE.Group();arm.position.set(side*.224,1.45,0);rig.add(arm);arms.push(arm);
     roundedMaterial(.075,.091,.085,sleeve,arm,0,-.035,0);
@@ -500,11 +500,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const knee=new THREE.Group();knee.position.y=-.43;leg.add(knee);knees.push(knee);
     rounded(.052,.05,.057,skin,knee,0,-.004,0);
     part(anatomy('athletic-sock',[[-.39,.032,.039],[-.31,.035,.042],[-.17,.059,.064],[-.07,.056,.055],[-.045,.050,.050]]),mat(kit.socks,{roughness:1}),knee);
-    rounded(.060,.050,.143,'#172025',knee,0,-.43,-.06);
-    rounded(.059,.018,.145,'#0b1014',knee,0,-.465,-.06);
+    feet.push(rounded(.060,.050,.143,'#172025',knee,0,-.43,-.06));
+    feet.push(rounded(.059,.018,.145,'#0b1014',knee,0,-.465,-.06));
    }
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
-   return{root,rig,arms,elbows,legs,knees,gloves,shadow};
+   return{root,rig,arms,elbows,legs,knees,gloves,feet,shadow};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:'footballer '+i));
@@ -521,9 +521,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0)}}
+  function strideAmplitude(speed){return (.25+.42*speed)*clamp(speed/.14)}
   function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
-   const phase=stride,step=Math.sin(phase)*.65*speed;
+   const phase=stride,step=Math.sin(phase)*strideAmplitude(speed);
    p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;
    p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.98*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.98*speed;
    p.arms[0].rotation.x=-step*.72;p.arms[1].rotation.x=step*.72;p.arms[0].rotation.z=.07+.045*speed;p.arms[1].rotation.z=-.07-.045*speed;for(const elbow of p.elbows)elbow.rotation.x=-.64;
@@ -531,8 +532,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
-  const gaitSamples=160,gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1);let previous=runPosition(index,0,sequence);for(let j=1;j<=gaitSamples;j++){const next=runPosition(index,j*DURATION/gaitSamples,sequence);a[j]=a[j-1]+Math.hypot(next[0]-previous[0],next[1]-previous[1]);previous=next}return a});
-  function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at)),distance=mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo);return distance*Math.PI*2/2.5+index*2.399}
+  const gaitSamples=160,gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=runPosition(index,0,sequence);for(let j=1;j<=gaitSamples;j++){const next=runPosition(index,j*dt,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=Math.max(.45,3.44*Math.sin(strideAmplitude(speed)));a[j]=a[j-1]+distance*Math.PI*2/strideLength;previous=next}return a});
+  function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
   const camTarget=new THREE.Vector3();let currentCameraPhase='build';
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
@@ -582,7 +583,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const ballScreen=project(ballWorld),goalScreen=project(goalWorld),wingerScreen=project(wingerWorld),runnerScreen=project(runnerWorld),sampleMatrix=new THREE.Matrix4(),samplePosition=new THREE.Vector3(),flagPosition=new THREE.Vector3();
    if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
-   return{direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+   const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
+   return{supportFootClearance,direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}

@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.21 shell includes broadcast crowd + event cards without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.22 shell includes broadcast crowd + event cards without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2121','3d-highlights-match.js?v=2121','3d-highlights-scene.mjs?v=2121','3d-highlights.css?v=2121','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-21'));assert.ok(html.includes('service-worker.js?v=2121'));
+ for(const file of ['3d-highlights.js?v=2122','3d-highlights-match.js?v=2122','3d-highlights-scene.mjs?v=2122','3d-highlights.css?v=2122','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-22'));assert.ok(html.includes('service-worker.js?v=2122'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -156,7 +156,7 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
 });
 
 
-test('V21.21 goal overlay stacks a compact minute above the scoring crest without changing the card renderer',()=>{
+test('V21.22 goal overlay stacks a compact minute above the scoring crest without changing the card renderer',()=>{
  const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8'),scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(css,/\.fh3d-hud-goal\{[^}]*grid-template-columns:98px minmax\(0,1fr\) 60px/);
  assert.match(css,/\.fh3d-hud-goal \.fh3d-goal-meta\{[^}]*flex-direction:column/);
@@ -167,7 +167,25 @@ test('V21.21 goal overlay stacks a compact minute above the scoring crest withou
  assert.match(scene,/hud\.append\(card,mark,copy,meta\)/);
 });
 
-test('V21.21 snapshot carries only presentation card and club metadata',()=>{
+test('V21.22 snapshot carries only presentation card and club metadata',()=>{
  const snap=H.snapshot({...event(),playerCardHTML:'<div class="card-shell">CARD</div>',teamName:'FC Gerlies',teamCrestHTML:'<div class="club-crest"></div>',scoreBeforeHome:0,scoreBeforeAway:0});
  assert.equal(snap.teamName,'FC Gerlies');assert.match(snap.playerCardHTML,/card-shell/);assert.match(snap.teamCrestHTML,/club-crest/);assert.equal(snap.scoreBeforeHome,0);assert.equal(snap.scoreBeforeAway,0);assert.equal('match' in snap,false);
+});
+
+test('athletic loft has human proportions, outward normals and complete UVs at every quality',async()=>{
+ const {athleticGeometry}=await import('../3d-highlights-scene.mjs');
+ const torso=[[1,.162,.103],[1.12,.161,.105],[1.38,.215,.134],[1.46,.237,.115],[1.54,.069,.071]];
+ for(const segments of [10,14,18]){
+  const g=athleticGeometry(torso,segments);g.computeBoundingBox();
+  const {min,max}=g.boundingBox;
+  assert.ok(max.x-min.x>.44&&max.x-min.x<.48,'athletic shoulder width in metres');
+  assert.ok(Math.abs((max.y-min.y)-.54)<.001,'shirt length');
+  assert.equal(g.attributes.uv.count,g.attributes.position.count);
+  for(let i=0;i<g.attributes.normal.count;i++){
+   const n=g.attributes.normal,p=g.attributes.position;
+   assert.ok(Number.isFinite(n.getY(i)));
+   assert.ok(n.getX(i)*p.getX(i)+n.getZ(i)*p.getZ(i)>0,'outward-facing smooth surface');
+  }
+  assert.equal(g.index.count,(torso.length-1)*segments*6);g.dispose();
+ }
 });
