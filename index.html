@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.10</title>
+<title>Footera V21.11</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1432,6 +1432,15 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .picker-trade-toggle{position:relative;justify-content:space-between;min-height:50px;padding:8px 11px 8px 13px;border:1px solid #40574b;border-radius:11px;background:#111e1b;color:#f0f6f2;font-size:12px;font-weight:850;cursor:pointer}.picker-trade-toggle input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}.picker-toggle-track{position:relative;flex:none;width:46px;height:27px;border-radius:999px;background:#3a4540;border:1px solid #59645f;transition:.18s ease}.picker-toggle-track i{position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;background:#f4f7f5;box-shadow:0 2px 5px rgba(0,0,0,.35);transition:.18s ease}.picker-trade-toggle input:checked+.picker-toggle-track{background:#bfe95d;border-color:#d8ff79}.picker-trade-toggle input:checked+.picker-toggle-track i{transform:translateX(19px);background:#07100b}.picker-trade-toggle input:focus-visible+.picker-toggle-track{outline:2px solid var(--lime);outline-offset:2px}
 @media(max-width:560px){.club-untradeable-badge{top:14px;right:max(5px,calc((100% - 150px)/2 + 2px))}}
 
+/* V21.11 — Verein: jede Spielerkarte exakt gleich groß; Chemie-Boost nur noch in der Spielerbio. */
+.club-card-preview>div:first-child{display:flex!important;justify-content:center!important;align-items:center!important;width:150px!important;min-width:150px!important;max-width:150px!important;flex:0 0 150px!important}
+.club-card-preview>div:first-child>.card-shell{width:150px!important;min-width:150px!important;max-width:150px!important;flex:0 0 150px!important}
+.club-card-preview .cb-player-badge{display:none!important}
+@media(max-width:560px){
+ .club-card-preview>div:first-child{width:142px!important;min-width:142px!important;max-width:142px!important;flex-basis:142px!important}
+ .club-card-preview>div:first-child>.card-shell{width:142px!important;min-width:142px!important;max-width:142px!important;flex-basis:142px!important}
+}
+
 
 /* V20.08 — Season 1 Evolution lanes */
 .evo-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1470,16 +1479,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2110">
+<link rel="stylesheet" href="./3d-highlights.css?v=2111">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=2110">
-<link rel="stylesheet" href="./ux-overview.css?v=2110">
+<link rel="stylesheet" href="./club-identity.css?v=2111">
+<link rel="stylesheet" href="./ux-overview.css?v=2111">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2110">
-<link rel="stylesheet" href="./playstyles.css?v=2110">
-<link rel="stylesheet" href="./player-profile.css?v=2110">
+<link rel="stylesheet" href="./chem-boosts.css?v=2111">
+<link rel="stylesheet" href="./playstyles.css?v=2111">
+<link rel="stylesheet" href="./player-profile.css?v=2111">
 </head>
 <body>
 
@@ -1550,7 +1559,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.10</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.11</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2075,9 +2084,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2110"></script>
-<script src="./chem-boosts.js?v=2110"></script>
-<script src="./playstyles.js?v=2110"></script>
+<script src="./3d-highlights.js?v=2111"></script>
+<script src="./chem-boosts.js?v=2111"></script>
+<script src="./playstyles.js?v=2111"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -4423,7 +4432,7 @@ function openBiography(item,index,fallbackBase=null){
  $("bioDetailBody").innerHTML=playerBiographyHTML(b,item,{shownPosition,clubPerf});
  showUiLayer("bioModal","bio")
 }
-function cardHTML(p,item=null,mini=false,shownPosition=null){
+function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=true){
   if(!p)return"";p=resolvedPlayer(p);if(!mini&&item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?(itemRating(item)||Number(item.displayRating)||Number(p.ovr)||0):p.ovr,pos=shownPosition||p.position;
   const baseRare=isCardRare(p,item)&&!item?.variant&&cls!=="evolution";
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
@@ -4431,7 +4440,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
   const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;const playstyleMarker=typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.badgeHTML(item,p,mini):"";
   if(cls==="founder"&&String(p.id||"")===FOUNDER_PLAYER_ID&&FOUNDER_BASTIAN_STATIC_SRC){
    const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";
-   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
+   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
   }
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
     <path fill="#b10931" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
@@ -4442,7 +4451,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null){
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
    </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"&&p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
+ const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
 }
 function cardAltPositionsHTML(p,shownPosition=p?.position){
  const shown=positionLabel(shownPosition,p),positions=[...new Set(playerPositions(p).map(x=>positionLabel(x,p)))].filter(x=>x&&x!==shown);
@@ -5827,7 +5836,7 @@ function renderClub(){
  arr.sort((a,b)=>{if(sort==="new")return Number(b.item.acquired||0)-Number(a.item.acquired||0);if(sort==="old")return Number(a.item.acquired||0)-Number(b.item.acquired||0);if(sort==="rating-asc")return a.rating-b.rating;return b.rating-a.rating});
  const signature=[rar,pos,sort,league,club,trade,min,max,rows.length,(state.transferList||[]).length].join("|");if(signature!==clubRenderSignature){clubRenderSignature=signature;clubRenderLimit=CLUB_RENDER_BATCH}
  const shown=arr.slice(0,clubRenderLimit);
- $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false)}${i.tradeable?"":'<span class="club-untradeable-badge" title="Untauschbar" aria-label="Untauschbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tauschbar":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
+ $("clubGrid").innerHTML=shown.map(x=>{const i=x.item,b=x.b,ps=parsePlayStyles(b,i);return`<div class="item club-item"><button class="club-card-preview" data-club-open="${i.uid}" aria-label="${esc(b.name)} öffnen">${cardHTML(b,i,false,null,false)}${i.tradeable?"":'<span class="club-untradeable-badge" title="Untauschbar" aria-label="Untauschbar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'}</button><h4>${esc(b.name)}</h4><p>${i.tradeable?"Tauschbar":"Untauschbar"} · ${esc(b.team)}</p>${inlineMetaHTML(b)}<div class="playstyle-line">${ps.length?ps.map(p=>`<span class="ps ${p.plus?"plus":""}">${esc(p.name)}${p.plus?"+":""}</span>`).join(""):'<span class="ps">Keine PS-Daten</span>'}</div><div class="itemactions"><button class="secondary" data-insert-item="${i.uid}">In Mannschaft</button>${i.tradeable?`<button class="secondary" data-qs="${i.uid}">Schnellverkauf +${fmt(quickSell(i))}</button>`:""}${isFounderItem(i)?"":`<button class="primary" data-evo-open-player="${i.uid}">Evolutions ansehen</button>`}</div></div>`}).join("")+(arr.length>shown.length?`<button class="secondary club-more" data-club-more>Weitere ${Math.min(CLUB_RENDER_BATCH,arr.length-shown.length)} Spieler anzeigen · ${shown.length}/${arr.length}</button>`:"");
  if(!arr.length)$("clubGrid").innerHTML='<div class="club-empty">Keine Spieler für diesen Filter gefunden.</div>'
 }
 let clubSection="players",identityTab="general",clubIdentityDraft=null,identityColorClipboard=null,identityColorPointer=null,identityColorSuppressTapUntil=0;
@@ -8982,7 +8991,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.10";
+const GFUT_BUILD="V21.11";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9035,7 +9044,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2110",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2111",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9049,11 +9058,11 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2110"></script>
+<script src="./champions-system.js?v=2111"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2110"></script>
-<script src="./chem-boosts-ui.js?v=2110"></script>
+<script src="./3d-highlights-match.js?v=2111"></script>
+<script src="./chem-boosts-ui.js?v=2111"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>

@@ -67,7 +67,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    check(`${width}: last bench card can scroll fully above fixed actions`,geometry.benchClear);
   }
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:path.join(output,"matchday-manager-v2110-390.png"),fullPage:true});
+  await page.screenshot({path:path.join(output,"matchday-manager-v2111-390.png"),fullPage:true});
   check("no uncaught JavaScript errors in team management",errors.length===0);
  }finally{await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
