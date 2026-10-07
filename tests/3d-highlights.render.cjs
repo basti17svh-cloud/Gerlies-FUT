@@ -52,6 +52,8 @@ const out=path.join(__dirname,'../test-artifacts');
   await capture('13-sequence-wing-right-390','goal',2.7,1,390,false,'wing_right');
   await capture('14-sequence-cutback-left-390','goal',4.3,1,390,false,'cutback_left');
   await capture('15-sequence-cutback-right-390','goal',4.3,1,390,false,'cutback_right');
+  await capture('16-sequence-wing-right-delivery-390','goal',4.45,1,390,false,'wing_right');
+  await capture('17-sequence-cutback-right-delivery-390','goal',4.45,1,390,false,'cutback_right');
   }
   // High-DPI quality is verified by the captures above. The software-only CI GPU
   // is not representative of a capable handset for a real-time DPR 2 run, so the
@@ -71,7 +73,7 @@ const out=path.join(__dirname,'../test-artifacts');
   // Independently inspect actual rendered meshes, projection and glove contact.
   const checks=await page.evaluate(async()=>{
    const originalRandom=Math.random;let randomCalls=0;Math.random=()=>{randomCalls++;return originalRandom()};
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2119'),rows=[];
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2120'),rows=[];
    const canvas=document.createElement('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(1);
    for(const weak of [true,false])for(const period of [1,2,3,4]){
     const event=FooteraHighlights.snapshot({id:'qa',type:'big_chance_saved',playerName:'Jamal Musiala',keeperName:'Mike Maignan',team:'home',period});
@@ -80,13 +82,13 @@ const out=path.join(__dirname,'../test-artifacts');
    }
    for(const sequence of M.PLAY_SEQUENCES){
     const event=FooteraHighlights.snapshot({id:'seq-'+sequence,type:'goal',playerName:'Jamal Musiala',team:'home',period:1,sequence});
-    const world=M.makeScene(renderer,event,false);world.resize(390,300);
-    for(const time of [2.7,4.3,5.35]){world.update(time);rows.push({scenario:'sequence',weak:false,period:1,time,...world.inspect()})}world.dispose();
+    const world=M.makeScene(renderer,event,false,false,true);world.resize(390,300);
+    for(const time of [2.7,4.0,4.3,4.65,5.1,5.35]){world.update(time);rows.push({scenario:'sequence',weak:false,period:1,time,...world.inspect()})}world.dispose();
    }
    renderer.dispose();renderer.forceContextLoss();Math.random=originalRandom;if(randomCalls)throw Error('Renderer consumed simulation RNG: '+randomCalls);return rows;
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
-  for(const row of checks){assert.ok(row.visibleFieldPlayers>=(row.scenario==='sequence'?7:8),JSON.stringify(row));assert.ok(row.cameraDistance>=43&&row.cameraDistance<=56);assert.ok(row.drawCalls<115,'batched renderer draw calls');assert.equal(Math.sign(row.goalScreenX-row.shooterScreenX),row.period%2?1:-1);if(row.scenario==='sequence'&&['wing_left','wing_right','cutback_left','cutback_right'].includes(row.sequence)&&row.time<5){assert.ok(Math.abs(row.ballScreen[0])<.98&&Math.abs(row.ballScreen[1])<.98&&row.ballScreen[2]<1,'wide ball stays on camera: '+JSON.stringify(row));if(row.time===2.7)assert.ok(Math.abs(row.wingerScreen[0])<.98&&Math.abs(row.wingerScreen[1])<.98&&row.wingerScreen[2]<1,'wide carrier stays visible: '+JSON.stringify(row))}if(row.time===6.65){const distance=Math.min(...row.gloves.map(g=>Math.hypot(...g.map((v,i)=>v-row.ball[i]))));assert.ok(distance<.16,'glove/ball contact: '+distance)}}
+  for(const row of checks){assert.ok(row.visibleFieldPlayers>=(row.scenario==='sequence'?7:8),JSON.stringify(row));assert.ok(row.cameraDistance>=43&&row.cameraDistance<=58);assert.ok(row.drawCalls<115,'batched renderer draw calls');assert.equal(Math.sign(row.goalScreenX-row.shooterScreenX),row.period%2?1:-1);if(row.scenario==='sequence'&&['wing_left','wing_right','cutback_left','cutback_right'].includes(row.sequence)&&row.time<=5.1){assert.ok(Math.abs(row.ballScreen[0])<.98&&Math.abs(row.ballScreen[1])<.98&&row.ballScreen[2]<1,'wide ball stays on camera: '+JSON.stringify(row));if(row.time<=4.65){assert.ok(Math.abs(row.wingerScreen[0])<.97&&Math.abs(row.wingerScreen[1])<.97&&row.wingerScreen[2]<1,'wide carrier stays fully visible through delivery: '+JSON.stringify(row));assert.ok(Math.abs(row.goalScreen[0])<.99&&Math.abs(row.goalScreen[1])<.99&&row.goalScreen[2]<1,'goal remains in the broadcast frame: '+JSON.stringify(row))}}if(row.time===6.65){const distance=Math.min(...row.gloves.map(g=>Math.hypot(...g.map((v,i)=>v-row.ball[i]))));assert.ok(distance<.16,'glove/ball contact: '+distance)}}
   const moving=checks.filter(r=>r.scenario==='baseline'&&!r.weak&&r.period===1),m0=moving.find(r=>r.time===0),m2=moving.find(r=>r.time===2);assert.ok(m0&&m2&&Math.abs(m0.crowdSampleY-m2.crowdSampleY)>.005,'crowd must move asynchronously');assert.ok(m0&&m2&&Math.hypot(...m0.flagSample.map((v,i)=>v-m2.flagSample[i]))>.02,'segmented flags must wave');
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,process.env.FOOTERA_SKIP_CAPTURES?'render-check-results.json':'render-results.json'),JSON.stringify({screenshots:evidence,checks,errors},null,2));console.log('PASS STANDARD natural end, extreme-performance fallback and zero simulation RNG draws');console.log('PASS',evidence.length,'production screenshots;',checks.length,'WebGL geometry checks');
  }finally{await browser.close();server.close()}
