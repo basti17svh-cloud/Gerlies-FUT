@@ -190,15 +190,16 @@ test('athletic loft has human proportions, outward normals and complete UVs at e
  }
 });
 
-test('complete goal roof stays inside both wing shots on 360/390/412 phones',async()=>{
+test('goal roof clears the top edge and fits both wings through delivery on 360/390/412 phones',async()=>{
  const T=await import('../vendor/three/three.module.min.js'),M=await import('../3d-highlights-scene.mjs');
  for(const width of [342,372,394])for(const sequence of ['wing_left','wing_right','cutback_left','cutback_right'])for(const direction of [1,-1]){
   const camera=new T.PerspectiveCamera(28,width/340,.5,350);
+  // Far-wing build-up follows the carrier; the full goal enters before delivery.
   for(let time=.5;time<=M.IMPACT_TIME;time+=.05){
    const c=M.cameraState(direction,time,width/340,'goal',sequence);camera.position.set(...c.position);camera.fov=c.fov;camera.updateProjectionMatrix();camera.lookAt(...c.target);camera.updateMatrixWorld();
    for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
     const roof=new T.Vector3(...M.worldPosition([x,2.5,z],direction)).project(camera);
-    assert.ok(roof.y<.99&&roof.y>-.99&&Math.abs(roof.x)<.99,`${width} ${sequence} ${direction} ${time}: clipped goal roof`);
+    assert.ok(roof.y<.99&&(time<2.7||(roof.y>-.99&&Math.abs(roof.x)<.99)),`${width} ${sequence} ${direction} ${time}: clipped goal roof`);
    }
   }
  }
