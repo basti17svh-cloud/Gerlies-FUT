@@ -42,9 +42,11 @@ function match3DPresentationMeta(event,current){
   const item=homeItem||awayCandidate||null;
   try{const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||''}catch(_){}
  }
- const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null,opponentIdentity=current?.opponentProfile?.clubIdentity||null;
  const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam'),awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
- const teamName=event.team==='away'?awayName:homeName,teamIdentity=event.team==='away'?opponentIdentity:identity;
+ const teamName=event.team==='away'?awayName:homeName;
+ const kickoffIdentity=current?.kickoffTeamIdentity?.[event.team]||null;
+ const liveIdentity=event.team==='away'?(current?.opponentProfile?.clubIdentity||null):(typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null);
+ const teamIdentity=kickoffIdentity||liveIdentity;
  let teamCrestHTML='';if(teamIdentity&&typeof crestHTML==='function'){try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}}
  return{playerCardHTML,teamName,teamCrestHTML}
 }
