@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.24</title>
+<title>Footera V21.23</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -579,19 +579,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .role-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .role-panel-head h3{margin:0;font-size:12px}.role-toggle{min-width:92px;min-height:34px;padding:6px 10px;border-radius:10px;border:1px solid #34423d;background:#15201c;color:#dce6e1;font-size:8px;font-weight:900}
 .role-panel.collapsed{padding-bottom:10px}.role-panel.collapsed>p,.role-panel.collapsed .role-list{display:none}.role-panel.collapsed .role-panel-head{margin-bottom:0}
-/* V21.24 — Squad planning hub: individual tactics, player roles and set-piece assignments. */
-.squad-plan-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 11px}
-.squad-plan-btn{position:relative;min-width:0;min-height:88px;display:grid;grid-template-columns:34px minmax(0,1fr) 12px;align-items:center;gap:9px;padding:11px 10px;border:1px solid #31453d;border-radius:15px;background:radial-gradient(circle at 0 0,rgba(78,241,185,.08),transparent 48%),linear-gradient(145deg,#111c18,#0b1210);color:#f4f8f6;text-align:left;cursor:pointer;box-shadow:inset 0 1px rgba(255,255,255,.03),0 10px 22px rgba(0,0,0,.15)}
-.squad-plan-btn:active{transform:translateY(1px)}.squad-plan-btn:hover{border-color:#57745f}.squad-plan-btn>b{font-size:22px;font-weight:400;color:#72857b;text-align:right}.squad-plan-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#16251f;color:#baff9f}.squad-plan-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.squad-plan-copy{min-width:0}.squad-plan-copy small{display:block;color:#79dca9;font-size:6px;font-weight:1000;letter-spacing:.12em;text-transform:uppercase}.squad-plan-copy strong{display:block;margin-top:3px;font-size:10px;line-height:1.15}.squad-plan-copy em{display:block;min-width:0;margin-top:4px;color:#879b91;font-size:6.5px;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.squad-plan-btn.roles .squad-plan-icon{color:#c7a1ff;background:#20182c}.squad-plan-btn.assignments .squad-plan-icon{color:#ffe18a;background:#27210f}
-.squad-plan-modal{background:radial-gradient(circle at 50% -10%,rgba(57,230,181,.17),transparent 43%),#050807}.squad-plan-modal .modalinner{max-width:720px}.plan-kicker{display:block;color:#9bf5be;font-size:7px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase}.plan-hero{position:relative;overflow:hidden;margin:10px 0 12px;padding:14px;border:1px solid #345047;border-radius:17px;background:radial-gradient(circle at 100% 0,rgba(216,255,62,.10),transparent 38%),linear-gradient(145deg,#102019,#0a1210)}.plan-hero:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#d8ff3e,#4ef1b9)}.plan-hero strong{display:block;font-size:15px}.plan-hero span{display:block;margin-top:4px;color:#91a69a;font-size:9px;line-height:1.45}
-.tactic-sections{display:grid;gap:10px}.tactic-section{padding:13px;border:1px solid #2d4038;border-radius:15px;background:linear-gradient(145deg,#0f1916,#0a110f)}.tactic-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:11px}.tactic-section-head div{min-width:0}.tactic-section-head small{display:block;color:#72dca6;font-size:6px;font-weight:1000;letter-spacing:.12em;text-transform:uppercase}.tactic-section-head h4{margin:3px 0 0;font-size:15px}.tactic-section-head span{color:#72867b;font-size:7px;text-align:right}
-.tactic-select-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.tactic-select-card{display:grid;gap:6px;padding:10px;border:1px solid #2d4138;border-radius:12px;background:#0d1714}.tactic-select-card>span{color:#a7b9af;font-size:8px;font-weight:900}.tactic-select-card select{width:100%;min-height:42px;border:1px solid #40564c;border-radius:9px;background:#111e1a;color:#fff;padding:0 9px;font-size:13px;color-scheme:dark}
-.tactic-range-list{display:grid;gap:8px}.tactic-range-card{display:grid;gap:8px;padding:10px;border:1px solid #2b3d35;border-radius:12px;background:#0b1411}.tactic-range-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center}.tactic-range-top strong{display:block;font-size:10px}.tactic-range-top small{display:block;margin-top:2px;color:#81948a;font-size:7px;line-height:1.35}.tactic-range-top output{min-width:38px;padding:5px 7px;border-radius:999px;background:#1d2a21;color:#d8ff3e;font-size:9px;font-weight:1000;text-align:center}.tactic-range-card input[type=range]{width:100%;height:24px;margin:0;accent-color:var(--lime)}.tactic-range-scale{display:flex;justify-content:space-between;color:#64766d;font-size:6px}
-.plan-footer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 28px}.plan-footer-actions button{min-height:45px;font-size:10px}
-.role-modal-list{display:grid;gap:8px;padding-bottom:26px}.role-column-head{display:grid;grid-template-columns:minmax(118px,1.2fr) 1fr 1fr;gap:8px;padding:0 9px;color:#70847a;font-size:6px;font-weight:1000;letter-spacing:.09em;text-transform:uppercase}.squad-plan-modal .role-row{grid-template-columns:minmax(118px,1.2fr) 1fr 1fr;gap:8px;padding:10px;border:1px solid #2d4038;border-radius:12px;background:#0d1714}.squad-plan-modal .role-player{font-size:9px;color:#eaf3ee}.squad-plan-modal .role-row select{width:100%;min-width:0}
-.assignment-list{display:grid;gap:8px;padding-bottom:26px}.assignment-row{display:grid;grid-template-columns:minmax(120px,.9fr) minmax(0,1.4fr);gap:10px;align-items:center;padding:11px;border:1px solid #2d4038;border-radius:13px;background:#0d1714}.assignment-copy strong{display:block;font-size:10px}.assignment-copy span{display:block;margin-top:3px;color:#81948a;font-size:7px;line-height:1.35}.assignment-row select{width:100%;min-height:43px;border:1px solid #40564c;border-radius:9px;background:#111e1a;color:#fff;padding:0 9px;font-size:12px;color-scheme:dark}.assignment-empty{padding:22px;border:1px dashed #40564c;border-radius:13px;color:#95a79e;font-size:10px;text-align:center;line-height:1.5}
-@media(max-width:560px){.squad-plan-menu{gap:5px}.squad-plan-btn{grid-template-columns:27px minmax(0,1fr) 8px;gap:5px;min-height:78px;padding:8px 7px;border-radius:12px}.squad-plan-icon{width:27px;height:27px;border-radius:8px}.squad-plan-icon svg{width:18px;height:18px}.squad-plan-copy strong{font-size:8px}.squad-plan-copy small{font-size:5.2px}.squad-plan-copy em{font-size:5.6px}.squad-plan-btn>b{font-size:17px}.tactic-select-grid{grid-template-columns:1fr}.role-column-head{display:none}.squad-plan-modal .role-row{grid-template-columns:1fr 1fr}.squad-plan-modal .role-player{grid-column:1/-1}.assignment-row{grid-template-columns:1fr}.assignment-row select{font-size:13px}}
 @media(max-width:560px){.club-card-preview{min-height:212px}.club-card-preview .card-shell{width:min(142px,96%)!important}}
 
 
@@ -1572,7 +1559,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.24</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.23</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1649,11 +1636,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
-  <div class="squad-plan-menu" aria-label="Mannschaft planen">
-    <button id="openSquadTactics" class="squad-plan-btn tactics" type="button"><span class="squad-plan-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M10 12h10M4 12h2M4 18h8M16 18h4"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg></span><span class="squad-plan-copy"><small>Matchplan</small><strong>Individuelle Taktik</strong><em id="squadTacticsSummary">Breite 50 · Tiefe 50</em></span><b aria-hidden="true">›</b></button>
-    <button id="openSquadRoles" class="squad-plan-btn roles" type="button"><span class="squad-plan-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20c.6-5 2.7-7.5 6-7.5s5.4 2.5 6 7.5M4 4l2 2M20 4l-2 2"/></svg></span><span class="squad-plan-copy"><small>Spieler</small><strong>Rollen & Fokus</strong><em id="squadRolesSummary">11 Positionen bearbeiten</em></span><b aria-hidden="true">›</b></button>
-    <button id="openSquadAssignments" class="squad-plan-btn assignments" type="button"><span class="squad-plan-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 21V4M7 5h10l-2 4 2 4H7M10 18h9"/><circle cx="18" cy="18" r="2"/></svg></span><span class="squad-plan-copy"><small>Standards</small><strong>Aufgaben</strong><em id="squadAssignmentsSummary">Kapitän · Ecken · Freistöße</em></span><b aria-hidden="true">›</b></button>
-  </div>
   <div class="squad-stage">
     <div id="pitch" class="pitch"></div>
     <div class="squad-drawer-tabs">
@@ -1665,6 +1647,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
       <div id="reserve" class="reserve squad-drawer-grid" data-drawer-drop="reserve"></div>
     </div>
   </div>
+  <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
 <section id="playView" class="view">
@@ -1975,9 +1958,6 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
   </form>
   <div id="pickerResults" class="picker-results" hidden><div class="picker-results-head"><div><strong id="pickerResultTitle">Spieler im Verein</strong><small id="pickerResultCount"></small></div><button id="pickerEditFilters" class="secondary" type="button">Filter ändern</button></div><div id="pickList" class="picklist"></div><div id="pickerPages" class="picker-pages" hidden><button id="pickerPrev" class="secondary" type="button">← Vorherige</button><span id="pickerPageLabel"></span><button id="pickerNext" class="secondary" type="button">Nächste →</button></div></div>
 </div></div>
-<div id="squadTacticsModal" class="modal squad-plan-modal"><div class="modalinner"><div class="modalhead"><div><span class="plan-kicker">Mannschaft</span><h3>Individuelle Taktik</h3><div style="font-size:8px;color:#8da198;margin-top:3px">Dein Matchplan für dieses gespeicherte Team</div></div><button id="squadTacticsClose" class="secondary" type="button">Schließen</button></div><div id="squadTacticsBody"></div></div></div>
-<div id="squadRolesModal" class="modal squad-plan-modal"><div class="modalinner"><div class="modalhead"><div><span class="plan-kicker">Mannschaft</span><h3>Rollen & Fokus</h3><div style="font-size:8px;color:#8da198;margin-top:3px">Jeder Startelfspieler bekommt eine Rolle und einen Fokus</div></div><button id="squadRolesClose" class="secondary" type="button">Schließen</button></div><div class="plan-hero"><strong>Spielerrollen</strong><span>Rollen greifen direkt in die Matchsimulation ein. Die Auswahl richtet sich nach der Position in deiner aktuellen Formation.</span></div><div id="roleList" class="role-list role-modal-list"></div></div></div>
-<div id="squadAssignmentsModal" class="modal squad-plan-modal"><div class="modalinner"><div class="modalhead"><div><span class="plan-kicker">Mannschaft</span><h3>Aufgaben</h3><div style="font-size:8px;color:#8da198;margin-top:3px">Kapitän und Standards festlegen</div></div><button id="squadAssignmentsClose" class="secondary" type="button">Schließen</button></div><div class="plan-hero"><strong>Verantwortung verteilen</strong><span>Lege Kapitän, Eckenschützen, Freistoß- und Elfmeterschützen für die aktuelle Startelf fest.</span></div><div id="assignmentList" class="assignment-list"></div></div></div>
 <div id="playerModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerdetails</h3><div id="playerDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="playerModalClose" class="secondary">Schließen</button></div><div id="playerDetailBody"></div></div></div>
 <div id="priceCompareModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="priceCompareTitle">Preisvergleich</h3><div id="priceCompareSub" style="font-size:7px;color:#87958f">Aktuelle Marktangebote</div></div><button id="priceCompareClose" class="secondary">Schließen</button></div><div id="priceCompareBody"></div></div></div>
 <div id="transferOfferModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Auf Transfermarkt anbieten</h3><div id="transferOfferSub" style="font-size:7px;color:#87958f"></div></div><button id="transferOfferClose" class="secondary">Schließen</button></div><div id="transferOfferBody"></div></div></div>
@@ -3295,26 +3275,15 @@ function ensureClubIdentityState(){
  return state.profile.clubIdentity
 }
 function clubIdentitySnapshot(){ensureClubIdentityState();return JSON.parse(JSON.stringify(state.profile.clubIdentity))}
-const DEFAULT_CUSTOM_TACTICS=Object.freeze({width:50,depth:50,pressing:50,buildUp:"balanced",attackFocus:"balanced",dribbling:50,crossing:50,longShots:50});
-const ASSIGNMENT_CONFIG=Object.freeze([
- {key:"captain",label:"Kapitän",hint:"Führt die Mannschaft auf dem Platz."},
- {key:"cornerLeft",label:"Ecke links",hint:"Schlägt Eckbälle von der linken Seite."},
- {key:"cornerRight",label:"Ecke rechts",hint:"Schlägt Eckbälle von der rechten Seite."},
- {key:"freeKicks",label:"Freistöße",hint:"Übernimmt direkte Freistöße."},
- {key:"penalties",label:"Elfmeter",hint:"Tritt Strafstöße in der regulären Spielzeit."}
-]);
-function tacticLevel(value,fallback=50){const n=Number(value);return Number.isFinite(n)?Math.max(0,Math.min(100,Math.round(n))):fallback}
-function cleanCustomTactics(raw={}){const x=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{};return{width:tacticLevel(x.width),depth:tacticLevel(x.depth),pressing:tacticLevel(x.pressing),buildUp:["balanced","patient","fast"].includes(x.buildUp)?x.buildUp:"balanced",attackFocus:["balanced","wide","inside"].includes(x.attackFocus)?x.attackFocus:"balanced",dribbling:tacticLevel(x.dribbling),crossing:tacticLevel(x.crossing),longShots:tacticLevel(x.longShots)}}
-function cleanSquadAssignments(raw={},squad=[]){const allowed=new Set((Array.isArray(squad)?squad.slice(0,11):[]).filter(uid=>typeof uid==="string"&&uid));const x=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{},out={};for(const row of ASSIGNMENT_CONFIG){const uid=String(x[row.key]||"");if(uid&&allowed.has(uid))out[row.key]=uid}return out}
 function baseState(){return{
- version:124,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
+ version:123,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,championsMatches:0,championsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},champions:null,squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
- roles:{},focus:{},customTactics:cleanCustomTactics(),assignments:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],chemBoostInventory:{},pendingChemBoosts:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
+ roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],chemBoostInventory:{},pendingChemBoosts:[],promoClaims:{},directClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:124,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
+  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:123,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
  }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -3326,14 +3295,14 @@ function cleanSquadPreset(raw,clubIds,index){
  });
  const positions=squad.slice(0,11);
  const entries=values=>Object.fromEntries(Object.entries(values&&typeof values==="object"&&!Array.isArray(values)?values:{}).filter(([key,value])=>/^(10|[0-9])$/.test(key)&&positions[Number(key)]&&typeof value==="string"));
- return{name:squadPresetName(raw?.name,index),formation:SQUAD_FORMATION_NAMES.includes(raw?.formation)?raw.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(raw?.tactic)?raw.tactic:"balanced",squad,roles:entries(raw?.roles),focus:entries(raw?.focus),customTactics:cleanCustomTactics(raw?.customTactics),assignments:cleanSquadAssignments(raw?.assignments,squad)}
+ return{name:squadPresetName(raw?.name,index),formation:SQUAD_FORMATION_NAMES.includes(raw?.formation)?raw.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(raw?.tactic)?raw.tactic:"balanced",squad,roles:entries(raw?.roles),focus:entries(raw?.focus)}
 }
 function initializeSquadPresets(s){
  const idx=Number.isInteger(s.activeSquadPreset)&&s.activeSquadPreset>=0&&s.activeSquadPreset<3?s.activeSquadPreset:0;
  const clubIds=new Set((Array.isArray(s.club)?s.club:[]).map(item=>item?.uid).filter(Boolean)),saved=Array.isArray(s.squadPresets)?s.squadPresets:[];
  s.activeSquadPreset=idx;s.squadPresets=Array.from({length:3},(_,i)=>saved[i]?cleanSquadPreset(saved[i],clubIds,i):null);
- const active=cleanSquadPreset({name:s.squadPresets[idx]?.name||(idx===0?"Mein Team":`Team ${idx+1}`),formation:s.formation,tactic:s.tactic,squad:s.squad,roles:s.roles,focus:s.focus,customTactics:s.customTactics,assignments:s.assignments},clubIds,idx);
- s.squadPresets[idx]=active;s.squad=[...active.squad];s.formation=active.formation;s.tactic=active.tactic;s.roles={...active.roles};s.focus={...active.focus};s.customTactics=cleanCustomTactics(active.customTactics);s.assignments={...active.assignments};
+ const active=cleanSquadPreset({name:s.squadPresets[idx]?.name||(idx===0?"Mein Team":`Team ${idx+1}`),formation:s.formation,tactic:s.tactic,squad:s.squad,roles:s.roles,focus:s.focus},clubIds,idx);
+ s.squadPresets[idx]=active;s.squad=[...active.squad];s.formation=active.formation;s.tactic=active.tactic;s.roles={...active.roles};s.focus={...active.focus};
  return s
 }
 function persistActiveSquadPreset(s){return initializeSquadPresets(s)}
@@ -3342,7 +3311,7 @@ function activateSquadPreset(s,index){
  persistActiveSquadPreset(s);
  const created=!s.squadPresets[index],clubIds=new Set((s.club||[]).map(item=>item.uid));
  const next=s.squadPresets[index]||cleanSquadPreset({...s.squadPresets[s.activeSquadPreset],name:`Team ${index+1}`},clubIds,index);
- s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.tactic=next.tactic;s.roles={...next.roles};s.focus={...next.focus};s.customTactics=cleanCustomTactics(next.customTactics);s.assignments={...next.assignments};
+ s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.tactic=next.tactic;s.roles={...next.roles};s.focus={...next.focus};
  return{created,name:next.name}
 }
 let saveQueued=false,saveDirty=false,saveTimer=0;
@@ -5043,30 +5012,24 @@ $("squadPresetName").addEventListener("change",e=>{
  renderSquadPresetControls();save();toast(`Team heißt jetzt ${name}.`)
 });
 function renderSquad(){
- ensureSquadSlots();renderSquadPresetControls();
+ ensureSquadSlots();
+ renderSquadPresetControls();
  const m=squadMetrics();$("sqRating").textContent=m.rating||"–";$("sqChem").textContent=`${m.chem}/33`;$("sqFilled").textContent=`${m.filled}/18`;$("formationSelect").value=state.formation;
- $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i,m.chemScores[i])).join("");$("bench").innerHTML=m.items.slice(11,18).map((x,k)=>benchHTML(x,11+k)).join("");$("reserve").innerHTML=m.items.slice(18,23).map((x,k)=>reserveHTML(x,18+k)).join("");
- $("benchDrawerCount").textContent=`${m.items.slice(11,18).filter(Boolean).length}/7`;$("reserveDrawerCount").textContent=`${m.reserveFilled}/5`;syncSquadDrawer();if(m.filled===18)state.stats.full=1;
- renderRoles(m.items);normalizeSquadAssignments(m.items);renderAssignments(m.items);renderSquadPlanSummaries(m.items);save();window.FooteraOnline?.queueProfileSync?.();setTimeout(prioritizeVisibleSquadBadges,20)
+ $("pitch").innerHTML=m.items.slice(0,11).map((x,i)=>slotHTML(x,i,m.chemScores[i])).join("");
+ $("bench").innerHTML=m.items.slice(11,18).map((x,k)=>benchHTML(x,11+k)).join("");
+ $("reserve").innerHTML=m.items.slice(18,23).map((x,k)=>reserveHTML(x,18+k)).join("");
+ $("benchDrawerCount").textContent=`${m.items.slice(11,18).filter(Boolean).length}/7`;
+ $("reserveDrawerCount").textContent=`${m.reserveFilled}/5`;
+ syncSquadDrawer();
+ if(m.filled===18)state.stats.full=1;
+ renderRoles(m.items);save();window.FooteraOnline?.queueProfileSync?.();setTimeout(prioritizeVisibleSquadBadges,20)
 }
 function renderRoles(items){
- const form=currentFormation(),header='<div class="role-column-head"><span>Spieler</span><span>Rolle</span><span>Fokus</span></div>';
- const rows=items.slice(0,11).map((it,i)=>{const b=it?displayBase(it):null,slot=form[i].p,roles=ROLE_OPTIONS[slot]||["Balanced"],current=state.roles[i]&&roles.includes(state.roles[i])?state.roles[i]:roles[0],focus=FOCUS_OPTIONS.includes(state.focus[i])?state.focus[i]:"Balanced";state.roles[i]=current;state.focus[i]=focus;return `<div class="role-row"><div class="role-player">${positionLabel(slot,b)} · ${b?esc(b.name):"Leer"}</div><select data-role-slot="${i}" ${b?"":"disabled"}>${roles.map(r=>`<option value="${esc(r)}" ${r===current?"selected":""}>${roleLabel(r)}</option>`).join("")}</select><select data-focus-slot="${i}" ${b?"":"disabled"}>${FOCUS_OPTIONS.map(f=>`<option value="${esc(f)}" ${f===focus?"selected":""}>${focusLabel(f)}</option>`).join("")}</select></div>`}).join("");$("roleList").innerHTML=header+rows
+ const form=currentFormation();
+ $("roleList").innerHTML=items.slice(0,11).map((it,i)=>{const b=it?displayBase(it):null,slot=form[i].p,roles=ROLE_OPTIONS[slot]||["Balanced"],current=state.roles[i]&&roles.includes(state.roles[i])?state.roles[i]:roles[0],focus=state.focus[i]||"Balanced";state.roles[i]=current;state.focus[i]=focus;return `<div class="role-row"><div class="role-player">${positionLabel(slot,b)} · ${b?esc(b.name):"Leer"}</div><select data-role-slot="${i}" ${b?"":"disabled"}>${roles.map(r=>`<option value="${esc(r)}" ${r===current?"selected":""}>${roleLabel(r)}</option>`).join("")}</select><select data-focus-slot="${i}" ${b?"":"disabled"}>${FOCUS_OPTIONS.map(f=>`<option value="${esc(f)}" ${f===focus?"selected":""}>${focusLabel(f)}</option>`).join("")}</select></div>`}).join("")
 }
-function assignmentScore(key,item){const raw=item?displayBase(item):null,b=raw?resolvedPlayer(raw):null;if(!b)return-1;const ovr=itemRating(item),pas=Number(b.pas||0),dri=Number(b.dri||0),sho=Number(b.sho||0),phy=Number(b.phy||0);if(key==="captain")return ovr*3+phy+pas*.35;if(key==="cornerLeft"||key==="cornerRight")return pas*1.45+dri*.75+sho*.2;if(key==="freeKicks")return sho*1.1+pas*1.05+dri*.35;if(key==="penalties")return sho*1.65+ovr*.55+phy*.2;return ovr}
-function suggestedAssignmentUid(key,items){return items.slice(0,11).filter(Boolean).map(item=>({item,score:assignmentScore(key,item)})).sort((a,b)=>b.score-a.score)[0]?.item?.uid||""}
-function normalizeSquadAssignments(items=squadItems()){const starters=items.slice(0,11),valid=new Set(starters.filter(Boolean).map(item=>item.uid)),clean=cleanSquadAssignments(state.assignments,starters.map(item=>item?.uid||null));for(const row of ASSIGNMENT_CONFIG)if(!clean[row.key]||!valid.has(clean[row.key])){const suggested=suggestedAssignmentUid(row.key,starters);if(suggested)clean[row.key]=suggested}state.assignments=clean;return clean}
-function renderAssignments(items=squadItems()){const starters=items.slice(0,11),available=starters.map((item,index)=>item?{item,index,base:displayBase(item)}:null).filter(Boolean),assignments=normalizeSquadAssignments(items);if(!available.length){$("assignmentList").innerHTML='<div class="assignment-empty">Stelle zuerst Spieler in deine Startelf. Danach kannst du Kapitän und Standards vergeben.</div>';return}const options=selected=>available.map(({item,index,base})=>`<option value="${esc(item.uid)}" ${item.uid===selected?"selected":""}>${esc(positionLabel(currentFormation()[index]?.p||base.position,base))} · ${esc(base.name)}</option>`).join("");$("assignmentList").innerHTML=ASSIGNMENT_CONFIG.map(row=>`<label class="assignment-row"><span class="assignment-copy"><strong>${esc(row.label)}</strong><span>${esc(row.hint)}</span></span><select data-assignment="${row.key}">${options(assignments[row.key])}</select></label>`).join("")}
-function renderSquadPlanSummaries(items=squadItems()){state.customTactics=cleanCustomTactics(state.customTactics);const t=state.customTactics,mentality={balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[state.tactic]||"Ausgeglichen";$("squadTacticsSummary").textContent=`${mentality} · Breite ${t.width} · Tiefe ${t.depth}`;const starters=items.slice(0,11).filter(Boolean);$("squadRolesSummary").textContent=`${starters.length}/11 Spieler · Rollen & Fokus`;const assignments=normalizeSquadAssignments(items),captain=items.slice(0,11).find(item=>item?.uid===assignments.captain),base=captain?displayBase(captain):null;$("squadAssignmentsSummary").textContent=base?`Kapitän: ${base.name}`:"Kapitän · Ecken · Standards"}
-function tacticSliderHTML(key,label,help,left,right){const value=state.customTactics[key];return `<label class="tactic-range-card"><span class="tactic-range-top"><span><strong>${esc(label)}</strong><small>${esc(help)}</small></span><output data-tactic-output="${key}">${value}</output></span><input type="range" min="0" max="100" step="1" value="${value}" data-tactic-range="${key}"><span class="tactic-range-scale"><span>${esc(left)}</span><span>${esc(right)}</span></span></label>`}
-function renderCustomTacticsPanel(){state.customTactics=cleanCustomTactics(state.customTactics);const t=state.customTactics,opt=(v,l,c)=>`<option value="${v}" ${v===c?"selected":""}>${l}</option>`;$("squadTacticsBody").innerHTML=`<div class="plan-hero"><strong>Dein Spiel, dein Matchplan</strong><span>Die Regler verändern das Verhalten der Simulation bewusst nur moderat. Spielerqualität, Chemie, Rollen und Formation bleiben entscheidend.</span></div><div class="tactic-sections"><section class="tactic-section"><div class="tactic-section-head"><div><small>Grundidee</small><h4>Ausrichtung & Aufbau</h4></div><span>Basis des Matchplans</span></div><div class="tactic-select-grid"><label class="tactic-select-card"><span>Grundausrichtung</span><select data-tactic-base>${opt("balanced","Ausgeglichen",state.tactic)}${opt("attacking","Offensiv",state.tactic)}${opt("defensive","Defensiv",state.tactic)}</select></label><label class="tactic-select-card"><span>Aufbauspiel</span><select data-tactic-select="buildUp">${opt("balanced","Ausgeglichen",t.buildUp)}${opt("patient","Ruhiger Aufbau",t.buildUp)}${opt("fast","Schneller Aufbau",t.buildUp)}</select></label><label class="tactic-select-card"><span>Angriffsfokus</span><select data-tactic-select="attackFocus">${opt("balanced","Variabel",t.attackFocus)}${opt("wide","Über Außen",t.attackFocus)}${opt("inside","Durch die Mitte",t.attackFocus)}</select></label></div><div class="tactic-range-list">${tacticSliderHTML("width","Breite","Wie breit dein Team gegen und mit dem Ball steht.","Eng","Breit")}${tacticSliderHTML("depth","Tiefe der Kette","Wie hoch deine letzte Linie verteidigt.","Tief","Hoch")}${tacticSliderHTML("pressing","Pressing","Wie aggressiv dein Team den Ball zurückerobern will.","Abwartend","Aggressiv")}</div></section><section class="tactic-section"><div class="tactic-section-head"><div><small>Offensive</small><h4>Chance Creation</h4></div><span>Wie Angriffe ausgespielt werden</span></div><div class="tactic-range-list">${tacticSliderHTML("dribbling","Dribbling","Häufigkeit von direkten Eins-gegen-eins-Aktionen.","Kombination","Direkt")}${tacticSliderHTML("crossing","Flanken","Wie stark Angriffe über Hereingaben gesucht werden.","Flach","Flanken")}${tacticSliderHTML("longShots","Distanzschüsse","Bereitschaft, aus der zweiten Reihe abzuschließen.","Geduldig","Früh schießen")}</div></section></div><div class="plan-footer-actions"><button type="button" class="secondary" data-tactics-reset>Regler zurücksetzen</button><button type="button" class="primary" data-tactics-done>Übernehmen</button></div>`}
-$("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;renderSquadPlanSummaries();save()});
-$("assignmentList").addEventListener("change",e=>{const field=e.target.closest("[data-assignment]");if(!field)return;state.assignments=normalizeSquadAssignments();state.assignments[field.dataset.assignment]=field.value;renderSquadPlanSummaries();save()});
-$("squadTacticsBody").addEventListener("input",e=>{const input=e.target.closest("[data-tactic-range]");if(!input)return;const key=input.dataset.tacticRange;state.customTactics=cleanCustomTactics({...state.customTactics,[key]:Number(input.value)});const out=$("squadTacticsBody").querySelector(`[data-tactic-output="${key}"]`);if(out)out.textContent=state.customTactics[key];renderSquadPlanSummaries();save()});
-$("squadTacticsBody").addEventListener("change",e=>{if(e.target.matches("[data-tactic-base]")){state.tactic=["balanced","attacking","defensive"].includes(e.target.value)?e.target.value:"balanced";renderSquadPlanSummaries();save();return}const select=e.target.closest("[data-tactic-select]");if(!select)return;state.customTactics=cleanCustomTactics({...state.customTactics,[select.dataset.tacticSelect]:select.value});renderSquadPlanSummaries();save()});
-$("squadTacticsBody").addEventListener("click",e=>{if(e.target.closest("[data-tactics-reset]")){state.customTactics=cleanCustomTactics();renderCustomTacticsPanel();renderSquadPlanSummaries();save();toast("Individuelle Regler auf Standard gesetzt.");return}if(e.target.closest("[data-tactics-done]"))closeUiLayer("squadTacticsModal","squad-tactics")});
-$("openSquadTactics").addEventListener("click",()=>{renderCustomTacticsPanel();showUiLayer("squadTacticsModal","squad-tactics")});$("openSquadRoles").addEventListener("click",()=>{renderRoles(squadItems());showUiLayer("squadRolesModal","squad-roles")});$("openSquadAssignments").addEventListener("click",()=>{renderAssignments(squadItems());showUiLayer("squadAssignmentsModal","squad-assignments")});
-$("squadTacticsClose").addEventListener("click",()=>closeUiLayer("squadTacticsModal","squad-tactics"));$("squadRolesClose").addEventListener("click",()=>closeUiLayer("squadRolesModal","squad-roles"));$("squadAssignmentsClose").addEventListener("click",()=>closeUiLayer("squadAssignmentsModal","squad-assignments"));
+$("roleList").addEventListener("change",e=>{const r=e.target.closest("[data-role-slot]"),f=e.target.closest("[data-focus-slot]");if(r)state.roles[Number(r.dataset.roleSlot)]=r.value;if(f)state.focus[Number(f.dataset.focusSlot)]=f.value;save()})
+$("roleToggle")?.addEventListener("click",()=>{const panel=$("rolePanel"),btn=$("roleToggle");if(!panel||!btn)return;const collapsed=panel.classList.toggle("collapsed");btn.textContent=collapsed?"Aufklappen":"Einklappen";btn.setAttribute("aria-expanded",collapsed?"false":"true")})
 let pickerFilterPosition="",pickerFilterLeague="",pickerFilterClub="",pickerFilterQuality="",pickerSortMode="fit",pickerSearchTerm="",pickerMinRating=0,pickerMaxRating=99,pickerOnlyUntradeable=false,pickerPage=0,pickerStage="filters";
 const PICKER_PAGE_SIZE=20;
 function pickerSlotLabel(i){return i<11?positionLabel(currentFormation()[i].p):i<18?`Bank ${i-10}`:`Reserve ${i-17}`}
@@ -7358,14 +7321,10 @@ function matchPower(lineup,formation,tactic){
  if(tactic==="defensive")base+=.7;
  return base+fitBonus/11
 }
-function tacticMods(t,custom=null){
- const base=t==="attacking"?{attack:1.11,defense:.92,poss:2.5}:t==="defensive"?{attack:.91,defense:1.11,poss:-2}:{attack:1,defense:1,poss:0},c=cleanCustomTactics(custom);
- const centered=key=>(Number(c[key])-50)/50,depth=centered("depth"),width=centered("width"),pressing=centered("pressing"),dribbling=centered("dribbling"),crossing=centered("crossing"),longShots=centered("longShots");
- const buildAttack=c.buildUp==="fast"?1.018:c.buildUp==="patient"?.992:1,buildDefense=c.buildUp==="fast"?.992:c.buildUp==="patient"?1.008:1,buildPoss=c.buildUp==="patient"?1.5:c.buildUp==="fast"?-.7:0;
- const focusAttack=c.attackFocus==="wide"?1+crossing*.016:c.attackFocus==="inside"?1+dribbling*.012+longShots*.009:1+(dribbling+crossing+longShots)*.003;
- const widthDefense=1-Math.abs(width)*.006,attack=base.attack*(1+depth*.018+dribbling*.010+longShots*.008)*buildAttack*focusAttack;
- const defense=base.defense*(1-depth*.018+pressing*.020)*buildDefense*widthDefense,poss=base.poss+buildPoss+pressing*.55+width*.35+(c.attackFocus==="inside"?.35:c.attackFocus==="wide"?.15:0);
- return{attack:Math.max(.78,Math.min(1.26,attack)),defense:Math.max(.78,Math.min(1.26,defense)),poss:Math.max(-6,Math.min(6,poss))}
+function tacticMods(t){
+ if(t==="attacking")return{attack:1.11,defense:.92,poss:2.5};
+ if(t==="defensive")return{attack:.91,defense:1.11,poss:-2};
+ return{attack:1,defense:1,poss:0}
 }
 function stopMatchTimer(){
  if(matchTimer){clearInterval(matchTimer);matchTimer=null}
@@ -7408,7 +7367,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  chemBoostChem:[...(m.chemScores||[])],
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
-  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],initialFormation:state.formation,formation:state.formation,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},customTactics:cleanCustomTactics(state.customTactics),assignments:cleanSquadAssignments(state.assignments,state.squad),redCards:[],yellowCards:[],
+  lineup:[...state.squad.slice(0,18)],initialStarters:[...state.squad.slice(0,11)],initialFormation:state.formation,formation:state.formation,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},redCards:[],yellowCards:[],
   subsUsed:0,subbedOut:[],substitutionEvents:[],fitnessLoss:{home:{},away:{}},defensiveEvents:[],shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,goalEvents:[],shotEvents:[],timeline:[],lastScene:null,highlightActive:false,
   injuryTriggered:false,redTriggered:false,halftimeLogged:false,halftimeActive:false,
   extraTimeStarted:false,extraTimeBreakLogged:false,extraTimeManagementActive:false,penaltyActive:false,penaltyState:null,penaltyEvents:[],penaltyWinner:null,pensHome:null,pensAway:null,playerStatsApplied:false
@@ -7604,7 +7563,6 @@ function assistSlotWeight(slot){
 }
 function chooseScorer(lineup){return chooseMatchAttacker("home")}
 function chooseHomeAssist(excludeUid){return chooseMatchCreator("home",excludeUid)}
-function assignedHomeMatchActor(key){const uid=String(match?.assignments?.[key]||"");return uid?matchActorRows("home").find(row=>String(row.uid)===uid)||null:null}
 
 function opponentMatchBase(entry){
  if(!entry)return null;
@@ -7651,7 +7609,7 @@ function logGoal(side,scorer,assist,type){
 }
 function simAttack(homeSide){
  const side=homeSide?"home":"away",defendingSide=homeSide?"away":"home",team=homeSide?matchHomeTeamName():matchAwayTeamName();
- const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced"),homeSide?match.customTactics:match.opponentProfile?.customTactics),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic,homeSide?match.opponentProfile?.customTactics:match.customTactics);
+ const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced")),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic);
  const attackRoles=teamRoleFocusMods(side),defenseRoles=teamRoleFocusMods(defendingSide),attackProfile=matchTeamAttributeProfile(side),defenseProfile=matchTeamAttributeProfile(defendingSide);
  const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(homeSide?myPower-opponentPower:opponentPower-myPower)/28;
  const creator=chooseMatchCreator(side),buildDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
@@ -7677,10 +7635,9 @@ function simAttack(homeSide){
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
  const goalChance=matchFinishingChance(xg,attacker,defendingSide);
  if(eventChance(goalChance)){
-  const type=goalCreation(),assigned=homeSide&&type==="freekick"?assignedHomeMatchActor("freeKicks"):homeSide&&type==="penalty"?assignedHomeMatchActor("penalties"):null,scorer=assigned||attacker,fallbackAssist=homeSide?chooseHomeAssist(scorer.uid):chooseOpponentAssist(scorer.index),creatorDifferent=homeSide?String(creator.uid)!==String(scorer.uid):creator.index!==scorer.index,assist=type==="assist"?(creatorDifferent?creator:fallbackAssist):null;
-  if(scorer!==attacker){shot.playerName=scorer.base?.fullName||[scorer.base?.firstName,scorer.base?.lastName].filter(Boolean).join(" ")||scorer.name;shot.shooter=scorer.name;shot.shooterUid=String(scorer.uid||"");shot.shooting=scorer.attrs?.sho??shot.shooting}
+  const type=goalCreation(),fallbackAssist=homeSide?chooseHomeAssist(attacker.uid):chooseOpponentAssist(attacker.index),creatorDifferent=homeSide?String(creator.uid)!==String(attacker.uid):creator.index!==attacker.index,assist=type==="assist"?(creatorDifferent?creator:fallbackAssist):null;
   shot.goal=true;shot.outcome="goal";shot.onTarget=true;if(homeSide)match.home++;else match.away++;
-  logGoal(side,scorer,assist,type)
+  logGoal(side,attacker,assist,type)
  }else resolveMissedMatchShot(shot,team)
 }
 function simTick(){
@@ -7692,7 +7649,7 @@ function simTick(){
  const step=Math.min(boundary-match.minute,baseStep);
  if(step<=0){resolveEndOfPhase();return}
  advanceMatchFitness(step);match.minute+=step;
- const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
+ const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),chemGap=matchChemistry("home")-matchChemistry("away");
  match.poss+=((powerNow-matchOpponentPower())*.007+chemGap*.003+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02+matchAttributeGap(homeAttributes.build-awayAttributes.build)*.004)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
  match.poss=Math.max(34,Math.min(66,match.poss));
@@ -8489,7 +8446,7 @@ function getSquadBattleOpponents(){
 }
 function friendAsOpponent(fr){
  const team=friendProfileTeams(fr)[0]||fr,rating=Number(team.rating||fr.rating||70),chem=Number(team.chem||fr.chem||0);
- return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[team.formation]?team.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||fr.roles||{})},focus:{...(team.focus||fr.focus||{})},customTactics:cleanCustomTactics(team.customTactics||fr.customTactics),rating,chem,squad:Array.isArray(team.squad)?team.squad:Array(18).fill(null),clubIdentity:fr.clubIdentity?cleanClubIdentity(fr.clubIdentity):null,tier:"Freundschaft",power:Math.max(45,Math.min(99,rating+chem*.12)),rewards:null,sp:0}
+ return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[team.formation]?team.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||fr.roles||{})},focus:{...(team.focus||fr.focus||{})},rating,chem,squad:Array.isArray(team.squad)?team.squad:Array(18).fill(null),clubIdentity:fr.clubIdentity?cleanClubIdentity(fr.clubIdentity):null,tier:"Freundschaft",power:Math.max(45,Math.min(99,rating+chem*.12)),rewards:null,sp:0}
 }
 const RIVALS_OPPONENT_LEVELS=Object.freeze({
  10:{min:72,max:76,chem:7},9:{min:74,max:78,chem:10},8:{min:76,max:80,chem:13},7:{min:78,max:82,chem:16},6:{min:79,max:83,chem:18},
@@ -8676,7 +8633,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
 function encodeFriendProfile(){
  const m=squadMetrics(),items=squadItems(),form=state.formation;
  const onlineUid=window.FooteraOnline?.registered?window.FooteraOnline.userId:"";
- ensureClubIdentityState();const payload={v:onlineUid?5:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",clubShortName:state.profile.clubShortName||"FTR",clubIdentity:clubIdentitySnapshot(),rating:m.rating,chem:m.chem,formation:form,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},customTactics:cleanCustomTactics(state.customTactics),division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||"",chemBoost:i.chemBoost?{...i.chemBoost}:null}:null})};
+ ensureClubIdentityState();const payload={v:onlineUid?5:2,onlineUid,username:state.profile.username||"",clubName:state.profile.clubName||"Footera Club",clubShortName:state.profile.clubShortName||"FTR",clubIdentity:clubIdentitySnapshot(),rating:m.rating,chem:m.chem,formation:form,tactic:state.tactic||"balanced",roles:{...state.roles},focus:{...state.focus},division:state.rivals.division,record:{w:state.stats.wins,d:state.stats.draws,l:state.stats.losses},squad:items.slice(0,18).map(i=>{if(!i)return null;const b=displayBase(i);return b?{pid:String(i.pid||b.id||""),name:b.name,ovr:itemRating(i),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",variant:i.variant||"",boost:i.boost||0,eventName:i.eventName||"",chemBoost:i.chemBoost?{...i.chemBoost}:null}:null})};
  try{return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return""}
 }
 function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(escape(atob(code.trim()))))}catch(e){return null}}
@@ -8691,8 +8648,8 @@ function friendTeamSnapshotForPreset(preset,indexSlot,isActive){
  const items=Array.from({length:23},(_,i)=>state.club.find(x=>x.uid===ids[i])||null),filled=items.slice(0,18).filter(Boolean).length;
  if(!filled)return null;
  const xi=items.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((sum,it)=>sum+itemRating(it),0)/xi.length):0;
- const bases=items.map(it=>it?displayBase(it):null),chem=opponentChemistryTotal(bases,formation,items),roles={...(isActive?state.roles:preset?.roles||{})},focus={...(isActive?state.focus:preset?.focus||{})},tactic=isActive?state.tactic:(preset?.tactic||"balanced"),customTactics=cleanCustomTactics(isActive?state.customTactics:preset?.customTactics);
- return{slot:indexSlot,name:squadPresetName((isActive?state.squadPresets?.[indexSlot]?.name:preset?.name)||"",indexSlot),active:!!isActive,formation,tactic,roles,focus,customTactics,rating,chem,filled,squad:items.slice(0,18).map(friendSnapshotItem)}
+ const bases=items.map(it=>it?displayBase(it):null),chem=opponentChemistryTotal(bases,formation,items),roles={...(isActive?state.roles:preset?.roles||{})},focus={...(isActive?state.focus:preset?.focus||{})},tactic=isActive?state.tactic:(preset?.tactic||"balanced");
+ return{slot:indexSlot,name:squadPresetName((isActive?state.squadPresets?.[indexSlot]?.name:preset?.name)||"",indexSlot),active:!!isActive,formation,tactic,roles,focus,rating,chem,filled,squad:items.slice(0,18).map(friendSnapshotItem)}
 }
 function friendOnlineTeamsSnapshot(){
  persistActiveSquadPreset(state);
@@ -8702,11 +8659,11 @@ function friendOnlineTeamsSnapshot(){
  return[active,...extras].filter(Boolean).slice(0,3)
 }
 function friendProfileTeams(friend){
- const legacy={slot:Number(friend?.activeSquadPreset||0),name:"Aktuelles Team",active:true,formation:FORMATIONS[friend?.formation]?friend.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(friend?.tactic)?friend.tactic:"balanced",roles:{...(friend?.roles||{})},focus:{...(friend?.focus||{})},customTactics:cleanCustomTactics(friend?.customTactics),rating:Number(friend?.rating||0),chem:Number(friend?.chem||0),filled:Array.isArray(friend?.squad)?friend.squad.filter(Boolean).length:0,squad:Array.isArray(friend?.squad)?friend.squad:Array(18).fill(null)};
+ const legacy={slot:Number(friend?.activeSquadPreset||0),name:"Aktuelles Team",active:true,formation:FORMATIONS[friend?.formation]?friend.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(friend?.tactic)?friend.tactic:"balanced",roles:{...(friend?.roles||{})},focus:{...(friend?.focus||{})},rating:Number(friend?.rating||0),chem:Number(friend?.chem||0),filled:Array.isArray(friend?.squad)?friend.squad.filter(Boolean).length:0,squad:Array.isArray(friend?.squad)?friend.squad:Array(18).fill(null)};
  const raw=Array.isArray(friend?.teams)?friend.teams.filter(team=>team&&Array.isArray(team.squad)):[];
  if(!raw.length)return[legacy];
  const activeSlot=Number.isFinite(Number(friend?.activeSquadPreset))?Number(friend.activeSquadPreset):Number(friend?.active_preset||0);
- const normalized=raw.map((team,i)=>{const slot=Number.isFinite(Number(team.slot))?Number(team.slot):i,filled=team.squad.slice(0,18).filter(Boolean).length;return{...team,slot,name:String(team.name||("Team "+(slot+1))),formation:FORMATIONS[team.formation]?team.formation:"4-3-3",customTactics:cleanCustomTactics(team.customTactics),rating:Number(team.rating||0),chem:Number(team.chem||0),filled,active:team.active===true||slot===activeSlot}});
+ const normalized=raw.map((team,i)=>{const slot=Number.isFinite(Number(team.slot))?Number(team.slot):i,filled=team.squad.slice(0,18).filter(Boolean).length;return{...team,slot,name:String(team.name||("Team "+(slot+1))),formation:FORMATIONS[team.formation]?team.formation:"4-3-3",rating:Number(team.rating||0),chem:Number(team.chem||0),filled,active:team.active===true||slot===activeSlot}});
  const active=normalized.find(team=>team.active)||normalized[0]||legacy;
  const extras=normalized.filter(team=>team!==active&&team.filled===18).sort((a,b)=>a.slot-b.slot);
  return[active,...extras].slice(0,3)
