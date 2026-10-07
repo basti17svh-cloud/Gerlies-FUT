@@ -6,7 +6,10 @@ The supplied reference emphasises athletic silhouettes, connected terraces,
 fine grass variation, directional lighting, contact shadows and a complete box
 net. Production V21.21 captures showed disconnected dark stadium corners,
 rectangular spectators, exaggerated simultaneous running strides and detached
-ground shadows. The existing elevated touchline camera is retained exactly.
+ground shadows. The existing elevated touchline camera position and target paths are retained.
+A 4.6-degree near-wing FOV allowance keeps the complete goal roof in frame and
+fades smoothly during the finish; the original ground-centre-only guard missed
+this clipping on 360/390/412 phones.
 
 Changes in the existing renderer:
 
@@ -34,7 +37,7 @@ LOW keeps lower geometry segments, fewer spectators, contact shadows and a
 phones. HIGH uses 2048px shadows, more geometry/crowd detail and up to 2.25 DPR.
 The existing adaptive reduction and extreme-performance fallback remain active.
 
-The simulation, camera choreography, score-impact bridge, event queue, card
+The simulation, camera position/target choreography, score-impact bridge, event queue, card
 renderer and goal-overlay layout are unchanged. A scoped crest positioning fix
 neutralises inherited kit-mini offsets that previously pushed the correct badge
 outside its overlay column; no crest identity or card rendering is replaced. The only index/loader changes
@@ -51,4 +54,5 @@ release assertions in the V21.21 shell, and geometric bounds left over from the
 older camera. V21.21's actual camera-to-offset-target distance was 38.01–69.00m;
 the existing near-side cutback had four visible field players at its widest
 phase. The updated guards reflect those measured baseline values, retain all
-ball/carrier/goal projection tests, and do not change the camera.
+ball/carrier/goal projection tests, and do not change the camera position or target paths. A new projected-roof
+regression covers both directions and all three phone widths through delivery.
