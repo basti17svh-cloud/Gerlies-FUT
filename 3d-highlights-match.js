@@ -18,7 +18,7 @@ function unlockMatch3DViewport(){
 }
 function cancelMatch3D(){
  match3DQueue?.cancel();match3DQueue=null;
- if(match)match.highlight3DPending=false;
+ if(match){match.highlight3DPending=false;delete match.highlight3DScoreHold}
  document.getElementById('match')?.classList.remove('highlight3d-pending');unlockMatch3DViewport();
 }
 function match3DStableNumber(value){
@@ -67,7 +67,7 @@ function queueMatch3D(event){
    onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending');lockMatch3DViewport()},
    onIdle(){
     if(match!==current){unlockMatch3DViewport();return}
-    current.highlight3DPending=false;current.highlightActive=false;
+    current.highlight3DPending=false;current.highlightActive=false;delete current.highlight3DScoreHold;
     document.getElementById('match')?.classList.remove('highlight3d-pending');
     updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);unlockMatch3DViewport();
     const fallback=current.highlight3DFallback;delete current.highlight3DFallback;
@@ -91,14 +91,20 @@ function queueMatch3D(event){
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
- // The simulation is already authoritative at enqueue time. Keep score, shots
- // and xG synchronized while the presentation layer is playing.
- if(queued){if(typeof updateMatchUI==='function')updateMatchUI(true);const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`}
+ // The simulation stays authoritative. Only the visible scoreboard is held at
+ // the pre-goal value until the 3D ball actually reaches the goal.
+ if(queued){
+  if(event.type==='goal'&&Number.isFinite(Number(event.scoreBeforeHome))&&Number.isFinite(Number(event.scoreBeforeAway)))current.highlight3DScoreHold={id:String(event.id||''),home:Number(event.scoreBeforeHome),away:Number(event.scoreBeforeAway)};
+  if(typeof updateMatchUI==='function')updateMatchUI(true);
+  const score=document.getElementById('matchScore'),hold=current.highlight3DScoreHold;if(score&&hold)score.textContent=`${hold.home} : ${hold.away}`;
+  const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`
+ }
  return queued;
 }
 function queueMatchGoal3D(event){
+ const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
-  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||''});
+  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',scoreBeforeHome,scoreBeforeAway});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
  return queued;
@@ -109,6 +115,10 @@ function queueMatchChance3D(shot){
   creatorName:shot.creator||'',creationType:'chance'});
 }
 (function(){
+ document.addEventListener('footera-highlight-impact',e=>{
+  const hold=match?.highlight3DScoreHold;if(!hold||String(e.detail?.id||'')!==String(hold.id||''))return;
+  delete match.highlight3DScoreHold;if(typeof updateMatchUI==='function')updateMatchUI(true)
+ });
  const selects=document.querySelectorAll('[data-highlight-mode]');
  selects.forEach(select=>{
   for(const [value,label] of Object.entries(FooteraHighlights.MODES)){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option)}
