@@ -302,10 +302,14 @@ export function makeScene(renderer,event,weak=false,high=false){
    const bodyY=spec.y+spec.lift+bob+.16,lean=wave*.055+negative*.09;
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,0,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,0,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
-   const despair=negative,idleRaise=group.dynamic?(spec.loop===2?.22+.22*(wave+1):spec.loop===1?.08+.12*(wave+1):0),raise=clamp(reaction.suspense*.42+positive*1.05+despair*.62+idleRaise);
+   const despair=negative;
+   const idleRaise=group.dynamic?(spec.loop===2 ? .22+.22*(wave+1) : spec.loop===1 ? .08+.12*(wave+1) : 0):0;
+   const raise=clamp(reaction.suspense*.42+positive*1.05+despair*.62+idleRaise);
    const shoulderY=bodyY+.1*spec.height;
    for(const side of [-1,1]){
-    const armIndex=i*2+(side>0?1:0),spread=positive>.05?1.18:despair>.05?.38:(spec.loop===1?.28:.12),armLift=mix(shoulderY-.12,shoulderY+.22,raise);
+    const armIndex=i*2+(side>0?1:0);
+    const spread=positive>.05 ? 1.18 : despair>.05 ? .38 : (spec.loop===1 ? .28 : .12);
+    const armLift=mix(shoulderY-.12,shoulderY+.22,raise);
     crowdDummy.position.set(spec.x+side*.22*spec.width,armLift,spec.z);
     crowdDummy.rotation.set((spec.loop===2?side*wave*.18:0),0,side*mix(.06,spread,raise)+wave*.045);
     crowdDummy.scale.set(.92,spec.height*(.94+raise*.08),.92);crowdDummy.updateMatrix();group.arms.setMatrixAt(armIndex,crowdDummy.matrix);
