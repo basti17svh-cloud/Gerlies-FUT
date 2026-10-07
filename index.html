@@ -16,7 +16,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.23</title>
+<link rel="stylesheet" href="./squad-tactics.css?v=2124">
+<title>Footera V21.24</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1559,7 +1560,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.23</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.24</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -7609,7 +7610,7 @@ function logGoal(side,scorer,assist,type){
 }
 function simAttack(homeSide){
  const side=homeSide?"home":"away",defendingSide=homeSide?"away":"home",team=homeSide?matchHomeTeamName():matchAwayTeamName();
- const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced")),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic);
+ const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced"),homeSide?match.customTactics:match.opponentProfile?.customTactics),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic,homeSide?match.opponentProfile?.customTactics:match.customTactics);
  const attackRoles=teamRoleFocusMods(side),defenseRoles=teamRoleFocusMods(defendingSide),attackProfile=matchTeamAttributeProfile(side),defenseProfile=matchTeamAttributeProfile(defendingSide);
  const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(homeSide?myPower-opponentPower:opponentPower-myPower)/28;
  const creator=chooseMatchCreator(side),buildDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
@@ -7649,7 +7650,7 @@ function simTick(){
  const step=Math.min(boundary-match.minute,baseStep);
  if(step<=0){resolveEndOfPhase();return}
  advanceMatchFitness(step);match.minute+=step;
- const homeTactic=tacticMods(match.tactic),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced"),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
+ const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),chemGap=matchChemistry("home")-matchChemistry("away");
  match.poss+=((powerNow-matchOpponentPower())*.007+chemGap*.003+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02+matchAttributeGap(homeAttributes.build-awayAttributes.build)*.004)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
  match.poss=Math.max(34,Math.min(66,match.poss));
@@ -9012,7 +9013,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.23";
+const GFUT_BUILD="V21.24";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9065,7 +9066,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2123",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2124",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9088,6 +9089,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
 <script src="./potm.js"></script>
+<script src="./squad-tactics.js?v=2124"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
