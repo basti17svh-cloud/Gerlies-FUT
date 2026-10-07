@@ -4,7 +4,7 @@ const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const css=fs.readFileSync(path.join(root,"ux-overview.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 
-test("V21.20 wires the focused usability layer without replacing existing hubs",()=>{
+test("V21.21 wires the focused usability layer without replacing existing hubs",()=>{
  assert.match(html,/<title>Footera V21\.20<\/title>/);
  assert.match(html,/ux-overview\.css\?v=2114/);
  assert.match(html,/id="clubOverviewStrip"/);
@@ -35,8 +35,8 @@ test("compact filters are mobile-only and desktop keeps the full filter surface"
 });
 
 test("offline shell contains the usability stylesheet and new build cache",()=>{
- assert.ok(sw.includes('footera-v21-20-root-shell'));
+ assert.ok(sw.includes('footera-v21-21-root-shell'));
  assert.ok(sw.includes('./ux-overview.css?v=2114'));
- assert.ok(sw.includes('./3d-highlights.js?v=2120'));
+ assert.ok(sw.includes('./3d-highlights.js?v=2121'));
 });
-console.log("V21.20 Übersichtlichkeit: Verein-Status und kompakte Mobile-Filter strukturell OK");
+console.log("V21.21 Übersichtlichkeit: Verein-Status und kompakte Mobile-Filter strukturell OK");
