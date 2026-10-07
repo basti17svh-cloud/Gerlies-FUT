@@ -12,10 +12,13 @@ async function fixture(page,mode='important'){
   for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
   const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM'];
   PLAYERS=positions.map((position,i)=>({id:'qa-'+i,name:'Musiala',fullName:'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:'Germany',team:'FC Bayern München',league:'Bundesliga'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
-  state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.tactic='balanced';
+  const homeIdentity=defaultClubIdentity(),awayIdentity=defaultClubIdentity();
+  homeIdentity.crest={...homeIdentity.crest,initials:'HOME',symbol:'f',primary:'#37df78',secondary:'#102d1d',accent:'#ffffff',borderColor:'#37df78'};
+  awayIdentity.crest={...awayIdentity.crest,initials:'AWAY',symbol:'diamond',primary:'#d85a6a',secondary:'#341117',accent:'#ffffff',borderColor:'#d85a6a'};
+  state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.profile.clubIdentity=homeIdentity;state.tactic='balanced';
   FooteraHighlights.setMode(mode);document.querySelectorAll('[data-highlight-mode]').forEach(s=>s.value=mode);
   const awaySquad=PLAYERS.slice(0,11).map((p,i)=>i===0?{...p,id:'away-gk',name:'Maignan',fullName:'Mike Maignan',nation:'France',team:'AC Milan',league:'Serie A'}:{...p,id:'away-'+i});
-  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad});stopMatchTimer();
+  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad,clubIdentity:awayIdentity});stopMatchTimer();
   match.minute=41;match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;updateMatchUI();document.getElementById('match').scrollTop=0;
  },mode);
 }
@@ -48,7 +51,7 @@ if(require.main===module)(async()=>{
   check('kickoff kit is frozen and cannot be replaced by a later profile edit',kickoffKitFreeze.before===kickoffKitFreeze.after&&kickoffKitFreeze.after!==kickoffKitFreeze.live);
   await page.evaluate(()=>stopMatchTimer());
   for(const width of [360,390,412]){
-   await page.setViewportSize({width,height:844});await fixture(page);const before=await force(page,'goal');
+   await page.setViewportSize({width,height:844});await fixture(page);await page.evaluate(()=>{state.profile.clubIdentity.crest.initials='LIVE'});const before=await force(page,'goal');
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
    check(`${width}: weak mobile hardware keeps the low-quality safety tier`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
@@ -60,17 +63,29 @@ if(require.main===module)(async()=>{
    await page.waitForSelector('.fh3d-hud.visible');
    check(`${width}: visible score updates only after the visual goal impact`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&!match.highlight3DScoreHold));
    check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
-   const hud=await page.locator('.fh3d-hud').evaluate(h=>{const box=h.getBoundingClientRect(),card=h.querySelector('.fh3d-player-card')?.getBoundingClientRect();return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,card:!!h.querySelector('.fh3d-player-card .card-shell'),cardContained:!!card&&card.top>=box.top-1&&card.bottom<=box.bottom+1&&card.width<=82}});
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>{
+    const box=h.getBoundingClientRect(),cardEl=h.querySelector('.fh3d-player-card'),copyEl=h.querySelector('.fh3d-copy'),metaEl=h.querySelector('.fh3d-goal-meta'),minuteEl=h.querySelector('.fh3d-minute'),crestEl=h.querySelector('.fh3d-team-crest');
+    const card=cardEl?.getBoundingClientRect(),copy=copyEl?.getBoundingClientRect(),meta=metaEl?.getBoundingClientRect(),minute=minuteEl?.getBoundingClientRect(),crest=crestEl?.getBoundingClientRect();
+    const inside=r=>!!r&&r.left>=box.left-1&&r.right<=box.right+1&&r.top>=box.top-1&&r.bottom<=box.bottom+1;
+    const overlap=(a,b)=>!!a&&!!b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+    return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,
+     card:!!h.querySelector('.fh3d-player-card .card-shell'),gold:!!h.querySelector('.fh3d-player-card .custom-card.gold'),cardContained:!!card&&inside(card)&&card.width<=82,
+     crest:h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent||'',minute:minuteEl?.textContent||'',minuteFont:minuteEl?parseFloat(getComputedStyle(minuteEl).fontSize):99,
+     minuteAboveCrest:!!minute&&!!crest&&minute.bottom<=crest.top+1,metaWidth:meta?.width||999,crestSize:crest?Math.min(crest.width,crest.height):0,
+     allContained:[card,copy,meta,minute,crest].filter(Boolean).every(inside),noOverlap:!overlap(card,copy)&&!overlap(copy,meta)&&!overlap(card,meta)};
+   });
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
-   check(`${width}: goal uses scorer + real Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card);
-   check(`${width}: scorer card stays contained and compact`,hud.cardContained);
+   check(`${width}: goal uses scorer + actual Gold Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card&&hud.gold);
+   check(`${width}: home goal uses frozen Home-team crest and team label`,hud.crest==='HOME'&&hud.event==='für Heimteam');
+   check(`${width}: minute is compact above the crest in a narrow right column`,hud.minute===`${before.minute}'`&&hud.minuteAboveCrest&&hud.metaWidth<=54&&hud.crestSize>=39&&hud.minuteFont<=13.5);
+   check(`${width}: goal overlay has no clipping or column overlap`,hud.cardContained&&hud.allContained&&hud.noOverlap);
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
    check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
    check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));
    await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});
   }
   await page.setViewportSize({width:390,height:844});
-  await fixture(page);await page.evaluate(()=>{match.opponentProfile.items=PLAYERS.slice(0,11).map(p=>makeItem(p,false,{variant:'special',eventName:'Team of the Week QA'}))});const awayGoal=await force(page,'goal','away');await page.waitForSelector('.fh3d-hud.visible');const awayCard=await page.locator('.fh3d-player-card').evaluate(c=>({totw:!!c.querySelector('.custom-card.totw'),name:c.closest('.fh3d-hud').querySelector('.fh3d-name').textContent}));check('away scorer uses the actual equipped special card',awayGoal.goals===1&&awayCard.totw&&awayCard.name);await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>stopMatchTimer());
+  await fixture(page);await page.evaluate(()=>{match.opponentProfile.items=PLAYERS.slice(0,11).map(p=>makeItem(p,false,{variant:'special',eventName:'Team of the Week QA'}))});const awayGoal=await force(page,'goal','away');await page.waitForSelector('.fh3d-hud.visible');const awayCard=await page.locator('.fh3d-player-card').evaluate(c=>{const h=c.closest('.fh3d-hud');return{totw:!!c.querySelector('.custom-card.totw'),name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,crest:h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent||'',minute:h.querySelector('.fh3d-minute')?.textContent||''}});check('away scorer uses the actual equipped special card',awayGoal.goals===1&&awayCard.totw&&awayCard.name);check('away goal uses the actual Away-team crest, label and compact minute',awayCard.crest==='AWAY'&&awayCard.event==='für Auswärtsteam'&&awayCard.minute===`${awayGoal.minute}'`);await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>stopMatchTimer());
   for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
    await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
    await page.waitForSelector('.fh3d-hud.visible');
