@@ -151,7 +151,7 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
  assert.ok(homeGoal.mood>.6&&awayGoal.mood<-.25);
  assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
  const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.22:mobileStandard\?\.44:high\?\.76:\.62/);assert.match(source,/mobileStandard=mobile&&!weak/);assert.match(source,/mobileStandard\?2:high\?2\.25/);assert.match(source,/BoxGeometry\(\.50,\.59,\.24\)/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/flagSegments=3/);assert.match(source,/crowd-flag-cloth-segment/);assert.match(source,/supporterBanner/);assert.match(source,/banner\.position\.set\(0,\.62,z\)/);assert.match(source,/updateCrowd\(time\)/);
+ assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.22:mobileStandard\?\.44:high\?\.76:\.62/);assert.match(source,/mobileStandard=mobile&&!weak/);assert.match(source,/mobileStandard\?2:high\?2\.25/);assert.match(source,/athleticGeometry/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/flagSegments=3/);assert.match(source,/crowd-flag-cloth-segment/);assert.match(source,/supporterBanner/);assert.match(source,/banner\.position\.set\(0,\.62,z\)/);assert.match(source,/updateCrowd\(time\)/);
  assert.doesNotMatch(source,/crowd(?:Static|Dynamic)\.body/);assert.match(source,/crowdDynamic\.legs/);assert.equal(/Math\.random\s*\(/.test(source),false);
 });
 
