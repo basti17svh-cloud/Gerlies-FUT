@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=43.8;
+export const MIN_CAMERA_DISTANCE=43.4;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -80,15 +80,43 @@ export function ballPosition(type,time,sequence='central'){
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
 export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central'){
- const phase=smooth(time/5.9),bp=worldPosition(ballPosition(type,time,sequence),direction);
- const pushIn=smooth((time-1.2)/3.2),settle=smooth((time-7.35)/2.0),push=pushIn*(1-.16*settle);
- // V21.17: clearly tighter TV/manager camera. The finish is materially larger,
- // while the goal, box, support runners and a full supporter block remain visible.
- const baseZ=mix(-22.0,-41.2,phase)*direction,z=mix(baseZ,bp[2],.69),x=bp[0]*.29;
- const portraitPad=Math.max(0,1.06-aspect)*6.2;
- const distance=mix(51.8+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.38,push);
- const sideline=56.0,height=33.5,trail=4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
- return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,mix(.64,.91,push),z],fov:mix(29.6,27.6,push),distance};
+ const seq=normalizeSequence(sequence),bp=worldPosition(ballPosition(type,time,seq),direction),goal=worldPosition([0,.86,-51.25],direction);
+ const portraitPad=Math.max(0,1.25-aspect)*8.5;
+ let targetX=0,targetY=.82,targetZ=0,distance=50,fov=28,phase='build';
+ const wide=seq.startsWith('wing_')||seq.startsWith('cutback_');
+ if(wide){
+  const carrierLocal=runPosition(1,time,seq),carrier=worldPosition([carrierLocal[0],.84,carrierLocal[1]],direction);
+  if(time<3.55){
+   const u=smooth(time/3.55),goalWeight=.42+.08*u;
+   targetX=mix(carrier[0],goal[0],goalWeight);
+   targetZ=mix(carrier[2],goal[2],.28+.10*u);
+   targetY=.78;distance=51.8+portraitPad;fov=29.4;phase='build';
+  }else if(time<5.05){
+   const u=smooth((time-3.55)/1.5),boxX=mix(bp[0],goal[0],.18+.36*u),boxZ=mix(bp[2],goal[2],.20+.42*u);
+   targetX=mix(carrier[0],boxX,.62+.30*u);
+   targetZ=mix(carrier[2],boxZ,.64+.30*u);
+   targetY=mix(.80,.92,u);distance=mix(51.8+portraitPad,44.6+portraitPad*.38,u);fov=mix(29.4,26.5,u);phase='delivery';
+  }else{
+   const u=smooth((time-5.05)/1.35);
+   targetX=mix(bp[0],goal[0],.34+.12*u);
+   targetZ=mix(bp[2],goal[2],.28+.16*u);
+   targetY=mix(.90,1.0,u);distance=mix(44.6+portraitPad*.38,MIN_CAMERA_DISTANCE+portraitPad*.30,u);fov=mix(26.5,25.9,u);phase='finish';
+  }
+ }else{
+  const actorIndex=seq==='one_two'&&time<3.0?1:0,actorLocal=runPosition(actorIndex,time,seq),actor=worldPosition([actorLocal[0],.84,actorLocal[1]],direction);
+  const push=smooth((time-.8)/4.55),ballWeight=seq==='through_ball'?.72:seq==='dribble'?.76:seq==='one_two'?.62:.68;
+  targetX=mix(actor[0],bp[0],ballWeight);
+  targetZ=mix(actor[2],bp[2],ballWeight);
+  const goalWeight=mix(seq==='through_ball'?.10:.06,.38,push);
+  targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
+  const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
+  distance=mix(startDistance+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.30,push);
+  fov=mix(seq==='through_ball'?29.3:29.0,26.0,push);
+  targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
+ }
+ // Permanent elevated touchline camera: framing changes, camera side never does.
+ const sideline=55.0,height=32.8,trail=wide&&phase==='build'?5.8:4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ return{position:[sideline*scale,height*scale,targetZ+trail*direction*scale],target:[targetX,targetY,targetZ],fov,distance,phase};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -191,8 +219,8 @@ export function keeperPose(type,time){
   tilt:rotation, anticipation, dive, land, recover};
 }
 export function makeScene(renderer,event,weak=false,high=false){
- const scene=new THREE.Scene();scene.background=new THREE.Color('#b6c7cc');scene.fog=new THREE.Fog('#b6c7cc',160,290);
- const camera=new THREE.PerspectiveCamera(30,1,.5,350);
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
+ const camera=new THREE.PerspectiveCamera(28,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence);
  // All match-space objects, pitch markings and both goals share one transform.
@@ -215,10 +243,10 @@ export function makeScene(renderer,event,weak=false,high=false){
    const material=track(new THREE.MeshStandardMaterial({color:primary,roughness:.68,metalness:0,emissive:primary,emissiveIntensity:.18}));
    shirtMaterials.set(key,material);return material
   }
-  const hemi=new THREE.HemisphereLight('#e2efff','#657644',2.2);scene.add(hemi);
-  const sun=new THREE.DirectionalLight('#fff4d8',2.8);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
+  const hemi=new THREE.HemisphereLight('#dbeaff','#263a33',1.9);scene.add(hemi);
+  const sun=new THREE.DirectionalLight('#fff0d2',3.15);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00025;sun.shadow.normalBias=.02;
-  const fill=new THREE.DirectionalLight('#d4e6ff',weak?0:.5);fill.position.set(40,15,-50);scene.add(fill);
+  const fill=new THREE.DirectionalLight('#c6ddff',weak?.18:.62);fill.position.set(40,18,-50);scene.add(fill);
 
   const grass=canvasTexture(512,512,(ctx,w,h)=>{
    ctx.fillStyle='#447a37';ctx.fillRect(0,0,w,h);
@@ -253,30 +281,30 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   const net=goal(-52.5,-1);goal(52.5,1);
 
-  // V21.17 — Crowd Paket L. Supporter remain presentation-only and deterministic:
-  // recognisable human silhouettes with torso/head/arms/legs, coherent colour blocks, asynchronous
-  // motion, event reactions and a few lightweight flags/banners.
-  box(100,.1,143,'#777d77',0,-.15,0,scene);
-  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?9:high?12:12,sideCols=weak?108:high?190:158,endCols=weak?72:high?136:112;
+  // V21.18 — broadcast crowd/stadium pass. Humans stay instanced and deterministic;
+  // darker tiering, irregular spacing and segmented flags add depth without extra per-fan draw calls.
+  box(100,.1,143,'#172126',0,-.15,0,scene);
+  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?9:high?12:12,sideCols=weak?112:high?204:170,endCols=weak?78:high?148:120;
   const sideSupporter=z=>z<-22?'home':z>22?'away':'neutral';
   for(const side of [-1,1]){
    for(let row=0;row<12;row++){
-    box(2.0,.64,119,row%2?'#303b40':'#3b464a',side*(39.3+row*1.42),.52+row*.72,0,scene);
-    box(79,.64,2.0,row%2?'#303b40':'#3b464a',0,.52+row*.72,side*(59.4+row*1.42),scene);
+    box(2.0,.64,119,row%2?'#172126':'#202c31',side*(39.3+row*1.42),.52+row*.72,0,scene);
+    box(79,.64,2.0,row%2?'#172126':'#202c31',0,.52+row*.72,side*(59.4+row*1.42),scene);
     if(row<crowdRows){
      for(let col=0;col<sideCols;col++){
       const z=-56+col*(112/Math.max(1,sideCols-1));
-      if(col%28>1)crowd.push({x:side*(39.3+row*1.42),y:1.13+row*.72,z,team:sideSupporter(z),row});
+      if(col%28>1)crowd.push({x:side*(39.3+row*1.42),y:1.13+row*.72,z,team:sideSupporter(z),row,zone:'side'});
      }
-     for(let col=0;col<endCols;col++)if(col%26>1)crowd.push({x:-37+col*(74/Math.max(1,endCols-1)),y:1.13+row*.72,z:side*(59.4+row*1.42),team:side<0?'home':'away',row});
+     for(let col=0;col<endCols;col++)if(col%26>1)crowd.push({x:-37+col*(74/Math.max(1,endCols-1)),y:1.13+row*.72,z:side*(59.4+row*1.42),team:side<0?'home':'away',row,zone:'end'});
     }
    }
-   box(5,.3,122,'#263940',side*57,10.2,0,scene);box(112,.3,7,'#263940',0,10.2,side*80,scene);
-   box(6,.35,126,'#202d31',side*59,12.15,0,scene);box(118,.35,8,'#202d31',0,12.15,side*82,scene);
-   for(let z=-56;z<=56;z+=14)box(.2,9,.2,'#c1c8c7',side*57,5,z,scene);
+   box(5,.3,122,'#132025',side*57,10.2,0,scene);box(112,.3,7,'#132025',0,10.2,side*80,scene);
+   box(6,.35,126,'#0f191d',side*59,12.15,0,scene);box(118,.35,8,'#0f191d',0,12.15,side*82,scene);
+   box(.16,.72,116,'#738184',side*38.25,1.02,0,scene);box(76,.72,.16,'#738184',0,1.02,side*58.25,scene);
+   for(let z=-56;z<=56;z+=14)box(.16,8.5,.16,'#748285',side*57,5,z,scene);
   }
-  const animatedShare=weak?.30:high?.72:.58;
-  const crowdSpecs=crowd.map((p,i)=>({...p,index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.94+hash(i*37+5)*.28,width:.90+hash(i*41+7)*.28,depth:.94+hash(i*43+11)*.18,lift:hash(i*47+13)*.11,animated:hash(i*53+17)<animatedShare}));
+  const animatedShare=weak?.34:high?.76:.62;
+  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.98+hash(i*37+5)*.30,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
   const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
   function fanPalette(team){
@@ -284,12 +312,11 @@ export function makeScene(renderer,event,weak=false,high=false){
    return kit?[kit.shirt,kit.shirt,kit.shirtSecondary,'#e4e1d8','#26343a']:neutralFanPalette;
   }
   function crowdGroup(specs,dynamic){
-   // Paket M uses an actual human TV silhouette: broad torso + separate head,
-   // two arms and two legs. Keeping each part instanced preserves mobile draw-call cost.
-   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>new THREE.BoxGeometry(.46,.55,.22)),mat('#ffffff'),specs.length);
-   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>new THREE.SphereGeometry(.132,7,6)),mat('#ffffff'),specs.length);
-   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.052,.044,.45,6)),mat('#ffffff'),specs.length*2);
-   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.060,.050,.46,6)),mat('#ffffff'),specs.length*2);
+   // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
+   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>new THREE.BoxGeometry(.50,.59,.24)),mat('#ffffff'),specs.length);
+   const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>new THREE.SphereGeometry(.138,7,6)),mat('#ffffff'),specs.length);
+   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6)),mat('#ffffff'),specs.length*2);
+   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6)),mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
    return{torso,head,arms,legs,specs,dynamic};
   }
@@ -332,26 +359,29 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   initCrowdGroup(crowdStatic);initCrowdGroup(crowdDynamic);
 
-  const flagCount=weak?7:high?18:13,flagSpecs=Array.from({length:flagCount},(_,i)=>{
-   const team=i<Math.ceil(flagCount*.62)?'home':'away',side=team==='home'?-1:1,row=i%4,scale=.95+hash(i+331)*1.30;
-   return{team,x:-30+(i%7)*10+hash(i+311)*2.6,y:2.1+row*.78,z:side*(59.9+row*1.42),phase:hash(i+317)*Math.PI*2,scale};
+  const flagCount=weak?8:high?22:16,flagSegments=3,flagSpecs=Array.from({length:flagCount},(_,i)=>{
+   const team=i<Math.ceil(flagCount*.62)?'home':'away',side=team==='home'?-1:1,row=i%4,scale=1.05+hash(i+331)*1.38;
+   return{team,x:-30+(i%7)*10+hash(i+311)*2.6,y:2.05+row*.78,z:side*(59.9+row*1.42),phase:hash(i+317)*Math.PI*2,scale};
   });
-  const flagPole=new THREE.InstancedMesh(geo('crowd-flag-pole',()=>new THREE.CylinderGeometry(.028,.028,1,6)),mat('#d5d9d5'),flagSpecs.length);
-  const flagCloth=new THREE.InstancedMesh(geo('crowd-flag-cloth',()=>new THREE.PlaneGeometry(1.80,1.02,6,3)),mat('#ffffff',{side:THREE.DoubleSide}),flagSpecs.length);
+  const flagPole=new THREE.InstancedMesh(geo('crowd-flag-pole',()=>new THREE.CylinderGeometry(.03,.03,1,6)),mat('#d5d9d5'),flagSpecs.length);
+  const flagCloth=new THREE.InstancedMesh(geo('crowd-flag-cloth-segment',()=>new THREE.PlaneGeometry(.72,1.08,2,2)),mat('#ffffff',{side:THREE.DoubleSide}),flagSpecs.length*flagSegments);
   flagPole.frustumCulled=flagCloth.frustumCulled=false;flagCloth.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(flagPole,flagCloth);track(flagPole);track(flagCloth);
   function writeFlag(spec,i,time=0,paint=false){
-   crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.60+spec.scale*.70,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
-   const reaction=crowdReactionState(event.type,event.team,spec.team,time),wave=Math.sin(time*(2.3+spec.scale*.5)+spec.phase),amp=.10+reaction.suspense*.12+Math.max(0,reaction.mood)*.32;
-   crowdDummy.position.set(spec.x+.68*spec.scale+wave*amp,spec.y+.48+.34*spec.scale+Math.abs(wave)*amp*.1,spec.z-(spec.team==='home'?-1:1)*.03);
-   crowdDummy.rotation.set(0,spec.team==='home'?0:Math.PI,wave*amp*.9);crowdDummy.scale.set(spec.scale,1+Math.abs(wave)*.06,spec.scale);crowdDummy.updateMatrix();flagCloth.setMatrixAt(i,crowdDummy.matrix);
-   if(paint){const kit=spec.team==='home'?crowdKits.home:crowdKits.away;flagCloth.setColorAt(i,crowdColor.set(i%3===0?kit.shirtSecondary:kit.shirt))}
+   crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.75+spec.scale*.72,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
+   const reaction=crowdReactionState(event.type,event.team,spec.team,time),baseWave=time*(2.25+spec.scale*.42)+spec.phase,amp=.12+reaction.suspense*.13+Math.max(0,reaction.mood)*.34;
+   for(let segment=0;segment<flagSegments;segment++){
+    const index=i*flagSegments+segment,wave=Math.sin(baseWave+segment*.72),previous=Math.sin(baseWave+(segment-1)*.72),bend=(wave-previous)*amp;
+    crowdDummy.position.set(spec.x+(.38+segment*.62)*spec.scale+wave*amp*(.18+.12*segment),spec.y+.56+.36*spec.scale+Math.abs(wave)*amp*.09,spec.z-(spec.team==='home'?-1:1)*(.03+segment*.012));
+    crowdDummy.rotation.set(0,spec.team==='home'?0:Math.PI,wave*amp*.78+bend*.42);crowdDummy.scale.set(spec.scale,1+Math.abs(wave)*.07,spec.scale);crowdDummy.updateMatrix();flagCloth.setMatrixAt(index,crowdDummy.matrix);
+    if(paint){const kit=spec.team==='home'?crowdKits.home:crowdKits.away,colour=i%3===0?(segment===1?kit.shirt:kit.shirtSecondary):kit.shirt;flagCloth.setColorAt(index,crowdColor.set(colour))}
+   }
   }
   flagSpecs.forEach((spec,i)=>writeFlag(spec,i,0,true));flagPole.instanceMatrix.needsUpdate=true;flagCloth.instanceMatrix.needsUpdate=true;if(flagCloth.instanceColor)flagCloth.instanceColor.needsUpdate=true;
 
   function supporterBanner(kit,z){
    const tex=canvasTexture(512,96,(ctx,w,h)=>{ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,w,h);ctx.fillStyle=kit.shirtSecondary;ctx.fillRect(0,0,w*.14,h);ctx.fillRect(w*.86,0,w*.14,h);ctx.fillStyle='#ffffff';ctx.globalAlpha=.94;ctx.textAlign='center';ctx.font='italic 900 46px system-ui';ctx.fillText('FOOTERA',w/2,55);ctx.globalAlpha=.8;ctx.font='800 15px system-ui';ctx.fillText('BUILD YOUR ERA',w/2,78)});
    // Rail-level only: banners never sit across the supporter bodies.
-   const banner=mesh(track(new THREE.PlaneGeometry(10,.92)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,1.05,z);banner.rotation.y=z<0?0:Math.PI;return banner;
+   const banner=mesh(track(new THREE.PlaneGeometry(12,.72)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,.62,z);banner.rotation.y=z<0?0:Math.PI;return banner;
   }
   const supporterBanners=[supporterBanner(crowdKits.home,-58.15),supporterBanner(crowdKits.away,58.15)];
   let lastCrowdUpdate=-1;
@@ -396,26 +426,28 @@ export function makeScene(renderer,event,weak=false,high=false){
   function player(kit,name,keeper=false){
    const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
    const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=['sleeves','shoulders'].includes(kit.pattern)?mat(kit.shirtSecondary):shirt;
-   // Athletic 1.82 m silhouette; saved shirt pattern is rendered on the torso.
-   bodyPartMaterial(.22,.153,.48,shirt,rig,0,1.27,0,1,.6);roundedMaterial(.215,.09,.125,shirt,rig,0,1.455,0);shirtDetail(rig,kit);
-   bodyPart(.155,.185,.2,kit.shorts,rig,0,.98,0,1,.75);
-   bodyPart(.058,.065,.095,skin,rig,0,1.555,0);
-   rounded(.095,.118,.1,skin,rig,0,1.70,-.012);rounded(.097,.043,.102,hair,rig,0,1.785,.003);
+   // Broadcast-scale footballer: athletic shoulders/chest, defined waist/hips and articulated limbs.
+   // The skeleton lengths stay physically aligned with shotFootPosition().
+   roundedMaterial(.245,.082,.138,shirt,rig,0,1.475,0);
+   bodyPartMaterial(.228,.178,.36,shirt,rig,0,1.31,0,1,.62);
+   bodyPartMaterial(.178,.153,.18,shirt,rig,0,1.07,0,1,.60);shirtDetail(rig,kit);
+   rounded(.168,.095,.14,kit.shorts,rig,0,.995,0);bodyPart(.158,.18,.16,kit.shorts,rig,0,.965,0,1,.76);
+   bodyPart(.060,.066,.098,skin,rig,0,1.565,0);
+   rounded(.098,.122,.104,skin,rig,0,1.708,-.012);rounded(.101,.044,.106,hair,rig,0,1.798,.003);
    const arms=[],elbows=[],legs=[],knees=[],gloves=[];
    for(const side of [-1,1]){
-    const arm=new THREE.Group();arm.position.set(side*.215,1.45,0);rig.add(arm);arms.push(arm);
-    bodyPartMaterial(.055,.05,.17,sleeve,arm,0,-.065,0);bodyPart(.048,.04,.16,skin,arm,0,-.225,0);
-    const elbow=new THREE.Group();elbow.position.y=-.30;arm.add(elbow);elbows.push(elbow);
-    bodyPart(.039,.029,.265,skin,elbow,0,-.132,0);
-    gloves.push(rounded(keeper?.047:.033,.065,.029,keeper?'#f3f4e9':skin,elbow,0,-.30,0));
-    const leg=new THREE.Group();leg.position.set(side*.105,.94,0);rig.add(leg);legs.push(leg);
-    bodyPart(.086,.075,.23,kit.shorts,leg,0,-.055,0);bodyPart(.067,.047,.31,skin,leg,0,-.275,0);
+    const arm=new THREE.Group();arm.position.set(side*.238,1.455,0);rig.add(arm);arms.push(arm);
+    bodyPartMaterial(.064,.054,.18,sleeve,arm,0,-.07,0);bodyPart(.052,.044,.17,skin,arm,0,-.245,0);
+    const elbow=new THREE.Group();elbow.position.y=-.32;arm.add(elbow);elbows.push(elbow);
+    bodyPart(.043,.031,.28,skin,elbow,0,-.14,0);
+    gloves.push(rounded(keeper?.052:.035,.067,.031,keeper?'#f3f4e9':skin,elbow,0,-.31,-.006));
+    const leg=new THREE.Group();leg.position.set(side*.108,.94,0);rig.add(leg);legs.push(leg);
+    bodyPart(.092,.079,.23,kit.shorts,leg,0,-.055,0);bodyPart(.071,.052,.31,skin,leg,0,-.275,0);
     const knee=new THREE.Group();knee.position.y=-.43;leg.add(knee);knees.push(knee);
-    bodyPart(.05,.036,.38,kit.socks,knee,0,-.22,0);
-    rounded(.06,.055,.145,'#151b21',knee,0,-.445,-.055);
+    bodyPart(.053,.040,.36,kit.socks,knee,0,-.20,0);
+    rounded(.065,.058,.17,'#121920',knee,0,-.43,-.072);
    }
-   // Soft contact shadows in LOW; STANDARD adds directional shadow maps.
-   const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.44,high?20:14)),mat('#10200f',{transparent:true,opacity:.24,depthWrite:false}),root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.021;shadow.scale.y=.6;
+   const shadow=mesh(geo('shadow',()=>new THREE.CircleGeometry(.46,high?20:14)),mat('#10200f',{transparent:true,opacity:.24,depthWrite:false}),root);shadow.rotation.x=-Math.PI/2;shadow.position.y=.021;shadow.scale.y=.6;
    return{root,rig,arms,elbows,legs,knees,gloves,shadow};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
@@ -434,13 +466,13 @@ export function makeScene(renderer,event,weak=false,high=false){
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);for(const b of [...p.arms,...p.elbows,...p.legs,...p.knees])b.rotation.set(0,0,0)}
   function pose(p,x,z,time,speed,heading=0,turn=0){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
-   const cadence=7.2+speed*2.5,phase=time*cadence,step=Math.sin(phase)*.6*speed;
+   const cadence=7.0+speed*2.8,phase=time*cadence,step=Math.sin(phase)*.68*speed;
    p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;
-   p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.9*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.9*speed;
-   p.arms[0].rotation.x=-step*.68;p.arms[1].rotation.x=step*.68;p.arms[0].rotation.z=.05+.035*speed;p.arms[1].rotation.z=-.05-.035*speed;for(const elbow of p.elbows)elbow.rotation.x=-.6;
-   p.rig.rotation.x=-.055*speed;p.rig.rotation.y=clamp(turn*.72,-.11,.11);p.rig.rotation.z=Math.sin(phase)*.024*speed+clamp(turn,-.16,.16);p.rig.position.y=Math.abs(Math.sin(phase))*.03*speed;
+   p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.98*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.98*speed;
+   p.arms[0].rotation.x=-step*.72;p.arms[1].rotation.x=step*.72;p.arms[0].rotation.z=.07+.045*speed;p.arms[1].rotation.z=-.07-.045*speed;for(const elbow of p.elbows)elbow.rotation.x=-.64;
+   p.rig.rotation.x=-.07*speed;p.rig.rotation.y=clamp(turn*.78,-.13,.13);p.rig.rotation.z=Math.sin(phase)*.027*speed+clamp(turn,-.17,.17);p.rig.position.y=Math.abs(Math.sin(phase))*.034*speed;
   }
-  const camTarget=new THREE.Vector3();
+  const camTarget=new THREE.Vector3();let currentCameraPhase='build';
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -458,7 +490,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    const striker=players[0];
    if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
    const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:sequence==='dribble'?[]:[[1.8,2.18]];
-   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1];passer.legs[1].rotation.x=Math.sin((time-from)/(to-from)*Math.PI)*.9}
+   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1],u=clamp((time-from)/(to-from)),wind=smooth(Math.min(1,u/.42)),follow=smooth(Math.max(0,(u-.42)/.58));passer.legs[1].rotation.x=mix(-.46,1.02,follow);passer.knees[1].rotation.x=mix(-.62,-.08,wind);passer.rig.rotation.x=-.08*(1-u);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);passer.arms[0].rotation.z=.38;passer.arms[1].rotation.z=-.55}
    const kp=keeperPose(event.type,time);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    keeper.rig.position.y=-.14*kp.anticipation*(1-kp.dive)+.13*kp.land;
@@ -475,17 +507,21 @@ export function makeScene(renderer,event,weak=false,high=false){
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],influence=Math.exp(-((x-2.65)**2+(y-1.08)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
-   const cam=cameraState(direction,time,camera.aspect,event.type,sequence);camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
+   const cam=cameraState(direction,time,camera.aspect,event.type,sequence);currentCameraPhase=cam.phase;camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
   }
-  function reduceQuality(){renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*.62),dynamicCount=Math.floor(crowdDynamic.specs.length*.46),flags=Math.max(2,Math.floor(flagSpecs.length*.6));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flagCloth.count=flags;supporterBanners.forEach(x=>x.visible=false);fill.intensity=0}
+  function reduceQuality(){renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*.62),dynamicCount=Math.floor(crowdDynamic.specs.length*.46),flags=Math.max(2,Math.floor(flagSpecs.length*.6));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flags;flagCloth.count=flags*flagSegments;supporterBanners.forEach(x=>x.visible=false);fill.intensity=.12}
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
   function inspect(){
    const project=p=>p.clone().project(camera),visible=players.filter(p=>{const q=project(p.root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,1,0)));return Math.abs(q.x)<.98&&Math.abs(q.y)<.98&&q.z<1}).length;
-   return{direction,sequence,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,goalScreenX:project(new THREE.Vector3(...worldPosition([0,0,-52.5],direction))).x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ball.getWorldPosition(new THREE.Vector3()).toArray()};
+   const ballWorld=ball.getWorldPosition(new THREE.Vector3()),goalWorld=new THREE.Vector3(...worldPosition([0,.4,-52.5],direction)),wingerWorld=players[1].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0)),runnerWorld=players[2].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0));
+   const ballScreen=project(ballWorld),goalScreen=project(goalWorld),wingerScreen=project(wingerWorld),runnerScreen=project(runnerWorld),sampleMatrix=new THREE.Matrix4(),samplePosition=new THREE.Vector3(),flagPosition=new THREE.Vector3();
+   if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
+   if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
+   return{direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}

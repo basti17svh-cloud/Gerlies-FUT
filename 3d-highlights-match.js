@@ -37,8 +37,10 @@ function match3DPresentationMeta(event,current){
   :(Number(event.playerId)>=0?rows.find(r=>Number(r.index)===Number(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase());
  let playerCardHTML='';
  if(event.type==='goal'&&row?.base&&typeof cardHTML==='function'){
-  const item=event.team==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
-  try{playerCardHTML=cardHTML(item&&typeof displayBase==='function'?displayBase(item):row.base,item||null,false,row.slot||row.base.position,false)||''}catch(_){}
+  const homeItem=event.team==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
+  const awayCandidate=event.team==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
+  const item=homeItem||awayCandidate||null;
+  try{const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||''}catch(_){}
  }
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null,opponentIdentity=current?.opponentProfile?.clubIdentity||null;
  const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam'),awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');

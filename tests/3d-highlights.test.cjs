@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.17 shell includes broadcast crowd + event cards without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.18 shell includes broadcast crowd + event cards without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2117','3d-highlights-match.js?v=2117','3d-highlights-scene.mjs?v=2117','3d-highlights.css?v=2117','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-17'));assert.ok(html.includes('service-worker.js?v=2117'));
+ for(const file of ['3d-highlights.js?v=2118','3d-highlights-match.js?v=2118','3d-highlights-scene.mjs?v=2118','3d-highlights.css?v=2118','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-18'));assert.ok(html.includes('service-worker.js?v=2118'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -78,9 +78,9 @@ test('the whole match space rotates together; the permanent broadcast camera pus
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=55);assert.ok(c.position[0]>35&&c.position[1]>21);assert.ok(c.fov>=27.4&&c.fov<=30);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=56);assert.ok(c.position[0]>35&&c.position[1]>21);assert.ok(c.fov>=25.8&&c.fov<=29.5);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
- const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>5.5,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>1.3,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
+ const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>6.5,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>2.4,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
  assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
  assert.ok(keeperPose('big_chance_saved',6.65).dive>.95);
@@ -103,6 +103,9 @@ test('presentation choreography has distinct football actions without changing t
  assert.ok(M.ballPosition('goal',4.35,'wing_left')[1]>1.2,'cross must travel through the air');
  assert.ok(M.ballPosition('goal',4.35,'cutback_left')[1]<.5,'cutback stays low');
  assert.notDeepEqual(paths.get('one_two'),paths.get('through_ball'));
+ const wingLeftCam=M.cameraState(1,2.7,1.15,'goal','wing_left'),wingRightCam=M.cameraState(1,2.7,1.15,'goal','wing_right'),centralCam=M.cameraState(1,2.7,1.15,'goal','central');
+ assert.equal(wingLeftCam.phase,'build');assert.equal(wingRightCam.phase,'build');assert.ok(wingLeftCam.target[0]<-5&&wingRightCam.target[0]>5,'build camera must frame the active flank');assert.ok(Math.abs(wingLeftCam.target[0]-centralCam.target[0])>5,'wing framing must differ materially from central');
+ const deliveryCam=M.cameraState(1,4.3,1.15,'goal','wing_right'),finishCam=M.cameraState(1,5.6,1.15,'goal','wing_right');assert.equal(deliveryCam.phase,'delivery');assert.equal(finishCam.phase,'finish');assert.ok(deliveryCam.distance>finishCam.distance&&deliveryCam.fov>finishCam.fov,'broadcast camera must push in smoothly through delivery to finish');
  const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
  for(const seq of sequences)assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'all build-ups reach the same authoritative finish');
 });
@@ -146,12 +149,12 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
  assert.ok(homeGoal.mood>.6&&awayGoal.mood<-.25);
  assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
  const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.30:high\?\.72:\.58/);assert.match(source,/BoxGeometry\(\.46,\.55,\.22\)/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/supporterBanner/);assert.match(source,/updateCrowd\(time\)/);
+ assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/animatedShare=weak\?\.34:high\?\.76:\.62/);assert.match(source,/BoxGeometry\(\.50,\.59,\.24\)/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/flagSegments=3/);assert.match(source,/crowd-flag-cloth-segment/);assert.match(source,/supporterBanner/);assert.match(source,/banner\.position\.set\(0,\.62,z\)/);assert.match(source,/updateCrowd\(time\)/);
  assert.doesNotMatch(source,/crowd(?:Static|Dynamic)\.body/);assert.match(source,/crowdDynamic\.legs/);assert.equal(/Math\.random\s*\(/.test(source),false);
 });
 
 
-test('V21.17 snapshot carries only presentation card and club metadata',()=>{
+test('V21.18 snapshot carries only presentation card and club metadata',()=>{
  const snap=H.snapshot({...event(),playerCardHTML:'<div class="card-shell">CARD</div>',teamName:'FC Gerlies',teamCrestHTML:'<div class="club-crest"></div>',scoreBeforeHome:0,scoreBeforeAway:0});
  assert.equal(snap.teamName,'FC Gerlies');assert.match(snap.playerCardHTML,/card-shell/);assert.match(snap.teamCrestHTML,/club-crest/);assert.equal(snap.scoreBeforeHome,0);assert.equal(snap.scoreBeforeAway,0);assert.equal('match' in snap,false);
 });

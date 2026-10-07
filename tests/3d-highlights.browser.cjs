@@ -51,6 +51,7 @@ if(require.main===module)(async()=>{
    await page.setViewportSize({width,height:844});await fixture(page);const before=await force(page,'goal');
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
+   check(`${width}: low-quality mobile LOD selected`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
    check(`${width}: simulation owns 1:0 but visible score stays 0:0 before impact`,await page.evaluate(()=>match.home===1&&match.away===0&&document.getElementById('matchScore').textContent==='0 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
    const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect(),canvas=layer.querySelector('canvas').getBoundingClientRect(),body=getComputedStyle(document.body);return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,buttonBottom:button.bottom,canvasTop:canvas.top,width:innerWidth,locked:document.documentElement.classList.contains('fh3d-scroll-lock')&&body.position==='fixed',touch:getComputedStyle(layer.querySelector('canvas')).touchAction}});
@@ -68,6 +69,7 @@ if(require.main===module)(async()=>{
    await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});
   }
   await page.setViewportSize({width:390,height:844});
+  await fixture(page);await page.evaluate(()=>{match.opponentProfile.items=PLAYERS.slice(0,11).map(p=>makeItem(p,false,{variant:'special',eventName:'Team of the Week QA'}))});const awayGoal=await force(page,'goal','away');await page.waitForSelector('.fh3d-hud.visible');const awayCard=await page.locator('.fh3d-player-card').evaluate(c=>({totw:!!c.querySelector('.custom-card.totw'),name:c.closest('.fh3d-hud').querySelector('.fh3d-name').textContent}));check('away scorer uses the actual equipped special card',awayGoal.goals===1&&awayCard.totw&&awayCard.name);await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>stopMatchTimer());
   for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
    await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
    await page.waitForSelector('.fh3d-hud.visible');
