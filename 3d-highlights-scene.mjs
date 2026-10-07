@@ -546,7 +546,8 @@ export function play(event,signal){
   const detail=document.createElement('span');detail.className='fh3d-event';copy.append(headline,name,detail);
   const minute=document.createElement('b');minute.className='fh3d-minute';minute.textContent=`${event.minute}'`;
   const crest=document.createElement('div');crest.className='fh3d-team-crest';if(event.teamCrestHTML)crest.innerHTML=event.teamCrestHTML;
-  hud.append(card,mark,copy,minute,crest);layer.append(hud);host.append(layer);
+  const meta=document.createElement('div');meta.className='fh3d-goal-meta';meta.append(minute,crest);
+  hud.append(card,mark,copy,meta);layer.append(hud);host.append(layer);
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
