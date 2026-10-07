@@ -14,15 +14,18 @@ function setup({initial={},now='2026-09-27T12:00:00Z',eventPlayers=[]}={}){
  const players=[{id:'bronze-gk',ovr:60,position:'GK'},...Array.from({length:8},(_,i)=>({id:`bronze-${i}`,ovr:60,position:'ST'}))];
  const event={id:'momentum-team-1',name:'MOMENTUM',subtitle:'TEAM 1',activeFrom:'2026-09-27T00:00:00+02:00',activeUntilAt:'2026-10-02T19:00:00+02:00',players:eventPlayers};
  const ctx={Date:ClockDate,Intl,Math,Map,Set,FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',state,PLAYERS:players,PACKS:[{id:'gold',name:'Gold-Pack'},{id:'82',name:'82+'}],MOMENTUM_EVENT:event,EVENT_PROMO_RELEASES:[event],LIVE_TOTW:{name:'TOTW',players:[]},
-  FORMATIONS:{'4-3-3':[{p:'GK'},...Array.from({length:10},()=>({p:'ST'}))]},
+  FORMATIONS:{
+   '4-3-3':[{p:'GK'},{p:'LB'},{p:'CB'},{p:'CB'},{p:'RB'},{p:'CM'},{p:'CM'},{p:'CM'},{p:'LW'},{p:'ST'},{p:'RW'}],
+   '4-3-3 (4)':[{p:'GK'},{p:'LB'},{p:'CB'},{p:'CB'},{p:'RB'},{p:'CM'},{p:'CM'},{p:'CAM'},{p:'LW'},{p:'ST'},{p:'RW'}]
+  },
   eventPackIsActive:(e,at)=>at>=Date.parse(e.activeFrom)&&at<Date.parse(e.activeUntilAt),
-  promoEventEntries:e=>e.players.map((p,i)=>({player:{id:p.pid,position:p.position,ovr:p.ovr},item:{pid:p.pid,variant:'special'},index:i})),
+  promoEventEntries:e=>e.players.map((p,i)=>({player:{id:p.pid,position:p.position,alt:p.alt||'',ovr:p.ovr},item:{pid:p.pid,variant:'special'},info:p,index:i})),
   liveTotwTeamEntries:()=>[],completeEventRoster:e=>e.players.length===18&&e.players.filter(x=>x.position==='GK').length===2,
-  deterministicPick:a=>a[0],posFit:(p,slot)=>p.position===slot,playerGender:()=>"male",totwDisplayName:x=>x,
+  deterministicPick:a=>a[0],posFit:(p,slot)=>[p.position,...String(p.alt||'').split(/[,/]/).map(x=>x.trim()).filter(Boolean)].includes(slot)?1:0,playerGender:()=>"male",totwDisplayName:x=>x,
   $:()=>({textContent:'',innerHTML:''}),save(){},renderAll(){},currentViewId:()=>'',toast(){},updateObjectiveIndicators(){},setInterval(){},
   document:{addEventListener(){}},fmt:String,esc:String,seasonCountdown:()=>'',seasonInfo:()=>({number:1,name:'THE BEGINNING'}),passDate:()=>''};
  vm.createContext(ctx);vm.runInContext(time,ctx);vm.runInContext(competitions,ctx);
- const api=vm.runInContext('({competitionWindow,sbBattlePoints,sbRank,recordSquadBattleResult,recordRivalsResult,syncCompetitionWeeks,competitionPending,claimCompetitionReward,battleSpecialOpponent})',ctx);
+ const api=vm.runInContext('({competitionWindow,sbBattlePoints,sbRank,recordSquadBattleResult,recordRivalsResult,syncCompetitionWeeks,competitionPending,claimCompetitionReward,battleSpecialOpponent,eventTeamLineup})',ctx);
  return{ctx,state,api}
 }
 
@@ -83,6 +86,27 @@ test('week change freezes rewards once, keeps division and survives a simulated 
  assert.equal(reload.state.coins,9000);
  assert.equal(reload.api.claimCompetitionReward('rivals',state.weeklyRewards.find(x=>x.mode==='rivals').week),false);
  assert.equal(reload.api.competitionPending().length,1);
+});
+
+test('event lineup optimizer starts the strongest valid XI and keeps TOTW 4 headliners on the pitch',()=>{
+ const {api}=setup();
+ const rows=[
+  ['Mamardashvili',86,'GK'],['Donnarumma',90,'GK'],['Cancelo',86,'LB'],['Brown',82,'CB'],['Hancko',85,'CB'],['Dvali',81,'CB'],['Williams',82,'RB'],
+  ['Bellingham',92,'CAM'],['Merino',87,'CM'],['De Bruyne',88,'CAM'],['Wirtz',88,'CAM'],['Bischof',83,'CM'],['Rieder',82,'CAM'],
+  ['Kane',92,'ST'],['Saka',89,'RW'],['Lewandowski',87,'ST'],['Ramos',84,'ST'],['Hojlund',84,'ST']
+ ].map(([name,ovr,position],index)=>({index,info:{ovr},player:{id:String(index),name,ovr,position,alt:''},item:{displayRating:ovr}}));
+ const lineup=api.eventTeamLineup(rows),starters=lineup.xi.filter(Boolean),names=starters.map(e=>e.player.name);
+ assert.equal(lineup.formation,'4-3-3 (4)');
+ for(const name of ['Bellingham','Kane','Saka','Donnarumma'])assert.ok(names.includes(name),name+' must start');
+ assert.equal(lineup.highlightCount,2);
+ assert.equal(lineup.fitCount,10);
+ assert.equal(lineup.xi[0].player.name,'Donnarumma');
+ assert.equal(lineup.xi[7].player.name,'Bellingham');
+ assert.equal(lineup.xi[9].player.name,'Kane');
+ for(let slot=0;slot<lineup.slots.length;slot++){
+  const starter=lineup.xi[slot];if(!starter||ctx.posFit(starter.player,lineup.slots[slot].p)>0)continue;
+  assert.equal(lineup.bench.some(e=>ctx.posFit(e.player,lineup.slots[slot].p)>0),false,'off-position is only allowed when no compatible bench player exists');
+ }
 });
 
 test('MOMENTUM opponent has 14 special players plus four bronze fillers and two keepers',()=>{
