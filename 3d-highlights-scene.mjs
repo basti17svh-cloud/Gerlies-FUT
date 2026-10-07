@@ -236,6 +236,27 @@ export function stanceHeight(hipA,kneeA,hipB,kneeB){
  const sole=(hip,knee)=>.94-.43*Math.cos(hip)-.483*Math.cos(hip+knee)+.06*Math.sin(hip+knee);
  return -Math.min(sole(hipA,kneeA),sole(hipB,kneeB));
 }
+// The model's toes, face and chest point down local -Z. During support the foot
+// travels towards +Z relative to the pelvis, cancelling forward root travel.
+export const runningStrideLength=speed=>2*(.16+.18*clamp(speed))/(.60-.34*clamp(speed));
+export function runningLeg(phase,speed,out={}){
+ speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.34*speed,reach=.16+.18*speed;
+ const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
+ const z=support?mix(-reach,reach,u):mix(reach,-reach,smooth(u));
+ const lift=support?0:Math.sin(Math.PI*u)*(.075+.17*speed);
+ const hipHeight=.89-.06*speed,ankleHeight=.055+lift,down=hipHeight-ankleHeight;
+ const distance=Math.min(.8599,Math.hypot(down,z)),bend=Math.acos(distance/.86);
+ out.hip=Math.atan2(-z,down)+bend;out.knee=-2*bend;out.ankle=-out.hip-out.knee;
+ out.z=z;out.y=ankleHeight;out.hipHeight=hipHeight;out.support=support;return out;
+}
+// Include the existing finish/chase offsets when orienting and grounding actors.
+// This changes no path or event; facing now follows the final displayed motion.
+export function playerPosition(index,time,type='goal',sequence='central'){
+ const p=runPosition(index,time,sequence);
+ if(time>SHOT_TIME&&[8,9,10,11,12,14,15].includes(index))p[1]-=smooth((time-SHOT_TIME)/1.8)*(.35+hash(index+200)*.8);
+ if(type==='goal'&&time>REVEAL_TIME&&[0,2,3].includes(index))p[1]-=Math.min(3,time-REVEAL_TIME)*.6;
+ return p;
+}
 export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
@@ -481,18 +502,25 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // normals. Shared geometry is instanced, keeping the existing joint hierarchy.
   function anatomy(key,rings){return geo(key,()=>athleticGeometry(rings,weak?10:high?18:14))}
   function player(kit,name,keeper=false){
-   const root=new THREE.Group(),rig=new THREE.Group();field.add(root);root.add(rig);
-   const skin=skinTone(name),hair='#26201a',shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});
-   part(anatomy('athletic-shirt',[[1.00,.162,.103],[1.04,.171,.11],[1.12,.161,.105],[1.25,.181,.12],[1.38,.215,.134],[1.46,.237,.115],[1.50,.196,.096],[1.54,.069,.071]]),shirt,rig);
+   const root=new THREE.Group(),rig=new THREE.Group(),upper=new THREE.Group(),chest=new THREE.Group();field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;upper.add(chest);chest.position.y=-1;
+   const skin=skinTone(name),variant=Array.from(name).reduce((n,c)=>n+c.charCodeAt(0),0),hair=['#201b17','#382820','#574032','#826444'][variant%4],shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});
+   if(!keeper)chest.scale.x=.97+(variant%4)*.025;
+   part(anatomy('athletic-shirt',[[1.00,.163,.105],[1.035,.174,.114],[1.09,.166,.108],[1.18,.171,.119],[1.28,.194,.14],[1.36,.219,.144],[1.43,.238,.126],[1.47,.229,.105],[1.51,.168,.08],[1.535,.071,.065]]),shirt,chest);
    part(anatomy('athletic-pelvis',[[.86,.142,.099],[.94,.173,.127],[1.015,.168,.107],[1.03,.161,.105]]),mat(kit.shorts,{roughness:.96}),rig);
-   bodyPart(.058,.066,.112,skin,rig,0,1.576,0);
-   part(anatomy('athletic-head',[[1.623,.045,.054],[1.648,.066,.076],[1.69,.092,.089],[1.75,.097,.095],[1.798,.079,.083],[1.823,.033,.045]]),mat(skin),rig,0,0,-.013);
-   part(anatomy('athletic-hair',[[1.762,.097,.094],[1.799,.082,.087],[1.828,.044,.053],[1.835,.008,.01]]),mat(hair,{roughness:1}),rig,0,0,-.008);
-   const arms=[],elbows=[],legs=[],knees=[],gloves=[],feet=[];
+   bodyPart(.058,.066,.112,skin,chest,0,1.576,0);
+   bodyPartMaterial(.073,.074,.028,mat(kit.shirtSecondary,{roughness:1}),chest,0,1.537,0,1,.94);
+   part(anatomy('athletic-head',[[1.623,.045,.054],[1.648,.066,.076],[1.69,.092,.089],[1.75,.097,.095],[1.798,.079,.083],[1.823,.033,.045]]),mat(skin),chest,0,0,-.013);
+   part(anatomy('athletic-hair',[[1.762,.097,.094],[1.799,.082,.087],[1.828,.044,.053],[1.835,.008,.01]]),mat(hair,{roughness:1}),chest,0,0,.002);
+   // A face plane, nose and ears make the facing direction readable in motion.
+   rounded(.027,.035,.022,skin,chest,0,1.708,-.101);
+   rounded(.019,.031,.018,skin,chest,-.094,1.717,-.005);rounded(.019,.031,.018,skin,chest,.094,1.717,-.005);
+   rounded(.072,.057,.020,hair,chest,0,1.752,.083);
+   const arms=[],elbows=[],legs=[],knees=[],ankles=[],gloves=[],feet=[];
    for(const side of [-1,1]){
-    const arm=new THREE.Group();arm.position.set(side*.224,1.45,0);rig.add(arm);arms.push(arm);
+    const arm=new THREE.Group();arm.position.set(side*.224,1.45,0);chest.add(arm);arms.push(arm);
     roundedMaterial(.075,.091,.085,sleeve,arm,0,-.035,0);
     bodyPartMaterial(.075,.062,.17,sleeve,arm,0,-.098,0);
+    bodyPartMaterial(.064,.063,.023,mat(kit.shirtSecondary,{roughness:1}),arm,0,-.184,0);
     part(anatomy('athletic-upper-arm',[[-.325,.043,.045],[-.25,.053,.056],[-.17,.061,.058],[-.14,.060,.058]]),mat(skin),arm);
     const elbow=new THREE.Group();elbow.position.y=-.32;arm.add(elbow);elbows.push(elbow);
     part(anatomy('athletic-forearm',[[-.28,.029,.033],[-.22,.033,.04],[-.08,.049,.049],[0,.043,.045]]),mat(skin),elbow);
@@ -503,11 +531,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const knee=new THREE.Group();knee.position.y=-.43;leg.add(knee);knees.push(knee);
     rounded(.052,.05,.057,skin,knee,0,-.004,0);
     part(anatomy('athletic-sock',[[-.39,.032,.039],[-.31,.035,.042],[-.17,.059,.064],[-.07,.056,.055],[-.045,.050,.050]]),mat(kit.socks,{roughness:1}),knee);
-    feet.push(rounded(.060,.050,.143,'#172025',knee,0,-.43,-.06));
-    feet.push(rounded(.059,.018,.145,'#0b1014',knee,0,-.465,-.06));
+    const ankle=new THREE.Group();ankle.position.y=-.43;knee.add(ankle);ankles.push(ankle);
+    const boot=['#e4e1cb','#ed763b','#172025','#a6c24a'][variant%4];
+    feet.push(rounded(.057,.047,.139,boot,ankle,0,0,-.064));
+    feet.push(rounded(.056,.014,.140,'#101716',ankle,0,-.039,-.064));
+    rounded(.035,.013,.064,'#e4e6df',ankle,0,.038,-.081);
+    bodyPartMaterial(.051,.052,.027,mat(kit.shirtSecondary,{roughness:1}),knee,0,-.062,0,1,1.04);
    }
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
-   return{root,rig,arms,elbows,legs,knees,gloves,feet,shadow};
+   return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,gait:[{},{}]};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:'footballer '+i));
@@ -523,21 +555,25 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const staticGroups=new Map();
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
-  function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0)}}
-  function strideAmplitude(speed){return (.25+.42*speed)*clamp(speed/.14)}
+  function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.upper.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0);p.ankles[i].rotation.set(0,0,0)}}
   function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
-   const phase=stride,step=Math.sin(phase)*strideAmplitude(speed);
-   p.legs[0].rotation.x=step;p.legs[1].rotation.x=-step;
-   p.knees[0].rotation.x=-Math.max(0,-Math.sin(phase))*.98*speed;p.knees[1].rotation.x=-Math.max(0,Math.sin(phase))*.98*speed;
-   p.arms[0].rotation.x=-step*.72;p.arms[1].rotation.x=step*.72;p.arms[0].rotation.z=.07+.045*speed;p.arms[1].rotation.z=-.07-.045*speed;for(const elbow of p.elbows)elbow.rotation.x=-.64;
-   p.rig.rotation.x=-.11*speed;p.rig.rotation.y=clamp(turn*.78,-.13,.13);p.rig.rotation.z=Math.sin(phase)*.027*speed+clamp(turn,-.17,.17);p.rig.position.y=stanceHeight(step,p.knees[0].rotation.x,-step,p.knees[1].rotation.x);p.shadow.rotation.z=heading;
+   const motion=smooth(speed/.13);
+   for(let i=0;i<2;i++){
+    const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]);
+    p.legs[i].rotation.x=g.hip*motion;p.knees[i].rotation.x=g.knee*motion;p.ankles[i].rotation.x=g.ankle*motion;
+    p.arms[i].rotation.x=-g.hip*.65*motion;p.arms[i].rotation.z=(i?1:-1)*(.10+.025*speed);
+    p.elbows[i].rotation.x=.65+.35*speed;
+   }
+   p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion);
+   p.upper.rotation.x=-.14*speed;p.upper.rotation.y=Math.sin(stride)*.045*speed+clamp(turn*.6,-.1,.1);
+   p.upper.rotation.z=Math.sin(stride)*.018*speed+clamp(turn,-.12,.12);p.shadow.rotation.z=heading;
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
-  const gaitSamples=160,gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=runPosition(index,0,sequence);for(let j=1;j<=gaitSamples;j++){const next=runPosition(index,j*dt,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=Math.max(.45,3.44*Math.sin(strideAmplitude(speed)));a[j]=a[j-1]+distance*Math.PI*2/strideLength;previous=next}return a});
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=playerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=playerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
   function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
-  const camTarget=new THREE.Vector3();let currentCameraPhase='build';
+  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -551,24 +587,30 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   function update(time){
-   players.forEach((p,i)=>{const [x,z]=runPosition(i,time,sequence),moving=time<(i===0?SHOT_TIME+1.05:i===1?7.2:6.9),prev=runPosition(i,Math.max(0,time-.12),sequence),next=runPosition(i,time+.12,sequence),farPrev=runPosition(i,Math.max(0,time-.28),sequence),farNext=runPosition(i,time+.28,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=moving?clamp(Math.hypot(vx,vz)/1.56,.02,1):0,heading=moving?Math.atan2(-vx,-vz):p.root.rotation.y,early=Math.atan2(-(prev[0]-farPrev[0]),-(prev[1]-farPrev[1])),late=Math.atan2(-(farNext[0]-next[0]),-(farNext[1]-next[1])),turn=moving?Math.atan2(Math.sin(late-early),Math.cos(late-early))*.25:0;pose(p,x,z,time+i*.29,speed,heading,turn,gaitPhase(i,time))});
+   renderTime=time;
+   players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.06),event.type,sequence),next=playerPosition(i,time+.06,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.78),moving=speed>.002;
+    const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
+    pose(p,x,z,time,speed,heading,0,gaitPhase(i,time));
+   });
    const striker=players[0];
-   if(time>=4.9){striker.root.rotation.y=0;const k=kickPose(time);striker.legs[1].rotation.x=k.hip;striker.knees[1].rotation.x=k.knee;striker.rig.rotation.set(0,0,0);striker.rig.position.y=0;striker.arms[0].rotation.z=.45;striker.arms[1].rotation.z=-.65}
+   if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
+    striker.root.rotation.y*=1-blend;striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,k.hip,blend);striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,k.knee,blend);striker.ankles[1].rotation.x*=1-blend;
+    striker.legs[0].rotation.x*=1-blend;striker.knees[0].rotation.x*=1-blend;striker.ankles[0].rotation.x*=1-blend;striker.upper.rotation.set(0,0,0);striker.rig.position.y*=1-blend;striker.arms[0].rotation.z=-.45;striker.arms[1].rotation.z=.65;
+   }
    const passWindows=sequence.startsWith('wing_')||sequence.startsWith('cutback_')?[[3.42,3.82]]:sequence==='one_two'?[[1.55,1.9],[2.4,2.72]]:sequence==='through_ball'?[[2.08,2.42]]:sequence==='dribble'?[]:[[1.8,2.18]];
-   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1],u=clamp((time-from)/(to-from)),wind=smooth(Math.min(1,u/.42)),follow=smooth(Math.max(0,(u-.42)/.58));passer.legs[1].rotation.x=mix(-.46,1.02,follow);passer.knees[1].rotation.x=mix(-.62,-.08,wind);passer.rig.rotation.x=-.08*(1-u);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);passer.arms[0].rotation.z=.38;passer.arms[1].rotation.z=-.55}
+   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1],u=clamp((time-from)/(to-from)),wind=smooth(Math.min(1,u/.42)),follow=smooth(Math.max(0,(u-.42)/.58));passer.legs[1].rotation.x=mix(-.46,1.02,follow);passer.knees[1].rotation.x=mix(-.62,-.08,wind);passer.rig.rotation.x=-.08*(1-u);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);passer.ankles[1].rotation.x=-passer.legs[1].rotation.x-passer.knees[1].rotation.x;passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55}
    const kp=keeperPose(event.type,time);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    keeper.rig.position.y=-.14*kp.anticipation*(1-kp.dive)+.13*kp.land;
    keeper.legs[0].rotation.x=-.22*(1-kp.dive);keeper.legs[1].rotation.x=-.22*(1-kp.dive);keeper.knees.forEach(k=>k.rotation.x=.4*(1-kp.dive));
    keeper.legs[0].rotation.z=.18+kp.dive*.32;keeper.legs[1].rotation.z=-.18-kp.dive*.15;
-   keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=-.3*(1-kp.dive));
+   keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
    if(kp.dive>.05){keeper.elbows.forEach(e=>e.rotation.x=0);aimArm(keeper.arms[0],[2.52,1.14,-50.6]);aimArm(keeper.arms[1],[2.52,1.14,-50.6]);}
    const bp=ballPosition(event.type,time,sequence);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
-   if(time>SHOT_TIME){const chase=smooth((time-SHOT_TIME)/1.8);for(const i of [8,9,10,11,12,14,15])players[i].root.position.z-=chase*(.35+hash(i+200)*.8)}
    const reaction=smooth((time-IMPACT_TIME)/.72);
-   if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=1.75;p.arms[1].rotation.z=-1.75;p.root.position.z-=Math.min(3,t)*.6;p.rig.position.y=Math.abs(Math.sin(t*7))*.025}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
-   else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,-lift,reaction);striker.rig.rotation.x=-.03*reaction}
+   if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
+   else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],influence=Math.exp(-((x-2.65)**2+(y-1.08)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
@@ -587,7 +629,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
-   return{supportFootClearance,direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+   const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),angle=p.root.rotation.y;return{index,forward:[-Math.sin(angle)*direction,-Math.cos(angle)*direction],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
+   return{facing,supportFootClearance,direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}

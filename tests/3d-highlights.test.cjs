@@ -204,3 +204,20 @@ test('goal roof clears the top edge and fits both wings through delivery on 360/
   }
  }
 });
+
+test('running feet plant flat, push backwards relative to forward travel and recover above grass',async()=>{
+ const {runningLeg,runningStrideLength}=await import('../3d-highlights-scene.mjs');
+ for(const speed of [.15,.4,.7,1]){
+  let support=0,air=0,previous;
+  for(let n=0;n<=240;n++){
+   const phase=n/240*Math.PI*2,g=runningLeg(phase,speed);
+   const y=g.hipHeight-.43*Math.cos(g.hip)-.43*Math.cos(g.hip+g.knee),z=-.43*Math.sin(g.hip)-.43*Math.sin(g.hip+g.knee);
+   assert.ok(Math.abs(y-g.y)<.0001&&Math.abs(z-g.z)<.0001,'two-bone foot reaches its actual ground target');
+   assert.ok(Math.abs(g.hip+g.knee+g.ankle)<.00001,'boots remain level');
+   if(g.support){support++;assert.ok(Math.abs(y-.055)<.0001);if(previous?.support&&n<240)assert.ok(z>previous.z,'support foot pushes towards local +Z while torso runs -Z')}
+   else{air++;assert.ok(y>=.055)}
+   previous=g;
+  }
+  assert.ok(support>40&&air>40);assert.ok(runningStrideLength(speed)>.5&&runningStrideLength(speed)<2.7);
+ }
+});
