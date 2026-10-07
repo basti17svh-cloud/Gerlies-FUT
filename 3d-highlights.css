@@ -14,9 +14,9 @@
 .fh3d-hud{position:absolute;z-index:4;bottom:14px;left:14px;right:14px;min-height:94px;box-sizing:border-box;display:grid;grid-template-columns:0 54px minmax(0,1fr) auto 54px;align-items:center;gap:10px;padding:11px 15px 11px 12px;background:linear-gradient(112deg,#071315f7 0%,#0d1b20f8 56%,#0a1517f8 100%);border:1px solid #63ff78;clip-path:polygon(2.5% 0,97% 0,100% 17%,97% 100%,2.5% 100%,0 83%);filter:drop-shadow(0 10px 24px #000d);transform:translateY(24px) scale(.985);opacity:0;transition:transform .34s ease,opacity .34s ease;pointer-events:none}
 .fh3d-hud::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,#5cff7819 0 24%,transparent 24% 63%,#5cff7812 63% 78%,transparent 78%);pointer-events:none}
 .fh3d-hud.visible{opacity:1;transform:translateY(0) scale(1)}
-.fh3d-player-card{position:relative;z-index:2;display:none;align-self:end;width:120px;margin:-54px 0 -12px 2px;filter:drop-shadow(0 10px 18px #000d)}
-.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:120px!important;max-width:120px!important}
-.fh3d-hud-goal{min-height:126px;grid-template-columns:120px minmax(0,1fr) auto 50px;padding-left:7px}
+.fh3d-player-card{position:relative;z-index:2;display:none;align-self:center;width:94px;margin:0 0 0 4px;filter:drop-shadow(0 8px 14px #000c)}
+.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:94px!important;max-width:94px!important}
+.fh3d-hud-goal{min-height:116px;grid-template-columns:98px minmax(0,1fr) auto 44px;padding-left:7px}
 .fh3d-hud-goal .fh3d-player-card{display:block}
 .fh3d-hud-goal .fh3d-mark{display:none}
 .fh3d-mark{position:relative;z-index:1;font:950 italic 34px/1 system-ui;color:#65ff7b;border-right:1px solid #ffffff2b;padding:2px 11px 2px 4px;text-shadow:0 0 18px #5cff7860}
@@ -45,9 +45,9 @@
 @media(max-width:560px){
  .fh3d-top{height:64px;padding:9px 10px}
  .fh3d-hud{left:9px;right:9px;bottom:10px;min-height:88px;padding:9px 11px}
- .fh3d-hud-goal{grid-template-columns:104px minmax(0,1fr) auto 36px;min-height:124px;padding-left:5px}
- .fh3d-player-card{width:104px;margin:-46px 0 -10px}
- .fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:104px!important;max-width:104px!important}
+ .fh3d-hud-goal{grid-template-columns:82px minmax(0,1fr) auto 34px;min-height:108px;padding-left:5px}
+ .fh3d-player-card{width:78px;margin:0 0 0 2px;align-self:center}
+ .fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:78px!important;max-width:78px!important}
  .fh3d-mark{font-size:30px;padding-right:9px}
  .fh3d-name{font-size:clamp(14px,4.4vw,18px);line-height:1.02}
  .fh3d-headline{font-size:clamp(23px,7.2vw,32px)}
@@ -56,7 +56,7 @@
  .fh3d-team-crest .club-crest{width:36px!important;height:36px!important;min-width:36px!important}
  #match.highlight3d-pending .match-live-stage{height:min(64svh,560px);min-height:440px;border-radius:18px}
 }
-@media(max-height:720px){#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{bottom:9px}.fh3d-hud-goal{min-height:114px}.fh3d-player-card{width:96px}.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:96px!important;max-width:96px!important}}
+@media(max-height:720px){#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{bottom:9px}.fh3d-hud-goal{min-height:104px}.fh3d-player-card{width:74px}.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:74px!important;max-width:74px!important}}
 @media(prefers-reduced-motion:reduce){.fh3d-hud{transition:none}}
 /* V20.98: full live picture with overlay HUD; no reserved empty footer. */
 .fh3d canvas{top:64px;bottom:0;height:calc(100% - 64px)}

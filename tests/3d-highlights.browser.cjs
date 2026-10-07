@@ -51,7 +51,7 @@ if(require.main===module)(async()=>{
    await page.setViewportSize({width,height:844});await fixture(page);const before=await force(page,'goal');
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
-   check(`${width}: low-quality mobile LOD selected`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
+   check(`${width}: mobile always uses smooth low-quality LOD`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
    check(`${width}: simulation owns 1:0 but visible score stays 0:0 before impact`,await page.evaluate(()=>match.home===1&&match.away===0&&document.getElementById('matchScore').textContent==='0 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
    const geometry=await page.evaluate(()=>{const layer=document.querySelector('.fh3d'),r=layer.getBoundingClientRect(),button=layer.querySelector('button').getBoundingClientRect(),canvas=layer.querySelector('canvas').getBoundingClientRect(),body=getComputedStyle(document.body);return{overflow:document.documentElement.scrollWidth>innerWidth||document.getElementById('match').scrollWidth>innerWidth,left:r.left,right:r.right,button:button.height,buttonBottom:button.bottom,canvasTop:canvas.top,width:innerWidth,locked:document.documentElement.classList.contains('fh3d-scroll-lock')&&body.position==='fixed',touch:getComputedStyle(layer.querySelector('canvas')).touchAction}});
@@ -60,9 +60,10 @@ if(require.main===module)(async()=>{
    await page.waitForSelector('.fh3d-hud.visible');
    check(`${width}: visible score updates only after the visual goal impact`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&!match.highlight3DScoreHold));
    check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
-   const hud=await page.locator('.fh3d-hud').evaluate(h=>({headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,card:!!h.querySelector('.fh3d-player-card .card-shell')}));
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>{const box=h.getBoundingClientRect(),card=h.querySelector('.fh3d-player-card')?.getBoundingClientRect();return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,card:!!h.querySelector('.fh3d-player-card .card-shell'),cardContained:!!card&&card.top>=box.top-1&&card.bottom<=box.bottom+1&&card.width<=82}});
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
    check(`${width}: goal uses scorer + real Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card);
+   check(`${width}: scorer card stays contained and compact`,hud.cardContained);
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
    check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
    check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));

@@ -85,22 +85,20 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  let targetX=0,targetY=.82,targetZ=0,distance=50,fov=28,phase='build';
  const wide=seq.startsWith('wing_')||seq.startsWith('cutback_');
  if(wide){
-  const carrierLocal=runPosition(1,time,seq),carrier=worldPosition([carrierLocal[0],.84,carrierLocal[1]],direction);
+  // Anchor every broadcast phase to the previous one so the camera never teleports at the flank-to-box transition.
+  const carrierAt=sample=>{const p=runPosition(1,sample,seq);return worldPosition([p[0],.84,p[1]],direction)};
+  const ballAt=sample=>worldPosition(ballPosition(type,sample,seq),direction);
+  const buildTarget=sample=>{const c=carrierAt(sample),u=smooth(sample/3.55),gw=.42+.08*u;return[mix(c[0],goal[0],gw),.78,mix(c[2],goal[2],.28+.10*u)]};
+  const deliveryDesired=(sample,u)=>{const c=carrierAt(sample),b=ballAt(sample),boxX=mix(b[0],goal[0],.18+.36*u),boxZ=mix(b[2],goal[2],.20+.42*u);return[mix(c[0],boxX,.62+.30*u),mix(.78,.92,u),mix(c[2],boxZ,.64+.30*u)]};
+  const buildEnd=buildTarget(3.55);
   if(time<3.55){
-   const u=smooth(time/3.55),goalWeight=.42+.08*u;
-   targetX=mix(carrier[0],goal[0],goalWeight);
-   targetZ=mix(carrier[2],goal[2],.28+.10*u);
-   targetY=.78;distance=51.8+portraitPad;fov=29.4;phase='build';
+   [targetX,targetY,targetZ]=buildTarget(time);distance=51.8+portraitPad;fov=29.4;phase='build';
   }else if(time<5.05){
-   const u=smooth((time-3.55)/1.5),boxX=mix(bp[0],goal[0],.18+.36*u),boxZ=mix(bp[2],goal[2],.20+.42*u);
-   targetX=mix(carrier[0],boxX,.62+.30*u);
-   targetZ=mix(carrier[2],boxZ,.64+.30*u);
-   targetY=mix(.80,.92,u);distance=mix(51.8+portraitPad,44.6+portraitPad*.38,u);fov=mix(29.4,26.5,u);phase='delivery';
+   const u=smooth((time-3.55)/1.5),desired=deliveryDesired(time,u),anchored=lerp(buildEnd,desired,u);
+   [targetX,targetY,targetZ]=anchored;distance=mix(51.8+portraitPad,44.6+portraitPad*.38,u);fov=mix(29.4,26.5,u);phase='delivery';
   }else{
-   const u=smooth((time-5.05)/1.35);
-   targetX=mix(bp[0],goal[0],.34+.12*u);
-   targetZ=mix(bp[2],goal[2],.28+.16*u);
-   targetY=mix(.90,1.0,u);distance=mix(44.6+portraitPad*.38,MIN_CAMERA_DISTANCE+portraitPad*.30,u);fov=mix(26.5,25.9,u);phase='finish';
+   const deliveryEnd=deliveryDesired(5.05,1),u=smooth((time-5.05)/1.35),desired=[mix(bp[0],goal[0],.34+.12*u),mix(.92,1.0,u),mix(bp[2],goal[2],.28+.16*u)],anchored=lerp(deliveryEnd,desired,u);
+   [targetX,targetY,targetZ]=anchored;distance=mix(44.6+portraitPad*.38,MIN_CAMERA_DISTANCE+portraitPad*.30,u);fov=mix(26.5,25.9,u);phase='finish';
   }
  }else{
   const actorIndex=seq==='one_two'&&time<3.0?1:0,actorLocal=runPosition(actorIndex,time,seq),actor=worldPosition([actorLocal[0],.84,actorLocal[1]],direction);
@@ -115,7 +113,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // Permanent elevated touchline camera: framing changes, camera side never does.
- const sideline=55.0,height=32.8,trail=wide&&phase==='build'?5.8:4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ const sideline=55.0,height=32.8,trail=wide?(time<3.55?5.8:time<5.05?mix(5.8,4.8,smooth((time-3.55)/1.5)):4.8):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
  return{position:[sideline*scale,height*scale,targetZ+trail*direction*scale],target:[targetX,targetY,targetZ],fov,distance,phase};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
@@ -284,7 +282,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   // V21.18 — broadcast crowd/stadium pass. Humans stay instanced and deterministic;
   // darker tiering, irregular spacing and segmented flags add depth without extra per-fan draw calls.
   box(100,.1,143,'#172126',0,-.15,0,scene);
-  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?9:high?12:12,sideCols=weak?112:high?204:170,endCols=weak?78:high?148:120;
+  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?8:high?12:12,sideCols=weak?94:high?204:170,endCols=weak?64:high?148:120;
   const sideSupporter=z=>z<-22?'home':z>22?'away':'neutral';
   for(const side of [-1,1]){
    for(let row=0;row<12;row++){
@@ -303,7 +301,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    box(.16,.72,116,'#738184',side*38.25,1.02,0,scene);box(76,.72,.16,'#738184',0,1.02,side*58.25,scene);
    for(let z=-56;z<=56;z+=14)box(.16,8.5,.16,'#748285',side*57,5,z,scene);
   }
-  const animatedShare=weak?.34:high?.76:.62;
+  const animatedShare=weak?.22:high?.76:.62;
   const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.98+hash(i*37+5)*.30,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
   const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
@@ -359,7 +357,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   initCrowdGroup(crowdStatic);initCrowdGroup(crowdDynamic);
 
-  const flagCount=weak?8:high?22:16,flagSegments=3,flagSpecs=Array.from({length:flagCount},(_,i)=>{
+  const flagCount=weak?6:high?22:16,flagSegments=3,flagSpecs=Array.from({length:flagCount},(_,i)=>{
    const team=i<Math.ceil(flagCount*.62)?'home':'away',side=team==='home'?-1:1,row=i%4,scale=1.05+hash(i+331)*1.38;
    return{team,x:-30+(i%7)*10+hash(i+311)*2.6,y:2.05+row*.78,z:side*(59.9+row*1.42),phase:hash(i+317)*Math.PI*2,scale};
   });
@@ -386,7 +384,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   const supporterBanners=[supporterBanner(crowdKits.home,-58.15),supporterBanner(crowdKits.away,58.15)];
   let lastCrowdUpdate=-1;
   function updateCrowd(time,force=false){
-   const cadence=weak?.14:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
+   const cadence=weak?.18:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
    crowdDynamic.specs.forEach((spec,i)=>writeCrowdFan(spec,i,crowdDynamic,time,false));
    for(const mesh of [crowdDynamic.torso,crowdDynamic.head,crowdDynamic.arms,crowdDynamic.legs])mesh.instanceMatrix.needsUpdate=true;
    flagSpecs.forEach((spec,i)=>writeFlag(spec,i,time,false));flagCloth.instanceMatrix.needsUpdate=true;
@@ -558,9 +556,9 @@ export function play(event,signal){
   skip.addEventListener('click',()=>finish('skipped'));signal.addEventListener('abort',onAbort,{once:true});canvas.addEventListener('webglcontextlost',onLost);window.addEventListener('keydown',onKey);
   timer=setTimeout(()=>finish('fallback'),16000);
   try{
-   const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,weak=memory<=4||cores<=4,high=!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
+   const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,weak=mobile||memory<=4||cores<=4,high=!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   renderer.setPixelRatio(Math.min(dpr,weak?1.25:high?2.5:1.8));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+   renderer.setPixelRatio(Math.min(dpr,weak?1.15:high?2.25:1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
    world=makeScene(renderer,event,weak,high);
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
    function frame(now){
