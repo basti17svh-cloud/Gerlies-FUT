@@ -35,7 +35,9 @@ phones. HIGH uses 2048px shadows, more geometry/crowd detail and up to 2.25 DPR.
 The existing adaptive reduction and extreme-performance fallback remain active.
 
 The simulation, camera choreography, score-impact bridge, event queue, card
-renderer and goal-overlay layout are unchanged. The only index/loader changes
+renderer and goal-overlay layout are unchanged. A scoped crest positioning fix
+neutralises inherited kit-mini offsets that previously pushed the correct badge
+outside its overlay column; no crest identity or card rendering is replaced. The only index/loader changes
 are release/cache references. No simulation RNG is used by procedural assets.
 
 Validation uses the existing production play loop in an isolated match fixture,

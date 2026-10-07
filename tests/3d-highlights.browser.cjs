@@ -64,19 +64,19 @@ if(require.main===module)(async()=>{
    check(`${width}: visible score updates only after the visual goal impact`,await page.evaluate(()=>document.getElementById('matchScore').textContent==='1 : 0'&&!match.highlight3DScoreHold));
    check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
    const hud=await page.locator('.fh3d-hud').evaluate(h=>{
-    const box=h.getBoundingClientRect(),cardEl=h.querySelector('.fh3d-player-card'),copyEl=h.querySelector('.fh3d-copy'),metaEl=h.querySelector('.fh3d-goal-meta'),minuteEl=h.querySelector('.fh3d-minute'),crestEl=h.querySelector('.fh3d-team-crest');
-    const card=cardEl?.getBoundingClientRect(),copy=copyEl?.getBoundingClientRect(),meta=metaEl?.getBoundingClientRect(),minute=minuteEl?.getBoundingClientRect(),crest=crestEl?.getBoundingClientRect();
+    const box=h.getBoundingClientRect(),cardEl=h.querySelector('.fh3d-player-card'),copyEl=h.querySelector('.fh3d-copy'),metaEl=h.querySelector('.fh3d-goal-meta'),minuteEl=h.querySelector('.fh3d-minute'),crestEl=h.querySelector('.fh3d-team-crest'),actualCrestEl=crestEl?.querySelector('.club-crest');
+    const card=cardEl?.getBoundingClientRect(),copy=copyEl?.getBoundingClientRect(),meta=metaEl?.getBoundingClientRect(),minute=minuteEl?.getBoundingClientRect(),crest=crestEl?.getBoundingClientRect(),actualCrest=actualCrestEl?.getBoundingClientRect();
     const inside=r=>!!r&&r.left>=box.left-1&&r.right<=box.right+1&&r.top>=box.top-1&&r.bottom<=box.bottom+1;
     const overlap=(a,b)=>!!a&&!!b&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
     return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,
-     card:!!h.querySelector('.fh3d-player-card .card-shell'),gold:!!h.querySelector('.fh3d-player-card .custom-card.gold'),cardContained:!!card&&inside(card)&&card.width<=82,
+     visibleCrest:!!actualCrest&&inside(actualCrest)&&actualCrest.left>=crest.left-1&&actualCrest.right<=crest.right+1&&actualCrest.top>=crest.top-1&&actualCrest.bottom<=crest.bottom+1,card:!!h.querySelector('.fh3d-player-card .card-shell'),gold:!!h.querySelector('.fh3d-player-card .custom-card.gold'),cardContained:!!card&&inside(card)&&card.width<=82,
      crest:h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent||'',minute:minuteEl?.textContent||'',minuteFont:minuteEl?parseFloat(getComputedStyle(minuteEl).fontSize):99,
      minuteAboveCrest:!!minute&&!!crest&&minute.bottom<=crest.top+1,metaWidth:meta?.width||999,crestSize:crest?Math.min(crest.width,crest.height):0,
      allContained:[card,copy,meta,minute,crest].filter(Boolean).every(inside),noOverlap:!overlap(card,copy)&&!overlap(copy,meta)&&!overlap(card,meta)};
    });
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
    check(`${width}: goal uses scorer + actual Gold Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card&&hud.gold);
-   check(`${width}: home goal uses frozen Home-team crest and team label`,hud.crest==='HOME'&&hud.event==='für Heimteam');
+   check(`${width}: home goal uses frozen Home-team crest and team label`,hud.visibleCrest&&hud.crest==='HOME'&&hud.event==='für Heimteam');
    check(`${width}: minute is compact above the crest in a narrow right column`,hud.minute===`${before.minute}'`&&hud.minuteAboveCrest&&hud.metaWidth<=54&&hud.crestSize>=39&&hud.minuteFont<=13.5);
    check(`${width}: goal overlay has no clipping or column overlap`,hud.cardContained&&hud.allContained&&hud.noOverlap);
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
