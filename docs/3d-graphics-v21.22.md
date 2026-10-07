@@ -33,7 +33,7 @@ Changes in the existing renderer:
   remain; supporters gain tapered torsos, hair shading and pitch-facing poses.
 
 LOW keeps lower geometry segments, fewer spectators, contact shadows and a
-1.15 DPR cap. STANDARD retains 1024px shadow maps and up to 2 DPR on capable
+1.15 DPR cap. Slightly wider LOW pitch markings prevent broken subpixel lines. STANDARD retains 1024px shadow maps and up to 2 DPR on capable
 phones. HIGH uses 2048px shadows, more geometry/crowd detail and up to 2.25 DPR.
 The existing adaptive reduction and extreme-performance fallback remain active.
 
