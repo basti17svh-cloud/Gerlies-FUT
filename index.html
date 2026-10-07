@@ -8397,9 +8397,10 @@ function matchKitContrastScore(a,b){
 }
 function matchKitsTooSimilar(a,b){return matchKitContrastScore(a,b)<105}
 function createDefaultMatchKitSelection(opponent){
- const options=matchKitOptions(opponent),preferred={home:"home",away:"away"};
+ const options=matchKitOptions(opponent),preferred={home:"home",away:"away"},keepHome={home:"home",away:"home"};
  if(!matchKitsTooSimilar(options.home.home,options.away.away))return preferred;
- const combos=[{home:"home",away:"home"},{home:"away",away:"home"},{home:"away",away:"away"},preferred];
+ if(!matchKitsTooSimilar(options.home.home,options.away.home))return keepHome;
+ const combos=[{home:"away",away:"home"},{home:"away",away:"away"},keepHome,preferred];
  return combos.sort((a,b)=>matchKitContrastScore(options.home[b.home],options.away[b.away])-matchKitContrastScore(options.home[a.home],options.away[a.away]))[0]
 }
 function currentPreviewKitSelection(){
