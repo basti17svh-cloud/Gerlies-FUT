@@ -6,7 +6,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=54.5;
+export const MIN_CAMERA_DISTANCE=49.2;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -80,13 +80,15 @@ export function ballPosition(type,time,sequence='central'){
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
 export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central'){
- const phase=smooth(time/6.15),bp=worldPosition(ballPosition(type,time,sequence),direction);
- const pushIn=smooth((time-1.75)/3.45),settle=smooth((time-7.25)/2.15),push=pushIn*(1-.22*settle);
- const baseZ=mix(-24.5,-40.5,phase)*direction,z=mix(baseZ,bp[2],.76),x=bp[0]*.34;
- const portraitPad=Math.max(0,1.06-aspect)*8;
- const distance=mix(62+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.45,push);
- const sideline=69,height=41,trail=6.5,length=Math.hypot(sideline,height,trail),scale=distance/length;
- return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,mix(.76,1.02,push),z],fov:mix(31.5,29.4,push),distance};
+ const phase=smooth(time/6.05),bp=worldPosition(ballPosition(type,time,sequence),direction);
+ const pushIn=smooth((time-1.45)/3.35),settle=smooth((time-7.3)/2.05),push=pushIn*(1-.18*settle);
+ // V21.16 broadcast preset: closer and slightly more top-down, while keeping
+ // goal, penalty area, several players and the active stand in the same frame.
+ const baseZ=mix(-23.2,-40.8,phase)*direction,z=mix(baseZ,bp[2],.72),x=bp[0]*.31;
+ const portraitPad=Math.max(0,1.06-aspect)*7.2;
+ const distance=mix(57.8+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.42,push);
+ const sideline=61.5,height=36.8,trail=5.4,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ return{position:[sideline*scale,height*scale,z+trail*scale],target:[x,mix(.68,.96,push),z],fov:mix(30.6,28.7,push),distance};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -251,11 +253,11 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   const net=goal(-52.5,-1);goal(52.5,1);
 
-  // V21.15 — Crowd Paket M. Supporter remain presentation-only and deterministic:
+  // V21.16 — Crowd Paket M+. Supporter remain presentation-only and deterministic:
   // recognisable human silhouettes with torso/head/arms/legs, coherent colour blocks, asynchronous
   // motion, event reactions and a few lightweight flags/banners.
   box(100,.1,143,'#777d77',0,-.15,0,scene);
-  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?7:high?12:10,sideCols=weak?75:high?132:106,endCols=weak?48:high?88:70;
+  const crowdKits=kitColors(event),crowd=[],crowdRows=weak?8:high?12:11,sideCols=weak?92:high?166:138,endCols=weak?58:high?118:94;
   const sideSupporter=z=>z<-22?'home':z>22?'away':'neutral';
   for(const side of [-1,1]){
    for(let row=0;row<12;row++){
@@ -273,7 +275,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    box(6,.35,126,'#202d31',side*59,12.15,0,scene);box(118,.35,8,'#202d31',0,12.15,side*82,scene);
    for(let z=-56;z<=56;z+=14)box(.2,9,.2,'#c1c8c7',side*57,5,z,scene);
   }
-  const animatedShare=weak?.13:high?.34:.25;
+  const animatedShare=weak?.22:high?.62:.48;
   const crowdSpecs=crowd.map((p,i)=>({...p,index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.86+hash(i*37+5)*.3,width:.82+hash(i*41+7)*.34,depth:.88+hash(i*43+11)*.22,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
   const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
@@ -294,17 +296,18 @@ export function makeScene(renderer,event,weak=false,high=false){
   const crowdStatic=crowdGroup(crowdStaticSpecs,false),crowdDynamic=crowdGroup(crowdDynamicSpecs,true);
   function writeCrowdFan(spec,i,group,time=0,paint=false){
    const reaction=group.dynamic?crowdReactionState(event.type,event.team,spec.team,time):{suspense:0,mood:0};
-   const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.55+spec.loop*.36)+spec.phase):0;
-   const jump=group.dynamic?Math.abs(Math.sin(time*(4.5+spec.loop*.45)+spec.phase))*positive*.15:0,bob=wave*.018+jump+reaction.suspense*.024;
-   const bodyY=spec.y+spec.lift+bob+.16,lean=wave*.035+negative*.07;
+   const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.35+spec.loop*.41)+spec.phase):0;
+   const cheerBeat=group.dynamic?Math.abs(Math.sin(time*(4.25+spec.loop*.55)+spec.phase)):0;
+   const jump=cheerBeat*positive*.25,bob=wave*.03+jump+reaction.suspense*.04;
+   const bodyY=spec.y+spec.lift+bob+.16,lean=wave*.055+negative*.09;
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,0,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,0,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
-   const despair=negative,idleRaise=group.dynamic&&spec.loop===2?.12+.1*(wave+1):0,raise=clamp(reaction.suspense*.34+positive*.98+despair*.58+idleRaise);
+   const despair=negative,idleRaise=group.dynamic?(spec.loop===2?.22+.22*(wave+1):spec.loop===1?.08+.12*(wave+1):0),raise=clamp(reaction.suspense*.42+positive*1.05+despair*.62+idleRaise);
    const shoulderY=bodyY+.1*spec.height;
    for(const side of [-1,1]){
-    const armIndex=i*2+(side>0?1:0),spread=positive>.05?1.04:despair>.05?.34:.12,armLift=mix(shoulderY-.12,shoulderY+.18,raise);
+    const armIndex=i*2+(side>0?1:0),spread=positive>.05?1.18:despair>.05?.38:(spec.loop===1?.28:.12),armLift=mix(shoulderY-.12,shoulderY+.22,raise);
     crowdDummy.position.set(spec.x+side*.22*spec.width,armLift,spec.z);
-    crowdDummy.rotation.set(0,0,side*mix(.06,spread,raise)+wave*.025);
+    crowdDummy.rotation.set((spec.loop===2?side*wave*.18:0),0,side*mix(.06,spread,raise)+wave*.045);
     crowdDummy.scale.set(.92,spec.height*(.94+raise*.08),.92);crowdDummy.updateMatrix();group.arms.setMatrixAt(armIndex,crowdDummy.matrix);
 
     const legIndex=i*2+(side>0?1:0),stance=.035+hash(spec.index*71+(side>0?29:13))*.055;
@@ -325,27 +328,28 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   initCrowdGroup(crowdStatic);initCrowdGroup(crowdDynamic);
 
-  const flagCount=weak?4:high?10:7,flagSpecs=Array.from({length:flagCount},(_,i)=>{
-   const team=i<Math.ceil(flagCount*.6)?'home':'away',side=team==='home'?-1:1,row=i%3;
-   return{team,x:-24+(i%5)*12+hash(i+311)*2.5,y:2.15+row*.7,z:side*(61.7+row*1.5),phase:hash(i+317)*Math.PI*2};
+  const flagCount=weak?5:high?14:10,flagSpecs=Array.from({length:flagCount},(_,i)=>{
+   const team=i<Math.ceil(flagCount*.62)?'home':'away',side=team==='home'?-1:1,row=i%3,scale=.82+hash(i+331)*1.22;
+   return{team,x:-28+(i%6)*11.2+hash(i+311)*2.8,y:2.0+row*.72,z:side*(61.4+row*1.5),phase:hash(i+317)*Math.PI*2,scale};
   });
-  const flagPole=new THREE.InstancedMesh(geo('crowd-flag-pole',()=>new THREE.CylinderGeometry(.025,.025,1,6)),mat('#d5d9d5'),flagSpecs.length);
-  const flagCloth=new THREE.InstancedMesh(geo('crowd-flag-cloth',()=>new THREE.PlaneGeometry(1.15,.68)),mat('#ffffff',{side:THREE.DoubleSide}),flagSpecs.length);
+  const flagPole=new THREE.InstancedMesh(geo('crowd-flag-pole',()=>new THREE.CylinderGeometry(.028,.028,1,6)),mat('#d5d9d5'),flagSpecs.length);
+  const flagCloth=new THREE.InstancedMesh(geo('crowd-flag-cloth',()=>new THREE.PlaneGeometry(1.45,.82,5,2)),mat('#ffffff',{side:THREE.DoubleSide}),flagSpecs.length);
   flagPole.frustumCulled=flagCloth.frustumCulled=false;flagCloth.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(flagPole,flagCloth);track(flagPole);track(flagCloth);
   function writeFlag(spec,i,time=0,paint=false){
-   crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.65,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
-   const reaction=crowdReactionState(event.type,event.team,spec.team,time),wave=Math.sin(time*3.2+spec.phase),amp=.07+reaction.suspense*.08+Math.max(0,reaction.mood)*.24;
-   crowdDummy.position.set(spec.x+.57+wave*amp,spec.y+.55+Math.abs(wave)*amp*.08,spec.z-(spec.team==='home'?-1:1)*.03);
-   crowdDummy.rotation.set(0,spec.team==='home'?0:Math.PI,wave*amp);crowdDummy.scale.set(1,1,1);crowdDummy.updateMatrix();flagCloth.setMatrixAt(i,crowdDummy.matrix);
+   crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.45+spec.scale*.62,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
+   const reaction=crowdReactionState(event.type,event.team,spec.team,time),wave=Math.sin(time*(2.3+spec.scale*.5)+spec.phase),amp=.10+reaction.suspense*.12+Math.max(0,reaction.mood)*.32;
+   crowdDummy.position.set(spec.x+.68*spec.scale+wave*amp,spec.y+.48+.34*spec.scale+Math.abs(wave)*amp*.1,spec.z-(spec.team==='home'?-1:1)*.03);
+   crowdDummy.rotation.set(0,spec.team==='home'?0:Math.PI,wave*amp*.9);crowdDummy.scale.set(spec.scale,1+Math.abs(wave)*.06,spec.scale);crowdDummy.updateMatrix();flagCloth.setMatrixAt(i,crowdDummy.matrix);
    if(paint){const kit=spec.team==='home'?crowdKits.home:crowdKits.away;flagCloth.setColorAt(i,crowdColor.set(i%3===0?kit.shirtSecondary:kit.shirt))}
   }
   flagSpecs.forEach((spec,i)=>writeFlag(spec,i,0,true));flagPole.instanceMatrix.needsUpdate=true;flagCloth.instanceMatrix.needsUpdate=true;if(flagCloth.instanceColor)flagCloth.instanceColor.needsUpdate=true;
 
   function supporterBanner(kit,z){
-   const tex=canvasTexture(512,96,(ctx,w,h)=>{ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,w,h);ctx.fillStyle=kit.shirtSecondary;ctx.fillRect(0,0,w*.16,h);ctx.fillRect(w*.84,0,w*.16,h);ctx.fillStyle='#ffffff';ctx.globalAlpha=.92;ctx.textAlign='center';ctx.font='italic 900 48px system-ui';ctx.fillText('FOOTERA',w/2,57);ctx.globalAlpha=.78;ctx.font='800 15px system-ui';ctx.fillText('BUILD YOUR ERA',w/2,80)});
-   const banner=mesh(track(new THREE.PlaneGeometry(12,2.1)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,2.65,z);banner.rotation.y=z<0?0:Math.PI;return banner;
+   const tex=canvasTexture(512,96,(ctx,w,h)=>{ctx.fillStyle=kit.shirt;ctx.fillRect(0,0,w,h);ctx.fillStyle=kit.shirtSecondary;ctx.fillRect(0,0,w*.14,h);ctx.fillRect(w*.86,0,w*.14,h);ctx.fillStyle='#ffffff';ctx.globalAlpha=.94;ctx.textAlign='center';ctx.font='italic 900 46px system-ui';ctx.fillText('FOOTERA',w/2,55);ctx.globalAlpha=.8;ctx.font='800 15px system-ui';ctx.fillText('BUILD YOUR ERA',w/2,78)});
+   // Rail-level only: banners never sit across the supporter bodies.
+   const banner=mesh(track(new THREE.PlaneGeometry(10,.92)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,1.05,z);banner.rotation.y=z<0?0:Math.PI;return banner;
   }
-  const supporterBanners=[supporterBanner(crowdKits.home,-60.8),supporterBanner(crowdKits.away,60.8)];
+  const supporterBanners=[supporterBanner(crowdKits.home,-58.15),supporterBanner(crowdKits.away,58.15)];
   let lastCrowdUpdate=-1;
   function updateCrowd(time,force=false){
    const cadence=weak?.14:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
@@ -493,9 +497,16 @@ export function play(event,signal){
   const top=document.createElement('div');top.className='fh3d-top';
   const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const sub=document.createElement('small');sub.textContent=`LIVE · ${event.minute}'`;brand.append(sub);
   const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,skip);layer.append(top);
-  const hud=document.createElement('div');hud.className='fh3d-hud';hud.setAttribute('aria-live','polite');
+  const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}`;hud.setAttribute('aria-live','polite');
+  const card=document.createElement('div');card.className='fh3d-player-card';if(event.type==='goal'&&event.playerCardHTML)card.innerHTML=event.playerCardHTML;
   const mark=document.createElement('span');mark.className='fh3d-mark';mark.textContent='F';mark.setAttribute('aria-hidden','true');
-  const copy=document.createElement('div');copy.className='fh3d-copy';const name=document.createElement('strong');name.className='fh3d-name';const detail=document.createElement('span');detail.className='fh3d-event';copy.append(name,detail);hud.append(mark,copy);layer.append(hud);host.append(layer);
+  const copy=document.createElement('div');copy.className='fh3d-copy';
+  const headline=document.createElement('span');headline.className='fh3d-headline';
+  const name=document.createElement('strong');name.className='fh3d-name';
+  const detail=document.createElement('span');detail.className='fh3d-event';copy.append(headline,name,detail);
+  const minute=document.createElement('b');minute.className='fh3d-minute';minute.textContent=`${event.minute}'`;
+  const crest=document.createElement('div');crest.className='fh3d-team-crest';if(event.teamCrestHTML)crest.innerHTML=event.teamCrestHTML;
+  hud.append(card,mark,copy,minute,crest);layer.append(hud);host.append(layer);
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
@@ -521,7 +532,12 @@ export function play(event,signal){
      if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.35));world.reduceQuality();resize()}
      world.update(elapsed);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
-     if(elapsed>=REVEAL_TIME&&!name.textContent){name.textContent=event.playerName;const eventLabel=event.type==='big_chance_saved'?(event.keeperName?`PARIERT VON ${event.keeperName.toUpperCase()}`:'SCHUSS GEHALTEN'):LABELS[event.type];detail.textContent=`${eventLabel} · ${event.minute}'`}
+     if(elapsed>=REVEAL_TIME&&!name.textContent){
+      if(event.type==='goal'){headline.textContent='TOR';name.textContent=event.playerName;detail.textContent=event.teamName?`für ${event.teamName}`:'TOR'}
+      else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}`}
+      else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
+      else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
+     }
      hud.classList.toggle('visible',elapsed>=REVEAL_TIME&&elapsed<DURATION-.2);
      if(elapsed>=DURATION){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
