@@ -350,7 +350,7 @@ export function makeScene(renderer,event,weak=false,high=false){
   function updateCrowd(time,force=false){
    const cadence=weak?.14:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
    crowdDynamic.specs.forEach((spec,i)=>writeCrowdFan(spec,i,crowdDynamic,time,false));
-   for(const mesh of [crowdDynamic.body,crowdDynamic.head,crowdDynamic.arms])mesh.instanceMatrix.needsUpdate=true;
+   for(const mesh of [crowdDynamic.torso,crowdDynamic.head,crowdDynamic.arms,crowdDynamic.legs])mesh.instanceMatrix.needsUpdate=true;
    flagSpecs.forEach((spec,i)=>writeFlag(spec,i,time,false));flagCloth.instanceMatrix.needsUpdate=true;
   }
   const brandTex=canvasTexture(1024,128,(ctx,w,h)=>{ctx.fillStyle='#182b30';ctx.fillRect(0,0,w,h);ctx.fillStyle='#70ed86';ctx.font='italic 900 74px system-ui';ctx.fillText('F',25,92);ctx.fillStyle='#f6f7ee';ctx.font='800 49px system-ui';ctx.fillText('FOOTERA',112,87);ctx.fillStyle='#82e792';ctx.font='700 31px system-ui';ctx.fillText('BUILD YOUR ERA',490,83)});
@@ -472,7 +472,7 @@ export function makeScene(renderer,event,weak=false,high=false){
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
   }
-  function reduceQuality(){renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*.62),dynamicCount=Math.floor(crowdDynamic.specs.length*.46),flags=Math.max(2,Math.floor(flagSpecs.length*.6));crowdStatic.body.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=staticCount*2;crowdDynamic.body.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=dynamicCount*2;flagPole.count=flagCloth.count=flags;supporterBanners.forEach(x=>x.visible=false);fill.intensity=0}
+  function reduceQuality(){renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*.62),dynamicCount=Math.floor(crowdDynamic.specs.length*.46),flags=Math.max(2,Math.floor(flagSpecs.length*.6));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flagCloth.count=flags;supporterBanners.forEach(x=>x.visible=false);fill.intensity=0}
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
   function inspect(){

@@ -147,5 +147,5 @@ test('Crowd Paket M reacts by supporter block without touching simulation RNG',a
  assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
  const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
  assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/BoxGeometry\(\.38,\.44,\.18\)/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/supporterBanner/);assert.match(source,/updateCrowd\(time\)/);
- assert.equal(/Math\.random\s*\(/.test(source),false);
+ assert.doesNotMatch(source,/crowd(?:Static|Dynamic)\.body/);assert.match(source,/crowdDynamic\.legs/);assert.equal(/Math\.random\s*\(/.test(source),false);
 });
