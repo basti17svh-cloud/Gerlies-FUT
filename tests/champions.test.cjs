@@ -14,8 +14,8 @@ test("Champions scripts parse and V21.21 shell wires the mode",()=>{
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
  assert.match(html,/champions-system\.js\?v=2114/);
- assert.match(html,/const GFUT_BUILD="V21\.20"/);
- assert.match(html,/<title>Footera V21\.20<\/title>/);
+ assert.match(html,/const GFUT_BUILD="V21\.21"/);
+ assert.match(html,/<title>Footera V21\.21<\/title>/);
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);

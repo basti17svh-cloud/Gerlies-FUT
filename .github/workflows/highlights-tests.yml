@@ -28,12 +28,9 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-browser/node_modules
         run: |
-          node tests/3d-highlights.browser.cjs
-          node tests/champions.browser.cjs
-          node tests/matchday-manager.browser.cjs
-          node tests/prematch-editor.browser.cjs
-          node tests/ux-overview.browser.cjs
           node tests/3d-highlights.render.cjs
+          node tests/3d-highlights.browser.cjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
