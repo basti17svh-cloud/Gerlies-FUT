@@ -39,6 +39,9 @@
 .kit-badge-mini{position:absolute;top:34px;left:58px;width:17px;height:19px;transform:scale(.86)}
 .kit-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .kit-mini{width:38px;height:42px}
+.kit-shirt.kit-mini.pattern-stripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 17%,var(--kit-b) 17% 34%)}
+.kit-shirt.kit-mini.pattern-hoops{background:repeating-linear-gradient(0deg,var(--kit-a) 0 16%,var(--kit-b) 16% 32%)}
+.kit-shirt.kit-mini.pattern-pinstripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 9%,var(--kit-b) 9% 12%,var(--kit-a) 12% 24%)}
 .identity-future-note{padding:10px;border:1px dashed #3c5548;border-radius:11px;color:#9eb0a6;font-size:9px;line-height:1.45}
 @media(max-width:620px){.identity-hero{grid-template-columns:auto minmax(0,1fr)}.identity-hero-kits{grid-column:1/-1;justify-content:flex-end}.identity-tabs{grid-template-columns:1fr 1fr}.crest-builder{grid-template-columns:1fr}.identity-fields,.kit-grid{grid-template-columns:1fr}.kit-meta{grid-template-columns:1fr 1fr}}
 

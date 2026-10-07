@@ -134,3 +134,18 @@ test('saved-chance snapshots keep the goalkeeper without giving him the shot',()
  assert.equal(snap.keeperName,'Mike Maignan');
  assert.equal(snap.type,'big_chance_saved');
 });
+
+test('Crowd Paket M reacts by supporter block without touching simulation RNG',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ const suspense=M.crowdReactionState('goal','home','home',M.IMPACT_TIME-.2);
+ const homeGoal=M.crowdReactionState('goal','home','home',M.IMPACT_TIME+.9);
+ const awayGoal=M.crowdReactionState('goal','home','away',M.IMPACT_TIME+.9);
+ const homeSaved=M.crowdReactionState('big_chance_saved','home','home',M.IMPACT_TIME+.9);
+ const awaySaved=M.crowdReactionState('big_chance_saved','home','away',M.IMPACT_TIME+.9);
+ assert.ok(suspense.suspense>.6);
+ assert.ok(homeGoal.mood>.6&&awayGoal.mood<-.25);
+ assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
+ const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
+ assert.match(source,/crowd-arm-human/);assert.match(source,/supporterBanner/);assert.match(source,/updateCrowd\(time\)/);
+ assert.equal(/Math\.random\s*\(/.test(source),false);
+});

@@ -256,6 +256,13 @@
 .squad-battle-preview .preview-role-editor>summary small{
  color:#839b90;font-size:7px;font-weight:750
 }
+.squad-battle-preview .preview-role-editor>summary>span{flex:0 1 auto}
+.squad-battle-preview .preview-role-editor>summary small{margin-left:auto}
+.squad-battle-preview .preview-role-editor>summary::after{
+ content:"⌄";display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border:1px solid #4a6358;border-radius:999px;
+ color:#d8ff3e;font-size:15px;line-height:1;transform:rotate(0deg);transition:transform .16s ease,border-color .16s ease,background .16s ease
+}
+.squad-battle-preview .preview-role-editor[open]>summary::after{transform:rotate(180deg);border-color:#7ea04e;background:#17231a}
 .squad-battle-preview .preview-role-list{display:grid;gap:7px;margin-top:10px}
 .squad-battle-preview .preview-role-row{
  display:grid;grid-template-columns:minmax(92px,.85fr) minmax(0,1.2fr) minmax(0,1fr);align-items:end;gap:8px;

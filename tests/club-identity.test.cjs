@@ -39,3 +39,7 @@ test("new kit patterns survive the 3D kit normalizer",async()=>{
  }
 });
 console.log("V21.06 Vereinsdesigner: Wappenrand, 36 Symbole, 13 Trikotmuster und Farbtransfer OK");
+
+test("mini hero kits preserve repeating stripe patterns",()=>{
+ for(const pattern of ["stripes","hoops","pinstripes"])assert.ok(css.includes(".kit-shirt.kit-mini.pattern-"+pattern),pattern);
+});
