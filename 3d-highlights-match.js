@@ -31,6 +31,21 @@ function match3DActorSlot(side,{uid='',index=-1,name=''}={}){
  const byName=row||rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===String(name||'').toLowerCase());
  return String(byName?.slot||'').toUpperCase()
 }
+function match3DPresentationMeta(event,current){
+ const rows=typeof matchActorRows==='function'?(matchActorRows(event.team)||[]):[],row=event.team==='home'
+  ?(event.playerId?rows.find(r=>String(r.uid)===String(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase())
+  :(Number(event.playerId)>=0?rows.find(r=>Number(r.index)===Number(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase());
+ let playerCardHTML='';
+ if(event.type==='goal'&&row?.base&&typeof cardHTML==='function'){
+  const item=event.team==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
+  try{playerCardHTML=cardHTML(item&&typeof displayBase==='function'?displayBase(item):row.base,item||null,false,row.slot||row.base.position,false)||''}catch(_){}
+ }
+ const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null,opponentIdentity=current?.opponentProfile?.clubIdentity||null;
+ const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam'),awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
+ const teamName=event.team==='away'?awayName:homeName,teamIdentity=event.team==='away'?opponentIdentity:identity;
+ let teamCrestHTML='';if(teamIdentity&&typeof crestHTML==='function'){try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}}
+ return{playerCardHTML,teamName,teamCrestHTML}
+}
 function match3DSequence(event){
  const wideLeft=new Set(['LB','LWB','LM','LW']),wideRight=new Set(['RB','RWB','RM','RW']);
  if(['freekick','penalty'].includes(event.creationType))return'central';
@@ -69,7 +84,7 @@ function queueMatch3D(event){
  const home=current.kickoffKits?.home||identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
- const presentation={...event};
+ const presentation={...event,...match3DPresentationMeta(event,current)};
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
