@@ -58,9 +58,9 @@ if(require.main===module)(async()=>{
    check(`${width}: live scene locks document scrolling and canvas panning`,geometry.locked&&geometry.touch==='none');
    await page.waitForSelector('.fh3d-hud.visible');
    check(`${width}: matchday and highlight clock agree`,await page.evaluate(()=>document.querySelector('.fh3d-brand small').textContent.endsWith(document.getElementById('matchMinute').textContent)));
-   const hud=await page.locator('.fh3d-hud').evaluate(h=>({name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent}));
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>({headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,text:h.textContent,card:!!h.querySelector('.fh3d-player-card .card-shell')}));
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
-   check(`${width}: full event name, minute, type and no rating`,hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.event==="TOR · 41'"&&!/84|GES|OVR/.test(hud.text));
+   check(`${width}: goal uses scorer + real Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card);
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
    check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
    check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));
@@ -70,8 +70,8 @@ if(require.main===module)(async()=>{
   for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
    await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
    await page.waitForSelector('.fh3d-hud.visible');
-   const hudState=await page.locator('.fh3d-hud').evaluate(h=>({name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent}));
-   check(`${type}: correct event label`,hudState.event.includes({big_chance_saved:'PARIERT VON MIKE MAIGNAN',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));if(type==='big_chance_saved')check('saved chance keeps shooter as primary actor',hudState.name==='Jamal Musiala');
+   const hudState=await page.locator('.fh3d-hud').evaluate(h=>({headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent}));
+   check(`${type}: correct event headline`,hudState.headline.includes({big_chance_saved:'PARADE',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
    await page.screenshot({path:path.join(output,type+'.png')});
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
