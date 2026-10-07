@@ -307,3 +307,78 @@
 .match-manager-dragghost :is(.cb-player-badge,.match-manager-card-meta,.match-live-rating,.match-live-fitness,.poswarn){
  display:none!important;
 }
+
+
+/* V21.12 — pre-match kit selection; isolated from matchday cards and 3D rendering. */
+.squad-battle-preview .preview-kit-selector{
+ margin:12px 0;padding:12px;border:1px solid #40584d;border-radius:15px;
+ background:linear-gradient(180deg,#0d1915,#09120f)
+}
+.squad-battle-preview .preview-kit-title{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px
+}
+.squad-battle-preview .preview-kit-title>div>span{
+ display:block;color:#d8ff3e;font-size:10px;font-weight:1000;letter-spacing:.08em
+}
+.squad-battle-preview .preview-kit-title small{
+ display:block;margin-top:3px;color:#839b90;font-size:7px;font-weight:750
+}
+.squad-battle-preview .preview-kit-auto{
+ min-height:34px;padding:7px 10px;font-size:8px
+}
+.squad-battle-preview .preview-kit-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+}
+.squad-battle-preview .preview-kit-team{
+ min-width:0;padding:9px;border:1px solid #2f4339;border-radius:12px;background:#0a1410
+}
+.squad-battle-preview .preview-kit-team-head{
+ min-width:0;margin-bottom:8px
+}
+.squad-battle-preview .preview-kit-team-head strong{
+ display:block;color:#edf6f1;font-size:8px;font-weight:1000;letter-spacing:.06em
+}
+.squad-battle-preview .preview-kit-team-head span{
+ display:block;margin-top:3px;color:#80968c;font-size:7px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.squad-battle-preview .preview-kit-choices{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px
+}
+.squad-battle-preview .preview-kit-choice{
+ min-width:0;min-height:112px;padding:7px 4px;border:1px solid #30463b;border-radius:10px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+ background:#101b17;color:#93a69d;box-shadow:none
+}
+.squad-battle-preview .preview-kit-choice.selected{
+ border-color:#d8ff3e;background:linear-gradient(180deg,#18231c,#101a16);color:#efffbd;
+ box-shadow:0 0 0 1px #d8ff3e33,0 8px 22px #0005
+}
+.squad-battle-preview .preview-kit-choice .preview-kit-art{
+ display:grid;place-items:center;width:100%;height:70px
+}
+.squad-battle-preview .preview-kit-choice .kit-shirt{
+ width:61px;height:66px;filter:drop-shadow(0 5px 8px #0008)
+}
+.squad-battle-preview .preview-kit-choice b{
+ font-size:8px;font-weight:950
+}
+.squad-battle-preview .preview-kit-status{
+ margin-top:9px;padding:8px 9px;border-radius:9px;font-size:7.5px;font-weight:900;text-align:center
+}
+.squad-battle-preview .preview-kit-status.ok{
+ color:#91efb9;border:1px solid #2e6a4c;background:#0e251b
+}
+.squad-battle-preview .preview-kit-status.warning{
+ color:#ffd482;border:1px solid #73582b;background:#2a210f
+}
+@media(max-width:560px){
+ .squad-battle-preview .preview-kit-selector{padding:9px}
+ .squad-battle-preview .preview-kit-grid{gap:6px}
+ .squad-battle-preview .preview-kit-team{padding:7px}
+ .squad-battle-preview .preview-kit-choices{gap:4px}
+ .squad-battle-preview .preview-kit-choice{min-height:100px;padding:5px 2px}
+ .squad-battle-preview .preview-kit-choice .preview-kit-art{height:61px}
+ .squad-battle-preview .preview-kit-choice .kit-shirt{width:53px;height:58px}
+ .squad-battle-preview .preview-kit-title>div>span{font-size:9px}
+ .squad-battle-preview .preview-kit-auto{min-height:32px;padding:6px 8px;font-size:7px}
+}

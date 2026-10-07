@@ -212,6 +212,27 @@ test('every match preview exposes formation, tactic, roles and focus before kick
  assert.match(start,/formation:state\.formation,tactic:state\.tactic\|\|"balanced",roles:\{\.\.\.state\.roles\},focus:\{\.\.\.state\.focus\}/);
 });
 
+test('pre-match kit selector supports both teams, contrast warning and kickoff persistence',()=>{
+ const preview=extract('function matchKitClone(','function ownLineupHTML(');
+ const start=extract('function startMatch(','function addLog(');
+ const clicks=extract('$("squadBattleModalBody").addEventListener("click"', 'function encodeFriendProfile(');
+ const css=fs.readFileSync(path.join(__dirname,'../matchday.css'),'utf8');
+ assert.match(preview,/function generatedOpponentKits\(/);
+ assert.match(preview,/function createDefaultMatchKitSelection\(/);
+ assert.match(preview,/data-preview-kit-side=/);
+ assert.match(preview,/data-preview-kit-choice=/);
+ assert.match(preview,/Auto-Kontrast/);
+ assert.match(preview,/Trikots zu ähnlich/);
+ assert.match(start,/kitSelection=null/);
+ assert.match(start,/const kickoffKits=\{home:\{\.\.\.kickoffOptions\.home\[selectedKits\.home\]\},away:\{\.\.\.kickoffOptions\.away\[selectedKits\.away\]\}\}/);
+ assert.match(clicks,/data-preview-kit-auto/);
+ assert.match(clicks,/data-preview-kit-side/);
+ assert.match(clicks,/startMatch\(ctx\.mode,ctx\.opponent,currentPreviewKitSelection\(\)\)/);
+ assert.match(css,/V21\.12 — pre-match kit selection/);
+ assert.match(css,/\.preview-kit-grid/);
+ assert.match(css,/\.preview-kit-choice\.selected/);
+});
+
 test('pre-match editor styles stay isolated from 3D highlight CSS',()=>{
  const css=fs.readFileSync(path.join(__dirname,'../matchday.css'),'utf8');
  assert.match(css,/V21\.01 — full pre-match editor/);

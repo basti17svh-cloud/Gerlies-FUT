@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="dark">
 
-<title>Footera V21.11</title>
+<title>Footera V21.12</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1479,16 +1479,16 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2111">
+<link rel="stylesheet" href="./3d-highlights.css?v=2112">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=2111">
-<link rel="stylesheet" href="./ux-overview.css?v=2111">
+<link rel="stylesheet" href="./club-identity.css?v=2112">
+<link rel="stylesheet" href="./ux-overview.css?v=2112">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
-<link rel="stylesheet" href="./chem-boosts.css?v=2111">
-<link rel="stylesheet" href="./playstyles.css?v=2111">
-<link rel="stylesheet" href="./player-profile.css?v=2111">
+<link rel="stylesheet" href="./chem-boosts.css?v=2112">
+<link rel="stylesheet" href="./playstyles.css?v=2112">
+<link rel="stylesheet" href="./player-profile.css?v=2112">
 </head>
 <body>
 
@@ -1559,7 +1559,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.11</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.12</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2084,9 +2084,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2111"></script>
-<script src="./chem-boosts.js?v=2111"></script>
-<script src="./playstyles.js?v=2111"></script>
+<script src="./3d-highlights.js?v=2112"></script>
+<script src="./chem-boosts.js?v=2112"></script>
+<script src="./playstyles.js?v=2112"></script>
 <script src="./footera-time.js"></script>
 <script>
 const DB_SOURCES=[
@@ -3122,7 +3122,7 @@ function syncPromoEventClock(){
   if(currentViewId()==="storeView")renderStore();
   if($("squadBattleModal")?.classList.contains("active")){
    if(squadBattleStage==="selection")renderSquadBattleSelection("none");
-   else if(!match&&pendingMatchContext?.opponent?.eventReleaseId){pendingMatchContext.opponent=battleSpecialOpponent("event",state.squadBattle.week);refreshOpenMatchPreview()}
+   else if(!match&&pendingMatchContext?.opponent?.eventReleaseId){pendingMatchContext.opponent=battleSpecialOpponent("event",state.squadBattle.week);pendingMatchKitSelection=createDefaultMatchKitSelection(pendingMatchContext.opponent);refreshOpenMatchPreview()}
   }
   const team=$("opponentTeamModalBody")?.querySelector("[data-momentum-release]");
   if($("opponentTeamModal")?.classList.contains("active")){
@@ -7362,7 +7362,7 @@ function setMatchPill(paused){
 }
 function matchHomeTeamName(){return String(state.profile?.clubName||"Footera Club").trim()||"Footera Club"}
 function matchAwayTeamName(){return String(match?.opponentName||"Gegner").trim()||"Gegner"}
-function startMatch(mode,opponent=null){
+function startMatch(mode,opponent=null,kitSelection=null){
  const m=squadMetrics();if(m.filled<18)return;
  const power=m.rating+m.chem*.12;
  let opp,name,opponentProfile=opponent||null;
@@ -7377,12 +7377,9 @@ function startMatch(mode,opponent=null){
   opp=Math.max(55,Math.min(94,Math.round(power+(Math.random()*4-4))));name="SQUAD BATTLE XI";
  }
  if(opponentProfile?.squad&&typeof opponentSquadChemistry==="function")opponentProfile={...opponentProfile,chemScores:opponentSquadChemistry(opponentProfile.squad.map(opponentMatchBase),opponentProfile.formation,opponentProfile.items||opponentProfile.squad)};
- const kickoffHomeIdentity=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null;
- const kickoffAwayIdentity=opponentProfile?.clubIdentity?cleanClubIdentity(opponentProfile.clubIdentity):null;
- const kickoffKits={
-  home:kickoffHomeIdentity?.kits?.home?{...kickoffHomeIdentity.kits.home}:null,
-  away:kickoffAwayIdentity?.kits?.away?{...kickoffAwayIdentity.kits.away}:kickoffAwayIdentity?.kits?.home?{...kickoffAwayIdentity.kits.home}:null
- };
+ const kickoffOptions=matchKitOptions(opponentProfile||{name}),selectedKits=kitSelection&&["home","away"].includes(kitSelection.home)&&["home","away"].includes(kitSelection.away)?kitSelection:createDefaultMatchKitSelection(opponentProfile||{name});
+ const kickoffKits={home:{...kickoffOptions.home[selectedKits.home]},away:{...kickoffOptions.away[selectedKits.away]}};
+
  if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
@@ -8376,7 +8373,44 @@ $("saveTeamManagement").addEventListener("click",()=>{
 });
 $("openClubIdentityFromTeam")?.addEventListener("click",()=>{removeUiLayer("teamManagementModal");clubSection="identity";clubIdentityDraft=makeClubIdentityDraft();switchView("clubView");renderClub()});
 
-let pendingMatchContext=null,previewSwapFrom=-1;
+let pendingMatchContext=null,pendingMatchKitSelection=null,previewSwapFrom=-1;
+function matchKitClone(kit,fallback){
+ const d=fallback||defaultClubIdentity().kits.home,k=kit&&typeof kit==="object"?kit:{};
+ return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels"].includes(k.pattern)?k.pattern:d.pattern,shirtPrimary:safeClubHex(k.shirtPrimary,d.shirtPrimary),shirtSecondary:safeClubHex(k.shirtSecondary,d.shirtSecondary),shorts:safeClubHex(k.shorts,d.shorts),socks:safeClubHex(k.socks,d.socks)}
+}
+function generatedOpponentKits(opponent){
+ const palettes=[
+  ["#182c4f","#72a8ff","#edf3ff"],["#5a1722","#f05b6f","#f6f2ea"],["#173d2d","#71d6a2","#f1f5ee"],
+  ["#30204f","#aa82ef","#f3effb"],["#4a3515","#e0b24b","#fff6df"],["#172f38","#57c9d8","#edf8fa"]
+ ],p=palettes[hashNum(String(opponent?.name||"Gegner"))%palettes.length],home={pattern:"solid",shirtPrimary:p[0],shirtSecondary:p[1],shorts:p[0],socks:p[1]},away={pattern:"diagonal",shirtPrimary:p[2],shirtSecondary:p[0],shorts:p[2],socks:p[0]};
+ return{home,away}
+}
+function matchKitOptions(opponent){
+ ensureClubIdentityState();
+ const own=clubIdentitySnapshot().kits,rawOpponent=opponent?.clubIdentity?cleanClubIdentity(opponent.clubIdentity).kits:generatedOpponentKits(opponent);
+ return{home:{home:matchKitClone(own.home,defaultClubIdentity().kits.home),away:matchKitClone(own.away,defaultClubIdentity().kits.away)},away:{home:matchKitClone(rawOpponent.home,generatedOpponentKits(opponent).home),away:matchKitClone(rawOpponent.away,generatedOpponentKits(opponent).away)}}
+}
+function matchKitRgb(hex){const s=String(hex||"").replace("#","");return s.length===6?[parseInt(s.slice(0,2),16),parseInt(s.slice(2,4),16),parseInt(s.slice(4,6),16)]:[128,128,128]}
+function matchKitColorDistance(a,b){const x=matchKitRgb(a),y=matchKitRgb(b);return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2])}
+function matchKitContrastScore(a,b){
+ return matchKitColorDistance(a.shirtPrimary,b.shirtPrimary)*.7+matchKitColorDistance(a.shirtSecondary,b.shirtSecondary)*.15+matchKitColorDistance(a.shorts,b.shorts)*.1+matchKitColorDistance(a.socks,b.socks)*.05
+}
+function matchKitsTooSimilar(a,b){return matchKitContrastScore(a,b)<105}
+function createDefaultMatchKitSelection(opponent){
+ const options=matchKitOptions(opponent),preferred={home:"home",away:"away"};
+ if(!matchKitsTooSimilar(options.home.home,options.away.away))return preferred;
+ const combos=[{home:"home",away:"home"},{home:"away",away:"home"},{home:"away",away:"away"},preferred];
+ return combos.sort((a,b)=>matchKitContrastScore(options.home[b.home],options.away[b.away])-matchKitContrastScore(options.home[a.home],options.away[a.away]))[0]
+}
+function currentPreviewKitSelection(){
+ if(!pendingMatchKitSelection&&pendingMatchContext)pendingMatchKitSelection=createDefaultMatchKitSelection(pendingMatchContext.opponent);
+ return pendingMatchKitSelection||{home:"home",away:"away"}
+}
+function previewKitSelectorHTML(opponent){
+ const options=matchKitOptions(opponent),sel=currentPreviewKitSelection(),clash=matchKitsTooSimilar(options.home[sel.home],options.away[sel.away]),teamName=String(state.profile?.clubName||"Dein Team"),oppName=String(opponent?.name||"Gegner");
+ const side=(key,title,name)=>`<div class="preview-kit-team" data-kit-team="${key}"><div class="preview-kit-team-head"><strong>${esc(title)}</strong><span>${esc(name)}</span></div><div class="preview-kit-choices">${["home","away"].map(kind=>`<button type="button" class="preview-kit-choice ${sel[key]===kind?"selected":""}" data-preview-kit-side="${key}" data-preview-kit-choice="${kind}" aria-pressed="${sel[key]===kind}"><span class="preview-kit-art">${kitHTML(options[key][kind])}</span><b>${kind==="home"?"Heim":"Auswärts"}</b></button>`).join("")}</div></div>`;
+ return`<section class="preview-kit-selector" aria-label="Trikotwahl vor dem Spiel"><div class="preview-kit-title"><div><span>TRIKOTWAHL</span><small>Gilt nur für dieses Spiel</small></div><button type="button" class="secondary preview-kit-auto" data-preview-kit-auto>Auto-Kontrast</button></div><div class="preview-kit-grid">${side("home","DEIN TEAM",teamName)}${side("away","GEGNER",oppName)}</div><div class="preview-kit-status ${clash?"warning":"ok"}" data-preview-kit-status>${clash?"⚠ Trikots zu ähnlich · Auto-Kontrast empfohlen":"✓ Trikots klar unterscheidbar"}</div></section>`
+}
 let squadBattleOpponentCache={key:"",list:[]};
 let selectedSquadBattleIndex=-1,selectedSquadBattleReplayConfirm="";
 const SB_TIERS=[
@@ -8431,7 +8465,7 @@ function getSquadBattleOpponents(){
 }
 function friendAsOpponent(fr){
  const team=friendProfileTeams(fr)[0]||fr,rating=Number(team.rating||fr.rating||70),chem=Number(team.chem||fr.chem||0);
- return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[team.formation]?team.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||fr.roles||{})},focus:{...(team.focus||fr.focus||{})},rating,chem,squad:Array.isArray(team.squad)?team.squad:Array(18).fill(null),tier:"Freundschaft",power:Math.max(45,Math.min(99,rating+chem*.12)),rewards:null,sp:0}
+ return{kind:"friend",name:fr.clubName||"Freund",formation:FORMATIONS[team.formation]?team.formation:"4-3-3",tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||fr.roles||{})},focus:{...(team.focus||fr.focus||{})},rating,chem,squad:Array.isArray(team.squad)?team.squad:Array(18).fill(null),clubIdentity:fr.clubIdentity?cleanClubIdentity(fr.clubIdentity):null,tier:"Freundschaft",power:Math.max(45,Math.min(99,rating+chem*.12)),rewards:null,sp:0}
 }
 const RIVALS_OPPONENT_LEVELS=Object.freeze({
  10:{min:72,max:76,chem:7},9:{min:74,max:78,chem:10},8:{min:76,max:80,chem:13},7:{min:78,max:82,chem:16},6:{min:79,max:83,chem:18},
@@ -8474,10 +8508,10 @@ function refreshOpenMatchPreview(){
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
  const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${replay?" · BEREITS GEWERTET · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
  const formationOptions=Object.keys(FORMATIONS).map(key=>`<option value="${esc(key)}" ${key===state.formation?"selected":""}>${esc(key)}</option>`).join("");
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}${previewKitSelectorHTML(opponent)}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
- pendingMatchContext={mode,opponent};previewSwapFrom=-1;squadBattleStage="preview";
+ pendingMatchContext={mode,opponent};pendingMatchKitSelection=createDefaultMatchKitSelection(opponent);previewSwapFrom=-1;squadBattleStage="preview";
  showUiLayer("squadBattleModal","squad-preview",{mode},historyMode);refreshOpenMatchPreview()
 }
 function renderSquadBattleSelection(historyMode="push"){
@@ -8590,7 +8624,13 @@ $("squadBattleModalBody").addEventListener("click",e=>{
   if(state.squadBattle?.playedIds?.includes(o.battleId)){selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");toast("Dieser Gegner wurde bereits gewertet und bringt 0 BP.");return}
   renderMatchPreview("squad",o);return
  }
- if(e.target.closest("#previewOpponentBtn")){if(pendingMatchContext?.opponent)openOpponentTeam(pendingMatchContext.opponent);return}
+ if(e.target.closest("[data-preview-kit-auto]")){if(pendingMatchContext){pendingMatchKitSelection=createDefaultMatchKitSelection(pendingMatchContext.opponent);refreshOpenMatchPreview()}return}
+ const kitChoice=e.target.closest("[data-preview-kit-side][data-preview-kit-choice]");
+ if(kitChoice&&pendingMatchContext){
+  const side=kitChoice.dataset.previewKitSide,choice=kitChoice.dataset.previewKitChoice;
+  if(["home","away"].includes(side)&&["home","away"].includes(choice)){const current={...currentPreviewKitSelection()};current[side]=choice;pendingMatchKitSelection=current;refreshOpenMatchPreview()}return
+ }
+  if(e.target.closest("#previewOpponentBtn")){if(pendingMatchContext?.opponent)openOpponentTeam(pendingMatchContext.opponent);return}
  if(e.target.closest("[data-preview-swap-cancel]")){previewSwapFrom=-1;refreshOpenMatchPreview();return}
  const slotButton=e.target.closest("[data-preview-slot]");
  if(slotButton){
@@ -8605,7 +8645,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
  if(e.target.closest("#squadBattleKickoff")){
   const ctx=pendingMatchContext;if(!ctx)return;
   if(squadMetrics().filled<18){refreshOpenMatchPreview();toast("Für den Anpfiff brauchst du 11 Starter und 7 Bankspieler.");return}
-  removeUiLayer("squadBattleModal");previewSwapFrom=-1;replaceUiState("view",{view:"playView"});startMatch(ctx.mode,ctx.opponent);pendingMatchContext=null
+  removeUiLayer("squadBattleModal");previewSwapFrom=-1;replaceUiState("view",{view:"playView"});startMatch(ctx.mode,ctx.opponent,currentPreviewKitSelection());pendingMatchContext=null;pendingMatchKitSelection=null
  }
 });
 
@@ -8991,7 +9031,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.11";
+const GFUT_BUILD="V21.12";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9044,7 +9084,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2111",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2112",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9058,11 +9098,11 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2111"></script>
+<script src="./champions-system.js?v=2112"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2111"></script>
-<script src="./chem-boosts-ui.js?v=2111"></script>
+<script src="./3d-highlights-match.js?v=2112"></script>
+<script src="./chem-boosts-ui.js?v=2112"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
 <script src="./friends-hub.js"></script>
