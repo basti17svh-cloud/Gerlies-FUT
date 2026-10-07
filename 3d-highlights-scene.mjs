@@ -601,9 +601,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=players[1],u=clamp((time-from)/(to-from)),wind=smooth(Math.min(1,u/.42)),follow=smooth(Math.max(0,(u-.42)/.58));passer.legs[1].rotation.x=mix(-.46,1.02,follow);passer.knees[1].rotation.x=mix(-.62,-.08,wind);passer.rig.rotation.x=-.08*(1-u);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);passer.ankles[1].rotation.x=-passer.legs[1].rotation.x-passer.knees[1].rotation.x;passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55}
    const kp=keeperPose(event.type,time);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
-   keeper.rig.position.y=-.14*kp.anticipation*(1-kp.dive)+.13*kp.land;
-   keeper.legs[0].rotation.x=-.22*(1-kp.dive);keeper.legs[1].rotation.x=-.22*(1-kp.dive);keeper.knees.forEach(k=>k.rotation.x=.4*(1-kp.dive));
-   keeper.legs[0].rotation.z=.18+kp.dive*.32;keeper.legs[1].rotation.z=-.18-kp.dive*.15;
+   // Knees flex behind the thigh while the keeper crouches towards the ball.
+   // During anticipation both boots stay planted instead of sinking with the hips.
+   const crouch=.26+.30*kp.anticipation,bend=crouch*(1-kp.dive);
+   keeper.rig.position.y=(.86*Math.cos(crouch)+.055-.94)*(1-kp.dive);
+   keeper.upper.rotation.x=-.12*kp.anticipation*(1-kp.dive);
+   for(let i=0;i<2;i++){keeper.legs[i].rotation.x=bend;keeper.knees[i].rotation.x=-2*bend;keeper.ankles[i].rotation.x=bend}
+   keeper.legs[0].rotation.z=.12+kp.dive*.32;keeper.legs[1].rotation.z=-.12-kp.dive*.15;
    keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
    if(kp.dive>.05){keeper.elbows.forEach(e=>e.rotation.x=0);aimArm(keeper.arms[0],[2.52,1.14,-50.6]);aimArm(keeper.arms[1],[2.52,1.14,-50.6]);}
    const bp=ballPosition(event.type,time,sequence);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
@@ -629,7 +633,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
-   const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),angle=p.root.rotation.y;return{index,forward:[-Math.sin(angle)*direction,-Math.cos(angle)*direction],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
+   const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
    return{facing,supportFootClearance,direction,sequence,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};

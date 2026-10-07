@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.22 shell includes broadcast crowd + event cards without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.23 shell includes broadcast crowd + event cards without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2122','3d-highlights-match.js?v=2122','3d-highlights-scene.mjs?v=2122','3d-highlights.css?v=2122','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-22'));assert.ok(html.includes('service-worker.js?v=2122'));
+ for(const file of ['3d-highlights.js?v=2123','3d-highlights-match.js?v=2123','3d-highlights-scene.mjs?v=2123','3d-highlights.css?v=2123','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-23'));assert.ok(html.includes('service-worker.js?v=2123'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -156,7 +156,7 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
 });
 
 
-test('V21.22 goal overlay stacks a compact minute above the scoring crest without changing the card renderer',()=>{
+test('V21.23 goal overlay stacks a compact minute above the scoring crest without changing the card renderer',()=>{
  const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8'),scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(css,/\.fh3d-hud-goal\{[^}]*grid-template-columns:98px minmax\(0,1fr\) 60px/);
  assert.match(css,/\.fh3d-hud-goal \.fh3d-goal-meta\{[^}]*flex-direction:column/);
@@ -167,7 +167,7 @@ test('V21.22 goal overlay stacks a compact minute above the scoring crest withou
  assert.match(scene,/hud\.append\(card,mark,copy,meta\)/);
 });
 
-test('V21.22 snapshot carries only presentation card and club metadata',()=>{
+test('V21.23 snapshot carries only presentation card and club metadata',()=>{
  const snap=H.snapshot({...event(),playerCardHTML:'<div class="card-shell">CARD</div>',teamName:'FC Gerlies',teamCrestHTML:'<div class="club-crest"></div>',scoreBeforeHome:0,scoreBeforeAway:0});
  assert.equal(snap.teamName,'FC Gerlies');assert.match(snap.playerCardHTML,/card-shell/);assert.match(snap.teamCrestHTML,/club-crest/);assert.equal(snap.scoreBeforeHome,0);assert.equal(snap.scoreBeforeAway,0);assert.equal('match' in snap,false);
 });
