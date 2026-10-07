@@ -156,6 +156,17 @@ test('Crowd Paket L reacts by supporter block without touching simulation RNG',a
 });
 
 
+test('V21.21 goal overlay stacks a compact minute above the scoring crest without changing the card renderer',()=>{
+ const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8'),scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(css,/\.fh3d-hud-goal\{[^}]*grid-template-columns:98px minmax\(0,1fr\) 60px/);
+ assert.match(css,/\.fh3d-hud-goal \.fh3d-goal-meta\{[^}]*flex-direction:column/);
+ assert.match(css,/\.fh3d-hud-goal \.fh3d-minute\{[^}]*font:950 14px\/1 system-ui/);
+ assert.match(css,/\.fh3d-hud-goal \.fh3d-team-crest\{[^}]*opacity:\.72/);
+ assert.match(css,/@media\(max-width:560px\)[\s\S]*\.fh3d-hud-goal\{grid-template-columns:82px minmax\(0,1fr\) 52px/);
+ assert.match(scene,/meta\.className='fh3d-goal-meta'/);assert.match(scene,/meta\.append\(minute,crest\)/);
+ assert.match(scene,/hud\.append\(card,mark,copy,meta\)/);
+});
+
 test('V21.21 snapshot carries only presentation card and club metadata',()=>{
  const snap=H.snapshot({...event(),playerCardHTML:'<div class="card-shell">CARD</div>',teamName:'FC Gerlies',teamCrestHTML:'<div class="club-crest"></div>',scoreBeforeHome:0,scoreBeforeAway:0});
  assert.equal(snap.teamName,'FC Gerlies');assert.match(snap.playerCardHTML,/card-shell/);assert.match(snap.teamCrestHTML,/club-crest/);assert.equal(snap.scoreBeforeHome,0);assert.equal(snap.scoreBeforeAway,0);assert.equal('match' in snap,false);
