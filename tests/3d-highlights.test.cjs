@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.14 shell includes Champions without changing 3D simulation
+const root=path.join(__dirname,'..'),H=require('../3d-highlights.js'); // V21.15 shell includes Champions without changing 3D simulation
 const event=(type='goal',id='one')=>({id,type,minute:67,team:'home',playerId:'p9',playerName:'Jamal Musiala',keeperName:type==='big_chance_saved'?'Mike Maignan':''});
 const turn=()=>new Promise(r=>setImmediate(r));
 test('modes select all four important types; unknown future events safely fall back',()=>{
@@ -146,6 +146,6 @@ test('Crowd Paket M reacts by supporter block without touching simulation RNG',a
  assert.ok(homeGoal.mood>.6&&awayGoal.mood<-.25);
  assert.ok(homeSaved.mood<-.25&&awaySaved.mood>.45);
  const source=fs.readFileSync(path.join(__dirname,'../3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/crowd-arm-human/);assert.match(source,/supporterBanner/);assert.match(source,/updateCrowd\(time\)/);
+ assert.match(source,/crowd-torso-human/);assert.match(source,/crowd-arm-human/);assert.match(source,/crowd-leg-human/);assert.match(source,/BoxGeometry\(\.38,\.44,\.18\)/);assert.doesNotMatch(source,/crowd-body-human/);assert.match(source,/supporterBanner/);assert.match(source,/updateCrowd\(time\)/);
  assert.equal(/Math\.random\s*\(/.test(source),false);
 });

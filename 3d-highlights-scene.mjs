@@ -251,8 +251,8 @@ export function makeScene(renderer,event,weak=false,high=false){
   }
   const net=goal(-52.5,-1);goal(52.5,1);
 
-  // V21.14 — Crowd Paket M. Supporter remain presentation-only and deterministic:
-  // human silhouettes with arms, coherent home/away colour blocks, asynchronous
+  // V21.15 — Crowd Paket M. Supporter remain presentation-only and deterministic:
+  // recognisable human silhouettes with torso/head/arms/legs, coherent colour blocks, asynchronous
   // motion, event reactions and a few lightweight flags/banners.
   box(100,.1,143,'#777d77',0,-.15,0,scene);
   const crowdKits=kitColors(event),crowd=[],crowdRows=weak?7:high?12:10,sideCols=weak?75:high?132:106,endCols=weak?48:high?88:70;
@@ -276,42 +276,52 @@ export function makeScene(renderer,event,weak=false,high=false){
   const animatedShare=weak?.13:high?.34:.25;
   const crowdSpecs=crowd.map((p,i)=>({...p,index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:.86+hash(i*37+5)*.3,width:.82+hash(i*41+7)*.34,depth:.88+hash(i*43+11)*.22,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
-  const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'];
+  const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
   function fanPalette(team){
    const kit=team==='home'?crowdKits.home:team==='away'?crowdKits.away:null;
    return kit?[kit.shirt,kit.shirt,kit.shirtSecondary,'#e4e1d8','#26343a']:neutralFanPalette;
   }
   function crowdGroup(specs,dynamic){
-   const body=new THREE.InstancedMesh(geo('crowd-body-human',()=>new THREE.CylinderGeometry(.20,.14,.48,6)),mat('#ffffff'),specs.length);
+   // Paket M uses an actual human TV silhouette: broad torso + separate head,
+   // two arms and two legs. Keeping each part instanced preserves mobile draw-call cost.
+   const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>new THREE.BoxGeometry(.38,.44,.18)),mat('#ffffff'),specs.length);
    const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>new THREE.SphereGeometry(.105,6,5)),mat('#ffffff'),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.045,.038,.36,5)),mat('#ffffff'),specs.length*2);
-   for(const mesh of [body,head,arms]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
-   return{body,head,arms,specs,dynamic};
+   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.052,.044,.38,5)),mat('#ffffff'),specs.length*2);
+   for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
+   return{torso,head,arms,legs,specs,dynamic};
   }
   const crowdStatic=crowdGroup(crowdStaticSpecs,false),crowdDynamic=crowdGroup(crowdDynamicSpecs,true);
   function writeCrowdFan(spec,i,group,time=0,paint=false){
    const reaction=group.dynamic?crowdReactionState(event.type,event.team,spec.team,time):{suspense:0,mood:0};
    const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.55+spec.loop*.36)+spec.phase):0;
    const jump=group.dynamic?Math.abs(Math.sin(time*(4.5+spec.loop*.45)+spec.phase))*positive*.15:0,bob=wave*.018+jump+reaction.suspense*.024;
-   const bodyY=spec.y+spec.lift+bob,lean=wave*.035+negative*.07;
-   crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,0,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.body.setMatrixAt(i,crowdDummy.matrix);
-   crowdDummy.position.set(spec.x,bodyY+.35*spec.height,spec.z);crowdDummy.rotation.set(0,0,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
+   const bodyY=spec.y+spec.lift+bob+.16,lean=wave*.035+negative*.07;
+   crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,0,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
+   crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,0,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
    const despair=negative,idleRaise=group.dynamic&&spec.loop===2?.12+.1*(wave+1):0,raise=clamp(reaction.suspense*.34+positive*.98+despair*.58+idleRaise);
+   const shoulderY=bodyY+.1*spec.height;
    for(const side of [-1,1]){
-    const armIndex=i*2+(side>0?1:0),spread=positive>.05?.58:despair>.05?.2:.12;
-    crowdDummy.position.set(spec.x+side*.19*spec.width,bodyY+mix(-.08,.29,raise),spec.z);
-    crowdDummy.rotation.set(0,0,side*mix(.08,spread,raise)+wave*.025);
+    const armIndex=i*2+(side>0?1:0),spread=positive>.05?1.04:despair>.05?.34:.12,armLift=mix(shoulderY-.12,shoulderY+.18,raise);
+    crowdDummy.position.set(spec.x+side*.22*spec.width,armLift,spec.z);
+    crowdDummy.rotation.set(0,0,side*mix(.06,spread,raise)+wave*.025);
     crowdDummy.scale.set(.92,spec.height*(.94+raise*.08),.92);crowdDummy.updateMatrix();group.arms.setMatrixAt(armIndex,crowdDummy.matrix);
+
+    const legIndex=i*2+(side>0?1:0),stance=.035+hash(spec.index*71+(side>0?29:13))*.055;
+    crowdDummy.position.set(spec.x+side*(.085+.018*spec.width),bodyY-.365*spec.height,spec.z+(hash(spec.index*73+legIndex)-.5)*.035);
+    crowdDummy.rotation.set(0,0,side*stance+wave*.012);
+    crowdDummy.scale.set(.9,spec.height*(.9+hash(spec.index*79+legIndex)*.08),.9);crowdDummy.updateMatrix();group.legs.setMatrixAt(legIndex,crowdDummy.matrix);
    }
    if(paint){
-    const palette=fanPalette(spec.team),shirt=palette[Math.floor(hash(spec.index*59+23)*palette.length)],skin=skinTone('supporter',spec.index);
-    group.body.setColorAt(i,crowdColor.set(shirt));group.head.setColorAt(i,crowdColor.set(skin));
+    const palette=fanPalette(spec.team),shirt=palette[Math.floor(hash(spec.index*59+23)*palette.length)],skin=skinTone('supporter',spec.index),pants=crowdPantsPalette[Math.floor(hash(spec.index*83+31)*crowdPantsPalette.length)];
+    group.torso.setColorAt(i,crowdColor.set(shirt));group.head.setColorAt(i,crowdColor.set(skin));
     group.arms.setColorAt(i*2,crowdColor.set(skin));group.arms.setColorAt(i*2+1,crowdColor.set(skin));
+    group.legs.setColorAt(i*2,crowdColor.set(pants));group.legs.setColorAt(i*2+1,crowdColor.set(pants));
    }
   }
   function initCrowdGroup(group){
    group.specs.forEach((spec,i)=>writeCrowdFan(spec,i,group,0,true));
-   for(const mesh of [group.body,group.head,group.arms]){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true}
+   for(const mesh of [group.torso,group.head,group.arms,group.legs]){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true}
   }
   initCrowdGroup(crowdStatic);initCrowdGroup(crowdDynamic);
 
