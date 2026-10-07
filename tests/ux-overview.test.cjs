@@ -19,7 +19,7 @@ test("V21.12 wires the focused usability layer without replacing existing hubs",
 test("club collection keeps all player cards at one size and suppresses Chemie-Boost badges only there",()=>{
  assert.match(html,/function cardHTML\(p,item=null,mini=false,shownPosition=null,includeChemBoost=true\)/);
  assert.match(html,/cardHTML\(b,i,false,null,false\)/);
- assert.match(html,/V21\.12 — Verein: jede Spielerkarte exakt gleich groß/);
+ assert.match(html,/V21\.11 — Verein: jede Spielerkarte exakt gleich groß/);
  assert.match(html,/\.club-card-preview>div:first-child>\.card-shell\{width:150px!important;min-width:150px!important;max-width:150px!important/);
  assert.match(html,/@media\(max-width:560px\)[\s\S]*?\.club-card-preview>div:first-child>\.card-shell\{width:142px!important;min-width:142px!important;max-width:142px!important/);
  assert.match(html,/\.club-card-preview \.cb-player-badge\{display:none!important\}/);
