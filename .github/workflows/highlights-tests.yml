@@ -34,7 +34,7 @@ jobs:
           node tests/prematch-editor.browser.cjs
           node tests/ux-overview.browser.cjs
       - name: Production graphics captures and geometry
-        if: always()
+        if: success()
         env:
           NODE_PATH: /tmp/footera-browser/node_modules
         run: node tests/3d-highlights.render.cjs
