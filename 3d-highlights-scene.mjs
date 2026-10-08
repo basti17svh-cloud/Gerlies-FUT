@@ -106,6 +106,12 @@ export function ballPosition(type,time,sequence='central',finish='normal'){
    p[0]+=mix(offset[0]*.78*(1-.22*u),offset[0],handoff);
    p[2]+=mix(Number(variant.depth||0)*.85*(1-u),offset[1],handoff);
   }else{p[0]+=offset[0]*fade;p[2]+=offset[1]*fade;}
+  // Lane/depth variants must follow the real carrier during close control.
+  const owned=controlCarrier(time,seq);
+  if(owned.weight>0){
+   const touch=carriedBall(owned.index,time,seq,.53);
+   return lerp(p,touch,owned.weight);
+  }
   return p;
  }
  const contact=contactFor(style);
