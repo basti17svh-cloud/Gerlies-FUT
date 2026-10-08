@@ -5,6 +5,7 @@ import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2143';
+import {applyLabMotion} from './3d-motion-lab.mjs?v=1';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -501,7 +502,7 @@ export function playerPosition(index,time,type='goal',sequence='central'){
  if(type==='goal'&&time>REVEAL_TIME&&[0,2,3].includes(index))p[1]-=Math.min(3,time-REVEAL_TIME)*.6;
  return p;
 }
-export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false){
+export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false){
  const enhancedRigMotion=!baselineRig&&!(typeof window!=='undefined'&&window.__FOOTERA_V2137_BASELINE===true);
  const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
@@ -815,7 +816,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   // Pilot: one connected deforming skeleton for the ball carrier, while the
   // surrounding sixteen-actor TV frame retains the fast instanced fallback.
-  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,false,i===0));
+  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,false,i===0||(pilotMotion&&i===defenderIndex)));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true);
   const ballMap=canvasTexture(128,64,(ctx,w,h)=>{ctx.fillStyle='#fafbf5';ctx.fillRect(0,0,w,h);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=col*w/6+(row%2)*w/12,y=row*h/2;ctx.beginPath();for(let n=0;n<5;n++){const a=n*Math.PI*2/5;ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5)}ctx.closePath();ctx.fillStyle='#25343b';ctx.fill();ctx.strokeStyle='#89918f';ctx.lineWidth=.5;ctx.stroke()}});
   const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({map:ballMap,color:'#ffffff',roughness:.6,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.14);ball.position.set(0,.13,0);ball.castShadow=!weak;
@@ -829,7 +830,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.upper.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0);p.ankles[i].rotation.set(0,0,0)}}
-  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6,acceleration=0,controlWeight=0){
+  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6,acceleration=0,controlWeight=0,ballDistance=99){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
    const closeControl=controlWeight>.3;
    const d=locomotionDynamics(speed,turn,stride,acceleration,closeControl),motion=d.effort;
@@ -852,9 +853,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    p.upper.rotation.z=d.bank*.73+c.roll*motion+Math.sin(stride)*.016*motion;
    p.rig.rotation.z=d.bank*.24+c.roll*.08*motion;
    p.shadow.rotation.z=heading;
-   if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
+   if(pilotMotion&&(p===players[0]||p===players[defenderIndex])){
+    applyLabMotion(p,p===players[0]?'attacker':'defender',time,sequence,speed,turn,stride,acceleration,ballDistance);
+   }else if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
-   if(enhancedRigMotion&&(p===players[0]||p===players[1]))
+   if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!(pilotMotion&&p===players[0]))
     applyContextualAttackerMotion(p,time,sequence,p===players[1]?1:0);
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
@@ -934,7 +937,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
-    pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight);
+    pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Make every surrounding instanced athlete readable without new draw calls.
     if(enhancedRigMotion&&!p.skinned)
      applySquadLocomotion(p,i,time,speed,turn,stride,acceleration,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
@@ -1112,7 +1115,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
+   return{motionLab:pilotMotion,labActors:pilotMotion?['attacker','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
