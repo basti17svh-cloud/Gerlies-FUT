@@ -19,7 +19,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
- assert.match(sw,/footera-v21-41-full-squad-motion/);
+ assert.match(sw,/footera-v21-42-fluid-live-motion/);
  assert.match(sw,/champions-system\.js\?v=2114/);
  assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.42");
 });
