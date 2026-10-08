@@ -2,6 +2,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2137';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
+import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2139';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -807,7 +808,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(skinned){track(skinned.geometry);track(skinned.atlasTexture);track(skinned.atlasMaterial)}
    const skeletonMotion=modern?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
    return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
-    gait:[{},{}],motionClips:{out:{},scratch:{},action:{}}};
+    gait:[{},{}],mocapFrame:new Float32Array(33),motionClips:{out:{},scratch:{},action:{}}};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   // Pilot: one connected deforming skeleton for the ball carrier, while the
@@ -849,7 +850,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    p.upper.rotation.z=d.bank*.73+c.roll*motion+Math.sin(stride)*.016*motion;
    p.rig.rotation.z=d.bank*.24+c.roll*.08*motion;
    p.shadow.rotation.z=heading;
-   if(enhancedRigMotion&&p.skinned&&p!==keeper)animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);
+   if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride)}
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
@@ -1059,7 +1060,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else if(savePose&&keeperAction==='fingertip'){
      keeper.rig.rotation.y-=.16*kp.dive;
     }
-   if(enhancedRigMotion)animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');
+   if(enhancedRigMotion){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time)}
    if(kp.dive>.05){
     keeper.elbows.forEach(e=>e.rotation.x=0);
     // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
