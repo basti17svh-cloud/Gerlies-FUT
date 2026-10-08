@@ -323,3 +323,21 @@ test('V21.29: no carried ball may trail behind the running player across 32 sequ
  assert.ok(contact.hip>before.hip+.9,'visible kick contact around release');
  assert.ok(after.hip>contact.hip,'follow through after pass release');
 });
+
+test('V21.29: smooth handoffs keep every attacking pattern continuous',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ let checks=0,largest=0;
+ for(const sequence of M.PLAY_SEQUENCES)for(const t of [2.35,2.5,2.9,3.1,3.2,3.36,3.65,4.65,5.16,M.SHOT_TIME]){
+  const a=M.ballPosition('goal',t-.0001,sequence),b=M.ballPosition('goal',t+.0001,sequence),
+    jump=Math.hypot(...a.map((v,i)=>v-b[i]));largest=Math.max(largest,jump);checks++;
+  assert.ok(jump<.12,sequence+' at '+t+' has nonphysical ball teleport of '+jump+' m');
+ }
+ const renderer=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(renderer,/function bootGuidedBall\(original,time\)/,'mesh ball follows real boot transforms');
+ assert.match(renderer,/p\.root\.updateWorldMatrix\(true,true\)/,'animated boots are updated before attaching ball');
+ assert.match(renderer,/const leftWeight=smooth/,'smooth foot switch instead of an abrupt left/right toggle');
+ assert.match(renderer,/ball\.rotation\.x=ballRollAt\(time\)/,'roll is based on travel distance');
+ assert.doesNotMatch(renderer,/ball\.rotation\.x=time\*9/,'remove constant unrelated spin');
+ assert.ok(checks>=320);
+ assert.ok(largest<.12);
+});
