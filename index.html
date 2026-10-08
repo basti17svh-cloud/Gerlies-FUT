@@ -17,7 +17,7 @@
 <meta name="color-scheme" content="dark">
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
-<title>Footera V21.30</title>
+<title>Footera V21.31</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1563,7 +1563,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.31</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3272,10 +3272,11 @@ function defaultClubIdentity(){return{
  }
 }}
 function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
+function cleanClubKit(src,def){src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}}
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
- const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
- return{crest:{shape:["shield","round","hex","point","modern","oval","diamond"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,symbolColor:safeClubHex(crest.symbolColor||crest.accent||colors.accent,d.crest.symbolColor),textColor:safeClubHex(crest.textColor,d.crest.textColor),field:["solid","split","stripes","diagonal","quarters"].includes(crest.field)?crest.field:"solid",decoration:crest.decoration==="laurel"?"laurel":"none",stars:[0,1,2,3].includes(Number(crest.stars))?Number(crest.stars):0,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
+
+ return{crest:{shape:["shield","round","hex","point","modern","oval","diamond"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,symbolColor:safeClubHex(crest.symbolColor||crest.accent||colors.accent,d.crest.symbolColor),textColor:safeClubHex(crest.textColor,d.crest.textColor),field:["solid","split","stripes","diagonal","quarters"].includes(crest.field)?crest.field:"solid",decoration:crest.decoration==="laurel"?"laurel":"none",stars:[0,1,2,3].includes(Number(crest.stars))?Number(crest.stars):0,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:cleanClubKit(kits.home,d.kits.home),away:cleanClubKit(kits.away,d.kits.away)}}
 }
 function ensureClubIdentityState(){
  state.profile=state.profile||{};
@@ -8374,10 +8375,7 @@ $("saveTeamManagement").addEventListener("click",()=>{
 $("openClubIdentityFromTeam")?.addEventListener("click",()=>{removeUiLayer("teamManagementModal");clubSection="identity";clubIdentityDraft=makeClubIdentityDraft();switchView("clubView");renderClub()});
 
 let pendingMatchContext=null,pendingMatchKitSelection=null,previewSwapFrom=-1;
-function matchKitClone(kit,fallback){
- const d=fallback||defaultClubIdentity().kits.home,k=kit&&typeof kit==="object"?kit:{};
- return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels"].includes(k.pattern)?k.pattern:d.pattern,shirtPrimary:safeClubHex(k.shirtPrimary,d.shirtPrimary),shirtSecondary:safeClubHex(k.shirtSecondary,d.shirtSecondary),shorts:safeClubHex(k.shorts,d.shorts),socks:safeClubHex(k.socks,d.socks)}
-}
+function matchKitClone(kit,fallback){return cleanClubKit(kit,fallback||defaultClubIdentity().kits.home)}
 function generatedOpponentKits(opponent){
  const palettes=[
   ["#182c4f","#72a8ff","#edf3ff"],["#5a1722","#f05b6f","#f6f2ea"],["#173d2d","#71d6a2","#f1f5ee"],
@@ -8409,7 +8407,8 @@ function currentPreviewKitSelection(){
 }
 function previewKitSelectorHTML(opponent){
  const options=matchKitOptions(opponent),sel=currentPreviewKitSelection(),clash=matchKitsTooSimilar(options.home[sel.home],options.away[sel.away]),teamName=String(state.profile?.clubName||"Dein Team"),oppName=String(opponent?.name||"Gegner");
- const side=(key,title,name)=>`<div class="preview-kit-team" data-kit-team="${key}"><div class="preview-kit-team-head"><strong>${esc(title)}</strong><span>${esc(name)}</span></div><div class="preview-kit-choices">${["home","away"].map(kind=>`<button type="button" class="preview-kit-choice ${sel[key]===kind?"selected":""}" data-preview-kit-side="${key}" data-preview-kit-choice="${kind}" aria-pressed="${sel[key]===kind}"><span class="preview-kit-art">${kitHTML(options[key][kind])}</span><b>${kind==="home"?"Heim":"Auswärts"}</b></button>`).join("")}</div></div>`;
+ const crests={home:clubIdentitySnapshot().crest,away:opponent?.clubIdentity?cleanClubIdentity(opponent.clubIdentity).crest:null};
+ const side=(key,title,name)=>`<div class="preview-kit-team" data-kit-team="${key}"><div class="preview-kit-team-head"><strong>${esc(title)}</strong><span>${esc(name)}</span></div><div class="preview-kit-choices">${["home","away"].map(kind=>`<button type="button" class="preview-kit-choice ${sel[key]===kind?"selected":""}" data-preview-kit-side="${key}" data-preview-kit-choice="${kind}" aria-pressed="${sel[key]===kind}"><span class="preview-kit-art">${kitHTML(options[key][kind],false,crests[key])}</span><b>${kind==="home"?"Heim":"Auswärts"}</b></button>`).join("")}</div></div>`;
  return`<section class="preview-kit-selector" aria-label="Trikotwahl vor dem Spiel"><div class="preview-kit-title"><div><span>TRIKOTWAHL</span><small>Gilt nur für dieses Spiel</small></div><button type="button" class="secondary preview-kit-auto" data-preview-kit-auto>Auto-Kontrast</button></div><div class="preview-kit-grid">${side("home","DEIN TEAM",teamName)}${side("away","GEGNER",oppName)}</div><div class="preview-kit-status ${clash?"warning":"ok"}" data-preview-kit-status>${clash?"⚠ Trikots zu ähnlich · Auto-Kontrast empfohlen":"✓ Trikots klar unterscheidbar"}</div></section>`
 }
 let squadBattleOpponentCache={key:"",list:[]};
@@ -9032,7 +9031,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.30";
+const GFUT_BUILD="V21.31";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9085,7 +9084,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2130",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2131",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

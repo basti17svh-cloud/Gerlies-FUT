@@ -22,14 +22,19 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    PLAYERS=defs.map(([position,alt],i)=>({id:"pre-"+i,name:"Preview "+i,fullName:"Preview Spieler "+i,position,alt,ovr:84,pac:84,sho:82,pas:84,dri:84,def:78,phy:82,nation:"Germany",team:"Preview FC",league:"Bundesliga"}));
    P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
    state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);while(state.squad.length<23)state.squad.push(null);
-   state.formation="4-3-3";state.tactic="balanced";state.roles={5:"Box to Box"};state.focus={5:"Attack"};state.profile.clubName="Preview Test";
-   state.profile.clubIdentity=cleanClubIdentity({kits:{home:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"},away:{pattern:"diagonal",shirtPrimary:"#f1f4f2",shirtSecondary:"#173627",shorts:"#f1f4f2",socks:"#173627"}}});
+   state.formation="4-3-3";state.tactic="balanced";state.roles={5:"Box to Box"};state.focus={5:"Attack"};state.profile.clubName="FC Gerlies";
+   state.profile.clubIdentity=cleanClubIdentity({kits:{home:{pattern:"reverse",shirtPrimary:"#173627",shirtSecondary:"#aa0000",shorts:"#173627",socks:"#aa0000"},away:{pattern:"fade",shirtPrimary:"#000000",shirtSecondary:"#ffffff",shorts:"#ffffff",socks:"#ffffff"}}});
    renderAll();
-   renderMatchPreview("rivals",{name:"RIVALS TEST",rating:84,chem:25,power:87,squad:PLAYERS.slice(0,11),formation:"4-3-3",items:[],clubIdentity:cleanClubIdentity({kits:{home:{pattern:"stripes",shirtPrimary:"#221144",shirtSecondary:"#aa82ef",shorts:"#221144",socks:"#aa82ef"},away:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"}}})});
+   renderMatchPreview("rivals",{name:"RIVALS TEST",rating:84,chem:25,power:87,squad:PLAYERS.slice(0,11),formation:"4-3-3",items:[],clubIdentity:cleanClubIdentity({kits:{home:{pattern:"stripes",shirtPrimary:"#f1f4f2",shirtSecondary:"#221144",shorts:"#221144",socks:"#aa82ef"},away:{pattern:"solid",shirtPrimary:"#173627",shirtSecondary:"#aa0000",shorts:"#173627",socks:"#aa0000"}}})});
   });
   check("pre-match preview opens with formation control",await page.locator("#previewFormationSelect").isVisible());
   check("pre-match preview exposes tactic control",await page.locator("#previewTacticSelect").isVisible());
   check("pre-match preview exposes four kit choices",await page.locator("[data-preview-kit-side][data-preview-kit-choice]").count()===4);
+  check("Matchday shows saved red/green sash and black/white fade",await page.evaluate(()=>{
+   const options=matchKitOptions(pendingMatchContext.opponent),identity=clubIdentitySnapshot();
+   return ['home','away'].every(kind=>JSON.stringify(options.home[kind])===JSON.stringify(identity.kits[kind])&&document.querySelector('[data-preview-kit-side="home"][data-preview-kit-choice="'+kind+'"] .kit-shirt').classList.contains('pattern-'+identity.kits[kind].pattern));
+  }));
+  check("both teams keep their club crests in every kit choice",await page.locator('.preview-kit-art .kit-crest-stamp').count()===4);
   check("automatic contrast avoids the deliberately clashing opponent away kit",await page.locator('[data-preview-kit-side="home"][data-preview-kit-choice="home"].selected').count()===1&&await page.locator('[data-preview-kit-side="away"][data-preview-kit-choice="home"].selected').count()===1);
   await page.locator('[data-preview-kit-side="away"][data-preview-kit-choice="away"]').click();
   check("manual clash is warned immediately",await page.locator("[data-preview-kit-status].warning").isVisible());
@@ -56,11 +61,20 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    check(`${width}: pre-match editor and kit selector have no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.editor<=geometry.editorClient+1&&geometry.controls<=geometry.controlsClient+1&&geometry.kit<=geometry.kitClient+1&&geometry.kitGrid<=geometry.kitGridClient+1&&geometry.rowsOk);
   }
   await page.setViewportSize({width:390,height:844});
-  await page.screenshot({path:path.join(output,"prematch-editor-v2112-390.png"),fullPage:true});
+  await page.locator(".preview-kit-selector").screenshot({path:path.join(output,"prematch-kits-v2131-390.png")});
+  await page.screenshot({path:path.join(output,"prematch-editor-v2131-390.png"),fullPage:true});
   await page.locator("#squadBattleKickoff").click();
   await page.evaluate(()=>stopMatchTimer());
   check("kickoff uses edited formation, tactic, role and focus",await page.evaluate(()=>match?.formation==="4-2-2-2"&&match?.tactic==="attacking"&&match?.roles?.[5]==="Deep Lying Playmaker"&&match?.focus?.[5]==="Defend"));
-  check("kickoff preserves the manually selected away/home kit pair",await page.evaluate(()=>match?.kickoffKits?.home?.shirtPrimary==="#f1f4f2"&&match?.kickoffKits?.home?.pattern==="diagonal"&&match?.kickoffKits?.away?.shirtPrimary==="#221144"&&match?.kickoffKits?.away?.pattern==="stripes"));
+  check("kickoff preserves the manually selected away/home kit pair",await page.evaluate(()=>match?.kickoffKits?.home?.shirtPrimary==="#000000"&&match?.kickoffKits?.home?.pattern==="fade"&&match?.kickoffKits?.away?.shirtPrimary==="#f1f4f2"&&match?.kickoffKits?.away?.pattern==="stripes"));
+  const renderedKits=await page.evaluate(async()=>{
+   let handedOff=null;match3DQueue={history:[],enqueue(event){handedOff=event;return true},cancel(){}};
+   const accepted=queueMatch3D({id:'kit-regression',type:'big_chance_saved',minute:15,team:'home',playerId:'pre-9',playerName:'Preview 9',keeperName:'Test Keeper'});
+   const renderer=await import('./3d-highlights-scene.mjs?v=2130');
+   const result={accepted,kits:renderer.kitColors(handedOff)};match3DQueue=null;return result;
+  });
+  check("3D receives selected fade kit with exact shirt, secondary, shorts and socks",renderedKits.accepted&&renderedKits.kits.home.pattern==='fade'&&renderedKits.kits.home.shirt==='#000000'&&renderedKits.kits.home.shirtSecondary==='#ffffff'&&renderedKits.kits.home.shorts==='#ffffff'&&renderedKits.kits.home.socks==='#ffffff');
+  check("3D keeps the chosen opponent kit",renderedKits.kits.away.pattern==='stripes'&&renderedKits.kits.away.shirt==='#f1f4f2');
   check("no uncaught JavaScript errors in pre-match editor",errors.length===0);
  }finally{await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});

@@ -43,3 +43,18 @@ console.log("V21.06 Vereinsdesigner: Wappenrand, 36 Symbole, 13 Trikotmuster und
 test("mini hero kits preserve repeating stripe patterns",()=>{
  for(const pattern of ["stripes","hoops","pinstripes"])assert.ok(css.includes(".kit-shirt.kit-mini.pattern-"+pattern),pattern);
 });
+
+test("every selectable editor pattern survives the Matchday clone unchanged",()=>{
+ const vm=require('node:vm'),context={};vm.createContext(context);
+ vm.runInContext(html.slice(html.indexOf('function defaultClubIdentity()'),html.indexOf('function ensureClubIdentityState()')),context);
+ vm.runInContext(html.slice(html.indexOf('function matchKitClone('),html.indexOf('function generatedOpponentKits(')),context);
+ const select=html.match(/id="identityHomePattern">([\s\S]*?)<\/select>/)[1];
+ const patterns=[...select.matchAll(/value="([^"]+)"/g)].map(x=>x[1]);assert.equal(patterns.length,20);
+ for(const pattern of patterns){
+  const kit={pattern,shirtPrimary:'#173627',shirtSecondary:'#bb0011',shorts:'#172839',socks:'#aabbcc'};
+  const saved=context.cleanClubIdentity({kits:{home:kit,away:kit}}).kits;
+  for(const side of ['home','away'])assert.deepEqual(JSON.parse(JSON.stringify(context.matchKitClone(saved[side],context.defaultClubIdentity().kits[side]))),kit,pattern+' / '+side);
+ }
+ const fallback={pattern:'fade',shirtPrimary:'#112233',shirtSecondary:'#445566',shorts:'#778899',socks:'#aabbcc'};
+ assert.deepEqual(JSON.parse(JSON.stringify(context.matchKitClone({pattern:'invalid',shirtPrimary:'no'},fallback))),fallback);
+});
