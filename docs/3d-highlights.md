@@ -102,3 +102,11 @@ No phone-specific frame-rate guarantee; hardware and measured frame times
 select rendering details or the established fallback. Player forms never change
 between quality modes. Similar shirts trigger a contrasting complete away kit;
 the goalkeeper uses a separate contrasting colour.
+
+## V21.26 – Präsentationsvielfalt und PlayStyle-Persönlichkeit
+
+- 32 gewichtete Szenenprofile; acht ursprüngliche Abläufe bleiben erhalten. Kombination aus Aufbaupfad und Abschlussmodul (normal, Kopfball, Finesse, Power, Low Driven, Volley, extrem seltener Fallrückzieher).
+- Die Szene wird im Match-Bridge-Code nach bereits feststehendem Event aus stabilen IDs, Schützen- und Vorlagengeber-PlayStyles sowie Position gewichtet gewählt. Das letzte Fünferfenster reduziert Wiederholungen; die Auswahl nutzt einen eigenen Hash ohne `Math.random()`.
+- Aktuelle PlayStyle-IDs aus `playstyles.js`; kein Trivela-Identifier vorhanden. Spieler- und Assist-Daten werden ausschließlich in den angehängten Präsentationsdaten verarbeitet. Keine Änderungen an Matchresultat, Chancenwahrscheinlichkeit, Simulations-RNG oder Match-Tick.
+- Der Three.js-Renderer erweitert Lauf-/Ballpfade und Abschlussposen innerhalb der bestehenden Broadcast-Kamera, Rigs und Quality-Tiers. Tor-Overlay, Skip und Fallback bleiben im bestehenden Ablauf.
+- Tests: `node --test tests/3d-highlights.test.cjs`; Browser/WebGL- und Snapshot-Läufe über `.github/workflows/highlights-tests.yml`.

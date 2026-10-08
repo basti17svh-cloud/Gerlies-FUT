@@ -50,19 +50,19 @@ function match3DPresentationMeta(event,current){
  let teamCrestHTML='';if(teamIdentity&&typeof crestHTML==='function'){try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}}
  return{playerCardHTML,teamName,teamCrestHTML}
 }
-function match3DSequence(event){
- const wideLeft=new Set(['LB','LWB','LM','LW']),wideRight=new Set(['RB','RWB','RM','RW']);
- if(['freekick','penalty'].includes(event.creationType))return'central';
- if(event.creationType==='solo')return'dribble';
- if(wideLeft.has(event.creatorSlot)||wideRight.has(event.creatorSlot)){
-  const side=wideLeft.has(event.creatorSlot)?'left':'right';
-  return match3DStableNumber(event.id+event.minute)%2?`wing_${side}`:`cutback_${side}`
- }
- if(wideLeft.has(event.scorerSlot)||wideRight.has(event.scorerSlot))return'dribble';
- const cycle=['one_two','through_ball','central','dribble'];
- return cycle[match3DStableNumber(event.id+':'+event.minute+':'+event.playerName)%cycle.length]
+// Resolve styles from copies of actor data; never consume simulation RNG.
+function match3DActorStyles(side,{uid='',index=-1,name=''}={}){
+ if(typeof matchActorRows!=='function'||typeof FooteraPlayStyles==='undefined')return[];
+ const rows=matchActorRows(side)||[],key=String(name||'').toLowerCase(),num=Number(index);
+ const row=(side==='home'&&uid?rows.find(r=>String(r.uid)===String(uid)):null)||
+   (side==='away'&&Number.isInteger(num)&&num>=0?rows.find(r=>r.index===num):null)||
+   (key?rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===key):null);
+ if(!row?.base)return[];
+ const item=side==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):
+   row.entry&&typeof row.entry==='object'?row.entry:null;
+ try{return FooteraPlayStyles.resolve({...row.base},item).styles.map(p=>({id:String(p.id),plus:!!p.plus})).filter(p=>!p.id.startsWith('custom-'))}catch(_){return[]}
 }
-
+function match3DSequence(event){if(['freekick','penalty'].includes(event.creationType))return 'central';return FooteraHighlights.choosePresentation(event,match3DQueue?.history||[]).sequence}
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -89,15 +89,20 @@ function queueMatch3D(event){
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const presentation={...event,...match3DPresentationMeta(event,current)};
+ presentation.playerStyles=match3DActorStyles(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
+ presentation.creatorStyles=match3DActorStyles(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
+ const selected=FooteraHighlights.choosePresentation(presentation,match3DQueue.history||[]);
  presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
+ presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  // The simulation stays authoritative. Only the visible scoreboard is held at
  // the pre-goal value until the 3D ball actually reaches the goal.
  if(queued){
+   match3DQueue.history=(match3DQueue.history||[]).concat({sequence:presentation.sequence,family:selected.family}).slice(-5);
   if(event.type==='goal'&&Number.isFinite(Number(event.scoreBeforeHome))&&Number.isFinite(Number(event.scoreBeforeAway)))current.highlight3DScoreHold={id:String(event.id||''),home:Number(event.scoreBeforeHome),away:Number(event.scoreBeforeAway)};
   if(typeof updateMatchUI==='function')updateMatchUI(true);
   const score=document.getElementById('matchScore'),hold=current.highlight3DScoreHold;if(score&&hold)score.textContent=`${hold.home} : ${hold.away}`;

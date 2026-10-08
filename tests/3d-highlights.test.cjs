@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2125','3d-highlights-match.js?v=2125','3d-highlights-scene.mjs?v=2125','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-25'));assert.ok(html.includes('service-worker.js?v=2125'));
+ for(const file of ['3d-highlights.js?v=2126','3d-highlights-match.js?v=2126','3d-highlights-scene.mjs?v=2126','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-26'));assert.ok(html.includes('service-worker.js?v=2126'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -96,7 +96,7 @@ test('configured kit pattern and all saved colours survive the immutable highlig
 test('presentation choreography has distinct football actions without changing the shot result',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const sequences=['central','one_two','through_ball','dribble','wing_left','wing_right','cutback_left','cutback_right'];
- assert.deepEqual([...M.PLAY_SEQUENCES],sequences);
+ assert.deepEqual(M.PLAY_SEQUENCES.slice(0,sequences.length),sequences);assert.ok(M.PLAY_SEQUENCES.length>=30);
  const paths=new Map(sequences.map(seq=>[seq,M.ballPosition('goal',3.8,seq)]));
  assert.ok(Math.abs(paths.get('wing_left')[0])>18&&Math.abs(paths.get('wing_right')[0])>18,'wing attacks must reach the touchline');
  assert.ok(paths.get('wing_left')[0]<0&&paths.get('wing_right')[0]>0,'both wings must exist');
@@ -220,4 +220,59 @@ test('running feet plant flat, push backwards relative to forward travel and rec
   }
   assert.ok(support>40&&air>40);assert.ok(runningStrideLength(speed)>.5&&runningStrideLength(speed)<2.7);
  }
+});
+
+
+test('V21.26: 32 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ assert.equal(H.VISUAL_SCENES.length,32);assert.equal(M.PLAY_SEQUENCES.length,H.VISUAL_SCENES.length);
+ assert.deepEqual(new Set(H.VISUAL_SCENES.map(v=>v.id)),new Set(M.PLAY_SEQUENCES));
+ const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle']);
+ for(const v of H.VISUAL_SCENES){
+  assert.ok(finishes.has(v.finish),v.id);
+  assert.equal(M.normalizeSequence(v.id),v.id);
+  for(const direction of [-1,1])for(const outcome of H.TYPES){
+   const c=M.cameraState(direction,4.2,360/340,outcome,v.id,v.finish);
+   const p=M.ballPosition(outcome,M.SHOT_TIME,v.id,v.finish);
+   const impact=M.ballPosition(outcome,M.IMPACT_TIME,v.id,v.finish);
+   assert.ok([...c.position,...c.target,...p,...impact].every(Number.isFinite),v.id);
+   assert.ok(Math.hypot(...p.map((x,i)=>x-M.ballPosition(outcome,M.SHOT_TIME+.0001,v.id,v.finish)[i]))<.03,'strike continuity: '+v.id);
+   assert.deepEqual(impact,M.ballPosition(outcome,M.IMPACT_TIME,'central',v.finish),'outcome unchanged: '+v.id);
+  }
+ }
+ const head=M.ballPosition('goal',M.SHOT_TIME,'near_post_left','header');
+ const volley=M.ballPosition('goal',M.SHOT_TIME,'volley_right','volley');
+ const low=M.ballPosition('goal',M.SHOT_TIME,'low_driven_duel','low_driven');
+ assert.ok(head[1]>1.6&&volley[1]>.9&&low[1]<.3);
+ assert.notDeepEqual(M.ballPosition('goal',6,'inside_left','finesse'),M.ballPosition('goal',6,'inside_left','power'));
+ assert.ok(M.ballPosition('goal',4.35,'early_cross_left','header')[1]>1);
+});
+
+test('V21.26: style metadata and deterministic visual hashing never touch match RNG',()=>{
+ const def=require('../playstyles.js').definitions,ids=new Set(def.map(x=>x.id));
+ for(const v of H.VISUAL_SCENES)for(const id of v.tags)assert.ok(ids.has(id),'unrecognized PlayStyle ID: '+id);
+ const snapshot=H.snapshot({...event(),finish:'header',playerStyles:[{id:'power-header',plus:true}],creatorStyles:[{id:'incisive-pass',plus:false}]});
+ assert.equal(snapshot.finish,'header');assert.ok(Object.isFrozen(snapshot.playerStyles));assert.ok(Object.isFrozen(snapshot.playerStyles[0]));
+ let calls=0;const saved=Math.random;Math.random=()=>{calls++;return .4};
+ try{
+  for(let i=0;i<400;i++){
+   const e={...event('goal','g'+i),scorerSlot:'ST',creatorSlot:'CAM',creatorName:'Passer',playerStyles:[{id:'power-shot',plus:true}],creatorStyles:[{id:'incisive-pass'}]};
+   assert.deepEqual(H.choosePresentation(e,[]),H.choosePresentation(e,[]));
+   assert.ok(H.VISUAL_SCENES.some(x=>x.id===H.choosePresentation({...e,playerStyles:null,creatorStyles:null},[]).sequence));
+  }
+ }finally{Math.random=saved}
+ assert.equal(calls,0);
+});
+
+test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay, bicycle is rare',()=>{
+ const make=(i,fields={})=>({...event('goal','variance-'+i),scorerSlot:'ST',creatorSlot:'CAM',creatorName:'Creator',...fields});
+ const sample=(fields,predicate,count=4000,hist=[])=>{let n=0;for(let i=0;i<count;i++)if(predicate(H.choosePresentation(make(i,fields),hist)))n++;return n};
+ const power=e=>['long_shot','power_drive'].includes(e.sequence);
+ assert.ok(sample({playerStyles:[{id:'power-shot',plus:true}]},power)>sample({},power)*1.15,'power shot selection is weighted');
+ const through=e=>['through_ball','one_two','one_on_one'].includes(e.sequence);
+ assert.ok(sample({creatorStyles:[{id:'incisive-pass',plus:true}]},through)>sample({},through)*1.1,'assist provider matters');
+ const central=e=>e.sequence==='central';
+ assert.ok(sample({},central,1200,[{sequence:'central',family:'central'}])<sample({},central,1200)*.55,'immediate repeat is penalized');
+ assert.ok(sample({},e=>e.sequence==='bicycle',4000)<25,'overhead should be exceptional');
+ assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
 });
