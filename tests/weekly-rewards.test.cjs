@@ -104,3 +104,42 @@ test("Rivals retest refuses to overwrite existing pending rewards or fabricate m
  assert.equal(none.saves,0);
  assert.match(none.elements.promoStatus.textContent,/Keine bereits abgeholte/);
 });
+
+test("weekly rewards group identical packs and show number of packs, not players inside",()=>{
+ const packs=[
+  {id:"86",tradeable:true},
+  {id:"primegold",tradeable:true},
+  {id:"primegold",tradeable:true},
+  {id:"totw-reward",tradeable:true}
+ ];
+ const row={mode:"rivals",week:"1000",division:1,milestone:35,reward:{coins:50000,packs}};
+ const {context,elements}=setup([row]);
+ context.PACKS.push(
+  {id:"86",name:"86+ Players Pack",count:1},
+  {id:"primegold",name:"Prime Goldspieler-Pack",count:12},
+  {id:"totw-reward",name:"TOTW-Spieler-Pack",count:1}
+ );
+ context.window.FooteraWeeklyRewards.open("rivals","1000");
+ const html=elements.weeklyRewardModalBody.innerHTML;
+ assert.equal((html.match(/class="weekly-reward-pack"/g)||[]).length,3);
+ assert.equal((html.match(/Prime Goldspieler-Pack/g)||[]).length,1);
+ assert.deepEqual([...html.matchAll(/class="weekly-reward-pack-count">([^<]+)</g)].map(m=>m[1]),["1×","2×","1×"]);
+ assert.match(html,/4 Packs \+ Coins/);
+ assert.doesNotMatch(html,/weekly-reward-pack-count">12×/);
+ assert.deepEqual(packs.map(p=>p.id),["86","primegold","primegold","totw-reward"]);
+ assert.equal(packs.some(p=>Object.hasOwn(p,"qty")),false);
+});
+test("tradeable and untradeable copies remain distinct rewards",()=>{
+ const row={mode:"squad",week:"1000",rank:"Gold 1",points:13000,reward:{coins:0,packs:[
+  {id:"primegold",tradeable:true},{id:"primegold",tradeable:false},{id:"primegold",tradeable:false}
+ ]}};
+ const {context,elements}=setup([row]);
+ context.PACKS.push({id:"primegold",name:"Prime Goldspieler-Pack",count:12});
+ context.window.FooteraWeeklyRewards.open("squad","1000");
+ const html=elements.weeklyRewardModalBody.innerHTML;
+ assert.equal((html.match(/class="weekly-reward-pack"/g)||[]).length,2);
+ assert.deepEqual([...html.matchAll(/class="weekly-reward-pack-count">([^<]+)</g)].map(m=>m[1]),["1×","2×"]);
+ assert.equal((html.match(/<small>Tauschbar<\/small>/g)||[]).length,1);
+ assert.equal((html.match(/<small>Untauschbar<\/small>/g)||[]).length,1);
+ assert.equal(row.reward.packs.length,3);
+});
