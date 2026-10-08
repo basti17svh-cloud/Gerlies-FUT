@@ -40,7 +40,8 @@ const server=http.createServer((req,res)=>{
     return{screen:innerWidth,doc:document.documentElement.scrollWidth,badge:badge?{left:badge.left,right:badge.right,width:badge.width}:null,copy:copy?{left:copy.left,right:copy.right,width:copy.width}:null,letters:letters?{x:letters.x,y:letters.y,width:letters.width,height:letters.height}:null}
    });
    assert.ok(bounds.doc<=bounds.screen+2,width+"px: no horizontal overflow "+JSON.stringify(bounds));
-   assert.ok(bounds.badge?.width>=110,width+"px: crest large enough");
+   console.log("MEASURED "+width+"px",JSON.stringify(bounds));
+   assert.ok(bounds.badge?.width>=110,width+"px: crest large enough "+JSON.stringify(bounds));
    assert.ok(bounds.badge.right<=bounds.copy.left+2,width+"px: crest/copy do not overlap");
    assert.ok(bounds.letters?.x>=39&&bounds.letters.x+bounds.letters.width<=161,width+"px: FCG05 fits banner "+JSON.stringify(bounds.letters));
    assert.ok(bounds.letters?.y>=180&&bounds.letters.y+bounds.letters.height<=215,width+"px: FCG05 vertically aligned");
