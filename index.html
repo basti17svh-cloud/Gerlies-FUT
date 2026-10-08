@@ -1484,6 +1484,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./3d-highlights.css?v=2125">
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css?v=2114">
+<link rel="stylesheet" href="./club-crest-premium.css?v=2129">
 <link rel="stylesheet" href="./ux-overview.css?v=2114">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
@@ -1491,6 +1492,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./chem-boosts.css?v=2114">
 <link rel="stylesheet" href="./playstyles.css?v=2114">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
+<script src="./club-crest-art.js?v=2129"></script>
 </head>
 <body>
 
@@ -5826,12 +5828,15 @@ let clubSection="players",identityTab="general",clubIdentityDraft=null,identityC
 const CREST_SYMBOLS={star:"★",ball:"⚽",bolt:"⚡",diamond:"◆",crown:"♛",f:"F",eagle:"🦅",lion:"🦁",wolf:"🐺",flame:"🔥",trophy:"🏆",anchor:"⚓",castle:"♜",sun:"☀",moon:"☾",cross:"✚",comet:"✦",skull:"☠",bull:"🐂",bear:"🐻",fox:"🦊",horse:"♞",dragon:"🐉",shark:"🦈",snake:"🐍",owl:"🦉",scorpion:"🦂",swords:"⚔",shieldmark:"🛡",fleur:"⚜",gear:"⚙",mountain:"▲",trident:"♆",target:"◎",waves:"≋",ram:"🐏"};
 function makeClubIdentityDraft(){ensureClubIdentityState();return{clubName:String(state.profile.clubName||"Footera Club"),clubShortName:String(state.profile.clubShortName||"FTR"),identity:clubIdentitySnapshot()}}
 function crestHTML(identity,mini=false){
- const x=cleanClubIdentity(identity),c=x.crest,g=CREST_SYMBOLS[c.symbol]||"★";
+ const c=cleanClubIdentity(identity).crest;
+ if(window.FooteraCrestArt?.render)return window.FooteraCrestArt.render(c,mini);
+ const g=CREST_SYMBOLS[c.symbol]||"★";
  return `<div class="club-crest shape-${c.shape} border-${c.borderWidth}${mini?" kit-badge-mini":""}" style="--crest-primary:${c.primary};--crest-secondary:${c.secondary};--crest-accent:${c.accent};--crest-border:${c.borderColor}"><span class="club-crest-symbol">${esc(g)}</span><span class="club-crest-initials">${esc(c.initials)}</span></div>`
 }
-function kitHTML(kit,mini=false){
+function kitHTML(kit,mini=false,crest=null){
  const k=kit||defaultClubIdentity().kits.home;
- return `<div class="kit-shirt pattern-${esc(k.pattern)}${mini?" kit-mini":""}" style="--kit-a:${safeClubHex(k.shirtPrimary,"#d8ff3e")};--kit-b:${safeClubHex(k.shirtSecondary,"#173627")}"></div>`
+ const badge=crest&&window.FooteraCrestArt?.render?`<span class="kit-crest-stamp">${window.FooteraCrestArt.render(crest,true)}</span>`:"";
+ return `<div class="kit-shirt pattern-${esc(k.pattern)}${mini?" kit-mini":""}" style="--kit-a:${safeClubHex(k.shirtPrimary,"#d8ff3e")};--kit-b:${safeClubHex(k.shirtSecondary,"#173627")}">${badge}</div>`
 }
 function syncClubSectionUi(){
  const players=$("clubPlayersSection"),identity=$("clubIdentitySection");if(players)players.hidden=clubSection!=="players";if(identity)identity.hidden=clubSection!=="identity";const boosts=$("clubChemBoostSection");if(boosts)boosts.hidden=clubSection!=="boosts";
@@ -5844,14 +5849,15 @@ function syncIdentityTabs(){
 function renderClubIdentityPreview(){
  if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();
  const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
+ window.FooteraCrestArt?.enhanceOptions($("identityCrestSymbols"));
  if($("identityHeroCrest"))$("identityHeroCrest").innerHTML=crestHTML(x);
  if($("identityCrestPreview"))$("identityCrestPreview").innerHTML=crestHTML(x);
  if($("identityHeroName"))$("identityHeroName").textContent=d.clubName||"Footera Club";
  if($("identityHeroShort"))$("identityHeroShort").textContent=d.clubShortName||"FTR";
- if($("identityHeroHomeKit"))$("identityHeroHomeKit").innerHTML=kitHTML(x.kits.home,true);
- if($("identityHeroAwayKit"))$("identityHeroAwayKit").innerHTML=kitHTML(x.kits.away,true);
- if($("identityHomeKitPreview"))$("identityHomeKitPreview").innerHTML=kitHTML(x.kits.home);
- if($("identityAwayKitPreview"))$("identityAwayKitPreview").innerHTML=kitHTML(x.kits.away);
+ if($("identityHeroHomeKit"))$("identityHeroHomeKit").innerHTML=kitHTML(x.kits.home,true,x.crest);
+ if($("identityHeroAwayKit"))$("identityHeroAwayKit").innerHTML=kitHTML(x.kits.away,true,x.crest);
+ if($("identityHomeKitPreview"))$("identityHomeKitPreview").innerHTML=kitHTML(x.kits.home,x.crest);
+ if($("identityAwayKitPreview"))$("identityAwayKitPreview").innerHTML=kitHTML(x.kits.away,x.crest);
  if($("identityColorChipPrimary"))$("identityColorChipPrimary").style.background=x.colors.primary;
  if($("identityColorChipSecondary"))$("identityColorChipSecondary").style.background=x.colors.secondary;
  if($("identityColorChipAccent"))$("identityColorChipAccent").style.background=x.colors.accent;

@@ -1,0 +1,38 @@
+name: Footera Crest Design
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'club-crest-art.js'
+      - 'club-crest-premium.css'
+      - 'club-identity.css'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+      - 'tests/club-crest-design.test.cjs'
+      - 'tests/club-identity.test.cjs'
+      - '.github/workflows/club-crest-tests.yml'
+  pull_request:
+    paths:
+      - 'club-crest-art.js'
+      - 'club-crest-premium.css'
+      - 'club-identity.css'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+      - 'tests/club-crest-design.test.cjs'
+      - 'tests/club-identity.test.cjs'
+      - '.github/workflows/club-crest-tests.yml'
+permissions:
+  contents: read
+jobs:
+  crest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Crest SVG, symbol options, mobile layout and existing club identity tests
+        run: node --test tests/club-crest-design.test.cjs tests/club-identity.test.cjs tests/boot-update.test.cjs tests/champions.test.cjs

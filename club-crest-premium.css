@@ -1,0 +1,45 @@
+/* V21.29 — premium Vereinswappen with scalable metallic vector art */
+.club-crest{display:block;position:relative;width:126px;height:auto;aspect-ratio:200/240;overflow:visible!important;background:none!important;clip-path:none!important;isolation:isolate;filter:drop-shadow(0 9px 9px #000a) drop-shadow(0 0 9px color-mix(in srgb,var(--crest-border) 22%,transparent))}
+.club-crest::before,.club-crest::after{content:none!important;display:none!important}
+.club-crest-art{display:block;width:100%;height:100%;overflow:visible}
+#identityHeroCrest{display:grid;place-items:center;min-width:0;grid-area:crest}
+#identityHeroCrest .club-crest{width:clamp(116px,16vw,158px)}
+.identity-hero{grid-template-columns:minmax(120px,158px) minmax(0,1fr) auto;align-items:center;gap:14px;min-height:204px;background:radial-gradient(circle at 12% 22%,#21503e 0,transparent 43%),linear-gradient(140deg,#0f231c,#09130f);border-color:#41685a;box-shadow:inset 0 1px #ffffff16,0 14px 35px #0006}
+.identity-hero-copy h3{font-size:clamp(17px,2.3vw,23px);white-space:normal;overflow-wrap:anywhere;line-height:1.17}
+.identity-hero-kits{gap:7px;align-items:end}
+.crest-preview-wrap{min-height:210px;background:radial-gradient(circle at 50% 34%,#234637,#0b1411 72%);overflow:visible}
+.crest-preview-wrap .club-crest{width:min(155px,50vw)}
+#identityCrestSymbols{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#identityCrestSymbols button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:83px;padding:9px 5px;border:1px solid #465b52;border-radius:12px;background:linear-gradient(145deg,#182921,#0d1916);transition:border-color .15s,background .15s,transform .15s}
+#identityCrestSymbols button.active{border-color:#a4f6d3;background:linear-gradient(135deg,#2d4838,#183028);box-shadow:inset 0 0 0 1px #a4f6d344,0 0 15px #b1fbd316}
+#identityCrestSymbols button:focus-visible{outline:2px solid #a4f6d3;outline-offset:3px}
+#identityCrestSymbols button:active{transform:scale(.97)}
+.crest-option-art{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:radial-gradient(circle,#2d463a,#13241e);color:#e4f3ed;box-shadow:inset 0 1px #ffffff2b}
+.crest-vector-icon{width:35px;height:35px;display:block;filter:drop-shadow(0 1px 3px #0009)}
+.crest-option-art .crest-vector-icon-mini{width:31px;height:31px}
+.crest-eagle-symbol{font-size:25px;line-height:1}
+.crest-option-name{font-size:10px;font-weight:900;color:#dcebe2;text-align:center;line-height:1.25;overflow-wrap:anywhere}
+.kit-crest-stamp{position:absolute;top:25%;left:57%;display:grid;place-items:center;width:22%;aspect-ratio:200/240;pointer-events:none}
+.kit-crest-stamp .club-crest.kit-badge-mini{position:static!important;left:auto!important;top:auto!important;transform:none!important;width:100%!important;height:auto!important;aspect-ratio:200/240;--crest-border-size:2px!important}
+.kit-mini .kit-crest-stamp{width:26%;top:23%;left:54%}
+.kit-mini .kit-crest-stamp .club-crest{filter:none}
+@media(max-width:620px){
+.identity-hero{grid-template-columns:minmax(112px,38%) minmax(0,1fr);grid-template-areas:"crest copy" "crest kits";gap:5px 10px;padding:14px;min-height:185px}
+.identity-hero-copy{grid-area:copy;align-self:end}
+.identity-hero-kits{grid-area:kits;justify-self:end;grid-column:auto;align-self:start}
+#identityHeroCrest{align-self:center}
+#identityHeroCrest .club-crest{width:clamp(112px,32vw,143px)}
+.identity-hero-copy h3{font-size:clamp(16px,4.7vw,21px)}
+.identity-hero-copy p{font-size:9px;line-height:1.35}
+#identityCrestSymbols{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:380px){
+.identity-hero{grid-template-columns:minmax(106px,37%) minmax(0,1fr);gap:5px 8px;padding:11px}
+#identityHeroCrest .club-crest{width:112px}
+#identityCrestSymbols{grid-template-columns:repeat(3,minmax(0,1fr))}
+#identityCrestSymbols button{min-height:75px;padding:7px 3px}
+.crest-option-art{width:35px;height:35px}
+.crest-option-art .crest-vector-icon-mini{width:27px;height:27px}
+.crest-option-name{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#identityCrestSymbols button{transition:none}}

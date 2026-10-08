@@ -277,8 +277,8 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
 });
 
-// V21.28 — presentation-only motion remains bounded, deterministic and mobile-safe.
-test('V21.28 reactive defending and pass swing keep visual movement deterministic',async()=>{
+// V21.29 — presentation-only motion remains bounded, deterministic and mobile-safe.
+test('V21.29 reactive defending and pass swing keep visual movement deterministic',async()=>{
  const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
  let responsive=0;
  for(const sequence of PLAY_SEQUENCES)for(const t of [0,1.5,3,5.4,6.65,8.5])for(let i=8;i<16;i++){

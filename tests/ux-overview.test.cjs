@@ -5,7 +5,7 @@ const css=fs.readFileSync(path.join(root,"ux-overview.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 
 test("V21.29 keeps the focused usability layer without replacing existing hubs",()=>{
- assert.match(html,/<title>Footera V21\.28<\/title>/);
+ assert.match(html,/<title>Footera V21\.29<\/title>/);
  assert.match(html,/ux-overview\.css\?v=2114/);
  assert.match(html,/id="clubOverviewStrip"/);
  for(const id of ["clubUxPlayers","clubUxTransfer","clubUxSbc","clubUxEvos","clubFilterToggle","clubFilterSummary","clubFilterPanel","marketFilterToggle","marketFilterSummary","marketFilterPanel"])assert.ok(html.includes('id="'+id+'"'),id);
