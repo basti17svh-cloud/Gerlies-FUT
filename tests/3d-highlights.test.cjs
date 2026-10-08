@@ -539,7 +539,7 @@ test('V21.37: a real connected skinned skeleton deforms a weighted football body
  }
  const mats=Array.from({length:5},()=>new T.MeshStandardMaterial());
  const skin=buildSkinnedFootballer(T,root,{rig,upper,motion,chest,arms,elbows,legs,knees,ankles},mats,10);
- assert.ok(skin.model.isSkinnedMesh&&skin.skeleton.isSkeleton,'GPU skinning is real, not rigid-body meshes');
+ assert.ok(skin.model.isSkinnedMesh&&skin.skeleton instanceof T.Skeleton&&skin.model.skeleton===skin.skeleton,'GPU skinning is real, not rigid-body meshes');
  assert.equal(skin.bones,14);assert.ok(skin.vertexCount>400);assert.ok(skin.segmentCount>=10);
  assert.ok(skin.geometry.getAttribute('skinIndex').count===skin.vertexCount);
  for(let i=0;i<skin.vertexCount;i++){
