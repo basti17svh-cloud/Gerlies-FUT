@@ -6,6 +6,7 @@ import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141'
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2143';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2143';
+import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -857,7 +858,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(pilotMotion&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
     const role=p===players[0]?'attacker':p===players[defenderIndex]?'defender':p===players[1]?'provider':'support';
     applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
-    if(controlWeight>.001)applyFootballControl(p,stride,controlWeight,sequence);
+    if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
    }else if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
@@ -914,16 +915,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    // Continuous foot-to-foot weighting avoids a pop when the leading boot
    // changes halfway through a step. No frame history or simulation RNG.
-   const touch=footballTouchSample(gaitPhase(state.index,time),state.weight,sequence);
+   const touch=footballTouchSample(gaitPhase(state.index,time),state.weight,sequence),
+    continuity=pilotMotion?touchContinuity(gaitPhase(state.index,time),state.weight,state.index===0?event.playerStyles:event.creatorStyles):null;
    const leftWeight=smooth(.5+(toes[1].d-toes[0].d)*1.1),
     touchingWeight=mix(leftWeight,touch.foot===0?1:0,touch.contact*.52),
     toeX=mix(toes[1].x,toes[0].x,touchingWeight),
     toeZ=mix(toes[1].z,toes[0].z,touchingWeight);
    const dx=toeX-current[0],dz=toeZ-current[1],
     forward=clamp(dx*fx+dz*fz,.33-.10*touch.contact,.65-.11*touch.contact),side=clamp(dx*(-fz)+dz*fx,-.22,.22),
-    blend=state.weight*.94;
-   return[mix(original[0],current[0]+fx*forward-fz*side,blend),.14,
-    mix(original[2],current[1]+fz*forward+fx*side,blend)];
+    drive=continuity?.lead||0,blend=state.weight*.94;
+   return[mix(original[0],current[0]+fx*(forward+drive)-fz*side,blend),.14,
+    mix(original[2],current[1]+fz*(forward+drive)+fx*side,blend)];
   }
   function update(time){
    renderTime=time;
@@ -984,7 +986,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.legs[0].rotation.x+=.25*a;p.legs[1].rotation.x-=.24*a;
      }
     }
-    if(pilotMotion&&i>=8)applyFootballDefender(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),i===defenderIndex?defenderAction:'jockey',sequence);
+    if(pilotMotion&&i>=8){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
    });
    const striker=players[0];
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
@@ -1041,7 +1043,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     striker.ankles[1].rotation.z+=shotClip.ankle*shotWeight*.5;
     striker.rig.position.y+=shotClip.bounce*shotWeight;
     if(enhancedRigMotion)animateFootballFinish(striker,time,finish,sequence);
-     if(pilotMotion)applyFootballStrike(striker,time,finish,sequence);
+     if(pilotMotion){applyFootballStrike(striker,time,finish,sequence);applyFinishContinuity(striker,time,finish,event.playerStyles)}
    }
    const passWindows=INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
    for(const [from,to] of passWindows)if(time>=from&&time<=to){
@@ -1049,7 +1051,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     passer.legs[1].rotation.x=kick.hip;passer.knees[1].rotation.x=kick.knee;passer.ankles[1].rotation.x=kick.ankle;
     passer.rig.rotation.x=-.085*(1-kick.follow);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);
     passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
-    if(pilotMotion){const wind=Math.sin(Math.PI*u);passer.knees[0].rotation.x-=.28*wind;passer.upper.rotation.y+=.18*wind;passer.arms[0].rotation.x+=.21*wind;passer.arms[1].rotation.x-=.17*wind;}
+    if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
    }
    const kp=keeperPose(event.type,time,finish,sequence,keeperAction);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
