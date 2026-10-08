@@ -6,16 +6,16 @@ const css=fs.readFileSync(path.join(root,"squad-tactics.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8"));
 
-test("V21.24 wires the squad-planning module into the live shell and offline cache",()=>{
- assert.match(html,/<title>Footera V21\.24<\/title>/);
+test("V21.25 wires the squad-planning module into the live shell and offline cache",()=>{
+ assert.match(html,/<title>Footera V21\.25<\/title>/);
  assert.match(html,/\.\/squad-tactics\.css\?v=2124/);
  assert.match(html,/\.\/squad-tactics\.js\?v=2124/);
- assert.match(html,/const GFUT_BUILD="V21\.24"/);
- assert.match(html,/service-worker\.js\?v=2124/);
+ assert.match(html,/const GFUT_BUILD="V21\.25"/);
+ assert.match(html,/service-worker\.js\?v=2125/);
  assert.ok(sw.includes('"./squad-tactics.js?v=2124"'));
  assert.ok(sw.includes('"./squad-tactics.css?v=2124"'));
- assert.ok(sw.includes('footera-v21-24-root-shell'));
- assert.equal(manifest.start_url,"./index.html?v=21.24");
+ assert.ok(sw.includes('footera-v21-25-root-shell'));
+ assert.equal(manifest.start_url,"./index.html?v=21.25");
  new vm.Script(js);
 });
 

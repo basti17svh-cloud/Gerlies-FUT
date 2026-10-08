@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2122','3d-highlights-match.js?v=2122','3d-highlights-scene.mjs?v=2122','3d-highlights.css?v=2122','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-24'));assert.ok(html.includes('service-worker.js?v=2124'));
+ for(const file of ['3d-highlights.js?v=2125','3d-highlights-match.js?v=2125','3d-highlights-scene.mjs?v=2125','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-25'));assert.ok(html.includes('service-worker.js?v=2125'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -202,5 +202,22 @@ test('goal roof clears the top edge and fits both wings through delivery on 360/
     assert.ok(roof.y<.99&&(time<2.7||(roof.y>-.99&&Math.abs(roof.x)<.99)),`${width} ${sequence} ${direction} ${time}: clipped goal roof`);
    }
   }
+ }
+});
+
+test('running feet plant flat, push backwards relative to forward travel and recover above grass',async()=>{
+ const {runningLeg,runningStrideLength}=await import('../3d-highlights-scene.mjs');
+ for(const speed of [.15,.4,.7,1]){
+  let support=0,air=0,previous;
+  for(let n=0;n<=240;n++){
+   const phase=n/240*Math.PI*2,g=runningLeg(phase,speed);
+   const y=g.hipHeight-.43*Math.cos(g.hip)-.43*Math.cos(g.hip+g.knee),z=-.43*Math.sin(g.hip)-.43*Math.sin(g.hip+g.knee);
+   assert.ok(Math.abs(y-g.y)<.0001&&Math.abs(z-g.z)<.0001,'two-bone foot reaches its actual ground target');
+   assert.ok(Math.abs(g.hip+g.knee+g.ankle)<.00001,'boots remain level');
+   if(g.support){support++;assert.ok(Math.abs(y-.055)<.0001);if(previous?.support&&n<240)assert.ok(z>previous.z,'support foot pushes towards local +Z while torso runs -Z')}
+   else{air++;assert.ok(y>=.055)}
+   previous=g;
+  }
+  assert.ok(support>40&&air>40);assert.ok(runningStrideLength(speed)>.5&&runningStrideLength(speed)<2.7);
  }
 });

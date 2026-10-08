@@ -6,7 +6,7 @@ const {server,fixture,force}=require('./3d-highlights.browser.cjs');
 const out=path.join(__dirname,'../test-artifacts');
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}`;
- const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+ let browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
  const evidence=[],errors=[];
  try{
   const page=await browser.newPage({viewport:{width:1280,height:1000},deviceScaleFactor:2,serviceWorkers:'block'});page.on('pageerror',e=>errors.push(e.message));
@@ -77,7 +77,7 @@ const out=path.join(__dirname,'../test-artifacts');
   // Independently inspect actual rendered meshes, projection and glove contact.
   const checks=await page.evaluate(async()=>{
    const originalRandom=Math.random;let randomCalls=0;Math.random=()=>{randomCalls++;return originalRandom()};
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2122'),rows=[];
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2125'),rows=[];
    const canvas=document.createElement('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(1);
    for(const weak of [true,false])for(const period of [1,2,3,4]){
     const event=FooteraHighlights.snapshot({id:'qa',type:'big_chance_saved',playerName:'Jamal Musiala',keeperName:'Mike Maignan',team:'home',period});
@@ -92,8 +92,34 @@ const out=path.join(__dirname,'../test-artifacts');
    renderer.dispose();renderer.forceContextLoss();Math.random=originalRandom;if(randomCalls)throw Error('Renderer consumed simulation RNG: '+randomCalls);return rows;
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
+  for(const row of checks)for(const actor of row.facing){
+   const speed=Math.hypot(...actor.velocity);
+   if(speed>.001){const forwardDot=(actor.forward[0]*actor.velocity[0]+actor.forward[1]*actor.velocity[1])/speed;
+    assert.ok(forwardDot>.85,`actor runs forwards: ${row.sequence} period ${row.period} time ${row.time} actor ${actor.index}: ${forwardDot}`);
+   }
+  }
   for(const row of checks){assert.ok(row.visibleFieldPlayers>=(row.scenario==='sequence'?(row.sequence==='cutback_right'?4:7):8),JSON.stringify(row));assert.ok(row.cameraDistance>=37&&row.cameraDistance<=70,'existing offset target camera envelope: '+JSON.stringify(row));assert.ok(row.drawCalls<115,'batched renderer draw calls');assert.equal(Math.sign(row.goalScreenX-row.shooterScreenX),row.period%2?1:-1);if(row.scenario==='sequence'&&['wing_left','wing_right','cutback_left','cutback_right'].includes(row.sequence)&&row.time<=5.1){assert.ok(Math.abs(row.ballScreen[0])<.98&&Math.abs(row.ballScreen[1])<.98&&row.ballScreen[2]<1,'wide ball stays on camera: '+JSON.stringify(row));if(row.time<=4.65){assert.ok(Math.abs(row.wingerScreen[0])<.97&&Math.abs(row.wingerScreen[1])<.97&&row.wingerScreen[2]<1,'wide carrier stays fully visible through delivery: '+JSON.stringify(row));assert.ok(Math.abs(row.goalScreen[0])<.99&&Math.abs(row.goalScreen[1])<.99&&row.goalScreen[2]<1,'goal remains in the broadcast frame: '+JSON.stringify(row))}}if(row.time===6.65){const distance=Math.min(...row.gloves.map(g=>Math.hypot(...g.map((v,i)=>v-row.ball[i]))));assert.ok(distance<.16,'glove/ball contact: '+distance)}}
   const moving=checks.filter(r=>r.scenario==='baseline'&&!r.weak&&r.period===1),m0=moving.find(r=>r.time===0),m2=moving.find(r=>r.time===2);assert.ok(m0&&m2&&Math.abs(m0.crowdSampleY-m2.crowdSampleY)>.005,'crowd must move asynchronously');assert.ok(moving.some(row=>Math.hypot(...row.flagSample.map((v,i)=>v-m0.flagSample[i]))>.02),'segmented flags must wave across the animation, not just two near-identical phases');
   assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,process.env.FOOTERA_SKIP_CAPTURES?'render-check-results.json':'render-results.json'),JSON.stringify({screenshots:evidence,checks,errors},null,2));console.log('PASS STANDARD natural end, extreme-performance fallback and zero simulation RNG draws');console.log('PASS',evidence.length,'production screenshots;',checks.length,'WebGL geometry checks');
+  // Real-time footage of the same production match and renderer, including the
+  // halftime rotation. No replacement camera, animation or showcase scene.
+  if(!process.env.FOOTERA_GEOMETRY_ONLY&&!process.env.FOOTERA_SKIP_CAPTURES){
+   // Release the capture suite's high-DPI software GPU contexts before measuring
+   // real-time playback. Keep the production watchdog and completion checks.
+   await browser.close();browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
+   const motion=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
+   await motion.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})});
+   await motion.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());await motion.goto(url);
+   for(const [sequence,period] of [['wing_right',1],['wing_left',2]]){
+    await fixture(motion);await motion.evaluate(({sequence,period})=>{match.halftimeLogged=period===2;match.minute=period===2?67:38;updateMatchUI();window.__sequence=match3DSequence;match3DSequence=()=>sequence},{sequence,period});
+    await force(motion,'goal');await motion.evaluate(()=>{match3DSequence=window.__sequence});await motion.waitForSelector('.fh3d canvas');
+    await motion.waitForSelector('.fh3d',{state:'detached',timeout:18000});
+    const ended=await motion.evaluate(()=>({disabled:match3DQueue.disabled,pending:!!match.highlight3DPending,home:match.home,shots:match.shotEvents.length,timer:matchTimer!==null}));
+    assert.deepEqual(ended,{disabled:false,pending:false,home:1,shots:1,timer:true},'recorded STANDARD sequence completes naturally');
+    await motion.evaluate(()=>stopMatchTimer());
+   }
+   const video=motion.video();await motion.close();await video.saveAs(path.join(out,'forward-running-390.webm'));await video.delete();
+   console.log('PASS production motion video: both wings and halftime side change');
+  }
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
