@@ -423,6 +423,21 @@ export function stanceHeight(hipA,kneeA,hipB,kneeB){
 }
 // The model's toes, face and chest point down local -Z. During support the foot
 // travels towards +Z relative to the pelvis, cancelling forward root travel.
+// Acceleration, lateral plant and counter-rotation are presentation-only.
+// No frame history, result, simulation RNG or extra mesh allocations.
+export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl=false){
+ const effort=smooth(clamp(speed)/.16),drive=clamp(acceleration,-1,1);
+ const bank=clamp(turn*1.7,-.28,.28)*effort;
+ const plant=smooth(Math.abs(turn)/.10)*effort;
+ return{
+  effort,bank,plant,
+  forwardLean:-(.09+.12*clamp(speed)+.065*Math.max(0,drive))*effort,
+  armSwing:closeControl?.45:.73,
+  strideReach:closeControl?.87:1,
+  shoulderTwist:Math.sin(stride)*.052*effort-bank*.23,
+  hipDrop:.015*plant+.008*effort*(1+Math.cos(stride*2))
+ };
+}
 export const runningStrideLength=speed=>2*(.16+.18*clamp(speed))/(.60-.34*clamp(speed));
 export function runningLeg(phase,speed,out={}){
  speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.34*speed,reach=.16+.18*speed;
@@ -449,17 +464,24 @@ export function defenderTracking(index,time,sequence='central'){
   z:clamp(dz*(dz<0?.19:.10),-1.85,1.15)*pressure*factor,pressure};
 }
 // Reusable, deterministic defensive animation windows. Attempts never touch the ball.
-export function defensiveMotion(action,time,index,activeIndex=8){
- if(index!==activeIndex)return Object.freeze({kind:'cover',intensity:0,slide:0,jump:0});
+export function defensiveMotion(action,time,index,activeIndex=8,ballDistance=0){
+ if(index!==activeIndex)return Object.freeze({kind:'cover',intensity:0,slide:0,jump:0,plant:0,recover:0});
  const windows={
   jockey:[2.1,5.65],close_down:[3.0,5.85],slide_attempt:[4.05,6.10],
   block_attempt:[4.55,6.1],lane_read:[1.85,3.22],aerial_challenge:[4.35,5.83]
  };
  const [start,end]=windows[action]||windows.jockey;
- const intensity=smooth((time-start)/.38)*(1-smooth((time-end+.47)/.47));
+ // A timed tackle must also be close to the visible ball.
+ // This prevents isolated falls when no attacker is in reach.
+ const reach=action==='slide_attempt'?3.6:action==='block_attempt'?4.8:action==='aerial_challenge'?4.3:
+  action==='lane_read'?7.5:action==='close_down'?8.0:12;
+ const proximity=1-smooth((Math.max(0,Number(ballDistance)||0)-reach)/2);
+ const intensity=smooth((time-start)/.38)*(1-smooth((time-end+.47)/.47))*proximity;
+ const plant=smooth((time-start)/.24)*(1-smooth((time-start-.35)/.30))*proximity;
+ const recover=smooth((time-(end-.40))/.43)*proximity;
  const slide=action==='slide_attempt'?intensity:0;
  const jump=action==='aerial_challenge'?.28*Math.sin(Math.PI*smooth((time-start)/(end-start)))*intensity:0;
- return Object.freeze({kind:action,intensity,slide,jump});
+ return Object.freeze({kind:action,intensity,slide,jump,plant,recover});
 }
 // Swing follows the visible pass release, without modifying the ball path.
 export function passStrikePose(progress){
@@ -787,19 +809,26 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.upper.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0);p.ankles[i].rotation.set(0,0,0)}}
-  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6){
+  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6,acceleration=0,closeControl=false){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
-   const motion=smooth(speed/.13);
+   const d=locomotionDynamics(speed,turn,stride,acceleration,closeControl),motion=d.effort;
    for(let i=0;i<2;i++){
-    const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]);
-    p.legs[i].rotation.x=g.hip*motion;p.knees[i].rotation.x=g.knee*motion;p.ankles[i].rotation.x=g.ankle*motion;
-    p.arms[i].rotation.x=-g.hip*.65*motion;p.arms[i].rotation.z=(i?1:-1)*(.10+.025*speed);
-    p.elbows[i].rotation.x=.65+.35*speed;
+    const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=g.support?1:.26;
+    p.legs[i].rotation.x=g.hip*motion*d.strideReach;
+    p.knees[i].rotation.x=g.knee*motion;
+    p.ankles[i].rotation.x=g.ankle*motion;
+    // A support leg braces during a cut while the free leg pushes through.
+    p.legs[i].rotation.z+=side*d.plant*.10*brace-d.bank*.32*brace;
+    p.ankles[i].rotation.z+=d.bank*.30*brace;
+    p.arms[i].rotation.x=-g.hip*d.armSwing*motion;
+    p.arms[i].rotation.z=side*(.13+.08*speed)+d.bank*.18;
+    p.elbows[i].rotation.x=.58+.39*speed+(closeControl?.14:0);
    }
-   p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion);
-   p.upper.rotation.x=-.14*speed;p.upper.rotation.y=Math.sin(stride)*.045*speed+clamp(turn*.6,-.1,.1);
-   p.upper.rotation.z=Math.sin(stride)*.018*speed+clamp(turn,-.12,.12);
-   p.rig.rotation.z=clamp(turn*.22,-.095,.095)*speed;
+   p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion)-d.hipDrop;
+   p.upper.rotation.x=d.forwardLean;
+   p.upper.rotation.y=d.shoulderTwist+clamp(turn*.65,-.13,.13);
+   p.upper.rotation.z=d.bank*.73+Math.sin(stride)*.016*motion;
+   p.rig.rotation.z=d.bank*.24;
    p.shadow.rotation.z=heading;
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
@@ -869,13 +898,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const back=playerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=playerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
-    pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time));
+    const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
+    const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
+    const closeControl=controlCarrier(time,sequence).index===i;
+    pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time),acceleration,closeControl);
     if(i>=8&&time<SHOT_TIME+.4){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
     // The real defender's style determines a visible attempt, not an outcome.
-    const motion=defensiveMotion(defenderAction,time,i,defenderIndex),a=motion.intensity;
+    const actionBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
+    const motion=defensiveMotion(defenderAction,time,i,defenderIndex,Math.hypot(actionBall[0]-x,actionBall[2]-z)),a=motion.intensity;
     if(a>.001){
      if(motion.kind==='jockey'){
       p.upper.rotation.y+=.18*a*Math.sin(time*5);p.upper.rotation.x+=.07*a;
@@ -885,10 +918,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.upper.rotation.x+=.24*a;p.arms[0].rotation.x-=.38*a;p.arms[1].rotation.x+=.28*a;
       p.rig.rotation.y+=.12*a;
      }else if(motion.kind==='slide_attempt'){
-      p.rig.position.y-=.34*a;p.rig.rotation.x-=.67*a;p.rig.rotation.z+=.23*a;
-      p.legs[0].rotation.x-=.98*a;p.knees[0].rotation.x+=.16*a;
-      p.legs[1].rotation.x+=.56*a;p.knees[1].rotation.x-=.65*a;
-      p.arms[0].rotation.z-=.57*a;p.arms[1].rotation.z+=.40*a;
+      // Step, brace, extend and recover instead of falling straight through turf.
+      p.rig.position.y-=.14*a+.045*motion.plant;
+      p.rig.rotation.x-=.40*a+.15*motion.plant;
+      p.rig.rotation.z+=.17*a;
+      p.legs[0].rotation.x-=1.05*a;p.knees[0].rotation.x+=.23*a;
+      p.legs[1].rotation.x+=.43*a;p.knees[1].rotation.x-=.82*a;
+      p.upper.rotation.x+=.16*motion.recover;
+      p.arms[0].rotation.z-=.67*a;p.arms[1].rotation.z+=.52*a;
      }else if(motion.kind==='block_attempt'){
       p.upper.rotation.x+=.30*a;p.legs[1].rotation.x-=.85*a;
       p.knees[1].rotation.x+=.28*a;

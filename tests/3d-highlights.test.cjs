@@ -470,3 +470,28 @@ test('inverted winger cuts inward and curls toward the opposite far corner',asyn
  const near=shotImpact('goal','near_post_cut_right','power');
  assert.ok(near[0]>2&&near[0]<3.6,'near-post finish stays on winger side');
 });
+
+
+test('V21.35: physical cut and defensive range are deterministic and presentation-only',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ const straight=M.locomotionDynamics(.85,0,3.5,.4,false),
+  cutLeft=M.locomotionDynamics(.85,-.14,3.5,.4,false),
+  cutRight=M.locomotionDynamics(.85,.14,3.5,.4,false),
+  control=M.locomotionDynamics(.85,.14,3.5,.4,true);
+ assert.equal(straight.bank,0);
+ assert.ok(cutLeft.bank<-.1&&cutRight.bank>.1);
+ assert.ok(cutLeft.plant>.5&&cutRight.plant>.5,'both turns plant the foot');
+ assert.ok(Math.abs(cutLeft.forwardLean)>.12,'sprint visibly leans');
+ assert.ok(control.armSwing<cutRight.armSwing&&control.strideReach<cutRight.strideReach,'dribbler uses compact steps');
+ assert.deepEqual(cutLeft,M.locomotionDynamics(.85,-.14,3.5,.4,false));
+ for(const action of ['slide_attempt','block_attempt','aerial_challenge']){
+  const nearby=M.defensiveMotion(action,5.2,8,8,2),
+   distant=M.defensiveMotion(action,5.2,8,8,13);
+  assert.ok(nearby.intensity>.05,action+' attempts near attacker');
+  assert.equal(distant.intensity,0,action+' cannot fall without attacker nearby');
+  assert.equal(M.defensiveMotion(action,5.2,9,8,2).intensity,0,'only selected defender reacts');
+  assert.ok(Number.isFinite(nearby.plant)&&Number.isFinite(nearby.recover));
+ }
+ assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),
+  M.shotImpact('goal','cut_inside_right','finesse'),'presentation never changes the final shot result');
+});
