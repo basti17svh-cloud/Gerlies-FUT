@@ -5,6 +5,7 @@ on:
     paths:
       - 'motion-lab.html'
       - '3d-motion-lab.mjs'
+      - '3d-action-continuity.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/motion-lab.browser.cjs'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'motion-lab.html'
       - '3d-motion-lab.mjs'
+      - '3d-action-continuity.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/motion-lab.browser.cjs'
@@ -37,7 +39,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify deterministic cut, defender states, and unchanged shot handoff
-        run: node --test tests/motion-lab.test.cjs
+        run: node --test tests/motion-lab.test.cjs tests/action-continuity.test.cjs
       - name: Install isolated browser renderer
         run: |
           npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
@@ -55,6 +57,6 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
-            test-artifacts/footera-v2142-live-motion.png
-            test-artifacts/footera-v2143-live-football-actions.webm
+            test-artifacts/footera-v2144-live-motion.png
+            test-artifacts/footera-v2144-live-football-actions.webm
           retention-days: 14
