@@ -52,16 +52,16 @@ const INVERTED_SEQUENCES=new Set(['inside_left','inside_right','cut_inside_left'
 function invertedRunPosition(sequence,time){
  const side=sequenceSide(sequence),t=clamp(time,0,SHOT_TIME);
  const cut=sequence.startsWith('cut_inside'),feint=sequence.startsWith('double_feint'),near=sequence.startsWith('near_post_cut');
- const nodes=feint?[[0,24,-24],[1.45,19,-28],[2.65,22,-31],[3.90,10.5,-34],[SHOT_TIME,0,-37]]:
-  cut?[[0,25,-23],[2.05,23,-31],[3.2,16,-33],[4.2,8,-35],[SHOT_TIME,0,-37]]:
-  near?[[0,22,-22],[2.0,18,-29],[3.65,9.5,-33.5],[SHOT_TIME,0,-37]]:
-  [[0,19,-25],[2.25,14,-30.5],[3.85,6.5,-34.5],[SHOT_TIME,0,-37]];
+ const nodes=feint?[[0,24,-24],[1.45,19,-28],[2.65,22,-31],[3.90,15,-35.5],[SHOT_TIME,9,-39]]:
+  cut?[[0,25,-23],[2.05,23,-31],[3.2,18,-34],[4.2,12,-37],[SHOT_TIME,9,-39]]:
+  near?[[0,22,-22],[2.0,18,-29],[3.65,12,-35.5],[SHOT_TIME,9,-39]]:
+  [[0,23,-24.5],[2.25,21,-30.5],[3.85,14,-35.6],[SHOT_TIME,9,-39]];
  let p=[side*nodes[nodes.length-1][1],nodes[nodes.length-1][2]];
  for(let i=1;i<nodes.length;i++)if(t<=nodes[i][0]){
   const a=nodes[i-1],b=nodes[i],u=smooth((t-a[0])/(b[0]-a[0]));
   p=[side*mix(a[1],b[1],u),mix(a[2],b[2],u)];break;
  }
- return time<=SHOT_TIME?p:lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15));
+ return time<=SHOT_TIME?p:lerp([side*9,-39],[side*8.3,-40.3],smooth((time-SHOT_TIME)/1.15));
 }
 const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
 export const normalizeFinish=finish=>FINISH_TYPES.includes(finish)?finish:'normal';
@@ -73,6 +73,16 @@ function variantShift(variant,time){
 }
 
 const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_right')?1:1;
+// Inverted winger does not teleport to the central striker position for the strike.
+// The contact point follows the winger's final position and shooting direction.
+export function shotContact(sequence='central',finish='normal'){
+ const style=normalizeFinish(finish),base=contactFor(style),seq=normalizeSequence(sequence);
+ if(!INVERTED_SEQUENCES.has(seq))return base;
+ const [x,z]=invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style);
+ const heading=Math.atan2(x-impact[0],z-impact[2]),dx=base[0],dz=base[2]+37;
+ return[x+Math.cos(heading)*dx-Math.sin(heading)*dz,base[1],
+        z+Math.sin(heading)*dx+Math.cos(heading)*dz];
+}
 function movingBall(a,b,u,arc=0){const t=smooth(u),p=lerp(a,b,t);p[1]=mix(a[1],b[1],t)+arc*Math.sin(clamp(u)*Math.PI);return p}
 // Grounded ball ahead of the runner rather than trailing a free world-space sine wave.
 function carriedBall(index,time,sequence,lead=.56){
@@ -103,9 +113,12 @@ export function controlCarrier(time,sequence='central'){
 // The simulated goal/save/miss stays unchanged; only the visual shot lane varies.
 export function shotImpact(type,sequence='central',finish='normal'){
  const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
- const sign=INVERTED_SEQUENCES.has(seq)?(seq.startsWith('near_post_cut')?sequenceSide(seq):-sequenceSide(seq)):1;
- const x=type==='big_chance_saved'?2.52:type==='shot_post'?3.52:type==='big_chance_missed'?5.1:2.65;
- let y=type==='big_chance_saved'?1.14:type==='shot_post'?1.25:type==='big_chance_missed'?1.5:1.08;
+ const inverted=INVERTED_SEQUENCES.has(seq),near=inverted&&seq.startsWith('near_post_cut');
+ const sign=inverted?(near?sequenceSide(seq):-sequenceSide(seq)):1;
+ const x=type==='big_chance_saved'?2.52:type==='shot_post'?3.52:type==='big_chance_missed'?5.1:
+   inverted?(near?2.48:3.12):2.65;
+ let y=type==='big_chance_saved'?1.14:type==='shot_post'?1.25:type==='big_chance_missed'?1.5:
+   inverted&&style==='finesse'?1.62:1.08;
  if(style==='low_driven')y=type==='shot_post'?.42:.32;
  else if(style==='header')y=type==='shot_post'?1.25:1.38;
  else if(style==='power')y=type==='shot_post'?1.25:.83;
@@ -115,7 +128,7 @@ export function shotImpact(type,sequence='central',finish='normal'){
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
  if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
-  const release=SHOT_TIME-.24,contact=contactFor(style);
+  const release=SHOT_TIME-.24,contact=shotContact(seq,style);
   if(time<release)return carriedBall(0,time,seq,.53);
   return movingBall(carriedBall(0,release,seq,.53),contact,(time-release)/.24,.025);
  }
@@ -851,7 +864,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function update(time){
    renderTime=time;
-   players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.06),event.type,sequence),next=playerPosition(i,time+.06,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.78),moving=speed>.002;
+   players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.02),event.type,sequence),next=playerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
     const back=playerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=playerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
@@ -893,7 +906,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    });
    const striker=players[0];
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
-    striker.root.rotation.y*=1-blend;striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,k.hip,blend);striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,k.knee,blend);striker.ankles[1].rotation.x*=1-blend;
+    if(INVERTED_SEQUENCES.has(sequence)){
+     const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=shotImpact(event.type,sequence,finish);
+     const shotHeading=Math.atan2(sx-aim[0],sz-aim[2]);
+     striker.root.rotation.y=mix(striker.root.rotation.y,shotHeading,blend);
+    }else striker.root.rotation.y*=1-blend;
+    striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,k.hip,blend);striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,k.knee,blend);striker.ankles[1].rotation.x*=1-blend;
     striker.legs[0].rotation.x*=1-blend;striker.knees[0].rotation.x*=1-blend;striker.ankles[0].rotation.x*=1-blend;striker.upper.rotation.set(0,0,0);striker.rig.position.y*=1-blend;striker.arms[0].rotation.z=-.45;striker.arms[1].rotation.z=.65;
      if(finish==='header'){
       const jump=Math.sin(Math.PI*smooth((time-4.9)/.92))*blend;
@@ -914,7 +932,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      }else if(finish==='low_driven'){
       striker.legs[1].rotation.x*=.72;striker.upper.rotation.x=.17*blend;
      }else if(finish==='finesse'){
-      striker.legs[1].rotation.x*=.85;striker.upper.rotation.z=-.14*blend;
+      const side=INVERTED_SEQUENCES.has(sequence)?sequenceSide(sequence):1;
+      // The planted leg, striking ankle and upper body rotate around the ball:
+      // a visible curved-foot finish rather than a scaled-down power strike.
+      striker.legs[0].rotation.x=-.10*blend;
+      striker.legs[1].rotation.x*=.84;
+      striker.legs[1].rotation.z-=side*.18*blend;
+      striker.ankles[1].rotation.z+=side*.29*blend;
+      striker.upper.rotation.y+=side*.25*blend;
+      striker.upper.rotation.z=-side*.22*blend;
+      striker.arms[0].rotation.x+=.18*blend;
      }
    }
    const passWindows=INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
