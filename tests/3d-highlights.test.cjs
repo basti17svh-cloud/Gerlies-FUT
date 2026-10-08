@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2136','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2136','3d-motion-clips.mjs?v=2136','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-36'));assert.ok(html.includes('service-worker.js?v=2136'));
+ for(const file of ['3d-highlights.js?v=2137','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2137','3d-rigged-footballer.mjs?v=2137','3d-motion-clips.mjs?v=2136','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-37'));assert.ok(html.includes('service-worker.js?v=2137'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -522,4 +522,36 @@ test('V21.36: authored motion clips blend into foot-planted movement safely',asy
  assert.equal(C.motionClipBlend(5.4,4.9,6.05,.16),1);
  assert.equal(C.motionClipBlend(7,4.9,6.05),0);
  assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),M.shotImpact('goal','cut_inside_right','finesse'));
+});
+
+test('V21.37: a real connected skinned skeleton deforms a weighted football body',async()=>{
+ const T=await import('../vendor/three/three.module.min.js');
+ const {buildSkinnedFootballer,createSkeletonMotion}=await import('../3d-rigged-footballer.mjs');
+ const root=new T.Group(),rig=new T.Bone(),upper=new T.Bone(),motion=new T.Bone(),chest=new T.Bone();
+ root.add(rig);rig.add(upper);upper.position.y=1;upper.add(motion);motion.add(chest);chest.position.y=-1;
+ const arms=[],elbows=[],legs=[],knees=[],ankles=[];
+ for(const side of [-1,1]){
+  const arm=new T.Bone();arm.position.set(side*.224,1.45,0);chest.add(arm);arms.push(arm);
+  const elbow=new T.Bone();elbow.position.y=-.32;arm.add(elbow);elbows.push(elbow);
+  const leg=new T.Bone();leg.position.set(side*.108,.94,0);rig.add(leg);legs.push(leg);
+  const knee=new T.Bone();knee.position.y=-.43;leg.add(knee);knees.push(knee);
+  const ankle=new T.Bone();ankle.position.y=-.43;knee.add(ankle);ankles.push(ankle);
+ }
+ const mats=Array.from({length:5},()=>new T.MeshStandardMaterial());
+ const skin=buildSkinnedFootballer(T,root,{rig,upper,motion,chest,arms,elbows,legs,knees,ankles},mats,10);
+ assert.ok(skin.model.isSkinnedMesh&&skin.skeleton.isSkeleton,'GPU skinning is real, not rigid-body meshes');
+ assert.equal(skin.bones,14);assert.ok(skin.vertexCount>400);assert.ok(skin.segmentCount>=10);
+ assert.ok(skin.geometry.getAttribute('skinIndex').count===skin.vertexCount);
+ for(let i=0;i<skin.vertexCount;i++){
+  const w=skin.geometry.getAttribute('skinWeight'),index=skin.geometry.getAttribute('skinIndex');
+  const sum=w.getX(i)+w.getY(i)+w.getZ(i)+w.getW(i);
+  assert.ok(Math.abs(sum-1)<.00001,'normalized skin weights '+i);
+  assert.ok(index.getX(i)<skin.bones&&index.getY(i)<skin.bones);
+ }
+ const before=motion.rotation.y,m=createSkeletonMotion(T,motion,'striker','finesse');
+ m.mixer.setTime(5.4);
+ assert.ok(Math.abs(motion.rotation.y-before)>.1,'AnimationMixer animates the skeleton transform');
+ m.mixer.setTime(0);assert.ok(Math.abs(motion.rotation.y)<.01,'seek is deterministic and reversible');
+ assert.equal(m.action.isRunning(),true);
+ m.mixer.stopAllAction();skin.geometry.dispose();mats.forEach(mat=>mat.dispose());
 });

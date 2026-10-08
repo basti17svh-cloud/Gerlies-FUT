@@ -109,6 +109,11 @@ const out=path.join(__dirname,'../test-artifacts');
     renderer.dispose();renderer.forceContextLoss();Math.random=originalRandom;if(randomCalls)throw Error('Renderer consumed simulation RNG: '+randomCalls);return rows;
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
+  for(const row of checks){
+   assert.equal(row.riggedActors,2,'real skinned striker + goalkeeper: '+row.sequence);
+   assert.ok(row.riggedBones>=14&&row.riggedVertices>400,'weighted skeleton geometry: '+row.sequence);
+   assert.match(row.skeletonClip,/Footera-striker-/,'authored striker AnimationMixer clip');
+  }
   for(const row of checks)for(const actor of row.facing){
    const speed=Math.hypot(...actor.velocity);
    if(speed>.001&&!(row.scenario==='finish'&&actor.index===0&&row.time>4.9&&row.time<6.2)){const forwardDot=(actor.forward[0]*actor.velocity[0]+actor.forward[1]*actor.velocity[1])/speed;

@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
+import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2137';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
@@ -755,12 +756,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Oval cross-sections describe chest, waist, jaw and muscles with smooth
   // normals. Shared geometry is instanced, keeping the existing joint hierarchy.
   function anatomy(key,rings){return geo(key,()=>athleticGeometry(rings,weak?10:high?18:14))}
-  function player(kit,name,keeper=false){
-   const root=new THREE.Group(),rig=new THREE.Group(),upper=new THREE.Group(),chest=new THREE.Group();field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;upper.add(chest);chest.position.y=-1;
+  function player(kit,name,keeper=false,modern=false){
+   const Joint=modern?THREE.Bone:THREE.Group;
+   const root=new THREE.Group(),rig=new Joint(),upper=new Joint(),chest=new Joint();
+   const motion=modern?new THREE.Bone():null;
+   field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;
+   if(motion){upper.add(motion);motion.add(chest)}else upper.add(chest);
+   chest.position.y=-1;
    const skin=skinTone(name),variant=Array.from(name).reduce((n,c)=>n+c.charCodeAt(0),0),hair=['#201b17','#382820','#574032','#826444'][variant%4],shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});
    if(!keeper)chest.scale.x=.97+(variant%4)*.025;
-   part(anatomy('athletic-shirt',[[1.00,.163,.105],[1.035,.174,.114],[1.09,.166,.108],[1.18,.171,.119],[1.28,.194,.14],[1.36,.219,.144],[1.43,.238,.126],[1.47,.229,.105],[1.51,.168,.08],[1.535,.071,.065]]),shirt,chest);
-   part(anatomy('athletic-pelvis',[[.86,.142,.099],[.94,.173,.127],[1.015,.168,.107],[1.03,.161,.105]]),mat(kit.shorts,{roughness:.96}),rig);
+   if(!modern)part(anatomy('athletic-shirt',[[1.00,.163,.105],[1.035,.174,.114],[1.09,.166,.108],[1.18,.171,.119],[1.28,.194,.14],[1.36,.219,.144],[1.43,.238,.126],[1.47,.229,.105],[1.51,.168,.08],[1.535,.071,.065]]),shirt,chest);
+   if(!modern)part(anatomy('athletic-pelvis',[[.86,.142,.099],[.94,.173,.127],[1.015,.168,.107],[1.03,.161,.105]]),mat(kit.shorts,{roughness:.96}),rig);
    bodyPart(.058,.066,.112,skin,chest,0,1.576,0);
    bodyPartMaterial(.073,.074,.028,mat(kit.shirtSecondary,{roughness:1}),chest,0,1.537,0,1,.94);
    part(anatomy('athletic-head',[[1.623,.045,.054],[1.648,.066,.076],[1.69,.092,.089],[1.75,.097,.095],[1.798,.079,.083],[1.823,.033,.045]]),mat(skin),chest,0,0,-.013);
@@ -771,21 +777,21 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    rounded(.072,.057,.020,hair,chest,0,1.752,.083);
    const arms=[],elbows=[],legs=[],knees=[],ankles=[],gloves=[],feet=[];
    for(const side of [-1,1]){
-    const arm=new THREE.Group();arm.position.set(side*.224,1.45,0);chest.add(arm);arms.push(arm);
-    roundedMaterial(.075,.091,.085,sleeve,arm,0,-.035,0);
-    bodyPartMaterial(.075,.062,.17,sleeve,arm,0,-.098,0);
-    bodyPartMaterial(.064,.063,.023,mat(kit.shirtSecondary,{roughness:1}),arm,0,-.184,0);
-    part(anatomy('athletic-upper-arm',[[-.325,.043,.045],[-.25,.053,.056],[-.17,.061,.058],[-.14,.060,.058]]),mat(skin),arm);
-    const elbow=new THREE.Group();elbow.position.y=-.32;arm.add(elbow);elbows.push(elbow);
-    part(anatomy('athletic-forearm',[[-.28,.029,.033],[-.22,.033,.04],[-.08,.049,.049],[0,.043,.045]]),mat(skin),elbow);
+    const arm=new Joint();arm.position.set(side*.224,1.45,0);chest.add(arm);arms.push(arm);
+    if(!modern)roundedMaterial(.075,.091,.085,sleeve,arm,0,-.035,0);
+    if(!modern)bodyPartMaterial(.075,.062,.17,sleeve,arm,0,-.098,0);
+    if(!modern)bodyPartMaterial(.064,.063,.023,mat(kit.shirtSecondary,{roughness:1}),arm,0,-.184,0);
+    if(!modern)part(anatomy('athletic-upper-arm',[[-.325,.043,.045],[-.25,.053,.056],[-.17,.061,.058],[-.14,.060,.058]]),mat(skin),arm);
+    const elbow=new Joint();elbow.position.y=-.32;arm.add(elbow);elbows.push(elbow);
+    if(!modern)part(anatomy('athletic-forearm',[[-.28,.029,.033],[-.22,.033,.04],[-.08,.049,.049],[0,.043,.045]]),mat(skin),elbow);
     gloves.push(rounded(keeper?.052:.033,.061,.031,keeper?'#f3f4e9':skin,elbow,0,-.31,-.006));
-    const leg=new THREE.Group();leg.position.set(side*.108,.94,0);rig.add(leg);legs.push(leg);
-    part(anatomy('athletic-shorts',[[-.19,.097,.092],[-.12,.103,.106],[.055,.098,.102]]),mat(kit.shorts,{roughness:.96}),leg);
-    part(anatomy('athletic-thigh',[[-.435,.052,.06],[-.38,.061,.067],[-.25,.081,.081],[-.16,.085,.082]]),mat(skin),leg);
-    const knee=new THREE.Group();knee.position.y=-.43;leg.add(knee);knees.push(knee);
-    rounded(.052,.05,.057,skin,knee,0,-.004,0);
-    part(anatomy('athletic-sock',[[-.39,.032,.039],[-.31,.035,.042],[-.17,.059,.064],[-.07,.056,.055],[-.045,.050,.050]]),mat(kit.socks,{roughness:1}),knee);
-    const ankle=new THREE.Group();ankle.position.y=-.43;knee.add(ankle);ankles.push(ankle);
+    const leg=new Joint();leg.position.set(side*.108,.94,0);rig.add(leg);legs.push(leg);
+    if(!modern)part(anatomy('athletic-shorts',[[-.19,.097,.092],[-.12,.103,.106],[.055,.098,.102]]),mat(kit.shorts,{roughness:.96}),leg);
+    if(!modern)part(anatomy('athletic-thigh',[[-.435,.052,.06],[-.38,.061,.067],[-.25,.081,.081],[-.16,.085,.082]]),mat(skin),leg);
+    const knee=new Joint();knee.position.y=-.43;leg.add(knee);knees.push(knee);
+    if(!modern)rounded(.052,.05,.057,skin,knee,0,-.004,0);
+    if(!modern)part(anatomy('athletic-sock',[[-.39,.032,.039],[-.31,.035,.042],[-.17,.059,.064],[-.07,.056,.055],[-.045,.050,.050]]),mat(kit.socks,{roughness:1}),knee);
+    const ankle=new Joint();ankle.position.y=-.43;knee.add(ankle);ankles.push(ankle);
     const boot=['#e4e1cb','#ed763b','#172025','#a6c24a'][variant%4];
     feet.push(rounded(.057,.047,.139,boot,ankle,0,0,-.064));
     feet.push(rounded(.056,.014,.140,'#101716',ankle,0,-.039,-.064));
@@ -793,11 +799,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     bodyPartMaterial(.051,.052,.027,mat(kit.shirtSecondary,{roughness:1}),knee,0,-.062,0,1,1.04);
    }
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
-   return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,gait:[{},{}],motionClips:{out:{},scratch:{},action:{}}};
+   const skinned=modern?buildSkinnedFootballer(THREE,root,
+    {rig,upper,motion,chest,arms,elbows,legs,knees,ankles},
+    [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12):null;
+   if(skinned)track(skinned.geometry);
+   const skeletonMotion=modern?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
+   return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
+    gait:[{},{}],motionClips:{out:{},scratch:{},action:{}}};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
-  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i));
-  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true);
+  // Pilot: one connected deforming skeleton for the ball carrier, while the
+  // surrounding sixteen-actor TV frame retains the fast instanced fallback.
+  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,false,i===0));
+  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true);
   const ballMap=canvasTexture(128,64,(ctx,w,h)=>{ctx.fillStyle='#fafbf5';ctx.fillRect(0,0,w,h);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=col*w/6+(row%2)*w/12,y=row*h/2;ctx.beginPath();for(let n=0;n<5;n++){const a=n*Math.PI*2/5;ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5)}ctx.closePath();ctx.fillStyle='#25343b';ctx.fill();ctx.strokeStyle='#89918f';ctx.lineWidth=.5;ctx.stroke()}});
   const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({map:ballMap,color:'#ffffff',roughness:.6,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.14);ball.position.set(0,.13,0);ball.castShadow=!weak;
   // A restrained ground cue keeps the real-size ball readable on a phone.
@@ -896,6 +910,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function update(time){
    renderTime=time;
+   // Seek rather than increment mixer clocks: stable on skip, replay and
+   // deterministic screenshots. No impact on match outcome/timeline.
+   if(players[0].skeletonMotion)players[0].skeletonMotion.mixer.setTime(time);
+   if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(time);
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.02),event.type,sequence),next=playerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
@@ -1064,7 +1082,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function reduceQuality(soft=false){if(!soft)renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*(soft?.82:.62)),dynamicCount=Math.floor(crowdDynamic.specs.length*(soft?.64:.46)),flags=Math.max(2,Math.floor(flagSpecs.length*(soft?.82:.6)));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flags;flagCloth.count=flags*flagSegments;if(!soft)supporterBanners.forEach(x=>x.visible=false);fill.intensity=soft?.48:.12}
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
-  function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
+  function dispose(){
+   for(const actor of [...players,keeper])if(actor.skeletonMotion){
+    actor.skeletonMotion.mixer.stopAllAction();actor.skeletonMotion.mixer.uncacheRoot(actor.skeletonMotion.mixer.getRoot());
+   }
+   for(const resource of resources){try{resource.dispose?.()}catch(_){}}
+   scene.clear()
+  }
   function inspect(){
    const project=p=>p.clone().project(camera),visible=players.filter(p=>{const q=project(p.root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,1,0)));return Math.abs(q.x)<.98&&Math.abs(q.y)<.98&&q.z<1}).length;
    const ballWorld=ball.getWorldPosition(new THREE.Vector3()),control=controlCarrier(renderTime,sequence),goalWorld=new THREE.Vector3(...worldPosition([0,.4,-52.5],direction)),wingerWorld=players[1].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0)),runnerWorld=players[2].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0));
@@ -1073,7 +1097,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:keeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+   return{riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
+    riggedBones:players[0].skinned?.bones||0,
+    riggedVertices:players[0].skinned?.vertexCount||0,
+    skeletonClip:players[0].skeletonMotion?.clip.name||'',
+    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:keeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}

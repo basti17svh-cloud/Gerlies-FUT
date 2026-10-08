@@ -47,6 +47,11 @@ fs.mkdirSync(out,{recursive:true});
    delete window.__original3DSequence;delete window.__original3DChoose;
   });
   await page.waitForSelector('.fh3d canvas',{timeout:12000});
+  const rigModule=await page.evaluate(async()=>{
+   const R=await import('./3d-rigged-footballer.mjs?v=2137');
+   return R.RIGGED_SURFACE_VERSION===1&&typeof R.createSkeletonMotion==='function';
+  });
+  assert.ok(rigModule,'browser must load the real skinned-rig module');
   const clipsReady=await page.evaluate(async()=>{
    const C=await import('./3d-motion-clips.mjs?v=2136');
    return ['sprint','dribble','finesse','keeper_save'].every(n=>!!C.MOTION_CLIPS[n])
