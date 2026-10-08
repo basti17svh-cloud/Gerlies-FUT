@@ -1,0 +1,38 @@
+name: Footera Weekly Rewards
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'weekly-rewards.js'
+      - 'weekly-rewards.css'
+      - 'tests/weekly-rewards.test.cjs'
+      - '.github/workflows/weekly-rewards-tests.yml'
+      - 'index.html'
+      - 'competition-system.js'
+      - 'champions-system.js'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+  pull_request:
+    paths:
+      - 'weekly-rewards.js'
+      - 'weekly-rewards.css'
+      - 'tests/weekly-rewards.test.cjs'
+      - '.github/workflows/weekly-rewards-tests.yml'
+      - 'index.html'
+      - 'competition-system.js'
+      - 'champions-system.js'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+permissions:
+  contents: read
+jobs:
+  weekly-rewards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reward UI, ranks, week resets, claims and update regression tests
+        run: node --test tests/weekly-rewards.test.cjs tests/competition-system.test.cjs tests/champions.test.cjs tests/boot-update.test.cjs tests/content-drop-20261007.test.cjs
