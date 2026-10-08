@@ -72,7 +72,11 @@ export function controlCarrier(time,sequence='central'){
  else if(seq.startsWith('early_cross_')){index=1;end=2.9}
  else if(['wing_left','wing_right','cutback_left','cutback_right'].includes(base)){index=1;end=3.65}
  else if(base==='dribble'){index=0;end=SHOT_TIME-.24}
- else if(base==='through_ball'){index=1;end=2.35}
+ else if(base==='through_ball'){
+  if(time<2.35){index=1;end=2.35}
+  else if(time>=4.65){index=0;start=4.65;end=SHOT_TIME-.24}
+ }
+ else if(base==='one_two'&&time>=4.65){index=0;start=4.65;end=SHOT_TIME-.24}
  else if(base==='central'&&seq!=='second_ball'){index=0;start=3.1;end=SHOT_TIME-.24}
  if(index<0||time<start||time>=end)return{index:-1,weight:0};
  return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
@@ -127,12 +131,14 @@ export function ballPosition(type,time,sequence='central',finish='normal'){
    if(time<1.8)return movingBall([-12,.12,-22],[-2,.12,-29.6],time/1.8,.1);
    if(time<2.65)return movingBall([-2,.12,-29.6],[-8,.12,-32.6],(time-1.8)/.85,.08);
    if(time<4.65)return movingBall([-8,.12,-32.6],[-.4,.12,-36.25],(time-2.65)/2,.13);
-   return movingBall([-.4,.12,-36.25],contact,(time-4.65)/(SHOT_TIME-4.65),.03)
+   const received=movingBall([-.4,.12,-36.25],contact,(time-4.65)/(SHOT_TIME-4.65),.03),carry=controlCarrier(time,seq);
+  return carry.weight>0?lerp(received,carriedBall(0,time,seq,.56),carry.weight):received
   }
   if(seq==='through_ball'){
    if(time<2.35)return carriedBall(1,time,seq,.52);
    if(time<4.65)return movingBall(carriedBall(1,2.35,seq,.52),[-.4,.14,-35.7],(time-2.35)/2.3,.18);
-   return movingBall([-.4,.12,-35.7],contact,(time-4.65)/(SHOT_TIME-4.65),.025)
+   const received=movingBall([-.4,.12,-35.7],contact,(time-4.65)/(SHOT_TIME-4.65),.025),carry=controlCarrier(time,seq);
+  return carry.weight>0?lerp(received,carriedBall(0,time,seq,.56),carry.weight):received
   }
   if(seq==='dribble'){
    const carryTime=Math.min(time,SHOT_TIME-.2),p=carriedBall(0,carryTime,seq,.58);
