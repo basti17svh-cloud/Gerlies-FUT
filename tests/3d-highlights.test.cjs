@@ -446,3 +446,27 @@ test('V21.30: smooth handoffs keep every attacking pattern continuous',async()=>
  assert.ok(checks>=320);
  assert.ok(largest<.12);
 });
+
+
+// The television highlight must actually show a cut from the touchline into a
+// half-space finish. Goal/save/miss still come only from the match simulation.
+test('inverted winger cuts inward and curls toward the opposite far corner',async()=>{
+ const {SHOT_TIME,IMPACT_TIME,runPosition,ballPosition,shotContact,shotImpact}=await import('../3d-highlights-scene.mjs');
+ for(const [sequence,side] of [['cut_inside_right',1],['cut_inside_left',-1],['double_feint_right',1],['inside_left',-1]]){
+  const before=runPosition(0,0,sequence),atStrike=runPosition(0,SHOT_TIME,sequence);
+  assert.ok(before[0]*side>=19,'wide start '+sequence);
+  assert.ok(atStrike[0]*side>7&&atStrike[0]*side<11,'strikes from half space, not centre '+sequence);
+  assert.ok(Math.abs(before[0])-Math.abs(atStrike[0])>9,'actually cuts inward '+sequence);
+  const contact=shotContact(sequence,'finesse'),ball=ballPosition('goal',SHOT_TIME,sequence,'finesse');
+  assert.ok(Math.hypot(contact[0]-atStrike[0],contact[2]-atStrike[1])<.45,'contact near shooter '+sequence);
+  assert.deepEqual(ball,contact,'ball is at rotated boot contact '+sequence);
+  const far=shotImpact('goal',sequence,'finesse');
+  assert.equal(Math.sign(far[0]),-side,'far corner opposite starting wing '+sequence);
+  assert.ok(Math.abs(far[0])>3&&Math.abs(far[0])<3.55&&far[1]>1.5&&far[1]<2.44,'high curl within goal frame '+sequence);
+  const mid=ballPosition('goal',(SHOT_TIME+IMPACT_TIME)/2,sequence,'finesse');
+  assert.ok(Math.abs(mid[0]-contact[0])>2,'clearly diagonal strike '+sequence);
+  assert.deepEqual(ballPosition('big_chance_saved',SHOT_TIME,sequence,'finesse'),contact,'saved attempt uses same valid contact '+sequence);
+ }
+ const near=shotImpact('goal','near_post_cut_right','power');
+ assert.ok(near[0]>2&&near[0]<3.6,'near-post finish stays on winger side');
+});
