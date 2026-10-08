@@ -2,7 +2,7 @@ name: Footera Visual Acceptance Stills
 on:
   push:
     branches: [footera-v21-38-animation-pilot]
-    paths: ['tests/footera-motion-stills.cjs', '.github/workflows/footera-motion-stills.yml']
+    paths: ['tests/footera-motion-stills.cjs', '3d-action-motion.mjs', '.github/workflows/footera-motion-stills.yml']
 permissions:
   contents: write
 jobs:
