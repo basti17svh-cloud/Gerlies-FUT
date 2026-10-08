@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2126','3d-highlights-match.js?v=2126','3d-highlights-scene.mjs?v=2126','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-26'));assert.ok(html.includes('service-worker.js?v=2126'));
+ for(const file of ['3d-highlights.js?v=2127','3d-highlights-match.js?v=2127','3d-highlights-scene.mjs?v=2127','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-27'));assert.ok(html.includes('service-worker.js?v=2127'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -275,4 +275,25 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  assert.ok(sample({},central,1200,[{sequence:'central',family:'central'}])<sample({},central,1200)*.55,'immediate repeat is penalized');
  assert.ok(sample({},e=>e.sequence==='bicycle',4000)<25,'overhead should be exceptional');
  assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
+});
+
+// V21.27 — presentation-only motion remains bounded, deterministic and mobile-safe.
+test('V21.27 reactive defending and pass swing keep visual movement deterministic',async()=>{
+ const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
+ let responsive=0;
+ for(const sequence of PLAY_SEQUENCES)for(const t of [0,1.5,3,5.4,6.65,8.5])for(let i=8;i<16;i++){
+  const v=defenderTracking(i,t,sequence);assert.deepEqual(v,defenderTracking(i,t,sequence));
+  assert.ok(Number.isFinite(v.x)&&Number.isFinite(v.z)&&Number.isFinite(v.pressure));
+  assert.ok(Math.abs(v.x)<=.581&&Math.abs(v.z)<=.301&&v.pressure>=0&&v.pressure<=1);
+  if(t===0||t>=6.65)assert.equal(v.pressure,0,'no tracking outside build-up');
+  if(v.pressure>.1)responsive++;
+ }
+ assert.ok(responsive>12,'defenders visibly react during build-up');
+ assert.deepEqual(defenderTracking(0,3),{x:0,z:0,pressure:0});
+ const wind=passStrikePose(0),strike=passStrikePose(.65),follow=passStrikePose(1);
+ assert.ok(wind.hip<strike.hip&&strike.hip<follow.hip&&wind.follow<strike.follow);
+ for(const k of [wind,strike,follow])assert.ok(Math.abs(k.ankle+k.hip+k.knee)<1e-10);
+ const css=fs.readFileSync(path.join(root,'matchday.css'),'utf8');
+ assert.match(css,/#match \.match-overview \.mstat strong\{[^}]*line-height:1\.3/);
+ assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
