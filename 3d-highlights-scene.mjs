@@ -288,6 +288,7 @@ export function runPosition(index,time,sequence='central'){
  const u=clamp(time/6.9),p=lerp(r.from,r.to,smooth(u)),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){const side=sequenceSide(seq);if(r.team==='attack'&&[2,3,4,5].includes(index))p[0]+=side*(index%2?.8:1.6)*Math.sin(u*Math.PI)}
  p[0]+=bend;p[1]+=Math.sin(u*Math.PI*2+hash(index+91)*Math.PI)*.2*Math.sin(u*Math.PI);
+ if(r.team==='defend'){const tracking=defenderTracking(index,time,seq);p[0]+=tracking.x;p[1]+=tracking.z;}
  return p;
 }
 export function keeperPose(type,time,finish='normal'){
@@ -328,6 +329,22 @@ export function runningLeg(phase,speed,out={}){
 }
 // Include the existing finish/chase offsets when orienting and grounding actors.
 // This changes no path or event; facing now follows the final displayed motion.
+// Deterministic anticipation belongs to the visual layer, not match simulation.
+export function defenderTracking(index,time,sequence='central'){
+ if(index<8||index>=RUNS.length)return{x:0,z:0,pressure:0};
+ const r=RUNS[index],base=lerp(r.from,r.to,smooth(clamp(time/6.9)));
+ const ball=ballPosition('goal',Math.min(SHOT_TIME,Math.max(0,time)),sequence);
+ const separation=Math.hypot(ball[0]-base[0],ball[2]-base[1]);
+ const pressure=smooth((time-.55)/.9)*(1-smooth((time-5.55)/.9))*clamp((24-separation)/17);
+ return{x:clamp((ball[0]-base[0])*.07,-.58,.58)*pressure,
+  z:clamp((ball[2]-base[1])*.045,-.30,.30)*pressure,pressure};
+}
+// Swing follows the visible pass release, without modifying the ball path.
+export function passStrikePose(progress){
+ const u=clamp(progress),wind=smooth(u/.43),follow=smooth((u-.32)/.68);
+ const hip=mix(-.52,1.04,follow),knee=mix(-.64,-.10,wind);
+ return{hip,knee,ankle:-hip-knee,follow};
+}
 export function playerPosition(index,time,type='goal',sequence='central'){
  const p=runPosition(index,time,sequence);
  if(time>SHOT_TIME&&[8,9,10,11,12,14,15].includes(index))p[1]-=smooth((time-SHOT_TIME)/1.8)*(.35+hash(index+200)*.8);
@@ -652,7 +669,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion);
    p.upper.rotation.x=-.14*speed;p.upper.rotation.y=Math.sin(stride)*.045*speed+clamp(turn*.6,-.1,.1);
-   p.upper.rotation.z=Math.sin(stride)*.018*speed+clamp(turn,-.12,.12);p.shadow.rotation.z=heading;
+   p.upper.rotation.z=Math.sin(stride)*.018*speed+clamp(turn,-.12,.12);
+   p.rig.rotation.z=clamp(turn*.22,-.095,.095)*speed;
+   p.shadow.rotation.z=heading;
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
@@ -675,7 +694,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    renderTime=time;
    players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.06),event.type,sequence),next=playerPosition(i,time+.06,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.78),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
-    pose(p,x,z,time,speed,heading,0,gaitPhase(i,time));
+    const back=playerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=playerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
+    const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
+    const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
+    pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time));
+    if(i>=8&&time<SHOT_TIME+.4){const brace=defenderTracking(i,time,sequence).pressure;
+     p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
+     p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
+    }
    });
    const striker=players[0];
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
@@ -687,8 +713,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       striker.knees[0].rotation.x=-.55*blend;striker.knees[1].rotation.x=-.48*blend;
       striker.upper.rotation.x=mix(-.26,.33,smooth((time-5.16)/.34))*blend;
      }else if(finish==='volley'){
+      const lift=smooth((time-4.96)/.37),follow=smooth((time-SHOT_TIME)/.26);
       striker.rig.position.y=.07*Math.sin(Math.PI*smooth((time-5.0)/.7))*blend;
-      striker.legs[1].rotation.x=1.42*blend;striker.knees[1].rotation.x=-.34*blend;striker.upper.rotation.x=-.29*blend;
+      striker.legs[1].rotation.x=mix(-.38,1.42,lift)*(1-.24*follow)*blend;
+      striker.knees[1].rotation.x=mix(-.82,-.24,lift)*blend;
+      striker.ankles[1].rotation.x=-.18*blend;striker.upper.rotation.x=-.29*blend;
      }else if(finish==='bicycle'){
       const flip=smooth((time-5.03)/.65);striker.rig.position.y=.32*Math.sin(Math.PI*flip)*blend;
       striker.rig.rotation.x=-Math.PI*.84*flip*blend;striker.legs[1].rotation.x=1.50*blend;striker.legs[0].rotation.x=-.9*blend;
@@ -700,8 +729,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       striker.legs[1].rotation.x*=.85;striker.upper.rotation.z=-.14*blend;
      }
    }
-   const passWindows=sequence==='diagonal_switch'?[[.2,.55],[3.42,3.82]]:sequence.startsWith('early_cross_')?[[2.66,3.04]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.42,3.82]]:base==='one_two'?[[1.55,1.9],[2.4,2.72]]:base==='through_ball'?[[2.08,2.42]]:base==='dribble'?[]:[[1.8,2.18]];
-   for(const [from,to] of passWindows)if(time>=from&&time<=to){const passer=sequence==='diagonal_switch'&&from<1?players[5]:players[1],u=clamp((time-from)/(to-from)),wind=smooth(Math.min(1,u/.42)),follow=smooth(Math.max(0,(u-.42)/.58));passer.legs[1].rotation.x=mix(-.46,1.02,follow);passer.knees[1].rotation.x=mix(-.62,-.08,wind);passer.rig.rotation.x=-.08*(1-u);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);passer.ankles[1].rotation.x=-passer.legs[1].rotation.x-passer.knees[1].rotation.x;passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55}
+   const passWindows=sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
+   for(const [from,to] of passWindows)if(time>=from&&time<=to){
+    const passer=sequence==='diagonal_switch'&&from<1?players[5]:players[1],u=clamp((time-from)/(to-from)),kick=passStrikePose(u);
+    passer.legs[1].rotation.x=kick.hip;passer.knees[1].rotation.x=kick.knee;passer.ankles[1].rotation.x=kick.ankle;
+    passer.rig.rotation.x=-.085*(1-kick.follow);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);
+    passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
+   }
    const kp=keeperPose(event.type,time,finish);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    // Knees flex behind the thigh while the keeper crouches towards the ball.
@@ -712,7 +746,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=0;i<2;i++){keeper.legs[i].rotation.x=bend;keeper.knees[i].rotation.x=-2*bend;keeper.ankles[i].rotation.x=bend}
    keeper.legs[0].rotation.z=.12+kp.dive*.32;keeper.legs[1].rotation.z=-.12-kp.dive*.15;
    keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
-   if(kp.dive>.05){keeper.elbows.forEach(e=>e.rotation.x=0);aimArm(keeper.arms[0],[2.52,finish==='low_driven'?.32:finish==='header'?1.38:1.14,-50.6]);aimArm(keeper.arms[1],[2.52,finish==='low_driven'?.32:finish==='header'?1.38:1.14,-50.6]);}
+   if(kp.dive>.05){
+    keeper.elbows.forEach(e=>e.rotation.x=0);
+    // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
+    const saved=event.type==='big_chance_saved',reachX=saved?2.52:1.25;
+    const reachY=saved?(finish==='low_driven'?.32:finish==='header'?1.38:1.14):finish==='low_driven'?.35:.92;
+    if(!saved){const dive=kp.dive*(1-kp.recover);keeper.upper.rotation.y=-.15*dive;
+     keeper.legs[0].rotation.x+=.22*dive;keeper.legs[1].rotation.x-=.25*dive;
+     keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
+    aimArm(keeper.arms[0],[reachX,reachY,-50.6]);aimArm(keeper.arms[1],[reachX,reachY,-50.6]);
+   }
    const bp=ballPosition(event.type,time,sequence,finish);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
