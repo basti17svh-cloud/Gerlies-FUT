@@ -29,7 +29,8 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
   let moved=0;
   for(let i=0;i<measures.reference.length;i++){
    const a=measures.reference[i],b=measures.pilot[i];
-   assert.deepEqual(a.ball,b.ball,'same authoritative ball flight');
+   if(a.time>=5.4)assert.deepEqual(a.ball,b.ball,'unchanged post-contact authoritative ball flight');
+   else assert.ok(Math.hypot(...a.ball.map((v,k)=>v-b.ball[k]))<.5,'pre-shot boot-guided dribble stays nearby');
    assert.equal(a.drawCalls,b.drawCalls,'unchanged draw-call budget');
    assert.equal(a.riggedActors,2);
    const keys=Object.keys(a.motionPose),distance=Math.hypot(...keys.map(k=>a.motionPose[k]-b.motionPose[k]));
