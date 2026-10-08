@@ -176,6 +176,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   fov=mix(seq==='through_ball'?29.3:29.0,26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
+ // A diagonal switch crosses the full pitch before reaching the near winger.
+ // Keep the broadcast frame between the ball and the box: centering directly
+ // on the near winger collapses the physical camera distance and crops runners.
+ if(seq==='diagonal_switch'){
+  targetX=mix(targetX,goal[0],.46);
+  fov+=10.5*(1-smooth((time-(SHOT_TIME-.2))/1.25));
+ }
  // A small near-wing lens allowance keeps the *whole* goal roof in the frame,
  // not only its ground centre. Camera position/target/choreography stay intact.
  if(wide&&sequenceSide(seq)*direction>0)fov+=4.6*(1-smooth((time-(SHOT_TIME-.2))/1.25));
