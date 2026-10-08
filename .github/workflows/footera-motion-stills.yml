@@ -1,0 +1,31 @@
+name: Footera Visual Acceptance Stills
+on:
+  push:
+    branches: [footera-v21-38-animation-pilot]
+    paths: ['tests/footera-motion-stills.cjs', '3d-action-motion.mjs', '.github/workflows/footera-motion-stills.yml']
+permissions:
+  contents: write
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix /tmp/footera-browser playwright@1.51.1
+      - run: /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Capture exact same game shot before and after new motions
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/footera-motion-stills.cjs
+      - name: Save visual inspection only to pilot branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa/footera-motion-stills.json
+          git commit -m "QA: archive 12 matched live WebGL motion frames"
+          git push origin "HEAD:footera-v21-38-animation-pilot"

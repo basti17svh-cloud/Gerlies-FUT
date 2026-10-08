@@ -5,7 +5,7 @@ const css=fs.readFileSync(path.join(root,"ux-overview.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 
 test("V21.30 keeps the focused usability layer without replacing existing hubs",()=>{
- assert.match(html,/<title>Footera V21\.37<\/title>/);
+ assert.match(html,/<title>Footera V21\.38<\/title>/);
  assert.match(html,/ux-overview\.css\?v=2114/);
  assert.match(html,/id="clubOverviewStrip"/);
  for(const id of ["clubUxPlayers","clubUxTransfer","clubUxSbc","clubUxEvos","clubFilterToggle","clubFilterSummary","clubFilterPanel","marketFilterToggle","marketFilterSummary","marketFilterPanel"])assert.ok(html.includes('id="'+id+'"'),id);
@@ -35,8 +35,8 @@ test("compact filters are mobile-only and desktop keeps the full filter surface"
 });
 
 test("offline shell contains the usability stylesheet and new build cache",()=>{
- assert.ok(sw.includes('footera-v21-37-skeleton'));
+ assert.ok(sw.includes('footera-v21-38-motion2-pilot'));
  assert.ok(sw.includes('./ux-overview.css?v=2114'));
- assert.ok(sw.includes('./3d-highlights.js?v=2137'));
+ assert.ok(sw.includes('./3d-highlights.js?v=2138'));
 });
 console.log("V21.23 Übersichtlichkeit: Verein-Status und kompakte Mobile-Filter strukturell OK");

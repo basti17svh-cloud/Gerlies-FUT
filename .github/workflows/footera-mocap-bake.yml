@@ -1,0 +1,33 @@
+name: Footera Motion Capture Bake
+on:
+  workflow_dispatch:
+  push:
+    branches: [footera-v21-38-animation-pilot]
+    paths:
+      - tools/build-footera-mocap.py
+      - .github/workflows/footera-mocap-bake.yml
+permissions:
+  contents: write
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify and quantize licensed Quaternius clips
+        run: python3 tools/build-footera-mocap.py
+      - name: Syntax check
+        run: node --check 3d-mocap-data.mjs
+      - name: Publish generated data to pilot branch only
+        run: |
+          if ! git diff --quiet -- 3d-mocap-data.mjs || [ -n "$(git ls-files --others --exclude-standard -- 3d-mocap-data.mjs)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add 3d-mocap-data.mjs
+            git commit -m "Build: bake verified CC0 human motion into compact Footera frames"
+            git push origin "HEAD:footera-v21-38-animation-pilot"
+          fi
