@@ -42,7 +42,10 @@ const out=path.join(__dirname,'../test-artifacts');
    assert.equal(Number(state.period),period);assert.equal(Number(state.direction),period%2?1:-1);assert.ok(state.highlight.endsWith(state.clock));evidence.push({name,type,time,width,...state});
    await page.evaluate(()=>{qaStep(10401);qaHold=false});await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>stopMatchTimer());
   }
-  if(!process.env.FOOTERA_GEOMETRY_ONLY){
+  // The software GPU's real-time STANDARD lifecycle is already covered by
+  // tests/3d-highlights.browser.cjs. In fast geometry CI, skip that duplicate
+  // watchdog test and run the independent mesh/contact/draw-call assertions.
+  if(!process.env.FOOTERA_GEOMETRY_ONLY&&!process.env.FOOTERA_SKIP_CAPTURES){
   if(!process.env.FOOTERA_SKIP_CAPTURES){
   await capture('01-open-play','goal',1.3);
   await capture('02-penalty-area','goal',4.8);
