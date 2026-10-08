@@ -21,6 +21,7 @@ fs.mkdirSync(out,{recursive:true});
   });
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  page.on('console',m=>{if(['error','warning'].includes(m.type()))console.log('BROWSER',m.type(),m.text().slice(0,500))});
   await page.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.abort());
   await page.goto(origin,{waitUntil:'load'});
   await fixture(page);
@@ -56,14 +57,14 @@ fs.mkdirSync(out,{recursive:true});
   assert.ok(usesWebGL,'A real WebGL2 highlight must be rendering');
   const picked=await page.evaluate(()=>match3DQueue?.history?.at(-1)?.sequence);
   assert.equal(picked,'cut_inside_right','Video must show the actual cut-inside choreography');
-  await page.waitForTimeout(2800);
-  // Screenshot is auxiliary: never abort the video when a moving HUD detaches.
-  try{await page.screenshot({path:path.join(out,'footera-finesse-preview.png'),timeout:2500})}
-  catch(e){console.log('WARN optional still unavailable:',e.message.slice(0,140))}
+  // Avoid a software-WebGL screenshot stall during the live performance test.
+  // Footage still records the full unaltered production canvas.
+  await page.waitForTimeout(1400);
   await page.waitForSelector('.fh3d',{state:'detached',timeout:20000});
   const result=await page.evaluate(()=>({home:match.home,away:match.away,shots:match.shotEvents.length,
     stopped:!match.highlight3DPending,disabled:!!match3DQueue?.disabled}));
   assert.equal(result.home,1);assert.equal(result.away,0);
+  console.log('PREVIEW-MATCH-STATE',JSON.stringify(result));
   assert.equal(result.shots,1);assert.ok(result.stopped&&!result.disabled);
   assert.deepEqual(errors,[],'No JavaScript page errors');
   const file=page.video();await context.close();context=null;
