@@ -1162,7 +1162,14 @@ export function play(event,signal){
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,weak=memory<=4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
    renderer.setPixelRatio(Math.min(dpr,weak?1.15:mobileStandard?2:high?2.25:1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-   world=makeScene(renderer,event,weak,high,mobileStandard);
+   // V21.42 rollout: fluid motion is standard on capable devices.
+   // Low-spec phones keep the established instanced route; QA/users can force
+   // legacy without affecting results: localStorage footera-3d-motion-mode=legacy.
+   let fluidMotion=!weak;
+   try{if(window.localStorage?.getItem('footera-3d-motion-mode')==='legacy')fluidMotion=false}catch(_){}
+   if(typeof window!=='undefined'&&window.__FOOTERA_FORCE_LEGACY_MOTION===true)fluidMotion=false;
+   world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion);
+   layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
    function frame(now){
     if(done)return;
