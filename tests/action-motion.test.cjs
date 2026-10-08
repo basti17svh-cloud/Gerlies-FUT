@@ -62,7 +62,7 @@ test('motion repertoire gives dribble two opposing planted steps and separate ac
 });
 test('one-two, through runs, crossing winger and double feint use independent animations',async()=>{
  const a=await A();
- for(const [name,time,kind] of [['one_two',2.68,'one_two'],['through_ball',3.30,'burst'],['cutback_right',2.75,'cutback'],['wing_left',2.75,'wing']]){
+ for(const [name,time,kind] of [['one_two',2.68,'one_two'],['through_ball',3.30,'burst'],['cutback_right',3.10,'cutback'],['wing_left',3.10,'wing']]){
   const role=kind==='cutback'||kind==='wing'?1:0;
   const p=actor(),m=a.applyContextualAttackerMotion(p,time,name,role);
   assert.equal(m.kind,kind);
