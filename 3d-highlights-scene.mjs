@@ -747,13 +747,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     vx=after[0]-before[0],vz=after[1]-before[1],length=Math.hypot(vx,vz),
     fx=length>.00001?vx/length:0,fz=length>.00001?vz/length:-1;
    const desiredX=current[0]+fx*.49,desiredZ=current[1]+fz*.49;
-   let toeX=desiredX,toeZ=desiredZ,best=Infinity;
+   const toes=[];
    for(let j=0;j<2;j++){
-    // The toe moves with hip/knee/ankle. It is NOT a static player offset.
     const toe=field.worldToLocal(p.ankles[j].localToWorld(new THREE.Vector3(0,0,-.27))),
-     x=toe.x+fx*.19,z=toe.z+fz*.19,d=Math.hypot(x-desiredX,z-desiredZ);
-    if(d<best){best=d;toeX=x;toeZ=z}
+     x=toe.x+fx*.19,z=toe.z+fz*.19;
+    toes.push({x,z,d:Math.hypot(x-desiredX,z-desiredZ)});
    }
+   // Continuous foot-to-foot weighting avoids a pop when the leading boot
+   // changes halfway through a step. No frame history or simulation RNG.
+   const leftWeight=smooth(.5+(toes[1].d-toes[0].d)*1.1),
+    toeX=mix(toes[1].x,toes[0].x,leftWeight),
+    toeZ=mix(toes[1].z,toes[0].z,leftWeight);
    const dx=toeX-current[0],dz=toeZ-current[1],
     forward=clamp(dx*fx+dz*fz,.37,.69),side=clamp(dx*(-fz)+dz*fx,-.22,.22),
     blend=state.weight*.94;
