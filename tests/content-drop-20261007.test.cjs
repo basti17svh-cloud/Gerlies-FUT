@@ -6,9 +6,9 @@ const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest")
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 
 test("V21.30 shell keeps the 7 October 19:00 content drop",()=>{
- assert.match(html,/<title>Footera V21\.35<\/title>/);
- assert.equal(manifest.start_url,"./index.html?v=21.35");
- assert.match(html,/const GFUT_BUILD="V21\.35"/);
+ assert.match(html,/<title>Footera V21\.36<\/title>/);
+ assert.equal(manifest.start_url,"./index.html?v=21.36");
+ assert.match(html,/const GFUT_BUILD="V21\.36"/);
 });
 
 test("TOTW 4 is admin-approved for Wednesday 7 October at 19:00 with the Footera 18-card structure",()=>{

@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
+import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -792,7 +793,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     bodyPartMaterial(.051,.052,.027,mat(kit.shirtSecondary,{roughness:1}),knee,0,-.062,0,1,1.04);
    }
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
-   return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,gait:[{},{}]};
+   return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,gait:[{},{}],motionClips:{out:{},scratch:{},action:{}}};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i));
@@ -809,26 +810,28 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   for(const o of staticBoxes){const key=o.material.uuid;if(!staticGroups.has(key))staticGroups.set(key,[]);staticGroups.get(key).push(o)}
   for(const nodes of staticGroups.values()){const batch=new THREE.InstancedMesh(nodes[0].geometry,nodes[0].material,nodes.length);nodes.forEach((o,i)=>{batch.setMatrixAt(i,o.matrixWorld);o.removeFromParent()});scene.add(batch);track(batch)}
   function resetPose(p){p.rig.position.set(0,0,0);p.rig.rotation.set(0,0,0);p.upper.rotation.set(0,0,0);for(let i=0;i<2;i++){p.arms[i].rotation.set(0,0,0);p.elbows[i].rotation.set(0,0,0);p.legs[i].rotation.set(0,0,0);p.knees[i].rotation.set(0,0,0);p.ankles[i].rotation.set(0,0,0)}}
-  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6,acceleration=0,closeControl=false){
+  function pose(p,x,z,time,speed,heading=0,turn=0,stride=time*9.6,acceleration=0,controlWeight=0){
    resetPose(p);p.root.position.set(x,0,z);p.root.rotation.y=heading;
+   const closeControl=controlWeight>.3;
    const d=locomotionDynamics(speed,turn,stride,acceleration,closeControl),motion=d.effort;
+   const c=blendLocomotionClips(speed,turn,stride,controlWeight,p.motionClips.out,p.motionClips.scratch);
    for(let i=0;i<2;i++){
     const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=g.support?1:.26;
-    p.legs[i].rotation.x=g.hip*motion*d.strideReach;
+    p.legs[i].rotation.x=g.hip*motion*d.strideReach*c.reach;
     p.knees[i].rotation.x=g.knee*motion;
     p.ankles[i].rotation.x=g.ankle*motion;
     // A support leg braces during a cut while the free leg pushes through.
     p.legs[i].rotation.z+=side*d.plant*.10*brace-d.bank*.32*brace;
     p.ankles[i].rotation.z+=d.bank*.30*brace;
-    p.arms[i].rotation.x=-g.hip*d.armSwing*motion;
-    p.arms[i].rotation.z=side*(.13+.08*speed)+d.bank*.18;
+    p.arms[i].rotation.x=-g.hip*d.armSwing*motion+(i?1:-1)*c.arm*motion;
+    p.arms[i].rotation.z=side*(.13+.08*speed+c.spread*motion)+d.bank*.18;
     p.elbows[i].rotation.x=.58+.39*speed+(closeControl?.14:0);
    }
-   p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion)-d.hipDrop;
-   p.upper.rotation.x=d.forwardLean;
-   p.upper.rotation.y=d.shoulderTwist+clamp(turn*.65,-.13,.13);
-   p.upper.rotation.z=d.bank*.73+Math.sin(stride)*.016*motion;
-   p.rig.rotation.z=d.bank*.24;
+   p.rig.position.y=mix(-.007,p.gait[0].hipHeight-.94,motion)-d.hipDrop+c.bounce*motion;
+   p.upper.rotation.x=d.forwardLean+c.pitch*motion;
+   p.upper.rotation.y=d.shoulderTwist+c.yaw*motion+clamp(turn*.65,-.13,.13);
+   p.upper.rotation.z=d.bank*.73+c.roll*motion+Math.sin(stride)*.016*motion;
+   p.rig.rotation.z=d.bank*.24+c.roll*.08*motion;
    p.shadow.rotation.z=heading;
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
@@ -893,7 +896,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function update(time){
    renderTime=time;
-   const carrierIndex=controlCarrier(time,sequence).index;
+   const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.02),event.type,sequence),next=playerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
@@ -902,8 +905,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
-    const closeControl=carrierIndex===i;
-    pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time),acceleration,closeControl);
+    const controlWeight=carrierIndex===i?carrierState.weight:0;
+    pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time),acceleration,controlWeight);
     if(i>=8&&time<SHOT_TIME+.4){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
@@ -950,7 +953,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      striker.root.rotation.y=mix(striker.root.rotation.y,shotHeading,blend);
     }else striker.root.rotation.y*=1-blend;
     striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,k.hip,blend);striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,k.knee,blend);striker.ankles[1].rotation.x*=1-blend;
-    striker.legs[0].rotation.x*=1-blend;striker.knees[0].rotation.x*=1-blend;striker.ankles[0].rotation.x*=1-blend;striker.upper.rotation.set(0,0,0);striker.rig.position.y*=1-blend;striker.arms[0].rotation.z=-.45;striker.arms[1].rotation.z=.65;
+    striker.legs[0].rotation.x*=1-blend;striker.knees[0].rotation.x*=1-blend;striker.ankles[0].rotation.x*=1-blend;striker.upper.rotation.x*=1-blend;striker.upper.rotation.y*=1-blend;striker.upper.rotation.z*=1-blend;striker.rig.position.y*=1-blend;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-.45,blend);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,.65,blend);
      if(finish==='header'){
       const jump=Math.sin(Math.PI*smooth((time-4.9)/.92))*blend;
       striker.rig.position.y=.20*jump;striker.legs[0].rotation.x=-.38*blend;striker.legs[1].rotation.x=.36*blend;
@@ -981,6 +984,21 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       striker.upper.rotation.z=-side*.22*blend;
       striker.arms[0].rotation.x+=.18*blend;
      }
+    // Authored one-shot clips run over the common 5.4 s foot-contact.
+    const actionName=['normal','finesse','power','low_driven','header','volley','bicycle'].includes(finish)?finish:'normal';
+    const shotClip=sampleMotionClip(actionName,(time-4.9)/1.15,striker.motionClips.action);
+    const shotWeight=motionClipBlend(time,4.9,6.05,.16);
+    striker.upper.rotation.x+=shotClip.pitch*shotWeight;
+    striker.upper.rotation.y+=shotClip.yaw*shotWeight;
+    striker.upper.rotation.z+=shotClip.roll*shotWeight;
+    striker.arms[0].rotation.z-=shotClip.spread*shotWeight;
+    striker.arms[1].rotation.z+=shotClip.spread*shotWeight;
+    striker.arms[0].rotation.x+=shotClip.arm*shotWeight;
+    striker.arms[1].rotation.x-=shotClip.arm*shotWeight;
+    striker.legs[1].rotation.x+=shotClip.kick*shotWeight*.42;
+    striker.knees[1].rotation.x+=shotClip.knee*shotWeight*.38;
+    striker.ankles[1].rotation.z+=shotClip.ankle*shotWeight*.5;
+    striker.rig.position.y+=shotClip.bounce*shotWeight;
    }
    const passWindows=INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
    for(const [from,to] of passWindows)if(time>=from&&time<=to){
@@ -990,6 +1008,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
    }
    const kp=keeperPose(event.type,time,finish,sequence,keeperAction);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
+   const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
+    (time-5.05)/3.1,keeper.motionClips.action);
+   const keeperClipWeight=motionClipBlend(time,5.05,8.15,.20);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    // Knees flex behind the thigh while the keeper crouches towards the ball.
    // During anticipation both boots stay planted instead of sinking with the hips.
@@ -998,7 +1019,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    keeper.upper.rotation.x=-.12*kp.anticipation*(1-kp.dive);
    for(let i=0;i<2;i++){keeper.legs[i].rotation.x=bend;keeper.knees[i].rotation.x=-2*bend;keeper.ankles[i].rotation.x=bend}
    keeper.legs[0].rotation.z=.12+kp.dive*.32;keeper.legs[1].rotation.z=-.12-kp.dive*.15;
-   keeper.arms[0].rotation.z=-.42;keeper.arms[1].rotation.z=.42;keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
+   keeper.arms[0].rotation.z=-.42-keeperClip.spread*keeperClipWeight;keeper.arms[1].rotation.z=.42+keeperClip.spread*keeperClipWeight;
+   keeper.upper.rotation.x+=keeperClip.pitch*keeperClipWeight*.62;
+   keeper.upper.rotation.y+=keeperClip.yaw*keeperClipWeight;
+   keeper.upper.rotation.z+=keeperClip.roll*keeperClipWeight*Math.sign(kp.tilt||1);
+   keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
     // Keeper styles alter reaction posture; glove aiming below still maintains contact.
     const savePose=event.type==='big_chance_saved';
     if(savePose&&keeperAction==='low_reflex'){

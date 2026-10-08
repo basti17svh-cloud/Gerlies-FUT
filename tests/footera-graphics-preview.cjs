@@ -46,6 +46,12 @@ fs.mkdirSync(out,{recursive:true});
    delete window.__original3DSequence;delete window.__original3DChoose;
   });
   await page.waitForSelector('.fh3d canvas',{timeout:12000});
+  const clipsReady=await page.evaluate(async()=>{
+   const C=await import('./3d-motion-clips.mjs?v=2136');
+   return ['sprint','dribble','finesse','keeper_save'].every(n=>!!C.MOTION_CLIPS[n])
+    && C.sampleMotionClip('finesse',.44).yaw>.16;
+  });
+  assert.ok(clipsReady,'the actual mobile match loads keyed animation clips');
   const usesWebGL=await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2'));
   assert.ok(usesWebGL,'A real WebGL2 highlight must be rendering');
   const picked=await page.evaluate(()=>match3DQueue?.history?.at(-1)?.sequence);

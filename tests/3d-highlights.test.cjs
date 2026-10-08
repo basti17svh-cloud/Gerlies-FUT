@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2135','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2135','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-35'));assert.ok(html.includes('service-worker.js?v=2135'));
+ for(const file of ['3d-highlights.js?v=2136','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2136','3d-motion-clips.mjs?v=2136','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-36'));assert.ok(html.includes('service-worker.js?v=2136'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -494,4 +494,32 @@ test('V21.35: physical cut and defensive range are deterministic and presentatio
  }
  assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),
   M.shotImpact('goal','cut_inside_right','finesse'),'presentation never changes the final shot result');
+});
+
+test('V21.36: authored motion clips blend into foot-planted movement safely',async()=>{
+ const C=await import('../3d-motion-clips.mjs');
+ const M=await import('../3d-highlights-scene.mjs');
+ const names=['jog','sprint','dribble','cut','normal','finesse','power','low_driven','header','volley','bicycle','keeper_save','keeper_beaten'];
+ for(const name of names){
+  assert.ok(C.MOTION_CLIPS[name]&&Object.isFrozen(C.MOTION_CLIPS[name]),'clip '+name);
+  for(const phase of [0,.1,.25,.44,.67,.92,1]){
+   const frame=C.sampleMotionClip(name,phase);
+   assert.ok(C.MOTION_CHANNELS.every(channel=>Number.isFinite(frame[channel])),name+' @'+phase);
+  }
+  if(C.MOTION_CLIPS[name].loop)assert.deepEqual(C.sampleMotionClip(name,0),C.sampleMotionClip(name,1));
+ }
+ const slow=C.blendLocomotionClips(.15,0,2,0),sprint=C.blendLocomotionClips(.98,0,2,0),
+ dribble=C.blendLocomotionClips(.98,0,2,1),cut=C.blendLocomotionClips(.98,.14,2,0);
+ assert.ok(sprint.pitch<slow.pitch-.04,'sprint has distinct lean');
+ assert.ok(dribble.reach<sprint.reach-.1,'dribbling shortens steps');
+ assert.ok(cut.roll>sprint.roll+.02,'cut plants laterally');
+ assert.ok(C.sampleMotionClip('finesse',.44).yaw>.16,'finesse hip rotation');
+ assert.ok(C.sampleMotionClip('power',.44).pitch<-.2,'power follow-through');
+ assert.notDeepEqual(C.sampleMotionClip('keeper_save',.44),C.sampleMotionClip('keeper_beaten',.44));
+ const out={},scratch={};
+ assert.equal(C.blendLocomotionClips(.7,.1,3,.25,out,scratch),out,'reusable buffer');
+ assert.equal(C.motionClipBlend(4,4.9,6.05),0);
+ assert.equal(C.motionClipBlend(5.4,4.9,6.05,.16),1);
+ assert.equal(C.motionClipBlend(7,4.9,6.05),0);
+ assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),M.shotImpact('goal','cut_inside_right','finesse'));
 });
