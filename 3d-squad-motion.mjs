@@ -18,10 +18,10 @@ export function applySquadLocomotion(p,index,time,speed,turn,stride,acceleration
  // Counterturn, shoulder movement, acceleration and braking remain readable
  // from the broadcast camera, without changing the global athlete route.
  p.upper.rotation.x+=-.13*sprint*movement-.073*push*movement+.11*brake*movement+.025*Math.sin(stride)*movement+.018*idle*Math.sin(time*1.35+index);
- p.upper.rotation.y+=bank*.32+scan*.085*idle+.065*Math.cos(stride)*movement-.12*close*Math.sin(time*1.7+index*.3);
+ p.upper.rotation.y+=scan*.038*idle; // preserve forward alignment while running
  p.upper.rotation.z+=bank*.31+Math.sin(stride)*.092*movement+.07*close*scan;
  p.rig.rotation.z+=bank*.17+Math.sin(stride)*.037*movement;
- p.rig.rotation.y-=bank*.10+Math.cos(stride)*.024*movement;
+ // Hip and shoulder counter-lean happens in roll; do not yaw away from the run vector.
  for(let i=0;i<2;i++){
   const side=i?1:-1,footWave=Math.sin(stride+i*Math.PI);
   const airborne=p.gait[i].support?0:1;
