@@ -127,16 +127,24 @@ const out=path.join(__dirname,'../test-artifacts');
    const motion=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
    await motion.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})});
    await motion.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());await motion.goto(url);
-   for(const [sequence,period] of [['wing_right',1],['wing_left',2]]){
-    await fixture(motion);await motion.evaluate(({sequence,period})=>{match.halftimeLogged=period===2;match.minute=period===2?67:38;updateMatchUI();window.__sequence=match3DSequence;match3DSequence=()=>sequence},{sequence,period});
-    await force(motion,'goal');await motion.evaluate(()=>{match3DSequence=window.__sequence});await motion.waitForSelector('.fh3d canvas');
+   for(const [sequence,period] of [['cut_inside_right',1],['wing_left',2]]){
+    await fixture(motion);await motion.evaluate(({sequence,period})=>{
+     match.halftimeLogged=period===2;match.minute=period===2?67:38;updateMatchUI();
+     window.__sequence=match3DSequence;window.__choose=FooteraHighlights.choosePresentation;
+     match3DSequence=()=>sequence;
+     FooteraHighlights.choosePresentation=(event,history)=>({...window.__choose(event,history),sequence,finish:sequence==='cut_inside_right'?'finesse':'normal'});
+    },{sequence,period});
+    await force(motion,'goal');await motion.evaluate(()=>{
+     match3DSequence=window.__sequence;FooteraHighlights.choosePresentation=window.__choose;
+     delete window.__sequence;delete window.__choose;
+    });await motion.waitForSelector('.fh3d canvas');
     await motion.waitForSelector('.fh3d',{state:'detached',timeout:18000});
     const ended=await motion.evaluate(()=>({disabled:match3DQueue.disabled,pending:!!match.highlight3DPending,home:match.home,shots:match.shotEvents.length,timer:matchTimer!==null}));
     assert.deepEqual(ended,{disabled:false,pending:false,home:1,shots:1,timer:true},'recorded STANDARD sequence completes naturally');
     await motion.evaluate(()=>stopMatchTimer());
    }
-   const video=motion.video();await motion.close();await video.saveAs(path.join(out,'forward-running-390.webm'));await video.delete();
-   console.log('PASS production motion video: both wings and halftime side change');
+   const video=motion.video();await motion.close();await video.saveAs(path.join(out,'footera-cut-inside-finesse-390.webm'));await video.delete();
+   console.log('PASS Footera actual-production match video: right-wing cut inside + far-corner finesse, then second-half wing');
   }
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
