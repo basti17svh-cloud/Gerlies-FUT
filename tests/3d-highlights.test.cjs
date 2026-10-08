@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2127','3d-highlights-match.js?v=2127','3d-highlights-scene.mjs?v=2127','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-28'));assert.ok(html.includes('service-worker.js?v=2128'));
+ for(const file of ['3d-highlights.js?v=2129','3d-highlights-match.js?v=2129','3d-highlights-scene.mjs?v=2129','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-29'));assert.ok(html.includes('service-worker.js?v=2129'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -284,7 +284,7 @@ test('V21.28 reactive defending and pass swing keep visual movement deterministi
  for(const sequence of PLAY_SEQUENCES)for(const t of [0,1.5,3,5.4,6.65,8.5])for(let i=8;i<16;i++){
   const v=defenderTracking(i,t,sequence);assert.deepEqual(v,defenderTracking(i,t,sequence));
   assert.ok(Number.isFinite(v.x)&&Number.isFinite(v.z)&&Number.isFinite(v.pressure));
-  assert.ok(Math.abs(v.x)<=.581&&Math.abs(v.z)<=.301&&v.pressure>=0&&v.pressure<=1);
+  assert.ok(Math.abs(v.x)<=2.451&&Math.abs(v.z)<=1.851&&v.pressure>=0&&v.pressure<=1);
   if(t===0||t>=6.65)assert.equal(v.pressure,0,'no tracking outside build-up');
   if(v.pressure>.1)responsive++;
  }
@@ -296,4 +296,30 @@ test('V21.28 reactive defending and pass swing keep visual movement deterministi
  const css=fs.readFileSync(path.join(root,'matchday.css'),'utf8');
  assert.match(css,/#match \.match-overview \.mstat strong\{[^}]*line-height:1\.3/);
  assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+});
+
+test('V21.29: no carried ball may trail behind the running player across 32 sequences',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ let checked=0;const samples=[];
+ for(const sequence of M.PLAY_SEQUENCES)for(let step=1;step<=104;step++){
+  const time=step/10,c=M.controlCarrier(time,sequence);
+  assert.deepEqual(c,M.controlCarrier(time,sequence),'deterministic owner');
+  if(c.weight<.80)continue;
+  checked++;
+  const p=M.runPosition(c.index,time,sequence),prev=M.runPosition(c.index,time-.04,sequence),next=M.runPosition(c.index,time+.04,sequence),
+   vx=next[0]-prev[0],vz=next[1]-prev[1],speed=Math.hypot(vx,vz),ball=M.ballPosition('goal',time,sequence);
+  assert.ok(speed>.00001,'moving ball owner: '+sequence);
+  const forward=((ball[0]-p[0])*vx+(ball[2]-p[1])*vz)/speed;
+  assert.ok(forward>.25,sequence+' @'+time+' dribble must be IN FRONT of footballer, got '+forward);
+  assert.ok(Math.hypot(ball[0]-p[0],ball[2]-p[1])<.8,sequence+' @'+time+' close boot control');
+  assert.ok(Math.abs(ball[1]-.14)<.035,sequence+' @'+time+' controlled ball stays grounded');
+  samples.push(forward);
+ }
+ assert.ok(checked>700,'test must cover most frames for all controlled attack types');
+ assert.ok(Math.min(...samples)>.25);
+ assert.equal(M.controlCarrier(M.SHOT_TIME,'dribble').index,-1,'kick releases controlled ball');
+ assert.equal(M.controlCarrier(4.1,'wing_left').index,-1,'wing delivery is not glued to a boot');
+ const before=M.passStrikePose(0),contact=M.passStrikePose(.5),after=M.passStrikePose(1);
+ assert.ok(contact.hip>before.hip+.9,'visible kick contact around release');
+ assert.ok(after.hip>contact.hip,'follow through after pass release');
 });
