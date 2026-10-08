@@ -143,6 +143,9 @@ export function ballPosition(type,time,sequence='central',finish='normal'){
   if(time<2){const u=time/2;return movingBall([-13,.12,-21.6],[-10,.12,-28.6],u,0)}
   if(time<3.1)return movingBall([-10,.12,-28.6],[-1,.12,-32],(time-2)/1.1,.12);
   const carryTime=Math.min(time,SHOT_TIME-.24),carry=carriedBall(0,carryTime,seq,mix(.68,.56,clamp((carryTime-3.1)/(SHOT_TIME-3.1))));
+  // Preserve the exact arriving pass position, then settle into the next
+  // physical touch instead of jumping a quarter metre at the hand-off.
+  if(time<3.36)return lerp([-1,.12,-32],carry,smooth((time-3.1)/.26));
   if(time<SHOT_TIME-.24)return carry;
   return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
  }
