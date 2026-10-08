@@ -22,14 +22,20 @@ const fs=require('node:fs'),path=require('node:path');
      playerName:'Jamal Musiala',keeperName:'Mike Maignan',sequence:'cut_inside_right',finish:'finesse',keeperAction:'classic'});
    const result={};
    for(const baseline of [true,false]){
-    const w=M.makeScene(renderer,event,false,false,true,baseline);
-    w.resize(390,300);
-    for(const t of [2.35,4.95,5.25,5.63,6.4,7.1]){
-     w.update(t);
-     const label=(baseline?'before':'after')+'-'+String(t).replace('.','_');
-     result[label]=canvas.toDataURL('image/jpeg',.70).split(',')[1];
+    for(const [labelType,fixture,times] of [
+      ['goal',event,[2.35,3.1,4.95,5.25,5.63,6.4,7.1]],
+      ['save',FooteraHighlights.snapshot({id:'qa-save',type:'big_chance_saved',minute:38,team:'home',period:1,
+        playerName:'Jamal Musiala',keeperName:'Mike Maignan',sequence:'central',finish:'power',keeperAction:'fingertip'}),[5.72,6.15,6.4,6.65,7.12,7.65]]
+    ]){
+     const w=M.makeScene(renderer,fixture,false,false,true,baseline);
+     w.resize(390,300);
+     for(const t of times){
+      w.update(t);
+      const label=(baseline?'before':'after')+'-'+labelType+'-'+String(t).replace('.','_');
+      result[label]=canvas.toDataURL('image/jpeg',.72).split(',')[1];
+     }
+     w.dispose();
     }
-    w.dispose();
    }
    renderer.dispose();renderer.forceContextLoss();
    return result;

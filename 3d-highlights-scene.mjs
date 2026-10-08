@@ -3,6 +3,7 @@ import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballe
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2139';
+import {applyVisibleInvertedCut,applyVisibleKeeperFlight} from './3d-action-motion.mjs?v=2140';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -850,7 +851,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    p.upper.rotation.z=d.bank*.73+c.roll*motion+Math.sin(stride)*.016*motion;
    p.rig.rotation.z=d.bank*.24+c.roll*.08*motion;
    p.shadow.rotation.z=heading;
-   if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride)}
+   if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
@@ -1060,7 +1061,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else if(savePose&&keeperAction==='fingertip'){
      keeper.rig.rotation.y-=.16*kp.dive;
     }
-   if(enhancedRigMotion){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time)}
+   if(enhancedRigMotion){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,shotImpact(event.type,sequence,finish)[0])}
    if(kp.dive>.05){
     keeper.elbows.forEach(e=>e.rotation.x=0);
     // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
