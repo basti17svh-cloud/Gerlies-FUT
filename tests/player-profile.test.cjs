@@ -13,7 +13,7 @@ assert.match(html,/bio-performance-grid/);
 assert.match(html,/playerBiographyHTML\(b,item,\{shownPosition,clubPerf\}\)/);
 assert.match(html,/playerBiographyHTML\(b,item,\{shownPosition:shown,friend:true\}\)/);
 assert.match(html,/\.\/player-profile\.css\?v=2114/);
-assert.match(html,/const GFUT_BUILD="V21\.33"/);
+assert.match(html,/const GFUT_BUILD="V21\.34"/);
 assert.match(css,/#bioModal \.bio-hero\{display:grid/);
 assert.match(css,/#bioModal \.bio-attributes-grid\{display:grid;grid-template-columns:repeat\(6/);
 assert.match(css,/@media\(max-width:560px\)[\s\S]*?#bioModal \.bio-profile-grid\{grid-template-columns:1fr\}/);
