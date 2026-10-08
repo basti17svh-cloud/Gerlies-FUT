@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/footera-v21-38-motion2-pilot/);
  assert.match(sw,/champions-system\.js\?v=2114/);
- assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.38");
+ assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.39");
 });
 
 test("Champions has one play-menu entry and qualification progress stays informational inside Rivals",()=>{

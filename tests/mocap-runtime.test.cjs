@@ -36,3 +36,29 @@ test('Goalkeeper authentic jump/loading/landing clips do not alter world positio
  assert.ok(Array.from(p.mocapFrame).every(Number.isFinite));
  assert.equal(p.root,undefined);
 });
+
+function motionPose(p){
+ return [p.upper,...p.legs,...p.knees,...p.ankles].flatMap(j=>[j.rotation.x,j.rotation.y,j.rotation.z]);
+}
+function maxPoseDifference(a,b){return Math.max(...a.map((x,i)=>Math.abs(x-b[i])))}
+test('Walk, jog and sprint crossfade without visible speed-threshold snaps',async()=>{
+ const m=await load();
+ for(const boundary of [.20,.26,.34,.56,.62,.70]){
+  const a=actor(),b=actor();
+  m.applyRunningMocap(a,2,boundary-.0001,1.45);
+  m.applyRunningMocap(b,2,boundary+.0001,1.45);
+  assert.ok(maxPoseDifference(motionPose(a),motionPose(b))<.06,'speed '+boundary);
+ }
+ const sprint=actor();assert.equal(m.applyRunningMocap(sprint,2,.9,1.45).clip,'Sprint_Loop');
+ const contact=actor();assert.equal(m.applyRunningMocap(contact,5.4,.62,1.45).blend,0);
+});
+test('Keeper capture transitions remain continuous at takeoff, landing and recovery',async()=>{
+ const m=await load();
+ for(const boundary of [5.22,5.79,5.91,6.03,6.67,6.79,6.91,7.83,7.95,8.07,8.7]){
+  const a=actor(),b=actor();
+  m.applyKeeperMocap(a,boundary-.0001);m.applyKeeperMocap(b,boundary+.0001);
+  assert.ok(maxPoseDifference(motionPose(a),motionPose(b))<.06,'keeper '+boundary);
+ }
+ const p=actor();assert.equal(m.applyKeeperMocap(p,9.2).blend,0);
+ assert.ok(motionPose(p).every(Number.isFinite));
+});

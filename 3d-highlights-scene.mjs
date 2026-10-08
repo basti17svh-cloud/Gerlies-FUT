@@ -2,7 +2,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2137';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
-import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2139';
+import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight} from './3d-action-motion.mjs?v=2140';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.

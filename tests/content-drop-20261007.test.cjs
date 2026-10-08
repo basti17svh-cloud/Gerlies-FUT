@@ -7,7 +7,7 @@ function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert
 
 test("V21.30 shell keeps the 7 October 19:00 content drop",()=>{
  assert.match(html,/<title>Footera V21\.38<\/title>/);
- assert.equal(manifest.start_url,"./index.html?v=21.38");
+ assert.equal(manifest.start_url,"./index.html?v=21.39");
  assert.match(html,/const GFUT_BUILD="V21\.38"/);
 });
 
