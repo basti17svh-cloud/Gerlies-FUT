@@ -55,7 +55,7 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  for(const file of ['3d-highlights.js?v=2127','3d-highlights-match.js?v=2127','3d-highlights-scene.mjs?v=2127','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-27'));assert.ok(html.includes('service-worker.js?v=2127'));
+ assert.ok(sw.includes('footera-v21-28'));assert.ok(html.includes('service-worker.js?v=2128'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -277,8 +277,8 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
 });
 
-// V21.27 — presentation-only motion remains bounded, deterministic and mobile-safe.
-test('V21.27 reactive defending and pass swing keep visual movement deterministic',async()=>{
+// V21.28 — presentation-only motion remains bounded, deterministic and mobile-safe.
+test('V21.28 reactive defending and pass swing keep visual movement deterministic',async()=>{
  const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
  let responsive=0;
  for(const sequence of PLAY_SEQUENCES)for(const t of [0,1.5,3,5.4,6.65,8.5])for(let i=8;i<16;i++){

@@ -160,7 +160,7 @@ function eventTeamSolveFormation(entries,formation){
  let scores=new Float64Array(size);scores.fill(-Infinity);scores[0]=0;
  const choices=[];
  for(const entry of candidates){
-  const next=scores.slice(),choice=new Int8Array(size);choice.fill(-1),rating=eventTeamEntryRating(entry),highlight=eventTeamEntryIsHighlight(entry,maxRating);
+  const next=scores.slice(),choice=new Int8Array(size),rating=eventTeamEntryRating(entry),highlight=eventTeamEntryIsHighlight(entry,maxRating);choice.fill(-1);
   for(let mask=0;mask<size;mask++){
    if(!Number.isFinite(scores[mask]))continue;
    for(let slot=0;slot<slots.length;slot++){
