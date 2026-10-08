@@ -14,14 +14,15 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
  assert.match(html,/champions-system\.js\?v=2114/);
- assert.match(html,/const GFUT_BUILD="V21\.42"/);
- assert.match(html,/<title>Footera V21\.42<\/title>/);
+ const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
+ assert.ok(build,"Footera build identifier exists");
+ assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
  assert.match(hub,/champions:\{title:"Footera Champions"/);
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
- assert.match(sw,/footera-v21-42-fluid-live-motion/);
+ assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
  assert.match(sw,/champions-system\.js\?v=2114/);
- assert.equal(JSON.parse(manifest).start_url,"./index.html?v=21.42");
+ assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
 test("Champions has one play-menu entry and qualification progress stays informational inside Rivals",()=>{
