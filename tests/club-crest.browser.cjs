@@ -28,6 +28,7 @@ const server=http.createServer((req,res)=>{
    clubSection="identity";clubIdentityDraft=makeClubIdentityDraft();switchView("clubView");
   });
   console.log("INITIAL SCREEN STATE",JSON.stringify(await page.evaluate(()=>{const a=document.getElementById("clubView"),b=document.getElementById("clubIdentitySection"),c=document.getElementById("identityHeroCrest");return{activeView:document.querySelector(".view.active")?.id,clubSection,clubViewDisplay:getComputedStyle(a).display,identityHidden:b.hidden,identityDisplay:getComputedStyle(b).display,heroDisplay:getComputedStyle(c).display,crestDisplay:getComputedStyle(c.querySelector(".club-crest")).display}})));
+  console.log("CREST ANCESTOR MEASURE",JSON.stringify(await page.evaluate(()=>{let e=document.querySelector("#identityHeroCrest .club-crest"),rows=[];while(e){const r=e.getBoundingClientRect();rows.push({name:e.tagName.toLowerCase(),id:e.id,cls:String(e.className).slice(0,60),display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility,rect:[r.width,r.height]});e=e.parentElement}return rows})));
   assert.equal(await page.locator("#identityHeroCrest .club-crest-art").count(),1,"new SVG crest is present");
   assert.equal(await page.locator("#identityCrestSymbols button").count(),36);
   assert.equal(await page.locator("#identityCrestSymbols svg").count(),35,"all non-eagle options are vectors");
