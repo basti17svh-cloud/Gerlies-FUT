@@ -304,6 +304,83 @@ test('V21.32: German positions and Chip Shot+ drive scene selection',()=>{
  const chips=styles=>Array.from({length:2000},(_,i)=>H.choosePresentation({...event('goal','chip-'+i),scorerSlot:'ST',playerStyles:styles})).filter(x=>x.family==='chip').length;
  assert.ok(chips([{id:'chip-shot',plus:true}])>chips([])*2,'Chip Shot+ visibly affects scene choice');
 });
+test('V21.33: defensive and goalkeeper choices are immutable, deterministic and never use simulator RNG',async()=>{
+ const styles=['block','jockey','slide-tackle','intercept','anticipate','aerial','footwork','far-reach','rush-out','deflector','cross-claimer'];
+ const declared=new Set(require('../playstyles.js').definitions.map(x=>x.id));
+ for(const id of styles)assert.ok(declared.has(id),'current real PlayStyle ID: '+id);
+ const e={...event('big_chance_saved','keeper-scenes'),sequence:'one_on_one',finish:'low_driven',
+  defenderStyles:[{id:'slide-tackle',plus:true}],keeperStyles:[{id:'footwork',plus:true}],defenderName:'Ruben Dias',defenderIndex:9};
+ const reactions=H.chooseReactions(e);assert.deepEqual(reactions,H.chooseReactions(e));assert.ok(Object.isFrozen(reactions));
+ const snap=H.snapshot({...e,...reactions});
+ assert.ok(Object.isFrozen(snap.defenderStyles)&&Object.isFrozen(snap.keeperStyles)&&Object.isFrozen(snap.keeperStyles[0]));
+ assert.equal(snap.defenderIndex,9);assert.equal(snap.defenderName,'Ruben Dias');
+ assert.equal(snap.defenderAction,reactions.defenderAction);assert.equal(snap.keeperAction,reactions.keeperAction);
+ assert.equal(H.chooseReactions({...e,type:'goal'}).keeperAction,'beaten');
+ assert.equal(H.chooseReactions({...e,type:'shot_post'}).keeperAction,'beaten');
+ let calls=0;const original=Math.random;Math.random=()=>{calls++;return .18};
+ try{for(let i=0;i<450;i++)assert.deepEqual(H.chooseReactions({...e,id:'s-'+i}),H.chooseReactions({...e,id:'s-'+i}))}
+ finally{Math.random=original}
+ assert.equal(calls,0,'presentation RNG must never touch simulation');
+});
+test('V21.33: defensive PlayStyles steer visible attempts; keeper styles steer only REAL saved chances',()=>{
+ const sample=(which,base,slot)=>{let count=0;for(let i=0;i<2400;i++){
+  const choice=H.chooseReactions({...event(base.type||'goal','def-'+i),sequence:base.sequence||'dribble',finish:base.finish||'normal',...(base.extra||{}),...slot});
+  if(choice[which]===base.target)count++;
+ }return count};
+ const configs=[
+  ['jockey','dribble','jockey','jockey'],
+  ['slide_attempt','dribble','slide-tackle','slide-tackle'],
+  ['block_attempt','central','block','block'],
+  ['lane_read','through_ball','intercept','intercept'],
+  ['aerial_challenge','early_cross_right','aerial','aerial']
+ ];
+ for(const [target,sequence,id] of configs){
+  const base={sequence,target};
+  const no=sample('defenderAction',base,{}),boosted=sample('defenderAction',base,{defenderStyles:[{id,plus:true}]});
+  assert.ok(boosted>no*1.25,`${id}: ${boosted} > ${no}`);
+ }
+ const saves=[
+  ['fingertip','power','halfspace_left','far-reach'],
+  ['parry','normal','central','deflector'],
+  ['low_reflex','low_driven','low_driven_duel','footwork'],
+  ['rush_spread','normal','one_on_one','rush-out'],
+  ['high_reach','header','early_cross_left','cross-claimer']
+ ];
+ for(const [target,finish,sequence,id] of saves){
+  const base={target,type:'big_chance_saved',sequence,finish};
+  const plain=sample('keeperAction',base,{}),boosted=sample('keeperAction',base,{keeperStyles:[{id,plus:true}]});
+  assert.ok(boosted>plain*1.35,`${id}: ${boosted} > ${plain}`);
+ }
+});
+test('V21.33: reactions have distinct poses while ball-contact and authoritative outcomes stay intact',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ const types=['jockey','close_down','slide_attempt','block_attempt','lane_read','aerial_challenge'];
+ const samples=new Set();for(const kind of types){
+  const t=kind==='lane_read'?2.45:kind==='aerial_challenge'?4.95:5.2;
+  const a=M.defensiveMotion(kind,t,8,8),other=M.defensiveMotion(kind,t,9,8);
+  assert.ok(a.intensity>.05&&Number.isFinite(a.jump)&&Number.isFinite(a.slide),kind);
+  assert.equal(other.intensity,0,'no full animation on other defenders');
+  assert.deepEqual(a,M.defensiveMotion(kind,t,8,8));
+  samples.add([kind,a.slide>0,a.jump>0].join(':'));
+ }
+ assert.equal(samples.size,types.length);
+ const keeper=['classic','fingertip','parry','low_reflex','rush_spread','high_reach'];
+ for(const action of keeper){
+  const contact=M.ballPosition('big_chance_saved',M.IMPACT_TIME,'central','normal',action);
+  assert.deepEqual(contact,M.ballPosition('big_chance_saved',M.IMPACT_TIME,'central','normal','classic'),'same actual save contact');
+  assert.notDeepEqual(M.ballPosition('big_chance_saved',8.2,'central','normal',action),M.ballPosition('big_chance_saved',8.2,'central','normal','invalid-action')||[],action);
+  const k=M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central',action);
+  assert.ok([k.x,k.y,k.z,k.tilt,k.dive].every(Number.isFinite),action);
+  const goal=M.ballPosition('goal',8,'central','normal',action);
+  assert.deepEqual(goal,M.ballPosition('goal',8,'central','normal','classic'),'keeper visuals never turn goal into save');
+  const miss=M.ballPosition('big_chance_missed',8,'central','normal',action);
+  assert.deepEqual(miss,M.ballPosition('big_chance_missed',8,'central','normal','classic'),'miss remains a miss');
+ }
+ assert.ok(M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','high_reach').y>M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','classic').y);
+ assert.ok(M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','rush_spread').z>M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','classic').z);
+ const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.doesNotMatch(source,/Math\\.random\\s*\\(/);
+});
 // V21.30 — presentation-only motion remains bounded, deterministic and mobile-safe.
 test('V21.30 reactive defending and pass swing keep visual movement deterministic',async()=>{
  const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
