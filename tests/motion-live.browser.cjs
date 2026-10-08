@@ -39,7 +39,10 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
     const visible=await page.evaluate(()=>document.getElementById('matchScore').textContent);
     assert.equal(visible,'1 : 0','real goal appears only after 3D impact');
    }
-   if(await layer.isVisible())await page.locator('.fh3d-skip').click();
+   // The autonomous 10.4s replay can complete while Chromium waits for a
+   // stable clickable button under software WebGL. DOM click is race-safe:
+   // if the overlay has already disappeared, natural completion is valid.
+   await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    const result=await page.evaluate(()=>({score:[match.home,match.away],goals:match.goalEvents.length,pending:!!match.highlight3DPending,disabled:!!match3DQueue.disabled}));
    assert.deepEqual(result.score,[1,0]);assert.equal(result.goals,1);
