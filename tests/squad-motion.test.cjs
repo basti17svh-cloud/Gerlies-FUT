@@ -12,7 +12,7 @@ test('all 15 instanced field players have unsynchronized upper/lower body motion
   m.applySquadLocomotion(p,index,2.8,.78,index%2?.10:-.10,phase,.4,index>=8?5:20);
   assert.ok(Math.hypot(...pose(p))>.25,'athlete '+index+' must have visible motion');
   assert.ok(pose(p).every(Number.isFinite));
-  kinds.add(p.upper.rotation.z.toFixed(6));
+  kinds.add(p.arms[1].rotation.x.toFixed(6));
   assert.deepEqual(p.root.position,baseline.root.position,'no position change');
  }
  assert.ok(kinds.size>=10,'individual gait phases must differ');

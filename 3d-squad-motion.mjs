@@ -10,18 +10,16 @@ export const SQUAD_MOTION_VERSION='21.41-full-squad';
 // Called after base gait, before contextual defending; existing foot IK remains authoritative.
 export function applySquadLocomotion(p,index,time,speed,turn,stride,acceleration,ballDistance=99){
  const v=clamp(speed),movement=smooth(v/.34),sprint=smooth((v-.27)/.55);
- const idle=1-smooth(v/.18),push=clamp(acceleration),brake=clamp(-acceleration);
+ const idle=v<=.001?1:0,brake=clamp(-acceleration);
  const bank=clamp(turn*5.5,-.75,.75)*movement;
  const scan=Math.sin(time*(.86+(index%5)*.067)+index*1.13);
  // Only nearby defenders jockey for the ball. No synchronized squad crouching.
  const close=index>=8?smooth((12-clamp(ballDistance,0,99))/9)*smooth((time-1.5)/.85)*(1-smooth((time-5.26)/.65)):0;
- // Counterturn, shoulder movement, acceleration and braking remain readable
- // from the broadcast camera, without changing the global athlete route.
- p.upper.rotation.x+=-.13*sprint*movement-.073*push*movement+.11*brake*movement+.025*Math.sin(stride)*movement+.018*idle*Math.sin(time*1.35+index);
- p.upper.rotation.y+=scan*.038*idle; // preserve forward alignment while running
- p.upper.rotation.z+=bank*.31+Math.sin(stride)*.092*movement+.07*close*scan;
- p.rig.rotation.z+=bank*.17+Math.sin(stride)*.037*movement;
- // Hip and shoulder counter-lean happens in roll; do not yaw away from the run vector.
+ // The existing route-oriented core supplies torso lean and body turns.
+ // Keep its facing vector EXACTLY intact while moving: change free limbs only.
+ // At absolute rest, a small deterministic glance prevents frozen idle stances.
+ p.upper.rotation.x+=.018*idle*Math.sin(time*1.35+index);
+ p.upper.rotation.y+=scan*.038*idle;
  for(let i=0;i<2;i++){
   const side=i?1:-1,footWave=Math.sin(stride+i*Math.PI);
   const airborne=p.gait[i].support?0:1;
