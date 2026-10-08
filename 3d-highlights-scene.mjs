@@ -693,6 +693,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Tables are built once; playback only reads two floats per actor.
   const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=playerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=playerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
   function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
+  // Distance-based ball roll: the football no longer spins at a constant
+  // unrelated speed during stops, turns or high-speed forward carries.
+  const ballRollSamples=208,ballRollPath=new Float32Array(ballRollSamples+1);
+  {let previous=ballPosition(event.type,0,sequence,finish);
+   for(let i=1;i<=ballRollSamples;i++){
+    const t=i*DURATION/ballRollSamples,next=ballPosition(event.type,t,sequence,finish);
+    const travelled=Math.hypot(next[0]-previous[0],next[2]-previous[2]);
+    ballRollPath[i]=ballRollPath[i-1]+(t<=SHOT_TIME?travelled/.14:4*DURATION/ballRollSamples);
+    previous=next;
+   }
+  }
+  function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
@@ -705,6 +717,33 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const elbow=keeper.elbows[keeper.arms.indexOf(arm)];
    const lower=end.clone().sub(joint).normalize().applyQuaternion(arm.quaternion.clone().invert());
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
+  }
+  // For close-control, guide the rendered ball between the actual ANIMATED
+  // boot toes. Flight paths remain independent when the foot releases it.
+  function bootGuidedBall(original,time){
+   const state=controlCarrier(time,sequence);
+   if(state.weight<=0)return original;
+   const p=players[state.index];
+   // Explicit update is necessary because the ball is positioned BEFORE render.
+   p.root.updateWorldMatrix(true,true);
+   const current=playerPosition(state.index,time,event.type,sequence),
+    before=playerPosition(state.index,Math.max(0,time-.05),event.type,sequence),
+    after=playerPosition(state.index,Math.min(DURATION,time+.05),event.type,sequence),
+    vx=after[0]-before[0],vz=after[1]-before[1],length=Math.hypot(vx,vz),
+    fx=length>.00001?vx/length:0,fz=length>.00001?vz/length:-1;
+   const desiredX=current[0]+fx*.49,desiredZ=current[1]+fz*.49;
+   let toeX=desiredX,toeZ=desiredZ,best=Infinity;
+   for(let j=0;j<2;j++){
+    // The toe moves with hip/knee/ankle. It is NOT a static player offset.
+    const toe=field.worldToLocal(p.ankles[j].localToWorld(new THREE.Vector3(0,0,-.27))),
+     x=toe.x+fx*.19,z=toe.z+fz*.19,d=Math.hypot(x-desiredX,z-desiredZ);
+    if(d<best){best=d;toeX=x;toeZ=z}
+   }
+   const dx=toeX-current[0],dz=toeZ-current[1],
+    forward=clamp(dx*fx+dz*fz,.37,.69),side=clamp(dx*(-fz)+dz*fx,-.22,.22),
+    blend=state.weight*.94;
+   return[mix(original[0],current[0]+fx*forward-fz*side,blend),.14,
+    mix(original[2],current[1]+fz*forward+fx*side,blend)];
   }
   function update(time){
    renderTime=time;
@@ -772,7 +811,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
     aimArm(keeper.arms[0],[reachX,reachY,-50.6]);aimArm(keeper.arms[1],[reachX,reachY,-50.6]);
    }
-   const bp=ballPosition(event.type,time,sequence,finish);ball.position.set(...bp);ball.rotation.x=time*9;ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.42:.24;
+   const bp=bootGuidedBall(ballPosition(event.type,time,sequence,finish),time);
+   ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
+   ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.25:.18;
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
    if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
@@ -790,13 +831,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function dispose(){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear()}
   function inspect(){
    const project=p=>p.clone().project(camera),visible=players.filter(p=>{const q=project(p.root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,1,0)));return Math.abs(q.x)<.98&&Math.abs(q.y)<.98&&q.z<1}).length;
-   const ballWorld=ball.getWorldPosition(new THREE.Vector3()),goalWorld=new THREE.Vector3(...worldPosition([0,.4,-52.5],direction)),wingerWorld=players[1].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0)),runnerWorld=players[2].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0));
+   const ballWorld=ball.getWorldPosition(new THREE.Vector3()),control=controlCarrier(renderTime,sequence),goalWorld=new THREE.Vector3(...worldPosition([0,.4,-52.5],direction)),wingerWorld=players[1].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0)),runnerWorld=players[2].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,.9,0));
    const ballScreen=project(ballWorld),goalScreen=project(goalWorld),wingerScreen=project(wingerWorld),runnerScreen=project(runnerWorld),sampleMatrix=new THREE.Matrix4(),samplePosition=new THREE.Vector3(),flagPosition=new THREE.Vector3();
    if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{facing,supportFootClearance,direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+   return{facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
