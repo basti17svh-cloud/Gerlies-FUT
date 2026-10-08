@@ -76,3 +76,5 @@ fs.mkdirSync(out,{recursive:true});
   await browser.close();server.close();
  }
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
+
+// V21.35: capture the actual motion-dynamics release, including turn/plant and range-aware defense.

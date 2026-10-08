@@ -893,6 +893,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function update(time){
    renderTime=time;
+   const carrierIndex=controlCarrier(time,sequence).index;
+   const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.02),event.type,sequence),next=playerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
     const back=playerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=playerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
@@ -900,15 +902,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
-    const closeControl=controlCarrier(time,sequence).index===i;
+    const closeControl=carrierIndex===i;
     pose(p,x,z,time,speed,heading,turn,gaitPhase(i,time),acceleration,closeControl);
     if(i>=8&&time<SHOT_TIME+.4){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
     // The real defender's style determines a visible attempt, not an outcome.
-    const actionBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
-    const motion=defensiveMotion(defenderAction,time,i,defenderIndex,Math.hypot(actionBall[0]-x,actionBall[2]-z)),a=motion.intensity;
+    const motion=defensiveMotion(defenderAction,time,i,defenderIndex,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z)),a=motion.intensity;
     if(a>.001){
      if(motion.kind==='jockey'){
       p.upper.rotation.y+=.18*a*Math.sin(time*5);p.upper.rotation.x+=.07*a;
