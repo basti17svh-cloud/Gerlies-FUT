@@ -1,0 +1,58 @@
+/* Footera weekly rewards – native premium event styling, mobile first. */
+#weeklyRewardHome[hidden]{display:none!important}
+.weekly-reward-banner{width:100%;min-height:98px;display:flex;gap:15px;align-items:center;text-align:left;cursor:pointer;color:#f8f9fb;background:radial-gradient(ellipse at 105% 4%,rgba(88,225,238,.18),transparent 48%),linear-gradient(115deg,#1b1320,#101d29 66%,#0a2833);border:1px solid rgba(111,211,231,.52);border-radius:19px;padding:17px 18px;box-shadow:0 12px 32px #0006,inset 0 1px #fff2;transition:transform .15s,border-color .15s}
+.weekly-reward-banner:active{transform:scale(.992)}
+.weekly-reward-banner:focus-visible,.weekly-reward-tabs button:focus-visible,.weekly-reward-claim:focus-visible{outline:3px solid #89edfb;outline-offset:3px}
+.weekly-reward-gift{width:56px;height:56px;flex:none;display:grid;place-items:center;border-radius:17px;color:#8befff;background:linear-gradient(155deg,#143d4e,#17202e);border:1px solid #388b9c;box-shadow:0 0 22px #4bcedb22}
+.weekly-reward-gift svg{width:31px;height:31px}
+.weekly-reward-banner-copy{min-width:0;display:grid;gap:5px}
+.weekly-reward-banner-copy small{font-size:10px;font-weight:950;letter-spacing:.17em;color:#83e6f6}
+.weekly-reward-banner-copy strong{font-size:clamp(17px,4.5vw,23px);font-weight:950;line-height:1.15}
+.weekly-reward-banner-copy>span{font-size:11px;line-height:1.4;color:#c4d6de}
+.weekly-reward-arrow{margin-left:auto;font-size:36px;color:#94eaf7;line-height:1}
+#weeklyRewardModal{background:radial-gradient(ellipse at 50% -7%,#172c3b 0,#0c101b 44%,#09090e 80%);color:#f9fbff;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+#weeklyRewardModal .modalinner{max-width:690px}
+#weeklyRewardModal .modalhead{background:#0c1420eF;border-bottom:1px solid #38566a;padding:10px 0 14px;backdrop-filter:blur(12px)}
+#weeklyRewardModal .modalhead h3{font-size:19px;letter-spacing:.06em}
+#weeklyRewardModal .modalhead small{display:block;margin-top:4px;color:#90b8c7;font-size:10px;letter-spacing:.12em}
+#weeklyRewardModalClose{background:#192a34;border-color:#486578;color:#edf8fa;font-size:12px;min-height:40px}
+.weekly-reward-intro{text-align:center;padding:26px 8px 20px}
+.weekly-reward-intro small{color:#9eddec;font-size:10px;letter-spacing:.15em;font-weight:950}
+.weekly-reward-intro h3{margin:10px 0;color:#7de5f1;font-size:clamp(27px,8vw,40px);line-height:1.1;letter-spacing:-.03em;text-transform:uppercase;font-weight:1000}
+.weekly-reward-intro p{margin:10px auto 0;font-size:12px;line-height:1.5;color:#c8d3da}
+.weekly-reward-tabs{display:flex;gap:9px;padding:3px 0 17px;overflow-x:auto;scrollbar-width:thin}
+.weekly-reward-tabs button{min-width:135px;flex:1;border:1px solid #384b57;border-radius:12px;background:#151c26;color:#c6d3dc;font-size:11px;font-weight:950;cursor:pointer;padding:12px 10px}
+.weekly-reward-tabs button.active{border-color:#7be5ed;background:linear-gradient(145deg,#143642,#10202d);color:#a1f7fc;box-shadow:0 0 16px #73eff822}
+.weekly-reward-tabs span{display:block;font-size:10px;margin-top:5px;font-weight:600;color:#d3dce4}
+.weekly-reward-detail{padding-bottom:25px}
+.weekly-reward-rank{position:relative;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 12px 29px;border:1px solid #38536a;border-radius:19px;background:radial-gradient(ellipse at 50% 20%,#23556d 0,#152a3d 48%,#0e1727 90%);overflow:hidden;box-shadow:0 16px 35px #0005}
+.weekly-reward-rank:before{content:"";position:absolute;width:220px;height:220px;top:-135px;border-radius:50%;border:1px solid #9ce7ff47;box-shadow:0 0 0 29px #b7eeff0c,0 0 0 60px #b7eeff07}
+.weekly-reward-rank>*{position:relative}
+.weekly-reward-rank small{color:#b2e8f2;font-size:10px;letter-spacing:.13em;font-weight:900}
+.weekly-reward-rank-icon{width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#fae8ac,#b8994a);color:#46340f;display:grid;place-items:center;font-size:32px;transform:rotate(-6deg);box-shadow:0 8px 25px #0008}
+.weekly-reward-rank strong{font-size:clamp(29px,9vw,45px);line-height:1.08;font-weight:1000;color:#fff;text-transform:uppercase;text-shadow:0 5px 12px #0007}
+.weekly-reward-rank>span:last-child{font-size:13px;color:#d0e3ed}
+.weekly-reward-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 2px 14px}
+.weekly-reward-detail-head h4{margin:0;font-size:14px;letter-spacing:.12em}
+.weekly-reward-detail-head small{font-size:11px;color:#9eb4c3}
+.weekly-reward-prizes{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}
+.weekly-reward-coin,.weekly-reward-pack{flex:1 1 128px;max-width:195px;min-width:115px;min-height:200px;border-radius:15px;border:1px solid #334858;background:linear-gradient(145deg,#1c2733,#101720);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;padding:13px 9px 15px}
+.weekly-reward-coin img{width:95px;height:103px;object-fit:contain;margin:auto 0 3px;filter:drop-shadow(0 8px 18px #f8bf3d44)}
+.weekly-reward-coin strong{font-size:23px;line-height:1.2;color:#fce28b;font-weight:1000}
+.weekly-reward-coin span{color:#e3d6a8;font-size:11px;margin-top:5px}
+.weekly-reward-pack-art{width:100%;height:119px;position:relative;display:grid;place-items:center;margin-bottom:8px}
+.weekly-reward-pack-art img{width:100%;max-width:102px;height:119px;object-fit:contain;filter:drop-shadow(0 5px 14px #0008)}
+.weekly-reward-pack-rating,.weekly-reward-pack-count{position:absolute;padding:4px 6px;border-radius:6px;background:#091922ec;border:1px solid #a1efff6c;font-size:11px;font-weight:1000;color:#bbf6ff}
+.weekly-reward-pack-rating{top:3px;left:4px}
+.weekly-reward-pack-count{right:4px;bottom:9px}
+.weekly-reward-pack strong{font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.weekly-reward-pack small{margin-top:6px;color:#9eb3bc;font-size:11px}
+.weekly-reward-note{font-size:11px;line-height:1.6;color:#a6bdc9;text-align:center;margin:17px 5px}
+.weekly-reward-claim,.weekly-reward-store{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:55px;border:1px solid #8ce3f0;border-radius:13px;background:linear-gradient(100deg,#8ef1ed,#44c9eb);font-size:15px;font-weight:1000;color:#061b26;cursor:pointer;box-shadow:0 8px 24px #24aeda33}
+.weekly-reward-claim:disabled{opacity:.5;cursor:not-allowed}
+.weekly-reward-empty{text-align:center;padding:60px 10px}
+.weekly-reward-empty h4{font-size:27px;margin:18px 0 8px}
+.weekly-reward-empty p{font-size:13px;line-height:1.6;color:#bed4db;margin-bottom:26px}
+.weekly-reward-check{display:grid;place-items:center;margin:auto;background:#164d54;color:#9dffef;border:1px solid #6ff0d7;font-size:45px;width:92px;height:92px;border-radius:50%}
+@media(max-width:390px){.weekly-reward-banner{gap:10px;padding:13px 12px}.weekly-reward-gift{width:47px;height:47px}.weekly-reward-banner-copy small{font-size:9px}.weekly-reward-banner-copy>span{font-size:10px}.weekly-reward-prizes{gap:8px}.weekly-reward-coin,.weekly-reward-pack{flex-basis:calc(50% - 8px);min-width:0}.weekly-reward-pack-art{height:106px}.weekly-reward-pack-art img{height:106px}}
+@media(prefers-reduced-motion:reduce){.weekly-reward-banner{transition:none}}

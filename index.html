@@ -17,7 +17,7 @@
 <meta name="color-scheme" content="dark">
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
-<title>Footera V21.27</title>
+<title>Footera V21.28</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1473,6 +1473,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
+<link rel="stylesheet" href="./weekly-rewards.css?v=2128">
 <link rel="stylesheet" href="./legacy-card.css">
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css">
@@ -1560,7 +1561,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.27</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.28</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1602,6 +1603,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
         </div>
       </div>
 
+      <div id="weeklyRewardHome" class="weekly-reward-home" hidden></div>
       <div id="competitionHome" class="home-competition"></div>
 
       <div class="home-action-grid">
@@ -1965,6 +1967,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="evoPickerModal" class="modal"><div class="modalinner evo-modalinner"><div class="modalhead"><div><h3 id="evoPickerTitle">Evolution</h3><div id="evoPickerSub" style="font-size:7px;color:#87958f"></div></div><button id="evoPickerClose" class="secondary">Schließen</button></div><div id="evoPickerBody"></div></div></div>
 <div id="bioModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Spielerprofil</h3><div id="bioDetailSub" style="font-size:7px;color:#87958f"></div></div><button id="bioModalClose" class="secondary">Schließen</button></div><div id="bioDetailBody"></div></div></div>
 <div id="campaignModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3 id="campaignModalTitle">Campaign Hub</h3><div style="font-size:7px;color:#87958f">Fortschritt und nächste Schritte</div></div><button id="campaignModalClose" class="secondary">Schließen</button></div><div id="campaignModalBody" class="campaign-detail-grid"></div></div></div>
+<div id="weeklyRewardModal" class="modal weekly-reward-modal" role="dialog" aria-modal="true" aria-label="Wöchentliche Wettbewerbsbelohnungen"><div class="modalinner"><div class="modalhead"><div><h3>WÖCHENTLICHE REWARDS</h3><small>DEIN RANG · DEINE BELOHNUNG</small></div><button id="weeklyRewardModalClose" class="secondary" type="button">Schließen</button></div><div id="weeklyRewardModalBody"></div></div></div>
 <div id="friendTeamModal" class="modal friend-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="friendTeamModalTitle">Freundes-Mannschaft</h3><div id="friendTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="friendTeamModalClose" class="secondary">Schließen</button></div><div id="friendTeamModalBody"></div></div></div>
 <div id="onlineDuelModal" class="modal online-duel-modal"><div class="modalinner"><div class="modalhead"><h3 id="onlineDuelModalTitle">Freundesduell · Live-Matchday</h3><button id="onlineDuelModalClose" class="secondary">Schließen</button></div><div id="onlineDuelBody"></div></div></div>
 <div id="usernameRequiredModal" class="modal"><div class="modalinner"><div class="modalhead"><div><h3>Benutzername festlegen</h3><div style="font-size:7px;color:#87958f">Dein Footera-Profil ist noch nicht vollständig</div></div></div>
@@ -8273,7 +8276,7 @@ function renderHomeRewards(){
  const claimable=homeClaimableTasks(),objectivesReady=availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount(),packs=homeOwnedPacks(),pending=competitionPending(),total=claimable.length+objectivesReady+passReady+pending.length+packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0);
  $("homeReadyCount").textContent=String(total);
  $("homeReadySummary").textContent=total?`Du hast ${total} Belohnung${total===1?"":"en"}, die abgeholt werden können.`:"Aktuell warten keine Belohnungen auf dich.";
- const cards=pending.map(row=>`<div class="home-reward-card"><div class="reward-gift">${row.mode==="squad"?"SB":"RV"}</div><div class="home-reward-copy"><strong>${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholbereit</strong><small>${esc(row.mode==="squad"?row.rank:`Division ${row.division||"Elite"} · ${row.milestone} Punkte`)}</small><p>${esc(rewardLabel(row))}</p><button class="primary" data-claim-competition="${row.mode}" data-competition-week="${row.week}">Abholen</button></div></div>`);
+ const cards=pending.map(row=>'<div class="home-reward-card"><div class="reward-gift">'+(row.mode==="champions"?"FC":row.mode==="squad"?"SB":"RV")+'</div><div class="home-reward-copy"><strong>'+esc(row.mode==="champions"?"Champions":row.mode==="squad"?"Squad-Battles":"Rivals")+'-Belohnung abholbereit</strong><small>'+esc(row.mode==="rivals"?(Number(row.division)===0?"Elite":"Division "+row.division)+' · '+row.milestone+' Punkte':row.rank)+'</small><p>'+esc(rewardLabel(row))+'</p><button class="primary" type="button" data-weekly-reward-open data-weekly-reward-mode="'+esc(row.mode)+'" data-weekly-reward-week="'+esc(row.week)+'">Rewards ansehen</button></div></div>')
  if(claimable.length){const first=claimable[0];cards.push(`<div class="home-reward-card"><div class="reward-gift"><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></div><div class="home-reward-copy"><strong>Aufgaben-Belohnungen</strong><small>${claimable.length} Aufgabe${claimable.length===1?"":"n"} abgeschlossen</small><p>${esc(first.title)} · ${esc(rewardText(first.reward))}</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`)}
  if(objectivesReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">SP</div><div class="home-reward-copy"><strong>Ziele</strong><small>${objectivesReady} Belohnung${objectivesReady===1?"":"en"} abholbereit</small><p>Tages-, Wochen- und Saisonziele warten auf dich.</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`);
  if(passReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">PASS</div><div class="home-reward-copy"><strong>Season Pass</strong><small>${passReady} Belohnung${passReady===1?"":"en"} abholbereit</small><p>Belohnungen aus dem kostenlosen oder Premium-Pfad warten auf dich.</p><button class="primary" data-go="seasonPassView">Jetzt abholen</button></div></div>`);
@@ -9013,7 +9016,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.27";
+const GFUT_BUILD="V21.28";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9066,7 +9069,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2127",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2128",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9087,6 +9090,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
+<script src="./weekly-rewards.js?v=2128"></script>
 <script src="./friends-hub.js"></script>
 <script src="./potm.js"></script>
 <script src="./squad-tactics.js?v=2124"></script>
