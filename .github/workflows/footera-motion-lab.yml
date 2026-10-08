@@ -8,6 +8,10 @@ on:
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/motion-lab.browser.cjs'
+      - 'tests/motion-live.browser.cjs'
+      - '3d-highlights.js'
+      - 'service-worker.js'
+      - 'index.html'
       - '.github/workflows/footera-motion-lab.yml'
   pull_request:
     paths:
@@ -16,6 +20,10 @@ on:
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/motion-lab.browser.cjs'
+      - 'tests/motion-live.browser.cjs'
+      - '3d-highlights.js'
+      - 'service-worker.js'
+      - 'index.html'
       - '.github/workflows/footera-motion-lab.yml'
 permissions:
   contents: read
@@ -37,7 +45,9 @@ jobs:
       - name: A/B screenshots at 390px and checks at 360/390/412px
         env:
           NODE_PATH: /tmp/footera-motion-lab/node_modules
-        run: node tests/motion-lab.browser.cjs
+        run: |
+          node tests/motion-lab.browser.cjs
+          node tests/motion-live.browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -45,4 +55,5 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
+            test-artifacts/footera-v2142-live-motion.png
           retention-days: 14
