@@ -13,7 +13,8 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    {name:'capable-phone',memory:8,cores:8,preference:'auto',expect:'fluid'},
    {name:'manual-legacy',memory:8,cores:8,preference:'legacy',expect:'legacy'},
    {name:'weak-phone',memory:4,cores:4,preference:'auto',expect:'legacy'}]){
-   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block'});
+   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block',
+    ...(setup.name==='capable-phone'?{recordVideo:{dir:out,size:{width:390,height:844}}}:{})});
    await ctx.addInitScript(({memory,cores,preference})=>{
     Object.defineProperty(navigator,'deviceMemory',{get:()=>memory});
     Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>cores});
@@ -48,8 +49,15 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    assert.deepEqual(result.score,[1,0]);assert.equal(result.goals,1);
    assert.equal(result.pending,false);assert.equal(result.disabled,false);
    assert.deepEqual(errors,[],'no browser errors');
-   console.log('PASS V21.42 LIVE '+setup.name+' motion='+motion+' same goal, safe cleanup, no errors');
+   console.log('PASS V21.43 LIVE '+setup.name+' motion='+motion+' same goal, safe cleanup, no errors');
+   const recording=setup.name==='capable-phone'?page.video():null;
    await ctx.close();
+   if(recording){
+    const filename=path.join(out,'footera-v2143-live-football-actions.webm');
+    await recording.saveAs(filename);await recording.delete();
+    assert.ok(fs.statSync(filename).size>12000,'actual WebGL match recording must contain frames');
+    console.log('PASS V21.43 live video',filename,fs.statSync(filename).size,'bytes');
+   }
   }
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

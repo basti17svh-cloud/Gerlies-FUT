@@ -56,4 +56,5 @@ jobs:
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
             test-artifacts/footera-v2142-live-motion.png
+            test-artifacts/footera-v2143-live-football-actions.webm
           retention-days: 14
