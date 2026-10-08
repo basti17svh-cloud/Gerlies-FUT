@@ -102,5 +102,49 @@
    switchView("storeView");
   }
  });
+
+ // One-time developer test reissue. Keep the original rank and reward payload:
+ // do not calculate a new rank, change match progress or award packs here.
+ const RIVALS_RETEST_CODE="rivalstest28";
+ const RIVALS_RETEST_MARKER="rivals-weekly-retest-v2128";
+ function tryRivalsRetest(){
+  const input=document.getElementById("promoCodeInput");
+  if(String(input?.value||"").normalize("NFC").trim().toLocaleLowerCase("de-DE")!==RIVALS_RETEST_CODE)return false;
+  const status=document.getElementById("promoStatus");
+  const feedback=(message,error=false)=>{
+   if(status){status.className="promo-status "+(error?"error":"success");status.textContent=message}
+  };
+  state.directClaims=state.directClaims||{};
+  if(state.directClaims[RIVALS_RETEST_MARKER]){
+   feedback("Rivals-Testfreigabe wurde in diesem Spielstand bereits verwendet.");return true
+  }
+  const alreadyPending=competitionPending("rivals");
+  if(alreadyPending.length){
+   feedback("Du hast bereits eine Rivals-Belohnung zur Abholung. Öffne sie über die Startseite.");return true
+  }
+  const claimed=(state.weeklyRewards||[])
+   .filter(row=>row&&row.mode==="rivals"&&row.claimed===true&&row.reward&&Array.isArray(row.reward.packs))
+   .sort((a,b)=>Number(b.week)-Number(a.week));
+  if(!claimed.length){
+   feedback("Keine bereits abgeholte Rivals-Belohnung in diesem Spielstand gefunden.",true);return true
+  }
+  const last=claimed[0];
+  last.claimed=false;
+  state.directClaims[RIVALS_RETEST_MARKER]={claimedAt:Date.now(),week:last.week};
+  save();renderAll();renderHomeRewardNotice();
+  input.value="";
+  feedback("Deine letzte Rivals-Belohnung wurde einmalig erneut freigegeben. Du kannst sie über die Startseite abholen.");
+  toast("Rivals-Rewards erneut abholbereit.");
+  return true
+ }
+ function onRivalsRetestPromo(event){
+  const redeemClick=event.type==="click"&&event.target.closest?.("#redeemPromoCode");
+  const redeemEnter=event.type==="keydown"&&event.key==="Enter"&&event.target.id==="promoCodeInput";
+  if(!(redeemClick||redeemEnter)||!tryRivalsRetest())return;
+  event.preventDefault();event.stopImmediatePropagation();
+ }
+ // Capture before the normal promo-code handler; all other codes remain unchanged.
+ document.addEventListener("click",onRivalsRetestPromo,true);
+ document.addEventListener("keydown",onRivalsRetestPromo,true);
  window.FooteraWeeklyRewards={open:openRewardCenter,renderNotice:renderHomeRewardNotice,renderCenter:renderRewardCenter};
 })();
