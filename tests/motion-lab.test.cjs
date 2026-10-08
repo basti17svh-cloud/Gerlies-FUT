@@ -44,3 +44,26 @@ test('Striker motion relinquishes the authoritative 5.4s shot and resumes later'
  assert.equal(atContact.enabled,0,'existing verified contact choreography remains in charge');
  assert.equal(before.enabled,1);assert.equal(after.enabled,1);
 });
+
+test('Football touch windows alternate boots and cut orientation',async()=>{
+ const {footballTouchSample,footballStrikeSample}=await import(moduleFile);
+ const a=footballTouchSample(Math.PI/2,.96,'cut_inside_left'),b=footballTouchSample(3*Math.PI/2,.96,'cut_inside_left');
+ assert.equal(a.foot,0);assert.equal(b.foot,1);assert.ok(a.contact>.9&&b.contact>.9);assert.equal(a.inside,-1);
+ assert.ok(footballTouchSample(0,.96).contact<.001);
+ const finesse=footballStrikeSample(5.02,'finesse','cut_inside_left'),power=footballStrikeSample(5.02,'power','central');
+ assert.ok(finesse.load>.2&&finesse.curl&&finesse.side===-1);assert.ok(power.power&&!power.curl);
+ assert.ok(footballStrikeSample(5.65,'finesse').follow>.2);
+ for(const finish of ['normal','finesse','power','low_driven','chip']){
+  const contact=footballStrikeSample(5.4,finish);
+  assert.equal(contact.load,0);assert.equal(contact.plant,0);assert.equal(contact.follow,0);
+ }
+});
+test('Receiver absorption, defender braking and feint react to proximity',async()=>{
+ const {footballReceptionSample,footballDefenderSample}=await import(moduleFile);
+ assert.ok(footballReceptionSample(0,4.68,'through_ball',.9).absorb>.2);
+ assert.equal(footballReceptionSample(0,4.68,'through_ball',99).absorb,0);
+ const near=footballDefenderSample(3.5,2,'close_down','double_feint_right');
+ assert.ok(near.brace>.3&&near.brake>.1&&near.press);
+ assert.equal(footballDefenderSample(3.5,99).brace,0);
+ assert.ok(footballDefenderSample(2.25,2,'jockey','double_feint_right').feint>.3);
+});
