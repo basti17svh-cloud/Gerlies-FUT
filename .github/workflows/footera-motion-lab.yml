@@ -1,0 +1,48 @@
+name: Footera Motion Lab Proof
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'motion-lab.html'
+      - '3d-motion-lab.mjs'
+      - '3d-highlights-scene.mjs'
+      - 'tests/motion-lab.test.cjs'
+      - 'tests/motion-lab.browser.cjs'
+      - '.github/workflows/footera-motion-lab.yml'
+  pull_request:
+    paths:
+      - 'motion-lab.html'
+      - '3d-motion-lab.mjs'
+      - '3d-highlights-scene.mjs'
+      - 'tests/motion-lab.test.cjs'
+      - 'tests/motion-lab.browser.cjs'
+      - '.github/workflows/footera-motion-lab.yml'
+permissions:
+  contents: read
+jobs:
+  motion-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify deterministic cut, defender states, and unchanged shot handoff
+        run: node --test tests/motion-lab.test.cjs
+      - name: Install isolated browser renderer
+        run: |
+          npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
+          /tmp/footera-motion-lab/node_modules/.bin/playwright install --with-deps chromium
+      - name: A/B screenshots at 390px and checks at 360/390/412px
+        env:
+          NODE_PATH: /tmp/footera-motion-lab/node_modules
+        run: node tests/motion-lab.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-motion-lab-ab-screens
+          path: |
+            test-artifacts/motion-lab-A.png
+            test-artifacts/motion-lab-B.png
+          retention-days: 14
