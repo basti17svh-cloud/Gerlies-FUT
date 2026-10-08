@@ -17,6 +17,10 @@
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
    period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:getAttackDirection(event.team,event.period),
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
+   keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
+   defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
+   defenderName:String(event.defenderName||''),defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
+   defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
    scoreBeforeAway:Number.isFinite(Number(event.scoreBeforeAway))?Number(event.scoreBeforeAway):null,
@@ -25,7 +29,7 @@
    homePattern:String(event.homePattern||'solid'),awayPattern:String(event.awayPattern||'solid'),homeKitConfigured:event.homeKitConfigured===true,awayKitConfigured:event.awayKitConfigured===true,
    homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2132'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2133'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -80,6 +84,44 @@
  ].map(([id,family,weight,finish,tags])=>Object.freeze({id,family,weight,finish,tags:Object.freeze(tags)})));
  function visualHash(input){let n=2166136261;for(const ch of String(input)){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
  function visualStyleMap(input){const map=new Map();for(const s of Array.isArray(input)?input:[]){const id=typeof s==='string'?s:s?.id;if(typeof id==='string'&&id)map.set(id,s?.plus?2:1)}return map}
+ // Deterministic presentation-only choreography. Every action is an attempt;
+ // a defender can NEVER turn an authoritative goal into a block/interception.
+ function chooseReactions(event){
+  const defender=visualStyleMap(event.defenderStyles),keeper=visualStyleMap(event.keeperStyles);
+  const seq=String(event.sequence||'central'),finish=String(event.finish||'normal');
+  const aerial=/(?:cross|post|volley|bicycle)/.test(seq)||['header','volley','bicycle'].includes(finish);
+  const breakaway=/(?:through_ball|one_on_one|counter|duel)/.test(seq);
+  const skill=/(?:dribble|inside|feint|cut_inside|halfspace)/.test(seq);
+  const low=finish==='low_driven'||/(?:low_cross|low_driven)/.test(seq);
+  const styles=(map,...ids)=>Math.max(0,...ids.map(id=>map.get(id)||0));
+  const hashKey=[event.id||'',event.minute||0,event.team||'',event.playerId||'',seq,finish,event.type||''].join('|');
+  function pick(options,salt){
+   const total=options.reduce((sum,x)=>sum+x[1],0);
+   let n=visualHash(hashKey+salt)/4294967296*total;
+   return options.find(x=>(n-=x[1])<0)?.[0]||options[0][0];
+  }
+  const defenseAction=pick([
+   ['jockey',5*(skill?2.4:1)*(1+styles(defender,'jockey')*.85)],
+   ['close_down',6*(breakaway?2:1)*(1+styles(defender,'anticipate')*.6)],
+   ['slide_attempt',3.2*(aerial?.13:1)*(breakaway||skill?1.7:1)*(1+styles(defender,'slide-tackle')*1.3)],
+   ['block_attempt',5*(aerial?.3:1)*(1+styles(defender,'block')*1.25)],
+   ['lane_read',4.5*(breakaway?1.75:1)*(1+styles(defender,'intercept','anticipate')*.9)],
+   ['aerial_challenge',aerial?6*(1+styles(defender,'aerial')*1.1):.08]
+  ],':defense');
+  // Non-saved shots retain a BEATEN keeper: no impossible successful save animation.
+  let keeperAction='beaten';
+  if(event.type==='big_chance_saved'){
+   keeperAction=pick([
+    ['classic',5],
+    ['fingertip',3.5*(low?.18:1.5)*(1+styles(keeper,'far-reach')*1.2)],
+    ['parry',4*(1+styles(keeper,'deflector')*1.4)],
+    ['low_reflex',low?6*(1+styles(keeper,'footwork')*1.25):.15],
+    ['rush_spread',breakaway?5*(1+styles(keeper,'rush-out')*1.3):.14],
+    ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14]
+   ],':keeper');
+  }
+  return Object.freeze({defenderAction,keeperAction});
+ }
  function choosePresentation(event,history=[]){
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
@@ -149,6 +191,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,choosePresentation,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

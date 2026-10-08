@@ -91,11 +91,31 @@ function queueMatch3D(event){
  const presentation={...event,...match3DPresentationMeta(event,current)};
  presentation.playerStyles=match3DActorStyles(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorStyles=match3DActorStyles(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
+ // Fetch the real OPPOSING goalkeeper/defender, using only player-data copies.
+ const defending=event.team==='home'?'away':'home';
+ const opponents=typeof matchActorRows==='function'?(matchActorRows(defending)||[]):[];
+ const goalie=opponents.find(r=>/^(GK|TW|TH)$/.test(String(r.slot||'').toUpperCase()));
+ const wideLeft=/_left$/.test(String(event.sequence||''))||/^(LW|LF|LM)$/.test(String(event.scorerSlot||'').toUpperCase());
+ const wideRight=/_right$/.test(String(event.sequence||''))||/^(RW|RF|RM)$/.test(String(event.scorerSlot||'').toUpperCase());
+ const defenders=opponents.filter(r=>/^(CB|IV|LB|RB|LV|RV|LWB|RWB|CDM|ZDM|CM|ZM)$/.test(String(r.slot||'').toUpperCase()));
+ const priority=r=>{const p=String(r.slot||'').toUpperCase();return wideLeft?/^(LB|LV|LWB)$/.test(p)?0:/^(CB|IV)$/.test(p)?1:2:
+  wideRight?/^(RB|RV|RWB)$/.test(p)?0:/^(CB|IV)$/.test(p)?1:2:
+  /^(CB|IV)$/.test(p)?0:/^(CDM|ZDM)$/.test(p)?1:2};
+ const closest=defenders.slice().sort((a,b)=>priority(a)-priority(b)||a.index-b.index);
+ const defender=closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null;
+ const styleFor=row=>row?match3DActorStyles(defending,{uid:row.uid,index:row.index,name:row.name}):[];
+ presentation.keeperName=event.keeperName||goalie?.name||'';
+ presentation.keeperStyles=styleFor(goalie);
+ presentation.defenderStyles=styleFor(defender);
+ presentation.defenderName=defender?.name||'';
+ presentation.defenderIndex=wideLeft?9:wideRight?10:8;
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  const selected=FooteraHighlights.choosePresentation(presentation,match3DQueue.history||[]);
  presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
  presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
+ const reactions=FooteraHighlights.chooseReactions(presentation);
+ presentation.defenderAction=reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
