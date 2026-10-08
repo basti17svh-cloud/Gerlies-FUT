@@ -1,0 +1,38 @@
+name: Footera Graphics Video Preview
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/footera-graphics-preview.cjs'
+      - '.github/workflows/footera-graphics-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium capture
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Record real Footera match and encode MP4
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/footera-graphics-preview.cjs
+      - name: Upload preview video and still
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: footera-cut-inside-finesse-video
+          path: |
+            test-artifacts/footera-cut-inside-finesse-390.mp4
+            test-artifacts/footera-cut-inside-finesse-390.webm
+            test-artifacts/footera-finesse-preview.png
+          if-no-files-found: warn
+          retention-days: 30
