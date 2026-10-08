@@ -173,7 +173,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   }
   return p;
  }
- const contact=contactFor(style);
+ const contact=shotContact(seq,style);
  if(time<SHOT_TIME){
   if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
    const side=sequenceSide(seq),cutback=seq.startsWith('cutback');
