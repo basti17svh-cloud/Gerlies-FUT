@@ -38,6 +38,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    if((a.time===5.12||a.time===5.63||a.time===6.4)&&distance>.12)moved++;
    if(a.type==='big_chance_saved'&&a.time===6.65)for(const item of [a,b]){
     const near=Math.min(...item.gloves.map(g=>Math.hypot(...g.map((v,k)=>v-item.ball[k]))));
+    console.log('SAVE CONTACT METRIC',JSON.stringify({baseline:item===a,near,ball:item.ball,gloves:item.gloves,pose:item.motionPose}));
     assert.ok(near<.16,'save/glove contact intact: '+near);
    }
   }
