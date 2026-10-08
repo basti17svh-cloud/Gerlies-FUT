@@ -89,7 +89,7 @@ test('week change freezes rewards once, keeps division and survives a simulated 
 });
 
 test('event lineup optimizer starts the strongest valid XI and keeps TOTW 4 headliners on the pitch',()=>{
- const {api}=setup();
+ const {api,ctx}=setup();
  const rows=[
   ['Mamardashvili',86,'GK'],['Donnarumma',90,'GK'],['Cancelo',86,'LB'],['Brown',82,'CB'],['Hancko',85,'CB'],['Dvali',81,'CB'],['Williams',82,'RB'],
   ['Bellingham',92,'CAM'],['Merino',87,'CM'],['De Bruyne',88,'CAM'],['Wirtz',88,'CAM'],['Bischof',83,'CM'],['Rieder',82,'CAM'],
