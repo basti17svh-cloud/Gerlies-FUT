@@ -7,7 +7,7 @@ const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const blend=(a,b,w)=>a+(b-a)*clamp(w);
 const rise=(t,a,b)=>smooth((t-a)/(b-a));
 const pulse=(t,a,b,c,d)=>rise(t,a,b)*(1-rise(t,c,d));
-export const MOTION_LAB_VERSION='motion-lab-1';
+export const MOTION_LAB_VERSION='21.42-live-motion';
 export const MOTION_LAB_SHOT_TIME=5.4;
 
 // All signals depend on the absolute highlight clock: a paused or scrubbed
@@ -33,6 +33,22 @@ export function sampleLabMotion(role,time,sequence='cut_inside_right',speed=.5,t
  const arms=[-.63*cycle*moving+.10*counter*moving,.63*cycle*moving-.10*counter*moving];
  const spread=[-.17-.11*moving,.17+.11*moving];
  const outside=side>0?1:0,inside=1-outside;
+ if(role==='support'||role==='provider'){
+  // Off-ball actors share the coherent stride controller without becoming extra
+  // GPU skinning draws. Only the real passer prepares for a visible delivery.
+  const wide=/^(?:wing|cutback|low_cross|early_cross|far_post|near_post|volley)_(?:left|right)$/.test(sequence);
+  const delivery=role==='provider'&&wide?pulse(t,3.04,3.35,3.64,4.05):0;
+  const receive=role==='provider'?pulse(t,.82,1.18,1.75,2.15):0;
+  hips[1]-=.29*delivery; knees[0]-=.25*delivery;
+  arms[0]-=.23*delivery;arms[1]+=.28*delivery;
+  return{role,time:t,side,moving,phase:delivery>.35?'prepare-pass':receive>.35?'receive':v<.16?'settle':'run',
+   hips,knees,ankles,arms,spread,
+   lean:-.10*moving-.14*delivery-.055*burst+.09*brake,
+   yaw:side*.14*delivery+clamp(turn*1.25,-.14,.14)+.045*counter*moving,
+   bank:clamp(turn*1.4,-.18,.18)+side*.13*delivery,
+   crouch:.035*delivery+.018*brake*moving,
+   pelvisYaw:side*.08*delivery,enabled:1};
+ }
  if(role==='attacker'){
   const load=plant*strike,push=redirect*strike,check=feint*strike;
   // Distinct readable phases: fake -> outside-foot braking -> hip-led cut -> push-off.
