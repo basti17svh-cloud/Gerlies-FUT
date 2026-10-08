@@ -120,7 +120,7 @@
     ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14]
    ],':keeper');
   }
-  return Object.freeze({defenderAction,keeperAction});
+  return Object.freeze({defenderAction:defenseAction,keeperAction});
  }
  function choosePresentation(event,history=[]){
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
