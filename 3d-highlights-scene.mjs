@@ -915,9 +915,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // Continuous foot-to-foot weighting avoids a pop when the leading boot
    // changes halfway through a step. No frame history or simulation RNG.
    const touch=footballTouchSample(gaitPhase(state.index,time),state.weight,sequence);
-   const leftWeight=mix(smooth(.5+(toes[1].d-toes[0].d)*1.1),touch.foot===0?1:0,touch.contact*.52),
-    toeX=mix(toes[1].x,toes[0].x,leftWeight),
-    toeZ=mix(toes[1].z,toes[0].z,leftWeight);
+   const leftWeight=smooth(.5+(toes[1].d-toes[0].d)*1.1),
+    touchingWeight=mix(leftWeight,touch.foot===0?1:0,touch.contact*.52),
+    toeX=mix(toes[1].x,toes[0].x,touchingWeight),
+    toeZ=mix(toes[1].z,toes[0].z,touchingWeight);
    const dx=toeX-current[0],dz=toeZ-current[1],
     forward=clamp(dx*fx+dz*fz,.33-.10*touch.contact,.65-.11*touch.contact),side=clamp(dx*(-fz)+dz*fx,-.22,.22),
     blend=state.weight*.94;
