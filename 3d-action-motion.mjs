@@ -18,7 +18,7 @@ export function divingBodyTrajectory(time,kind='goal',action='classic',side=1){
  const landing=pulse(time,6.78,7.14,7.88,8.55);
  const push=pulse(time,5.67,5.98,6.19,6.61);
  // A goal-bound strike beats the keeper: preserve the shorter reach.
- const reach=saved?(rush?.18:low?.31:.52):.22;
+ const reach=saved?(rush?.18:low?.26:action==='fingertip'?.30:.34):.22;
  const vertical=(low?.065:.14)*flight-(low?.025:.055)*landing;
  return{takeoff,flight,landing,push,
   lateral:Math.sign(side||1)*reach*(.3*takeoff+.7*flight),
