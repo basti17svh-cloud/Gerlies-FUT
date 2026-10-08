@@ -324,8 +324,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const contactTexture=canvasTexture(64,64,(ctx,w,h)=>{const gradient=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);gradient.addColorStop(0,'rgba(5,12,4,.6)');gradient.addColorStop(.3,'rgba(5,12,4,.35)');gradient.addColorStop(1,'rgba(5,12,4,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h)});
   const contactMaterial=track(new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:weak?.80:.58,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));
   // Surface ribbons; LOW widens them slightly to survive its subpixel sampling.
-  const markings=[];
-  function line(points,width=weak?.20:.12){for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz),nx=-dz/l*width/2,nz=dx/l*width/2;const p=[a[0]+nx,.018,a[1]+nz,a[0]-nx,.018,a[1]-nz,b[0]+nx,.018,b[1]+nz,b[0]-nx,.018,b[1]-nz];markings.push(...p.slice(0,9),...p.slice(3,6),...p.slice(9,12),...p.slice(6,9))}}
+  const markings=[],markingCenters=[];
+  function line(points,width=weak?.20:.12){for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz),nx=-dz/l*width/2,nz=dx/l*width/2;const p=[a[0]+nx,.018,a[1]+nz,a[0]-nx,.018,a[1]-nz,b[0]+nx,.018,b[1]+nz,b[0]-nx,.018,b[1]-nz];markings.push(...p.slice(0,9),...p.slice(3,6),...p.slice(9,12),...p.slice(6,9));if(weak)markingCenters.push(a[0],.020,a[1],b[0],.020,b[1])}}
   function arc(cx,cz,r,start=0,end=Math.PI*2){const pts=[];for(let i=0;i<=80;i++){const a=mix(start,end,i/80);pts.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r])}line(pts)}
   line([[-34,-52.5],[34,-52.5],[34,52.5],[-34,52.5],[-34,-52.5]]);line([[-34,0],[34,0]]);arc(0,0,9.15);arc(0,0,.12);
   for(const sign of [-1,1]){
@@ -335,6 +335,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const x of [-34,34]){const cx=x<0?0:Math.PI/2;arc(x,52.5*sign,1,sign<0?cx:Math.PI+cx,sign<0?cx+Math.PI/2:Math.PI*1.5+cx);cylinder(.025,.025,1.65,'#f4e4c5',x,.82,52.5*sign);box(.4,.3,.03,'#c11d3f',x+.2,1.5,52.5*sign)}
   }
   const mg=track(new THREE.BufferGeometry());mg.setAttribute('position',new THREE.Float32BufferAttribute(markings,3));mg.computeVertexNormals();mesh(mg,track(new THREE.MeshBasicMaterial({color:'#eff1db',side:THREE.DoubleSide})));
+  // LOW has no MSAA: a one-pixel centreline keeps distant ribbons continuous
+  // when their projected width falls below one sample. One shared draw call.
+  if(weak){const edges=track(new THREE.BufferGeometry());edges.setAttribute('position',new THREE.Float32BufferAttribute(markingCenters,3));field.add(new THREE.LineSegments(edges,track(new THREE.LineBasicMaterial({color:'#eff1db'}))))}
   function goal(z,sign){
    const g=new THREE.Group();field.add(g);g.position.z=z;g.rotation.y=sign===-1?0:Math.PI;
    const posts=mat('#f7faf7');for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak}

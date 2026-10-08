@@ -33,6 +33,10 @@ and instancing; there are no external model assets or additional dependencies.
 The crowd gains varied resting arm poses attached to the shoulders, modest height
 variation and shaded clothing in deeper rows; instance counts/draw calls stay fixed.
 
+Final screenshot review exposed broken subpixel pitch markings in LOW. A shared
+one-pixel centreline reinforces the existing ribbons at distance, costing one
+additional draw call in LOW only. STANDARD and HIGH are unchanged.
+
 Camera paths, field, ball paths, impact timing, match bridge, card renderer
 and simulation are unchanged. Release references are the only index.html edits.
 
