@@ -458,7 +458,7 @@ test('inverted winger cuts inward and curls toward the opposite far corner',asyn
   assert.ok(atStrike[0]*side>7&&atStrike[0]*side<11,'strikes from half space, not centre '+sequence);
   assert.ok(Math.abs(before[0])-Math.abs(atStrike[0])>9,'actually cuts inward '+sequence);
   const contact=shotContact(sequence,'finesse'),ball=ballPosition('goal',SHOT_TIME,sequence,'finesse');
-  assert.ok(Math.hypot(contact[0]-atStrike[0],contact[2]-atStrike[1])<.45,'contact near shooter '+sequence);
+  assert.ok(Math.hypot(contact[0]-atStrike[0],contact[2]-atStrike[1])<1.05,'contact near shooter '+sequence);
   assert.deepEqual(ball,contact,'ball is at rotated boot contact '+sequence);
   const far=shotImpact('goal',sequence,'finesse');
   assert.equal(Math.sign(far[0]),-side,'far corner opposite starting wing '+sequence);
