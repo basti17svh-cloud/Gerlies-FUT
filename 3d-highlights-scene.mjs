@@ -397,9 +397,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    box(2,.14,119,'#202c31',side*55.9,9.55,0,scene);box(79,.14,2,'#202c31',0,9.55,side*76.1,scene);
   }
   const animatedShare=weak?.22:mobileStandard?.44:high?.76:.62;
-  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.32+hash(i*37+5)*.24,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
+  const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.25+hash(i*37+5)*.38,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
   const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
-  const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
+  const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),crowdArmAxis=new THREE.Vector3(0,1,0),crowdArmDirection=new THREE.Vector3(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
   function fanPalette(team){
    const kit=team==='home'?crowdKits.home:team==='away'?crowdKits.away:null;
    return kit?[kit.shirt,kit.shirt,kit.shirtSecondary,'#e4e1d8','#26343a','#52616a','#a39485','#d2c8b5','#343c49']:neutralFanPalette;
@@ -423,16 +423,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    crowdDummy.position.set(spec.x,bodyY,spec.z);crowdDummy.rotation.set(0,yaw,lean);crowdDummy.scale.set(spec.width,spec.height,spec.depth);crowdDummy.updateMatrix();group.torso.setMatrixAt(i,crowdDummy.matrix);
    crowdDummy.position.set(spec.x,bodyY+.33*spec.height,spec.z);crowdDummy.rotation.set(0,yaw,lean*.45);crowdDummy.scale.set(.95+.08*spec.width,.95+.06*spec.height,.95);crowdDummy.updateMatrix();group.head.setMatrixAt(i,crowdDummy.matrix);
    const despair=negative;
-   const idleRaise=group.dynamic?(spec.loop===2 ? .30+.24*(wave+1) : spec.loop===1 ? .12+.15*(wave+1) : .03*Math.abs(wave)):0;
+   const idleRaise=spec.loop===2?.20+.18*(wave+1):spec.loop===1?.08+.12*(wave+1):.025;
    const raise=clamp(reaction.suspense*.42+positive*1.05+despair*.62+idleRaise);
    const shoulderY=bodyY+.1*spec.height;
    for(const side of [-1,1]){
     const armIndex=i*2+(side>0?1:0);
-    const spread=positive>.05 ? 1.18 : despair>.05 ? .38 : (spec.loop===1 ? .28 : .12);
-    const armLift=mix(shoulderY-.12,shoulderY+.22,raise);
-    crowdDummy.position.set(spec.x+side*.22*spec.width*lx,armLift,spec.z+side*.22*spec.width*lz);
-    crowdDummy.rotation.set((spec.loop===2?side*wave*.18:0),yaw,side*mix(.06,spread,raise)+wave*.045);
-    crowdDummy.scale.set(.92,spec.height*(.94+raise*.08),.92);crowdDummy.updateMatrix();group.arms.setMatrixAt(armIndex,crowdDummy.matrix);
+    // Keep each arm attached to its shoulder while resting, clapping or cheering.
+    // Static spectators also have distinct relaxed poses, without extra draw calls.
+    const angle=mix(.10,2.50,raise),bend=spec.loop===1?.58:spec.loop===2?.32:.08;
+    const ax=side*Math.sin(angle),ay=-Math.cos(angle)*Math.cos(bend),az=Math.cos(angle)*Math.sin(bend),half=.24*spec.height;
+    const dx=ax*lx+az*Math.sin(yaw),dz=ax*lz+az*Math.cos(yaw);
+    crowdDummy.position.set(spec.x+side*.22*spec.width*lx+dx*half,shoulderY+ay*half,spec.z+side*.22*spec.width*lz+dz*half);
+    crowdArmDirection.set(dx,ay,dz);crowdDummy.quaternion.setFromUnitVectors(crowdArmAxis,crowdArmDirection);
+    crowdDummy.scale.set(.92,spec.height,.92);crowdDummy.updateMatrix();group.arms.setMatrixAt(armIndex,crowdDummy.matrix);
 
     const legIndex=i*2+(side>0?1:0),stance=.035+hash(spec.index*71+(side>0?29:13))*.055;
     crowdDummy.position.set(spec.x+side*(.085+.018*spec.width)*lx,bodyY-.365*spec.height,spec.z+side*(.085+.018*spec.width)*lz+(hash(spec.index*73+legIndex)-.5)*.035);
@@ -441,8 +444,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    if(paint){
     const palette=fanPalette(spec.team),shirt=palette[Math.floor(hash(spec.index*59+23)*palette.length)],skin=skinTone('supporter',spec.index),pants=crowdPantsPalette[Math.floor(hash(spec.index*83+31)*crowdPantsPalette.length)];
-    group.torso.setColorAt(i,crowdColor.set(shirt));group.head.setColorAt(i,crowdColor.set(skin));
-    group.arms.setColorAt(i*2,crowdColor.set(skin));group.arms.setColorAt(i*2+1,crowdColor.set(skin));
+    const shade=.90+hash(spec.index*101+3)*.10-Math.min(11,spec.row)*.012;
+    group.torso.setColorAt(i,crowdColor.set(shirt).multiplyScalar(shade));group.head.setColorAt(i,crowdColor.set(skin).multiplyScalar(shade));
+    const sleeves=hash(spec.index*103+5)>.45?shirt:skin;
+    group.arms.setColorAt(i*2,crowdColor.set(sleeves).multiplyScalar(shade));group.arms.setColorAt(i*2+1,crowdColor.set(sleeves).multiplyScalar(shade));
     group.legs.setColorAt(i*2,crowdColor.set(pants));group.legs.setColorAt(i*2+1,crowdColor.set(pants));
    }
   }

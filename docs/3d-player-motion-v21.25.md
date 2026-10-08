@@ -1,6 +1,6 @@
-# V21.23 — footballer motion and silhouette
+# V21.25 — footballer motion and silhouette
 
-Continues V21.22 (`b24ce38`). The reference image remains a visual target, not a
+Continues the V21.22 graphics on current main V21.24 (`bc2aa856`). The reference image remains a visual target, not a
 claim of achieved photorealism. This step concentrates on the real match actors.
 
 ## Forward movement
@@ -30,7 +30,10 @@ and instancing; there are no external model assets or additional dependencies.
 
 ## Scope and evidence
 
-Camera paths, field, crowd, ball paths, impact timing, match bridge, card renderer
+The crowd gains varied resting arm poses attached to the shoulders, modest height
+variation and shaded clothing in deeper rows; instance counts/draw calls stay fixed.
+
+Camera paths, field, ball paths, impact timing, match bridge, card renderer
 and simulation are unchanged. Release references are the only index.html edits.
 
 Regression coverage checks foot placement and backwards-relative support travel,

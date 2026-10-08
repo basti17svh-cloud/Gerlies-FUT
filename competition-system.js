@@ -143,6 +143,61 @@ function recordCompetitionMatch(mode,result,home,away,opponent,difficulty){
  return mode==="rivals"?recordRivalsResult(result):recordSquadBattleResult(result,home,away,opponent,difficulty)
 }
 
+function eventTeamEntryRating(entry){return Number(entry?.player?.ovr??entry?.item?.displayRating??entry?.info?.ovr??0)||0}
+function eventTeamPositionQuality(entry,slot){
+ const player=entry?.player;if(!player)return 0;
+ const target=String(slot||"").toUpperCase(),primary=String(player.position||"").toUpperCase();
+ if(primary===target)return 2;
+ return posFit(player,target)>0?1:0
+}
+function eventTeamEntryIsHighlight(entry,maxRating=0){
+ const info=entry?.info||{},item=entry?.item||{};
+ if(info.highlight===true||info.headliner===true||info.featured===true||info.hero===true||item.highlight===true||item.headliner===true||["highlight","headliner","featured"].includes(String(info.priority||"").toLowerCase()))return true;
+ return maxRating>0&&eventTeamEntryRating(entry)>=maxRating-1
+}
+function eventTeamSolveFormation(entries,formation){
+ const slots=FORMATIONS[formation]||FORMATIONS["4-3-3"]||[],candidates=(entries||[]).filter(e=>e?.player),size=1<<slots.length,maxRating=candidates.reduce((m,e)=>Math.max(m,eventTeamEntryRating(e)),0);
+ let scores=new Float64Array(size);scores.fill(-Infinity);scores[0]=0;
+ const choices=[];
+ for(const entry of candidates){
+  const next=scores.slice(),choice=new Int8Array(size);choice.fill(-1),rating=eventTeamEntryRating(entry),highlight=eventTeamEntryIsHighlight(entry,maxRating);
+  for(let mask=0;mask<size;mask++){
+   if(!Number.isFinite(scores[mask]))continue;
+   for(let slot=0;slot<slots.length;slot++){
+    const bit=1<<slot;if(mask&bit)continue;
+    const quality=eventTeamPositionQuality(entry,slots[slot].p),points=(quality?1e12:0)+(highlight?1e9:0)+rating*1e5+(quality===2?1000:0),nextMask=mask|bit;
+    if(scores[mask]+points>next[nextMask]){next[nextMask]=scores[mask]+points;choice[nextMask]=slot}
+   }
+  }
+  scores=next;choices.push(choice)
+ }
+ let mask=size-1;
+ if(!Number.isFinite(scores[mask])){
+  let bestMask=0,bestCount=-1,bestScore=-Infinity;
+  for(let m=0;m<size;m++){if(!Number.isFinite(scores[m]))continue;let bits=m,count=0;while(bits){bits&=bits-1;count++}if(count>bestCount||(count===bestCount&&scores[m]>bestScore)){bestMask=m;bestCount=count;bestScore=scores[m]}}
+  mask=bestMask
+ }
+ const xi=Array(slots.length).fill(null);
+ for(let n=candidates.length-1;n>=0;n--){const slot=choices[n][mask];if(slot>=0){xi[slot]=candidates[n];mask^=1<<slot}}
+ const used=new Set(xi.filter(Boolean)),starters=xi.filter(Boolean),fitCount=xi.reduce((n,e,slot)=>n+(e&&eventTeamPositionQuality(e,slots[slot].p)>0?1:0),0),exactCount=xi.reduce((n,e,slot)=>n+(e&&eventTeamPositionQuality(e,slots[slot].p)===2?1:0),0);
+ const highlightCount=starters.filter(e=>eventTeamEntryIsHighlight(e,maxRating)).length,ratingSum=starters.reduce((n,e)=>n+eventTeamEntryRating(e),0);
+ const bench=candidates.filter(e=>!used.has(e)).sort((a,b)=>Number(eventTeamEntryIsHighlight(b,maxRating))-Number(eventTeamEntryIsHighlight(a,maxRating))||eventTeamEntryRating(b)-eventTeamEntryRating(a)||Number(a.index??0)-Number(b.index??0));
+ return{formation,slots,xi,bench,filled:starters.length,fitCount,exactCount,highlightCount,ratingSum}
+}
+function eventTeamLineup(entries,{preferredFormation="",formations=null}={}){
+ const names=(Array.isArray(formations)&&formations.length?formations:Object.keys(FORMATIONS)).filter(name=>Array.isArray(FORMATIONS[name])&&FORMATIONS[name].length===11);
+ if(preferredFormation&&FORMATIONS[preferredFormation]&&!names.includes(preferredFormation))names.unshift(preferredFormation);
+ let best=null;
+ const better=current=>{
+  if(!best)return true;
+  for(const key of ["filled","fitCount","highlightCount","ratingSum","exactCount"])if(current[key]!==best[key])return current[key]>best[key];
+  const cp=current.formation===preferredFormation,bp=best.formation===preferredFormation;if(cp!==bp)return cp;
+  return String(current.formation).localeCompare(String(best.formation),"de")<0
+ };
+ for(const formation of names){const current=eventTeamSolveFormation(entries,formation);if(better(current))best=current}
+ return best||{formation:"4-3-3",slots:FORMATIONS["4-3-3"]||[],xi:[],bench:[...(entries||[])],filled:0,fitCount:0,exactCount:0,highlightCount:0,ratingSum:0}
+}
+
 function battleEventTeam(at=new Date()){
  const now=new Date(at).getTime();
  const ready=e=>e.id===MOMENTUM_EVENT.id?e.players?.length===MOMENTUM_EVENT.players.length:completeEventRoster(e);
@@ -163,14 +218,8 @@ function battleSpecialOpponent(kind,key){
  if(kind==="event"&&!event)return null;
  const entries=kind==="event"?promoEventEntries(event):liveTotwTeamEntries();
  if(!entries.length)return null;
- const used=new Set(),formation=event?.id==="momentum-team-2"?"4-2-3-1":"4-3-3",slots=FORMATIONS[formation],xi=[];
- if(event?.id==="momentum-team-2"){
-  const lineup=momentumTeamLineup(entries,slots);for(const entry of lineup.xi){if(entry){xi.push(entry);used.add(entry)}}
- }else for(const slot of slots){
-  const entry=entries.find(x=>!used.has(x)&&posFit(x.player,slot.p)>0)||entries.find(x=>!used.has(x));
-  if(entry){xi.push(entry);used.add(entry)}
- }
- const rest=entries.filter(x=>!used.has(x));
+ const lineup=eventTeamLineup(entries,{preferredFormation:event?.preferredFormation||event?.formation||""}),formation=lineup.formation||"4-3-3",slots=lineup.slots||FORMATIONS[formation]||FORMATIONS["4-3-3"],xi=(lineup.xi||[]).filter(Boolean),used=new Set(xi);
+ const rest=lineup.bench||entries.filter(x=>!used.has(x));
  const base=kind==="event"?[...xi,...rest,...bronzeBattleFillers(event,key)]:[...xi,...rest];
  const rows=base.slice(0,18).map(x=>x?.player?{player:x.player,item:x.item}:{player:x,item:null});
  if(kind==="totw"){
