@@ -19,3 +19,8 @@ A real two-actor `THREE.SkinnedMesh` prototype is now in the existing production
 - Bone binding, normalized skin weights, animated mixer, deterministic seek, offline loading.
 - Production WebGL geometry checks assert two skinned actors and preserve goal/saved-chance contact checks.
 - CI 390px video records the actual Footera highlight, not a separate showcase engine.
+
+## Performance correction after first complete browser run
+The initial surface had twelve Three.js material groups per actor and exceeded the production limit of 115 draw calls (117–125 observed). The fix combines the existing club's rendered shirt fabric and the shorts/skin/socks/sleeve swatches into one shared UV atlas **per skinned actor**. Each weighted figure now submits **one** SkinnedMesh draw instead of one draw per anatomical band; material patterns stay derived from the saved match kit.
+
+The V21.37 workflow separates fast deterministic geometry, keeper-contact and draw-call assertions from costly screenshot/video production. The real 390px video workflow records the release independently. Full screenshots remain available through the standalone render script.

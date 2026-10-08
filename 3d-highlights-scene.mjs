@@ -802,7 +802,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const skinned=modern?buildSkinnedFootballer(THREE,root,
     {rig,upper,motion,chest,arms,elbows,legs,knees,ankles},
     [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12):null;
-   if(skinned)track(skinned.geometry);
+   if(skinned){track(skinned.geometry);track(skinned.atlasTexture);track(skinned.atlasMaterial)}
    const skeletonMotion=modern?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
    return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
     gait:[{},{}],motionClips:{out:{},scratch:{},action:{}}};

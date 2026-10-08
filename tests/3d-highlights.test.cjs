@@ -540,6 +540,9 @@ test('V21.37: a real connected skinned skeleton deforms a weighted football body
  const mats=Array.from({length:5},()=>new T.MeshStandardMaterial());
  const skin=buildSkinnedFootballer(T,root,{rig,upper,motion,chest,arms,elbows,legs,knees,ankles},mats,10);
  assert.ok(skin.model.isSkinnedMesh&&skin.skeleton instanceof T.Skeleton&&skin.model.skeleton===skin.skeleton,'GPU skinning is real, not rigid-body meshes');
+ assert.equal(skin.geometry.groups.length,0,'the atlas draws the skinned figure in one batch');
+ assert.equal(skin.drawSurfaces,1);
+ assert.ok(skin.atlasTexture.isDataTexture,'DOM-free atlas fallback supports CI');
  assert.equal(skin.bones,14);assert.ok(skin.vertexCount>400);assert.ok(skin.segmentCount>=10);
  assert.ok(skin.geometry.getAttribute('skinIndex').count===skin.vertexCount);
  for(let i=0;i<skin.vertexCount;i++){

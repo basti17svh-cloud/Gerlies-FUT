@@ -1,13 +1,49 @@
 /* Footera: lightweight skinning pilot for the scorer and goalkeeper.
  * Original authored geometry, no external assets/licence dependencies.
  * Existing animated bone joints drive a continuous weighted football silhouette.
- * Body masses share a *single* SkinnedMesh with 5 material groups per actor.
+ * All surfaces share ONE atlas material and ONE SkinnedMesh draw per actor.
  * The reference pose is built in actor-local coordinates, Y = metres.
  */
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 export const RIGGED_SURFACE_VERSION=1;
 export const MATERIAL_SLOTS=Object.freeze(['shirt','shorts','skin','socks','sleeves']);
+// A one-row atlas bakes the existing saved club-kit shirt pattern alongside
+// shorts, skin, socks and sleeve materials. Avoid one draw per limb/material.
+export function createFootballKitAtlas(THREE,materials,segments=12){
+ const canDraw=typeof document!=='undefined'&&typeof document.createElement==='function';
+ let texture;
+ if(canDraw){
+  const tile=segments>=16?256:128,canvas=document.createElement('canvas');
+  canvas.width=tile*MATERIAL_SLOTS.length;canvas.height=tile;
+  const ctx=canvas.getContext('2d');
+  if(!ctx)throw new Error('Football kit atlas needs Canvas 2D');
+  for(let index=0;index<MATERIAL_SLOTS.length;index++){
+   const material=materials[index],left=index*tile;
+   ctx.fillStyle=material?.color?.getStyle?.()||'#ffffff';
+   ctx.fillRect(left,0,tile,tile);
+   if(index===0&&material?.map?.image){
+    try{ctx.drawImage(material.map.image,left,0,tile,tile)}catch(_){}
+   }
+  }
+  texture=new THREE.CanvasTexture(canvas);
+ }else{
+  // Node unit tests have no DOM; fallback validates the same five atlas slots.
+  const data=new Uint8Array(MATERIAL_SLOTS.length*4);
+  materials.forEach((material,i)=>{
+   const color=material.color||new THREE.Color('#ffffff'),j=i*4;
+   data[j]=Math.round(color.r*255);data[j+1]=Math.round(color.g*255);
+   data[j+2]=Math.round(color.b*255);data[j+3]=255;
+  });
+  texture=new THREE.DataTexture(data,MATERIAL_SLOTS.length,1,THREE.RGBAFormat);
+  texture.needsUpdate=true;
+ }
+ texture.colorSpace=THREE.SRGBColorSpace;
+ texture.wrapS=THREE.ClampToEdgeWrapping;
+ texture.magFilter=THREE.LinearFilter;
+ const atlasMaterial=new THREE.MeshStandardMaterial({map:texture,roughness:.92,metalness:0});
+ return{texture,material:atlasMaterial};
+}
 export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
  const order=[joints.rig,joints.upper,joints.motion,joints.chest,
   joints.arms[0],joints.elbows[0],joints.arms[1],joints.elbows[1],
@@ -27,7 +63,7 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
    for(let k=0;k<=segments;k++){
     const t=k/segments*Math.PI*2;
     v.push(centerX+rx*Math.sin(t),y,centerZ+rz*Math.cos(t));
-    uv.push(k/segments,(y-ymin)/Math.max(.01,ymax-ymin));
+    uv.push((mat+.015+k/segments*.97)/MATERIAL_SLOTS.length,(y-ymin)/Math.max(.01,ymax-ymin));
     ids.push(a,b,0,0);weights.push(1-blend,blend,0,0);
    }
   }
@@ -72,9 +108,10 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
  geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ids,4));
  geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));
  geometry.setIndex(ix);
- for(const [start,count,materialIndex] of groups)geometry.addGroup(start,count,materialIndex);
+ // NO geometry groups: GPU processes the entire figure in one skinning draw.
  geometry.computeVertexNormals();
- const model=new THREE.SkinnedMesh(geometry,materials);
+ const atlas=createFootballKitAtlas(THREE,materials,segments);
+ const model=new THREE.SkinnedMesh(geometry,atlas.material);
  model.name='FooteraSkinnedFootballer';
  model.frustumCulled=false;
  model.castShadow=true;model.receiveShadow=true;
@@ -82,7 +119,8 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
  root.updateMatrixWorld(true);
  const skeleton=new THREE.Skeleton(order);
  model.bind(skeleton);
- return{model,geometry,skeleton,bones:order.length,vertexCount:v.length/3,segmentCount:groups.length};
+ return{model,geometry,skeleton,bones:order.length,vertexCount:v.length/3,
+  segmentCount:groups.length,atlasTexture:atlas.texture,atlasMaterial:atlas.material,drawSurfaces:1};
 }
 export function createSkeletonMotion(THREE,motionBone,role='striker',finish='normal',duration=10.4){
  if(!motionBone?.isBone)throw new Error('AnimationMixer requires a THREE.Bone');

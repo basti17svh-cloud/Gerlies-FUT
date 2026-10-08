@@ -33,10 +33,11 @@ jobs:
           node tests/matchday-manager.browser.cjs
           node tests/prematch-editor.browser.cjs
           node tests/ux-overview.browser.cjs
-      - name: Production graphics captures and geometry
+      - name: Production rigging geometry, glove contact and draw-call budget
         if: success()
         env:
           NODE_PATH: /tmp/footera-browser/node_modules
+          FOOTERA_SKIP_CAPTURES: '1'
         run: node tests/3d-highlights.render.cjs
       - uses: actions/upload-artifact@v4
         if: always()

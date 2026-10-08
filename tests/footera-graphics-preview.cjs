@@ -49,7 +49,7 @@ fs.mkdirSync(out,{recursive:true});
   await page.waitForSelector('.fh3d canvas',{timeout:12000});
   const rigModule=await page.evaluate(async()=>{
    const R=await import('./3d-rigged-footballer.mjs?v=2137');
-   return R.RIGGED_SURFACE_VERSION===1&&typeof R.createSkeletonMotion==='function';
+   return R.RIGGED_SURFACE_VERSION===1&&typeof R.createSkeletonMotion==='function'&&typeof R.createFootballKitAtlas==='function';
   });
   assert.ok(rigModule,'browser must load the real skinned-rig module');
   const clipsReady=await page.evaluate(async()=>{
