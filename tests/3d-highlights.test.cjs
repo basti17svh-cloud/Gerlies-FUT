@@ -283,7 +283,7 @@ test('V21.32: actual inverted-wing dribbles, near/far posts and grounded crosses
   const sign=side==='left'?-1:1;
   for(const kind of ['inside','cut_inside','double_feint','near_post_cut']){
    const id=kind+'_'+side, start=M.runPosition(0,0,id),mid=M.runPosition(0,4.3,id),end=M.runPosition(0,M.SHOT_TIME,id);
-   assert.ok(start[0]*sign>16&&Math.abs(mid[0])<Math.abs(start[0])&&Math.abs(end[0])<.01,'visible outside-inside cut '+id);
+   assert.ok(start[0]*sign>16&&Math.abs(mid[0])<Math.abs(start[0])&&Math.abs(end[0])>7&&Math.abs(end[0])<11,'visible outside-inside half-space cut '+id);
    for(const time of [.2,1.6,2.8,4.1]){
     const ball=M.ballPosition('goal',time,id,'finesse'),runner=M.runPosition(0,time,id);
     assert.ok(Math.hypot(ball[0]-runner[0],ball[2]-runner[1])<1.1,'controlled dribble '+id+' @'+time);
