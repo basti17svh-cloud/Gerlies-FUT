@@ -27,6 +27,7 @@ const server=http.createServer((req,res)=>{
    state.profile.clubIdentity=cleanClubIdentity({crest:{shape:"shield",symbol:"shieldmark",primary:"#173f32",secondary:"#0b241b",accent:"#ffffff",borderColor:"#bf263a",borderWidth:"strong",initials:"FCG05"}});
    clubSection="identity";clubIdentityDraft=makeClubIdentityDraft();switchView("clubView");
   });
+  console.log("INITIAL SCREEN STATE",JSON.stringify(await page.evaluate(()=>{const a=document.getElementById("clubView"),b=document.getElementById("clubIdentitySection"),c=document.getElementById("identityHeroCrest");return{activeView:document.querySelector(".view.active")?.id,clubSection,clubViewDisplay:getComputedStyle(a).display,identityHidden:b.hidden,identityDisplay:getComputedStyle(b).display,heroDisplay:getComputedStyle(c).display,crestDisplay:getComputedStyle(c.querySelector(".club-crest")).display}})));
   assert.equal(await page.locator("#identityHeroCrest .club-crest-art").count(),1,"new SVG crest is present");
   assert.equal(await page.locator("#identityCrestSymbols button").count(),36);
   assert.equal(await page.locator("#identityCrestSymbols svg").count(),35,"all non-eagle options are vectors");
