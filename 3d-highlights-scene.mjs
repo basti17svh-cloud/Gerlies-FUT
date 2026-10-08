@@ -57,11 +57,25 @@ function variantShift(variant,time){
 
 const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_right')?1:1;
 function movingBall(a,b,u,arc=0){const t=smooth(u),p=lerp(a,b,t);p[1]=mix(a[1],b[1],t)+arc*Math.sin(clamp(u)*Math.PI);return p}
+// Grounded ball ahead of the runner rather than trailing a free world-space sine wave.
 function carriedBall(index,time,sequence,lead=.56){
- const [x,z]=runPosition(index,time,sequence),before=runPosition(index,Math.max(0,time-.1),sequence),after=runPosition(index,time+.1,sequence);
- const dx=after[0]-before[0],dz=after[1]-before[1],length=Math.max(.001,Math.hypot(dx,dz)),ux=dx/length,uz=dz/length;
- const cadence=7.4+Math.min(2.2,length*7),touch=Math.sin(time*cadence)*.11;
- return[x+ux*lead-uz*touch,.12+.035*Math.abs(Math.sin(time*cadence)),z+uz*lead+ux*touch];
+ const [x,z]=runPosition(index,time,sequence),prev=runPosition(index,Math.max(0,time-.055),sequence),next=runPosition(index,Math.min(DURATION,time+.055),sequence);
+ const dx=next[0]-prev[0],dz=next[1]-prev[1],length=Math.hypot(dx,dz),ux=length>.00001?dx/length:0,uz=length>.00001?dz/length:-1;
+ const speed=clamp(length/.11/5),cycle=time*(8.3+speed*1.15),advance=clamp(lead-.055,.43,.61)+.032*Math.sin(cycle),side=.066*Math.sin(cycle+.5);
+ return[x+ux*advance-uz*side,.14,z+uz*advance+ux*side];
+}
+// Close-control windows only. The ball detaches for real passes, crosses and shots.
+export function controlCarrier(time,sequence='central'){
+ const seq=normalizeSequence(sequence),base=baseSequence(seq);
+ let index=-1,start=0,end=0;
+ if(seq==='diagonal_switch'){index=1;start=2.5;end=3.65}
+ else if(seq.startsWith('early_cross_')){index=1;end=2.9}
+ else if(['wing_left','wing_right','cutback_left','cutback_right'].includes(base)){index=1;end=3.65}
+ else if(base==='dribble'){index=0;end=SHOT_TIME-.24}
+ else if(base==='through_ball'){index=1;end=2.35}
+ else if(base==='central'&&seq!=='second_ball'){index=0;start=3.1;end=SHOT_TIME-.24}
+ if(index<0||time<start||time>=end)return{index:-1,weight:0};
+ return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
 }
 export function ballPosition(type,time,sequence='central',finish='normal'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
@@ -110,8 +124,8 @@ export function ballPosition(type,time,sequence='central',finish='normal'){
    return movingBall([-.4,.12,-36.25],contact,(time-4.65)/(SHOT_TIME-4.65),.03)
   }
   if(seq==='through_ball'){
-   if(time<2.35){const u=time/2.35,p=movingBall([-13,.12,-21.5],[-9,.12,-28.2],u,0);p[1]+=.025*Math.abs(Math.sin(u*4*Math.PI));return p}
-   if(time<4.65)return movingBall([-9,.12,-28.2],[-.4,.12,-35.7],(time-2.35)/2.3,.18);
+   if(time<2.35)return carriedBall(1,time,seq,.52);
+   if(time<4.65)return movingBall(carriedBall(1,2.35,seq,.52),[-.4,.14,-35.7],(time-2.35)/2.3,.18);
    return movingBall([-.4,.12,-35.7],contact,(time-4.65)/(SHOT_TIME-4.65),.025)
   }
   if(seq==='dribble'){
@@ -335,14 +349,16 @@ export function defenderTracking(index,time,sequence='central'){
  const r=RUNS[index],base=lerp(r.from,r.to,smooth(clamp(time/6.9)));
  const ball=ballPosition('goal',Math.min(SHOT_TIME,Math.max(0,time)),sequence);
  const separation=Math.hypot(ball[0]-base[0],ball[2]-base[1]);
- const pressure=smooth((time-.55)/.9)*(1-smooth((time-5.55)/.9))*clamp((24-separation)/17);
- return{x:clamp((ball[0]-base[0])*.07,-.58,.58)*pressure,
-  z:clamp((ball[2]-base[1])*.045,-.30,.30)*pressure,pressure};
+ const pressure=smooth((time-.35)/.85)*(1-smooth((time-5.50)/.95))*clamp((29-separation)/19);
+ // Pressers step in; centre-backs hold cover instead of chasing every touch.
+ const factor=[12,14,15].includes(index)?1:[8,11].includes(index)?.47:.72,dz=ball[2]-base[1];
+ return{x:clamp((ball[0]-base[0])*.21,-2.45,2.45)*pressure*factor,
+  z:clamp(dz*(dz<0?.19:.10),-1.85,1.15)*pressure*factor,pressure};
 }
 // Swing follows the visible pass release, without modifying the ball path.
 export function passStrikePose(progress){
- const u=clamp(progress),wind=smooth(u/.43),follow=smooth((u-.32)/.68);
- const hip=mix(-.52,1.04,follow),knee=mix(-.64,-.10,wind);
+ const u=clamp(progress),swing=smooth((u-.22)/.30),follow=smooth((u-.50)/.5);
+ const hip=mix(-.78,.84,swing)+.19*follow,knee=mix(-.70,-.12,swing);
  return{hip,knee,ankle:-hip-knee,follow};
 }
 export function playerPosition(index,time,type='goal',sequence='central'){
