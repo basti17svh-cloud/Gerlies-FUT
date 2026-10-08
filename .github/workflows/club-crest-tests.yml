@@ -10,6 +10,7 @@ on:
       - 'service-worker.js'
       - 'manifest.webmanifest'
       - 'tests/club-crest-design.test.cjs'
+      - 'tests/club-crest.browser.cjs'
       - 'tests/club-identity.test.cjs'
       - '.github/workflows/club-crest-tests.yml'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'service-worker.js'
       - 'manifest.webmanifest'
       - 'tests/club-crest-design.test.cjs'
+      - 'tests/club-crest.browser.cjs'
       - 'tests/club-identity.test.cjs'
       - '.github/workflows/club-crest-tests.yml'
 permissions:
@@ -28,7 +30,7 @@ permissions:
 jobs:
   crest:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,3 +38,17 @@ jobs:
           node-version: '22'
       - name: Crest SVG, symbol options, mobile layout and existing club identity tests
         run: node --test tests/club-crest-design.test.cjs tests/club-identity.test.cjs tests/boot-update.test.cjs tests/champions.test.cjs
+      - name: Install Chromium for real 360 / 390 / 412 px checks
+        run: |
+          npm install --prefix /tmp/footera-crest-browser playwright@1.51.1
+          /tmp/footera-crest-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Mobile crest proportions, banners, and symbol switching
+        env:
+          NODE_PATH: /tmp/footera-crest-browser/node_modules
+        run: node tests/club-crest.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-v2129-crest-mobile-screens
+          path: test-artifacts/footera-crest-v2129-*.png
+          retention-days: 7
