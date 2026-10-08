@@ -25,7 +25,7 @@
    homePattern:String(event.homePattern||'solid'),awayPattern:String(event.awayPattern||'solid'),homeKitConfigured:event.homeKitConfigured===true,awayKitConfigured:event.awayKitConfigured===true,
    homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2130'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2132'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -50,6 +50,11 @@
   ['cutback_left','cutback',10,'normal',['pinged-pass']],['cutback_right','cutback',10,'normal',['pinged-pass']],
   ['inside_left','inside',10,'finesse',['finesse-shot','technical']],
   ['inside_right','inside',10,'finesse',['finesse-shot','technical']],
+  ['cut_inside_left','inverted',10,'finesse',['technical','finesse-shot','quick-step']],['cut_inside_right','inverted',10,'finesse',['technical','finesse-shot','quick-step']],
+  ['double_feint_left','feint',5.5,'finesse',['trickster','technical','finesse-shot']],['double_feint_right','feint',5.5,'finesse',['trickster','technical','finesse-shot']],
+  ['near_post_cut_left','cutfinish',5,'power',['rapid','power-shot']],['near_post_cut_right','cutfinish',5,'power',['rapid','power-shot']],
+  ['low_cross_left','lowcross',6,'normal',['pinged-pass','first-touch']],['low_cross_right','lowcross',6,'normal',['pinged-pass','first-touch']],
+  ['chip_one_on_one','chip',2.5,'chip',['chip-shot']],['chip_counter','chip',1.5,'chip',['chip-shot','rapid']],
   ['halfspace_left','halfspace',9,'normal',['tiki-taka','first-touch']],
   ['halfspace_right','halfspace',9,'normal',['tiki-taka','first-touch']],
   ['counter_central','counter',10,'normal',['rapid','quick-step']],
@@ -78,25 +83,33 @@
  function choosePresentation(event,history=[]){
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
-  const wide=/^(LW|RW|LM|RM|LB|RB|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM)$/.test(striker),centreBack=/^(CB)$/.test(striker);
+  const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
   const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&String(event.creationType||'')!=='solo';
-  const side=/^(LW|LM|LB|LWB)$/.test(provider)?'left':/^(RW|RM|RB|RWB)$/.test(provider)?'right':'';
+  const side=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(provider)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(provider)?'right':'';
+  const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-5);
   const choices=VISUAL_SCENES.map(v=>{
    let w=v.weight;
    for(const id of v.tags){const ps=scorer.get(id);if(ps)w*=1+.48*ps;const pa=hasCreator&&creator.get(id);if(pa)w*=1+.38*pa}
-   if(['wing','cutback','cross','nearpost','farpost','volley'].includes(v.family)&&hasCreator&&/^(LW|RW|LM|RM|LB|RB|LWB|RWB)$/.test(provider))w*=1.8;
+   if(['wing','cutback','lowcross','cross','nearpost','farpost','volley'].includes(v.family)&&hasCreator&&/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(provider))w*=1.8;
    if(['through','duel','counter','lowduel'].includes(v.family)&&hasCreator&&(creator.has('incisive-pass')||creator.has('through-ball')))w*=1.9;
    if(['cross','nearpost','farpost'].includes(v.family)&&(scorer.has('power-header')||scorer.has('aerial')))w*=2.1;
    if(['cross','nearpost','farpost','volley'].includes(v.family)&&hasCreator&&(creator.has('long-ball-pass')||creator.has('pinged-pass')))w*=1.5;
    if(v.family==='distance'&&mid)w*=2.2;
    if(v.family==='halfspace'&&mid)w*=1.65;
-   if(['inside','curler'].includes(v.family)&&wide)w*=2;
+   if(['inside','inverted','feint','cutfinish','curler'].includes(v.family)&&wide)w*=2.8;
+   if(['inside','inverted','feint','cutfinish'].includes(v.family)&&!wide)w*=.38;
+   if(['inside','inverted','feint','cutfinish'].includes(v.family)&&strikerSide&&v.id.endsWith('_'+(strikerSide==='left'?'right':'left')))w*=.08;
+   if(['inverted','feint'].includes(v.family)&&scorer.has('finesse-shot'))w*=scorer.get('finesse-shot')===2?2.3:1.6;
+   if(v.family==='feint'&&scorer.has('trickster'))w*=1.65;
+   if(v.family==='chip'&&scorer.has('chip-shot'))w*=scorer.get('chip-shot')===2?3.8:2.5;
+   if(v.family==='chip'&&!scorer.has('chip-shot'))w*=.55;
+   if(v.family==='lowcross'&&hasCreator&&creator.has('pinged-pass'))w*=2.1;
    if(v.family==='duel'&&/^(ST|CF)$/.test(striker))w*=1.8;
-   if(centreBack)w*=(v.finish==='header'?3:(['dribble','inside'].includes(v.family)?.13:.6));
-   if(event.creationType==='solo'&&['wing','cross','cutback','nearpost','farpost','volley','combination','switch'].includes(v.family))w*=.08;
+   if(centreBack)w*=(v.finish==='header'?3:(['dribble','inside','inverted','feint','cutfinish','chip'].includes(v.family)?.13:.6));
+   if(event.creationType==='solo'&&['wing','cross','cutback','lowcross','nearpost','farpost','volley','combination','switch'].includes(v.family))w*=.08;
    if(v.family==='bicycle'&&(!hasCreator||centreBack))w*=.3;
-   if(side&&v.id.endsWith('_'+(side==='left'?'right':'left'))&&['wing','cutback','cross','nearpost','farpost','volley','counter'].includes(v.family))w*=.25;
+   if(side&&v.id.endsWith('_'+(side==='left'?'right':'left'))&&['wing','cutback','lowcross','cross','nearpost','farpost','volley','counter'].includes(v.family))w*=.25;
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
   });
