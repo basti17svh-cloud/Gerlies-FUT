@@ -1,4 +1,4 @@
-/* Two actual Footera match captures: V21.37 reference motion vs V21.40 pilot.
+/* Two actual Footera match captures: V21.37 reference motion vs V21.41 pilot.
  * Identical simulator fixture, scorer, kits, finish, scene and camera. The QA
  * switch bypasses ONLY the new additive skeleton motions in the reference.
  */
@@ -13,26 +13,35 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
   const comparison=await browser.newPage({viewport:{width:390,height:844},serviceWorkers:'block'});
   await comparison.goto(url);
   const measures=await comparison.evaluate(async()=>{
-   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2142');
+   const T=await import('./vendor/three/three.module.min.js'),M=await import('./3d-highlights-scene.mjs?v=2143');
    const c=document.createElement('canvas'),r=new T.WebGLRenderer({canvas:c,antialias:false});
    const output={reference:[],pilot:[]};
    for(const baseline of [true,false]){
     for(const [type,sequence,finish,keeperAction] of [['goal','cut_inside_right','finesse','classic'],['goal','dribble','finesse','classic'],['goal','wing_left','normal','classic'],['big_chance_saved','central','power','fingertip']]){
      const event=FooteraHighlights.snapshot({id:'qa-comparison',type,minute:38,team:'home',period:1,playerName:'Jamal Musiala',keeperName:'Mike Maignan',sequence,finish,keeperAction});
      const w=M.makeScene(r,event,false,false,true,baseline);w.resize(390,300);
-     for(const time of [2,2.75,3.2,4.15,5.12,5.4,5.63,6.4,6.65,7,8.5]){w.update(time);const x=w.inspect();output[baseline?'reference':'pilot'].push({type,finish,time,motionPose:x.motionPose,ball:x.ball,gloves:x.gloves,drawCalls:x.drawCalls,riggedActors:x.riggedActors})}
+     for(const time of [2,2.75,3.2,4.15,5.12,5.4,5.63,6.4,6.65,7,8.5]){w.update(time);const x=w.inspect();output[baseline?'reference':'pilot'].push({type,finish,time,motionPose:x.motionPose,ball:x.ball,gloves:x.gloves,squadMotion:x.squadMotion,drawCalls:x.drawCalls,riggedActors:x.riggedActors})}
      w.dispose();
     }
    }
    r.dispose();r.forceContextLoss();return output;
   });
-  let moved=0;
+  let moved=0;const visiblyAnimated=new Set(),stronglyAnimated=new Set();
   for(let i=0;i<measures.reference.length;i++){
    const a=measures.reference[i],b=measures.pilot[i];
    if(a.time>=5.4)assert.deepEqual(a.ball,b.ball,'unchanged post-contact authoritative ball flight');
    else assert.ok(Math.hypot(...a.ball.map((v,k)=>v-b.ball[k]))<.5,'pre-shot boot-guided dribble stays nearby');
    assert.equal(a.drawCalls,b.drawCalls,'unchanged draw-call budget');
    assert.equal(a.riggedActors,2);
+   assert.equal(a.squadMotion.length,16);
+   if(a.time>=2&&a.time<=4.15){
+    for(let actor=1;actor<16;actor++){
+     const diff=Math.hypot(...a.squadMotion[actor].map((v,k)=>v-b.squadMotion[actor][k]));
+     assert.ok(Number.isFinite(diff),'off-ball joints remain finite');
+     if(diff>.10)visiblyAnimated.add(actor);
+     if(diff>.20)stronglyAnimated.add(actor);
+    }
+   }
    const keys=Object.keys(a.motionPose),distance=Math.hypot(...keys.map(k=>a.motionPose[k]-b.motionPose[k]));
    assert.ok(Number.isFinite(distance));
    if((a.time===5.12||a.time===5.63||a.time===6.4)&&distance>.12)moved++;
@@ -43,10 +52,12 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    }
   }
   assert.ok(moved>=3,'at least three clearly separated action poses vs V21.37: '+moved);
-  fs.writeFileSync(path.join(out,'footera-motion-comparison.json'),JSON.stringify({comparison:'production same-code V21.37 motion disabled vs V21.40 additive motion',meaningfulPoseChanges:moved,measures},null,2));
+  assert.ok(visiblyAnimated.size>=13,'13 or more background athletes animate: '+visiblyAnimated.size);
+  assert.ok(stronglyAnimated.size>=8,'8 or more background athletes visibly pump arms/legs: '+stronglyAnimated.size);
+  fs.writeFileSync(path.join(out,'footera-motion-comparison.json'),JSON.stringify({comparison:'production same-code V21.37 motion disabled vs V21.41 additive motion',meaningfulPoseChanges:moved,animatedSquadActors:visiblyAnimated.size,strongSquadActors:stronglyAnimated.size,measures},null,2));
   await comparison.close();
   for(const baseline of [true,false]){
-   const name=baseline?'footera-v21.37-reference':'footera-v21.40-pilot';
+   const name=baseline?'footera-v21.37-reference':'footera-v21.41-pilot';
    ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
    await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -75,6 +86,6 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    else console.log('WARN ffmpeg unavailable, preserving WebM recording',ff.error?.message||ff.stderr?.slice(-300)||String(ff.status));
    console.log('PASS',name,fs.statSync(ff.status===0?mp4:webm).size,'bytes; actual match state',JSON.stringify(state));
   }
-  console.log('PASS V21.37 / V21.40 identical Footera scene and ball paths, '+moved+' visibly differing skeletal poses, both 390px videos');
+  console.log('PASS V21.37 / V21.41 identical Footera scene and ball paths, '+moved+' visibly differing skeletal poses, both 390px videos');
  }finally{if(ctx)await ctx.close().catch(()=>{});await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

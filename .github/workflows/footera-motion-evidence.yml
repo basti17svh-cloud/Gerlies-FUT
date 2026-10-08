@@ -1,10 +1,10 @@
 name: Footera Athletic Motion Evidence
 on:
   pull_request:
-    paths: ['3d-football-animation.mjs', '3d-highlights-scene.mjs', 'tests/footera-motion-compare.cjs', '.github/workflows/footera-motion-evidence.yml']
+    paths: ['3d-football-animation.mjs', '3d-squad-motion.mjs', '3d-highlights-scene.mjs', 'tests/footera-motion-compare.cjs', '.github/workflows/footera-motion-evidence.yml']
   push:
     branches: [main]
-    paths: ['3d-football-animation.mjs', '3d-highlights-scene.mjs', 'tests/footera-motion-compare.cjs', '.github/workflows/footera-motion-evidence.yml']
+    paths: ['3d-football-animation.mjs', '3d-squad-motion.mjs', '3d-highlights-scene.mjs', 'tests/footera-motion-compare.cjs', '.github/workflows/footera-motion-evidence.yml']
 permissions:
   contents: read
 jobs:
@@ -18,18 +18,18 @@ jobs:
           node-version: '22'
       - run: npm install --prefix /tmp/footera-browser playwright@1.51.1
       - run: /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
-      - name: Record V21.37 reference and V21.40 pilot in the real mobile match
+      - name: Record V21.37 reference and V21.41 pilot in the real mobile match
         env:
           NODE_PATH: /tmp/footera-browser/node_modules
         run: node tests/footera-motion-compare.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: footera-v21-40-animation-comparison
+          name: footera-v21-41-animation-comparison
           path: |
             test-artifacts/footera-v21.37-reference.mp4
             test-artifacts/footera-v21.37-reference.webm
-            test-artifacts/footera-v21.40-pilot.mp4
-            test-artifacts/footera-v21.40-pilot.webm
+            test-artifacts/footera-v21.41-pilot.mp4
+            test-artifacts/footera-v21.41-pilot.webm
             test-artifacts/footera-motion-comparison.json
           retention-days: 30
