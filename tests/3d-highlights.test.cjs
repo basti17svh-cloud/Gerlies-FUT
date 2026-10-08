@@ -54,7 +54,7 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2130','3d-highlights-match.js?v=2129','3d-highlights-scene.mjs?v=2130','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-highlights.js?v=2132','3d-highlights-match.js?v=2129','3d-highlights-scene.mjs?v=2132','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  assert.ok(sw.includes('footera-v21-31'));assert.ok(html.includes('service-worker.js?v=2131'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
@@ -223,11 +223,11 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 });
 
 
-test('V21.26: 32 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
+test('V21.32: 42 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- assert.equal(H.VISUAL_SCENES.length,32);assert.equal(M.PLAY_SEQUENCES.length,H.VISUAL_SCENES.length);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(M.PLAY_SEQUENCES.length,H.VISUAL_SCENES.length);
  assert.deepEqual(new Set(H.VISUAL_SCENES.map(v=>v.id)),new Set(M.PLAY_SEQUENCES));
- const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle']);
+ const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
   assert.equal(M.normalizeSequence(v.id),v.id);
@@ -237,7 +237,7 @@ test('V21.26: 32 visual scenes correspond to actual renderer IDs without changin
    const impact=M.ballPosition(outcome,M.IMPACT_TIME,v.id,v.finish);
    assert.ok([...c.position,...c.target,...p,...impact].every(Number.isFinite),v.id);
    assert.ok(Math.hypot(...p.map((x,i)=>x-M.ballPosition(outcome,M.SHOT_TIME+.0001,v.id,v.finish)[i]))<.03,'strike continuity: '+v.id);
-   assert.deepEqual(impact,M.ballPosition(outcome,M.IMPACT_TIME,'central',v.finish),'outcome unchanged: '+v.id);
+   assert.deepEqual(impact,M.shotImpact(outcome,v.id,v.finish),'outcome class unchanged: '+v.id);
   }
  }
  const head=M.ballPosition('goal',M.SHOT_TIME,'near_post_left','header');
@@ -277,6 +277,33 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
 });
 
+test('V21.32: actual inverted-wing dribbles, near/far posts and grounded crosses',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ for(const side of ['left','right']){
+  const sign=side==='left'?-1:1;
+  for(const kind of ['inside','cut_inside','double_feint','near_post_cut']){
+   const id=kind+'_'+side, start=M.runPosition(0,0,id),mid=M.runPosition(0,4.3,id),end=M.runPosition(0,M.SHOT_TIME,id);
+   assert.ok(start[0]*sign>16&&Math.abs(mid[0])<Math.abs(start[0])&&Math.abs(end[0])<.01,'visible outside-inside cut '+id);
+   for(const time of [.2,1.6,2.8,4.1]){
+    const ball=M.ballPosition('goal',time,id,'finesse'),runner=M.runPosition(0,time,id);
+    assert.ok(Math.hypot(ball[0]-runner[0],ball[2]-runner[1])<1.1,'controlled dribble '+id+' @'+time);
+   }
+   assert.equal(Math.sign(M.shotImpact('goal',id,'finesse')[0]),kind==='near_post_cut'?sign:-sign,'targeted corner '+id);
+  }
+  const flat=M.ballPosition('goal',4.2,'low_cross_'+side),aerial=M.ballPosition('goal',4.2,'wing_'+side);
+  assert.ok(flat[1]<aerial[1]-.3,'low cross stays below aerial delivery '+side);
+ }
+ const chip=M.ballPosition('goal',6.02,'chip_one_on_one','chip'),driven=M.ballPosition('goal',6.02,'one_on_one','low_driven');
+ assert.ok(chip[1]>driven[1]+1,'chip goes over the goalkeeper');
+});
+test('V21.32: German positions and Chip Shot+ drive scene selection',()=>{
+ const e=(i,props={})=>({...event('goal','german-'+i),scorerSlot:'LF',playerStyles:[{id:'finesse-shot',plus:true},{id:'technical'}],...props});
+ const sample=props=>{let left=0,right=0;for(let i=0;i<1500;i++){const s=H.choosePresentation(e(i,props));if(/^(inside|cut_inside|double_feint|near_post_cut)_left$/.test(s.sequence))left++;if(/^(inside|cut_inside|double_feint|near_post_cut)_right$/.test(s.sequence))right++}return {left,right}};
+ const l=sample({}),r=sample({scorerSlot:'RF'});
+ assert.ok(l.left>l.right*3&&r.right>r.left*3,'scene direction follows LF/RF');
+ const chips=styles=>Array.from({length:2000},(_,i)=>H.choosePresentation({...event('goal','chip-'+i),scorerSlot:'ST',playerStyles:styles})).filter(x=>x.family==='chip').length;
+ assert.ok(chips([{id:'chip-shot',plus:true}])>chips([])*2,'Chip Shot+ visibly affects scene choice');
+});
 // V21.30 — presentation-only motion remains bounded, deterministic and mobile-safe.
 test('V21.30 reactive defending and pass swing keep visual movement deterministic',async()=>{
  const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
@@ -298,7 +325,7 @@ test('V21.30 reactive defending and pass swing keep visual movement deterministi
  assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
-test('V21.30: no carried ball may trail behind the running player across 32 sequences',async()=>{
+test('V21.30: no carried ball may trail behind the running player across 42 sequences',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  let checked=0;const samples=[];
  for(const sequence of M.PLAY_SEQUENCES)for(let step=1;step<=104;step++){
