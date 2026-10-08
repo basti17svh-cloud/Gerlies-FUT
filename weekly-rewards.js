@@ -34,11 +34,22 @@
    '<span class="weekly-reward-banner-copy"><small>DEINE WOCHENREWARDS</small><strong>'+esc(rewardCount(rows))+' abholbereit</strong><span>'+esc(label)+' · Jetzt ansehen</span></span>'+
    '<span class="weekly-reward-arrow" aria-hidden="true">›</span></button>';
  }
- function packPreview(pack,index){
+ function groupedRewardPacks(packs){
+  const groups=new Map();
+  for(const pack of packs){
+   const id=String(pack.id||"");
+   const tradeable=pack.tradeable!==false;
+   const key=JSON.stringify([id,tradeable]);
+   if(!groups.has(key))groups.set(key,{...pack,qty:0});
+   groups.get(key).qty++;
+  }
+  return [...groups.values()];
+ }
+ function packPreview(pack){
   const id=String(pack.id||""),definition=PACKS.find(p=>p.id===id),rated=/^reward-(\d+)-(\d+)$/.exec(id);
   const name=definition?.name||id||"Reward-Pack";
   const quality=rated?rated[1]+"+":"FOOTERA";
-  const amount=rated?rated[2]:(definition?.count||1);
+  const amount=pack.qty;
   const art=rated?"./assets/footera/gold.webp":packArtSrc(id);
   return '<div class="weekly-reward-pack"><div class="weekly-reward-pack-art">'+
    '<img src="'+esc(art)+'" alt="" loading="lazy" decoding="async">'+
@@ -47,7 +58,7 @@
    '<strong>'+esc(name)+'</strong><small>'+(pack.tradeable===false?"Untauschbar":"Tauschbar")+'</small></div>';
  }
  function renderRewardDetails(row){
-  const packs=row.reward.packs||[],coins=Math.max(0,Number(row.reward.coins||0));
+  const packs=row.reward.packs||[],groupedPacks=groupedRewardPacks(packs),coins=Math.max(0,Number(row.reward.coins||0));
   const coinHtml=coins?'<div class="weekly-reward-coin"><img src="./assets/footera/coins.webp" alt="" loading="lazy">'+
    '<strong>'+fmt(coins)+'</strong><span>Footera Coins</span></div>':"";
   const week=Number(row.week),date=Number.isFinite(week)&&week>0?new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(week)):"";
@@ -56,7 +67,7 @@
    '<span class="weekly-reward-rank-icon" aria-hidden="true">◆</span><strong>'+esc(rankTitle(row))+'</strong>'+
    '<span>'+esc(details(row))+'</span></div>'+
    '<div class="weekly-reward-detail-head"><h4>DEINE BELOHNUNGEN</h4><small>'+packs.length+' '+(packs.length===1?"Pack":"Packs")+(coins?" + Coins":"")+'</small></div>'+
-   '<div class="weekly-reward-prizes">'+coinHtml+packs.map(packPreview).join("")+'</div>'+
+   '<div class="weekly-reward-prizes">'+coinHtml+groupedPacks.map(packPreview).join("")+'</div>'+
    '<p class="weekly-reward-note">Beim Abholen werden Münzen direkt gutgeschrieben. Packs landen in deinem Store-Inventar.</p>'+
    '<button type="button" class="weekly-reward-claim" data-weekly-reward-claim="'+esc(String(row.mode))+'" data-week="'+esc(String(row.week))+'">Belohnungen abholen <span aria-hidden="true">→</span></button>'+
    '</section>';
