@@ -368,7 +368,8 @@ test('V21.33: reactions have distinct poses while ball-contact and authoritative
  for(const action of keeper){
   const contact=M.ballPosition('big_chance_saved',M.IMPACT_TIME,'central','normal',action);
   assert.deepEqual(contact,M.ballPosition('big_chance_saved',M.IMPACT_TIME,'central','normal','classic'),'same actual save contact');
-  assert.notDeepEqual(M.ballPosition('big_chance_saved',8.2,'central','normal',action),M.ballPosition('big_chance_saved',8.2,'central','normal','invalid-action')||[],action);
+  const rebound=M.ballPosition('big_chance_saved',8.2,'central','normal',action),classic=M.ballPosition('big_chance_saved',8.2,'central','normal','classic');
+  if(action==='classic')assert.deepEqual(rebound,classic);else assert.notDeepEqual(rebound,classic,action+' unique rebound');
   const k=M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central',action);
   assert.ok([k.x,k.y,k.z,k.tilt,k.dive].every(Number.isFinite),action);
   const goal=M.ballPosition('goal',8,'central','normal',action);
@@ -379,7 +380,7 @@ test('V21.33: reactions have distinct poses while ball-contact and authoritative
  assert.ok(M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','high_reach').y>M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','classic').y);
  assert.ok(M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','rush_spread').z>M.keeperPose('big_chance_saved',M.IMPACT_TIME,'normal','central','classic').z);
  const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.doesNotMatch(source,/Math\\.random\\s*\\(/);
+ assert.doesNotMatch(source,/Math\.random\s*\(/);
 });
 // V21.30 — presentation-only motion remains bounded, deterministic and mobile-safe.
 test('V21.30 reactive defending and pass swing keep visual movement deterministic',async()=>{
