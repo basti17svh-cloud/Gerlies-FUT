@@ -64,6 +64,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    await page.waitForSelector('.fh3d',{state:'detached',timeout:22000});
    const state=await page.evaluate(()=>({goals:match.goalEvents.length,score:[match.home,match.away],pending:!!match.highlight3DPending,disabled:!!match3DQueue.disabled}));
+   console.log('REAL-TIME VIDEO CHECK',name,JSON.stringify(state),'pageErrors=',JSON.stringify(errors));
    assert.deepEqual(state,{goals:1,score:[1,0],pending:false,disabled:false});assert.deepEqual(errors,[]);
    const file=page.video();await ctx.close();ctx=null;
    const webm=path.join(out,name+'.webm');await file.saveAs(webm);await file.delete();
