@@ -45,3 +45,22 @@
 .crest-option-name{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#identityCrestSymbols button{transition:none}}
+/* V21.30 — compact club badges, optional ornament and distinct silhouettes. */
+.club-crest{aspect-ratio:200/220;filter:drop-shadow(0 4px 5px #0007)}
+#identityHeroCrest .club-crest{width:clamp(112px,14vw,140px)}
+.crest-preview-wrap .club-crest{width:150px}
+.crest-preview-wrap{min-height:190px}
+.kit-crest-stamp,.kit-crest-stamp .club-crest.kit-badge-mini{aspect-ratio:200/220}
+.kit-crest-stamp{width:15%;left:58%;top:25%}
+.crest-color-fields,.crest-style-fields{margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.crest-presets{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:16px 0}
+.crest-presets button{display:grid;justify-items:center;gap:6px;padding:10px 5px;border:1px solid #385247;border-radius:12px;background:linear-gradient(145deg,#20352a,#0b1812);color:#e1ece6;font-size:11px;font-weight:800;cursor:pointer}
+.crest-presets button .club-crest{width:70px;max-width:100%}
+.crest-presets button:hover,.crest-presets button:focus-visible{outline:2px solid #a4f6d3;outline-offset:2px}
+#identityCrestShapes{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:620px){
+ .crest-presets{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #identityHeroCrest .club-crest{width:112px}
+ .crest-color-fields,.crest-style-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+.kit-preview .kit-crest-stamp{width:12%;left:60%;top:25%}

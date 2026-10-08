@@ -17,7 +17,7 @@
 <meta name="color-scheme" content="dark">
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
-<title>Footera V21.29</title>
+<title>Footera V21.30</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1483,8 +1483,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./matchday.css">
 <link rel="stylesheet" href="./3d-highlights.css?v=2125">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=2114">
-<link rel="stylesheet" href="./club-crest-premium.css?v=2129">
+<link rel="stylesheet" href="./club-identity.css?v=2130">
+<link rel="stylesheet" href="./club-crest-premium.css?v=2130">
 <link rel="stylesheet" href="./ux-overview.css?v=2114">
 <link rel="stylesheet" href="./play-hub.css">
 <link rel="stylesheet" href="./friends-hub.css">
@@ -1492,7 +1492,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./chem-boosts.css?v=2114">
 <link rel="stylesheet" href="./playstyles.css?v=2114">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
-<script src="./club-crest-art.js?v=2129"></script>
+<script src="./club-crest-art.js?v=2130"></script>
 </head>
 <body>
 
@@ -1563,7 +1563,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.29</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.30</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1844,14 +1844,19 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </div>
 
     <div class="identity-panel" data-identity-panel="crest">
-      <h3>Vereinswappen</h3><p>Das Wappen ist frei wählbar und kein Pack-Item.</p>
+      <h3>Vereinswappen</h3><p>Dein Verein. Dein Zeichen. Wähle eine Vorlage oder gestalte jedes Detail selbst.</p>
+      <div class="crest-presets" id="identityCrestPresets" aria-label="Wappenvorlagen"></div>
       <div class="crest-builder">
         <div class="crest-preview-wrap"><div id="identityCrestPreview"></div></div>
         <div>
           <label class="identity-field">Eigene Zeichen (max. 5)<input id="identityCrestInitials" maxlength="5" placeholder="FCS05" autocomplete="off" autocapitalize="characters"></label><div class="identity-fields crest-border-fields"><label class="identity-field">Randfarbe<input id="identityCrestBorderColor" type="color"></label><label class="identity-field">Randstärke<select id="identityCrestBorderWidth"><option value="thin">Dünn</option><option value="medium">Standard</option><option value="strong">Stark</option><option value="massive">Extra stark</option></select></label></div>
+<div class="identity-fields crest-color-fields"><label class="identity-field">Grundfarbe<input id="identityCrestPrimary" type="color"></label><label class="identity-field">Zweitfläche<input id="identityCrestSecondary" type="color"></label><label class="identity-field">Symbolfarbe<input id="identityCrestSymbolColor" type="color"></label><label class="identity-field">Schriftfarbe<input id="identityCrestTextColor" type="color"></label><label class="identity-field">Details / Zierfarbe<input id="identityCrestAccent" type="color"></label></div><div class="identity-fields crest-style-fields">
+<label class="identity-field">Flächenmuster<select id="identityCrestField"><option value="solid">Einfarbig</option><option value="split">Geteilt</option><option value="stripes">Längsstreifen</option><option value="diagonal">Schärpe</option><option value="quarters">Geviertelt</option></select></label>
+<label class="identity-field">Verzierung<select id="identityCrestDecoration"><option value="none">Ohne</option><option value="laurel">Lorbeer</option></select></label>
+<label class="identity-field">Sterne<select id="identityCrestStars"><option value="0">Keine Sterne</option><option value="1">1 Stern</option><option value="2">2 Sterne</option><option value="3">3 Sterne</option></select></label></div>
           <div style="height:10px"></div>
           <div class="identity-field"><span>Form</span><div class="crest-option-grid" id="identityCrestShapes">
-            <button type="button" data-crest-shape="shield">Schild</button><button type="button" data-crest-shape="round">Rund</button><button type="button" data-crest-shape="hex">Hex</button><button type="button" data-crest-shape="point">Spitz</button><button type="button" data-crest-shape="modern">Modern</button>
+            <button type="button" data-crest-shape="shield">Schild</button><button type="button" data-crest-shape="round">Rund</button><button type="button" data-crest-shape="hex">Hex</button><button type="button" data-crest-shape="point">Spitz</button><button type="button" data-crest-shape="modern">Modern</button><button type="button" data-crest-shape="oval">Oval</button><button type="button" data-crest-shape="diamond">Raute</button>
           </div></div>
           <div style="height:10px"></div>
           <div class="identity-field"><span>Symbol</span><div class="crest-option-grid" id="identityCrestSymbols">
@@ -1864,7 +1869,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </div>
 
     <div class="identity-panel" data-identity-panel="colors">
-      <h3>Vereinsfarben</h3><p>Drei zentrale Farben bilden die Grundlage für Wappen und Club-Darstellungen. Farbplättchen ziehen oder antippen: Quelle wählen, danach die Zielfarbe antippen.</p>
+      <h3>Vereinsfarben</h3><p>Deine Vereinsfarben für Club-Darstellungen. Die Wappenfarben stellst du unabhängig im Wappen-Tab ein. Farbplättchen ziehen oder antippen: Quelle wählen, danach die Zielfarbe antippen.</p>
       <div class="identity-colors-preview"><div id="identityColorChipPrimary" class="identity-color-chip"></div><div id="identityColorChipSecondary" class="identity-color-chip"></div><div id="identityColorChipAccent" class="identity-color-chip"></div></div>
       <div class="identity-fields">
         <label class="identity-field">Hauptfarbe<input id="identityColorPrimary" type="color"></label>
@@ -1874,24 +1879,24 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
     </div>
 
     <div class="identity-panel" data-identity-panel="kits">
-      <h3>Trikots</h3><p>Heim- und Auswärtstrikot werden bereits so gespeichert, dass sie später für 3D-Matches genutzt werden können.</p>
+      <h3>Trikots</h3><p>20 Designs für Heim und Auswärts. Farben und Muster werden auch in den 3D-Highlights verwendet.</p>
       <div class="kit-grid">
         <div class="kit-card"><h4>Heimtrikot</h4><div class="kit-preview"><div id="identityHomeKitPreview"></div></div><div class="kit-meta">
-          <label class="identity-field">Muster<select id="identityHomePattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option></select></label>
+          <label class="identity-field">Muster<select id="identityHomePattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option><option value="reverse">Gegenschärpe</option><option value="doubleband">Doppeltes Brustband</option><option value="checkers">Schachbrett</option><option value="diamonds">Rauten</option><option value="fade">Farbverlauf</option><option value="splitstripe">Geteilter Mittelstreifen</option><option value="cuffs">Kontrastabschlüsse</option></select></label>
           <label class="identity-field">Hauptfarbe<input id="identityHomePrimary" type="color"></label>
           <label class="identity-field">Zweitfarbe<input id="identityHomeSecondary" type="color"></label>
           <label class="identity-field">Hose<input id="identityHomeShorts" type="color"></label>
           <label class="identity-field">Stutzen<input id="identityHomeSocks" type="color"></label>
         </div></div>
         <div class="kit-card"><h4>Auswärtstrikot</h4><div class="kit-preview"><div id="identityAwayKitPreview"></div></div><div class="kit-meta">
-          <label class="identity-field">Muster<select id="identityAwayPattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option></select></label>
+          <label class="identity-field">Muster<select id="identityAwayPattern"><option value="solid">Einfarbig</option><option value="stripes">Streifen</option><option value="hoops">Querstreifen</option><option value="diagonal">Diagonal</option><option value="halves">Halb / Halb</option><option value="sleeves">Ärmel</option><option value="center">Mittelstreifen</option><option value="pinstripes">Nadelstreifen</option><option value="quarters">Viertel</option><option value="chevron">Chevron</option><option value="chestband">Brustband</option><option value="shoulders">Schultern</option><option value="sidepanels">Seitenbahnen</option><option value="reverse">Gegenschärpe</option><option value="doubleband">Doppeltes Brustband</option><option value="checkers">Schachbrett</option><option value="diamonds">Rauten</option><option value="fade">Farbverlauf</option><option value="splitstripe">Geteilter Mittelstreifen</option><option value="cuffs">Kontrastabschlüsse</option></select></label>
           <label class="identity-field">Hauptfarbe<input id="identityAwayPrimary" type="color"></label>
           <label class="identity-field">Zweitfarbe<input id="identityAwaySecondary" type="color"></label>
           <label class="identity-field">Hose<input id="identityAwayShorts" type="color"></label>
           <label class="identity-field">Stutzen<input id="identityAwaySocks" type="color"></label>
         </div></div>
       </div>
-      <div class="identity-future-note">Farben lassen sich zwischen Vereinsfarben, Wappenrand sowie Heim- und Auswärtstrikot exakt kopieren. Die Trikotmuster werden auch in den 3D-Highlights verwendet.</div>
+      <div class="identity-future-note">Farben lassen sich zwischen Vereinsfarben, allen Wappenfarben sowie Heim- und Auswärtstrikot exakt kopieren. Die Trikotmuster werden auch in den 3D-Highlights verwendet.</div>
     </div>
 
     <button id="saveClubIdentity" class="primary identity-save" type="button">Vereinsidentität speichern</button>
@@ -2090,7 +2095,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2129"></script>
+<script src="./3d-highlights.js?v=2130"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
@@ -3259,7 +3264,7 @@ function sbcGroupBannerHTML(group,rows){
 
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
 function defaultClubIdentity(){return{
- crest:{shape:"shield",symbol:"star",primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff",borderColor:"#d8ff3e",borderWidth:"medium",initials:"F"},
+ crest:{shape:"shield",symbol:"star",primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff",borderColor:"#d8ff3e",borderWidth:"medium",symbolColor:"#ffffff",textColor:"#ffffff",field:"solid",decoration:"none",stars:0,initials:"F"},
  colors:{primary:"#d8ff3e",secondary:"#173627",accent:"#ffffff"},
  kits:{
   home:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"},
@@ -3269,8 +3274,8 @@ function defaultClubIdentity(){return{
 function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
- const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
- return{crest:{shape:["shield","round","hex","point","modern"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
+ const kit=(src,def)=>{src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}};
+ return{crest:{shape:["shield","round","hex","point","modern","oval","diamond"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,symbolColor:safeClubHex(crest.symbolColor||crest.accent||colors.accent,d.crest.symbolColor),textColor:safeClubHex(crest.textColor,d.crest.textColor),field:["solid","split","stripes","diagonal","quarters"].includes(crest.field)?crest.field:"solid",decoration:crest.decoration==="laurel"?"laurel":"none",stars:[0,1,2,3].includes(Number(crest.stars))?Number(crest.stars):0,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:kit(kits.home,d.kits.home),away:kit(kits.away,d.kits.away)}}
 }
 function ensureClubIdentityState(){
  state.profile=state.profile||{};
@@ -5850,14 +5855,15 @@ function renderClubIdentityPreview(){
  if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();
  const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
  window.FooteraCrestArt?.enhanceOptions($("identityCrestSymbols"));
+ window.FooteraCrestArt?.renderPresets($("identityCrestPresets"));
  if($("identityHeroCrest"))$("identityHeroCrest").innerHTML=crestHTML(x);
  if($("identityCrestPreview"))$("identityCrestPreview").innerHTML=crestHTML(x);
  if($("identityHeroName"))$("identityHeroName").textContent=d.clubName||"Footera Club";
  if($("identityHeroShort"))$("identityHeroShort").textContent=d.clubShortName||"FTR";
  if($("identityHeroHomeKit"))$("identityHeroHomeKit").innerHTML=kitHTML(x.kits.home,true,x.crest);
  if($("identityHeroAwayKit"))$("identityHeroAwayKit").innerHTML=kitHTML(x.kits.away,true,x.crest);
- if($("identityHomeKitPreview"))$("identityHomeKitPreview").innerHTML=kitHTML(x.kits.home,x.crest);
- if($("identityAwayKitPreview"))$("identityAwayKitPreview").innerHTML=kitHTML(x.kits.away,x.crest);
+ if($("identityHomeKitPreview"))$("identityHomeKitPreview").innerHTML=kitHTML(x.kits.home,false,x.crest);
+ if($("identityAwayKitPreview"))$("identityAwayKitPreview").innerHTML=kitHTML(x.kits.away,false,x.crest);
  if($("identityColorChipPrimary"))$("identityColorChipPrimary").style.background=x.colors.primary;
  if($("identityColorChipSecondary"))$("identityColorChipSecondary").style.background=x.colors.secondary;
  if($("identityColorChipAccent"))$("identityColorChipAccent").style.background=x.colors.accent;
@@ -5868,6 +5874,7 @@ function renderClubIdentity(){
  if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
  const set=(id,val)=>{const el=$(id);if(el&&document.activeElement!==el)el.value=val};
  set("identityClubName",d.clubName);set("identityClubShortName",d.clubShortName);set("identityCrestInitials",x.crest.initials);set("identityCrestBorderColor",x.crest.borderColor);set("identityCrestBorderWidth",x.crest.borderWidth);
+ for(const [id,key] of Object.entries({Primary:"primary",Secondary:"secondary",SymbolColor:"symbolColor",TextColor:"textColor",Accent:"accent",Field:"field",Decoration:"decoration",Stars:"stars"}))set("identityCrest"+id,x.crest[key]);
  set("identityColorPrimary",x.colors.primary);set("identityColorSecondary",x.colors.secondary);set("identityColorAccent",x.colors.accent);
  set("identityHomePattern",x.kits.home.pattern);set("identityHomePrimary",x.kits.home.shirtPrimary);set("identityHomeSecondary",x.kits.home.shirtSecondary);set("identityHomeShorts",x.kits.home.shorts);set("identityHomeSocks",x.kits.home.socks);
  set("identityAwayPattern",x.kits.away.pattern);set("identityAwayPrimary",x.kits.away.shirtPrimary);set("identityAwaySecondary",x.kits.away.shirtSecondary);set("identityAwayShorts",x.kits.away.shorts);set("identityAwaySocks",x.kits.away.socks);
@@ -5881,9 +5888,12 @@ function bindIdentityInput(id,apply,event="input"){$(id)?.addEventListener(event
 bindIdentityInput("identityClubName",(v,d)=>d.clubName=String(v).slice(0,30));
 bindIdentityInput("identityClubShortName",(v,d)=>d.clubShortName=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
 bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5));bindIdentityInput("identityCrestBorderColor",(v,d)=>d.identity.crest.borderColor=v);bindIdentityInput("identityCrestBorderWidth",(v,d)=>d.identity.crest.borderWidth=v,"change");
-bindIdentityInput("identityColorPrimary",(v,d)=>{const old=d.identity.colors.primary;if(d.identity.crest.borderColor===old)d.identity.crest.borderColor=v;d.identity.colors.primary=v;d.identity.crest.primary=v});
-bindIdentityInput("identityColorSecondary",(v,d)=>{d.identity.colors.secondary=v;d.identity.crest.secondary=v});
-bindIdentityInput("identityColorAccent",(v,d)=>{d.identity.colors.accent=v;d.identity.crest.accent=v});
+for(const [id,key] of Object.entries({Primary:"primary",Secondary:"secondary",SymbolColor:"symbolColor",TextColor:"textColor",Accent:"accent"}))bindIdentityInput("identityCrest"+id,(v,d)=>d.identity.crest[key]=v);
+for(const [id,key] of Object.entries({Field:"field",Decoration:"decoration",Stars:"stars"}))bindIdentityInput("identityCrest"+id,(v,d)=>d.identity.crest[key]=key==="stars"?Number(v):v,"change");
+$("identityCrestPresets")?.addEventListener("click",e=>{const b=e.target.closest("[data-crest-preset]"),preset=window.FooteraCrestArt?.presets[b?.dataset.crestPreset];if(!preset)return;if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();Object.assign(clubIdentityDraft.identity.crest,preset.crest);renderClubIdentity()});
+bindIdentityInput("identityColorPrimary",(v,d)=>d.identity.colors.primary=v);
+bindIdentityInput("identityColorSecondary",(v,d)=>d.identity.colors.secondary=v);
+bindIdentityInput("identityColorAccent",(v,d)=>d.identity.colors.accent=v);
 for(const side of ["Home","Away"]){
  const key=side.toLowerCase();
  bindIdentityInput("identity"+side+"Pattern",(v,d)=>d.identity.kits[key].pattern=v,"change");
@@ -9022,7 +9032,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.29";
+const GFUT_BUILD="V21.30";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9075,7 +9085,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2129",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2130",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

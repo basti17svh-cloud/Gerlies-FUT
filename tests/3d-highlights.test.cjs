@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2129','3d-highlights-match.js?v=2129','3d-highlights-scene.mjs?v=2129','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.ok(sw.includes('footera-v21-29'));assert.ok(html.includes('service-worker.js?v=2129'));
+ for(const file of ['3d-highlights.js?v=2130','3d-highlights-match.js?v=2129','3d-highlights-scene.mjs?v=2130','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.ok(sw.includes('footera-v21-30'));assert.ok(html.includes('service-worker.js?v=2130'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
@@ -277,8 +277,8 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  assert.ok(H.choosePresentation(make('none',{creatorName:'',creatorStyles:null,playerStyles:null})).sequence);
 });
 
-// V21.29 — presentation-only motion remains bounded, deterministic and mobile-safe.
-test('V21.29 reactive defending and pass swing keep visual movement deterministic',async()=>{
+// V21.30 — presentation-only motion remains bounded, deterministic and mobile-safe.
+test('V21.30 reactive defending and pass swing keep visual movement deterministic',async()=>{
  const {PLAY_SEQUENCES,defenderTracking,passStrikePose}=await import('../3d-highlights-scene.mjs');
  let responsive=0;
  for(const sequence of PLAY_SEQUENCES)for(const t of [0,1.5,3,5.4,6.65,8.5])for(let i=8;i<16;i++){
@@ -298,7 +298,7 @@ test('V21.29 reactive defending and pass swing keep visual movement deterministi
  assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
-test('V21.29: no carried ball may trail behind the running player across 32 sequences',async()=>{
+test('V21.30: no carried ball may trail behind the running player across 32 sequences',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  let checked=0;const samples=[];
  for(const sequence of M.PLAY_SEQUENCES)for(let step=1;step<=104;step++){
@@ -324,7 +324,7 @@ test('V21.29: no carried ball may trail behind the running player across 32 sequ
  assert.ok(after.hip>contact.hip,'follow through after pass release');
 });
 
-test('V21.29: smooth handoffs keep every attacking pattern continuous',async()=>{
+test('V21.30: smooth handoffs keep every attacking pattern continuous',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  let checks=0,largest=0;
  for(const sequence of M.PLAY_SEQUENCES)for(const t of [2.35,2.5,2.9,3.1,3.2,3.36,3.65,4.65,5.16,M.SHOT_TIME]){

@@ -222,7 +222,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
 export function kitColors(event){
- const validPattern=v=>['solid','stripes','hoops','diagonal','halves','sleeves','center','pinstripes','quarters','chevron','chestband','shoulders','sidepanels'].includes(String(v))?String(v):'solid';
+ const validPattern=v=>['solid','stripes','hoops','diagonal','halves','sleeves','center','pinstripes','quarters','chevron','chestband','shoulders','sidepanels','reverse','doubleband','checkers','diamonds','fade','splitstripe','cuffs'].includes(String(v))?String(v):'solid';
  const home={shirt:hex(event.homeColor,'#971d42'),shirtSecondary:hex(event.homeSecondary,event.homeColor||'#971d42'),pattern:validPattern(event.homePattern),shorts:hex(event.homeShorts,'#f3f4ee'),socks:hex(event.homeSocks,'#971d42')};
  let away={shirt:hex(event.awayColor,'#f2f3f4'),shirtSecondary:hex(event.awaySecondary,event.awayColor||'#f2f3f4'),pattern:validPattern(event.awayPattern),shorts:hex(event.awayShorts,'#172b49'),socks:hex(event.awaySocks,'#f2f3f4')};
  const h=new THREE.Color(home.shirt),a=new THREE.Color(away.shirt);
@@ -417,6 +417,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      case 'shoulders':rect(0,0,1,.20);break;
      case 'sidepanels':rect(0,0,.16,1);rect(.84,0,.16,1);break;
      case 'diagonal':ctx.beginPath();ctx.moveTo(0,h*.06);ctx.lineTo(w,h*.80);ctx.lineTo(w,h*.96);ctx.lineTo(0,h*.22);ctx.fill();break;
+     case 'reverse':ctx.beginPath();ctx.moveTo(0,h*.80);ctx.lineTo(w,h*.06);ctx.lineTo(w,h*.22);ctx.lineTo(0,h*.96);ctx.fill();break;
+     case 'doubleband':rect(0,.32,1,.10);rect(0,.48,1,.10);break;
+     case 'checkers':for(let y=0;y<8;y++)for(let x=0;x<8;x++)if((x+y)%2)rect(x/8,y/8,1/8,1/8);break;
+     case 'diamonds':for(let y=-1;y<6;y++)for(let x=-1;x<6;x++){ctx.beginPath();ctx.moveTo((x+.5)*w/5,y*h/5);ctx.lineTo((x+1)*w/5,(y+.5)*h/5);ctx.lineTo((x+.5)*w/5,(y+1)*h/5);ctx.lineTo(x*w/5,(y+.5)*h/5);ctx.fill()}break;
+     case 'fade':{const gradient=ctx.createLinearGradient(0,0,0,h);gradient.addColorStop(0,kit.shirt);gradient.addColorStop(1,kit.shirtSecondary);ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h);break}
+     case 'splitstripe':rect(.34,0,.12,1);rect(.54,0,.12,1);break;
+     case 'cuffs':rect(0,0,1,.10);rect(0,.92,1,.08);break;
      case 'chevron':ctx.beginPath();ctx.moveTo(0,h*.19);ctx.lineTo(w*.5,h*.43);ctx.lineTo(w,h*.19);ctx.lineTo(w,h*.32);ctx.lineTo(w*.5,h*.56);ctx.lineTo(0,h*.32);ctx.fill();break;
     }
     const shade=ctx.createLinearGradient(0,0,w,0);shade.addColorStop(0,'#00000035');shade.addColorStop(.28,'#ffffff08');shade.addColorStop(.65,'#ffffff04');shade.addColorStop(1,'#00000035');ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);

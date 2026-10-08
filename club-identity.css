@@ -79,3 +79,22 @@
 .identity-color-drag-ghost::before{content:"";position:absolute;left:7px;top:50%;width:17px;height:17px;transform:translateY(-50%);border-radius:5px;background:var(--transfer-color);border:1px solid #ffffff55}
 @media(max-width:620px){.crest-border-fields{grid-template-columns:1fr 1fr}.identity-color-transfer{grid-template-columns:22px minmax(0,1fr) auto}.identity-color-transfer i{width:22px;height:22px}}
 @media(max-width:390px){.identity-color-transfer small{display:none}}
+/* V21.30 — full-size jersey editor, proportional patterns, cloth and collar. */
+.kit-preview{min-height:248px;padding:18px 8px}
+.kit-preview .kit-shirt{width:190px;height:205px;max-width:100%;margin:auto}
+.kit-shirt::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#0003,transparent 29%,#ffffff14 47%,transparent 66%,#0003),repeating-linear-gradient(0deg,transparent 0 2px,#ffffff08 2px 3px);box-shadow:inset 0 -3px #0003}
+.kit-shirt::after{content:"";position:absolute;left:38%;top:-4%;width:24%;height:16%;border:4px solid var(--kit-b);border-top:0;border-radius:0 0 50% 50%;box-shadow:0 2px 2px #0004;pointer-events:none}
+.kit-shirt.kit-mini::after{border-width:2px}
+.kit-shirt.pattern-stripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 17%,var(--kit-b) 17% 34%)}
+.kit-shirt.pattern-hoops{background:repeating-linear-gradient(0deg,var(--kit-a) 0 16%,var(--kit-b) 16% 32%)}
+.kit-shirt.pattern-pinstripes{background:repeating-linear-gradient(90deg,var(--kit-a) 0 9%,var(--kit-b) 9% 12%,var(--kit-a) 12% 24%)}
+.kit-shirt.pattern-reverse{background:linear-gradient(45deg,var(--kit-a) 0 43%,var(--kit-b) 44% 58%,var(--kit-a) 59%)}
+.kit-shirt.pattern-doubleband{background:linear-gradient(180deg,var(--kit-a) 0 32%,var(--kit-b) 32% 42%,var(--kit-a) 42% 48%,var(--kit-b) 48% 58%,var(--kit-a) 58%)}
+.kit-shirt.pattern-checkers{background:repeating-conic-gradient(var(--kit-a) 0 25%,var(--kit-b) 0 50%) 0 0/25% 25%}
+.kit-shirt.pattern-diamonds{background:conic-gradient(from 45deg,var(--kit-a) 0 25%,var(--kit-b) 0 50%,var(--kit-a) 0 75%,var(--kit-b) 0) 0 0/20% 20%}
+.kit-shirt.pattern-fade{background:linear-gradient(180deg,var(--kit-a),var(--kit-b))}
+.kit-shirt.pattern-splitstripe{background:linear-gradient(90deg,var(--kit-a) 0 34%,var(--kit-b) 34% 46%,var(--kit-a) 46% 54%,var(--kit-b) 54% 66%,var(--kit-a) 66%)}
+.kit-shirt.pattern-cuffs{background:linear-gradient(180deg,var(--kit-b) 0 10%,var(--kit-a) 10% 92%,var(--kit-b) 92%)}
+.kit-meta .identity-field{min-width:0}
+.kit-meta select{font-size:12px}
+.kit-shirt{clip-path:polygon(25% 0,40% 5%,44% 9%,56% 9%,60% 5%,75% 0,100% 20%,87% 42%,79% 35%,82% 100%,18% 100%,21% 35%,13% 42%,0 20%)}

@@ -49,6 +49,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: footera-v2129-crest-mobile-screens
-          path: test-artifacts/footera-crest-v2129-*.png
+          name: footera-v2130-crest-mobile-screens
+          path: test-artifacts/footera-*-v2130-*.png
           retention-days: 7

@@ -1,4 +1,4 @@
-/* Footera V21.29 — Vereinswappen: metallic SVG renderer and bespoke emblem artwork. */
+/* Footera V21.30 — configurable football club badges and recolourable vector emblems. */
 (function(){
  "use strict";
  const GLYPHS={
@@ -39,66 +39,84 @@
  ram:'<path d="M22 23C10 4 0 20 9 34c5 8 13 5 16 1M42 23C54 4 64 20 55 34c-5 8-13 5-16 1"/><path d="m22 19 10-8 10 8 6 19-8 19H24l-8-19Z"/><path d="m21 35 9 3m13-3-9 3m-7 9 5-5 5 5-5 7Z"/>'
  };
  const SHAPES={
-  shield:"M28 10H172L190 38 176 164Q167 198 100 230 33 198 24 164L10 38Z",
-  round:"M100 9C150 9 190 47 190 109c0 57-36 106-90 122C46 215 10 166 10 109 10 47 50 9 100 9Z",
-  hex:"M48 9H152L188 56V165L100 231 12 165V56Z",
-  point:"M25 9H175L190 39 156 165 100 232 44 165 10 39Z",
-  modern:"M35 9H188L176 166 100 231 12 184 9 48Z"
+  shield:'M22 18H178V103C178 151 149 185 100 207 51 185 22 151 22 103Z',
+  round:'M100 22a88 88 0 1 1 0 176 88 88 0 1 1 0-176Z',
+  hex:'M100 14 184 62V158L100 206 16 158V62Z',
+  point:'M30 16H170V135L100 210 30 135Z',
+  modern:'M30 18H182L166 163 100 204 18 170Z',
+  oval:'M100 12C146 12 175 49 175 110S146 208 100 208 25 171 25 110 54 12 100 12Z',
+  diamond:'M100 8 194 110 100 212 6 110Z'
  };
- const SCALES={thin:.94,medium:.915,strong:.885,massive:.85};
+ const WIDTHS={thin:2,medium:4,strong:7,massive:10};
+ // Solid, cut-out club emblems remain crisp at badge size and fully recolourable.
+ const EMBLEMS={
+ eagle:'<path fill="currentColor" stroke="none" d="M29 18 25 13 28 7 36 7 42 13 35 15 36 23 43 17 60 7 57 19 47 27 59 22 56 32 44 37 53 35 49 43 39 43 37 48 44 56 35 53 32 61 29 53 20 56 27 48 25 43 15 43 11 35 20 37 8 32 5 22 17 27 7 19 4 7 21 17 28 23Z"/><path d="m29 30 3 13 3-13M28 12h3" stroke="var(--crest-secondary)" stroke-width="2"/>',
+ lion:'<path fill="currentColor" stroke="none" d="m32 3 9 6 10-1 1 12 9 9-5 11-1 11-13 2-10 9-10-9-13-2-1-11-5-11 9-9 1-12 10 1Z"/><path fill="var(--crest-secondary)" stroke="none" d="m19 21 6-5 7 6 7-6 6 5-2 19-11 13-11-13Z"/><path d="m21 29 7 3m15-3-7 3m-9 9 5-3 5 3-5 6Zm5 6v5"/>',
+ wolf:'<path fill="currentColor" stroke="none" d="M8 3 25 16 32 12 39 16 56 3 53 27 61 37 46 49 32 62 18 49 3 37 11 27Z"/><path fill="var(--crest-secondary)" stroke="none" d="m15 17 9 8-10-2Zm34 0 1 6-10 2ZM13 32l14 7-7 3Zm38 0-14 7 7 3ZM23 46l9-5 9 5-9 10Z"/>',
+ bull:'<path fill="currentColor" stroke="none" d="M18 19C9 16 5 8 6 2-3 17 6 30 19 30l-3 12 10 17h12l10-17-3-12C58 30 67 17 58 2c1 6-3 14-12 17L32 12Z"/><path d="m20 32 9 4m15-4-9 4m-8 12 5-3 5 3-5 5Z" stroke="var(--crest-secondary)"/>',
+ fleur:'<path fill="currentColor" stroke="none" d="M32 2C12 21 24 30 28 40 11 14-4 26 4 39c4 8 15 6 11-1 5 0 9 4 10 8H15v6h12l-5 9 10-4 10 4-5-9h12v-6H39c1-4 5-8 10-8-4 7 7 9 11 1 8-13-7-25-24 1C40 30 52 21 32 2Z"/>'
+ };
+ // The same vector is used in the option grid, full crest and shirt stamp.
+ GLYPHS.eagle=EMBLEMS.eagle;
+ const presets={
+  heritage:{name:'Tradition',crest:{shape:'round',symbol:'lion',primary:'#163e32',secondary:'#0b241c',borderColor:'#d9bd78',symbolColor:'#e5c888',textColor:'#fff4d7',accent:'#d9bd78',borderWidth:'medium',field:'solid',decoration:'laurel',stars:0}},
+  athletic:{name:'Athletic',crest:{shape:'shield',symbol:'eagle',primary:'#f1eadb',secondary:'#ae2132',borderColor:'#182638',symbolColor:'#182638',textColor:'#182638',accent:'#182638',borderWidth:'medium',field:'split',decoration:'none',stars:0}},
+  union:{name:'Union',crest:{shape:'hex',symbol:'wolf',primary:'#123d65',secondary:'#0a2743',borderColor:'#d8e9f1',symbolColor:'#eaf5ff',textColor:'#eaf5ff',accent:'#6faed0',borderWidth:'medium',field:'stripes',decoration:'none',stars:1}},
+  racing:{name:'Racing',crest:{shape:'oval',symbol:'fleur',primary:'#172343',secondary:'#25375c',borderColor:'#d5b573',symbolColor:'#e6c785',textColor:'#f5e6bc',accent:'#d5b573',borderWidth:'thin',field:'solid',decoration:'none',stars:0}},
+  city:{name:'City',crest:{shape:'round',symbol:'castle',primary:'#8b2637',secondary:'#561c2a',borderColor:'#e7dac5',symbolColor:'#e7dac5',textColor:'#fff7eb',accent:'#e7dac5',borderWidth:'strong',field:'solid',decoration:'none',stars:0}},
+  dynamo:{name:'Dynamo',crest:{shape:'diamond',symbol:'bolt',primary:'#e9bf46',secondary:'#d7a932',borderColor:'#192b33',symbolColor:'#192b33',textColor:'#192b33',accent:'#192b33',borderWidth:'medium',field:'split',decoration:'none',stars:0}}
+ };
  let counter=0;
- function escapeText(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+ function escapeText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function hex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value))?value:fallback}
  function emblemIcon(symbol,mini){
-  if(symbol==="eagle")return '<span class="crest-eagle-symbol" aria-hidden="true">🦅</span>';
-  return '<svg class="crest-vector-icon'+(mini?' crest-vector-icon-mini':'')+'" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(GLYPHS[symbol]||GLYPHS.star)+'</svg>';
+  return '<svg class="crest-vector-icon'+(mini?' crest-vector-icon-mini':'')+'" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(EMBLEMS[symbol]||GLYPHS[symbol]||GLYPHS.star)+'</svg>';
  }
  function render(crest,mini){
-  const c=crest||{};
-  // The eagle continues to use its unchanged original emoji; all 35 other glyphs are SVG.
-  const safeSymbol=c.symbol==="eagle"?"eagle":GLYPHS[c.symbol]?c.symbol:"star";
-  const shape=SHAPES[c.shape]||SHAPES.shield,scale=SCALES[c.borderWidth]||SCALES.medium;
-  const inner=scale-.050,uid="footera-crest-"+(++counter);
-  const colors={primary:c.primary||"#d8ff3e",secondary:c.secondary||"#173627",accent:c.accent||"#ffffff",border:c.borderColor||c.primary||"#d8ff3e"};
-  const initials=String(c.initials||"F").slice(0,5),labelSize=initials.length===5?24:initials.length===4?27:30;
-  const layer=(s,fill,extra)=>'<path d="'+shape+'" transform="translate(100 120) scale('+s+') translate(-100 -120)" fill="'+fill+'" '+(extra||'')+'/>';
-  const centerIcon=safeSymbol==="eagle"?'<text x="100" y="141" font-size="53" text-anchor="middle" aria-hidden="true">🦅</text>':
-   '<svg x="58" y="86" width="84" height="77" viewBox="0 0 64 64" color="'+colors.accent+'" aria-hidden="true">'+
-   '<g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round">'+GLYPHS[safeSymbol]+'</g></svg>';
-  const star=(x,y,size)=>'<path d="M'+x+' '+(y-size)+'l'+(size*.26)+' '+(size*.71)+' '+(size*.76)+' '+(size*.05)+'-'+(size*.59)+' '+(size*.50)+' '+(size*.19)+' '+(size*.72)+'-'+(size*.62)+'-'+(size*.4)+'-'+(size*.62)+' '+(size*.4)+' '+(size*.19)+'-'+(size*.72)+'-'+(size*.59)+'-'+(size*.5)+' '+(size*.76)+'-'+(size*.05)+'Z" fill="url(#'+uid+'-metal)" stroke="#fff" stroke-width=".8"/>';
-  const leaves=(right)=>{
-   const dir=right?1:-1,x=right?160:40;
-   let marks='<path d="M'+x+' 89 Q'+(x-12*dir)+' 116 '+(x-5*dir)+' 160" fill="none" stroke="url(#'+uid+'-metal)" stroke-width="3"/>';
-   for(let i=0;i<5;i++){const y=94+i*13,dx=right?-1:1;const bx=x+(i%2?5:-5)*dx;marks+='<path d="M'+bx+' '+y+' q'+(10*dx)+' -12 '+(13*dx)+' -11 q'+(-1*dx)+' 12 '+(-13*dx)+' 16Z" fill="url(#'+uid+'-metal)" opacity=".93"/>'}
-   return marks;
-  };
-  return '<span class="club-crest shape-'+escapeText(c.shape||"shield")+' border-'+escapeText(c.borderWidth||"medium")+(mini?' kit-badge-mini':'')+'" style="--crest-primary:'+colors.primary+';--crest-secondary:'+colors.secondary+';--crest-accent:'+colors.accent+';--crest-border:'+colors.border+'" role="img" aria-label="Vereinswappen '+escapeText(initials)+'">'+
-   '<svg class="club-crest-art" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'+
-   '<defs><linearGradient id="'+uid+'-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" offset="0"/><stop stop-color="#9aabb7" offset=".15"/><stop stop-color="'+colors.border+'" offset=".27"/><stop stop-color="#f8fcff" offset=".41"/><stop stop-color="#56636e" offset=".58"/><stop stop-color="'+colors.border+'" offset=".73"/><stop stop-color="#f3f6fa" offset=".86"/><stop stop-color="#677681" offset="1"/></linearGradient>'+
-   '<linearGradient id="'+uid+'-face" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="'+colors.secondary+'" offset="0"/><stop stop-color="'+colors.primary+'" offset=".38"/><stop stop-color="'+colors.secondary+'" offset="1"/></linearGradient>'+
-   '<linearGradient id="'+uid+'-plaque" x1="0" y1="0" x2=".95" y2="1"><stop stop-color="'+colors.primary+'" offset="0"/><stop stop-color="'+colors.secondary+'" offset=".48"/><stop stop-color="'+colors.secondary+'" offset="1"/></linearGradient></defs>'+
-   '<path d="'+shape+'" fill="url(#'+uid+'-metal)" stroke="#f3f7ff" stroke-width="1.5"/>'+
-   layer(scale,colors.border,'stroke="#0a1018" stroke-width="2.2"')+
-   layer(inner,'url(#'+uid+'-face)','stroke="url(#'+uid+'-metal)" stroke-width="2.8"')+
-   '<path d="M32 34Q65 22 100 21Q139 23 170 36" fill="none" stroke="#fff" stroke-opacity=".30" stroke-width="2"/>'+
-   '<path d="M100 66 147 82V125Q145 155 100 171 55 155 53 125V82Z" fill="url(#'+uid+'-metal)" stroke="#0b1720" stroke-width="3"/>'+
-   '<path d="M100 73 139 88V122Q137 147 100 162 63 147 61 122V88Z" fill="url(#'+uid+'-plaque)" stroke="'+colors.accent+'" stroke-opacity=".35" stroke-width="1.6"/>'+
-   '<g opacity=".92">'+leaves(false)+leaves(true)+'</g>'+
-   star(69,52,8)+star(100,45,11)+star(131,52,8)+
-   centerIcon+
-   '<path d="M27 175 42 171H158L173 175 165 211 100 224 35 211Z" fill="#080b14" stroke="url(#'+uid+'-metal)" stroke-width="4"/>'+
-   '<path d="M31 180 44 178H156L169 180 162 205 100 217 38 205Z" fill="url(#'+uid+'-plaque)" stroke="'+colors.accent+'" stroke-opacity=".36" stroke-width="1.2"/>'+
-   '<path d="M46 183H154" stroke="#fff" stroke-opacity=".28" stroke-width="1.2"/>'+
-   '<text x="100" y="202" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="'+labelSize+'" letter-spacing="1.1" text-anchor="middle" paint-order="stroke fill" stroke="#070b12" stroke-width="3.6" fill="#fff">'+escapeText(initials)+'</text>'+
-   '</svg></span>';
+  const c=crest||{},shapeKey=SHAPES[c.shape]?c.shape:'shield',shape=SHAPES[shapeKey],width=WIDTHS[c.borderWidth]||4;
+  const uid='footera-crest-'+(++counter),initials=String(c.initials||'F').slice(0,5);
+  const colors={primary:hex(c.primary,'#173627'),secondary:hex(c.secondary,'#0d241b'),accent:hex(c.accent,'#ffffff'),border:hex(c.borderColor,'#d8ff3e'),symbol:hex(c.symbolColor,hex(c.accent,'#ffffff')),text:hex(c.textColor,'#ffffff')};
+  const symbol=GLYPHS[c.symbol]?c.symbol:'star',art=EMBLEMS[symbol]||GLYPHS[symbol];
+  const stars=[1,2,3].includes(Number(c.stars))?Number(c.stars):0;
+  let field='';
+  if(c.field==='split')field='<path d="M100 0H200V220H100Z"/>';
+  if(c.field==='stripes')field='<path d="M44 0h22v220H44ZM89 0h22v220H89ZM134 0h22v220h-22Z"/>';
+  if(c.field==='diagonal')field='<path d="M0 0h34l166 186v34h-34L0 34Z"/>';
+  if(c.field==='quarters')field='<path d="M100 0h100v110H100ZM0 110h100v110H0Z"/>';
+  let decoration='';
+  if(c.decoration==='laurel'){
+   for(const sign of [-1,1]){
+    decoration+='<g transform="translate(100 112) scale('+sign+' 1)" fill="'+colors.accent+'"><path d="M36 52Q72 22 56-27" fill="none" stroke="'+colors.accent+'" stroke-width="1.6"/>';
+    for(let i=0;i<6;i++){const y=40-i*12,x=50+Math.sin(i/5*Math.PI)*10;decoration+='<path d="M'+x+' '+y+'q-14-2-13-12 12 0 13 12q13-7 12-17-13 4-12 17Z"/>'}
+    decoration+='</g>';
+   }
+  }
+  let starArt='';for(let i=0;i<stars;i++)starArt+='<svg data-crest-star="true" x="'+(100-(stars*17-3)/2+i*17)+'" y="38" width="14" height="14" viewBox="0 0 64 64" fill="'+colors.accent+'">'+GLYPHS.star+'</svg>';
+  const iconWidth=c.decoration==='laurel'?72:88,iconX=(200-iconWidth)/2;
+  return '<span class="club-crest shape-'+shapeKey+' border-'+(WIDTHS[c.borderWidth]?c.borderWidth:'medium')+(mini?' kit-badge-mini':'')+'" style="--crest-primary:'+colors.primary+';--crest-secondary:'+colors.secondary+';--crest-accent:'+colors.accent+';--crest-border:'+colors.border+'" role="img" aria-label="Vereinswappen '+escapeText(initials)+'">'+
+   '<svg class="club-crest-art" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><clipPath id="'+uid+'-clip"><path d="'+shape+'"/></clipPath><linearGradient id="'+uid+'-sheen" x2=".2" y2="1"><stop stop-color="#fff" stop-opacity=".10"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient></defs>'+
+   '<path data-crest-part="primary" d="'+shape+'" fill="'+colors.primary+'"/>'+
+   '<g data-crest-part="secondary" clip-path="url(#'+uid+'-clip)" fill="'+colors.secondary+'">'+field+'</g>'+
+   '<path d="'+shape+'" fill="url(#'+uid+'-sheen)"/>'+
+   '<path data-crest-part="border" d="'+shape+'" fill="none" stroke="'+colors.border+'" stroke-width="'+width+'"/>'+
+   '<path d="'+shape+'" transform="translate(100 110) scale(.92) translate(-100 -110)" fill="none" stroke="'+colors.accent+'" stroke-width=".7" opacity=".65"/>'+
+   '<g data-crest-part="decoration">'+decoration+starArt+'</g>'+
+   '<svg data-crest-part="symbol" x="'+iconX+'" y="'+(stars?64:57)+'" width="'+iconWidth+'" height="88" viewBox="0 0 64 64" color="'+colors.symbol+'"><g fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">'+art+'</g></svg>'+
+   '<path d="M78 151H122" stroke="'+colors.accent+'" stroke-width="1.5"/>'+
+   '<text data-crest-part="text" x="100" y="'+(shapeKey==='point'||shapeKey==='diamond'?168:176)+'" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="'+(shapeKey==='diamond'?16:initials.length>4?19:23)+'" letter-spacing="1.6" text-anchor="middle" fill="'+colors.text+'">'+escapeText(initials)+'</text></svg></span>';
+ }
+ function renderPresets(host){
+  if(!host||host.childElementCount)return;
+  host.innerHTML=Object.entries(presets).map(([id,p])=>'<button type="button" data-crest-preset="'+id+'" aria-label="Vorlage '+p.name+' übernehmen">'+render({...p.crest,initials:'FC'})+'<span>'+p.name+'</span></button>').join('');
  }
  function enhanceOptions(host){
   if(!host)return;
-  host.querySelectorAll("[data-crest-symbol]").forEach(button=>{
-   if(button.dataset.crestArtReady==="1")return;
-   const id=button.dataset.crestSymbol,label=button.textContent.trim().split(/\s+/).slice(1).join(" ")||(id==="f"?"Footera":"Symbol");
+  host.querySelectorAll('[data-crest-symbol]').forEach(button=>{
+   if(button.dataset.crestArtReady==='1')return;
+   const id=button.dataset.crestSymbol,label=button.textContent.trim().split(/\s+/).slice(1).join(' ')||(id==='f'?'Footera':'Symbol');
    button.innerHTML='<span class="crest-option-art">'+emblemIcon(id,true)+'</span><span class="crest-option-name">'+escapeText(label)+'</span>';
-   button.dataset.crestArtReady="1";
+   button.dataset.crestArtReady='1';
   });
  }
- window.FooteraCrestArt={render,emblemIcon,enhanceOptions,keys:Object.freeze(Object.keys(GLYPHS).concat("eagle"))};
+ window.FooteraCrestArt={render,emblemIcon,enhanceOptions,renderPresets,presets,keys:Object.freeze(Object.keys(GLYPHS))};
 })();
