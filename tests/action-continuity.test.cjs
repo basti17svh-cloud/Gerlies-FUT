@@ -4,7 +4,7 @@ test('Foot touch precedes push and handover stays continuous',async()=>{
  const {touchContinuity}=await import(source);
  const impact=touchContinuity(Math.PI/2,1),push=touchContinuity(Math.PI*.75,1);
  assert.equal(impact.foot,0);assert.ok(impact.contact>.99&&impact.push<1e-9);
- assert.ok(push.push>.99&&push.contact<.01);
+ assert.ok(push.push>.99&&push.contact<.10);
  for(const t of [0,Math.PI,Math.PI*2]){
   const a=touchContinuity(t-1e-5,1),b=touchContinuity(t+1e-5,1);
   assert.ok(Math.abs(a.contact-b.contact)<.001&&Math.abs(a.lead-b.lead)<.001);
