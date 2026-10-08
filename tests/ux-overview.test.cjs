@@ -35,7 +35,7 @@ test("compact filters are mobile-only and desktop keeps the full filter surface"
 });
 
 test("offline shell contains the usability stylesheet and new build cache",()=>{
- assert.ok(sw.includes('footera-v21-38-athletic-pilot'));
+ assert.ok(sw.includes('footera-v21-38-motion2-pilot'));
  assert.ok(sw.includes('./ux-overview.css?v=2114'));
  assert.ok(sw.includes('./3d-highlights.js?v=2138'));
 });
