@@ -14,10 +14,13 @@ function setup(rows){
   weeklyRewardHome:{hidden:true,innerHTML:""},
   weeklyRewardModal:{classList:{contains:()=>true}},
   weeklyRewardModalBody:{innerHTML:""},
-  weeklyRewardModalClose:{focus(){}}
+  weeklyRewardModalClose:{focus(){}},
+  promoCodeInput:{value:""},
+  promoStatus:{className:"",textContent:""}
  };
  const clicks=[];
- const context={window:{},document:{getElementById:id=>elements[id]||null,addEventListener:(name,fn)=>{if(name==="click")clicks.push(fn)}},
+ let saves=0;
+ const context={state:{weeklyRewards:rows,directClaims:{},coins:500,packs:{}},save(){saves++},renderAll(){},toast(){},window:{},document:{getElementById:id=>elements[id]||null,addEventListener:(name,fn)=>{if(name==="click")clicks.push(fn)}},
   setTimeout:fn=>fn(),Intl,Date,PACKS:[{id:"gold",name:"Gold Pack",count:3},{id:"reward-75-5",name:"5× 75+ Spieler-Pack",count:5}],
   syncCompetitionWeeks(){},competitionPending:()=>rows.filter(r=>!r.claimed),claimCompetitionReward(mode,week){
    const row=rows.find(r=>r.mode===mode&&r.week===week&&!r.claimed);if(!row)return false;row.claimed=true;return true
@@ -25,7 +28,8 @@ function setup(rows){
   esc:String,fmt:String,packArtSrc:()=> "./assets/footera/gold.webp"};
  vm.createContext(context);vm.runInContext(src,context);
  function click(attr,data={}){const target={closest:selector=>selector===attr?{dataset:data,disabled:false}:null};clicks[0]({target,preventDefault(){}})}
- return{context,elements,click}
+ function promo(code){elements.promoCodeInput.value=code;const event={type:"click",target:{closest:sel=>sel==="#redeemPromoCode"?{}:null},preventDefault(){},stopImmediatePropagation(){}};clicks[1](event)}
+ return{context,elements,click,promo,get saves(){return saves}}
 }
 test("reward banner sits between rotating hero and season countdown and is loaded in shell",()=>{
  const a=html.indexOf('id="homeHeroCard"'),b=html.indexOf('id="weeklyRewardHome"'),c=html.indexOf('id="competitionHome"');
@@ -67,4 +71,36 @@ test("claiming removes only that pending reward, refuses a second claim and hide
  assert.match(elements.weeklyRewardModalBody.innerHTML,/Alles abgeholt/);
  click("[data-weekly-reward-claim]",{weeklyRewardClaim:"rivals",week:"1000"});
  assert.equal(rows.filter(x=>x.claimed).length,1);
+});
+
+test("one-time Rivals retest restores only the latest claimed Rivals reward without a premature payout",()=>{
+ const old={mode:"rivals",week:"1000",division:9,milestone:15,reward:{coins:2500,packs:[{id:"gold",tradeable:true}]},claimed:true};
+ const last={mode:"rivals",week:"3000",division:5,milestone:35,reward:{coins:16000,packs:[{id:"primegold",tradeable:true}]},claimed:true};
+ const squad={mode:"squad",week:"2000",reward:{coins:5000,packs:[]},claimed:true};
+ const t=setup([old,squad,last]);
+ t.promo("RIVALSTEST28");
+ assert.equal(last.claimed,false);
+ assert.equal(old.claimed,true);
+ assert.equal(squad.claimed,true);
+ assert.equal(t.context.state.coins,500);
+ assert.deepEqual(t.context.state.packs,{});
+ assert.equal(t.saves,1);
+ assert.equal(t.context.state.directClaims["rivals-weekly-retest-v2128"].week,"3000");
+ assert.match(t.elements.weeklyRewardHome.innerHTML,/RIVALS/);
+ t.promo("RIVALSTEST28");
+ assert.equal(t.saves,1);
+ assert.match(t.elements.promoStatus.textContent,/bereits verwendet/);
+});
+test("Rivals retest refuses to overwrite existing pending rewards or fabricate missing ones",()=>{
+ const pending={mode:"rivals",week:"3000",reward:{coins:4000,packs:[]},claimed:false};
+ const prior={mode:"rivals",week:"1000",reward:{coins:3000,packs:[]},claimed:true};
+ const t=setup([pending,prior]);
+ t.promo("rivalstest28");
+ assert.equal(prior.claimed,true);
+ assert.equal(pending.claimed,false);
+ assert.equal(t.saves,0);
+ assert.equal(t.context.state.directClaims["rivals-weekly-retest-v2128"],undefined);
+ const none=setup([]);none.promo("rivalstest28");
+ assert.equal(none.saves,0);
+ assert.match(none.elements.promoStatus.textContent,/Keine bereits abgeholte/);
 });
