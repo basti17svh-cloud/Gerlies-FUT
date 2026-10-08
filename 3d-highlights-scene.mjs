@@ -27,7 +27,7 @@ export function shotFootPosition(time=SHOT_TIME){
  return [.105,.94-.43*Math.cos(hip)-.43*Math.cos(hip+knee)-.045,-37-.43*Math.sin(hip)-.43*Math.sin(hip+knee)-.24];
 }
 export const PLAY_SEQUENCES=Object.freeze(['central','one_two','through_ball','dribble','wing_left','wing_right','cutback_left','cutback_right',
-'inside_left','inside_right','halfspace_left','halfspace_right','counter_central','counter_left','counter_right','diagonal_switch','long_shot','one_on_one',
+'inside_left','inside_right','cut_inside_left','cut_inside_right','double_feint_left','double_feint_right','near_post_cut_left','near_post_cut_right','low_cross_left','low_cross_right','chip_one_on_one','chip_counter','halfspace_left','halfspace_right','counter_central','counter_left','counter_right','diagonal_switch','long_shot','one_on_one',
 'early_cross_left','early_cross_right','far_post_left','far_post_right','near_post_left','near_post_right','volley_left','volley_right','second_ball','high_press','finesse_halfspace','power_drive','low_driven_duel','bicycle']);
 export function normalizeSequence(value){return PLAY_SEQUENCES.includes(String(value))?String(value):'central'}
 
@@ -43,10 +43,27 @@ const VARIANTS=Object.freeze({
  volley_left:{base:'wing_left',endX:-.6},volley_right:{base:'wing_right',endX:.6},
  second_ball:{base:'central',lane:2.5,swerve:-1},high_press:{base:'through_ball',depth:-3},
  finesse_halfspace:{base:'central',lane:-4,swerve:2},power_drive:{base:'central',finishZ:-31.5},
- low_driven_duel:{base:'through_ball',depth:3},bicycle:{base:'wing_left',endX:-.5}
+ low_driven_duel:{base:'through_ball',depth:3},bicycle:{base:'wing_left',endX:-.5},
+  low_cross_left:{base:'wing_left'},low_cross_right:{base:'wing_right'},
+  chip_one_on_one:{base:'through_ball',depth:2},chip_counter:{base:'through_ball',depth:7}
 });
 const baseSequence=sequence=>VARIANTS[sequence]?.base||sequence;
-const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle']);
+const INVERTED_SEQUENCES=new Set(['inside_left','inside_right','cut_inside_left','cut_inside_right','double_feint_left','double_feint_right','near_post_cut_left','near_post_cut_right']);
+function invertedRunPosition(sequence,time){
+ const side=sequenceSide(sequence),t=clamp(time,0,SHOT_TIME);
+ const cut=sequence.startsWith('cut_inside'),feint=sequence.startsWith('double_feint'),near=sequence.startsWith('near_post_cut');
+ const nodes=feint?[[0,24,-24],[1.45,19,-28],[2.65,22,-31],[3.90,10.5,-34],[SHOT_TIME,0,-37]]:
+  cut?[[0,25,-23],[2.05,23,-31],[3.2,16,-33],[4.2,8,-35],[SHOT_TIME,0,-37]]:
+  near?[[0,22,-22],[2.0,18,-29],[3.65,9.5,-33.5],[SHOT_TIME,0,-37]]:
+  [[0,19,-25],[2.25,14,-30.5],[3.85,6.5,-34.5],[SHOT_TIME,0,-37]];
+ let p=[side*nodes[nodes.length-1][1],nodes[nodes.length-1][2]];
+ for(let i=1;i<nodes.length;i++)if(t<=nodes[i][0]){
+  const a=nodes[i-1],b=nodes[i],u=smooth((t-a[0])/(b[0]-a[0]));
+  p=[side*mix(a[1],b[1],u),mix(a[2],b[2],u)];break;
+ }
+ return time<=SHOT_TIME?p:lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15));
+}
+const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
 export const normalizeFinish=finish=>FINISH_TYPES.includes(finish)?finish:'normal';
 const contactFor=finish=>finish==='header'?[.03,1.83,-37.14]:finish==='volley'?[.11,1.05,-37.25]:finish==='bicycle'?[.1,1.53,-37.22]:shotFootPosition();
 function variantShift(variant,time){
@@ -68,7 +85,9 @@ function carriedBall(index,time,sequence,lead=.56){
 export function controlCarrier(time,sequence='central'){
  const seq=normalizeSequence(sequence),base=baseSequence(seq);
  let index=-1,start=0,end=0;
- if(seq==='diagonal_switch'){index=1;start=2.5;end=3.65}
+ if(INVERTED_SEQUENCES.has(seq)){index=0;end=SHOT_TIME-.24}
+  else if(seq.startsWith('low_cross_')){index=1;end=3.08}
+  else if(seq==='diagonal_switch'){index=1;start=2.5;end=3.65}
  else if(seq.startsWith('early_cross_')){index=1;end=2.9}
  else if(['wing_left','wing_right','cutback_left','cutback_right'].includes(base)){index=1;end=3.65}
  else if(base==='dribble'){index=0;end=SHOT_TIME-.24}
@@ -81,13 +100,36 @@ export function controlCarrier(time,sequence='central'){
  if(index<0||time<start||time>=end)return{index:-1,weight:0};
  return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
 }
+// The simulated goal/save/miss stays unchanged; only the visual shot lane varies.
+export function shotImpact(type,sequence='central',finish='normal'){
+ const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
+ const sign=INVERTED_SEQUENCES.has(seq)?(seq.startsWith('near_post_cut')?sequenceSide(seq):-sequenceSide(seq)):1;
+ const x=type==='big_chance_saved'?2.52:type==='shot_post'?3.52:type==='big_chance_missed'?5.1:2.65;
+ let y=type==='big_chance_saved'?1.14:type==='shot_post'?1.25:type==='big_chance_missed'?1.5:1.08;
+ if(style==='low_driven')y=type==='shot_post'?.42:.32;
+ else if(style==='header')y=type==='shot_post'?1.25:1.38;
+ else if(style==='power')y=type==='shot_post'?1.25:.83;
+ else if(style==='chip')y=type==='shot_post'?1.25:1.64;
+ return[sign*x,y,type==='big_chance_saved'?-50.6:type==='shot_post'?-52.5:type==='big_chance_missed'?-53.4:-54.25];
+}
 export function ballPosition(type,time,sequence='central',finish='normal'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
- if(variant){
+ if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
+  const release=SHOT_TIME-.24,contact=contactFor(style);
+  if(time<release)return carriedBall(0,time,seq,.53);
+  return movingBall(carriedBall(0,release,seq,.53),contact,(time-release)/.24,.025);
+ }
+ if(variant&&!INVERTED_SEQUENCES.has(seq)){
   // A true diagonal pass starts at the opposite touchline and reaches the winger.
   if(seq==='diagonal_switch'&&time<3.65){
    if(time<2.5)return movingBall([-26,.25,-21],carriedBall(1,2.5,variant.base,.56),time/2.5,3.1);
    return carriedBall(1,time,variant.base,.56);
+  }
+  if(seq.startsWith('low_cross_')&&time<SHOT_TIME){
+   const launch=3.08,last=SHOT_TIME-.2,contact=contactFor(style);
+   if(time<launch)return carriedBall(1,time,variant.base,.54);
+   const start=carriedBall(1,launch,variant.base,.54),end=[contact[0],.14,contact[2]+.43];
+   return time<last?movingBall(start,end,(time-launch)/(last-launch),.1):movingBall(end,contact,(time-last)/.2,.035);
   }
   if(seq.startsWith('early_cross_')&&time<SHOT_TIME){
    const launch=2.9,last=SHOT_TIME-.2,contact=contactFor(style);
@@ -155,16 +197,13 @@ export function ballPosition(type,time,sequence='central',finish='normal'){
   if(time<SHOT_TIME-.24)return carry;
   return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
  }
- const impact=type==='big_chance_saved'?[2.52,1.14,-50.6]:type==='shot_post'?[3.52,1.25,-52.5]:type==='big_chance_missed'?[5.1,1.5,-53.4]:[2.65,1.08,-54.25];
- if(style==='low_driven')impact[1]=type==='shot_post'?.42:.32;
- else if(style==='header')impact[1]=type==='shot_post'?1.25:1.38;
- else if(style==='power')impact[1]=type==='shot_post'?1.25:.83;
+ const impact=shotImpact(type,seq,style);
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
- if(t<1){const p=lerp(contact,impact,t),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:.65;p[1]+=arc*Math.sin(t*Math.PI);if(style==='finesse')p[0]+=.72*Math.sin(t*Math.PI);return p}
- if(type==='goal'){const p=lerp(impact,[2.5,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
- if(type==='big_chance_saved'){const u=clamp((time-IMPACT_TIME)/1.35),p=lerp(impact,[7,.12,-46],u);p[1]+=.5*Math.sin(u*Math.PI);return p}
- if(type==='shot_post')return lerp(impact,[8,.12,-45],(time-IMPACT_TIME)/1.35);
- return lerp(impact,[8,.12,-60],(time-IMPACT_TIME)/1.4);
+ if(t<1){const p=lerp(contact,impact,t),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(t*Math.PI);if(style==='finesse')p[0]+=(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq)*.72:.72)*Math.sin(t*Math.PI);return p}
+ if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
+ if(type==='big_chance_saved'){const u=clamp((time-IMPACT_TIME)/1.35),p=lerp(impact,[Math.sign(impact[0])*7,.12,-46],u);p[1]+=.5*Math.sin(u*Math.PI);return p}
+ if(type==='shot_post')return lerp(impact,[Math.sign(impact[0])*8,.12,-45],(time-IMPACT_TIME)/1.35);
+ return lerp(impact,[Math.sign(impact[0])*8,.12,-60],(time-IMPACT_TIME)/1.4);
 }
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
@@ -172,7 +211,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  const seq=normalizeSequence(sequence),base=baseSequence(seq),bp=worldPosition(ballPosition(type,time,seq,finish),direction),goal=worldPosition([0,.86,-51.25],direction);
  const portraitPad=Math.max(0,1.25-aspect)*8.5;
  let targetX=0,targetY=.82,targetZ=0,distance=50,fov=28,phase='build';
- const wide=base.startsWith('wing_')||base.startsWith('cutback_'),deliveryAt=seq.startsWith('early_cross_')?2.9:3.65;
+ const wide=base.startsWith('wing_')||base.startsWith('cutback_'),inverted=INVERTED_SEQUENCES.has(seq),deliveryAt=seq.startsWith('early_cross_')?2.9:seq.startsWith('low_cross_')?3.08:3.65;
  if(wide){
   // Keep the live winger, moving ball and box in one continuous TV frame.
   // Timing matches the actual carry (to 3.65 s), delivery (to 5.20 s) and finish.
@@ -201,8 +240,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const goalWeight=mix(seq==='through_ball'?.10:.06,.38,push);
   targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
   const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
-  distance=mix(startDistance+portraitPad,MIN_CAMERA_DISTANCE+portraitPad*.30,push);
-  fov=mix(seq==='through_ball'?29.3:29.0,26.0,push);
+  distance=mix(startDistance+portraitPad+(inverted?6:0),MIN_CAMERA_DISTANCE+portraitPad*.30,push);
+  fov=mix((seq==='through_ball'?29.3:29.0)+(inverted?5:0),26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // A diagonal switch crosses the full pitch before reaching the near winger.
@@ -268,6 +307,11 @@ export const RUNS=Object.freeze([
 ]);
 export function runPosition(index,time,sequence='central'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq];
+ if(INVERTED_SEQUENCES.has(seq)){
+  if(index===0)return invertedRunPosition(seq,time);
+  if(index===1){const side=sequenceSide(seq);return lerp([side*27,-25],[side*20,-41],smooth(time/6.8))}
+  return runPosition(index,time,'dribble');
+ }
  if(variant){
   const p=runPosition(index,time,variant.base),[dx,dz]=variantShift(variant,Math.min(time,SHOT_TIME));
   if(index===0){p[0]+=dx;p[1]+=dz}
@@ -320,12 +364,12 @@ export function runPosition(index,time,sequence='central'){
  if(r.team==='defend'){const tracking=defenderTracking(index,time,seq);p[0]+=tracking.x;p[1]+=tracking.z;}
  return p;
 }
-export function keeperPose(type,time,finish='normal'){
+export function keeperPose(type,time,finish='normal',sequence='central'){
  const anticipation=smooth((time-SHOT_TIME-.18)/.22),dive=smooth((time-SHOT_TIME-.4)/.85),land=smooth((time-IMPACT_TIME-.12)/.85),recover=smooth((time-7.55)/1.45);
- const save=type==='big_chance_saved',low=finish==='low_driven',rotation=(1.13*dive+land*.35)*(1-recover),peak=low?.55:save?1.05:.8;
+ const save=type==='big_chance_saved',low=finish==='low_driven',sign=Math.sign(shotImpact(type,sequence,finish)[0])||1,rotation=sign*(1.13*dive+land*.35)*(1-recover),peak=low?.55:save?1.05:.8;
  // Takeoff, airborne extension, landing and recovery are separate phases. Contact
  // remains fixed by the authoritative event; recovery only improves presentation.
- return{x:mix(mix(.1,peak,dive),.35,recover),y:.5*Math.sin(dive*Math.PI/2)*(1-land),z:mix(-50.6,-50.2,recover),
+ return{x:sign*mix(mix(.1,peak,dive),.35,recover),y:.5*Math.sin(dive*Math.PI/2)*(1-land),z:mix(-50.6,-50.2,recover),
   tilt:rotation, anticipation, dive, land, recover};
 }
 // Smooth oval loft, reused by every instance of a given anatomical part.
@@ -810,14 +854,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       striker.legs[1].rotation.x*=.85;striker.upper.rotation.z=-.14*blend;
      }
    }
-   const passWindows=sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
+   const passWindows=INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
    for(const [from,to] of passWindows)if(time>=from&&time<=to){
     const passer=sequence==='diagonal_switch'&&from<1?players[5]:players[1],u=clamp((time-from)/(to-from)),kick=passStrikePose(u);
     passer.legs[1].rotation.x=kick.hip;passer.knees[1].rotation.x=kick.knee;passer.ankles[1].rotation.x=kick.ankle;
     passer.rig.rotation.x=-.085*(1-kick.follow);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);
     passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
    }
-   const kp=keeperPose(event.type,time,finish);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
+   const kp=keeperPose(event.type,time,finish,sequence);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    // Knees flex behind the thigh while the keeper crouches towards the ball.
    // During anticipation both boots stay planted instead of sinking with the hips.
@@ -830,8 +874,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(kp.dive>.05){
     keeper.elbows.forEach(e=>e.rotation.x=0);
     // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
-    const saved=event.type==='big_chance_saved',reachX=saved?2.52:1.25;
-    const reachY=saved?(finish==='low_driven'?.32:finish==='header'?1.38:1.14):finish==='low_driven'?.35:.92;
+    const saved=event.type==='big_chance_saved',impact=shotImpact(event.type,sequence,finish),reachX=saved?impact[0]:Math.sign(impact[0])*1.25;
+    const reachY=saved?impact[1]:finish==='low_driven'?.35:finish==='chip'?1.5:.92;
     if(!saved){const dive=kp.dive*(1-kp.recover);keeper.upper.rotation.y=-.15*dive;
      keeper.legs[0].rotation.x+=.22*dive;keeper.legs[1].rotation.x-=.25*dive;
      keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
@@ -845,7 +889,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=finish==='low_driven'?.32:finish==='header'?1.38:finish==='power'?.83:1.08,influence=Math.exp(-((x-2.65)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish);currentCameraPhase=cam.phase;camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
