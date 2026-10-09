@@ -4,7 +4,8 @@
  * One foreground scorer only; no change to authoritative match state.
  */
 import * as THREE from './vendor/three/three.module.min.js';
-import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2174';
+import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
+import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
@@ -262,19 +263,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
    limb.foot.quaternion.copy(parentQ).multiply(worldQ);limb.foot.updateMatrixWorld(true);
   }
  }
- const motion={};let frameTime=0;
+ const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
  function animate(time=0,info={}){
   const driver=existingDriver;
   frameTime=Number.isFinite(time)?time:0;
   const m=sampleGlbBodyMotion(frameTime,info,motion);
+  clipState=sampleCapturedLocomotion(frameTime,info,info.clipEnabled!==false);
   // The existing Footera pose owns shot contact and leg planting. The
   // imported GLB adds a modest counter-rotating kinetic chain and head aim.
   // Rest-posed neutral quaternions prevent cumulative joint rotation.
   normalized.position.y=clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
   apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);
-  apply('spine_01',driver.upper.rotation.x*.48+m.spinePitch*.37,driver.upper.rotation.y*.48+m.spineYaw*.38,driver.upper.rotation.z*.45+m.spineRoll*.37);
-  apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34);
-  apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29);
+  apply('spine_01',driver.upper.rotation.x*.48+m.spinePitch*.37+clipState.torsoPitch*.38,driver.upper.rotation.y*.48+m.spineYaw*.38,driver.upper.rotation.z*.45+m.spineRoll*.37+clipState.torsoRoll*.40);
+  apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35+clipState.torsoPitch*.32,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34+clipState.torsoRoll*.35);
+  apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28+clipState.torsoPitch*.30,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29+clipState.torsoRoll*.25);
   apply('Head',m.headPitch,m.headYaw,m.headRoll);
   for(let i=0;i<2;i++){
    const side=i?'r':'l',sign=i?1:-1;
@@ -283,9 +285,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
    apply('calf_'+side,driver.knees[i].rotation.x-m.kneeCushion*swing,0,driver.knees[i].rotation.z);
    apply('foot_'+side,driver.ankles[i].rotation.x+(i?m.rightToeLift:m.leftToeLift)*swing,
      driver.ankles[i].rotation.y,driver.ankles[i].rotation.z);
-   apply('upperarm_'+side,driver.arms[i].rotation.x*.94+sign*m.armSwing,
-     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace);
-   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running,0,driver.elbows[i].rotation.z);
+   apply('upperarm_'+side,driver.arms[i].rotation.x*.94+sign*m.armSwing+(i?clipState.rightArmPitch:clipState.leftArmPitch),
+     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll));
+   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow),0,driver.elbows[i].rotation.z);
   }
   matchFeet();
  }
@@ -295,6 +297,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
   return{time:frameTime,rootY:normalized.position.y,headYaw:motion.headYaw||0,
    spineYaw:motion.spineYaw||0,pelvisYaw:motion.pelvisYaw||0,cut:motion.cut||0,
    shot:motion.shot||0,follow:motion.follow||0,running:motion.running||0,
+   capturedClip:clipState?.clip||'none',capturedWeight:clipState?.weight||0,
+   capturedPhase:clipState?.phase||0,capturedSource:clipState?.source||'none',
    hipLeft:bones.get('thigh_l').quaternion.toArray(),hipRight:bones.get('thigh_r').quaternion.toArray(),
    feet:[local('foot_l'),local('foot_r')],toes:[local('ball_l'),local('ball_r')],
    footTargets:existingDriver.ankles.map(ankle=>playerRoot.worldToLocal(ankle.getWorldPosition(new THREE.Vector3())).toArray()),

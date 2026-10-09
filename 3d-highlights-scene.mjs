@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2174';
+import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2175';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -997,7 +997,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     mix(original[2],current[1]+fz*(forward+drive)+fx*side,blend)];
   }
   // Reused render-only sample; no new GPU objects during frames.
-  const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish};
+  let clipEnabled=true;
+  try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
+  const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
   function update(time){
    renderTime=time;
    // Seek rather than increment mixer clocks: stable on skip, replay and

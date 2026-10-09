@@ -4,7 +4,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const root=process.env.FOOTERA_QA_ROOT||path.resolve(__dirname,'..');
-const label=process.env.FOOTERA_QA_LABEL||'v21.74';
+const label=process.env.FOOTERA_QA_LABEL||'v21.75';
 const out=path.resolve(__dirname,'../test-artifacts',label);fs.mkdirSync(out,{recursive:true});
 const server=http.createServer((req,res)=>{
  if(req.url==='/qa-empty.html'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><html><body></body></html>');return}
@@ -74,6 +74,8 @@ const server=http.createServer((req,res)=>{
    }
   }
   assert.deepEqual(errors,[]);assert.ok(evidence.every(e=>e.motion&&e.drawCalls<125));
+  assert.ok(evidence.some(e=>e.time<4.6&&e.motion.capturedWeight>.1),'production clip layer is active before the shot');
+  assert.ok(evidence.filter(e=>e.time===5.4).every(e=>e.motion.capturedWeight===0),'shot contact stays authoritative');
   fs.writeFileSync(path.join(out,'quality.json'),JSON.stringify({evidence,errors},null,2));
   console.log('PASS production GLB, central and mirrored cuts, diagnostic captures:',out);
  }finally{await browser.close();server.close()}

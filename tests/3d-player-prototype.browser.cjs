@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.goto(url+'/motion-lab.html',{waitUntil:'domcontentloaded'});
   const result=await page.evaluate(async()=>{
    const THREE=await import('./vendor/three/three.module.min.js');
-   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2174');
+   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2175');
    const loaded=await prepareFooteraPlayerModel();
    const canvas=document.createElement('canvas');canvas.id='real-player-prototype';
    canvas.style.cssText='width:390px;height:300px;display:block';
@@ -70,6 +70,9 @@ const server=http.createServer((req,res)=>{
   assert.equal(result.finish.imported,true);
   assert.deepEqual(result.motion.frames[1],result.motion.repeated,'GLB pose is identical after seek');
   assert.ok(result.motion.frames[1].cut>.1,'visible cut includes GLB body weight shift');
+  assert.equal(result.motion.frames[0].capturedSource,'Quaternius CC0');
+  assert.ok(result.motion.frames[0].capturedWeight>0,'real captured locomotion blends into attacker');
+  assert.equal(result.motion.frames[2].capturedWeight,0,'foot-ball strike removes locomotion interference');
   assert.ok(result.motion.frames[2].shot>.5,'shot preparation is distinct');
   assert.ok(result.motion.frames[3].follow>.3,'follow-through is distinct');
   assert.notDeepEqual(result.motion.frames[0].hipLeft,result.motion.frames[2].hipLeft,'leg follows the actual kick');
