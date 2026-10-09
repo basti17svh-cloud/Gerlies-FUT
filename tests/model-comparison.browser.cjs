@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=>{
   await page.getByRole('button',{name:'Cut links'}).click();
   await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('12 echte WebGL-Renderings fertig'),{timeout:120000});
   assert.equal(await page.getByRole('button',{name:'Cut links'}).getAttribute('aria-pressed'),'true');
-  await page.locator('#moment').fill('4.25');
+  await page.locator('#moment').evaluate(el=>{el.value='4.25';el.dispatchEvent(new Event('input',{bubbles:true}))});
   assert.ok((await page.locator('#cut-new').getAttribute('src')).startsWith('data:image/png;base64,'));
   console.log('PASS real model comparison',JSON.stringify({status:collected.status,mobile,images:collected.images.length}));
  }finally{await browser.close();server.close()}
