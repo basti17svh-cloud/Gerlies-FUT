@@ -15,7 +15,11 @@ export function stagedDefenderPosition(action,time,sequence,ballAt,original){
  const b=ballAt(contact),contactPoint=[b[0]+side*(slide?.40:.32),b[2]+(slide?.36:.28)];
  const start=[contactPoint[0]+side*(slide?3.25:2.3),contactPoint[1]+(slide?2.35:2.65)];
  const arrival=smooth((time-(slide?2.45:4.35))/(slide?1.05:1.20));
- return[lerp(start[0],contactPoint[0],arrival),lerp(start[1],contactPoint[1],arrival)];
+ // A genuine slide does not stop moving as soon as the leading boot arrives.
+ // Carry the defender across the tackle lane while the torso is on the grass.
+ const glide=slide?smooth((time-SLIDE_CONTACT)/.72):0;
+ return[lerp(start[0],contactPoint[0],arrival)-side*1.45*glide,
+        lerp(start[1],contactPoint[1],arrival)-1.45*glide];
 }
 export function stagedBallPosition(action,time,sequence,ballAt){
  const original=ballAt(time);

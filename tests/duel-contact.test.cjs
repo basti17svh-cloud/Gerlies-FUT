@@ -11,6 +11,10 @@ test('contact demo actively stages the defender against the moving ball',async()
    const pos=m.stagedDefenderPosition(action,at,seq,ballAt,[0,0]),b=ballAt(at);
    assert.ok(d(pos,[b[0],b[2]])<.75,action+' must actually meet the ball');
    assert.deepEqual(m.stagedDefenderPosition(action,at,seq,ballAt,[0,0]),pos);
+   if(action==='slide_attempt'){
+    const end=m.stagedDefenderPosition(action,at+.85,seq,ballAt,[0,0]);
+    assert.ok(d(pos,end)>1.9,'the slide must TRAVEL across the grass after boot contact');
+   }
   }
  }
  assert.deepEqual(m.stagedDefenderPosition('jockey',4,'cut_inside_right',ballAt,[9,7]),[9,7]);
