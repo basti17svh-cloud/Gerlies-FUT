@@ -6,7 +6,7 @@
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,Number.isFinite(v)?v:0));
 const byte=v=>Math.round(clamp(v)*255);
 export const FOOTERA_PBR_VERSION='21.78-athletic-pbr';
-export const FOOTERA_PBR_WIDTH=320;
+export const FOOTERA_PBR_WIDTH=256;
 export const FOOTERA_PBR_HEIGHT=64;
 const TAU=Math.PI*2;
 export function sampleFooteraSurface(slot,u,v){
@@ -36,7 +36,7 @@ export function createFooteraSurfaceMaps(THREE){
  const {FOOTERA_PBR_WIDTH:W,FOOTERA_PBR_HEIGHT:H}={FOOTERA_PBR_WIDTH,FOOTERA_PBR_HEIGHT};
  const packed=new Uint8Array(W*H*4),normals=new Uint8Array(W*H*4);
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-  const slot=Math.min(4,Math.floor(x/64)),u=(x%64+.5)/64,v=(y+.5)/H;
+  const slot=Math.min(4,Math.floor((x+.5)*5/W)),u=((x+.5)*5/W)-slot,v=(y+.5)/H;
   const s=sampleFooteraSurface(slot,u,v),i=(y*W+x)*4;
   packed[i]=byte(s.occlusion);packed[i+1]=byte(s.roughness);packed[i+2]=0;packed[i+3]=255;
   normals[i]=byte(.5+.5*s.normal[0]);normals[i+1]=byte(.5+.5*s.normal[1]);
