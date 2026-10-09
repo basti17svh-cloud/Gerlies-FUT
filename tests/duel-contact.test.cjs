@@ -47,3 +47,26 @@ test('slide is a substantial grounded body tilt with a clearly extended leg',asy
  m.applyContactStage(untouched,'jockey',5.72);
  assert.equal(JSON.stringify(untouched),before);
 });
+
+test('shot-block recovery stays grounded and avoids the exaggerated backward stumble',async()=>{
+ const {contactStage,applyContactStage}=await import(file);
+ const fresh=()=>({rig:{position:{y:0},rotation:{x:0,z:0}},upper:{rotation:{x:0,y:0,z:0}},
+  legs:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  knees:[{rotation:{x:0}},{rotation:{x:0}}],
+  ankles:[{rotation:{x:0}},{rotation:{x:0}}],
+  arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}]});
+ for(const t of [5.16,5.45,5.62,5.74,5.95,6.18,6.45,6.70]){
+  const p=fresh(),stage=applyContactStage(p,'block_attempt',t,true);
+  assert.ok(Math.abs(p.upper.rotation.x)<.16,'upright torso at '+t);
+  assert.ok(Math.abs(p.upper.rotation.z)<.11,'no uncontrolled sideways fall at '+t);
+  assert.ok(Math.abs(p.arms[0].rotation.z)<.33&&Math.abs(p.arms[1].rotation.z)<.33,
+   'do not spread both arms like an airplane at '+t);
+  assert.ok(p.rig.position.y>-.10,'support leg remains grounded at '+t);
+  assert.ok(stage.extension<1.1,'blocking foot does not overextend at '+t);
+ }
+ const p=fresh(),impact=applyContactStage(p,'block_attempt',5.74,true);
+ assert.ok(impact.extension>.95,'still enough leg extension to intercept shot');
+ assert.ok(p.legs[1].rotation.z>.25,'shank deflects across the shot line');
+ assert.ok(contactStage('block_attempt',6.7).extend<.001,
+  'the blocking leg lowers again before the end of recovery');
+});
