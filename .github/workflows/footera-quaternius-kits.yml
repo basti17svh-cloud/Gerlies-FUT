@@ -1,7 +1,7 @@
 name: Footera Quaternius Kit Proof
 on:
   push:
-    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','3d-playbook.mjs','tests/playbook-variation.test.cjs','3d-highlights.js','3d-highlights-match.js','squad-numbers.js','squad-numbers.css','tests/shirt-numbers.test.cjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
+    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','3d-playbook.mjs','tests/playbook-variation.test.cjs','tests/playbook.browser.cjs','3d-highlights.js','3d-highlights-match.js','squad-numbers.js','squad-numbers.css','tests/shirt-numbers.test.cjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,6 +33,16 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-kit-proof/node_modules
         run: node tests/quaternius-kits.browser.cjs
+      - name: Prove passing combinations and genuine recoveries in live mobile WebGL
+        env:
+          NODE_PATH: /tmp/footera-kit-proof/node_modules
+        run: node tests/playbook.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-real-playbook-v21-86
+          path: test-artifacts/playbook-v21.86/
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
