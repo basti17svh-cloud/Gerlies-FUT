@@ -606,7 +606,7 @@ test('V21.69: in-game opt-in diagnostic reports actual imported GLB vs fallback'
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(scene,/footera-model-debug/);
  assert.match(scene,/data-footera-model-diagnostic/);
- assert.match(scene,/modelInfo\.importedFootballer\?'glb':'legacy'/);
+ assert.match(scene,/layer\.dataset\.playerModel=imported\?'glb':'legacy'/);
  assert.match(scene,/GLB AKTIV/);
  assert.match(scene,/ALTES MODELL/);
 });
