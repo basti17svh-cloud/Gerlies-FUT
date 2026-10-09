@@ -32,15 +32,17 @@ const server=http.createServer((req,res)=>{
     assert.equal(plant.motion2,true);
     assert.equal(plant.motion2Stage,'outside-foot-lock');
     assert.ok(plant.motion2CutBoot?.every(Number.isFinite));
+    assert.ok(plant.motion2CutBoot[1]>-.12&&plant.motion2CutBoot[1]<.35,'outside ankle stays near planted turf: '+plant.motion2CutBoot[1]);
     await page.screenshot({path:path.join(out,'motion-2-cut.png'),fullPage:true});
-   }else assert.equal(plant.motion2,false);
+   }else {assert.equal(plant.motion2,false);await page.screenshot({path:path.join(out,'motion-2-old-cut.png'),fullPage:true})}
    await seek(page,5.30);
    const shot=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
    if(mode==='new'){
     assert.equal(shot.motion2Stage,'shooting-plant');
     assert.ok(shot.motion2PlantBoot?.every(Number.isFinite));
+    assert.ok(shot.motion2PlantBoot[1]>-.12&&shot.motion2PlantBoot[1]<.35,'shooting support ankle stays on pitch: '+shot.motion2PlantBoot[1]);
     await page.screenshot({path:path.join(out,'motion-2-shot.png'),fullPage:true});
-   }
+   }else await page.screenshot({path:path.join(out,'motion-2-old-shot.png'),fullPage:true});
    await seek(page,6.65);
    const shotBall=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
    assert.ok(shotBall.every(Number.isFinite));

@@ -68,6 +68,8 @@ jobs:
             test-artifacts/motion-lab-B.png
             test-artifacts/motion-2-old.webm
             test-artifacts/motion-2-new.webm
+            test-artifacts/motion-2-old-cut.png
+            test-artifacts/motion-2-old-shot.png
             test-artifacts/motion-2-cut.png
             test-artifacts/motion-2-shot.png
             test-artifacts/footera-v2145-live-motion.png
