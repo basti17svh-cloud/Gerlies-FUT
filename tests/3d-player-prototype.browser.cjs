@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{
    const canvas=document.createElement('canvas');canvas.id='real-player-prototype';
    canvas.style.cssText='width:390px;height:300px;display:block';
    document.body.replaceChildren(canvas);
-   const renderer=new THREE.WebGLRenderer({canvas,alpha:false,antialias:false});
+   const renderer=new THREE.WebGLRenderer({canvas,alpha:false,antialias:false,preserveDrawingBuffer:true});
    renderer.setPixelRatio(1);
    const event={id:'glb-prototype-qa',type:'goal',team:'home',period:1,minute:45,
     attackDirection:1,sequence:'cut_inside_right',finish:'finesse',playerName:'Footera Testspieler',
@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=>{
     awaySecondary:'#192d42',awayPattern:'halves',awayShorts:'#192d42',awaySocks:'#f1f1f1'};
    const main=makeScene(renderer,event,false,false,true,false,true);
    main.resize(390,300);main.update(2.75);
-   const detail=main.inspect();
+   const detail=main.inspect(),capture=canvas.toDataURL('image/png').split(',')[1];
    const fallback=makeScene(renderer,event,true,false,false,false,false);
    fallback.resize(390,300);fallback.update(2.75);
    const low=fallback.inspect();
@@ -46,11 +46,13 @@ const server=http.createServer((req,res)=>{
    main.update(5.4);
    const finish=main.inspect();
    main.dispose();renderer.dispose();
-   return{loaded,detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
+   return{loaded,capture,detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
      drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
      visiblePlayers:detail.visibleFieldPlayers},fallback:{imported:low.importedFootballer,quality:low.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
   });
+  fs.writeFileSync(path.join(out,'footera-imported-humanoid-390.png'),Buffer.from(result.capture,'base64'));
+  delete result.capture;
   console.log('FOOTERA IMPORTED PLAYER WEBGL',JSON.stringify(result));
   assert.equal(result.loaded,true,'CC0 GLB loads with official r160 glTF importer');
   assert.equal(result.detail.imported,true,'real GLB deployed in production makeScene striker');
