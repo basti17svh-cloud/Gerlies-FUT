@@ -61,3 +61,14 @@ test('2.4 to 2.6 remain finite and inactive after scene ends or outside action r
  }
  assert.equal(sampleFinishBalance(10.4,'normal').load,0);
 });
+
+test('block recovery begins only after the contact pose, not while the foot is raised',async()=>{
+ const {sampleDefensiveDuels}=await import(source);
+ const near=4,action='block_attempt',seq='cut_inside_right';
+ assert.equal(sampleDefensiveDuels(5.85,near,action,seq).recovery,0,
+  'no stumble recovery while the shot-blocking foot is extended');
+ assert.ok(sampleDefensiveDuels(6.48,near,action,seq).recovery>.60,
+  'defender settles their balance after ball contact');
+ assert.equal(sampleDefensiveDuels(7.15,near,action,seq).recovery,0,
+  'recovery finishes before the next action');
+});
