@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('12 echte WebGL-Renderings fertig'),{timeout:120000});
+  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('12 echte WebGL-Renderings fertig'),null,{timeout:120000});
   const collected=await page.evaluate(()=>{
    const images=[...document.querySelectorAll('#views img')];
    return{status:document.querySelector('#status').textContent,images:images.map(e=>({id:e.id,length:e.src.length,png:e.src.startsWith('data:image/png;base64,'),complete:e.complete,width:e.naturalWidth,height:e.naturalHeight})),
@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=>{
    mobile.push({width,overflow});
   }
   await page.getByRole('button',{name:'Cut links'}).click();
-  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('12 echte WebGL-Renderings fertig'),{timeout:120000});
+  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('12 echte WebGL-Renderings fertig'),null,{timeout:120000});
   assert.equal(await page.getByRole('button',{name:'Cut links'}).getAttribute('aria-pressed'),'true');
   await page.locator('#moment').evaluate(el=>{el.value='4.25';el.dispatchEvent(new Event('input',{bubbles:true}))});
   assert.ok((await page.locator('#cut-new').getAttribute('src')).startsWith('data:image/png;base64,'));
