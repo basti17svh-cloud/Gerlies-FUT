@@ -72,6 +72,12 @@ jobs:
             test-artifacts/motion-2-old-shot.png
             test-artifacts/motion-2-cut.png
             test-artifacts/motion-2-shot.png
+            test-artifacts/motion-21-cut_inside_left-old.png
+            test-artifacts/motion-21-cut_inside_left-new.png
+            test-artifacts/motion-21-double_feint_right-old.png
+            test-artifacts/motion-21-double_feint_right-new.png
+            test-artifacts/motion-21-double_feint_left-old.png
+            test-artifacts/motion-21-double_feint_left-new.png
             test-artifacts/footera-v2145-live-motion.png
             test-artifacts/footera-v2145-live-football-actions.webm
           retention-days: 14

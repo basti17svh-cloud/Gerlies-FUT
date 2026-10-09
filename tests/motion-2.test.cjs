@@ -11,7 +11,7 @@ test('Motion 2.0 authors a complete right-wing inside cut and finesse finish',as
   assert.equal(a.phase,expected,time+'s stage');
  }
  assert.equal(sampleWinger2(3.08,'central','finesse').active,false);
- assert.equal(sampleWinger2(3.08,'cut_inside_left','finesse').active,false);
+ assert.equal(sampleWinger2(3.08,'cut_inside_left','finesse').active,true);
  assert.equal(sampleWinger2(3.08,'cut_inside_right','power').active,false);
 });
 test('Support-leg IK keeps foot under body and knee physically bent on both turns',async()=>{
@@ -33,4 +33,57 @@ test('Finesse impact remains unchanged at precisely 5.4s',async()=>{
  assert.ok(after.finishFollow>=before.finishFollow);
  assert.equal(sampleDefender2(3.1,99).wrongFoot,0,'far defender never reacts');
  assert.ok(sampleDefender2(3.1,4).wrongFoot>.1,'near defender reads cut');
+});
+
+test('Motion 2.1 left/right cuts mirror the outside plant and body turn',async()=>{
+ const {sampleWinger2,MOTION_2_SEQUENCES,isMotion2Sequence,applyWinger2}=await import(file);
+ assert.deepEqual([...MOTION_2_SEQUENCES],['cut_inside_right','cut_inside_left','double_feint_right','double_feint_left']);
+ const mock=()=>({root:{position:{x:0,z:0},rotation:{y:0}},rig:{position:{y:0},rotation:{y:0}},
+  upper:{rotation:{x:0,y:0,z:0}},arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  legs:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  knees:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  ankles:[{rotation:{x:0,y:0,z:0}},{rotation:{x:0,y:0,z:0}}]});
+ const right=sampleWinger2(3.08,'cut_inside_right'),left=sampleWinger2(3.08,'cut_inside_left');
+ assert.equal(right.side,1);assert.equal(left.side,-1);
+ assert.equal(right.outside,1);assert.equal(left.outside,0);
+ assert.equal(right.inside,0);assert.equal(left.inside,1);
+ const pr=mock(),pl=mock();
+ applyWinger2(pr,3.08,'cut_inside_right','finesse',[0,0],[0,0]);
+ applyWinger2(pl,3.08,'cut_inside_left','finesse',[0,0],[0,0]);
+ assert.ok(pr.upper.rotation.z<-.05&&pl.upper.rotation.z>.05,'body lean mirrors');
+ assert.ok(pr.legs[1].rotation.x!==0&&pl.legs[0].rotation.x!==0,'planted support boot mirrors');
+ assert.ok(isMotion2Sequence('double_feint_left','finesse')&&isMotion2Sequence('double_feint_right','finesse'));
+ assert.equal(isMotion2Sequence('cut_inside_left','power'),false);
+});
+test('Motion 2.1 feint, misread and recovery form independent deterministic states',async()=>{
+ const {sampleWinger2,sampleDefender2}=await import(file);
+ for(const sequence of ['double_feint_right','double_feint_left']){
+  const fake=sampleWinger2(2.22,sequence),cut=sampleWinger2(3.08,sequence);
+  assert.equal(fake.phase,'sell-feint');assert.ok(fake.fake>.5);
+  assert.equal(cut.phase,'outside-foot-lock');assert.equal(cut.fake,0);
+  assert.deepEqual(sampleWinger2(2.22,sequence),fake);
+  const defender=sampleDefender2(2.22,3,sequence);
+  assert.ok(defender.fakeRead>.2);
+  assert.equal(defender.phase,'misread-feint');
+  assert.ok(sampleDefender2(3.1,3,sequence).wrongFoot>.3);
+  assert.ok(sampleDefender2(3.65,3,sequence).recover>.3);
+  assert.equal(sampleDefender2(2.22,99,sequence).fakeRead,0);
+ }
+ assert.equal(sampleWinger2(2.22,'cut_inside_left').fake,0);
+ assert.equal(sampleDefender2(2.22,3,'cut_inside_right').fakeRead,0);
+});
+test('Motion 2.1 shot kick leg remains under existing verified contact at 5.4s',async()=>{
+ const {applyWinger2,sampleWinger2}=await import(file);
+ const mock=()=>({root:{position:{x:0,z:0},rotation:{y:0}},rig:{position:{y:0},rotation:{y:0}},
+ upper:{rotation:{x:0,y:0,z:0}},arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+ legs:[{rotation:{x:0,z:0}},{rotation:{x:.75,z:0}}],
+ knees:[{rotation:{x:0,z:0}},{rotation:{x:-.05,z:0}}],
+ ankles:[{rotation:{x:0,y:0,z:0}},{rotation:{x:0,y:0,z:0}}]});
+ for(const sequence of ['cut_inside_right','cut_inside_left','double_feint_right','double_feint_left']){
+  const player=mock();applyWinger2(player,5.4,sequence,'finesse',[0,0],[0,0]);
+  assert.equal(player.legs[1].rotation.x,.75,'canonical shooting hip preserved '+sequence);
+  assert.equal(player.knees[1].rotation.x,-.05,'canonical shooting knee preserved '+sequence);
+  assert.equal(player.ankles[1].rotation.z,0,'canonical instep unchanged '+sequence);
+  assert.equal(sampleWinger2(5.4,sequence).finishFollow,0);
+ }
 });

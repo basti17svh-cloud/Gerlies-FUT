@@ -64,5 +64,47 @@ const server=http.createServer((req,res)=>{
   assert.ok(Math.hypot(...newScene.shot.squadMotion[0].map((v,i)=>v-oldScene.shot.squadMotion[0][i]))>.15,'shooting stance visibly differs');
   assert.ok(Math.hypot(...oldScene.shotBall.map((v,i)=>v-newScene.shotBall[i]))<1e-6,'same far-post result and ball flight');
   console.log('PASS Motion 2.0 A/B: distinct plant and finish, identical match-authoritative ball flight');
+  // V21.46: exercise all remaining mirrored and double-feint variants in
+  // real WebGL with the identical camera, ball flight, 390px viewport.
+  const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  try{
+   const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+   await page.goto(origin+'/motion-lab.html',{waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>!!window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
+   for(const sequence of ['cut_inside_left','double_feint_right','double_feint_left']){
+    await page.locator('#scene').selectOption(sequence);
+    await page.locator('#current').click();
+    await seek(page,3.08);
+    const before=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    await page.screenshot({path:path.join(out,'motion-21-'+sequence+'-old.png')});
+    await page.locator('#pilot').click();
+    await seek(page,3.08);
+    const after=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(after.motion2,true,sequence+' enabled');
+    assert.equal(after.motion2Stage,'outside-foot-lock');
+    assert.equal(after.motion2Side,sequence.endsWith('_left')?-1:1);
+    assert.ok(after.motion2CutBoot?.every(Number.isFinite),'mirrored planted ankle');
+    assert.ok(after.motion2CutBoot[1]>-.16&&after.motion2CutBoot[1]<.39,'boot within grounded window '+sequence+': '+after.motion2CutBoot[1]);
+    assert.ok(Math.hypot(...after.squadMotion[0].map((v,i)=>v-before.squadMotion[0][i]))>.16,'changed biomechanics '+sequence);
+    await page.screenshot({path:path.join(out,'motion-21-'+sequence+'-new.png')});
+    if(sequence.startsWith('double_feint')){
+     await seek(page,2.22);
+     const fake=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+     assert.equal(fake.motion2Stage,'sell-feint');
+     assert.ok(fake.motion2Feint>.45,sequence+' sells a genuine feint');
+    }
+    await seek(page,5.40);
+    const atContact=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.ok(atContact.motion2PlantBoot?.every(Number.isFinite));
+    await seek(page,6.65);
+    const ballB=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    await page.locator('#current').click();
+    const ballA=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    assert.ok(Math.hypot(...ballA.map((v,i)=>v-ballB[i]))<1e-6,'same far-post flight '+sequence);
+    console.log('PASS Motion 2.1 '+sequence+' matched ballistic outcome and mirrored plant');
+   }
+   assert.deepEqual(errors,[],'mirrored motion has no JavaScript exceptions');
+  }finally{await ctx.close()}
+
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
