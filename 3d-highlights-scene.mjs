@@ -10,6 +10,7 @@ import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinish
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2149';
+import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT} from './3d-duel-contact.mjs?v=2150';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -514,6 +515,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
  // All match-space objects, pitch markings and both goals share one transform.
  const field=new THREE.Group();field.rotation.y=direction===1?0:Math.PI;scene.add(field);
+ // Isolated demonstration ONLY, not an authoritative match highlight.
+ const labDuelPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isContactDemo(defenderAction);
+ const labBallAt=t=>ballPosition(event.type,t,sequence,finish,keeperAction);
+ function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
+  const original=playerPosition(index,time,type,seq);
+  return labDuelPreview&&index===defenderIndex?
+   stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original):original;
+ }
  try{
   const geometry=new Map(),materials=new Map(),staticBoxes=[];
   function geo(key,create){if(!geometry.has(key))geometry.set(key,track(create()));return geometry.get(key)}
@@ -873,7 +882,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=playerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=playerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
   function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
   // Distance-based ball roll: the football no longer spins at a constant
   // unrelated speed during stops, turns or high-speed forward carries.
@@ -887,7 +896,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
   }
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
-  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null;
+  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -908,9 +917,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const p=players[state.index];
    // Explicit update is necessary because the ball is positioned BEFORE render.
    p.root.updateWorldMatrix(true,true);
-   const current=playerPosition(state.index,time,event.type,sequence),
-    before=playerPosition(state.index,Math.max(0,time-.05),event.type,sequence),
-    after=playerPosition(state.index,Math.min(DURATION,time+.05),event.type,sequence),
+   const current=stagedPlayerPosition(state.index,time,event.type,sequence),
+    before=stagedPlayerPosition(state.index,Math.max(0,time-.05),event.type,sequence),
+    after=stagedPlayerPosition(state.index,Math.min(DURATION,time+.05),event.type,sequence),
     vx=after[0]-before[0],vz=after[1]-before[1],length=Math.hypot(vx,vz),
     fx=length>.00001?vx/length:0,fz=length>.00001?vz/length:-1;
    const desiredX=current[0]+fx*.49,desiredZ=current[1]+fz*.49;
@@ -942,10 +951,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(time);
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
-   motion23Sample=null;duelSample=null;balanceSample=null;
-   players.forEach((p,i)=>{const [x,z]=playerPosition(i,time,event.type,sequence),prev=playerPosition(i,Math.max(0,time-.02),event.type,sequence),next=playerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
+   motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;
+   players.forEach((p,i)=>{const [x,z]=stagedPlayerPosition(i,time,event.type,sequence),prev=stagedPlayerPosition(i,Math.max(0,time-.02),event.type,sequence),next=stagedPlayerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
-    const back=playerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=playerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
+    const back=stagedPlayerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=stagedPlayerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
@@ -977,8 +986,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      }else if(motion.kind==='close_down'){
       p.upper.rotation.x+=.24*a;p.arms[0].rotation.x-=.38*a;p.arms[1].rotation.x+=.28*a;
       p.rig.rotation.y+=.12*a;
-     }else if(motion.kind==='slide_attempt'){
-      // Step, brace, extend and recover instead of falling straight through turf.
+     }else if(motion.kind==='slide_attempt'&&!pilotMotion){
+      // Legacy slide is used only if the modern full-body contact pose is off.
       p.rig.position.y-=.14*a+.045*motion.plant;
       p.rig.rotation.x-=.40*a+.15*motion.plant;
       p.rig.rotation.z+=.17*a;
@@ -1002,8 +1011,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }
     if(pilotMotion&&i>=8){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
     if(motion2Active&&i===defenderIndex)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
-    if(pilotMotion&&i===defenderIndex)
-     duelSample=applyDefensiveDuels(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),defenderAction,sequence,event.defenderStyles);
+    if(pilotMotion&&i===defenderIndex){
+     const dist=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);
+     duelSample=applyDefensiveDuels(p,time,dist,defenderAction,sequence,event.defenderStyles);
+     if(isContactDemo(defenderAction))contactPose=applyContactStage(p,defenderAction,
+      labDuelPreview?time:defenderAction==='slide_attempt'?time-.8:time,labDuelPreview,
+      Math.max(0,1-dist/8));
+    }
    });
    const striker=players[0];
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
@@ -1115,15 +1129,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
     aimArm(keeper.arms[0],[reachX,reachY,-50.6]);aimArm(keeper.arms[1],[reachX,reachY,-50.6]);
    }
-   const bp=bootGuidedBall(ballPosition(event.type,time,sequence,finish,keeperAction),time);
+   const guidedBall=bootGuidedBall(ballPosition(event.type,time,sequence,finish,keeperAction),time);
+   const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
+   const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
    ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
    ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.25:.18;
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
-   if(event.type==='goal'&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
+   if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
@@ -1146,8 +1162,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(crowdDynamic.specs.length){crowdDynamic.torso.getMatrixAt(0,sampleMatrix);samplePosition.setFromMatrixPosition(sampleMatrix)}
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
-   const facing=players.map((p,index)=>{const before=playerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=playerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{motionLab:pilotMotion,motionDuels:pilotMotion,motionDuelPhase:duelSample?.phase||'inactive',
+   const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
+   return{motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
+    contactAction:labDuelPreview?defenderAction:'none',
+    contactTilt:contactPose?.torsoTilt||0,contactExtension:contactPose?.extension||0,
+    contactBallDistance:Math.hypot(ball.position.x-players[defenderIndex].root.position.x,ball.position.z-players[defenderIndex].root.position.z),
+    contactBallDeflected:labDuelPreview&&renderTime>(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT)+.10,
+    motionDuels:pilotMotion,motionDuelPhase:duelSample?.phase||'inactive',
     motionDuelShuffle:duelSample?.shuffle||0,motionDuelBlock:duelSample?.block||0,
     motionDuelRecovery:duelSample?.recovery||0,motionDuelNear:duelSample?.near||0,
     motionFinishBalance:balanceSample?.load||0,

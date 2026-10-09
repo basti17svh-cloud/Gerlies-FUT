@@ -1,0 +1,45 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url'),path=require('node:path');
+const file=pathToFileURL(path.resolve(__dirname,'../3d-duel-contact.mjs')).href;
+const ballAt=t=>[12+(t-3)*-.8,.14,-33-(t-3)*2.6];
+const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+test('contact demo actively stages the defender against the moving ball',async()=>{
+ const m=await import(file);
+ for(const seq of ['cut_inside_right','cut_inside_left']){
+  for(const action of ['slide_attempt','block_attempt']){
+   const at=action==='slide_attempt'?m.SLIDE_CONTACT:m.BLOCK_CONTACT;
+   const pos=m.stagedDefenderPosition(action,at,seq,ballAt,[0,0]),b=ballAt(at);
+   assert.ok(d(pos,[b[0],b[2]])<.75,action+' must actually meet the ball');
+   assert.deepEqual(m.stagedDefenderPosition(action,at,seq,ballAt,[0,0]),pos);
+  }
+ }
+ assert.deepEqual(m.stagedDefenderPosition('jockey',4,'cut_inside_right',ballAt,[9,7]),[9,7]);
+});
+test('ball is truly deflected before the goal, without discontinuity at contact',async()=>{
+ const m=await import(file);
+ for(const action of ['slide_attempt','block_attempt']){
+  const at=action==='slide_attempt'?m.SLIDE_CONTACT:m.BLOCK_CONTACT;
+  assert.deepEqual(m.stagedBallPosition(action,at,'cut_inside_right',ballAt),ballAt(at));
+  const after=m.stagedBallPosition(action,at+1.1,'cut_inside_right',ballAt);
+  assert.ok(Math.abs(after[0]-ballAt(at+1.1)[0])>2.4);
+  assert.ok(after[2]>ballAt(at+1.1)[2]-.25,'trajectory cannot continue toward goal');
+ }
+ assert.deepEqual(m.stagedBallPosition('jockey',7,'cut_inside_right',ballAt),ballAt(7));
+});
+test('slide is a substantial grounded body tilt with a clearly extended leg',async()=>{
+ const m=await import(file);
+ const s=m.contactStage('slide_attempt',3.62);
+ assert.ok(s.hold>.80&&s.flight>.80);
+ const make=()=>({rig:{position:{y:0},rotation:{x:0,z:0}},upper:{rotation:{x:0,y:0,z:0}},
+ legs:[{rotation:{x:0}},{rotation:{x:0}}],knees:[{rotation:{x:0}},{rotation:{x:0}}],
+ ankles:[{rotation:{x:0}},{rotation:{x:0}}],
+ arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}]});
+ const player=make(),stage=m.applyContactStage(player,'slide_attempt',3.62,true);
+ assert.ok(Math.abs(player.rig.rotation.x)>.82,'body really slides close to horizontal');
+ assert.ok(stage.extension>1,'forward leg extended rather than stumbling');
+ const defender=make();m.applyContactStage(defender,'block_attempt',5.72,true);
+ assert.ok(defender.legs[1].rotation.x>.85,'meaningful blocking leg extension');
+ const untouched=make(),before=JSON.stringify(untouched);
+ m.applyContactStage(untouched,'jockey',5.72);
+ assert.equal(JSON.stringify(untouched),before);
+});

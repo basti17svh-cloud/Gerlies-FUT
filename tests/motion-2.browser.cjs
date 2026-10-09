@@ -175,7 +175,43 @@ const server=http.createServer((req,res)=>{
       scenario.name+' cannot change goal flight');
     console.log('PASS Motion 2.6 '+scenario.name+' WebGL pose, same ball flight');
    }
-   assert.deepEqual(errors,[],'mirrored motion and Motion 2.3–2.6 have no JavaScript exceptions');
+   // Contact-accurate proof: a pose difference alone is NOT acceptance.
+   // Both rendered feet and the staged ball must converge before a deflection.
+   for(const scenario of [
+    {name:'tackle-contact',sequence:'cut_inside_right',action:'slide_attempt',contact:3.55,check:3.62},
+    {name:'blocked-shot',sequence:'cut_inside_right',action:'block_attempt',contact:5.74,check:5.76}
+   ]){
+    await page.locator('#scene').selectOption(scenario.sequence);
+    await page.locator('#defense').selectOption(scenario.action);
+    await page.locator('#pilot').click();
+    await seek(page,scenario.contact);
+    const collision=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(collision.motionDuelPreview,true,'only sandbox choreographs outcomes');
+    assert.ok(collision.contactBallDistance<1.1,
+      scenario.name+' defender must reach the actual ball: '+collision.contactBallDistance);
+    await seek(page,scenario.check);
+    const action=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    if(scenario.action==='slide_attempt'){
+     assert.ok(Math.abs(action.contactTilt)>.78,'sliding torso must truly approach the turf');
+     assert.ok(action.contactExtension>1,'sliding leg clearly reaches forward');
+    }else{
+     assert.ok(action.contactExtension>.95,'blocking leg extends across shot lane');
+    }
+    await page.screenshot({path:path.join(out,'motion-contact-'+scenario.name+'.png'),fullPage:true});
+    await seek(page,scenario.action==='slide_attempt'?4.22:6.55);
+    const deflected=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(deflected.contactBallDeflected,true,'not a cosmetic block');
+    assert.ok(deflected.ball[2]>-52,
+      'contact demonstration must not show a goal after a successful defensive action');
+    assert.equal(await page.locator('#outcome').isVisible(),true,'outcome must be readable');
+    await page.locator('#current').click();
+    const same=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.ok(Math.hypot(...same.ball.map((v,i)=>v-deflected.ball[i]))<1e-6,
+      'A/B share the same declared demo outcome');
+    console.log('PASS '+scenario.name+': contact distance '+collision.contactBallDistance+
+      ', full animation '+action.contactExtension+', actually deflected ball');
+   }
+   assert.deepEqual(errors,[],'live contact choreography has no browser exceptions');
   }finally{await ctx.close()}
 
  }finally{await browser.close();server.close()}

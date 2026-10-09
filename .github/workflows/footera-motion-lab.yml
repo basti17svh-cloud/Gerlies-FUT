@@ -9,12 +9,14 @@ on:
       - '3d-motion-2.mjs'
       - '3d-motion-transition.mjs'
       - '3d-motion-duels.mjs'
+      - '3d-duel-contact.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/action-continuity.test.cjs'
       - 'tests/motion-2.test.cjs'
       - 'tests/motion-transitions.test.cjs'
       - 'tests/motion-duels.test.cjs'
+      - 'tests/duel-contact.test.cjs'
       - 'tests/motion-lab.browser.cjs'
       - 'tests/motion-2.browser.cjs'
       - 'tests/motion-live.browser.cjs'
@@ -30,12 +32,14 @@ on:
       - '3d-motion-2.mjs'
       - '3d-motion-transition.mjs'
       - '3d-motion-duels.mjs'
+      - '3d-duel-contact.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/action-continuity.test.cjs'
       - 'tests/motion-2.test.cjs'
       - 'tests/motion-transitions.test.cjs'
       - 'tests/motion-duels.test.cjs'
+      - 'tests/duel-contact.test.cjs'
       - 'tests/motion-lab.browser.cjs'
       - 'tests/motion-2.browser.cjs'
       - 'tests/motion-live.browser.cjs'
@@ -55,7 +59,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify deterministic cut, defender states, and unchanged shot handoff
-        run: node --test tests/motion-lab.test.cjs tests/action-continuity.test.cjs tests/motion-2.test.cjs tests/motion-transitions.test.cjs tests/motion-duels.test.cjs
+        run: node --test tests/motion-lab.test.cjs tests/action-continuity.test.cjs tests/motion-2.test.cjs tests/motion-transitions.test.cjs tests/motion-duels.test.cjs tests/duel-contact.test.cjs
       - name: Install isolated browser renderer
         run: |
           npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
@@ -74,6 +78,8 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
+            test-artifacts/motion-contact-tackle-contact.png
+            test-artifacts/motion-contact-blocked-shot.png
             test-artifacts/motion-26-jockey-right-old.png
             test-artifacts/motion-26-jockey-right-new.png
             test-artifacts/motion-26-jockey-left-old.png
