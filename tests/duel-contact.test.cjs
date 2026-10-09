@@ -42,7 +42,7 @@ test('slide is a substantial grounded body tilt with a clearly extended leg',asy
  assert.ok(Math.abs(player.rig.rotation.x)>1.14,'body stays close to horizontal');
  assert.ok(stage.extension>1.7,'long leading leg fully extends into the tackle');
  const defender=make();m.applyContactStage(defender,'block_attempt',5.72,true);
- assert.ok(defender.legs[1].rotation.x>.85,'meaningful blocking leg extension');
+ assert.ok(defender.legs[1].rotation.x>.35&&defender.legs[1].rotation.z>.50,'low lateral foot block instead of an uncontrolled high kick');
  const untouched=make(),before=JSON.stringify(untouched);
  m.applyContactStage(untouched,'jockey',5.72);
  assert.equal(JSON.stringify(untouched),before);
@@ -65,8 +65,8 @@ test('shot-block recovery stays grounded and avoids the exaggerated backward stu
   assert.ok(stage.extension<1.1,'blocking foot does not overextend at '+t);
  }
  const p=fresh(),impact=applyContactStage(p,'block_attempt',5.74,true);
- assert.ok(impact.extension>.95,'still enough leg extension to intercept shot');
- assert.ok(p.legs[1].rotation.z>.25,'shank deflects across the shot line');
+ assert.ok(impact.extension>.70,'low lateral reach still intercepts the ball');
+ assert.ok(p.legs[1].rotation.z>.55,'shank deflects laterally across the shot line');
  assert.ok(contactStage('block_attempt',6.7).extend<.001,
   'the blocking leg lowers again before the end of recovery');
 });
