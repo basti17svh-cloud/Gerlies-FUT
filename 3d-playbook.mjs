@@ -138,6 +138,10 @@ export function playPassWindows(plan){
 export function defensePosition(index,time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
  const t=clamp(time,0,10.4),slide=sequence==='defense_slide_tackle';
+ if(index===1){
+  // The opposition's midfielder starts in possession and supplies a visible pass.
+  return interpolate([-15,-21],[-12,-29],t/3.15);
+ }
  if(index===0){
   const a=interpolate([-13,-27],[-7.25,-34.35],t/4.4);
   if(t>4.4){a[0]-=1.1*ease((t-4.4)/2);a[1]+=2*ease((t-4.4)/2)}
@@ -154,6 +158,15 @@ export function defenseBall(time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
  const t=clamp(time,0,10.4);
  const a=defensePosition(0,Math.min(t,4.15),sequence),d=defensePosition(8,4.4,sequence);
+ // Possession -> opening pass -> advancing attacker -> visible ball win.
+ // The chosen tackle/interception and result still come only from the simulator.
+ const release=.65,receive=1.42,passer=defensePosition(1,release,sequence);
+ const from=[passer[0]+.2,.14,passer[1]-.46];
+ const receiver=defensePosition(0,receive,sequence);
+ const to=[receiver[0]+.27,.14,receiver[1]-.42];
+ if(t<release){const owner=defensePosition(1,t,sequence);return[owner[0]+.2,.14,owner[1]-.46]}
+ if(t<receive){const u=(t-release)/(receive-release),point=interpolate(from,to,u);
+  point[1]+=.28*Math.sin(Math.PI*u);return point}
  if(t<4.03)return[a[0]+.27,.14,a[1]-.42];
  if(t<4.4){
   const u=ease((t-4.03)/.37);

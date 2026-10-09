@@ -112,12 +112,31 @@ function carriedBall(index,time,sequence,lead=.56){
  const speed=clamp(length/.11/5),cycle=time*(8.3+speed*1.15),advance=clamp(lead-.055,.43,.61)+.032*Math.sin(cycle),side=.066*Math.sin(cycle+.5);
  return[x+ux*advance-uz*side,.14,z+uz*advance+ux*side];
 }
+// Opening supply pass: a true first action before the future carrier starts dribbling.
+const ENTRY_RELEASE=.42,ENTRY_RECEIVE=1.12;
+function entryPassBall(time,sequence,source,target){
+ if(time>=ENTRY_RECEIVE)return null;
+ if(time<ENTRY_RELEASE)return carriedBall(source,time,sequence,.50);
+ return movingBall(carriedBall(source,ENTRY_RELEASE,sequence,.50),
+  carriedBall(target,ENTRY_RECEIVE,sequence,.54),
+  (time-ENTRY_RELEASE)/(ENTRY_RECEIVE-ENTRY_RELEASE),.22);
+}
 // Close-control windows only. The ball detaches for real passes, crosses and shots.
 export function controlCarrier(time,sequence='central'){
  const seq=normalizeSequence(sequence),base=baseSequence(seq);
  const plan=getPlay(seq);
  if(plan){const index=playCarrier(plan,time);return{index,weight:index<0?0:Math.min(.94,.75+smooth((time-.05)/.6)*.15)}}
- if(DEFENSIVE_SCENES.includes(seq))return time>4.4?{index:8,weight:smooth((time-4.4)/.23)*.9}:{index:-1,weight:0};
+ if(DEFENSIVE_SCENES.includes(seq)){
+  if(time<.65)return{index:1,weight:.88};
+  if(time<1.42)return{index:-1,weight:0};
+  if(time<4.03)return{index:0,weight:.83};
+  return time>4.4?{index:8,weight:smooth((time-4.4)/.23)*.9}:{index:-1,weight:0};
+ }
+ const wideEntry=['wing_left','wing_right','cutback_left','cutback_right'].includes(seq);
+ if((wideEntry||INVERTED_SEQUENCES.has(seq)||seq==='dribble')&&time<ENTRY_RECEIVE){
+  if(time>=ENTRY_RELEASE)return{index:-1,weight:0};
+  return{index:wideEntry?(sequenceSide(seq)<0?5:4):1,weight:.88};
+ }
  let index=-1,start=0,end=0;
  if(INVERTED_SEQUENCES.has(seq)){index=0;end=SHOT_TIME-.24}
   else if(seq.startsWith('low_cross_')){index=1;end=3.08}
@@ -155,6 +174,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  const plan=getPlay(seq);
  if(plan&&time<SHOT_TIME)return playBall(plan,time,contactFor(style));
  if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
+  const entry=entryPassBall(time,seq,1,0);if(entry)return entry;
   const release=SHOT_TIME-.24,contact=shotContact(seq,style);
   if(time<release)return carriedBall(0,time,seq,.53);
   return movingBall(carriedBall(0,release,seq,.53),contact,(time-release)/.24,.025);
@@ -203,6 +223,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  const contact=shotContact(seq,style);
  if(time<SHOT_TIME){
   if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
+   const entry=entryPassBall(time,seq,sequenceSide(seq)<0?5:4,1);if(entry)return entry;
    const side=sequenceSide(seq),cutback=seq.startsWith('cutback');
    if(time<3.65)return carriedBall(1,time,seq,.56);
    const deliveryStart=carriedBall(1,3.65,seq,.56),aerial=['header','volley','bicycle'].includes(style),deliveryEnd=[contact[0],aerial?contact[1]:(cutback?.14:.35),contact[2]+.45];
@@ -223,6 +244,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   return carry.weight>0?lerp(received,carriedBall(0,time,seq,.56),carry.weight):received
   }
   if(seq==='dribble'){
+   const entry=entryPassBall(time,seq,1,0);if(entry)return entry;
    const carryTime=Math.min(time,SHOT_TIME-.2),p=carriedBall(0,carryTime,seq,.58);
    if(time<SHOT_TIME-.2)return p;
    return movingBall(p,contact,(time-(SHOT_TIME-.2))/.2,.02)
@@ -291,17 +313,28 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const goalWeight=mix(seq==='through_ball'?.10:.06,.38,push);
   targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
   const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
-  distance=mix(startDistance+portraitPad+(inverted?6:0),MIN_CAMERA_DISTANCE+portraitPad*.30,push);
-  fov=mix((seq==='through_ball'?29.3:29.0)+(inverted?5:0),26.0,push);
+  distance=mix(startDistance+portraitPad+(inverted?2:0),MIN_CAMERA_DISTANCE+portraitPad*.30,push);
+  fov=mix((seq==='through_ball'?29.3:29.0)+(inverted?1.5:0),26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // A diagonal switch crosses the full pitch before reaching the near winger.
  // Keep the broadcast frame between the ball and the box: centering directly
  // on the near winger collapses the physical camera distance and crops runners.
- if(getPlay(seq)||DEFENSIVE_SCENES.includes(seq)){
-  // A higher TV lens keeps midfield passing triangles AND the fullback lane in view.
-  distance=Math.max(distance,64+portraitPad);
-  fov=Math.max(fov,35.5);
+ if(getPlay(seq)){
+  // Preserve passing lanes but not at the cost of microscopic athletes.
+  distance=Math.max(distance,57+portraitPad*.35);
+  fov=Math.max(fov,31.0);
+ }
+ if(DEFENSIVE_SCENES.includes(seq)){
+  // One sideline camera follows the passer, closing defender and ball win.
+  const focus=smooth((time-.55)/4.1),defender=defensePosition(8,time,seq);
+  const chaser=worldPosition([defender[0],.85,defender[1]],direction);
+  targetX=mix(bp[0],chaser[0],.18*(1-focus));
+  targetZ=mix(bp[2],chaser[2],.18*(1-focus));
+  targetY=.83;
+  distance=mix(54+portraitPad*.54,45+portraitPad*.23,focus);
+  fov=mix(30.5,27.1,focus);
+  phase=time<1.42?'build':time<4.4?'delivery':'finish';
  }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
@@ -1512,14 +1545,15 @@ export function play(event,signal){
      }
      if(event.type==='goal'&&!impactSent&&displayTime>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
-     if(displayTime>=REVEAL_TIME&&!name.textContent){
+     const revealAt=event.type==='ball_won'?4.55:REVEAL_TIME;
+     if(displayTime>=revealAt&&!name.textContent){
       if(event.type==='goal'){headline.textContent='TOR';name.textContent=event.playerName;detail.textContent=event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='ball_won'){headline.textContent='BALL EROBERT';name.textContent=event.defenderName||'Verteidiger';detail.textContent=event.defenseKind==='tackle'?'Zweikampf gewonnen':'Pass abgefangen'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
-     hud.classList.toggle('visible',displayTime>=REVEAL_TIME&&displayTime<DURATION-.2);
+     hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
      if(elapsed>=seconds){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
    }

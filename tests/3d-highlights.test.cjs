@@ -121,16 +121,25 @@ test('presentation choreography has distinct football actions without changing t
  const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
  for(const seq of sequences)assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'all build-ups reach the same authoritative finish');
 });
-test('wing and cutback highlights start with a visible ball carrier and no sideways skating',async()=>{
+test('wing and cutback highlights show a supply pass before the winger carries on',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  for(const seq of ['wing_left','wing_right','cutback_left','cutback_right']){
-  for(const time of [0,.6,1.2,1.64,2.4,3.4]){
-   const ball=M.ballPosition('goal',time,seq),passer=M.runPosition(1,time,seq),distance=Math.hypot(ball[0]-passer[0],ball[2]-passer[1]);
-   assert.ok(distance>.4&&distance<.75,`${seq} @ ${time}: ball must stay one stride ahead of the visible winger, distance=${distance}`);
+  const source=seq.endsWith('_left')?5:4;
+  for(const time of [0,.25]){
+   const ball=M.ballPosition('goal',time,seq),passer=M.runPosition(source,time,seq),distance=Math.hypot(ball[0]-passer[0],ball[2]-passer[1]);
+   assert.ok(distance>.35&&distance<.75,`${seq}: build starts with the supplying player`);
+  }
+  for(const time of [1.12,1.64,2.4,3.4]){
+   const ball=M.ballPosition('goal',time,seq),winger=M.runPosition(1,time,seq),distance=Math.hypot(ball[0]-winger[0],ball[2]-winger[1]);
+   assert.ok(distance>.35&&distance<.78,`${seq} @ ${time}: visible winger retains close control`);
+  }
+  for(const boundary of [.42,1.12]){
+   const before=M.ballPosition('goal',boundary-.001,seq),after=M.ballPosition('goal',boundary+.001,seq);
+   assert.ok(Math.hypot(...before.map((n,i)=>n-after[i]))<.09,`${seq}: no ball jump at the pass handoff`);
   }
   const start=M.runPosition(1,0,seq),after=M.runPosition(1,1.2,seq),lateral=Math.abs(after[0]-start[0]),forward=Math.abs(after[1]-start[1]);
-  assert.ok(Math.abs(start[0])>=22,'wide attack must begin with the winger already on the flank');
-  assert.ok(forward>lateral*3,`${seq}: winger must run downfield instead of gliding sideways`);
+  assert.ok(Math.abs(start[0])>=22,'wide attack begins with the winger on the flank');
+  assert.ok(forward>lateral*3,`${seq}: winger runs downfield rather than gliding sideways`);
  }
 });
 test('snapshot preserves the selected build-up and creator context',()=>{
