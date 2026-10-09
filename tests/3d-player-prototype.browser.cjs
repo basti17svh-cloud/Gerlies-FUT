@@ -53,9 +53,9 @@ const server=http.createServer((req,res)=>{
    main.update(5.4);
    const finish=main.inspect();
    main.dispose();renderer.dispose();
-   return{loaded,capture,footwork:{run:contextRun.groundedFootwork,kick:contextKick.groundedFootwork},context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
+   return{loaded,capture,footwork:{run:contextRun.groundedFootwork,kick:contextKick.groundedFootwork},context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,pbr:detail.importedPbr,vertices:detail.importedVertices,bones:detail.importedBones,
      drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
-     visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
+     visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,pbr:low.importedPbr,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
   });
   fs.writeFileSync(path.join(out,'footera-imported-humanoid-390.png'),Buffer.from(result.capture,'base64'));
@@ -63,6 +63,8 @@ const server=http.createServer((req,res)=>{
   console.log('FOOTERA IMPORTED PLAYER WEBGL',JSON.stringify(result));
   assert.equal(result.loaded,true,'CC0 GLB loads with official r160 glTF importer');
   assert.equal(result.detail.imported,true,'real GLB deployed in production makeScene striker');
+  assert.equal(result.detail.pbr,true,'STANDARD applies authored normal/roughness/AO surfaces');
+  assert.equal(result.low.pbr,false,'LOW retains non-textured shader budget');
    assert.equal(result.context.run.enabled,true,'captured locomotion is enabled for GLB');
    assert.deepEqual(result.context.run.participants.indices,[1,10],'provider and scenario-specific defender get CC0 without GLB clones');
    assert.ok(result.context.run.participants.activeCount>=1,'CC0 capture moves nearby participants');
@@ -87,7 +89,7 @@ const server=http.createServer((req,res)=>{
   assert.ok(result.motion.frames.every(m=>m.rootY>=-.1001&&m.rootY<=.2201),'GLB root is safely bounded');
   assert.ok(result.finish.triangles>2000);
   assert.deepEqual(errors,[]);
-  console.log('PASS V21.68 imported real CC0 humanoid renders and animates in Footera camera');
+  console.log('PASS V21.78 CC0 humanoid PBR/LOW, capture and shot contact in real WebGL');
   await page.close();
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
