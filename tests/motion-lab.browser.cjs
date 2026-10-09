@@ -58,6 +58,19 @@ const server=http.createServer((req,res)=>{
   await seek(6.55);
   assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
   assert.ok(await page.locator('#outcome').isVisible(),'result appears for both quick previews');
+  // Separate V21.55 URL bypasses a stale cached V21.54 document.
+  await page.goto(origin+'/motion-lab-v2155.html',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
+  const fresh=await page.evaluate(()=>window.__footeraMotionLab.getState());
+  assert.equal(fresh.mode,'pilot','new diagnostic page starts on B');
+  assert.equal(fresh.defense,'block_attempt','new diagnostic page starts with shot block');
+  assert.equal(fresh.metrics.contactMotionVersion,'21.55-balanced-block');
+  assert.match(await page.locator('#build-tag').innerText(),/21\.55-balanced-block/,
+   'the real loaded build must be visible to user');
+  await seek(5.74);
+  const stance=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+  assert.ok(Math.abs(stance.contactBodyLean)<.16,'real shot-block torso stays upright');
+  assert.ok(Math.abs(stance.contactPelvisLean)<.12,'real shot-block pelvis stays upright');
   assert.deepEqual(errors,[],'no browser errors');
   console.log('PASS Motion Lab: distinct striker/defender poses, same shot, 360/390/412px, reference + pilot screenshots');
   await page.close();
