@@ -8,8 +8,8 @@
  --card-info-width:21%;
  --card-portrait-left:31%;
  --card-portrait-right:14%;
- --card-portrait-top:17%;
- --card-portrait-height:45%;
+ --card-portrait-top:12%;
+ --card-portrait-height:50%;
  --card-emblems-top:39%;
  --card-emblems-gap:2.8cqw;
  --card-name-top:63%;
@@ -45,3 +45,10 @@
 .card-shell.flashback-shell:has(>.custom-card.flashback)>.playstyle-card-row{bottom:14%;height:7cqw;gap:1.8cqw}
 .card-shell.flashback-shell:has(>.custom-card.flashback)>.playstyle-card-row .playstyle-card-icon{flex:0 0 6cqw;width:6cqw;height:6cqw}
 .card-shell.flashback-shell:has(>.playstyle-card-row) .custom-card.flashback .card-alt-positions{bottom:9.5%!important}
+
+/* Approved Dortmund flashback cutout: crop the lower body, retaining a large head and raised fist. */
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card.flashback .face img{
+ width:155%!important;height:auto!important;max-width:none!important;
+ object-fit:contain!important;object-position:center top!important;
+ position:absolute!important;top:0!important;left:-27.5%!important;transform:none!important;
+}

@@ -57,7 +57,7 @@ const server=http.createServer((req,res)=>{
     assert.ok(metrics.alt.bottom<=metrics.card.bottom-(metrics.card.bottom-metrics.card.top)*.08,`${view} ${width}: secondary positions remain inside frame`);
     assert.ok(metrics.face.bottom<=metrics.name.top,`${view} ${width}: portrait ends above name`);
     assert.ok(metrics.width<=metrics.viewport+1,`${view} ${width}: no page overflow`);
-    assert.match(metrics.faceUrl,/events\/flashback\/reus\.png/);
+    assert.match(metrics.faceUrl,/events\/flashback\/reus-dortmund\.png/);
     if(width===390){await page.screenshot({path:path.join(out,'reus-'+view+'-390.png')});await page.locator(selector).screenshot({path:path.join(out,'reus-'+view+'-card.png')})}
    }
   }
