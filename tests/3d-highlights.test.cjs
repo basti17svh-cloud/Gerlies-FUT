@@ -235,8 +235,10 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 
 test('V21.32: 42 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(M.PLAY_SEQUENCES.length,H.VISUAL_SCENES.length);
- assert.deepEqual(new Set(H.VISUAL_SCENES.map(v=>v.id)),new Set(M.PLAY_SEQUENCES));
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,30);
+ assert.equal(M.PLAY_SEQUENCES.length,76);
+ assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),
+  'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery']),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
@@ -268,7 +270,7 @@ test('V21.26: style metadata and deterministic visual hashing never touch match 
   for(let i=0;i<400;i++){
    const e={...event('goal','g'+i),scorerSlot:'ST',creatorSlot:'CAM',creatorName:'Passer',playerStyles:[{id:'power-shot',plus:true}],creatorStyles:[{id:'incisive-pass'}]};
    assert.deepEqual(H.choosePresentation(e,[]),H.choosePresentation(e,[]));
-   assert.ok(H.VISUAL_SCENES.some(x=>x.id===H.choosePresentation({...e,playerStyles:null,creatorStyles:null},[]).sequence));
+   assert.ok([...H.VISUAL_SCENES,...H.PLAYBOOK_SCENES].some(x=>x.id===H.choosePresentation({...e,playerStyles:null,creatorStyles:null},[]).sequence));
   }
  }finally{Math.random=saved}
  assert.equal(calls,0);
@@ -416,7 +418,7 @@ test('V21.30 reactive defending and pass swing keep visual movement deterministi
 test('V21.30: no carried ball may trail behind the running player across 42 sequences',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  let checked=0;const samples=[];
- for(const sequence of M.PLAY_SEQUENCES)for(let step=1;step<=104;step++){
+ for(const sequence of H.VISUAL_SCENES.map(v=>v.id))for(let step=1;step<=104;step++){
   const time=step/10,c=M.controlCarrier(time,sequence);
   assert.deepEqual(c,M.controlCarrier(time,sequence),'deterministic owner');
   if(c.weight<.80)continue;
