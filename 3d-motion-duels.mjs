@@ -25,7 +25,11 @@ export function sampleDefensiveDuels(time,distance,action='jockey',sequence='cen
   (action==='block_attempt'?1:action==='jockey'?.28:action==='close_down'?.36:.10);
  const step=near*pulse(t,4.55,4.81,5.04,5.44)*
   (action==='close_down'?.90:action==='lane_read'?.60:action==='jockey'?.20:0);
- const recovery=near*pulse(t,5.65,5.91,6.29,6.68)*(slide?.38:1);
+ // Do not stack an early stumbling/recovery pose on top of the contact
+ // block's extended leg. Settle the body only AFTER the blocking foot returns.
+ const recovery=near*(action==='block_attempt'
+  ?pulse(t,6.13,6.38,6.58,6.90)
+  :pulse(t,5.65,5.91,6.29,6.68))*(slide?.38:1);
  const agility=1+.16*styleAccent(styles,'jockey','anticipate');
  const strength=1+.13*styleAccent(styles,'block','intercept');
  const phase=recovery>.20?'recover-footing':block>.22?'shot-block':step>.22?'close-down-step':
