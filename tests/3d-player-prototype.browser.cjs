@@ -64,7 +64,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(result.loaded,true,'CC0 GLB loads with official r160 glTF importer');
   assert.equal(result.detail.imported,true,'real GLB deployed in production makeScene striker');
    assert.equal(result.context.run.enabled,true,'captured locomotion is enabled for GLB');
-   assert.deepEqual(result.context.run.participants.indices,[1,8],'two active scene participants selected without extra GLB clones');
+   assert.deepEqual(result.context.run.participants.indices,[1,10],'provider and scenario-specific defender get CC0 without GLB clones');
    assert.ok(result.context.run.participants.activeCount>=1,'CC0 capture moves nearby participants');
    assert.equal(result.context.kick.activeCount,0,'captured locomotion yields during canonical shot');
   assert.ok(result.detail.vertices>=3000,'real authored 3D humanoid vertices');
