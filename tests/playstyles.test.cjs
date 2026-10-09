@@ -10,7 +10,9 @@ vm.createContext(sandbox);
 vm.runInContext(source,sandbox,{filename:"playstyles.js"});
 const ps=sandbox.FooteraPlayStyles;
 assert(ps,"FooteraPlayStyles export fehlt");
-assert.strictEqual(ps.definitions.length,36,"Es müssen genau 36 PlayStyles registriert sein");
+assert.strictEqual(ps.definitions.length,37,"Mit dem Flashback-Außenrist müssen 37 PlayStyles registriert sein");
+
+assert(ps.definitions.some(x=>x.id==="trivela"),"Flashback-Außenrist/Trivela muss registriert sein");
 
 const raw={id:"raw",name:"Raw",ovr:88,position:"CAM",pac:85,sho:82,pas:87,dri:91,def:45,phy:67,playstyles:"Technical, First Touch",playstylesPlus:"Trickster"};
 ps.enrichPlayer(raw);
@@ -66,4 +68,4 @@ assert(/const GFUT_BUILD="V21\.\d+"/.test(index),"Footera Build-Bezeichnung fehl
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 assert(sw.includes("./playstyles.js?v=2114")&&sw.includes("./playstyles.css?v=2114"),"Service Worker cached PlayStyle-Dateien nicht");
-console.log("PlayStyle-System: 36 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");
+console.log("PlayStyle-System: 37 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");
