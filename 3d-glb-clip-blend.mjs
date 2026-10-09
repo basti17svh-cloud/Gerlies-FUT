@@ -4,7 +4,7 @@
  * Root motion and lower-body/foot IK remain the existing match presentation.
  * Every pose is an absolute-time sample; no random, timers or new frame buffers.
  */
-import {sampleMocap,FOOTERA_MOCAP_CHANNEL_COUNT} from './3d-mocap-runtime.mjs?v=2175';
+import {sampleMocap,FOOTERA_MOCAP_CHANNEL_COUNT} from './3d-mocap-runtime.mjs?v=2141';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const pulse=(t,a,b,c,d)=>smooth((t-a)/(b-a))*(1-smooth((t-c)/(d-c)));
