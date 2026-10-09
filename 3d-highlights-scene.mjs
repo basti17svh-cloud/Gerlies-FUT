@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2137';
+import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2165';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
@@ -419,7 +419,7 @@ export function athleticGeometry(rings,segments=14){
  const vertices=[],uv=[],indices=[],min=rings[0][0],height=rings[rings.length-1][0]-min;
  for(let j=0;j<rings.length;j++)for(let i=0;i<=segments;i++){
   const a=i/segments*Math.PI*2,[y,rx,rz]=rings[j];
-  vertices.push(Math.sin(a)*rx,y,Math.cos(a)*rz);uv.push((Math.sin(a)+1)/2,(y-min)/height);
+  vertices.push(Math.sin(a)*rx,y,Math.cos(a)*rz+(rings[j][3]||0));uv.push((Math.sin(a)+1)/2,(y-min)/height);
   if(j&&i){const b=j*(segments+1)+i;indices.push(b,b-1,b-segments-2,b,b-segments-2,b-segments-1)}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
@@ -790,12 +790,23 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(!modern)part(anatomy('athletic-pelvis',[[.86,.142,.099],[.94,.173,.127],[1.015,.168,.107],[1.03,.161,.105]]),mat(kit.shorts,{roughness:.96}),rig);
    bodyPart(.058,.066,.112,skin,chest,0,1.576,0);
    bodyPartMaterial(.073,.074,.028,mat(kit.shirtSecondary,{roughness:1}),chest,0,1.537,0,1,.94);
-   part(anatomy('athletic-head',[[1.623,.045,.054],[1.648,.066,.076],[1.69,.092,.089],[1.75,.097,.095],[1.798,.079,.083],[1.823,.033,.045]]),mat(skin),chest,0,0,-.013);
-   part(anatomy('athletic-hair',[[1.762,.097,.094],[1.799,.082,.087],[1.828,.044,.053],[1.835,.008,.01]]),mat(hair,{roughness:1}),chest,0,0,.002);
-   // A face plane, nose and ears make the facing direction readable in motion.
-   rounded(.027,.035,.022,skin,chest,0,1.708,-.101);
-   rounded(.019,.031,.018,skin,chest,-.094,1.717,-.005);rounded(.019,.031,.018,skin,chest,.094,1.717,-.005);
-   rounded(.072,.057,.020,hair,chest,0,1.752,.083);
+   part(anatomy('athletic-head-v2',[[1.616,.032,.042,-.006],[1.638,.054,.062,-.010],
+    [1.663,.068,.077,-.013],[1.695,.082,.088,-.012],[1.725,.090,.094,-.009],
+    [1.755,.092,.093,-.003],[1.783,.081,.084,.002],[1.808,.061,.069,.006],
+    [1.834,.023,.031,.006]]),mat(skin),chest,0,0,-.010);
+   // Jaw and cheekbone loft replaces the toy-like ball head. Hair follows
+   // the scalp and facial elements are batched with existing instances.
+   part(anatomy('athletic-hair-v2',[[1.771,.087,.081,.024],[1.790,.084,.089,.010],
+    [1.812,.067,.072,.006],[1.836,.027,.036,.005],[1.845,.008,.010,.004]]),
+    mat(hair,{roughness:1}),chest,0,0,-.005);
+   rounded(.015,.028,.014,skin,chest,0,1.710,-.110);
+   rounded(.012,.010,.009,skin,chest,0,1.688,-.122);
+   for(const side of [-1,1]){
+    rounded(.010,.007,.004,'#2b2927',chest,side*.035,1.738,-.103);
+    rounded(.027,.006,.007,hair,chest,side*.037,1.761,-.099);
+    rounded(.015,.026,.013,skin,chest,side*.090,1.722,-.014);
+   }
+   rounded(.068,.047,.017,hair,chest,0,1.769,.084);
    const arms=[],elbows=[],legs=[],knees=[],ankles=[],gloves=[],feet=[];
    for(const side of [-1,1]){
     const arm=new Joint();arm.position.set(side*.224,1.45,0);chest.add(arm);arms.push(arm);
@@ -814,9 +825,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(!modern)part(anatomy('athletic-sock',[[-.39,.032,.039],[-.31,.035,.042],[-.17,.059,.064],[-.07,.056,.055],[-.045,.050,.050]]),mat(kit.socks,{roughness:1}),knee);
     const ankle=new Joint();ankle.position.y=-.43;knee.add(ankle);ankles.push(ankle);
     const boot=['#e4e1cb','#ed763b','#172025','#a6c24a'][variant%4];
-    feet.push(rounded(.057,.047,.139,boot,ankle,0,0,-.064));
-    feet.push(rounded(.056,.014,.140,'#101716',ankle,0,-.039,-.064));
-    rounded(.035,.013,.064,'#e4e6df',ankle,0,.038,-.081);
+    feet.push(rounded(.057,.041,.139,boot,ankle,0,0,-.073));
+    feet.push(rounded(.058,.011,.141,'#101716',ankle,0,-.035,-.073));
+    rounded(.031,.009,.053,'#e4e6df',ankle,0,.037,-.093);
     bodyPartMaterial(.051,.052,.027,mat(kit.shirtSecondary,{roughness:1}),knee,0,-.062,0,1,1.04);
    }
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;

@@ -6,7 +6,7 @@
  */
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
-export const RIGGED_SURFACE_VERSION=1;
+export const RIGGED_SURFACE_VERSION=2;
 export const MATERIAL_SLOTS=Object.freeze(['shirt','shorts','skin','socks','sleeves']);
 // A one-row atlas bakes the existing saved club-kit shirt pattern alongside
 // shorts, skin, socks and sleeve materials. Avoid one draw per limb/material.
@@ -25,6 +25,28 @@ export function createFootballKitAtlas(THREE,materials,segments=12){
    if(index===0&&material?.map?.image){
     try{ctx.drawImage(material.map.image,left,0,tile,tile)}catch(_){}
    }
+   // Bake cloth relief into one atlas; no additional renderer draw call.
+   ctx.save();ctx.translate(left,0);
+   const shade=ctx.createLinearGradient(0,0,tile,0);
+   shade.addColorStop(0,'rgba(0,0,0,.17)');
+   shade.addColorStop(.19,'rgba(255,255,255,.055)');
+   shade.addColorStop(.48,'rgba(0,0,0,.04)');
+   shade.addColorStop(.73,'rgba(255,255,255,.04)');
+   shade.addColorStop(1,'rgba(0,0,0,.16)');
+   ctx.fillStyle=shade;ctx.fillRect(0,0,tile,tile);
+   if(index===0||index===1||index===4){
+    ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=Math.max(1,tile/128);
+    for(const x of [tile*.08,tile*.92]){
+     ctx.beginPath();ctx.moveTo(x,0);ctx.bezierCurveTo(x+tile*.022,tile*.37,x-tile*.016,tile*.68,x,tile);ctx.stroke();
+    }
+   }
+   if(index===3){
+    ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;
+    for(let y=3;y<tile;y+=Math.max(5,tile/18)){
+     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(tile,y);ctx.stroke();
+    }
+   }
+   ctx.restore();
   }
   texture=new THREE.CanvasTexture(canvas);
  }else{
@@ -59,10 +81,10 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
   const start=ix.length,vertexStart=v.length/3;
   const ymin=rings[0][0],ymax=rings[rings.length-1][0];
   for(let i=0;i<rings.length;i++){
-   const [y,rx,rz]=rings[i],[a,b,w]=influences(y),blend=smooth(w);
+   const [y,rx,rz,depth=0]=rings[i],[a,b,w]=influences(y),blend=smooth(w);
    for(let k=0;k<=segments;k++){
     const t=k/segments*Math.PI*2;
-    v.push(centerX+rx*Math.sin(t),y,centerZ+rz*Math.cos(t));
+    v.push(centerX+rx*Math.sin(t),y,centerZ+depth+rz*Math.cos(t));
     uv.push((mat+.015+k/segments*.97)/MATERIAL_SLOTS.length,(y-ymin)/Math.max(.01,ymax-ymin));
     ids.push(a,b,0,0);weights.push(1-blend,blend,0,0);
    }
@@ -74,20 +96,21 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
   groups.push([start,ix.length-start,mat]);
  }
  // A torso with a soft hip/upper-torso blend avoids the 'floating armour' seam.
- band([[1.00,.154,.109],[1.045,.181,.124],[1.10,.174,.118],
-  [1.19,.183,.127],[1.30,.217,.147],[1.40,.238,.143],
-  [1.48,.224,.118],[1.54,.083,.071]],0,0,0,y=>
+ band([[1.00,.151,.108],[1.045,.171,.121],[1.10,.174,.119],
+  [1.19,.182,.128],[1.28,.204,.138,-.003],[1.34,.222,.147,-.007],
+  [1.405,.231,.141,-.006],[1.465,.208,.119,-.002],
+  [1.505,.150,.088],[1.54,.080,.069]],0,0,0,y=>
   influenced(0,3,clamp((y-1.01)/.36)));
- band([[.84,.139,.109],[.89,.159,.125],[.96,.177,.134],[1.005,.157,.117]],0,0,1,y=>influenced(0,0,0));
+ band([[.84,.137,.108],[.885,.156,.122],[.945,.173,.127],[.988,.168,.115],[1.008,.151,.105]],0,0,1,y=>influenced(0,0,0));
  // Both arms stay continuous through the elbow. Wrist/hand is supplied by
  // the original skeleton accessory, preserving goalie glove aiming.
  for(let i=0;i<2;i++){
   const side=i?1:-1,arm=4+i*2,elbow=arm+1,x=side*.224;
   const soft=y=>influenced(arm,elbow,clamp((1.30-y)/.18));
-  band([[1.29,.071,.078],[1.37,.079,.081],[1.44,.075,.080],
-    [1.49,.055,.064]],x,0,4,soft);
-  band([[.82,.030,.039],[.89,.036,.043],[1.02,.050,.054],
-    [1.14,.057,.059],[1.27,.059,.060],[1.30,.060,.062]],x,0,2,soft);
+  band([[1.28,.058,.065],[1.31,.069,.072],[1.38,.079,.082],
+    [1.445,.073,.078],[1.49,.048,.054]],x,0,4,soft);
+  band([[.82,.030,.037],[.91,.037,.042],[1.025,.050,.052],
+    [1.13,.056,.058],[1.24,.059,.061],[1.29,.058,.063]],x,0,2,soft);
  }
  // Weighted thigh/knee/shin sections bend as a single surface, rather than
  // independent solid tubes passing through one another at the joint.
