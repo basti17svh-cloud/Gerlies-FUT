@@ -1289,15 +1289,15 @@ export function play(event,signal){
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
   const top=document.createElement('div');top.className='fh3d-top';
   const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const sub=document.createElement('small');sub.textContent=`LIVE · ${event.minute}'`;brand.append(sub);
-  // Only the opt-in QA URL shows this: ordinary match HUDs remain unchanged.
+  // Always visible while the imported prototype is under assessment.
+  // Query parameters can disappear when Android opens an installed PWA, so
+  // never gate the actual diagnostic on location.search.
   const modelDiagnostic=typeof location!=='undefined'&&new URLSearchParams(location.search).get('footera-model-debug')==='1';
-  const modelStatus=modelDiagnostic?document.createElement('small'):null;
-  if(modelStatus){
-   modelStatus.setAttribute('data-footera-model-diagnostic','');
-   modelStatus.style.cssText='display:block;font-size:11px;font-weight:700;color:#def7ee;letter-spacing:.01em';
-   modelStatus.textContent='PRÜFE SPIELERMODELL …';brand.append(modelStatus);
-  }
-  const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,skip);layer.append(top);
+  const modelStatus=document.createElement('span');
+  modelStatus.className='fh3d-model-status';
+  modelStatus.setAttribute('data-footera-model-diagnostic','');
+  modelStatus.textContent='MODELL PRÜFEN';
+  const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,modelStatus,skip);layer.append(top);
   const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}`;hud.setAttribute('aria-live','polite');
   const card=document.createElement('div');card.className='fh3d-player-card';if(event.type==='goal'&&event.playerCardHTML)card.innerHTML=event.playerCardHTML;
   const mark=document.createElement('span');mark.className='fh3d-mark';mark.textContent='F';mark.setAttribute('aria-hidden','true');
@@ -1332,10 +1332,13 @@ export function play(event,signal){
    world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion);
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
-   layer.dataset.playerModel=modelInfo.importedFootballer?'glb':'legacy';
-   if(modelStatus)modelStatus.textContent=modelInfo.importedFootballer?
-    `GLB AKTIV · ${modelInfo.importedVertices} Punkte · ${modelInfo.importedBones} Knochen`:
-    `ALTES MODELL · ${weak?'LOW-GRAFIK / GERÄTEERKENNUNG':'GLB NICHT GELADEN'}`;
+   const imported=!!modelInfo.importedFootballer;
+   layer.dataset.playerModel=imported?'glb':'legacy';
+   layer.dataset.playerModelReason=imported?'loaded':weak?'low-tier':'unavailable';
+   modelStatus.dataset.modelStatus=imported?'glb':'legacy';
+   modelStatus.textContent=imported?'GLB AKTIV':weak?'ALT · LOW':'ALTES MODELL';
+   // Optional extra device information; the main badge always shows.
+   if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores}`;
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
    function frame(now){
     if(done)return;

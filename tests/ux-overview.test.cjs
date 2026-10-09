@@ -37,6 +37,6 @@ test("compact filters are mobile-only and desktop keeps the full filter surface"
 test("offline shell contains the usability stylesheet and new build cache",()=>{
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
  assert.ok(sw.includes('./ux-overview.css?v=2114'));
- assert.ok(sw.includes('./3d-highlights.js?v=2169'));
+ assert.ok(sw.includes('./3d-highlights.js?v=2170'));
 });
 console.log("V21.23 Übersichtlichkeit: Verein-Status und kompakte Mobile-Filter strukturell OK");

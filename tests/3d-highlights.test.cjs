@@ -54,7 +54,7 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2169','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2169','3d-rigged-footballer.mjs?v=2167','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-highlights.js?v=2170','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2170','3d-rigged-footballer.mjs?v=2167','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes("service-worker.js?v="+(html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/)||[]).slice(1).join("")));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
@@ -609,4 +609,15 @@ test('V21.69: in-game opt-in diagnostic reports actual imported GLB vs fallback'
  assert.match(scene,/modelInfo\.importedFootballer\?'glb':'legacy'/);
  assert.match(scene,/GLB AKTIV/);
  assert.match(scene,/ALTES MODELL/);
+});
+
+test('V21.70: player model status visible in all live matches even when PWA drops query',()=>{
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
+ assert.match(scene,/const modelStatus=document.createElement\('span'\)/);
+ assert.match(scene,/top\.append\(brand,modelStatus,skip\)/);
+ assert.match(scene,/modelStatus\.textContent=imported\?'GLB AKTIV'/);
+ assert.match(scene,/layer\.dataset\.playerModel=imported\?'glb':'legacy'/);
+ assert.match(css,/\.fh3d-model-status\[data-model-status="glb"\]/);
+ assert.match(css,/\.fh3d-model-status\[data-model-status="legacy"\]/);
 });
