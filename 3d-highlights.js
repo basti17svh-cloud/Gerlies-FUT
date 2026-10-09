@@ -45,8 +45,14 @@
    // First a genuine 3D skinned GLB, then the existing deterministic highlight.
    // Missing file / slow device => existing Footera actor, never delay results.
    if(!signal.aborted&&!skipped){
-    let disabled=false;
-    try{disabled=root.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
+    let disabled=false,useMakeHuman=false;
+    try{const model=root.localStorage?.getItem('footera-3d-player-model');disabled=model==='legacy';useMakeHuman=model==='makehuman'}catch(_){}
+    if(useMakeHuman&&typeof module.prepareFooteraMakeHumanModel==='function')try{
+      await Promise.race([
+       module.prepareFooteraMakeHumanModel(),
+       new Promise(resolve=>setTimeout(()=>resolve(false),4500))
+      ]);
+    }catch(error){console.warn('Footera MakeHuman GLB unavailable, retaining Quaternius:',error)}
     if(!disabled)try{await Promise.race([
       module.prepareFooteraPlayerModel(),
       new Promise(resolve=>setTimeout(()=>resolve(false),4500))

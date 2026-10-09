@@ -1,0 +1,55 @@
+name: Footera MakeHuman Real Matchday A/B
+on:
+  push:
+    paths:
+      - '3d-player-prototype.mjs'
+      - '3d-highlights-scene.mjs'
+      - '3d-highlights.js'
+      - 'makehuman-vergleich.html'
+      - 'tests/makehuman-comparison.browser.cjs'
+      - '.github/workflows/footera-makehuman-ab.yml'
+      - 'assets/footera/models/makehuman-male.glb'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  real-player:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Footera model rig, clip and material regression tests
+        run: node --test tests/3d-player-retarget.test.cjs tests/3d-glb-motion.test.cjs tests/3d-glb-clip-blend.test.cjs tests/player-pbr.test.cjs
+      - name: Install actual mobile Chromium/WebGL renderer
+        run: |
+          npm install --prefix /tmp/footera-model-ab playwright@1.51.1
+          /tmp/footera-model-ab/node_modules/.bin/playwright install --with-deps chromium
+      - name: Genuine same-frame game screenshot and mobile width validation
+        env:
+          NODE_PATH: /tmp/footera-model-ab/node_modules
+        run: node tests/makehuman-comparison.browser.cjs
+      - name: Publish the ACTUAL renderer screenshot; only on passing test
+        if: success()
+        run: |
+          test -s test-artifacts/makehuman-ab/makehuman-ab-390.png
+          mkdir -p qa
+          cp test-artifacts/makehuman-ab/makehuman-ab-390.png qa/makehuman-game-ab-390.png
+          git config user.name "Footera Render Evidence"
+          git config user.email "footera-qa@users.noreply.github.com"
+          git add qa/makehuman-game-ab-390.png
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera: publish genuine MakeHuman in-game before/after screenshot"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-makehuman-real-game-screens
+          path: test-artifacts/makehuman-ab/
+          if-no-files-found: warn
