@@ -54,6 +54,14 @@ if(require.main===module)(async()=>{
    await page.setViewportSize({width,height:844});await fixture(page);await page.evaluate(()=>{state.profile.clubIdentity.crest.initials='LIVE'});const before=await force(page,'goal');
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
    check(`${width}: actual WebGL canvas`,await page.locator('.fh3d canvas').evaluate(c=>!!c.getContext('webgl2')));
+   const modelBadge=await page.locator('[data-footera-model-diagnostic]').evaluate(el=>{
+    const a=el.getBoundingClientRect(),bar=el.closest('.fh3d-top').getBoundingClientRect();
+    const skip=el.closest('.fh3d-top').querySelector('.fh3d-skip').getBoundingClientRect();
+    return{text:el.textContent,visible:a.width>30&&a.height>10&&a.left>=bar.left&&a.right<=skip.left&&a.bottom<=bar.bottom+1,
+     source:el.closest('.fh3d').dataset.playerModel};
+   });
+   check(`${width}: GLB/legacy status shown without a URL parameter and not clipped`,
+    modelBadge.visible&&modelBadge.text==='ALT · LOW'&&modelBadge.source==='legacy');
    check(`${width}: weak mobile hardware keeps the low-quality safety tier`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
    check(`${width}: simulation owns 1:0 but visible score stays 0:0 before impact`,await page.evaluate(()=>match.home===1&&match.away===0&&document.getElementById('matchScore').textContent==='0 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));
