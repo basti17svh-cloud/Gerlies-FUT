@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2176';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {applyFootwork} from './3d-footwork-dynamics.mjs?v=2177';
+import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -1132,6 +1132,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     capturedParticipantActive++;
    }
    const striker=players[0];
+   // V21.78 planted shot preparation; fully released before the canonical kick.
+   applyShotApproach(striker,time,finish,sequence);
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
     if(INVERTED_SEQUENCES.has(sequence)){
      const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=shotImpact(event.type,sequence,finish);
@@ -1326,7 +1328,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      importedFootballer:!!importedPlayer,importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
       importedMotion:importedPlayer?.inspectMotion()||null,
-      groundedFootwork:{weight:players[0].footworkState.weight||0,brake:players[0].footworkState.brake||0,
+      groundedFootwork:{weight:players[0].footworkState.weight||0,sprint:players[0].footworkState.sprint||0,
+       armDrive:players[0].footworkState.armDrive||0,turnBank:players[0].footworkState.bank||0,
+       brake:players[0].footworkState.brake||0,
        burst:players[0].footworkState.burst||0,leftSupport:!!players[0].footworkState.feet[0].support,
        leftToeLift:players[0].footworkState.feet[0].anklePitch||0,
        rightToeLift:players[0].footworkState.feet[1].anklePitch||0},
