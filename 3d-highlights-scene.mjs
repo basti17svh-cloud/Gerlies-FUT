@@ -1,12 +1,12 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2172';
+import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2174';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
-import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
+import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
-import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2143';
+import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
@@ -453,12 +453,17 @@ export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/(.60-.32*clamp
 export function runningLeg(phase,speed,out={}){
  speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.32*speed,reach=.15+.145*speed;
  const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
- const z=support?mix(-reach,reach,u):mix(reach,-reach,smooth(u));
- const lift=support?0:Math.sin(Math.PI*u)*(.075+.11*speed);
+ // Match the support foot's velocity at BOTH ends of the recovery arc.
+ // The old smoothstep stopped the foot abruptly at toe-off and landing.
+ const recoveryTangent=2*reach*(1-duty)/duty;
+ const z=support?mix(-reach,reach,u):mix(reach,-reach,smooth(u))+recoveryTangent*u*(1-u)*(1-2*u);
+ // Zero vertical velocity at ground contact: no kick upwards on toe-off.
+ const lift=support?0:Math.sin(Math.PI*u)**2*(.075+.11*speed);
  const hipHeight=.89-.06*speed,ankleHeight=.055+lift,down=hipHeight-ankleHeight;
  const distance=Math.min(.8599,Math.hypot(down,z)),bend=Math.acos(distance/.86);
  out.hip=Math.atan2(-z,down)+bend;out.knee=-2*bend;out.ankle=-out.hip-out.knee;
- out.z=z;out.y=ankleHeight;out.hipHeight=hipHeight;out.support=support;return out;
+ out.z=z;out.y=ankleHeight;out.hipHeight=hipHeight;out.support=support;
+ out.swingWeight=support?0:smooth(u/.18)*(1-smooth((u-.82)/.18));return out;
 }
 // Include the existing finish/chase offsets when orienting and grounding actors.
 // This changes no path or event; facing now follows the final displayed motion.
@@ -891,7 +896,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const d=locomotionDynamics(speed,turn,stride,acceleration,closeControl),motion=d.effort;
    const c=blendLocomotionClips(speed,turn,stride,controlWeight,p.motionClips.out,p.motionClips.scratch);
    for(let i=0;i<2;i++){
-    const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=g.support?1:.26;
+    const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=1-.74*g.swingWeight;
     // Keep the IK stride authoritative. Clip reach adds nuance, not a second lunge.
     p.legs[i].rotation.x=g.hip*motion*d.strideReach*Math.min(1.045,c.reach);
     p.knees[i].rotation.x=g.knee*motion;

@@ -22,7 +22,7 @@ export function applySquadLocomotion(p,index,time,speed,turn,stride,acceleration
  p.upper.rotation.y+=scan*.038*idle;
  for(let i=0;i<2;i++){
   const side=i?1:-1,footWave=Math.sin(stride+i*Math.PI);
-  const airborne=p.gait[i].support?0:1;
+  const airborne=p.gait[i].swingWeight??(p.gait[i].support?0:1);
   // Support boot retains the original IK angle; only the free leg flexes.
   p.legs[i].rotation.x+=footWave*(.09+.07*sprint)*movement*airborne;
   p.knees[i].rotation.x-=airborne*(.13+.17*sprint)*movement+close*.075;

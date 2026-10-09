@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.goto(url+'/motion-lab.html',{waitUntil:'domcontentloaded'});
   const result=await page.evaluate(async()=>{
    const THREE=await import('./vendor/three/three.module.min.js');
-   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2172');
+   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2174');
    const loaded=await prepareFooteraPlayerModel();
    const canvas=document.createElement('canvas');canvas.id='real-player-prototype';
    canvas.style.cssText='width:390px;height:300px;display:block';

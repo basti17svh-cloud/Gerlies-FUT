@@ -33,6 +33,6 @@ test('pilot wiring is isolated from simulation, no randomness and supports basel
  const sw=readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.match(scene,/animateAthleticRun/);assert.match(scene,/animateFootballFinish/);assert.match(scene,/animateGoalkeeperDive/);
  assert.match(scene,/__FOOTERA_V2137_BASELINE/);
- assert.ok(sw.includes('3d-football-animation.mjs?v=2138'));
+ assert.ok(sw.includes('3d-football-animation.mjs?v=2174'));
  assert.ok(!readFileSync(file,'utf8').includes('Math.random'));
 });

@@ -26,7 +26,7 @@ export function animateAthleticRun(p,speed,turn,cycle,acceleration=0,control=0){
  p.rig.rotation.y-=m.counter*.035*m.effort;
  p.rig.position.y-=m.crouch;
  for(let i=0;i<2;i++){
-  const side=i?1:-1,g=p.gait[i],stance=g.support?1:0;
+  const side=i?1:-1,g=p.gait[i],stance=1-(g.swingWeight??(g.support?0:1));
   // Support ankle remains near neutral; airborne foot dorsiflexes for clearance.
   const swing=1-stance;
   p.ankles[i].rotation.x+=swing*.12*m.effort-stance*.025*m.stop;
