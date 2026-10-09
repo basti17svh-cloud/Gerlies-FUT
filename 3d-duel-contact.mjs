@@ -74,6 +74,30 @@ export function applyContactStage(p,action,time,preview=false,near=1){
  }
  if(m.kind==='block'){
   const a=m.brace*w,e=m.extend*w,r=m.rebound*w;
+  if(preview){
+   // The Motion Lab used to stack the live defender's sprint, feint, brace,
+   // duel and strike-block poses. An additive leg raise could not produce
+   // a dependable upright player. Compose ONE pose for the sandbox shot block.
+   // Each value is an absolute joint target, weighted only by this phase.
+   const amount=clamp(Math.max(a,e,r));
+   const pose=(joint,axis,target)=>{const previous=Number(joint.rotation[axis])||0;
+    joint.rotation[axis]=lerp(previous,target,amount)};
+   pose(p.rig,'x',0);pose(p.rig,'z',0);
+   pose(p.upper,'x',.07*a+.045*e-.02*r);
+   pose(p.upper,'y',.06*a);pose(p.upper,'z',.025*e);
+   pose(p.legs[0],'x',-.12*a-.05*e);
+   pose(p.knees[0],'x',-.35*a-.13*e);
+   pose(p.ankles[0],'x',.12*a);
+   pose(p.legs[1],'x',1.01*e);
+   pose(p.legs[1],'z',.27*e);
+   pose(p.knees[1],'x',-.17*a-.12*e);
+   pose(p.ankles[1],'x',-.13*e);
+   pose(p.arms[0],'x',-.10*e);pose(p.arms[1],'x',.07*e);
+   pose(p.arms[0],'z',-.19*a-.10*e);
+   pose(p.arms[1],'z',.19*a+.10*e);
+   p.rig.position.y=lerp(p.rig.position.y,-.05*a-.014*e,amount);
+   return{...m,torsoTilt:.045*e,extension:1.01*e};
+  }
   // Previous additive pose kicked a leg excessively high while both arms
   // flared out, reading as an uncontrolled backwards stumble. Ground the
   // support leg and redirect the blocking shin across the shooting lane.
@@ -84,7 +108,7 @@ export function applyContactStage(p,action,time,preview=false,near=1){
   p.knees[0].rotation.x-=.24*a+.09*e;
   p.knees[1].rotation.x-=.17*a+.12*e;
   p.legs[1].rotation.x+=1.04*e;
-  p.legs[1].rotation.z+=.30*e;
+  p.legs[1].rotation.z=(p.legs[1].rotation.z||0)+.30*e;
   p.ankles[1].rotation.x-=.13*e;
   p.legs[0].rotation.x-=.15*e;
   p.arms[0].rotation.z-=.16*a+.15*e;
