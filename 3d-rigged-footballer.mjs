@@ -116,11 +116,11 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
    // Player number is printed on the jersey atlas. Torso seam faces forward,
    // placing this glyph on the actual back, not on a billboard.
    if(index===0&&shirtNumber>0){
-    ctx.font=`900 ${Math.round(tile*.3)}px system-ui,sans-serif`;
+    ctx.font=`900 ${Math.round(tile*(kit?.18:.30))}px system-ui,sans-serif`;
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
     ctx.lineWidth=Math.max(2,tile*.033);ctx.strokeStyle='rgba(0,0,0,.84)';
-    ctx.strokeText(String(shirtNumber),kit?tile*.75:tile*.5,tile*.49);
-    ctx.fillStyle='#f8f8f3';ctx.fillText(String(shirtNumber),kit?tile*.75:tile*.5,tile*.49);
+    ctx.strokeText(String(shirtNumber),kit?tile*.75:tile*.5,kit?tile*.37:tile*.49,kit?tile*.20:undefined);
+    ctx.fillStyle='#f8f8f3';ctx.fillText(String(shirtNumber),kit?tile*.75:tile*.5,kit?tile*.37:tile*.49,kit?tile*.20:undefined);
    }
    ctx.restore();
   }
