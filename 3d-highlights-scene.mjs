@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2176';
+import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2178';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel};
@@ -865,7 +865,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let importedPlayer=null;
   if(allowImported&&!baselineRig&&isFooteraPlayerModelReady()){
    try{
-    importedPlayer=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName);
+    importedPlayer=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName,!weak);
     if(importedPlayer){
      players[0].skinned.model.visible=false;
      for(const batch of batches.values())for(const node of batch.nodes){
@@ -1325,7 +1325,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
      playerModelTier:weak?'low-hybrid':'full-squad',
-     importedFootballer:!!importedPlayer,importedVertices:importedPlayer?.vertexCount||0,
+     importedFootballer:!!importedPlayer,importedPbr:!!importedPlayer?.surfaceDetail,
+     importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
       importedMotion:importedPlayer?.inspectMotion()||null,
       groundedFootwork:{weight:players[0].footworkState.weight||0,sprint:players[0].footworkState.sprint||0,
