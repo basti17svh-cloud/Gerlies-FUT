@@ -10,7 +10,7 @@ import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinish
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
-import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT} from './3d-duel-contact.mjs?v=2154';
+import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2155';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -1181,7 +1181,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
+   return{contactMotionVersion:CONTACT_MOTION_VERSION,motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
     contactAction:labDuelPreview?defenderAction:'none',
     contactTilt:contactPose?.torsoTilt||0,contactExtension:contactPose?.extension||0,
     contactBallDistance:Math.hypot(ball.position.x-players[defenderIndex].root.position.x,ball.position.z-players[defenderIndex].root.position.z),
