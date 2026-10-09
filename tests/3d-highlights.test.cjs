@@ -54,7 +54,17 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2184','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2184','3d-rigged-footballer.mjs?v=2184','3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2176','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-rigged-footballer.mjs?v=2184','3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2176','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ // Verify current versioned renderer assets instead of pinning yesterday's URLs.
+ for(const file of ['3d-highlights.js','3d-highlights-match.js']){
+  const version=(html.match(new RegExp(file.replace(/\./g,'\\.')+'\\?v=(\\d+)'))||[])[1];
+  assert.ok(version,'Missing HTML version for '+file);
+  assert.ok(sw.includes('./'+file+'?v='+version),'Offline cache has stale '+file);
+ }
+ const highlightsText=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
+ const sceneVersion=(highlightsText.match(/3d-highlights-scene\.mjs\?v=(\d+)/)||[])[1];
+ assert.ok(sceneVersion,'Missing renderer import');
+ assert.ok(sw.includes('./3d-highlights-scene.mjs?v='+sceneVersion),'Offline scene version must match renderer');
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes("service-worker.js?v="+(html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/)||[]).slice(1).join("")));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
