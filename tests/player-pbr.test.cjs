@@ -18,10 +18,10 @@ test('V21.78: PBR atlas stays smaller than 256KiB and is properly disposed',asyn
  const THREE={DataTexture,RGBAFormat:1023,NoColorSpace:'',LinearFilter:1006,
   LinearMipmapLinearFilter:1008,ClampToEdgeWrapping:1001};
  const maps=m.createFooteraSurfaceMaps(THREE);
- assert.equal(maps.width,320);assert.equal(maps.height,64);
+ assert.equal(maps.width,256);assert.equal(maps.height,64);
  assert.ok(maps.byteSize<256*1024);
- assert.equal(maps.packedMap.image.data.length,320*64*4);
- assert.equal(maps.normalMap.image.data.length,320*64*4);
+ assert.equal(maps.packedMap.image.data.length,256*64*4);
+ assert.equal(maps.normalMap.image.data.length,256*64*4);
  assert.equal(maps.packedMap.colorSpace,THREE.NoColorSpace);
  assert.equal(maps.normalMap.colorSpace,THREE.NoColorSpace);
  for(const array of [maps.packedMap.image.data,maps.normalMap.image.data])for(const value of array)
