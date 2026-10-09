@@ -790,7 +790,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const Joint=modern?THREE.Bone:THREE.Group;
    const root=new THREE.Group(),rig=new Joint(),upper=new Joint(),chest=new Joint();
    const motion=modern?new THREE.Bone():null;
-   field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;
+   root.name=keeper?'FooteraKeeperRoot':lead?'FooteraScorerRoot':'';field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;
    if(motion){upper.add(motion);motion.add(chest)}else upper.add(chest);
    chest.position.y=-1;
    const skin=skinTone(name),variant=Array.from(name).reduce((n,c)=>n+c.charCodeAt(0),0),hair=['#201b17','#382820','#574032','#826444'][variant%4],shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});

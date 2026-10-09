@@ -1,0 +1,37 @@
+name: Footera Real GLB Model Comparison
+on:
+  push:
+    paths:
+      - 'modellvergleich.html'
+      - '3d-highlights-scene.mjs'
+      - 'tests/model-comparison.browser.cjs'
+      - '.github/workflows/footera-model-comparison.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-model-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Existing Footera renderer and motion unit checks
+        run: |
+          node --test tests/3d-player-retarget.test.cjs tests/3d-glb-motion.test.cjs tests/3d-glb-clip-blend.test.cjs tests/player-pbr.test.cjs
+      - name: Install actual WebGL Chromium renderer
+        run: |
+          npm install --prefix /tmp/footera-model-ab playwright@1.51.1
+          /tmp/footera-model-ab/node_modules/.bin/playwright install --with-deps chromium
+      - name: Render old and imported GLB, exercise 360/390/412
+        env:
+          NODE_PATH: /tmp/footera-model-ab/node_modules
+        run: node tests/model-comparison.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-model-real-before-after
+          path: test-artifacts/model-ab/
+          if-no-files-found: warn

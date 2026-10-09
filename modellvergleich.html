@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071613">
+<title>Footera – Echtes 3D-Spielermodell A/B</title>
+<style>
+:root{color-scheme:dark;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:#081612;color:#e7f3ed}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#102e25,#081612 430px);min-height:100vh}
+main{max-width:1060px;padding:20px 14px 42px;margin:auto}
+h1{font-size:clamp(21px,4.8vw,31px);margin:0;letter-spacing:.015em}h1 b{color:#9fe5b7}
+header p,.sub,.note{color:#b1c5bb}header p{margin:6px 0 16px;font-size:13px}
+.info{border:1px solid #38574b;border-radius:10px;padding:12px 14px;background:#132820;font-size:13px}
+.info strong{color:#b7e9bf}.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0}
+button{background:#19392c;border:1px solid #659477;color:#effcf3;border-radius:8px;padding:9px 13px;min-height:44px;font:700 13px system-ui;cursor:pointer}
+button[aria-pressed=true]{background:#a5e7bb;color:#102319}
+button:focus-visible{outline:3px solid #e2f9e8;outline-offset:2px}
+#status{border-left:3px solid #9fe5b7;padding:8px 12px;background:#13291f;min-height:38px;margin-bottom:18px}
+article{margin:17px 0 24px}h2{font-size:17px;margin:0 0 4px;color:#f1d194}article p{font-size:12px;margin:0 0 9px;color:#acc1b4}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+figure{margin:0;min-width:0;border:1px solid #466957;background:#10231c;border-radius:9px;overflow:hidden}
+figcaption{padding:9px 11px;font-weight:800;font-size:12px}
+figure.new figcaption{color:#9debb0}figure.old figcaption{color:#d8dedb}
+figure img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#142521;cursor:zoom-in}
+article[data-view=match] figure img{aspect-ratio:16/9}
+.note{border-top:1px solid #3d584c;padding-top:12px;font-size:12px;line-height:1.7}
+#capture{position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+#zoom{position:fixed;inset:0;z-index:10;background:#030907f5;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:12px}
+#zoom[hidden]{display:none}#zoom img{max-height:80vh;max-width:100%;object-fit:contain}#zoom button{align-self:flex-end}
+@media(max-width:500px){main{padding:14px 8px 30px}.pair{gap:6px}figcaption{font-size:10px;padding:7px 5px;text-align:center}h2{font-size:15px}article{margin:16px 0}header p{font-size:12px}}
+</style></head><body><main>
+<header><h1>FOOTERA <b>MODELLVERGLEICH</b></h1><p>Echte WebGL-Aufnahmen direkt aus Footeras Produktionsrenderer · identische Spielsituation und Trikots.</p></header>
+<div class="info"><strong>Teststatus:</strong> Dies ist der Vergleich zwischen dem bisherigen Footera-Skinned-Spieler (links) und dem bereits in V21.78 vorhandenen Quaternius-CC0-GLB (rechts). <strong>Es ist noch kein neues, fotorealistisches Modell integriert.</strong> Keine KI-generierten Nachher-Bilder.</div>
+<div class="controls"><button type="button" id="captureAgain">Originalaufnahmen neu erstellen</button><button type="button" id="leftCut" aria-pressed="false">Cut links</button><button type="button" id="rightCut" aria-pressed="true">Cut rechts</button><label for="moment">Bewegungszeit</label><input type="range" id="moment" min="0" max="6" step="0.05" value="3.12" aria-label="Bewegungszeitpunkt"><output id="momentValue">3,12 s</output></div>
+<div id="status" role="status" aria-live="polite">Echte Renderer-Aufnahmen werden vorbereitet …</div>
+<div id="views">
+<article data-view="body"><h2>01 · Ganzkörper</h2><p>Einheitliche Diagnosekamera mit vollständiger Körperhöhe · 1,55 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="body-old" alt="Original Footera Ganzkörper-Rendering"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="body-new" alt="Original GLB Ganzkörper-Rendering"></figure></div></article>
+<article data-view="head"><h2>02 · Kopf / Oberkörper</h2><p>Gleiche Nahkamera und dieselben Lichtquellen · 1,55 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="head-old" alt="Original Footera Kopfmodell"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="head-new" alt="Original GLB Kopfmodell"></figure></div></article>
+<article data-view="match"><h2>03 · Matchday-Kamera</h2><p>Originale erhöhte Fernsehperspektive · 3,12 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="match-old" alt="Original Footera Matchday-Szene"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="match-new" alt="Original GLB Matchday-Szene"></figure></div></article>
+<article data-view="sprint"><h2>04 · Sprint</h2><p>Gleicher Laufweg, gleiche Simulationszeit · 1,55 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="sprint-old" alt="Original Footera Sprintpose"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="sprint-new" alt="Original GLB Sprintpose"></figure></div></article>
+<article data-view="cut"><h2>05 · Richtungswechsel</h2><p>Identischer Innen-Cut, Drehung und Gewichtsverlagerung · 3,12 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="cut-old" alt="Original Footera Richtungswechsel"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="cut-new" alt="Original GLB Richtungswechsel"></figure></div></article>
+<article data-view="shot"><h2>06 · Schussbewegung</h2><p>Schussvorbereitung, Standbein und Nachschwingen · 5,18 s</p><div class="pair"><figure class="old"><figcaption>ALT · Footera-Skin</figcaption><img id="shot-old" alt="Original Footera Schussansatz"></figure><figure class="new"><figcaption>GLB · Quaternius CC0</figcaption><img id="shot-new" alt="Original GLB Schussansatz"></figure></div></article>
+</div>
+<p class="note"><strong>Nachweis:</strong> Beide Varianten verwenden dieselbe Szene, Spielereignisse, Balltrajektorie, Pose-Zeit, Vereinsfarben, Kamera, Beleuchtung und den Footera-Matchsimulator unverändert. Die Standbilder entstehen beim Öffnen dieser Seite im eigenen Browser (keine statischen Illustrationen). Die Nahkameras dienen nur zur Prüfung, nicht als neue Spielkamera. Angezeigte Rendering-Statistiken stammen aus WebGL; echte Smartphone-FPS werden hier nicht vorgetäuscht.</p>
+<canvas id="capture" width="640" height="480" aria-hidden="true"></canvas>
+<div id="zoom" role="dialog" aria-modal="true" aria-label="Originalaufnahme" hidden><button type="button" id="zoomClose">Schließen ×</button><img id="zoomImage" alt="Vergrößerte Originalaufnahme"></div>
+</main>
+<script type="module">
+import * as THREE from './vendor/three/three.module.min.js';
+import {makeScene,prepareFooteraPlayerModel} from './3d-highlights-scene.mjs?v=2179';
+const $=id=>document.getElementById(id);
+const event={id:'footera-real-model-comparison',type:'goal',team:'home',minute:38,period:1,attackDirection:1,
+ sequence:'cut_inside_right',finish:'finesse',playerName:'Footera Modelltest',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',
+ defenderIndex:10,defenderAction:'jockey',keeperAction:'classic',playerStyles:[],creatorStyles:[],defenderStyles:[],keeperStyles:[],
+ homeColor:'#0c7964',homeSecondary:'#f4d184',homePattern:'diagonal',homeShorts:'#103c32',homeSocks:'#f4d184',
+ awayColor:'#e7edf5',awaySecondary:'#a42748',awayPattern:'halves',awayShorts:'#18233b',awaySocks:'#e7edf5'};
+const specs=[['body',1.55,'body'],['head',1.55,'head'],['match',3.12,'match'],['sprint',1.55,'body'],['cut',3.12,'body'],['shot',5.18,'body']];
+let renderer,worldOld,worldNew,latestScene,renderDirect,busy=false,ready=false;
+const canvas=$('capture');
+function renderOne(which,spec){
+ const world=which==='old'?worldOld:worldNew;
+ const view=spec[2],time=spec[1],width=640,height=view==='match'?360:480;
+ world.resize(width,height);
+ world.update(time);
+ const inspection=world.inspect();
+ if(which==='new'&&!inspection.importedFootballer)throw new Error('Das echte GLB wurde nicht geladen – keine Ersatzgrafik wird gezeigt.');
+ if(which==='old'&&inspection.importedFootballer)throw new Error('Legacy-Renderer wurde nicht aktiviert.');
+ if(view!=='match'){
+  const root=latestScene.getObjectByName('FooteraScorerRoot');
+  if(!root)throw new Error('Spieler-Root für den identischen Diagnosewinkel nicht gefunden.');
+  root.updateWorldMatrix(true,true);
+  const cam=new THREE.PerspectiveCamera(view==='head'?29:33,width/height,.05,120);
+  const position=view==='head'?new THREE.Vector3(1.15,1.85,-2.30):new THREE.Vector3(2.70,1.7,-3.7);
+  const aim=view==='head'?new THREE.Vector3(0,1.55,0):new THREE.Vector3(0,.95,0);
+  cam.position.copy(root.localToWorld(position));cam.lookAt(root.localToWorld(aim));
+  renderDirect(latestScene,cam);
+ }
+ const png=canvas.toDataURL('image/png');
+ if(!png.startsWith('data:image/png;base64,'))throw new Error('WebGL-Screenshot konnte nicht gelesen werden.');
+ return{png,inspection};
+}
+async function captures(){
+ if(busy||!ready)return;busy=true;
+ try{
+  $('status').textContent='Altes und importiertes Modell werden in exakt gleichen Szenen gerendert …';
+  let oldMax=0,newMax=0,oldTriangles=0,newTriangles=0;
+  for(const spec of specs){
+   for(const which of ['old','new']){
+    const capture=renderOne(which,spec);
+    $(spec[0]+'-'+which).src=capture.png;
+    if(which==='old'){oldMax=Math.max(oldMax,capture.inspection.drawCalls);oldTriangles=Math.max(oldTriangles,capture.inspection.triangles)}
+    else{newMax=Math.max(newMax,capture.inspection.drawCalls);newTriangles=Math.max(newTriangles,capture.inspection.triangles)}
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+   }
+  }
+  $('status').textContent='12 echte WebGL-Renderings fertig · Draw Calls max: ALT '+oldMax+' / GLB '+newMax+' · Dreiecke max: ALT '+oldTriangles+' / GLB '+newTriangles+' · keine Smartphone-FPS-Messung';
+ }catch(error){console.error(error);$('status').textContent='Vergleich blockiert: '+String(error?.message||error)}
+ finally{busy=false}
+}
+async function init(){
+ try{
+  if(!window.WebGLRenderingContext)throw new Error('WebGL ist nicht verfügbar.');
+  if(!await prepareFooteraPlayerModel())throw new Error('GLB nicht verfügbar.');
+  renderer=new THREE.WebGLRenderer({canvas,preserveDrawingBuffer:true,antialias:false,alpha:false});
+  renderer.setPixelRatio(1);renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderDirect=renderer.render.bind(renderer);
+  renderer.render=(s,c)=>{latestScene=s;renderDirect(s,c)};
+  worldOld=makeScene(renderer,event,false,false,true,false,true,false);
+  worldNew=makeScene(renderer,event,false,false,true,false,true,true);
+  ready=true;await captures();
+ }catch(error){console.error(error);$('status').textContent='Vergleich nicht verfügbar: '+String(error?.message||error)}
+}
+$('captureAgain').addEventListener('click',captures);
+function updateCut(which){
+ event.sequence=which==='left'?'cut_inside_left':'cut_inside_right';
+ $('leftCut').setAttribute('aria-pressed',String(which==='left'));
+ $('rightCut').setAttribute('aria-pressed',String(which==='right'));
+ if(!ready||busy)return;
+ worldOld.dispose();worldNew.dispose();
+ worldOld=makeScene(renderer,event,false,false,true,false,true,false);
+ worldNew=makeScene(renderer,event,false,false,true,false,true,true);
+ captures();
+}
+$('leftCut').addEventListener('click',()=>updateCut('left'));
+$('rightCut').addEventListener('click',()=>updateCut('right'));
+$('moment').addEventListener('input',()=>{
+ const t=Number($('moment').value);
+ $('momentValue').textContent=t.toFixed(2).replace('.',',')+' s';
+ // Requested time is used for a paired live snapshot of the direction change.
+ specs[4][1]=t;
+ if(!ready||busy)return;
+ try{for(const which of ['old','new'])$('cut-'+which).src=renderOne(which,specs[4]).png}
+ catch(error){$('status').textContent=String(error?.message||error)}
+});
+for(const img of document.querySelectorAll('figure img'))img.addEventListener('click',()=>{
+ if(!img.src.startsWith('data:image/'))return;
+ $('zoomImage').src=img.src;$('zoomImage').alt=img.alt;$('zoom').hidden=false;
+});
+$('zoomClose').addEventListener('click',()=>$('zoom').hidden=true);
+$('zoom').addEventListener('click',event=>{if(event.target===$('zoom'))$('zoom').hidden=true});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')$('zoom').hidden=true});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();ready=false;$('status').textContent='WebGL-Kontext verloren: keine falschen Nachher-Bilder.'});
+window.addEventListener('pagehide',()=>{try{worldOld?.dispose();worldNew?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}});
+init();
+</script></body></html>
