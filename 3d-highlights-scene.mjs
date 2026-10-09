@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2175';
+import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2176';
+import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -1000,6 +1001,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
+  // Two existing skinned actors can share the verified CC0 sampler without
+  // cloning heavy GLB geometry. LOW permits just one additional participant.
+  // These parts are purely cosmetic: no root translation, gait/IK or ball touch.
+  const capturedParticipantIndices=importedPlayer&&clipEnabled&&!baselineRig
+   ?(weak?[defenderIndex]:[1,defenderIndex].filter((id,i,a)=>a.indexOf(id)===i&&detailedActors.has(id))):[];
+  const capturedInputs=new Map(capturedParticipantIndices.map(id=>[id,
+   {speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish}]));
+  const sampleParticipantClip=capturedParticipantIndices.length?createGlbClipLayer():null;
+  let capturedParticipantActive=0;
   function update(time){
    renderTime=time;
    // Seek rather than increment mixer clocks: stable on skip, replay and
@@ -1023,6 +1033,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
      importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
      importedMotionFrame.stride=stride}
+    const capture=capturedInputs.get(i);
+    if(capture){capture.speed=speed;capture.turn=turn;capture.acceleration=acceleration;
+     capture.control=controlWeight;capture.stride=stride}
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Make every surrounding instanced athlete readable without new draw calls.
     if(enhancedRigMotion&&i!==0&&!(pilotMotion&&i>=1&&i<=4))
@@ -1089,6 +1102,27 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       Math.max(0,1-dist/8));
     }
    });
+   capturedParticipantActive=0;
+   for(const index of capturedParticipantIndices){
+    const p=players[index],clip=sampleParticipantClip(time,capturedInputs.get(index));
+    if(clip.weight<.005)continue;
+    // Preserve a defending player's jockey/tackle choreography, especially
+    // during a block or slide. No lower-body channels are touched.
+    const defense=index===defenderIndex;
+    const brace=defense?defensiveMotion(defenderAction,time,index,defenderIndex,
+     Math.hypot(defensiveBall[0]-p.root.position.x,defensiveBall[2]-p.root.position.z)).intensity:0;
+    const gain=(defense?.65:1)*(1-.90*brace);
+    if(gain<.05)continue;
+    p.upper.rotation.x+=clip.torsoPitch*.65*gain;
+    p.upper.rotation.z+=clip.torsoRoll*.65*gain;
+    p.arms[0].rotation.x+=clip.leftArmPitch*gain;
+    p.arms[1].rotation.x+=clip.rightArmPitch*gain;
+    p.arms[0].rotation.z+=clip.leftArmRoll*.6*gain;
+    p.arms[1].rotation.z+=clip.rightArmRoll*.6*gain;
+    p.elbows[0].rotation.x+=clip.leftElbow*gain;
+    p.elbows[1].rotation.x+=clip.rightElbow*gain;
+    capturedParticipantActive++;
+   }
    const striker=players[0];
    if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
     if(INVERTED_SEQUENCES.has(sequence)){
@@ -1284,6 +1318,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      importedFootballer:!!importedPlayer,importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
       importedMotion:importedPlayer?.inspectMotion()||null,
+      capturedMotionEnabled:!!(importedPlayer&&clipEnabled),
+      capturedContext:{enabled:capturedParticipantIndices.length>0,indices:[...capturedParticipantIndices],activeCount:capturedParticipantActive},
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
@@ -1352,6 +1388,8 @@ export function play(event,signal){
    layer.dataset.playerModelReason=imported?'loaded':forceLegacyModel?'user-disabled':isFooteraPlayerModelReady()?'mount-failed':'not-ready';
    modelStatus.dataset.modelStatus=imported?'glb':'legacy';
    modelStatus.textContent=imported?'GLB AKTIV':forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL';
+   modelStatus.dataset.motionCaption=modelInfo.capturedMotionEnabled?'CC0 BEREIT':'CC0 AUS';
+   layer.dataset.capturedMotion=modelInfo.capturedMotionEnabled?'ready':'off';
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores}`;
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
@@ -1363,6 +1401,17 @@ export function play(event,signal){
      if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
      if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileStandard?1.55:1.35));world.reduceQuality(mobileStandard);resize()}
      world.update(elapsed);
+     // Bounded diagnostics: reflect actual sampled poses, not GLB load state.
+     // Once per ~20 frames avoids inspecting an entire football scene per RAF.
+     if(frames%20===1){
+      const state=world.inspect(),clip=state.importedMotion;
+      const active=!!clip&&clip.capturedSource==='Quaternius CC0'&&clip.capturedWeight>.015;
+      const count=(active?1:0)+(state.capturedContext?.activeCount||0);
+      const off=!state.capturedMotionEnabled||!clip||clip.capturedSource!=='Quaternius CC0';
+      layer.dataset.capturedMotion=off?'off':count?'active':'ready';
+      modelStatus.dataset.motionCaption=off?'CC0 AUS':count?`CC0 AKTIV · ${count}`:'CC0 BEREIT';
+      layer.dataset.capturedActors=String(count);
+     }
      if(event.type==='goal'&&!impactSent&&elapsed>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      if(elapsed>=REVEAL_TIME&&!name.textContent){

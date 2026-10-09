@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.goto(url+'/motion-lab.html',{waitUntil:'domcontentloaded'});
   const result=await page.evaluate(async()=>{
    const THREE=await import('./vendor/three/three.module.min.js');
-   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2175');
+   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2176');
    const loaded=await prepareFooteraPlayerModel();
    const canvas=document.createElement('canvas');canvas.id='real-player-prototype';
    canvas.style.cssText='width:390px;height:300px;display:block';
@@ -39,6 +39,8 @@ const server=http.createServer((req,res)=>{
    const main=makeScene(renderer,event,false,false,true,false,true);
    main.resize(390,300);main.update(2.75);
    const detail=main.inspect(),capture=canvas.toDataURL('image/png').split(',')[1];
+   main.update(1.55);const contextRun=main.inspect();
+   main.update(5.4);const contextKick=main.inspect();
    const frames=[];
    for(const time of [1.55,3.12,5.18,5.79]){main.update(time);frames.push(main.inspect().importedMotion)}
    main.update(3.12);const repeated=main.inspect().importedMotion;
@@ -51,7 +53,7 @@ const server=http.createServer((req,res)=>{
    main.update(5.4);
    const finish=main.inspect();
    main.dispose();renderer.dispose();
-   return{loaded,capture,motion:{frames,repeated},detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
+   return{loaded,capture,context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
      drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
      visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
@@ -61,6 +63,10 @@ const server=http.createServer((req,res)=>{
   console.log('FOOTERA IMPORTED PLAYER WEBGL',JSON.stringify(result));
   assert.equal(result.loaded,true,'CC0 GLB loads with official r160 glTF importer');
   assert.equal(result.detail.imported,true,'real GLB deployed in production makeScene striker');
+   assert.equal(result.context.run.enabled,true,'captured locomotion is enabled for GLB');
+   assert.deepEqual(result.context.run.participants.indices,[1,8],'two active scene participants selected without extra GLB clones');
+   assert.ok(result.context.run.participants.activeCount>=1,'CC0 capture moves nearby participants');
+   assert.equal(result.context.kick.activeCount,0,'captured locomotion yields during canonical shot');
   assert.ok(result.detail.vertices>=3000,'real authored 3D humanoid vertices');
   assert.ok(result.detail.bones>=45,'full articulated humanoid skeleton');
   assert.equal(result.low.imported,true,'LOW tier uses imported humanoid when GLB is available');
