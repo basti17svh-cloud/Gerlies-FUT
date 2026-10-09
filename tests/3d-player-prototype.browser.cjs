@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.goto(url+'/motion-lab.html',{waitUntil:'domcontentloaded'});
   const result=await page.evaluate(async()=>{
    const THREE=await import('./vendor/three/three.module.min.js');
-   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2176');
+   const {makeScene,prepareFooteraPlayerModel}=await import('./3d-highlights-scene.mjs?v=2177');
    const loaded=await prepareFooteraPlayerModel();
    const canvas=document.createElement('canvas');canvas.id='real-player-prototype';
    canvas.style.cssText='width:390px;height:300px;display:block';
@@ -53,7 +53,7 @@ const server=http.createServer((req,res)=>{
    main.update(5.4);
    const finish=main.inspect();
    main.dispose();renderer.dispose();
-   return{loaded,capture,context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
+   return{loaded,capture,footwork:{run:contextRun.groundedFootwork,kick:contextKick.groundedFootwork},context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
      drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
      visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
@@ -67,6 +67,8 @@ const server=http.createServer((req,res)=>{
    assert.deepEqual(result.context.run.participants.indices,[1,10],'provider and scenario-specific defender get CC0 without GLB clones');
    assert.ok(result.context.run.participants.activeCount>=1,'CC0 capture moves nearby participants');
    assert.equal(result.context.kick.activeCount,0,'captured locomotion yields during canonical shot');
+   assert.ok(result.footwork.run.weight>.15,'grounded run transition active on imported attacker');
+   assert.equal(result.footwork.kick.weight,0,'the 5.4s shooting boot cannot be re-posed by grounded gait');
   assert.ok(result.detail.vertices>=3000,'real authored 3D humanoid vertices');
   assert.ok(result.detail.bones>=45,'full articulated humanoid skeleton');
   assert.equal(result.low.imported,true,'LOW tier uses imported humanoid when GLB is available');

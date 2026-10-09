@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2176';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
+import {applyFootwork} from './3d-footwork-dynamics.mjs?v=2177';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -845,7 +846,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(skinned){track(skinned.geometry);track(skinned.atlasTexture);track(skinned.atlasMaterial)}
    const skeletonMotion=modern&&lead?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
    return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
-    gait:[{},{}],mocapFrame:new Float32Array(33),motionClips:{out:{},scratch:{},action:{}}};
+    gait:[{},{}],footworkState:{feet:[{},{}]},mocapFrame:new Float32Array(33),motionClips:{out:{},scratch:{},action:{}}};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
   // V21.67: actual skinned football anatomy for ALL 16 field players in
@@ -1101,6 +1102,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       labDuelPreview?time:defenderAction==='slide_attempt'?time-.8:time,labDuelPreview,
       Math.max(0,1-dist/8));
     }
+    // V21.77 final grounded stance pass. On the already-authored joint rig,
+    // not on player roots or the ball. A tackle wins over locomotion footwork.
+    // Run it after contextual gait but before the one-shot pass/kick contact.
+    if(enhancedRigMotion){
+     const guard=(1-(i===defenderIndex?.90*a:0))*(1-.40*controlWeight);
+     applyFootwork(p,time,speed,turn,acceleration,stride,guard);
+    }
    });
    capturedParticipantActive=0;
    for(const index of capturedParticipantIndices){
@@ -1318,6 +1326,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      importedFootballer:!!importedPlayer,importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
       importedMotion:importedPlayer?.inspectMotion()||null,
+      groundedFootwork:{weight:players[0].footworkState.weight||0,brake:players[0].footworkState.brake||0,
+       burst:players[0].footworkState.burst||0,leftSupport:!!players[0].footworkState.feet[0].support,
+       leftToeLift:players[0].footworkState.feet[0].anklePitch||0,
+       rightToeLift:players[0].footworkState.feet[1].anklePitch||0},
       capturedMotionEnabled:!!(importedPlayer&&clipEnabled),
       capturedContext:{enabled:capturedParticipantIndices.length>0,indices:[...capturedParticipantIndices],activeCount:capturedParticipantActive},
     riggedBones:players[0].skinned?.bones||0,
