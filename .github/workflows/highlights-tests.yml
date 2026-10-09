@@ -34,6 +34,10 @@ jobs:
           node tests/matchday-manager.browser.cjs
           node tests/prematch-editor.browser.cjs
           node tests/ux-overview.browser.cjs
+      - name: Real imported CC0 humanoid scene proof (WebGL)
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/3d-player-prototype.browser.cjs
       - name: Production rigging geometry, glove contact and draw-call budget
         if: success()
         env:
