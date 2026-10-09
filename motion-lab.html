@@ -31,10 +31,10 @@ canvas{display:block;width:100%;height:100%;touch-action:pan-y}
 a{color:#adffc2}
 @media(max-width:420px){main{padding:10px}.stage{height:clamp(340px,105vw,455px)}h1{font-size:18px}.tag{font-size:9px}}
 </style></head><body><main>
-<header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Ein identisches Highlight · zwei Bewegungssteuerungen</p></div><div class="tag">A/B TEST</div></header>
+<header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Ein identisches Highlight · zwei Bewegungssteuerungen</p></div><div class="tag" id="build-tag">MOTION VERSION WIRD GELADEN</div></header>
 <section class="controls" aria-label="Animation vergleichen">
 <button type="button" id="current" class="active" aria-pressed="true">A · Bisherige Bewegung</button>
-<button type="button" id="pilot" aria-pressed="false">B · Kontakt-Bewegungen</button>
+<button type="button" id="pilot" aria-pressed="false">B · Stabile Bewegungen</button>
 <select id="scene" aria-label="Spielsituation">
 <option value="cut_inside_right">Cut nach innen + Schlenzer</option>
 <option value="cut_inside_left">Cut von links + Schlenzer</option>
@@ -58,7 +58,7 @@ a{color:#adffc2}
 </main>
 <script type="module">
 import * as THREE from './vendor/three/three.module.min.js';
-import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2156';
+import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2157';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
 const state={mode:'current',sequence:'cut_inside_right',defense:'jockey',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
@@ -71,14 +71,14 @@ const event=()=>({id:'footera-motion-test',type:'goal',motionDuelPreview:isDemo(
  homeColor:'#0c7964',homeSecondary:'#f4d184',homePattern:'diagonal',homeShorts:'#103c32',homeSocks:'#f4d184',
  awayColor:'#e7edf5',awaySecondary:'#a42748',awayPattern:'halves',awayShorts:'#18233b',awaySocks:'#e7edf5'});
 function resize(){if(!state.world)return;const r=canvas.getBoundingClientRect();state.world.resize(Math.max(1,r.width),Math.max(1,r.height))}
-function info(){const d=state.world.inspect();el('rigs').textContent=d.riggedActors;el('draw').textContent=d.drawCalls;return d}
+function info(){const d=state.world.inspect();el('build-tag').textContent='AKTIV: '+(d.contactMotionVersion||'UNBEKANNT');el('rigs').textContent=d.riggedActors;el('draw').textContent=d.drawCalls;return d}
 function build(){
  if(state.world){state.world.dispose();state.world=null}
  state.world=makeScene(state.renderer,event(),false,false,true,false,state.mode==='pilot');
  resize();state.time=Math.min(state.time,maxTime());el('time').max=String(maxTime());state.world.update(state.time);info();
  buttons.current.classList.toggle('active',state.mode==='current');buttons.pilot.classList.toggle('active',state.mode==='pilot');
  buttons.current.setAttribute('aria-pressed',String(state.mode==='current'));buttons.pilot.setAttribute('aria-pressed',String(state.mode==='pilot'));
- el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · KONTAKT-MOTION':'<strong>A</strong> · BISHERIG';
+ el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · STABILER BLOCK':'<strong>A</strong> · BISHERIG';
 }
 function update(){
  state.world.update(state.time);el('time').value=String(state.time);el('clock').textContent=state.time.toFixed(1)+' s';
