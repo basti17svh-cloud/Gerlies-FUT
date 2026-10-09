@@ -117,6 +117,7 @@ export function playCarrier(plan,time){
 export function playBall(plan,time,shotContact){
  if(!plan)return null;
  const touches=playTouches(plan),t=clamp(time,0,5.4);
+ if(t>=5.4)return shotContact.slice();
  if(t>=5.14){const pos=foot(0,5.14,plan),u=clamp((t-5.14)/.26);return interpolate(pos,shotContact,u)}
  for(const pass of touches){
   if(t>=pass.release&&t<pass.arrival){
