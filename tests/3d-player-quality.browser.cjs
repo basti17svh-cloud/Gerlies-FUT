@@ -4,7 +4,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const root=process.env.FOOTERA_QA_ROOT||path.resolve(__dirname,'..');
-const label=process.env.FOOTERA_QA_LABEL||'v21.77';
+const label=process.env.FOOTERA_QA_LABEL||'v21.78';
 const out=path.resolve(__dirname,'../test-artifacts',label);fs.mkdirSync(out,{recursive:true});
 const server=http.createServer((req,res)=>{
  if(req.url==='/qa-empty.html'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><html><body></body></html>');return}
