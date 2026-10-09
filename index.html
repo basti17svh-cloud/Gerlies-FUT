@@ -17,7 +17,7 @@
 <meta name="color-scheme" content="dark">
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
-<title>Footera V21.62</title>
+<title>Footera V21.63</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -2952,7 +2952,7 @@ const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,team
 // The Halloween window is published here; its player team is released only when its roster is defined.
 const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"EVENT",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",players:[]};
 // SBC-only card; never inserted into the ordinary packs or market player pool.
-const FLASHBACK_REUS_BASE={id:"footera-flashback-reus-20261009",name:"Marco Reus",fullName:"Marco Reus",ovr:88,position:"CAM",alt:"LW,ST",nation:"Germany",team:"LA Galaxy",league:"Major League Soccer",height:180,preferredFoot:"Right",skillMoves:4,weakFoot:4,pac:87,sho:86,pas:88,dri:90,def:52,phy:72,face:"https://cdn.futwiz.com/assets/img/fc27/faces/188350.png",playstyles:"Finesse Shot,Incisive Pass,First Touch,Trivela,Dead Ball",playstylesPlus:"Technical",source:"footera-flashback"};
+const FLASHBACK_REUS_BASE={id:"footera-flashback-reus-20261009",name:"Marco Reus",fullName:"Marco Reus",ovr:88,position:"CAM",alt:"LW,ST",nation:"Germany",team:"LA Galaxy",league:"Major League Soccer",clubLogo:"https://upload.wikimedia.org/wikipedia/commons/7/70/Los_Angeles_Galaxy_logo.svg",leagueLogo:"https://upload.wikimedia.org/wikipedia/commons/c/c7/Major_League_Soccer_logo.svg",height:180,preferredFoot:"Right",skillMoves:4,weakFoot:4,pac:87,sho:86,pas:88,dri:90,def:52,phy:72,face:"https://cdn.futwiz.com/assets/img/fc27/faces/188350.png",playstyles:"Finesse Shot,Incisive Pass,First Touch,Trivela,Dead Ball",playstylesPlus:"Technical",source:"footera-flashback"};
 const FLASHBACK_REUS_EVENT={id:"flashback-reus-20261009",name:"FLASHBACK",shortName:"FLASHBACK",theme:"flashback",activeFrom:"2026-10-09T19:00:00+02:00",activeUntilAt:"2026-10-29T19:00:00+01:00",activeUntil:"29.10.2026 · 18:59",players:[],sbcPlayer:{
  id:"flashback-reus-88",pid:FLASHBACK_REUS_BASE.id,name:"Marco Reus",names:["Marco Reus"],ovr:88,position:"CAM",team:"LA Galaxy",league:"Major League Soccer",nation:"Germany",alt:"LW,ST",stats:[87,86,88,90,52,72],playstyleAdds:["finesse-shot","incisive-pass","first-touch","trivela","dead-ball"],playstylePlusAdds:["technical"],releaseAt:"2026-10-09T19:00:00+02:00",activeUntilAt:"2026-10-29T19:00:00+01:00",packEligible:false,segments:[
  {name:"Flashback – 83er-Team",desc:"Teil 1/3 · TOTW-Herausforderung.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
@@ -7121,8 +7121,8 @@ function sbcFeatureGroupCard(rows,detail=false){
  if(!rows?.length)return"";
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
- const title=isPlayer?(sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
- const desc=isPlayer?`Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
+ const title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Spieler-SBC")):"Top-Partien";
+ const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward);
  let art="";
  if(isPlayer&&found){
@@ -7141,7 +7141,7 @@ function sbcGroupedRows(rows){
 }
 function sbcSetDetailHTML(rows){
  if(!rows?.length)return"";
- const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
+ const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Profi-SBC")):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
  const bonusState=claimed?"ERHALTEN":done>=total?"FREIGESCHALTET":`NOCH ${total-done} SBC${total-done===1?"":"s"}`;
  return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
@@ -9050,7 +9050,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.62";
+const GFUT_BUILD="V21.63";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9103,7 +9103,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2162",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2163",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

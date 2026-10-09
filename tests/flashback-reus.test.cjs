@@ -4,7 +4,7 @@ const event=html.slice(html.indexOf("const FLASHBACK_REUS_BASE="),html.indexOf("
 test("Reus Flashback gets LA Galaxy MLS, 88 OVR, 87/86/88/90/52/72 and Design 3",()=>{
  for(const x of ['id:"footera-flashback-reus-20261009"','team:"LA Galaxy"','league:"Major League Soccer"','ovr:88,position:"CAM"','stats:[87,86,88,90,52,72]','playstylePlusAdds:["technical"]'])assert.ok(event.includes(x),x);
  assert.ok(html.includes('item?.eventType==="flashback-sbc"'));assert.ok(html.includes('cls==="flashback"?" flashback-shell"'));
- assert.match(css,/card-flashback\.svg/);assert.match(ps,/id:"trivela"/);
+ assert.match(css,/card-flashback\.svg/);assert.match(ps,/id:"trivela"/);assert.ok(event.includes("Los_Angeles_Galaxy_logo.svg"));assert.ok(event.includes("Major_League_Soccer_logo.svg"));
 });
 test("release from October 9 19:00 to October 29 18:59 Berlin handles DST",()=>{
  const start=Date.parse("2026-10-09T19:00:00+02:00"),end=Date.parse("2026-10-29T19:00:00+01:00");
