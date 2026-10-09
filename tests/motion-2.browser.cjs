@@ -184,6 +184,17 @@ const server=http.createServer((req,res)=>{
     await page.locator('#scene').selectOption(scenario.sequence);
     await page.locator('#defense').selectOption(scenario.action);
     await page.locator('#pilot').click();
+    if(scenario.action==='slide_attempt'){
+     // A tackle must not stumble or sink before the defender launches.
+     for(const t of [2.30,2.65,2.95,3.17]){
+      await seek(page,t);
+      const approaching=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+      assert.equal(approaching.contactMotionVersion,'21.56-controlled-slide');
+      assert.ok(Math.abs(approaching.contactPelvisLean)<.08,'no pre-slide fall at '+t);
+      assert.ok(Math.abs(approaching.contactBodyLean)<.28,'upright approach at '+t);
+      assert.ok(approaching.contactArmSpread<.66,'no pre-contact flailing at '+t);
+     }
+    }
     await seek(page,scenario.contact);
     const collision=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
     assert.equal(collision.motionDuelPreview,true,'only sandbox choreographs outcomes');
@@ -197,7 +208,7 @@ const server=http.createServer((req,res)=>{
     }else{
      assert.ok(action.contactExtension>.70,'low sideways block extends across shot lane');
      assert.ok(Math.abs(action.contactTilt)<.12,'blocking torso stays upright, no backward stumble');
-     assert.equal(action.contactMotionVersion,'21.55-low-lateral-block','rendered page imports current balanced-block module');
+     assert.equal(action.contactMotionVersion,'21.56-controlled-slide','rendered page imports current balanced-block module');
      assert.ok(Math.abs(action.contactBodyLean)<.16,'real defender torso must stay upright');
      assert.ok(Math.abs(action.contactPelvisLean)<.12,'defender hip root must not pitch backwards');
      assert.ok(action.contactArmSpread<.38,'arms stay balanced rather than flying apart');
@@ -225,7 +236,7 @@ const server=http.createServer((req,res)=>{
   const {createHash}=require('node:crypto');
   const {execFileSync}=require('node:child_process');
   for(const [action,start,end,name] of [
-   ['slide_attempt',2.66,4.68,'slide'],
+   ['slide_attempt',2.06,4.68,'slide'],
    ['block_attempt',4.85,6.70,'block']
   ]){
    const movieCtx=await browser.newContext({
