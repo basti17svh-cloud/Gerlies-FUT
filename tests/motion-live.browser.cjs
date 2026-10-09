@@ -23,6 +23,15 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());
    await page.goto(url,{waitUntil:'load'});await fixture(page);
+   // CI-only tolerance: slow software WebGL must not trigger a false timeout.
+   await page.evaluate(()=>{
+    match3DQueue.timeout=45000;
+    window.__footeraHudSeen=false;
+    window.__footeraHudObserver=new MutationObserver(()=>{
+     if(document.querySelector('.fh3d-hud.visible'))window.__footeraHudSeen=true;
+    });
+    window.__footeraHudObserver.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+   });
    const goal=await force(page,'goal');
    assert.deepEqual(goal.score,[1,0]);assert.equal(goal.goals,1);
    await page.waitForSelector('.fh3d canvas',{timeout:15000});
@@ -36,7 +45,9 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    assert.equal(live.quality,setup.memory<=4?'low':'standard');
    if(setup.name==='capable-phone'){
     await page.screenshot({path:path.join(out,'footera-v2146-live-motion.png')});
-    await page.waitForSelector('.fh3d-hud.visible',{timeout:14000});
+    // Capture transient visibility, not a particular software-rendering frame.
+    await page.waitForFunction(()=>window.__footeraHudSeen||!document.querySelector('.fh3d'),{timeout:32000});
+    assert.equal(await page.evaluate(()=>window.__footeraHudSeen),true,'real goal HUD appeared during replay');
     const visible=await page.evaluate(()=>document.getElementById('matchScore').textContent);
     assert.equal(visible,'1 : 0','real goal appears only after 3D impact');
    }
@@ -49,6 +60,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    assert.deepEqual(result.score,[1,0]);assert.equal(result.goals,1);
    assert.equal(result.pending,false);assert.equal(result.disabled,false);
    assert.deepEqual(errors,[],'no browser errors');
+   await page.evaluate(()=>window.__footeraHudObserver?.disconnect());
    console.log('PASS V21.46 LIVE '+setup.name+' motion='+motion+' same goal, safe cleanup, no errors');
    const recording=setup.name==='capable-phone'?page.video():null;
    await ctx.close();
