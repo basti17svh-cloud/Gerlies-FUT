@@ -51,11 +51,11 @@ a{color:#adffc2}
 <div class="corner" id="corner"><strong>A</strong> · BISHERIG</div><div id="outcome" role="status"></div><div id="error" role="alert">Diese Vorschau benötigt WebGL. Falls die Seite schwarz bleibt, bitte in Chrome öffnen und Hardwarebeschleunigung aktivieren.</div></div>
 <div class="transport"><button id="toggle" type="button">Pause</button><input type="range" id="time" min="0" max="10.4" step=".01" value="0" aria-label="Zeitpunkt im Highlight"><output id="clock" for="time">0.0 s</output></div>
 <div class="stats"><div><b id="rigs">–</b><small>3D-Skelettfiguren</small></div><div><b id="draw">–</b><small>Draw Calls</small></div><div><b id="fps">–</b><small>FPS (circa)</small></div></div>
-<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Kontaktkorrektur: Bei Grätsche und Schussblock zeigt diese isolierte Motion-Lab-Demonstration eine tatsächliche Ballablenkung und dafür choreografierte Abwehrwege. Beide Varianten A und B haben denselben vorgegebenen Demo-Ausgang, B demonstriert die neue vollständige Kontaktbewegung. Diese Demo ist KEIN simuliertes Footera-Match; echte Treffer, Schussblocks und Ballbesitz bleiben ausschließlich der Matchsimulation vorbehalten.</p>
+<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Kontaktkorrektur: Bei Grätsche und Schussblock zeigt diese isolierte Motion-Lab-Demonstration eine tatsächliche Ballablenkung und dafür choreografierte Abwehrwege. Beide Varianten A und B haben denselben vorgegebenen Demo-Ausgang, B demonstriert die neue vollständige Kontaktbewegung. Für Grätschen und Blocks nutzt das Labor eine vergrößerte Kamera mit identischer Ansicht in A und B. Im richtigen Match bleibt die TV-Kamera unverändert. Diese Demo ist KEIN simuliertes Footera-Match; echte Treffer, Schussblocks und Ballbesitz bleiben ausschließlich der Matchsimulation vorbehalten.</p>
 </main>
 <script type="module">
 import * as THREE from './vendor/three/three.module.min.js';
-import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2152';
+import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2153';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
 const state={mode:'current',sequence:'cut_inside_right',defense:'jockey',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};

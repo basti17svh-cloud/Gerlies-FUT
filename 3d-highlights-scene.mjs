@@ -1088,10 +1088,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
    }
-   const kp=keeperPose(event.type,time,finish,sequence,keeperAction);pose(keeper,kp.x,kp.z,time,.12,Math.PI);
+   // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
+   const kp=labDuelPreview?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
+    keeperPose(event.type,time,finish,sequence,keeperAction);
+   pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
     (time-5.05)/3.1,keeper.motionClips.action);
-   const keeperClipWeight=motionClipBlend(time,5.05,8.15,.20);
+   const keeperClipWeight=labDuelPreview?0:motionClipBlend(time,5.05,8.15,.20);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    // Knees flex behind the thigh while the keeper crouches towards the ball.
    // During anticipation both boots stay planted instead of sinking with the hips.
@@ -1118,7 +1121,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else if(savePose&&keeperAction==='fingertip'){
      keeper.rig.rotation.y-=.16*kp.dive;
     }
-   if(enhancedRigMotion){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,shotImpact(event.type,sequence,finish)[0])}
+   if(enhancedRigMotion&&!labDuelPreview){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,shotImpact(event.type,sequence,finish)[0])}
    if(kp.dive>.05){
     keeper.elbows.forEach(e=>e.rotation.x=0);
     // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
@@ -1141,7 +1144,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
-   const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
+   const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
+   if(labDuelPreview){
+    // Isolated assessment lens only: A and B use the SAME close sideline camera.
+    // In-game broadcasts always use the canonical cameraState unchanged.
+    const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
+    const tx=mix(cam.target[0],focus[0],.73),tz=mix(cam.target[2],focus[1],.73),ty=.88;
+    const zoom=.69;
+    camera.position.set(tx+(cam.position[0]-cam.target[0])*zoom,
+     ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom);
+    camTarget.set(tx,ty,tz);camera.fov=cam.fov*.83;
+   }else{camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov}
+   camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
