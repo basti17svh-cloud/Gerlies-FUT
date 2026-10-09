@@ -9,7 +9,7 @@ import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStr
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
-import {applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
+import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT} from './3d-duel-contact.mjs?v=2154';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
@@ -959,6 +959,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
+    const cleanBlockPreview=labDuelPreview&&defenderAction==='block_attempt'&&i===defenderIndex;
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
@@ -972,7 +973,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const transition=applyMotion23(p,time,speed,turn,stride,acceleration,sequence,role,i===0?event.playerStyles:i===1?event.creatorStyles:[]);
      if(i===0)motion23Sample=transition;
     }
-    if(i>=8&&time<SHOT_TIME+.4){const brace=defenderTracking(i,time,sequence).pressure;
+    if(i>=8&&time<SHOT_TIME+.4&&!cleanBlockPreview){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
@@ -1010,11 +1011,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.legs[0].rotation.x+=.25*a;p.legs[1].rotation.x-=.24*a;
      }
     }
-    if(pilotMotion&&i>=8){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
-    if(motion2Active&&i===defenderIndex)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
+    if(pilotMotion&&i>=8&&!cleanBlockPreview){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
+    if(motion2Active&&i===defenderIndex&&!cleanBlockPreview)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
     if(pilotMotion&&i===defenderIndex){
      const dist=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);
-     duelSample=applyDefensiveDuels(p,time,dist,defenderAction,sequence,event.defenderStyles);
+     duelSample=cleanBlockPreview
+      ?sampleDefensiveDuels(time,dist,defenderAction,sequence,event.defenderStyles)
+      :applyDefensiveDuels(p,time,dist,defenderAction,sequence,event.defenderStyles);
      if(isContactDemo(defenderAction))contactPose=applyContactStage(p,defenderAction,
       labDuelPreview?time:defenderAction==='slide_attempt'?time-.8:time,labDuelPreview,
       Math.max(0,1-dist/8));
