@@ -10,7 +10,7 @@ import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinish
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
-import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2156';
+import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
