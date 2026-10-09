@@ -844,7 +844,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // STANDARD/HIGH. LOW preserves a limited 8-player subset for mobile FPS;
   // other actors continue to use their existing safe instanced silhouettes.
   const priority=[0,1,defenderIndex,2,8,3,9,4,10,5,11,6,12,7,13,14,15];
-  const detailedActors=new Set(weak?priority.slice(0,8):priority);
+  const uniquePriority=priority.filter((v,i)=>priority.indexOf(v)===i);
+  const detailedActors=new Set(weak?uniquePriority.slice(0,8):uniquePriority);
   const squadNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
    i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
