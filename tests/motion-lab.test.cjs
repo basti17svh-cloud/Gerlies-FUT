@@ -67,3 +67,38 @@ test('Receiver absorption, defender braking and feint react to proximity',async(
  assert.equal(footballDefenderSample(3.5,99).brace,0);
  assert.ok(footballDefenderSample(2.25,2,'jockey','double_feint_right').feint>.3);
 });
+
+
+test('V21.57 single planted-foot run controller prevents double gait and overstriding',async()=>{
+ const {applyLabMotion,sampleLabMotion}=await import(moduleFile);
+ const {runningLeg,runningStrideLength}=await import('../3d-highlights-scene.mjs');
+ const joint=()=>({rotation:{x:0,y:0,z:0}});
+ const actor=()=>({
+  rig:{rotation:{x:0,y:0,z:0},position:{y:-.03}},
+  upper:joint(),legs:[joint(),joint()],knees:[joint(),joint()],
+  ankles:[joint(),joint()],arms:[joint(),joint()],elbows:[joint(),joint()]
+ });
+ const neutral=actor();
+ for(let i=0;i<2;i++){
+  const g=runningLeg(1.3+i*Math.PI,.9);
+  neutral.legs[i].rotation.x=g.hip;
+  neutral.knees[i].rotation.x=g.knee;
+  neutral.ankles[i].rotation.x=g.ankle;
+ }
+ const legsBefore=neutral.legs.map(x=>({...x.rotation}));
+ const kneesBefore=neutral.knees.map(x=>({...x.rotation}));
+ const anklesBefore=neutral.ankles.map(x=>({...x.rotation}));
+ const neutralHeight=neutral.rig.position.y;
+ const motion=applyLabMotion(neutral,'attacker',2.2,'central',.9,.04,1.3,0,4);
+ assert.equal(motion.legAction,0,'ordinary sprint has no competing authored leg motion');
+ assert.deepEqual(neutral.legs.map(x=>x.rotation),legsBefore,'hip gait is owned by foot-planted IK');
+ assert.deepEqual(neutral.knees.map(x=>x.rotation),kneesBefore,'no second running knee cycle');
+ assert.deepEqual(neutral.ankles.map(x=>x.rotation),anklesBefore,'no separate ankle cycle');
+ assert.equal(neutral.rig.position.y,neutralHeight,'no second running bounce');
+ const cut=sampleLabMotion('attacker',3.06,'cut_inside_right',.7,.06,1.3,.1,4);
+ assert.ok(cut.legAction>.4,'scripted cut may still load the outside foot');
+ const defense=sampleLabMotion('defender',3.85,'cut_inside_right',.7,0,1.3,-.1,4);
+ assert.ok(defense.legAction>.2,'defensive tackle preparation stays available');
+ assert.ok(runningStrideLength(1)>1.8&&runningStrideLength(1)<2.2,'shortened but realistic full-cycle sprint reach');
+ assert.ok(Math.abs(runningLeg(0,1).z)<.31,'maximum forward foot reach is restrained');
+});
