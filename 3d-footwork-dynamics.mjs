@@ -27,10 +27,10 @@ export function sampleFootwork(time,speed,turn,acceleration,stride,out){
  state.brake=brake*weight;state.burst=burst*weight;
  state.bank=bank*weight;
  state.rigDrop=.013*state.brake+.005*state.sprint*(.5+.5*Math.cos(phase*2));
- state.torsoPitch=.065*state.brake-.072*state.burst-.035*state.sprint;
+ state.torsoPitch=.065*state.brake-.072*state.burst-.052*state.sprint;
  state.torsoYaw=-.047*state.bank+.024*counter*state.sprint;
  state.torsoRoll=.070*state.bank+.014*strideWave*state.sprint;
- state.armDrive=(.095*state.sprint+.034*state.burst)*strideWave;
+ state.armDrive=(.151*state.sprint+.041*state.burst)*strideWave;
  state.armBrace=.070*state.brake+.045*Math.abs(state.bank);
  state.elbowDrive=.070*state.sprint;
  // Match the duty cycle and phase used by scene.runningLeg. Do not
@@ -47,8 +47,8 @@ export function sampleFootwork(time,speed,turn,acceleration,stride,out){
   foot.anklePitch=(.112*swing-.077*toeOff-.018*contact*sprint)*weight;
   foot.ankleRoll=side*.043*load*Math.abs(bank);
   foot.ankleYaw=-.065*bank*load;
-  foot.kneePitch=-.105*state.brake*contact-.088*state.burst*swing-.075*state.sprint*swing;
-  foot.hipPitch=.088*state.burst*swing+.080*state.sprint*swing-.040*state.brake*contact;
+  foot.kneePitch=-.105*state.brake*contact-.088*state.burst*swing-.116*state.sprint*swing;
+  foot.hipPitch=.088*state.burst*swing+.119*state.sprint*swing-.040*state.brake*contact;
   foot.hipRoll=side*.049*state.brake*contact-side*.065*bank*contact*weight;
  }
  return state;
