@@ -5,7 +5,7 @@ import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2143';
-import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2143';
+import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
@@ -450,12 +450,14 @@ export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl
   hipDrop:.015*plant+.008*effort*(1+Math.cos(stride*2))
  };
 }
-export const runningStrideLength=speed=>2*(.16+.18*clamp(speed))/(.60-.34*clamp(speed));
+// One complete left/right gait cycle follows travelled distance. Restrained reach
+// prevents the overextended sprint lunge without increasing step frequency wildly.
+export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/(.60-.32*clamp(speed));
 export function runningLeg(phase,speed,out={}){
- speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.34*speed,reach=.16+.18*speed;
+ speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.32*speed,reach=.15+.145*speed;
  const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
  const z=support?mix(-reach,reach,u):mix(reach,-reach,smooth(u));
- const lift=support?0:Math.sin(Math.PI*u)*(.075+.17*speed);
+ const lift=support?0:Math.sin(Math.PI*u)*(.075+.11*speed);
  const hipHeight=.89-.06*speed,ankleHeight=.055+lift,down=hipHeight-ankleHeight;
  const distance=Math.min(.8599,Math.hypot(down,z)),bend=Math.acos(distance/.86);
  out.hip=Math.atan2(-z,down)+bend;out.knee=-2*bend;out.ankle=-out.hip-out.knee;
@@ -855,7 +857,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const c=blendLocomotionClips(speed,turn,stride,controlWeight,p.motionClips.out,p.motionClips.scratch);
    for(let i=0;i<2;i++){
     const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=g.support?1:.26;
-    p.legs[i].rotation.x=g.hip*motion*d.strideReach*c.reach;
+    // Keep the IK stride authoritative. Clip reach adds nuance, not a second lunge.
+    p.legs[i].rotation.x=g.hip*motion*d.strideReach*Math.min(1.045,c.reach);
     p.knees[i].rotation.x=g.knee*motion;
     p.ankles[i].rotation.x=g.ankle*motion;
     // A support leg braces during a cut while the free leg pushes through.
