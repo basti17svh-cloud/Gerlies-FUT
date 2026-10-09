@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2168';
+import {isFooteraPlayerModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel} from './3d-player-prototype.mjs?v=2172';
 export {prepareFooteraPlayerModel};
 import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
@@ -991,6 +991,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    return[mix(original[0],current[0]+fx*(forward+drive)-fz*side,blend),.14,
     mix(original[2],current[1]+fz*(forward+drive)+fx*side,blend)];
   }
+  // Reused render-only sample; no new GPU objects during frames.
+  const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish};
   function update(time){
    renderTime=time;
    // Seek rather than increment mixer clocks: stable on skip, replay and
@@ -1011,6 +1013,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const singleTrackingMotion=pilotMotion&&i===defenderIndex&&isTrackingAction(defenderAction);
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
+    if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
+     importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
+     importedMotionFrame.stride=stride}
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Make every surrounding instanced athlete readable without new draw calls.
     if(enhancedRigMotion&&i!==0&&!(pilotMotion&&i>=1&&i<=4))
@@ -1201,7 +1206,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
-   importedPlayer?.animate();
+   importedPlayer?.animate(time,importedMotionFrame);
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
    if(labFocusedPreview){
@@ -1271,6 +1276,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      playerModelTier:weak?'low-hybrid':'full-squad',
      importedFootballer:!!importedPlayer,importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
+      importedMotion:importedPlayer?.inspectMotion()||null,
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',

@@ -4,6 +4,7 @@
  * One foreground scorer only; no change to authoritative match state.
  */
 import * as THREE from './vendor/three/three.module.min.js';
+import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2172';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
@@ -103,7 +104,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
   colorsByMesh.push({geometry,material:mesh.material});
  }
  // Neutral T pose is converted once into normal running arm-down posture.
- const aim=new THREE.Vector3(),from=new THREE.Vector3(),jointPos=new THREE.Vector3();
+ const aim=new THREE.Vector3(),from=new THREE.Vector3();
  for(const side of ['l','r']){
   const shoulder=bones.get('upperarm_'+side),elbow=bones.get('lowerarm_'+side);
   for(const [bone,target,desired] of [
@@ -127,27 +128,40 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
   const bone=bones.get(name);
   if(!bone)return;
   delta.setFromEuler(rot.set(x,y,z,'XYZ'));
-  bone.quaternion.copy(neutral.get(name)).multiply(delta);
- }
- function animate(){
+  bone.quaternion.copy(neut const motion={};let frameTime=0;
+ function animate(time=0,info={}){
   const driver=existingDriver;
-  // Exact established Footera gait and shot angles control the new model.
-  apply('pelvis',driver.rig.rotation.x*.45,driver.rig.rotation.y,driver.rig.rotation.z*.7);
-  apply('spine_01',driver.upper.rotation.x*.48,driver.upper.rotation.y*.48,driver.upper.rotation.z*.45);
-  apply('spine_02',driver.upper.rotation.x*.33,driver.upper.rotation.y*.34,driver.upper.rotation.z*.35);
-  apply('spine_03',driver.upper.rotation.x*.28,driver.upper.rotation.y*.26,driver.upper.rotation.z*.28);
+  frameTime=Number.isFinite(time)?time:0;
+  const m=sampleGlbBodyMotion(frameTime,info,motion);
+  // The existing Footera pose owns shot contact and leg planting. The
+  // imported GLB adds a modest counter-rotating kinetic chain and head aim.
+  // Rest-posed neutral quaternions prevent cumulative joint rotation.
+  normalized.position.y=clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
+  apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);
+  apply('spine_01',driver.upper.rotation.x*.48+m.spinePitch*.37,driver.upper.rotation.y*.48+m.spineYaw*.38,driver.upper.rotation.z*.45+m.spineRoll*.37);
+  apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34);
+  apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29);
+  apply('Head',m.headPitch,m.headYaw,m.headRoll);
   for(let i=0;i<2;i++){
-   const side=i?'r':'l';
+   const side=i?'r':'l',sign=i?1:-1;
    apply('thigh_'+side,driver.legs[i].rotation.x,driver.legs[i].rotation.y,driver.legs[i].rotation.z);
-   apply('calf_'+side,driver.knees[i].rotation.x,0,driver.knees[i].rotation.z);
-   apply('foot_'+side,driver.ankles[i].rotation.x,0,driver.ankles[i].rotation.z);
-   apply('upperarm_'+side,driver.arms[i].rotation.x*.94,driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92);
-   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72,0,driver.elbows[i].rotation.z);
+   apply('calf_'+side,driver.knees[i].rotation.x-m.kneeCushion*(driver.gait[i]?.support?0:1),0,driver.knees[i].rotation.z);
+   apply('foot_'+side,driver.ankles[i].rotation.x+(i?m.rightToeLift:m.leftToeLift)*(driver.gait[i]?.support?0:1),
+     driver.ankles[i].rotation.y,driver.ankles[i].rotation.z);
+   apply('upperarm_'+side,driver.arms[i].rotation.x*.94+sign*m.armSwing,
+     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace);
+   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running,0,driver.elbows[i].rotation.z);
   }
+ }
+ function inspectMotion(){
+  return{time:frameTime,rootY:normalized.position.y,headYaw:motion.headYaw||0,
+   spineYaw:motion.spineYaw||0,pelvisYaw:motion.pelvisYaw||0,cut:motion.cut||0,
+   shot:motion.shot||0,follow:motion.follow||0,running:motion.running||0,
+   hipLeft:bones.get('thigh_l').quaternion.toArray(),hipRight:bones.get('thigh_r').quaternion.toArray()};
  }
  animate();
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:source.vertexCount,
-  boneCount:source.boneCount,animate,
+  boneCount:source.boneCount,animate,inspectMotion,
   dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}}
  };
 }
