@@ -65,7 +65,9 @@ export function applyContactStage(p,action,time,preview=false,near=1){
    const blend=clamp(Math.max(a,f,h,r));
    const target=(joint,axis,value)=>{const base=Number(joint.rotation[axis])||0;
     joint.rotation[axis]=lerp(base,value,blend)};
-   target(p.rig,'x',-1.32*h);
+   // The pitch already has its own smoothed contact curve. Never apply
+   // the blend a second time, otherwise the torso snaps upright mid-glide.
+   p.rig.rotation.x=lerp(p.rig.rotation.x,-1.32*h,w);
    target(p.rig,'z',.035*f);
    p.rig.position.y=lerp(p.rig.position.y,-.075*a-.17*h-.055*r,blend);
    target(p.upper,'x',-.095*a-.06*h+.10*r);
