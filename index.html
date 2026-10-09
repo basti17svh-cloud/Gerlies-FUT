@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.85</title>
+<title>Footera V21.86</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1565,7 +1565,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.85</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.86</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2097,7 +2097,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2185"></script>
+<script src="./3d-highlights.js?v=2186"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
@@ -7659,7 +7659,7 @@ function simAttack(homeSide){
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
  if(!eventChance(buildChance)){
   const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);
-  if(action)recordMatchScene(`${defendingSide}-interception`,`${action.name} fängt den Pass von ${creator.name} ab.`);
+  if(action){recordMatchScene(`${defendingSide}-interception`,`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
   return
  }
  const attacker=chooseMatchAttacker(side),duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
@@ -7667,7 +7667,7 @@ function simAttack(homeSide){
  const duelChance=matchClamp(.60+duelMargin*.0038+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016,.28,.86);
  if(!eventChance(duelChance)){
   const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);
-  if(action)recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);
+  if(action){recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
   return
  }
  const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0009+duelMargin*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014,.05,.52);
@@ -9051,7 +9051,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.85";
+const GFUT_BUILD="V21.86";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9104,7 +9104,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2185",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2186",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9121,7 +9121,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./champions-system.js?v=2114"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js"></script>
-<script src="./3d-highlights-match.js?v=2185"></script>
+<script src="./3d-highlights-match.js?v=2186"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>

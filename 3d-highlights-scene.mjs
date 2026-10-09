@@ -17,6 +17,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
+import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2186';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -46,7 +47,7 @@ export function shotFootPosition(time=SHOT_TIME){
 }
 export const PLAY_SEQUENCES=Object.freeze(['central','one_two','through_ball','dribble','wing_left','wing_right','cutback_left','cutback_right',
 'inside_left','inside_right','cut_inside_left','cut_inside_right','double_feint_left','double_feint_right','near_post_cut_left','near_post_cut_right','low_cross_left','low_cross_right','chip_one_on_one','chip_counter','halfspace_left','halfspace_right','counter_central','counter_left','counter_right','diagonal_switch','long_shot','one_on_one',
-'early_cross_left','early_cross_right','far_post_left','far_post_right','near_post_left','near_post_right','volley_left','volley_right','second_ball','high_press','finesse_halfspace','power_drive','low_driven_duel','bicycle']);
+'early_cross_left','early_cross_right','far_post_left','far_post_right','near_post_left','near_post_right','volley_left','volley_right','second_ball','high_press','finesse_halfspace','power_drive','low_driven_duel','bicycle',...PLAYBOOK_IDS,...DEFENSIVE_SCENES]);
 export function normalizeSequence(value){return PLAY_SEQUENCES.includes(String(value))?String(value):'central'}
 
 const VARIANTS=Object.freeze({
@@ -114,6 +115,9 @@ function carriedBall(index,time,sequence,lead=.56){
 // Close-control windows only. The ball detaches for real passes, crosses and shots.
 export function controlCarrier(time,sequence='central'){
  const seq=normalizeSequence(sequence),base=baseSequence(seq);
+ const plan=getPlay(seq);
+ if(plan){const index=playCarrier(plan,time);return{index,weight:index<0?0:Math.min(.94,.75+ease((time-.05)/.6)*.15)}}
+ if(DEFENSIVE_SCENES.includes(seq))return time>4.4?{index:8,weight:ease((time-4.4)/.23)*.9}:{index:-1,weight:0};
  let index=-1,start=0,end=0;
  if(INVERTED_SEQUENCES.has(seq)){index=0;end=SHOT_TIME-.24}
   else if(seq.startsWith('low_cross_')){index=1;end=3.08}
@@ -147,6 +151,9 @@ export function shotImpact(type,sequence='central',finish='normal'){
 }
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
+ if(DEFENSIVE_SCENES.includes(seq))return defenseBall(time,seq);
+ const plan=getPlay(seq);
+ if(plan&&time<SHOT_TIME)return playBall(plan,time,contactFor(style));
  if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
   const release=SHOT_TIME-.24,contact=shotContact(seq,style);
   if(time<release)return carriedBall(0,time,seq,.53);
@@ -291,6 +298,11 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // A diagonal switch crosses the full pitch before reaching the near winger.
  // Keep the broadcast frame between the ball and the box: centering directly
  // on the near winger collapses the physical camera distance and crops runners.
+ if(getPlay(seq)||DEFENSIVE_SCENES.includes(seq)){
+  // A higher TV lens keeps midfield passing triangles AND the fullback lane in view.
+  distance=Math.max(distance,64+portraitPad);
+  fov=Math.max(fov,35.5);
+ }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
   fov+=10.5*(1-smooth((time-(SHOT_TIME-.2))/1.25));
@@ -358,6 +370,9 @@ const ATTACKER_FLOW_NODES=Object.freeze({
 });
 export function runPosition(index,time,sequence='central'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq];
+ const plan=getPlay(seq);
+ if(plan){const point=playPosition(index,time,plan);if(point)return point}
+ if(DEFENSIVE_SCENES.includes(seq)){const point=defensePosition(index,time,seq);if(point)return point}
  if(INVERTED_SEQUENCES.has(seq)){
   if(index===0)return invertedRunPosition(seq,time);
   if(index===1){const side=sequenceSide(seq);return lerp([side*27,-25],[side*20,-41],smooth(time/6.8))}
@@ -1182,8 +1197,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    const striker=players[0];
    // V21.78 planted shot preparation; fully released before the canonical kick.
-   applyShotApproach(striker,time,finish,sequence);
-   if(time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
+   if(event.type!=='ball_won')applyShotApproach(striker,time,finish,sequence);
+   if(event.type!=='ball_won'&&time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
     if(INVERTED_SEQUENCES.has(sequence)){
      const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=shotImpact(event.type,sequence,finish);
      const shotHeading=Math.atan2(sx-aim[0],sz-aim[2]);
@@ -1243,21 +1258,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(motion2Active)applyWinger2(striker,time,sequence,finish,motion2CutAnchor,motion2ShotAnchor,event.playerStyles);
    // 2.6: rebalance after the kick; never change the canonical 5.4s contact.
    if(pilotMotion)balanceSample=applyFinishBalance(striker,time,finish);
-   const passWindows=INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]];
-   for(const [from,to] of passWindows)if(time>=from&&time<=to){
-    const passer=sequence==='diagonal_switch'&&from<1?players[5]:players[1],u=clamp((time-from)/(to-from)),kick=passStrikePose(u);
+   const authoredPassWindows=getPlay(sequence)?playPassWindows(getPlay(sequence)):null;
+   const passWindows=authoredPassWindows|| (INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]]);
+   for(const window of passWindows){
+    const [from,to]=Array.isArray(window)?window:[window.start,window.end];
+    if(time<from||time>to)continue;
+    const passer=window.actor!==undefined?players[window.actor]:(sequence==='diagonal_switch'&&from<1?players[5]:players[1]),u=clamp((time-from)/(to-from)),kick=passStrikePose(u);
     passer.legs[1].rotation.x=kick.hip;passer.knees[1].rotation.x=kick.knee;passer.ankles[1].rotation.x=kick.ankle;
     passer.rig.rotation.x=-.085*(1-kick.follow);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);
     passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
-   const kp=labDuelPreview?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
+   const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
     keeperPose(event.type,time,finish,sequence,keeperAction);
    pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
     (time-5.05)/3.1,keeper.motionClips.action);
-   const keeperClipWeight=labDuelPreview?0:motionClipBlend(time,5.05,8.15,.20);
+   const keeperClipWeight=labDuelPreview||event.type==='ball_won'?0:motionClipBlend(time,5.05,8.15,.20);
    keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
    // Knees flex behind the thigh while the keeper crouches towards the ball.
    // During anticipation both boots stay planted instead of sinking with the hips.
@@ -1441,7 +1459,9 @@ export function play(event,signal){
   function onLost(e){e.preventDefault();finish('fallback')}
   function onKey(e){if(e.key==='Escape'){e.preventDefault();finish('skipped')}}
   skip.addEventListener('click',()=>finish('skipped'));signal.addEventListener('abort',onAbort,{once:true});canvas.addEventListener('webglcontextlost',onLost);window.addEventListener('keydown',onKey);
-  timer=setTimeout(()=>finish('fallback'),16000);
+  const seconds=Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(20,Number(event.playSeconds))):DURATION;
+  const timeScale=DURATION/seconds;
+  timer=setTimeout(()=>finish('fallback'),Math.max(16000,seconds*1000+4500));
   try{
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,weak=memory<=4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
@@ -1477,7 +1497,8 @@ export function play(event,signal){
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
      if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileStandard?1.55:1.35));world.reduceQuality(mobileStandard);resize()}
-     world.update(elapsed);
+     const displayTime=elapsed*timeScale;
+     world.update(displayTime);
      // Bounded diagnostics: reflect actual sampled poses, not GLB load state.
      // Once per ~20 frames avoids inspecting an entire football scene per RAF.
      if(frames%20===1){
@@ -1489,16 +1510,17 @@ export function play(event,signal){
       modelStatus.dataset.motionCaption=off?'CC0 AUS':count?`CC0 AKTIV · ${count}`:'CC0 BEREIT';
       layer.dataset.capturedActors=String(count);
      }
-     if(event.type==='goal'&&!impactSent&&elapsed>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
+     if(event.type==='goal'&&!impactSent&&displayTime>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
-     if(elapsed>=REVEAL_TIME&&!name.textContent){
+     if(displayTime>=REVEAL_TIME&&!name.textContent){
       if(event.type==='goal'){headline.textContent='TOR';name.textContent=event.playerName;detail.textContent=event.teamName?`für ${event.teamName}`:'TOR'}
+      else if(event.type==='ball_won'){headline.textContent='BALL EROBERT';name.textContent=event.defenderName||'Verteidiger';detail.textContent=event.defenseKind==='tackle'?'Zweikampf gewonnen':'Pass abgefangen'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
-     hud.classList.toggle('visible',elapsed>=REVEAL_TIME&&elapsed<DURATION-.2);
-     if(elapsed>=DURATION){finish('played');return}raf=requestAnimationFrame(frame);
+     hud.classList.toggle('visible',displayTime>=REVEAL_TIME&&displayTime<DURATION-.2);
+     if(elapsed>=seconds){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
    }
    raf=requestAnimationFrame(frame);

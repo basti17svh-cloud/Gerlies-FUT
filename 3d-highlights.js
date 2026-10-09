@@ -1,7 +1,7 @@
 /* Footera highlights: presentation-only queue. No access to the match or its RNG. */
 (function(root){
  'use strict';
- const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post']);
+ const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won']);
  const MODES=Object.freeze({off:'Aus',goals:'Nur Tore',important:'Wichtige Highlights',all:'Alle Highlights'});
  const KEY='footera-3d-highlights-v1';
  let mode='important',loader;
@@ -19,7 +19,7 @@
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
-   defenderName:String(event.defenderName||''),defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
+   defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(20,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
@@ -31,7 +31,7 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2185'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2186'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -66,6 +66,32 @@
  }
 
  // Existing PlayStyle IDs are taken from playstyles.js; this is visual weighting only.
+ const PLAYBOOK_SCENES=Object.freeze([
+  ['triangle_left','combination',7,'normal','short'],['triangle_right','combination',7,'normal','short'],
+  ['tiki_short','combination',8,'normal','short'],['tiki_quick','combination',7,'normal','short'],
+  ['wall_pass_left','combination',7,'normal','short'],['wall_pass_right','combination',7,'normal','short'],
+  ['central_recycle','combination',6,'normal','medium'],['midfield_switch','switch',5,'normal','long'],
+  ['first_touch_triangle','combination',7,'normal','medium'],['third_man_run','combination',8,'normal','medium'],
+  ['split_defenders','through',8,'low_driven','short'],['curved_striker_run','through',8,'normal','short'],
+  ['left_halfspace_thread','through',7,'normal','medium'],['right_halfspace_thread','through',7,'normal','medium'],
+  ['deep_playmaker_lob','through',4,'normal','medium'],
+  ['overlap_left_low','overlap',7,'normal','medium'],['overlap_right_low','overlap',7,'normal','medium'],
+  ['overlap_left_high','overlap',6,'header','medium'],['overlap_right_high','overlap',6,'header','medium'],
+  ['early_low_delivery_left','lowcross',6,'low_driven','short'],['early_low_delivery_right','lowcross',6,'low_driven','short'],
+  ['switch_overlap_low','switch',5,'normal','long'],['switch_overlap_high','switch',5,'header','long'],
+  ['quick_burst_left','dribble',5,'normal','short'],['quick_burst_right','dribble',5,'normal','short'],
+  ['inside_link_left','dribble',5,'finesse','medium'],['inside_link_right','dribble',5,'finesse','medium'],
+  ['edge_cutback_finesse','cutback',5,'finesse','medium'],['first_time_power','distance',4,'power','short'],
+  ['near_post_tap','nearpost',5,'low_driven','short']
+ ].map(([id,family,weight,finish,length],index)=>Object.freeze({
+  id,family,weight,finish,
+  seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
+  tags:Object.freeze(({combination:['tiki-taka','first-touch','incisive-pass'],switch:['long-ball-pass','flair'],
+   through:['incisive-pass','through-ball'],overlap:['rapid','quick-step','whipped-pass'],
+   lowcross:['pinged-pass','whipped-pass'],dribble:['technical','trickster','rapid'],
+   cutback:['pinged-pass','finesse-shot'],distance:['power-shot','first-touch'],
+   nearpost:['first-touch','low-driven-shot']})[family]||[])
+ })));
  const VISUAL_SCENES=Object.freeze([
   ['central','central',12,'normal',[]],['one_two','combination',11,'normal',['tiki-taka','incisive-pass']],
   ['through_ball','through',11,'normal',['through-ball','incisive-pass']],
@@ -107,6 +133,10 @@
  // Deterministic presentation-only choreography. Every action is an attempt;
  // a defender can NEVER turn an authoritative goal into a block/interception.
  function chooseReactions(event){
+  if(event?.type==='ball_won'){
+   const seq=String(event.sequence||'');
+   return Object.freeze({defenderAction:seq==='defense_slide_tackle'?'slide_attempt':seq==='defense_interception'?'lane_read':'close_down',keeperAction:'beaten'});
+  }
   const defender=visualStyleMap(event.defenderStyles),keeper=visualStyleMap(event.keeperStyles);
   const seq=String(event.sequence||'central'),finish=String(event.finish||'normal');
   const aerial=/(?:cross|post|volley|bicycle)/.test(seq)||['header','volley','bicycle'].includes(finish);
@@ -143,15 +173,32 @@
   return Object.freeze({defenderAction:defenseAction,keeperAction});
  }
  function choosePresentation(event,history=[]){
+  if(event?.type==='ball_won'){
+   const kind=String(event.defenseKind||'interception'),hash=visualHash([event.id,event.minute,event.defenderName].join(':'));
+   const seq=kind==='tackle'?(hash%4===0?'defense_slide_tackle':'defense_standing_tackle'):
+    hash%3===0?'defense_press_recovery':'defense_interception';
+   return Object.freeze({sequence:seq,family:'defense',finish:'normal',seconds:10.4});
+  }
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
   const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&String(event.creationType||'')!=='solo';
   const side=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(provider)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(provider)?'right':'';
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
-  const recent=(Array.isArray(history)?history:[]).slice(-5);
-  const choices=VISUAL_SCENES.map(v=>{
+  const recent=(Array.isArray(history)?history:[]).slice(-9);
+  const choices=[...VISUAL_SCENES,...PLAYBOOK_SCENES].map(v=>{
    let w=v.weight;
+   if(PLAYBOOK_SCENES.includes(v)){
+    if(!hasCreator)w*=.04;
+    if(['combination','through','switch'].includes(v.family)&&hasCreator)w*=1.45;
+    if(['lowcross','overlap','nearpost','cutback'].includes(v.family)&&hasCreator)w*=1.6;
+    if(v.family==='through'&&(creator.has('incisive-pass')||creator.has('through-ball')))w*=2.1;
+    if(v.family==='switch'&&creator.has('long-ball-pass'))w*=2.25;
+    if(v.family==='combination'&&creator.has('tiki-taka'))w*=1.9;
+    if(v.family==='overlap'&&creator.has('whipped-pass'))w*=1.8;
+    if(v.id.includes('left')&&side==='right'||v.id.includes('right')&&side==='left')w*=.22;
+    if(v.id.includes('header')||v.finish==='header')w*=scorer.has('power-header')||scorer.has('aerial')?1.6:.66;
+   }
    for(const id of v.tags){const ps=scorer.get(id);if(ps)w*=1+.48*ps;const pa=hasCreator&&creator.get(id);if(pa)w*=1+.38*pa}
    if(['wing','cutback','lowcross','cross','nearpost','farpost','volley'].includes(v.family)&&hasCreator&&/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(provider))w*=1.8;
    if(['through','duel','counter','lowduel'].includes(v.family)&&hasCreator&&(creator.has('incisive-pass')||creator.has('through-ball')))w*=1.9;
@@ -181,10 +228,10 @@
   // Finishing module is independent from the attack build-up and never touches match outcomes.
   const finish=chosen.finish==='normal'&&scorer.has('finesse-shot')&&visualHash(key+':finish')%7===0?'finesse':
    chosen.finish==='normal'&&scorer.has('low-driven-shot')&&visualHash(key+':low')%8===0?'low_driven':chosen.finish;
-  return Object.freeze({sequence:chosen.id,family:chosen.family,finish});
+  return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4});
  }
  class Queue{
-  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=18000}={}){
+  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000}={}){
    this.play=play||defaultPlay;
    this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
   }
@@ -211,6 +258,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

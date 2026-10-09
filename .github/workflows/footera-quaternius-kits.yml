@@ -22,6 +22,8 @@ jobs:
           node --check 3d-highlights.js
           node --check 3d-highlights-match.js
           node --check squad-numbers.js
+          node --check 3d-playbook.mjs
+          node --test tests/playbook-variation.test.cjs
           node --test tests/shirt-numbers.test.cjs
       - name: Install real Chromium WebGL
         run: |
