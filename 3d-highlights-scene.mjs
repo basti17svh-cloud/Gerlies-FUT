@@ -995,7 +995,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.legs[1].rotation.x+=.43*a;p.knees[1].rotation.x-=.82*a;
       p.upper.rotation.x+=.16*motion.recover;
       p.arms[0].rotation.z-=.67*a;p.arms[1].rotation.z+=.52*a;
-     }else if(motion.kind==='block_attempt'){
+     }else if(motion.kind==='block_attempt'&&!pilotMotion){
+      // Pilot uses one grounded contact pose; legacy rotation opposed it.
       p.upper.rotation.x+=.30*a;p.legs[1].rotation.x-=.85*a;
       p.knees[1].rotation.x+=.28*a;
       p.arms[0].rotation.z-=.38*a;p.arms[1].rotation.z+=.52*a;
