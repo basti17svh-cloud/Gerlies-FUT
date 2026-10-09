@@ -574,7 +574,7 @@ test('V21.67: realistic humanoid geometry reaches full STANDARD squad and retain
  const {RIGGED_SURFACE_VERSION}=await import('../3d-rigged-footballer.mjs');
  assert.equal(RIGGED_SURFACE_VERSION,3);
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(scene,/detailedActors=new Set\(weak\?priority.slice\(0,8\):priority\)/);
+ assert.match(scene,/detailedActors=new Set\(weak\?uniquePriority.slice\(0,8\):uniquePriority\)/);
  assert.match(scene,/false,detailedActors.has\(i\),squadNumbers\[i\],i===0/);
  assert.match(scene,/playerModelTier:weak\?'low-hybrid':'full-squad'/);
 });
