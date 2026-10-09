@@ -195,9 +195,9 @@ const server=http.createServer((req,res)=>{
      assert.ok(Math.abs(action.contactTilt)>1.14,'torso must be near horizontal, not a sitting fall');
      assert.ok(action.contactExtension>1.7,'fully straightened slide into ball');
     }else{
-     assert.ok(action.contactExtension>.95,'blocking leg extends across shot lane');
+     assert.ok(action.contactExtension>.70,'low sideways block extends across shot lane');
      assert.ok(Math.abs(action.contactTilt)<.12,'blocking torso stays upright, no backward stumble');
-     assert.equal(action.contactMotionVersion,'21.55-balanced-block','rendered page imports current balanced-block module');
+     assert.equal(action.contactMotionVersion,'21.55-low-lateral-block','rendered page imports current balanced-block module');
      assert.ok(Math.abs(action.contactBodyLean)<.16,'real defender torso must stay upright');
      assert.ok(Math.abs(action.contactPelvisLean)<.12,'defender hip root must not pitch backwards');
      assert.ok(action.contactArmSpread<.38,'arms stay balanced rather than flying apart');
