@@ -1,7 +1,7 @@
 name: Footera Quaternius Kit Proof
 on:
   push:
-    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','3d-highlights.js','3d-highlights-match.js','squad-numbers.js','squad-numbers.css','tests/shirt-numbers.test.cjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
+    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','3d-playbook.mjs','tests/playbook-variation.test.cjs','3d-highlights.js','3d-highlights-match.js','squad-numbers.js','squad-numbers.css','tests/shirt-numbers.test.cjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
   workflow_dispatch:
 permissions:
   contents: read
