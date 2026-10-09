@@ -128,7 +128,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
   const bone=bones.get(name);
   if(!bone)return;
   delta.setFromEuler(rot.set(x,y,z,'XYZ'));
-  bone.quaternion.copy(neut const motion={};let frameTime=0;
+  bone.quaternion.copy(neutral.get(name)).multiply(delta);
+ }
+ const motion={};let frameTime=0;
  function animate(time=0,info={}){
   const driver=existingDriver;
   frameTime=Number.isFinite(time)?time:0;
