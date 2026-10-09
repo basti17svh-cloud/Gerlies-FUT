@@ -6,10 +6,13 @@ on:
       - 'motion-lab.html'
       - '3d-motion-lab.mjs'
       - '3d-action-continuity.mjs'
+      - '3d-motion-2.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/action-continuity.test.cjs'
+      - 'tests/motion-2.test.cjs'
       - 'tests/motion-lab.browser.cjs'
+      - 'tests/motion-2.browser.cjs'
       - 'tests/motion-live.browser.cjs'
       - '3d-highlights.js'
       - 'service-worker.js'
@@ -20,10 +23,13 @@ on:
       - 'motion-lab.html'
       - '3d-motion-lab.mjs'
       - '3d-action-continuity.mjs'
+      - '3d-motion-2.mjs'
       - '3d-highlights-scene.mjs'
       - 'tests/motion-lab.test.cjs'
       - 'tests/action-continuity.test.cjs'
+      - 'tests/motion-2.test.cjs'
       - 'tests/motion-lab.browser.cjs'
+      - 'tests/motion-2.browser.cjs'
       - 'tests/motion-live.browser.cjs'
       - '3d-highlights.js'
       - 'service-worker.js'
@@ -41,7 +47,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify deterministic cut, defender states, and unchanged shot handoff
-        run: node --test tests/motion-lab.test.cjs tests/action-continuity.test.cjs
+        run: node --test tests/motion-lab.test.cjs tests/action-continuity.test.cjs tests/motion-2.test.cjs
       - name: Install isolated browser renderer
         run: |
           npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
@@ -51,6 +57,7 @@ jobs:
           NODE_PATH: /tmp/footera-motion-lab/node_modules
         run: |
           node tests/motion-lab.browser.cjs
+          node tests/motion-2.browser.cjs
           node tests/motion-live.browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -59,6 +66,10 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
-            test-artifacts/footera-v2144-live-motion.png
-            test-artifacts/footera-v2144-live-football-actions.webm
+            test-artifacts/motion-2-old.webm
+            test-artifacts/motion-2-new.webm
+            test-artifacts/motion-2-cut.png
+            test-artifacts/motion-2-shot.png
+            test-artifacts/footera-v2145-live-motion.png
+            test-artifacts/footera-v2145-live-football-actions.webm
           retention-days: 14

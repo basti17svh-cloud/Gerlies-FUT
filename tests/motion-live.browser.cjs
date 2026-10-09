@@ -35,7 +35,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    assert.deepEqual(live.score,[1,0]);assert.equal(live.goals,1);
    assert.equal(live.quality,setup.memory<=4?'low':'standard');
    if(setup.name==='capable-phone'){
-    await page.screenshot({path:path.join(out,'footera-v2144-live-motion.png')});
+    await page.screenshot({path:path.join(out,'footera-v2145-live-motion.png')});
     await page.waitForSelector('.fh3d-hud.visible',{timeout:14000});
     const visible=await page.evaluate(()=>document.getElementById('matchScore').textContent);
     assert.equal(visible,'1 : 0','real goal appears only after 3D impact');
@@ -49,14 +49,14 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    assert.deepEqual(result.score,[1,0]);assert.equal(result.goals,1);
    assert.equal(result.pending,false);assert.equal(result.disabled,false);
    assert.deepEqual(errors,[],'no browser errors');
-   console.log('PASS V21.44 LIVE '+setup.name+' motion='+motion+' same goal, safe cleanup, no errors');
+   console.log('PASS V21.45 LIVE '+setup.name+' motion='+motion+' same goal, safe cleanup, no errors');
    const recording=setup.name==='capable-phone'?page.video():null;
    await ctx.close();
    if(recording){
-    const filename=path.join(out,'footera-v2144-live-football-actions.webm');
+    const filename=path.join(out,'footera-v2145-live-football-actions.webm');
     await recording.saveAs(filename);await recording.delete();
     assert.ok(fs.statSync(filename).size>12000,'actual WebGL match recording must contain frames');
-    console.log('PASS V21.43 live video',filename,fs.statSync(filename).size,'bytes');
+    console.log('PASS V21.45 live video',filename,fs.statSync(filename).size,'bytes');
    }
   }
  }finally{await browser.close();server.close()}
