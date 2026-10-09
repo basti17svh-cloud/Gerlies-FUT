@@ -132,12 +132,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    let slot=ny<.056?2:ny<.31?3:ny<.445?2:ny<.557?1:
     ny>.863||bareArm?2:Math.abs(nx)>.26?4:0;
    let c=footballerKitColorAt(nx,ny,nz,kit,tintIndex);
-   if(existingDriver.skinned?.atlasTexture){
-    c=new THREE.Color('#ffffff');
-    const longitude=((Math.atan2(nx,nz)/(Math.PI*2))%1+1)%1;
-    const vertical=slot===0?clamp((ny-.557)/.306):slot===1?clamp((ny-.445)/.112):slot===3?clamp((ny-.056)/.254):.5;
-    uv[i*2]=(slot+.015+longitude*.97)/5;uv[i*2+1]=vertical;
-   }
+   const longitude=((Math.atan2(nx,nz)/(Math.PI*2))%1+1)%1;
+   const vertical=slot===0?clamp((ny-.557)/.306):slot===1?clamp((ny-.445)/.112):slot===3?clamp((ny-.056)/.254):.5;
+   uv[i*2]=(slot+.015+longitude*.97)/5;uv[i*2+1]=vertical;
+   if(existingDriver.skinned?.atlasTexture)c=new THREE.Color('#ffffff');
    // Eyebrows/eyes used to receive exactly the skin colour, erasing the face.
    // Their existing meshes use an untextured facial material below.
    if(brow)c.set('#30241e');
