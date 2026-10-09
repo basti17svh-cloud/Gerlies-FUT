@@ -70,3 +70,37 @@ test('shot-block recovery stays grounded and avoids the exaggerated backward stu
  assert.ok(contactStage('block_attempt',6.7).extend<.001,
   'the blocking leg lowers again before the end of recovery');
 });
+
+test('slide starts with a controlled run-up, stable supporting foot and a real ground slide',async()=>{
+ const m=await import(file);
+ const actor=()=>({rig:{position:{y:0},rotation:{x:0,y:0,z:0}},
+  upper:{rotation:{x:0,y:0,z:0}},
+  legs:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  knees:[{rotation:{x:0}},{rotation:{x:0}}],
+  ankles:[{rotation:{x:0}},{rotation:{x:0}}],
+  arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}]});
+ for(const t of [2.08,2.25,2.45,2.65,2.85,3.05,3.20]){
+  const p=actor(),motion=m.applyContactStage(p,'slide_attempt',t,true);
+  assert.ok(Math.abs(p.rig.rotation.x)<.06,'no premature stumble/torso fall at '+t);
+  assert.ok(p.rig.position.y>-.12,'defender must not sit/fall before planting '+t);
+  assert.ok(Math.abs(p.arms[0].rotation.z)<.4&&Math.abs(p.arms[1].rotation.z)<.4,
+   'arms under control approaching slide at '+t);
+  assert.ok(p.legs[1].rotation.x<.65,'sliding leg stays down until take-off at '+t);
+  assert.equal(motion.recover,0,'no recovery before tackle at '+t);
+ }
+ const contact=actor(),impact=m.applyContactStage(contact,'slide_attempt',m.SLIDE_CONTACT+.07,true);
+ assert.ok(contact.rig.rotation.x< -1.14,'slide becomes horizontal only at contact');
+ assert.ok(impact.extension>1.7,'leading foot reaches through the tackle');
+ const at=actor(),after=m.applyContactStage(at,'slide_attempt',4.78,true);
+ assert.ok(Math.abs(at.rig.rotation.x)<.06,'player stands up again without falling over');
+ assert.ok(after.extension<.06,'sliding foot no longer sticks up after recovery');
+ for(const seq of ['cut_inside_right','cut_inside_left']){
+  const p=t=>m.stagedDefenderPosition('slide_attempt',t,seq,ballAt,[0,0]);
+  const first=p(2.05),running=p(2.65),atBall=p(m.SLIDE_CONTACT),ball=ballAt(m.SLIDE_CONTACT);
+  assert.ok(d(first,running)>.9,'defender starts running before the lunge');
+  assert.ok(d(atBall,[ball[0],ball[2]])<.75,'moving defender still reaches the football');
+  for(let t=2.1;t<4.3;t+=.035){
+   assert.ok(d(p(t),p(t+.035))<.38,'no teleport or snap at '+t.toFixed(2));
+  }
+ }
+});
