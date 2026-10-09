@@ -6,6 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
+import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
@@ -83,7 +84,7 @@ export function footballerKitColorAt(nx,ny,nz,kit={},hair=0){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
+export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true){
  if(!source)return null;
  const model=source.clone(source.scene);
  model.name='FooteraImportedFootballer';
@@ -109,6 +110,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
  // generated skin; tint their original vertices using mesh local coordinates.
  const tintIndex=[...String(name)].reduce((n,ch)=>n+ch.charCodeAt(0),0)%4;
  model.updateMatrixWorld(true);
+ // Shared textile-detail textures stay off on LOW mobile devices.
+ const surfaceMaps=detail?createFooteraSurfaceMaps(THREE):null;
  const colorsByMesh=[];
  for(const mesh of meshes){
   const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
@@ -160,7 +163,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
     p.x=center.x+nx*inflate/scale;p.z=center.z+nz*inflate/scale;
     p.applyMatrix4(modelToLocal);pos.setXYZ(i,p.x,p.y,p.z);
    }
-   colors[i*3]=c.r;colors[i*3+1]=c.g;colors[i*3+2]=c.b;
+   const ao=vertexFooteraOcclusion(nx,ny,nz,slot);
+   colors[i*3]=c.r*ao;colors[i*3+1]=c.g*ao;colors[i*3+2]=c.b*ao;
   }
   geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
   if(isBody){
@@ -172,11 +176,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
    }
    geometry.setIndex(indices);geometry.computeVertexNormals();
   }
-  if(existingDriver.skinned?.atlasTexture)geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  // Both PBR maps share this atlas: UV for normal/roughness, UV2 for AO.
+  // Each slot already encodes the real material zone, so skin never gets knit.
+  const uvAttr=new THREE.Float32BufferAttribute(uv,2);
+  geometry.setAttribute('uv',uvAttr);
+  if(surfaceMaps&&isBody)geometry.setAttribute('uv2',uvAttr);
   mesh.geometry=geometry;
   mesh.material=new THREE.MeshStandardMaterial({vertexColors:true,
    map:/eye/i.test(mesh.name)?null:existingDriver.skinned?.atlasTexture||null,
-   metalness:0,roughness:/^eyes$/i.test(mesh.name)?.4:.85,side:THREE.DoubleSide});
+   roughnessMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
+   aoMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
+   aoMapIntensity:.64,
+   normalMap:surfaceMaps&&isBody?surfaceMaps.normalMap:null,
+   normalScale:new THREE.Vector2(.52,.52),
+   metalness:0,roughness:/^eyes$/i.test(mesh.name)?.36:1,side:THREE.DoubleSide});
   colorsByMesh.push({geometry,material:mesh.material});
  }
  // Neutral T pose is converted once into normal running arm-down posture.
@@ -215,7 +228,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
    }
   }
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-  const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.64,metalness:0,side:THREE.DoubleSide});
+  const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.51,metalness:0,side:THREE.DoubleSide});
   const boot=new THREE.Mesh(geometry,material);boot.name='FooteraBoot-'+side;boot.castShadow=true;boot.receiveShadow=true;foot.add(boot);colorsByMesh.push({geometry,material});
  }
  // Match the EXISTING contact targets using the imported limb lengths. The
@@ -307,6 +320,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name=''){
  animate();
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:source.vertexCount,
   boneCount:source.boneCount,animate,inspectMotion,
-  dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}}
+  surfaceDetail:!!surfaceMaps,
+  dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}surfaceMaps?.dispose()}
  };
 }
