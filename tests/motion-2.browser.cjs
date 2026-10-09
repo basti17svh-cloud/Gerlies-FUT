@@ -197,6 +197,10 @@ const server=http.createServer((req,res)=>{
     }else{
      assert.ok(action.contactExtension>.95,'blocking leg extends across shot lane');
      assert.ok(Math.abs(action.contactTilt)<.12,'blocking torso stays upright, no backward stumble');
+     assert.equal(action.contactMotionVersion,'21.55-balanced-block','rendered page imports current balanced-block module');
+     assert.ok(Math.abs(action.contactBodyLean)<.16,'real defender torso must stay upright');
+     assert.ok(Math.abs(action.contactPelvisLean)<.12,'defender hip root must not pitch backwards');
+     assert.ok(action.contactArmSpread<.38,'arms stay balanced rather than flying apart');
     }
     await page.screenshot({path:path.join(out,'motion-contact-'+scenario.name+'.png'),fullPage:true});
     await seek(page,scenario.action==='slide_attempt'?4.22:6.55);
