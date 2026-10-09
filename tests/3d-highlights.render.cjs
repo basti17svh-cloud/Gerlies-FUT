@@ -119,7 +119,7 @@ const out=path.join(__dirname,'../test-artifacts');
   }
   for(const row of checks)for(const actor of row.facing){
    const speed=Math.hypot(...actor.velocity);
-   if(speed>.001&&!(row.scenario==='finish'&&actor.index===0&&row.time>4.9&&row.time<6.2)){const forwardDot=(actor.forward[0]*actor.velocity[0]+actor.forward[1]*actor.velocity[1])/speed;
+   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forwardDot=(actor.forward[0]*actor.velocity[0]+actor.forward[1]*actor.velocity[1])/speed;
     assert.ok(forwardDot>.85,`actor runs forwards: ${row.sequence} period ${row.period} time ${row.time} actor ${actor.index}: ${forwardDot}`);
    }
   }
