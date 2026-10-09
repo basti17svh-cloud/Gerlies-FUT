@@ -280,6 +280,37 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.51,metalness:0,side:THREE.DoubleSide});
   const boot=new THREE.Mesh(geometry,material);boot.name='FooteraBoot-'+side;boot.castShadow=true;boot.receiveShadow=true;foot.add(boot);colorsByMesh.push({geometry,material});
  }
+ // The CC0 MakeHuman body intentionally contains no authored hairstyle.
+ // Rig a small lightweight haircut to the real head bone: no licensed art,
+ // no copied celebrity identity and no change to the actual head/face mesh.
+ if(makehuman){
+  const head=bones.get('Head');
+  playerRoot.updateMatrixWorld(true);
+  const anchor=playerRoot.localToWorld(new THREE.Vector3(0,1.753,-.003));
+  head.updateWorldMatrix(true,false);
+  const headWorld=head.getWorldQuaternion(new THREE.Quaternion());
+  const playerWorld=playerRoot.getWorldQuaternion(new THREE.Quaternion());
+  const hairAxis=headWorld.invert().multiply(playerWorld);
+  const cutColor=new THREE.Color(['#241b17','#2b211b','#39271f','#423128'][tintIndex]);
+  const hairMaterial=new THREE.MeshStandardMaterial({color:cutColor,roughness:.97,metalness:0});
+  const capGeo=new THREE.SphereGeometry(1,20,12,0,Math.PI*2,0,Math.PI*.57);
+  const cap=new THREE.Mesh(capGeo,hairMaterial);
+  cap.name='FooteraMakeHumanHair';
+  cap.position.copy(head.worldToLocal(anchor));cap.quaternion.copy(hairAxis);
+  cap.scale.set(.101,.075,.100);
+  cap.castShadow=true;cap.receiveShadow=true;head.add(cap);
+  colorsByMesh.push({geometry:capGeo,material:hairMaterial});
+  // Small soft locks break the helmet silhouette around the forehead.
+  for(let i=-2;i<=2;i++){
+   const g=new THREE.SphereGeometry(1,8,6),m=new THREE.MeshStandardMaterial({
+    color:cutColor.clone().multiplyScalar(1+(i%2)*.08),roughness:.98});
+   const tuft=new THREE.Mesh(g,m);
+   tuft.position.copy(cap.position);tuft.quaternion.copy(hairAxis);
+   tuft.position.add(new THREE.Vector3(i*.035,-.008,-.078));
+   tuft.scale.set(.035,.018,.026);tuft.castShadow=true;head.add(tuft);
+   colorsByMesh.push({geometry:g,material:m});
+  }
+ }
  // Match the EXISTING contact targets using the imported limb lengths. The
  // authored shin is longer than the old rig: angle copying alone floats feet
  // and moves the striking boot away from the authoritative ball contact.
