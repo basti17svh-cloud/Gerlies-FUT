@@ -994,7 +994,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const stride=gaitPhase(i,time);
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Make every surrounding instanced athlete readable without new draw calls.
-    if(enhancedRigMotion&&!p.skinned&&!(pilotMotion&&i>=1&&i<=4))
+    if(enhancedRigMotion&&i!==0&&!(pilotMotion&&i>=1&&i<=4))
      applySquadLocomotion(p,i,time,speed,turn,stride,acceleration,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     if(pilotMotion&&i<2&&time<SHOT_TIME-.25)applyFootballReception(p,i,time,sequence,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Add bracing and release motions without moving roots, ball or match events.
