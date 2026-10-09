@@ -17,7 +17,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2186';
+import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2188';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
