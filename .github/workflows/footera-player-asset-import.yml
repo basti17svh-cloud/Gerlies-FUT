@@ -1,0 +1,49 @@
+name: Footera CC0 Player Asset Import
+on:
+  push:
+    paths: [".github/workflows/footera-player-asset-import.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download pinned CC0 original model and verify git object
+        run: |
+          mkdir -p assets/footera/models
+          curl --fail --location --silent --show-error --retry 3 --max-time 60 \
+            'https://raw.githubusercontent.com/programasweights/avatar/ddd5fc34a445bcded3cf9836607aaeebc19a5c78/public/assets/character.glb' \
+            --output assets/footera/models/footballer-prototype.glb
+          test "$(git hash-object assets/footera/models/footballer-prototype.glb)" = "b3fd79533fdb9fcedd077744f7e120920eb6cc97"
+          python3 - <<'PY'
+          import json,struct,pathlib
+          p=pathlib.Path('assets/footera/models/footballer-prototype.glb')
+          raw=p.read_bytes()
+          magic,version,length=struct.unpack_from('<III',raw,0)
+          assert magic==0x46546c67 and version==2 and length==len(raw)
+          chunksize,kind=struct.unpack_from('<II',raw,12)
+          data=json.loads(raw[20:20+chunksize])
+          names=[node.get('name','') for node in data.get('nodes',[])]
+          for required in ('pelvis','thigh_l','thigh_r','calf_l','calf_r','upperarm_l','upperarm_r','Head'):
+              assert required in names,required
+          assert data.get('skins') and data.get('meshes') and len(raw)<2_000_000
+          print('FOOTERA MODEL VALIDATED',len(raw),'bytes,',len(data['skins']),'skins,',len(data['meshes']),'meshes, nodes:',len(names))
+          for i,mesh in enumerate(data['meshes']):
+              print('MESH',i,mesh.get('name'),[(p.get('material'),len(p.get('attributes',{}))) for p in mesh.get('primitives',[])])
+          print('BONES',[n for n in names if n in ('pelvis','spine_01','spine_02','spine_03','neck_01','Head','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r')])
+          PY
+      - name: Commit verified asset on current main without touching match scripts
+        run: |
+          git config user.name "Footera Asset Bot"
+          git config user.email "footera-assets@users.noreply.github.com"
+          git add assets/footera/models/footballer-prototype.glb
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera: add verified CC0 rigged footballer prototype GLB"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
