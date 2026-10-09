@@ -117,7 +117,7 @@ export function controlCarrier(time,sequence='central'){
  const seq=normalizeSequence(sequence),base=baseSequence(seq);
  const plan=getPlay(seq);
  if(plan){const index=playCarrier(plan,time);return{index,weight:index<0?0:Math.min(.94,.75+smooth((time-.05)/.6)*.15)}}
- if(DEFENSIVE_SCENES.includes(seq))return time>4.4?{index:8,weight:ease((time-4.4)/.23)*.9}:{index:-1,weight:0};
+ if(DEFENSIVE_SCENES.includes(seq))return time>4.4?{index:8,weight:smooth((time-4.4)/.23)*.9}:{index:-1,weight:0};
  let index=-1,start=0,end=0;
  if(INVERTED_SEQUENCES.has(seq)){index=0;end=SHOT_TIME-.24}
   else if(seq.startsWith('low_cross_')){index=1;end=3.08}
