@@ -1,0 +1,104 @@
+name: Footera MakeHuman CC0 Model Import
+on:
+  push:
+    paths:
+      - '.github/workflows/footera-makehuman-import.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Obtain precisely pinned MakeHuman male GLB
+        run: |
+          mkdir -p assets/footera/models
+          curl --fail --location --silent --show-error --retry 3 --max-time 90 \
+            'https://raw.githubusercontent.com/kunalkushwaha/vsim/3f97faf85e46d2f9a122b0a8b8d3ccc0af598f91/packages/assets/library/man.glb' \
+            -o /tmp/footera-makehuman-original.glb
+          test "$(git hash-object /tmp/footera-makehuman-original.glb)" = 'bec48c7ad6be753520f7291510c1d63440df87b9'
+      - name: Validate mesh and rig, eliminate bundled external animations
+        run: |
+          python3 - <<'PY'
+          import struct,json,pathlib,hashlib
+          path=pathlib.Path('/tmp/footera-makehuman-original.glb')
+          data=path.read_bytes()
+          magic,version,length=struct.unpack_from('<III',data)
+          assert magic==0x46546c67 and version==2 and length==len(data)
+          offset=12;chunks=[]
+          while offset<len(data):
+              size,kind=struct.unpack_from('<II',data,offset);offset+=8
+              chunks.append((kind,data[offset:offset+size]));offset+=size
+          assert chunks[0][0]==0x4e4f534a and chunks[1][0]==0x004e4942
+          gltf=json.loads(chunks[0][1]);buf=bytearray(chunks[1][1])
+          names=[n.get('name','') for n in gltf.get('nodes',[])]
+          required=['pelvis','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','upperarm_l','upperarm_r']
+          assert all(n in names for n in required), [n for n in required if n not in names]
+          assert any('head' in n.lower() for n in names)
+          assert gltf.get('skins') and gltf.get('meshes')
+          accessors=gltf['accessors'];views=gltf['bufferViews']
+          # Preserve any bufferView referenced outside animation channels, including
+          # all mesh attributes, morph targets, skin IBM, images and sparse accessors.
+          needed=set()
+          def add_accessor(index):
+              if index is None:return
+              a=accessors[index]
+              if 'bufferView' in a:needed.add(a['bufferView'])
+              for value in a.get('sparse',{}).values():
+                  if isinstance(value,dict) and 'bufferView' in value:needed.add(value['bufferView'])
+          for mesh in gltf['meshes']:
+              for prim in mesh['primitives']:
+                  for idx in prim.get('attributes',{}).values():add_accessor(idx)
+                  add_accessor(prim.get('indices'))
+                  for target in prim.get('targets',[]):
+                      for idx in target.values():add_accessor(idx)
+          for skin in gltf['skins']:add_accessor(skin.get('inverseBindMatrices'))
+          for img in gltf.get('images',[]):
+              if 'bufferView' in img:needed.add(img['bufferView'])
+          anim_accessors=set()
+          clip_names=[]
+          for animation in gltf.pop('animations',[]):
+              clip_names.append(animation.get('name','unnamed'))
+              for sampler in animation['samplers']:
+                  anim_accessors.update([sampler['input'],sampler['output']])
+          zeroed=0
+          for idx in anim_accessors:
+              accessor=accessors[idx]
+              if accessor.get('bufferView') in needed:continue
+              bv=views[accessor['bufferView']]
+              beg=bv.get('byteOffset',0)
+              end=beg+bv['byteLength']
+              buf[beg:end]=b'\0'*(end-beg);zeroed+=1
+          # No non-CC0 retargeted motion is distributed by Footera.
+          gltf.pop('extensionsRequired',None) if False else None
+          gltf.setdefault('asset',{})['generator']='Footera stripped CMU/wave/run/idle animations from vsim MakeHuman CC0 body'
+          metadata={'origin':'https://github.com/kunalkushwaha/vsim/blob/3f97faf85e46d2f9a122b0a8b8d3ccc0af598f91/packages/assets/library/man.glb',
+              'originalGitBlobSha':'bec48c7ad6be753520f7291510c1d63440df87b9',
+              'bodyLicense':'CC0 1.0; skin texture from MakeHuman CC0 system pack',
+              'animationsRemoved':clip_names,'animationAccessorsZeroed':zeroed,
+              'boneNames':names,'meshNames':[m.get('name','') for m in gltf['meshes']],
+              'skins':len(gltf['skins']),'vertices':sum(gltf['accessors'][prim['attributes']['POSITION']]['count'] for m in gltf['meshes'] for prim in m['primitives']),
+              'sourceBytes':len(data),'facesMayRequireMoreDetail':True}
+          j=json.dumps(gltf,separators=(',',':'),ensure_ascii=False).encode()
+          j+=b' '*((-len(j))%4);buf+=b'\0'*((-len(buf))%4)
+          total=12+8+len(j)+8+len(buf)
+          out=struct.pack('<III',0x46546c67,2,total)+struct.pack('<II',len(j),0x4e4f534a)+j+struct.pack('<II',len(buf),0x004e4942)+buf
+          pathlib.Path('assets/footera/models/makehuman-male.glb').write_bytes(out)
+          pathlib.Path('assets/footera/models/makehuman-source.json').write_text(json.dumps(metadata,indent=2)+'\n')
+          assert 'animations' not in json.loads(out[20:20+len(j)])
+          print('FOOTERA MAKEHUMAN GLB:',json.dumps(metadata))
+          PY
+      - name: Commit verified body asset to current main
+        run: |
+          git config user.name "Footera Asset Bot"
+          git config user.email "footera-assets@users.noreply.github.com"
+          git add assets/footera/models/makehuman-male.glb assets/footera/models/makehuman-source.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera: add CC0 MakeHuman male GLB stripped of all source animation tracks"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
