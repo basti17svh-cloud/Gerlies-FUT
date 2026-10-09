@@ -143,7 +143,39 @@ const server=http.createServer((req,res)=>{
     assert.ok(Math.hypot(...ballBefore.map((v,i)=>v-ballAfter[i]))<1e-6,'canonical ball flight unchanged '+sequence);
     console.log('PASS Motion 2.3 '+sequence+' '+phase+' matched ball flight and 390px pose');
    }
-   assert.deepEqual(errors,[],'mirrored motion and Motion 2.3 have no JavaScript exceptions');
+   // Motion 2.4–2.6: review defensive footwork, existing-action blocking
+   // and post-shot recovery in the SAME real mobile WebGL scene.
+   for(const scenario of [
+    {name:'jockey-right',sequence:'double_feint_right',action:'jockey',at:3.25,key:'motionDuelShuffle',min:.08,actor:'defender'},
+    {name:'jockey-left',sequence:'double_feint_left',action:'jockey',at:3.25,key:'motionDuelShuffle',min:.08,actor:'defender'},
+    {name:'block',sequence:'cut_inside_right',action:'block_attempt',at:5.08,key:'motionDuelBlock',min:.10,actor:'defender'},
+    {name:'recovery',sequence:'cut_inside_right',action:'close_down',at:6.08,key:'motionDuelRecovery',min:.10,actor:'defender'},
+    {name:'shot-balance',sequence:'dribble',action:'jockey',at:6.25,key:'motionFinishBalance',min:.65,actor:'striker'}
+   ]){
+    await page.locator('#scene').selectOption(scenario.sequence);
+    await page.locator('#defense').selectOption(scenario.action);
+    await page.locator('#current').click();await seek(page,scenario.at);
+    const before=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(before.motionDuels,false,scenario.name+' old pose has no Motion 2.6');
+    await page.screenshot({path:path.join(out,'motion-26-'+scenario.name+'-old.png')});
+    await page.locator('#pilot').click();await seek(page,scenario.at);
+    const after=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(after.motionDuels,true,scenario.name+' enabled');
+    assert.ok(after[scenario.key]>scenario.min,
+      scenario.name+' active: '+scenario.key+'='+after[scenario.key]);
+    const actor=scenario.actor==='defender'?(scenario.sequence.endsWith('_left')?9:10):0;
+    const poseDiff=Math.hypot(...after.squadMotion[actor].map((v,i)=>v-before.squadMotion[actor][i]));
+    assert.ok(poseDiff>.08,scenario.name+' posture visibly changes '+poseDiff);
+    await page.screenshot({path:path.join(out,'motion-26-'+scenario.name+'-new.png')});
+    await seek(page,6.65);
+    const ballAfter=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    await page.locator('#current').click();
+    const ballBefore=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    assert.ok(Math.hypot(...ballBefore.map((v,i)=>v-ballAfter[i]))<1e-6,
+      scenario.name+' cannot change goal flight');
+    console.log('PASS Motion 2.6 '+scenario.name+' WebGL pose, same ball flight');
+   }
+   assert.deepEqual(errors,[],'mirrored motion and Motion 2.3–2.6 have no JavaScript exceptions');
   }finally{await ctx.close()}
 
  }finally{await browser.close();server.close()}

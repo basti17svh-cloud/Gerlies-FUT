@@ -31,7 +31,7 @@ a{color:#adffc2}
 <header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Ein identisches Highlight · zwei Bewegungssteuerungen</p></div><div class="tag">A/B TEST</div></header>
 <section class="controls" aria-label="Animation vergleichen">
 <button type="button" id="current" class="active" aria-pressed="true">A · Bisherige Bewegung</button>
-<button type="button" id="pilot" aria-pressed="false">B · Motion 2.3</button>
+<button type="button" id="pilot" aria-pressed="false">B · Motion 2.6</button>
 <select id="scene" aria-label="Spielsituation">
 <option value="cut_inside_right">Cut nach innen + Schlenzer</option>
 <option value="cut_inside_left">Cut von links + Schlenzer</option>
@@ -39,23 +39,29 @@ a{color:#adffc2}
 <option value="double_feint_left">Doppel-Finte von links + Schlenzer</option>
 <option value="dribble">Dribbling · Bremsen + Antritt</option>
 <option value="through_ball">Steilpass · Ballmitnahme + Abschluss</option>
+</select>
+<select id="defense" aria-label="Verteidigeraktion">
+<option value="jockey">Verteidiger · seitlich begleiten</option>
+<option value="close_down">Verteidiger · anlaufen und zustellen</option>
+<option value="block_attempt">Verteidiger · Schuss blocken</option>
+<option value="slide_attempt">Verteidiger · Grätsche</option>
 </select></section>
 <div class="stage"><canvas id="picture" aria-label="3D Fußballszene"></canvas>
 <div class="corner" id="corner"><strong>A</strong> · BISHERIG</div><div id="error" role="alert">Diese Vorschau benötigt WebGL. Falls die Seite schwarz bleibt, bitte in Chrome öffnen und Hardwarebeschleunigung aktivieren.</div></div>
 <div class="transport"><button id="toggle" type="button">Pause</button><input type="range" id="time" min="0" max="10.4" step=".01" value="0" aria-label="Zeitpunkt im Highlight"><output id="clock" for="time">0.0 s</output></div>
 <div class="stats"><div><b id="rigs">–</b><small>3D-Skelettfiguren</small></div><div><b id="draw">–</b><small>Draw Calls</small></div><div><b id="fps">–</b><small>FPS (circa)</small></div></div>
-<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Motion 2.3 erweitert Motion 2.2: bei normalen Dribblings werden Abbremsen und Antritt getrennt animiert, bei Steilpässen wird die Ballmitnahme sichtbar abgefedert. Gespiegelte Cuts, Doppelfinten und Verteidigerreaktionen bleiben bestehen. Die Simulation, Torwertung und alle Laufwege bleiben unverändert. Ballflug, Spielerwege, Torwertung und Kamera bleiben unverändert.</p>
+<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Motion 2.4–2.6 baut auf Motion 2.3 auf: seitliche Verteidiger-Fußarbeit, gesonderte Vorbereitung für Blockversuche und Stabilisierung nach dem Zweikampf sowie nach dem Abschluss. Wähle oben eine Verteidigeraktion. In A und B bleiben Spielerwege, Ballflug, Torwertung, Matchereignis und Kamera identisch.</p>
 </main>
 <script type="module">
 import * as THREE from './vendor/three/three.module.min.js';
-import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2150';
+import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2151';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
-const state={mode:'current',sequence:'cut_inside_right',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
+const state={mode:'current',sequence:'cut_inside_right',defense:'jockey',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
 const sequences={cut_inside_right:'finesse',cut_inside_left:'finesse',double_feint_right:'finesse',double_feint_left:'finesse',dribble:'normal',through_ball:'normal'};
 const event=()=>({id:'footera-motion-test',type:'goal',team:'home',period:1,minute:38,attackDirection:1,
- playerName:'Footera Angreifer',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',defenderIndex:10,
- defenderAction:'jockey',keeperAction:'classic',sequence:state.sequence,finish:sequences[state.sequence]||'normal',
+ playerName:'Footera Angreifer',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',defenderIndex:state.sequence.endsWith('_left')?9:10,
+ defenderAction:state.defense,keeperAction:'classic',sequence:state.sequence,finish:sequences[state.sequence]||'normal',
  homeColor:'#0c7964',homeSecondary:'#f4d184',homePattern:'diagonal',homeShorts:'#103c32',homeSocks:'#f4d184',
  awayColor:'#e7edf5',awaySecondary:'#a42748',awayPattern:'halves',awayShorts:'#18233b',awaySocks:'#e7edf5'});
 function resize(){if(!state.world)return;const r=canvas.getBoundingClientRect();state.world.resize(Math.max(1,r.width),Math.max(1,r.height))}
@@ -66,7 +72,7 @@ function build(){
  resize();state.world.update(state.time);info();
  buttons.current.classList.toggle('active',state.mode==='current');buttons.pilot.classList.toggle('active',state.mode==='pilot');
  buttons.current.setAttribute('aria-pressed',String(state.mode==='current'));buttons.pilot.setAttribute('aria-pressed',String(state.mode==='pilot'));
- el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · MOTION 2.3':'<strong>A</strong> · BISHERIG';
+ el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · MOTION 2.6':'<strong>A</strong> · BISHERIG';
 }
 function update(){
  state.world.update(state.time);el('time').value=String(state.time);el('clock').textContent=state.time.toFixed(1)+' s';
@@ -74,9 +80,10 @@ function update(){
 function choose(mode){if(mode===state.mode)return;state.mode=mode;build()}
 buttons.current.onclick=()=>choose('current');buttons.pilot.onclick=()=>choose('pilot');
 el('scene').onchange=()=>{state.sequence=el('scene').value;state.time=0;build();update()};
+el('defense').onchange=()=>{state.defense=el('defense').value;state.time=0;build();update()};
 el('toggle').onclick=()=>{state.playing=!state.playing;el('toggle').textContent=state.playing?'Pause':'Abspielen'};
 el('time').oninput=()=>{state.playing=false;el('toggle').textContent='Abspielen';state.time=Number(el('time').value);update();info()};
-window.__footeraMotionLab={getState:()=>({mode:state.mode,time:state.time,sequence:state.sequence,metrics:state.world?.inspect()}),choose};
+window.__footeraMotionLab={getState:()=>({mode:state.mode,time:state.time,sequence:state.sequence,defense:state.defense,metrics:state.world?.inspect()}),choose};
 try{
  const memory=navigator.deviceMemory||8,weak=memory<=4;
  state.renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
