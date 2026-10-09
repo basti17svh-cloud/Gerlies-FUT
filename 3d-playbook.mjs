@@ -174,5 +174,8 @@ export function defenseBall(time,sequence){
  }
  const owner=defensePosition(8,t,sequence),future=defensePosition(8,Math.min(10.4,t+.10),sequence);
  const dx=future[0]-owner[0],dz=future[1]-owner[1],len=Math.hypot(dx,dz)||1;
- return[owner[0]+dx/len*.43,.14,owner[1]+dz/len*.43];
+ // The first recovered touch MUST start exactly where the ball was intercepted.
+ // Blend its short escape dribble from that contact instead of teleporting.
+ const taken=[owner[0]+.12,.14,owner[1]-.3],carried=[owner[0]+dx/len*.43,.14,owner[1]+dz/len*.43];
+ return interpolate(taken,carried,(t-4.4)/.32);
 }
