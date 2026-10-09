@@ -11,7 +11,7 @@ test('V21.75 real CC0 captured locomotion is deterministic and visibly phase-dri
  assert.equal(a.source,'Quaternius CC0');
  assert.equal(a.clip,'Sprint_Loop');
  assert.ok(a.weight>.25);
- const poses=[0,.25,.50,.75].map(i=>at(sample,2,{stride:8.2+i*Math.PI*2/4}));
+ const poses=[0,.25,.50,.75].map(i=>at(sample,2,{stride:8.2+i*Math.PI*2}));
  const animated=['leftArmRoll','rightArmRoll','leftElbow','rightElbow'];
  assert.ok(animated.some(key=>poses.some(p=>Math.abs(p[key]-poses[0][key])>.015)),
   'captured roll and elbow rotation must vary with the running stride');
