@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Footera – Motion Lab A/B</title><meta name="theme-color" content="#071314">
+<title>Footera V21.55 – Schussblock ohne Stolpern</title><meta name="theme-color" content="#071314">
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#071314;color:#edf7ef}
 *{box-sizing:border-box}body{margin:0;min-height:100svh;background:linear-gradient(160deg,#122c2a,#071314 42%);padding:0 0 28px}
@@ -31,7 +31,7 @@ canvas{display:block;width:100%;height:100%;touch-action:pan-y}
 a{color:#adffc2}
 @media(max-width:420px){main{padding:10px}.stage{height:clamp(340px,105vw,455px)}h1{font-size:18px}.tag{font-size:9px}}
 </style></head><body><main>
-<header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Ein identisches Highlight · zwei Bewegungssteuerungen</p></div><div class="tag" id="build-tag">MOTION VERSION WIRD GELADEN</div></header>
+<header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Schussblock: vorher gegen neue stabile Bewegung · V21.55</p></div><div class="tag" id="build-tag">MOTION VERSION WIRD GELADEN</div></header>
 <section class="controls" aria-label="Animation vergleichen">
 <button type="button" id="current" class="active" aria-pressed="true">A · Bisherige Bewegung</button>
 <button type="button" id="pilot" aria-pressed="false">B · Stabile Bewegungen</button>
@@ -61,7 +61,8 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2157';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
-const state={mode:'current',sequence:'cut_inside_right',defense:'jockey',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
+const state={mode:'pilot',sequence:'cut_inside_right',defense:'block_attempt',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
+el('defense').value='block_attempt';
 const isDemo=()=>['slide_attempt','block_attempt'].includes(state.defense);
 const maxTime=()=>state.defense==='slide_attempt'?4.85:state.defense==='block_attempt'?7.15:DURATION;
 const sequences={cut_inside_right:'finesse',cut_inside_left:'finesse',double_feint_right:'finesse',double_feint_left:'finesse',dribble:'normal',through_ball:'normal'};
