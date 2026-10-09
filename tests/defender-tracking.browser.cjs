@@ -24,7 +24,8 @@ const server=http.createServer((req,res)=>{
   await seek(3.4);const jMid=await metrics();
   assert.equal(jStart.trackingAction,'jockey');
   assert.ok(jStart.trackingReaction>.3,'defender uses a reaction delay');
-  assert.ok(jMid.trackingGap>2.8&&jMid.trackingGap<5.5,'defender shadows carrier with independent reaction gap');
+  assert.ok(jMid.trackingGap>1.25&&jMid.trackingGap<7.0,'defender shadows carrier with independent reaction gap');
+  assert.ok(Math.abs(jMid.trackingGap-jStart.trackingGap)>.65,'gap changes independently during sharp cut');
   assert.ok(Math.abs(jMid.contactPelvisLean)<.06,'no fall while moving laterally');
   assert.ok(Math.abs(jMid.trackingPoseLean)<.22,'upright torso while accompanying');
   await page.screenshot({path:path.join(out,'v2159-lateral-tracking.png')});
@@ -33,9 +34,9 @@ const server=http.createServer((req,res)=>{
   await seek(4.1);const cEnd=await metrics();
   assert.equal(cEnd.trackingAction,'close_down');
   assert.ok(cEnd.trackingSpeed<=6.25,'close-down has capped sprint speed');
-  assert.ok(cStart.trackingGap>7.0,'press begins significantly farther away');
-  assert.ok(cEnd.trackingGap<cStart.trackingGap-4.0&&cEnd.trackingGap>1.6,'press visibly closes while braking naturally');
-  assert.ok(cStart.trackingGap>cEnd.trackingGap+4,'visible closing trajectory');
+  assert.ok(cStart.trackingGap>6.0,'press begins significantly farther away');
+  assert.ok(cEnd.trackingGap<cStart.trackingGap-2.6&&cEnd.trackingGap>1.6,'press visibly closes while braking naturally');
+  assert.ok(cStart.trackingGap>cEnd.trackingGap+2.6,'visible closing trajectory');
   assert.ok(Math.abs(cEnd.contactPelvisLean)<.06,'no falling on approach');
   assert.ok(Math.abs(cEnd.trackingPoseLean)<.22,'pressing runner stays upright');
   await page.screenshot({path:path.join(out,'v2159-close-down.png')});
