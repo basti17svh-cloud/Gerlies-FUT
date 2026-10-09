@@ -6,7 +6,7 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(x)?x:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const pulse=(t,a,b,c,d)=>smooth((t-a)/(b-a))*(1-smooth((t-c)/(d-c)));
 const lerp=(a,b,w)=>a+(b-a)*clamp(w);
-export const CONTACT_MOTION_VERSION='21.55-low-lateral-block';
+export const CONTACT_MOTION_VERSION='21.56-controlled-slide';
 export const SLIDE_CONTACT=3.55,BLOCK_CONTACT=5.74;
 export const isContactDemo=action=>action==='slide_attempt'||action==='block_attempt';
 export function stagedDefenderPosition(action,time,sequence,ballAt,original){
@@ -15,7 +15,9 @@ export function stagedDefenderPosition(action,time,sequence,ballAt,original){
  const slide=action==='slide_attempt',contact=slide?SLIDE_CONTACT:BLOCK_CONTACT;
  const b=ballAt(contact),contactPoint=[b[0]+side*(slide?.40:.32),b[2]+(slide?.36:.28)];
  const start=[contactPoint[0]+side*(slide?3.25:2.3),contactPoint[1]+(slide?2.35:2.65)];
- const arrival=smooth((time-(slide?2.45:4.35))/(slide?1.05:1.20));
+ // Begin the slide run-up earlier and accelerate smoothly; the old compressed
+ // 1.05-second lunge made the defender jerk forward just before falling.
+ const arrival=smooth((time-(slide?2.05:4.35))/(slide?1.50:1.20));
  // A genuine slide does not stop moving as soon as the leading boot arrives.
  // Carry the defender across the tackle lane while the torso is on the grass.
  const glide=slide?smooth((time-SLIDE_CONTACT)/.72):0;
@@ -37,10 +39,11 @@ export function stagedBallPosition(action,time,sequence,ballAt){
 export function contactStage(action,time){
  const slide=action==='slide_attempt';
  if(slide)return{kind:'slide',
-  plant:pulse(time,2.80,3.03,3.20,3.38),
-  flight:pulse(time,3.12,3.39,3.89,4.23),
-  hold:pulse(time,3.26,3.49,3.93,4.30),
-  recover:pulse(time,4.09,4.38,4.65,4.90)};
+  approach:pulse(time,2.05,2.28,2.73,2.98),
+  plant:pulse(time,2.78,3.02,3.19,3.40),
+  flight:pulse(time,3.13,3.40,3.91,4.26),
+  hold:pulse(time,3.26,3.49,3.94,4.33),
+  recover:pulse(time,4.10,4.39,4.65,4.93)};
  if(action==='block_attempt')return{kind:'block',
   // Load the support leg, extend during contact, then settle naturally.
   brace:pulse(time,4.90,5.18,5.42,5.65),
@@ -54,6 +57,32 @@ export function applyContactStage(p,action,time,preview=false,near=1){
   // One planted foot, a decisive take-off, extended leading leg, sliding torso,
   // then hand-braced recovery. Root only follows its already-defined path.
   const a=m.plant*w,f=m.flight*w,h=m.hold*w,r=m.recover*w;
+  if(preview){
+   // One coherent movement for the demonstration's active tackler. Start
+   // from the ordinary locomotion rig; do not pile feint, jockey and mocap
+   // signals over the same knees and torso. The approach remains upright,
+   // then the planted leg lowers the hips and the full slide follows.
+   const blend=clamp(Math.max(a,f,h,r));
+   const target=(joint,axis,value)=>{const base=Number(joint.rotation[axis])||0;
+    joint.rotation[axis]=lerp(base,value,blend)};
+   target(p.rig,'x',-1.32*h);
+   target(p.rig,'z',.035*f);
+   p.rig.position.y=lerp(p.rig.position.y,-.075*a-.17*h-.055*r,blend);
+   target(p.upper,'x',-.095*a-.06*h+.10*r);
+   target(p.upper,'y',0);
+   target(p.upper,'z',.025*h);
+   target(p.legs[0],'x',.25*a-.65*h-.14*r);
+   target(p.knees[0],'x',-.55*a-.68*h-.42*r);
+   target(p.ankles[0],'x',.10*a);
+   target(p.legs[1],'x',1.79*f+.13*h-.11*r);
+   target(p.knees[1],'x',-.12*a+.08*f-.24*r);
+   target(p.ankles[1],'x',-.18*f);
+   target(p.arms[0],'x',-.19*h+.16*r);
+   target(p.arms[1],'x',-.16*h-.08*r);
+   target(p.arms[0],'z',-.18*a-.32*f-.15*h-.08*r);
+   target(p.arms[1],'z',.18*a+.32*f+.15*h+.08*r);
+   return{...m,torsoTilt:-1.32*h,extension:1.79*f+.13*h};
+  }
   p.rig.position.y-=.09*a+.17*h;
   p.rig.rotation.x-=1.32*h;
   p.rig.rotation.z+=.08*f;
