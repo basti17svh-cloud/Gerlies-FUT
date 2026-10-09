@@ -96,19 +96,36 @@ const out=path.join(__dirname,'../test-artifacts');
    const canvas=document.createElement('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(1);
    for(const weak of [true,false])for(const period of [1,2,3,4]){
     const event=FooteraHighlights.snapshot({id:'qa',type:'big_chance_saved',playerName:'Jamal Musiala',keeperName:'Mike Maignan',team:'home',period});
-    const world=M.makeScene(renderer,event,weak);world.resize(390,300);
+    const world=M.makeScene(renderer,event,weak,false,false,true);world.resize(390,300);
     for(const time of [0,2,4.8,5.4,6.65,8.5]){world.update(time);rows.push({scenario:'baseline',weak,period,time,...world.inspect()})}world.dispose();
    }
    for(const sequence of M.PLAY_SEQUENCES){
     const event=FooteraHighlights.snapshot({id:'seq-'+sequence,type:'goal',playerName:'Jamal Musiala',team:'home',period:1,sequence});
-    const world=M.makeScene(renderer,event,false,false,true);world.resize(390,300);
+    const world=M.makeScene(renderer,event,false,false,true,true);world.resize(390,300);
     for(const time of [2.7,4.0,4.3,4.65,5.1,5.35]){world.update(time);rows.push({scenario:'sequence',weak:false,period:1,time,...world.inspect()})}world.dispose();
    }
    for(const [sequence,finish] of [['near_post_left','header'],['far_post_right','header'],['volley_left','volley'],['inside_right','finesse'],['power_drive','power'],['low_driven_duel','low_driven'],['bicycle','bicycle']]){
      const event=FooteraHighlights.snapshot({id:'finish-'+sequence,type:'goal',playerName:'Jamal Musiala',team:'home',period:1,sequence,finish});
-     const world=M.makeScene(renderer,event,false,false,true);world.resize(390,300);
+     const world=M.makeScene(renderer,event,false,false,true,true);world.resize(390,300);
      for(const time of [4.35,5.35,6.15,6.65]){world.update(time);rows.push({scenario:'finish',weak:false,period:1,time,...world.inspect()})}world.dispose();
     }
+    // Extensive camera/keeper route regressions use the unchanged procedural
+    // baselines. One explicit production GLB squad proves the *full* clone path.
+    await M.prepareFooteraPlayerModel();
+    const kitEvent=FooteraHighlights.snapshot({id:'full-quaternius',type:'goal',playerName:'Jamal Musiala',
+      keeperName:'Mike Maignan',team:'home',period:1,sequence:'cut_inside_right',
+      homeColor:'#126647',homeSecondary:'#e2bd55',homePattern:'reverse',homeShorts:'#14252a',homeSocks:'#e2bd55',
+      awayColor:'#ededf0',awaySecondary:'#8c324c',awayPattern:'fade',awayShorts:'#182234',awaySocks:'#e7e7e7',
+      homeKitConfigured:true,awayKitConfigured:true});
+    const squad=M.makeScene(renderer,kitEvent,false,false,true,false,true,true,'quaternius');
+    squad.resize(390,300);squad.update(3.12);
+    const diagnostic=squad.inspect();
+    if(diagnostic.importedSquadCount!==16||!diagnostic.importedKeeper)
+     throw Error('Whole Quaternius squad not mounted: '+JSON.stringify(diagnostic));
+    if(diagnostic.kickoffKitSnapshot.home.pattern!=='reverse'||diagnostic.kickoffKitSnapshot.away.pattern!=='fade')
+     throw Error('The chosen kickoff shirt patterns were not retained');
+    rows.push({scenario:'glb',weak:false,period:1,time:3.12,sequence:'cut_inside_right',...diagnostic});
+    squad.dispose();
     renderer.dispose();renderer.forceContextLoss();Math.random=originalRandom;if(randomCalls)throw Error('Renderer consumed simulation RNG: '+randomCalls);return rows;
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
