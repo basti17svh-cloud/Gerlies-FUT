@@ -110,7 +110,7 @@ export function footballerKitColorAt(nx,ny,nz,kit={},hair=0){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius'){
+export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null){
  const asset=variant==='makehuman'?sourceMakeHuman:source;
  if(!asset)return null;
  const makehuman=variant==='makehuman';
@@ -141,7 +141,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.updateMatrixWorld(true);
  // Shared textile-detail textures stay off on LOW mobile devices.
  const surfaceMaps=detail?createFooteraSurfaceMaps(THREE):null;
- const colorsByMesh=[];
+ const colorsByMesh=[],kitAtlas=existingDriver.skinned?.atlasTexture||fallbackAtlas;
  for(const mesh of meshes){
   const sourceGeometry=mesh.geometry,sourceMaterial=mesh.material;
   const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
@@ -167,7 +167,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const longitude=((Math.atan2(nx,nz)/(Math.PI*2))%1+1)%1;
    const vertical=slot===0?clamp((ny-.557)/.306):slot===1?clamp((ny-.445)/.112):slot===3?clamp((ny-.056)/.254):.5;
    uv[i*2]=(slot+.015+longitude*.97)/5;uv[i*2+1]=vertical;
-   if(existingDriver.skinned?.atlasTexture)c=new THREE.Color('#ffffff');
+   if(kitAtlas)c=new THREE.Color('#ffffff');
    // Eyebrows/eyes used to receive exactly the skin colour, erasing the face.
    // Their existing meshes use an untextured facial material below.
    if(brow)c.set('#30241e');
@@ -214,7 +214,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   geometry.setAttribute('uv',uvAttr);
   if(surfaceMaps&&isBody)geometry.setAttribute('uv2',uvAttr);
   const kitMaterial=new THREE.MeshStandardMaterial({vertexColors:true,
-   map:/eye/i.test(mesh.name)?null:existingDriver.skinned?.atlasTexture||null,
+   map:/eye/i.test(mesh.name)?null:kitAtlas,
    roughnessMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
    aoMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,aoMapIntensity:.64,
    normalMap:surfaceMaps&&isBody?surfaceMaps.normalMap:null,

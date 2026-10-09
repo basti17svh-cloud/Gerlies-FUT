@@ -54,7 +54,9 @@ const server=http.createServer((req,res)=>{
    const finish=main.inspect();
    main.dispose();renderer.dispose();
    return{loaded,capture,footwork:{run:contextRun.groundedFootwork,kick:contextKick.groundedFootwork},context:{run:{enabled:contextRun.capturedMotionEnabled,participants:contextRun.capturedContext},kick:contextKick.capturedContext},motion:{frames,repeated},detail:{imported:detail.importedFootballer,pbr:detail.importedPbr,vertices:detail.importedVertices,bones:detail.importedBones,
-     drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
+     drawCalls:detail.drawCalls,squad:detail.importedSquadCount,keeper:detail.importedKeeper,
+     home:detail.importedHomeCount,away:detail.importedAwayCount,
+     kits:detail.kickoffKitSnapshot,quality:detail.quality,cameraDistance:detail.cameraDistance,
      visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,pbr:low.importedPbr,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
   });
@@ -76,7 +78,12 @@ const server=http.createServer((req,res)=>{
   assert.equal(result.low.imported,true,'LOW tier uses imported humanoid when GLB is available');
   assert.equal(result.low.quality,'low','LOW rendering quality remains reduced');
   assert.equal(result.fallback.imported,false,'explicit baseline keeps the legacy model');
-  assert.ok(result.detail.drawCalls<125,'one imported foreground player stays in mobile draw call budget');
+  assert.equal(result.detail.squad,16,'all 16 visible outfield players use Quaternius');
+  assert.equal(result.detail.keeper,true,'goalkeeper uses Quaternius');
+  assert.ok(result.detail.home>0&&result.detail.away>0,'both clubs rendered');
+  assert.equal(result.detail.kits.home.pattern,'diagonal');
+  assert.equal(result.detail.kits.away.pattern,'halves');
+  assert.ok(result.detail.drawCalls<240,'17 GLB actors remain in mobile draw-call budget');
   assert.equal(result.finish.imported,true);
   assert.deepEqual(result.motion.frames[1],result.motion.repeated,'GLB pose is identical after seek');
   assert.ok(result.motion.frames[1].cut>.1,'visible cut includes GLB body weight shift');

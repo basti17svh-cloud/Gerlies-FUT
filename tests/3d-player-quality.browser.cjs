@@ -74,7 +74,7 @@ const server=http.createServer((req,res)=>{
     fs.writeFileSync(path.join(frames,String(n).padStart(4,'0')+'.png'),Buffer.from(frame.png,'base64'));
    }
   }
-  assert.deepEqual(errors,[]);assert.ok(evidence.every(e=>e.motion&&e.drawCalls<125));
+  assert.deepEqual(errors,[]);assert.ok(evidence.every(e=>e.motion&&e.drawCalls<240));
   assert.ok(evidence.some(e=>e.time<4.6&&e.motion.capturedWeight>.1),'production clip layer is active before the shot');
   assert.ok(evidence.filter(e=>e.time===5.4).every(e=>e.motion.capturedWeight===0),'shot contact stays authoritative');
   assert.ok(evidence.filter(e=>e.time===1.55).every(e=>e.capturedMotionEnabled&&e.context.indices.length===2),'lead and two supporting players have deterministic CC0 coverage');

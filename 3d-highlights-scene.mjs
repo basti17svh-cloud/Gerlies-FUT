@@ -3,7 +3,7 @@ import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlaye
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel};
-import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
+import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
@@ -860,21 +860,63 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
    false,detailedActors.has(i),squadNumbers[i],i===0));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,1,true);
-  // The first imported humanoid replaces only the scorer. Existing animations
-  // remain the movement authority; LOW still has its reduced crowd and actor tier.
-  let importedPlayer=null;
+  // Use a single CC0 source and one skeleton clone for EACH visible player.
+  // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
+  const allQuaternius=allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
+  const importedPlayers=new Array(players.length).fill(null);
+  let importedPlayer=null,importedKeeper=null;
+  const fallbackKitAtlases=new Map();
+  function lowKitAtlas(kit){
+   const key=JSON.stringify(kit);
+   if(!fallbackKitAtlases.has(key)){
+    const atlas=createFootballKitAtlas(THREE,[shirtMaterial(kit),
+     mat(kit.shorts,{roughness:.96}),mat('#bd8c70'),
+     mat(kit.socks,{roughness:1}),mat(kit.shirt,{roughness:.92})],8);
+    track(atlas.texture);track(atlas.material);fallbackKitAtlases.set(key,atlas.texture);
+   }
+   return fallbackKitAtlases.get(key);
+  }
+  function hideOriginal(actor,retainGloves=false){
+   if(actor.skinned)actor.skinned.model.visible=false;
+   for(const batch of batches.values())for(const node of batch.nodes){
+    if(node===actor.shadow||(retainGloves&&actor.gloves.includes(node)))continue;
+    for(let parent=node;parent;parent=parent.parent)
+     if(parent===actor.root){node.userData.hideForFooteraPrototype=true;break}
+   }
+  }
   if(allowImported&&!baselineRig&&(modelVariant==='makehuman'?isFooteraMakeHumanModelReady():isFooteraPlayerModelReady())){
+   const staged=[];
    try{
-    importedPlayer=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName,!weak,modelVariant);
-    if(importedPlayer){
-     players[0].skinned.model.visible=false;
-     for(const batch of batches.values())for(const node of batch.nodes){
-      if(node===players[0].shadow)continue;
-      for(let parent=node;parent;parent=parent.parent)
-       if(parent===players[0].root){node.userData.hideForFooteraPrototype=true;break}
+    if(allQuaternius){
+     for(let i=0;i<players.length;i++){
+      const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
+      const name=i===0?event.playerName:'footballer '+i;
+      const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
+       'quaternius',actor.skinned?null:lowKitAtlas(kit));
+      if(!glb)throw new Error('GLB unavailable on field player '+i);
+      importedPlayers[i]=glb;staged.push(glb);
      }
+     const keeperKit={shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper};
+     importedKeeper=mountFooteraPlayerModel(keeper.root,keeper,keeperKit,event.keeperName||'Goalkeeper',
+      !weak,'quaternius');
+     if(!importedKeeper)throw new Error('GLB unavailable on goalkeeper');
+     staged.push(importedKeeper);
+     players.forEach(p=>hideOriginal(p));
+     hideOriginal(keeper,true); // preserve existing glove contact meshes
+    }else{
+     const glb=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName,!weak,modelVariant);
+     if(!glb)throw new Error('Diagnostic GLB unavailable');
+     importedPlayers[0]=glb;staged.push(glb);hideOriginal(players[0]);
     }
-   }catch(error){console.warn('Footera humanoid fallback:',error);importedPlayer?.dispose();importedPlayer=null}
+    importedPlayer=importedPlayers[0];
+   }catch(error){
+    console.warn('Footera GLB squad fallback:',error);
+    for(const glb of staged)glb.dispose();
+    importedPlayers.fill(null);importedKeeper=null;importedPlayer=null;
+    for(const actor of [...players,keeper])if(actor.skinned)actor.skinned.model.visible=true;
+    for(const batch of batches.values())for(const node of batch.nodes)
+     delete node.userData.hideForFooteraPrototype;
+   }
   }
   // Motion 2.2 shapes first touch, mirrored cuts and finesse preparation.
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
@@ -1002,6 +1044,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
+  const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
+  const keeperMotionFrame={...importedMotionFrame};
   // Two existing skinned actors can share the verified CC0 sampler without
   // cloning heavy GLB geometry. LOW permits just one additional participant.
   // These parts are purely cosmetic: no root translation, gait/IK or ball touch.
@@ -1031,6 +1075,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const singleTrackingMotion=pilotMotion&&i===defenderIndex&&isTrackingAction(defenderAction);
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
+    const frame=squadMotionFrames[i];
+    frame.speed=speed;frame.turn=turn;frame.acceleration=acceleration;
+    frame.control=controlWeight;frame.stride=stride;
     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
      importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
      importedMotionFrame.stride=stride}
@@ -1258,6 +1305,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    importedPlayer?.animate(time,importedMotionFrame);
+   for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
+   importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
    if(labFocusedPreview){
@@ -1280,7 +1329,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function reduceQuality(soft=false){if(!soft)renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*(soft?.82:.62)),dynamicCount=Math.floor(crowdDynamic.specs.length*(soft?.64:.46)),flags=Math.max(2,Math.floor(flagSpecs.length*(soft?.82:.6)));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flags;flagCloth.count=flags*flagSegments;if(!soft)supporterBanners.forEach(x=>x.visible=false);fill.intensity=soft?.48:.12}
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){
-   importedPlayer?.dispose();
+   for(const glb of importedPlayers)glb?.dispose();
+   importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
     actor.skeletonMotion.mixer.stopAllAction();actor.skeletonMotion.mixer.uncacheRoot(actor.skeletonMotion.mixer.getRoot());
    }
@@ -1324,7 +1374,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23:pilotMotion,motion23Phase:motion23Sample?.phase||'inactive',
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
-     playerModelTier:weak?'low-hybrid':'full-squad',
+     playerModelTier:allQuaternius&&importedKeeper?'quaternius-entire-squad':weak?'low-hybrid':'full-squad',
+     importedSquadCount:importedPlayers.filter(Boolean).length,
+     importedKeeper:!!importedKeeper,
+     importedHomeCount:importedPlayers.filter((p,i)=>p&&RUNS[i].team===(event.team==='away'?'defend':'attack')).length,
+     importedAwayCount:importedPlayers.filter((p,i)=>p&&RUNS[i].team===(event.team==='away'?'attack':'defend')).length,
+     kickoffKitSnapshot:{home:{...kits.home},away:{...kits.away},goalkeeper:kits.keeper},
      importedFootballer:!!importedPlayer,importedVariant:importedPlayer?.variant||'legacy',importedPbr:!!importedPlayer?.surfaceDetail,
      importedVertices:importedPlayer?.vertexCount||0,
      importedBones:importedPlayer?.boneCount||0,
