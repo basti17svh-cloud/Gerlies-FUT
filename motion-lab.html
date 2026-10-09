@@ -52,7 +52,7 @@ import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2148';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
 const state={mode:'current',sequence:'cut_inside_right',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
-const sequences={cut_inside_right:'finesse',cut_inside_left:'finesse',double_feint_right:'finesse',dribble:'normal',through_ball:'normal'};
+const sequences={cut_inside_right:'finesse',cut_inside_left:'finesse',double_feint_right:'finesse',double_feint_left:'finesse',dribble:'normal',through_ball:'normal'};
 const event=()=>({id:'footera-motion-test',type:'goal',team:'home',period:1,minute:38,attackDirection:1,
  playerName:'Footera Angreifer',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',defenderIndex:10,
  defenderAction:'jockey',keeperAction:'classic',sequence:state.sequence,finish:sequences[state.sequence]||'normal',
