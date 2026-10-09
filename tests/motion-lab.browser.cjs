@@ -42,6 +42,21 @@ const server=http.createServer((req,res)=>{
    const layout=await page.evaluate(()=>({body:document.documentElement.scrollWidth,viewport:innerWidth,canvas:document.querySelector('canvas').getBoundingClientRect().width}));
    assert.ok(layout.body<=width+1&&layout.canvas>width*.7,'no horizontal clip at '+width+': '+JSON.stringify(layout));
   }
+  // One-tap controls must work on an actual mobile viewport and keep the
+  // isolated preview outcome separate from match simulation.
+  await page.locator('#test-slide').click();
+  const slide=await page.evaluate(()=>window.__footeraMotionLab.getState());
+  assert.equal(slide.mode,'pilot');
+  assert.equal(slide.defense,'slide_attempt');
+  await seek(4.22);
+  assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
+  await page.locator('#test-block').click();
+  const block=await page.evaluate(()=>window.__footeraMotionLab.getState());
+  assert.equal(block.mode,'pilot');
+  assert.equal(block.defense,'block_attempt');
+  await seek(6.55);
+  assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
+  assert.ok(await page.locator('#outcome').isVisible(),'result appears for both quick previews');
   assert.deepEqual(errors,[],'no browser errors');
   console.log('PASS Motion Lab: distinct striker/defender poses, same shot, 360/390/412px, reference + pilot screenshots');
   await page.close();
