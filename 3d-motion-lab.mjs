@@ -7,7 +7,7 @@ const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const blend=(a,b,w)=>a+(b-a)*clamp(w);
 const rise=(t,a,b)=>smooth((t-a)/(b-a));
 const pulse=(t,a,b,c,d)=>rise(t,a,b)*(1-rise(t,c,d));
-export const MOTION_LAB_VERSION='21.43-football-actions';
+export const MOTION_LAB_VERSION='21.57-single-run-controller';
 export const MOTION_LAB_SHOT_TIME=5.4;
 
 // All signals depend on the absolute highlight clock: a paused or scrubbed
@@ -24,13 +24,13 @@ export function sampleLabMotion(role,time,sequence='cut_inside_right',speed=.5,t
  const brace=role==='defender'?pulse(t,3.08,3.48,4.22,4.77)*smooth((15-clamp(ballDistance,0,99))/12):0;
  const strike=role==='attacker'?1-rise(t,4.72,4.96)+rise(t,6.05,6.34):1;
  const brake=clamp(-acceleration),burst=clamp(acceleration);
- const pace=blend(.47,1.04,smooth(v/.75));
+ const pace=blend(.34,.62,smooth(v/.75));
  const cycle=Math.sin(stride),opposite=Math.sin(stride+Math.PI),counter=Math.cos(stride);
  // Support stays loaded and trailing leg lifts; arms counter-rotate naturally.
  const hips=[cycle*pace*moving,opposite*pace*moving];
  const knees=[-.10-moving*(.16+.53*Math.max(0,-cycle)),-.10-moving*(.16+.53*Math.max(0,-opposite))];
  const ankles=[-.045+moving*.17*Math.max(0,-cycle),-.045+moving*.17*Math.max(0,-opposite)];
- const arms=[-.63*cycle*moving+.10*counter*moving,.63*cycle*moving-.10*counter*moving];
+ const arms=[-.42*cycle*moving+.06*counter*moving,.42*cycle*moving-.06*counter*moving];
  const spread=[-.17-.11*moving,.17+.11*moving];
  const outside=side>0?1:0,inside=1-outside;
  if(role==='support'||role==='provider'){
@@ -42,7 +42,7 @@ export function sampleLabMotion(role,time,sequence='cut_inside_right',speed=.5,t
   hips[1]-=.29*delivery; knees[0]-=.25*delivery;
   arms[0]-=.23*delivery;arms[1]+=.28*delivery;
   return{role,time:t,side,moving,phase:delivery>.35?'prepare-pass':receive>.35?'receive':v<.16?'settle':'run',
-   hips,knees,ankles,arms,spread,
+   hips,knees,ankles,arms,spread,legAction:delivery,
    lean:-.10*moving-.14*delivery-.055*burst+.09*brake,
    yaw:side*.14*delivery+clamp(turn*1.25,-.14,.14)+.045*counter*moving,
    bank:clamp(turn*1.4,-.18,.18)+side*.13*delivery,
@@ -60,7 +60,7 @@ export function sampleLabMotion(role,time,sequence='cut_inside_right',speed=.5,t
   arms[outside]-=side*(.47*load-.16*push);
   arms[inside]+=side*(.38*load+.22*push);
   return{role,time:t,side,moving,phase:check>.36?'feint':load>.40?'plant':push>.36?'accelerate':v<.16?'settle':'run',
-   hips,knees,ankles,arms,spread,
+   hips,knees,ankles,arms,spread,legAction:clamp(Math.max(load,push,check)),
    lean:-.095*moving-.21*load-.16*push+.08*brake,
    yaw:side*(-.32*load+.43*push+.21*check)+clamp(turn*1.4,-.12,.12),
    bank:side*(.37*load-.26*push-.31*check),
@@ -77,7 +77,7 @@ export function sampleLabMotion(role,time,sequence='cut_inside_right',speed=.5,t
  spread[0]-=.26*load;spread[1]+=.26*load;
  arms[0]+=.26*load;arms[1]-=.22*load;
  return{role,time:t,side,moving,phase:load>.35?'jockey':defend>.35?'track':v<.16?'set':'run',
-  hips,knees,ankles,arms,spread,
+  hips,knees,ankles,arms,spread,legAction:load,
   lean:-.07*moving-.21*load-.08*defend,
   yaw:-side*.21*load+clamp(turn*1.2,-.13,.13),
   bank:-side*.16*load,
@@ -93,10 +93,17 @@ export function applyLabMotion(p,role,time,sequence,speed,turn,stride,accelerati
  // Complete authored pose instead of piling on top of old gait + mocap.
  set(p.upper,'x',m.lean);set(p.upper,'y',m.yaw);set(p.upper,'z',m.bank);
  set(p.rig,'z',m.bank*.40);set(p.rig,'y',m.pelvisYaw);
- p.rig.position.y=blend(p.rig.position.y,-m.crouch+.018*Math.cos(stride*2)*m.moving,w);
+ // The distance-phased planted-foot IK already owns ordinary running legs.
+ // Only deliberately authored turns, passes and defensive loads may override
+ // them; never replace every sprint frame with a second sine-wave gait.
+ const actionWeight=w*clamp(m.legAction||0)*.84;
+ if(actionWeight>.001)p.rig.position.y-=m.crouch*actionWeight;
  for(let i=0;i<2;i++){
-  set(p.legs[i],'x',m.hips[i]);set(p.legs[i],'z',(i?1:-1)*(.038+.08*m.crouch));
-  set(p.knees[i],'x',m.knees[i]);set(p.ankles[i],'x',m.ankles[i]);
+  if(actionWeight>.001){
+   const target=(joint,axis,value)=>{joint.rotation[axis]=blend(joint.rotation[axis],value,actionWeight)};
+   target(p.legs[i],'x',m.hips[i]);target(p.legs[i],'z',(i?1:-1)*(.038+.08*m.crouch));
+   target(p.knees[i],'x',m.knees[i]);target(p.ankles[i],'x',m.ankles[i]);
+  }
   set(p.arms[i],'x',m.arms[i]);set(p.arms[i],'z',m.spread[i]);
   set(p.elbows[i],'x',.62+.22*m.moving);
  }
