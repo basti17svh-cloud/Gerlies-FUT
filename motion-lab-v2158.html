@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Footera V21.58 – Verteidiger begleiten und anlaufen</title><meta name="theme-color" content="#071314">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#071314;color:#edf7ef}
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:linear-gradient(160deg,#122c2a,#071314 42%);padding:0 0 28px}
+main{max-width:840px;margin:0 auto;padding:14px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+h1{font-size:20px;letter-spacing:.3px;margin:0}h1 span{color:#6eff91}
+.subtitle{font-size:12px;color:#aabbb4;margin:4px 0 0}.tag{font-size:10px;color:#94f4ab;border:1px solid #568b65;padding:6px 8px;border-radius:6px;letter-spacing:1px;font-weight:800}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.quickchecks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.quickchecks button{background:#18332b;border-color:#62876d}
+button,select{border:1px solid #3a5450;border-radius:10px;min-height:46px;color:#fff;background:#142522;font:700 14px system-ui;padding:10px;touch-action:manipulation}
+button.active{color:#061710;background:#86f6a2;border-color:#a6ffbd}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #b9ffc2;outline-offset:2px}
+select{width:100%;grid-column:span 2}
+.stage{position:relative;border:1px solid #426459;border-radius:14px;overflow:hidden;background:#142022;height:clamp(340px,92vw,560px)}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.corner{position:absolute;left:10px;top:10px;padding:6px 8px;background:#071414d9;border:1px solid #ffffff30;border-radius:6px;font-size:11px;font-weight:800;pointer-events:none}
+.corner strong{color:#8cffad}
+#tracking-state{display:none;position:absolute;bottom:12px;left:12px;right:12px;text-align:center;padding:9px;background:#071813e8;border:1px solid #76ed99;border-radius:8px;color:#edfff0;font-size:11px;font-weight:850;letter-spacing:.5px;pointer-events:none}
+#outcome{display:none;position:absolute;left:12px;right:12px;bottom:12px;text-align:center;background:#071813e8;border:1px solid #76ed99;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:900;letter-spacing:.7px;pointer-events:none}
+#error{display:none;position:absolute;inset:15%;align-items:center;text-align:center;background:#121c20e8;padding:18px;border-radius:12px;font-size:13px}
+.transport{display:flex;align-items:center;gap:9px;margin-top:12px}
+#toggle{width:100px;flex:0 0 100px}
+#time{width:100%;accent-color:#78ed90;min-height:42px}
+#clock{font:800 13px/1 monospace;width:44px;text-align:right}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.stats>div{background:#132521;border:1px solid #344841;padding:10px 5px;text-align:center;border-radius:8px}
+.stats b{display:block;font-size:17px}.stats small{display:block;font-size:10px;color:#a5bcb0}
+.note{font-size:12px;line-height:1.5;color:#adbbb2;border-top:1px solid #31433d;padding-top:10px;margin:13px 0 0}
+a{color:#adffc2}
+@media(max-width:420px){main{padding:10px}.stage{height:clamp(340px,105vw,455px)}h1{font-size:18px}.tag{font-size:9px}}
+</style></head><body><main>
+<header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Eigenes Begleiten und Anlaufen · saubere Schritte statt Stolpern · Grätsche bleibt · V21.58</p></div><div class="tag" id="build-tag">MOTION VERSION WIRD GELADEN</div></header>
+<section class="controls" aria-label="Animation vergleichen">
+<button type="button" id="current" class="active" aria-pressed="true">A · Basisbewegung</button>
+<button type="button" id="pilot" aria-pressed="false">B · Optimierter Lauf</button>
+<select id="scene" aria-label="Spielsituation">
+<option value="cut_inside_right">Cut nach innen + Schlenzer</option>
+<option value="cut_inside_left">Cut von links + Schlenzer</option>
+<option value="double_feint_right">Doppel-Finte + Schlenzer</option>
+<option value="double_feint_left">Doppel-Finte von links + Schlenzer</option>
+<option value="dribble">Dribbling · Bremsen + Antritt</option>
+<option value="through_ball">Steilpass · Ballmitnahme + Abschluss</option>
+</select>
+<select id="defense" aria-label="Verteidigeraktion">
+<option value="jockey">Verteidiger · seitlich begleiten</option>
+<option value="close_down">Verteidiger · anlaufen und zustellen</option>
+<option value="block_attempt">Verteidiger · Schuss blocken</option>
+<option value="slide_attempt">Verteidiger · Grätsche</option>
+</select></section>
+<section class="quickchecks" aria-label="Verteidigerbewegungen direkt testen"><button id="test-jockey" type="button">▶ Seitlich begleiten</button><button id="test-close" type="button">▶ Anlaufen</button></section>
+<section class="quickchecks" aria-label="Kontaktaktionen testen"><button id="test-slide" type="button">▶ Grätsche ansehen</button><button id="test-block" type="button">▶ Schussblock ansehen</button></section>
+<div class="stage"><canvas id="picture" aria-label="3D Fußballszene"></canvas>
+<div class="corner" id="corner"><strong>B</strong> · SEITLICH BEGLEITEN</div><div id="tracking-state" class="tracking-state" role="status"></div><div id="outcome" role="status"></div><div id="error" role="alert">Diese Vorschau benötigt WebGL. Falls die Seite schwarz bleibt, bitte in Chrome öffnen und Hardwarebeschleunigung aktivieren.</div></div>
+<div class="transport"><button id="toggle" type="button">Pause</button><input type="range" id="time" min="0" max="10.4" step=".01" value="0" aria-label="Zeitpunkt im Highlight"><output id="clock" for="time">0.0 s</output></div>
+<div class="stats"><div><b id="rigs">–</b><small>3D-Skelettfiguren</small></div><div><b id="draw">–</b><small>Draw Calls</small></div><div><b id="fps">–</b><small>FPS (circa)</small></div></div>
+<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Die Testwege für Begleiten und Anlaufen sind in A und B identisch, unterscheiden sich aber deutlich voneinander. Das ist eine isolierte Grafikprobe ohne Eingriff in die Matchsimulation. Kontaktkorrektur: Bei Grätsche und Schussblock zeigt diese isolierte Motion-Lab-Demonstration eine tatsächliche Ballablenkung und dafür choreografierte Abwehrwege. Beide Varianten A und B haben denselben vorgegebenen Demo-Ausgang, B demonstriert die neue vollständige Kontaktbewegung. Für Grätschen und Blocks nutzt das Labor eine vergrößerte Kamera mit identischer Ansicht in A und B. Im richtigen Match bleibt die TV-Kamera unverändert. Diese Demo ist KEIN simuliertes Footera-Match; echte Treffer, Schussblocks und Ballbesitz bleiben ausschließlich der Matchsimulation vorbehalten.</p>
+</main>
+<script type="module">
+import * as THREE from './vendor/three/three.module.min.js';
+import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2158';
+const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
+const buttons={current:el('current'),pilot:el('pilot')};
+const state={mode:'pilot',sequence:'cut_inside_right',defense:'jockey',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
+el('defense').value='jockey';
+const isDemo=()=>true;
+const maxTime=()=>state.defense==='slide_attempt'?4.85:state.defense==='block_attempt'?7.15:6.35;
+const sequences={cut_inside_right:'finesse',cut_inside_left:'finesse',double_feint_right:'finesse',double_feint_left:'finesse',dribble:'normal',through_ball:'normal'};
+const event=()=>({id:'footera-motion-test',type:'goal',motionDuelPreview:isDemo(),team:'home',period:1,minute:38,attackDirection:1,
+ playerName:'Footera Angreifer',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',defenderIndex:state.sequence.endsWith('_left')?9:10,
+ defenderAction:state.defense,keeperAction:'classic',sequence:state.sequence,finish:sequences[state.sequence]||'normal',
+ homeColor:'#0c7964',homeSecondary:'#f4d184',homePattern:'diagonal',homeShorts:'#103c32',homeSocks:'#f4d184',
+ awayColor:'#e7edf5',awaySecondary:'#a42748',awayPattern:'halves',awayShorts:'#18233b',awaySocks:'#e7edf5'});
+function resize(){if(!state.world)return;const r=canvas.getBoundingClientRect();state.world.resize(Math.max(1,r.width),Math.max(1,r.height))}
+function info(){const d=state.world.inspect();el('build-tag').textContent='ABWEHR V21.58 · GRÄTSCHE '+(d.contactMotionVersion||'');el('rigs').textContent=d.riggedActors;el('draw').textContent=d.drawCalls;return d}
+function build(){
+ if(state.world){state.world.dispose();state.world=null}
+ state.world=makeScene(state.renderer,event(),false,false,true,false,state.mode==='pilot');
+ resize();state.time=Math.min(state.time,maxTime());el('time').max=String(maxTime());state.world.update(state.time);info();
+ buttons.current.classList.toggle('active',state.mode==='current');buttons.pilot.classList.toggle('active',state.mode==='pilot');
+ buttons.current.setAttribute('aria-pressed',String(state.mode==='current'));buttons.pilot.setAttribute('aria-pressed',String(state.mode==='pilot'));
+ el('corner').innerHTML=state.mode==='pilot'?(state.defense==='slide_attempt'?'<strong>B</strong> · KONTROLLIERTE GRÄTSCHE':state.defense==='block_attempt'?'<strong>B</strong> · SCHUSSBLOCK':state.defense==='close_down'?'<strong>B</strong> · ANLAUFEN + ABSTAND SCHLIESSEN':'<strong>B</strong> · SEITLICH BEGLEITEN'):'<strong>A</strong> · BASIS';
+}
+function update(){
+ state.world.update(state.time);el('time').value=String(state.time);el('clock').textContent=state.time.toFixed(1)+' s';
+ const outcome=el('outcome'),impact=state.defense==='slide_attempt'?3.55:state.defense==='block_attempt'?5.74:Infinity;
+ const track=el('tracking-state');const metric=state.world.inspect();
+ track.style.display=state.mode==='pilot'&&(state.defense==='jockey'||state.defense==='close_down')?'block':'none';
+ track.textContent=state.defense==='jockey'?'SEITLICH BEGLEITEN · AM GEGNER BLEIBEN':'ANLAUFEN · ABSTAND '+metric.trackingGap.toFixed(1)+' m';
+ outcome.style.display=state.time>impact+.20?'block':'none';
+ outcome.textContent=state.defense==='slide_attempt'?'GRÄTSCHE · BALL WEGGESPITZELT':'SCHUSS GEBLOCKT · BALL ABGELENKT';
+}
+function choose(mode){if(mode===state.mode)return;state.mode=mode;build()}
+function showDefense(action){state.mode='pilot';state.defense=action;el('defense').value=action;state.time=0;state.playing=true;el('toggle').textContent='Pause';build();update()}
+el('test-jockey').onclick=()=>showDefense('jockey');
+el('test-close').onclick=()=>showDefense('close_down');
+el('test-slide').onclick=()=>showDefense('slide_attempt');
+el('test-block').onclick=()=>showDefense('block_attempt');
+buttons.current.onclick=()=>choose('current');buttons.pilot.onclick=()=>choose('pilot');
+el('scene').onchange=()=>{state.sequence=el('scene').value;state.time=0;build();update()};
+el('defense').onchange=()=>{state.defense=el('defense').value;state.time=0;build();update()};
+el('toggle').onclick=()=>{state.playing=!state.playing;el('toggle').textContent=state.playing?'Pause':'Abspielen'};
+el('time').oninput=()=>{state.playing=false;el('toggle').textContent='Abspielen';state.time=Number(el('time').value);update();info()};
+window.__footeraMotionLab={getState:()=>({mode:state.mode,time:state.time,sequence:state.sequence,defense:state.defense,metrics:state.world?.inspect()}),choose};
+try{
+ const memory=navigator.deviceMemory||8,weak=memory<=4;
+ state.renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
+ state.renderer.outputColorSpace=THREE.SRGBColorSpace;state.renderer.toneMapping=THREE.ACESFilmicToneMapping;
+ state.renderer.toneMappingExposure=1;state.renderer.setPixelRatio(Math.min(devicePixelRatio||1,weak?1.15:1.65));
+ state.renderer.shadowMap.enabled=!weak;state.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ build();update();new ResizeObserver(resize).observe(stage);
+ function frame(now){
+  const delta=state.last?Math.min(.055,(now-state.last)/1000):0;state.last=now;
+  if(state.playing){state.time+=delta;if(state.time>maxTime())state.time=0;update()}
+  if(now-state.lastFps>1000){el('fps').textContent=Math.round(state.frames*1000/(now-state.lastFps));state.frames=0;state.lastFps=now;info()}
+  state.frames++;requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+ canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();state.playing=false;el('error').style.display='flex'});
+ document.addEventListener('visibilitychange',()=>{state.last=0});
+}catch(err){console.error('Motion Lab WebGL error',err);el('error').style.display='flex';el('error').textContent='WebGL-Vorschau konnte nicht gestartet werden: '+String(err?.message||err)}
+</script></body></html>
