@@ -1,4 +1,4 @@
-name: Footera MakeHuman Real Matchday A/B
+name: Footera MakeHuman Experimental Diagnostic
 on:
   push:
     paths:
@@ -11,7 +11,7 @@ on:
       - 'assets/footera/models/makehuman-male.glb'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   real-player:
     runs-on: ubuntu-latest
@@ -33,23 +33,9 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-model-ab/node_modules
         run: node tests/makehuman-comparison.browser.cjs
-      - name: Publish the ACTUAL renderer screenshot; only on passing test
-        if: success()
-        run: |
-          test -s test-artifacts/makehuman-ab/makehuman-ab-390.png
-          mkdir -p qa
-          cp test-artifacts/makehuman-ab/makehuman-ab-390.png qa/makehuman-game-ab-390.png
-          git config user.name "Footera Render Evidence"
-          git config user.email "footera-qa@users.noreply.github.com"
-          git add qa/makehuman-game-ab-390.png
-          git diff --cached --quiet && exit 0
-          git commit -m "Footera: publish genuine MakeHuman in-game before/after screenshot"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: footera-makehuman-real-game-screens
+          name: footera-makehuman-quarantined-screens
           path: test-artifacts/makehuman-ab/
           if-no-files-found: warn
