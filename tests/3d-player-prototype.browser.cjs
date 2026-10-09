@@ -39,16 +39,18 @@ const server=http.createServer((req,res)=>{
    const main=makeScene(renderer,event,false,false,true,false,true);
    main.resize(390,300);main.update(2.75);
    const detail=main.inspect(),capture=canvas.toDataURL('image/png').split(',')[1];
-   const fallback=makeScene(renderer,event,true,false,false,false,false);
+   const lowScene=makeScene(renderer,event,true,false,false,false,false);
+   lowScene.resize(390,300);lowScene.update(2.75);
+   const low=lowScene.inspect();lowScene.dispose();
+   const fallback=makeScene(renderer,event,true,false,false,true,false);
    fallback.resize(390,300);fallback.update(2.75);
-   const low=fallback.inspect();
-   fallback.dispose();
+   const legacy=fallback.inspect();fallback.dispose();
    main.update(5.4);
    const finish=main.inspect();
    main.dispose();renderer.dispose();
    return{loaded,capture,detail:{imported:detail.importedFootballer,vertices:detail.importedVertices,bones:detail.importedBones,
      drawCalls:detail.drawCalls,quality:detail.quality,cameraDistance:detail.cameraDistance,
-     visiblePlayers:detail.visibleFieldPlayers},fallback:{imported:low.importedFootballer,quality:low.quality},
+     visiblePlayers:detail.visibleFieldPlayers},low:{imported:low.importedFootballer,quality:low.quality},fallback:{imported:legacy.importedFootballer,quality:legacy.quality},
      finish:{imported:finish.importedFootballer,triangles:finish.triangles,drawCalls:finish.drawCalls}};
   });
   fs.writeFileSync(path.join(out,'footera-imported-humanoid-390.png'),Buffer.from(result.capture,'base64'));
@@ -58,7 +60,9 @@ const server=http.createServer((req,res)=>{
   assert.equal(result.detail.imported,true,'real GLB deployed in production makeScene striker');
   assert.ok(result.detail.vertices>=3000,'real authored 3D humanoid vertices');
   assert.ok(result.detail.bones>=45,'full articulated humanoid skeleton');
-  assert.equal(result.fallback.imported,false,'weak mobile keeps legacy model');
+  assert.equal(result.low.imported,true,'LOW tier uses imported humanoid when GLB is available');
+  assert.equal(result.low.quality,'low','LOW rendering quality remains reduced');
+  assert.equal(result.fallback.imported,false,'explicit baseline keeps the legacy model');
   assert.ok(result.detail.drawCalls<125,'one imported foreground player stays in mobile draw call budget');
   assert.equal(result.finish.imported,true);
   assert.ok(result.finish.triangles>2000);

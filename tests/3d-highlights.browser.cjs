@@ -61,7 +61,7 @@ if(require.main===module)(async()=>{
      source:el.closest('.fh3d').dataset.playerModel};
    });
    check(`${width}: GLB/legacy status shown without a URL parameter and not clipped`,
-    modelBadge.visible&&modelBadge.text==='ALT · LOW'&&modelBadge.source==='legacy');
+    modelBadge.visible&&modelBadge.text==='GLB AKTIV'&&modelBadge.source==='glb');
    check(`${width}: weak mobile hardware keeps the low-quality safety tier`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
    check(`${width}: goal counted exactly once`,before.goals===1&&before.score[0]===1&&before.shots===1);
    check(`${width}: simulation owns 1:0 but visible score stays 0:0 before impact`,await page.evaluate(()=>match.home===1&&match.away===0&&document.getElementById('matchScore').textContent==='0 : 0'&&document.getElementById('matchShots').textContent==='1 : 0'&&!document.querySelector('.fh3d-name').textContent));

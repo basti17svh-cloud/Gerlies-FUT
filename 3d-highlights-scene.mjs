@@ -506,7 +506,7 @@ export function playerPosition(index,time,type='goal',sequence='central'){
  if(type==='goal'&&time>REVEAL_TIME&&[0,2,3].includes(index))p[1]-=Math.min(3,time-REVEAL_TIME)*.6;
  return p;
 }
-export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false){
+export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false,allowImported=true){
  const enhancedRigMotion=!baselineRig&&!(typeof window!=='undefined'&&window.__FOOTERA_V2137_BASELINE===true);
  const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
@@ -854,9 +854,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    false,detailedActors.has(i),squadNumbers[i],i===0));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,1,true);
   // The first imported humanoid replaces only the scorer. Existing animations
-  // remain the movement authority; weak hardware keeps the entire legacy mesh.
+  // remain the movement authority; LOW still has its reduced crowd and actor tier.
   let importedPlayer=null;
-  if(!weak&&!baselineRig&&isFooteraPlayerModelReady()){
+  if(allowImported&&!baselineRig&&isFooteraPlayerModelReady()){
    try{
     importedPlayer=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName);
     if(importedPlayer){
@@ -1329,14 +1329,16 @@ export function play(event,signal){
    let fluidMotion=!weak;
    try{if(window.localStorage?.getItem('footera-3d-motion-mode')==='legacy')fluidMotion=false}catch(_){}
    if(typeof window!=='undefined'&&window.__FOOTERA_FORCE_LEGACY_MOTION===true)fluidMotion=false;
-   world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion);
+   let forceLegacyModel=false;
+   try{forceLegacyModel=window.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
+   world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel);
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
    const imported=!!modelInfo.importedFootballer;
    layer.dataset.playerModel=imported?'glb':'legacy';
-   layer.dataset.playerModelReason=imported?'loaded':weak?'low-tier':'unavailable';
+   layer.dataset.playerModelReason=imported?'loaded':forceLegacyModel?'user-disabled':isFooteraPlayerModelReady()?'mount-failed':'not-ready';
    modelStatus.dataset.modelStatus=imported?'glb':'legacy';
-   modelStatus.textContent=imported?'GLB AKTIV':weak?'ALT · LOW':'ALTES MODELL';
+   modelStatus.textContent=imported?'GLB AKTIV':forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL';
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores}`;
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
