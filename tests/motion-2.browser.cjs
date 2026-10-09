@@ -26,6 +26,18 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>!!window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
    if(mode==='new')await page.locator('#pilot').click();
    await page.locator('#scene').selectOption('cut_inside_right');
+   await seek(page,1.12);
+   const first=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+   if(mode==='new'){
+    assert.equal(first.motion2Stage,'first-touch');assert.ok(first.motion2Touch>.7);
+    await page.screenshot({path:path.join(out,'motion-22-first-touch-new.png'),fullPage:true});
+   }else await page.screenshot({path:path.join(out,'motion-22-first-touch-old.png'),fullPage:true});
+   await seek(page,4.52);
+   const aim=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+   if(mode==='new'){
+    assert.equal(aim.motion2Stage,'spot-far-corner');assert.ok(aim.motion2Aim>.5);
+    await page.screenshot({path:path.join(out,'motion-22-far-corner-new.png'),fullPage:true});
+   }else await page.screenshot({path:path.join(out,'motion-22-far-corner-old.png'),fullPage:true});
    await seek(page,3.08);
    const plant=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
    if(mode==='new'){
@@ -46,7 +58,7 @@ const server=http.createServer((req,res)=>{
    await seek(page,6.65);
    const shotBall=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
    assert.ok(shotBall.every(Number.isFinite));
-   captures.push({plant,shot,shotBall});
+   captures.push({first,aim,plant,shot,shotBall});
    await seek(page,0);
    await page.locator('#toggle').click();
    // Capture one full authored 10.4-second highlight at native mobile width.
@@ -60,10 +72,12 @@ const server=http.createServer((req,res)=>{
    console.log('PASS Motion 2.0 '+mode+' 390px WebGL video '+fs.statSync(filename).size+' bytes');
   }
   const [oldScene,newScene]=captures;
+  assert.ok(Math.hypot(...newScene.first.squadMotion[0].map((v,i)=>v-oldScene.first.squadMotion[0][i]))>.10,'visible first-touch silhouette');
+  assert.ok(Math.hypot(...newScene.aim.squadMotion[0].map((v,i)=>v-oldScene.aim.squadMotion[0][i]))>.10,'visible pre-shot silhouette');
   assert.ok(Math.hypot(...newScene.plant.squadMotion[0].map((v,i)=>v-oldScene.plant.squadMotion[0][i]))>.2,'visible 3D pose improvement');
   assert.ok(Math.hypot(...newScene.shot.squadMotion[0].map((v,i)=>v-oldScene.shot.squadMotion[0][i]))>.15,'shooting stance visibly differs');
   assert.ok(Math.hypot(...oldScene.shotBall.map((v,i)=>v-newScene.shotBall[i]))<1e-6,'same far-post result and ball flight');
-  console.log('PASS Motion 2.0 A/B: distinct plant and finish, identical match-authoritative ball flight');
+  console.log('PASS Motion 2.2 A/B: first touch and pre-shot poses, identical ball flight');
   // V21.46: exercise all remaining mirrored and double-feint variants in
   // real WebGL with the identical camera, ball flight, 390px viewport.
   const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});

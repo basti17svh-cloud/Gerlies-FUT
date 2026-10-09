@@ -31,7 +31,7 @@ a{color:#adffc2}
 <header><div><h1>FOOTERA <span>MOTION LAB</span></h1><p class="subtitle">Ein identisches Highlight · zwei Bewegungssteuerungen</p></div><div class="tag">A/B TEST</div></header>
 <section class="controls" aria-label="Animation vergleichen">
 <button type="button" id="current" class="active" aria-pressed="true">A · Bisherige Bewegung</button>
-<button type="button" id="pilot" aria-pressed="false">B · Motion 2.1</button>
+<button type="button" id="pilot" aria-pressed="false">B · Motion 2.2</button>
 <select id="scene" aria-label="Spielsituation">
 <option value="cut_inside_right">Cut nach innen + Schlenzer</option>
 <option value="cut_inside_left">Cut von links + Schlenzer</option>
@@ -44,11 +44,11 @@ a{color:#adffc2}
 <div class="corner" id="corner"><strong>A</strong> · BISHERIG</div><div id="error" role="alert">Diese Vorschau benötigt WebGL. Falls die Seite schwarz bleibt, bitte in Chrome öffnen und Hardwarebeschleunigung aktivieren.</div></div>
 <div class="transport"><button id="toggle" type="button">Pause</button><input type="range" id="time" min="0" max="10.4" step=".01" value="0" aria-label="Zeitpunkt im Highlight"><output id="clock" for="time">0.0 s</output></div>
 <div class="stats"><div><b id="rigs">–</b><small>3D-Skelettfiguren</small></div><div><b id="draw">–</b><small>Draw Calls</small></div><div><b id="fps">–</b><small>FPS (circa)</small></div></div>
-<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Motion 2.1 ergänzt gespiegelte Richtungswechsel rechts/links und Doppelfinten mit separater Reaktion des Verteidigers. Ballflug, Spielerwege, Torwertung und Kamera bleiben unverändert.</p>
+<p class="note"><b>Wichtig:</b> Das ist eine isolierte Grafikprobe, kein echtes Footera-Match. Spielerwege, Ballflug, Perspektive und Ereignis sind in A und B identisch. Motion 2.2 ergänzt erste Ballberührung, Stabilisierung, gespiegelte Cuts, Doppelfinten und die Körperausrichtung vor dem Schlenzer mit separater Verteidigerreaktion. Ballflug, Spielerwege, Torwertung und Kamera bleiben unverändert.</p>
 </main>
 <script type="module">
 import * as THREE from './vendor/three/three.module.min.js';
-import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2148';
+import {makeScene,DURATION} from './3d-highlights-scene.mjs?v=2149';
 const el=id=>document.getElementById(id),canvas=el('picture'),stage=canvas.parentElement;
 const buttons={current:el('current'),pilot:el('pilot')};
 const state={mode:'current',sequence:'cut_inside_right',playing:true,time:0,last:0,frames:0,lastFps:performance.now(),world:null,renderer:null};
@@ -66,7 +66,7 @@ function build(){
  resize();state.world.update(state.time);info();
  buttons.current.classList.toggle('active',state.mode==='current');buttons.pilot.classList.toggle('active',state.mode==='pilot');
  buttons.current.setAttribute('aria-pressed',String(state.mode==='current'));buttons.pilot.setAttribute('aria-pressed',String(state.mode==='pilot'));
- el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · MOTION 2.1':'<strong>A</strong> · BISHERIG';
+ el('corner').innerHTML=state.mode==='pilot'?'<strong>B</strong> · MOTION 2.2':'<strong>A</strong> · BISHERIG';
 }
 function update(){
  state.world.update(state.time);el('time').value=String(state.time);el('clock').textContent=state.time.toFixed(1)+' s';

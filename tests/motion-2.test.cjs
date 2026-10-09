@@ -87,3 +87,32 @@ test('Motion 2.1 shot kick leg remains under existing verified contact at 5.4s',
   assert.equal(sampleWinger2(5.4,sequence).finishFollow,0);
  }
 });
+
+test('Motion 2.2 adds symmetrical first touch, settle and far-corner setup without changing contact',async()=>{
+ const {sampleWinger2,applyWinger2}=await import(file);
+ const mock=()=>({root:{position:{x:0,z:0},rotation:{y:0}},rig:{position:{y:0},rotation:{y:0}},
+  upper:{rotation:{x:0,y:0,z:0}},arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  legs:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  knees:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}],
+  ankles:[{rotation:{x:0,y:0,z:0}},{rotation:{x:0,y:0,z:0}}]});
+ for(const seq of ['cut_inside_right','cut_inside_left','double_feint_right','double_feint_left']){
+  const first=sampleWinger2(1.12,seq),settle=sampleWinger2(1.52,seq),aim=sampleWinger2(4.52,seq);
+  assert.equal(first.phase,'first-touch');assert.ok(first.touch>.7);
+  assert.equal(settle.phase,'settle-ball');assert.ok(settle.settle>.5);
+  assert.equal(aim.phase,'spot-far-corner');assert.ok(aim.aim>.5);
+  const at=sampleWinger2(5.4,seq);assert.equal(at.touch,0);assert.equal(at.settle,0);assert.equal(at.aim,0);
+  const plain=mock(),styled=mock();
+  applyWinger2(plain,1.12,seq,'finesse',[0,0],[0,0]);
+  applyWinger2(styled,1.12,seq,'finesse',[0,0],[0,0],[{id:'first-touch',plus:true}]);
+  assert.ok(Math.abs(styled.legs[first.inside].rotation.x)>Math.abs(plain.legs[first.inside].rotation.x));
+  const prep=mock();applyWinger2(prep,4.52,seq,'finesse',[0,0],[0,0],[{id:'finesse-shot',plus:true}]);
+  assert.ok(Math.abs(prep.upper.rotation.y)>.15);
+  const kick=mock();kick.legs[1].rotation.x=.75;kick.knees[1].rotation.x=-.05;
+  applyWinger2(kick,5.4,seq,'finesse',[0,0],[0,0],[{id:'first-touch',plus:true},{id:'finesse-shot',plus:true}]);
+  assert.equal(kick.legs[1].rotation.x,.75);assert.equal(kick.knees[1].rotation.x,-.05);
+  assert.equal(kick.ankles[1].rotation.z,0);
+  assert.deepEqual(sampleWinger2(1.12,seq),first);
+ }
+ assert.equal(sampleWinger2(1.12,'central','finesse').touch,0);
+ assert.equal(sampleWinger2(4.52,'cut_inside_right','power').aim,0);
+});

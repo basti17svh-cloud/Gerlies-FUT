@@ -66,6 +66,10 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
+            test-artifacts/motion-22-first-touch-old.png
+            test-artifacts/motion-22-first-touch-new.png
+            test-artifacts/motion-22-far-corner-old.png
+            test-artifacts/motion-22-far-corner-new.png
             test-artifacts/motion-2-old.webm
             test-artifacts/motion-2-new.webm
             test-artifacts/motion-2-old-cut.png

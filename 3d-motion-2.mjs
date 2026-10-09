@@ -1,4 +1,4 @@
-/* Footera Motion 2.1: mirrored wide cuts and genuine double-feint phases.
+/* Footera Motion 2.2: first touch, mirrored cuts and controlled finesse setup.
  * Analytic 2-bone support IK plus independent visual defender reaction.
  * The match simulation, score, camera, route and canonical 5.4s right-foot
  * shot contact are never modified; no per-frame allocation of geometry.
@@ -8,29 +8,36 @@ const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const rise=(t,a,b)=>smooth((t-a)/(b-a));
 const pulse=(t,a,b,c,d)=>rise(t,a,b)*(1-rise(t,c,d));
 const mix=(a,b,w)=>a+(b-a)*clamp(w);
-export const MOTION_2_VERSION='2.1-mirrored-feint-finesse';
+import {styleAccent} from './3d-action-continuity.mjs?v=2144';
+export const MOTION_2_VERSION='2.2-touch-cut-shot-preparation';
 export const MOTION_2_SHOT=5.4;
 export const MOTION_2_SEQUENCE='cut_inside_right';
 export const MOTION_2_SEQUENCES=Object.freeze(['cut_inside_right','cut_inside_left','double_feint_right','double_feint_left']);
 export const isMotion2Sequence=(sequence,finish)=>finish==='finesse'&&MOTION_2_SEQUENCES.includes(sequence);
-export function sampleWinger2(time,sequence='cut_inside_right',finish='finesse'){
+export function sampleWinger2(time,sequence='cut_inside_right',finish='finesse',styles=[]){
  const active=isMotion2Sequence(sequence,finish),side=sequence.endsWith('_left')?-1:1;
  const feint=sequence.startsWith('double_feint');
  const t=clamp(time,0,10.4);
  // A double feint visibly sells the *wrong* way before planting to cut.
  // All signals are absolute-time functions: pausing/scrubbing is deterministic.
+ const touch=active?pulse(t,.82,1.02,1.22,1.42):0;
+ const settle=active?pulse(t,1.23,1.42,1.62,1.82):0;
  const fake=active&&feint?pulse(t,1.80,2.10,2.39,2.72):0;
  const cue=active?pulse(t,2.54,2.87,2.95,3.15):0;
  const plant=active?pulse(t,2.87,3.02,3.20,3.41):0;
  const pin=active?pulse(t,2.98,3.045,3.15,3.24):0;
  const push=active?pulse(t,3.09,3.27,3.59,3.94):0;
+ const aim=active?pulse(t,4.20,4.38,4.70,4.93):0;
  const gather=active?pulse(t,4.62,4.93,5.16,5.39):0;
  const shotPin=active?pulse(t,5.065,5.23,5.49,5.77):0;
  const finishFollow=active?pulse(t,5.405,5.55,5.94,6.27):0;
  const phase=!active?'inactive':finishFollow>.30?'follow-through':shotPin>.30?'shooting-plant':
-  gather>.30?'wind-up':push>.30?'explode-inside':pin>.30?'outside-foot-lock':
-  plant>.30?'brake-and-load':cue>.30?'anticipate':fake>.30?'sell-feint':'run';
- return{active,side,feint,t,fake,cue,plant,pin,push,gather,shotPin,finishFollow,phase,
+  gather>.30?'wind-up':aim>.30?'spot-far-corner':push>.30?'explode-inside':pin>.30?'outside-foot-lock':
+  plant>.30?'brake-and-load':cue>.30?'anticipate':fake>.30?'sell-feint':
+  settle>.30?'settle-ball':touch>.30?'first-touch':'run';
+ return{active,side,feint,t,touch,settle,fake,cue,plant,pin,push,aim,gather,shotPin,finishFollow,phase,
+  technical:styleAccent(styles,'technical','first-touch'),trickster:styleAccent(styles,'trickster'),
+  finesseStyle:styleAccent(styles,'finesse-shot'),
   outside:side>0?1:0,inside:side>0?0:1};
 }
 /* Solve a two-segment (0.43m + 0.43m) forward-plane leg from hip to ankle.
@@ -63,9 +70,35 @@ export function plantSupportLeg(p,index,anchor,weight){
  foot.rotation.z+=clamp((ik.sideways-(index?1:-1)*.108)*1.1,-.22,.22)*w;
  return ik;
 }
-export function applyWinger2(p,time,sequence,finish,cutAnchor,shotAnchor){
- const m=sampleWinger2(time,sequence,finish);
+export function applyWinger2(p,time,sequence,finish,cutAnchor,shotAnchor,styles=[]){
+ const m=sampleWinger2(time,sequence,finish,styles);
  if(!m.active)return m;
+ // The supporting knee cushions the carried ball, then the pelvis settles.
+ // These additions are gone before the planted cut or 5.4s kick contact.
+ if(m.touch>.001||m.settle>.001){
+  const control=m.touch*(1+.18*m.technical),stable=m.settle;
+  p.upper.rotation.x+=.11*control-.075*stable;
+  p.upper.rotation.y+=m.side*(-.13*control+.07*stable);
+  p.upper.rotation.z+=m.side*(.12*control-.065*stable);
+  p.rig.rotation.y-=m.side*.085*control;
+  p.rig.position.y-=.037*control+.016*stable;
+  p.knees[m.outside].rotation.x-=.22*control+.08*stable;
+  p.legs[m.inside].rotation.x+=.39*control-.13*stable;
+  p.ankles[m.inside].rotation.y+=m.side*(.30*control-.11*stable);
+  p.arms[m.outside].rotation.x-=.20*control;
+  p.arms[m.inside].rotation.x+=.22*control;
+ }
+ // A visual goal-side read: hips and shoulders align before the shot wind-up.
+ if(m.aim>.001){
+  const a=m.aim*(1+.12*m.finesseStyle);
+  p.upper.rotation.x-=.13*a;
+  p.upper.rotation.y+=m.side*.28*a;
+  p.upper.rotation.z-=m.side*.09*a;
+  p.rig.rotation.y+=m.side*.12*a;
+  p.knees[0].rotation.x-=.10*a;
+  p.arms[0].rotation.z-=.19*a;
+  p.arms[1].rotation.z+=.16*a;
+ }
  // Three readable segments: shoulders drop and brake; outside leg loads;
  // pelvis unwinds while the free leg drives infield.
  const lean=-.17*m.cue-.29*m.plant+.18*m.push;
@@ -77,9 +110,10 @@ export function applyWinger2(p,time,sequence,finish,cutAnchor,shotAnchor){
  // The feint starts towards the sideline, then snaps back into the cut.
  // The planned sprint route does not change until its existing turn.
  if(m.fake>.001){
-  p.upper.rotation.y-=m.side*.41*m.fake;
-  p.upper.rotation.z-=m.side*.29*m.fake;
-  p.rig.rotation.y-=m.side*.18*m.fake;
+  const trick=m.fake*(1+.13*m.trickster);
+  p.upper.rotation.y-=m.side*.41*trick;
+  p.upper.rotation.z-=m.side*.29*trick;
+  p.rig.rotation.y-=m.side*.18*trick;
   p.legs[m.inside].rotation.x-=.28*m.fake;
   p.knees[m.inside].rotation.x-=.19*m.fake;
   p.ankles[m.inside].rotation.y-=m.side*.23*m.fake;

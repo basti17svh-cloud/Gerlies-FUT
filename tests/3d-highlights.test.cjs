@@ -54,8 +54,8 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2148','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2148','3d-rigged-footballer.mjs?v=2137','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
- assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes('service-worker.js?v=2146'));
+ for(const file of ['3d-highlights.js?v=2149','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2149','3d-rigged-footballer.mjs?v=2137','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes('service-worker.js?v=2147'));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
   const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
