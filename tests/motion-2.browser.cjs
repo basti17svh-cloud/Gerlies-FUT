@@ -192,8 +192,8 @@ const server=http.createServer((req,res)=>{
     await seek(page,scenario.check);
     const action=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
     if(scenario.action==='slide_attempt'){
-     assert.ok(Math.abs(action.contactTilt)>.78,'sliding torso must truly approach the turf');
-     assert.ok(action.contactExtension>1,'sliding leg clearly reaches forward');
+     assert.ok(Math.abs(action.contactTilt)>1.14,'torso must be near horizontal, not a sitting fall');
+     assert.ok(action.contactExtension>1.7,'fully straightened slide into ball');
     }else{
      assert.ok(action.contactExtension>.95,'blocking leg extends across shot lane');
     }

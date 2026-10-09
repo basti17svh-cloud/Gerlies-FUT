@@ -35,8 +35,8 @@ test('slide is a substantial grounded body tilt with a clearly extended leg',asy
  ankles:[{rotation:{x:0}},{rotation:{x:0}}],
  arms:[{rotation:{x:0,z:0}},{rotation:{x:0,z:0}}]});
  const player=make(),stage=m.applyContactStage(player,'slide_attempt',3.62,true);
- assert.ok(Math.abs(player.rig.rotation.x)>.82,'body really slides close to horizontal');
- assert.ok(stage.extension>1,'forward leg extended rather than stumbling');
+ assert.ok(Math.abs(player.rig.rotation.x)>1.14,'body stays close to horizontal');
+ assert.ok(stage.extension>1.7,'long leading leg fully extends into the tackle');
  const defender=make();m.applyContactStage(defender,'block_attempt',5.72,true);
  assert.ok(defender.legs[1].rotation.x>.85,'meaningful blocking leg extension');
  const untouched=make(),before=JSON.stringify(untouched);

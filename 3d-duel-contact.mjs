@@ -48,15 +48,15 @@ export function applyContactStage(p,action,time,preview=false,near=1){
   // One planted foot, a decisive take-off, extended leading leg, sliding torso,
   // then hand-braced recovery. Root only follows its already-defined path.
   const a=m.plant*w,f=m.flight*w,h=m.hold*w,r=m.recover*w;
-  p.rig.position.y-=.10*a+.27*h;
-  p.rig.rotation.x-=1.06*h;
+  p.rig.position.y-=.09*a+.17*h;
+  p.rig.rotation.x-=1.32*h;
   p.rig.rotation.z+=.08*f;
-  p.upper.rotation.x-=.16*a+.18*h;
+  p.upper.rotation.x-=.11*a+.05*h;
   p.upper.rotation.z+=.06*h;
   p.legs[0].rotation.x+=.33*a-.68*h;
   p.knees[0].rotation.x-=.56*a+.68*h;
-  p.legs[1].rotation.x+=1.28*f+.36*h;
-  p.knees[1].rotation.x+=.32*f;
+  p.legs[1].rotation.x+=1.94*f+.16*h;
+  p.knees[1].rotation.x+=.11*f;
   p.ankles[1].rotation.x-=.24*f;
   p.arms[0].rotation.z-=.48*f+.28*h;
   p.arms[1].rotation.z+=.48*f+.28*h;
@@ -65,7 +65,7 @@ export function applyContactStage(p,action,time,preview=false,near=1){
   p.upper.rotation.x+=.27*r;
   p.knees[0].rotation.x-=.40*r;
   p.arms[0].rotation.x+=.28*r;
-  return{...m,torsoTilt:-1.06*h,extension:1.28*f+.36*h};
+  return{...m,torsoTilt:-1.32*h,extension:1.94*f+.16*h};
  }
  if(m.kind==='block'){
   const a=m.brace*w,e=m.extend*w,r=m.rebound*w;
