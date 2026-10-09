@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#091614">
+<title>Footera V21.78 – 3D-Spielermodell ohne und mit PBR</title>
+<style>
+:root{color-scheme:dark;font:14px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#ecf8f0;background:#071311}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0,#18382f 0,#0b1d1a 42%,#071311 85%);min-height:100svh}
+main{max-width:900px;margin:auto;padding:16px 12px 32px}
+header{display:flex;justify-content:space-between;gap:10px;align-items:center}
+h1{margin:0;font-size:clamp(18px,4.7vw,25px);letter-spacing:.01em}
+h1 span{color:#8df5ae}
+.muted{color:#b3c4bb;font-size:12px;line-height:1.5}
+.version{font-size:11px;letter-spacing:.07em;border:1px solid #416354;padding:5px 8px;border-radius:5px;color:#bcf7d0;white-space:nowrap}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:16px 0}
+button{background:#17362c;border:1px solid #4e7961;color:#e8fff0;font:700 13px system-ui;min-height:42px;padding:9px 13px;border-radius:9px;cursor:pointer}
+button[aria-pressed=true]{background:#a4eab8;color:#122a1b;border-color:#c7fad6}
+button:focus-visible{outline:3px solid #c8fada;outline-offset:2px}
+#status{font-size:12px;min-height:37px;padding:8px 10px;border:1px solid #426057;border-radius:8px;background:#112820;margin-bottom:18px}
+section{margin-top:16px}
+h2{font-size:17px;letter-spacing:.01em;margin:0 0 4px}
+.group-desc{font-size:12px;color:#a9bdb1;margin:0 0 9px}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+figure{margin:0;min-width:0;background:#0a1816;border:1px solid #35594b;border-radius:10px;overflow:hidden}
+figcaption{padding:8px 10px;font-size:12px;font-weight:800;letter-spacing:.035em}
+.before figcaption{color:#e2e7e2}.after figcaption{color:#97f2ac}
+figure img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#182a24;cursor:zoom-in}
+.match figure img{aspect-ratio:16/9}
+.placeholder{opacity:.85}
+.note{margin:18px 0 0;padding-top:12px;border-top:1px solid #2e5145;color:#b2c7bd;font-size:12px;line-height:1.6}
+#previewCanvas{position:fixed;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;opacity:0}
+#lightbox{position:fixed;inset:0;z-index:100;background:#030b09f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
+#lightbox[hidden]{display:none}
+#lightbox img{max-width:100%;max-height:80vh;object-fit:contain}
+#lightbox button{align-self:flex-end}
+@media(max-width:480px){main{padding:12px 8px 24px}.pair{gap:6px}figure figcaption{font-size:10px;padding:7px}h2{font-size:15px}.controls{gap:5px}button{font-size:12px;padding:8px 10px}header{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>FOOTERA <span>3D-MODELLVERGLEICH</span></h1><p class="muted">Gleiches importiertes GLB · gleiche Animation · gleiche Szene · nur PBR ein/aus</p></div><span class="version">V21.78</span></header>
+<div class="controls" aria-label="Bewegungsphase auswählen">
+<button id="sprint" type="button" aria-pressed="false">Sprint</button>
+<button id="cut" type="button" aria-pressed="true">Richtungswechsel</button>
+<button id="shot" type="button" aria-pressed="false">Schussansatz</button>
+<button id="again" type="button">Neu rendern</button>
+</div>
+<div id="status" role="status" aria-live="polite">3D-Renderer und Originalmodell werden geladen …</div>
+<section>
+<h2>Nahaufnahme – Details am Spielermodell</h2>
+<p class="group-desc">Diagnostische Nahkamera. Das ist nicht die reguläre Spielkamera.</p>
+<div class="pair">
+<figure class="before"><figcaption>OHNE PBR · Basis-Material</figcaption><img id="close-off" alt="Nahaufnahme des Original-Spielermodells mit deaktivierten PBR-Texturen" class="placeholder"></figure>
+<figure class="after"><figcaption>MIT PBR · Normal / AO / Roughness</figcaption><img id="close-on" alt="Identische Nahaufnahme mit aktivierten PBR-Texturen" class="placeholder"></figure>
+</div>
+</section>
+<section class="match">
+<h2>Normale Matchday-Kamera – Spielansicht</h2>
+<p class="group-desc">Unveränderte Footera-TV-Kamera. Auf diese Distanz können Materialdetails deutlich dezenter wirken.</p>
+<div class="pair">
+<figure class="before"><figcaption>OHNE PBR · Basis-Material</figcaption><img id="match-off" alt="Footera Matchday-Totale mit PBR deaktiviert" class="placeholder"></figure>
+<figure class="after"><figcaption>MIT PBR · Normal / AO / Roughness</figcaption><img id="match-on" alt="Identische Footera Matchday-Totale mit aktiviertem PBR" class="placeholder"></figure>
+</div>
+</section>
+<p class="note"><b>Was wird verglichen?</b> In beiden Spalten wird exakt das gleiche Footera-GLB mit identischer Pose, Vertexfarben, Licht, Schatten, Trikotfarben und Kamera verwendet. Links werden nur die PBR-Oberflächenmaps ausgeschaltet und die Basis-Rauigkeit eingesetzt; rechts sind die V21.78-Maps aktiv. Die bereits eingebrannte geometrische Vertex-Abdunkelung bleibt in beiden Bildern gleich. Keine KI-Illustration und kein Wechsel auf ein anderes Spielermodell. Die Aufnahmen werden direkt in deinem Browser mit WebGL erzeugt. Das normale Spiel bleibt unverändert.</p>
+<canvas id="previewCanvas" width="640" height="480" aria-hidden="true"></canvas>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Vollbild der Vergleichsaufnahme" hidden><button id="closeLightbox" type="button">Schließen ×</button><img id="enlarged" alt=""></div>
+</main>
+<script type="module">
+import * as THREE from './vendor/three/three.module.min.js';
+import {makeScene,prepareFooteraPlayerModel} from './3d-highlights-scene.mjs?v=2178';
+
+const $=id=>document.getElementById(id);
+const status=$('status'),canvas=$('previewCanvas');
+const steps={sprint:1.55,cut:3.12,shot:4.55};
+let phase='cut',renderer=null,world=null,scene=null,loaded=false,busy=false;
+let originalRender=null,meshMaterials=[];
+const event={id:'footera-v2178-pbr-compare',type:'goal',team:'home',period:1,minute:38,attackDirection:1,
+ sequence:'cut_inside_right',finish:'finesse',playerName:'Footera Testspieler',
+ keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',defenderIndex:10,
+ defenderAction:'jockey',keeperAction:'classic',playerStyles:[],creatorStyles:[],defenderStyles:[],keeperStyles:[],
+ homeColor:'#0c7964',homeSecondary:'#f4d184',homePattern:'diagonal',
+ homeShorts:'#103c32',homeSocks:'#f4d184',
+ awayColor:'#e7edf5',awaySecondary:'#a42748',awayPattern:'halves',
+ awayShorts:'#18233b',awaySocks:'#e7edf5'};
+const sleep=()=>new Promise(done=>requestAnimationFrame(()=>done()));
+function setButtons(){for(const key of Object.keys(steps))$(key).setAttribute('aria-pressed',String(key===phase))}
+function findMaterials(){
+ const imported=scene.getObjectByName('FooteraImportedFootballer');
+ if(!imported)throw new Error('Das importierte GLB-Spielermodell wurde nicht gefunden.');
+ meshMaterials=[];imported.traverse(o=>{
+  if(!o.isSkinnedMesh||!o.material)return;
+  for(const mat of Array.isArray(o.material)?o.material:[o.material]){
+   if(!(mat.roughnessMap||mat.normalMap||mat.aoMap))continue;
+   meshMaterials.push({mat,normalMap:mat.normalMap,roughnessMap:mat.roughnessMap,aoMap:mat.aoMap,
+    roughness:mat.roughness,aoMapIntensity:mat.aoMapIntensity});
+  }
+ });
+ if(!meshMaterials.length)throw new Error('Auf diesem Modell sind keine aktiven PBR-Maps vorhanden.');
+}
+function setPbr(on){
+ for(const s of meshMaterials){
+  s.mat.normalMap=on?s.normalMap:null;
+  s.mat.roughnessMap=on?s.roughnessMap:null;
+  s.mat.aoMap=on?s.aoMap:null;
+  s.mat.roughness=on?s.roughness:.85;
+  s.mat.aoMapIntensity=on?s.aoMapIntensity:0;
+  s.mat.needsUpdate=true;
+ }
+}
+function snapshot(view,pbr){
+ setPbr(pbr);
+ const close=view==='close';
+ const width=640,height=close?480:360;
+ world.resize(width,height);
+ world.update(steps[phase]);
+ const quality=world.inspect();
+ if(!quality.importedFootballer)throw new Error('Das echte GLB-Spielermodell ist nicht aktiv.');
+ if(close){
+  const mount=scene.getObjectByName('FooteraPlayerPrototypeMount');
+  if(!mount)throw new Error('Spielerposition für die Nahkamera fehlt.');
+  const root=mount.parent;root.updateWorldMatrix(true,true);
+  const camera=new THREE.PerspectiveCamera(31,width/height,.05,100);
+  camera.position.copy(root.localToWorld(new THREE.Vector3(2.7,1.7,-3.7)));
+  camera.lookAt(root.localToWorld(new THREE.Vector3(0,.95,0)));
+  originalRender(scene,camera);
+ }
+ const picture=canvas.toDataURL('image/png');
+ if(!picture.startsWith('data:image/png;base64,'))throw new Error('Screenshot kann nicht gelesen werden.');
+ return picture;
+}
+async function renderAll(){
+ if(!loaded||busy)return;
+ busy=true;
+ try{
+  status.textContent='Vergleich wird aus dem echten Footera-Renderer erstellt …';
+  setButtons();
+  for(const view of ['close','match']){
+   for(const mode of [false,true]){
+    const id=view+'-'+(mode?'on':'off');
+    $(id).src=snapshot(view,mode);
+    $(id).classList.remove('placeholder');
+    await sleep();
+   }
+  }
+  setPbr(true);
+  status.textContent='Vier Original-Renderings erstellt · '+meshMaterials.length+' GLB-Materialien mit PBR-Maps · Standbild bei '+steps[phase].toFixed(2)+' s · Tippen zum Vergrößern';
+ }catch(error){
+  console.error('Footera PBR A/B Fehler:',error);
+  status.textContent='Vergleich konnte nicht gerendert werden: '+String(error?.message||error);
+ }finally{busy=false}
+}
+async function boot(){
+ try{
+  if(!window.WebGLRenderingContext)throw new Error('WebGL fehlt auf diesem Gerät.');
+  const ready=await prepareFooteraPlayerModel();
+  if(!ready)throw new Error('Das Original-GLB ist nicht verfügbar.');
+  renderer=new THREE.WebGLRenderer({canvas,preserveDrawingBuffer:true,antialias:false,alpha:false,powerPreference:'default'});
+  renderer.setPixelRatio(1);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1;
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  originalRender=renderer.render.bind(renderer);
+  renderer.render=(s,c)=>{scene=s;originalRender(s,c)};
+  world=makeScene(renderer,event,false,false,true,false,true,true);
+  world.resize(640,360);world.update(steps.cut);
+  if(!world.inspect().importedPbr)throw new Error('Die V21.78-PBR-Materialien wurden nicht eingebunden.');
+  findMaterials();
+  loaded=true;
+  await renderAll();
+ }catch(error){
+  console.error('Footera PBR-Vergleich Startfehler:',error);
+  status.textContent='WebGL-Vergleich nicht verfügbar: '+String(error?.message||error);
+ }
+}
+for(const key of Object.keys(steps))$(key).addEventListener('click',()=>{if(busy||!loaded)return;phase=key;renderAll()});
+$('again').addEventListener('click',renderAll);
+for(const id of ['close-off','close-on','match-off','match-on'])$(id).addEventListener('click',()=>{
+ if(!$(id).src.startsWith('data:image/'))return;
+ $('enlarged').src=$(id).src;$('enlarged').alt=$(id).alt;
+ $('lightbox').hidden=false;
+});
+$('closeLightbox').addEventListener('click',()=>$('lightbox').hidden=true);
+$('lightbox').addEventListener('click',e=>{if(e.target===$('lightbox'))$('lightbox').hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lightbox').hidden=true});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();loaded=false;status.textContent='WebGL-Kontext verloren. Bitte Vergleichsseite neu öffnen.'});
+window.addEventListener('pagehide',()=>{try{world?.dispose();renderer?.dispose()}catch(_){ }});
+boot();
+</script>
+</body>
+</html>
