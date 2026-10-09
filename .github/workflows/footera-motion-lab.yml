@@ -64,6 +64,13 @@ jobs:
         run: |
           npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
           /tmp/footera-motion-lab/node_modules/.bin/playwright install --with-deps chromium
+      - name: Ensure video encoder for frame-accurate MP4 proofs
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -n 1
       - name: A/B screenshots at 390px and checks at 360/390/412px
         env:
           NODE_PATH: /tmp/footera-motion-lab/node_modules
@@ -80,9 +87,7 @@ jobs:
             test-artifacts/motion-lab-B.png
             test-artifacts/contact-frames-slide/*.png
             test-artifacts/contact-frames-block/*.png
-            test-artifacts/footera-slide-contact.webm
             test-artifacts/footera-slide-contact.mp4
-            test-artifacts/footera-shot-block.webm
             test-artifacts/footera-shot-block.mp4
             test-artifacts/motion-contact-tackle-contact-result.png
             test-artifacts/motion-contact-blocked-shot-result.png
