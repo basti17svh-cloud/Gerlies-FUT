@@ -41,9 +41,10 @@ export function contactStage(action,time){
   hold:pulse(time,3.26,3.49,3.93,4.30),
   recover:pulse(time,4.09,4.38,4.65,4.90)};
  if(action==='block_attempt')return{kind:'block',
-  brace:pulse(time,4.87,5.15,5.49,5.68),
-  extend:pulse(time,5.39,5.61,5.85,6.12),
-  rebound:pulse(time,5.83,6.11,6.32,6.56)};
+  // Load the support leg, extend during contact, then settle naturally.
+  brace:pulse(time,4.90,5.18,5.42,5.65),
+  extend:pulse(time,5.40,5.61,5.85,6.14),
+  rebound:pulse(time,5.98,6.19,6.43,6.72)};
  return{kind:'none'};
 }
 export function applyContactStage(p,action,time,preview=false,near=1){
@@ -73,21 +74,25 @@ export function applyContactStage(p,action,time,preview=false,near=1){
  }
  if(m.kind==='block'){
   const a=m.brace*w,e=m.extend*w,r=m.rebound*w;
-  p.rig.position.y-=.06*a;
-  p.upper.rotation.x+=.23*a+.26*e;
-  p.upper.rotation.y+=.09*a;
-  p.upper.rotation.z-=.13*e;
-  p.knees[0].rotation.x-=.28*a;
-  p.knees[1].rotation.x-=.19*a;
-  p.legs[1].rotation.x+=1.32*e;  // conspicuous high outstretched shin
-  p.knees[1].rotation.x-=.21*e;
-  p.ankles[1].rotation.x-=.22*e;
-  p.legs[0].rotation.x-=.26*e;
-  p.arms[0].rotation.z-=.34*a+.28*e;
-  p.arms[1].rotation.z+=.34*a+.28*e;
-  p.upper.rotation.x-=.24*r;
-  p.knees[0].rotation.x-=.18*r;
-  return{...m,torsoTilt:.26*e,extension:1.32*e};
+  // Previous additive pose kicked a leg excessively high while both arms
+  // flared out, reading as an uncontrolled backwards stumble. Ground the
+  // support leg and redirect the blocking shin across the shooting lane.
+  p.rig.position.y-=.045*a+.018*e;
+  p.upper.rotation.x+=.07*a+.055*e-.04*r;
+  p.upper.rotation.y+=.06*a;
+  p.upper.rotation.z+=.055*e-.03*r;
+  p.knees[0].rotation.x-=.24*a+.09*e;
+  p.knees[1].rotation.x-=.17*a+.12*e;
+  p.legs[1].rotation.x+=1.04*e;
+  p.legs[1].rotation.z+=.30*e;
+  p.ankles[1].rotation.x-=.13*e;
+  p.legs[0].rotation.x-=.15*e;
+  p.arms[0].rotation.z-=.16*a+.15*e;
+  p.arms[1].rotation.z+=.16*a+.15*e;
+  p.arms[0].rotation.x-=.13*e;
+  p.arms[1].rotation.x+=.09*e;
+  p.knees[0].rotation.x-=.08*r;
+  return{...m,torsoTilt:.055*e,extension:1.04*e};
  }
  return{...m,torsoTilt:0,extension:0};
 }
