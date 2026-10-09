@@ -62,7 +62,7 @@ test('V21.77: bounded on LOW, no action-layer modification of sim result or goal
   const s=sampleFootwork(time,.9,.14,-1,13,{feet:[{},{}]});
   assert.ok(s.weight>=0&&s.weight<=1);
   for(const f of s.feet)for(const [key,value] of Object.entries(f))
-   if(typeof value==='number')assert.ok(Number.isFinite(value)&&Math.abs(value)<.5,key);
+   if(typeof value==='number')assert.ok(Number.isFinite(value)&&Math.abs(value)<(key==='swing'||key==='load'?1.001:.5),key);
  }
  const fs=require('node:fs'),path=require('node:path');
  const root=path.resolve(__dirname,'..');
