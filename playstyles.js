@@ -8,6 +8,7 @@ const DEFINITIONS = [
  {id:"chip-shot",name:"Lupfer",group:"Abschluss",symbol:"LU",aliases:["Chip Shot"],description:"Lupfer über herauslaufende Torhüter gelingen kontrollierter und präziser."},
  {id:"power-header",name:"Präziser Kopfball",group:"Abschluss",symbol:"PK",aliases:["Power Header","Precision Header"],description:"Kopfbälle aufs Tor werden gezielter und mit mehr Druck ausgeführt."},
  {id:"acrobatic",name:"Akrobatik",group:"Abschluss",symbol:"AK",aliases:["Acrobatic"],description:"Akrobatische Abschlüsse und schwierige Direktabnahmen werden zuverlässiger."},
+ {id:"trivela",name:"Außenrist",group:"Abschluss",symbol:"AR",aliases:["Trivela"],description:"Außenristabschlüsse und kreative Schüsse aus schwierigen Winkeln gelingen kontrollierter."},
  {id:"dead-ball",name:"Ruhender Ball",group:"Abschluss",symbol:"RB",aliases:["Dead Ball"],description:"Freistöße, Ecken und andere ruhende Bälle werden präziser ausgeführt."},
  {id:"gamechanger",name:"Gamechanger",group:"Abschluss",symbol:"GC",aliases:["Game Changer"],description:"Schwierige und kreative Abschlüsse erhalten in engen Spielsituationen einen Vorteil."},
 
@@ -47,6 +48,7 @@ const DEFINITIONS = [
 
 const ICON_BODIES=Object.freeze({
  "power-shot":'<circle cx="7" cy="12" r="3"/><path d="M11 12h9M16 8l4 4-4 4"/>',
+ "trivela":'<path d="M4 17c5-10 9-12 14-12"/><circle cx="18" cy="6" r="3"/><path d="m5 13 4 3 4-2"/>',
  "finesse-shot":'<circle cx="7" cy="15" r="3"/><path d="M10 15c5 0 8-3 9-8"/><path d="m16 8 3-1 1 3"/>',
  "low-driven-shot":'<circle cx="7" cy="15" r="3"/><path d="M11 15h9"/><path d="M13 18h6"/>',
  "chip-shot":'<circle cx="6" cy="17" r="3"/><path d="M9 16c3-8 8-9 11-4"/><path d="m17 10 3 2-2 3"/>',

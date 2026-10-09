@@ -1,0 +1,24 @@
+/* FOOTERA Flashback – design 3: red-black, silver, shattered metal. Master renderer sizing remains authoritative. */
+.card-shell .custom-card.flashback {
+ color:#f7f7f8;
+ background:url("./assets/footera/card-flashback.svg") center / 100% 100% no-repeat,#11090e;
+ clip-path:polygon(8% 0,25% 2%,50% 0,75% 2%,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);
+ --card-column-fill:linear-gradient(180deg,#09090dcc,#2a0c16a8);
+ --card-name-fill:linear-gradient(90deg,#0a090bf2,#501420ea 52%,#0a090bf2);
+ --card-name-border:#f24c61;
+ --card-stats-fill:linear-gradient(180deg,#090a0ce0,#16070de8);
+ --card-name-color:#fff;--card-stats-color:#f1e7ea;--card-value-color:#fff;
+}
+.card-shell .custom-card.flashback:before{content:"";inset:1.7%;border:1px solid #f87381b8;z-index:1;pointer-events:none}
+.card-shell .custom-card.flashback .card-top:before{border-color:#9c2636;background:linear-gradient(#07090be8,#290611dd)}
+.card-shell .custom-card.flashback .ovr,.card-shell .custom-card.flashback .pos{color:#fff;text-shadow:0 2px 6px #000,0 0 5px #dc3445}
+.card-shell .custom-card.flashback .pname{border-color:#fa6174!important;box-shadow:0 -1px 0 #fff5,0 1px 8px #e32d3d55}
+.card-shell .custom-card.flashback .stats span{border-color:#c7c7c766}
+.card-shell .custom-card.flashback .card-alt-positions{color:#fafafa;text-shadow:0 2px 5px #000}
+.flashback-shell{filter:drop-shadow(0 1px 7px #ca183c55)}
+.sbc-feature-card.flashback-sbc{border-color:#8e3544;background:radial-gradient(circle at 100% 0,#ec21322b,transparent 44%),linear-gradient(150deg,#1c1116,#0d1012)}
+.sbc-feature-card.flashback-sbc:before{background:linear-gradient(#f15c6d,#b41730)}
+.sbc-feature-card.flashback-sbc .sbc-feature-kicker,.sbc-feature-card.flashback-sbc .sbc-feature-progressline b{color:#ff9aab}
+.sbc-feature-card.flashback-sbc .sbc-feature-track i{background:linear-gradient(90deg,#b61635,#fa5e70)}
+.sbc-feature-card.flashback-sbc .sbc-feature-player .card-shell{width:158px}
+@media(max-width:560px){.sbc-feature-card.flashback-sbc .sbc-feature-player .card-shell{width:120px}}
