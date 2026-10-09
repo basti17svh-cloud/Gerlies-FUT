@@ -23,9 +23,8 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());
    await page.goto(url,{waitUntil:'load'});await fixture(page);
-   // CI-only tolerance: slow software WebGL must not trigger a false timeout.
+   // Observe transient goal HUD without altering queue timeouts.
    await page.evaluate(()=>{
-    match3DQueue.timeout=45000;
     window.__footeraHudSeen=false;
     window.__footeraHudObserver=new MutationObserver(()=>{
      if(document.querySelector('.fh3d-hud.visible'))window.__footeraHudSeen=true;
