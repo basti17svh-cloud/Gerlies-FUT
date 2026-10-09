@@ -204,6 +204,7 @@ const server=http.createServer((req,res)=>{
     assert.ok(deflected.ball[2]>-52,
       'contact demonstration must not show a goal after a successful defensive action');
     assert.equal(await page.locator('#outcome').isVisible(),true,'outcome must be readable');
+    await page.screenshot({path:path.join(out,'motion-contact-'+scenario.name+'-result.png'),fullPage:true});
     await page.locator('#current').click();
     const same=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
     assert.ok(Math.hypot(...same.ball.map((v,i)=>v-deflected.ball[i]))<1e-6,
@@ -213,6 +214,40 @@ const server=http.createServer((req,res)=>{
    }
    assert.deepEqual(errors,[],'live contact choreography has no browser exceptions');
   }finally{await ctx.close()}
+  // Record the actual tackle and ball-blocking sequences on 390px hardware-
+  // sized viewport. Earlier test suites captured only the generic winger clip.
+  for(const [action,start,name] of [
+   ['slide_attempt',2.30,'footera-slide-contact'],
+   ['block_attempt',4.55,'footera-shot-block']
+  ]){
+   const movieCtx=await browser.newContext({
+    viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,
+    recordVideo:{dir:out,size:{width:390,height:844}}
+   });
+   const movie=await movieCtx.newPage(),errors=[];movie.on('pageerror',e=>errors.push(e.message));
+   await movie.goto(origin+'/motion-lab.html',{waitUntil:'domcontentloaded'});
+   await movie.waitForFunction(()=>!!window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
+   await movie.locator('#defense').selectOption(action);
+   await movie.locator('#pilot').click();
+   await seek(movie,start);
+   await movie.locator('#toggle').click(); // resume a paused seek
+   await movie.waitForTimeout(2350);
+   const final=await movie.evaluate(()=>window.__footeraMotionLab.getState());
+   assert.ok(final.metrics.contactBallDeflected,
+    name+' must visibly deflect the ball while the clip records');
+   assert.deepEqual(errors,[],name+' no live browser errors');
+   const video=movie.video();
+   await movieCtx.close();
+   const webm=path.join(out,name+'.webm');
+   await video.saveAs(webm);await video.delete();
+   assert.ok(fs.statSync(webm).size>18000,name+' recorded real video frames');
+   const mp4=path.join(out,name+'.mp4');
+   const {spawnSync}=require('node:child_process');
+   const converted=spawnSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-i',webm,
+    '-c:v','libx264','-preset','veryfast','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart',mp4]);
+   if(converted.status===0)console.log('PASS MP4 contact clip '+name+' '+fs.statSync(mp4).size);
+   console.log('PASS authentic contact video '+name+' '+fs.statSync(webm).size);
+  }
 
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

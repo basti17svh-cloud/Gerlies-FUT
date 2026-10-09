@@ -78,6 +78,12 @@ jobs:
           path: |
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
+            test-artifacts/footera-slide-contact.webm
+            test-artifacts/footera-slide-contact.mp4
+            test-artifacts/footera-shot-block.webm
+            test-artifacts/footera-shot-block.mp4
+            test-artifacts/motion-contact-tackle-contact-result.png
+            test-artifacts/motion-contact-blocked-shot-result.png
             test-artifacts/motion-contact-tackle-contact.png
             test-artifacts/motion-contact-blocked-shot.png
             test-artifacts/motion-26-jockey-right-old.png
