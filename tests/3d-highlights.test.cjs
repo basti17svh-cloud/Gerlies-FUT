@@ -54,7 +54,7 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-highlights.js?v=2167','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2167','3d-rigged-footballer.mjs?v=2167','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-highlights.js?v=2168','3d-highlights-match.js?v=2133','3d-highlights-scene.mjs?v=2168','3d-rigged-footballer.mjs?v=2167','3d-football-animation.mjs?v=2138','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2143','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','3d-highlights.css?v=2125','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes("service-worker.js?v="+(html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/)||[]).slice(1).join("")));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
@@ -583,4 +583,21 @@ test('V21.67: off-ball locomotion is preserved on upgraded skinned footballers',
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(scene,/if\(enhancedRigMotion&&i!==0&&/,'all eligible background actors receive squad locomotion regardless of skinning tier');
  assert.doesNotMatch(scene,/enhancedRigMotion&&!p.skinned&&/,'skinned rigs cannot be silently excluded from group locomotion');
+});
+
+test('V21.68 imported articulated CC0 GLB is integrated without simulation ownership',async()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const raw=fs.readFileSync(path.join(root,'assets/footera/models/footballer-prototype.glb'));
+ assert.equal(raw.toString('utf8',0,4),'glTF');
+ assert.ok(raw.length>200000&&raw.length<2000000);
+ const model=await import('../3d-player-prototype.mjs');
+ assert.equal(typeof model.prepareFooteraPlayerModel,'function');
+ assert.equal(typeof model.mountFooteraPlayerModel,'function');
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(scene,/mountFooteraPlayerModel\(players\[0\]\.root/);
+ assert.match(scene,/players\[0\]\.skinned\.model\.visible=false/);
+ assert.match(scene,/importedPlayer\?\.animate\(\)/);
+ const bridge=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
+ assert.match(bridge,/module\.prepareFooteraPlayerModel\(\)/);
+ assert.match(bridge,/footera-3d-player-model/);
 });

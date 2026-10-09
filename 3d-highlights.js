@@ -29,7 +29,7 @@
    homePattern:String(event.homePattern||'solid'),awayPattern:String(event.awayPattern||'solid'),homeKitConfigured:event.homeKitConfigured===true,awayKitConfigured:event.awayKitConfigured===true,
    homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2167'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2168'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -41,7 +41,20 @@
   const skippedPromise=new Promise(resolve=>{skipResolve=resolve});
   const remove=()=>loading.remove();signal.addEventListener('abort',remove,{once:true});
   skip.onclick=()=>{skipped=true;remove();skipResolve('skipped')};
-  try{return await Promise.race([loadRenderer().then(module=>{remove();return signal.aborted||skipped?'skipped':module.play(event,signal)}),skippedPromise])}
+  try{return await Promise.race([loadRenderer().then(async module=>{
+   // First a genuine 3D skinned GLB, then the existing deterministic highlight.
+   // Missing file / slow device => existing Footera actor, never delay results.
+   const memory=Number(root.navigator?.deviceMemory||8),cores=Number(root.navigator?.hardwareConcurrency||8);
+   if(!signal.aborted&&!skipped&&memory>4&&cores>4){
+    let disabled=false;
+    try{disabled=root.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
+    if(!disabled)try{await Promise.race([
+      module.prepareFooteraPlayerModel(),
+      new Promise(resolve=>setTimeout(()=>resolve(false),2600))
+    ])}catch(error){console.warn('Footera GLB unavailable, using original footballer:',error)}
+   }
+   remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
+  }),skippedPromise])}
   finally{remove();signal.removeEventListener('abort',remove)}
  }
 
