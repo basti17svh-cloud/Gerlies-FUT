@@ -76,6 +76,23 @@ const server=http.createServer((req,res)=>{
   const stance=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
   assert.ok(Math.abs(stance.contactBodyLean)<.16,'real shot-block torso stays upright');
   assert.ok(Math.abs(stance.contactPelvisLean)<.12,'real shot-block pelvis stays upright');
+  // Fresh V21.56 mobile landing page must start with the new slide,
+  // not the old shot-block default or a stale cached 3D module.
+  await page.goto(origin+'/motion-lab-v2156.html',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
+  const slidePage=await page.evaluate(()=>window.__footeraMotionLab.getState());
+  assert.equal(slidePage.mode,'pilot');
+  assert.equal(slidePage.defense,'slide_attempt');
+  assert.equal(slidePage.metrics.contactMotionVersion,'21.56-controlled-slide');
+  assert.match(await page.locator('#corner').innerText(),/KONTROLLIERTE GRÄTSCHE/);
+  await seek(2.45);
+  const beforeSlide=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+  assert.ok(Math.abs(beforeSlide.contactPelvisLean)<.08,'no pre-slide fall on dedicated page');
+  assert.ok(Math.abs(beforeSlide.contactBodyLean)<.28,'approach stays upright');
+  await seek(3.62);
+  const sliding=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+  assert.ok(sliding.contactPelvisLean< -1.14,'only real slide is horizontal');
+  assert.ok(sliding.contactExtension>1.7,'boot reaches ball after support-foot plant');
   assert.deepEqual(errors,[],'no browser errors');
   console.log('PASS Motion Lab: distinct striker/defender poses, same shot, 360/390/412px, reference + pilot screenshots');
   await page.close();
