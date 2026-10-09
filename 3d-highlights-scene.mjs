@@ -3,7 +3,7 @@ import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlaye
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel};
-import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
+import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2183';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
@@ -842,7 +842,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
    const skinned=modern?buildSkinnedFootballer(THREE,root,
     {rig,upper,motion,chest,arms,elbows,legs,knees,ankles},
-    [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12,shirtNumber):null;
+    [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12,shirtNumber,kit):null;
    if(skinned){track(skinned.geometry);track(skinned.atlasTexture);track(skinned.atlasMaterial)}
    const skeletonMotion=modern&&lead?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
    return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
@@ -871,7 +871,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(!fallbackKitAtlases.has(key)){
     const atlas=createFootballKitAtlas(THREE,[shirtMaterial(kit),
      mat(kit.shorts,{roughness:.96}),mat('#bd8c70'),
-     mat(kit.socks,{roughness:1}),mat(kit.shirt,{roughness:.92})],8);
+     mat(kit.socks,{roughness:1}),mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92})],8,0,kit);
     track(atlas.texture);track(atlas.material);fallbackKitAtlases.set(key,atlas.texture);
    }
    return fallbackKitAtlases.get(key);

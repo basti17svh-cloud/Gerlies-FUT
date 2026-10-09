@@ -7,6 +7,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
+import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2183';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -164,9 +165,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     ny>.863||bareArm?2:Math.abs(nx)>.26?4:0;
    zones[i]=slot;
    let c=footballerKitColorAt(nx,ny,nz,kit,tintIndex);
-   const longitude=((Math.atan2(nx,nz)/(Math.PI*2))%1+1)%1;
-   const vertical=slot===0?clamp((ny-.557)/.306):slot===1?clamp((ny-.445)/.112):slot===3?clamp((ny-.056)/.254):.5;
-   uv[i*2]=(slot+.015+longitude*.97)/5;uv[i*2+1]=vertical;
+   const mapped=footeraAtlasUV(nx,ny,nz,slot);
+   uv[i*2]=mapped[0];uv[i*2+1]=mapped[1];
    if(kitAtlas)c=new THREE.Color('#ffffff');
    // Eyebrows/eyes used to receive exactly the skin colour, erasing the face.
    // Their existing meshes use an untextured facial material below.
@@ -184,12 +184,15 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     const seam=Math.abs(nx)<.012&&nz<0?.93:1;
     c.multiplyScalar(seam*(.97+.03*Math.cos(ny*95)*Math.cos(nx*25)));
    }
-   // Clothing sits outside the anatomy; remove the painted-on abdominal
-   // grooves without replacing the authored shoulders or skin weights.
-   if(isBody&&slot===0&&Math.abs(nx)<.26){
-    const chest=clamp((ny-.62)/.19),rx=.175+.052*chest,rz=.117+.022*chest;
-    const radius=Math.hypot(nx/rx,nz/rz),ease=Math.sin(Math.PI*clamp((ny-.557)/.306));
-    const inflate=radius>.01?1+Math.max(0,1/radius-1)*ease:1;
+   // Gentle continuous fabric allowance, never the former unbounded radial
+   // inflation that crushed the shirt and produced exaggerated waist ridges.
+   // No UV/skin-weight separation or extra arm/leg meshes.
+   if(isBody&&(slot===0||slot===1||slot===3||slot===4)){
+    const allowance=slot===0?.027:slot===1?.042:slot===3?.012:.015;
+    const seam=slot===0?Math.min(1,Math.max(0,(ny-.557)/.035),Math.max(0,(.863-ny)/.035)):
+      slot===1?Math.min(1,Math.max(0,(ny-.445)/.018),Math.max(0,(.557-ny)/.018)):
+      slot===3?Math.min(1,Math.max(0,(ny-.056)/.025),Math.max(0,(.31-ny)/.025)):1;
+    const inflate=1+allowance*Math.max(0,seam);
     p.x=center.x+nx*inflate/scale;p.z=center.z+nz*inflate/scale;
     p.applyMatrix4(modelToLocal);pos.setXYZ(i,p.x,p.y,p.z);
    }

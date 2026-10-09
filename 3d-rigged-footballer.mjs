@@ -8,9 +8,66 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 export const RIGGED_SURFACE_VERSION=3;
 export const MATERIAL_SLOTS=Object.freeze(['shirt','shorts','skin','socks','sleeves']);
+// The 20 patterns used in club-identity.css. No creative replacement at
+// kickoff: the same editor pattern and exact saved colors reach both teams.
+export const FOOTERA_KIT_PATTERNS=Object.freeze([
+ 'solid','stripes','hoops','diagonal','halves','sleeves','center','pinstripes',
+ 'quarters','chevron','chestband','shoulders','sidepanels','reverse',
+ 'doubleband','checkers','diamonds','fade','splitstripe','cuffs'
+]);
+export function paintFooteraKitTile(ctx,kit,width,height,part='shirt'){
+ const primary=kit?.shirt||'#ffffff',secondary=kit?.shirtSecondary||primary;
+ const pattern=FOOTERA_KIT_PATTERNS.includes(kit?.pattern)?kit.pattern:'solid';
+ ctx.fillStyle=(part==='sleeves'&&(pattern==='sleeves'||pattern==='shoulders'))?secondary:primary;
+ ctx.fillRect(0,0,width,height);ctx.fillStyle=secondary;
+ const rect=(x,y,w,h)=>ctx.fillRect(x*width,y*height,w*width,h*height);
+ const poly=points=>{ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x*width,y*height):ctx.moveTo(x*width,y*height));ctx.closePath();ctx.fill()};
+ if(part==='sleeves'){
+  if(pattern==='cuffs')rect(0,.83,1,.17);
+  if(pattern==='shoulders')rect(0,0,1,.29);
+  return;
+ }
+ if(part!=='shirt')return;
+ switch(pattern){
+ case 'stripes':for(let x=0;x<1;x+=.34)rect(x+.17,0,.17,1);break;
+ case 'hoops':for(let y=0;y<1;y+=.32)rect(0,y+.16,1,.16);break;
+ case 'diagonal':poly([[0,.06],[1,.74],[1,.90],[0,.22]]);break;
+ case 'reverse':poly([[0,.74],[1,.06],[1,.22],[0,.90]]);break;
+ case 'halves':rect(.5,0,.5,1);break;
+ case 'center':rect(.36,0,.28,1);break;
+ case 'pinstripes':for(let x=0;x<1;x+=.24)rect(x+.09,0,.03,1);break;
+ case 'quarters':rect(.5,0,.5,.5);rect(0,.5,.5,.5);break;
+ case 'chevron':poly([[0,.42],[.5,.60],[1,.42],[1,.53],[.5,.73],[0,.53]]);break;
+ case 'chestband':rect(0,.38,1,.20);break;
+ case 'shoulders':rect(0,0,1,.24);break;
+ case 'sidepanels':rect(0,0,.18,1);rect(.82,0,.18,1);break;
+ case 'doubleband':rect(0,.32,1,.1);rect(0,.48,1,.1);break;
+ case 'checkers':for(let y=0;y<8;y++)for(let x=0;x<8;x++)if((x+y)%2)rect(x/8,y/8,.125,.125);break;
+ case 'diamonds':for(let y=-1;y<6;y++)for(let x=-1;x<6;x++)
+  if((x+y)%2===0)poly([[(x+.5)/5,y/5],[(x+1)/5,(y+.5)/5],[(x+.5)/5,(y+1)/5],[x/5,(y+.5)/5]]);break;
+ case 'fade':{const g=ctx.createLinearGradient(0,0,0,height);g.addColorStop(0,primary);g.addColorStop(1,secondary);ctx.fillStyle=g;ctx.fillRect(0,0,width,height);break}
+ case 'splitstripe':rect(.34,0,.12,1);rect(.54,0,.12,1);break;
+ case 'cuffs':rect(0,0,1,.10);rect(0,.92,1,.08);break;
+ }
+}
+// UV coordinates in the canonical five-tile atlas. Shirt tile has separately
+// aligned FRONT and BACK halves; a shirt number is printed on the back only.
+export function footeraAtlasUV(nx,ny,nz,slot){
+ const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+ const cross=clamp(nx/Math.max(.145,Math.hypot(nx,nz)),-1,1);
+ const front=nz>=0;
+ const across=clamp(.5-.47*cross,.015,.985);
+ const u=slot===0?(front?0:.5)+across*.5:across;
+ const v=slot===0?clamp((ny-.557)/.306):
+  slot===1?clamp((ny-.445)/.112):
+  slot===3?clamp((ny-.056)/.254):
+  slot===4?clamp((ny-.59)/.28):.5;
+ return [(slot+.015+u*.97)/MATERIAL_SLOTS.length,v];
+}
+
 // A one-row atlas bakes the existing saved club-kit shirt pattern alongside
 // shorts, skin, socks and sleeve materials. Avoid one draw per limb/material.
-export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0){
+export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0,kit=null){
  const canDraw=typeof document!=='undefined'&&typeof document.createElement==='function';
  let texture;
  if(canDraw){
@@ -22,7 +79,15 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
    const material=materials[index],left=index*tile;
    ctx.fillStyle=material?.color?.getStyle?.()||'#ffffff';
    ctx.fillRect(left,0,tile,tile);
-   if(index===0&&material?.map?.image){
+   if(index===0&&kit){
+    // Face-independent atlas: editor pattern on both halves, shirt number BACK.
+    ctx.save();ctx.translate(left,0);
+    paintFooteraKitTile(ctx,kit,tile/2,tile,'shirt');
+    ctx.translate(tile/2,0);paintFooteraKitTile(ctx,kit,tile/2,tile,'shirt');
+    ctx.restore();
+   }else if(index===4&&kit){
+    ctx.save();ctx.translate(left,0);paintFooteraKitTile(ctx,kit,tile,tile,'sleeves');ctx.restore();
+   }else if(index===0&&material?.map?.image){
     try{ctx.drawImage(material.map.image,left,0,tile,tile)}catch(_){}
    }
    // Bake cloth relief into one atlas; no additional renderer draw call.
@@ -41,6 +106,8 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
     }
    }
    if(index===3){
+    // A restrained knit cuff respects the selected sock color.
+    ctx.fillStyle='rgba(255,255,255,.09)';ctx.fillRect(0,0,tile,tile*.075);
     ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;
     for(let y=3;y<tile;y+=Math.max(5,tile/18)){
      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(tile,y);ctx.stroke();
@@ -52,8 +119,8 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
     ctx.font=`900 ${Math.round(tile*.3)}px system-ui,sans-serif`;
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
     ctx.lineWidth=Math.max(2,tile*.033);ctx.strokeStyle='rgba(0,0,0,.84)';
-    ctx.strokeText(String(shirtNumber),tile*.5,tile*.49);
-    ctx.fillStyle='#f8f8f3';ctx.fillText(String(shirtNumber),tile*.5,tile*.49);
+    ctx.strokeText(String(shirtNumber),kit?tile*.75:tile*.5,tile*.49);
+    ctx.fillStyle='#f8f8f3';ctx.fillText(String(shirtNumber),kit?tile*.75:tile*.5,tile*.49);
    }
    ctx.restore();
   }
@@ -75,7 +142,7 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
  const atlasMaterial=new THREE.MeshStandardMaterial({map:texture,roughness:.92,metalness:0});
  return{texture,material:atlasMaterial};
 }
-export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12,shirtNumber=0){
+export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12,shirtNumber=0,kit=null){
  const order=[joints.rig,joints.upper,joints.motion,joints.chest,
   joints.arms[0],joints.elbows[0],joints.arms[1],joints.elbows[1],
   joints.legs[0],joints.knees[0],joints.ankles[0],
@@ -94,7 +161,10 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12,s
    for(let k=0;k<=segments;k++){
     const t=k/segments*Math.PI*2+(mat===0?Math.PI:0);
     v.push(centerX+rx*Math.sin(t),y,centerZ+depth+rz*Math.cos(t));
-    uv.push((mat+.015+k/segments*.97)/MATERIAL_SLOTS.length,(y-ymin)/Math.max(.01,ymax-ymin));
+    const front=Math.cos(t)<=0,across=.5-.47*Math.sin(t);
+    const shirtU=(front?0:.5)+across*.5;
+    uv.push((mat+.015+(mat===0&&kit?shirtU:k/segments)*.97)/MATERIAL_SLOTS.length,
+      (y-ymin)/Math.max(.01,ymax-ymin));
     ids.push(a,b,0,0);weights.push(1-blend,blend,0,0);
    }
   }
@@ -142,7 +212,7 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12,s
  geometry.setIndex(ix);
  // NO geometry groups: GPU processes the entire figure in one skinning draw.
  geometry.computeVertexNormals();
- const atlas=createFootballKitAtlas(THREE,materials,segments,shirtNumber);
+ const atlas=createFootballKitAtlas(THREE,materials,segments,shirtNumber,kit);
  const model=new THREE.SkinnedMesh(geometry,atlas.material);
  model.name='FooteraSkinnedFootballer';
  model.frustumCulled=false;
