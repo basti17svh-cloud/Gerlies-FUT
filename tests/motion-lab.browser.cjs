@@ -59,7 +59,7 @@ const server=http.createServer((req,res)=>{
   const block=await page.evaluate(()=>window.__footeraMotionLab.getState());
   assert.equal(block.mode,'pilot');
   assert.equal(block.defense,'block_attempt');
-  assert.equal(block.metrics.contactMotionVersion,'21.56-controlled-slide','preview must load V21.55, not cached V21.54');
+  assert.equal(block.metrics.contactMotionVersion,'21.56-controlled-slide','preview must load the current controlled-slide build, not an obsolete cached build');
   await seek(6.55);
   assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
   assert.ok(await page.locator('#outcome').isVisible(),'result appears for both quick previews');
@@ -70,7 +70,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(fresh.mode,'pilot','new diagnostic page starts on B');
   assert.equal(fresh.defense,'block_attempt','new diagnostic page starts with shot block');
   assert.equal(fresh.metrics.contactMotionVersion,'21.56-controlled-slide');
-  assert.match(await page.locator('#build-tag').innerText(),/21\.55-balanced-block/,
+  assert.match(await page.locator('#build-tag').innerText(),/21\.56-controlled-slide/,
    'the real loaded build must be visible to user');
   await seek(5.74);
   const stance=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
