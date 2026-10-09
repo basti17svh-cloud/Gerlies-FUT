@@ -9,9 +9,10 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
+const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
 const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
  'lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r'];
-let source=null,pending=null;
+let source=null,pending=null,sourceMakeHuman=null,pendingMakeHuman=null;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 
 // Driver rotations are expressed in player space, NOT in the imported bones'
@@ -56,6 +57,31 @@ export async function prepareFooteraPlayerModel(){
  return pending;
 }
 export function isFooteraPlayerModelReady(){return !!source}
+export function isFooteraMakeHumanModelReady(){return !!sourceMakeHuman}
+export async function prepareFooteraMakeHumanModel(){
+ if(sourceMakeHuman)return true;
+ if(typeof document==='undefined'||typeof fetch!=='function')return false;
+ if(!pendingMakeHuman)pendingMakeHuman=(async()=>{
+  const [{GLTFLoader},{clone}]=await Promise.all([
+   import('./vendor/three/GLTFLoader.mjs'),import('./vendor/three/SkeletonUtils.mjs')
+  ]);
+  const gltf=await new GLTFLoader().loadAsync(MAKEHUMAN_URL.href);
+  const bones=new Set();let weighted=0,vertices=0;
+  gltf.scene.traverse(node=>{
+   if(node.isBone)bones.add(node.name);
+   if(node.isSkinnedMesh){weighted++;vertices+=node.geometry.getAttribute('position')?.count||0}
+  });
+  const needed=['pelvis','spine_01','spine_03','head','thigh_l','thigh_r','calf_l','calf_r',
+   'foot_l','foot_r','ball_l','ball_r','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r'];
+  if(weighted<1||vertices<12000||needed.some(name=>!bones.has(name)))
+   throw new Error('MakeHuman GLB failed 53-bone rig validation');
+  // Source animations are stripped from the published GLB and never played.
+  if(gltf.animations?.length)throw new Error('Unapproved MakeHuman animations in GLB');
+  sourceMakeHuman={scene:gltf.scene,clone,vertexCount:vertices,boneCount:bones.size};
+  return true;
+ })().catch(error=>{pendingMakeHuman=null;throw error});
+ return pendingMakeHuman;
+}
 
 // Colour fallback for callers without the existing club-kit texture atlas.
 export function footballerKitColorAt(nx,ny,nz,kit={},hair=0){
@@ -84,15 +110,18 @@ export function footballerKitColorAt(nx,ny,nz,kit={},hair=0){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true){
- if(!source)return null;
- const model=source.clone(source.scene);
+export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius'){
+ const asset=variant==='makehuman'?sourceMakeHuman:source;
+ if(!asset)return null;
+ const makehuman=variant==='makehuman';
+ const model=asset.clone(asset.scene);
  model.name='FooteraImportedFootballer';
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
   if(node.isBone)bones.set(node.name,node);
   if(node.isSkinnedMesh){node.frustumCulled=false;node.castShadow=true;node.receiveShadow=true;meshes.push(node)}
  });
+ if(makehuman&&bones.has('head'))bones.set('Head',bones.get('head'));
  if(REQUIRED.some(key=>!bones.has(key))||!meshes.length)return null;
  model.updateMatrixWorld(true);
  const bounds=new THREE.Box3().setFromObject(model);
@@ -114,8 +143,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const surfaceMaps=detail?createFooteraSurfaceMaps(THREE):null;
  const colorsByMesh=[];
  for(const mesh of meshes){
+  const sourceGeometry=mesh.geometry,sourceMaterial=mesh.material;
   const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
-  const colors=new Float32Array(pos.count*3),uv=new Float32Array(pos.count*2),heights=new Float32Array(pos.count),p=new THREE.Vector3();
+  const colors=new Float32Array(pos.count*3),uv=new Float32Array(pos.count*2),
+   heights=new Float32Array(pos.count),zones=new Uint8Array(pos.count),p=new THREE.Vector3();
   // vertex position in the original GLB's unscaled world coordinates.
   const localToModel=model.matrixWorld.clone().invert().multiply(mesh.matrixWorld);
   const modelToLocal=localToModel.clone().invert();
@@ -131,6 +162,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const hairline=.934+(nz>0?.018:0);
    let slot=ny<.056?2:ny<.31?3:ny<.445?2:ny<.557?1:
     ny>.863||bareArm?2:Math.abs(nx)>.26?4:0;
+   zones[i]=slot;
    let c=footballerKitColorAt(nx,ny,nz,kit,tintIndex);
    const longitude=((Math.atan2(nx,nz)/(Math.PI*2))%1+1)%1;
    const vertical=slot===0?clamp((ny-.557)/.306):slot===1?clamp((ny-.445)/.112):slot===3?clamp((ny-.056)/.254):.5;
@@ -165,30 +197,49 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    colors[i*3]=c.r*ao;colors[i*3+1]=c.g*ao;colors[i*3+2]=c.b*ao;
   }
   geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-  if(isBody){
-   const original=geometry.index?.array||Array.from({length:pos.count},(_,i)=>i),indices=[];
-   for(let i=0;i<original.length;i+=3){
-    // Actual shaped boots below cover the trimmed anatomical toes/forefoot.
-    if(Math.max(heights[original[i]],heights[original[i+1]],heights[original[i+2]])<.061)continue;
-    indices.push(original[i],original[i+1],original[i+2]);
-   }
-   geometry.setIndex(indices);geometry.computeVertexNormals();
+  const sourceIndices=geometry.index?.array||Array.from({length:pos.count},(_,i)=>i);
+  const keepSkin=[],keepKit=[],keepAll=[];
+  for(let i=0;i<sourceIndices.length;i+=3){
+   const tri=[sourceIndices[i],sourceIndices[i+1],sourceIndices[i+2]];
+   if(isBody&&Math.max(...tri.map(k=>heights[k]))<.061)continue;
+   keepAll.push(...tri);
+   const garment=tri.filter(k=>zones[k]===0||zones[k]===1||zones[k]===3||zones[k]===4).length>=2;
+   (makehuman&&isBody&&!garment?keepSkin:keepKit).push(...tri);
   }
+  geometry.setIndex(makehuman?keepKit:keepAll);
+  geometry.computeVertexNormals();
   // Both PBR maps share this atlas: UV for normal/roughness, UV2 for AO.
   // Each slot already encodes the real material zone, so skin never gets knit.
   const uvAttr=new THREE.Float32BufferAttribute(uv,2);
   geometry.setAttribute('uv',uvAttr);
   if(surfaceMaps&&isBody)geometry.setAttribute('uv2',uvAttr);
-  mesh.geometry=geometry;
-  mesh.material=new THREE.MeshStandardMaterial({vertexColors:true,
+  const kitMaterial=new THREE.MeshStandardMaterial({vertexColors:true,
    map:/eye/i.test(mesh.name)?null:existingDriver.skinned?.atlasTexture||null,
    roughnessMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
-   aoMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
-   aoMapIntensity:.64,
+   aoMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,aoMapIntensity:.64,
    normalMap:surfaceMaps&&isBody?surfaceMaps.normalMap:null,
    normalScale:new THREE.Vector2(.52,.52),
-   metalness:0,roughness:/^eyes$/i.test(mesh.name)?(surfaceMaps ? .36 : .4):(surfaceMaps ? 1 : .85),side:THREE.DoubleSide});
-  colorsByMesh.push({geometry,material:mesh.material});
+   metalness:0,roughness:surfaceMaps?1:.85,side:THREE.DoubleSide});
+  if(makehuman&&isBody){
+   // Keep the original CC0 MakeHuman skin UVs/materials for face and bare skin;
+   // cloth uses Footera's own club atlas on a second mesh sharing the real rig.
+   // No source material is edited, so a cloned player cannot contaminate others.
+   const skinGeometry=sourceGeometry.clone();skinGeometry.setIndex(keepSkin);
+   const skinMaterial=Array.isArray(sourceMaterial)?sourceMaterial[0].clone():sourceMaterial.clone();
+   skinMaterial.side=THREE.DoubleSide;
+   mesh.geometry=skinGeometry;mesh.material=skinMaterial;
+   const clothes=new THREE.SkinnedMesh(geometry,kitMaterial);
+   clothes.name='FooteraMakeHumanTeamKit';
+   clothes.bind(mesh.skeleton,mesh.bindMatrix);
+   clothes.position.copy(mesh.position);clothes.quaternion.copy(mesh.quaternion);
+   clothes.scale.copy(mesh.scale);clothes.frustumCulled=false;
+   clothes.castShadow=true;clothes.receiveShadow=true;
+   mesh.parent.add(clothes);
+   colorsByMesh.push({geometry:skinGeometry,material:skinMaterial},{geometry,material:kitMaterial});
+  }else{
+   mesh.geometry=geometry;mesh.material=kitMaterial;
+   colorsByMesh.push({geometry,material:kitMaterial});
+  }
  }
  // Neutral T pose is converted once into normal running arm-down posture.
  const aim=new THREE.Vector3(),from=new THREE.Vector3();
@@ -316,8 +367,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    elbows:[local('lowerarm_l'),local('lowerarm_r')],hands:[local('hand_l'),local('hand_r')]};
  }
  animate();
- return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:source.vertexCount,
-  boneCount:source.boneCount,animate,inspectMotion,
+ return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
+  boneCount:asset.boneCount,variant,animate,inspectMotion,
   surfaceDetail:!!surfaceMaps,
   dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}surfaceMaps?.dispose()}
  };
