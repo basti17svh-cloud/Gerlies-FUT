@@ -196,6 +196,7 @@ const server=http.createServer((req,res)=>{
      assert.ok(action.contactExtension>1.7,'fully straightened slide into ball');
     }else{
      assert.ok(action.contactExtension>.95,'blocking leg extends across shot lane');
+     assert.ok(Math.abs(action.contactTilt)<.12,'blocking torso stays upright, no backward stumble');
     }
     await page.screenshot({path:path.join(out,'motion-contact-'+scenario.name+'.png'),fullPage:true});
     await seek(page,scenario.action==='slide_attempt'?4.22:6.55);
