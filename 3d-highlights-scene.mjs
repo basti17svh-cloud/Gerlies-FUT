@@ -361,44 +361,20 @@ export function runPosition(index,time,sequence='central'){
  }
  if(variant){
   const p=runPosition(index,time,variant.base),[dx,dz]=variantShift(variant,Math.min(time,SHOT_TIME));
-  if(index===0){
-  // One coherent path into shooting position. The old per-leg smoothstep
-  // slowed the entire runner to zero at 1.8 / 2.65 / 3.1 / 3.25 s.
-  const nodes=seq==='dribble'?ATTACKER_FLOW_NODES.dribble:
-   seq.startsWith('wing_')||seq.startsWith('cutback_')?ATTACKER_FLOW_NODES.wing:
-   seq==='one_two'?ATTACKER_FLOW_NODES.one_two:
-   seq==='through_ball'?ATTACKER_FLOW_NODES.through_ball:ATTACKER_FLOW_NODES.central;
-  return sampleFlowRun(nodes,time,.35,-1.9);
- }
- if(index===1){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.78*(1-.22*u);p[1]+=Number(variant.depth||0)*.85*(1-u)}
+  if(index===0){p[0]+=dx;p[1]+=dz}
+  else if(index===1){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.78*(1-.22*u);p[1]+=Number(variant.depth||0)*.85*(1-u)}
   else if(index<8){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.15*(1-u)}
   return p;
  }
  const r=RUNS[index];
  if(index===0){
-  if(seq==='dribble'){
-   const u=clamp(time/SHOT_TIME),z=mix(-25.5,-37,u),x=u<.35?mix(-7,-3,smooth(u/.35)):u<.7?mix(-3,2.4,smooth((u-.35)/.35)):mix(2.4,0,smooth((u-.7)/.3));
-   if(time<=SHOT_TIME)return[x,z];return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
-  }
-  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
-   if(time<3.25)return lerp([1,-26],[1,-31.2],smooth(time/3.25));
-   if(time<=SHOT_TIME)return lerp([1,-31.2],[0,-37],smooth((time-3.25)/(SHOT_TIME-3.25)));
-   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
-  }
-  if(seq==='one_two'){
-   if(time<1.8)return lerp([-2,-26],[-2,-29.3],smooth(time/1.8));
-   if(time<2.65)return lerp([-2,-29.3],[-1,-30.6],smooth((time-1.8)/.85));
-   if(time<=SHOT_TIME)return lerp([-1,-30.6],[0,-37],smooth((time-2.65)/(SHOT_TIME-2.65)));
-   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
-  }
-  if(seq==='through_ball'){
-   if(time<2.35)return lerp([-2,-25.5],[-1.8,-29],smooth(time/2.35));
-   if(time<=SHOT_TIME)return lerp([-1.8,-29],[0,-37],smooth((time-2.35)/(SHOT_TIME-2.35)));
-   return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
-  }
-  if(time<3.1)return lerp([-2,-26],[-1,-31.2],smooth(time/3.1));
-  if(time<=SHOT_TIME){const u=clamp((time-3.1)/(SHOT_TIME-3.1)),t=u<.18?smooth(u/.18)*.18:u;return lerp([-1,-31.2],[0,-37],t)}
-  return lerp([0,-37],[.35,-38.35],smooth((time-SHOT_TIME)/1.15))
+  // No zero-speed frames at authored intermediate nodes. Keep path contact
+  // at exactly 5.4s and carry incoming momentum through the follow-through.
+  const nodes=seq==='dribble'?ATTACKER_FLOW_NODES.dribble:
+   seq.startsWith('wing_')||seq.startsWith('cutback_')?ATTACKER_FLOW_NODES.wing:
+   seq==='one_two'?ATTACKER_FLOW_NODES.one_two:
+   seq==='through_ball'?ATTACKER_FLOW_NODES.through_ball:ATTACKER_FLOW_NODES.central;
+  return sampleFlowRun(nodes,time,.35,-1.9);
  }
  if(index===1){
   if(seq.startsWith('wing_')||seq.startsWith('cutback_')){
