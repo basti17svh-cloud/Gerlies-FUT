@@ -871,11 +871,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    p.upper.rotation.z=d.bank*.73+c.roll*motion+Math.sin(stride)*.016*motion;
    p.rig.rotation.z=d.bank*.24+c.roll*.08*motion;
    p.shadow.rotation.z=heading;
-   if(pilotMotion&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
+   // Keep the tackling defender on natural running legs until the dedicated
+   // support-foot plant begins. Otherwise its feint/jockey clip crouches and
+   // twists the player well before the tackle (the visible pre-stumble).
+   const isolatedSlide=labDuelPreview&&defenderAction==='slide_attempt'&&p===players[defenderIndex];
+   if(pilotMotion&&!isolatedSlide&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
     const role=p===players[0]?'attacker':p===players[defenderIndex]?'defender':p===players[1]?'provider':'support';
     applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
     if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
-   }else if(enhancedRigMotion&&p.skinned&&p!==keeper){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
+   }else if(enhancedRigMotion&&p.skinned&&p!==keeper&&!isolatedSlide){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
     applyContextualAttackerMotion(p,time,sequence,p===players[1]?1:0);
@@ -959,7 +963,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
-    const cleanBlockPreview=labDuelPreview&&defenderAction==='block_attempt'&&i===defenderIndex;
+    const cleanContactPreview=labDuelPreview&&i===defenderIndex;
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
@@ -973,7 +977,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const transition=applyMotion23(p,time,speed,turn,stride,acceleration,sequence,role,i===0?event.playerStyles:i===1?event.creatorStyles:[]);
      if(i===0)motion23Sample=transition;
     }
-    if(i>=8&&time<SHOT_TIME+.4&&!cleanBlockPreview){const brace=defenderTracking(i,time,sequence).pressure;
+    if(i>=8&&time<SHOT_TIME+.4&&!cleanContactPreview){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
@@ -1011,11 +1015,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.legs[0].rotation.x+=.25*a;p.legs[1].rotation.x-=.24*a;
      }
     }
-    if(pilotMotion&&i>=8&&!cleanBlockPreview){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
-    if(motion2Active&&i===defenderIndex&&!cleanBlockPreview)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
+    if(pilotMotion&&i>=8&&!cleanContactPreview){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
+    if(motion2Active&&i===defenderIndex&&!cleanContactPreview)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
     if(pilotMotion&&i===defenderIndex){
      const dist=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);
-     duelSample=cleanBlockPreview
+     duelSample=cleanContactPreview
       ?sampleDefensiveDuels(time,dist,defenderAction,sequence,event.defenderStyles)
       :applyDefensiveDuels(p,time,dist,defenderAction,sequence,event.defenderStyles);
      if(isContactDemo(defenderAction))contactPose=applyContactStage(p,defenderAction,
