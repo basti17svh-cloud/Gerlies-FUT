@@ -31,6 +31,31 @@ function match3DActorSlot(side,{uid='',index=-1,name=''}={}){
  const byName=row||rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===String(name||'').toLowerCase());
  return String(byName?.slot||'').toUpperCase()
 }
+function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
+ // Visual only; never affect the match simulation or its random stream.
+ const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice();
+ const valid=(v,fb)=>{const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=99?n:fb};
+ const rows=side=>typeof matchActorRows==="function"?(matchActorRows(side)||[]):[];
+ const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||"")));
+ const number=(side,row,fb)=>side==="home"?valid(current?.shirtNumbers?.[row?.uid],fb):
+  valid(row?.entry?.shirtNumber??row?.entry?.jerseyNumber??row?.base?.shirtNumber??row?.base?.jerseyNumber,fb);
+ const attackSide=event.team==="away"?"away":"home",defendSide=attackSide==="home"?"away":"home";
+ const attacker=field(attackSide).find(row=>attackSide==="home"?String(row.uid)===String(event.playerId):String(row.index)===String(event.playerId))||
+  field(attackSide).find(row=>String(row.name).toLowerCase()===String(event.playerName||"").toLowerCase());
+ const fill=(side,offset,lead,target)=>{
+  const list=field(side),anchor=list.includes(lead)?lead:null,ordered=anchor?[anchor,...list.filter(row=>row!==anchor)]:list;
+  let slot=0;
+  for(let i=0;i<ordered.length&&i<8;i++){
+   if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);continue}
+   while(anchor&&slot===target)slot++;
+   if(slot>7)break;
+   out[offset+slot]=number(side,ordered[i],out[offset+slot]);slot++;
+  }
+ };
+ fill(attackSide,0,attacker,0);
+ fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
+ return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
+}
 function match3DPresentationMeta(event,current){
  const rows=typeof matchActorRows==='function'?(matchActorRows(event.team)||[]):[],row=event.team==='home'
   ?(event.playerId?rows.find(r=>String(r.uid)===String(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase())
@@ -109,6 +134,9 @@ function queueMatch3D(event){
  presentation.defenderStyles=styleFor(defender);
  presentation.defenderName=defender?.name||'';
  presentation.defenderIndex=wideLeft?9:wideRight?10:8;
+  const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
+  presentation.shirtNumbers=shirtInfo.shirtNumbers;
+  presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  const selected=FooteraHighlights.choosePresentation(presentation,match3DQueue.history||[]);

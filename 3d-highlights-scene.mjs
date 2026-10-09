@@ -855,23 +855,25 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const priority=[0,1,defenderIndex,2,8,3,9,4,10,5,11,6,12,7,13,14,15];
   const uniquePriority=priority.filter((v,i)=>priority.indexOf(v)===i);
   const detailedActors=new Set(weak?uniquePriority.slice(0,8):uniquePriority);
-  const squadNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
+  const defaultNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
+  const squadNumbers=defaultNumbers.map((fb,i)=>{const n=Number(event.shirtNumbers?.[i]);return Number.isInteger(n)&&n>=1&&n<=99?n:fb});
+  const keeperNumber=Number(event.keeperShirtNumber);
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
    i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
    false,detailedActors.has(i),squadNumbers[i],i===0));
-  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,1,true);
+  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true);
   // Use a single CC0 source and one skeleton clone for EACH visible player.
   // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
   const allQuaternius=allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
   const importedPlayers=new Array(players.length).fill(null);
   let importedPlayer=null,importedKeeper=null;
   const fallbackKitAtlases=new Map();
-  function lowKitAtlas(kit){
-   const key=JSON.stringify(kit);
+  function lowKitAtlas(kit,shirtNumber){
+   const key=JSON.stringify([kit,shirtNumber]);
    if(!fallbackKitAtlases.has(key)){
     const atlas=createFootballKitAtlas(THREE,[shirtMaterial(kit),
      mat(kit.shorts,{roughness:.96}),mat('#bd8c70'),
-     mat(kit.socks,{roughness:1}),mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92})],8,0,kit);
+     mat(kit.socks,{roughness:1}),mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92})],8,shirtNumber,kit);
     track(atlas.texture);track(atlas.material);fallbackKitAtlases.set(key,atlas.texture);
    }
    return fallbackKitAtlases.get(key);
@@ -892,7 +894,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
       const name=i===0?event.playerName:'footballer '+i;
       const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
-       'quaternius',actor.skinned?null:lowKitAtlas(kit));
+       'quaternius',actor.skinned?null:lowKitAtlas(kit,squadNumbers[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
       importedPlayers[i]=glb;staged.push(glb);
      }

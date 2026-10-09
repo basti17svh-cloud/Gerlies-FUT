@@ -1,0 +1,20 @@
+/* Footera V21.85 — squad shirt numbers */
+#squadPlanMenu{grid-template-columns:repeat(2,minmax(0,1fr))}
+#squadPlanMenu .squad-plan-btn{min-height:83px}
+#squadPlanMenu .squad-plan-copy strong{font-size:11px}
+#squadPlanMenu .squad-plan-copy em{font-size:8px}
+#squadPlanMenu .squad-plan-btn.numbers .squad-plan-icon{color:#91ccff;background:#142637}
+#shirtNumbersModal .modalinner{max-width:720px}
+#shirtNumbersBody{padding-bottom:25px}
+.shirt-number-section{margin:13px 0;padding:12px;border:1px solid #2d4038;border-radius:16px;background:linear-gradient(145deg,#101b17,#0a1110)}
+.shirt-number-section h4{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 10px;font-size:14px}
+.shirt-number-section h4 span{font-size:9px;font-weight:500;color:#8b9c92}
+.shirt-number-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;padding:7px 10px;border-radius:10px;background:#14211b;margin-top:6px}
+.shirt-number-name{display:grid;gap:4px;min-width:0}
+.shirt-number-name strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.shirt-number-name small{font-size:9px;color:#8ea39a}
+.shirt-number-edit{display:flex;align-items:center;gap:3px;border:1px solid #426052;border-radius:10px;background:#0b1612;color:#d8ff3e;padding:3px 8px;font-size:15px;font-weight:800}
+.shirt-number-edit input{width:52px;min-height:38px;padding:3px;background:none;border:0;outline:0;color:#fff;text-align:center;font-size:19px;font-weight:850;appearance:textfield}
+.shirt-number-edit input::-webkit-inner-spin-button,.shirt-number-edit input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.shirt-number-edit:focus-within{border-color:#d8ff3e;box-shadow:0 0 0 1px #d8ff3e}
+@media(max-width:560px){#squadPlanMenu .squad-plan-btn{min-height:82px}#squadPlanMenu .squad-plan-copy strong{font-size:10px}#squadPlanMenu .squad-plan-copy em{font-size:7.5px}.shirt-number-section{padding:10px}.shirt-number-row{padding:7px 9px}}

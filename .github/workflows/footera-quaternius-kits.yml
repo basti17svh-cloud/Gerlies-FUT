@@ -1,7 +1,7 @@
 name: Footera Quaternius Kit Proof
 on:
   push:
-    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
+    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','3d-highlights.js','3d-highlights-match.js','squad-numbers.js','squad-numbers.css','tests/shirt-numbers.test.cjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +19,10 @@ jobs:
           node --check 3d-rigged-footballer.mjs
           node --check 3d-player-prototype.mjs
           node --check 3d-highlights-scene.mjs
+          node --check 3d-highlights.js
+          node --check 3d-highlights-match.js
+          node --check squad-numbers.js
+          node --test tests/shirt-numbers.test.cjs
       - name: Install real Chromium WebGL
         run: |
           npm install --prefix /tmp/footera-kit-proof playwright@1.51.1
