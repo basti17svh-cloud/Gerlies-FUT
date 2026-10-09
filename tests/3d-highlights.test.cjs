@@ -596,7 +596,7 @@ test('V21.68 imported articulated CC0 GLB is integrated without simulation owner
  assert.equal(typeof model.mountFooteraPlayerModel,'function');
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(scene,/mountFooteraPlayerModel\(players\[0\]\.root/);
- assert.match(scene,/players\[0\]\.skinned\.model\.visible=false/);
+ assert.match(scene,/if\(actor.skinned\)actor.skinned.model.visible=false/);
  assert.match(scene,/importedPlayer\?\.animate\(time,importedMotionFrame\)/);
  const bridge=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
  assert.match(bridge,/module\.prepareFooteraPlayerModel\(\)/);
