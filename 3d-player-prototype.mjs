@@ -187,7 +187,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    aoMapIntensity:.64,
    normalMap:surfaceMaps&&isBody?surfaceMaps.normalMap:null,
    normalScale:new THREE.Vector2(.52,.52),
-   metalness:0,roughness:/^eyes$/i.test(mesh.name)?.36:1,side:THREE.DoubleSide});
+   metalness:0,roughness:/^eyes$/i.test(mesh.name)?(surfaceMaps?.36:.4):surfaceMaps?1:.85,side:THREE.DoubleSide});
   colorsByMesh.push({geometry,material:mesh.material});
  }
  // Neutral T pose is converted once into normal running arm-down posture.
