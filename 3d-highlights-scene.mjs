@@ -1395,9 +1395,11 @@ export function play(event,signal){
    let fluidMotion=!weak;
    try{if(window.localStorage?.getItem('footera-3d-motion-mode')==='legacy')fluidMotion=false}catch(_){}
    if(typeof window!=='undefined'&&window.__FOOTERA_FORCE_LEGACY_MOTION===true)fluidMotion=false;
-   let forceLegacyModel=false,useMakeHuman=false;
-   try{const selected=window.localStorage?.getItem('footera-3d-player-model');forceLegacyModel=selected==='legacy';useMakeHuman=selected==='makehuman'}catch(_){}
-   const modelVariant=useMakeHuman&&isFooteraMakeHumanModelReady()?'makehuman':'quaternius';
+   let forceLegacyModel=false;
+   try{forceLegacyModel=window.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
+   // MakeHuman remains a laboratory-only A/B asset. The real Matchday always
+   // selects the last verified Quaternius model until visual quality is accepted.
+   const modelVariant='quaternius';
    world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant);
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
@@ -1405,7 +1407,7 @@ export function play(event,signal){
    layer.dataset.playerModel=imported?'glb':'legacy';
    layer.dataset.playerModelReason=imported?'loaded':forceLegacyModel?'user-disabled':isFooteraPlayerModelReady()?'mount-failed':'not-ready';
    modelStatus.dataset.modelStatus=imported?'glb':'legacy';
-   modelStatus.textContent=imported?(modelInfo.importedVariant==='makehuman'?'MAKEHUMAN GLB':'GLB AKTIV'):forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL';
+   modelStatus.textContent=imported?'GLB AKTIV':forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL';
    modelStatus.dataset.motionCaption=modelInfo.capturedMotionEnabled?'CC0 BEREIT':'CC0 AUS';
    layer.dataset.capturedMotion=modelInfo.capturedMotionEnabled?'ready':'off';
    // Optional extra device information; the main badge always shows.

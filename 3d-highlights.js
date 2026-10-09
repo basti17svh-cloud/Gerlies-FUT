@@ -29,7 +29,7 @@
    homePattern:String(event.homePattern||'solid'),awayPattern:String(event.awayPattern||'solid'),homeKitConfigured:event.homeKitConfigured===true,awayKitConfigured:event.awayKitConfigured===true,
    homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3')});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2180'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2181'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
@@ -45,14 +45,14 @@
    // First a genuine 3D skinned GLB, then the existing deterministic highlight.
    // Missing file / slow device => existing Footera actor, never delay results.
    if(!signal.aborted&&!skipped){
-    let disabled=false,useMakeHuman=false;
-    try{const model=root.localStorage?.getItem('footera-3d-player-model');disabled=model==='legacy';useMakeHuman=model==='makehuman'}catch(_){}
-    if(useMakeHuman&&typeof module.prepareFooteraMakeHumanModel==='function')try{
-      await Promise.race([
-       module.prepareFooteraMakeHumanModel(),
-       new Promise(resolve=>setTimeout(()=>resolve(false),4500))
-      ]);
-    }catch(error){console.warn('Footera MakeHuman GLB unavailable, retaining Quaternius:',error)}
+    let disabled=false;
+    try{
+      const model=root.localStorage?.getItem('footera-3d-player-model');
+      disabled=model==='legacy';
+      // V21.81 safety rollback: experimental MakeHuman was visibly malformed.
+      // Remove the opt-in; only the isolated A/B diagnostics may load that model.
+      if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
+    }catch(_){}
     if(!disabled)try{await Promise.race([
       module.prepareFooteraPlayerModel(),
       new Promise(resolve=>setTimeout(()=>resolve(false),4500))

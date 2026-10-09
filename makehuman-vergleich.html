@@ -29,9 +29,8 @@ article[data-view=match] figure img{aspect-ratio:16/9}
 @media(max-width:500px){main{padding:14px 8px 30px}.pair{gap:6px}figcaption{font-size:10px;padding:7px 5px;text-align:center}h2{font-size:15px}article{margin:16px 0}header p{font-size:12px}}
 </style></head><body><main>
 <header><h1>FOOTERA <b>MODELLVERGLEICH</b></h1><p>Echte WebGL-Aufnahmen direkt aus Footeras Produktionsrenderer · identische Spielsituation und Trikots.</p></header>
-<div class="info"><strong>Teststatus:</strong> Dies ist der Vergleich zwischen dem bisherigen Quaternius-GLB (links) und dem neu integrierten MakeHuman-CC0-GLB (rechts). Keine KI-generierten Nachher-Bilder.</div>
+<div class="info"><strong>NICHT FREIGEGEBEN · Sichtbare Fehler:</strong> Das MakeHuman-Experiment rechts hat fehlerhafte Trikot-/Hautkanten, einen unbrauchbaren Haaraufsatz und unnatürliche Posen. Die Bilder sind echte Renderer-Aufnahmen und dokumentieren den Fehler, keine Qualitätsverbesserung. Der Live-Matchday bleibt beim bisherigen Quaternius-Modell.</div>
 <div class="controls"><button type="button" id="captureAgain">Originalaufnahmen neu erstellen</button>
-<button type="button" id="activateModel">MakeHuman im Matchday testen</button>
 <button type="button" id="restoreModel">Bisheriges Modell verwenden</button><button type="button" id="leftCut" aria-pressed="false">Cut links</button><button type="button" id="rightCut" aria-pressed="true">Cut rechts</button><label for="moment">Bewegungszeit</label><input type="range" id="moment" min="0" max="6" step="0.05" value="3.12" aria-label="Bewegungszeitpunkt"><output id="momentValue">3,12 s</output></div>
 <div id="status" role="status" aria-live="polite">Echte Renderer-Aufnahmen werden vorbereitet …</div>
 <div id="views">
@@ -48,7 +47,7 @@ article[data-view=match] figure img{aspect-ratio:16/9}
 </main>
 <script type="module">
 import * as THREE from './vendor/three/three.module.min.js';
-import {makeScene,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-highlights-scene.mjs?v=2180';
+import {makeScene,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-highlights-scene.mjs?v=2181';
 const $=id=>document.getElementById(id);
 const event={id:'footera-real-model-comparison',type:'goal',team:'home',minute:38,period:1,attackDirection:1,
  sequence:'cut_inside_right',finish:'finesse',playerName:'Footera Modelltest',keeperName:'Footera Torwart',defenderName:'Footera Verteidiger',
@@ -115,13 +114,9 @@ async function init(){
  }catch(error){console.error(error);$('status').textContent='Vergleich nicht verfügbar: '+String(error?.message||error)}
 }
 $('captureAgain').addEventListener('click',captures);
-$('activateModel').addEventListener('click',()=>{
-  localStorage.setItem('footera-3d-player-model','makehuman');
-  $('status').textContent='MakeHuman ist für deine nächsten Matchday-Highlights aktiviert. Öffne Footera und starte ein Match.';
-});
 $('restoreModel').addEventListener('click',()=>{
   localStorage.removeItem('footera-3d-player-model');
-  $('status').textContent='Das bisherige Quaternius-Modell wird wieder verwendet.';
+  $('status').textContent='Das bisherige Quaternius-Modell bleibt im Matchday aktiv.';
 });
 function updateCut(which){
  event.sequence=which==='left'?'cut_inside_left':'cut_inside_right';
