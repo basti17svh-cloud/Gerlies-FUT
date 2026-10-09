@@ -12,6 +12,7 @@ import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
+import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -62,19 +63,21 @@ const VARIANTS=Object.freeze({
 });
 const baseSequence=sequence=>VARIANTS[sequence]?.base||sequence;
 const INVERTED_SEQUENCES=new Set(['inside_left','inside_right','cut_inside_left','cut_inside_right','double_feint_left','double_feint_right','near_post_cut_left','near_post_cut_right']);
+// Authored football runs retain their story beats but no longer stop at every
+// waypoint: shared Hermite tangents keep forward velocity through the cut.
+const INVERTED_FLOW_NODES=Object.freeze({
+ feint:[[0,24,-24],[1.45,19,-28],[2.65,22,-31],[3.90,15,-35.5],[SHOT_TIME,9,-39]],
+ cut:[[0,25,-23],[2.05,23,-31],[3.2,18,-34],[4.2,12,-37],[SHOT_TIME,9,-39]],
+ near:[[0,22,-22],[2.0,18,-29],[3.65,12,-35.5],[SHOT_TIME,9,-39]],
+ inside:[[0,23,-24.5],[2.25,21,-30.5],[3.85,14,-35.6],[SHOT_TIME,9,-39]]
+});
 function invertedRunPosition(sequence,time){
- const side=sequenceSide(sequence),t=clamp(time,0,SHOT_TIME);
- const cut=sequence.startsWith('cut_inside'),feint=sequence.startsWith('double_feint'),near=sequence.startsWith('near_post_cut');
- const nodes=feint?[[0,24,-24],[1.45,19,-28],[2.65,22,-31],[3.90,15,-35.5],[SHOT_TIME,9,-39]]:
-  cut?[[0,25,-23],[2.05,23,-31],[3.2,18,-34],[4.2,12,-37],[SHOT_TIME,9,-39]]:
-  near?[[0,22,-22],[2.0,18,-29],[3.65,12,-35.5],[SHOT_TIME,9,-39]]:
-  [[0,23,-24.5],[2.25,21,-30.5],[3.85,14,-35.6],[SHOT_TIME,9,-39]];
- let p=[side*nodes[nodes.length-1][1],nodes[nodes.length-1][2]];
- for(let i=1;i<nodes.length;i++)if(t<=nodes[i][0]){
-  const a=nodes[i-1],b=nodes[i],u=smooth((t-a[0])/(b[0]-a[0]));
-  p=[side*mix(a[1],b[1],u),mix(a[2],b[2],u)];break;
- }
- return time<=SHOT_TIME?p:lerp([side*9,-39],[side*8.3,-40.3],smooth((time-SHOT_TIME)/1.15));
+ const side=sequenceSide(sequence);
+ const nodes=sequence.startsWith('double_feint')?INVERTED_FLOW_NODES.feint:
+  sequence.startsWith('cut_inside')?INVERTED_FLOW_NODES.cut:
+  sequence.startsWith('near_post_cut')?INVERTED_FLOW_NODES.near:INVERTED_FLOW_NODES.inside;
+ const [x,z]=sampleFlowRun(nodes,time,-1.45,-2.0);
+ return[side*x,z];
 }
 const FINISH_TYPES=Object.freeze(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
 export const normalizeFinish=finish=>FINISH_TYPES.includes(finish)?finish:'normal';
@@ -342,6 +345,13 @@ export const RUNS=Object.freeze([
  {role:'chaser',team:'defend',from:[-17,-25],to:[-14,-32]},
  {role:'second-line',team:'defend',from:[-7,-16],to:[-6,-27]}
 ]);
+const ATTACKER_FLOW_NODES=Object.freeze({
+ dribble:[[0,-7,-25.5],[SHOT_TIME*.35,-3,-29.525],[SHOT_TIME*.70,2.4,-33.55],[SHOT_TIME,0,-37]],
+ wing:[[0,1,-26],[3.25,1,-31.2],[SHOT_TIME,0,-37]],
+ one_two:[[0,-2,-26],[1.8,-2,-29.3],[2.65,-1,-30.6],[SHOT_TIME,0,-37]],
+ through_ball:[[0,-2,-25.5],[2.35,-1.8,-29],[SHOT_TIME,0,-37]],
+ central:[[0,-2,-26],[3.1,-1,-31.2],[SHOT_TIME,0,-37]]
+});
 export function runPosition(index,time,sequence='central'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq];
  if(INVERTED_SEQUENCES.has(seq)){
@@ -351,8 +361,16 @@ export function runPosition(index,time,sequence='central'){
  }
  if(variant){
   const p=runPosition(index,time,variant.base),[dx,dz]=variantShift(variant,Math.min(time,SHOT_TIME));
-  if(index===0){p[0]+=dx;p[1]+=dz}
-  else if(index===1){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.78*(1-.22*u);p[1]+=Number(variant.depth||0)*.85*(1-u)}
+  if(index===0){
+  // One coherent path into shooting position. The old per-leg smoothstep
+  // slowed the entire runner to zero at 1.8 / 2.65 / 3.1 / 3.25 s.
+  const nodes=seq==='dribble'?ATTACKER_FLOW_NODES.dribble:
+   seq.startsWith('wing_')||seq.startsWith('cutback_')?ATTACKER_FLOW_NODES.wing:
+   seq==='one_two'?ATTACKER_FLOW_NODES.one_two:
+   seq==='through_ball'?ATTACKER_FLOW_NODES.through_ball:ATTACKER_FLOW_NODES.central;
+  return sampleFlowRun(nodes,time,.35,-1.9);
+ }
+ if(index===1){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.78*(1-.22*u);p[1]+=Number(variant.depth||0)*.85*(1-u)}
   else if(index<8){const u=smooth(clamp(time/SHOT_TIME));p[0]+=dx*.15*(1-u)}
   return p;
  }
@@ -887,7 +905,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const isolatedDefender=isolatedSlide||(pilotMotion&&p===players[defenderIndex]&&isTrackingAction(defenderAction));
    if(pilotMotion&&!isolatedDefender&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
     const role=p===players[0]?'attacker':p===players[defenderIndex]?'defender':p===players[1]?'provider':'support';
-    applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
+    // A cutting attacker cannot have TWO independent pose controllers.
+    // The planted-foot run stays authoritative; Motion 2 alone authors
+    // the feint, cut and shot preparation for these finesse sequences.
+    if(!(motion2Active&&p===players[0]))
+     applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
     if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
    }else if(enhancedRigMotion&&p.skinned&&p!==keeper&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
@@ -1205,7 +1227,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
    const defenderPos=stagedPlayerPosition(defenderIndex,renderTime,event.type,sequence),attackerPos=stagedPlayerPosition(0,renderTime,event.type,sequence);
    const defenderRoute=labTrackingPreview?trackingTimeline.sample(renderTime):null;
-   return{contactMotionVersion:CONTACT_MOTION_VERSION,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
+   const runnerBefore=stagedPlayerPosition(0,Math.max(0,renderTime-.016),event.type,sequence),runnerAfter=stagedPlayerPosition(0,Math.min(DURATION,renderTime+.016),event.type,sequence);
+   const runnerDt=Math.max(.001,Math.min(DURATION,renderTime+.016)-Math.max(0,renderTime-.016));
+   return{contactMotionVersion:CONTACT_MOTION_VERSION,attackFlowVersion:ATTACK_FLOW_VERSION,
+    attackFlowSpeed:Math.hypot(runnerAfter[0]-runnerBefore[0],runnerAfter[1]-runnerBefore[1])/runnerDt,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
     trackingPreview:labTrackingPreview,trackingAction:labTrackingPreview?defenderAction:'none',
     trackingPhase:defenderRoute?.phase||trackingPose?.phase||'inactive',
     trackingGap:Math.hypot(defenderPos[0]-attackerPos[0],defenderPos[1]-attackerPos[1]),

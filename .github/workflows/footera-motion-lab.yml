@@ -13,6 +13,10 @@ on:
       - '3d-defender-tracking.mjs'
       - 'motion-lab-v2158.html'
       - 'motion-lab-v2159.html'
+      - 'motion-lab-v2160.html'
+      - '3d-attack-flow.mjs'
+      - 'tests/attack-flow.test.cjs'
+      - 'tests/attack-flow.browser.cjs'
       - 'tests/defender-tracking.test.cjs'
       - 'tests/defender-tracking.browser.cjs'
       - '3d-highlights-scene.mjs'
@@ -41,6 +45,10 @@ on:
       - '3d-defender-tracking.mjs'
       - 'motion-lab-v2158.html'
       - 'motion-lab-v2159.html'
+      - 'motion-lab-v2160.html'
+      - '3d-attack-flow.mjs'
+      - 'tests/attack-flow.test.cjs'
+      - 'tests/attack-flow.browser.cjs'
       - 'tests/defender-tracking.test.cjs'
       - 'tests/defender-tracking.browser.cjs'
       - '3d-highlights-scene.mjs'
@@ -69,7 +77,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify deterministic cut, defender states, and unchanged shot handoff
-        run: node --test tests/defender-tracking.test.cjs tests/motion-lab.test.cjs tests/action-continuity.test.cjs tests/motion-2.test.cjs tests/motion-transitions.test.cjs tests/motion-duels.test.cjs tests/duel-contact.test.cjs
+        run: node --test tests/attack-flow.test.cjs tests/defender-tracking.test.cjs tests/motion-lab.test.cjs tests/action-continuity.test.cjs tests/motion-2.test.cjs tests/motion-transitions.test.cjs tests/motion-duels.test.cjs tests/duel-contact.test.cjs
       - name: Install isolated browser renderer
         run: |
           npm install --prefix /tmp/footera-motion-lab playwright@1.51.1
@@ -85,6 +93,7 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-motion-lab/node_modules
         run: |
+          node tests/attack-flow.browser.cjs
           node tests/defender-tracking.browser.cjs
           node tests/motion-lab.browser.cjs
           node tests/motion-2.browser.cjs
@@ -94,6 +103,8 @@ jobs:
         with:
           name: footera-motion-lab-ab-screens
           path: |
+            test-artifacts/v2160-continuous-cut.png
+            test-artifacts/v2160-continuous-dribble.png
             test-artifacts/v2159-lateral-tracking.png
             test-artifacts/v2159-close-down.png
             test-artifacts/motion-lab-A.png
