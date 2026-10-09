@@ -58,7 +58,9 @@ test('new running paths preserve ball close control, canonical shot contact and 
  const M=await import(scene);
  for(const seq of ['central','dribble','wing_left','wing_right','one_two','through_ball',
   'cut_inside_left','cut_inside_right','double_feint_left','double_feint_right']){
-  assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),M.shotFootPosition(),'identical canonical goal strike: '+seq);
+  const inverted=/^(?:cut_inside|double_feint)_(?:left|right)$/.test(seq);
+  assert.deepEqual(M.ballPosition('goal',M.SHOT_TIME,seq),inverted?M.shotContact(seq):M.shotFootPosition(),
+   'canonical strike remains at the sequence-specific boot contact: '+seq);
   for(const t of [1.2,2.7,3.7,4.4]){
    const c=M.controlCarrier(t,seq);
    if(c.index!==0||c.weight<.8)continue;
