@@ -48,13 +48,18 @@ const server=http.createServer((req,res)=>{
   const slide=await page.evaluate(()=>window.__footeraMotionLab.getState());
   assert.equal(slide.mode,'pilot');
   assert.equal(slide.defense,'slide_attempt');
+  await seek(2.45);
+  const lead=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+  assert.equal(lead.contactMotionVersion,'21.56-controlled-slide');
+  assert.ok(Math.abs(lead.contactPelvisLean)<.08,'approach cannot start with a fall');
+  assert.ok(Math.abs(lead.contactBodyLean)<.28,'tackler must run upright into slide');
   await seek(4.22);
   assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
   await page.locator('#test-block').click();
   const block=await page.evaluate(()=>window.__footeraMotionLab.getState());
   assert.equal(block.mode,'pilot');
   assert.equal(block.defense,'block_attempt');
-  assert.equal(block.metrics.contactMotionVersion,'21.55-low-lateral-block','preview must load V21.55, not cached V21.54');
+  assert.equal(block.metrics.contactMotionVersion,'21.56-controlled-slide','preview must load V21.55, not cached V21.54');
   await seek(6.55);
   assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
   assert.ok(await page.locator('#outcome').isVisible(),'result appears for both quick previews');
@@ -64,7 +69,7 @@ const server=http.createServer((req,res)=>{
   const fresh=await page.evaluate(()=>window.__footeraMotionLab.getState());
   assert.equal(fresh.mode,'pilot','new diagnostic page starts on B');
   assert.equal(fresh.defense,'block_attempt','new diagnostic page starts with shot block');
-  assert.equal(fresh.metrics.contactMotionVersion,'21.55-low-lateral-block');
+  assert.equal(fresh.metrics.contactMotionVersion,'21.56-controlled-slide');
   assert.match(await page.locator('#build-tag').innerText(),/21\.55-balanced-block/,
    'the real loaded build must be visible to user');
   await seek(5.74);
