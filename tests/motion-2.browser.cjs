@@ -117,7 +117,33 @@ const server=http.createServer((req,res)=>{
     assert.ok(Math.hypot(...ballA.map((v,i)=>v-ballB[i]))<1e-6,'same far-post flight '+sequence);
     console.log('PASS Motion 2.1 '+sequence+' matched ballistic outcome and mirrored plant');
    }
-   assert.deepEqual(errors,[],'mirrored motion has no JavaScript exceptions');
+   // Motion 2.3 extends real gameplay beyond the winger-only pilot.
+   for(const [sequence,t,field,phase,key] of [
+    ['dribble',2.52,'motion23Brake','brake-to-control','brake'],
+    ['dribble',3.25,'motion23Launch','accelerate-away','launch'],
+    ['through_ball',4.56,'motion23Cushion','cushion-pass','receive']
+   ]){
+    await page.locator('#scene').selectOption(sequence);
+    await page.locator('#current').click();await seek(page,t);
+    const before=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(before.motion23,false,'baseline does not receive Motion 2.3');
+    await page.screenshot({path:path.join(out,'motion-23-'+key+'-old.png')});
+    await page.locator('#pilot').click();await seek(page,t);
+    const after=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
+    assert.equal(after.motion23,true);
+    assert.equal(after.motion23Phase,phase);
+    assert.ok(after[field]>.7,sequence+' '+phase+' has visibly strong transition');
+    assert.ok(Math.hypot(...after.squadMotion[0].map((v,i)=>v-before.squadMotion[0][i]))>.12,
+      'Motion 2.3 silhouette differs in real WebGL');
+    await page.screenshot({path:path.join(out,'motion-23-'+key+'-new.png')});
+    await seek(page,6.65);
+    const ballAfter=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    await page.locator('#current').click();
+    const ballBefore=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics.ball);
+    assert.ok(Math.hypot(...ballBefore.map((v,i)=>v-ballAfter[i]))<1e-6,'canonical ball flight unchanged '+sequence);
+    console.log('PASS Motion 2.3 '+sequence+' '+phase+' matched ball flight and 390px pose');
+   }
+   assert.deepEqual(errors,[],'mirrored motion and Motion 2.3 have no JavaScript exceptions');
   }finally{await ctx.close()}
 
  }finally{await browser.close();server.close()}
