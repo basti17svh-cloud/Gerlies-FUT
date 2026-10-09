@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:'+server.address().port+'/motion-lab-v2158.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:'+server.address().port+'/motion-lab-v2159.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__footeraMotionLab?.getState()?.metrics?.defenderTrackingVersion,{timeout:25000});
   const seek=seconds=>page.evaluate(s=>{const el=document.querySelector('#time');el.value=String(s);el.dispatchEvent(new Event('input',{bubbles:true}))},seconds);
   const metrics=()=>page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
@@ -23,20 +23,22 @@ const server=http.createServer((req,res)=>{
   await seek(1.7);const jStart=await metrics();
   await seek(3.4);const jMid=await metrics();
   assert.equal(jStart.trackingAction,'jockey');
-  assert.ok(jMid.trackingGap>3&&jMid.trackingGap<4.5,'defender shadows carrier at stable gap');
+  assert.ok(jStart.trackingReaction>.3,'defender uses a reaction delay');
+  assert.ok(jMid.trackingGap>2.8&&jMid.trackingGap<5.5,'defender shadows carrier with independent reaction gap');
   assert.ok(Math.abs(jMid.contactPelvisLean)<.06,'no fall while moving laterally');
   assert.ok(Math.abs(jMid.trackingPoseLean)<.22,'upright torso while accompanying');
-  await page.screenshot({path:path.join(out,'v2158-lateral-tracking.png')});
+  await page.screenshot({path:path.join(out,'v2159-lateral-tracking.png')});
   await page.locator('#test-close').click();
   await seek(.9);const cStart=await metrics();
   await seek(4.1);const cEnd=await metrics();
   assert.equal(cEnd.trackingAction,'close_down');
-  assert.ok(cStart.trackingGap>8,'press begins significantly farther away');
-  assert.ok(cEnd.trackingGap<2.8&&cEnd.trackingGap>2,'press closes then stops at safe body distance');
-  assert.ok(cStart.trackingGap>cEnd.trackingGap+5,'visible closing trajectory');
+  assert.ok(cEnd.trackingSpeed<=6.25,'close-down has capped sprint speed');
+  assert.ok(cStart.trackingGap>7.0,'press begins significantly farther away');
+  assert.ok(cEnd.trackingGap<cStart.trackingGap-4.0&&cEnd.trackingGap>1.6,'press visibly closes while braking naturally');
+  assert.ok(cStart.trackingGap>cEnd.trackingGap+4,'visible closing trajectory');
   assert.ok(Math.abs(cEnd.contactPelvisLean)<.06,'no falling on approach');
   assert.ok(Math.abs(cEnd.trackingPoseLean)<.22,'pressing runner stays upright');
-  await page.screenshot({path:path.join(out,'v2158-close-down.png')});
+  await page.screenshot({path:path.join(out,'v2159-close-down.png')});
   await page.locator('#test-slide').click();await seek(3.62);
   const slide=await metrics();
   assert.ok(slide.contactPelvisLean< -1.14&&slide.contactExtension>1.7,'existing clean slide remains intact');
@@ -44,7 +46,7 @@ const server=http.createServer((req,res)=>{
    const layout=await page.evaluate(()=>({body:document.documentElement.scrollWidth,view:innerWidth}));
    assert.ok(layout.body<=width+1,'mobile no overflow '+width)}
   assert.deepEqual(errors,[],'browser runtime error-free');
-  console.log('PASS V21.58 tracking, closing and unchanged slide, WebGL mobile 360/390/412');
+  console.log('PASS V21.59 independent tracking, closing and unchanged slide, WebGL mobile 360/390/412');
   await page.close();
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

@@ -10,9 +10,9 @@ test('jockey genuinely tracks laterally, close-down closes a large gap without o
  const c1=m.sampleTrackingRoute('close_down',1,'cut_inside_right',carrier);
  const c4=m.sampleTrackingRoute('close_down',4.2,'cut_inside_right',carrier);
  assert.equal(j4.lateral,true);assert.equal(c4.lateral,false);
- assert.ok(j1.gap>3.5&&j4.gap>3.0&&j4.gap<4.0,'side-on defender maintains shadow gap');
- assert.ok(c1.gap>8&&c4.gap<2.6&&c4.gap>2,'pressing defender actually approaches and brakes');
- assert.ok(c1.gap>j1.gap+4,'two actions have different routes');
+ assert.ok(j1.gap>3&&j4.gap>2.8&&j4.gap<5.4,'side-on defender shadows with natural reaction lag');
+ assert.ok(c1.gap>7.0&&c4.gap<c1.gap-4.0&&c4.gap>1.6,'pressing defender actually closes distance without joining attacker root');
+ assert.ok(c1.gap>j1.gap+3,'two actions have different routes');
  assert.notDeepEqual(j4.position,c4.position);
  assert.deepEqual(j4,m.sampleTrackingRoute('jockey',4.2,'cut_inside_right',carrier),'seek deterministic');
  const l=m.sampleTrackingRoute('close_down',4.2,'cut_inside_left',carrier);
@@ -43,6 +43,31 @@ test('single tracking pose does not overwrite planted hip or ankle locomotion',a
    assert.ok(Math.abs(q.rig.rotation.x)<.00001&&Math.abs(q.rig.rotation.z)<.07,'pelvis does not stumble');
    assert.ok(q.rig.position.y>=-.085&&q.rig.position.y<=.027,'feet remain grounded');
    assert.ok(Number.isFinite(pose.heading));
+  }
+ }
+});
+
+test('defender observes direction changes later, pursues using separate capped velocity',async()=>{
+ const m=await import(file);
+ // A sudden carrier cut creates an observation delay, not frame-perfect cloning.
+ const attacker=t=>[t<2?-5:-5+(t-2)*8,-28-t*1.4];
+ for(const action of ['jockey','close_down']){
+  const path=m.createTrackingTimeline(action,'cut_inside_right',attacker);
+  assert.ok(path.reaction>.25);
+  const before=path.sample(2),short=path.sample(2.12),later=path.sample(3.2);
+  const attackerDx=attacker(2.12)[0]-attacker(2)[0],defenderDx=short.position[0]-before.position[0];
+  assert.ok(attackerDx>.90,'carrier visibly cuts');
+  assert.ok(defenderDx<attackerDx*.55,'defender must NOT move in lockstep on the same frame: '+action);
+  assert.ok(later.position[0]>short.position[0]+.10,'defender reacts later: '+action);
+  assert.deepEqual(path.sample(2.12),path.sample(2.12),'random seeking must be deterministic');
+  assert.deepEqual(path.sample(2.12),m.createTrackingTimeline(action,'cut_inside_right',attacker).sample(2.12));
+  assert.ok(path.sample(.10).speed===0,'starts by observing before reacting');
+  const max=action==='jockey'?3.9:6.2,accel=action==='jockey'?5:8;
+  for(let t=.2;t<5.2;t+=.08){
+   const now=path.sample(t),next=path.sample(t+.04);
+   assert.ok(now.speed<=max+.02,'independent defender speed is capped');
+   assert.ok(Math.hypot(...next.position.map((n,i)=>n-now.position[i]))<=max*.05,'no instant route jumps');
+   assert.ok(Math.hypot(...next.velocity.map((n,i)=>n-now.velocity[i]))<=accel*.06,'no sudden velocity snaps');
   }
  }
 });

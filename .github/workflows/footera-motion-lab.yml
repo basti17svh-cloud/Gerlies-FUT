@@ -12,6 +12,7 @@ on:
       - '3d-duel-contact.mjs'
       - '3d-defender-tracking.mjs'
       - 'motion-lab-v2158.html'
+      - 'motion-lab-v2159.html'
       - 'tests/defender-tracking.test.cjs'
       - 'tests/defender-tracking.browser.cjs'
       - '3d-highlights-scene.mjs'
@@ -39,6 +40,7 @@ on:
       - '3d-duel-contact.mjs'
       - '3d-defender-tracking.mjs'
       - 'motion-lab-v2158.html'
+      - 'motion-lab-v2159.html'
       - 'tests/defender-tracking.test.cjs'
       - 'tests/defender-tracking.browser.cjs'
       - '3d-highlights-scene.mjs'
@@ -92,8 +94,8 @@ jobs:
         with:
           name: footera-motion-lab-ab-screens
           path: |
-            test-artifacts/v2158-lateral-tracking.png
-            test-artifacts/v2158-close-down.png
+            test-artifacts/v2159-lateral-tracking.png
+            test-artifacts/v2159-close-down.png
             test-artifacts/motion-lab-A.png
             test-artifacts/motion-lab-B.png
             test-artifacts/contact-frames-slide/*.png

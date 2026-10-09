@@ -11,7 +11,7 @@ import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefend
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
-import {isTrackingAction,sampleTrackingRoute,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2158';
+import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -523,11 +523,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const labTrackingPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isTrackingAction(defenderAction);
  const labFocusedPreview=labDuelPreview||labTrackingPreview;
  const labBallAt=t=>ballPosition(event.type,t,sequence,finish,keeperAction);
+ const trackingTimeline=labTrackingPreview?createTrackingTimeline(defenderAction,sequence,t=>playerPosition(0,t,event.type,sequence),DURATION):null;
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
   const original=playerPosition(index,time,type,seq);
   if(index!==defenderIndex)return original;
   if(labDuelPreview)return stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original);
-  if(labTrackingPreview)return sampleTrackingRoute(defenderAction,time,sequence,t=>playerPosition(0,t,type,seq)).position;
+  if(labTrackingPreview)return trackingTimeline.sample(time).position;
   return original;
  }
  try{
@@ -1203,12 +1204,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
    const defenderPos=stagedPlayerPosition(defenderIndex,renderTime,event.type,sequence),attackerPos=stagedPlayerPosition(0,renderTime,event.type,sequence);
-   const defenderRoute=labTrackingPreview?sampleTrackingRoute(defenderAction,renderTime,sequence,t=>playerPosition(0,t,event.type,sequence)):null;
+   const defenderRoute=labTrackingPreview?trackingTimeline.sample(renderTime):null;
    return{contactMotionVersion:CONTACT_MOTION_VERSION,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
     trackingPreview:labTrackingPreview,trackingAction:labTrackingPreview?defenderAction:'none',
     trackingPhase:defenderRoute?.phase||trackingPose?.phase||'inactive',
     trackingGap:Math.hypot(defenderPos[0]-attackerPos[0],defenderPos[1]-attackerPos[1]),
     trackingClosing:defenderRoute?.closing||0,
+    trackingSpeed:defenderRoute?.speed||0,trackingReaction:defenderRoute?.reaction||0,
+    trackingVelocity:defenderRoute?.velocity||[0,0],
     trackingPoseLean:players[defenderIndex].upper.rotation.x,
     trackingDefenderPosition:defenderPos,trackingAttackerPosition:attackerPos,
     contactMotionVersionLegacy:CONTACT_MOTION_VERSION,motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
