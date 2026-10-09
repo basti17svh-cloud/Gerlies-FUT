@@ -2095,7 +2095,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2159"></script>
+<script src="./3d-highlights.js?v=2160"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
@@ -9084,7 +9084,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2153",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2157",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
