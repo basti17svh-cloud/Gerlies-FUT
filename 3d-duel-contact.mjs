@@ -84,20 +84,21 @@ export function applyContactStage(p,action,time,preview=false,near=1){
    const pose=(joint,axis,target)=>{const previous=Number(joint.rotation[axis])||0;
     joint.rotation[axis]=lerp(previous,target,amount)};
    pose(p.rig,'x',0);pose(p.rig,'z',0);
-   pose(p.upper,'x',.07*a+.045*e-.02*r);
-   pose(p.upper,'y',.06*a);pose(p.upper,'z',.025*e);
-   pose(p.legs[0],'x',-.12*a-.05*e);
-   pose(p.knees[0],'x',-.35*a-.13*e);
+   pose(p.upper,'x',.03*a+.025*e-.02*r);
+   pose(p.upper,'y',.08*a);pose(p.upper,'z',.018*e);
+   pose(p.legs[0],'x',-.10*a-.08*e);
+   pose(p.knees[0],'x',-.36*a-.16*e);
    pose(p.ankles[0],'x',.12*a);
-   pose(p.legs[1],'x',1.01*e);
-   pose(p.legs[1],'z',.27*e);
-   pose(p.knees[1],'x',-.17*a-.12*e);
+   // Low, lateral shin block instead of the former high stumbling kick.
+   pose(p.legs[1],'x',.43*e);
+   pose(p.legs[1],'z',.63*e);
+   pose(p.knees[1],'x',-.18*a-.34*e);
    pose(p.ankles[1],'x',-.13*e);
    pose(p.arms[0],'x',-.10*e);pose(p.arms[1],'x',.07*e);
-   pose(p.arms[0],'z',-.19*a-.10*e);
-   pose(p.arms[1],'z',.19*a+.10*e);
+   pose(p.arms[0],'z',-.17*a-.075*e);
+   pose(p.arms[1],'z',.17*a+.075*e);
    p.rig.position.y=lerp(p.rig.position.y,-.05*a-.014*e,amount);
-   return{...m,torsoTilt:.045*e,extension:1.01*e};
+   return{...m,torsoTilt:.025*e,extension:Math.hypot(.43,.63)*e};
   }
   // Previous additive pose kicked a leg excessively high while both arms
   // flared out, reading as an uncontrolled backwards stumble. Ground the
