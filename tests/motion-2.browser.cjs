@@ -214,46 +214,40 @@ const server=http.createServer((req,res)=>{
    }
    assert.deepEqual(errors,[],'live contact choreography has no browser exceptions');
   }finally{await ctx.close()}
-  // Record the actual tackle and ball-blocking sequences on 390px hardware-
-  // sized viewport. Earlier test suites captured only the generic winger clip.
-  for(const [action,start,name] of [
-   ['slide_attempt',2.30,'footera-slide-contact'],
-   ['block_attempt',4.55,'footera-shot-block']
+  // True frame-by-frame evidence, NOT Playwright's wall-clock video.
+  // SwiftShader may be 3 FPS. A screenshot forces the actual rendered canvas
+  // at every seek time; no action can disappear between recording frames.
+  const {createHash}=require('node:crypto');
+  for(const [action,start,end,name] of [
+   ['slide_attempt',2.66,4.68,'slide'],
+   ['block_attempt',4.85,6.70,'block']
   ]){
    const movieCtx=await browser.newContext({
-    viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,
-    recordVideo:{dir:out,size:{width:390,height:844}}
+    viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true
    });
    const movie=await movieCtx.newPage(),errors=[];movie.on('pageerror',e=>errors.push(e.message));
    await movie.goto(origin+'/motion-lab.html',{waitUntil:'domcontentloaded'});
    await movie.waitForFunction(()=>!!window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
    await movie.locator('#defense').selectOption(action);
    await movie.locator('#pilot').click();
-   // SwiftShader can render as few as 3 FPS, and playback intentionally caps
-   // frame delta. Seek every pose in order rather than measuring wall-clock time.
-   // This records ACTUAL WebGL frames at accurate authored scene timestamps.
-   const end=action==='slide_attempt'?4.72:6.98;
-   for(let t=start;t<end;t+=.105){
+   const dir=path.join(out,'contact-frames-'+name);
+   fs.mkdirSync(dir,{recursive:true});
+   const hashes=new Set(),frames=25;
+   for(let i=0;i<frames;i++){
+    const t=start+(end-start)*i/(frames-1);
     await seek(movie,t);
-    await movie.waitForTimeout(65);
+    const png=path.join(dir,String(i).padStart(4,'0')+'.png');
+    await movie.locator('#picture').screenshot({path:png});
+    assert.ok(fs.statSync(png).size>10000,'real rendered image '+name+' '+i);
+    hashes.add(createHash('sha256').update(fs.readFileSync(png)).digest('hex'));
    }
-   await seek(movie,end);
-   await movie.waitForTimeout(120);
    const final=await movie.evaluate(()=>window.__footeraMotionLab.getState());
    assert.ok(final.metrics.contactBallDeflected,
-    name+' must visibly deflect the ball while the clip records');
-   assert.deepEqual(errors,[],name+' no live browser errors');
-   const video=movie.video();
+    name+' final frame must show the ball deflected');
+   assert.ok(hashes.size>=20,'most frames must be visually distinct, not a static pose');
+   assert.deepEqual(errors,[],name+' no WebGL browser exceptions');
    await movieCtx.close();
-   const webm=path.join(out,name+'.webm');
-   await video.saveAs(webm);await video.delete();
-   assert.ok(fs.statSync(webm).size>18000,name+' recorded real video frames');
-   const mp4=path.join(out,name+'.mp4');
-   const {spawnSync}=require('node:child_process');
-   const converted=spawnSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-i',webm,
-    '-c:v','libx264','-preset','veryfast','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart',mp4]);
-   if(converted.status===0)console.log('PASS MP4 contact clip '+name+' '+fs.statSync(mp4).size);
-   console.log('PASS authentic contact video '+name+' '+fs.statSync(webm).size);
+   console.log('PASS '+name+' 25 actual sequential WebGL canvas frames, '+hashes.size+' distinct');
   }
 
  }finally{await browser.close();server.close()}
