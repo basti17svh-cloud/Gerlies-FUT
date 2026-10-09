@@ -578,3 +578,9 @@ test('V21.67: realistic humanoid geometry reaches full STANDARD squad and retain
  assert.match(scene,/false,detailedActors.has\(i\),squadNumbers\[i\],i===0/);
  assert.match(scene,/playerModelTier:weak\?'low-hybrid':'full-squad'/);
 });
+
+test('V21.67: off-ball locomotion is preserved on upgraded skinned footballers',()=>{
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(scene,/if\(enhancedRigMotion&&i!==0&&/,'all eligible background actors receive squad locomotion regardless of skinning tier');
+ assert.doesNotMatch(scene,/enhancedRigMotion&&!p.skinned&&/,'skinned rigs cannot be silently excluded from group locomotion');
+});

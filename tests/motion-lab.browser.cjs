@@ -20,7 +20,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/motion-lab.html',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__footeraMotionLab?.getState()?.metrics?.riggedActors===2,{timeout:25000});
+  await page.waitForFunction(()=>window.__footeraMotionLab?.getState()?.metrics?.riggedActors===17,{timeout:25000});
   const seek=async seconds=>page.evaluate(seconds=>{const s=document.querySelector('#time');s.value=String(seconds);s.dispatchEvent(new Event('input',{bubbles:true}))},seconds);
   await seek(3.06);
   const a=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#pilot').click();
   const b=await page.evaluate(()=>window.__footeraMotionLab.getState().metrics);
   await page.screenshot({path:path.join(out,'motion-lab-B.png'),fullPage:true});
-  assert.equal(a.riggedActors,2);assert.equal(b.riggedActors,3);
+  assert.equal(a.riggedActors,17);assert.equal(b.riggedActors,17);
   assert.equal(a.sequence,b.sequence);assert.equal(a.cameraPhase,b.cameraPhase);
   assert.ok(Math.hypot(...a.squadMotion[0].map((n,i)=>n-b.squadMotion[0][i]))>.20,'attacker has a visible new pose');
   assert.ok(Math.hypot(...a.squadMotion[10].map((n,i)=>n-b.squadMotion[10][i]))>.16,'defender changes pose');
