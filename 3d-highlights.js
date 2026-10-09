@@ -87,8 +87,8 @@
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
   tags:Object.freeze(({combination:['tiki-taka','first-touch','incisive-pass'],switch:['long-ball-pass','flair'],
-   through:['incisive-pass','through-ball'],overlap:['rapid','quick-step','whipped-pass'],
-   lowcross:['pinged-pass','whipped-pass'],dribble:['technical','trickster','rapid'],
+   through:['incisive-pass','through-ball'],overlap:['rapid','quick-step','pinged-pass'],
+   lowcross:['pinged-pass','first-touch'],dribble:['technical','trickster','rapid'],
    cutback:['pinged-pass','finesse-shot'],distance:['power-shot','first-touch'],
    nearpost:['first-touch','low-driven-shot']})[family]||[])
  })));
@@ -195,7 +195,7 @@
     if(v.family==='through'&&(creator.has('incisive-pass')||creator.has('through-ball')))w*=2.1;
     if(v.family==='switch'&&creator.has('long-ball-pass'))w*=2.25;
     if(v.family==='combination'&&creator.has('tiki-taka'))w*=1.9;
-    if(v.family==='overlap'&&creator.has('whipped-pass'))w*=1.8;
+    if(v.family==='overlap'&&creator.has('pinged-pass'))w*=1.8;
     if(v.id.includes('left')&&side==='right'||v.id.includes('right')&&side==='left')w*=.22;
     if(v.id.includes('header')||v.finish==='header')w*=scorer.has('power-header')||scorer.has('aerial')?1.6:.66;
    }

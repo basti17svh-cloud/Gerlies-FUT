@@ -56,3 +56,15 @@ test('V21.86: defense highlight types never claim a goal or alter authoritative 
  const before=H.choosePresentation({id:'old-goal',type:'goal',playerId:'A',minute:34,team:'home',playerName:'B'});
  assert.ok(before.sequence&&!before.sequence.startsWith('defense_'));
 });
+
+test('V21.86: all authored scene PlayStyles match the actual Footera registry',async()=>{
+ const H=require('../3d-highlights.js');
+ const P=await import('../3d-playbook.mjs');
+ const ids=new Set(require('../playstyles.js').definitions.map(style=>style.id));
+ for(const scene of H.PLAYBOOK_SCENES){
+  const authored=P.getPlay(scene.id);
+  assert.ok(authored,'missing authored movement: '+scene.id);
+  assert.deepEqual([...scene.tags],[...authored.tags],scene.id+' must use identical style weights');
+  for(const id of scene.tags)assert.ok(ids.has(id),'unknown PlayStyle: '+scene.id+' / '+id);
+ }
+});
