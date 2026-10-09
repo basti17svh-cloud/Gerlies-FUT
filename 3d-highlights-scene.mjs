@@ -9,8 +9,8 @@ import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStr
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
-import {applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2149';
-import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT} from './3d-duel-contact.mjs?v=2152';
+import {applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
+import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT} from './3d-duel-contact.mjs?v=2154';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
