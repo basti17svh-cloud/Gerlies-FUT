@@ -218,6 +218,7 @@ const server=http.createServer((req,res)=>{
   // SwiftShader may be 3 FPS. A screenshot forces the actual rendered canvas
   // at every seek time; no action can disappear between recording frames.
   const {createHash}=require('node:crypto');
+  const {execFileSync}=require('node:child_process');
   for(const [action,start,end,name] of [
    ['slide_attempt',2.66,4.68,'slide'],
    ['block_attempt',4.85,6.70,'block']
@@ -245,7 +246,28 @@ const server=http.createServer((req,res)=>{
    assert.ok(final.metrics.contactBallDeflected,
     name+' final frame must show the ball deflected');
    assert.ok(hashes.size>=20,'most frames must be visually distinct, not a static pose');
+   // Produce a real, seekable MP4 from verified WebGL frames, not a
+   // slow software renderer's wall-clock recording. An image sequence alone
+   // must never be reported to users as a playable video.
+   const filename=path.join(out,name==='slide'?'footera-slide-contact.mp4':'footera-shot-block.mp4');
+   execFileSync('ffmpeg',[
+    '-hide_banner','-loglevel','error','-y',
+    '-framerate','12','-i',path.join(dir,'%04d.png'),
+    '-frames:v',String(frames),'-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2',
+    '-c:v','libx264','-pix_fmt','yuv420p',
+    '-movflags','+faststart',filename
+   ],{timeout:60000});
+   assert.ok(fs.statSync(filename).size>15000,name+' MP4 has real video bytes');
+   const probe=JSON.parse(execFileSync('ffprobe',[
+    '-v','error','-select_streams','v:0','-count_frames',
+    '-show_entries','stream=codec_name,nb_read_frames',
+    '-of','json',filename
+   ],{encoding:'utf8',timeout:15000}));
+   assert.equal(probe.streams?.[0]?.codec_name,'h264',name+' must be H.264');
+   assert.equal(Number(probe.streams?.[0]?.nb_read_frames),frames,
+    name+' video must contain all 25 rendered frames');
    assert.deepEqual(errors,[],name+' no WebGL browser exceptions');
+   console.log('PASS '+name+' playable MP4: 25 validated H.264 WebGL frames');
    await movieCtx.close();
    console.log('PASS '+name+' 25 actual sequential WebGL canvas frames, '+hashes.size+' distinct');
   }
