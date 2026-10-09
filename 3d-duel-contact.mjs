@@ -6,7 +6,7 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(x)?x:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const pulse=(t,a,b,c,d)=>smooth((t-a)/(b-a))*(1-smooth((t-c)/(d-c)));
 const lerp=(a,b,w)=>a+(b-a)*clamp(w);
-export const CONTACT_MOTION_VERSION='21.55-balanced-block';
+export const CONTACT_MOTION_VERSION='21.55-low-lateral-block';
 export const SLIDE_CONTACT=3.55,BLOCK_CONTACT=5.74;
 export const isContactDemo=action=>action==='slide_attempt'||action==='block_attempt';
 export function stagedDefenderPosition(action,time,sequence,ballAt,original){
