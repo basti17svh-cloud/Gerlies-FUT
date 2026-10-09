@@ -54,6 +54,7 @@ const server=http.createServer((req,res)=>{
   const block=await page.evaluate(()=>window.__footeraMotionLab.getState());
   assert.equal(block.mode,'pilot');
   assert.equal(block.defense,'block_attempt');
+  assert.equal(block.metrics.contactMotionVersion,'21.55-balanced-block','preview must load V21.55, not cached V21.54');
   await seek(6.55);
   assert.equal((await page.evaluate(()=>window.__footeraMotionLab.getState())).metrics.contactBallDeflected,true);
   assert.ok(await page.locator('#outcome').isVisible(),'result appears for both quick previews');
