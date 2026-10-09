@@ -27,7 +27,7 @@ jobs:
           node --check 3d-player-materials.mjs
           node --check 3d-highlights-scene.mjs
       - name: Simulation, queue, cards, chemistry and PlayStyles regressions
-        run: node --test tests/footwork-dynamics.test.cjs tests/player-pbr.test.cjs tests/3d-glb-clip-blend.test.cjs tests/3d-player-retarget.test.cjs tests/3d-glb-motion.test.cjs tests/attack-flow.test.cjs tests/defender-tracking.test.cjs tests/squad-motion.test.cjs tests/action-motion.test.cjs tests/mocap-runtime.test.cjs tests/football-animation.test.cjs tests/3d-highlights.test.cjs tests/matchday.test.cjs tests/chem-boosts.test.cjs tests/playstyles.test.cjs tests/card-layout.test.cjs tests/player-profile.test.cjs tests/boot-update.test.cjs tests/champions.test.cjs tests/club-identity.test.cjs tests/ux-overview.test.cjs tests/content-drop-20261007.test.cjs
+        run: node --test tests/footwork-dynamics.test.cjs tests/player-pbr.test.cjs tests/3d-glb-clip-blend.test.cjs tests/3d-player-retarget.test.cjs tests/3d-glb-motion.test.cjs tests/attack-flow.test.cjs tests/defender-tracking.test.cjs tests/squad-motion.test.cjs tests/action-motion.test.cjs tests/mocap-runtime.test.cjs tests/football-animation.test.cjs tests/3d-highlights.test.cjs tests/matchday.test.cjs tests/chem-boosts.test.cjs tests/playstyles.test.cjs tests/card-layout.test.cjs tests/player-profile.test.cjs tests/boot-update.test.cjs tests/champions.test.cjs tests/club-identity.test.cjs tests/ux-overview.test.cjs tests/content-drop-20261007.test.cjs tests/makehuman-safety.test.cjs
       - name: Install isolated browser test dependency
         run: |
           npm install --prefix /tmp/footera-browser playwright@1.51.1
