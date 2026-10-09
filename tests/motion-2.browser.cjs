@@ -229,9 +229,16 @@ const server=http.createServer((req,res)=>{
    await movie.waitForFunction(()=>!!window.__footeraMotionLab?.getState()?.metrics?.riggedActors,{timeout:25000});
    await movie.locator('#defense').selectOption(action);
    await movie.locator('#pilot').click();
-   await seek(movie,start);
-   await movie.locator('#toggle').click(); // resume a paused seek
-   await movie.waitForTimeout(2350);
+   // SwiftShader can render as few as 3 FPS, and playback intentionally caps
+   // frame delta. Seek every pose in order rather than measuring wall-clock time.
+   // This records ACTUAL WebGL frames at accurate authored scene timestamps.
+   const end=action==='slide_attempt'?4.72:6.98;
+   for(let t=start;t<end;t+=.105){
+    await seek(movie,t);
+    await movie.waitForTimeout(65);
+   }
+   await seek(movie,end);
+   await movie.waitForTimeout(120);
    const final=await movie.evaluate(()=>window.__footeraMotionLab.getState());
    assert.ok(final.metrics.contactBallDeflected,
     name+' must visibly deflect the ball while the clip records');
