@@ -11,6 +11,7 @@ import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefend
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
+import {isTrackingAction,sampleTrackingRoute,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2158';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -519,11 +520,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const field=new THREE.Group();field.rotation.y=direction===1?0:Math.PI;scene.add(field);
  // Isolated demonstration ONLY, not an authoritative match highlight.
  const labDuelPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isContactDemo(defenderAction);
+ const labTrackingPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isTrackingAction(defenderAction);
+ const labFocusedPreview=labDuelPreview||labTrackingPreview;
  const labBallAt=t=>ballPosition(event.type,t,sequence,finish,keeperAction);
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
   const original=playerPosition(index,time,type,seq);
-  return labDuelPreview&&index===defenderIndex?
-   stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original):original;
+  if(index!==defenderIndex)return original;
+  if(labDuelPreview)return stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original);
+  if(labTrackingPreview)return sampleTrackingRoute(defenderAction,time,sequence,t=>playerPosition(0,t,type,seq)).position;
+  return original;
  }
  try{
   const geometry=new Map(),materials=new Map(),staticBoxes=[];
@@ -878,11 +883,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // support-foot plant begins. Otherwise its feint/jockey clip crouches and
    // twists the player well before the tackle (the visible pre-stumble).
    const isolatedSlide=labDuelPreview&&defenderAction==='slide_attempt'&&p===players[defenderIndex];
-   if(pilotMotion&&!isolatedSlide&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
+   const isolatedDefender=isolatedSlide||(pilotMotion&&p===players[defenderIndex]&&isTrackingAction(defenderAction));
+   if(pilotMotion&&!isolatedDefender&&(p===players[0]||p===players[1]||p===players[2]||p===players[3]||p===players[4]||p===players[defenderIndex])){
     const role=p===players[0]?'attacker':p===players[defenderIndex]?'defender':p===players[1]?'provider':'support';
     applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
     if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
-   }else if(enhancedRigMotion&&p.skinned&&p!==keeper&&!isolatedSlide){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
+   }else if(enhancedRigMotion&&p.skinned&&p!==keeper&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
     applyContextualAttackerMotion(p,time,sequence,p===players[1]?1:0);
@@ -903,7 +909,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
   }
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
-  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null;
+  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -958,7 +964,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(time);
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
-   motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;
+   motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    players.forEach((p,i)=>{const [x,z]=stagedPlayerPosition(i,time,event.type,sequence),prev=stagedPlayerPosition(i,Math.max(0,time-.02),event.type,sequence),next=stagedPlayerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
     const back=stagedPlayerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=stagedPlayerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
@@ -967,6 +973,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
     const acceleration=clamp((afterSpeed-beforeSpeed)/4,-1,1);
     const cleanContactPreview=labDuelPreview&&i===defenderIndex;
+    const singleTrackingMotion=pilotMotion&&i===defenderIndex&&isTrackingAction(defenderAction);
     const controlWeight=carrierIndex===i?carrierState.weight:0;
     const stride=gaitPhase(i,time);
     pose(p,x,z,time,speed,heading,turn,stride,acceleration,controlWeight,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
@@ -980,13 +987,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const transition=applyMotion23(p,time,speed,turn,stride,acceleration,sequence,role,i===0?event.playerStyles:i===1?event.creatorStyles:[]);
      if(i===0)motion23Sample=transition;
     }
-    if(i>=8&&time<SHOT_TIME+.4&&!cleanContactPreview){const brace=defenderTracking(i,time,sequence).pressure;
+    if(i>=8&&time<SHOT_TIME+.4&&!cleanContactPreview&&!singleTrackingMotion){const brace=defenderTracking(i,time,sequence).pressure;
      p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
     // The real defender's style determines a visible attempt, not an outcome.
     const motion=defensiveMotion(defenderAction,time,i,defenderIndex,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z)),a=motion.intensity;
-    if(a>.001){
+    if(a>.001&&!singleTrackingMotion){
      if(motion.kind==='jockey'){
       p.upper.rotation.y+=.18*a*Math.sin(time*5);p.upper.rotation.x+=.07*a;
       p.legs[0].rotation.z+=.15*a;p.legs[1].rotation.z-=.15*a;
@@ -1018,13 +1025,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       p.legs[0].rotation.x+=.25*a;p.legs[1].rotation.x-=.24*a;
      }
     }
-    if(pilotMotion&&i>=8&&!cleanContactPreview){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
-    if(motion2Active&&i===defenderIndex&&!cleanContactPreview)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
+    if(pilotMotion&&i>=8&&!cleanContactPreview&&!singleTrackingMotion){const range=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);applyFootballDefender(p,time,range,i===defenderIndex?defenderAction:'jockey',sequence);applyDefenderContinuity(p,time,range,sequence,event.defenderStyles)}
+    if(motion2Active&&i===defenderIndex&&!cleanContactPreview&&!singleTrackingMotion)applyDefender2(p,time,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z),sequence);
     if(pilotMotion&&i===defenderIndex){
      const dist=Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z);
-     duelSample=cleanContactPreview
+     duelSample=cleanContactPreview||singleTrackingMotion
       ?sampleDefensiveDuels(time,dist,defenderAction,sequence,event.defenderStyles)
       :applyDefensiveDuels(p,time,dist,defenderAction,sequence,event.defenderStyles);
+     if(singleTrackingMotion){
+      const attacker=stagedPlayerPosition(0,time,event.type,sequence);
+      const targetHeading=Math.atan2(-(attacker[0]-x),-(attacker[1]-z));
+      trackingPose=applyTrackingPose(p,defenderAction,time,speed,heading,targetHeading);
+     }
      if(isContactDemo(defenderAction))contactPose=applyContactStage(p,defenderAction,
       labDuelPreview?time:defenderAction==='slide_attempt'?time-.8:time,labDuelPreview,
       Math.max(0,1-dist/8));
@@ -1156,15 +1168,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
-   if(labDuelPreview){
+   if(labFocusedPreview){
     // Isolated assessment lens only: A and B use the SAME close sideline camera.
     // In-game broadcasts always use the canonical cameraState unchanged.
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
-    const tx=mix(cam.target[0],focus[0],.73),tz=mix(cam.target[2],focus[1],.73),ty=.88;
-    const zoom=.58;
+    const attacker=labTrackingPreview?stagedPlayerPosition(0,time,event.type,sequence):focus;
+    const tx=mix(cam.target[0],(focus[0]+attacker[0])*.5,labTrackingPreview?.96:.73);
+    const tz=mix(cam.target[2],(focus[1]+attacker[1])*.5,labTrackingPreview?.96:.73),ty=.88;
+    const zoom=labTrackingPreview?.70:.58;
     camera.position.set(tx+(cam.position[0]-cam.target[0])*zoom,
      ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom);
-    camTarget.set(tx,ty,tz);camera.fov=cam.fov*.78;
+    camTarget.set(tx,ty,tz);camera.fov=cam.fov*(labTrackingPreview?.86:.78);
    }else{camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov}
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
@@ -1188,7 +1202,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(flagCloth.count){flagCloth.getMatrixAt(0,sampleMatrix);flagPosition.setFromMatrixPosition(sampleMatrix)}
    const supportFootClearance=players.map(p=>Math.min(...p.feet.map(f=>{const m=f.matrixWorld.elements;return m[13]-Math.hypot(m[1],m[5],m[9])})));
    const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
-   return{contactMotionVersion:CONTACT_MOTION_VERSION,motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
+   const defenderPos=stagedPlayerPosition(defenderIndex,renderTime,event.type,sequence),attackerPos=stagedPlayerPosition(0,renderTime,event.type,sequence);
+   const defenderRoute=labTrackingPreview?sampleTrackingRoute(defenderAction,renderTime,sequence,t=>playerPosition(0,t,event.type,sequence)):null;
+   return{contactMotionVersion:CONTACT_MOTION_VERSION,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
+    trackingPreview:labTrackingPreview,trackingAction:labTrackingPreview?defenderAction:'none',
+    trackingPhase:defenderRoute?.phase||trackingPose?.phase||'inactive',
+    trackingGap:Math.hypot(defenderPos[0]-attackerPos[0],defenderPos[1]-attackerPos[1]),
+    trackingClosing:defenderRoute?.closing||0,
+    trackingPoseLean:players[defenderIndex].upper.rotation.x,
+    trackingDefenderPosition:defenderPos,trackingAttackerPosition:attackerPos,
+    contactMotionVersionLegacy:CONTACT_MOTION_VERSION,motionLab:pilotMotion,motionDuelPreview:labDuelPreview,
     contactAction:labDuelPreview?defenderAction:'none',
     contactTilt:contactPose?.torsoTilt||0,contactExtension:contactPose?.extension||0,
     contactBodyLean:players[defenderIndex].upper.rotation.x,
