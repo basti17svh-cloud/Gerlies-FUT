@@ -1,0 +1,35 @@
+name: Footera Quaternius Kit Proof
+on:
+  push:
+    paths: ['3d-rigged-footballer.mjs','3d-player-prototype.mjs','3d-highlights-scene.mjs','tests/quaternius-kits.browser.cjs','.github/workflows/footera-quaternius-kits.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kit-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify 3D rig and material module syntax
+        run: |
+          node --check 3d-rigged-footballer.mjs
+          node --check 3d-player-prototype.mjs
+          node --check 3d-highlights-scene.mjs
+      - name: Install real Chromium WebGL
+        run: |
+          npm install --prefix /tmp/footera-kit-proof playwright@1.51.1
+          /tmp/footera-kit-proof/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify 20 patterns, jersey panels and render real game screenshots
+        env:
+          NODE_PATH: /tmp/footera-kit-proof/node_modules
+        run: node tests/quaternius-kits.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-real-quaternius-kit-frames
+          path: test-artifacts/quaternius-kits/
+          if-no-files-found: warn
