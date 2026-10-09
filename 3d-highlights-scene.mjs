@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2165';
+import {buildSkinnedFootballer,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2167';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2138';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
@@ -777,7 +777,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Oval cross-sections describe chest, waist, jaw and muscles with smooth
   // normals. Shared geometry is instanced, keeping the existing joint hierarchy.
   function anatomy(key,rings){return geo(key,()=>athleticGeometry(rings,weak?10:high?18:14))}
-  function player(kit,name,keeper=false,modern=false){
+  function player(kit,name,keeper=false,modern=false,shirtNumber=0,lead=false){
    const Joint=modern?THREE.Bone:THREE.Group;
    const root=new THREE.Group(),rig=new Joint(),upper=new Joint(),chest=new Joint();
    const motion=modern?new THREE.Bone():null;
@@ -833,18 +833,23 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const shadow=part(geo('contact-plane',()=>new THREE.PlaneGeometry(1,1)),contactMaterial,root,0,.022,0,1.4,1.05,1);shadow.rotation.x=-Math.PI/2;
    const skinned=modern?buildSkinnedFootballer(THREE,root,
     {rig,upper,motion,chest,arms,elbows,legs,knees,ankles},
-    [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12):null;
+    [shirt,mat(kit.shorts,{roughness:.96}),mat(skin),mat(kit.socks,{roughness:1}),sleeve],weak?8:high?16:12,shirtNumber):null;
    if(skinned){track(skinned.geometry);track(skinned.atlasTexture);track(skinned.atlasMaterial)}
-   const skeletonMotion=modern?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
+   const skeletonMotion=modern&&lead?createSkeletonMotion(THREE,motion,keeper?'keeper':'striker',finish,DURATION):null;
    return{root,rig,upper,arms,elbows,legs,knees,ankles,gloves,feet,shadow,skinned,skeletonMotion,
     gait:[{},{}],mocapFrame:new Float32Array(33),motionClips:{out:{},scratch:{},action:{}}};
   }
   const kits=kitColors(event),attackKit=event.team==='away'?kits.away:kits.home,defendKit=event.team==='away'?kits.home:kits.away;
-  // V21.42: fluid controller for the ball carrier, main creator, supporting runs
-  // and nearest defender. Only the defender adds one skinned draw call; four
-  // supporting attackers preserve their existing batched instanced geometry.
-  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,false,i===0||(pilotMotion&&i===defenderIndex)));
-  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true);
+  // V21.67: actual skinned football anatomy for ALL 16 field players in
+  // STANDARD/HIGH. LOW preserves a limited 8-player subset for mobile FPS;
+  // other actors continue to use their existing safe instanced silhouettes.
+  const priority=[0,1,defenderIndex,2,8,3,9,4,10,5,11,6,12,7,13,14,15];
+  const detailedActors=new Set(weak?priority.slice(0,8):priority);
+  const squadNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
+  const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
+   i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
+   false,detailedActors.has(i),squadNumbers[i],i===0));
+  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,1,true);
   // Motion 2.2 shapes first touch, mirrored cuts and finesse preparation.
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
   const motion2CutAnchor=motion2Active?runPosition(0,3.08,sequence):null;
@@ -898,7 +903,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(!(motion2Active&&p===players[0]))
      applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
     if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
-   }else if(enhancedRigMotion&&p.skinned&&p!==keeper&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
+   }else if(enhancedRigMotion&&p.skinned&&p===players[0]&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
     applyContextualAttackerMotion(p,time,sequence,p===players[1]?1:0);
@@ -1241,6 +1246,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23:pilotMotion,motion23Phase:motion23Sample?.phase||'inactive',
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
+     playerModelTier:weak?'low-hybrid':'full-squad',
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',

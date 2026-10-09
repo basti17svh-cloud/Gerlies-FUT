@@ -113,7 +113,7 @@ const out=path.join(__dirname,'../test-artifacts');
   });
   fs.writeFileSync(path.join(out,'geometry-results.json'),JSON.stringify(checks,null,2));
   for(const row of checks){
-   assert.equal(row.riggedActors,2,'real skinned striker + goalkeeper: '+row.sequence);
+   assert.equal(row.riggedActors,row.weak?9:17,'expanded anatomically skinned squad: '+row.sequence);
    assert.ok(row.riggedBones>=14&&row.riggedVertices>400,'weighted skeleton geometry: '+row.sequence);
    assert.match(row.skeletonClip,/Footera-striker-/,'authored striker AnimationMixer clip');
   }

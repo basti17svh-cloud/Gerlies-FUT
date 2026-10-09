@@ -32,7 +32,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    if(a.time>=5.4)assert.deepEqual(a.ball,b.ball,'unchanged post-contact authoritative ball flight');
    else assert.ok(Math.hypot(...a.ball.map((v,k)=>v-b.ball[k]))<.5,'pre-shot boot-guided dribble stays nearby');
    assert.equal(a.drawCalls,b.drawCalls,'unchanged draw-call budget');
-   assert.equal(a.riggedActors,2);
+   assert.equal(a.riggedActors,17);
    assert.equal(a.squadMotion.length,16);
    if(a.time>=2&&a.time<=4.15){
     for(let actor=1;actor<16;actor++){

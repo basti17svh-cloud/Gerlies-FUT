@@ -6,11 +6,11 @@
  */
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
-export const RIGGED_SURFACE_VERSION=2;
+export const RIGGED_SURFACE_VERSION=3;
 export const MATERIAL_SLOTS=Object.freeze(['shirt','shorts','skin','socks','sleeves']);
 // A one-row atlas bakes the existing saved club-kit shirt pattern alongside
 // shorts, skin, socks and sleeve materials. Avoid one draw per limb/material.
-export function createFootballKitAtlas(THREE,materials,segments=12){
+export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0){
  const canDraw=typeof document!=='undefined'&&typeof document.createElement==='function';
  let texture;
  if(canDraw){
@@ -46,6 +46,15 @@ export function createFootballKitAtlas(THREE,materials,segments=12){
      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(tile,y);ctx.stroke();
     }
    }
+   // Player number is printed on the jersey atlas. Torso seam faces forward,
+   // placing this glyph on the actual back, not on a billboard.
+   if(index===0&&shirtNumber>0){
+    ctx.font=`900 ${Math.round(tile*.3)}px system-ui,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+    ctx.lineWidth=Math.max(2,tile*.033);ctx.strokeStyle='rgba(0,0,0,.84)';
+    ctx.strokeText(String(shirtNumber),tile*.5,tile*.49);
+    ctx.fillStyle='#f8f8f3';ctx.fillText(String(shirtNumber),tile*.5,tile*.49);
+   }
    ctx.restore();
   }
   texture=new THREE.CanvasTexture(canvas);
@@ -66,7 +75,7 @@ export function createFootballKitAtlas(THREE,materials,segments=12){
  const atlasMaterial=new THREE.MeshStandardMaterial({map:texture,roughness:.92,metalness:0});
  return{texture,material:atlasMaterial};
 }
-export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
+export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12,shirtNumber=0){
  const order=[joints.rig,joints.upper,joints.motion,joints.chest,
   joints.arms[0],joints.elbows[0],joints.arms[1],joints.elbows[1],
   joints.legs[0],joints.knees[0],joints.ankles[0],
@@ -83,7 +92,7 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
   for(let i=0;i<rings.length;i++){
    const [y,rx,rz,depth=0]=rings[i],[a,b,w]=influences(y),blend=smooth(w);
    for(let k=0;k<=segments;k++){
-    const t=k/segments*Math.PI*2;
+    const t=k/segments*Math.PI*2+(mat===0?Math.PI:0);
     v.push(centerX+rx*Math.sin(t),y,centerZ+depth+rz*Math.cos(t));
     uv.push((mat+.015+k/segments*.97)/MATERIAL_SLOTS.length,(y-ymin)/Math.max(.01,ymax-ymin));
     ids.push(a,b,0,0);weights.push(1-blend,blend,0,0);
@@ -96,19 +105,19 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
   groups.push([start,ix.length-start,mat]);
  }
  // A torso with a soft hip/upper-torso blend avoids the 'floating armour' seam.
- band([[1.00,.151,.108],[1.045,.171,.121],[1.10,.174,.119],
+ band([[.994,.146,.102],[1.012,.165,.113],[1.045,.171,.121],[1.10,.174,.119],
   [1.19,.182,.128],[1.28,.204,.138,-.003],[1.34,.222,.147,-.007],
-  [1.405,.231,.141,-.006],[1.465,.208,.119,-.002],
+  [1.405,.235,.141,-.006],[1.445,.220,.128,-.004],[1.465,.208,.119,-.002],
   [1.505,.150,.088],[1.54,.080,.069]],0,0,0,y=>
   influenced(0,3,clamp((y-1.01)/.36)));
- band([[.84,.137,.108],[.885,.156,.122],[.945,.173,.127],[.988,.168,.115],[1.008,.151,.105]],0,0,1,y=>influenced(0,0,0));
+ band([[.832,.132,.102],[.84,.137,.108],[.885,.156,.122],[.945,.173,.127],[.975,.175,.125],[.988,.168,.115],[1.008,.151,.105]],0,0,1,y=>influenced(0,0,0));
  // Both arms stay continuous through the elbow. Wrist/hand is supplied by
  // the original skeleton accessory, preserving goalie glove aiming.
  for(let i=0;i<2;i++){
   const side=i?1:-1,arm=4+i*2,elbow=arm+1,x=side*.224;
   const soft=y=>influenced(arm,elbow,clamp((1.30-y)/.18));
-  band([[1.28,.058,.065],[1.31,.069,.072],[1.38,.079,.082],
-    [1.445,.073,.078],[1.49,.048,.054]],x,0,4,soft);
+  band([[1.265,.057,.064],[1.28,.058,.065],[1.31,.069,.075],[1.38,.079,.082],
+    [1.424,.078,.082],[1.445,.073,.078],[1.49,.048,.054]],x,0,4,soft);
   band([[.82,.030,.037],[.91,.037,.042],[1.025,.050,.052],
     [1.13,.056,.058],[1.24,.059,.061],[1.29,.058,.063]],x,0,2,soft);
  }
@@ -117,13 +126,13 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
  for(let i=0;i<2;i++){
   const side=i?1:-1,x=side*.108,leg=8+i*3,knee=leg+1,ankle=leg+2;
   const upper=y=>influenced(leg,knee,clamp((.68-y)/.17));
-  band([[.72,.099,.102],[.82,.101,.109],[.93,.101,.107],
+  band([[.71,.096,.100],[.735,.101,.105],[.82,.103,.109],[.93,.103,.107],
     [.985,.091,.096]],x,0,1,upper);
   band([[.49,.061,.070],[.56,.079,.083],[.66,.086,.092],
     [.73,.088,.088]],x,0,2,upper);
   const lower=y=>influenced(knee,ankle,clamp((.28-y)/.18));
-  band([[.08,.037,.043],[.16,.039,.043],[.24,.047,.051],
-    [.34,.059,.065],[.45,.057,.060],[.51,.054,.056]],x,0,3,lower);
+  band([[.08,.035,.041],[.16,.039,.043],[.24,.047,.051],
+    [.33,.060,.066],[.39,.062,.068],[.45,.057,.060],[.51,.054,.056]],x,0,3,lower);
  }
  const geometry=new THREE.BufferGeometry();
  geometry.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
@@ -133,7 +142,7 @@ export function buildSkinnedFootballer(THREE,root,joints,materials,segments=12){
  geometry.setIndex(ix);
  // NO geometry groups: GPU processes the entire figure in one skinning draw.
  geometry.computeVertexNormals();
- const atlas=createFootballKitAtlas(THREE,materials,segments);
+ const atlas=createFootballKitAtlas(THREE,materials,segments,shirtNumber);
  const model=new THREE.SkinnedMesh(geometry,atlas.material);
  model.name='FooteraSkinnedFootballer';
  model.frustumCulled=false;
