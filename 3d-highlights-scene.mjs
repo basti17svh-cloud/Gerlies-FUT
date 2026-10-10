@@ -314,7 +314,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   // Timing matches the actual carry (to 3.65 s), delivery (to 5.20 s) and finish.
   const finishAt=SHOT_TIME-.2;
   const carrierAt=sample=>{const p=runPosition(1,sample,seq);return worldPosition([p[0],.84,p[1]],direction)};
-  const ballAt=sample=>worldPosition(ballPosition(type,sample,seq,finish,keeperAction),direction);
+  const ballAt=sample=>worldPosition(ballPosition(type,sample,seq,finish,keeperAction,placement),direction);
   const buildTarget=sample=>{const c=carrierAt(sample),u=smooth(sample/deliveryAt),gw=.28+.08*u;
     if(seq==='diagonal_switch'){const b=ballAt(sample);return[mix(b[0],c[0],.14+.2*u),.80,mix(b[2],goal[2],.18+.08*u)]}
     return[mix(c[0],goal[0],gw),.80,mix(c[2],goal[2],.18+.08*u)]};
