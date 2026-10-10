@@ -84,4 +84,36 @@ test("Rank rewards match the approved 15-game structure",()=>{
  assert.match(champions,/Rang VIII",min:0,max:2,coins:5000,rated:\[\[80,1\]\],totw:0/);
 });
 
+test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+ ICONS",()=>{
+ const rated=html.split("\n").find(line=>line.includes('id:"84x10"'));
+ assert.ok(rated,"84+ x10 pack registered");
+ assert.match(rated,/iconChance:0\.003/);
+ const championPackCode=champions.slice(champions.indexOf("function ensureChampionsPacks()"),champions.indexOf("function championsRewardForWins("));
+ const iconCode=html.slice(html.indexOf("function randomMidIconBase("),html.indexOf("function makeMidIconItem("));
+ const generateCode=html.slice(html.indexOf("function generatePack(id,tradeable=true)"),html.indexOf("function generateMarcoSurprisePack("));
+ assert.ok(championPackCode.startsWith("function ensureChampionsPacks()"));
+ assert.ok(iconCode.startsWith("function randomMidIconBase("));
+ assert.ok(generateCode.startsWith("function generatePack(id,tradeable=true)"));
+ let sequence=0;
+ const sandbox={
+  PACKS:[],MID_ICON_BASES:[{id:"low",ovr:84},{id:"high",ovr:90}],
+  PLAYERS:[],Math:{floor:Math.floor,max:Math.max,random:()=>0},
+  founderRuleForPack:()=>null,weightedPlayer:()=>({id:"gold-"+(++sequence),ovr:87+sequence}),
+  makeLivePackItem:(base,tradeable)=>({pid:base.id,ovr:base.ovr,base,tradeable}),
+  makeMidIconItem:(base,tradeable)=>({pid:base.id,ovr:base.ovr,base,tradeable,variant:"icon-mid"}),
+  displayBase:item=>item.base,rarityOf:()=> "gold",isCardRare:()=>false
+ };
+ vm.createContext(sandbox);
+ vm.runInContext(championPackCode+"\n"+iconCode+"\n"+generateCode+"\nensureChampionsPacks();this.items=generatePack('champions-bonus',false);",sandbox);
+ const bonus=sandbox.PACKS.find(p=>p.id==="champions-bonus");
+ assert.equal(bonus?.iconChance,0.05);
+ assert.equal(bonus.count,5);
+ assert.equal(bonus.min,87);
+ assert.equal(bonus.store,false);
+ assert.equal(sandbox.items.length,5);
+ assert.equal(sandbox.items.filter(x=>x.variant==="icon-mid").length,1);
+ assert.ok(sandbox.items.every(x=>x.ovr>=87),"ICON replacement must preserve 87+ guarantee");
+ assert.ok(sandbox.items.every(x=>x.tradeable===false),"all bonus items remain untradeable");
+});
+
 console.log("Footera Champions V21.23: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");

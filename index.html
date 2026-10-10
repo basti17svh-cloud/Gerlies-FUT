@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.101</title>
+<title>Footera V21.102</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -2730,7 +2730,7 @@ const ICON_LEGACY_ALIASES={
 };
 // Kluivert is a Hero in FC 27. Keep acquired Icon items readable, but do not generate new ones.
 const RETIRED_ICON_BASE={id:"midicon-patrick-kluivert",name:"Patrick Kluivert",ovr:88,position:"ST",alt:"",nation:"Netherlands",league:"Icons",team:"ICON",face:"https://cdn.futwiz.com/assets/img/fc26/faces/238424.png",futwizId:"238424",pac:84,sho:86,pas:76,dri:81,def:40,phy:79,skillMoves:4,weakFoot:4,preferredFoot:"Right",source:"retired-icon-save",isIcon:true};
-function randomMidIconBase(){return MID_ICON_BASES[Math.floor(Math.random()*MID_ICON_BASES.length)]||null}
+function randomMidIconBase(minRating=0){const pool=Number(minRating)>0?MID_ICON_BASES.filter(base=>Number(base.ovr||0)>=Number(minRating)):MID_ICON_BASES;return pool[Math.floor(Math.random()*pool.length)]||null}
 function makeMidIconItem(base,tradeable=true){return makeItem(base,tradeable,{variant:"icon-mid",eventName:"Icon"})}
 function totwSearchKeys(p){
  const names=[p?.name,p?.fullName,[p?.firstName,p?.lastName].filter(Boolean).join(" ")].filter(Boolean);
@@ -5485,7 +5485,7 @@ function generatePack(id,tradeable=true){
  const specs=Array.isArray(p.composition)&&p.composition.length?p.composition.flatMap(c=>Array.from({length:c.count},()=>({min:c.min,max:c.max,quality:c.quality}))):Array.from({length:p.count},()=>({min:p.min,max:p.max,quality:p.type}));
  let guaranteeSlot=-1;if(p.guarantee){guaranteeSlot=specs.findIndex(x=>x.max>=p.guarantee);if(guaranteeSlot<0)guaranteeSlot=0}
  specs.forEach((spec,i)=>{const min=i===guaranteeSlot?Math.max(spec.min||0,p.guarantee||0):(spec.min||0),max=spec.max??99,b=take(min,max);if(b)arr.push(makeLivePackItem(b,tradeable))});
- if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase();if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,tradeable)}}
+ if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase(p.id==="champions-bonus"?87:0);if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,tradeable)}}
  let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
  return arr.slice(0,p.count)
 }
@@ -9093,7 +9093,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.101";
+const GFUT_BUILD="V21.102";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9160,7 +9160,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 </script>
 <script src="./season-system.js"></script>
 <script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2114"></script>
+<script src="./champions-system.js?v=2115"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js?v=21101"></script>
 <script src="./3d-highlights-match.js?v=2198"></script>

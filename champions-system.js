@@ -33,7 +33,7 @@ function championsWindowText(at=new Date()){
  return w.open?`Offen bis ${championsDate(w.end)} · ${seasonCountdown(w.end)}`:`Öffnet ${championsDate(w.start)} · ${seasonCountdown(w.start).replace("Endet","Startet")}`
 }
 function ensureChampionsPacks(){
- if(!PACKS.some(p=>p.id==="champions-bonus"))PACKS.push({id:"champions-bonus",name:"Champions Bonus Pack",coins:null,points:null,type:"gold",count:5,min:87,max:99,store:false,reward:true,desc:"5 Goldspieler · jeder mindestens 87 GES",iconChance:0});
+ if(!PACKS.some(p=>p.id==="champions-bonus"))PACKS.push({id:"champions-bonus",name:"Champions Bonus Pack",coins:null,points:null,type:"gold",count:5,min:87,max:99,store:false,reward:true,desc:"5 Spieler · jeder mindestens 87 GES · 5 % ICON-Chance (87+)",iconChance:0.05});
 }
 function championsRewardForWins(wins){
  ensureChampionsPacks();const row=championsRank(wins),packs=[];
@@ -159,4 +159,5 @@ showPostMatchProgress=function(snapshot){
  setTimeout(()=>$("postMatchProgressClose")?.focus(),120);return true
 };
 
+ensureChampionsPacks();
 syncChampionsCompetition();
