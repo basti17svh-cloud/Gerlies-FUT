@@ -74,3 +74,22 @@ test('V21.89: 10 additional attacks have visible nonidentical running routes and
  }
  assert.equal(shapes.size,10);assert.ok(endings.size>=3);
 });
+
+test('V21.90: closer camera shows the beginning and continuation of real passes on phone',async()=>{
+ const M=await import('../3d-highlights-scene.mjs'),P=await importPlaybook(),
+  T=await import('../vendor/three/three.module.min.js');
+ for(const id of ['triangle_left','wall_pass_right','diagonal_counter_left','reverse_cutback_right','blindside_overlap_left']){
+  const plan=P.getPlay(id),first=P.playTouches(plan)[0];
+  for(const direction of [-1,1])for(const aspect of [390/340,1.7]){
+   const camera=new T.PerspectiveCamera(30,aspect,.1,250);
+   for(const time of [.08,first.release+.12,first.arrival-.02,3.2,5.2]){
+    const c=M.cameraState(direction,time,aspect,'goal',id,plan.finish);
+    assert.ok(c.distance>=M.MIN_CAMERA_DISTANCE&&c.distance<52.5,id+' close framing');
+    assert.ok(c.position[0]>0&&c.position[1]>0,id+' sideline never flips');
+    camera.position.set(...c.position);camera.fov=c.fov;camera.lookAt(...c.target);camera.updateProjectionMatrix();camera.updateMatrixWorld();
+    const ball=new T.Vector3(...M.worldPosition(M.ballPosition('goal',time,id,plan.finish),direction)).project(camera);
+    assert.ok(Math.abs(ball.x)<.98&&Math.abs(ball.y)<.98&&ball.z<1,id+' ball remains visible at '+time);
+   }
+  }
+ }
+});
