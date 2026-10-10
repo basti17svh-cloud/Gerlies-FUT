@@ -60,12 +60,12 @@ if(require.main===module)(async()=>{
     const a=el.getBoundingClientRect(),bar=el.closest('.fh3d-top').getBoundingClientRect();
     const skip=el.closest('.fh3d-top').querySelector('.fh3d-skip').getBoundingClientRect();
     return{text:el.textContent,visible:a.width>30&&a.height>10&&a.left>=bar.left&&a.right<=skip.left&&a.bottom<=bar.bottom+1,
-     source:el.closest('.fh3d').dataset.playerModel};
+     source:el.closest('.fh3d').dataset.playerModel,reason:el.closest('.fh3d').dataset.playerModelReason};
    });
    // At first kickoff the CC0 rig may still load. The fallback is intentional;
     // 390/412px scenes must then mount the real GLB, not silently stay legacy.
     const modelOk=modelBadge.source==='glb'&&modelBadge.text==='GLB AKTIV'||
-      width===360&&modelBadge.source==='legacy'&&modelBadge.text==='ALTES MODELL';
+      width===360&&modelBadge.source==='legacy'&&modelBadge.reason==='not-ready'&&modelBadge.text==='ALT · LOW';
     check(`${width}: visible GLB or initially permitted skinned fallback`,
       modelBadge.visible&&modelOk);
    check(`${width}: weak mobile hardware keeps the low-quality safety tier`,await page.locator('.fh3d').getAttribute('data-quality')==='low');
