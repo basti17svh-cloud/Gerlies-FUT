@@ -33,6 +33,11 @@ const server=http.createServer((req,res)=>{
    const world=M.makeScene(renderer,event,false,false,true,false,true,true,'quaternius');
    world.resize(640,480);world.update(1.55);
    const info=world.inspect();
+    // The complete deployed squad, not just a showroom player, carries hair.
+    const hairMeshes=[];
+    scene.traverse(node=>{if(node.isMesh&&/^FooteraAthleteHair-/.test(node.name))hairMeshes.push(node)});
+    if(hairMeshes.length!==17||new Set(hairMeshes.map(x=>x.name)).size<5)
+     throw Error('Not enough individually fitted hairstyles: '+hairMeshes.map(x=>x.name).join(','));
    const rootModel=scene.getObjectByName('FooteraPlayerPrototypeMount');
    const skins=[];rootModel?.traverse(n=>{if(n.isSkinnedMesh)skins.push(n)});
    const body=skins.find(n=>n.material?.map?.image?.getContext);
@@ -71,7 +76,7 @@ const server=http.createServer((req,res)=>{
    world.resize(640,360);world.update(3.12);
    screenshots.push({name:'matchday',data:canvas.toDataURL('image/png').split(',')[1]});
    const proof={squad:info.importedSquadCount,keeper:info.importedKeeper,kit:info.kickoffKitSnapshot,
-     drawCalls:info.drawCalls,triangles:info.triangles,patterns:unique.size,atlas:[cv.width,cv.height],sampled,
+     drawCalls:info.drawCalls,triangles:info.triangles,hairCount:hairMeshes.length,hairStyles:new Set(hairMeshes.map(x=>x.name)).size,patterns:unique.size,atlas:[cv.width,cv.height],sampled,
      maxUV:Math.max(...Array.from(body.geometry.getAttribute('uv').array)),screenshots:screenshots.length};
    world.dispose();renderer.dispose();renderer.forceContextLoss();
    return{proof,screenshots};
@@ -79,7 +84,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(result.proof.squad,16);assert.equal(result.proof.keeper,true);
   assert.equal(result.proof.kit.home.pattern,'halves');assert.equal(result.proof.kit.away.pattern,'diagonal');
   assert.equal(result.proof.kit.home.shorts,'#071f3b');assert.equal(result.proof.kit.home.socks,'#f9e5ac');
-  assert.ok(result.proof.drawCalls<240);assert.ok(result.proof.maxUV<=1.00001);assert.deepEqual(errors,[]);
+  assert.ok(result.proof.drawCalls<240);assert.equal(result.proof.hairCount,17);assert.ok(result.proof.hairStyles>=5);assert.ok(result.proof.maxUV<=1.00001);assert.deepEqual(errors,[]);
   for(const shot of result.screenshots)fs.writeFileSync(path.join(out,shot.name+'.png'),Buffer.from(shot.data,'base64'));
   fs.writeFileSync(path.join(out,'proof.json'),JSON.stringify(result.proof,null,2));
   console.log('PASS QUATERNIUS IN-GAME KITS',JSON.stringify(result.proof));
