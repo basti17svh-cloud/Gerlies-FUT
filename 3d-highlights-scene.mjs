@@ -1190,6 +1190,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
   const keeperGuideArmBefore=new THREE.Quaternion(),keeperGuideElbowBefore=new THREE.Quaternion();
+  const keeperContactWorld=new THREE.Vector3();
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
   function bootGuidedBall(original,time){
@@ -1495,6 +1496,20 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      };
      guide(lead,[impact[0],impact[1],-50.6],toContact);
      guide(other,[impact[0]-side*.33,Math.max(.22,impact[1]-.24),-50.49],toContact*.46);
+    }
+    // Read the ACTUAL animated glove position, not a guessed reach length.
+    // Blend the center-of-mass toward that interception over the whole leap.
+    // A save is never shown with a one-metre gap between glove and ball.
+    // Field-local coordinates work identically after either half-time rotation.
+    const catchWeight=smooth((time-5.91)/.65)*(1-smooth((time-6.79)/.43));
+    if(saved&&catchWeight>.001){
+     keeper.root.updateWorldMatrix(true,true);
+     keeper.gloves[lead].getWorldPosition(keeperContactWorld);
+     field.worldToLocal(keeperContactWorld);
+     keeper.root.position.x+=(impact[0]-keeperContactWorld.x)*catchWeight;
+     keeper.root.position.y=Math.max(0,keeper.root.position.y+(impact[1]-keeperContactWorld.y)*catchWeight);
+     keeper.root.position.z+=(impact[2]-keeperContactWorld.z)*catchWeight;
+     keeper.shadow.position.y=.022-keeper.root.position.y;
     }
    }
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
