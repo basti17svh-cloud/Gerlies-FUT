@@ -1177,6 +1177,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // deterministic screenshots. No impact on match outcome/timeline.
    if(players[0].skeletonMotion)players[0].skeletonMotion.mixer.setTime(time);
    if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(time);
+   const authoredTouches=getPlay(sequence)?playTouches(getPlay(sequence)):null;
+   // Every member of a combination can now absorb the incoming ball.
+   // Previously only attacker 0/1 had a reception motion in these sequences.
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
@@ -1271,6 +1274,23 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(enhancedRigMotion){
      const guard=(1-(i===defenderIndex?.90*a:0))*(1-.40*controlWeight);
      applyFootwork(p,time,speed,turn,acceleration,stride,guard);
+    }
+    if(pilotMotion&&authoredTouches&&i<8&&time<SHOT_TIME-.25){
+     let receive=0;
+     for(const touch of authoredTouches){
+      if(touch.receiver!==i)continue;
+      const anticipate=smooth((time-(touch.arrival-.22))/.17),
+       recover=1-smooth((time-(touch.arrival+.09))/.24),
+       nearby=1-smooth((Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z)-1.4)/1.8);
+      receive=Math.max(receive,anticipate*recover*nearby);
+     }
+     if(receive>.001){
+      // A planted receiving foot cushions the pass into the next running step,
+      // then releases before this same actor's subsequent passing contact.
+      p.legs[0].rotation.x-=.12*receive;p.knees[0].rotation.x-=.19*receive;
+      p.ankles[0].rotation.x+=.19*receive;p.upper.rotation.x+=.11*receive;
+      p.arms[0].rotation.z-=.16*receive;p.arms[1].rotation.z+=.15*receive;
+     }
     }
    });
    capturedParticipantActive=0;
