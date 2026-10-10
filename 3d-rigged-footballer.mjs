@@ -151,6 +151,9 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
  texture.colorSpace=THREE.SRGBColorSpace;
  texture.wrapS=THREE.ClampToEdgeWrapping;
  texture.magFilter=THREE.LinearFilter;
+  // Angled pitch-side broadcast shots retain the saved kit design's detail.
+  texture.minFilter=THREE.LinearMipmapLinearFilter;
+  texture.anisotropy=4;
  const atlasMaterial=new THREE.MeshStandardMaterial({map:texture,roughness:.92,metalness:0});
  return{texture,material:atlasMaterial};
 }
