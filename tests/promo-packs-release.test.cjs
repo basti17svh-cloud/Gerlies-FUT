@@ -112,3 +112,52 @@ test('an incomplete player pool cannot charge for fewer players than advertised'
  const before={...a.ctx.state};a.buy('rare-mixed');a.buy('rare-mixed','points');
  assert.equal(a.ctx.state.coins,before.coins);assert.equal(a.ctx.state.points,before.points);assert.equal(a.ctx.opened,undefined);assert.equal(a.ctx.state.packLimits['rare-mixed'].count,0);
 });
+
+const EXTRA_PROMO_IDS=['83x15','84x10'];
+
+test('10 October shop adds 83+ x15 and 84+ x10 without removing the three normal promos',()=>{
+ const a=app('2026-10-10T16:59:59Z'),ids=()=>Array.from(a.ctx.activePromoPacks(),p=>p.id);
+ assert.equal(ids().length,3);
+ assert.ok(EXTRA_PROMO_IDS.every(id=>!ids().includes(id)));
+ a.clock('2026-10-10T17:00:00Z');
+ assert.equal(ids().length,5);
+ assert.deepEqual(ids().slice(-2),EXTRA_PROMO_IDS);
+ a.ctx.renderStore();
+ const markup=a.get('packGrid').innerHTML;
+ assert.equal((markup.match(/class="store-pack /g)||[]).length,5);
+ assert.match(markup,/7 von 7 Käufen übrig/);
+ assert.match(markup,/5 von 5 Käufen übrig/);
+ a.clock('2026-10-11T16:59:59Z');assert.equal(ids().length,5);
+ a.clock('2026-10-11T17:00:00Z');
+ assert.equal(ids().length,3);
+ assert.ok(EXTRA_PROMO_IDS.every(id=>!ids().includes(id)));
+});
+
+test('each 83+ x15 and 84+ x10 pack contains only players at or above its minimum rating',()=>{
+ const a=app('2026-10-10T17:00:00Z');
+ for(const [id,count,min,limit] of [['83x15',15,83,7],['84x10',10,84,5]]){
+  const pack=a.run(`PACKS.find(p=>p.id==='${id}')`);
+  assert.equal(pack.dailyLimit,limit);
+  assert.equal(pack.resetHour,19);
+  for(let round=0;round<8;round++){
+   const items=a.ctx.generatePack(id,true);
+   assert.equal(items.length,count);
+   assert.equal(new Set(items.map(i=>i.pid)).size,count);
+   assert.ok(items.every(i=>a.ctx.PLAYERS.find(p=>String(p.id)===i.pid).ovr>=min));
+  }
+ }
+});
+
+test('the seven and five new pack purchases share a per-pack limit across Coins and Points',()=>{
+ const a=app('2026-10-10T17:00:00Z');
+ for(const [id,limit] of [['83x15',7],['84x10',5]]){
+  for(let n=0;n<limit;n++)a.buy(id,n%2?'points':'coins');
+  assert.equal(a.ctx.promoUsage(a.run(`PACKS.find(p=>p.id==='${id}')`)).remaining,0);
+  const coins=a.ctx.state.coins,points=a.ctx.state.points;
+  a.buy(id,'coins');a.buy(id,'points');
+  assert.equal(a.ctx.state.coins,coins);
+  assert.equal(a.ctx.state.points,points);
+ }
+ a.clock('2026-10-11T17:00:00Z');
+ for(const id of EXTRA_PROMO_IDS)assert.equal(a.ctx.promoUsage(a.run(`PACKS.find(p=>p.id==='${id}')`)).remaining,a.run(`PACKS.find(p=>p.id==='${id}').dailyLimit`));
+});

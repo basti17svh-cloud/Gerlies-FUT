@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.99</title>
+<title>Footera V21.100</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -2446,6 +2446,8 @@ const PACKS=[
  {id:"jumbo-rare",name:"Jumbo-Seltene-Spieler-Pack",coins:100000,points:2000,type:"gold",count:24,composition:[{quality:"gold",count:24,min:75,max:99}],guarantee:83,rareCount:24,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"24 Goldspieler · alle selten · mind. 1× 83+",tag:"PROMO",iconChance:0.003,dailyLimit:10,resetHour:19},
  {id:"rare-mixed",name:"Seltenes Gemischtes Spieler-Pack",coins:20000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"mega",name:"Mega Pack",coins:65000,points:1000,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mega",chemBoostSlots:{slots:2,chance:1},desc:"12 Goldspieler · 6 selten · mind. 1× 82+ · 2 Chemie-Boosts garantiert",tag:"PROMO",iconChance:0.002,dailyLimit:20,resetHour:19},
+ {id:"83x15",name:"83+ ×15 Spieler-Pack",coins:150000,points:3000,type:"gold",count:15,min:83,max:99,composition:[{quality:"gold",count:15,min:83,max:99}],guarantee:83,rareCount:15,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"15 seltene Goldspieler · jeder Spieler garantiert 83+",tag:"PROMO",iconChance:0.0025,dailyLimit:7,resetHour:19},
+ {id:"84x10",name:"84+ ×10 Spieler-Pack",coins:200000,points:4000,type:"gold",count:10,min:84,max:99,composition:[{quality:"gold",count:10,min:84,max:99}],guarantee:84,rareCount:10,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"10 seltene Goldspieler · jeder Spieler garantiert 84+",tag:"PROMO",iconChance:0.003,dailyLimit:5,resetHour:19},
  {id:"jumbo-gold",name:"Jumbo-Gold-Pack",coins:null,points:null,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],rareCount:3,store:false,reward:true,desc:"12 Goldspieler · 3 selten",iconChance:0.0005},
  {id:"premium-electrum-reward",name:"Premium-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],rareCount:3,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 3 selten",iconChance:0.0007},
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
@@ -5434,11 +5436,12 @@ function packChanceLabel(v){if(!v)return"0 %";return `${(v*100).toLocaleString("
 // Scheduled 19:00 shop drops. A dated release overrides the normal daily promo rotation for that 19:00-to-19:00 window.
 const PROMO_PACK_RELEASES=Object.freeze({
  "2026-10-05":{startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]},
- "2026-10-07":{startsAt:"2026-10-07T19:00:00+02:00",ids:["ultimate","jumbo-rare"]}
+ "2026-10-07":{startsAt:"2026-10-07T19:00:00+02:00",ids:["ultimate","jumbo-rare"]},
+ "2026-10-10":{startsAt:"2026-10-10T19:00:00+02:00",extraIds:["83x15","84x10"]}
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
-function promoPackReleaseLabel(release){return (release?.ids||[]).map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
-function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
+function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
+function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=[...(release?.ids||sets[cycle]||sets[0]),...(release?.extraIds||[])];return ids.map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg"};
@@ -9070,7 +9073,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.99";
+const GFUT_BUILD="V21.100";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
