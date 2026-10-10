@@ -18,7 +18,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2189';
+import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2200';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -97,10 +97,10 @@ function variantShift(variant,time){
 const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_right')?1:1;
 // Inverted winger does not teleport to the central striker position for the strike.
 // The contact point follows the winger's final position and shooting direction.
-export function shotContact(sequence='central',finish='normal'){
+export function shotContact(sequence='central',finish='normal',placement=null){
  const style=normalizeFinish(finish),base=contactFor(style),seq=normalizeSequence(sequence);
  if(!INVERTED_SEQUENCES.has(seq))return base;
- const [x,z]=invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style);
+ const [x,z]=invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style,placement);
  const heading=Math.atan2(x-impact[0],z-impact[2]),dx=base[0],dz=base[2]+37;
  return[x+Math.cos(heading)*dx-Math.sin(heading)*dz,base[1],
         z+Math.sin(heading)*dx+Math.cos(heading)*dz];
@@ -162,28 +162,33 @@ export function controlCarrier(time,sequence='central'){
  return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
 }
 // The simulated goal/save/miss stays unchanged; only the visual shot lane varies.
-export function shotImpact(type,sequence='central',finish='normal'){
+// Event-specific finishing direction stays cosmetic: the simulation determines
+// whether the exact same kick results in a goal, save, post or miss.
+export function shotImpact(type,sequence='central',finish='normal',placement=null){
  const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
  const inverted=INVERTED_SEQUENCES.has(seq),near=inverted&&seq.startsWith('near_post_cut');
- const sign=inverted?(near?sequenceSide(seq):-sequenceSide(seq)):1;
- const x=type==='big_chance_saved'?2.52:type==='shot_post'?3.52:type==='big_chance_missed'?5.1:
-   inverted?(near?2.48:3.12):2.65;
+ const sign=placement?(placement.side===-1?-1:1):(inverted?(near?sequenceSide(seq):-sequenceSide(seq)):1);
+ const zone=placement?.zone||'channel';
+ const x=type==='big_chance_saved'?(placement?(zone==='corner'?2.86:zone==='inside'?1.42:2.15):2.52):
+  type==='shot_post'?3.52:type==='big_chance_missed'?(placement?(zone==='corner'?6.05:zone==='inside'?4.45:5.1):5.1):
+  placement?(zone==='corner'?3.13:zone==='inside'?1.12:2.24):inverted?(near?2.48:3.12):2.65;
  let y=type==='big_chance_saved'?1.14:type==='shot_post'?1.25:type==='big_chance_missed'?1.5:
-   inverted&&style==='finesse'?1.62:1.08;
+  inverted&&style==='finesse'?1.62:1.08;
+ if(placement&&type!=='shot_post')y=placement.height==='high'?2.06:placement.height==='low'?.48:1.18;
  if(style==='low_driven')y=type==='shot_post'?.42:.32;
- else if(style==='header')y=type==='shot_post'?1.25:1.38;
- else if(style==='power')y=type==='shot_post'?1.25:.83;
+ else if(style==='header')y=type==='shot_post'?1.25:placement?.height==='high'?2.02:1.38;
+ else if(style==='power')y=type==='shot_post'?1.25:placement?.height==='high'?1.92:.83;
  else if(style==='chip')y=type==='shot_post'?1.25:1.64;
  return[sign*x,y,type==='big_chance_saved'?-50.6:type==='shot_post'?-52.5:type==='big_chance_missed'?-53.4:-54.25];
 }
-export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic'){
+export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
  if(DEFENSIVE_SCENES.includes(seq))return defenseBall(time,seq);
  const plan=getPlay(seq);
  if(plan&&time<SHOT_TIME)return playBall(plan,time,contactFor(style));
  if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
   const entry=entryPassBall(time,seq,1,0);if(entry)return entry;
-  const release=SHOT_TIME-.24,contact=shotContact(seq,style);
+  const release=SHOT_TIME-.24,contact=shotContact(seq,style,placement);
   if(time<release)return carriedBall(0,time,seq,.53);
   return movingBall(carriedBall(0,release,seq,.53),contact,(time-release)/.24,.025);
  }
@@ -224,7 +229,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
    const side=sequenceSide(seq==='bicycle'?variant.base:seq);
    return entryPassBall(time,seq,side<0?5:4,1);
   }
-  const p=ballPosition(type,time,variant.base,style),offset=variantShift(variant,Math.min(time,SHOT_TIME));
+  const p=ballPosition(type,time,variant.base,style,keeperAction,placement),offset=variantShift(variant,Math.min(time,SHOT_TIME));
   const fade=time<=SHOT_TIME?1:1-clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
   if((variant.base.startsWith('wing_')||variant.base.startsWith('cutback_'))&&time<SHOT_TIME){
    const u=smooth(clamp(time/SHOT_TIME)),handoff=smooth((time-3.65)/(SHOT_TIME-3.65));
@@ -239,7 +244,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   }
   return p;
  }
- const contact=shotContact(seq,style);
+ const contact=shotContact(seq,style,placement);
  if(time<SHOT_TIME){
   if(seq==='wing_left'||seq==='wing_right'||seq==='cutback_left'||seq==='cutback_right'){
    const entry=entryPassBall(time,seq,sequenceSide(seq)<0?5:4,1);if(entry)return entry;
@@ -278,9 +283,9 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   if(time<SHOT_TIME-.24)return carry;
   return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
  }
- const impact=shotImpact(type,seq,style);
+ const impact=shotImpact(type,seq,style,placement);
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
- if(t<1){const p=lerp(contact,impact,t),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(t*Math.PI);if(style==='finesse')p[0]+=(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq)*.72:.72)*Math.sin(t*Math.PI);return p}
+ if(t<1){const p=lerp(contact,impact,t),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(t*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(t*Math.PI);return p}
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
   const u=clamp((time-IMPACT_TIME)/1.35),sign=Math.sign(impact[0])||1;
@@ -299,8 +304,8 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
 }
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
-export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central',finish='normal',keeperAction='classic'){
- const seq=normalizeSequence(sequence),base=baseSequence(seq),bp=worldPosition(ballPosition(type,time,seq,finish,keeperAction),direction),goal=worldPosition([0,.86,-51.25],direction);
+export function cameraState(direction,time,aspect=1.3,type='goal',sequence='central',finish='normal',keeperAction='classic',placement=null){
+ const seq=normalizeSequence(sequence),base=baseSequence(seq),bp=worldPosition(ballPosition(type,time,seq,finish,keeperAction,placement),direction),goal=worldPosition([0,.86,-51.25],direction);
  const portraitPad=Math.max(0,1.25-aspect)*8.5;
  let targetX=0,targetY=.82,targetZ=0,distance=50,fov=28,phase='build';
  const wide=base.startsWith('wing_')||base.startsWith('cutback_'),inverted=INVERTED_SEQUENCES.has(seq),deliveryAt=wideLaunch(seq);
@@ -553,9 +558,9 @@ export function runPosition(index,time,sequence='central'){
  return p;
 }
 // Action presets modify only goalkeeper animation, never saved/missed/goal outcomes.
-export function keeperPose(type,time,finish='normal',sequence='central',keeperAction='classic'){
+export function keeperPose(type,time,finish='normal',sequence='central',keeperAction='classic',placement=null){
  const anticipation=smooth((time-SHOT_TIME-.18)/.22),dive=smooth((time-SHOT_TIME-.4)/.85),land=smooth((time-IMPACT_TIME-.12)/.85),recover=smooth((time-7.55)/1.45);
- const save=type==='big_chance_saved',low=finish==='low_driven',sign=Math.sign(shotImpact(type,sequence,finish)[0])||1,rotation=sign*(1.13*dive+land*.35)*(1-recover),peak=low?.55:save?1.05:.8;
+ const save=type==='big_chance_saved',low=finish==='low_driven',sign=Math.sign(shotImpact(type,sequence,finish,placement)[0])||1,rotation=sign*(1.13*dive+land*.35)*(1-recover),peak=low?.55:save?1.05:.8;
  // Takeoff, airborne extension, landing and recovery are separate phases. Contact
  // remains fixed by the authoritative event; recovery only improves presentation.
 
@@ -672,13 +677,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
+ const placement=event.shotPlacement||null;
+ const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
+ const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
+ const eventKeeperPose=(type,time,style=finish,seq=sequence,action=keeperAction)=>keeperPose(type,time,style,seq,action,placement);
+ const eventCameraState=(dir,time,aspect=1.3,type=event.type,seq=sequence,style=finish,action=keeperAction)=>cameraState(dir,time,aspect,type,seq,style,action,placement);
  // All match-space objects, pitch markings and both goals share one transform.
  const field=new THREE.Group();field.rotation.y=direction===1?0:Math.PI;scene.add(field);
  // Isolated demonstration ONLY, not an authoritative match highlight.
  const labDuelPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isContactDemo(defenderAction);
  const labTrackingPreview=pilotMotion!==null&&event.motionDuelPreview===true&&isTrackingAction(defenderAction);
  const labFocusedPreview=labDuelPreview||labTrackingPreview;
- const labBallAt=t=>ballPosition(event.type,t,sequence,finish,keeperAction);
+ const labBallAt=t=>eventBallPosition(event.type,t,sequence,finish,keeperAction);
  const trackingTimeline=labTrackingPreview?createTrackingTimeline(defenderAction,sequence,t=>playerPosition(0,t,event.type,sequence),DURATION):null;
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
   const original=playerPosition(index,time,type,seq);
@@ -1138,9 +1148,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Distance-based ball roll: the football no longer spins at a constant
   // unrelated speed during stops, turns or high-speed forward carries.
   const ballRollSamples=208,ballRollPath=new Float32Array(ballRollSamples+1);
-  {let previous=ballPosition(event.type,0,sequence,finish,keeperAction);
+  {let previous=eventBallPosition(event.type,0,sequence,finish,keeperAction);
    for(let i=1;i<=ballRollSamples;i++){
-    const t=i*DURATION/ballRollSamples,next=ballPosition(event.type,t,sequence,finish,keeperAction);
+    const t=i*DURATION/ballRollSamples,next=eventBallPosition(event.type,t,sequence,finish,keeperAction);
     const travelled=Math.hypot(next[0]-previous[0],next[2]-previous[2]);
     ballRollPath[i]=ballRollPath[i-1]+(t<=SHOT_TIME?travelled/.14:4*DURATION/ballRollSamples);
     previous=next;
@@ -1149,7 +1159,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
   const camTarget=new THREE.Vector3(),broadcastTracks=new Map();
-  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>cameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})}));return broadcastTracks.get(key)};
+  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})}));return broadcastTracks.get(key)};
   let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
@@ -1222,7 +1232,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // Every member of a combination can now absorb the incoming ball.
    // Previously only attacker 0/1 had a reception motion in these sequences.
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
-   const defensiveBall=ballPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
+   const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    players.forEach((p,i)=>{const [x,z]=stagedPlayerPosition(i,time,event.type,sequence),prev=stagedPlayerPosition(i,Math.max(0,time-.02),event.type,sequence),next=stagedPlayerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
@@ -1256,7 +1266,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      if(i===0)motion23Sample=transition;
     }
     if(i>=8&&time<SHOT_TIME+.4&&!cleanContactPreview&&!singleTrackingMotion){const brace=defenderTracking(i,time,sequence).pressure;
-     p.upper.rotation.y+=clamp((ballPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
+     p.upper.rotation.y+=clamp((eventBallPosition(event.type,time,sequence,finish)[0]-x)*.018,-.13,.13)*brace;
      p.arms[0].rotation.z-=.16*brace;p.arms[1].rotation.z+=.16*brace;
     }
     // The real defender's style determines a visible attempt, not an outcome.
@@ -1364,7 +1374,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type!=='ball_won')applyShotApproach(striker,time,finish,sequence);
    if(event.type!=='ball_won'&&time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
     if(INVERTED_SEQUENCES.has(sequence)){
-     const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=shotImpact(event.type,sequence,finish);
+     const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish);
      const shotHeading=Math.atan2(sx-aim[0],sz-aim[2]);
      striker.root.rotation.y=mix(striker.root.rotation.y,shotHeading,blend);
     }else striker.root.rotation.y*=1-blend;
@@ -1438,7 +1448,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
-    keeperPose(event.type,time,finish,sequence,keeperAction);
+    eventKeeperPose(event.type,time,finish,sequence,keeperAction);
    pose(keeper,kp.x,kp.z,time,.12,Math.PI);
    const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
     (time-5.05)/3.1,keeper.motionClips.action);
@@ -1469,18 +1479,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else if(savePose&&keeperAction==='fingertip'){
      keeper.rig.rotation.y-=.16*kp.dive;
     }
-   if(enhancedRigMotion&&!labDuelPreview){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,shotImpact(event.type,sequence,finish)[0])}
+   if(enhancedRigMotion&&!labDuelPreview){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,eventShotImpact(event.type,sequence,finish)[0])}
    if(kp.dive>.05){
     keeper.elbows.forEach(e=>e.rotation.x=0);
     // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
-    const saved=event.type==='big_chance_saved',impact=shotImpact(event.type,sequence,finish),reachX=saved?impact[0]:Math.sign(impact[0])*1.25;
+    const saved=event.type==='big_chance_saved',impact=eventShotImpact(event.type,sequence,finish),reachX=saved?impact[0]:Math.sign(impact[0])*1.25;
     const reachY=saved?impact[1]:finish==='low_driven'?.35:finish==='chip'?1.5:.92;
     if(!saved){const dive=kp.dive*(1-kp.recover);keeper.upper.rotation.y=-.15*dive;
      keeper.legs[0].rotation.x+=.22*dive;keeper.legs[1].rotation.x-=.25*dive;
      keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
     aimArm(keeper.arms[0],[reachX,reachY,-50.6]);aimArm(keeper.arms[1],[reachX,reachY,-50.6]);
    }
-   const guidedBall=bootGuidedBall(ballPosition(event.type,time,sequence,finish,keeperAction),time);
+   const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
    const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
    const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
    ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
@@ -1490,12 +1500,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=shotImpact('goal',sequence,finish)[1],netX=shotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
-   const cam=labFocusedPreview?cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
+   const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
    if(labFocusedPreview){
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
@@ -1588,7 +1598,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:keeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
