@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {createStableCameraTrack} from './3d-camera-director.mjs?v=2194';
+import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2190';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
@@ -1110,7 +1110,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
   const camTarget=new THREE.Vector3(),broadcastTracks=new Map();
-  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>cameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION}));return broadcastTracks.get(key)};
+  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>cameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})}));return broadcastTracks.get(key)};
   let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){

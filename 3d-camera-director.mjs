@@ -18,7 +18,7 @@ function limitTravel(before,current,maxDelta){
  * a previous frame, so dropped frames, seeks and low-end phones cannot make the
  * lens or camera teleport. The goal/keeper and pitch are not modified.
  */
-export function createStableCameraTrack(cameraAt,{duration=10.4,step=.05,sigma=.34,focusSpeed=12,railSpeed=14}={}){
+export function createStableCameraTrack(cameraAt,{duration=10.4,step=.05,sigma=.34,focusSpeed=12,railSpeed=14,fovFloor=27.5,fovCeiling=35.5}={}){
  if(typeof cameraAt!=='function')throw new TypeError('Camera sampler required');
  const count=Math.max(2,Math.ceil(duration/step)),dt=duration/count;
  const frames=Array.from({length:count+1},(_,i)=>cameraAt(i*dt));
@@ -38,7 +38,7 @@ export function createStableCameraTrack(cameraAt,{duration=10.4,step=.05,sigma=.
  const requestedLens=frames.map(frame=>frame.fov).sort((a,b)=>a-b);
  // A fixed per-clip lens deliberately ignores isolated player-fit spikes.
  // Zoom is from the actual 3D dolly, not abruptly widening the field of view.
- const fov=clamp(requestedLens[Math.floor(requestedLens.length*.84)],27.5,35.5);
+ const fov=clamp(requestedLens[Math.floor(requestedLens.length*.84)],fovFloor,fovCeiling);
  const axisAt=(t,key,axis)=>{
   const u=clamp(t,0,duration)/dt,i=Math.min(count-1,Math.floor(u)),v=u-i;
   const val=j=>weighted[clamp(j,0,count)][key][axis];
