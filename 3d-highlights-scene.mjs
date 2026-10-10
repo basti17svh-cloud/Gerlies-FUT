@@ -115,6 +115,13 @@ function carriedBall(index,time,sequence,lead=.56){
 }
 // Opening supply pass: a true first action before the future carrier starts dribbling.
 const ENTRY_RELEASE=.42,ENTRY_RECEIVE=1.12;
+// Every scripted crossing move now has a genuine opening phase: supply,
+// reception, a visible wide 1-v-1, and only then the cross.
+const wideLaunch=sequence=>sequence.startsWith('early_cross_')?3.20:sequence.startsWith('low_cross_')?3.24:3.65;
+const wideFeint=time=>{
+ const entering=smooth((time-1.43)/.48),breaking=smooth((time-2.50)/.78);
+ return 1.85*entering*(1-breaking);
+};
 function entryPassBall(time,sequence,source,target){
  if(time>=ENTRY_RECEIVE)return null;
  if(time<ENTRY_RELEASE)return carriedBall(source,time,sequence,.50);
@@ -133,16 +140,16 @@ export function controlCarrier(time,sequence='central'){
   if(time<4.03)return{index:0,weight:.83};
   return time>4.4?{index:8,weight:smooth((time-4.4)/.23)*.9}:{index:-1,weight:0};
  }
- const wideEntry=['wing_left','wing_right','cutback_left','cutback_right'].includes(seq);
+ const wideEntry=(base.startsWith('wing_')||base.startsWith('cutback_'))&&seq!=='diagonal_switch';
  if((wideEntry||INVERTED_SEQUENCES.has(seq)||seq==='dribble')&&time<ENTRY_RECEIVE){
   if(time>=ENTRY_RELEASE)return{index:-1,weight:0};
-  return{index:wideEntry?(sequenceSide(seq)<0?5:4):1,weight:.88};
+  return{index:wideEntry?(sequenceSide(seq==='bicycle'?base:seq)<0?5:4):1,weight:.88};
  }
  let index=-1,start=0,end=0;
  if(INVERTED_SEQUENCES.has(seq)){index=0;end=SHOT_TIME-.24}
-  else if(seq.startsWith('low_cross_')){index=1;end=3.08}
+  else if(seq.startsWith('low_cross_')){index=1;end=wideLaunch(seq)}
   else if(seq==='diagonal_switch'){index=1;start=2.5;end=3.65}
- else if(seq.startsWith('early_cross_')){index=1;end=2.9}
+ else if(seq.startsWith('early_cross_')){index=1;end=wideLaunch(seq)}
  else if(['wing_left','wing_right','cutback_left','cutback_right'].includes(base)){index=1;end=3.65}
  else if(base==='dribble'){index=0;end=SHOT_TIME-.24}
  else if(base==='through_ball'){
@@ -187,14 +194,18 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
    return carriedBall(1,time,variant.base,.56);
   }
   if(seq.startsWith('low_cross_')&&time<SHOT_TIME){
-   const launch=3.08,last=SHOT_TIME-.2,contact=contactFor(style);
-   if(time<launch)return carriedBall(1,time,variant.base,.54);
+   const launch=wideLaunch(seq),last=SHOT_TIME-.2,contact=contactFor(style);
+   const supply=entryPassBall(time,seq,sequenceSide(seq)<0?5:4,1);
+   if(supply)return supply;
+   if(time<launch)return carriedBall(1,time,seq,.54);
    const start=carriedBall(1,launch,variant.base,.54),end=[contact[0],.14,contact[2]+.43];
    return time<last?movingBall(start,end,(time-launch)/(last-launch),.1):movingBall(end,contact,(time-last)/.2,.035);
   }
   if(seq.startsWith('early_cross_')&&time<SHOT_TIME){
-   const launch=2.9,last=SHOT_TIME-.2,contact=contactFor(style);
-   if(time<launch)return carriedBall(1,time,variant.base,.56);
+   const launch=wideLaunch(seq),last=SHOT_TIME-.2,contact=contactFor(style);
+   const supply=entryPassBall(time,seq,sequenceSide(seq)<0?5:4,1);
+   if(supply)return supply;
+   if(time<launch)return carriedBall(1,time,seq,.56);
    const start=carriedBall(1,launch,variant.base,.56),end=[contact[0],contact[1],contact[2]+.45];
    return time<last?movingBall(start,end,(time-launch)/(last-launch),2.15):movingBall(end,contact,(time-last)/.2,.08);
   }
@@ -285,7 +296,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  const seq=normalizeSequence(sequence),base=baseSequence(seq),bp=worldPosition(ballPosition(type,time,seq,finish,keeperAction),direction),goal=worldPosition([0,.86,-51.25],direction);
  const portraitPad=Math.max(0,1.25-aspect)*8.5;
  let targetX=0,targetY=.82,targetZ=0,distance=50,fov=28,phase='build';
- const wide=base.startsWith('wing_')||base.startsWith('cutback_'),inverted=INVERTED_SEQUENCES.has(seq),deliveryAt=seq.startsWith('early_cross_')?2.9:seq.startsWith('low_cross_')?3.08:3.65;
+ const wide=base.startsWith('wing_')||base.startsWith('cutback_'),inverted=INVERTED_SEQUENCES.has(seq),deliveryAt=wideLaunch(seq);
  if(wide){
   // Keep the live winger, moving ball and box in one continuous TV frame.
   // Timing matches the actual carry (to 3.65 s), delivery (to 5.20 s) and finish.
@@ -499,13 +510,27 @@ export function runPosition(index,time,sequence='central'){
    const side=sequenceSide(seq),cutback=seq.startsWith('cutback'),wideStart=[side*23,-20.5],target=[side*(cutback?27:25.5),cutback?-48:-44.5];
    // The winger now runs predominantly forward along the touchline. This removes
    // the sideways skating caused by translating him from a central spawn.
-   if(time<3.65)return lerp(wideStart,target,smooth(time/3.65));
+   if(time<3.65){
+    const p=lerp(wideStart,target,smooth(time/3.65));
+    // Attack the marker's inside foot before accelerating down the line.
+    // The feint decays before delivery so the ball never jumps on release.
+    p[0]-=side*wideFeint(time);
+    return p;
+   }
    return lerp(target,[side*(cutback?26.2:24.8),target[1]-.8],smooth((time-3.65)/2.4))
   }
   if(seq==='one_two'){if(time<2.65)return lerp([-12,-22],[-8,-32.6],smooth(time/2.65));return lerp([-8,-32.6],[-5,-38],smooth((time-2.65)/3.7))}
   if(seq==='through_ball'){if(time<2.35)return lerp([-13,-21.5],[-9,-28.2],smooth(time/2.35));return lerp([-9,-28.2],[-7,-34],smooth((time-2.35)/4.2))}
   if(seq==='dribble')return lerp([-12,-23],[-8,-34],smooth(time/6.2));
   if(time<2)return lerp(r.from,r.to,smooth(time/2));return lerp(r.to,[-8,-35],smooth((time-2)/5.2))
+ }
+ // The fullback closes the flank, jockeys the feint, then trails the runner.
+ // Maintain a real 2.5m gap: no body overlap or late defender teleport.
+ if((seq.startsWith('wing_')||seq.startsWith('cutback_'))&&index===(sequenceSide(seq)<0?14:13)){
+  const side=sequenceSide(seq),winger=runPosition(1,time,seq),
+   close=smooth((time-.60)/.85),behind=smooth((time-2.50)/.65),
+   pursuit=[winger[0]-side*2.55,winger[1]+mix(-2.35,1.65,behind)];
+  return lerp([side*21.1,-27.4],pursuit,close);
  }
  const u=clamp(time/6.9),p=lerp(r.from,r.to,smooth(u)),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){const side=sequenceSide(seq);if(r.team==='attack'&&[2,3,4,5].includes(index))p[0]+=side*(index%2?.8:1.6)*Math.sin(u*Math.PI)}
@@ -1380,7 +1405,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // 2.6: rebalance after the kick; never change the canonical 5.4s contact.
    if(pilotMotion)balanceSample=applyFinishBalance(striker,time,finish);
    const authoredPassWindows=getPlay(sequence)?playPassWindows(getPlay(sequence)):null;
-   const passWindows=authoredPassWindows|| (INVERTED_SEQUENCES.has(sequence)?[]:sequence.startsWith('low_cross_')?[[2.82,3.25]]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:sequence.startsWith('early_cross_')?[[2.66,3.14]]:base.startsWith('wing_')||base.startsWith('cutback_')?[[3.41,3.9]]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]]);
+   const scriptedWing=(base.startsWith('wing_')||base.startsWith('cutback_'))&&sequence!=='diagonal_switch';
+   const deliveryWindow=scriptedWing?[[wideLaunch(sequence)-.24,wideLaunch(sequence)+.25]]:[];
+   const openingPass=scriptedWing?[{actor:sequenceSide(sequence==='bicycle'?base:sequence)<0?5:4,start:ENTRY_RELEASE-.24,end:ENTRY_RELEASE+.30}]:[];
+   const passWindows=authoredPassWindows|| (INVERTED_SEQUENCES.has(sequence)?[]:sequence==='diagonal_switch'?[[-.24,.25],[3.41,3.9]]:scriptedWing?[...openingPass,...deliveryWindow]:base==='one_two'?[[1.56,2.05],[2.41,2.9]]:base==='through_ball'?[[2.11,2.6]]:base==='dribble'?[]:[[1.76,2.25]]);
    for(const window of passWindows){
     const [from,to]=Array.isArray(window)?window:[window.start,window.end];
     if(time<from||time>to)continue;
