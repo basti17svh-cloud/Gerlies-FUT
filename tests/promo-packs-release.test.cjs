@@ -16,7 +16,7 @@ function app(at){
  const byId=new Map(players.map(p=>[String(p.id),p])),elements=new Map(),tabs=[{dataset:{storeTab:'classic'}},{dataset:{storeTab:'promo'}}];
  for(const tab of tabs){tab.classList={toggle(){}};tab.setAttribute=()=>{}}
  const get=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',addEventListener(_event,fn){if(id==='storeView')ctx.click=fn}});return elements.get(id)};
- const ctx={Date:Clock,Intl,Math:math,FOUNDER_PACK_ID:'founder',MARCO_FOUNDER_PACK_ID:'marco',PLAYERS:players,
+ const ctx={Date:Clock,Intl,Math:math,FOUNDER_PACK_ID:'founder',MARCO_FOUNDER_PACK_ID:'marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',PLAYERS:players,
   state:{coins:3000000,points:100000,packs:{},club:[]},pendingPack:[],founderRuleForPack:()=>null,
   makeLivePackItem:(b,tradeable)=>({uid:`test-${++sequence}`,pid:String(b.id),tradeable,rare:false}),
   displayBase:i=>byId.get(i.pid),isCardRare:(_b,i)=>i.rare,rarityOf:b=>b.ovr>=75?'gold':b.ovr>=65?'silver':'bronze',randomMidIconBase:()=>null,

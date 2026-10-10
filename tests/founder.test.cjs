@@ -147,3 +147,53 @@ test('Marco biography lists his full name, 178 cm, right foot, five stars, ZOM a
  for(const token of ['Marco Gerlach','FOOTERA FOUNDER','178 cm','Rechts','ZOM','Schweinfurt Rangers 09 · Footera','★★★★★'])assert.ok(markup.includes(token),token);
  for(const n of [91,89,82,88,45,84])assert.ok(markup.includes(`<strong>${n}</strong>`));
 });
+
+const NIKLAS_USER='4af57ea2-9b89-44f7-b7ca-ffdbb7400317',NIKLAS_PID='footera-founder-niklas-bergstraesser',NIKLAS_PACK='founder-niklas';
+function niklasSave(){const s=saveState('GF-WORMS');s.profile.founderOnlineUserId=NIKLAS_USER;return s}
+test('Niklas pack is bound to the verified online account, never to an absent save ID or club name',()=>{
+ const ctx=setup();
+ for(const s of [saveState(),saveState(MARCO_OWNER),saveState('GF-OTHER'),{...saveState(),profile:{clubName:'Wurstwasser Worms FC',founderOnlineUserId:'another-user'}}]){
+  ctx.state=call(ctx,'reconcileFounderState')(s);assert.equal(ctx.state.packs[NIKLAS_PACK],undefined);assert.equal(call(ctx,'generatePack')(NIKLAS_PACK).length,0);
+ }
+ ctx.state=call(ctx,'reconcileFounderState')(niklasSave());
+ assert.equal(ctx.state.packs[NIKLAS_PACK],1);assert.equal(ctx.state.packs[PACK],undefined);assert.equal(ctx.state.packs[MARCO_PACK],undefined);
+ const [item]=call(ctx,'generatePack')(NIKLAS_PACK);assert.equal(item.pid,NIKLAS_PID);assert.equal(item.ownerUserId,NIKLAS_USER);assert.equal(item.tradeable,false);
+});
+test('Niklas authenticates after boot, gets one pack, completes the walkout and survives offline reload without duplicates',()=>{
+ const ctx=setup();ctx.state=call(ctx,'reconcileFounderState')(saveState('GF-WORMS'));let saves=0;
+ ctx.save=()=>saves++;ctx.renderStore=()=>{};
+ call(ctx,'syncFounderOnlineOwner')(NIKLAS_USER);assert.equal(ctx.state.packs[NIKLAS_PACK],1);assert.equal(saves,1);
+ call(ctx,'syncFounderOnlineOwner')(NIKLAS_USER);assert.equal(saves,1);
+ const [item]=call(ctx,'generatePack')(NIKLAS_PACK);ctx.state.packs[NIKLAS_PACK]=0;ctx.state.niklasFounderOpening=true;ctx.state.pendingPack=[item];ctx.pendingPack=ctx.state.pendingPack;ctx.itemRating=()=>88;
+ const plan=call(ctx,'packRevealPlan')();assert.equal(plan.mode,'walkout');assert.equal(plan.label,'FOOTERA FOUNDER');
+ const els=new Map();ctx.$=id=>{if(!els.has(id))els.set(id,{className:'',style:{},classList:{remove(){},add(){}},querySelector(){return null},textContent:''});return els.get(id)};
+ ctx.pendingResolved=new Set();ctx.flushSave=()=>{};ctx.resetBoardIntro=()=>{};ctx.resetWalkoutTunnel=()=>{};ctx.renderPackResults=()=>{};
+ vm.runInContext(finishCode,ctx);call(ctx,'finishPack')();
+ assert.equal(ctx.state.niklasFounderClaimed,true);assert.equal(ctx.state.club.length,1);
+ const saved=JSON.parse(JSON.stringify(ctx.state));saved.club.push({...item,uid:'copy',tradeable:true});saved.packs[NIKLAS_PACK]=5;
+ ctx.state=call(ctx,'reconcileFounderState')(saved);ctx.pendingPack=ctx.state.pendingPack;
+ assert.equal(ctx.state.club.filter(i=>i.pid===NIKLAS_PID).length,1);assert.equal(ctx.state.club[0].tradeable,false);assert.equal(ctx.state.packs[NIKLAS_PACK],0);assert.equal(call(ctx,'generatePack')(NIKLAS_PACK).length,0);
+ call(ctx,'syncFounderOnlineOwner')('another-user');assert.equal(ctx.state.club.length,0);assert.equal(ctx.state.packs[NIKLAS_PACK],undefined);
+});
+test('Niklas has the agreed ST/ZOM profile and exactly Aerial+ with three normal PlayStyles',()=>{
+ const ctx=setup(),b=call(ctx,'NIKLAS_FOUNDER_BASE'),item=call(ctx,'niklasFounderItem')();
+ assert.deepEqual([b.name,b.fullName,b.ovr,b.position,b.alt,b.height,b.preferredFoot,b.skillMoves,b.weakFoot],['N. Bergsträßer','Niklas Bergsträßer',88,'ST','CAM',185,'Right',5,5]);
+ assert.deepEqual([b.pac,b.sho,b.pas,b.dri,b.def,b.phy],[91,89,82,88,45,84]);
+ const ps={};vm.createContext(ps);vm.runInContext(fs.readFileSync(path.join(__dirname,'../playstyles.js'),'utf8'),ps);
+ const styles=ps.FooteraPlayStyles.resolve({...b},item).styles;
+ assert.deepEqual(Array.from(styles.filter(s=>s.plus),s=>s.id),['aerial']);
+ assert.deepEqual(Array.from(styles.filter(s=>!s.plus),s=>s.id).sort(),['first-touch','power-header','power-shot']);
+ assert.equal(call(ctx,'isExclusiveFounderBase')(b),true);
+ ctx.state=niklasSave();ctx.state.club=[{...item,tradeable:true}];ctx.displayBase=()=>b;ctx.itemRating=()=>88;
+ vm.runInContext(between('function sbcSourceItems(){','function sbcSourceMap(){')+between('function quickSell(i){','function clubFilterItems(){'),ctx);
+ assert.equal(call(ctx,'sbcSourceItems')().length,0);assert.equal(call(ctx,'quickSell')(ctx.state.club[0]),0);
+});
+test('Niklas opens his pack through the real Store button without paying and cannot reopen it',()=>{
+ const ctx=setup();ctx.state=call(ctx,'reconcileFounderState')(niklasSave());ctx.pendingPack=ctx.state.pendingPack;ctx.pendingResolved=new Set();ctx.PACKS=[{id:NIKLAS_PACK,name:'Founder Niklas',count:1}];
+ const elements=new Map();ctx.$=id=>{if(!elements.has(id))elements.set(id,{style:{},classList:{add(){},remove(){}},querySelector:()=>null,addEventListener(_e,fn){ctx.storeClick=fn}});return elements.get(id)};
+ Object.assign(ctx,{save(){},flushSave(){},ensureObjectiveWindows(){},updateObjectiveIndicators(){},resetBoardIntro(){},resetWalkoutTunnel(){},toast(message){throw Error(message)},uid:()=> 'test',packArtSrc:()=> 'founder.svg'});
+ vm.runInContext(between('$("storeView").addEventListener("click"','let pendingResolved=')+between('function openPack(','function packIsSpecial('),ctx);
+ const click=()=>ctx.storeClick({target:{closest:selector=>selector==='[data-owned]'?{dataset:{owned:NIKLAS_PACK}}:null}});
+ click();assert.equal(ctx.state.packs[NIKLAS_PACK],0);assert.equal(ctx.state.pendingPack.length,1);assert.equal(ctx.state.pendingPack[0].pid,NIKLAS_PID);assert.equal(ctx.state.coins,3572);assert.equal(ctx.state.stats.packs,13);
+ click();assert.equal(ctx.state.stats.packs,13);assert.equal(ctx.state.pendingPack.length,1);
+});

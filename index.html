@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.100</title>
+<title>Footera V21.101</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1477,7 +1477,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
 <link rel="stylesheet" href="./legacy-card.css">
 <link rel="stylesheet" href="./momentum-card.css">
-<link rel="stylesheet" href="./card-layout.css">
+<link rel="stylesheet" href="./card-layout.css?v=21101">
 <link rel="stylesheet" href="./flashback-card.css?v=2173">
 <link rel="stylesheet" href="./story-card.css">
 <link rel="stylesheet" href="./evolution-card.css">
@@ -2162,20 +2162,34 @@ const FOUNDER_BASE=Object.freeze({id:FOUNDER_PLAYER_ID,name:"B. Gerlach",fullNam
 const FOUNDER_BASTIAN_STATIC_SRC="./assets/footera/founder-bastian-card-hd.webp";
 const MARCO_FOUNDER_SAVE_ID="GF-7D87D08A06104571",MARCO_FOUNDER_PLAYER_ID="footera-founder-marco-gerlach",MARCO_FOUNDER_PACK_ID="founder-marco";
 const MARCO_FOUNDER_BASE=Object.freeze({id:MARCO_FOUNDER_PLAYER_ID,name:"M. Gerlach",fullName:"Marco Gerlach",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"Schweinfurt Rangers 09",league:"Footera",height:178,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,face:"./assets/footera/founder-marco-portrait.webp",clubLogo:"./assets/footera/schweinfurt-rangers-09.webp",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
-function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
+const NIKLAS_FOUNDER_USER_ID="4af57ea2-9b89-44f7-b7ca-ffdbb7400317",NIKLAS_FOUNDER_PLAYER_ID="footera-founder-niklas-bergstraesser",NIKLAS_FOUNDER_PACK_ID="founder-niklas";
+const NIKLAS_FOUNDER_BASE=Object.freeze({id:NIKLAS_FOUNDER_PLAYER_ID,name:"N. Bergsträßer",fullName:"Niklas Bergsträßer",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"Wormatia Worms",league:"Footera",height:185,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,playstyles:"Power Header, First Touch, Power Shot",playstylesPlus:"Aerial",face:"./assets/footera/founder-niklas-portrait.webp",clubLogo:"./assets/footera/wormatia-worms.png",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
+function isNiklasFounderItem(item){return String(item?.pid||"")===NIKLAS_FOUNDER_PLAYER_ID}
+function isNiklasBase(p){return String(p?.id||"")===NIKLAS_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(niklas|n\.) bergstr(aesser|aßer)$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))}
+function niklasFounderItem(){return{uid:"footera-founder-niklas",pid:NIKLAS_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerUserId:NIKLAS_FOUNDER_USER_ID}}
+function ownsFounderRule(s,rule){return !!rule&&(rule.userId?!!s.profile?.founderOnlineUserId&&s.profile.founderOnlineUserId===rule.userId:!!rule.saveId&&s.profile?.saveId===rule.saveId)}
+// Bind this online-only entitlement after the existing authenticated session loads.
+// Keep the last verified identity in the save so an offline reload preserves the card.
+function syncFounderOnlineOwner(userId){
+ if(!userId||state.profile?.founderOnlineUserId===userId)return;
+ state.profile.founderOnlineUserId=userId;reconcileFounderState(state);
+ pendingPack=state.pendingPack;pendingResolved=new Set(state.pendingResolved||[]);
+ save();renderStore();
+}
+function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
 function isMarcoFounderItem(item){return String(item?.pid||"")===MARCO_FOUNDER_PLAYER_ID}
 function isBastianBase(p){return [p?.fullName,p?.name].some(v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()==="bastian gerlach")||String(p?.id||"")===FOUNDER_PLAYER_ID}
 function isMarcoBase(p){return [p?.fullName,p?.name].some(v=>/^(marco|m\.) gerlach$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))||String(p?.id||"")===MARCO_FOUNDER_PLAYER_ID}
-function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)}
+function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)||isNiklasBase(p)}
 function founderItem(){return{uid:"footera-founder-bastian",pid:FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:FOUNDER_SAVE_ID}}
 function marcoFounderItem(){return{uid:"footera-founder-marco",pid:MARCO_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MARCO_FOUNDER_SAVE_ID}}
-const FOUNDER_RULES=[{saveId:FOUNDER_SAVE_ID,playerId:FOUNDER_PLAYER_ID,packId:FOUNDER_PACK_ID,base:FOUNDER_BASE,create:founderItem,uid:"footera-founder-bastian",claimed:"founderClaimed",opening:"founderOpening"},{saveId:MARCO_FOUNDER_SAVE_ID,playerId:MARCO_FOUNDER_PLAYER_ID,packId:MARCO_FOUNDER_PACK_ID,base:MARCO_FOUNDER_BASE,create:marcoFounderItem,uid:"footera-founder-marco",claimed:"marcoFounderClaimed",opening:"marcoFounderOpening"}];
+const FOUNDER_RULES=[{saveId:FOUNDER_SAVE_ID,playerId:FOUNDER_PLAYER_ID,packId:FOUNDER_PACK_ID,base:FOUNDER_BASE,create:founderItem,uid:"footera-founder-bastian",claimed:"founderClaimed",opening:"founderOpening"},{saveId:MARCO_FOUNDER_SAVE_ID,playerId:MARCO_FOUNDER_PLAYER_ID,packId:MARCO_FOUNDER_PACK_ID,base:MARCO_FOUNDER_BASE,create:marcoFounderItem,uid:"footera-founder-marco",claimed:"marcoFounderClaimed",opening:"marcoFounderOpening"},{userId:NIKLAS_FOUNDER_USER_ID,playerId:NIKLAS_FOUNDER_PLAYER_ID,packId:NIKLAS_FOUNDER_PACK_ID,base:NIKLAS_FOUNDER_BASE,create:niklasFounderItem,uid:"footera-founder-niklas",claimed:"niklasFounderClaimed",opening:"niklasFounderOpening"}];
 function founderRuleForItem(item){return FOUNDER_RULES.find(r=>r.playerId===String(item?.pid||""))}
 function founderRuleForPack(id){return FOUNDER_RULES.find(r=>r.packId===id)}
 function reconcileFounderState(s){
  const original=s.pendingPack||[],resolved=new Set(s.pendingResolved||[]),originalUids=new Map();
  for(const rule of FOUNDER_RULES){
-  const owner=s.profile?.saveId===rule.saveId,founder=i=>String(i?.pid||"")===rule.playerId;
+  const owner=ownsFounderRule(s,rule),founder=i=>String(i?.pid||"")===rule.playerId;
   const oldUids=new Set((s.club||[]).filter(founder).map(i=>i.uid));
   for(const oldUid of oldUids)originalUids.set(oldUid,owner?rule.uid:null);
   s.club=(s.club||[]).filter((i,idx,arr)=>!founder(i)||(owner&&arr.findIndex(founder)===idx));
@@ -2454,7 +2468,8 @@ const PACKS=[
  {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
  {id:"event-sbc-player",name:"Event-SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer Event-SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
- {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0}
+ {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
+ {id:"founder-niklas",name:"FOOTERA FOUNDER Pack · N. Bergsträßer",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Deine exklusive N. Bergsträßer Founder-Karte · einmalig für Wurstwasser Worms FC",iconChance:0}
 ];
 // This account-only gift shares the ordinary pack's name, artwork and description.
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
@@ -2757,6 +2772,7 @@ function restoreSyntheticPlayerIds(){
  P_BY_ID.set(RETIRED_ICON_BASE.id,RETIRED_ICON_BASE);
  P_BY_ID.set(FOUNDER_PLAYER_ID,FOUNDER_BASE);
  P_BY_ID.set(MARCO_FOUNDER_PLAYER_ID,MARCO_FOUNDER_BASE);
+ P_BY_ID.set(NIKLAS_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_BASE);
  P_BY_ID.set(FLASHBACK_REUS_BASE.id,{...FLASHBACK_REUS_BASE,face:P_BY_ID.get("188350")?.face||FLASHBACK_REUS_BASE.face});
  for(const base of LIVE_TOTW_BASE_CACHE.values())if(base?.id)P_BY_ID.set(String(base.id),base);
  for(const info of MOMENTUM_BY_ID.values())if(!P_BY_ID.has(info.pid)){const base=momentumFallbackBase(info);applyPlayerTraits([base]);P_BY_ID.set(info.pid,base)}
@@ -3758,6 +3774,7 @@ function resolvedAffiliation(p){
  if(cached&&cached.epoch===AFFILIATION_CACHE_EPOCH&&cached.sig===sig)return cached.value;
  let value;
  if(p.id===FOUNDER_PLAYER_ID)value={...p,team:"FC Gerlies",league:"Footera",clubLogo:FOUNDER_BASE.clubLogo,leagueLogo:FOUNDER_BASE.leagueLogo};
+ else if(p.id===NIKLAS_FOUNDER_PLAYER_ID)value={...p,team:NIKLAS_FOUNDER_BASE.team,league:"Footera",clubLogo:NIKLAS_FOUNDER_BASE.clubLogo,leagueLogo:NIKLAS_FOUNDER_BASE.leagueLogo};
  else if(p.id===MARCO_FOUNDER_PLAYER_ID)value={...p,team:MARCO_FOUNDER_BASE.team,league:"Footera",clubLogo:MARCO_FOUNDER_BASE.clubLogo,leagueLogo:MARCO_FOUNDER_BASE.leagueLogo};
  else{
   const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
@@ -3791,7 +3808,7 @@ function playerLeagueLabel(p){
  if(league)return league;
  return String(a?.team||"").trim()?"Liga wird ermittelt":"Keine Liga"
 }
-function playerContextLine(p){const a=resolvedAffiliation(p);return `${playerClubLabel(a)} · ${playerLeagueLabel(a)} · ${[FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID].includes(String(p?.id||""))?"Deutschland":nationLabel(a?.nation)}`}
+function playerContextLine(p){const a=resolvedAffiliation(p);return `${playerClubLabel(a)} · ${playerLeagueLabel(a)} · ${[FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID].includes(String(p?.id||""))?"Deutschland":nationLabel(a?.nation)}`}
 function playerAffiliationHTML(p,compact=false){
  p=resolvedAffiliation(p);
  const hasClub=!!String(p?.team||"").trim(),hasLeague=!!String(p?.league||"").trim(),pid=String(p?.id||"");
@@ -3832,7 +3849,7 @@ async function ensureEaPlayerAssets(p){
 }
 function ensurePlayerAffiliationAssets(p){
  if(!p)return;
- if(p.id===FOUNDER_PLAYER_ID||p.id===MARCO_FOUNDER_PLAYER_ID)return;
+ if(isExclusiveFounderBase(p))return;
  const a=resolvedAffiliation(p);
  if(a.team&&!verifiedClubBadge(a.team,a)&&!isWomensAffiliation(a.team,a))queueBadgeDiscovery("club",a.team,a.league,true);
  if(a.league)queueBadgeDiscovery("league",a.league,"",true);
@@ -4216,6 +4233,9 @@ function startGlobalBadgePrewarm(){
 }
 function emblemCandidates(kind,p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!arr.includes(u))arr.push(u)};
+ if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="flag")return["./assets/footera/events/flashback/de.png"];
+ if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="club")return[NIKLAS_FOUNDER_BASE.clubLogo];
+ if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="league")return[NIKLAS_FOUNDER_BASE.leagueLogo];
  if(p?.id===FOUNDER_PLAYER_ID&&kind==="club")return[FOUNDER_BASE.clubLogo];
  if(p?.id===FOUNDER_PLAYER_ID&&kind==="league")return[FOUNDER_BASE.leagueLogo];
  if(p?.id===MARCO_FOUNDER_PLAYER_ID&&kind==="club")return[MARCO_FOUNDER_BASE.clubLogo];
@@ -4454,7 +4474,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
     <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#ff5367" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
-   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"&&p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
+   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"?(p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":p.id==="footera-founder-niklas-bergstraesser"?" worms-founder":""):"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
  const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="flashback"?" flashback-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
 }
 function cardAltPositionsHTML(p,shownPosition=p?.position){
@@ -5444,7 +5464,7 @@ function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(releas
 function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg"};
+const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 let storeTab="promo";
 let storePromoKey="";
@@ -5453,7 +5473,7 @@ function updateStoreCountdown(){document.querySelectorAll("#storeView [data-stor
 setInterval(()=>{if(currentViewId()==="storeView"){if(storeTab==="promo"&&promoWindowKey(new Date(),19)!==storePromoKey)renderStore();else updateStoreCountdown()}},60000);
 function generatePack(id,tradeable=true){
  const founderRule=founderRuleForPack(id);
- if(founderRule)return state.profile?.saveId===founderRule.saveId&&Number(state.packs[id]||0)===1&&!state[founderRule.claimed]&&!state.club.some(i=>i.pid===founderRule.playerId)&&!pendingPack.some(i=>i.pid===founderRule.playerId)?[founderRule.create()]:[];
+ if(founderRule)return ownsFounderRule(state,founderRule)&&Number(state.packs[id]||0)===1&&!state[founderRule.claimed]&&!state.club.some(i=>i.pid===founderRule.playerId)&&!pendingPack.some(i=>i.pid===founderRule.playerId)?[founderRule.create()]:[];
  if(id==="totw-reward"){
   const entries=activeTotwWeek()?liveTotwTeamEntries():[];if(!entries.length)return[];
   const source=entries[Math.floor(Math.random()*entries.length)];
@@ -5500,11 +5520,11 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||state.profile?.saveId===founderRuleForPack(p.id).saveId));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
-$("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(items.length!==p.count)return toast("Für dieses Pack konnten nicht alle Spieler erzeugt werden. Es wurde kein Guthaben abgezogen.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(state.profile?.saveId!==rule.saveId||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
+$("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(items.length!==p.count)return toast("Für dieses Pack konnten nicht alle Spieler erzeugt werden. Es wurde kein Guthaben abgezogen.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||state.profile?.saveId!==rule.saveId||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
+function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
 function packRevealPlan(){
@@ -5519,7 +5539,7 @@ function packRevealPlan(){
 }
 function finishPack(){
  const opening=$("opening");
- if(pendingPack.some(isFounderItem)){const item=pendingPack.find(isFounderItem),rule=founderRuleForItem(item);if(rule&&state.profile?.saveId===rule.saveId){if(!state.club.some(i=>i.pid===rule.playerId))state.club.push(item);item.tradeable=false;state[rule.claimed]=true;state[rule.opening]=false;state.packs[rule.packId]=0;pendingResolved.add(pendingPack.indexOf(item));state.pendingResolved=[...pendingResolved];save();flushSave()}}
+ if(pendingPack.some(isFounderItem)){const item=pendingPack.find(isFounderItem),rule=founderRuleForItem(item);if(ownsFounderRule(state,rule)){if(!state.club.some(i=>i.pid===rule.playerId))state.club.push(item);item.tradeable=false;state[rule.claimed]=true;state[rule.opening]=false;state.packs[rule.packId]=0;pendingResolved.add(pendingPack.indexOf(item));state.pendingResolved=[...pendingResolved];save();flushSave()}}
  opening.className="opening";
  resetBoardIntro();
  resetWalkoutTunnel();
@@ -5597,7 +5617,7 @@ function showWalkoutClue(kind,base){
 }
 async function runPackReveal(plan){
  const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
- opening.className="opening active mode-"+plan.mode+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":""}`:"");
+ opening.className="opening active mode-"+plan.mode+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
  opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
 
@@ -9073,7 +9093,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.100";
+const GFUT_BUILD="V21.101";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9126,7 +9146,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2199",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21101",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9142,7 +9162,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./competition-system.js"></script>
 <script src="./champions-system.js?v=2114"></script>
 <script src="./online-config.js"></script>
-<script src="./friend-online.js"></script>
+<script src="./friend-online.js?v=21101"></script>
 <script src="./3d-highlights-match.js?v=2198"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>

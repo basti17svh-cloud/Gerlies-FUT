@@ -187,7 +187,9 @@
     let {data:{session},error}=await client.auth.getSession();if(error)throw error;
     if(!session){const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
-    online.ready=true;ensureCommsUi();
+    online.ready=true;
+    if(typeof syncFounderOnlineOwner==="function")syncFounderOnlineOwner(online.userId);
+    ensureCommsUi();
     await syncProfile();await refresh();await loadUnreadCounts();
     heartbeat();refreshPresence();
     clearInterval(presenceTimer);presenceTimer=setInterval(()=>{heartbeat();if(currentView()==="socialView")refreshPresence(true)},25000);

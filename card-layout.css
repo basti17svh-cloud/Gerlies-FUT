@@ -448,3 +448,30 @@
 @media(prefers-reduced-motion:reduce){
  .card-shell .custom-card.gold.base-rare:after{animation:none;opacity:0}
 }
+
+/* Niklas uses the shared Founder renderer; only the approved ruby artwork slots differ. */
+.founder-shell:has(>.worms-founder){
+ --card-portrait-left:28%;--card-portrait-right:11%;--card-portrait-top:14%;
+ --card-portrait-height:53%;--card-name-top:66.5%;
+}
+.card-shell .custom-card.founder.worms-founder{
+ background-image:url("./assets/footera/founder-niklas-frame.webp");
+ --card-name-fill:transparent;--card-stats-color:#ffe7ae;--card-value-color:#fff0c6;
+ --card-alt-bottom:11.7%;
+}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .card-top{top:20%!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .ovr{font-size:13cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .pos{font-size:5.8cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .card-icons{top:36%!important;gap:2.7cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .card-club{width:12cqw!important;height:12cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .card-league{width:11cqw!important;height:11cqw!important}
+.founder-shell .custom-card.founder.worms-founder .face:before{content:none}
+:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card.founder.worms-founder .face img{object-fit:cover!important;object-position:center top!important;filter:none}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .pname{background:transparent!important;border:0!important;font-family:Arial,sans-serif!important;height:27%!important;font-size:6.8cqw!important}
+:is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .stats{top:39%!important;height:29%!important}
+.founder-pack-worms{background:linear-gradient(115deg,#52080e,#170306)!important;border-color:#deaf60!important}
+.opening.mode-walkout.theme-founder-worms{background:radial-gradient(circle at 50% 42%,#a7193287 0,#460712 32%,#130306 75%)}
+.opening.theme-founder-worms .walkout-tunnel{--walkout-beam:#ffe0a0;background:radial-gradient(ellipse at 50% 46%,#ff3b5370,#5b0918 28%,#180307 76%)}
+.opening.theme-founder-worms .reveal .card-shell{filter:drop-shadow(0 0 30px #f838568c)!important}
+
+.card-shell.founder-shell:has(>.playstyle-card-row) .custom-card.worms-founder .card-alt-positions{bottom:5.2%!important}
