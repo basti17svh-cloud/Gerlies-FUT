@@ -144,6 +144,7 @@ function queueMatch3D(event){
  presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
  presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
+ presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
  presentation.defenderAction=reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
@@ -152,7 +153,7 @@ function queueMatch3D(event){
  // The simulation stays authoritative. Only the visible scoreboard is held at
  // the pre-goal value until the 3D ball actually reaches the goal.
  if(queued){
-   match3DQueue.history=(match3DQueue.history||[]).concat({sequence:presentation.sequence,family:selected.family}).slice(-9);
+   match3DQueue.history=(match3DQueue.history||[]).concat({sequence:presentation.sequence,family:selected.family,shotSide:presentation.shotPlacement.side}).slice(-9);
   if(event.type==='goal'&&Number.isFinite(Number(event.scoreBeforeHome))&&Number.isFinite(Number(event.scoreBeforeAway)))current.highlight3DScoreHold={id:String(event.id||''),home:Number(event.scoreBeforeHome),away:Number(event.scoreBeforeAway)};
   if(typeof updateMatchUI==='function')updateMatchUI(true);
   const score=document.getElementById('matchScore'),hold=current.highlight3DScoreHold;if(score&&hold)score.textContent=`${hold.home} : ${hold.away}`;
