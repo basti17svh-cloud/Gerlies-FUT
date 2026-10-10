@@ -217,6 +217,13 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
    if(time<4.2)return movingBall([3.2,.55,-33.4],[1.9,.14,-35],(time-3.75)/.45,.08);
    return movingBall([1.9,.14,-35],contact,(time-4.2)/(SHOT_TIME-4.2),.12);
   }
+  // Base-wing variants must start at their OWN provider's boot.
+  // Shifting an inherited base ball without moving the provider leaves
+  // counter/far-post openings behind the passer during the first touch.
+  if(time<ENTRY_RECEIVE&&(variant.base.startsWith('wing_')||variant.base.startsWith('cutback_'))){
+   const side=sequenceSide(seq==='bicycle'?variant.base:seq);
+   return entryPassBall(time,seq,side<0?5:4,1);
+  }
   const p=ballPosition(type,time,variant.base,style),offset=variantShift(variant,Math.min(time,SHOT_TIME));
   const fade=time<=SHOT_TIME?1:1-clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
   if((variant.base.startsWith('wing_')||variant.base.startsWith('cutback_'))&&time<SHOT_TIME){
