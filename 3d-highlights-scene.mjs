@@ -333,8 +333,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
    towardsGoal=smooth((time-3.65)/2),
    ballFocusX=mix(bp[0],receiving[0],anticipation),
    ballFocusZ=mix(bp[2],receiving[2],anticipation);
-  targetX=mix(ballFocusX,goal[0],mix(.035,.34,towardsGoal));
-  targetZ=mix(ballFocusZ,goal[2],mix(.04,.32,towardsGoal));
+  targetX=mix(ballFocusX,goal[0],mix(.17,.34,towardsGoal));
+  targetZ=mix(ballFocusZ,goal[2],mix(.25,.32,towardsGoal));
   targetY=mix(.79,.96,towardsGoal);
   const push=smooth((time-.65)/4.55);
   distance=mix(48.2+portraitPad*.44,MIN_CAMERA_DISTANCE+portraitPad*.2,push);
