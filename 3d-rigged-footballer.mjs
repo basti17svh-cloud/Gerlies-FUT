@@ -105,7 +105,19 @@ export function createFootballKitAtlas(THREE,materials,segments=12,shirtNumber=0
      ctx.beginPath();ctx.moveTo(x,0);ctx.bezierCurveTo(x+tile*.022,tile*.37,x-tile*.016,tile*.68,x,tile);ctx.stroke();
     }
    }
-   if(index===3){
+   if(index===0&&kit){
+     // Editor-derived collar trim remains attached to the real shirt texture.
+     ctx.fillStyle='rgba(0,0,0,.15)';ctx.fillRect(0,tile*.956,tile,tile*.018);
+     ctx.fillStyle=kit.shirtSecondary||kit.shirt;
+     ctx.globalAlpha=.83;ctx.fillRect(0,tile*.967,tile,tile*.011);ctx.globalAlpha=1;
+    }
+    if(index===1){ctx.fillStyle='rgba(0,0,0,.17)';ctx.fillRect(0,tile*.075,tile,tile*.018)}
+    if(index===4&&kit){
+     ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,tile*.92,tile,tile*.024);
+     ctx.fillStyle=kit.shirtSecondary||kit.shirt;
+     ctx.globalAlpha=.76;ctx.fillRect(0,tile*.942,tile,tile*.014);ctx.globalAlpha=1;
+    }
+    if(index===3){
     // A restrained knit cuff respects the selected sock color.
     ctx.fillStyle='rgba(255,255,255,.09)';ctx.fillRect(0,0,tile,tile*.075);
     ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;

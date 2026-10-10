@@ -345,7 +345,25 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  if(wide&&sequenceSide(seq)*direction>0)fov+=2.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  // Permanent elevated touchline camera: framing changes, camera side never does.
  const sideline=55.0,height=32.8,trail=wide?(time<deliveryAt?5.9:time<SHOT_TIME-.2?mix(5.9,5.1,smooth((time-deliveryAt)/(SHOT_TIME-.2-deliveryAt))):5.1):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
- return{position:[sideline*scale,height*scale,targetZ+trail*direction*scale],target:[targetX,targetY,targetZ],fov,distance,phase};
+ const position=[sideline*scale,height*scale,targetZ+trail*direction*scale],target=[targetX,targetY,targetZ];
+  // The goal must stay fully in the mobile picture even with a closer lens.
+  // Widen ONLY enough to clear the roof; never zoom out or switch sides.
+  if(wide){
+   const forward=target.map((v,i)=>v-position[i]),length=Math.hypot(...forward);
+   const [fx,fy,fz]=forward.map(v=>v/length),rightLen=Math.hypot(fz,fx)||1;
+   const right=[-fz/rightLen,0,fx/rightLen],up=[right[2]*fy,-(right[2]*fx-right[0]*fz),-right[0]*fy];
+   let tan=Math.tan(fov*Math.PI/360);
+   for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
+    const roof=worldPosition([x,2.5,z],direction),vx=roof[0]-position[0],vy=roof[1]-position[1],vz=roof[2]-position[2];
+    const depth=vx*fx+vy*fy+vz*fz;
+    if(depth<=1)continue;
+    tan=Math.max(tan,Math.max(0,vx*up[0]+vy*up[1]+vz*up[2])/(depth*.96));
+    if(time>=2.7)tan=Math.max(tan,Math.abs(vx*right[0]+vz*right[2])/(Math.max(.65,aspect)*depth*.96),
+     Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.96));
+   }
+   fov=Math.max(fov,2*Math.atan(tan)*180/Math.PI);
+  }
+  return{position,target,fov,distance,phase};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;

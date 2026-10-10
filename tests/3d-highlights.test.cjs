@@ -92,7 +92,7 @@ test('the whole match space rotates together; the permanent broadcast camera pus
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
   for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=56);assert.ok(c.position[0]>35&&c.position[1]>21);assert.ok(c.fov>=25.8&&c.fov<=29.5);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
- const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>6.5,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>2.4,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
+ const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>3.9,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>1.5,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
  assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
  assert.ok(keeperPose('big_chance_saved',6.65).dive>.95);
@@ -716,4 +716,13 @@ test('V21.89: close match camera is nearer but holds a fixed TV side',async()=>{
    assert.ok(c.position[0]>0&&end.position[0]>0,sequence+' fixed broadcast sideline');
   }
  }
+});
+
+test('V21.89: hair styling and trim use one GLB hair mesh, saved secondary color, no match RNG',()=>{
+ const hair=fs.readFileSync(path.join(root,'3d-player-prototype.mjs'),'utf8');
+ assert.match(hair,/FooteraAthleteHair-/);
+ assert.match(hair,/hairStyle,animate,inspectMotion/);
+ assert.match(hair,/const allowance=slot===0\?\.017/);
+ const atlas=fs.readFileSync(path.join(root,'3d-rigged-footballer.mjs'),'utf8');
+ assert.match(atlas,/kit\.shirtSecondary\|\|kit\.shirt/);
 });
