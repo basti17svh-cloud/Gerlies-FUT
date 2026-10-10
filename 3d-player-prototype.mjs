@@ -305,7 +305,19 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    }
    geometry.computeVertexNormals();
    const color=['#201b17','#392921','#624932','#171b1d','#2b2320','#83664a'][hairStyle];
-   const material=new THREE.MeshStandardMaterial({color,roughness:1,metalness:0});
+   // Root shadows and directional strand tones make the six silhouettes
+   // distinguishable without transparency or additional mobile draw calls.
+   const strandColors=new Float32Array(pos.count*3),
+    baseColor=new THREE.Color(color),tint=new THREE.Color();
+   for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),
+     strand=Math.sin(x*23+z*11+hairStyle)*Math.cos(z*29-x*8),
+     light=(.93+.09*Math.max(0,y))*(1+.07*strand);
+    tint.copy(baseColor).multiplyScalar(light);
+    strandColors[i*3]=tint.r;strandColors[i*3+1]=tint.g;strandColors[i*3+2]=tint.b;
+   }
+   geometry.setAttribute('color',new THREE.Float32BufferAttribute(strandColors,3));
+   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.94,metalness:0});
    const hair=new THREE.Mesh(geometry,material);
    hair.name='FooteraAthleteHair-'+hairStyle;
    hair.position.copy(head.worldToLocal(anchor));
