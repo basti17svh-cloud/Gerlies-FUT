@@ -17,7 +17,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2189';
+import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2189';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -320,10 +320,26 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // A diagonal switch crosses the full pitch before reaching the near winger.
  // Keep the broadcast frame between the ball and the box: centering directly
  // on the near winger collapses the physical camera distance and crops runners.
- if(getPlay(seq)){
-  // Preserve passing lanes but not at the cost of microscopic athletes.
-  distance=Math.max(distance,54.0+portraitPad*.30);
-  fov=Math.max(fov,29.0);
+ const authoredPlay=getPlay(seq);
+ if(authoredPlay){
+  // Follow the active first pass instead of zooming out to the eventual scorer.
+  const touches=playTouches(authoredPlay),
+   airborne=touches.find(pass=>time>=pass.release&&time<pass.arrival),
+   owner=playCarrier(authoredPlay,time),
+   receiver=airborne?.receiver??(owner>=0?owner:0),
+   run=runPosition(receiver,time,seq),
+   receiving=worldPosition([run[0],.84,run[1]],direction),
+   anticipation=time<.35?0:airborne?.17:.09,
+   towardsGoal=smooth((time-3.65)/2),
+   ballFocusX=mix(bp[0],receiving[0],anticipation),
+   ballFocusZ=mix(bp[2],receiving[2],anticipation);
+  targetX=mix(ballFocusX,goal[0],mix(.035,.34,towardsGoal));
+  targetZ=mix(ballFocusZ,goal[2],mix(.04,.32,towardsGoal));
+  targetY=mix(.79,.96,towardsGoal);
+  const push=smooth((time-.65)/4.55);
+  distance=mix(48.2+portraitPad*.44,MIN_CAMERA_DISTANCE+portraitPad*.2,push);
+  fov=mix(29.1,26.6,push);
+  phase=time<1.15?'build':time<5.03?'delivery':'finish';
  }
  if(DEFENSIVE_SCENES.includes(seq)){
   // One sideline camera follows the passer, closing defender and ball win.
@@ -348,12 +364,24 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  const position=[sideline*scale,height*scale,targetZ+trail*direction*scale],target=[targetX,targetY,targetZ];
   // The goal must stay fully in the mobile picture even with a closer lens.
   // Widen ONLY enough to clear the roof; never zoom out or switch sides.
-  if(wide){
+  if(wide||authoredPlay){
    const forward=target.map((v,i)=>v-position[i]),length=Math.hypot(...forward);
    const [fx,fy,fz]=forward.map(v=>v/length),rightLen=Math.hypot(fz,fx)||1;
    const right=[-fz/rightLen,0,fx/rightLen],up=[-right[2]*fy,right[2]*fx-right[0]*fz,right[0]*fy];
    let tan=Math.tan(fov*Math.PI/360);
-   for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
+   if(authoredPlay&&!wide){
+    // Fit the ball into frame and only include goal corners near the shot.
+    const essential=[bp,...(time>4.55?[-3.72,3.72].map(x=>worldPosition([x,2.5,-52.5],direction)):[])];
+    for(const point of essential){
+     const vx=point[0]-position[0],vy=point[1]-position[1],vz=point[2]-position[2],
+      depth=vx*fx+vy*fy+vz*fz;
+     if(depth<=1)continue;
+     tan=Math.max(tan,
+      Math.abs(vx*right[0]+vz*right[2])/(Math.max(.68,aspect)*depth*.94),
+      Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.94));
+    }
+   }
+   for(const x of (wide?[-3.72,3.72]:[]))for(const z of [-52.5,-54.45]){
     const roof=worldPosition([x,2.5,z],direction),vx=roof[0]-position[0],vy=roof[1]-position[1],vz=roof[2]-position[2];
     const depth=vx*fx+vy*fy+vz*fz;
     if(depth<=1)continue;
