@@ -53,7 +53,12 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   await page.locator('.startmode[data-mode="champions"]').click();
   check("entry consumes 1000 CP and starts one run",await page.evaluate(()=>state.champions.active&&state.champions.qualPoints===0&&state.champions.participations===1));
   check("Champions match preview opens",await page.locator("#matchPreviewModalTitle").textContent()==="Footera Champions");
-  check("record-based AI opponent is shown",/CHAMPIONS/.test(await page.locator("#squadBattleModalSub").innerText()+await page.locator("#squadBattleModalBody").innerText()));
+  check("record-based AI opponent is shown",await page.evaluate(()=>{
+   const opponent=pendingMatchContext?.opponent;
+   return opponent?.kind==="generated"&&String(opponent.name||"").length>=5&&
+    String(opponent.tier||"").includes("Champions")&&
+    document.getElementById("squadBattleModalBody")?.textContent.includes(opponent.name)
+  }));
   await page.screenshot({path:path.join(output,"champions-mobile-390.png"),fullPage:true});
   await page.locator("#squadBattleKickoff").click();await page.evaluate(()=>stopMatchTimer());
   check("kickoff uses Champions mode",await page.evaluate(()=>match?.mode==="champions"&&document.getElementById("matchCompetition").textContent==="Footera Champions"));
