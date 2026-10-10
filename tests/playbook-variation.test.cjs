@@ -93,3 +93,13 @@ test('V21.90: closer camera shows the beginning and continuation of real passes 
   }
  }
 });
+
+test('V21.90: all authored receivers have independent ball cushioning, without touching HUD',()=>{
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(scene,/authoredTouches&&i<8&&time<SHOT_TIME-\.25/);
+ assert.match(scene,/touch\.receiver!==i/);
+ assert.match(scene,/p\.ankles\[0\]\.rotation\.x\+=\.19\*receive/);
+ const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
+ assert.match(css,/\.fh3d-headline/);
+ assert.match(css,/\.fh3d-event/);
+});
