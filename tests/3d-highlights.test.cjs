@@ -58,7 +58,7 @@ test('scripts, module, stylesheet and pinned Three are in the new offline shell;
  const cssVersion=(html.match(/3d-highlights\.css\?v=(\d+)/)||[])[1];
  assert.ok(cssVersion&&sw.includes('./3d-highlights.css?v='+cssVersion),'Offline CSS version must match HTML');
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- const rigVersion=(scene.match(/3d-rigged-footballer\\.mjs\\?v=(\\d+)/)||[])[1];
+ const rigVersion=(scene.match(/3d-rigged-footballer\.mjs\?v=(\d+)/)||[])[1];
  assert.ok(rigVersion&&sw.includes('./3d-rigged-footballer.mjs?v='+rigVersion),'Rig module cache must track scene import');
  // Verify current versioned renderer assets instead of pinning yesterday's URLs.
  for(const file of ['3d-highlights.js','3d-highlights-match.js']){
