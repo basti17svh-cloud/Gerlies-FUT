@@ -19,6 +19,11 @@
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
+   shotPlacement:event.shotPlacement?Object.freeze({
+    side:event.shotPlacement.side===-1?-1:1,
+    zone:['inside','channel','corner'].includes(event.shotPlacement.zone)?event.shotPlacement.zone:'channel',
+    height:['low','mid','high'].includes(event.shotPlacement.height)?event.shotPlacement.height:'mid'
+   }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(20,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
@@ -31,7 +36,7 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2199').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2200').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
   if(root.document&&mode!=='off'){
@@ -95,7 +100,15 @@
    ['edge_of_box_recycle','combination',7,'power','medium'],
    ['back_post_sweep','lowcross',6,'normal','medium'],
    ['late_midfield_runner','combination',6,'normal','short'],
-   ['short_corner_combo','combination',5,'finesse','medium']
+   ['short_corner_combo','combination',5,'finesse','medium'],
+   ['halfspace_overload_left','combination',7,'finesse','medium'],
+   ['halfspace_overload_right','combination',7,'finesse','medium'],
+   ['counter_reversal_left','switch',6,'low_driven','long'],
+   ['counter_reversal_right','switch',6,'low_driven','long'],
+   ['wing_isolation_left','dribble',7,'finesse','medium'],
+   ['wing_isolation_right','dribble',7,'finesse','medium'],
+   ['late_cutback_left','cutback',7,'normal','medium'],
+   ['late_cutback_right','cutback',7,'normal','medium']
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -142,6 +155,18 @@
   ['bicycle','bicycle',.08,'bicycle',['acrobatic']]
  ].map(([id,family,weight,finish,tags])=>Object.freeze({id,family,weight,finish,tags:Object.freeze(tags)})));
  function visualHash(input){let n=2166136261;for(const ch of String(input)){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
+
+ function chooseShotPlacement(event,history=[]){
+  // A deterministic, presentation-only corner: no match RNG is consumed.
+  const key=[event.id||'',event.minute||0,event.team||'',event.playerId||'',event.sequence||'',event.finish||'',event.type||''].join('|');
+  const prior=(Array.isArray(history)?history:[]).slice(-3).filter(item=>item?.shotSide===-1||item?.shotSide===1);
+  let side=(visualHash(key+':corner')&1)?1:-1;
+  if(prior.length>1&&prior[prior.length-1].shotSide===prior[prior.length-2].shotSide)
+   side=-prior[prior.length-1].shotSide;
+  const zones=['inside','channel','corner'],heights=['low','mid','high'];
+  return Object.freeze({side,zone:zones[visualHash(key+':zone')%3],
+   height:event.finish==='low_driven'?'low':event.finish==='chip'?'high':heights[visualHash(key+':height')%3]});
+ }
  function visualStyleMap(input){const map=new Map();for(const s of Array.isArray(input)?input:[]){const id=typeof s==='string'?s:s?.id;if(typeof id==='string'&&id)map.set(id,s?.plus?2:1)}return map}
  // Deterministic presentation-only choreography. Every action is an attempt;
  // a defender can NEVER turn an authoritative goal into a block/interception.
@@ -263,6 +288,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);
