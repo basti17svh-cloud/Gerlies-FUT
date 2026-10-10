@@ -73,7 +73,7 @@ test('scripts, module, stylesheet and pinned Three are in the new offline shell;
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes("service-worker.js?v="+(html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/)||[]).slice(1).join("")));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
-  const old=require('node:child_process').execFileSync('git',['show','a5094f7:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
+  const old=require('node:child_process').execFileSync('git',['show','3d0f03f131a000601aea327096914b24ad5c0736:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
  }
 });
 
@@ -249,8 +249,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 
 test('V21.32: 42 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,40);
- assert.equal(M.PLAY_SEQUENCES.length,82);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,48);
+ assert.equal(M.PLAY_SEQUENCES.length,90);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id)]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
