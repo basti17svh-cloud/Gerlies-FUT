@@ -222,8 +222,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    roughnessMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,
    aoMap:surfaceMaps&&isBody?surfaceMaps.packedMap:null,aoMapIntensity:.64,
    normalMap:surfaceMaps&&isBody?surfaceMaps.normalMap:null,
-   normalScale:new THREE.Vector2(.52,.52),
-   metalness:0,roughness:surfaceMaps?1:.85,side:THREE.DoubleSide});
+   normalScale:new THREE.Vector2(.39,.39),
+    metalness:0,roughness:surfaceMaps?.88:.87,side:THREE.DoubleSide});
   if(makehuman&&isBody){
    // Keep the original CC0 MakeHuman skin UVs/materials for face and bare skin;
    // cloth uses Footera's own club atlas on a second mesh sharing the real rig.
