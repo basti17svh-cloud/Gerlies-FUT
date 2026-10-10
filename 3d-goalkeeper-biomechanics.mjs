@@ -87,7 +87,7 @@ export function applyGoalkeeperMotion(p,time,base,type='goal',action='classic',i
  }else if(kind==='fingertip'){
   p.upper.rotation.y+=side*.12*flight;p.elbows[lead].rotation.x-=.20*contact;
  }else if(kind==='parry'){
-  p.arms[lead].rotation.x-=.18*contact;p.elbows[trail].rotation.x+=.14*flight;
+  p.arms[lead].rotation.x-=.14*flight+.18*contact;p.elbows[trail].rotation.x+=.14*flight;
  }
  // A missed shot / conceded goal does not fake a successful catch.
  if(!save){p.arms[lead].rotation.z*=.84;p.elbows[lead].rotation.x+=.27*flight}
