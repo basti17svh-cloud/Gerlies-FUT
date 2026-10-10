@@ -42,19 +42,9 @@ test('V21.86: attacking choreography and interceptions are stateless and indepen
   assert.ok(after.every(Number.isFinite));
  }
 });
-test('V21.86: defense highlight types never claim a goal or alter authoritative chance results',()=>{
+test('V21.89: no obsolete independent ball-won highlight type',()=>{
  const H=require('../3d-highlights.js');
- assert.equal(H.accepts('ball_won'),true);
- assert.equal(H.accepts('ball_won','off'),false);
- assert.equal(H.accepts('ball_won','goals'),false);
- const event={id:'interception:3',type:'ball_won',minute:24,team:'home',playerName:'Passgeber',defenderName:'Verteidiger',defenseKind:'interception'};
- const selected=H.choosePresentation(event);
- assert.match(selected.sequence,/^defense_/);
- assert.notEqual(selected.finish,'power');
- const snap=H.snapshot({...event,playSeconds:10.4});
- assert.ok(Object.isFrozen(snap));assert.equal(snap.type,'ball_won');
- const before=H.choosePresentation({id:'old-goal',type:'goal',playerId:'A',minute:34,team:'home',playerName:'B'});
- assert.ok(before.sequence&&!before.sequence.startsWith('defense_'));
+ assert.equal(H.accepts('ball_won'),false);
 });
 
 test('V21.86: all authored scene PlayStyles match the actual Footera registry',async()=>{

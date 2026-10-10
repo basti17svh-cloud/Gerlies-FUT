@@ -89,13 +89,3 @@
 html.fh3d-scroll-lock,html.fh3d-scroll-lock body{overscroll-behavior:none!important;touch-action:none!important}
 html.fh3d-scroll-lock body{overflow:hidden!important}
 
-/* V21.87: correctly proportioned possession-win lower third on mobile. */
-.fh3d-hud-ball_won{left:10px;right:auto;bottom:12px;width:min(342px,calc(100% - 20px));max-width:calc(100% - 20px);min-height:72px;grid-template-columns:27px minmax(0,1fr) 38px;column-gap:8px;padding:10px 12px;clip-path:polygon(3% 0,97% 0,100% 15%,97% 100%,3% 100%,0 85%)}
-.fh3d-hud-ball_won .fh3d-player-card,.fh3d-hud-ball_won .fh3d-team-crest{display:none}
-.fh3d-hud-ball_won .fh3d-mark{font-size:21px;padding:0 6px 0 0;line-height:1.1}
-.fh3d-hud-ball_won .fh3d-copy{min-width:0;overflow:hidden}
-.fh3d-hud-ball_won .fh3d-headline{font-size:clamp(15px,4.5vw,19px);line-height:1.05;letter-spacing:.1px;white-space:nowrap}
-.fh3d-hud-ball_won .fh3d-name{margin-top:4px;font-size:clamp(12px,3.35vw,15px);line-height:1.15;letter-spacing:0;overflow-wrap:anywhere}
-.fh3d-hud-ball_won .fh3d-event{margin-top:3px;font-size:9px;line-height:1.2;letter-spacing:0}
-.fh3d-hud-ball_won .fh3d-goal-meta{min-width:0;align-self:start;justify-content:center}
-.fh3d-hud-ball_won .fh3d-minute{min-width:0;padding:0 0 0 6px;font-size:13px;line-height:1.3}

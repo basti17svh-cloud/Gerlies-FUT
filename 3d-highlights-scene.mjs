@@ -47,7 +47,7 @@ export function shotFootPosition(time=SHOT_TIME){
 }
 export const PLAY_SEQUENCES=Object.freeze(['central','one_two','through_ball','dribble','wing_left','wing_right','cutback_left','cutback_right',
 'inside_left','inside_right','cut_inside_left','cut_inside_right','double_feint_left','double_feint_right','near_post_cut_left','near_post_cut_right','low_cross_left','low_cross_right','chip_one_on_one','chip_counter','halfspace_left','halfspace_right','counter_central','counter_left','counter_right','diagonal_switch','long_shot','one_on_one',
-'early_cross_left','early_cross_right','far_post_left','far_post_right','near_post_left','near_post_right','volley_left','volley_right','second_ball','high_press','finesse_halfspace','power_drive','low_driven_duel','bicycle',...PLAYBOOK_IDS,...DEFENSIVE_SCENES]);
+'early_cross_left','early_cross_right','far_post_left','far_post_right','near_post_left','near_post_right','volley_left','volley_right','second_ball','high_press','finesse_halfspace','power_drive','low_driven_duel','bicycle',...PLAYBOOK_IDS]);
 export function normalizeSequence(value){return PLAY_SEQUENCES.includes(String(value))?String(value):'central'}
 
 const VARIANTS=Object.freeze({
@@ -1545,10 +1545,9 @@ export function play(event,signal){
      }
      if(event.type==='goal'&&!impactSent&&displayTime>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
-     const revealAt=event.type==='ball_won'?4.55:REVEAL_TIME;
+     const revealAt=REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
       if(event.type==='goal'){headline.textContent='TOR';name.textContent=event.playerName;detail.textContent=event.teamName?`für ${event.teamName}`:'TOR'}
-      else if(event.type==='ball_won'){headline.textContent='BALL EROBERT';name.textContent=event.defenderName||'Verteidiger';detail.textContent=event.defenseKind==='tackle'?'Zweikampf gewonnen':'Pass abgefangen'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}

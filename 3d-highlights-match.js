@@ -128,16 +128,13 @@ function queueMatch3D(event){
   /^(CB|IV)$/.test(p)?0:/^(CDM|ZDM)$/.test(p)?1:2};
  const closest=defenders.slice().sort((a,b)=>priority(a)-priority(b)||a.index-b.index);
  const picked=closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null;
- const defender=event.type==='ball_won'?
-  (defenders.find(row=>event.defenderUid&&String(row.uid)===String(event.defenderUid))||
-   defenders.find(row=>Number.isInteger(Number(event.defenderPlayerIndex))&&row.index===Number(event.defenderPlayerIndex))||
-   defenders.find(row=>String(row.name)===String(event.defenderName))||picked):picked;
+ const defender=picked;
  const styleFor=row=>row?match3DActorStyles(defending,{uid:row.uid,index:row.index,name:row.name}):[];
  presentation.keeperName=event.keeperName||goalie?.name||'';
  presentation.keeperStyles=styleFor(goalie);
  presentation.defenderStyles=styleFor(defender);
  presentation.defenderName=defender?.name||'';
- presentation.defenderIndex=event.type==='ball_won'?8:wideLeft?9:wideRight?10:8;
+ presentation.defenderIndex=wideLeft?9:wideRight?10:8;
   const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
@@ -163,20 +160,9 @@ function queueMatch3D(event){
  }
  return queued;
 }
-function queueMatchDefensive3D(action,attackingSide,attacker){
- if(!match||!action||!['tackle','interception'].includes(action.kind))return false;
- if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts('ball_won'))return false;
- const minute=Number(action.minute||0),last=Number(match.lastDefenseHighlightMinute??-100),count=Number(match.defenseHighlightCount||0);
- // Never flood with a defensive clip on every failed build or challenge.
- if(count>=4||minute-last<12||match.highlight3DPending||match.paused||match.finished)return false;
- const queued=queueMatch3D({id:'defense:'+match.defensiveEvents.length,type:'ball_won',
-  minute,team:attackingSide,playerId:attackingSide==='home'?String(attacker?.uid||''):Number(attacker?.index??-1),
-  playerName:String(attacker?.name||'Angreifer'),defenderUid:String(action.uid||''),
-  defenderPlayerIndex:Number(action.index??-1),defenderName:String(action.name||'Verteidiger'),
-  defenseKind:action.kind,creationType:'turnover'});
- if(queued){match.lastDefenseHighlightMinute=minute;match.defenseHighlightCount=count+1}
- return queued;
-}
+// Simulation records tackles, interceptions, cards and stats unchanged.
+// Standalone turnover clips are retired; slide/block moves within shots remain.
+function queueMatchDefensive3D(){return false}
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,

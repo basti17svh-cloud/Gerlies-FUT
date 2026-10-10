@@ -41,3 +41,11 @@ test('V21.87: interception banner fits mobile width in a dedicated layout',()=>{
  assert.ok(css.includes('white-space:nowrap}'));
  assert.ok(css.includes('.fh3d-hud-ball_won .fh3d-team-crest{display:none}'));
 });
+
+test('V21.89: retired defense sequences cannot be selected in production',async()=>{
+ const M=await import('../3d-highlights-scene.mjs'),H=require('../3d-highlights.js');
+ for(const seq of ['defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery']){
+  assert.equal(M.PLAY_SEQUENCES.includes(seq),false);
+  assert.ok(!H.VISUAL_SCENES.some(v=>v.id===seq));
+ }
+});

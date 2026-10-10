@@ -247,9 +247,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 test('V21.32: 42 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,30);
- assert.equal(M.PLAY_SEQUENCES.length,76);
- assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),
-  'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery']),new Set(M.PLAY_SEQUENCES));
+ assert.equal(M.PLAY_SEQUENCES.length,72);
+ assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id)]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
@@ -692,4 +691,17 @@ test('V21.76: actual CC0 motion status and existing-actor expansion are truthful
  assert.match(source,/state\.capturedContext\?\.activeCount/);
  assert.match(css,/data-motion-caption/);
  assert.doesNotMatch(source,/mountFooteraPlayerModel\(players\[1\]/);
+});
+
+test('V21.89: retired turnovers cannot queue but attack slides and blocks remain available',()=>{
+ assert.equal(H.TYPES.includes('ball_won'),false);
+ for(const mode of ['off','goals','important','all'])assert.equal(H.accepts('ball_won',mode),false);
+ const queue=new H.Queue({play:()=>Promise.resolve('played')});
+ assert.equal(queue.enqueue(event('ball_won','turnover')),false);
+ const dribble=Array.from({length:900},(_,i)=>H.chooseReactions({...event('goal','dribble-'+i),sequence:'dribble',defenderStyles:[{id:'slide-tackle',plus:true}]}));
+ const shot=Array.from({length:900},(_,i)=>H.chooseReactions({...event('big_chance_saved','block-'+i),sequence:'central',defenderStyles:[{id:'block',plus:true}]}));
+ assert.ok(dribble.some(r=>r.defenderAction==='slide_attempt'));
+ assert.ok(shot.some(r=>r.defenderAction==='block_attempt'));
+ const source=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
+ assert.match(source,/function queueMatchDefensive3D\(\)\{return false\}/);
 });

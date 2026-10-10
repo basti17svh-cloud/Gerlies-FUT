@@ -1,7 +1,7 @@
 /* Footera highlights: presentation-only queue. No access to the match or its RNG. */
 (function(root){
  'use strict';
- const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won']);
+ const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post']);
  const MODES=Object.freeze({off:'Aus',goals:'Nur Tore',important:'Wichtige Highlights',all:'Alle Highlights'});
  const KEY='footera-3d-highlights-v1';
  let mode='important',loader;
@@ -133,10 +133,6 @@
  // Deterministic presentation-only choreography. Every action is an attempt;
  // a defender can NEVER turn an authoritative goal into a block/interception.
  function chooseReactions(event){
-  if(event?.type==='ball_won'){
-   const seq=String(event.sequence||'');
-   return Object.freeze({defenderAction:seq==='defense_slide_tackle'?'slide_attempt':seq==='defense_interception'?'lane_read':'close_down',keeperAction:'beaten'});
-  }
   const defender=visualStyleMap(event.defenderStyles),keeper=visualStyleMap(event.keeperStyles);
   const seq=String(event.sequence||'central'),finish=String(event.finish||'normal');
   const aerial=/(?:cross|post|volley|bicycle)/.test(seq)||['header','volley','bicycle'].includes(finish);
@@ -173,12 +169,6 @@
   return Object.freeze({defenderAction:defenseAction,keeperAction});
  }
  function choosePresentation(event,history=[]){
-  if(event?.type==='ball_won'){
-   const kind=String(event.defenseKind||'interception'),hash=visualHash([event.id,event.minute,event.defenderName].join(':'));
-   const seq=kind==='tackle'?(hash%4===0?'defense_slide_tackle':'defense_standing_tackle'):
-    hash%3===0?'defense_press_recovery':'defense_interception';
-   return Object.freeze({sequence:seq,family:'defense',finish:'normal',seconds:10.4});
-  }
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
