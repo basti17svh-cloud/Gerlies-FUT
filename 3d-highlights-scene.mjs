@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2190';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21105';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
@@ -8,6 +8,7 @@ import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
+import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21105';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
@@ -1188,6 +1189,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const lower=end.clone().sub(joint).normalize().applyQuaternion(arm.quaternion.clone().invert());
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
+  const keeperGuideArmBefore=new THREE.Quaternion(),keeperGuideElbowBefore=new THREE.Quaternion();
+  const keeperContactWorld=new THREE.Vector3();
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
   function bootGuidedBall(original,time){
@@ -1227,7 +1230,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
-  const keeperMotionFrame={...importedMotionFrame};
+  const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
   // Two existing skinned actors can share the verified CC0 sampler without
   // cloning heavy GLB geometry. LOW permits just one additional participant.
   // These parts are purely cosmetic: no root translation, gait/IK or ball touch.
@@ -1465,45 +1468,49 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
     eventKeeperPose(event.type,time,finish,sequence,keeperAction);
    pose(keeper,kp.x,kp.z,time,.12,Math.PI);
-   const keeperClip=sampleMotionClip(event.type==='big_chance_saved'?'keeper_save':'keeper_beaten',
-    (time-5.05)/3.1,keeper.motionClips.action);
-   const keeperClipWeight=labDuelPreview||event.type==='ball_won'?0:motionClipBlend(time,5.05,8.15,.20);
-   keeper.shadow.position.y=.022-kp.y;keeper.root.position.y=kp.y;keeper.root.rotation.y=Math.PI;keeper.rig.rotation.z=kp.tilt;
-   // Knees flex behind the thigh while the keeper crouches towards the ball.
-   // During anticipation both boots stay planted instead of sinking with the hips.
-   const crouch=.26+.30*kp.anticipation,bend=crouch*(1-kp.dive);
-   keeper.rig.position.y=(.86*Math.cos(crouch)+.055-.94)*(1-kp.dive);
-   keeper.upper.rotation.x=-.12*kp.anticipation*(1-kp.dive);
-   for(let i=0;i<2;i++){keeper.legs[i].rotation.x=bend;keeper.knees[i].rotation.x=-2*bend;keeper.ankles[i].rotation.x=bend}
-   keeper.legs[0].rotation.z=.12+kp.dive*.32;keeper.legs[1].rotation.z=-.12-kp.dive*.15;
-   keeper.arms[0].rotation.z=-.42-keeperClip.spread*keeperClipWeight;keeper.arms[1].rotation.z=.42+keeperClip.spread*keeperClipWeight;
-   keeper.upper.rotation.x+=keeperClip.pitch*keeperClipWeight*.62;
-   keeper.upper.rotation.y+=keeperClip.yaw*keeperClipWeight;
-   keeper.upper.rotation.z+=keeperClip.roll*keeperClipWeight*Math.sign(kp.tilt||1);
-   keeper.elbows.forEach(e=>e.rotation.x=.3*(1-kp.dive));
-    // Keeper styles alter reaction posture; glove aiming below still maintains contact.
-    const savePose=event.type==='big_chance_saved';
-    if(savePose&&keeperAction==='low_reflex'){
-     keeper.rig.rotation.x+=.2*kp.dive;keeper.legs[0].rotation.z+=.65*kp.dive;keeper.legs[1].rotation.z-=.65*kp.dive;
-     keeper.knees[0].rotation.x-=.28*kp.dive;keeper.knees[1].rotation.x-=.28*kp.dive;
-    }else if(savePose&&keeperAction==='rush_spread'){
-     keeper.rig.rotation.x+=.16*kp.dive;keeper.legs[0].rotation.z+=.78*kp.dive;keeper.legs[1].rotation.z-=.78*kp.dive;
-     keeper.arms[0].rotation.z-=.34*kp.dive;keeper.arms[1].rotation.z+=.34*kp.dive;
-    }else if(savePose&&keeperAction==='high_reach'){
-     keeper.rig.rotation.x-=.2*kp.dive;keeper.legs[0].rotation.x-=.23*kp.dive;keeper.legs[1].rotation.x+=.25*kp.dive;
-    }else if(savePose&&keeperAction==='fingertip'){
-     keeper.rig.rotation.y-=.16*kp.dive;
+   // The keeper has ONE biomechanical pose owner. Legacy additive dive,
+   // random-looking captured jumps and whole-body tilting must not fight it.
+   // All sample times are absolute and deterministic; the match score and
+   // ball trajectory continue to come exclusively from the simulator.
+   keeper.root.rotation.y=Math.PI;
+   const impact=eventShotImpact(event.type,sequence,finish);
+   if(labDuelPreview||event.type==='ball_won'){
+    keeper.root.position.y=0;
+    keeper.shadow.position.y=.022;
+    keeper.rig.rotation.z=0;
+   }else{
+    applyGoalkeeperMotion(keeper,time,kp,event.type,keeperAction,impact[0],impact[1]);
+    // Only an actual SAVE gets contact IK. One hand reaches the ball;
+    // the other braces just behind it instead of two stiff parallel arms.
+    const saved=event.type==='big_chance_saved',side=Math.sign(impact[0])||1;
+    const lead=side>0?0:1,other=1-lead;
+    const toContact=smooth((time-6.22)/.26)*(1-smooth((time-6.80)/.24));
+    if(saved&&toContact>.001){
+     const guide=(index,point,weight)=>{
+      const arm=keeper.arms[index],elbow=keeper.elbows[index];
+      keeperGuideArmBefore.copy(arm.quaternion);
+      keeperGuideElbowBefore.copy(elbow.quaternion);
+      aimArm(arm,point);
+      arm.quaternion.slerpQuaternions(keeperGuideArmBefore,arm.quaternion,weight);
+      elbow.quaternion.slerpQuaternions(keeperGuideElbowBefore,elbow.quaternion,weight);
+     };
+     guide(lead,[impact[0],impact[1],-50.6],toContact);
+     guide(other,[impact[0]-side*.33,Math.max(.22,impact[1]-.24),-50.49],toContact*.46);
     }
-   if(enhancedRigMotion&&!labDuelPreview){animateGoalkeeperDive(keeper,time,keeperAction,event.type==='big_chance_saved');applyKeeperMocap(keeper,time);applyVisibleKeeperFlight(keeper,time,event.type,keeperAction,eventShotImpact(event.type,sequence,finish)[0])}
-   if(kp.dive>.05){
-    keeper.elbows.forEach(e=>e.rotation.x=0);
-    // A beaten keeper reaches short; real saves retain verified ball/glove alignment.
-    const saved=event.type==='big_chance_saved',impact=eventShotImpact(event.type,sequence,finish),reachX=saved?impact[0]:Math.sign(impact[0])*1.25;
-    const reachY=saved?impact[1]:finish==='low_driven'?.35:finish==='chip'?1.5:.92;
-    if(!saved){const dive=kp.dive*(1-kp.recover);keeper.upper.rotation.y=-.15*dive;
-     keeper.legs[0].rotation.x+=.22*dive;keeper.legs[1].rotation.x-=.25*dive;
-     keeper.legs[0].rotation.z+=.14*dive;keeper.legs[1].rotation.z-=.1*dive;}
-    aimArm(keeper.arms[0],[reachX,reachY,-50.6]);aimArm(keeper.arms[1],[reachX,reachY,-50.6]);
+    // Read the ACTUAL animated glove position, not a guessed reach length.
+    // Blend the center-of-mass toward that interception over the whole leap.
+    // A save is never shown with a one-metre gap between glove and ball.
+    // Field-local coordinates work identically after either half-time rotation.
+    const catchWeight=smooth((time-5.91)/.65)*(1-smooth((time-6.79)/.43));
+    if(saved&&catchWeight>.001){
+     keeper.root.updateWorldMatrix(true,true);
+     keeper.gloves[lead].getWorldPosition(keeperContactWorld);
+     field.worldToLocal(keeperContactWorld);
+     keeper.root.position.x+=(impact[0]-keeperContactWorld.x)*catchWeight;
+     keeper.root.position.y=Math.max(0,keeper.root.position.y+(impact[1]-keeperContactWorld.y)*catchWeight);
+     keeper.root.position.z+=(impact[2]-keeperContactWorld.z)*catchWeight;
+     keeper.shadow.position.y=.022-keeper.root.position.y;
+    }
    }
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
    const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
@@ -1588,6 +1595,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motionDuelShuffle:duelSample?.shuffle||0,motionDuelBlock:duelSample?.block||0,
     motionDuelRecovery:duelSample?.recovery||0,motionDuelNear:duelSample?.near||0,
     motionFinishBalance:balanceSample?.load||0,
+    goalkeeperMotionVersion:GOALKEEPER_MOTION_VERSION,
+    goalkeeperBiomechanics:sampleGoalkeeperMotion(renderTime,event.type,keeperAction,eventShotImpact(event.type,sequence,finish)[0],eventShotImpact(event.type,sequence,finish)[1]),
     motion23:pilotMotion,motion23Phase:motion23Sample?.phase||'inactive',
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
