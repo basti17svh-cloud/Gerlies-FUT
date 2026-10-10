@@ -45,3 +45,30 @@ test('V21.96: the selected visual finish and shot result remain unchanged',async
   assert.deepEqual(S.ballPosition(type,S.IMPACT_TIME,seq),S.shotImpact(type,seq,'normal'));
  }
 });
+
+test('V21.98: wide plays show the pass, isolated winger and timed delivery',async()=>{
+ const {getPlay,playTouches,playPosition,playBall}=await import('../3d-playbook.mjs');
+ const ids=['overlap_left_low','overlap_right_high','early_low_delivery_left','early_low_delivery_right',
+  'reverse_cutback_left','reverse_cutback_right','switch_overlap_low','switch_overlap_high'];
+ const tempos=new Set();
+ for(const id of ids){
+  const plan=getPlay(id),touches=playTouches(plan);
+  assert.ok(touches.length>=2,id+' must start in buildup');
+  assert.ok(touches.every(p=>p.arrival>p.release),id+' timed passes');
+  const first=touches.find(p=>p.receiver===1||p.receiver===2);
+  if(first){
+   const next=touches.find(p=>p.passer===first.receiver&&p.release>first.arrival);
+   if(next&&['overlap','lowcross','cutback'].includes(plan.family))
+    assert.ok(next.release-first.arrival>1,id+' requires dribbling interval');
+  }
+  for(let t=0;t<=5.4;t+=.045)assert.ok(playBall(plan,t,[0,.14,-37]).every(Number.isFinite),id+' finite ball path');
+  assert.deepEqual(playBall(plan,5.4,[0,.14,-37]),[0,.14,-37],id+' same shot contact');
+  tempos.add(touches.map(p=>p.release.toFixed(2)).join(','));
+ }
+ assert.ok(tempos.size>=4,'different build-up rhythms');
+ for(const [id,index] of [['overlap_left_low',1],['overlap_right_low',2]]){
+  const plan=getPlay(id),before=playPosition(index,1.42,plan),feint=playPosition(index,1.85,plan),sprint=playPosition(index,3.2,plan);
+  assert.ok(Math.abs(feint[0]-before[0])>.15,id+' visible feint');
+  assert.ok(sprint[1]<before[1]-3,id+' genuine sprint down flank');
+ }
+});

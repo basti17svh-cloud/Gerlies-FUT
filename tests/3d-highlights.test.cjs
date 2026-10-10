@@ -729,3 +729,14 @@ test('V21.89: hair styling and trim use one GLB hair mesh, saved secondary color
  const atlas=fs.readFileSync(path.join(root,'3d-rigged-footballer.mjs'),'utf8');
  assert.match(atlas,/kit\.shirtSecondary\|\|kit\.shirt/);
 });
+
+test('V21.98: field remains visible until first rendered frame and model loading is nonblocking',()=>{
+ const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ const script=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
+ assert.ok(css.includes('#match.highlight3d-active .match-live-stage> :not(.fh3d)'));
+ assert.ok(css.includes('.fh3d:not(.fh3d-ready){visibility:hidden}'));
+ assert.ok(scene.includes("layer.classList.add('fh3d-ready')"));
+ assert.ok(script.includes('function prewarm()'));
+ assert.ok(!script.includes('setTimeout(()=>resolve(false),4500)'));
+});
