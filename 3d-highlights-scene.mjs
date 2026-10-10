@@ -1,9 +1,9 @@
 import * as THREE from './vendor/three/three.module.min.js';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2184';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2189';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel};
-import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2184';
+import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2189';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
@@ -17,7 +17,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2188';
+import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2189';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -351,15 +351,19 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   if(wide){
    const forward=target.map((v,i)=>v-position[i]),length=Math.hypot(...forward);
    const [fx,fy,fz]=forward.map(v=>v/length),rightLen=Math.hypot(fz,fx)||1;
-   const right=[-fz/rightLen,0,fx/rightLen],up=[right[2]*fy,-(right[2]*fx-right[0]*fz),-right[0]*fy];
+   const right=[-fz/rightLen,0,fx/rightLen],up=[-right[2]*fy,right[2]*fx-right[0]*fz,right[0]*fy];
    let tan=Math.tan(fov*Math.PI/360);
    for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
     const roof=worldPosition([x,2.5,z],direction),vx=roof[0]-position[0],vy=roof[1]-position[1],vz=roof[2]-position[2];
     const depth=vx*fx+vy*fy+vz*fz;
     if(depth<=1)continue;
     tan=Math.max(tan,Math.max(0,vx*up[0]+vy*up[1]+vz*up[2])/(depth*.96));
-    if(time>=2.7)tan=Math.max(tan,Math.abs(vx*right[0]+vz*right[2])/(Math.max(.65,aspect)*depth*.96),
-     Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.96));
+    if(time>=1.65){
+     const coverage=smooth((time-1.65)/1.05);
+     const required=Math.max(Math.abs(vx*right[0]+vz*right[2])/(Math.max(.65,aspect)*depth*.96),
+      Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.96));
+     tan=Math.max(tan,mix(tan,required,coverage));
+    }
    }
    fov=Math.max(fov,2*Math.atan(tan)*180/Math.PI);
   }

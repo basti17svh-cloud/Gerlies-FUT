@@ -7,7 +7,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
-import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2184';
+import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2189';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
