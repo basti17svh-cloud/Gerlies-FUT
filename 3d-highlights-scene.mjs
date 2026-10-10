@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three/three.module.min.js';
+import {createStableCameraTrack} from './3d-camera-director.mjs?v=2194';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2190';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
@@ -1108,7 +1109,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
-  const camTarget=new THREE.Vector3();let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
+  const camTarget=new THREE.Vector3(),broadcastTracks=new Map();
+  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>cameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION}));return broadcastTracks.get(key)};
+  let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -1446,25 +1449,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
-   const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
-   let nextPosition=cam.position,nextTarget=cam.target,nextFov=cam.fov;
+   const cam=labFocusedPreview?cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
+   currentCameraPhase=cam.phase;
    if(labFocusedPreview){
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
     const attacker=labTrackingPreview?stagedPlayerPosition(0,time,event.type,sequence):focus;
     const tx=mix(cam.target[0],(focus[0]+attacker[0])*.5,labTrackingPreview?.96:.73);
-    const tz=mix(cam.target[2],(focus[1]+attacker[1])*.5,labTrackingPreview?.96:.73),ty=.88;
-    const zoom=labTrackingPreview?.70:.58;
-    nextPosition=[tx+(cam.position[0]-cam.target[0])*zoom,ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom];
-    nextTarget=[tx,ty,tz];nextFov=cam.fov*(labTrackingPreview?.86:.78);
+    const tz=mix(cam.target[2],(focus[1]+attacker[1])*.5,labTrackingPreview?.96:.73),ty=.88,zoom=labTrackingPreview?.70:.58;
+    const position=[tx+(cam.position[0]-cam.target[0])*zoom,ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom];
+    const target=[tx,ty,tz],desiredFov=cam.fov*(labTrackingPreview?.86:.78);
+    const delta=lastCameraTime===null?0:time-lastCameraTime,snap=lastCameraTime===null||delta<0||delta>.5;
+    const follow=snap?1:1-Math.exp(-Math.max(0,delta)*10);
+    camera.position.lerp(new THREE.Vector3(...position),follow);
+    camTarget.lerp(new THREE.Vector3(...target),follow);
+    camera.fov=mix(camera.fov,desiredFov,follow);
+   }else{
+    camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
    }
-   // Smooth ball tracking and lens changes; snap only on a fresh frame or seek.
-   const delta=lastCameraTime===null?0:time-lastCameraTime;
-   const snap=lastCameraTime===null||delta<0||delta>.5;
-   const follow=snap?1:1-Math.exp(-Math.max(0,delta)*10);
-   const lens=snap?1:1-Math.exp(-Math.max(0,delta)*(nextFov>camera.fov?5:10));
-   camera.position.lerp(new THREE.Vector3(...nextPosition),follow);
-   camTarget.lerp(new THREE.Vector3(...nextTarget),follow);
-   camera.fov=mix(camera.fov,nextFov,lens);lastCameraTime=time;
+   lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
