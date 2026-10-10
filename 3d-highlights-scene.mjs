@@ -1159,7 +1159,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
   const camTarget=new THREE.Vector3(),broadcastTracks=new Map();
-  const broadcastFor=aspect=>{const key=Math.round(aspect*100)/100;if(!broadcastTracks.has(key))broadcastTracks.set(key,createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})}));return broadcastTracks.get(key)};
+  const broadcastFor=aspect=>{
+   const key=Math.round(aspect*100)/100;
+   if(!broadcastTracks.has(key)){
+    const sample=createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})});
+    // Temporal smoothing can bring an off-axis broadcast camera closer than
+    // the unsmoothed safety rail. Preserve the same TV sightline while keeping
+    // the measured target clearance at every frame, including wide overlaps.
+    broadcastTracks.set(key,time=>{
+     const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
+     if(gap>=37.65)return state;
+     const factor=37.65/Math.max(.01,gap);
+     return {...state,position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
+    });
+   }
+   return broadcastTracks.get(key);
+  };
   let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
