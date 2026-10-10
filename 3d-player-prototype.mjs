@@ -139,6 +139,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // Imported meshes have different polygon shapes than the old procedurally
  // generated skin; tint their original vertices using mesh local coordinates.
  const tintIndex=[...String(name)].reduce((n,ch)=>n+ch.charCodeAt(0),0)%4;
+ const hairStyle=([...String(name)].reduce((n,ch)=>(Math.imul(n,31)+ch.charCodeAt(0))|0,2166136261)>>>0)%6;
  model.updateMatrixWorld(true);
  // Shared textile-detail textures stay off on LOW mobile devices.
  const surfaceMaps=detail?createFooteraSurfaceMaps(THREE):null;
@@ -188,7 +189,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    // inflation that crushed the shirt and produced exaggerated waist ridges.
    // No UV/skin-weight separation or extra arm/leg meshes.
    if(isBody&&(slot===0||slot===1||slot===3||slot===4)){
-    const allowance=slot===0?.027:slot===1?.042:slot===3?.012:.015;
+    const allowance=slot===0?.017:slot===1?.026:slot===3?.010:.009;
     const seam=slot===0?Math.min(1,Math.max(0,(ny-.557)/.035),Math.max(0,(.863-ny)/.035)):
       slot===1?Math.min(1,Math.max(0,(ny-.445)/.018),Math.max(0,(.557-ny)/.018)):
       slot===3?Math.min(1,Math.max(0,(ny-.056)/.025),Math.max(0,(.31-ny)/.025)):1;
@@ -282,6 +283,35 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
   const material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.51,metalness:0,side:THREE.DoubleSide});
   const boot=new THREE.Mesh(geometry,material);boot.name='FooteraBoot-'+side;boot.castShadow=true;boot.receiveShadow=true;foot.add(boot);colorsByMesh.push({geometry,material});
+ }
+ // One bound haircut mesh on every real match player's head (mobile-safe).
+ if(!makehuman){
+  const head=bones.get('Head');
+  if(head){
+   playerRoot.updateMatrixWorld(true);
+   const anchor=playerRoot.localToWorld(new THREE.Vector3(0,1.782,-.002));
+   head.updateWorldMatrix(true,false);
+   const orientation=head.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(
+    playerRoot.getWorldQuaternion(new THREE.Quaternion()));
+   const cuts=[[.092,.040,.090,.43],[.099,.061,.097,.56],[.105,.070,.098,.58],
+    [.103,.083,.101,.61],[.106,.083,.106,.67],[.109,.078,.099,.74]];
+   const [w,h,d,coverage]=cuts[hairStyle],geometry=new THREE.SphereGeometry(1,14,9,0,Math.PI*2,0,Math.PI*coverage);
+   const pos=geometry.getAttribute('position');
+   for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
+    const wave=hairStyle===4?Math.cos(x*27+z*19)*Math.cos(z*23)*.025:
+     hairStyle===3?Math.sin(x*17+z*13)*.020:hairStyle===2?Math.sin(x*6+z*4)*.008:0;
+    pos.setXYZ(i,x*(1+wave)+(hairStyle===5?Math.max(0,y)*.13:0),y*(1+wave*.18),z*(1+wave));
+   }
+   geometry.computeVertexNormals();
+   const color=['#201b17','#392921','#624932','#171b1d','#2b2320','#83664a'][hairStyle];
+   const material=new THREE.MeshStandardMaterial({color,roughness:1,metalness:0});
+   const hair=new THREE.Mesh(geometry,material);
+   hair.name='FooteraAthleteHair-'+hairStyle;
+   hair.position.copy(head.worldToLocal(anchor));
+   hair.quaternion.copy(orientation);hair.scale.set(w,h,d);hair.castShadow=true;
+   head.add(hair);colorsByMesh.push({geometry,material});
+  }
  }
  // The CC0 MakeHuman body intentionally contains no authored hairstyle.
  // Rig a small lightweight haircut to the real head bone: no licensed art,
@@ -402,7 +432,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  }
  animate();
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
-  boneCount:asset.boneCount,variant,animate,inspectMotion,
+  boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,
   surfaceDetail:!!surfaceMaps,
   dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}surfaceMaps?.dispose()}
  };
