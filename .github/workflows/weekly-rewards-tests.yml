@@ -7,6 +7,7 @@ on:
       - 'weekly-rewards.css'
       - 'tests/weekly-rewards.test.cjs'
       - 'tests/competition-system.test.cjs'
+      - 'tests/promo-packs-release.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
       - 'index.html'
       - 'competition-system.js'
@@ -19,6 +20,7 @@ on:
       - 'weekly-rewards.css'
       - 'tests/weekly-rewards.test.cjs'
       - 'tests/competition-system.test.cjs'
+      - 'tests/promo-packs-release.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
       - 'index.html'
       - 'competition-system.js'
@@ -37,4 +39,4 @@ jobs:
         with:
           node-version: '22'
       - name: Reward UI, ranks, week resets, claims and update regression tests
-        run: node --test tests/weekly-rewards.test.cjs tests/competition-system.test.cjs tests/champions.test.cjs tests/boot-update.test.cjs tests/content-drop-20261007.test.cjs
+        run: node --test tests/weekly-rewards.test.cjs tests/competition-system.test.cjs tests/champions.test.cjs tests/boot-update.test.cjs tests/content-drop-20261007.test.cjs tests/promo-packs-release.test.cjs
