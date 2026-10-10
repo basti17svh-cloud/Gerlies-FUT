@@ -112,7 +112,7 @@ function championsOpponent(){
  const base=Math.round(82+diff*1.15+c.games*.12),target=Math.max(78,Math.min(92,base)),chem=Math.max(22,Math.min(33,25+Math.max(-2,diff)+Math.floor(c.games/4)));
  const profileIndex=Math.max(0,Math.min(CHAMPIONS_PROFILES.length-1,Math.floor((target-78)/3.2))),profile=CHAMPIONS_PROFILES[profileIndex];
  const formations=["4-3-3","4-2-3-1","4-4-2","4-1-2-1-2 (2)"],formation=formations[hashNum(seed+"|formation")%formations.length];
- return buildGeneratedOpponent({name:profile.name,target,chem,formation,seed,tier:`${profile.tier} · Record ${c.wins}-${c.losses}`,sp:150,power:target+chem*.12})
+ return buildGeneratedOpponent({name:generatedOpponentName(seed+"|club"),target,chem,formation,seed,tier:`${profile.tier} · Record ${c.wins}-${c.losses}`,sp:150,power:target+chem*.12})
 }
 function championsBestRecordText(){
  const c=ensureChampionsState();return c.bestWins||c.bestLosses!==99?`${c.bestWins}-${c.bestLosses}`:"–"

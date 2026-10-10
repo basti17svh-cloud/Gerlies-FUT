@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.91</title>
+<title>Footera V21.92</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1565,7 +1565,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.91</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.92</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2097,7 +2097,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=2191"></script>
+<script src="./3d-highlights.js?v=2192"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
@@ -8396,11 +8396,30 @@ $("openClubIdentityFromTeam")?.addEventListener("click",()=>{removeUiLayer("team
 
 let pendingMatchContext=null,pendingMatchKitSelection=null,previewSwapFrom=-1;
 function matchKitClone(kit,fallback){return cleanClubKit(kit,fallback||defaultClubIdentity().kits.home)}
+// A consistent identity for a generated opponent, but a fresh club for each seeded match.
+function generatedOpponentName(seed){
+ const prefixes=["FC","SC","SV","AC","AS","CF","Union","Sporting","Atlético","Dynamo","Racing","Olympique","VfB","VfL","FK","IF","Inter","Borussia","Real","CD","Athletic","Lokomotive","Royal","Victoria"];
+ const places=["Nordhafen","Costa Azul","Bergstadt","Valdoria","Montavera","Rosenfeld","Lindenfeld","Kronenberg","Solano","Hohenfels","Porto Verde","Santa Luz","Eichenau","Lago Azul","Falkenstadt","Montelago","Westbridge","Alpenblick","Seabrook","Sonnenstadt","Cascadia","Bellavista","Aurora","Ostmeer","Rivermouth","Felsenburg","Gran Vista","Monte Claro","Altenfurt","Porto Nera","Valloria","Silberbach","Oceana","Eastport","Valencia Nova","Dornwald","Südbrück","Torre Verde","Himmelsfeld","Lacosta","Winterhafen","Goldbach"];
+ return prefixes[hashNum(String(seed)+"|clubPrefix")%prefixes.length]+" "+places[hashNum(String(seed)+"|clubPlace")%places.length]
+}
 function generatedOpponentKits(opponent){
- const palettes=[
+ const key=String(opponent?.seed||opponent?.name||"Gegner"),palettes=[
   ["#182c4f","#72a8ff","#edf3ff"],["#5a1722","#f05b6f","#f6f2ea"],["#173d2d","#71d6a2","#f1f5ee"],
-  ["#30204f","#aa82ef","#f3effb"],["#4a3515","#e0b24b","#fff6df"],["#172f38","#57c9d8","#edf8fa"]
- ],p=palettes[hashNum(String(opponent?.name||"Gegner"))%palettes.length],home={pattern:"solid",shirtPrimary:p[0],shirtSecondary:p[1],shorts:p[0],socks:p[1]},away={pattern:"diagonal",shirtPrimary:p[2],shirtSecondary:p[0],shorts:p[2],socks:p[0]};
+  ["#30204f","#aa82ef","#f3effb"],["#4a3515","#e0b24b","#fff6df"],["#172f38","#57c9d8","#edf8fa"],
+  ["#c43324","#fbcd46","#1d2531"],["#14565b","#fa9e42","#f3eae0"],["#003b7c","#ffffff","#ec202b"],
+  ["#f3df26","#151d35","#fafafa"],["#802d80","#f5b2e0","#10152e"],["#ce6b1f","#17362c","#f4ead8"],
+  ["#0c5e9d","#76d9ff","#fcf6f0"],["#751c1c","#f4e8cf","#203652"],["#4c6729","#ddec66","#f4ebd9"],
+  ["#222222","#dfae51","#f4f4f4"],["#c7164c","#f6d7e0","#161e37"],["#f1eeee","#c92030","#14274b"],
+  ["#115d6c","#ffde7c","#f8ebd2"],["#bb4f30","#ffb576","#172735"],["#3c3780","#f2c64e","#f1f2ff"],
+  ["#103c25","#efb038","#f4f1e3"],["#e5e5df","#11538f","#f13b41"],["#47342c","#d0c4a2","#e8e6df"]
+ ],awayPalettes=[
+  ["#f8f6ec","#162a40"],["#0d253c","#ef4c70"],["#f3b541","#21263e"],["#c8edff","#1d4262"],
+  ["#f4b8d2","#401744"],["#26282d","#e7e4d2"],["#dbe87a","#284431"],["#f4e5bb","#6b2636"],
+  ["#d0fcf0","#193a64"],["#f5d6a9","#67332f"],["#edeeee","#bd3434"],["#182c38","#75d4d3"]
+ ],patterns=["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe"];
+ const p=palettes[hashNum(key+"|homePalette")%palettes.length],a=awayPalettes[hashNum(key+"|awayPalette")%awayPalettes.length];
+ const home={pattern:patterns[hashNum(key+"|homePattern")%patterns.length],shirtPrimary:p[0],shirtSecondary:p[1],shorts:p[0],socks:p[1]};
+ const away={pattern:patterns[hashNum(key+"|awayPattern")%patterns.length],shirtPrimary:a[0],shirtSecondary:a[1],shorts:a[1],socks:a[0]};
  return{home,away}
 }
 function matchKitOptions(opponent){
@@ -8469,7 +8488,7 @@ function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier=""
  for(let i=0;i<7;i++)squad.push(opponentBenchPlayer(target-1,`${seed}|bench|${i}`,used));
  const xi=squad.slice(0,11).filter(Boolean),rating=xi.length?Math.round(xi.reduce((n,p)=>n+Number(p.ovr||0),0)/xi.length):target;
  const actualChem=opponentChemistryTotal(squad,formation);
- return{kind:"generated",name,formation,rating,chem:actualChem,squad,tier,rewards,sp,power:rating+actualChem*.12}
+ return{kind:"generated",name,seed,formation,rating,chem:actualChem,squad,tier,rewards,sp,power:rating+actualChem*.12}
 }
 function getSquadBattleOpponents(){
  syncCompetitionWeeks();
@@ -8478,7 +8497,7 @@ function getSquadBattleOpponents(){
  const list=specialPhase?
   [battleSpecialOpponent("totw",sb.week),battleSpecialOpponent("event",sb.week)].filter(Boolean):
   SB_TIERS.map((t,i)=>{
-   const seed=`${sb.week}|set-${setSeq}|${t.id}`,name=t.names[hashNum(seed+"|name")%t.names.length];
+   const seed=`${sb.week}|set-${setSeq}|${t.id}`,name=generatedOpponentName(seed+"|name");
    return{...buildGeneratedOpponent({name,target:t.target,chem:t.chem,formation:i%2?"4-2-3-1":"4-3-3",seed,tier:t.label,rewards:{win:t.win,loss:t.loss},sp:t.sp}),battleId:`${seed}|normal`,battleSet:setSeq,strengthId:t.id}
   });
  squadBattleOpponentCache={key,list};return list
@@ -8501,9 +8520,9 @@ function oneOffOpponent(mode){
  if(mode==="rivals"){
   const level=rivalsOpponentLevel(),seed=`rivals|d${level.division}|${stamp}`,span=Math.max(0,level.max-level.min);
   const target=level.min+(hashNum(seed+"|rating")%(span+1)),formations=["4-3-3","4-4-2","4-2-3-1"],formation=formations[hashNum(seed+"|formation")%formations.length];
-  return buildGeneratedOpponent({name:"RIVALS XI",target,chem:level.chem,formation,seed,tier:level.division===0?"Division Rivals · Elite":`Division Rivals · Division ${level.division}`})
+  return buildGeneratedOpponent({name:generatedOpponentName(seed+"|club"),target,chem:level.chem,formation,seed,tier:level.division===0?"Division Rivals · Elite":`Division Rivals · Division ${level.division}`})
  }
- return buildGeneratedOpponent({name:["CITY XI","UNITED XI","ATHLETIC CLUB","RACING XI","FUT ALLSTARS"][hashNum(String(stamp))%5],target:Math.max(62,Math.min(87,Math.round(base+(Math.random()*6-3)))),chem:Math.max(14,Math.min(29,Math.round((m.chem||22)+(Math.random()*8-4)))),formation:"4-3-3",seed:`friendly|${stamp}`,tier:"Freundschaft"})
+ return buildGeneratedOpponent({name:generatedOpponentName(`friendly|${stamp}|club`),target:Math.max(62,Math.min(87,Math.round(base+(Math.random()*6-3)))),chem:Math.max(14,Math.min(29,Math.round((m.chem||22)+(Math.random()*8-4)))),formation:"4-3-3",seed:`friendly|${stamp}`,tier:"Freundschaft"})
 }
 function ownLineupHTML(){
  const m=squadMetrics(),form=currentFormation(),items=squadItems();
@@ -9051,7 +9070,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.91";
+const GFUT_BUILD="V21.92";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9104,7 +9123,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=2191",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=2192",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.

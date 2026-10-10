@@ -31,7 +31,7 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2191'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2192'))}
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';

@@ -25,7 +25,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=43.4;
+export const MIN_CAMERA_DISTANCE=42.2;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -297,13 +297,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const deliveryDesired=(sample,u)=>{const c=carrierAt(sample),b=ballAt(sample),mid=[mix(c[0],b[0],.48),.84,mix(c[2],b[2],.48)],gw=.10+.20*u;return[mix(mid[0],goal[0],gw),mix(.82,.90,u),mix(mid[2],goal[2],gw)]};
   const buildEnd=buildTarget(deliveryAt);
   if(time<deliveryAt){
-   [targetX,targetY,targetZ]=buildTarget(time);distance=50.8+portraitPad*.74;fov=29.8;phase='build';
+   [targetX,targetY,targetZ]=buildTarget(time);distance=48.9+portraitPad*.65;fov=28.3;phase='build';
   }else if(time<finishAt){
    const u=smooth((time-deliveryAt)/(finishAt-deliveryAt)),desired=deliveryDesired(time,u),anchored=lerp(buildEnd,desired,u);
-   [targetX,targetY,targetZ]=anchored;distance=mix(50.8+portraitPad*.74,48.5+portraitPad*.42,u);fov=mix(29.8,28.4,u);phase='delivery';
+   [targetX,targetY,targetZ]=anchored;distance=mix(48.9+portraitPad*.65,46.8+portraitPad*.35,u);fov=mix(28.3,27.5,u);phase='delivery';
   }else{
    const deliveryEnd=deliveryDesired(finishAt,1),u=smooth((time-finishAt)/1.25),shooterLocal=runPosition(0,time,seq),shooter=worldPosition([shooterLocal[0],.88,shooterLocal[1]],direction),action=[mix(shooter[0],bp[0],.58),.92,mix(shooter[2],bp[2],.58)],desired=[mix(action[0],goal[0],.38),mix(.92,1.0,u),mix(action[2],goal[2],.38)],anchored=lerp(deliveryEnd,desired,u);
-   [targetX,targetY,targetZ]=anchored;distance=mix(48.5+portraitPad*.42,MIN_CAMERA_DISTANCE+portraitPad*.22,u);fov=mix(28.4,26.1,u);phase='finish';
+   [targetX,targetY,targetZ]=anchored;distance=mix(46.8+portraitPad*.35,MIN_CAMERA_DISTANCE+portraitPad*.22,u);fov=mix(27.5,26.0,u);phase='finish';
   }
  }else{
   const actorIndex=base==='one_two'&&time<3.0?1:0,actorLocal=runPosition(actorIndex,time,seq),actor=worldPosition([actorLocal[0],.84,actorLocal[1]],direction);
@@ -313,8 +313,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const goalWeight=mix(seq==='through_ball'?.10:.06,.38,push);
   targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
   const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
-  distance=mix(startDistance-2.4+portraitPad*.70+(inverted?1.2:0),MIN_CAMERA_DISTANCE+portraitPad*.22,push);
-  fov=mix((seq==='through_ball'?28.8:28.3)+(inverted?1.1:0),26.0,push);
+  distance=mix(startDistance-3.5+portraitPad*.70+(inverted?1.2:0),MIN_CAMERA_DISTANCE+portraitPad*.22,push);
+  fov=mix((seq==='through_ball'?28.0:27.4)+(inverted?1.1:0),26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // A diagonal switch crosses the full pitch before reaching the near winger.
@@ -337,8 +337,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   targetZ=mix(ballFocusZ,goal[2],mix(.25,.32,towardsGoal));
   targetY=mix(.79,.96,towardsGoal);
   const push=smooth((time-.65)/4.55);
-  distance=mix(48.2+portraitPad*.44,MIN_CAMERA_DISTANCE+portraitPad*.2,push);
-  fov=mix(29.1,26.6,push);
+  distance=mix(46.5+portraitPad*.38,MIN_CAMERA_DISTANCE+portraitPad*.2,push);
+  fov=mix(27.5,26.0,push);
   phase=time<1.15?'build':time<5.03?'delivery':'finish';
  }
  if(DEFENSIVE_SCENES.includes(seq)){
@@ -348,13 +348,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   targetX=mix(bp[0],chaser[0],.18*(1-focus));
   targetZ=mix(bp[2],chaser[2],.18*(1-focus));
   targetY=.83;
-  distance=mix(54+portraitPad*.54,45+portraitPad*.23,focus);
-  fov=mix(30.5,27.1,focus);
+  distance=mix(50.8+portraitPad*.48,43.6+portraitPad*.23,focus);
+  fov=mix(28.5,26.1,focus);
   phase=time<1.42?'build':time<4.4?'delivery':'finish';
  }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
-  fov+=5.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
+  fov+=3.4*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  }
  // A small near-wing lens allowance keeps the *whole* goal roof in the frame,
  // not only its ground centre. Camera position/target/choreography stay intact.
@@ -371,14 +371,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
    let tan=Math.tan(fov*Math.PI/360);
    if(authoredPlay&&!wide){
     // Fit the ball into frame and only include goal corners near the shot.
-    const essential=[bp,...(time>4.55?[-3.72,3.72].map(x=>worldPosition([x,2.5,-52.5],direction)):[])];
-    for(const point of essential){
+    const goalReveal=smooth((time-3.8)/1.5),essential=[{point:bp,weight:1},...[-3.72,3.72].map(x=>({point:worldPosition([x,2.5,-52.5],direction),weight:goalReveal}))];
+    for(const {point,weight} of essential){
      const vx=point[0]-position[0],vy=point[1]-position[1],vz=point[2]-position[2],
       depth=vx*fx+vy*fy+vz*fz;
      if(depth<=1)continue;
-     tan=Math.max(tan,
-      Math.abs(vx*right[0]+vz*right[2])/(Math.max(.68,aspect)*depth*.94),
-      Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.94));
+     const need=Math.max(Math.abs(vx*right[0]+vz*right[2])/(Math.max(.68,aspect)*depth*.94),Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.94));
+     tan=Math.max(tan,mix(Math.tan(fov*Math.PI/360),need,weight));
     }
     // Keep a minimum six active players legible alongside the ball. The
     // sixth-smallest projected requirement changes smoothly as runs unfold;
@@ -1109,7 +1108,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
-  const camTarget=new THREE.Vector3();let currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
+  const camTarget=new THREE.Vector3();let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
@@ -1448,18 +1447,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
    const cam=cameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction);currentCameraPhase=cam.phase;
+   let nextPosition=cam.position,nextTarget=cam.target,nextFov=cam.fov;
    if(labFocusedPreview){
-    // Isolated assessment lens only: A and B use the SAME close sideline camera.
-    // In-game broadcasts always use the canonical cameraState unchanged.
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
     const attacker=labTrackingPreview?stagedPlayerPosition(0,time,event.type,sequence):focus;
     const tx=mix(cam.target[0],(focus[0]+attacker[0])*.5,labTrackingPreview?.96:.73);
     const tz=mix(cam.target[2],(focus[1]+attacker[1])*.5,labTrackingPreview?.96:.73),ty=.88;
     const zoom=labTrackingPreview?.70:.58;
-    camera.position.set(tx+(cam.position[0]-cam.target[0])*zoom,
-     ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom);
-    camTarget.set(tx,ty,tz);camera.fov=cam.fov*(labTrackingPreview?.86:.78);
-   }else{camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov}
+    nextPosition=[tx+(cam.position[0]-cam.target[0])*zoom,ty+(cam.position[1]-cam.target[1])*zoom,tz+(cam.position[2]-cam.target[2])*zoom];
+    nextTarget=[tx,ty,tz];nextFov=cam.fov*(labTrackingPreview?.86:.78);
+   }
+   // Smooth ball tracking and lens changes; snap only on a fresh frame or seek.
+   const delta=lastCameraTime===null?0:time-lastCameraTime;
+   const snap=lastCameraTime===null||delta<0||delta>.5;
+   const follow=snap?1:1-Math.exp(-Math.max(0,delta)*10);
+   const lens=snap?1:1-Math.exp(-Math.max(0,delta)*(nextFov>camera.fov?5:10));
+   camera.position.lerp(new THREE.Vector3(...nextPosition),follow);
+   camTarget.lerp(new THREE.Vector3(...nextTarget),follow);
+   camera.fov=mix(camera.fov,nextFov,lens);lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
