@@ -381,6 +381,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // Permanent elevated touchline camera: framing changes, camera side never does.
  const sideline=55.0,height=32.8,trail=wide?(time<deliveryAt?5.9:time<SHOT_TIME-.2?mix(5.9,5.1,smooth((time-deliveryAt)/(SHOT_TIME-.2-deliveryAt))):5.1):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
  const position=[sideline*scale,height*scale,targetZ+trail*direction*scale],target=[targetX,targetY,targetZ];
+ // An off-axis wing target can shorten the actual camera-to-action distance.
+ // Slide back along the SAME existing sightline only if the lens becomes too close.
+ const measuredDistance=Math.hypot(position[0]-targetX,position[1]-targetY,position[2]-targetZ);
+ if(measuredDistance<37.65){
+  const reach=37.65/Math.max(.01,measuredDistance);
+  for(let i=0;i<3;i++)position[i]=target[i]+(position[i]-target[i])*reach;
+ }
   // The goal must stay fully in the mobile picture even with a closer lens.
   // Widen ONLY enough to clear the roof; never zoom out or switch sides.
   if(wide||authoredPlay){

@@ -37,3 +37,15 @@ test('Footera authored attacks use a close, stable camera from either direction'
   }
  }
 });
+
+test('V21.99: wing camera cannot rush closer than broadcast safety envelope',async()=>{
+ const S=await import('../3d-highlights-scene.mjs');
+ for(const aspect of [360/300,390/300,412/300])
+  for(const sequence of ['wing_left','wing_right','reverse_cutback_left','switch_overlap_high'])
+   for(const direction of [-1,1])for(const time of [0,2.7,4.3,5.1]){
+    const c=S.cameraState(direction,time,aspect,'goal',sequence);
+    const measured=Math.hypot(...c.position.map((v,i)=>v-c.target[i]));
+    assert.ok(measured>=37.5,sequence+' time '+time+' measured '+measured);
+    assert.ok(c.position[0]>0,'broadcast camera stays on the same sideline');
+   }
+});
