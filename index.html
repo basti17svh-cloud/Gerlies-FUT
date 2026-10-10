@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.102</title>
+<title>Footera V21.103</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1472,6 +1472,29 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 #match .match-manager-bench button{position:relative}
 @media(max-width:560px){#match .match-performance-cards{grid-template-columns:1fr}#match .match-performance-card{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:5px}#match .match-performance-card>span,#match .match-performance-card strong,#match .match-performance-card small{margin:0}#match .match-performance-card small{text-align:right}}
 
+
+/* V21.103 – Special pack palettes; base gold presentation unchanged. */
+.opening.theme-totw{--pack-beam:#ffcf4a;--pack-bright:#fff4bc;--pack-haze:rgba(255,205,67,.32);--pack-halo:rgba(255,207,74,.65);--pack-dark:#382309}
+.opening.theme-icon{--pack-beam:#fff;--pack-bright:#fff;--pack-haze:rgba(255,255,255,.34);--pack-halo:rgba(255,255,255,.88);--pack-dark:#1b2030}
+.opening.theme-special{--pack-beam:#59ffe7;--pack-bright:#cafff8;--pack-haze:rgba(89,255,231,.25);--pack-halo:rgba(89,255,231,.57);--pack-dark:#10252c}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double,.mode-board){background:radial-gradient(circle at 50% 42%,var(--pack-haze),transparent 34%),linear-gradient(180deg,#05060b,var(--pack-dark) 55%,#020307)}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double,.mode-board):before{opacity:.8!important;background:repeating-conic-gradient(from 0deg,var(--pack-haze) 0 2deg,transparent 2deg 11deg)!important;animation:packRays 3s linear infinite!important}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double,.mode-board):after{opacity:.72!important;background:radial-gradient(circle at 50% 55%,var(--pack-haze),transparent 60%)!important;animation:walkGlow .65s ease-in-out infinite alternate!important}
+.opening:is(.theme-totw,.theme-icon,.theme-special) .walkout-tunnel{--walkout-beam:var(--pack-beam);background:radial-gradient(ellipse at 50% 47%,var(--pack-halo) 0,var(--pack-dark) 18%,#090a12 49%,#010103 82%)}
+.opening:is(.theme-totw,.theme-icon,.theme-special) .walkout-tunnel:before{background:linear-gradient(108deg,transparent 5%,var(--pack-haze) 17%,transparent 29%,transparent 71%,var(--pack-haze) 83%,transparent 95%),radial-gradient(circle at 50% 48%,var(--pack-halo),transparent 12%)}
+.opening:is(.theme-totw,.theme-icon,.theme-special) .walkout-tunnel:after{background:repeating-linear-gradient(0deg,transparent 0 32px,var(--pack-halo) 33px 35px,transparent 36px 69px),linear-gradient(90deg,transparent 0 27%,var(--pack-haze) 27% 27.3%,transparent 27.3% 72.7%,var(--pack-haze) 72.7% 73%,transparent 73%)}
+.opening:is(.theme-totw,.theme-icon,.theme-special) .walkout-clue-art{border-color:var(--pack-halo);box-shadow:0 0 48px var(--pack-halo),inset 0 0 30px var(--pack-haze)}
+.opening:is(.theme-totw,.theme-icon,.theme-special) .pack-floor-lights i,.opening:is(.theme-totw,.theme-icon,.theme-special) .pack-spark{background:var(--pack-beam);box-shadow:0 0 22px var(--pack-halo)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-intro{background:radial-gradient(ellipse at 50% 48%,var(--pack-haze),var(--pack-dark) 35%,#020307 77%)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-intro:before{background:linear-gradient(90deg,transparent 0 18%,var(--pack-haze) 18% 18.5%,transparent 18.5% 81.5%,var(--pack-haze) 81.5% 82%,transparent 82%),linear-gradient(180deg,transparent 0 65%,var(--pack-haze) 80%,transparent 100%)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-stripe{background:linear-gradient(90deg,transparent,var(--pack-beam) 30%,var(--pack-bright) 50%,var(--pack-beam) 70%,transparent);box-shadow:0 0 22px var(--pack-halo),0 0 45px var(--pack-halo)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-plaque{border-color:var(--pack-halo);background:linear-gradient(145deg,var(--pack-dark),#070a10 58%,var(--pack-dark));box-shadow:inset 0 0 28px var(--pack-haze),0 0 30px var(--pack-halo)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-cue-label{color:var(--pack-bright)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .board-cue-art{border-color:var(--pack-halo);background:#091017;box-shadow:0 0 18px var(--pack-halo)}
+.opening:is(.theme-totw,.theme-icon,.theme-special).mode-board .reveal .card-shell{filter:drop-shadow(0 0 24px var(--pack-halo))}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double) .revealbadge{color:var(--pack-bright)!important;text-shadow:0 0 16px var(--pack-halo),0 0 32px var(--pack-halo)!important}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double) .reveal .card-shell{filter:drop-shadow(0 0 35px var(--pack-halo))!important}
+.opening:is(.theme-totw,.theme-icon,.theme-special):is(.mode-special,.mode-double) .walkout-title{color:var(--pack-bright)!important;text-shadow:0 0 18px var(--pack-halo)}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
@@ -5526,15 +5549,32 @@ $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-st
 let pendingResolved=new Set(state.pendingResolved);
 function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
-function packIsWalkout(item){return !!item&&(item.variant==="icon-mid"||itemRating(item)>=86)}
+function packRevealTheme(item){
+ if(item?.variant==="icon-mid")return"icon";
+ if(item?.variant!=="special")return"gold";
+ const type=String(item.eventType||""),name=String(item.eventName||"");
+ return /^totw/i.test(type)||/^(team of the week|team der woche|totw)\b/i.test(name)?"totw":"special"
+}
+function packIsWalkout(item){
+ if(!item)return false;
+ if(item.variant==="icon-mid")return true;
+ return item.variant==="special"?itemRating(item)>=84:itemRating(item)>=86
+}
+function packWalkoutPriority(item){const theme=packRevealTheme(item);return theme==="icon"?0:theme==="gold"?2:1}
 function packRevealPlan(){
  const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
  if(ranked.length===1&&isFounderItem(ranked[0]))return{mode:"walkout",cards:ranked,label:"FOOTERA FOUNDER",duration:5600};
- const walkouts=ranked.filter(packIsWalkout),specials=ranked.filter(packIsSpecial),best=ranked[0]||null;
+ // Order double walkouts: ICONS, special cards of 84+, then gold cards of 86+.
+ const walkouts=ranked.filter(packIsWalkout).sort((a,b)=>packWalkoutPriority(a)-packWalkoutPriority(b)||itemRating(b)-itemRating(a));
  if(walkouts.length>=2)return{mode:"double",cards:walkouts.slice(0,2),label:"DOUBLE WALKOUT",duration:5900};
- if(specials.length){const first=specials[0];if(isMomentumItem(first))return packIsWalkout(first)?{mode:"walkout",cards:[first],label:"WALKOUT",duration:5200}:{mode:"board",cards:[first],label:"",duration:2350};return{mode:"special",cards:[first],label:first.variant==="icon-mid"?"ICON":totwDisplayName(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}}
- if(best&&itemRating(best)>=86)return{mode:"walkout",cards:[best],label:"WALKOUT",duration:5200};
- if(best&&itemRating(best)>=83)return{mode:"board",cards:[best],label:"",duration:2350};
+ if(walkouts.length){
+  const first=walkouts[0],theme=packRevealTheme(first);
+  if(theme==="gold")return{mode:"walkout",cards:[first],label:"WALKOUT",duration:5200};
+  return{mode:"special",cards:[first],label:theme==="icon"?"ICON":totwDisplayName(first.eventName||"SPEZIALKARTE").toUpperCase(),duration:4700}
+ }
+ const best=ranked[0]||null;
+ // Special cards below 84 get the regular short board, never the full tunnel.
+ if(best&&(packIsSpecial(best)||itemRating(best)>=83))return{mode:"board",cards:[best],label:"",duration:2350};
  return{mode:"plain",cards:best?[best]:[],label:"HÖCHSTE KARTE",duration:1250}
 }
 function finishPack(){
@@ -5561,8 +5601,8 @@ function addPackFloorLights(){
  const opening=$("opening");if(opening.querySelector(".pack-floor-lights"))return;
  const x=document.createElement("div");x.className="pack-floor-lights";x.innerHTML="<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>";opening.appendChild(x)
 }
-function spawnPackConfetti(count=70,special=false){
- const fx=packFxLayer(),palette=special?["#57ffe3","#8c63ff","#ff5ad7","#ffffff","#ffd85a"]:["#d8ff3e","#ffffff","#72ffc0","#ffd85a","#7de7ff"];
+function spawnPackConfetti(count=70,theme="gold"){
+ const fx=packFxLayer(),palette=theme==="icon"?["#ffffff","#f2f7ff","#e2e9fc","#ffffff","#c9d7ff"]:theme==="totw"?["#ffce47","#ffed99","#fff7cf","#f3ae24","#ffffff"]:theme==="special"?["#57ffe3","#8c63ff","#ff5ad7","#ffffff","#ffd85a"]:["#d8ff3e","#ffffff","#72ffc0","#ffd85a","#7de7ff"];
  for(let i=0;i<count;i++){
   const p=document.createElement("i");p.className="pack-confetti";
   p.style.left=(Math.random()*100)+"%";p.style.background=palette[i%palette.length];
@@ -5617,7 +5657,8 @@ function showWalkoutClue(kind,base){
 }
 async function runPackReveal(plan){
  const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
- opening.className="opening active mode-"+plan.mode+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
+ const theme=packRevealTheme(plan.cards[0]);
+ opening.className="opening active mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
  opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
 
@@ -5658,17 +5699,17 @@ async function runPackReveal(plan){
  $("bigPack").classList.remove("pulse");
  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
  spawnPackSparks(plan.mode==="double"?60:46);
- spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,plan.mode==="special");
+ spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,theme);
  await sleep(380);
  if(!showPackRevealCard(plan)){finishPack();return}
 
  if(plan.mode==="double"&&plan.cards[1]){
   await sleep(700);
   const second=plan.cards[1],secondBase=displayBase(second);
-  if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,false)}
+  if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,theme)}
  }
- if(plan.mode==="walkout"){await sleep(700);spawnPackConfetti(55,false)}
- if(plan.mode==="special"){await sleep(650);spawnPackConfetti(50,true)}
+ if(plan.mode==="walkout"){await sleep(700);spawnPackConfetti(55,theme)}
+ if(plan.mode==="special"){await sleep(650);spawnPackConfetti(50,theme)}
  await sleep(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
  finishPack();
 }
@@ -9093,7 +9134,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.102";
+const GFUT_BUILD="V21.103";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
