@@ -70,7 +70,8 @@ export function applyTrackingPose(p,action,time,speed,heading,targetHeading){
  const contain=jockey?1:smooth((t-3.1)/.9);
  const difference=Math.atan2(Math.sin(targetHeading-heading),Math.cos(targetHeading-heading));
  const look=jockey?.43:mix(.08,.48,contain);
- const face=clamp(difference*look,-.62,.62);
+ // Running defenders follow travel direction; only a planted jockey turns far.
+ const plant=1-smooth((speed-.10)/.52),face=clamp(difference*look*plant,-.42,.42);
  p.root.rotation.y=heading+face;
  const lean=jockey?-.055:-.10*(1-contain)-.045*contain;
  p.upper.rotation.x=mix(p.upper.rotation.x,lean,.75);

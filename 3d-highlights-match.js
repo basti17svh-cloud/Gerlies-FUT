@@ -19,7 +19,7 @@ function unlockMatch3DViewport(){
 function cancelMatch3D(){
  match3DQueue?.cancel();match3DQueue=null;
  if(match){match.highlight3DPending=false;delete match.highlight3DScoreHold}
- document.getElementById('match')?.classList.remove('highlight3d-pending');unlockMatch3DViewport();
+ document.getElementById('match')?.classList.remove('highlight3d-pending','highlight3d-active');unlockMatch3DViewport();
 }
 function match3DStableNumber(value){
  let n=2166136261;for(const ch of String(value||'')){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0
@@ -97,7 +97,7 @@ function queueMatch3D(event){
    onIdle(){
     if(match!==current){unlockMatch3DViewport();return}
     current.highlight3DPending=false;current.highlightActive=false;delete current.highlight3DScoreHold;
-    document.getElementById('match')?.classList.remove('highlight3d-pending');
+    document.getElementById('match')?.classList.remove('highlight3d-pending','highlight3d-active');
     updateMatchUI();renderMatchTimeline();renderMatchScene();setMatchPill(!!current.paused);unlockMatch3DViewport();
     const fallback=current.highlight3DFallback;delete current.highlight3DFallback;
     if(fallback?.type==='goal'&&!current.paused&&!current.finished){

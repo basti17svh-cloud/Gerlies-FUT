@@ -7,7 +7,7 @@
  let mode='important',loader;
  try{const saved=root.localStorage?.getItem(KEY);if(saved in MODES)mode=saved}catch(_){}
  function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')}
- function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}return mode}
+ function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}if(mode!=='off')prewarm();return mode}
  // Period is captured at enqueue time from the simulator's existing lifecycle flags.
  // In particular 45+/90+/105+ belong to the current period until its break is logged.
  function getMatchPeriod(state){return state.extraTimeStarted?(state.extraTimeBreakLogged?4:3):(state.halftimeLogged?2:1)}
@@ -31,11 +31,17 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2197'))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2198').catch(e=>{loader=null;throw e}))}
+  // Idle preparation never stalls the match or hides its live field.
+  function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
+  if(root.document&&mode!=='off'){
+   const schedule=()=>{if(typeof root.requestIdleCallback==='function')root.requestIdleCallback(prewarm,{timeout:2500});else root.setTimeout(prewarm,1100)};
+   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+  }
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
-  const loading=document.createElement('div');loading.className='fh3d';
+  const loading=document.createElement('div');loading.className='fh3d-warming';
   const text=document.createElement('span');text.className='fh3d-loading';text.textContent='LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
@@ -55,10 +61,7 @@
       // Remove the opt-in; only the isolated A/B diagnostics may load that model.
       if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
     }catch(_){}
-    if(!disabled)try{await Promise.race([
-      module.prepareFooteraPlayerModel(),
-      new Promise(resolve=>setTimeout(()=>resolve(false),4500))
-    ])}catch(error){console.warn('Footera GLB unavailable, using original footballer:',error)}
+    if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
    }
    remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
   }),skippedPromise])}
@@ -260,6 +263,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

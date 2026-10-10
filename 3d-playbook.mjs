@@ -103,6 +103,11 @@ export function playPosition(index,time,plan){
    p[0]+=(index===4?-1:1)*2.2*Math.sin(Math.PI*u);
   }else p[1]=mix(start[1],end[1]+7,ease(time/5.6));
  }
+ // Smooth inside feint and byline acceleration give a real visible wing duel.
+ if((index===1||index===2)&&['overlap','lowcross','cutback','nearpost'].includes(plan.family)){
+  const side=index===1?-1:1,feint=ease((time-1.35)/.35)*(1-ease((time-2.12)/.48));
+  p[0]-=side*1.35*feint;p[1]-=2.1*ease((time-2.35)/.92);
+ }
  // A receiver checks towards the ball before running beyond the passer.
  if(plan.order.includes(index)&&index!==0&&index!==4&&index!==5){
   p[0]+=(index%2?-1:1)*1.15*Math.sin(time*1.12);
@@ -113,9 +118,15 @@ export function playPosition(index,time,plan){
 export function playTouches(plan){
  if(!plan)return [];
  const count=plan.order.length-1,slot=4.38/count;
+ // Distinct passing tempos preserve the 1-v-1 before the final cross.
+ const beats=plan.family==='overlap'&&count===3?[[.42,1.06],[2.58,2.99],[3.72,4.80]]:
+  plan.family==='lowcross'&&count===2?[[.42,1.10],[3.62,4.82]]:
+  plan.family==='cutback'&&count===4?[[.40,.94],[2.35,2.76],[3.25,3.60],[4.02,4.84]]:
+  plan.family==='switch'&&count===4?[[.34,.88],[1.10,1.77],[2.12,2.69],[3.60,4.83]]:
+  plan.family==='nearpost'&&count===2?[[.42,1.10],[3.69,4.79]]:null;
  return Array.from({length:count},(_,i)=>Object.freeze({
   passer:plan.order[i],receiver:plan.order[i+1],
-  release:.45+i*slot,arrival:.45+i*slot+slot*.80,
+  release:beats?beats[i][0]:.45+i*slot,arrival:beats?beats[i][1]:.45+i*slot+slot*.80,
   arc:plan.delivery==='cross'&&i===count-1?2.3:
       plan.delivery==='loft'&&(i===count-1||plan.family==='switch')?2.1:
       plan.delivery==='driven'&&i===count-1?.10:

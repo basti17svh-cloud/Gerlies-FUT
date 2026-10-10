@@ -3,7 +3,7 @@ import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=2190';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
-export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel};
+export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
@@ -1309,6 +1309,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const guard=(1-(i===defenderIndex?.90*a:0))*(1-.40*controlWeight);
      applyFootwork(p,time,speed,turn,acceleration,stride,guard);
     }
+    // Do not stack a sprint torso lean over the laboratory slide run-up.
+    if(cleanContactPreview&&defenderAction==='slide_attempt'&&time<3.12){
+     p.upper.rotation.x=clamp(p.upper.rotation.x,-.20,.20);p.rig.rotation.x=0;
+    }
     if(pilotMotion&&authoredTouches&&i<8&&time<SHOT_TIME-.25){
      let receive=0;
      for(const touch of authoredTouches){
@@ -1615,7 +1619,7 @@ export function play(event,signal){
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
-   const focused=layer.contains(document.activeElement);layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
+   const focused=layer.contains(document.activeElement);document.getElementById('match')?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
   function onAbort(){finish('skipped')}
   function onLost(e){e.preventDefault();finish('fallback')}
@@ -1661,6 +1665,10 @@ export function play(event,signal){
      if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileStandard?1.55:1.35));world.reduceQuality(mobileStandard);resize()}
      const displayTime=elapsed*timeScale;
      world.update(displayTime);
+     if(!layer.classList.contains('fh3d-ready')){
+      layer.classList.add('fh3d-ready');
+      document.getElementById('match')?.classList.add('highlight3d-active');
+     }
      // Bounded diagnostics: reflect actual sampled poses, not GLB load state.
      // Once per ~20 frames avoids inspecting an entire football scene per RAF.
      if(frames%20===1){
