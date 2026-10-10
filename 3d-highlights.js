@@ -82,7 +82,17 @@
   ['quick_burst_left','dribble',5,'normal','short'],['quick_burst_right','dribble',5,'normal','short'],
   ['inside_link_left','dribble',5,'finesse','medium'],['inside_link_right','dribble',5,'finesse','medium'],
   ['edge_cutback_finesse','cutback',5,'finesse','medium'],['first_time_power','distance',4,'power','short'],
-  ['near_post_tap','nearpost',5,'low_driven','short']
+  ['near_post_tap','nearpost',5,'low_driven','short'],
+   ['reverse_cutback_left','cutback',7,'finesse','medium'],
+   ['reverse_cutback_right','cutback',7,'finesse','medium'],
+   ['blindside_overlap_left','overlap',7,'normal','medium'],
+   ['blindside_overlap_right','overlap',7,'normal','medium'],
+   ['diagonal_counter_left','through',8,'low_driven','short'],
+   ['diagonal_counter_right','through',8,'low_driven','short'],
+   ['edge_of_box_recycle','combination',7,'power','medium'],
+   ['back_post_sweep','lowcross',6,'normal','medium'],
+   ['late_midfield_runner','combination',6,'normal','short'],
+   ['short_corner_combo','combination',5,'finesse','medium']
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -187,6 +197,8 @@
     if(v.family==='combination'&&creator.has('tiki-taka'))w*=1.9;
     if(v.family==='overlap'&&creator.has('pinged-pass'))w*=1.8;
     if(v.id.includes('left')&&side==='right'||v.id.includes('right')&&side==='left')w*=.22;
+     if(v.id.includes('counter')&&creator.has('incisive-pass'))w*=1.45;
+     if(v.id.includes('cutback')&&creator.has('pinged-pass'))w*=1.35;
     if(v.id.includes('header')||v.finish==='header')w*=scorer.has('power-header')||scorer.has('aerial')?1.6:.66;
    }
    for(const id of v.tags){const ps=scorer.get(id);if(ps)w*=1+.48*ps;const pa=hasCreator&&creator.get(id);if(pa)w*=1+.38*pa}

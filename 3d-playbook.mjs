@@ -39,7 +39,18 @@ const catalog=[
  // angled cut-back to shooting zone, driven first time and near-post strike
  ['edge_cutback_finesse','cutback',5,'finesse','driven',[6,1,3,0],'medium'],
  ['first_time_power','distance',4,'power','short',[6,3,0],'short'],
- ['near_post_tap','nearpost',5,'low_driven','driven',[3,1,0],'short']
+ ['near_post_tap','nearpost',5,'low_driven','driven',[3,1,0],'short'],
+ // V21.89: distinct channels, late runners, overlapping wide breaks and quick switches
+ ['reverse_cutback_left','cutback',7,'finesse','driven',[6,1,4,3,0],'medium'],
+ ['reverse_cutback_right','cutback',7,'finesse','driven',[7,2,5,3,0],'medium'],
+ ['blindside_overlap_left','overlap',7,'normal','driven',[3,1,4,0],'medium'],
+ ['blindside_overlap_right','overlap',7,'normal','driven',[3,2,5,0],'medium'],
+ ['diagonal_counter_left','through',8,'low_driven','through',[7,3,1,0],'short'],
+ ['diagonal_counter_right','through',8,'low_driven','through',[6,3,2,0],'short'],
+ ['edge_of_box_recycle','combination',7,'power','short',[7,3,6,1,0],'medium'],
+ ['back_post_sweep','lowcross',6,'normal','driven',[7,2,5,0],'medium'],
+ ['late_midfield_runner','combination',6,'normal','through',[6,7,3,0],'short'],
+ ['short_corner_combo','combination',5,'finesse','short',[3,1,6,0],'medium']
 ];
 const tags=Object.freeze({
  combination:['tiki-taka','first-touch','incisive-pass'],
@@ -63,11 +74,26 @@ export const DEFENSIVE_SCENES=Object.freeze([
  'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery'
 ]);
 const STARTS=[[-7,-28],[-23,-22],[23,-22],[-4,-21],[-27,-15],[27,-15],[-9,-16],[8,-17]];
+// Stable per-play movement fingerprint; no RNG or additional match events.
+const routeHash=plan=>Array.from(plan.id).reduce((n,c)=>(Math.imul(n,33)+c.charCodeAt(0))|0,5381)>>>0;
+export function playRouteSignature(plan){
+ const n=routeHash(plan);
+ return Object.freeze({bend:((n%9)-4)*.31,hold:((n>>>4)%7)*.04,
+  attackLane:((n>>>9)%7-3)*.18,side:plan.id.includes('_left')?-1:plan.id.includes('_right')?1:0});
+}
+
 const ENDS=[[0,-37],[-24,-39],[24,-39],[-1,-32],[-26,-42],[26,-42],[-6,-30],[6,-31]];
 export function playPosition(index,time,plan){
  if(!plan||index<0||index>7)return null;
- const start=STARTS[index],end=ENDS[index],u=clamp(time/5.4);
+ const start=STARTS[index],end=ENDS[index],u=clamp(time/5.4),shape=playRouteSignature(plan);
  let p=interpolate(start,end,u);
+ // All player tracks are distinct even when the same passer appears across
+ // several presets. Passing ball windows sample these exact actor positions.
+ const flow=Math.sin(Math.PI*u),lane=shape.side*(index===4||index===5?1:.55);
+ if(index!==0){
+  p[0]+=flow*(shape.bend*(index%2?1:-1)+lane*.9);
+  p[1]+=flow*(shape.attackLane*(index%3-1)-shape.hold*2);
+ }
  // The final attacker accelerates through the line while support keeps moving.
  if(index===0){p=interpolate(start,end,ease((time-.45)/4.95));p[0]+=(plan.family==='dribble'?(plan.id.includes('left')?-1.4:1.4):0)*Math.sin(Math.PI*u)}
  if(index===4||index===5){

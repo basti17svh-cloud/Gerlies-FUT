@@ -297,13 +297,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const deliveryDesired=(sample,u)=>{const c=carrierAt(sample),b=ballAt(sample),mid=[mix(c[0],b[0],.48),.84,mix(c[2],b[2],.48)],gw=.10+.20*u;return[mix(mid[0],goal[0],gw),mix(.82,.90,u),mix(mid[2],goal[2],gw)]};
   const buildEnd=buildTarget(deliveryAt);
   if(time<deliveryAt){
-   [targetX,targetY,targetZ]=buildTarget(time);distance=53.8+portraitPad;fov=30.4;phase='build';
+   [targetX,targetY,targetZ]=buildTarget(time);distance=50.8+portraitPad*.74;fov=29.8;phase='build';
   }else if(time<finishAt){
    const u=smooth((time-deliveryAt)/(finishAt-deliveryAt)),desired=deliveryDesired(time,u),anchored=lerp(buildEnd,desired,u);
-   [targetX,targetY,targetZ]=anchored;distance=mix(53.8+portraitPad,50.5+portraitPad*.55,u);fov=mix(30.4,29.3,u);phase='delivery';
+   [targetX,targetY,targetZ]=anchored;distance=mix(50.8+portraitPad*.74,48.5+portraitPad*.42,u);fov=mix(29.8,28.4,u);phase='delivery';
   }else{
    const deliveryEnd=deliveryDesired(finishAt,1),u=smooth((time-finishAt)/1.25),shooterLocal=runPosition(0,time,seq),shooter=worldPosition([shooterLocal[0],.88,shooterLocal[1]],direction),action=[mix(shooter[0],bp[0],.58),.92,mix(shooter[2],bp[2],.58)],desired=[mix(action[0],goal[0],.38),mix(.92,1.0,u),mix(action[2],goal[2],.38)],anchored=lerp(deliveryEnd,desired,u);
-   [targetX,targetY,targetZ]=anchored;distance=mix(50.5+portraitPad*.55,MIN_CAMERA_DISTANCE+portraitPad*.30,u);fov=mix(29.3,26.2,u);phase='finish';
+   [targetX,targetY,targetZ]=anchored;distance=mix(48.5+portraitPad*.42,MIN_CAMERA_DISTANCE+portraitPad*.22,u);fov=mix(28.4,26.1,u);phase='finish';
   }
  }else{
   const actorIndex=base==='one_two'&&time<3.0?1:0,actorLocal=runPosition(actorIndex,time,seq),actor=worldPosition([actorLocal[0],.84,actorLocal[1]],direction);
@@ -313,8 +313,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const goalWeight=mix(seq==='through_ball'?.10:.06,.38,push);
   targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
   const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
-  distance=mix(startDistance+portraitPad+(inverted?2:0),MIN_CAMERA_DISTANCE+portraitPad*.30,push);
-  fov=mix((seq==='through_ball'?29.3:29.0)+(inverted?1.5:0),26.0,push);
+  distance=mix(startDistance-2.4+portraitPad*.70+(inverted?1.2:0),MIN_CAMERA_DISTANCE+portraitPad*.22,push);
+  fov=mix((seq==='through_ball'?28.8:28.3)+(inverted?1.1:0),26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // A diagonal switch crosses the full pitch before reaching the near winger.
@@ -322,8 +322,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // on the near winger collapses the physical camera distance and crops runners.
  if(getPlay(seq)){
   // Preserve passing lanes but not at the cost of microscopic athletes.
-  distance=Math.max(distance,57+portraitPad*.35);
-  fov=Math.max(fov,31.0);
+  distance=Math.max(distance,54.0+portraitPad*.30);
+  fov=Math.max(fov,29.0);
  }
  if(DEFENSIVE_SCENES.includes(seq)){
   // One sideline camera follows the passer, closing defender and ball win.
@@ -338,11 +338,11 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
-  fov+=10.5*(1-smooth((time-(SHOT_TIME-.2))/1.25));
+  fov+=5.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  }
  // A small near-wing lens allowance keeps the *whole* goal roof in the frame,
  // not only its ground centre. Camera position/target/choreography stay intact.
- if(wide&&sequenceSide(seq)*direction>0)fov+=4.6*(1-smooth((time-(SHOT_TIME-.2))/1.25));
+ if(wide&&sequenceSide(seq)*direction>0)fov+=2.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  // Permanent elevated touchline camera: framing changes, camera side never does.
  const sideline=55.0,height=32.8,trail=wide?(time<deliveryAt?5.9:time<SHOT_TIME-.2?mix(5.9,5.1,smooth((time-deliveryAt)/(SHOT_TIME-.2-deliveryAt))):5.1):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
  return{position:[sideline*scale,height*scale,targetZ+trail*direction*scale],target:[targetX,targetY,targetZ],fov,distance,phase};

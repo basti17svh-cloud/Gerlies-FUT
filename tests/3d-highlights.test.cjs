@@ -246,8 +246,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 
 test('V21.32: 42 visual scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,30);
- assert.equal(M.PLAY_SEQUENCES.length,72);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,40);
+ assert.equal(M.PLAY_SEQUENCES.length,82);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id)]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
@@ -704,4 +704,16 @@ test('V21.89: retired turnovers cannot queue but attack slides and blocks remain
  assert.ok(shot.some(r=>r.defenderAction==='block_attempt'));
  const source=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
  assert.match(source,/function queueMatchDefensive3D\(\)\{return false\}/);
+});
+
+test('V21.89: close match camera is nearer but holds a fixed TV side',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ for(const sequence of ['central','dribble','wing_left','wing_right','reverse_cutback_left','blindside_overlap_right','diagonal_counter_left']){
+  for(const aspect of [1.05,1.65]){
+   const c=M.cameraState(1,2.25,aspect,'goal',sequence),end=M.cameraState(1,5.7,aspect,'goal',sequence);
+   assert.ok(c.distance>=M.MIN_CAMERA_DISTANCE&&c.distance<57,sequence+' zoom range');
+   assert.ok(end.distance>=M.MIN_CAMERA_DISTANCE&&end.distance<57,sequence+' finish zoom');
+   assert.ok(c.position[0]>0&&end.position[0]>0,sequence+' fixed broadcast sideline');
+  }
+ }
 });

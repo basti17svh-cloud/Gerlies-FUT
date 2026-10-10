@@ -3,8 +3,8 @@ const root=path.join(__dirname,'..');
 const importPlaybook=()=>import('../3d-playbook.mjs');
 test('V21.86: thirty distinct authored attacking sequences, not just different labels',async()=>{
  const {PLAYBOOK,getPlay,PLAYBOOK_IDS,playTouches}=await importPlaybook();
- assert.equal(PLAYBOOK.length,30);
- assert.equal(new Set(PLAYBOOK_IDS).size,30);
+ assert.equal(PLAYBOOK.length,40);
+ assert.equal(new Set(PLAYBOOK_IDS).size,40);
  assert.ok(PLAYBOOK.every(p=>p.order.length>=2&&p.order.at(-1)===0&&p.seconds>=9&&p.seconds<=20));
  assert.ok(new Set(PLAYBOOK.map(p=>p.order.join(','))).size>=18);
  assert.ok(PLAYBOOK.every(p=>playTouches(p).length===p.order.length-1));
@@ -57,4 +57,20 @@ test('V21.86: all authored scene PlayStyles match the actual Footera registry',a
   assert.deepEqual([...scene.tags],[...authored.tags],scene.id+' must use identical style weights');
   for(const id of scene.tags)assert.ok(ids.has(id),'unknown PlayStyle: '+scene.id+' / '+id);
  }
+});
+
+test('V21.89: 10 additional attacks have visible nonidentical running routes and readable finishes',async()=>{
+ const {getPlay,playRouteSignature,playPosition,playBall}=await importPlaybook();
+ const names=['reverse_cutback_left','reverse_cutback_right','blindside_overlap_left','blindside_overlap_right',
+  'diagonal_counter_left','diagonal_counter_right','edge_of_box_recycle','back_post_sweep','late_midfield_runner','short_corner_combo'];
+ const endings=new Set(),shapes=new Set();
+ for(const id of names){
+  const p=getPlay(id);assert.ok(p,id+' registered');
+  const start=playPosition(p.order[0],0,p),mid=playPosition(p.order[0],2.6,p);
+  assert.notDeepEqual(start,mid,id+' actual run');
+  shapes.add(JSON.stringify([playRouteSignature(p),p.order]));
+  const contact=playBall(p,5.4,[.105,.14,-37.2]);
+  endings.add(p.finish);assert.deepEqual(contact,[.105,.14,-37.2],id+' immutable kick anchor');
+ }
+ assert.equal(shapes.size,10);assert.ok(endings.size>=3);
 });
