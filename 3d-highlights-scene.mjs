@@ -314,7 +314,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   targetX=mix(targetX,goal[0],goalWeight);targetZ=mix(targetZ,goal[2],goalWeight);
   const startDistance=seq==='through_ball'?52.2:seq==='one_two'?51.6:seq==='dribble'?50.6:51.2;
   distance=mix(startDistance-3.5+portraitPad*.70+(inverted?1.2:0),MIN_CAMERA_DISTANCE+portraitPad*.22,push);
-  fov=mix((seq==='through_ball'?28.0:27.4)+(inverted?1.1:0),26.0,push);
+  fov=mix((seq==='through_ball'?28.0:27.8)+(inverted?1.1:0),26.0,push);
   targetY=mix(.76,.98,push);phase=time<3.2?'build':time<5.05?'delivery':'finish';
  }
  // A diagonal switch crosses the full pitch before reaching the near winger.
