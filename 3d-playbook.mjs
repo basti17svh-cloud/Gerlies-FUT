@@ -50,7 +50,15 @@ const catalog=[
  ['edge_of_box_recycle','combination',7,'power','short',[7,3,6,1,0],'medium'],
  ['back_post_sweep','lowcross',6,'normal','driven',[7,2,5,0],'medium'],
  ['late_midfield_runner','combination',6,'normal','through',[6,7,3,0],'short'],
- ['short_corner_combo','combination',5,'finesse','short',[3,1,6,0],'medium']
+ ['short_corner_combo','combination',5,'finesse','short',[3,1,6,0],'medium'],
+ ['halfspace_overload_left','combination',7,'finesse','short',[6,1,3,7,0],'medium'],
+ ['halfspace_overload_right','combination',7,'finesse','short',[7,2,3,6,0],'medium'],
+ ['counter_reversal_left','switch',6,'low_driven','loft',[7,3,1,0],'long'],
+ ['counter_reversal_right','switch',6,'low_driven','loft',[6,3,2,0],'long'],
+ ['wing_isolation_left','dribble',7,'finesse','short',[6,1,0],'medium'],
+ ['wing_isolation_right','dribble',7,'finesse','short',[7,2,0],'medium'],
+ ['late_cutback_left','cutback',7,'normal','driven',[6,1,4,3,0],'medium'],
+ ['late_cutback_right','cutback',7,'normal','driven',[7,2,5,3,0],'medium']
 ];
 const tags=Object.freeze({
  combination:['tiki-taka','first-touch','incisive-pass'],
@@ -107,6 +115,29 @@ export function playPosition(index,time,plan){
  if((index===1||index===2)&&['overlap','lowcross','cutback','nearpost'].includes(plan.family)){
   const side=index===1?-1:1,feint=ease((time-1.35)/.35)*(1-ease((time-2.12)/.48));
   p[0]-=side*1.35*feint;p[1]-=2.1*ease((time-2.35)/.92);
+ }
+ // Strong, family-specific movement arcs. Deviations taper to zero at kick contact.
+ const side=plan.id.includes('_left')?-1:plan.id.includes('_right')?1:(routeHash(plan)&1?1:-1);
+ const beat=Math.sin(Math.PI*u),check=Math.sin(Math.PI*2*u),late=ease((time-1.25)/2.45)*(1-ease((time-3.85)/1.45));
+ const family=plan.family,variation=playRouteSignature(plan).bend;
+ if(index===0){
+  const carve=family==='dribble'?4.7:family==='through'?2.9:family==='cutback'?2.2:family==='distance'?.7:family==='switch'?1.8:1.4;
+  p[0]+=side*carve*beat+variation*.85*check;
+  p[1]+=(family==='through'?-2.25:family==='combination'?1.05:family==='cutback'?.8:0)*beat;
+ }
+ if(index===1||index===2){
+  const active=side<0?index===1:index===2;
+  if(active&&['overlap','lowcross','cutback'].includes(family)){
+   p[0]+=side*(family==='cutback'?3.8:2.5)*beat;p[1]-=(family==='cutback'?5.3:3.1)*late;
+  }
+  if(family==='switch'){p[0]+=side*(active?-5.1:4.2)*beat;p[1]+=(active?-2.4:1.6)*beat}
+  if(family==='through')p[0]+=side*(active?2.6:-1.8)*beat;
+  if(family==='dribble'&&active)p[0]-=side*3.3*check*beat;
+ }
+ if(index===3||index===6||index===7){
+  if(family==='combination'){p[0]+=side*(index===3?-3.2:index===6?2.6:-2.4)*beat;p[1]+=(index===3?2.2:-1.1)*check*beat}
+  else if(family==='through')p[1]-=(index===3?3.2:1.6)*late;
+  else if(family==='cutback'&&index===3){p[1]+=3.7*late;p[0]-=side*2.3*beat}
  }
  // A receiver checks towards the ball before running beyond the passer.
  if(plan.order.includes(index)&&index!==0&&index!==4&&index!==5){
