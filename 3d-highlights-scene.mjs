@@ -380,6 +380,22 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
       Math.abs(vx*right[0]+vz*right[2])/(Math.max(.68,aspect)*depth*.94),
       Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.94));
     }
+    // Keep a minimum six active players legible alongside the ball. The
+    // sixth-smallest projected requirement changes smoothly as runs unfold;
+    // it never affects the match, camera side or HUD.
+    const playerRequirements=[];
+    for(let actor=0;actor<16;actor++){
+     const route=runPosition(actor,time,seq),
+      point=worldPosition([route[0],1.0,route[1]],direction),
+      vx=point[0]-position[0],vy=point[1]-position[1],vz=point[2]-position[2],
+      depth=vx*fx+vy*fy+vz*fz;
+     if(depth<=1)continue;
+     playerRequirements.push(Math.max(
+      Math.abs(vx*right[0]+vz*right[2])/(Math.max(.68,aspect)*depth*.90),
+      Math.abs(vx*up[0]+vy*up[1]+vz*up[2])/(depth*.90)));
+    }
+    playerRequirements.sort((a,b)=>a-b);
+    if(playerRequirements.length>=6)tan=Math.max(tan,playerRequirements[5]);
    }
    for(const x of (wide?[-3.72,3.72]:[]))for(const z of [-52.5,-54.45]){
     const roof=worldPosition([x,2.5,z],direction),vx=roof[0]-position[0],vy=roof[1]-position[1],vz=roof[2]-position[2];
