@@ -66,3 +66,52 @@ test('an unavailable event card cannot appear in a Bronze pack',()=>{
  assert.equal(result.events.possible,false);
  assert.equal(odds.percent(result.events),'0 %');
 });
+
+
+test('exact 2-player probability matches independent exhaustive subset enumeration',()=>{
+ const w0=1,w1=Math.pow(1.62,-1),w2=Math.pow(1.62,-15);
+ const denom=w0*w1+w0*w2+w1*w2;
+ const expected=w2*(w0+w1)/denom;
+ const p={id:'enumeration',count:2,min:75,max:99,iconChance:0};
+ const players=[player('a',75),player('b',76),player('c',90)];
+ const result=odds.calculate(p,players);
+ const actual=result.rows.find(x=>x.threshold===90).rate;
+ assert.ok(Math.abs(actual-expected)<1e-12,actual+' vs '+expected);
+});
+test('conditional guarantee has an exact closed-form result',()=>{
+ const w75=1,w80=Math.pow(1.62,-5),w85=Math.pow(1.62,-10),w90=Math.pow(1.62,-15);
+ const denom=w85*(w75+w80)+w90*(w75+w80)+w85*w90;
+ const expected=w90*(w75+w80+w85)/denom;
+ const p={id:'conditional-enumeration',count:2,min:75,max:99,guarantee:85};
+ const players=[player('a',75),player('b',80),player('c',85),player('d',90)];
+ const actual=odds.calculate(p,players).rows.find(x=>x.threshold===90).rate;
+ assert.ok(Math.abs(actual-expected)<1e-12,actual+' vs '+expected);
+});
+test('Icon addition and replacement are included in exact rating odds',()=>{
+ const p={id:'icon-enumeration',count:1,min:75,max:99,iconChance:0.1};
+ const players=[player('base-low',75),player('base-high',90)];
+ const icons=[player('icon',92)];
+ const baseProbability=Math.pow(1.62,-15)/(1+Math.pow(1.62,-15));
+ const result=odds.calculate(p,players,{icons});
+ const actual=result.rows.find(x=>x.threshold===90).rate;
+ assert.ok(Math.abs(actual-(0.9*baseProbability+0.1))<1e-12);
+ assert.ok(Math.abs(result.special.rate-0.1)<1e-12);
+});
+test('actual weighted pack draws have no duplicate IDs and obey guarantee for 200 runs',()=>{
+ const p={id:'exact-many',count:8,min:75,max:99,guarantee:85,iconChance:0.2};
+ const pool=Array.from({length:100},(_,i)=>player('item-'+i,75+i%16));
+ const icons=[player('icon-88',88),player('icon-91',91)];
+ for(let i=0;i<200;i++){
+  const draw=odds.draw(p,pool,{icons});
+  assert.equal(draw.available,true);
+  assert.equal(draw.items.length,p.count);
+  assert.equal(new Set(draw.items.map(x=>String(x.base.id))).size,p.count);
+  assert.ok(draw.items.some(x=>x.base.ovr>=85));
+ }
+});
+test('unavailable odds and drawing fail closed rather than inventing percentages',()=>{
+ const p={id:'insufficient',count:3,min:75,max:99,guarantee:85};
+ const players=[player('same',88),player('same',90)];
+ assert.equal(odds.calculate(p,players).available,false);
+ assert.equal(odds.draw(p,players).available,false);
+});
