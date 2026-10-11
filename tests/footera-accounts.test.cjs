@@ -15,7 +15,7 @@ function runtime(mode="guest"){
   updateUser:async args=>{calls.push(["update",args]);return{error:null}},
   signUp:async args=>{calls.push(["signup",args]);return{error:null}}
  };
- const client={auth},document={readyState:"loading",addEventListener(){}},win={
+ const client={auth},document={readyState:"loading",addEventListener(){},getElementById(){return null}},win={
   document,FooteraOnline:{available:true,authClient:async()=>client},
   location:{href:"https://example.test/Gerlies-FUT/"},
   localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
