@@ -18,6 +18,7 @@ function app(at){
  const get=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',addEventListener(_event,fn){if(id==='storeView')ctx.click=fn}});return elements.get(id)};
  const ctx={Date:Clock,Intl,Math:math,FOUNDER_PACK_ID:'founder',MARCO_FOUNDER_PACK_ID:'marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',PLAYERS:players,
   state:{coins:3000000,points:100000,packs:{},club:[]},pendingPack:[],founderRuleForPack:()=>null,
+  FooteraPackOdds:require('../pack-odds.js'),MID_ICON_BASES:[],
   makeLivePackItem:(b,tradeable)=>({uid:`test-${++sequence}`,pid:String(b.id),tradeable,rare:false}),
   displayBase:i=>byId.get(i.pid),isCardRare:(_b,i)=>i.rare,rarityOf:b=>b.ovr>=75?'gold':b.ovr>=65?'silver':'bronze',randomMidIconBase:()=>null,
   $:get,fmt:String,esc:String,currencyAmountHTML:(_c,n)=>String(n),document:{querySelectorAll:()=>tabs},
