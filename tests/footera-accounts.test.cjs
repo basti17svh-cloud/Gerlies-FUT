@@ -6,7 +6,7 @@ const worker=fs.readFileSync(path.join(__dirname,"../service-worker.js"),"utf8")
 const sql=fs.readFileSync(path.join(__dirname,"../online/footera-accounts-v21.109.sql"),"utf8");
 
 function runtime(mode="guest"){
- const calls=[],store=new Map(),who=mode==="guest"?{id:"guest-a",is_anonymous:true}:mode==="registered"?{id:"existing-a",is_anonymous:false,identities:[]}:null;
+ const calls=[],store=new Map(),who=mode==="guest"?{id:"guest-a",is_anonymous:true}:mode==="registered"?{id:"existing-a",email:"registered@example.org",email_confirmed_at:"2026-10-11",is_anonymous:false,identities:[]}:null;
  const auth={
   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),
   getUser:async()=>({data:{user:who},error:who?null:{name:"AuthSessionMissingError"}}),
@@ -17,15 +17,21 @@ function runtime(mode="guest"){
   signInAnonymously:async()=>{calls.push(["guest"]);return{data:{user:{id:"guest-b",is_anonymous:true}},error:null}},
   resend:async args=>{calls.push(["resend",args]);return{error:null}}
  };
- const client={auth},document={readyState:"loading",addEventListener(){},getElementById(){return null}},win={
-  document,FooteraOnline:{available:true,authClient:async()=>client},
-  location:{href:"https://example.test/Gerlies-FUT/"},
+ let cloud=null,revision=0,reloaded=false;
+ const client={auth,
+  from:()=>({select:()=>({maybeSingle:async()=>({data:cloud,error:null})})}),
+  rpc:async (_name,args)=>{calls.push(["cloud",args]);if(args.p_base_revision!==revision)return{error:Error("conflict")};revision++;cloud={save_data:args.p_save,revision,saved_at:"2026-10-11T10:00:00Z"};return{data:revision,error:null}}
+ };
+ const document={readyState:"loading",addEventListener(){},getElementById(){return null}};
+ const win={
+  document,FooteraOnline:{available:true,authClient:async()=>client,ready:true},FooteraBackup:{validateState:s=>s,blocked:()=>""},
+  location:{href:"https://example.test/Gerlies-FUT/",reload:()=>{reloaded=true}},
   localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
   setTimeout(){},
   console:{warn(){}}
  };
  vm.runInNewContext(js,{window:win,document,URL,TextEncoder,console});
- return {calls,store,win};
+ return {calls,store,win,setCloud:data=>{cloud=data;revision=data?.revision||0},wasReloaded:()=>reloaded};
 }
 
 test("existing guest links Google instead of creating another user",async()=>{
@@ -132,4 +138,63 @@ test("resend has distinct confirmation types for fresh and upgraded accounts",as
  await guest.win.FooteraAccount.emailRegister("guest@example.org","");
  await guest.win.FooteraAccount.resendEmail();
  assert.equal(guest.calls.at(-1)[1].type,"email_change");
+});
+
+function sampleGame(id="club-a"){return{version:1,onboarded:true,profile:{username:"Tester",clubName:"Test FC",saveId:id},club:[],squad:[],coins:5000,points:0};}
+test("freshly confirmed account automatically adopts and saves its own club",async()=>{
+ const t=runtime("registered");
+ t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:null}));
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,1);
+ assert.equal(t.calls.find(x=>x[0]==="cloud")[1].p_base_revision,0);
+});
+test("unmodified club is not re-uploaded on the next automatic sync",async()=>{
+ const t=runtime("registered");
+ t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:null}));
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,1);
+});
+test("returning player without a local club restores the account cloud save",async()=>{
+ const t=runtime("registered");
+ t.setCloud({save_data:sampleGame(),revision:3,saved_at:"2026-10-11"});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.wasReloaded(),true);
+ assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
+});
+test("another player's existing club is never automatically adopted",async()=>{
+ const t=runtime("registered");
+ t.store.set("footera-cloud-owner","other-owner");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:null}));
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.store.get("footera-cloud-owner"),"other-owner");
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
+});
+test("cloud club mismatch blocks overwrite during signup",async()=>{
+ const t=runtime("registered");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame("different-club")));
+ t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:null}));
+ t.setCloud({save_data:sampleGame("first-club"),revision:2,saved_at:"2026-10-11"});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
+});
+test("unidentified legacy club without registration marker is not silently adopted",async()=>{
+ const t=runtime("registered");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.store.get("footera-cloud-owner"),undefined);
+});
+test("outdated revision never overwrites newer cloud progress",async()=>{
+ const t=runtime("registered"),s=sampleGame();
+ t.store.set("footera-cloud-owner","existing-a");
+ t.store.set("gerliesFutV9",JSON.stringify({...s,coins:7000}));
+ t.store.set("footera-cloud-sync-point-v1",JSON.stringify({userId:"existing-a",saveId:"club-a",revision:1,hash:"old"}));
+ t.setCloud({save_data:s,revision:2,saved_at:"2026-10-11"});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
 });

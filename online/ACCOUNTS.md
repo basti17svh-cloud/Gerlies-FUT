@@ -50,3 +50,9 @@ Der Spielstand bleibt beim Gast lokal und ist ohne Verknüpfung mit einem dauerh
 - Betreiber-Konfiguration: unter **Supabase → Authentication → URL Configuration** die echte Footera-GitHub-Pages-Adresse `https://basti17svh-cloud.github.io/Gerlies-FUT/` als Site URL und Redirect URL erlauben. TinyURL ist keine Auth-Callback-Adresse.
 - Unter **Authentication → Providers → Email** E-Mail-Anmeldung und **Confirm email** einschalten; für öffentliche Registrierung eigenen SMTP-Anbieter konfigurieren und Zustellung prüfen.
 - Cloud-Sicherung bleibt ein **expliziter** Vorgang zum Schutz vor ungewolltem Überschreiben. Eine Browser-Registrierung alleine aktiviert weder Google OAuth noch SMTP in der Supabase-Konsole.
+
+## Automatische Konto-/Vereinsverbindung (V21.116)
+
+Nach bestätigter E-Mail-Verifizierung übernimmt Footera den neu gegründeten Verein automatisch in dasselbe Supabase-Konto und legt die erste Cloud-Sicherung ohne zusätzliche Schaltfläche an. Bereits angemeldete Gäste mit erhaltener User-ID bleiben erhalten. Der Hintergrundabgleich läuft alle 20 Sekunden und verwendet eine Cloud-Revisionsprüfung gegen gleichzeitige Änderungen; unveränderte Saves erzeugen keine zusätzlichen Writes. Ein neues Gerät ohne lokale Daten stellt die Cloud-Sicherung des angemeldeten Kontos automatisch wieder her.
+
+Sicherheitsgrenzen: Fremde lokale Vereine werden nie automatisch übernommen, unterschiedliche Club-IDs oder voneinander abweichende bisherige Spielstände niemals still überschrieben. Unbekannte ältere Gastkonten behalten die separate Legacy-Übernahme als Ausnahme. Für In-App-Käufe und einen autoritativen Transfermarkt ist diese clientseitige Cloud-Sicherung noch keine belastbare Wallet.
