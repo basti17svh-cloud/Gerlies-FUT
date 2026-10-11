@@ -126,6 +126,13 @@
      const r=await c.auth.linkIdentity({provider:"google",options});
      if(r.error)throw Error(safeMessage(r.error)+". Google-Provider und manuelle Identitäts-Verknüpfung in Supabase aktivieren.");
      return;
+   }else if(u&&kind!=="switch"){
+     if((u.identities||[]).some(identity=>identity.provider==="google")){
+       msg("Google ist bereits mit diesem Footera-Konto verbunden.");return;
+     }
+     const linked=await c.auth.linkIdentity({provider:"google",options});
+     if(linked.error)throw Error(safeMessage(linked.error)+". Bitte Google und manuelle Identitäts-Verknüpfung in Supabase konfigurieren.");
+     return;
    }
    const r=await c.auth.signInWithOAuth({provider:"google",options});
    if(r.error)throw r.error;
