@@ -18,7 +18,7 @@
  function isPermanent(u){return !!u&&!u.is_anonymous;}
  function checkedEmail(value){
    const email=String(value||"").trim().toLowerCase();
-   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>254)throw Error("Bitte eine gültige E-Mail-Adresse eingeben.");
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)throw Error("Bitte eine gültige E-Mail-Adresse eingeben.");
    return email;
  }
  function pendingEmail(){
