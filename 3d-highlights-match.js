@@ -57,23 +57,46 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
 }
 function match3DPresentationMeta(event,current){
- const rows=typeof matchActorRows==='function'?(matchActorRows(event.team)||[]):[],row=event.team==='home'
-  ?(event.playerId?rows.find(r=>String(r.uid)===String(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase())
-  :(Number(event.playerId)>=0?rows.find(r=>Number(r.index)===Number(event.playerId)):null)||rows.find(r=>String(r.name||'').toLowerCase()===String(event.playerName||'').toLowerCase());
+ // The 3D ball still travels in the attacking team's direction. Only the
+ // HUD actor, card, club label and crest belong to the team that won the ball.
+ const ballWon=event.type==='ball_won';
+ const displaySide=ballWon?(event.team==='home'?'away':'home'):event.team;
+ const uid=ballWon?event.defenderUid:event.playerId;
+ const index=ballWon?event.defenderSourceIndex:event.playerId;
+ const actorName=ballWon?event.defenderName:event.playerName;
+ const rows=typeof matchActorRows==='function'?(matchActorRows(displaySide)||[]):[];
+ const row=(displaySide==='home'
+  ?(uid?rows.find(r=>String(r.uid)===String(uid)):null)
+  :(Number.isInteger(Number(index))&&Number(index)>=0?rows.find(r=>r.index===Number(index)):null))
+  ||rows.find(r=>String(r.name||'').toLowerCase()===String(actorName||'').toLowerCase());
  let playerCardHTML='';
- if(event.type==='goal'&&row?.base&&typeof cardHTML==='function'){
-  const homeItem=event.team==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
-  const awayCandidate=event.team==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
+ if((event.type==='goal'||ballWon)&&row?.base&&typeof cardHTML==='function'){
+  const homeItem=displaySide==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
+  const awayCandidate=displaySide==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
   const item=homeItem||awayCandidate||null;
-  try{const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||''}catch(_){}
+  try{
+   const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;
+   playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||'';
+  }catch(_){}
  }
- const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam'),awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
- const teamName=event.team==='away'?awayName:homeName;
- const kickoffIdentity=current?.kickoffTeamIdentity?.[event.team]||null;
- const liveIdentity=event.team==='away'?(current?.opponentProfile?.clubIdentity||null):(typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null);
+ const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam');
+ const awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
+ const teamName=displaySide==='away'?awayName:homeName;
+ const kickoffIdentity=current?.kickoffTeamIdentity?.[displaySide]||null;
+ const liveIdentity=displaySide==='away'?(current?.opponentProfile?.clubIdentity||null):(typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null);
  const teamIdentity=kickoffIdentity||liveIdentity;
- let teamCrestHTML='';if(teamIdentity&&typeof crestHTML==='function'){try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}}
- return{playerCardHTML,teamName,teamCrestHTML}
+ let teamCrestHTML='';
+ if(teamIdentity&&typeof crestHTML==='function'){
+  try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}
+ }
+ // Generated AI opponents often do not own an editable crest. Never use the
+ // user's badge as a substitute for an opponent's missing identity.
+ if(!teamCrestHTML&&displaySide==='away'){
+  const initials=teamName.trim().split(/\s+/).filter(Boolean).map(word=>word[0]).join('').slice(0,3).toUpperCase()||'G';
+  const safe=typeof esc==='function'?esc:txt=>String(txt).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  teamCrestHTML='<span class="fh3d-opponent-crest" role="img" aria-label="'+safe(teamName)+'">'+safe(initials)+'</span>';
+ }
+ return{playerCardHTML,teamName,teamCrestHTML};
 }
 // Resolve styles from copies of actor data; never consume simulation RNG.
 function match3DActorStyles(side,{uid='',index=-1,name=''}={}){
