@@ -150,6 +150,23 @@ if(require.main===module)(async()=>{
   await page.evaluate(()=>{FooteraHighlights.Queue=OriginalHighlightQueue});
   // Boundaries cannot overtake a queued event.
   for(const minute of [45,90]){await fixture(page);await page.evaluate(m=>{match.minute=m;match.halftimeLogged=m>=90},minute);await force(page,'goal');check(`${minute}: phase boundary waits for highlight`,await page.evaluate(()=>resolveEndOfPhase()&&!match.finished&&!match.halftimeActive));await page.waitForSelector('.fh3d canvas');await page.getByRole('button',{name:'Überspringen',exact:true}).click();await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>{stopMatchTimer();resolveEndOfPhase()});check(`${minute}: correct phase resumes`,await page.evaluate(m=>m===45?match.halftimeActive:match.finished,minute));}
+  // Real simulator-backed interception: no extra shot or goal, defender HUD is correct.
+  await fixture(page);
+  const defense=await page.evaluate(()=>{
+   const before={home:match.home,away:match.away,shots:match.shotEvents.length};
+   const actor=matchActorRows('home').find(x=>x.index===9);
+   const action=recordMatchDefense('home','interception',0,2);
+   const queued=queueMatchDefensive3D(action,'home',actor);
+   return {...before,queued,count:match.defensiveEvents.length};
+  });
+  check('real interception is eligible for important highlights',defense.queued&&defense.count===1);
+  await page.waitForSelector('.fh3d canvas');
+  await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
+  check('defensive overlay says actual interception',await page.locator('.fh3d-headline').textContent()==='ABGEFANGEN');
+  await page.locator('.fh3d-skip').click();
+  await page.waitForSelector('.fh3d',{state:'detached'});
+  check('interception creates no goals or shots',await page.evaluate(()=>match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
+  await page.evaluate(()=>stopMatchTimer());
   check('no uncaught JavaScript errors during mobile matches',errors.length===0);
   fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({passed:results.length,results,errors},null,2));
  }catch(error){if(activePage)await activePage.screenshot({path:path.join(output,'failure.png')}).catch(()=>{});throw error}finally{await browser.close();server.close()}
