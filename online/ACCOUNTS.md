@@ -35,3 +35,9 @@ Die Browser-Konfiguration in `online-config.js` enthält ausschließlich öffent
 7. Den Echtgeld-Shop erst nach separater serverautoritativer Wallet-/Transaktionsbuchhaltung und Stripe-Webhooks aktivieren.
 
 Die Migration `online/footera-accounts-v21.109.sql` wurde im verbundenen Supabase-Projekt ausgeführt. Google OAuth muss noch im jeweiligen Betreiberkonto aktiviert werden.
+
+## V21.113 – Spieler-Einstieg mit Gastmodus
+
+Neue Installationen ohne lokalen Footera-Spielstand erhalten beim ersten Start die Kontoauswahl mit Google, E-Mail und „Als Gast spielen“. Bereits angelegte Vereine werden **nicht** mit einem erzwungenen Startdialog unterbrochen. Die Gastoption verwendet eine bestehende anonyme Supabase-ID oder legt eine an, wenn noch keine Sitzung existiert; sie ersetzt niemals einen dauerhaften Account. Die Kontooption bleibt später im Spiel erreichbar.
+
+Der Spielstand bleibt beim Gast lokal und ist ohne Verknüpfung mit einem dauerhaften Account nicht geräteübergreifend wiederherstellbar. Die Cloud-Sicherung wird weiterhin ausdrücklich ausgelöst und kann nur von dauerhaft angemeldeten Eigentümern genutzt werden. Die produktive Einrichtung des Google-OAuth-Providers und des Mailversands bleibt eine separate Betreibereinstellung. Wettbewerbs- und Markt-Zugriffsbeschränkungen für Gastkonten sind damit **noch nicht** umgesetzt; dazu braucht es serverseitige Durchsetzung, um Umgehungen zu verhindern.

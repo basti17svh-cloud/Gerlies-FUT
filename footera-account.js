@@ -4,7 +4,7 @@
 (function(root){
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
- const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore";
+ const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1";
  const maxLength=12*1024*1024;
  let client=null,dialog=null,notice=null,busy=false,recovery=false;
  const $=id=>document.getElementById(id);
@@ -16,6 +16,25 @@
    target.textContent=text;target.dataset.error=isError?"1":"0";
  }
  function isPermanent(u){return !!u&&!u.is_anonymous;}
+ // Existing clubs are never interrupted by the introductory choice.
+ function shouldWelcome(){
+   return !root.localStorage.getItem(WELCOME)
+     && !root.localStorage.getItem(KEY)
+     && !root.localStorage.getItem("uc27v7");
+ }
+ async function continueAsGuest(){
+   const c=await getClient();
+   let u=await user();
+   if(!u){
+     const result=await c.auth.signInAnonymously();
+     if(result.error)throw result.error;
+     u=result.data?.user||result.data?.session?.user;
+     if(!u?.is_anonymous)throw Error("Gastkonto konnte nicht erstellt werden.");
+   }
+   // A permanent account must never be replaced with a new guest identity.
+   root.localStorage.setItem(WELCOME,"1");
+   hide();
+ }
  async function getClient(){
    if(!client){
      client=await root.FooteraOnline.authClient();
@@ -152,6 +171,7 @@
      if(r.error)throw r.error;
      msg("Registrierung gestartet. Bitte den Bestätigungslink im E-Mail-Postfach öffnen.");
    }
+   root.localStorage.setItem(WELCOME,"1");
  }
  async function emailLogin(email,password){
    const c=await getClient(),u=await user();
@@ -201,6 +221,8 @@
    if(!dialog)return;
    let u=null;try{u=await user()}catch(e){msg(safeMessage(e),true);return}
    const logged=isPermanent(u),guest=!!u?.is_anonymous,owner=root.localStorage.getItem(OWNER);
+   $("footeraAccountWelcome").hidden=!shouldWelcome();
+   $("footeraGuest").hidden=logged;
    $("footeraAccountStatus").textContent=logged?"Konto: "+(u.email||"Google")+" · dauerhaft":guest?"Gastkonto · nicht wiederherstellbar":"Noch nicht angemeldet";
    $("footeraAccountIdentity").textContent=logged?(owner===u.id?"Lokaler Verein mit diesem Konto verbunden.":"Lokaler Verein noch nicht mit diesem Konto verbunden."):"Google verknüpfen bewahrt deine bisherige Online-ID.";
    $("footeraGoogle").textContent=guest?"Mit Google verknüpfen":"Mit Google anmelden";
@@ -242,12 +264,14 @@
      '<header><div><small>BUILD YOUR ERA</small><h2>Footera-Konto</h2></div><button type="button" id="footeraAccountClose" aria-label="Schließen">✕</button></header>'+
      '<p id="footeraAccountStatus" class="footera-account-status">Konto wird geprüft …</p>'+
      '<p id="footeraAccountIdentity"></p>'+
+     '<div class="footera-account-welcome" id="footeraAccountWelcome"><strong>Dein Team. Deine Ära.</strong><p>Erstelle ein Konto oder probiere Footera als Gast. Deinen Verein kannst du später mit einem Konto sichern.</p></div>'+
      '<button type="button" class="footera-account-google" id="footeraGoogle"><span>G</span> Mit Google fortfahren</button>'+
      '<button type="button" id="footeraSwitchGoogle" class="footera-account-link" hidden>Stattdessen bei bestehendem Google-Konto anmelden</button>'+
      '<div class="footera-account-separator">oder mit E-Mail</div>'+
      '<form id="footeraAccountForm"><label>E-Mail<input type="email" id="footeraAccountEmail" placeholder="name@beispiel.de" autocomplete="email" required></label>'+
      '<label>Passwort<input id="footeraAccountPassword" type="password" placeholder="Mindestens 10 Zeichen" autocomplete="current-password"></label>'+
      '<div class="footera-account-actions"><button type="submit" id="footeraEmailLogin">Anmelden</button><button type="button" id="footeraEmailRegister">Registrieren</button><button type="button" id="footeraSetPassword">Passwort vergessen</button></div></form>'+
+     '<button type="button" id="footeraGuest" class="footera-account-guest">Als Gast spielen · ohne Registrierung</button>'+
      '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
      '<p id="footeraAccountMessage" role="status" aria-live="polite"></p>'+
      '<button type="button" id="footeraSignOut" class="footera-account-link" hidden>Abmelden</button>'+
@@ -257,6 +281,7 @@
    $("footeraAccountClose").addEventListener("click",hide);
    dialog.addEventListener("click",e=>{if(e.target===dialog)hide()});
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dialog.hidden)hide()});
+   $("footeraGuest").addEventListener("click",()=>run(continueAsGuest));
    $("footeraGoogle").addEventListener("click",()=>run(()=>google("link")));
    $("footeraSwitchGoogle").addEventListener("click",()=>run(()=>google("switch")));
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
@@ -266,9 +291,9 @@
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
    $("footeraSignOut").addEventListener("click",()=>run(signOut));
-   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||root.location.search.includes("error="))show();
+   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||root.location.search.includes("error=")||shouldWelcome())show();
    getClient().then(()=>render()).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,continueAsGuest,shouldWelcome};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);

@@ -13,7 +13,8 @@ function runtime(mode="guest"){
   linkIdentity:async options=>{calls.push(["link",options]);return{error:null}},
   signInWithOAuth:async options=>{calls.push(["oauth",options]);return{error:null}},
   updateUser:async args=>{calls.push(["update",args]);return{error:null}},
-  signUp:async args=>{calls.push(["signup",args]);return{error:null}}
+  signUp:async args=>{calls.push(["signup",args]);return{error:null}},
+  signInAnonymously:async()=>{calls.push(["guest"]);return{data:{user:{id:"guest-b",is_anonymous:true}},error:null}}
  };
  const client={auth},document={readyState:"loading",addEventListener(){},getElementById(){return null}},win={
   document,FooteraOnline:{available:true,authClient:async()=>client},
@@ -71,4 +72,29 @@ test("cloud save schema enforces ownership and revision checks",()=>{
  assert.match(sql,/where public\.footera_cloud_saves\.revision=p_base_revision/);
  assert.match(sql,/coalesce\(\(auth\.jwt\(\)->>'is_anonymous'\)::boolean,true\)/);
  assert.match(sql,/revoke all on table public\.footera_cloud_saves from public, anon, authenticated/);
+});
+
+test("new visitors see account choice without overwriting a club",()=>{
+ const a=runtime("fresh");
+ assert.equal(a.win.FooteraAccount.shouldWelcome(),true);
+ a.store.set("gerliesFutV9","existing-game-save");
+ assert.equal(a.win.FooteraAccount.shouldWelcome(),false);
+ assert.equal(a.store.get("gerliesFutV9"),"existing-game-save");
+});
+test("guest continues using existing anonymous ID without a duplicate account",async()=>{
+ const a=runtime("guest");
+ await a.win.FooteraAccount.continueAsGuest();
+ assert.equal(a.calls.length,0);
+ assert.equal(a.store.get("footera-account-welcome-v1"),"1");
+});
+test("new visitor can create an anonymous account and continue",async()=>{
+ const a=runtime("fresh");
+ await a.win.FooteraAccount.continueAsGuest();
+ assert.deepEqual(a.calls.map(x=>x[0]),["guest"]);
+ assert.equal(a.win.FooteraAccount.shouldWelcome(),false);
+});
+test("permanent session cannot be downgraded to a guest",async()=>{
+ const a=runtime("registered");
+ await a.win.FooteraAccount.continueAsGuest();
+ assert.equal(a.calls.length,0);
 });

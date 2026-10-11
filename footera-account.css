@@ -24,3 +24,10 @@
 #footeraAccountMessage{min-height:19px;color:#d8ff8d;font-weight:700}#footeraAccountMessage[data-error="1"]{color:#ffaf98}
 .footera-account-note{margin-top:15px!important;font-size:10px!important;color:#9dab9c!important}
 @media(max-width:480px){.footera-account-entry{right:8px;bottom:75px;padding:9px 12px}.footera-account-modal{padding:15px}.footera-account-overlay{padding:8px}}
+
+/* V21.113: first-visit account choice; no takeover of existing local clubs. */
+.footera-account-welcome{padding:12px 13px;margin:12px 0;border:1px solid #405a43;border-radius:11px;background:linear-gradient(130deg,#223b2b,#17261d)}
+.footera-account-welcome strong{display:block;color:#e9ff9d;font-size:15px}
+.footera-account-welcome p{margin-bottom:0!important}
+.footera-account-guest{display:block;width:100%;margin:15px 0 4px;padding:13px 10px;background:#243b2a;color:#ebffe7;border:1px solid #75976c;border-radius:10px;font-size:13px;font-weight:800;min-height:46px}
+.footera-account-guest:disabled{opacity:.5}
