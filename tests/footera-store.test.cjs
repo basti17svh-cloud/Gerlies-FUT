@@ -64,7 +64,7 @@ test('bronze cannot be purchased with points; other currencies deduct their actu
  assert.equal(app.ctx.state.points,100);
  assert.equal(app.ctx.opened,undefined);
  buy(app,'bronze','coins');
- assert.equal(app.ctx.state.coins,2250);
+ assert.equal(app.ctx.state.coins,2550);
  assert.equal(app.ctx.opened.id,'bronze');
  assert.equal(app.ctx.opened.items.length,5);
  buy(app,'silver','points');

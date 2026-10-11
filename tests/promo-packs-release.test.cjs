@@ -78,7 +78,7 @@ test('Mega Pack keeps all 12 players and adds two guaranteed Chemie-Boosts separ
 
 test('Coins and Points share the ten-purchase limit on standard promos; rejected purchases charge nothing',()=>{
  const a=app('2026-10-05T17:00:00Z');
- for(const [id,coins,points] of [['ultimate',125000,2500],['jumbo-rare',100000,2000],['rare-mixed',20000,300]]){
+ for(const [id,coins,points] of [['ultimate',75000,2500],['jumbo-rare',60000,2000],['rare-mixed',12000,300]]){
   const before={...a.ctx.state};
   for(let n=0;n<10;n++)a.buy(id,n%2?'points':'coins');
   assert.equal(a.ctx.state.coins,before.coins-5*coins);assert.equal(a.ctx.state.points,before.points-5*points);
@@ -91,7 +91,7 @@ test('Coins and Points share the ten-purchase limit on standard promos; rejected
 test('Mega Pack has one shared twenty-purchase limit across Coins and Points',()=>{
  const a=app('2026-10-05T17:00:00Z'),beforeCoins=a.ctx.state.coins,beforePoints=a.ctx.state.points;
  for(let n=0;n<20;n++)a.buy('mega',n%2?'points':'coins');
- assert.equal(a.ctx.state.coins,beforeCoins-10*65000);assert.equal(a.ctx.state.points,beforePoints-10*1000);
+ assert.equal(a.ctx.state.coins,beforeCoins-10*39000);assert.equal(a.ctx.state.points,beforePoints-10*1000);
  assert.equal(a.ctx.promoUsage(a.run('PACKS.find(p=>p.id==="mega")')).remaining,0);
  const afterCoins=a.ctx.state.coins,afterPoints=a.ctx.state.points;a.buy('mega');a.buy('mega','points');
  assert.equal(a.ctx.state.coins,afterCoins);assert.equal(a.ctx.state.points,afterPoints);
