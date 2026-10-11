@@ -150,22 +150,57 @@ if(require.main===module)(async()=>{
   await page.evaluate(()=>{FooteraHighlights.Queue=OriginalHighlightQueue});
   // Boundaries cannot overtake a queued event.
   for(const minute of [45,90]){await fixture(page);await page.evaluate(m=>{match.minute=m;match.halftimeLogged=m>=90},minute);await force(page,'goal');check(`${minute}: phase boundary waits for highlight`,await page.evaluate(()=>resolveEndOfPhase()&&!match.finished&&!match.halftimeActive));await page.waitForSelector('.fh3d canvas');await page.getByRole('button',{name:'Überspringen',exact:true}).click();await page.waitForSelector('.fh3d',{state:'detached'});await page.evaluate(()=>{stopMatchTimer();resolveEndOfPhase()});check(`${minute}: correct phase resumes`,await page.evaluate(m=>m===45?match.halftimeActive:match.finished,minute));}
-  // Real simulator-backed interception: no extra shot or goal, defender HUD is correct.
+  // Defender card layout must match the goal overlay at actual mobile widths.
+  for(const width of [360,390,412]){
+   await page.setViewportSize({width,height:844});
+   await fixture(page);
+   const defense=await page.evaluate(()=>{
+    match.opponentProfile.squad[2]={...match.opponentProfile.squad[2],id:'away-laimer',name:'K. Laimer',fullName:'Konrad Laimer'};
+    const attacker=matchActorRows('home').find(x=>x.index===9);
+    const action=recordMatchDefense('home','interception',0,2);
+    const queued=queueMatchDefensive3D(action,'home',attacker);
+    return{queued,count:match.defensiveEvents.length,defender:action?.name};
+   });
+   check(width+': opponent interception uses a real event',defense.queued&&defense.count===1&&defense.defender==='K. Laimer');
+   await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
+   const hud=await page.locator('.fh3d-hud').evaluate(h=>{
+    const bound=e=>e?.getBoundingClientRect(),a=bound(h),card=bound(h.querySelector('.fh3d-player-card')),copy=bound(h.querySelector('.fh3d-copy')),
+     meta=bound(h.querySelector('.fh3d-goal-meta')),minute=bound(h.querySelector('.fh3d-minute')),crest=bound(h.querySelector('.fh3d-team-crest'));
+    const name=h.querySelector('.fh3d-name'),headline=h.querySelector('.fh3d-headline'),c=h.querySelector('.fh3d-copy');
+    const range=document.createRange();range.selectNodeContents(name);const lineCount=range.getClientRects().length;
+    const headerRange=document.createRange();headerRange.selectNodeContents(headline);
+    const inside=r=>!!r&&r.left>=a.left-1&&r.right<=a.right+1&&r.top>=a.top-1&&r.bottom<=a.bottom+1;
+    return{headline:headline.textContent,name:name.textContent,lines:lineCount,headerLines:headerRange.getClientRects().length,
+     crest:h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent?.trim()||'',
+     card:!!h.querySelector('.fh3d-player-card .card-shell'),
+     minuteAboveCrest:minute.bottom<=crest.top+1,metaWidth:meta.width,
+     contained:[card,copy,meta,minute,crest].every(inside),noOverlap:card.right<=copy.left+1&&copy.right<=meta.left+1,
+     copyFits:c.scrollWidth<=c.clientWidth+1};
+   });
+   console.log('DEFENSE HUD',width,JSON.stringify(hud));
+   check(width+': defender card, name and AWAY crest',hud.headline==='ABGEFANGEN'&&hud.name==='K. Laimer'&&hud.card&&hud.crest==='AWAY');
+   check(width+': one-line name and no clipped columns',hud.contained&&hud.noOverlap&&hud.copyFits&&hud.lines===1&&hud.headerLines===1&&hud.minuteAboveCrest&&hud.metaWidth<=54);
+   await page.screenshot({path:path.join(output,'interception-'+width+'.png')});
+   await page.locator('.fh3d-skip').click();
+   await page.waitForSelector('.fh3d',{state:'detached'});
+   check(width+': no fabricated goal or shot',await page.evaluate(()=>match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
+   await page.evaluate(()=>stopMatchTimer());
+  }
+  // Generated opponents without custom badges get their own initials.
   await fixture(page);
-  const defense=await page.evaluate(()=>{
-   const before={home:match.home,away:match.away,shots:match.shotEvents.length};
-   const actor=matchActorRows('home').find(x=>x.index===9);
+  await page.evaluate(()=>{
+   match.opponentProfile.clubIdentity=null;
+   match.kickoffTeamIdentity.away=null;
+   match.opponentProfile.name='SV Monte Claro';match.opponentName='SV Monte Claro';
    const action=recordMatchDefense('home','interception',0,2);
-   const queued=queueMatchDefensive3D(action,'home',actor);
-   return {...before,queued,count:match.defensiveEvents.length};
+   const attacker=matchActorRows('home').find(x=>x.index===9);
+   queueMatchDefensive3D(action,'home',attacker);
   });
-  check('real interception is eligible for important highlights',defense.queued&&defense.count===1);
-  await page.waitForSelector('.fh3d canvas');
   await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
-  check('defensive overlay says actual interception',await page.locator('.fh3d-headline').textContent()==='ABGEFANGEN');
+  check('generated opponent badge is distinct from FC Gerlies',await page.locator('.fh3d-team-crest').evaluate(c=>
+   c.querySelector('.fh3d-opponent-crest')?.textContent==='SMC'&&!c.querySelector('.club-crest')));
   await page.locator('.fh3d-skip').click();
   await page.waitForSelector('.fh3d',{state:'detached'});
-  check('interception creates no goals or shots',await page.evaluate(()=>match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
   await page.evaluate(()=>stopMatchTimer());
   check('no uncaught JavaScript errors during mobile matches',errors.length===0);
   fs.writeFileSync(path.join(output,'results.json'),JSON.stringify({passed:results.length,results,errors},null,2));
