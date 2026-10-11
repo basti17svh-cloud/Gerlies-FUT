@@ -1,12 +1,12 @@
 /* Footera highlights: presentation-only queue. No access to the match or its RNG. */
 (function(root){
  'use strict';
- const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post']);
+ const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won']);
  const MODES=Object.freeze({off:'Aus',goals:'Nur Tore',important:'Wichtige Highlights',all:'Alle Highlights'});
  const KEY='footera-3d-highlights-v1';
  let mode='important',loader;
  try{const saved=root.localStorage?.getItem(KEY);if(saved in MODES)mode=saved}catch(_){}
- function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')}
+ function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')&&(type!=='ball_won'||value==='important'||value==='all')}
  function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}if(mode!=='off')prewarm();return mode}
  // Period is captured at enqueue time from the simulator's existing lifecycle flags.
  // In particular 45+/90+/105+ belong to the current period until its break is logged.
