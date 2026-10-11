@@ -42,9 +42,10 @@ test('V21.86: attacking choreography and interceptions are stateless and indepen
   assert.ok(after.every(Number.isFinite));
  }
 });
-test('V21.89: no obsolete independent ball-won highlight type',()=>{
+test('V21.107: actual ball-won highlights require an eligible display mode',()=>{
  const H=require('../3d-highlights.js');
- assert.equal(H.accepts('ball_won'),false);
+ assert.equal(H.accepts('ball_won','off'),false);
+ assert.equal(H.accepts('ball_won','important'),true);
 });
 
 test('V21.86: all authored scene PlayStyles match the actual Footera registry',async()=>{
