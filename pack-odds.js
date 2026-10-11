@@ -55,7 +55,8 @@
    ranges.set(key,pool);return pool
   });
   for(let i=0;i<pools.length;i++)if(!pools[i].ids.length)return{available:false,reason:"Mindestens eine Kartenkategorie ist nicht verfügbar."};
-  const used=new Uint32Array(all.length),rng=rngFromSeed(seedFor(pack,all,icons)),hit=Object.fromEntries(TARGETS.map(v=>[v,0]));
+  const groups=new Map(),groupOf=all.map(p=>{const id=String(p.id);if(!groups.has(id))groups.set(id,groups.size);return groups.get(id)});
+  const used=new Uint32Array(groups.size),rng=rngFromSeed(seedFor(pack,all,icons)),hit=Object.fromEntries(TARGETS.map(v=>[v,0]));
   let valid=0,events=0,totws=0,anySpecial=0;
   const iconChance=icons.length?Math.max(0,Math.min(1,Number(pack.iconChance)||0)):0;
   for(let trial=1;trial<=trials;trial++){
@@ -66,11 +67,11 @@
      let r=rng()*pool.total,lo=0,hi=pool.prefix.length-1;
      while(lo<hi){const mid=(lo+hi)>>1;if(r<=pool.prefix[mid])hi=mid;else lo=mid+1}
      const candidate=pool.ids[lo];
-     if(used[candidate]!==trial){index=candidate;break}
+     if(used[groupOf[candidate]]!==trial){index=candidate;break}
     }
-    if(index<0)index=pool.ids.find(i=>used[i]!==trial)??-1;
+    if(index<0)index=pool.ids.find(i=>used[groupOf[i]]!==trial)??-1;
     if(index<0){ok=false;break}
-    used[index]=trial;
+    used[groupOf[index]]=trial;
     indices.push(index);rating.push(meta[index].rating);kind.push(meta[index].kind)
    }
    if(!ok)continue;
@@ -95,7 +96,7 @@
   const minimum=Math.max(Number(pack.guarantee)||0,...specs.map(s=>s.min));
   const odds=(count,possible=true,guaranteed=false)=>({rate:guaranteed?1:!possible?0:count/valid,guaranteed,possible,hits:count});
   const rows=TARGETS.map(threshold=>({threshold,...odds(hit[threshold],maxPossible>=threshold,minimum>=threshold)}));
-  const anyKind=k=>meta.some(m=>m.kind===k);
+  const anyKind=k=>Array.from(eligible).some(index=>meta[index].kind===k);
   return{available:true,trials:valid,requested:trials,rows,icon:odds(0,iconChance>0,false),
    iconExact:iconChance,events:odds(events,anyKind("event")),totw:odds(totws,anyKind("totw")),
    special:odds(anySpecial,iconChance>0||anyKind("event")||anyKind("totw")),
