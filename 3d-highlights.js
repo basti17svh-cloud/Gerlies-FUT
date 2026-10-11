@@ -256,7 +256,7 @@
      style==='wing'?['wing','cutback','cross','lowcross','overlap','nearpost','farpost'].includes(family):
      style==='press'?['press','through','dribble'].includes(family):
      style==='block'?['counter','through','duel'].includes(family):false;
-    if(matches)w*=1.85;
+    if(matches)w*=3.05;else w*=.90;
    }
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
