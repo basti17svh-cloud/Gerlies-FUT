@@ -41,3 +41,12 @@ Die Migration `online/footera-accounts-v21.109.sql` wurde im verbundenen Supabas
 Neue Installationen ohne lokalen Footera-Spielstand erhalten beim ersten Start die Kontoauswahl mit Google, E-Mail und „Als Gast spielen“. Bereits angelegte Vereine werden **nicht** mit einem erzwungenen Startdialog unterbrochen. Die Gastoption verwendet eine bestehende anonyme Supabase-ID oder legt eine an, wenn noch keine Sitzung existiert; sie ersetzt niemals einen dauerhaften Account. Die Kontooption bleibt später im Spiel erreichbar.
 
 Der Spielstand bleibt beim Gast lokal und ist ohne Verknüpfung mit einem dauerhaften Account nicht geräteübergreifend wiederherstellbar. Die Cloud-Sicherung wird weiterhin ausdrücklich ausgelöst und kann nur von dauerhaft angemeldeten Eigentümern genutzt werden. Die produktive Einrichtung des Google-OAuth-Providers und des Mailversands bleibt eine separate Betreibereinstellung. Wettbewerbs- und Markt-Zugriffsbeschränkungen für Gastkonten sind damit **noch nicht** umgesetzt; dazu braucht es serverseitige Durchsetzung, um Umgehungen zu verhindern.
+
+## V21.115 – bestätigte E-Mail-Konten
+
+- Bestehender Gast: **Konto → E-Mail mit Gastkonto verknüpfen** führt über `auth.updateUser({email},{emailRedirectTo: Footera})` zur Bestätigung. Erst nach verifizierter E-Mail ein Passwort festlegen. Die Supabase User-ID bleibt erhalten.
+- Neues Konto ohne Gast: E-Mail und mindestens 10-stelliges Passwort eingeben, bestätigen, dann anmelden.
+- Mit **Bestätigungs-E-Mail erneut senden** kann der Registrierungs- bzw. E-Mail-Änderungs-Link erneut angefordert werden. Auf dem Gerät wird kein Passwort gespeichert.
+- Betreiber-Konfiguration: unter **Supabase → Authentication → URL Configuration** die echte Footera-GitHub-Pages-Adresse `https://basti17svh-cloud.github.io/Gerlies-FUT/` als Site URL und Redirect URL erlauben. TinyURL ist keine Auth-Callback-Adresse.
+- Unter **Authentication → Providers → Email** E-Mail-Anmeldung und **Confirm email** einschalten; für öffentliche Registrierung eigenen SMTP-Anbieter konfigurieren und Zustellung prüfen.
+- Cloud-Sicherung bleibt ein **expliziter** Vorgang zum Schutz vor ungewolltem Überschreiben. Eine Browser-Registrierung alleine aktiviert weder Google OAuth noch SMTP in der Supabase-Konsole.

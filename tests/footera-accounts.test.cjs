@@ -12,9 +12,10 @@ function runtime(mode="guest"){
   getUser:async()=>({data:{user:who},error:who?null:{name:"AuthSessionMissingError"}}),
   linkIdentity:async options=>{calls.push(["link",options]);return{error:null}},
   signInWithOAuth:async options=>{calls.push(["oauth",options]);return{error:null}},
-  updateUser:async args=>{calls.push(["update",args]);return{error:null}},
+  updateUser:async (args,options)=>{calls.push(["update",args,options]);return{error:null}},
   signUp:async args=>{calls.push(["signup",args]);return{error:null}},
-  signInAnonymously:async()=>{calls.push(["guest"]);return{data:{user:{id:"guest-b",is_anonymous:true}},error:null}}
+  signInAnonymously:async()=>{calls.push(["guest"]);return{data:{user:{id:"guest-b",is_anonymous:true}},error:null}},
+  resend:async args=>{calls.push(["resend",args]);return{error:null}}
  };
  const client={auth},document={readyState:"loading",addEventListener(){},getElementById(){return null}},win={
   document,FooteraOnline:{available:true,authClient:async()=>client},
@@ -97,4 +98,38 @@ test("permanent session cannot be downgraded to a guest",async()=>{
  const a=runtime("registered");
  await a.win.FooteraAccount.continueAsGuest();
  assert.equal(a.calls.length,0);
+});
+
+test("guest email upgrade points back to Footera and keeps the same owner",async()=>{
+ const a=runtime("guest");
+ await a.win.FooteraAccount.emailRegister(" BASTI@Example.org ","ignored");
+ assert.equal(a.calls[0][0],"update");
+ assert.equal(a.calls[0][1].email,"basti@example.org");
+ assert.equal(a.calls[0][2].emailRedirectTo,"https://example.test/Gerlies-FUT/");
+ assert.equal(a.store.get("footera-cloud-owner"),"guest-a");
+ assert.equal(JSON.parse(a.store.get("footera-pending-email-v1")).userId,"guest-a");
+});
+test("malformed guest email cannot claim the local game save",async()=>{
+ const a=runtime("guest");
+ await assert.rejects(a.win.FooteraAccount.emailRegister("bad-address",""),/gültige E-Mail-Adresse/);
+ assert.equal(a.calls.length,0);
+ assert.equal(a.store.get("footera-cloud-owner"),undefined);
+});
+test("signup stores pending confirmation and redirect",async()=>{
+ const a=runtime("fresh");
+ await a.win.FooteraAccount.emailRegister("NEW@Example.org","verystrongpassword");
+ assert.equal(a.calls[0][0],"signup");
+ assert.equal(a.calls[0][1].email,"new@example.org");
+ assert.equal(a.calls[0][1].options.emailRedirectTo,"https://example.test/Gerlies-FUT/");
+ assert.equal(JSON.parse(a.store.get("footera-pending-email-v1")).userId,null);
+});
+test("resend has distinct confirmation types for fresh and upgraded accounts",async()=>{
+ const fresh=runtime("fresh");
+ await fresh.win.FooteraAccount.emailRegister("new@example.org","verystrongpassword");
+ await fresh.win.FooteraAccount.resendEmail();
+ assert.equal(fresh.calls.at(-1)[1].type,"signup");
+ const guest=runtime("guest");
+ await guest.win.FooteraAccount.emailRegister("guest@example.org","");
+ await guest.win.FooteraAccount.resendEmail();
+ assert.equal(guest.calls.at(-1)[1].type,"email_change");
 });

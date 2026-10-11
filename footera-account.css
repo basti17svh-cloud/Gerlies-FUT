@@ -31,3 +31,6 @@
 .footera-account-welcome p{margin-bottom:0!important}
 .footera-account-guest{display:block;width:100%;margin:15px 0 4px;padding:13px 10px;background:#243b2a;color:#ebffe7;border:1px solid #75976c;border-radius:10px;font-size:13px;font-weight:800;min-height:46px}
 .footera-account-guest:disabled{opacity:.5}
+
+.footera-email-pending{padding:12px 13px!important;border:1px solid #9ab76a;border-radius:10px;background:#2b3723;color:#ecffc5!important;font-size:12px!important;font-weight:650}
+#footeraResendEmail{color:#e9ffad;font-size:12px;margin:5px 0 10px}

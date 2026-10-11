@@ -4,7 +4,7 @@
 (function(root){
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
- const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1";
+ const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1";
  const maxLength=12*1024*1024;
  let client=null,dialog=null,notice=null,busy=false,recovery=false;
  const $=id=>document.getElementById(id);
@@ -16,6 +16,21 @@
    target.textContent=text;target.dataset.error=isError?"1":"0";
  }
  function isPermanent(u){return !!u&&!u.is_anonymous;}
+ function checkedEmail(value){
+   const email=String(value||"").trim().toLowerCase();
+   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>254)throw Error("Bitte eine gültige E-Mail-Adresse eingeben.");
+   return email;
+ }
+ function pendingEmail(){
+   try{const v=JSON.parse(root.localStorage.getItem(PENDING_EMAIL)||"null");
+     return v&&typeof v.email==="string"?v:null;
+   }catch(_){return null;}
+ }
+ function rememberPending(email,userId){
+   root.localStorage.setItem(PENDING_EMAIL,JSON.stringify({email,userId:userId||null}));
+ }
+ function clearPending(){root.localStorage.removeItem(PENDING_EMAIL);}
+
  // Existing clubs are never interrupted by the introductory choice.
  function shouldWelcome(){
    return !root.localStorage.getItem(WELCOME)
@@ -157,25 +172,42 @@
    if(r.error)throw r.error;
  }
  async function emailRegister(email,password){
-   const c=await getClient(),u=await user();
+   const c=await getClient(),u=await user(),address=checkedEmail(email);
    if(u?.is_anonymous){
+     // Upgrade the existing guest. Password is only allowed after email verification.
+     const r=await c.auth.updateUser({email:address},{emailRedirectTo:callbackURL()});
+     if(r.error)throw r.error;
      root.localStorage.setItem(OWNER,u.id);
-     const r=await c.auth.updateUser({email});
-     if(r.error)throw r.error;
-     msg("Bestätigungslink an "+email+" versendet. Nach der Bestätigung hier ein Passwort festlegen.");
+     rememberPending(address,u.id);
+     msg("Bestätigungslink an "+address+" verschickt. Öffne ihn auf diesem Gerät und lege danach ein Passwort fest.");
    }else if(u){
-     throw Error("Du bist bereits angemeldet. Nutze 'Passwort festlegen'.");
+     throw Error("Du bist bereits angemeldet. Nutze 'Passwort festlegen / ändern'.");
    }else{
-     if(password.length<10)throw Error("Mindestens 10 Zeichen als Passwort verwenden.");
-     const r=await c.auth.signUp({email,password,options:{emailRedirectTo:callbackURL()}});
+     if(String(password||"").length<10)throw Error("Mindestens 10 Zeichen als Passwort verwenden.");
+     const r=await c.auth.signUp({email:address,password,options:{emailRedirectTo:callbackURL()}});
      if(r.error)throw r.error;
-     msg("Registrierung gestartet. Bitte den Bestätigungslink im E-Mail-Postfach öffnen.");
+     rememberPending(address,null);
+     msg("Registrierung gestartet. Bestätige die E-Mail "+address+" und melde dich anschließend an.");
    }
    root.localStorage.setItem(WELCOME,"1");
+   await render();
+ }
+ async function resendEmail(){
+   const saved=pendingEmail();
+   if(!saved)throw Error("Es liegt keine offene E-Mail-Bestätigung vor.");
+   const c=await getClient(),u=await user();
+   if(saved.userId&&u?.id!==saved.userId)throw Error("Die Bestätigung gehört zu einem anderen Gastkonto.");
+   if(u&&!u.is_anonymous){clearPending();await render();return msg("E-Mail bereits bestätigt. Lege jetzt dein Passwort fest.");}
+   const params=saved.userId?{type:"email_change",email:saved.email}:{type:"signup",email:saved.email,options:{emailRedirectTo:callbackURL()}};
+   const r=await c.auth.resend(params);
+   if(r.error)throw r.error;
+   msg("Bestätigungslink erneut angefordert für "+saved.email+". Bitte auch im Spam-Ordner nachsehen.");
  }
  async function emailLogin(email,password){
    const c=await getClient(),u=await user();
    if(u?.is_anonymous&&!root.confirm("Mit einem BESTEHENDEN Footera-Konto anmelden?\n\nDeine bisherige Gast-Online-ID und Freundescodes werden nicht automatisch auf dieses Konto übertragen. Zum Behalten dieses Gastes bitte stattdessen 'Registrieren' wählen."))return;
+   checkedEmail(email);
+   if(!password)throw Error("Bitte das Passwort eingeben.");
    // Do not destroy a guest session on an invalid password.
    const cfg=root.FOOTERA_ONLINE_CONFIG;
    const sdk=root.supabase;
@@ -188,6 +220,8 @@
    if(u?.is_anonymous&&!existingOwner)root.localStorage.setItem(OWNER,"__restore_required__");
    const r=await c.auth.setSession({access_token:verified.data.session.access_token,refresh_token:verified.data.session.refresh_token});
    if(r.error)throw r.error;
+   root.localStorage.setItem(WELCOME,"1");
+   clearPending();
    root.location.reload();
  }
  async function password(email,pass){
@@ -196,7 +230,8 @@
      if(pass.length<10)throw Error("Mindestens 10 Zeichen als Passwort verwenden.");
      const r=await c.auth.updateUser({password:pass});
      if(r.error)throw r.error;
-     recovery=false;msg("Passwort gespeichert.");
+     recovery=false;clearPending();msg("Passwort gespeichert. Dein Konto kann jetzt wiederhergestellt werden. Sichere bitte deinen Verein in der Cloud.");
+     await render();
    }else{
      if(!email)throw Error("Bitte E-Mail-Adresse eintragen.");
      const r=await c.auth.resetPasswordForEmail(email,{redirectTo:callbackURL()});
@@ -221,6 +256,16 @@
    if(!dialog)return;
    let u=null;try{u=await user()}catch(e){msg(safeMessage(e),true);return}
    const logged=isPermanent(u),guest=!!u?.is_anonymous,owner=root.localStorage.getItem(OWNER);
+   const pending=pendingEmail();
+   const belongsToPending=!!pending&&(!pending.userId||pending.userId===u?.id);
+   $("footeraPendingEmail").hidden=!belongsToPending;
+   $("footeraResendEmail").hidden=!belongsToPending||logged;
+   if(belongsToPending){
+     $("footeraPendingEmail").textContent=logged
+       ?"E-Mail bestätigt. Lege jetzt ein Passwort fest und sichere deinen Verein in der Cloud."
+       :"Bestätigung für "+pending.email+" ausstehend. Öffne den Bestätigungslink aus deinem Postfach.";
+     if(!$("footeraAccountEmail").value)$("footeraAccountEmail").value=pending.email;
+   }
    $("footeraAccountWelcome").hidden=!shouldWelcome();
    $("footeraGuest").hidden=logged;
    $("footeraAccountStatus").textContent=logged?"Konto: "+(u.email||"Google")+" · dauerhaft":guest?"Gastkonto · nicht wiederherstellbar":"Noch nicht angemeldet";
@@ -228,11 +273,14 @@
    $("footeraGoogle").textContent=guest?"Mit Google verknüpfen":"Mit Google anmelden";
    $("footeraSwitchGoogle").hidden=!guest;
    $("footeraEmailRegister").textContent=guest?"E-Mail mit Gastkonto verknüpfen":"Registrieren";
+   $("footeraEmailRegister").hidden=logged;
+   $("footeraEmailLogin").hidden=logged;
    $("footeraAccountSave").disabled=!logged||owner!==u?.id;
    $("footeraAccountLoad").disabled=!logged;
    $("footeraAccountAdopt").hidden=!logged||owner===u?.id;
    $("footeraSignOut").hidden=!logged;
    $("footeraSetPassword").textContent=logged||recovery?"Passwort festlegen / ändern":"Passwort vergessen";
+   $("footeraAccountPassword").placeholder=guest?"Nach E-Mail-Bestätigung festlegen":"Mindestens 10 Zeichen";
    if(logged){
      try{$("footeraAccountCloud").textContent=cloudText(await cloudInfo())}
      catch(e){$("footeraAccountCloud").textContent="Cloud nicht erreichbar: "+safeMessage(e)}
@@ -264,6 +312,8 @@
      '<header><div><small>BUILD YOUR ERA</small><h2>Footera-Konto</h2></div><button type="button" id="footeraAccountClose" aria-label="Schließen">✕</button></header>'+
      '<p id="footeraAccountStatus" class="footera-account-status">Konto wird geprüft …</p>'+
      '<p id="footeraAccountIdentity"></p>'+
+     '<p id="footeraPendingEmail" class="footera-email-pending" hidden></p>'+
+     '<button type="button" id="footeraResendEmail" class="footera-account-link" hidden>Bestätigungs-E-Mail erneut senden</button>'+
      '<div class="footera-account-welcome" id="footeraAccountWelcome"><strong>Dein Team. Deine Ära.</strong><p>Erstelle ein Konto oder probiere Footera als Gast. Deinen Verein kannst du später mit einem Konto sichern.</p></div>'+
      '<button type="button" class="footera-account-google" id="footeraGoogle"><span>G</span> Mit Google fortfahren</button>'+
      '<button type="button" id="footeraSwitchGoogle" class="footera-account-link" hidden>Stattdessen bei bestehendem Google-Konto anmelden</button>'+
@@ -284,6 +334,7 @@
    $("footeraGuest").addEventListener("click",()=>run(continueAsGuest));
    $("footeraGoogle").addEventListener("click",()=>run(()=>google("link")));
    $("footeraSwitchGoogle").addEventListener("click",()=>run(()=>google("switch")));
+   $("footeraResendEmail").addEventListener("click",()=>run(resendEmail));
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
    $("footeraAccountForm").addEventListener("submit",e=>{e.preventDefault();run(()=>emailLogin($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value))});
    $("footeraSetPassword").addEventListener("click",()=>run(()=>password($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
@@ -294,6 +345,6 @@
    if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||root.location.search.includes("error=")||shouldWelcome())show();
    getClient().then(()=>render()).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,continueAsGuest,shouldWelcome};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
