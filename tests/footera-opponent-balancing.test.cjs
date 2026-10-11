@@ -32,7 +32,7 @@ function run(style,count=250){
    const selected=ctx.FooteraOpponentStyles.profiles.find(x=>x.id===style);
    opp.styleProfile={id:selected.id,label:selected.label,hint:selected.hint};
    opp.tactic=selected.tactic;opp.customTactics={...selected.tactics};
-  }else delete opp.styleProfile;
+  }else{delete opp.styleProfile;opp.tactic='balanced';opp.customTactics={width:50,depth:50,pressing:50,buildUp:'balanced',attackFocus:'balanced',dribbling:50,crossing:50,longShots:50};}
   ctx.match={mode:'rivals',basePower:84.88,homeRating:82,chem:24,opp:84.88,opponentProfile:opp,
    lineup:Array.from({length:18},(_,j)=>'p'+j),formation:'4-3-3',tactic:'balanced',roles:{},focus:{},
    minute:0,home:0,away:0,shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
