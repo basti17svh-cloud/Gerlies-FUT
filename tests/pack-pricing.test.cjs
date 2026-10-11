@@ -32,7 +32,16 @@ test('every purchasable pack has the approved coin price; Points prices are unch
   }
 });
 
-test('reward-only and personalized founder packs remain free of purchase prices',()=>{
-  for(const p of prices.filter(p=>p.coins===null&&p.points===null))
-    assert.equal(typeof p.coins,'object');
+test('reward-only and personalized founder packs cannot be bought',()=>{
+  for(const id of [
+    '82','83','85','86','2x86','jumbo-gold','premium-electrum-reward',
+    'small-prime-gold','prime-electrum-reward','event-sbc-player',
+    'founder-bastian','founder-marco','founder-niklas'
+  ]){
+    const pack=byId.get(id);
+    assert.ok(pack,'pack exists: '+id);
+    assert.equal(pack.coins,null,'not purchasable with coins: '+id);
+    assert.equal(pack.points,null,'not purchasable with points: '+id);
+    assert.equal(pack.store,false,'not on sale: '+id);
+  }
 });
