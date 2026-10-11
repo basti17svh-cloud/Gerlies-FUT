@@ -56,7 +56,7 @@
   });
   for(let i=0;i<pools.length;i++)if(!pools[i].ids.length)return{available:false,reason:"Mindestens eine Kartenkategorie ist nicht verfügbar."};
   const used=new Uint32Array(all.length),rng=rngFromSeed(seedFor(pack,all,icons)),hit=Object.fromEntries(TARGETS.map(v=>[v,0]));
-  let valid=0,events=0,totws=0,anySpecial=0,nonRare=0;
+  let valid=0,events=0,totws=0,anySpecial=0;
   const iconChance=icons.length?Math.max(0,Math.min(1,Number(pack.iconChance)||0)):0;
   for(let trial=1;trial<=trials;trial++){
    const indices=[],rating=[],kind=[];let ok=true;
@@ -86,10 +86,10 @@
    if(kind.includes("event"))events++;
    if(kind.includes("totw"))totws++;
    if(kind.some(k=>k==="event"||k==="totw"||k==="icon"))anySpecial++;
-   if(kind.every(k=>k!=="event"&&k!=="totw"&&k!=="icon"))nonRare++;
   }
   if(!valid)return{available:false,reason:"Dieses Pack lässt sich mit dem aktuellen Spielerpool nicht vollständig generieren."};
-  const possibleRatings=meta.map(m=>m.rating);
+  const eligible=new Set(pools.flatMap(pool=>pool.ids));
+  const possibleRatings=Array.from(eligible,index=>meta[index].rating);
   if(iconChance)possibleRatings.push(...icons.map(i=>Number(i.ovr)));
   const maxPossible=Math.max(...possibleRatings);
   const minimum=Math.max(Number(pack.guarantee)||0,...specs.map(s=>s.min));
@@ -105,7 +105,7 @@
   if(row.guaranteed)return"100 % (garantiert)";
   if(row.possible===false)return"0 %";
   if(row.rate>=1)return"> 99,9 %";
-  if(row.rate===0)return"< 0,1 %*";
+  if(row.rate<0.001)return"< 0,1 %*";
   return"≈ "+(row.rate*100).toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1})+" %";
  }
  return{calculate,percent,specsFor};
