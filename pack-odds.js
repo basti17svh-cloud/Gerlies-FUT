@@ -164,16 +164,16 @@
    return guarantee?both[k]:hit[k];
   }
   function hitChance(predicate,withIcon,iconCanGuarantee){
-   let probability=1;
+   let logNo=0;
    for(let i=0;i<groups.length;i++){
     const g=groups[i],k=g.slots.length-(withIcon&&i===iconGroup?1:0);
     const guarantee=withIcon&&i===iconGroup&&iconCanGuarantee?0:g.required;
     const d=denom(i,withIcon,iconCanGuarantee);
     if(!(d>0))return null;
     const numerator=hitWeight(g.entries,k,guarantee,predicate);
-    probability*=clamp(1-clamp(numerator/d));
+    logNo+=Math.log1p(-clamp(numerator/d));
    }
-   return clamp(1-probability);
+   return clamp(-Math.expm1(logNo));
   }
   function rate(predicate,iconPredicate){
    const without=hitChance(predicate,false,false);
