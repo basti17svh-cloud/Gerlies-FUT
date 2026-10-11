@@ -6,7 +6,7 @@
  if(!root.FooteraOnline?.available||!root.document)return;
  const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1";
  const maxLength=12*1024*1024;
- let client=null,dialog=null,notice=null,busy=false,recovery=false,autoBusy=false,autoStatus="",autoTimer=null;
+ let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoStatus="",autoTimer=null,deleteBusy=false;
  const $=id=>document.getElementById(id);
  const safeMessage=e=>String(e?.message||e||"Unbekannter Fehler").slice(0,230);
  const callbackURL=()=>new URL("./",root.location.href).href;
@@ -342,6 +342,97 @@
      msg("E-Mail zur Passwort-Wiederherstellung verschickt.");
    }
  }
+ // Permanent accounts have an independent profile page, not just the login modal.
+ function stateForProfile(u){
+   if(!u||root.localStorage.getItem(OWNER)!==u.id)return null;
+   try{
+     const raw=root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+     const state=raw?JSON.parse(raw):null;
+     return state&&typeof state==="object"&&state.profile?state:null;
+   }catch(_){return null}
+ }
+ function labelValue(id,value){const el=$(id);if(el)el.textContent=String(value??"–")}
+ function integerValue(value){return Number(value||0).toLocaleString("de-DE")}
+ async function renderProfile(){
+   if(!profilePage||profilePage.hidden)return;
+   const u=await user();
+   if(!isPermanent(u)){profilePage.hidden=true;show();return}
+   const state=stateForProfile(u),club=state?.profile||{};
+   labelValue("footeraProfileUsername",club.username||"Noch kein Benutzername");
+   labelValue("footeraProfileClub",club.clubName||"Noch kein Verein");
+   labelValue("footeraProfileEmail",u.email||"Über Google angemeldet");
+   labelValue("footeraProfileCards",state?.club?.length??"–");
+   labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
+   labelValue("footeraProfilePoints",state?integerValue(state.points):"–");
+   labelValue("footeraProfileStatus","Dauerhaftes Footera-Konto");
+   const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
+   labelValue("footeraProfileMethod",providers.map(x=>x==="email"?"E-Mail":x==="google"?"Google":x).join(" · ")||"Anmeldung");
+   labelValue("footeraProfileSince",u.created_at?new Date(u.created_at).toLocaleDateString("de-DE"):"–");
+   labelValue("footeraProfileCloud","Cloud wird geprüft …");
+   try{const cloud=await cloudInfo(true);labelValue("footeraProfileCloud",cloud?("Gesichert am "+new Date(cloud.saved_at).toLocaleString("de-DE")+" · Version "+cloud.revision):"Noch keine Cloud-Sicherung")}
+   catch(e){labelValue("footeraProfileCloud","Cloud nicht erreichbar: "+safeMessage(e))}
+ }
+ async function showProfile(){
+   const u=await user();
+   if(!isPermanent(u)){show();return}
+   if(dialog)dialog.hidden=true;
+   if(deleteDialog)deleteDialog.hidden=true;
+   profilePage.hidden=false;
+   await renderProfile();
+ }
+ function hideProfile(){if(profilePage)profilePage.hidden=true}
+ function openDeletion(){
+   if(!deleteDialog)return;
+   deleteDialog.hidden=false;
+   $("footeraDeletePhrase").value="";
+   $("footeraDeletePassword").value="";
+   $("footeraDeleteAgree").checked=false;
+   $("footeraDeleteError").textContent="";
+   $("footeraDeleteConfirm").disabled=true;
+   const uEmail=$("footeraProfileEmail")?.textContent||"";
+   $("footeraDeleteAccountName").textContent=uEmail;
+   const resetNeeded=(root.FooteraAccountDeleteEmailProvider||false);
+   $("footeraDeletePasswordLabel").hidden=!resetNeeded;
+ }
+ function updateDeleteReady(){
+   $("footeraDeleteConfirm").disabled=$("footeraDeletePhrase").value.trim()!=="FOOTERA LÖSCHEN"||!$("footeraDeleteAgree").checked||deleteBusy;
+ }
+ async function deleteOwnAccount(phrase,password){
+   if(phrase!=="FOOTERA LÖSCHEN")throw Error("Bitte FOOTERA LÖSCHEN exakt eingeben.");
+   const c=await getClient(),u=await user();
+   if(!isPermanent(u))throw Error("Zur Kontolöschung musst du angemeldet sein.");
+   const result=await c.functions.invoke("footera-delete-account",{body:{confirmation:phrase,password:String(password||"")}});
+   if(result.error){
+     let detail="";
+     try{const body=await result.error.context?.json?.();detail=String(body?.error||"")}catch(_){}
+     throw Error(detail||"Kontolöschung nicht möglich. Bitte prüfe die Anmeldung und versuche es erneut.");
+   }
+   if(result.data?.deleted!==true)throw Error("Kontolöschung wurde nicht bestätigt. Keine lokalen Daten verändert.");
+   const ownsLocal=root.localStorage.getItem(OWNER)===u.id||registrationOwner()===u.id;
+   // Do not erase an unrelated club in a shared browser.
+   if(ownsLocal)for(const k of [KEY,"uc27v7",ROLLBACK])root.localStorage.removeItem(k);
+   for(const k of [OWNER,SYNC_POINT,REGISTERED_HERE,PENDING_EMAIL,WELCOME])root.localStorage.removeItem(k);
+   // The user has already been deleted by the server; clear the session locally even if signOut fails.
+   try{await c.auth.signOut({scope:"local"})}catch(_){}
+   const projectId=new URL(root.FOOTERA_ONLINE_CONFIG.url).hostname.split(".")[0];
+   root.localStorage.removeItem("sb-"+projectId+"-auth-token");
+   if(deleteDialog)deleteDialog.hidden=true;
+   if(profilePage)profilePage.hidden=true;
+   root.location.reload();
+   return true;
+ }
+ async function runDelete(){
+   if(deleteBusy)return;
+   deleteBusy=true;
+   const button=$("footeraDeleteConfirm");
+   button.disabled=true;
+   $("footeraDeleteError").textContent="";
+   try{
+     if(!$("footeraDeleteAgree").checked)throw Error("Bitte die Folgen der Löschung bestätigen.");
+     await deleteOwnAccount($("footeraDeletePhrase").value.trim(),$("footeraDeletePassword").value);
+   }catch(e){$("footeraDeleteError").textContent=safeMessage(e)}
+   finally{deleteBusy=false;updateDeleteReady()}
+ }
  async function signOut(){
    const c=await getClient(),u=await user();
    if(u?.is_anonymous)throw Error("Gastkonten ohne Wiederherstellungsmöglichkeit nicht abmelden. Erst Google oder E-Mail verknüpfen.");
@@ -371,6 +462,7 @@
    }
    $("footeraAccountWelcome").hidden=!shouldWelcome();
    $("footeraGuest").hidden=logged;
+   const entry=$("footeraAccountEntry");if(entry)entry.textContent=logged?"Mein Profil":"Konto";
    $("footeraAccountStatus").textContent=logged?"Konto: "+(u.email||"Google")+" · dauerhaft":guest?"Gastkonto · nicht wiederherstellbar":"Noch nicht angemeldet";
    $("footeraAccountIdentity").textContent=logged?(owner===u.id?"Verein mit deinem Konto verbunden.":registrationOwner()===u.id?"Verein wird automatisch verbunden.":owner?"Auf diesem Gerät ist ein anderer Verein gespeichert.":"Dein Verein wird nach der Gründung automatisch verbunden."):"Registrieren bewahrt deinen Gastverein und die Online-ID.";
    $("footeraGoogle").textContent=logged?"Google-Konto verknüpfen":guest?"Mit Google verknüpfen":"Mit Google anmelden";
@@ -391,6 +483,7 @@
  }
  function show(){
    if(!dialog)return;
+   if(profilePage)profilePage.hidden=true;
    dialog.hidden=false;
    notice=$("footeraAccountMessage");
    msg("");
@@ -401,7 +494,10 @@
    if($("footeraAccountDialog"))return;
    const open=document.createElement("button");
    open.type="button";open.id="footeraAccountEntry";open.className="footera-account-entry";
-   open.textContent="Konto";open.addEventListener("click",show);document.body.append(open);
+   open.textContent="Konto";
+   open.addEventListener("click",()=>user().then(u=>isPermanent(u)?showProfile():show()).catch(()=>show()));
+   document.body.append(open);
+   user().then(u=>{open.textContent=isPermanent(u)?"Mein Profil":"Konto"}).catch(()=>{});
    const panel=document.createElement("section");
    panel.className="footera-account-panel";
    panel.innerHTML='<small>FOOTERA · KONTO</small><h3>Konto & Cloud</h3><p>Sichere deine Online-ID und deinen Verein mit Google oder E-Mail.</p><button type="button" id="footeraAccountPanelOpen">Konto verwalten</button>';
@@ -431,6 +527,56 @@
      '<p class="footera-account-note">Neue registrierte Vereine werden automatisch zugeordnet und gesichert. Gastkonten bleiben bis zur Registrierung nicht wiederherstellbar. Bei Cloud-Konflikten wird nichts überschrieben.</p>'+
      '</div>';
    document.body.append(dialog);
+   profilePage=document.createElement("div");
+   profilePage.id="footeraProfilePage";
+   profilePage.className="footera-profile-overlay";
+   profilePage.hidden=true;
+   profilePage.setAttribute("role","dialog");
+   profilePage.setAttribute("aria-modal","true");
+   profilePage.setAttribute("aria-label","Mein Footera-Profil");
+   profilePage.innerHTML='<section class="footera-profile-page">'+
+     '<header class="footera-profile-header"><div><small>FOOTERA · BUILD YOUR ERA</small><h2>Mein Profil</h2></div><button id="footeraProfileClose" type="button" aria-label="Profil schließen">✕</button></header>'+
+     '<div class="footera-profile-hero"><span class="footera-profile-avatar">F</span><div><small>MEIN ACCOUNT</small><h3 id="footeraProfileUsername">–</h3><p id="footeraProfileClub">–</p><p id="footeraProfileStatus">–</p></div></div>'+
+     '<h3 class="footera-profile-section-title">Mein Verein</h3>'+
+     '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
+     '<h3 class="footera-profile-section-title">Mein Konto</h3>'+
+     '<dl class="footera-profile-details"><div><dt>E-Mail-Adresse</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Anmeldung über</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Cloud-Spielstand</dt><dd id="footeraProfileCloud">–</dd></div></dl>'+
+     '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileBackup" type="button">Spielstand sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
+     '<div class="footera-profile-danger"><small>GEFAHRENBEREICH</small><h3>Konto endgültig löschen</h3><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
+     '</section>';
+   document.body.append(profilePage);
+   deleteDialog=document.createElement("div");
+   deleteDialog.id="footeraDeleteDialog";
+   deleteDialog.className="footera-account-overlay footera-delete-overlay";
+   deleteDialog.hidden=true;
+   deleteDialog.setAttribute("role","dialog");deleteDialog.setAttribute("aria-modal","true");deleteDialog.setAttribute("aria-label","Footera-Konto löschen");
+   deleteDialog.innerHTML='<section class="footera-delete-card">'+
+     '<header><h2>Konto endgültig löschen?</h2><button id="footeraDeleteCancelTop" type="button" aria-label="Abbrechen">✕</button></header>'+
+     '<p>Dieses Konto <strong id="footeraDeleteAccountName"></strong> wird unwiderruflich gelöscht. Vereinsdaten, Karten, Münzen, FC Points, Freundescode, Chats und Duelle gehen verloren.</p>'+
+     '<p>Auch die Cloud-Sicherung wird entfernt. Lokale Kopien auf anderen Geräten können dort noch bestehen, sind aber keinem gültigen Konto mehr zugeordnet.</p>'+
+     '<label class="footera-delete-label">Schreibe FOOTERA LÖSCHEN<input id="footeraDeletePhrase" autocomplete="off" spellcheck="false" placeholder="FOOTERA LÖSCHEN"></label>'+
+     '<label class="footera-delete-label" id="footeraDeletePasswordLabel">Zur Bestätigung dein Kontopasswort<input id="footeraDeletePassword" type="password" autocomplete="current-password" placeholder="Passwort eingeben"></label>'+
+     '<label class="footera-delete-check"><input id="footeraDeleteAgree" type="checkbox">Ich verstehe, dass alle meine Footera-Kontodaten unwiderruflich gelöscht werden.</label>'+
+     '<p id="footeraDeleteError" role="alert"></p>'+
+     '<button type="button" id="footeraDeleteConfirm" class="footera-delete-confirm" disabled>Endgültig löschen</button>'+
+     '<button type="button" id="footeraDeleteCancel" class="footera-delete-cancel">Abbrechen</button>'+
+     '</section>';
+   document.body.append(deleteDialog);
+   $("footeraProfileClose").addEventListener("click",hideProfile);
+   $("footeraProfileSettings").addEventListener("click",()=>{hideProfile();show()});
+   $("footeraProfileBackup").addEventListener("click",()=>run(async()=>{await saveCloud();await renderProfile()}));
+   $("footeraProfileSignOut").addEventListener("click",()=>run(signOut));
+   $("footeraProfileDelete").addEventListener("click",async()=>{
+     const u=await user();
+     root.FooteraAccountDeleteEmailProvider=(u?.identities||[]).some(x=>x.provider==="email");
+     openDeletion();
+   });
+   const cancelDeletion=()=>{deleteDialog.hidden=true;$("footeraDeletePassword").value=""};
+   $("footeraDeleteCancelTop").addEventListener("click",cancelDeletion);
+   $("footeraDeleteCancel").addEventListener("click",cancelDeletion);
+   $("footeraDeletePhrase").addEventListener("input",updateDeleteReady);
+   $("footeraDeleteAgree").addEventListener("change",updateDeleteReady);
+   $("footeraDeleteConfirm").addEventListener("click",runDelete);
    $("footeraAccountClose").addEventListener("click",hide);
    dialog.addEventListener("click",e=>{if(e.target===dialog)hide()});
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dialog.hidden)hide()});
@@ -454,6 +600,6 @@
      },20000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);

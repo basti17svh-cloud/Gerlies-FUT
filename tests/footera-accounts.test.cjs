@@ -198,3 +198,22 @@ test("outdated revision never overwrites newer cloud progress",async()=>{
  await t.win.FooteraAccount.autoAttachAndBackup();
  assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
 });
+
+test("account deletion rejects guests and incorrect confirmation",async()=>{
+ const guest=runtime("guest");
+ await assert.rejects(guest.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN",""),/Dauerhaftes Konto/);
+ assert.equal(guest.calls.some(x=>x[0]==="delete"),false);
+ const regular=runtime("registered");
+ await assert.rejects(regular.win.FooteraAccount.deleteOwnAccount("DELETE",""),/FOOTERA LÖSCHEN/);
+});
+test("hard deletion is invoked for the authenticated user and clears owned local state only after confirmation",async()=>{
+ const t=runtime("registered");
+ t.store.set("footera-cloud-owner","existing-a");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ t.win.FOOTERA_ONLINE_CONFIG={url:"https://idxydyrihtyecvfjvtuk.supabase.co"};
+ const accountSource=require("node:fs").readFileSync(path.join(__dirname,"../footera-account.js"),"utf8");
+ assert.match(accountSource,/functions\.invoke\("footera-delete-account"/);
+ assert.match(accountSource,/result\.data\?\.deleted!==true/);
+ assert.match(accountSource,/if\(ownsLocal\)/);
+ assert.match(accountSource,/FOOTERA LÖSCHEN/);
+});
