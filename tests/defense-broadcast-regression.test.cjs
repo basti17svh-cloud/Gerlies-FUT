@@ -1,14 +1,19 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.join(__dirname,'..');
-test('V21.89: remove standalone ball-winning scenes but keep actual game defenses',async()=>{
+test('V21.107: actual simulator ball wins can render without inventing events',async()=>{
  const M=await import('../3d-highlights-scene.mjs'),H=require('../3d-highlights.js');
  const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
  for(const sequence of ['defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery']){
-  assert.equal(M.PLAY_SEQUENCES.includes(sequence),false);
+  assert.equal(M.PLAY_SEQUENCES.includes(sequence),true);
   assert.ok(!H.PLAYBOOK_SCENES.some(v=>v.id===sequence));
  }
- assert.equal(H.accepts('ball_won'),false);
- assert.ok(bridge.includes('function queueMatchDefensive3D(){return false}'));
+ assert.equal(H.accepts('ball_won','off'),false);
+ assert.equal(H.accepts('ball_won','goals'),false);
+ assert.equal(H.accepts('ball_won','important'),true);
+ assert.equal(H.accepts('ball_won','all'),true);
+ assert.match(bridge,/function queueMatchDefensive3D\(action,attackingSide,attacker\)/);
+ assert.match(bridge,/match\.defenseHighlightsShown/);
+ assert.match(bridge,/type:'ball_won'/);
 });
 test('V21.89: defensive actions still animate during shots',()=>{
  const H=require('../3d-highlights.js');
