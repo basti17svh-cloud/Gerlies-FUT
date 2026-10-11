@@ -97,7 +97,8 @@ test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+
  let sequence=0;
  const sandbox={
   PACKS:[],MID_ICON_BASES:[{id:"low",ovr:84},{id:"high",ovr:90}],
-  PLAYERS:[],Math:{floor:Math.floor,max:Math.max,random:()=>0},
+  PLAYERS:Array.from({length:30},(_,i)=>({id:"gold-"+i,ovr:87+i%5})),Math:{floor:Math.floor,max:Math.max,random:()=>0},
+  FooteraPackOdds:require("../pack-odds.js"),
   founderRuleForPack:()=>null,weightedPlayer:()=>({id:"gold-"+(++sequence),ovr:87+sequence}),
   makeLivePackItem:(base,tradeable)=>({pid:base.id,ovr:base.ovr,base,tradeable}),
   makeMidIconItem:(base,tradeable)=>({pid:base.id,ovr:base.ovr,base,tradeable,variant:"icon-mid"}),
