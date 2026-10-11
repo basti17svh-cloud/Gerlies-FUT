@@ -1,0 +1,24 @@
+name: Footera Accounts Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'footera-account.js'
+      - 'footera-account.css'
+      - 'friend-online.js'
+      - 'online/footera-accounts-v21.109.sql'
+      - 'tests/footera-accounts.test.cjs'
+      - '.github/workflows/footera-accounts-tests.yml'
+  workflow_dispatch:
+jobs:
+  account-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check account and online friend regressions
+        run: node --test tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs
