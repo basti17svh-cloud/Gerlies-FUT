@@ -36,7 +36,7 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2201').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=2202').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
   if(root.document&&mode!=='off'){
@@ -47,7 +47,7 @@
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent='LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.type==='ball_won'?'LIVE-BALLGEWINN':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
   let skipped=false,skipResolve;
