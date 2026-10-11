@@ -41,7 +41,7 @@
   const candidates=Array.isArray(icons)?icons.filter(i=>Number.isFinite(Number(i.ovr))&&Number(i.ovr)>0):[];
   const eligibleIcons=candidates.filter(icon=>{
    const group=groups[iconGroup];
-   return !(group.required&&group.slots.length===1&&Number(icon.ovr)<group.required);
+   return Number(icon.ovr)>=group.min&&Number(icon.ovr)<=group.max&&!(group.required&&group.slots.length===1&&Number(icon.ovr)<group.required);
   });
   const iconRate=eligibleIcons.length?clamp(Number(pack.iconChance)||0):0;
   for(const p of players||[]){
