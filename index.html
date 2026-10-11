@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.120</title>
+<title>Footera V21.121</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1518,7 +1518,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./playstyles.css?v=2114">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <script src="./club-crest-art.js?v=2130"></script>
-<script src="./pack-odds.js?v=21120"></script>
+<script src="./pack-odds.js?v=21121"></script>
 <script src="./pack-odds-ui.js?v=21120"></script>
 <link rel="stylesheet" href="./pack-odds.css?v=21120">
 <link rel="stylesheet" href="./footera-backup.css?v=21106">
@@ -5513,15 +5513,19 @@ function generatePack(id,tradeable=true){
   const source=entries[Math.floor(Math.random()*entries.length)];
   return[{...source.item,uid:uid(),tradeable,acquired:Date.now()}]
  }
- const p=PACKS.find(x=>x.id===id),arr=[],used=new Set();if(!p)return[];
+ const p=PACKS.find(x=>x.id===id);
+ if(!p)return[];
  if(p.recipientSaveId)return generateMarcoSurprisePack(p);
- const take=(min,max)=>{for(let tries=0;tries<120;tries++){const b=weightedPlayer(min,max);if(b&&!used.has(String(b.id))){used.add(String(b.id));return b}}const b=PLAYERS.find(x=>x.ovr>=min&&x.ovr<=max&&!used.has(String(x.id)));if(b)used.add(String(b.id));return b||null};
- const specs=Array.isArray(p.composition)&&p.composition.length?p.composition.flatMap(c=>Array.from({length:c.count},()=>({min:c.min,max:c.max,quality:c.quality}))):Array.from({length:p.count},()=>({min:p.min,max:p.max,quality:p.type}));
- let guaranteeSlot=-1;if(p.guarantee){guaranteeSlot=specs.findIndex(x=>x.max>=p.guarantee);if(guaranteeSlot<0)guaranteeSlot=0}
- specs.forEach((spec,i)=>{const min=i===guaranteeSlot?Math.max(spec.min||0,p.guarantee||0):(spec.min||0),max=spec.max??99,b=take(min,max);if(b)arr.push(makeLivePackItem(b,tradeable))});
- if(Number(p.iconChance||0)>0&&Math.random()<Number(p.iconChance||0)&&arr.length){const ib=randomMidIconBase(p.id==="champions-bonus"?87:0);if(ib){let idx=arr.findIndex(i=>rarityOf(displayBase(i))==="gold");if(idx<0)idx=0;arr[idx]=makeMidIconItem(ib,tradeable)}}
- let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
- return arr.slice(0,p.count)
+ // Shared audited distribution: draws and published percentage figures use one algorithm.
+ // Do not silently fall back to a different random engine if the disclosure module is missing.
+ if(typeof FooteraPackOdds==="undefined"||!FooteraPackOdds?.draw)return[];
+ const chosen=FooteraPackOdds.draw(p,PLAYERS,{icons:MID_ICON_BASES,random:Math.random});
+ if(!chosen.available||chosen.items.length!==p.count)return[];
+ const arr=chosen.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
+ let rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);
+ const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);
+ for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
+ return arr;
 }
 function generateMarcoSurprisePack(pack){
  if(state.profile?.saveId!==pack.recipientSaveId||Number(state.packs[pack.id]||0)!==1)return[];
@@ -9149,7 +9153,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.120";
+const GFUT_BUILD="V21.121";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
