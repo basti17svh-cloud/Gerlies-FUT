@@ -23,7 +23,7 @@
   const pack=PACKS.find(p=>p.id===packId),modal=byId("packOddsModal"),body=byId("packOddsBody");
   if(!pack||!modal||!body)return;
   byId("packOddsTitle").textContent=pack.name+" – Wahrscheinlichkeiten";
-  let html='<p class="pack-odds-intro">Alle Prozente beziehen sich auf <strong>mindestens einen Treffer in einem vollständigen Pack</strong> – nicht auf jede einzelne Karte. Die GES-Grenzen überschneiden sich.</p>';
+  let html='<p class="pack-odds-intro">Die Prozentwerte gelten pro vollständigem Pack. Sie werden mit den tatsächlich verwendeten Ziehungsgewichten mathematisch berechnet; Rating-Grenzen können sich überschneiden.</p>';
   if(founderRuleForPack(pack.id)){
    html+='<div class="pack-odds-guarantees"><strong>100 % garantiert</strong><span>'+safe(pack.desc||"Eine fest zugeordnete Founder-Karte")+'</span></div>';
    html+='<p class="pack-odds-note">Dieses personalisierte Pack enthält eine feste Karte und keine zufällige Spielerziehung.</p>';
@@ -32,7 +32,7 @@
    html+='<p class="pack-odds-note">Für dieses einmalige Sondergeschenk liegt keine berechnete Gesamtquote der neun zusätzlichen Spieler vor.</p>';
   }else{
    const api=window.FooteraPackOdds;
-   const result=api?.calculate(pack,PLAYERS,{icons:MID_ICON_BASES,trials:12000,classify});
+   const result=api?.calculate(pack,PLAYERS,{icons:MID_ICON_BASES,classify});
    if(!result?.available){
     html+='<p class="pack-odds-error">Wahrscheinlichkeiten momentan nicht verfügbar. '+safe(result?.reason||"Spielerdaten fehlen.")+'</p>';
    }else{
@@ -52,7 +52,7 @@
     if(pack.chemBoostSlots?.slots&&Number(pack.chemBoostSlots.chance)===1)
      html+=detail(pack.chemBoostSlots.slots+" Chemie-Boosts","100 % (garantiert)");
     if(pack.guarantee)html+=detail("Mindestens 1× "+pack.guarantee+"+ im garantierten Slot","100 % (garantiert)");
-    html+='</div><p class="pack-odds-note">Werte mit ≈ sind <strong>Schätzwerte</strong> aus '+Number(result.trials).toLocaleString("de-DE")+' simulierten Packziehungen anhand der aktuellen Daten und derselben gewichteten Spielerauswahl ohne Duplikate. Sie sind keine mathematisch exakten Wahrscheinlichkeiten. „&lt; 0,1 %*“ bedeutet: nicht oder nur sehr selten beobachtet, nicht automatisch unmöglich. Garantien und die direkte Icon-Zusatzchance stammen aus den Packregeln.</p>';
+    html+='</div><p class="pack-odds-note"><strong>Berechnungsmodell:</strong> Jede zulässige Kombination unterschiedlicher Spieler ist proportional zum Produkt ihrer Gewichte wahrscheinlich. Garantierte Ratings, aktive Spezialkarten und die unabhängige Icon-Ziehchance sind berücksichtigt. Es handelt sich nicht um eine Simulation; die angegebenen Dezimalwerte sind gerundet. Bei Änderungen am Kartenpool oder aktiven Events werden die Prozentwerte neu berechnet.</p>';
    }
   }
   html+='<p class="pack-odds-disclaimer">Packs enthalten zufällige virtuelle Inhalte. Vorherige Packkäufe erhöhen die Chancen nicht. Ein bestimmter Spieler ist nur dann garantiert, wenn dies ausdrücklich genannt wird.</p>';
