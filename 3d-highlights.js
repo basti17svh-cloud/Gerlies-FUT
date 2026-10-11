@@ -249,6 +249,15 @@
    if(event.creationType==='solo'&&['wing','cross','cutback','lowcross','nearpost','farpost','volley','combination','switch'].includes(v.family))w*=.08;
    if(v.family==='bicycle'&&(!hasCreator||centreBack))w*=.3;
    if(side&&v.id.endsWith('_'+(side==='left'?'right':'left'))&&['wing','cutback','lowcross','cross','nearpost','farpost','volley','counter'].includes(v.family))w*=.25;
+   if(event.team==='away'&&event.opponentStyle){
+    const style=String(event.opponentStyle),family=v.family;
+    const matches=style==='possession'?['combination','switch','halfspace'].includes(family):
+     style==='counter'?['through','counter','duel','switch'].includes(family):
+     style==='wing'?['wing','cutback','cross','lowcross','overlap','nearpost','farpost'].includes(family):
+     style==='press'?['press','through','dribble'].includes(family):
+     style==='block'?['counter','through','duel'].includes(family):false;
+    if(matches)w*=1.85;
+   }
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
   });
