@@ -7717,10 +7717,11 @@ function simAttack(homeSide){
  const side=homeSide?"home":"away",defendingSide=homeSide?"away":"home",team=homeSide?matchHomeTeamName():matchAwayTeamName();
  const attackTactic=tacticMods(homeSide?match.tactic:(match.opponentProfile?.tactic||"balanced"),homeSide?match.customTactics:match.opponentProfile?.customTactics),defenseTactic=tacticMods(homeSide?(match.opponentProfile?.tactic||"balanced"):match.tactic,homeSide?match.opponentProfile?.customTactics:match.customTactics);
  const attackRoles=teamRoleFocusMods(side),defenseRoles=teamRoleFocusMods(defendingSide),attackProfile=matchTeamAttributeProfile(side),defenseProfile=matchTeamAttributeProfile(defendingSide);
+ const aiTuning=typeof FooteraOpponentStyles!=='undefined'?FooteraOpponentStyles.matchTuning(match.opponentProfile,side,match.minute):{build:0,duel:0,xg:0};
  const myPower=matchTeamPower(),opponentPower=matchOpponentPower(),edge=(homeSide?myPower-opponentPower:opponentPower-myPower)/28;
  const creator=chooseMatchCreator(side),buildDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const buildAttack=matchBuildSkill(creator),buildDefense=buildDefender?matchDefensiveSkill(buildDefender):defenseProfile.defense,buildMargin=matchAttributeGap(buildAttack-buildDefense),buildProfileGap=matchAttributeGap(attackProfile.build-defenseProfile.defense);
- const buildChance=matchClamp(.72+buildMargin*.0035+buildProfileGap*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014,.42,.90);
+ const buildChance=matchClamp(.72+buildMargin*.0035+buildProfileGap*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014+aiTuning.build,.42,.90);
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
  if(!eventChance(buildChance)){
   const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);
@@ -7729,14 +7730,14 @@ function simAttack(homeSide){
  }
  const attacker=chooseMatchAttacker(side),duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const duelAttack=matchBreakthroughSkill(attacker),duelDefense=duelDefender?matchDefensiveSkill(duelDefender):defenseProfile.defense,duelMargin=matchAttributeGap(duelAttack-duelDefense),duelProfileGap=matchAttributeGap(attackProfile.transition-defenseProfile.defense);
- const duelChance=matchClamp(.60+duelMargin*.0038+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016,.28,.86);
+ const duelChance=matchClamp(.60+duelMargin*.0038+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel,.28,.86);
  if(!eventChance(duelChance)){
   const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);
   if(action){recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
   return
  }
- const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0009+duelMargin*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014,.05,.52);
- const shot={side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:attacker.base?.fullName||[attacker.base?.firstName,attacker.base?.lastName].filter(Boolean).join(" ")||attacker.name,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:attacker.attrs.sho,creator:creator.name,defenderIndex:duelDefender?.index??-1,goal:false};
+ const xg=matchClamp(.09+Math.random()*.16+buildMargin*.0009+duelMargin*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014+aiTuning.xg,.05,.52);
+ const shot={side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:attacker.base?.fullName||[attacker.base?.firstName,attacker.base?.lastName].filter(Boolean).join(" ")||attacker.name,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:attacker.attrs.sho,creator:creator.name,defenderIndex:duelDefender?.index??-1,goal:false,opponentStyle:homeSide?'':String(match.opponentProfile?.styleProfile?.id||'')};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
  const goalChance=matchFinishingChance(xg,attacker,defendingSide);
@@ -7758,6 +7759,8 @@ function simTick(){
  const homeTactic=tacticMods(match.tactic,match.customTactics),awayTactic=tacticMods(match.opponentProfile?.tactic||"balanced",match.opponentProfile?.customTactics),homeRoles=teamRoleFocusMods("home"),awayRoles=teamRoleFocusMods("away"),homeAttributes=matchTeamAttributeProfile("home"),awayAttributes=matchTeamAttributeProfile("away");
  const powerNow=matchTeamPower(),chemGap=matchChemistry("home")-matchChemistry("away");
  match.poss+=((powerNow-matchOpponentPower())*.007+chemGap*.003+(homeTactic.poss-awayTactic.poss)*.02+(homeRoles.poss-awayRoles.poss)*.02+matchAttributeGap(homeAttributes.build-awayAttributes.build)*.004)*(step/1.7)+(Math.random()-.5)*.45*Math.sqrt(step/1.7);
+ // Match identity changes possession gradually; the existing RNG stream is untouched.
+ if(typeof FooteraOpponentStyles!=='undefined')match.poss+=FooteraOpponentStyles.possessionBias(match.opponentProfile)*(step/1.25);
  match.poss=Math.max(34,Math.min(66,match.poss));
 
  // Each opportunity now resolves build-up -> duel -> chance -> finish from player attributes.
