@@ -114,6 +114,7 @@ function queueMatch3D(event){
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const presentation={...event,...match3DPresentationMeta(event,current)};
+ if(event.team==='away')presentation.opponentStyle=String(current.opponentProfile?.styleProfile?.id||'');
  presentation.playerStyles=match3DActorStyles(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorStyles=match3DActorStyles(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  // Fetch the real OPPOSING goalkeeper/defender, using only player-data copies.
