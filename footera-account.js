@@ -109,7 +109,7 @@
  }
  async function requirePermanent(){
    const c=await getClient(),u=await user();
-   if(!isPermanent(u))throw Error("Zuerst Google oder E-Mail mit deinem Konto verknüpfen.");
+   if(!isPermanent(u))throw Error("Bitte zuerst dein E-Mail-Konto registrieren oder anmelden.");
    return {c,u};
  }
  function ensureOwned(u){
@@ -440,7 +440,7 @@
  }
  async function signOut(){
    const c=await getClient(),u=await user();
-   if(u?.is_anonymous)throw Error("Gastkonten ohne Wiederherstellungsmöglichkeit nicht abmelden. Erst Google oder E-Mail verknüpfen.");
+   if(u?.is_anonymous)throw Error("Gastkonten können ohne Wiederherstellungsmöglichkeit nicht abgemeldet werden. Registriere zuerst deine E-Mail.");
    if(!root.confirm("Von diesem Gerät abmelden? Der lokale Verein bleibt gespeichert, wird aber erst nach der nächsten Anmeldung wieder mit deinem Konto verbunden."))return;
    const r=await c.auth.signOut();if(r.error)throw r.error;
    root.location.reload();
@@ -469,9 +469,7 @@
    $("footeraGuest").hidden=logged;
    const entry=$("footeraAccountEntry");if(entry)entry.textContent=logged?"Mein Profil":"Konto";
    $("footeraAccountStatus").textContent=logged?"Konto: "+(u.email||"Google")+" · dauerhaft":guest?"Gastkonto · nicht wiederherstellbar":"Noch nicht angemeldet";
-   $("footeraAccountIdentity").textContent=logged?(owner===u.id?"Verein mit deinem Konto verbunden.":registrationOwner()===u.id?"Verein wird automatisch verbunden.":owner?"Auf diesem Gerät ist ein anderer Verein gespeichert.":"Dein Verein wird nach der Gründung automatisch verbunden."):"Registrieren bewahrt deinen Gastverein und die Online-ID.";
-   $("footeraGoogle").textContent=logged?"Google-Konto verknüpfen":guest?"Mit Google verknüpfen":"Mit Google anmelden";
-   $("footeraSwitchGoogle").hidden=!guest;
+   $("footeraAccountIdentity").textContent=logged?(owner===u.id?"Verein mit deinem Konto verbunden.":registrationOwner()===u.id?"Verein wird automatisch verbunden.":owner?"Auf diesem Gerät ist ein anderer Verein gespeichert.":"Dein Verein wird nach der Gründung automatisch verbunden."):"Du kannst deinen Gastverein später über E-Mail registrieren.";
    $("footeraEmailRegister").textContent=guest?"E-Mail mit Gastkonto verknüpfen":"Registrieren";
    $("footeraEmailRegister").hidden=logged;
    $("footeraEmailLogin").hidden=logged;
@@ -505,7 +503,7 @@
    user().then(u=>{open.textContent=isPermanent(u)?"Mein Profil":"Konto"}).catch(()=>{});
    const panel=document.createElement("section");
    panel.className="footera-account-panel";
-   panel.innerHTML='<small>FOOTERA · KONTO</small><h3>Konto & Cloud</h3><p>Sichere deine Online-ID und deinen Verein mit Google oder E-Mail.</p><button type="button" id="footeraAccountPanelOpen">Konto verwalten</button>';
+   panel.innerHTML='<small>FOOTERA · KONTO</small><h3>Konto & Cloud</h3><p>Verwalte dein E-Mail-Konto und deinen Verein.</p><button type="button" id="footeraAccountPanelOpen">Konto verwalten</button>';
    const club=$("clubView");
    if(club){const backup=$("footeraBackupPanel");if(backup?.parentNode)backup.insertAdjacentElement("afterend",panel);else club.prepend(panel);}
    panel.querySelector("button").addEventListener("click",show);
@@ -519,9 +517,7 @@
      '<p id="footeraPendingEmail" class="footera-email-pending" hidden></p>'+
      '<button type="button" id="footeraResendEmail" class="footera-account-link" hidden>Bestätigungs-E-Mail erneut senden</button>'+
      '<div class="footera-account-welcome" id="footeraAccountWelcome"><strong>Dein Team. Deine Ära.</strong><p>Erstelle ein Konto oder probiere Footera als Gast. Deinen Verein kannst du später mit einem Konto sichern.</p></div>'+
-     '<button type="button" class="footera-account-google" id="footeraGoogle"><span>G</span> Mit Google fortfahren</button>'+
-     '<button type="button" id="footeraSwitchGoogle" class="footera-account-link" hidden>Stattdessen bei bestehendem Google-Konto anmelden</button>'+
-     '<div class="footera-account-separator">oder mit E-Mail</div>'+
+     '<p class="footera-email-intro">Mit E-Mail-Adresse anmelden oder registrieren.</p>'+
      '<form id="footeraAccountForm"><label>E-Mail<input type="email" id="footeraAccountEmail" placeholder="name@beispiel.de" autocomplete="email" required></label>'+
      '<label>Passwort<input id="footeraAccountPassword" type="password" placeholder="Mindestens 10 Zeichen" autocomplete="current-password"></label>'+
      '<div class="footera-account-actions"><button type="submit" id="footeraEmailLogin">Anmelden</button><button type="button" id="footeraEmailRegister">Registrieren</button><button type="button" id="footeraSetPassword">Passwort vergessen</button></div></form>'+
@@ -586,8 +582,6 @@
    dialog.addEventListener("click",e=>{if(e.target===dialog)hide()});
    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dialog.hidden)hide()});
    $("footeraGuest").addEventListener("click",()=>run(continueAsGuest));
-   $("footeraGoogle").addEventListener("click",()=>run(()=>google("link")));
-   $("footeraSwitchGoogle").addEventListener("click",()=>run(()=>google("switch")));
    $("footeraResendEmail").addEventListener("click",()=>run(resendEmail));
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
    $("footeraAccountForm").addEventListener("submit",e=>{e.preventDefault();run(()=>emailLogin($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value))});

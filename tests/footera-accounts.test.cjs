@@ -251,3 +251,14 @@ test("different locally owned club is preserved when deleting a separate account
  assert.equal(t.store.get("gerliesFutV9"),before);
  assert.equal(t.store.get("footera-cloud-owner"),"other-user");
 });
+
+test("Google login and linking are absent from account UI while email flows remain available",()=>{
+ assert.doesNotMatch(js,/id="footeraGoogle"/);
+ assert.doesNotMatch(js,/id="footeraSwitchGoogle"/);
+ assert.doesNotMatch(js,/id="footeraGoogle"[^\n]*Mit Google/);
+ assert.match(js,/id="footeraAccountEmail"/);
+ assert.match(js,/id="footeraAccountPassword"/);
+ assert.match(js,/id="footeraEmailRegister"/);
+ assert.match(js,/id="footeraEmailLogin"/);
+ assert.match(js,/id="footeraGuest"/);
+});
