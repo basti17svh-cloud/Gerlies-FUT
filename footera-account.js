@@ -410,8 +410,12 @@
    if(result.data?.deleted!==true)throw Error("Kontolöschung wurde nicht bestätigt. Keine lokalen Daten verändert.");
    const ownsLocal=root.localStorage.getItem(OWNER)===u.id||registrationOwner()===u.id;
    // Do not erase an unrelated club in a shared browser.
-   if(ownsLocal)for(const k of [KEY,"uc27v7",ROLLBACK])root.localStorage.removeItem(k);
-   for(const k of [OWNER,SYNC_POINT,REGISTERED_HERE,PENDING_EMAIL,WELCOME])root.localStorage.removeItem(k);
+   if(ownsLocal){
+     for(const k of [KEY,"uc27v7",ROLLBACK,OWNER,WELCOME])root.localStorage.removeItem(k);
+   }
+   if(syncPoint(u))root.localStorage.removeItem(SYNC_POINT);
+   if(registrationOwner()===u.id)root.localStorage.removeItem(REGISTERED_HERE);
+   if(pendingEmail()?.userId===u.id||pendingEmail()?.email===u.email)clearPending();
    // The user has already been deleted by the server; clear the session locally even if signOut fails.
    try{await c.auth.signOut({scope:"local"})}catch(_){}
    const projectId=new URL(root.FOOTERA_ONLINE_CONFIG.url).hostname.split(".")[0];

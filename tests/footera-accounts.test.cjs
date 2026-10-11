@@ -15,23 +15,25 @@ function runtime(mode="guest"){
   updateUser:async (args,options)=>{calls.push(["update",args,options]);return{error:null}},
   signUp:async args=>{calls.push(["signup",args]);return{error:null}},
   signInAnonymously:async()=>{calls.push(["guest"]);return{data:{user:{id:"guest-b",is_anonymous:true}},error:null}},
-  resend:async args=>{calls.push(["resend",args]);return{error:null}}
+  resend:async args=>{calls.push(["resend",args]);return{error:null}},
+  signOut:async()=>{calls.push(["signout"]);return{error:null}}
  };
  let cloud=null,revision=0,reloaded=false;
  const client={auth,
   from:()=>({select:()=>({maybeSingle:async()=>({data:cloud,error:null})})}),
-  rpc:async (_name,args)=>{calls.push(["cloud",args]);if(args.p_base_revision!==revision)return{error:Error("conflict")};revision++;cloud={save_data:args.p_save,revision,saved_at:"2026-10-11T10:00:00Z"};return{data:revision,error:null}}
+  rpc:async (_name,args)=>{calls.push(["cloud",args]);if(args.p_base_revision!==revision)return{error:Error("conflict")};revision++;cloud={save_data:args.p_save,revision,saved_at:"2026-10-11T10:00:00Z"};return{data:revision,error:null}},
+  functions:{invoke:async (slug,options)=>{calls.push(["delete",slug,options]);return{data:{deleted:true},error:null}}}
  };
  const document={readyState:"loading",addEventListener(){},getElementById(){return null}};
  const win={
-  document,FooteraOnline:{available:true,authClient:async()=>client,ready:true},FooteraBackup:{validateState:s=>s,blocked:()=>""},
+  document,FOOTERA_ONLINE_CONFIG:{url:"https://idxydyrihtyecvfjvtuk.supabase.co"},FooteraOnline:{available:true,authClient:async()=>client,ready:true},FooteraBackup:{validateState:s=>s,blocked:()=>""},
   location:{href:"https://example.test/Gerlies-FUT/",reload:()=>{reloaded=true}},
   localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
   setTimeout(){},
   console:{warn(){}}
  };
  vm.runInNewContext(js,{window:win,document,URL,TextEncoder,console});
- return {calls,store,win,setCloud:data=>{cloud=data;revision=data?.revision||0},wasReloaded:()=>reloaded};
+ return {calls,store,win,client,setCloud:data=>{cloud=data;revision=data?.revision||0},wasReloaded:()=>reloaded};
 }
 
 test("existing guest links Google instead of creating another user",async()=>{
@@ -201,7 +203,7 @@ test("outdated revision never overwrites newer cloud progress",async()=>{
 
 test("account deletion rejects guests and incorrect confirmation",async()=>{
  const guest=runtime("guest");
- await assert.rejects(guest.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN",""),/Dauerhaftes Konto/);
+ await assert.rejects(guest.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN",""),/angemeldet sein/);
  assert.equal(guest.calls.some(x=>x[0]==="delete"),false);
  const regular=runtime("registered");
  await assert.rejects(regular.win.FooteraAccount.deleteOwnAccount("DELETE",""),/FOOTERA LÖSCHEN/);
@@ -216,4 +218,36 @@ test("hard deletion is invoked for the authenticated user and clears owned local
  assert.match(accountSource,/result\.data\?\.deleted!==true/);
  assert.match(accountSource,/if\(ownsLocal\)/);
  assert.match(accountSource,/FOOTERA LÖSCHEN/);
+});
+
+test("successful server deletion removes only its own local club and reloads",async()=>{
+ const t=runtime("registered");
+ t.store.set("footera-cloud-owner","existing-a");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ t.store.set("footera-cloud-sync-point-v1",JSON.stringify({userId:"existing-a",revision:1}));
+ const result=await t.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN","correct-password");
+ assert.equal(result,true);
+ assert.equal(t.calls.filter(x=>x[0]==="delete").length,1);
+ assert.equal(t.calls.find(x=>x[0]==="delete")[2].body.password,"correct-password");
+ assert.equal(t.store.get("gerliesFutV9"),undefined);
+ assert.equal(t.store.get("footera-cloud-owner"),undefined);
+ assert.equal(t.wasReloaded(),true);
+});
+test("server refuses deletion: local club remains intact",async()=>{
+ const t=runtime("registered"),before=JSON.stringify(sampleGame());
+ t.store.set("footera-cloud-owner","existing-a");
+ t.store.set("gerliesFutV9",before);
+ t.client.functions.invoke=async()=>({data:null,error:{context:{json:async()=>({error:"Passwort stimmt nicht."})}}});
+ await assert.rejects(t.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN","wrong"),/Passwort stimmt nicht/);
+ assert.equal(t.store.get("gerliesFutV9"),before);
+ assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
+ assert.equal(t.wasReloaded(),false);
+});
+test("different locally owned club is preserved when deleting a separate account",async()=>{
+ const t=runtime("registered"),before=JSON.stringify(sampleGame("other"));
+ t.store.set("footera-cloud-owner","other-user");
+ t.store.set("gerliesFutV9",before);
+ await t.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN","current-password");
+ assert.equal(t.store.get("gerliesFutV9"),before);
+ assert.equal(t.store.get("footera-cloud-owner"),"other-user");
 });
