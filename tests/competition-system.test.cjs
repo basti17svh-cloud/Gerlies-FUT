@@ -134,7 +134,7 @@ test('event windows end at Friday 19:00 Berlin, including after the clock change
 
 test('reward-only rating packs retain tradeability and TOTW pack needs a live team',()=>{
  const {ctx}=setup();let next=1;
- Object.assign(ctx,{founderRuleForPack:()=>undefined,weightedPlayer:min=>({id:String(next++),ovr:min,position:'ST'}),makeLivePackItem:(p,tradeable)=>({pid:p.id,tradeable}),
+ Object.assign(ctx,{founderRuleForPack:()=>undefined,FooteraPackOdds:{draw:p=>({available:true,items:Array.from({length:p.count},(_,i)=>({base:{id:String(next++),ovr:p.min||p.guarantee||75},icon:false}))})},MID_ICON_BASES:[],weightedPlayer:min=>({id:String(next++),ovr:min,position:'ST'}),makeLivePackItem:(p,tradeable)=>({pid:p.id,tradeable}),
   isCardRare:()=>false,displayBase:()=>({ovr:77}),rarityOf:()=>"gold",uid:()=>String(next++),activeTotwWeek:()=>null,
   liveTotwTeamEntries:()=>[{item:{pid:'totw-1',variant:'special',eventName:'Team of the Week 2'}}]});
  const code=html.slice(html.indexOf('function generatePack(id,tradeable=true){'),html.indexOf('function renderStore(){'));
