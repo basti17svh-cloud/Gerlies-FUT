@@ -696,17 +696,18 @@ test('V21.76: actual CC0 motion status and existing-actor expansion are truthful
  assert.doesNotMatch(source,/mountFooteraPlayerModel\(players\[1\]/);
 });
 
-test('V21.89: retired turnovers cannot queue but attack slides and blocks remain available',()=>{
- assert.equal(H.TYPES.includes('ball_won'),false);
- for(const mode of ['off','goals','important','all'])assert.equal(H.accepts('ball_won',mode),false);
+test('V21.107: simulator-backed ball wins display only in allowed modes',()=>{
+ assert.equal(H.TYPES.includes('ball_won'),true);
+ for(const mode of ['off','goals'])assert.equal(H.accepts('ball_won',mode),false);
+ for(const mode of ['important','all'])assert.equal(H.accepts('ball_won',mode),true);
  const queue=new H.Queue({play:()=>Promise.resolve('played')});
- assert.equal(queue.enqueue(event('ball_won','turnover')),false);
+ assert.equal(queue.enqueue(event('ball_won','turnover')),true);
  const dribble=Array.from({length:900},(_,i)=>H.chooseReactions({...event('goal','dribble-'+i),sequence:'dribble',defenderStyles:[{id:'slide-tackle',plus:true}]}));
  const shot=Array.from({length:900},(_,i)=>H.chooseReactions({...event('big_chance_saved','block-'+i),sequence:'central',defenderStyles:[{id:'block',plus:true}]}));
  assert.ok(dribble.some(r=>r.defenderAction==='slide_attempt'));
  assert.ok(shot.some(r=>r.defenderAction==='block_attempt'));
  const source=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
- assert.match(source,/function queueMatchDefensive3D\(\)\{return false\}/);
+ assert.match(source,/function queueMatchDefensive3D\(action,attackingSide,attacker\)/);
 });
 
 test('V21.89: close match camera is nearer but holds a fixed TV side',async()=>{
