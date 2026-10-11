@@ -1,113 +1,198 @@
-/* Footera Pack-Odds: deterministic, read-only sampling of the actual weighted pack selection.
- * Estimated rates are NOT contractual/exact probabilities. No inventory or wallet mutations.
- * The sampling mirrors weightedPlayer, guarantee slots, unique players and the Icon roll.
- */
+/* Exact pack-level odds for the shared weighted-without-replacement draw.
+   Each subset S of k distinct player IDs has probability proportional to
+   product(weight[i]), where weight[i] = 1.62^(minRating - player.ovr).
+   A guaranteed rating conditions its group's subset on containing >=1 such card.
+   Complements are elementary symmetric sums; no Monte Carlo or invented rates.
+*/
 (function(root,factory){
  const api=factory();
  if(typeof module==="object"&&module.exports)module.exports=api;
  if(root)root.FooteraPackOdds=api;
 })(typeof window!=="undefined"?window:null,function(){
  "use strict";
- const TARGETS=[65,70,75,80,82,83,84,85,86,87,88,89,90,91,93];
- function rngFromSeed(seed){
-  let a=seed>>>0;
-  return function(){a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296}
- }
- function seedFor(pack,players,icons){
-  let h=2166136261;const key=String(pack.id)+":"+players.length+":"+icons.length+
-   ":"+players.slice(0,5).map(p=>p.id+":"+p.ovr).join("|")+
-   ":"+players.slice(-5).map(p=>p.id+":"+p.ovr).join("|");
-  for(let i=0;i<key.length;i++)h=Math.imul(h^key.charCodeAt(i),16777619);
-  return h>>>0
- }
+ const TARGETS=[55,60,63,65,70,73,75,80,82,83,84,85,86,87,88,89,90,91,93,95];
+ const clamp=(x)=>Math.max(0,Math.min(1,x));
+ const finite=x=>Number.isFinite(x)?x:0;
  function specsFor(pack){
-  const comps=Array.isArray(pack.composition)&&pack.composition.length?pack.composition:null;
-  const specs=comps?comps.flatMap(c=>Array.from({length:c.count},()=>({min:Number(c.min||0),max:Number(c.max??99)}))):
-   Array.from({length:pack.count},()=>({min:Number(pack.min||0),max:Number(pack.max??99)}));
-  if(pack.guarantee&&specs.length){
-   const slot=specs.findIndex(spec=>spec.max>=pack.guarantee);
-   specs[slot>=0?slot:0].min=Math.max(specs[slot>=0?slot:0].min,Number(pack.guarantee));
+  const composition=Array.isArray(pack.composition)&&pack.composition.length?pack.composition:
+    [{count:pack.count,min:pack.min??0,max:pack.max??99}];
+  const specs=composition.flatMap(c=>Array.from({length:Math.max(0,Number(c.count)||0)},()=>({
+   min:Number(c.min??0),max:Number(c.max??99)
+  })));
+  return specs;
+ }
+ function model(pack,players,icons=[]){
+  const specs=specsFor(pack),groups=[],byRange=new Map(),unique=new Map();
+  if(specs.length!==Number(pack.count)||!specs.length)return{available:false,reason:"Ungültige Pack-Zusammensetzung"};
+  for(let slot=0;slot<specs.length;slot++){
+   const spec=specs[slot],key=spec.min+":"+spec.max;
+   if(!byRange.has(key)){byRange.set(key,groups.length);groups.push({min:spec.min,max:spec.max,slots:[],entries:[],required:0})}
+   groups[byRange.get(key)].slots.push(slot);
   }
-  return specs
+  const guarantee=Number(pack.guarantee)||0;
+  if(guarantee){
+   const index=groups.findIndex(g=>g.max>=guarantee);
+   if(index<0)return{available:false,reason:"Rating-Garantie nicht erfüllbar"};
+   groups[index].required=guarantee;
+  }
+  const iconSlot=specs.findIndex(spec=>spec.min>=75);
+  const selectedIconSlot=iconSlot>=0?iconSlot:0;
+  const iconGroup=byRange.get(specs[selectedIconSlot].min+":"+specs[selectedIconSlot].max);
+  const candidates=Array.isArray(icons)?icons.filter(i=>Number.isFinite(Number(i.ovr))&&Number(i.ovr)>0):[];
+  const eligibleIcons=candidates.filter(icon=>{
+   const group=groups[iconGroup];
+   return !(group.required&&group.slots.length===1&&Number(icon.ovr)<group.required);
+  });
+  const iconRate=eligibleIcons.length?clamp(Number(pack.iconChance)||0):0;
+  for(const p of players||[]){
+   const id=String(p?.id??"");
+   if(!id||unique.has(id)||!Number.isFinite(Number(p?.ovr)))continue;
+   unique.set(id,p);
+  }
+  const overlap=new Set();
+  for(const g of groups){
+   const list=Array.from(unique.values()).filter(p=>Number(p.ovr)>=g.min&&Number(p.ovr)<=g.max);
+   if(list.length<g.slots.length)return{available:false,reason:"Nicht genügend unterschiedliche Spieler für "+g.min+"–"+g.max};
+   for(const p of list){
+    const id=String(p.id);
+    if(overlap.has(id))return{available:false,reason:"Überlappende Rating-Kategorien verhindern eine exakte Berechnung"};
+    overlap.add(id);
+   }
+   const minRating=Math.min(...list.map(p=>Number(p.ovr)));
+   g.entries=list.map(p=>({base:p,w:Math.pow(1.62,minRating-Number(p.ovr)),baseRating:Number(p.ovr)}));
+   if(g.required&&!g.entries.some(x=>x.baseRating>=g.required))
+    return{available:false,reason:"Kein Spieler erfüllt die garantierte Wertung"};
+  }
+  return{available:true,groups,iconSlot:selectedIconSlot,iconGroup,icons:eligibleIcons,iconRate,guarantee};
+ }
+ function totalWeight(entries,k,guarantee,excluded=()=>false){
+  if(k===0)return guarantee?0:1;
+  const all=new Float64Array(k+1),yes=guarantee?new Float64Array(k+1):null;
+  all[0]=1;
+  let n=0;
+  for(const e of entries){
+   if(excluded(e))continue;
+   n++;
+   for(let j=Math.min(k,n);j>=1;j--){
+    if(yes)yes[j]+=e.w*(e.baseRating>=guarantee?all[j-1]:yes[j-1]);
+    all[j]+=e.w*all[j-1];
+   }
+  }
+  return guarantee?finite(yes[k]):finite(all[k]);
+ }
+ function sampleSubset(entries,count,guarantee,rng){
+  if(!count)return guarantee?null:[];
+  const n=entries.length,stride=count+1;
+  if(count>n)return null;
+  const all=new Float64Array((n+1)*stride);
+  const yes=guarantee?new Float64Array((n+1)*stride):null;
+  all[n*stride]=1;
+  for(let i=n-1;i>=0;i--){
+   const next=(i+1)*stride,here=i*stride,e=entries[i];
+   all[here]=1;
+   for(let j=1;j<=count;j++){
+    all[here+j]=all[next+j]+e.w*all[next+j-1];
+    if(yes)yes[here+j]=yes[next+j]+e.w*(e.baseRating>=guarantee?all[next+j-1]:yes[next+j-1]);
+   }
+  }
+  if(!(guarantee?yes[count]:all[count]))return null;
+  const selected=[];let remaining=count,need=!!guarantee;
+  for(let i=0;i<n&&remaining>0;i++){
+   const here=i*stride,next=(i+1)*stride,e=entries[i],good=e.baseRating>=guarantee;
+   const denom=need?yes[here+remaining]:all[here+remaining];
+   const numer=e.w*(need?(good?all[next+remaining-1]:yes[next+remaining-1]):all[next+remaining-1]);
+   const chance=denom>0?clamp(numer/denom):0;
+   if(rng()<chance){
+    selected.push(e.base);remaining--;if(good)need=false;
+   }
+  }
+  return remaining||need?null:selected;
+ }
+ function draw(pack,players,options={}){
+  const m=model(pack,players,options.icons);
+  if(!m.available)return{available:false,reason:m.reason,items:[]};
+  const rng=typeof options.random==="function"?options.random:Math.random;
+  const icon=rng()<m.iconRate?m.icons[Math.min(m.icons.length-1,Math.floor(rng()*m.icons.length))]:null;
+  const items=Array(pack.count);
+  for(let gi=0;gi<m.groups.length;gi++){
+   const g=m.groups[gi],remove=icon&&gi===m.iconGroup?1:0;
+   const guaranteed=g.required&&(icon&&gi===m.iconGroup&&Number(icon.ovr)>=g.required)?0:g.required;
+   const sample=sampleSubset(g.entries,g.slots.length-remove,guaranteed,rng);
+   if(!sample)return{available:false,reason:"Garantierte Inhalte nicht erfüllbar",items:[]};
+   let index=0;
+   for(const slot of g.slots){
+    if(icon&&slot===m.iconSlot)items[slot]={base:icon,icon:true};
+    else items[slot]={base:sample[index++],icon:false};
+   }
+  }
+  return{available:true,items,iconRate:m.iconRate};
  }
  function calculate(pack,players,options={}){
-  const all=Array.isArray(players)?players:[],icons=Array.isArray(options.icons)?options.icons.filter(i=>Number.isFinite(Number(i.ovr))):[];
-  const trials=Math.max(1000,Math.min(30000,Math.floor(Number(options.trials)||12000)));
-  const specs=specsFor(pack);
-  if(!specs.length||!all.length)return{available:false,reason:"Keine Spieler für die Quotenberechnung vorhanden."};
-  const classify=typeof options.classify==="function"?options.classify:null;
-  const meta=all.map(p=>{
-   const kind=classify?classify(p):null;
-   return{rating:Number(kind?.rating??p.ovr)||0,kind:kind?.kind||"base"}
-  });
-  const ranges=new Map();
-  const pools=specs.map(spec=>{
-   const key=spec.min+":"+spec.max;
-   if(ranges.has(key))return ranges.get(key);
-   let total=0;const ids=[],prefix=[];
-   for(let i=0;i<all.length;i++){
-    const rating=Number(all[i]?.ovr);
-    if(!(rating>=spec.min&&rating<=spec.max))continue;
-    total+=Math.pow(1.62,Math.max(0,spec.max-rating));
-    ids.push(i);prefix.push(total)
+  const m=model(pack,players,options.icons);
+  if(!m.available)return m;
+  const classify=typeof options.classify==="function"?options.classify:p=>({rating:Number(p.ovr)||0,kind:"base"});
+  const groups=m.groups.map(g=>({...g,entries:g.entries.map(e=>({...e,meta:classify(e.base)}))}));
+  const iconGroup=m.iconGroup,iconRate=m.iconRate;
+  const denomCache=new Map();
+  const denom=(idx,withIcon,meetsGuarantee)=>{
+   const g=groups[idx],k=g.slots.length-(withIcon&&idx===iconGroup?1:0);
+   const guarantee=idx===iconGroup&&withIcon&&meetsGuarantee?0:g.required;
+   const key=idx+":"+k+":"+guarantee;
+   if(!denomCache.has(key))denomCache.set(key,totalWeight(g.entries,k,guarantee));
+   return denomCache.get(key)
+  };
+  function noHit(predicate,withIcon,iconCanGuarantee){
+   let probability=1;
+   for(let i=0;i<groups.length;i++){
+    const g=groups[i],k=g.slots.length-(withIcon&&i===iconGroup?1:0);
+    const guarantee=withIcon&&i===iconGroup&&iconCanGuarantee?0:g.required;
+    const d=denom(i,withIcon,iconCanGuarantee);
+    if(!(d>0))return null;
+    const no=totalWeight(g.entries,k,guarantee,e=>predicate(e.meta));
+    probability*=clamp(no/d);
    }
-   const pool={ids,prefix,total};
-   ranges.set(key,pool);return pool
-  });
-  for(let i=0;i<pools.length;i++)if(!pools[i].ids.length)return{available:false,reason:"Mindestens eine Kartenkategorie ist nicht verfügbar."};
-  const groups=new Map(),groupOf=all.map(p=>{const id=String(p.id);if(!groups.has(id))groups.set(id,groups.size);return groups.get(id)});
-  const used=new Uint32Array(groups.size),rng=rngFromSeed(seedFor(pack,all,icons)),hit=Object.fromEntries(TARGETS.map(v=>[v,0]));
-  let valid=0,events=0,totws=0,anySpecial=0;
-  const iconChance=icons.length?Math.max(0,Math.min(1,Number(pack.iconChance)||0)):0;
-  for(let trial=1;trial<=trials;trial++){
-   const indices=[],rating=[],kind=[];let ok=true;
-   for(let j=0;j<specs.length;j++){
-    const pool=pools[j];let index=-1;
-    for(let attempts=0;attempts<120;attempts++){
-     let r=rng()*pool.total,lo=0,hi=pool.prefix.length-1;
-     while(lo<hi){const mid=(lo+hi)>>1;if(r<=pool.prefix[mid])hi=mid;else lo=mid+1}
-     const candidate=pool.ids[lo];
-     if(used[groupOf[candidate]]!==trial){index=candidate;break}
-    }
-    if(index<0)index=pool.ids.find(i=>used[groupOf[i]]!==trial)??-1;
-    if(index<0){ok=false;break}
-    used[groupOf[index]]=trial;
-    indices.push(index);rating.push(meta[index].rating);kind.push(meta[index].kind)
-   }
-   if(!ok)continue;
-   if(iconChance&&rng()<iconChance){
-    let slot=rating.findIndex(n=>n>=75);if(slot<0)slot=0;
-    const icon=icons[Math.floor(rng()*icons.length)];
-    rating[slot]=Number(icon.ovr)||0;
-    kind[slot]="icon";
-   }
-   valid++;
-   const best=Math.max(...rating);
-   for(const threshold of TARGETS)if(best>=threshold)hit[threshold]++;
-   if(kind.includes("event"))events++;
-   if(kind.includes("totw"))totws++;
-   if(kind.some(k=>k==="event"||k==="totw"||k==="icon"))anySpecial++;
+   return probability;
   }
-  if(!valid)return{available:false,reason:"Dieses Pack lässt sich mit dem aktuellen Spielerpool nicht vollständig generieren."};
-  const eligible=new Set(pools.flatMap(pool=>pool.ids));
-  const possibleRatings=Array.from(eligible,index=>meta[index].rating);
-  if(iconChance)possibleRatings.push(...icons.map(i=>Number(i.ovr)));
-  const maxPossible=Math.max(...possibleRatings);
-  const minimum=Math.max(Number(pack.guarantee)||0,...specs.map(s=>s.min));
-  const odds=(count,possible=true,guaranteed=false)=>({rate:guaranteed?1:!possible?0:count/valid,guaranteed,possible,hits:count});
-  const rows=TARGETS.map(threshold=>({threshold,...odds(hit[threshold],maxPossible>=threshold,minimum>=threshold)}));
-  const anyKind=k=>Array.from(eligible).some(index=>meta[index].kind===k);
-  return{available:true,trials:valid,requested:trials,rows,icon:odds(0,iconChance>0,false),
-   iconExact:iconChance,events:odds(events,anyKind("event")),totw:odds(totws,anyKind("totw")),
-   special:odds(anySpecial,iconChance>0||anyKind("event")||anyKind("totw")),
-   pack,minimum,highestPossible:maxPossible};
+  function rate(predicate,iconPredicate){
+   const without=noHit(predicate,false,false);
+   if(without===null)return null;
+   let no=(1-iconRate)*without;
+   if(iconRate){
+    const ratios=new Map();
+    for(const icon of m.icons){
+     if(iconPredicate(icon))continue;
+     const good=m.guarantee&&groups[iconGroup].required>0&&Number(icon.ovr)>=groups[iconGroup].required;
+     const key=good?"good":"bad";
+     if(!ratios.has(key))ratios.set(key,noHit(predicate,true,good));
+     if(ratios.get(key)===null)return null;
+     no+=iconRate*ratios.get(key)/m.icons.length;
+    }
+   }
+   return clamp(1-no);
+  }
+  const rating=p=>Number(p?.rating??0)||0;
+  const hits=[];
+  for(const threshold of TARGETS){
+   const answer=rate(m=>rating(m)>=threshold,i=>Number(i.ovr)>=threshold);
+   if(answer===null)return{available:false,reason:"Chancen konnten nicht berechnet werden"};
+   hits.push({threshold,rate:answer,guaranteed:answer>=1-1e-13,possible:answer>0});
+  }
+  const oddsOf=kind=>rate(p=>p?.kind===kind,()=>false);
+  const event=oddsOf("event"),totw=oddsOf("totw");
+  const special=rate(p=>["event","totw","icon"].includes(p?.kind),()=>true);
+  if([event,totw,special].some(x=>x===null))return{available:false,reason:"Spezialchancen konnten nicht berechnet werden"};
+  return{available:true,rows:hits,iconExact:iconRate,events:{rate:event,possible:event>0},totw:{rate:totw,possible:totw>0},
+   special:{rate:special,possible:special>0},method:"exact-weighted-subset-v1"};
  }
- function percent(row){
-  if(row.guaranteed)return"100 % (garantiert)";
-  if(row.possible===false)return"0 %";
-  if(row.rate>=1)return"> 99,9 %";
-  if(row.rate<0.001)return"< 0,1 %*";
-  return"≈ "+(row.rate*100).toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1})+" %";
+ function percent(value){
+  const row=typeof value==="number"?{rate:value}:value;
+  const rate=clamp(Number(row?.rate)||0);
+  if(row?.guaranteed||rate>=1-1e-13)return"100 % (garantiert)";
+  if(row?.possible===false||rate<=0)return"0 %";
+  const x=rate*100;
+  const decimals=x>=10?2:x>=1?3:x>=0.01?4:6;
+  if(x<0.000001)return"< 0,000001 %";
+  return x.toLocaleString("de-DE",{minimumFractionDigits:decimals,maximumFractionDigits:decimals})+" %";
  }
- return{calculate,percent,specsFor};
+ return{specsFor,model,draw,calculate,percent,totalWeight};
 });
