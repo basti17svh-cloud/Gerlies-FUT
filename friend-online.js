@@ -191,7 +191,13 @@
    try{
     client=await authClient();
     let {data:{session},error}=await client.auth.getSession();if(error)throw error;
-    if(!session){const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
+    if(!session){
+     if(localStorage.getItem("footera-cloud-owner")){
+       const status=$("onlineStatus");if(status)status.textContent="Bitte dein Footera-Konto wieder anmelden. Gastkonto wird nicht automatisch neu erstellt.";
+       return;
+     }
+     const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session
+    }
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
     // Never overwrite a different registered user's profile with this device's local save.
     if(session?.user?.is_anonymous===false&&localStorage.getItem("footera-cloud-owner")!==online.userId){
@@ -544,5 +550,8 @@ if(typeof window!=="undefined"&&typeof document!=="undefined"&&window.FooteraOnl
  const accountScript=document.createElement("script");
  accountScript.src="./footera-account.js?v=21109";
  accountScript.async=true;
+ const accountStyle=document.createElement("link");
+ accountStyle.rel="stylesheet";accountStyle.href="./footera-account.css?v=21109";
+ document.head.appendChild(accountStyle);
  document.head.appendChild(accountScript);
 }
