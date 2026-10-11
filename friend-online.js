@@ -2,7 +2,7 @@
 (()=>{
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const available=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(config.url||"")&&/^(sb_publishable_[\w-]{16,}|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(config.publishableKey||"");
- const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary,presence,refreshPresence,duelStats};
+ const online={available,ready:false,registered:false,userId:"",friendCode:"",init,render,invite,showComparison,syncProfile,queueProfileSync,fetchFriendProfile,getFriendCode,resolveFriendCode,openChat,unreadCount,unreadSummary,presence,refreshPresence,duelStats,authClient};
  window.FooteraOnline=online;
  const unreadCounts=new Map(),duelStatus=new Map(),presenceRows=new Map();
  let reconnectBusy=false,connectionError="",comparisonRequest=0,comparisonSyncKey="";
@@ -178,15 +178,27 @@
   if(!window.supabase?.createClient)throw new Error("Online-Bibliothek fehlt");
   return window.supabase
  }
+ async function authClient(){
+  if(client)return client;
+  const sdk=await loadSdk();
+  client=sdk.createClient(config.url.replace(/\/$/,""),config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  return client;
+ }
  async function init(){
   if(!state.profile?.username||!state.onboarded)return;
   if(started)return started;
   started=(async()=>{
    try{
-    const sdk=await loadSdk();client=sdk.createClient(config.url.replace(/\/$/,""),config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true}});
+    client=await authClient();
     let {data:{session},error}=await client.auth.getSession();if(error)throw error;
     if(!session){const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session}
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
+    // Never overwrite a different registered user's profile with this device's local save.
+    if(session?.user?.is_anonymous===false&&localStorage.getItem("footera-cloud-owner")!==online.userId){
+      online.ready=false;
+      const status=$("onlineStatus");if(status)status.textContent="Konto erkannt: erst den passenden Cloud-Spielstand laden oder lokalen Verein ausdrücklich zuordnen.";
+      return;
+    }
     online.ready=true;
     if(typeof syncFounderOnlineOwner==="function")syncFounderOnlineOwner(online.userId);
     ensureCommsUi();
@@ -526,3 +538,11 @@
  window.addEventListener("pagehide",stopTick);
  if(typeof module!=="undefined")module.exports={rankRows};
 })();
+
+/* Account UI is optional: keep the established friend/duel runtime independent. */
+if(typeof window!=="undefined"&&typeof document!=="undefined"&&window.FooteraOnline?.available){
+ const accountScript=document.createElement("script");
+ accountScript.src="./footera-account.js?v=21109";
+ accountScript.async=true;
+ document.head.appendChild(accountScript);
+}
