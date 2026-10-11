@@ -52,3 +52,17 @@ test('the store provides an odds button for purchased and owned packs',()=>{
  assert.match(html,/pack-odds-ui\.js\?v=21120/);
  assert.match(html,/pack-odds\.css\?v=21120/);
 });
+
+test('duplicate database IDs never count as separate pack players',()=>{
+ const pack={id:'duplicates',count:2,min:75,max:99};
+ const players=[player('same',75),player('same',90)];
+ assert.equal(odds.calculate(pack,players,{trials:1000}).available,false);
+});
+test('an unavailable event card cannot appear in a Bronze pack',()=>{
+ const pack={id:'bronze-event',count:1,min:0,max:64};
+ const players=[player('bronze',59),player('event',86)];
+ const result=odds.calculate(pack,players,{trials:1000,classify:p=>({rating:p.ovr,kind:p.id==='event'?'event':'base'})});
+ assert.equal(result.available,true);
+ assert.equal(result.events.possible,false);
+ assert.equal(odds.percent(result.events),'0 %');
+});
