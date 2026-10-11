@@ -127,14 +127,14 @@ function queueMatch3D(event){
   wideRight?/^(RB|RV|RWB)$/.test(p)?0:/^(CB|IV)$/.test(p)?1:2:
   /^(CB|IV)$/.test(p)?0:/^(CDM|ZDM)$/.test(p)?1:2};
  const closest=defenders.slice().sort((a,b)=>priority(a)-priority(b)||a.index-b.index);
- const picked=closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null;
+ const picked=event.type==='ball_won'?(opponents.find(row=>(event.defenderUid&&String(row.uid)===String(event.defenderUid))||(Number.isInteger(event.defenderSourceIndex)&&Number(row.index)===event.defenderSourceIndex))||closest[0]||null):(closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null);
  const defender=picked;
  const styleFor=row=>row?match3DActorStyles(defending,{uid:row.uid,index:row.index,name:row.name}):[];
  presentation.keeperName=event.keeperName||goalie?.name||'';
  presentation.keeperStyles=styleFor(goalie);
  presentation.defenderStyles=styleFor(defender);
  presentation.defenderName=defender?.name||'';
- presentation.defenderIndex=wideLeft?9:wideRight?10:8;
+ presentation.defenderIndex=event.type==='ball_won'?8:wideLeft?9:wideRight?10:8;
   const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
@@ -146,7 +146,7 @@ function queueMatch3D(event){
  presentation.playSeconds=selected.seconds||10.4;
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
- presentation.defenderAction=reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
+ presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':event.sequence==='defense_slide_tackle'?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
@@ -163,7 +163,19 @@ function queueMatch3D(event){
 }
 // Simulation records tackles, interceptions, cards and stats unchanged.
 // Standalone turnover clips are retired; slide/block moves within shots remain.
-function queueMatchDefensive3D(){return false}
+function queueMatchDefensive3D(action,attackingSide,attacker){
+ // Only actual simulator events may be presented. No RNG draws or match result changes.
+ if(!action||!match||!['tackle','interception'].includes(action.kind)||!attacker||!FooteraHighlights.accepts('ball_won'))return false;
+ const shown=Number(match.defenseHighlightsShown||0),minute=Number(action.minute);
+ if(shown>=2||!Number.isFinite(minute)||minute<(shown?55:18)||minute-Number(match.lastDefenseHighlightMinute||-100)<17)return false;
+ const styles=match3DActorStyles(action.side,{uid:action.uid,index:action.index,name:action.name});
+ const sliding=action.kind==='tackle'&&styles.some(style=>style.id==='slide-tackle');
+ const sequence=action.kind==='interception'?(minute%2?'defense_interception':'defense_press_recovery'):(sliding?'defense_slide_tackle':'defense_standing_tackle');
+ const queued=queueMatch3D({id:'defense:'+match.defensiveEvents.length,type:'ball_won',minute,team:attackingSide,playerId:attacker.uid??attacker.index,
+  playerName:attacker.name||'Angreifer',defenderUid:action.uid,defenderSourceIndex:action.index,defenseKind:action.kind,sequence,finish:'normal'});
+ if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute}
+ return queued;
+}
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
