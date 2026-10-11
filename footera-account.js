@@ -361,6 +361,7 @@
    labelValue("footeraProfileUsername",club.username||"Noch kein Benutzername");
    labelValue("footeraProfileClub",club.clubName||"Noch kein Verein");
    labelValue("footeraProfileEmail",u.email||"Über Google angemeldet");
+   labelValue("footeraProfileFriendCode",root.FooteraOnline?.friendCode||"Noch nicht synchronisiert");
    labelValue("footeraProfileCards",state?.club?.length??"–");
    labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
    labelValue("footeraProfilePoints",state?integerValue(state.points):"–");
@@ -544,7 +545,7 @@
      '<h3 class="footera-profile-section-title">Mein Verein</h3>'+
      '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
      '<h3 class="footera-profile-section-title">Mein Konto</h3>'+
-     '<dl class="footera-profile-details"><div><dt>E-Mail-Adresse</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Anmeldung über</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Cloud-Spielstand</dt><dd id="footeraProfileCloud">–</dd></div></dl>'+
+     '<dl class="footera-profile-details"><div><dt>E-Mail-Adresse</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Anmeldung über</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Cloud-Spielstand</dt><dd id="footeraProfileCloud">–</dd></div></dl>'+
      '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileBackup" type="button">Spielstand sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
      '<div class="footera-profile-danger"><small>GEFAHRENBEREICH</small><h3>Konto endgültig löschen</h3><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
      '</section>';
