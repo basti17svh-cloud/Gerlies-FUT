@@ -1,0 +1,26 @@
+/* Footera Account modal: isolated from the game card renderer */
+.footera-account-entry{position:fixed;right:12px;bottom:82px;z-index:115;padding:10px 15px;border:1px solid #85996c;border-radius:999px;background:#14221c;color:#e5ff95;font-size:12px;font-weight:800;box-shadow:0 6px 24px #000a}
+.footera-account-panel{padding:16px;margin:16px 0;border:1px solid #46594a;border-radius:14px;background:linear-gradient(130deg,#15261e,#11201b);color:#f2fff6}
+.footera-account-panel small,.footera-account-modal small{letter-spacing:.15em;color:#b8d06c;font-size:10px;font-weight:800}
+.footera-account-panel h3{font-size:19px;margin:5px 0}.footera-account-panel p{font-size:12px;color:#c0ccc6;margin:5px 0 12px}
+.footera-account-panel button{padding:10px 14px;border:1px solid #c9e99a;background:#d8ff3e;color:#101b0d;border-radius:9px;font-weight:800}
+.footera-account-overlay[hidden],.footera-account-modal [hidden]{display:none!important}
+.footera-account-overlay{position:fixed;inset:0;z-index:9999;background:#040907e9;display:flex;align-items:center;justify-content:center;padding:13px;overflow:auto}
+.footera-account-modal{font-family:inherit;width:min(100%,440px);max-height:95dvh;overflow-y:auto;background:#142019;border:1px solid #486345;border-radius:18px;padding:18px;color:#f3fff4;box-shadow:0 24px 70px #000c}
+.footera-account-modal header{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:8px}.footera-account-modal h2{font-size:23px;margin:4px 0}
+.footera-account-modal header button{border:1px solid #566358;background:#26352b;color:white;border-radius:50%;width:34px;height:34px}
+.footera-account-modal p{font-size:12px;line-height:1.5;color:#cbd6cd;margin:7px 0}
+.footera-account-status{font-weight:800;color:#f4ffe3!important}
+.footera-account-google{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff!important;color:#161c19!important;padding:12px!important;margin:16px 0 6px;border:0!important;border-radius:10px!important;font-weight:800;font-size:14px;min-height:46px}
+.footera-account-google span{font-weight:900;font-size:19px;color:#4285f4}
+.footera-account-link{display:block;background:transparent;border:0;color:#d9eeae;text-decoration:underline;padding:8px 3px;font-size:11px;margin:5px auto}
+.footera-account-separator{display:flex;gap:12px;align-items:center;justify-content:center;font-size:11px;color:#9daf9f;margin:15px 0}.footera-account-separator:before,.footera-account-separator:after{content:"";height:1px;flex:1;background:#445446}
+.footera-account-modal label{display:block;font-size:12px;color:#dfe9dd;font-weight:700;margin:10px 0}
+.footera-account-modal input{box-sizing:border-box;width:100%;margin-top:6px;font:inherit;font-size:14px;background:#0c1610;color:#f7fff7;border:1px solid #506454;border-radius:9px;min-height:44px;padding:10px 12px}
+.footera-account-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.footera-account-actions button{flex:1 1 auto;border-radius:8px;min-height:39px;padding:8px 10px;font-size:12px;font-weight:800;background:#d8ff3e;color:#172216;border:1px solid #aac836}
+.footera-account-actions button:nth-child(n+2){background:#293a2d;color:#eaf4e8;border-color:#576951}
+.footera-account-actions button:disabled{opacity:.4;cursor:not-allowed}
+.footera-account-cloud{border-top:1px solid #435747;margin-top:13px;padding-top:15px}.footera-account-cloud strong{color:#dfff7b;font-size:13px}
+#footeraAccountMessage{min-height:19px;color:#d8ff8d;font-weight:700}#footeraAccountMessage[data-error="1"]{color:#ffaf98}
+.footera-account-note{margin-top:15px!important;font-size:10px!important;color:#9dab9c!important}
+@media(max-width:480px){.footera-account-entry{right:8px;bottom:75px;padding:9px 12px}.footera-account-modal{padding:15px}.footera-account-overlay{padding:8px}}
