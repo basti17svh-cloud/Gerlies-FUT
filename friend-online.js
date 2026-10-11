@@ -9,7 +9,7 @@
  let presenceBusy=false,presenceLastAttempt=-Infinity,presenceKey="",presenceTimer=null;
  if(!available)return;
  $("onlinePanel").hidden=false;
- let client=null,started=null,channel=null,messageChannel=null,active=null,rows=[],rowsLoaded=false,comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;
+ let client=null,clientPromise=null,started=null,channel=null,messageChannel=null,active=null,rows=[],rowsLoaded=false,comparison=null,comparing="",ticker=null,pollTimer=null,profileSyncTimer=null,lastProfileSignature="",seenGoal="",notified=new Set(),draftSubOut="",draftSubIn="",chatFriend=null,chatMessages=[],noticeTimer=0,onlineManagerOpen=false,goalMomentUntil=0,goalMomentTimer=null;
  const escape=s=>esc(String(s??""));
  const team=(d,side)=>d?.[`${side}_profile`]?.club_name||"Footera Club";
  const sideOf=d=>d?.home_user===online.userId?"home":"away";
@@ -180,9 +180,13 @@
  }
  async function authClient(){
   if(client)return client;
-  const sdk=await loadSdk();
-  client=sdk.createClient(config.url.replace(/\/$/,""),config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  return client;
+  if(!clientPromise){
+   clientPromise=loadSdk().then(sdk=>{
+    if(!client)client=sdk.createClient(config.url.replace(/\/$/,""),config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    return client;
+   }).catch(e=>{clientPromise=null;throw e});
+  }
+  return clientPromise;
  }
  async function init(){
   if(!state.profile?.username||!state.onboarded)return;
