@@ -117,9 +117,10 @@
      throw Error("Dieser lokale Spielstand ist nicht mit dem angemeldeten Konto verbunden. Lade zuerst deine Cloud-Sicherung.");
    }
  }
- async function cloudInfo(){
+ async function cloudInfo(metadataOnly=false){
    const {c}=await requirePermanent();
-   const {data,error}=await c.from("footera_cloud_saves").select("save_data,revision,saved_at").maybeSingle();
+   const fields=metadataOnly?"revision,saved_at":"save_data,revision,saved_at";
+   const {data,error}=await c.from("footera_cloud_saves").select(fields).maybeSingle();
    if(error)throw error;
    return data;
  }
@@ -181,8 +182,10 @@
        return;
      }
      const eligible=owner===u.id||registrationOwner()===u.id;
-     const cloud=await cloudInfo();
-     if(!hasLocalGame()){
+     const localPresent=hasLocalGame();
+     if(localPresent&&!eligible)return;
+     const cloud=await cloudInfo(!!syncPoint(u)&&localPresent);
+     if(!localPresent){
        if(cloud){
          const saved=root.FooteraBackup?.validateState(cloud.save_data);
          if(!saved)throw Error("Cloud-Sicherung konnte nicht geprüft werden.");
@@ -209,11 +212,11 @@
        if(root.FooteraOnline&&!root.FooteraOnline.ready)root.location.reload();
        return;
      }
-     if(cloud.save_data?.profile?.saveId!==save.profile?.saveId){
+     const point=syncPoint(u);
+     if(cloud.save_data&&cloud.save_data?.profile?.saveId!==save.profile?.saveId){
        autoStatus="Im Konto ist bereits ein anderer Verein gesichert. Keine automatische Überschreibung.";
        return;
      }
-     const point=syncPoint(u);
      if(!point){
        if(structurallyEqual(cloud.save_data,save)){
          root.localStorage.setItem(OWNER,u.id);
@@ -382,7 +385,7 @@
    $("footeraSetPassword").textContent=logged||recovery?"Passwort festlegen / ändern":"Passwort vergessen";
    $("footeraAccountPassword").placeholder=guest?"Nach E-Mail-Bestätigung festlegen":"Mindestens 10 Zeichen";
    if(logged){
-     try{$("footeraAccountCloud").textContent=cloudText(await cloudInfo())+(autoStatus?" · "+autoStatus:"")}
+     try{$("footeraAccountCloud").textContent=cloudText(await cloudInfo(true))+(autoStatus?" · "+autoStatus:"")}
      catch(e){$("footeraAccountCloud").textContent="Cloud nicht erreichbar: "+safeMessage(e)}
    }else $("footeraAccountCloud").textContent="Cloud-Sicherung nach der Anmeldung verfügbar.";
  }
