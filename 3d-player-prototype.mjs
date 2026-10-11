@@ -402,6 +402,30 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
  }
  const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
+ // The keeper's guide rotates about the feet, not the imported pelvis.
+ // Preserve that entire transform before retargeting individual joints.
+ const authoredFacing=normalized.quaternion.clone();
+ const keeperArms=['l','r'].map(side=>{
+  const shoulder=bones.get('upperarm_'+side),elbow=bones.get('lowerarm_'+side),hand=bones.get('hand_'+side);
+  return{shoulder,elbow,hand,upper:shoulder.getWorldPosition(new THREE.Vector3()).distanceTo(elbow.getWorldPosition(new THREE.Vector3())),
+   lower:elbow.getWorldPosition(new THREE.Vector3()).distanceTo(hand.getWorldPosition(new THREE.Vector3()))};
+ });
+ function matchKeeperHands(){
+  playerRoot.updateMatrixWorld(true);
+  for(let i=0;i<2;i++){
+   const limb=keeperArms[i];limb.shoulder.getWorldPosition(hp);
+   existingDriver.gloves[i].getWorldPosition(target);
+   existingDriver.elbows[i].getWorldPosition(kp);
+   direction.copy(target).sub(hp);
+   const distance=clamp(direction.length(),.001,limb.upper+limb.lower-.00001);
+   direction.normalize();pole.copy(kp).sub(hp);pole.addScaledVector(direction,-pole.dot(direction));
+   if(pole.lengthSq()<1e-8){pole.set(0,0,-1).applyQuaternion(playerRoot.getWorldQuaternion(worldQ));pole.addScaledVector(direction,-pole.dot(direction))}
+   pole.normalize();
+   const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
+   desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
+   pointBone(limb.shoulder,limb.elbow,desiredKnee);pointBone(limb.elbow,limb.hand,target);
+  }
+ }
  // Keepers must NOT inherit striker running clips on top of their save pose.
  const keeperIdle=Object.freeze({bob:0,pelvisPitch:0,pelvisYaw:0,pelvisRoll:0,
   spinePitch:0,spineYaw:0,spineRoll:0,headPitch:0,headYaw:0,headRoll:0,
@@ -417,9 +441,17 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // The existing Footera pose owns shot contact and leg planting. The
   // imported GLB adds a modest counter-rotating kinetic chain and head aim.
   // Rest-posed neutral quaternions prevent cumulative joint rotation.
-  normalized.position.y=clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
-  apply('pelvis',driver.rig.rotation.x*(keeperRole?.76:.45)+m.pelvisPitch,
-   driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*(keeperRole?.88:.7)+m.pelvisRoll);
+  if(keeperRole){
+   normalized.position.copy(driver.rig.position);
+   normalized.quaternion.copy(driver.rig.quaternion).multiply(authoredFacing);
+   apply('pelvis',0,0,0);
+  }else{
+   normalized.position.set(0,0,0);
+   normalized.position.y=clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
+   normalized.quaternion.copy(authoredFacing);
+   apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,
+    driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);
+  }
   apply('spine_01',driver.upper.rotation.x*(keeperRole?.67:.48)+m.spinePitch*.37+clipState.torsoPitch*.38,driver.upper.rotation.y*(keeperRole?.65:.48)+m.spineYaw*.38,driver.upper.rotation.z*(keeperRole?.66:.45)+m.spineRoll*.37+clipState.torsoRoll*.40);
   apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35+clipState.torsoPitch*.32,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34+clipState.torsoRoll*.35);
   apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28+clipState.torsoPitch*.30,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29+clipState.torsoRoll*.25);
@@ -436,6 +468,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow),0,driver.elbows[i].rotation.z);
   }
   matchFeet();
+  if(keeperRole)matchKeeperHands();
  }
  function inspectMotion(){
   playerRoot.updateMatrixWorld(true);

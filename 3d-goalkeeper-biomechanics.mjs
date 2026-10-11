@@ -1,4 +1,4 @@
-/* Footera V21.105 — goalkeeper-only biomechanics.
+/* Footera V21.114 — goalkeeper-only biomechanics.
  * One coordinated controller owns ready stance, shuffle, load, takeoff,
  * asymmetric flight, landing and recovery. The event outcome/ball are read-only.
  * Stable time sampling: no simulation RNG, allocation per frame, or timers.
@@ -6,7 +6,7 @@
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(x)?x:a));
 const ease=(t,a,b)=>{const u=clamp((t-a)/(b-a));return u*u*(3-2*u)};
 const pulse=(t,a,b,c,d)=>ease(t,a,b)*(1-ease(t,c,d));
-export const GOALKEEPER_MOTION_VERSION='21.105-biomechanical-keeper';
+export const GOALKEEPER_MOTION_VERSION='21.114-visible-keeper-contact';
 export const GOALKEEPER_ACTIONS=Object.freeze(['classic','fingertip','parry','low_reflex','rush_spread','high_reach','beaten']);
 export function sampleGoalkeeperMotion(time,type='goal',action='classic',impactX=2.5,impactY=1.1){
  const t=clamp(time,0,10.4),save=type==='big_chance_saved',side=Math.sign(impactX)||1,
@@ -36,26 +36,34 @@ export function applyGoalkeeperMotion(p,time,base,type='goal',action='classic',i
   high=m.high?1.25:1,low=m.low?1:0,spread=m.spread?1:0;
  // Center of mass: a visible small lateral set-step, explosive lateral
  // transfer in the air, turf absorption and a planted get-up. Ball never moves.
- const drift=side*(.16*shuffle+.19*flight+.055*landing*(1-rise));
- p.root.position.x+=drift;
- p.root.position.y=Math.max(0,base.y+.065*plant+m.altitude-.065*grounded);
+ // Position the shoulder BEHIND the interception, leaving room to extend the
+ // arm toward the ball. Moving the old standing root sideways plus rotating
+ // the torso used to overshoot it, forcing the hand to reach backwards.
+ const settle=ease(time,6.70,7.25),reachableX=save?impactX:side*Math.min(Math.abs(impactX),2.9),
+  intercept=reachableX-side*(m.spread?1.25:2.05);
+ p.root.position.x=(base.x??side*.1)*(1-m.launch)+intercept*m.launch
+  +side*(.16*shuffle+.22*settle+.90*rise);
+ p.root.position.y=Math.max(0,(base.y+.065*plant+m.altitude)*(1-grounded)+.34*grounded);
  p.shadow.position.y=.022-p.root.position.y;
- p.rig.rotation.z=base.tilt*.73+side*(.08*shuffle+.09*plant+.11*flight-.085*grounded);
+ // Stay side-on through turf contact. Recovery starts only after the landing
+ // has settled; a pelvis-only roll left the visible player standing in mid-air.
+ p.rig.rotation.z=side*(.08*shuffle+.09*plant+
+  ((m.spread?.60:1.23)*m.launch+(m.spread?.36:.24)*ease(time,6.65,7.10))*(1-rise));
  p.rig.rotation.x=-.10*plant+(.09+.18*low)*flight+.23*grounded*(1-rise);
  p.rig.rotation.y=side*(.07*shuffle+.14*flight-.09*grounded);
  p.rig.position.y=-.025*ready-.105*plant*(1-flight)-.11*grounded+.055*rise;
  // Head/shoulders look into the flight, but counter-rotate against the hips.
  p.upper.rotation.x=-.13*ready-.11*plant+.19*flight+.25*grounded-.18*rise;
  p.upper.rotation.y=side*(.12*shuffle+.17*plant+.21*flight-.19*rise);
- p.upper.rotation.z=-side*(.08*plant+.19*flight)+side*.11*grounded;
+ p.upper.rotation.z=-side*(.08*plant+.08*flight)+side*.06*grounded;
  // Loaded outside leg drives the lateral push, inside leg trails. Both legs
  // tuck asymmetrically on impact so the body no longer resembles a hinged rod.
  for(let i=0;i<2;i++){
   const push=i===trail,leadLeg=i===lead;
-  const load=plant*(push?-.49:-.37);
-  p.legs[i].rotation.x=load+flight*(push?-.46:.43)+landing*(push?.25:.52)+grounded*(push?-.24:-.11);
+  const load=plant*(push?.49:.37),kneel=pulse(time,7.95,8.48,8.72,9.18);
+  p.legs[i].rotation.x=.12*ready+load+flight*(push?-.46:.43)+landing*(push?.25:.52)+grounded*(push?.50:.30)+kneel*(push?.85:.35);
   p.knees[i].rotation.x=-.20*ready-.78*plant*(push?1.18:.80)
-   +flight*(push?-.20:.31)-.52*grounded*(push?1:.78)+.18*rise;
+   +flight*(push?-.20:.31)-.52*grounded*(push?1:.78)+.18*rise-kneel*(push?.75:.42);
   p.ankles[i].rotation.x=.12*plant+flight*(push?-.28:.20)+.14*grounded-.08*rise;
   p.legs[i].rotation.z=(i===0?1:-1)*(.095*ready+.10*shuffle+.10*landing)
    +side*(push?-.22:.31)*flight*(1+.25*spread);
@@ -64,10 +72,10 @@ export function applyGoalkeeperMotion(p,time,base,type='goal',action='classic',i
  // The glove-side arm leads the ball, the other shields the landing. Hands
  // remain separate; a narrow IK blend near a real save handles exact contact.
  const reach=(save?1:.68)*(1+.18*m.high);
- p.arms[lead].rotation.z=nearSign*(.38*ready+.25*plant+1.04*flight*reach+.24*landing-.28*rise);
- p.arms[trail].rotation.z=-nearSign*(.34*ready+.16*plant+.52*flight+.20*grounded-.25*rise);
- p.arms[lead].rotation.x=-.12*ready-.34*flight*high+.24*grounded;
- p.arms[trail].rotation.x=.09*ready+.15*flight-.30*grounded;
+ p.arms[lead].rotation.z=nearSign*(.38*ready+.25*plant+1.76*flight*reach+.24*landing-.28*rise);
+ p.arms[trail].rotation.z=-nearSign*(.34*ready+.16*plant+1.58*flight+.20*grounded-.25*rise);
+ p.arms[lead].rotation.x=.20*ready-.34*flight*high+.24*grounded;
+ p.arms[trail].rotation.x=.20*ready+.15*flight-.30*grounded;
  p.arms[lead].rotation.y=side*(.08*plant+.18*flight);
  p.arms[trail].rotation.y=-side*.09*flight;
  p.elbows[lead].rotation.x=.37*ready+.21*plant-(m.high?.13:0)*flight-.24*contact+.28*grounded;

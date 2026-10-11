@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21105';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21114';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
@@ -8,7 +8,7 @@ import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
 import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
-import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21105';
+import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
@@ -1181,15 +1181,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function aimArm(arm,point){
    arm.parent.updateWorldMatrix(true,false);
    const end=arm.parent.worldToLocal(new THREE.Vector3(...worldPosition(point,direction))),start=arm.position.clone();
-   const delta=end.clone().sub(start),length=Math.min(.599,delta.length()),axis=delta.normalize();
+   const delta=end.clone().sub(start),length=clamp(delta.length(),.0101,.6299),axis=delta.normalize();
    const bend=new THREE.Vector3(0,0,1).cross(axis).normalize();
-   const joint=start.clone().addScaledVector(axis,length/2).addScaledVector(bend,Math.sqrt(.30*.30-(length/2)**2));
+   const along=(.32*.32-.31*.31+length*length)/(2*length);
+   const joint=start.clone().addScaledVector(axis,along).addScaledVector(bend,Math.sqrt(Math.max(0,.32*.32-along*along)));
    arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),joint.clone().sub(start).normalize());
    const elbow=keeper.elbows[keeper.arms.indexOf(arm)];
    const lower=end.clone().sub(joint).normalize().applyQuaternion(arm.quaternion.clone().invert());
    elbow.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0),lower);
   }
-  const keeperGuideArmBefore=new THREE.Quaternion(),keeperGuideElbowBefore=new THREE.Quaternion();
+  const keeperGuidePoint=new THREE.Vector3();
   const keeperContactWorld=new THREE.Vector3();
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
@@ -1245,7 +1246,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // Seek rather than increment mixer clocks: stable on skip, replay and
    // deterministic screenshots. No impact on match outcome/timeline.
    if(players[0].skeletonMotion)players[0].skeletonMotion.mixer.setTime(time);
-   if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(time);
+   if(keeper.skeletonMotion)keeper.skeletonMotion.mixer.setTime(0);
    const authoredTouches=getPlay(sequence)?playTouches(getPlay(sequence)):null;
    // Every member of a combination can now absorb the incoming ball.
    // Previously only attacker 0/1 had a reception motion in these sequences.
@@ -1480,22 +1481,30 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     keeper.rig.rotation.z=0;
    }else{
     applyGoalkeeperMotion(keeper,time,kp,event.type,keeperAction,impact[0],impact[1]);
+    // A loaded knee bend lowers the hips; it must not lift both boots off turf.
+    // Release the support constraint for flight, restore it as the keeper rises.
+    const support=Math.max(1-smooth((time-5.79)/.32),smooth((time-8.68)/.50));
+    if(support>.001){
+     let sole=Infinity;
+     for(const ankle of keeper.ankles){ankle.getWorldPosition(keeperContactWorld);field.worldToLocal(keeperContactWorld);sole=Math.min(sole,keeperContactWorld.y)}
+     keeper.root.position.y-=(sole-.07)*support;
+     keeper.shadow.position.y=.022-keeper.root.position.y;
+    }
     // Only an actual SAVE gets contact IK. One hand reaches the ball;
     // the other braces just behind it instead of two stiff parallel arms.
     const saved=event.type==='big_chance_saved',side=Math.sign(impact[0])||1;
     const lead=side>0?0:1,other=1-lead;
     const toContact=smooth((time-6.22)/.26)*(1-smooth((time-6.80)/.24));
+    const guide=(index,point,weight)=>{
+      // Blend the endpoint, not two arm quaternions: their shortest rotation
+      // can switch sides mid-reach and jerk the whole keeper via contact IK.
+      keeper.gloves[index].getWorldPosition(keeperGuidePoint);
+      field.worldToLocal(keeperGuidePoint);
+      aimArm(keeper.arms[index],[mix(keeperGuidePoint.x,point[0],weight),
+       mix(keeperGuidePoint.y,point[1],weight),mix(keeperGuidePoint.z,point[2],weight)]);
+    };
     if(saved&&toContact>.001){
-     const guide=(index,point,weight)=>{
-      const arm=keeper.arms[index],elbow=keeper.elbows[index];
-      keeperGuideArmBefore.copy(arm.quaternion);
-      keeperGuideElbowBefore.copy(elbow.quaternion);
-      aimArm(arm,point);
-      arm.quaternion.slerpQuaternions(keeperGuideArmBefore,arm.quaternion,weight);
-      elbow.quaternion.slerpQuaternions(keeperGuideElbowBefore,elbow.quaternion,weight);
-     };
      guide(lead,[impact[0],impact[1],-50.6],toContact);
-     guide(other,[impact[0]-side*.33,Math.max(.22,impact[1]-.24),-50.49],toContact*.46);
     }
     // Read the ACTUAL animated glove position, not a guessed reach length.
     // Blend the center-of-mass toward that interception over the whole leap.
@@ -1510,6 +1519,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      keeper.root.position.y=Math.max(0,keeper.root.position.y+(impact[1]-keeperContactWorld.y)*catchWeight);
      keeper.root.position.z+=(impact[2]-keeperContactWorld.z)*catchWeight;
      keeper.shadow.position.y=.022-keeper.root.position.y;
+    }
+    // Aim the supporting hand after root interception correction, otherwise
+    // that correction lifts the second hand away from the ball as well.
+    if(saved&&toContact>.001)
+     guide(other,[impact[0]-side*.33,Math.max(.22,impact[1]-.24),-50.49],toContact*.92);
+    // Brace against the turf during landing and the first part of getting up.
+    // Targets stay in field space, so neither hand passes through the grass.
+    const brace=smooth((time-6.82)/.35)*(1-smooth((time-8.48)/.55));
+    if(brace>.001){
+     guide(lead,[keeper.root.position.x+side*1.24,.10,keeper.root.position.z+.28],brace);
+     guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
     }
    }
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);

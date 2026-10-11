@@ -57,6 +57,14 @@ test('keeper animation is deterministic and cannot consume simulation RNG',async
  assert.deepEqual(sample(6.4,'goal','classic',-2.5),sample(6.4,'goal','classic',-2.5));
 });
 
+test('a shot far outside the post does not drag the keeper out of the goalmouth',async()=>{
+ const {applyGoalkeeperMotion:apply}=await load();
+ for(const side of [-1,1]){
+  const body=rig();apply(body,6.65,{x:side*.8,y:.4,tilt:side},'big_chance_missed','classic',side*6.05,1.5);
+  assert.ok(Math.abs(body.root.position.x)<1.2);
+ }
+});
+
 test('scene delegates to one keeper controller; saved ball gets short contact-only glove IK',()=>{
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.ok(scene.includes('applyGoalkeeperMotion(keeper,time,kp'));
@@ -64,5 +72,5 @@ test('scene delegates to one keeper controller; saved ball gets short contact-on
   assert.ok(!scene.includes(obsolete),obsolete);
  assert.ok(scene.includes('if(saved&&toContact>.001)'));
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- assert.ok(sw.includes('./3d-goalkeeper-biomechanics.mjs?v=21105'));
+ assert.ok(sw.includes('./3d-goalkeeper-biomechanics.mjs?v=21114'));
 });
