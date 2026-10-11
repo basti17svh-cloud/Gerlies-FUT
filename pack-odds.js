@@ -141,41 +141,63 @@
    if(!denomCache.has(key))denomCache.set(key,totalWeight(g.entries,k,guarantee));
    return denomCache.get(key)
   };
-  function noHit(predicate,withIcon,iconCanGuarantee){
+  function hitWeight(entries,k,guarantee,predicate){
+   if(k===0)return 0;
+   const all=new Float64Array(k+1),hit=new Float64Array(k+1);
+   const good=guarantee?new Float64Array(k+1):null;
+   const both=guarantee?new Float64Array(k+1):null;
+   all[0]=1;let n=0;
+   for(const e of entries){
+    n++;
+    const h=predicate(e.meta),g=!!guarantee&&e.baseRating>=guarantee;
+    for(let j=Math.min(k,n);j>=1;j--){
+     const a=all[j-1],hBefore=hit[j-1];
+     if(good){
+      const gBefore=good[j-1],bBefore=both[j-1];
+      both[j]+=e.w*(h&&g?a:h?gBefore:g?hBefore:bBefore);
+      good[j]+=e.w*(g?a:gBefore);
+     }
+     hit[j]+=e.w*(h?a:hBefore);
+     all[j]+=e.w*a;
+    }
+   }
+   return guarantee?both[k]:hit[k];
+  }
+  function hitChance(predicate,withIcon,iconCanGuarantee){
    let probability=1;
    for(let i=0;i<groups.length;i++){
     const g=groups[i],k=g.slots.length-(withIcon&&i===iconGroup?1:0);
     const guarantee=withIcon&&i===iconGroup&&iconCanGuarantee?0:g.required;
     const d=denom(i,withIcon,iconCanGuarantee);
     if(!(d>0))return null;
-    const no=totalWeight(g.entries,k,guarantee,e=>predicate(e.meta));
-    probability*=clamp(no/d);
+    const numerator=hitWeight(g.entries,k,guarantee,predicate);
+    probability*=clamp(1-clamp(numerator/d));
    }
-   return probability;
+   return clamp(1-probability);
   }
   function rate(predicate,iconPredicate){
-   const without=noHit(predicate,false,false);
+   const without=hitChance(predicate,false,false);
    if(without===null)return null;
-   let no=(1-iconRate)*without;
+   let result=(1-iconRate)*without;
    if(iconRate){
     const ratios=new Map();
     for(const icon of m.icons){
-     if(iconPredicate(icon))continue;
-     const good=m.guarantee&&groups[iconGroup].required>0&&Number(icon.ovr)>=groups[iconGroup].required;
+     if(iconPredicate(icon)){result+=iconRate/m.icons.length;continue}
+     const good=!!m.guarantee&&groups[iconGroup].required>0&&Number(icon.ovr)>=groups[iconGroup].required;
      const key=good?"good":"bad";
-     if(!ratios.has(key))ratios.set(key,noHit(predicate,true,good));
+     if(!ratios.has(key))ratios.set(key,hitChance(predicate,true,good));
      if(ratios.get(key)===null)return null;
-     no+=iconRate*ratios.get(key)/m.icons.length;
+     result+=iconRate*ratios.get(key)/m.icons.length;
     }
    }
-   return clamp(1-no);
+   return clamp(result);
   }
   const rating=p=>Number(p?.rating??0)||0;
   const hits=[];
   for(const threshold of TARGETS){
    const answer=rate(m=>rating(m)>=threshold,i=>Number(i.ovr)>=threshold);
    if(answer===null)return{available:false,reason:"Chancen konnten nicht berechnet werden"};
-   hits.push({threshold,rate:answer,guaranteed:answer>=1-1e-13,possible:answer>0});
+   hits.push({threshold,rate:answer,guaranteed:(Number(pack.guarantee)||0)>=threshold||m.groups.every(g=>g.min>=threshold)&&(!m.iconRate||m.icons.every(i=>Number(i.ovr)>=threshold)),possible:answer>0});
   }
   const oddsOf=kind=>rate(p=>p?.kind===kind,()=>false);
   const event=oddsOf("event"),totw=oddsOf("totw");
@@ -187,7 +209,8 @@
  function percent(value){
   const row=typeof value==="number"?{rate:value}:value;
   const rate=clamp(Number(row?.rate)||0);
-  if(row?.guaranteed||rate>=1-1e-13)return"100 % (garantiert)";
+  if(row?.guaranteed)return"100 % (garantiert)";
+  if(rate>=1)return"100,00 %";
   if(row?.possible===false||rate<=0)return"0 %";
   const x=rate*100;
   const decimals=x>=10?2:x>=1?3:x>=0.01?4:6;
