@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.119</title>
+<title>Footera V21.120</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1518,6 +1518,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./playstyles.css?v=2114">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <script src="./club-crest-art.js?v=2130"></script>
+<script src="./pack-odds.js?v=21120"></script>
+<script src="./pack-odds-ui.js?v=21120"></script>
+<link rel="stylesheet" href="./pack-odds.css?v=21120">
 <link rel="stylesheet" href="./footera-backup.css?v=21106">
 </head>
 <body>
@@ -1735,6 +1738,13 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </section>
 
 <section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><div id="ownedPacks"></div></div></section>
+
+<div id="packOddsModal" class="modal pack-odds-modal" role="dialog" aria-modal="true" aria-labelledby="packOddsTitle">
+ <div class="modalinner pack-odds-dialog">
+  <div class="modalhead"><h3 id="packOddsTitle">Pack-Wahrscheinlichkeiten</h3><button type="button" class="secondary" id="packOddsClose">Schließen</button></div>
+  <div class="pack-odds-body" id="packOddsBody" aria-live="polite"></div>
+ </div>
+</div>
 
 <section id="sbcView" class="view"><div class="headline"><h2>SBCs</h2><p>Tausche Spieler aus deinem Verein und SBC-Speicher gegen Belohnungen.</p></div><div class="section"><div class="sbc-storage-bar"><div><strong>SBC-Speicher</strong><span>Duplikate aus Packs können hier für spätere SBCs abgelegt werden.</span></div><b id="sbcStorageCount">0/100</b></div><div id="sbcTabs" class="sbc-tabs"></div><div id="sbcGrid" class="sbcgrid"></div></div></section>
 
@@ -5540,11 +5550,12 @@ function renderStore(){
    <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
+   <button type="button" class="store-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Wahrscheinlichkeiten für ${esc(p.name)} ansehen">ⓘ Wahrscheinlichkeiten</button>
    <div class="store-pack-prices ${p.points==null?"coins-only":""}">${button("coins","Footera Coins")}${button("points","Footera Points")}</div>
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
 $("storeView").addEventListener("click",e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");if(b){const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;const price=p[cur],lim=promoUsage(p);if(p.dailyLimit&&lim.remaining<=0)return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);if(state[cur]<price)return toast("Nicht genügend Guthaben.");const items=generatePack(p.id);if(items.length!==p.count)return toast("Für dieses Pack konnten nicht alle Spieler erzeugt werden. Es wurde kein Guthaben abgezogen.");if(!consumePromoPurchase(p))return toast(`Promo-Limit erreicht. Reset täglich um ${p.resetHour??19}:00 Uhr.`);state[cur]-=price;save();renderWallet();renderStore();openPack(p.id,items);return}const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
 let pendingResolved=new Set(state.pendingResolved);
@@ -9138,7 +9149,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.119";
+const GFUT_BUILD="V21.120";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;

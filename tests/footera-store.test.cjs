@@ -47,6 +47,9 @@ test('the two store tabs separate permanent packs from rotating promos',()=>{
  assert.match(classic,/Silber-Pack/);
  assert.match(classic,/Premium Gold Pack/);
  assert.match(classic,/data-buy="bronze" data-cur="coins"/);
+ assert.match(classic,/data-pack-odds="bronze"/);
+ assert.match(classic,/data-pack-odds="silver"/);
+ assert.match(classic,/data-pack-odds="gold"/);
  assert.doesNotMatch(classic,/data-buy="bronze" data-cur="points"/);
  assert.match(classic,/data-buy="silver" data-cur="points"/);
  assert.doesNotMatch(classic,/Vorschau|Pack anschauen/i);
@@ -55,6 +58,7 @@ test('the two store tabs separate permanent packs from rotating promos',()=>{
  assert.equal((promos.match(/class="store-pack /g)||[]).length,3);
  assert.doesNotMatch(promos,/data-buy="bronze"/);
  assert.match(promos,/Footera Points/);
+ assert.equal((promos.match(/data-pack-odds=/g)||[]).length,3);
 });
 
 test('bronze cannot be purchased with points; other currencies deduct their actual prices once',()=>{
