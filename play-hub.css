@@ -102,3 +102,6 @@
 #playView .champions-qual strong{font-size:20px;color:#ffd46d}
 #playView .champions-qual span{font-size:11px;color:#b8ab92}
 #playView .champions-claim{border-color:#ffd46d;background:#ffd46d;color:#151109}
+
+/* V21.108: CPU team identity displayed beside opponent strength. */
+.sb-playstyle{display:block;margin:4px 0 7px;padding:5px 9px;border:1px solid #79c7ac66;border-radius:7px;background:#122d284d;color:#d6efe6;font-size:11px;font-weight:750;letter-spacing:.2px}
