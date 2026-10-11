@@ -12,6 +12,7 @@ on:
       - 'footera-opponent-styles.js'
       - 'tests/footera-backup.test.cjs'
       - 'tests/footera-opponent-styles.test.cjs'
+      - 'tests/footera-opponent-balancing.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
       - 'index.html'
       - 'competition-system.js'
@@ -29,6 +30,7 @@ on:
       - 'footera-opponent-styles.js'
       - 'tests/footera-backup.test.cjs'
       - 'tests/footera-opponent-styles.test.cjs'
+      - 'tests/footera-opponent-balancing.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
       - 'index.html'
       - 'competition-system.js'
@@ -52,4 +54,4 @@ jobs:
         run: |
           node --check footera-backup.js
           node --check footera-opponent-styles.js
-          node --test tests/footera-backup.test.cjs tests/footera-opponent-styles.test.cjs
+          node --test tests/footera-backup.test.cjs tests/footera-opponent-styles.test.cjs tests/footera-opponent-balancing.test.cjs
