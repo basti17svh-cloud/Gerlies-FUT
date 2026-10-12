@@ -103,8 +103,13 @@ if(require.main===module)(async()=>{
   for(const type of ['big_chance_saved','big_chance_missed','shot_post']){
    await fixture(page);const before=await force(page,type);check(`${type}: does not change score`,before.score[0]===0&&before.score[1]===0&&before.goals===0);
    await page.waitForSelector('.fh3d-hud.visible');
-   const hudState=await page.locator('.fh3d-hud').evaluate(h=>({headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent}));
-   check(`${type}: correct event headline`,hudState.headline.includes({big_chance_saved:'PARADE',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
+   const hudState=await page.locator('.fh3d-hud').evaluate(h=>{
+     const performer=h.querySelector('.fh3d-player-card'),shell=performer?.querySelector('.card-shell'),art=performer?.querySelector('.custom-card');
+     const outer=performer?.getBoundingClientRect(),inner=shell?.getBoundingClientRect();
+     return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,
+      performerVisible:!!shell&&!!art&&getComputedStyle(performer).display!=='none'&&outer.width>=65&&outer.height>=90&&inner.width>=65&&inner.height>=90};
+    });
+   check(`${type}: correct event headline`,hudState.headline.includes({big_chance_saved:'PARADE',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
    await page.screenshot({path:path.join(output,type+'.png')});
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
