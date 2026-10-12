@@ -23,6 +23,8 @@ const server=http.createServer((req,res)=>{
   await page.goto(base,{waitUntil:"load"});
   await page.evaluate(()=>{
    for(const id of ["bootIntro","dbGate","onboarding","usernameRequiredModal"])document.getElementById(id)?.remove();
+   // Isolated crest editing: do not let async account/analytics modals cover this fixture.
+   const guard=document.createElement("style");guard.textContent="#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important;pointer-events:none!important}";document.head.append(guard);
    state.profile.clubName="FC Gerlies";state.profile.clubShortName="FCG";
    state.profile.clubIdentity=cleanClubIdentity({crest:{shape:"shield",symbol:"shieldmark",primary:"#173f32",secondary:"#0b241b",accent:"#ffffff",borderColor:"#bf263a",borderWidth:"strong",initials:"FCG05"}});
    switchView("clubView");
