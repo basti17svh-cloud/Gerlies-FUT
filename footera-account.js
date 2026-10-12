@@ -71,7 +71,7 @@
    root.localStorage.setItem(EMAIL_CHANGE,JSON.stringify({
      userId:u.id,newEmail,previousEmail,createdAt:Date.now()
    }));
-   $("footeraNewEmail").value="";
+   const newEmailInput=$("footeraNewEmail");if(newEmailInput)newEmailInput.value="";
    msg("E-Mail-Wechsel angefordert. Öffne die Bestätigungslinks von Supabase in der bisherigen und der neuen Mailbox (je nach Kontoeinstellungen). Nicht abmelden oder ein neues Konto erstellen.");
  }
  function prepareSaveReplacement(){
@@ -707,6 +707,6 @@
      },20000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,signOut};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
