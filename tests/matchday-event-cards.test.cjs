@@ -43,7 +43,7 @@ test('the 3D Matchday bridge resolves the defender for saves and the shooter for
 test('every action renders a sized Footera player card on mobile, including saves',()=>{
  assert.match(css,/#match \.fh3d \.fh3d-hud \.fh3d-player-card\s*\{[^}]*display:block!important/s);
  assert.match(css,/#match \.fh3d \.fh3d-hud \.fh3d-player-card \.card-shell\s*\{[^}]*aspect-ratio:7 \/ 10/s);
- assert.match(css,/@media\(max-width:560px\)\s*\{[^}]*?\.fh3d-player-card\{width:78px\}/s);
+ assert.match(css,/@media\(max-width:560px\)[\s\S]*?#match \.fh3d \.fh3d-hud \.fh3d-player-card\{width:78px\}/);
  assert.doesNotMatch(css,/\.fh3d-hud-big_chance_saved \.fh3d-player-card\s*[,\{]/);
  assert.doesNotMatch(css,/\.fh3d-hud-shot_post \.fh3d-player-card\s*[,\{]/);
  assert.match(scene,/hud\.append\(card,mark,copy,meta\)/);
