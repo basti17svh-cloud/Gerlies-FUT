@@ -5574,8 +5574,8 @@ function renderStore(){
  const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
  $("packGrid").innerHTML=purch.map(p=>{
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
-  const verifiedLive=window.FooteraPaidWallet?.liveState?.();
-  const livePackReady=window.FOOTERA_LIVE_PACK_STORE_ENABLED===true &&
+  const verifiedLive=typeof window!=="undefined"?window.FooteraPaidWallet?.liveState?.():null;
+  const livePackReady=typeof window!=="undefined"&&window.FOOTERA_LIVE_PACK_STORE_ENABLED===true &&
    ["silver","gold"].includes(p.id)&&verifiedLive?.verified&&
    verifiedLive.balance>=Number(p.points||0);
   const liveBuy=livePackReady?`<button type="button" class="store-buy-button points"
@@ -5637,7 +5637,7 @@ async function recoverFooteraLiveCards(){
  }catch(error){console.warn("Echtgeldkarten konnten nicht wiederhergestellt werden",error)}
  finally{footeraLiveRecoveryBusy=false}
 }
-window.addEventListener("footera:live-wallet-updated",()=>{
+if(typeof window!=="undefined"&&typeof window.addEventListener==="function")window.addEventListener("footera:live-wallet-updated",()=>{
  if(!footeraLiveCheckoutBusy)recoverFooteraLiveCards().catch(console.warn);
 });
 let footeraStorePurchaseBusy=false;
