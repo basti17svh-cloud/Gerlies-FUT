@@ -628,6 +628,21 @@
    labelValue("footeraProfileCloud","Cloud wird geprüft …");
    try{const cloud=await cloudInfo(true);labelValue("footeraProfileCloud",cloud?("Gesichert am "+new Date(cloud.saved_at).toLocaleString("de-DE")+" · Version "+cloud.revision):"Noch keine Cloud-Sicherung")}
    catch(e){labelValue("footeraProfileCloud","Cloud nicht erreichbar: "+safeMessage(e))}
+   // A fully secured club may still lack its online friend profile when an
+   // earlier database constraint rejected the club's formation. Retry from
+   // the profile page and surface the actual blocker instead of a blank code.
+   const online=root.FooteraOnline;
+   if(online?.available&&root.localStorage.getItem(OWNER)===u.id&&!pendingLocalTransfer()){
+     try{
+       if(!online.ready)await online.init();
+       const code=await online.getFriendCode?.();
+       if(code)labelValue("footeraProfileFriendCode",code);
+       else if(!online.ready){
+         const reason=$("onlineStatus")?.textContent?.trim();
+         labelValue("footeraProfileFriendCode",reason&&reason.length<120?reason:"Online-Verbindung noch nicht bereit");
+       }else labelValue("footeraProfileFriendCode","Online-Profil wartet auf vollständige Aufstellung");
+     }catch(e){labelValue("footeraProfileFriendCode","Online-Fehler: "+safeMessage(e))}
+   }
  }
  async function showProfile(){
    const u=await user();
