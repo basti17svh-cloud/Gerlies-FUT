@@ -79,3 +79,14 @@
 .footera-profile-backup-hint{margin:7px 1px 0;padding:10px 12px;font-size:12px;line-height:1.5;border:1px solid #657850;background:#203123;border-radius:10px;color:#e7f6ce}
 .footera-profile-backup-feedback{min-height:18px;margin:6px 1px 0;font-size:12px;line-height:1.5;color:#d9f7b2;overflow-wrap:anywhere}
 .footera-profile-backup-feedback[data-error="true"]{color:#ffc2bd}
+
+/* Verified local-club transfer: clearly distinguish the saved club from login. */
+.footera-transfer[hidden],.footera-transfer [hidden]{display:none!important}
+.footera-transfer{margin:14px 0;padding:16px;border:1px solid #91ae63;border-radius:13px;background:#243522;color:#f4ffde}
+.footera-transfer strong{display:block;font-size:15px;color:#e2ff93;margin-bottom:8px}
+.footera-transfer p,.footera-transfer small{display:block;font-size:12px;line-height:1.5;color:#d9e8cc;overflow-wrap:anywhere}
+.footera-transfer label{display:block;font-size:12px;font-weight:750;margin-top:12px}
+.footera-transfer input[type=email]{display:block;min-height:44px;width:100%;box-sizing:border-box;padding:10px 12px;margin:7px 0;border-radius:8px;border:1px solid #7eaa72;background:#0e1a15;color:#fff;font-size:15px}
+.footera-transfer button{display:block;width:100%;min-height:45px;padding:10px;border-radius:9px;border:1px solid #e2ff9d;background:#ddf883;color:#1b2816;font-weight:850;font-size:13px;margin:10px 0}
+.footera-transfer button:disabled{opacity:.45;cursor:not-allowed}
+#footeraProfileTransferFeedback{color:#ffe0a0;font-weight:750}
