@@ -14,7 +14,7 @@ test('backup integrity accepts a valid save and rejects altered contents',async(
 });
 
 test('local FC Gerlies export downloads JSON without any account or cloud authorization',async()=>{
- const state={version:126,profile:{clubName:'FC Gerlies',saveId:'main-club'},club:[{uid:'c1',pid:'p1'}],squad:Array(23).fill(null),coins:8000,points:150};
+ const state={version:128,profile:{clubName:'FC Gerlies',saveId:'main-club'},club:[{uid:'c1',pid:'p1'}],squad:Array(23).fill(null),coins:8000,points:150};
  let downloaded='',appended=0;
  const backupStatus={textContent:'',dataset:{}};
  const doc={readyState:'loading',addEventListener(){},querySelector(){return null},getElementById:id=>id==='footeraBackupStatus'?backupStatus:null,
@@ -38,4 +38,18 @@ test('account profile has an independent local-export control and safeguards mis
  assert.match(account,/root\.FooteraBackup\.exportBackup\(\)/);
  assert.match(account,/cloudButton\.disabled=owner!==u\.id/);
  assert.match(account,/id="footeraProfileBackupHint"/);
+});
+
+test('Footera current save schema and export validator stay in sync',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const saveVersion=Number(html.match(/function baseState\(\)\{return\{\s*version:(\d+)/)?.[1]);
+ const maxVersion=Number(file.match(/MAX_GAME_VERSION=(\d+)/)?.[1]);
+ assert.ok(saveVersion>0,'baseState save version should be discoverable');
+ assert.equal(maxVersion,saveVersion,'Backup exporter must accept current live game save schema');
+ const ctx={document:{readyState:'loading',addEventListener(){}},crypto:webcrypto,TextEncoder};
+ vm.createContext(ctx);vm.runInContext(file,ctx);
+ const base={version:saveVersion,profile:{clubName:'FC Gerlies'},club:[{uid:'x',pid:'y'}],squad:[],coins:949885,points:340000};
+ assert.equal(ctx.FooteraBackup.validateState(base).version,saveVersion);
+ assert.throws(()=>ctx.FooteraBackup.validateState({...base,version:saveVersion+1}),/Spielstand-Version nicht unterstützt/);
+ assert.throws(()=>ctx.FooteraBackup.validateState({...base,version:-1}),/Spielstand-Version nicht unterstützt/);
 });
