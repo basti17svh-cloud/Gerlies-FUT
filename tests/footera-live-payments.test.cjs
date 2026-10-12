@@ -30,7 +30,7 @@ test("all live Points tiers have identical fixed cents and price IDs in checkout
 test("LIVE checkout always requires an explicit release flag and server-verified user",()=>{
  assert.match(checkout,/FOOTERA_LIVE_PAYMENTS_ENABLED/);
  assert.match(checkout,/!== "true"/);
- assert.match(checkout,/sk_live_/);
+ assert.ok(checkout.includes("/^(?:sk|rk)_live_/.test(key)"),"both LIVE key types required");
  assert.match(checkout,/auth\.getUser\(/);
  assert.match(checkout,/is_anonymous/);
  assert.match(checkout,/email_confirmed_at/);
@@ -42,6 +42,7 @@ test("LIVE checkout always requires an explicit release flag and server-verified
 test("LIVE webhook rejects unsigned, sandbox or unpaid events",()=>{
  assert.match(webhook,/FOOTERA_LIVE_WEBHOOK_ENABLED/);
  assert.match(webhook,/constructEventAsync/);
+ assert.ok(webhook.includes("/^(?:sk|rk)_live_/.test(key)"),"both LIVE key types required");
  assert.match(webhook,/stripe-signature/);
  assert.match(webhook,/!event\.livemode/);
  assert.match(webhook,/cs_live_/);
