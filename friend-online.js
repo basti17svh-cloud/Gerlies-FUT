@@ -203,10 +203,12 @@
      const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session
     }
     online.userId=session?.user?.id||"";if(!validUid(online.userId))throw new Error("Online-Anmeldung fehlgeschlagen");
-    // Never overwrite a different registered user's profile with this device's local save.
-    if(session?.user?.is_anonymous===false&&localStorage.getItem("footera-cloud-owner")!==online.userId){
+    // Never claim a local club for another guest or permanent user, including
+    // newly-created anonymous sessions during an explicit email transfer.
+    if(localStorage.getItem("footera-local-account-transfer-v1")||
+       (localStorage.getItem("footera-cloud-owner")&&localStorage.getItem("footera-cloud-owner")!==online.userId)){
       online.ready=false;
-      const status=$("onlineStatus");if(status)status.textContent="Konto erkannt: erst den passenden Cloud-Spielstand laden oder lokalen Verein ausdrücklich zuordnen.";
+      const status=$("onlineStatus");if(status)status.textContent="Konto-Wechsel vorbereitet: erst die bestätigte E-Mail und Vereinsübernahme abschließen.";
       return;
     }
     online.ready=true;
