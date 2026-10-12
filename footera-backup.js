@@ -6,7 +6,7 @@ function fail(t){throw Error(t)}
 function obj(v){return !!v&&typeof v==="object"&&!Array.isArray(v)}
 function validateState(s){
  if(!obj(s)||!obj(s.profile)||!Array.isArray(s.club)||!Array.isArray(s.squad))fail("Profil, Verein oder Mannschaft fehlen.");
- if(!Number.isInteger(s.version)||s.version<1||s.version>123)fail("Spielstand-Version nicht unterstützt.");
+ if(!Number.isInteger(s.version)||s.version<1||s.version>126)fail("Spielstand-Version nicht unterstützt.");
  if(!Number.isFinite(s.coins)||s.coins<0||!Number.isFinite(s.points)||s.points<0)fail("Ungültiges Guthaben.");
  if(s.club.length>25000||s.squad.length>50)fail("Ungültige Vereinsgröße.");
  if(s.squadPresets!==undefined&&(!Array.isArray(s.squadPresets)||s.squadPresets.length>3))fail("Ungültige Mannschaftspläne.");
