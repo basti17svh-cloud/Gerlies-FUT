@@ -5574,6 +5574,13 @@ function renderStore(){
  const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
  $("packGrid").innerHTML=purch.map(p=>{
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
+  const verifiedLive=window.FooteraPaidWallet?.liveState?.();
+  const livePackReady=window.FOOTERA_LIVE_PACK_STORE_ENABLED===true &&
+   ["silver","gold"].includes(p.id)&&verifiedLive?.verified&&
+   verifiedLive.balance>=Number(p.points||0);
+  const liveBuy=livePackReady?`<button type="button" class="store-buy-button points"
+   data-buy-live="${esc(p.id)}"><span class="store-price">${currencyAmountHTML("points",p.points)}
+   </span><strong>Gekaufte Points</strong></button>`:"";
   const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span class="store-price">${currencyAmountHTML(currency,p[currency],"store-currency")}</span><strong>Kaufen</strong></button>`;
   return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
@@ -5582,13 +5589,57 @@ function renderStore(){
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
    <button type="button" class="store-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Wahrscheinlichkeiten für ${esc(p.name)} ansehen">ⓘ Wahrscheinlichkeiten</button>
-   <div class="store-pack-prices ${p.points==null?"coins-only":""}">${button("coins","Footera Coins")}${button("points","Footera Points")}</div>
+   <div class="store-pack-prices ${p.points==null?"coins-only":""}">${button("coins","Footera Coins")}${button("points","Footera Points")}${liveBuy}</div>
    </div></article>`
  }).join("");
  updateStoreCountdown();
  const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
 }
 
+let footeraLiveRecoveryBusy=false,footeraLiveCheckoutBusy=false;
+// Server-verified LIVE pack contents are immutable across browser restarts.
+// They remain non-tradeable and cannot be quick-sold, put in SBCs or evolved
+// until server-side disposition/market/Evolution reconciliation is implemented.
+function footeraLiveCardItem(card){
+ const uid=String(card?.card_id||""),pid=String(card?.player_id||"");
+ const snap=card?.card_snapshot;
+ if(!/^[a-f0-9-]{36}$/i.test(uid)||!pid||!snap||
+    String(snap.uid||"")!==uid||String(snap.pid||"")!==pid||
+    snap.tradeable!==false||snap.acquisitionSource!=="stripe-live")return null;
+ const item={...snap,uid,pid,tradeable:false,acquisitionSource:"stripe-live",
+  paidSpendId:String(card.spend_id||"")};
+ return displayBase(item)?item:null;
+}
+async function recoverFooteraLiveCards(){
+ if(footeraLiveRecoveryBusy||footeraLiveCheckoutBusy||!state.onboarded||
+    PLAYERS.length<DB_MIN_PLAYERS||!window.FooteraPaidWallet?.fetchLiveCards)return;
+ if(!window.FooteraPaidWallet.liveState()?.verified)return;
+ footeraLiveRecoveryBusy=true;
+ try{
+  const cards=await window.FooteraPaidWallet.fetchLiveCards();
+  if(!window.FooteraPaidWallet.liveState()?.verified)return;
+  const claims=state.livePaidCardClaims||(state.livePaidCardClaims={});
+  const known=new Set([...(state.club||[]),...(pendingPack||[]),
+    ...(state.sbcStorage||[])].map(i=>String(i.uid||"")));
+  let recovered=0;
+  for(const card of cards){
+   const id=String(card?.card_id||"");
+   if(!id||claims[id])continue;
+   if(known.has(id)){claims[id]=String(card.spend_id||"");continue}
+   const item=footeraLiveCardItem(card);
+   if(!item)continue; // missing base catalogue: never lose/acknowledge receipt
+   state.club.push(item);claims[id]=String(card.spend_id||"");known.add(id);recovered++;
+  }
+  if(recovered){
+   save();flushSave();renderAll();
+   toast(recovered+" servergesicherte Echtgeldkarte"+(recovered===1?"":"n")+" wiederhergestellt.");
+  }
+ }catch(error){console.warn("Echtgeldkarten konnten nicht wiederhergestellt werden",error)}
+ finally{footeraLiveRecoveryBusy=false}
+}
+window.addEventListener("footera:live-wallet-updated",()=>{
+ if(!footeraLiveCheckoutBusy)recoverFooteraLiveCards().catch(console.warn);
+});
 let footeraStorePurchaseBusy=false;
 function recoverFooteraPaidPackOrders(orders,userId){
  if(localStorage.getItem("footera-cloud-owner")!==userId||!Array.isArray(orders))return;
@@ -5606,6 +5657,25 @@ function recoverFooteraPaidPackOrders(orders,userId){
   toast(recovered===1?"Bezahltes Pack im Store gutgeschrieben.":recovered+" bezahlte Packs im Store gutgeschrieben.");}
 }
 
+$("storeView").addEventListener("click",async event=>{
+ const button=event.target.closest("[data-buy-live]");if(!button)return;
+ if(footeraLiveCheckoutBusy||footeraStorePurchaseBusy)return;
+ if(window.FOOTERA_LIVE_PACK_STORE_ENABLED!==true)return;
+ const id=button.dataset.buyLive,pack=PACKS.find(p=>p.id===id);
+ if(!pack||!["silver","gold"].includes(id)||pendingPack.length)return;
+ if(!confirm("Für "+fmt(pack.points)+" verifizierte gekaufte Footera Points "+pack.name+" öffnen?"))return;
+ footeraLiveCheckoutBusy=true;button.disabled=true;
+ try{
+  const purchase=await window.FooteraPaidWallet.spendLivePack(id);
+  const items=purchase.cards.map(footeraLiveCardItem);
+  if(items.length!==pack.count||items.some(x=>!x))
+   throw Error("Karten nicht vollständig geladen. Kaufbeleg wird erneut geprüft.");
+  state.livePaidCardClaims=state.livePaidCardClaims||{};
+  for(const card of purchase.cards)state.livePaidCardClaims[card.card_id]=card.spend_id;
+  openPack(id,items);renderWallet();
+ }catch(error){toast(error?.message||"Packkauf noch nicht abgeschlossen.");}
+ finally{footeraLiveCheckoutBusy=false;button.disabled=false}
+});
 $("storeView").addEventListener("click",async e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");
 if(b){
  if(footeraStorePurchaseBusy)return toast("Ein Points-Kauf wird bereits bearbeitet.");
@@ -9337,7 +9407,7 @@ window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEve
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&promoEventClockId!==null)syncPromoEventClock()});
 window.FooteraPaidWallet?.start({render:renderWallet,grant:recoverFooteraPaidPackOrders});
 initFooteraBootIntro();
-FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()}).catch(e=>{console.error("Footera Start fehlgeschlagen",e);const gate=$("dbGate");if(gate)gate.style.display="grid";if($("dbTitle"))$("dbTitle").textContent="Start gerade nicht möglich";if($("dbText"))$("dbText").textContent="Der Start wurde unterbrochen. Bitte erneut versuchen.";if($("dbRetry"))$("dbRetry").style.display="block";if($("dbOffline"))$("dbOffline").style.display="block"});
+FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();recoverFooteraLiveCards().catch(console.warn);if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()}).catch(e=>{console.error("Footera Start fehlgeschlagen",e);const gate=$("dbGate");if(gate)gate.style.display="grid";if($("dbTitle"))$("dbTitle").textContent="Start gerade nicht möglich";if($("dbText"))$("dbText").textContent="Der Start wurde unterbrochen. Bitte erneut versuchen.";if($("dbRetry"))$("dbRetry").style.display="block";if($("dbOffline"))$("dbOffline").style.display="block"});
 </script>
 </body>
 </html>
