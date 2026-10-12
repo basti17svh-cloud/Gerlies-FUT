@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.126</title>
+<title>Footera V21.127</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1523,7 +1523,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./pack-odds.css?v=21120">
 <link rel="stylesheet" href="./footera-backup.css?v=21106">
 <link rel="stylesheet" href="./footera-account.css?v=21122">
-<link rel="stylesheet" href="./footera-points-shop.css?v=21124">
+<link rel="stylesheet" href="./footera-points-shop.css?v=21127">
 </head>
 <body>
 
@@ -1594,7 +1594,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.126</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.127</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1749,6 +1749,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div class="modalinner">
  <div class="modalhead"><h3 id="footeraPointsPurchaseTitle">Footera Points erwerben</h3><button type="button" id="footeraPointsPurchaseClose" class="secondary">Schließen</button></div>
  <div class="footera-points-banner"><strong><img src="./assets/footera/points.webp" alt="" aria-hidden="true"> Stripe-Sandbox · Testkäufe</strong><p>Wähle dein Points-Paket. Im nächsten Schritt wird ein Test-Checkout geöffnet. Es wird kein echtes Geld abgebucht.</p></div>
+ <p id="footeraPointsNeedNote" class="footera-points-shortfall" role="status" hidden></p>
  <div id="footeraPointsOffers" class="footera-points-offer-grid"></div>
  <p class="footera-points-disclaimer">Nur mit einem bestätigten Footera-E-Mail-Konto. Sandbox-Points werden serverseitig geprüft und können im Spiel für Packs verwendet werden. Echtgeldzahlungen bleiben deaktiviert.</p>
 </div></div>
@@ -3365,14 +3366,14 @@ function ensureClubIdentityState(){
 }
 function clubIdentitySnapshot(){ensureClubIdentityState();return JSON.parse(JSON.stringify(state.profile.clubIdentity))}
 function baseState(){return{
- version:126,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
+ version:127,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,championsMatches:0,championsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},champions:null,squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
  roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],chemBoostInventory:{},pendingChemBoosts:[],promoClaims:{},directClaims:{},paidPackClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:126,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},paidPackClaims:{...(x.paidPackClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
+  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:127,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},paidPackClaims:{...(x.paidPackClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
  }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -5006,6 +5007,12 @@ $("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-lea
 $("starterBack").addEventListener("click",prepareOnboarding);
 $("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=arrangeSquad(items,state.formation);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
 
+function openFooteraPointsOverview(required,source,available=Number(state.points||0)){
+ const pointsShop=window.FooteraPointsShop;
+ if(pointsShop?.open)return pointsShop.open({required,source,available});
+ toast("Points-Übersicht wird geladen. Bitte erneut versuchen.");
+ return false;
+}
 function renderWallet(){const local=Number(state.points)||0,server=window.FooteraPaidWallet?.paidBalance()||0;$("coins").textContent=fmt(state.coins);$("points").textContent=fmt(local+server);$("points").closest(".walletbox")?.setAttribute("title",fmt(local)+" erspielte Points + "+fmt(server)+" gekaufte Sandbox-Points")}
 function ensureSquadSlots(){if(!Array.isArray(state.squad))state.squad=[];while(state.squad.length<23)state.squad.push(null);if(state.squad.length>23)state.squad=state.squad.slice(0,23)}
 function squadItems(){ensureSquadSlots();return state.squad.map(id=>state.club.find(x=>x.uid===id)||null)}
@@ -5604,8 +5611,11 @@ if(b){
  if(p.dailyLimit&&lim.remaining<=0)return toast("Promo-Limit erreicht. Reset täglich um "+(p.resetHour??19)+":00 Uhr.");
  const usingServer=cur==="points"&&Number(state.points||0)<price;
  if(usingServer){
-  if(!window.FooteraPaidWallet?.ready())return toast("Serverguthaben wird geladen. Bitte kurz warten.");
-  if(window.FooteraPaidWallet.paidBalance()<price)return toast("Nicht genügend gekaufte Points für dieses Pack.");
+  if(!window.FooteraPaidWallet?.ready()){
+   if(!(await window.FooteraPaidWallet?.refresh?.()))return toast("Serverguthaben konnte nicht geladen werden. Bitte erneut versuchen.");
+  }
+  if(window.FooteraPaidWallet.paidBalance()<price)
+   return openFooteraPointsOverview(price,p.name,Math.max(Number(state.points||0),window.FooteraPaidWallet.paidBalance()));
  }else if(state[cur]<price)return toast("Nicht genügend Guthaben.");
  const items=generatePack(p.id);
  if(items.length!==p.count)return toast("Für dieses Pack konnten nicht alle Spieler erzeugt werden. Es wurde kein Guthaben abgezogen.");
@@ -6850,7 +6860,7 @@ function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){
  let buttons="";
  if(blocked)buttons=`<div class="evo-payment-actions one"><button class="primary" disabled>${reason}</button></div>`;
  else if(free)buttons=`<div class="evo-payment-actions one"><button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="free">Kostenlos starten</button></div>`;
- else buttons=`<div class="evo-payment-actions">${coins?`<button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="coins" ${state.coins<coins?"disabled":""}>${currencyAmountHTML("coins",coins,"button-currency")}</button>`:""}${points?`<button class="secondary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="points" ${state.points<points?"disabled":""}>${currencyAmountHTML("points",points,"button-currency")}</button>`:""}</div>`;
+ else buttons=`<div class="evo-payment-actions">${coins?`<button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="coins" ${state.coins<coins?"disabled":""}>${currencyAmountHTML("coins",coins,"button-currency")}</button>`:""}${points?`<button class="secondary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="points" ${state.points<points?'title="Zu wenig Points – Points-Übersicht öffnen"':""}>${currencyAmountHTML("points",points,"button-currency")}</button>`:""}</div>`;
  $("evoPickerBody").innerHTML=`<button class="secondary evo-picker-back" data-evo-picker-back="${evo.id}">← Andere Spieler</button><div class="evo-selected"><div><h3>${esc(b.name)}</h3><p>${esc(evoRequirementText(evo))}</p>${evoCostHTML(evo)}<div class="evo-result-cap">Aktuell ${itemRating(item)} GES → maximal ${evoProjectedFinalOvr(item,evo)} GES</div><div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div></div>${buttons}</div>${evoStagesHTML(item,evo,-1,{})}`;
  evoPickerContext={evoId:evo.id,uid:item.uid,instanceKey:sch.key}
 }
@@ -6867,7 +6877,7 @@ function startEvolution(evoId,uid,payment="free"){
  let paidWith="free",paidAmount=0;
  if(!free){
   if(payment==="coins"&&coins){if(state.coins<coins)return toast("Nicht genügend Münzen.");state.coins-=coins;paidWith="coins";paidAmount=coins}
-  else if(payment==="points"&&points){if(state.points<points)return toast("Nicht genügend Footera Points.");state.points-=points;paidWith="points";paidAmount=points}
+  else if(payment==="points"&&points){if(state.points<points)return openFooteraPointsOverview(points,`Evolution ${evo.name}`,Number(state.points||0));state.points-=points;paidWith="points";paidAmount=points}
   else return toast("Wähle Münzen oder Footera Points.")
  }
  item.tradeable=false;
@@ -9226,7 +9236,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.126";
+const GFUT_BUILD="V21.127";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9279,7 +9289,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21126",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21127",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9291,7 +9301,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 }else window.addEventListener("load",()=>FOOTERA_INTRO_DONE.then(checkForGerliesUpdate));
 
 </script>
-<script src="./season-system.js"></script>
+<script src="./season-system.js?v=21127"></script>
 <script src="./competition-system.js"></script>
 <script src="./champions-system.js?v=2115"></script>
 <script src="./online-config.js"></script>
@@ -9305,10 +9315,10 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./potm.js"></script>
 <script src="./squad-tactics.js?v=2124"></script>
 <script src="./squad-numbers.js?v=2185"></script>
-<script src="./footera-backup.js?v=21126"></script>
+<script src="./footera-backup.js?v=21127"></script>
 <script src="./footera-account.js?v=21122"></script>
 <script src="./footera-paid-wallet.js?v=21125"></script>
-<script src="./footera-points-shop.js?v=21125"></script>
+<script src="./footera-points-shop.js?v=21127"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});

@@ -276,7 +276,7 @@ function renderSeasonPass(){
  const info=seasonInfo(),sp=Math.max(0,Number(state.sp||0)),max=SEASON_REWARDS[SEASON_REWARDS.length-1].sp;
  const next=SEASON_REWARDS.find(t=>t.sp>sp),level=Math.max(1,SEASON_REWARDS.filter(t=>sp>=t.sp).length);
  const upgrade=state.seasonPass.premium?'<strong>✓ Premium aktiviert</strong><p>Beide Spuren verwenden dieselben Season Points. Bereits erreichte Premium-Stufen können abgeholt werden.</p>':
-  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${currencyIconHTML("coins")}${fmt(PASS_PRICE.coins)}</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?"disabled":""}>${currencyIconHTML("points")}${fmt(PASS_PRICE.points)}</button></div>`;
+  `<div><strong>Premium-Pass freischalten</strong><p>Zusätzliche Belohnungen auf denselben 30 Stufen. Frühere Stufen bleiben verfügbar.</p></div><div class="pass-upgrade-actions"><button class="secondary" data-pass-buy="coins" ${state.coins<PASS_PRICE.coins?"disabled":""}>${currencyIconHTML("coins")}${fmt(PASS_PRICE.coins)}</button><button class="primary" data-pass-buy="points" ${state.points<PASS_PRICE.points?'title="Zu wenig Points – Points-Übersicht öffnen"':""}>${currencyIconHTML("points")}${fmt(PASS_PRICE.points)}</button></div>`;
  host.innerHTML=`<div class="pass-panel"><div class="pass-top"><div><span class="pass-kicker">SEASON ${info.number} · ${esc(info.name)}</span><h3>${esc(info.name)}</h3><p>30 Stufen · eine Belohnung im Fokus · bei mehreren Inhalten nach links oder rechts wischen.</p></div><span class="pass-time">Start ${passDate(info.start)}<br>${info.end?`Endet ${passDate(info.end,true)}<br>`:""}<strong>${seasonCountdown(info.end)}</strong></span></div><div class="pass-progress"><div style="width:${Math.min(100,Math.round(sp/max*100))}%"></div></div><div class="pass-status"><span>Level ${level}/30 · ${fmt(Math.min(sp,max))} / ${fmt(max)} SP</span><span>${next?`Nächstes Level bei ${fmt(next.sp)} SP`:"Alle Stufen erreicht"}</span></div><div class="pass-upgrade">${upgrade}</div><div class="pass-ladder pass-level-stack" aria-label="Saisonbelohnungen">${SEASON_REWARDS.map(tier=>`<section class="pass-level-row ${sp>=tier.sp?"reached":""} ${tier.level===level?"current":""}" data-pass-tier="${tier.level}"><div class="pass-level-rail"><span>${tier.level}</span></div><div class="pass-level-cards">${passLevelCard(tier)}</div></section>`).join("")}</div></div>`
 }
 function objectiveCard(task,group,featured=false){
@@ -355,7 +355,11 @@ $("seasonPass").addEventListener("click",event=>{
   ensureObjectiveWindows();
   if(state.seasonPass.premium)return;
   const currency=buy.dataset.passBuy,price=PASS_PRICE[currency];
-  if(!price||!Number.isFinite(state[currency])||state[currency]<price)return toast("Nicht genügend Guthaben.");
+  if(!price||!Number.isFinite(state[currency]))return toast("Guthaben nicht verfügbar.");
+  if(state[currency]<price){
+   if(currency==="points")return openFooteraPointsOverview(price,"Premium Season Pass",Number(state.points||0));
+   return toast("Nicht genügend Münzen.");
+  }
   if(!confirm(`Premium-Pass für Saison ${seasonInfo().number} für ${fmt(price)} ${currency==="coins"?"Coins":"Footera Points"} freischalten?`))return;
   state[currency]-=price;state.seasonPass.premium=true;save();renderAll();toast("Premium-Pass aktiviert.");return
  }

@@ -1,4 +1,4 @@
-/* Footera V21.124: Points purchase entry – deliberately sandbox-only. */
+/* Footera V21.127: Points purchase entry – deliberately sandbox-only. */
 (()=>{
  "use strict";
  const offers=[
@@ -25,7 +25,24 @@
     '<span class="footera-points-pack-cost">'+o.price+'<span>Testkauf →</span></span>'+
     '</button>'
   ).join("");
-  open.addEventListener("click",()=>{modal.scrollTop=0;showUiLayer("footeraPointsPurchaseModal","footera-points");});
+  function showOffers({required=0,available=0,source=""}={}){
+   const note=document.getElementById("footeraPointsNeedNote");
+   const price=Math.max(0,Math.trunc(Number(required)||0));
+   const usable=Math.max(0,Math.trunc(Number(available)||0));
+   if(note){
+    note.hidden=!price;
+    note.textContent=price?("Für "+(source||"diesen Kauf")+" benötigst du "+price.toLocaleString("de-DE")+" Points. "+
+     "Es fehlen "+Math.max(0,price-usable).toLocaleString("de-DE")+" Points."+
+     (source==="Premium Season Pass"||source.startsWith("Evolution ")?
+      " Hinweis: Gekaufte Sandbox-Points sind momentan nur für Packs einsetzbar, nicht für Evolutions oder den Season Pass.":
+      " Kostenloses und gekauftes Guthaben werden beim Packkauf derzeit getrennt verwendet.")):"";
+   }
+   modal.scrollTop=0;
+   showUiLayer("footeraPointsPurchaseModal","footera-points");
+   return true;
+  }
+  window.FooteraPointsShop=Object.freeze({open:showOffers});
+  open.addEventListener("click",()=>showOffers());
   close.addEventListener("click",()=>closeUiLayer("footeraPointsPurchaseModal","footera-points"));
   grid.addEventListener("click",e=>{
    const choice=e.target.closest("button[data-footera-points-pack]");

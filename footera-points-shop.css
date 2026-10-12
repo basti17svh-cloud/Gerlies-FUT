@@ -28,3 +28,7 @@ button.footera-points-pack:active{transform:scale(.985)}
 .footera-points-disclaimer{padding:10px 3px 30px;font-size:12px;line-height:1.6;color:#e0b6ca}
 @media(min-width:620px){.footera-points-offer-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:360px){button.footera-points-entry-btn{padding:12px;gap:10px}.footera-points-entry-copy strong{font-size:13px}.footera-points-pack-amount{font-size:23px}}
+
+/* V21.127: Explain insufficient Points before offering the optional Sandbox top-up. */
+.footera-points-shortfall{margin:0 0 15px;padding:13px 15px;border:1px solid #b34d7a;border-radius:14px;color:#ffe1ee;background:#481a31;font-size:13px;line-height:1.55}
+.footera-points-shortfall[hidden]{display:none}
