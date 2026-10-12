@@ -72,3 +72,10 @@
 }
 .footera-email-change button:disabled{opacity:.5;cursor:not-allowed}
 #footeraEmailChangeProgress{font-size:12px;color:#e5f3cd}
+
+/* V21.136: local backup available independently from an unrelated cloud account. */
+#footeraProfileExport{background:#cdef7a;color:#1e311e;border:1px solid #e8ffa0}
+#footeraProfileBackup:disabled{opacity:.38;cursor:not-allowed;background:#586459;color:#e0e9da}
+.footera-profile-backup-hint{margin:7px 1px 0;padding:10px 12px;font-size:12px;line-height:1.5;border:1px solid #657850;background:#203123;border-radius:10px;color:#e7f6ce}
+.footera-profile-backup-feedback{min-height:18px;margin:6px 1px 0;font-size:12px;line-height:1.5;color:#d9f7b2;overflow-wrap:anywhere}
+.footera-profile-backup-feedback[data-error="true"]{color:#ffc2bd}
