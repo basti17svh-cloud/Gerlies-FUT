@@ -63,6 +63,8 @@ jobs:
           cp online/footera-live-checkout.ts supabase/functions/footera-live-checkout/index.ts
           mkdir -p supabase/functions/footera-stripe-checkout
           cp online/footera-stripe-checkout.ts supabase/functions/footera-stripe-checkout/index.ts
+          mkdir -p supabase/functions/footera-spend-points
+          cp online/footera-spend-points.ts supabase/functions/footera-spend-points/index.ts
           cp online/footera-live-webhook.ts supabase/functions/footera-live-webhook/index.ts
 
       - name: Set up current Supabase CLI
@@ -77,6 +79,17 @@ jobs:
               --use-api; then
             echo "::warning::API bundling failed; trying Docker bundle."
             supabase functions deploy footera-stripe-checkout \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --use-docker
+          fi
+
+      - name: Deploy Sandbox pack debit with optional cutover guard
+        run: |
+          if ! supabase functions deploy footera-spend-points \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --use-api; then
+            echo "::warning::API bundling failed; trying Docker bundle."
+            supabase functions deploy footera-spend-points \
               --project-ref "$SUPABASE_PROJECT_REF" \
               --use-docker
           fi
