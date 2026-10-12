@@ -4,7 +4,7 @@
 (function(root){
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
- const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1";
+ const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1",TRANSFER="footera-local-account-transfer-v1";
  const maxLength=12*1024*1024;
  let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoStatus="",autoTimer=null,deleteBusy=false;
  const $=id=>document.getElementById(id);
@@ -99,6 +99,74 @@
  }
  function savePoint(u,s,revision){
    root.localStorage.setItem(SYNC_POINT,JSON.stringify({userId:u.id,saveId:s.profile?.saveId||null,revision,hash:fingerprint(s)}));
+ }
+
+ // Safely separate a local club from an unrelated permanent login.
+ // Transfer requires a SHA-256 checked JSON backup, then a verified NEW account.
+ function pendingLocalTransfer(){
+   try{
+     const p=JSON.parse(root.localStorage.getItem(TRANSFER)||"null");
+     if(!p||typeof p.saveId!=="string"||typeof p.fingerprint!=="string"
+        ||typeof p.targetEmail!=="string"||!Number.isFinite(p.createdAt)
+        ||Date.now()-p.createdAt>7*86400000)return null;
+     return p;
+   }catch(_){return null}
+ }
+ function transferMatches(local,p){
+   return !!p&&!!local?.profile?.saveId&&local.profile.saveId===p.saveId
+      &&local.profile.clubName===p.clubName
+      &&root.localStorage.getItem(OWNER)===(p.previousOwner||null)
+      &&fingerprint(local)===p.fingerprint;
+ }
+ async function beginLocalTransfer(file,targetEmail){
+   const {c,u}=await requirePermanent(),target=checkedEmail(targetEmail);
+   if(target===String(u.email||"").toLowerCase())throw Error("Bitte eine andere E-Mail-Adresse für diesen Verein verwenden.");
+   if(!file||!root.FooteraBackup?.inspect)throw Error("Bitte zuerst deine lokale JSON-Sicherungsdatei auswählen.");
+   if(root.FooteraBackup?.blocked?.())throw Error("Während einer laufenden Spielaktion nicht möglich.");
+   if(root.localStorage.getItem(OWNER)===u.id)throw Error("Dieser Verein gehört bereits zum angemeldeten Konto.");
+   const local=localData();
+   if(!local.onboarded||!local.profile?.saveId||!local.profile?.clubName||!local.club?.length)
+      throw Error("Der lokale Spielstand ist unvollständig. Nichts geändert.");
+   if(file.size>20*1024*1024)throw Error("Sicherung größer als 20 MB.");
+   const backup=await root.FooteraBackup.inspect(await file.text());
+   if(!structurallyEqual(backup.state,local))
+      throw Error("JSON-Sicherung und lokaler Verein unterscheiden sich. Lade eine aktuelle Sicherung herunter und prüfe sie erneut.");
+   const oldCloud=await cloudInfo();
+   if(oldCloud?.save_data?.profile?.saveId===local.profile.saveId)
+      throw Error("Dieser Verein ist bereits im angemeldeten Cloud-Konto gesichert. Kontowechsel nicht erforderlich.");
+   if(!root.confirm("Sicheren Kontowechsel vorbereiten?\\n\\nVerein: "+local.profile.clubName+
+      "\\nZielkonto: "+target+
+      "\\n\\nDer lokale Verein und die JSON-Datei bleiben erhalten, Holy FC und seine Cloud unverändert. Die alte anonyme Online-ID und der alte Freundescode werden NICHT automatisch übertragen.\\n\\nNach E-Mail-Bestätigung muss der Verein ausdrücklich zugeordnet werden."))return false;
+   const p={previousOwner:root.localStorage.getItem(OWNER)||null,previousLogin:u.id,
+     targetEmail:target,saveId:local.profile.saveId,clubName:local.profile.clubName,
+     fingerprint:fingerprint(local),createdAt:Date.now()};
+   root.localStorage.setItem(TRANSFER,JSON.stringify(p));
+   try{const out=await c.auth.signOut({scope:"local"});if(out.error)throw out.error}
+   catch(e){root.localStorage.removeItem(TRANSFER);throw e}
+   // No game data, online account, friendship, wallet or cloud row is modified here.
+   root.location.reload();
+   return true;
+ }
+ async function finishLocalTransfer(){
+   const p=pendingLocalTransfer();
+   if(!p)throw Error("Die vorbereitete sichere Übernahme fehlt oder ist abgelaufen.");
+   const {c,u}=await requirePermanent();
+   if(!u.email_confirmed_at||String(u.email||"").toLowerCase()!==p.targetEmail||u.id===p.previousLogin)
+      throw Error("Zuerst die neue E-Mail bestätigen und mit genau diesem neuen Konto anmelden.");
+   const local=localData();
+   if(!transferMatches(local,p))
+      throw Error("Lokaler Spielstand oder bisherige Zuordnung wurden verändert. Es wurde nichts übertragen.");
+   if(root.FooteraBackup?.blocked?.())throw Error("Während einer Spielaktion nicht möglich.");
+   if(await cloudInfo())throw Error("Dieses Konto hat bereits einen Cloud-Spielstand. Keine Überschreibung.");
+   if(!root.confirm(p.clubName+" jetzt zu "+p.targetEmail+" zuordnen und sicher in der Cloud speichern?\\n\\nDie bisherige Gast-Online-ID und der alte Freundescode werden NICHT automatisch übernommen. Holy FC bleibt unverändert."))return false;
+   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
+   if(error)throw error;
+   root.localStorage.setItem(OWNER,u.id);
+   savePoint(u,local,data);
+   root.localStorage.removeItem(TRANSFER);
+   if(pendingEmail()?.email===p.targetEmail)clearPending();
+   root.location.reload();
+   return true;
  }
  function structurallyEqual(a,b){
    const norm=v=>Array.isArray(v)?v.map(norm):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,norm(v[k])])):v;
@@ -756,6 +824,6 @@
      },20000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,signOut};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
