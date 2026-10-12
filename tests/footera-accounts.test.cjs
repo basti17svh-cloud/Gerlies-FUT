@@ -405,3 +405,90 @@ test("cancelled email change neither mutates account nor saves",async()=>{
  assert.equal(t.calls.length,0);
  assert.equal(t.store.has("footera-account-email-change-v1"),false);
 });
+
+
+test("wrong WEB.DE session can be safely disconnected only after matching local JSON backup",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main"),cloud=sampleGame("holy");
+ local.profile.clubName="FC Gerlies";cloud.profile.clubName="Holy FC";
+ t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.setCloud({save_data:cloud,revision:5,saved_at:"2026-10-12"});
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});
+ t.win.confirm=()=>true;
+ let signedOutWith;
+ t.client.auth.signOut=async opts=>{signedOutWith=opts;return{error:null}};
+ await t.win.FooteraAccount.beginLocalTransfer({size:200,text:async()=>"valid-backup"}," NEW@EXAMPLE.ORG ");
+ assert.equal(signedOutWith.scope,"local");
+ assert.equal(t.wasReloaded(),true);
+ assert.equal(t.store.get("gerliesFutV9"),JSON.stringify(local));
+ assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
+ const pending=JSON.parse(t.store.get("footera-local-account-transfer-v1"));
+ assert.equal(pending.targetEmail,"new@example.org");
+ assert.equal(pending.saveId,"gerlies-main");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
+test("mismatching file cannot trigger logout or ownership changes",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:sampleGame("wrong-id")});
+ t.win.confirm=()=>true;
+ await assert.rejects(t.win.FooteraAccount.beginLocalTransfer({size:10,text:async()=>""},"new@example.org"),/unterscheiden/);
+ assert.equal(t.calls.some(c=>c[0]==="signout"),false);
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),false);
+ assert.equal(t.wasReloaded(),false);
+});
+test("Gmail must be verified before safely claiming FC Gerlies; no old cloud overwrite",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";
+ t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:200,text:async()=>"json"},"new@example.org");
+ t.setUser({id:"gmail-user",email:"new@example.org",email_confirmed_at:null,is_anonymous:false,identities:[]});
+ await assert.rejects(t.win.FooteraAccount.finishLocalTransfer(),/E-Mail bestätigen/);
+ assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
+test("confirmed Gmail can claim FC Gerlies only after fresh, empty-cloud verification",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";local.club=[{uid:"a",pid:"b"}];
+ t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:200,text:async()=>"json"},"new@example.org");
+ t.setUser({id:"gmail-user",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false,identities:[]});
+ await t.win.FooteraAccount.finishLocalTransfer();
+ assert.equal(t.store.get("gerliesFutV9"),JSON.stringify(local));
+ assert.equal(t.store.get("footera-cloud-owner"),"gmail-user");
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),false);
+ const saved=t.calls.filter(c=>c[0]==="cloud");
+ assert.equal(saved.length,1);assert.equal(saved[0][1].p_base_revision,0);
+ assert.equal(saved[0][1].p_save.profile.clubName,"FC Gerlies");
+});
+test("preexisting Gmail cloud save prevents accidental club overwrites",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:40,text:async()=>""},"new@example.org");
+ t.setUser({id:"gmail-user",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false,identities:[]});
+ t.setCloud({save_data:sampleGame("someone-else"),revision:3,saved_at:"2026-10-12"});
+ await assert.rejects(t.win.FooteraAccount.finishLocalTransfer(),/bereits einen Cloud-Spielstand/);
+ assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
+test("new Gmail account cannot claim a local save modified during handoff",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:40,text:async()=>""},"new@example.org");
+ t.setUser({id:"gmail-user",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.store.set("gerliesFutV9",JSON.stringify({...local,coins:12345}));
+ await assert.rejects(t.win.FooteraAccount.finishLocalTransfer(),/wurden verändert/);
+ assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
