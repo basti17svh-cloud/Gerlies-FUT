@@ -1,4 +1,4 @@
-/* Footera V21.127: Points purchase entry – deliberately sandbox-only. */
+/* Footera Points shop – server-gated LIVE mode, isolated Sandbox mode. */
 (()=>{
  "use strict";
  const offers=[
@@ -18,11 +18,12 @@
   const close=document.getElementById("footeraPointsPurchaseClose");
   const grid=document.getElementById("footeraPointsOffers");
   if(!open||!modal||!close||!grid)return;
+  const liveStore=window.FOOTERA_LIVE_STORE_ENABLED===true;
   grid.innerHTML=offers.map(o=>
-    '<button class="footera-points-pack" type="button" data-footera-points-pack="'+o.id+'" aria-label="'+o.amount+' Footera Points für '+o.price+' im Testmodus auswählen">'+
+    '<button class="footera-points-pack" type="button" data-footera-points-pack="'+o.id+'" aria-label="'+o.amount+' Footera Points für '+o.price+(liveStore?' kaufen':' im Testmodus auswählen')+'">'+
     '<span class="footera-points-pack-head"><img src="./assets/footera/points.webp" alt="" aria-hidden="true">FOOTERA POINTS</span>'+
     '<strong class="footera-points-pack-amount">'+o.amount+'</strong>'+
-    '<span class="footera-points-pack-cost">'+o.price+'<span>Testkauf →</span></span>'+
+    '<span class="footera-points-pack-cost">'+o.price+'<span>'+(liveStore?'Mit Echtgeld kaufen →':'Testkauf →')+'</span></span>'+
     '</button>'
   ).join("");
   function showOffers({required=0,available=0,source=""}={}){
@@ -49,7 +50,7 @@
    if(!choice || !permitted.has(choice.dataset.footeraPointsPack))return;
    // LIVE only after explicit public release; server still verifies identity,
    // EUR price, independent keys and payment flags.
-   if(window.FOOTERA_LIVE_STORE_ENABLED===true){
+   if(liveStore){
     if(typeof window.FooteraPaidWallet?.checkoutLive!=="function"){
      if(typeof toast==="function")toast("Echtgeld-Checkout nicht verfügbar.");
      return;
