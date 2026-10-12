@@ -92,6 +92,28 @@ Deno.serve(async(req:Request)=>{
   if(!approvedKeys.has(itemKey)||!UUID.test(requestId))
     return reply({error:"Ungültiges Pack oder Kauf-ID"},400);
   try{
+    // A retry after an ambiguous network failure must return the original
+    // server receipt even when the pack rotates or the balance changed.
+    const { data:previous, error:previousError }=await admin
+      .from("footera_live_point_spends")
+      .select("id,user_id,item_key,points_cost")
+      .eq("id",requestId).maybeSingle();
+    if(previousError) throw Error("Cannot verify previous purchase");
+    if(previous){
+      if(previous.user_id!==user.id||previous.item_key!==itemKey)
+        return reply({error:"Kauf-ID gehört zu einem anderen Artikel oder Konto."},409);
+      const {data:receipt,error:receiptError}=await admin
+        .from("footera_live_entitlements")
+        .select("delivery_status").eq("spend_id",requestId).maybeSingle();
+      const {data:wallet,error:walletError}=await admin
+        .from("footera_live_points_wallets")
+        .select("balance_points").eq("user_id",user.id).maybeSingle();
+      if(receiptError||walletError||!receipt||receipt.delivery_status!=="delivered")
+        return reply({error:"Lieferung ist noch nicht abgeschlossen."},409);
+      return reply({status:"already_processed",request_id:requestId,
+        item_key:itemKey,points_cost:previous.points_cost,
+        balance:wallet?.balance_points??0,delivery_status:"delivered"});
+    }
     // Never trust price/spec/player IDs from the browser.
     const [{data:spec,error:specErr},{data:store,error:storeErr}] = await Promise.all([
       admin.from("footera_live_pack_specs").select("*")
