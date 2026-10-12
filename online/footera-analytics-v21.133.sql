@@ -99,7 +99,7 @@ returns jsonb
 language sql stable security definer set search_path=''
 as $$
 with ref as (
- select (now() at time zone 'Europe/Berlin')::date as day
+ select (now() at time zone 'Europe/Berlin')::date as today
 ), registrations as (
  select
  count(*) as accounts,
@@ -107,19 +107,19 @@ with ref as (
  count(*) filter(where not coalesce(u.is_anonymous,false) and u.email_confirmed_at is not null) as verified_registrations,
  count(*) filter(where u.is_anonymous) as guest_accounts,
  count(*) filter(where not coalesce(u.is_anonymous,false) and u.email_confirmed_at is null) as pending_emails,
- count(*) filter(where not coalesce(u.is_anonymous,false) and u.created_at >= (select day from ref)::timestamp at time zone 'Europe/Berlin') as new_today,
- count(*) filter(where not coalesce(u.is_anonymous,false) and u.created_at >= ((select day from ref)-6)::timestamp at time zone 'Europe/Berlin') as new_week
+ count(*) filter(where not coalesce(u.is_anonymous,false) and u.created_at >= (select today from ref)::timestamp at time zone 'Europe/Berlin') as new_today,
+ count(*) filter(where not coalesce(u.is_anonymous,false) and u.created_at >= ((select today from ref)-6)::timestamp at time zone 'Europe/Berlin') as new_week
  from auth.users u
 ), visitors as (
  select
- count(distinct visitor_hash) filter(where visited_on=(select day from ref)) as today,
- count(distinct visitor_hash) filter(where visited_on>=(select day from ref)-6) as week,
- count(distinct visitor_hash) filter(where visited_on>=(select day from ref)-29) as month,
+ count(distinct visitor_hash) filter(where visited_on=(select today from ref)) as today,
+ count(distinct visitor_hash) filter(where visited_on>=(select today from ref)-6) as week,
+ count(distinct visitor_hash) filter(where visited_on>=(select today from ref)-29) as month,
  count(distinct visitor_hash) as all_recorded
  from public.footera_analytics_visits
 ), player_activity as (
- select count(distinct user_id) filter(where active_on=(select day from ref)) as today,
- count(distinct user_id) filter(where active_on>=(select day from ref)-6) as week
+ select count(distinct user_id) filter(where active_on=(select today from ref)) as today,
+ count(distinct user_id) filter(where active_on>=(select today from ref)-6) as week
  from public.footera_analytics_activity_days
 ), profile_activity as (
  select count(*) as total,
@@ -128,36 +128,36 @@ with ref as (
  from public.footera_online_profiles
 ), clubs as (
  select count(*) as created_since_tracking,
- count(*) filter(where created_at >= (select day from ref)::timestamp at time zone 'Europe/Berlin') as created_today,
- count(*) filter(where created_at >= ((select day from ref)-6)::timestamp at time zone 'Europe/Berlin') as created_week
+ count(*) filter(where created_at >= (select today from ref)::timestamp at time zone 'Europe/Berlin') as created_today,
+ count(*) filter(where created_at >= ((select today from ref)-6)::timestamp at time zone 'Europe/Berlin') as created_week
  from public.footera_analytics_club_creations
 ), traffic_trend as (
  select coalesce(jsonb_agg(jsonb_build_object(
-   'day', d.day::text,
+   'day', d.visit_date::text,
    'visitors',coalesce(v.visitors,0),
    'instagram',coalesce(v.instagram,0),
    'registrations',coalesce(a.registered,0),
    'club_creations',coalesce(c.created,0)
- ) order by d.day),'[]'::jsonb) as trend
- from (select generate_series((select day from ref)-29,(select day from ref),interval '1 day')::date day) d
+ ) order by d.visit_date),'[]'::jsonb) as trend
+ from (select generate_series((select today from ref)-29,(select today from ref),interval '1 day')::date as visit_date) d
  left join lateral (
   select count(distinct visitor_hash) visitors,
     count(distinct visitor_hash) filter(where source='instagram') instagram
-  from public.footera_analytics_visits t where t.visited_on=d.day
+  from public.footera_analytics_visits t where t.visited_on=d.visit_date
  ) v on true
  left join lateral (
   select count(*) as registered from auth.users u
   where not coalesce(u.is_anonymous,false)
-  and (u.created_at at time zone 'Europe/Berlin')::date=d.day
+  and (u.created_at at time zone 'Europe/Berlin')::date=d.visit_date
  ) a on true
  left join lateral(
   select count(*) as created from public.footera_analytics_club_creations t
-  where (t.created_at at time zone 'Europe/Berlin')::date=d.day
+  where (t.created_at at time zone 'Europe/Berlin')::date=d.visit_date
  ) c on true
 ), sources as (
  select coalesce(jsonb_object_agg(source,visitors),'{}'::jsonb) as counts from (
   select source,count(distinct visitor_hash) visitors
-  from public.footera_analytics_visits where visited_on>=(select day from ref)-29
+  from public.footera_analytics_visits where visited_on>=(select today from ref)-29
   group by source
  ) a
 )
