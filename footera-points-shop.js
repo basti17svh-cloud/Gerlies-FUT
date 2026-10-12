@@ -54,4 +54,13 @@
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
  else init();
 })();
-\n// Analytics is optional and isolated from the Points Store.\n(()=>{if(document.getElementById("footeraVisitorAnalyticsScript"))return;const s=document.createElement("script");s.id="footeraVisitorAnalyticsScript";s.src="./footera-visitor-analytics.js";s.defer=true;document.head.append(s)})();\n
+
+ // Analytics is optional and isolated from the Points Store.
+ (()=>{
+   if(document.getElementById("footeraVisitorAnalyticsScript"))return;
+   const s=document.createElement("script");
+   s.id="footeraVisitorAnalyticsScript";
+   s.src="./footera-visitor-analytics.js";
+   s.defer=true;
+   document.head.append(s);
+ })();
