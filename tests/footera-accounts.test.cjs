@@ -6,7 +6,7 @@ const worker=fs.readFileSync(path.join(__dirname,"../service-worker.js"),"utf8")
 const sql=fs.readFileSync(path.join(__dirname,"../online/footera-accounts-v21.109.sql"),"utf8");
 
 function runtime(mode="guest"){
- const calls=[],store=new Map(),who=mode==="guest"?{id:"guest-a",is_anonymous:true}:mode==="registered"?{id:"existing-a",email:"registered@example.org",email_confirmed_at:"2026-10-11",is_anonymous:false,identities:[]}:null;
+ const calls=[],store=new Map();let who=mode==="guest"?{id:"guest-a",is_anonymous:true}:mode==="registered"?{id:"existing-a",email:"registered@example.org",email_confirmed_at:"2026-10-11",is_anonymous:false,identities:[]}:null;
  const auth={
   onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),
   getUser:async()=>({data:{user:who},error:who?null:{name:"AuthSessionMissingError"}}),
@@ -33,7 +33,7 @@ function runtime(mode="guest"){
   console:{warn(){}}
  };
  vm.runInNewContext(js,{window:win,document,URL,TextEncoder,console});
- return {calls,store,win,client,setCloud:data=>{cloud=data;revision=data?.revision||0},wasReloaded:()=>reloaded};
+ return {calls,store,win,client,setUser:u=>{who=u},setCloud:data=>{cloud=data;revision=data?.revision||0},wasReloaded:()=>reloaded};
 }
 
 test("existing guest links Google instead of creating another user",async()=>{
@@ -72,8 +72,8 @@ test("account switch and cloud saves cannot silently replace online profile",()=
  assert.match(online,/localStorage\.getItem\("footera-cloud-owner"\)!==online\.userId/);
  assert.match(online,/if\(!session\)[\s\S]*?footera-cloud-owner/);
  assert.match(online,/authClient/);
- assert.match(worker,/footera-account\.js\?v=21109/);
- assert.match(worker,/footera-account\.css\?v=21109/);
+ assert.match(worker,/footera-account\.js\?v=21122/);
+ assert.match(worker,/footera-account\.css\?v=21122/);
 });
 test("cloud save schema enforces ownership and revision checks",()=>{
  assert.match(sql,/alter table public\.footera_cloud_saves enable row level security/);
@@ -261,4 +261,106 @@ test("Google login and linking are absent from account UI while email flows rema
  assert.match(js,/id="footeraEmailRegister"/);
  assert.match(js,/id="footeraEmailLogin"/);
  assert.match(js,/id="footeraGuest"/);
+});
+
+test("the real entry page loads accounts after online and backup, including the stylesheet",()=>{
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ assert.match(html,/<script src="\.\/footera-account\.js\?v=21122"><\/script>/);
+ assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=21122">/);
+ assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./footera-backup.js'));
+ assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./friend-online.js'));
+});
+test("empty boot autosave does not suppress first account choice",()=>{
+ const t=runtime("fresh");t.store.set("gerliesFutV9",JSON.stringify({onboarded:false,profile:{username:""},club:[]}));
+ assert.equal(t.win.FooteraAccount.shouldWelcome(),true);
+ t.store.set("gerliesFutV9",JSON.stringify({onboarded:false,profile:{username:"Setup started"},club:[]}));
+ assert.equal(t.win.FooteraAccount.shouldWelcome(),false);
+});
+test("login on a new device with an empty autosave restores its club",async()=>{
+ const t=runtime("registered");t.store.set("gerliesFutV9",JSON.stringify({onboarded:false,profile:{username:""},club:[]}));
+ t.setCloud({save_data:sampleGame(),revision:2,saved_at:"2026-10-11"});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(JSON.parse(t.store.get("gerliesFutV9")).profile.saveId,"club-a");
+ assert.equal(t.win.FooteraAccountReplacingSave,true);
+});
+test("confirmed account on a new device reserves ownership before club setup",async()=>{
+ const t=runtime("registered");await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
+ t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,1);
+});
+test("guest registration never changes another account's local owner",async()=>{
+ const t=runtime("guest");t.store.set("footera-cloud-owner","other");const before=JSON.stringify(sampleGame());t.store.set("gerliesFutV9",before);
+ await assert.rejects(t.win.FooteraAccount.emailRegister("qa@example.org",""),/anderen Konto/);
+ assert.equal(t.calls.length,0);assert.equal(t.store.get("footera-cloud-owner"),"other");assert.equal(t.store.get("gerliesFutV9"),before);
+});
+test("obfuscated duplicate signup cannot authorize local club adoption",async()=>{
+ const t=runtime("fresh");t.client.auth.signUp=async()=>({data:{user:{id:"fake-id",identities:[]}},error:null});
+ await t.win.FooteraAccount.emailRegister("duplicate@example.org","test-password-only");
+ assert.equal(t.store.has("footera-pending-email-v1"),false);
+ assert.equal(t.store.has("footera-register-owner-v1"),false);
+});
+test("new signup binds pending verification to returned identity and resends without a session",async()=>{
+ const t=runtime("fresh");t.client.auth.signUp=async()=>({data:{user:{id:"new-id",identities:[{provider:"email"}]}},error:null});
+ await t.win.FooteraAccount.emailRegister("qa@example.org","test-password-only");
+ assert.equal(JSON.parse(t.store.get("footera-pending-email-v1")).userId,"new-id");
+ await t.win.FooteraAccount.resendEmail();assert.equal(t.calls.at(-1)[1].type,"signup");
+ assert.equal(t.calls.at(-1)[1].options.emailRedirectTo,"https://example.test/Gerlies-FUT/");
+});
+test("old registration marker cannot delete another locally owned club",async()=>{
+ const t=runtime("registered"),before=JSON.stringify(sampleGame("other"));
+ t.store.set("footera-cloud-owner","other");t.store.set("footera-register-owner-v1",JSON.stringify({userId:"existing-a"}));t.store.set("gerliesFutV9",before);
+ await t.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN","test-password-only");
+ assert.equal(t.store.get("gerliesFutV9"),before);assert.equal(t.store.get("footera-cloud-owner"),"other");
+});
+test("invalid login preserves guest session, owner and save",async()=>{
+ const t=runtime("guest");t.win.confirm=()=>true;let probes=0;
+ t.win.supabase={createClient:()=>({auth:{signInWithPassword:async()=>{probes++;return{error:Error("invalid credentials")}}}})};
+ const before=JSON.stringify(sampleGame());t.store.set("gerliesFutV9",before);
+ await assert.rejects(t.win.FooteraAccount.emailLogin("qa@example.org","wrong-test-password"),/invalid credentials/);
+ assert.equal(probes,1);assert.equal(t.calls.length,0);assert.equal(t.store.get("gerliesFutV9"),before);assert.equal(t.wasReloaded(),false);
+});
+test("successful login normalizes email and sets only the verified session",async()=>{
+ const t=runtime("fresh");let submitted;
+ t.win.supabase={createClient:(_url,_key,opts)=>{assert.equal(opts.auth.persistSession,false);assert.equal(opts.auth.detectSessionInUrl,false);return{auth:{signInWithPassword:async args=>{submitted=args.email;return{data:{session:{access_token:"test-access",refresh_token:"test-refresh"},user:{id:"qa",is_anonymous:false}}}}}}}};
+ t.client.auth.setSession=async session=>{t.calls.push(["setSession",session]);return{error:null}};
+ await t.win.FooteraAccount.emailLogin(" QA@EXAMPLE.ORG ","test-password-only");
+ assert.equal(submitted,"qa@example.org");assert.equal(t.calls[0][0],"setSession");assert.equal(t.wasReloaded(),true);
+});
+test("logout affects this device only and preserves the owned club",async()=>{
+ const t=runtime("registered");t.win.confirm=()=>true;let opts;
+ t.client.auth.signOut=async o=>{opts=o;return{error:null}};
+ const before=JSON.stringify(sampleGame());t.store.set("gerliesFutV9",before);t.store.set("footera-cloud-owner","existing-a");
+ await t.win.FooteraAccount.signOut();assert.equal(opts.scope,"local");assert.equal(t.store.get("gerliesFutV9"),before);assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
+});
+
+test("club created during cloud lookup is not overwritten by automatic restore",async()=>{
+ const t=runtime("registered"),local=sampleGame("created-during-request");
+ t.client.from=()=>({select:()=>({maybeSingle:async()=>{t.store.set("gerliesFutV9",JSON.stringify(local));return{data:{save_data:sampleGame("remote-club"),revision:1},error:null}}})});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(JSON.parse(t.store.get("gerliesFutV9")).profile.saveId,"created-during-request");assert.equal(t.wasReloaded(),false);
+});
+test("deletion without a positive server confirmation preserves all local data",async()=>{
+ const t=runtime("registered"),before=JSON.stringify(sampleGame());t.store.set("gerliesFutV9",before);t.store.set("footera-cloud-owner","existing-a");
+ t.client.functions.invoke=async()=>({data:{deleted:false},error:null});
+ await assert.rejects(t.win.FooteraAccount.deleteOwnAccount("FOOTERA LÖSCHEN","fixture-only"),/nicht bestätigt/);
+ assert.equal(t.store.get("gerliesFutV9"),before);assert.equal(t.wasReloaded(),false);
+});
+test("cancelled signout leaves session and local club untouched",async()=>{
+ const t=runtime("registered");t.win.confirm=()=>false;await t.win.FooteraAccount.signOut();assert.equal(t.calls.length,0);assert.equal(t.wasReloaded(),false);
+});
+test("a different confirmed identity cannot claim a pending signup with matching email",async()=>{
+ const t=runtime("registered");t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:"other-signup",kind:"signup"}));t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();assert.equal(t.store.has("footera-register-owner-v1"),false);assert.equal(t.calls.length,0);
+});
+
+test("confirmed guest remains on the password step while first cloud backup completes",async()=>{
+ const t=runtime("registered");t.win.FooteraOnline.ready=false;
+ t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:"existing-a",kind:"email_change"}));t.store.set("footera-cloud-owner","existing-a");t.store.set("gerliesFutV9",JSON.stringify(sampleGame()));
+ await t.win.FooteraAccount.autoAttachAndBackup();assert.equal(t.calls.filter(x=>x[0]==="cloud").length,1);assert.equal(t.wasReloaded(),false);assert.equal(t.store.has("footera-pending-email-v1"),true);
+});
+test("confirmed fresh signup clears the prompt because its password already exists",async()=>{
+ const t=runtime("registered");t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:"existing-a",kind:"signup"}));
+ await t.win.FooteraAccount.autoAttachAndBackup();assert.equal(t.store.has("footera-pending-email-v1"),false);assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
 });

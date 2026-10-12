@@ -1,3 +1,7 @@
+# Aktueller Kontoeinstieg: V21.122
+
+E-Mail und Gastmodus sind die angebotenen Anmeldewege. Google-Schaltflächen bleiben entfernt; keine Google-Einrichtung erforderlich. Der aktuelle Prüfbericht steht in [REGISTRATION-AUDIT-V21.122.md](REGISTRATION-AUDIT-V21.122.md). Die nachfolgenden Versionsabschnitte dokumentieren die Entwicklung und sind teilweise historisch.
+
 # Footera-Konten – Google, E-Mail, Cloud (V21.109)
 
 Diese Version verwendet den bestehenden Supabase-Auth-Client in `friend-online.js`. Bei vorhandenen Gastkonten erhält `auth.linkIdentity({ provider: 'google' })` dieselbe User-ID; Freundescodes und bestehende Duelle bleiben so dem Konto zugeordnet. Für E-Mail-Gastumwandlung wird zunächst `auth.updateUser({ email })` aufgerufen, die Adresse verifiziert und anschließend ein Passwort vergeben.

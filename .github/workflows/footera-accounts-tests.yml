@@ -8,6 +8,13 @@ on:
       - 'friend-online.js'
       - 'online/footera-accounts-v21.109.sql'
       - 'tests/footera-accounts.test.cjs'
+      - 'tests/startup-state.test.cjs'
+      - 'tests/boot-update.test.cjs'
+      - 'tests/footera-account-deletion-server.test.cjs'
+      - 'tests/fixtures/footera-delete-account.deployed.ts'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
       - '.github/workflows/footera-accounts-tests.yml'
   workflow_dispatch:
 jobs:
@@ -21,4 +28,4 @@ jobs:
         with:
           node-version: '22'
       - name: Check account and online friend regressions
-        run: node --test tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs
+        run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs
