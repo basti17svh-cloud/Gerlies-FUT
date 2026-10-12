@@ -531,3 +531,45 @@ test("mismatched account is visibly called out before profile controls",()=>{
  assert.match(source,/footeraProfileTransferFile/);
  assert.match(source,/root\.FooteraBackup\.inspect\(await file\.text\(\)\)/);
 });
+
+test("prepared transfer permits Gmail verification on a DIFFERENT anonymous session without claiming FC Gerlies early",async()=>{
+ const t=runtime("registered"),club=sampleGame("gerlies-transfer");
+ club.profile.clubName="FC Gerlies";club.club=[{uid:"a",pid:"b"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));t.store.set("footera-cloud-owner","gerlies-original");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:250,text:async()=>"verified"},"new@gmail.com");
+ t.setUser({id:"new-guest",is_anonymous:true});
+ await t.win.FooteraAccount.emailRegister(" NEW@GMAIL.COM ","");
+ assert.equal(t.calls.filter(c=>c[0]==="update").length,1);
+ assert.equal(t.calls.find(c=>c[0]==="update")[1].email,"new@gmail.com");
+ assert.equal(t.store.get("footera-cloud-owner"),"gerlies-original");
+ assert.equal(JSON.parse(t.store.get("footera-pending-email-v1")).userId,"new-guest");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
+test("prepared transfer rejects registration to an unapproved address and leaves account untouched",async()=>{
+ const t=runtime("registered"),club=sampleGame("gerlies-transfer");
+ club.profile.clubName="FC Gerlies";club.club=[{uid:"a",pid:"b"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));t.store.set("footera-cloud-owner","gerlies-original");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:250,text:async()=>"verified"},"new@gmail.com");
+ t.setUser({id:"new-guest",is_anonymous:true});
+ await assert.rejects(t.win.FooteraAccount.emailRegister("wrong@gmail.com",""),/nur für new@gmail.com/);
+ assert.equal(t.calls.filter(c=>c[0]==="update").length,0);
+ assert.equal(t.store.get("footera-cloud-owner"),"gerlies-original");
+});
+test("verified Gmail registration never auto-adopts the club until explicit transfer confirmation",async()=>{
+ const t=runtime("registered"),club=sampleGame("gerlies-transfer");
+ club.profile.clubName="FC Gerlies";club.club=[{uid:"a",pid:"b"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));t.store.set("footera-cloud-owner","gerlies-original");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:250,text:async()=>"verified"},"new@gmail.com");
+ t.setUser({id:"new-guest",is_anonymous:true});
+ await t.win.FooteraAccount.emailRegister("new@gmail.com","");
+ t.setUser({id:"new-guest",email:"new@gmail.com",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.store.get("footera-cloud-owner"),"gerlies-original");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+ await t.win.FooteraAccount.finishLocalTransfer();
+ assert.equal(t.store.get("footera-cloud-owner"),"new-guest");
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,1);
+});
