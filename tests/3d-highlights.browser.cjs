@@ -184,14 +184,14 @@ if(require.main===module)(async()=>{
     const headerRange=document.createRange();headerRange.selectNodeContents(headline);
     const inside=r=>!!r&&r.left>=a.left-1&&r.right<=a.right+1&&r.top>=a.top-1&&r.bottom<=a.bottom+1;
     return{headline:headline.textContent,name:name.textContent,lines:lineCount,headerLines:headerRange.getClientRects().length,
-     crest:h.querySelector('.fh3d-team-crest .club-crest-initials')?.textContent?.trim()||'',
+     crestVisible:!!h.querySelector('.fh3d-team-crest .club-crest,.fh3d-team-crest .fh3d-opponent-crest')&&crest.width>=35&&crest.height>=35,
      card:!!h.querySelector('.fh3d-player-card .card-shell'),
      minuteAboveCrest:minute.bottom<=crest.top+1,metaWidth:meta.width,
      contained:[card,copy,meta,minute,crest].every(inside),noOverlap:card.right<=copy.left+1&&copy.right<=meta.left+1,
      copyFits:c.scrollWidth<=c.clientWidth+1};
    });
    console.log('DEFENSE HUD',width,JSON.stringify(hud));
-   check(width+': defender card, name and AWAY crest',hud.headline==='ABGEFANGEN'&&hud.name==='K. Laimer'&&hud.card&&hud.crest==='AWAY');
+   check(width+': defender card, name and rendered opponent crest',hud.headline==='ABGEFANGEN'&&hud.name==='K. Laimer'&&hud.card&&hud.crestVisible);
    check(width+': one-line name and no clipped columns',hud.contained&&hud.noOverlap&&hud.copyFits&&hud.lines===1&&hud.headerLines===1&&hud.minuteAboveCrest&&hud.metaWidth<=54);
    await page.screenshot({path:path.join(output,'interception-'+width+'.png')});
    await page.locator('.fh3d-skip').click();
