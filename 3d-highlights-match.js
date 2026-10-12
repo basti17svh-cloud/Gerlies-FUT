@@ -64,10 +64,14 @@ function match3DPresentationMeta(event,current){
  const index=saved?event.goalkeeperIndex:ballWon?event.defenderSourceIndex:event.playerId;
  const actorName=saved?event.keeperName:ballWon?event.defenderName:event.playerName;
  const rows=typeof matchActorRows==='function'?(matchActorRows(displaySide)||[]):[];
- const row=(displaySide==='home'
+ // Resolve the performer on the correct team; for saves prefer the named
+ // goalkeeper if an obsolete lineup index was supplied with a shot event.
+ const wantedName=String(actorName||'').trim().toLocaleLowerCase();
+ const named=wantedName?rows.find(r=>String(r.name||r.base?.fullName||r.base?.name||'').trim().toLocaleLowerCase()===wantedName):null;
+ const indexed=displaySide==='home'
   ?(uid?rows.find(r=>String(r.uid)===String(uid)):null)
-  :(Number.isInteger(Number(index))&&Number(index)>=0?rows.find(r=>r.index===Number(index)):null))
-  ||rows.find(r=>String(r.name||r.base?.fullName||'').toLowerCase()===String(actorName||'').toLowerCase())
+  :(Number.isInteger(Number(index))&&Number(index)>=0?rows.find(r=>Number(r.index)===Number(index)):null);
+ const row=(saved&&named)||indexed||named
   ||(saved?rows.find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||''))):null);
  let playerCardHTML='';
  if(row?.base&&typeof cardHTML==='function'){
