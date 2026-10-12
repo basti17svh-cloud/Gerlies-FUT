@@ -79,7 +79,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#saveClubIdentity').click();
   const saved=await page.evaluate(()=>JSON.stringify(state.profile.clubIdentity));
   await page.reload({waitUntil:'load'});
-  await page.evaluate(()=>{for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();switchView('clubView')});
+  await page.evaluate(()=>{for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();const guard=document.createElement('style');guard.textContent='#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important;pointer-events:none!important}';document.head.append(guard);switchView('clubView')});
   await page.locator('.club-hub-identity').click();
   assert.equal(await page.evaluate(()=>JSON.stringify(state.profile.clubIdentity)),saved,'actual save survives reload');
   assert.equal(await page.locator('#identityHeroCrest [data-crest-part="symbol"]').getAttribute('color'),'#e74759');
