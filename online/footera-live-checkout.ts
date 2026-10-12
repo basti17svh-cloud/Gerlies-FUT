@@ -67,7 +67,10 @@ Deno.serve(async (req: Request) => {
     }
     const checkout = await stripe.checkout.sessions.create({
       mode: "payment",
-      payment_method_types: ["card"],
+      // Use Stripe's dashboard-controlled dynamic eligibility for supported wallet methods.
+      // Limit to immediate-settlement methods: no BNPL, bank debits or delayed delivery.
+      // Apple Pay and Google Pay use 'card'; PayPal and Link need account enablement.
+      allowed_payment_method_types: ["card", "link", "paypal"],
       line_items: [{ price: pack.priceId, quantity: 1 }],
       client_reference_id: user.id,
       customer_email: user.email,
