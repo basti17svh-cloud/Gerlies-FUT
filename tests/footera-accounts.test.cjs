@@ -429,6 +429,7 @@ test("wrong WEB.DE session can be safely disconnected only after matching local 
 });
 test("mismatching file cannot trigger logout or ownership changes",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
  t.win.FooteraBackup.inspect=async()=>({state:sampleGame("wrong-id")});
@@ -440,6 +441,7 @@ test("mismatching file cannot trigger logout or ownership changes",async()=>{
 });
 test("Gmail must be verified before safely claiming FC Gerlies; no old cloud overwrite",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  local.profile.clubName="FC Gerlies";
  t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
@@ -453,6 +455,7 @@ test("Gmail must be verified before safely claiming FC Gerlies; no old cloud ove
 });
 test("confirmed Gmail can claim FC Gerlies only after fresh, empty-cloud verification",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  local.profile.clubName="FC Gerlies";local.club=[{uid:"a",pid:"b"}];
  t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
@@ -470,6 +473,7 @@ test("confirmed Gmail can claim FC Gerlies only after fresh, empty-cloud verific
 });
 test("preexisting Gmail cloud save prevents accidental club overwrites",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  local.profile.clubName="FC Gerlies";t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
  t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
@@ -482,6 +486,7 @@ test("preexisting Gmail cloud save prevents accidental club overwrites",async()=
 });
 test("new Gmail account cannot claim a local save modified during handoff",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  local.profile.clubName="FC Gerlies";t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
  t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
