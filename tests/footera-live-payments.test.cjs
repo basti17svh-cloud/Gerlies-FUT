@@ -12,6 +12,8 @@ const spend=read("online/footera-live-spend.ts");
 const migration=read("online/footera-live-entitlements-v21.135.sql");
 const shop=read("footera-points-shop.js");
 const wallet=read("footera-paid-wallet.js");
+const sandboxCheckout=read("online/footera-stripe-checkout.ts");
+const sandboxSpend=read("online/footera-spend-points.ts");
 
 test("all live Points tiers have identical fixed cents and price IDs in checkout and webhook",()=>{
  const parse=code=>{
@@ -105,4 +107,14 @@ test("Points shop labels mode honestly but remains Sandbox by default",()=>{
  assert.match(shop,/if\(liveStore\)/);
  assert.match(shop,/stripe-sandbox-test\.html/);
  assert.match(shop,/FooteraPaidWallet\.checkoutLive/);
+});
+
+test("Sandbox APIs can be shut down independently at release, without deletion or blocking webhook settlement",()=>{
+ for(const source of [sandboxCheckout,sandboxSpend]){
+  assert.match(source,/Deno\.env\.get\("FOOTERA_SANDBOX_PURCHASES_ENABLED"\) === "false"/);
+  assert.match(source,/\}, 503\)|\},503\)/);
+ }
+ const oldWebhook=read("online/footera-stripe-webhook.ts");
+ assert.doesNotMatch(oldWebhook,/FOOTERA_SANDBOX_PURCHASES_ENABLED/);
+ assert.match(wallet,/const liveMode=\(\)=>window\.FOOTERA_LIVE_STORE_ENABLED===true/);
 });
