@@ -375,6 +375,8 @@ $("seasonPass").addEventListener("click",event=>{
   if(state.seasonPass.premium)return;
   const currency=buy.dataset.passBuy;
   if(currency==="live"){
+   if(seasonInfo().key!=="s1")return;
+   if(!confirm("500 gekaufte Footera Points für den Premium Season Pass ausgeben?"))return;
    buy.disabled=true;
    window.FooteraPaidWallet.spendLivePass().then(()=>syncVerifiedLiveSeasonPass()).catch(e=>toast(e.message)).finally(()=>{buy.disabled=false});
    return;
