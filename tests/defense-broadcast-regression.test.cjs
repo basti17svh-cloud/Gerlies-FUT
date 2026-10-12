@@ -65,5 +65,5 @@ test('ball win follows goal HUD sizing on mobile without splitting player names'
  assert.match(css,/\.fh3d-hud-ball_won\{[^}]*grid-template-columns:98px minmax\(0,1fr\) 60px/);
  assert.match(css,/@media\(max-width:560px\)[\s\S]*\.fh3d-hud-ball_won\{grid-template-columns:82px minmax\(0,1fr\) 52px/);
  assert.match(css,/\.fh3d-hud-ball_won \.fh3d-name\{[^}]*word-break:normal/);
- assert.match(scene,/event\.type==='goal'\|\|event\.type==='ball_won'/);
+ assert.match(scene,/if\(event\.playerCardHTML\)card\.innerHTML=event\.playerCardHTML/);
 });
