@@ -1,0 +1,23 @@
+name: Footera paid pack draw safety
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/footera-live-pack-tests.yml'
+      - 'tests/footera-live-pack-draw.test.cjs'
+      - 'online/footera-live-pack-odds.mjs'
+      - 'online/footera-live-pack-purchase.ts'
+      - 'online/footera-live-atomic-packs-v21.139.sql'
+      - 'pack-odds.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paid-pack-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/footera-live-pack-draw.test.cjs tests/footera-live-payments.test.cjs tests/footera-live-delivery.test.cjs tests/footera-live-pass.test.cjs
