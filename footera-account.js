@@ -154,21 +154,36 @@
    if(!u.email_confirmed_at||String(u.email||"").toLowerCase()!==p.targetEmail||u.id===p.previousLogin)
       throw Error("Zuerst die neue E-Mail bestätigen und mit genau diesem neuen Konto anmelden.");
    const local=localData();
-   if(!transferMatches(local,p))
-      throw Error("Lokaler Spielstand oder bisherige Zuordnung wurden verändert. Es wurde nichts übertragen.");
+   if(local.profile?.saveId!==p.saveId||local.profile?.clubName!==p.clubName)
+      throw Error("Der lokale Verein entspricht nicht mehr der geprüften Sicherung. Es wurde nichts übertragen.");
    if(root.FooteraBackup?.blocked?.())throw Error("Während einer Spielaktion nicht möglich.");
+   const owner=root.localStorage.getItem(OWNER);
    const existing=await cloudInfo();
-   if(existing&&(existing.save_data?.profile?.saveId!==local.profile.saveId||!structurallyEqual(existing.save_data,local)))
-      throw Error("Dieses Konto hat bereits einen anderen Cloud-Spielstand. Keine Überschreibung.");
-   if(!root.confirm(p.clubName+" jetzt zu "+p.targetEmail+" zuordnen und sicher in der Cloud speichern?\\n\\nDie bisherige Gast-Online-ID und der alte Freundescode werden NICHT automatisch übernommen. Holy FC bleibt unverändert."))return false;
-   let revision=existing?.revision||0;
-   if(!existing){
-     const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
-     if(error)throw error;
-     revision=data;
+   const matchingCloud=!!existing&&existing.save_data?.profile?.saveId===p.saveId
+     &&structurallyEqual(existing.save_data,local);
+   // A registration callback may already have saved and claimed this EXACT club.
+   // Treat that as a complete, reconcilable migration, not an owner mismatch.
+   // Never silently overwrite a cloud save or steal a third account's club.
+   if(matchingCloud){
+     if(owner!==u.id&&owner!==(p.previousOwner||null))
+       throw Error("Die lokale Zuordnung gehört zu einem dritten Konto. Nichts verändert.");
+     if(!root.confirm("FC Gerlies ist bereits vollständig in diesem Gmail-Konto gesichert (Version "+existing.revision+").\n\nJetzt die Zuordnung bestätigen und den alten Übernahme-Hinweis entfernen?\n\nEs wird nichts erneut hochgeladen oder überschrieben."))return false;
+     root.localStorage.setItem(OWNER,u.id);
+     savePoint(u,local,existing.revision);
+     root.localStorage.removeItem(TRANSFER);
+     if(pendingEmail()?.email===p.targetEmail)clearPending();
+     root.location.reload();
+     return true;
    }
+   if(!transferMatches(local,p))
+     throw Error("Der lokale Spielstand wurde seit der Vorbereitung verändert. Die Gmail-Cloud wird nicht überschrieben. Bitte zuerst die Sicherungen vergleichen.");
+   if(existing)
+     throw Error("Das Gmail-Konto hat bereits einen abweichenden Cloud-Spielstand. Keine Überschreibung.");
+   if(!root.confirm(p.clubName+" jetzt zu "+p.targetEmail+" zuordnen und sicher in der Cloud speichern?\n\nDie bisherige Gast-Online-ID und der alte Freundescode werden NICHT automatisch übernommen. Holy FC bleibt unverändert."))return false;
+   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
+   if(error)throw error;
    root.localStorage.setItem(OWNER,u.id);
-   savePoint(u,local,revision);
+   savePoint(u,local,data);
    root.localStorage.removeItem(TRANSFER);
    if(pendingEmail()?.email===p.targetEmail)clearPending();
    root.location.reload();
