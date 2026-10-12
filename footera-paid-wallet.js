@@ -3,14 +3,16 @@
 */
 (()=>{
  "use strict";
- let client=null,owner="",verified=false,balance=0,fetchInFlight=null,spending=false;\n let liveOwner="",liveVerified=false,liveBalance=0,liveReceipts=[],liveFetchInFlight=null;
+ let client=null,owner="",verified=false,balance=0,fetchInFlight=null,spending=false;
+ let liveOwner="",liveVerified=false,liveBalance=0,liveReceipts=[],liveFetchInFlight=null;
  let render=()=>{},grant=()=>{};
  const OWNER_KEY="footera-cloud-owner";
  const asPoints=v=>Number.isSafeInteger(Number(v))&&Number(v)>=0?Number(v):0;
  function paidBalance(){return verified?balance:0}
  function ready(){return verified&&!!owner}
  function emit(){try{render()}catch(e){console.warn("Footera wallet rendering",e)}}
- function invalidate(){owner="";verified=false;balance=0;invalidateLive();emit()}\n function invalidateLive(){liveOwner="";liveVerified=false;liveBalance=0;liveReceipts=[]}
+ function invalidate(){owner="";verified=false;balance=0;invalidateLive();emit()}
+ function invalidateLive(){liveOwner="";liveVerified=false;liveBalance=0;liveReceipts=[]}
  function ownedBy(u){return !!u&&localStorage.getItem(OWNER_KEY)===u}
  async function connect(){
   if(!client)client=await window.FooteraOnline.authClient();
