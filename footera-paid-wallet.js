@@ -98,6 +98,33 @@
  }
  // Read-only access to the server's immutable paid card inventory.
  // This method does NOT grant items or trust a browser-submitted player result.
+ // Stage LIVE card checkout; the Supabase endpoint stays fail-closed without
+ // explicit production flags and valid independent LIVE Stripe secrets.
+ async function checkoutLive(packId){
+  const permitted=new Set(["100","500","1050","1600","2800","5900","12000","18500"]);
+  if(!permitted.has(String(packId)))throw Error("Unbekanntes Footera Points Paket.");
+  const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
+  if(e||!user||user.is_anonymous||!user.email_confirmed_at||!ownedBy(user.id))
+   throw Error("Verifiziertes und verknüpftes Footera-Konto erforderlich.");
+  const {data,error}=await c.functions.invoke("footera-live-checkout",{
+   body:{pack_id:String(packId)}
+  });
+  if(error){
+   let message="Echtgeld-Checkout ist derzeit deaktiviert.";
+   if(error.context?.json)try{
+    const body=await error.context.json();if(body?.error)message=body.error;
+   }catch(_){}
+   throw Error(message);
+  }
+  let url;
+  try{url=new URL(data?.checkout_url)}catch{
+   throw Error("Ungültige Stripe Checkout Adresse.");
+  }
+  if(url.protocol!=="https:"||url.hostname!=="checkout.stripe.com" ||
+     !url.pathname.startsWith("/c/pay/"))
+    throw Error("Unbekannte Stripe Checkout Adresse.");
+  return url.toString();
+ }
  async function fetchLiveCards(spendId=null){
   if(!(await refreshLive()))throw Error("Verifiziertes Live-Konto erforderlich.");
   const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
@@ -229,5 +256,5 @@
    refreshLive().catch(console.warn);
   }},30000);
  }
- window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState,spendLivePass,fetchLiveCards,spendLivePack});
+ window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState,spendLivePass,fetchLiveCards,spendLivePack,checkoutLive});
 })();
