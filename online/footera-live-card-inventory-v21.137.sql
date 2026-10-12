@@ -64,14 +64,15 @@ create policy footera_live_cards_owner_read on public.footera_live_cards
 create or replace function public.footera_live_validate_card()
 returns trigger language plpgsql security definer set search_path=''
 as $$
-declare v_type text; v_base public.footera_live_player_catalog%rowtype;
+declare v_type text; v_max_slots smallint; v_base public.footera_live_player_catalog%rowtype;
 begin
  select item_type into v_type from public.footera_live_point_spends
    where id=new.spend_id and user_id=new.user_id and item_key=new.item_key;
  if v_type is distinct from 'pack' then raise exception 'Card requires owned LIVE pack spend'; end if;
- if not exists(select 1 from public.footera_live_pack_specs
-   where item_key=new.item_key and enabled=true)
- then raise exception 'Verified LIVE pack specification not enabled'; end if;
+ select player_count into v_max_slots from public.footera_live_pack_specs
+   where item_key=new.item_key and enabled=true;
+ if v_max_slots is null or new.slot>=v_max_slots
+ then raise exception 'Verified LIVE pack specification unavailable or slot out of bounds'; end if;
  select * into v_base from public.footera_live_player_catalog
    where player_id=new.player_id and approved_for_paid=true;
  if not found then raise exception 'Paid player not approved in server catalog'; end if;
