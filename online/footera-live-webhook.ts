@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
     return respond("Footera live webhook not enabled", 503);
   const key = Deno.env.get("FOOTERA_STRIPE_LIVE_SECRET_KEY") ?? "";
   const secret = Deno.env.get("FOOTERA_STRIPE_LIVE_WEBHOOK_SECRET") ?? "";
-  if (!key.startsWith("sk_live_") || !secret.startsWith("whsec_"))
+  if (!/^(?:sk|rk)_live_/.test(key) || !secret.startsWith("whsec_"))
     return respond("Live webhook is not configured", 503);
   const sig = req.headers.get("stripe-signature");
   if (!sig) return respond("Missing signature", 400);
