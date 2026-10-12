@@ -69,6 +69,9 @@
  const $=id=>document.getElementById(id);
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const qs=new URLSearchParams(location.search);
+ const selectedPack=qs.get("pack");
+ if(["100","500","1050","1600","2800","5900","12000","18500"].includes(selectedPack))
+  $("pack").value=selectedPack;
  let client=null,user=null,busy=false;
  const setStatus=msg=>{$("status").textContent=msg;};
  function buttons(){$("buy").disabled=!user||busy;$("refresh").disabled=!user||busy;}

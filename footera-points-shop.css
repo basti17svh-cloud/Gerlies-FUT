@@ -1,0 +1,30 @@
+/* Footera Points Shop – V21.123. Stripe sandbox only, no real-money wallet mutation. */
+.footera-points-entry{margin:1px 0 16px}
+button.footera-points-entry-btn{width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;min-height:82px;border:1px solid #f04d92;border-radius:19px;text-align:left;color:#fff;background:linear-gradient(115deg,#2e1020 0%,#51152e 54%,#9c204f 100%);box-shadow:inset 0 1px #ffffff29,0 9px 22px #17030d66;cursor:pointer}
+.footera-points-entry-btn:focus-visible,.footera-points-pack:focus-visible{outline:3px solid #ffaad2;outline-offset:3px}
+.footera-points-entry-icon{display:grid;place-items:center;flex:none;width:51px;height:51px;border-radius:15px;background:linear-gradient(150deg,#100910,#47112b);border:1px solid #fc82b9;box-shadow:0 0 20px #eb2d8447}
+.footera-points-entry-icon img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 0 7px #ff419b70)}
+.footera-points-entry-copy{display:grid;gap:5px;flex:1;min-width:0}
+.footera-points-entry-copy strong{font-weight:900;font-size:15px;line-height:1.2;letter-spacing:.01em}
+.footera-points-entry-copy small{font-weight:600;font-size:10px;line-height:1.4;color:#ffd6e8}
+.footera-points-entry-arrow{font-size:30px;line-height:1;color:#ffbedb}
+.footera-points-modal{background:radial-gradient(circle at 55% -15%,#5b1533 0%,#150810 55%,#0a070b 100%)}
+.footera-points-modal .modalinner{max-width:640px;margin:auto}
+.footera-points-modal .modalhead{padding:9px 0 14px;background:transparent;border-bottom:1px solid #64304b}
+.footera-points-modal .modalhead h3{font-size:20px;font-weight:900}
+.footera-points-modal .modalhead button{background:#2e1726;border-color:#86506d;color:#fff;padding:10px 14px}
+.footera-points-banner{border:1px solid #95365d;border-radius:17px;padding:13px 15px;background:linear-gradient(110deg,#301020,#641b3e);margin:16px 0 15px}
+.footera-points-banner strong{display:flex;align-items:center;gap:9px;font-size:15px}
+.footera-points-banner img{width:26px;height:26px;object-fit:contain}
+.footera-points-banner p{font-size:12px;line-height:1.55;color:#ffe4ee;margin:7px 0 0}
+.footera-points-offer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding-bottom:12px}
+button.footera-points-pack{min-width:0;display:grid;justify-items:start;gap:5px;min-height:130px;border:1px solid #6d3050;border-radius:16px;padding:15px 13px;background:linear-gradient(160deg,#2a1422,#140e16 78%);color:#fff;text-align:left;cursor:pointer;box-shadow:inset 0 1px #ffffff10}
+button.footera-points-pack:active{transform:scale(.985)}
+.footera-points-pack-head{display:flex;align-items:center;gap:7px;color:#ffb2da;font-size:10px;font-weight:850;letter-spacing:.03em}
+.footera-points-pack-head img{width:24px;height:24px;object-fit:contain}
+.footera-points-pack-amount{font-size:26px;line-height:1.1;font-weight:950;font-variant-numeric:tabular-nums;white-space:nowrap;color:#ffe3f0}
+.footera-points-pack-cost{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:auto;font-size:13px;font-weight:850;color:#ff90c1}
+.footera-points-pack-cost span{font-size:11px;color:#fed3e6}
+.footera-points-disclaimer{padding:10px 3px 30px;font-size:12px;line-height:1.6;color:#e0b6ca}
+@media(min-width:620px){.footera-points-offer-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:360px){button.footera-points-entry-btn{padding:12px;gap:10px}.footera-points-entry-copy strong{font-size:13px}.footera-points-pack-amount{font-size:23px}}
