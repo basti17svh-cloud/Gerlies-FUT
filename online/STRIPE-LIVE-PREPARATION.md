@@ -1,3 +1,23 @@
+# Footera Stripe Live – Vorbereitung V21.136 (12.10.2026)
+
+## V21.136: Nachverfolgte Umsetzung
+- **Aktuellster technischer Sicherheitsausbau:** `online/footera-live-delivery-v21.136.sql` ist in Supabase angewendet. Die neue Tabelleinstellung `fulfillment_ready` steht für alle 14 Artikel auf `false`. Ein BEFORE-INSERT-Trigger auf dem LIVE-Entitlement verlangt sowohl `enabled=true` als auch `fulfillment_ready=true`; fehlende Lieferfähigkeit löst eine SQL-Exception aus und rollt die gesamte Points-Abbuchung zurück.
+- **Season-Pass S1:** Der Server kann, sobald der Artikel später explizit freigegeben wird, die eindeutig einem Konto zugeordnete Premium-Berechtigung zusammen mit dem Debit in derselben Datenbanktransaktion als `delivered` speichern. Der Browser darf keinen Entitlement-Beleg erstellen.
+- **Packs & Evolutions:** Vom Trigger weiterhin ausdrücklich abgelehnt, selbst falls jemand eine Angebotsfreigabe falsch setzt. Ein vollständiges serverseitiges, mit dem Spiel synchronisiertes Karteninventar und ein nachweislich korrekter Zufallszug fehlen weiterhin.
+- **Footera-Client:** `footera-paid-wallet.js` lädt die LIVE-Wallet/Belege für das zugeordnete bestätigte Konto und verwaltet die eindeutige Season-Pass-Anfrage persistent, sodass ein Retry nicht erneut abbucht. `season-system.js` zeigt den LIVE-Pass-Kauf nur bei ausreichendem verifizierten Live-Saldo an, verlangt einen ausdrücklichen Klick mit Kaufbestätigung und stellt verifizierte Berechtigungen nach erneutem Laden wieder her. Die gewohnten Coins/Free-Points-Käufe bleiben separat.
+- **LIVE Endpoint:** `footera-live-spend` wurde als Supabase Edge Function Version 2 neu deployed und liest nach der Buchung den **gespeicherten** Lieferbeleg, nicht bloß den ursprünglichen RPC-Status.
+- **Tests:** SQL-Transaktionstest (`BEGIN`/`ROLLBACK`) für erfolgreiche atomare S1-Lieferung, Replay, gesperrte Packs trotz Freigabefehler und einmaligen Season Pass erfolgreich. 10 Quellcode-Regressionstests und 4 simulierte LIVE-Pass-Verhaltenstests erfolgreich. GitHub Actions Tests hinzugefügt. Keine echte Stripe-Zahlung ausgeführt.
+- **Nachprüfung:** LIVE Wallets/Payments/Spends/Entitlements jeweils 0; Store-Artikel aktiviert 0; Fulfillment-Artikel bereit 0. Erneute LIVE-Stripe-Abfrage: **kein registrierter LIVE-Webhook**.
+
+### Zur Veröffentlichung weiterhin NICHT erfüllt
+1. Sicheres serverseitiges Pack-Öffnen und Inventar, korrekte Karten-Verknüpfung mit Teams/Transfers, Evolution-Berechtigungen, autoritative Reward-/Season-Claims über mehrere Geräte hinweg; in vorhandenen lokalen Spieldaten kann weiterhin manipuliert werden.
+2. Separate Stripe-Live-Secrets und signierter Live-Webhook müssen sicher konfiguriert werden. Der Live-Webhook ist bei Stripe **nicht registriert**; die Supabase-Funktionen sind nur deployed, nicht für Echtgeld-Freigabe aktiviert. Keine Produktiv-Secrets in GitHub.
+3. Vollständige Stripe End-to-End-Tests mit Testmode-signierten Events und isolierten Fehler-/Refund-/Chargeback-Fällen, inklusive Sperren/Rücknahme **bereits ausgegebener Spielinhalte** nach Rückbuchungen, stehen aus. Keine eigenständige Echtgeldtransaktion.
+4. Betreiberseitige Steuer-/USt.-, Verbraucher-, Alters- und Lootbox-Transparenzpflichten vor öffentlicher Aktivierung abschließen; die in der Chatkommunikation mitgeteilte Stripe-Geschäftsmodellzustimmung ist berücksichtigt, aber Originalantwort hier nicht unabhängig verifiziert.
+
+**GO-LIVE: NO / FAIL CLOSED.** Der Betreiber hat die Veröffentlichung ausdrücklich gewünscht, aber die Bedingungen für einen verantwortbaren Echtgeldstart sind technisch noch nicht erfüllt.
+
+---
 # Footera Stripe Live – Vorbereitung V21.135 (12.10.2026)
 
 ## AKTUELLER STAND V21.135 (ersetzt ältere Statusmeldungen unten)
