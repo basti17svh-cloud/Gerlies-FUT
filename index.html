@@ -2452,8 +2452,11 @@ function chooseMatchCreator(side,exclude=null){
  return weightedMatchPick(weighted)||matchFallbackActor(side,side==="home"?"Spieler":"Gegenspieler")
 }
 function chooseMatchAttacker(side){
- const rows=matchActorRows(side),weighted=rows.map(r=>({...r,weight:scorerSlotWeight(r.slot)*(.38+r.attrs.sho/145+r.attrs.pac/300+r.attrs.dri/300)*r.ctx.scorer*(.72+r.fitness*.0028)}));
- return weightedMatchPick(weighted)||matchFallbackActor(side,side==="home"?"Spieler":"Gegenspieler")
+ // Goalkeepers may never be selected as shot takers, even if deployed out of position.
+ const rows=matchActorRows(side).filter(r=>!['GK','TW','TH'].includes(String(r.slot||'').toUpperCase())&&!['GK','TW','TH'].includes(String(r.base?.position||'').toUpperCase()));
+ if(!rows.length)return null;
+ const weighted=rows.map(r=>({...r,weight:scorerSlotWeight(r.slot)*(.38+r.attrs.sho/145+r.attrs.pac/300+r.attrs.dri/300)*r.ctx.scorer*(.72+r.fitness*.0028)}));
+ return weightedMatchPick(weighted)
 }
 function matchDefensiveSkill(row){
  if(!row)return 70;const a=row.attrs||matchAttributes(row.base);if(row.slot==="GK")return a.ovr;
@@ -7731,6 +7734,10 @@ function resolveMissedMatchShot(shot,team){
  // Presentation metadata only: name the actual goalkeeper on saved chances.
  const keeperRow=shot.outcome==="save"&&action?matchActorRows(action.side).find(row=>row.index===action.index):null;
  shot.goalkeeperName=shot.outcome==="save"?(keeperRow?.base?.fullName||[keeperRow?.base?.firstName,keeperRow?.base?.lastName].filter(Boolean).join(" ")||action?.name||"Torwart"):"";
+ if(shot.outcome==="save"){
+  shot.goalkeeperUid=String(action?.uid||"");
+  shot.goalkeeperIndex=Number(action?.index??-1);
+ }
  if(typeof queueMatchChance3D==="function")queueMatchChance3D(shot);
  if(action){
   const text=kind==="save"?`${action.name} pariert den Abschluss von ${shot.shooter}!`:`${action.name} blockt den Schuss von ${shot.shooter}.`;
@@ -7826,7 +7833,9 @@ function simAttack(homeSide){
   if(action){recordMatchScene(`${defendingSide}-interception`,`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
   return
  }
- const attacker=chooseMatchAttacker(side),duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
+ const attacker=chooseMatchAttacker(side);
+ if(!attacker)return; // No fictional shot when only a goalkeeper is available.
+ const duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
  const duelAttack=matchBreakthroughSkill(attacker),duelDefense=duelDefender?matchDefensiveSkill(duelDefender):defenseProfile.defense,duelMargin=matchAttributeGap(duelAttack-duelDefense),duelProfileGap=matchAttributeGap(attackProfile.transition-defenseProfile.defense);
  const duelChance=matchClamp(.60+duelMargin*.0038+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel,.28,.86);
  if(!eventChance(duelChance)){
