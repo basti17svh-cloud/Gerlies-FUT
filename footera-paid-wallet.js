@@ -96,6 +96,67 @@
   return {verified:liveVerified&&ownedBy(liveOwner),balance:liveVerified&&ownedBy(liveOwner)?liveBalance:0,
    receipts:liveVerified&&ownedBy(liveOwner)?liveReceipts.map(r=>({...r})):[]};
  }
+ // Read-only access to the server's immutable paid card inventory.
+ // This method does NOT grant items or trust a browser-submitted player result.
+ async function fetchLiveCards(spendId=null){
+  if(!(await refreshLive()))throw Error("Verifiziertes Live-Konto erforderlich.");
+  const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
+  if(e||!user||user.id!==liveOwner||!ownedBy(user.id))
+   throw Error("Dein Verein ist nicht mit diesem Echtgeldkonto verbunden.");
+  let query=c.from("footera_live_cards")
+   .select("card_id,spend_id,user_id,item_key,slot,player_id,card_snapshot,created_at")
+   .eq("user_id",user.id).order("created_at",{ascending:false});
+  if(spendId)query=query.eq("spend_id",spendId);
+  const {data,error}=await query.limit(spendId?30:1000);
+  if(error||!Array.isArray(data))throw Error("Live-Karten konnten nicht geladen werden.");
+  const {data:{user:again}}=await c.auth.getUser();
+  if(!again||again.id!==user.id||!ownedBy(user.id))
+   throw Error("Footera-Konto hat sich während des Ladens geändert.");
+  if(!spendId&&data.length>=1000)throw Error("Zu viele Live-Karten für eine sichere Einzelabfrage.");
+  return data.filter(x=>x.user_id===user.id&&(!spendId||x.spend_id===spendId))
+    .map(x=>({
+      card_id:x.card_id,spend_id:x.spend_id,item_key:x.item_key,slot:x.slot,
+      player_id:x.player_id,card_snapshot:{...x.card_snapshot},created_at:x.created_at
+    }));
+ }
+ let livePackBusy=false;
+ async function spendLivePack(packId){
+  if(!["silver","gold"].includes(packId))
+   throw Error("Dieser Echtgeld-Packtyp hat noch keine vollständige sichere Auslieferung.");
+  if(livePackBusy)throw Error("Ein Echtgeld-Packkauf läuft bereits.");
+  livePackBusy=true;
+  try{
+   if(!(await refreshLive()))throw Error("Echtgeld-Wallet nicht verfügbar.");
+   const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
+   if(e||!user||user.id!==liveOwner||!ownedBy(user.id))
+    throw Error("Das Echtgeld-Konto gehört nicht zu deinem Verein.");
+   const itemKey="pack:"+packId,storeKey="footera-live-request:"+user.id+":"+itemKey;
+   const existing=localStorage.getItem(storeKey);
+   const requestId=existing||crypto.randomUUID();
+   if(!existing)localStorage.setItem(storeKey,requestId);
+   const {data,error}=await c.functions.invoke("footera-live-pack-purchase",{
+    body:{item_key:itemKey,request_id:requestId}
+   });
+   if(error){
+    let message="Echtgeld-Packkauf wurde nicht abgeschlossen.";
+    if(error.context?.json)try{
+     const body=await error.context.json();if(body?.error)message=body.error;
+    }catch(_){}
+    throw Error(message);
+   }
+   if(!data || data.request_id!==requestId || data.item_key!==itemKey ||
+      !["spent","already_processed"].includes(data.status) ||
+      data.delivery_status!=="delivered")
+    throw Error("Server-Lieferbeleg nicht bestätigt. Kauf erneut prüfen.");
+   const cards=await fetchLiveCards(requestId);
+   if(cards.length!==(packId==="silver"?5:5) ||
+      cards.some(x=>x.item_key!==itemKey) ||
+      new Set(cards.map(x=>x.slot)).size!==cards.length)
+    throw Error("Nicht alle Karten sind sichtbar. Kauf-ID bleibt zur Wiederherstellung gespeichert.");
+   localStorage.removeItem(storeKey);
+   return {receipt:data,cards:cards.sort((a,b)=>a.slot-b.slot)};
+  }finally{livePackBusy=false}
+ }
  async function spendLivePass(){
   if(!(await refreshLive()))throw Error("Echtgeld-Wallet nicht verfügbar.");
   const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
@@ -168,5 +229,5 @@
    refreshLive().catch(console.warn);
   }},30000);
  }
- window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState,spendLivePass});
+ window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState,spendLivePass,fetchLiveCards,spendLivePack});
 })();
