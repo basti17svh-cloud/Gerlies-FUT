@@ -1,4 +1,4 @@
-/* Footera V21.123: Points purchase entry – deliberately sandbox-only. */
+/* Footera V21.124: Points purchase entry – deliberately sandbox-only. */
 (()=>{
  "use strict";
  const offers=[
@@ -25,7 +25,7 @@
     '<span class="footera-points-pack-cost">'+o.price+'<span>Testkauf →</span></span>'+
     '</button>'
   ).join("");
-  open.addEventListener("click",()=>showUiLayer("footeraPointsPurchaseModal","footera-points"));
+  open.addEventListener("click",()=>{modal.scrollTop=0;showUiLayer("footeraPointsPurchaseModal","footera-points");});
   close.addEventListener("click",()=>closeUiLayer("footeraPointsPurchaseModal","footera-points"));
   grid.addEventListener("click",e=>{
    const choice=e.target.closest("button[data-footera-points-pack]");

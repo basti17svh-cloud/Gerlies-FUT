@@ -44,3 +44,8 @@ Bei einer erfolgreichen Testzahlung sind die serverseitigen Points in `public.fo
 - Ein eigenes mobiles Fenster zeigt 8 Pakete mit EUR-Testpreisen an. Gewählte Pakete öffnen die isolierte Sandbox-Testseite mit vorausgewähltem Paket.
 - Testkauf und serverseitige Buchung bleiben vom normalen clientseitigen Spielguthaben getrennt. **Keine echten Zahlungen, keine Freischaltung gekaufter Packs im regulären Spiel.**
 - Der Shop-Einstieg ist mit der vorhandenen App-Layer-/Android-Zurück-Logik verbunden.
+
+## V21.124 – Mobile Shop-Dialog
+- Deckender Sticky-Header verhindert überlappenden Hinweistext im Points-Kaufdialog.
+- Dialog scrollt beim Öffnen an den Anfang.
+- Erster Sandbox-Checkout am 12.10.2026 durch Betreiber bestätigt, Datenbank: genau eine Points-Buchung über 500 und Wallet-Summe 500.
