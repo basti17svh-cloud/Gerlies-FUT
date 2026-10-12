@@ -27,8 +27,9 @@ Deno.serve(async (req: Request) => {
     return respond({ error: "Origin not allowed" }, 403);
   // This is separate from LIVE Checkout. It must only be enabled after
   // authenticated paid entitlements can be granted atomically and restored after crashes.
-  if (Deno.env.get("FOOTERA_LIVE_SPENDING_ENABLED") !== "true")
-    return respond({ error: "Footera Echtgeld-Points können noch nicht ausgegeben werden." }, 503);
+  if (Deno.env.get("FOOTERA_LIVE_SPENDING_ENABLED") !== "true" ||
+      Deno.env.get("FOOTERA_LIVE_DELIVERY_ENABLED") !== "true")
+    return respond({ error: "Echtgeld-Purchases bleiben bis zur sicheren Lieferung deaktiviert." }, 503);
   const match = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") || "");
   if (!match) return respond({ error: "Footera Anmeldung erforderlich." }, 401);
   const endpoint = Deno.env.get("SUPABASE_URL") || "";
@@ -69,8 +70,13 @@ Deno.serve(async (req: Request) => {
     if (!data || data.item_key !== itemKey || data.request_id !== requestId ||
         !["spent", "already_processed"].includes(data.status) ||
         !Number.isSafeInteger(Number(data.balance)) ||
-        !Number.isSafeInteger(Number(data.points_cost)))
+        !Number.isSafeInteger(Number(data.points_cost)) ||
+        !["pending", "delivered"].includes(data.delivery_status))
       return respond({ error: "Buchungsbestätigung ungültig." }, 502);
+    // Points spending is not a delivered pack/pass. Never mark success when
+    // the game-server has not yet persisted the purchased entitlement.
+    if (data.delivery_status !== "delivered")
+      return respond({ ...data, status: "delivery_pending" }, 202);
     return respond(data);
   } catch (e) {
     console.error("Footera live spend runtime", String(e));
