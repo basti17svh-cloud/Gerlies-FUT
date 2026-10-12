@@ -145,6 +145,8 @@ test("LIVE checkout: authentic server-selected price, account and metadata",asyn
  const request=s.created[0];
  assert.equal(request.mode,"payment");
  assert.equal(request.line_items[0].price,PRICE);
+ assert.deepEqual(Array.from(request.allowed_payment_method_types),["card","link","paypal"]);
+ assert.equal(request.payment_method_types,undefined);
  assert.equal(request.line_items[0].quantity,1);
  assert.equal(request.client_reference_id,USER);
  assert.equal(request.metadata.footera_user_id,USER);
@@ -219,4 +221,17 @@ test("LIVE webhook: disputes create holds and won disputes release holds",async(
  s.disputes={data:[{status:"won",amount:59}],has_more:false};
  assert.equal((await hook(s,dispute)).status,200);
  assert.equal(s.rpc.at(-1).args.p_current_dispute_hold_cents,0);
+});
+
+test("LIVE and Sandbox payment options use Stripe eligibility, without BNPL or deferred methods",()=>{
+ const live=fs.readFileSync(path.join(root,"online","footera-live-checkout.ts"),"utf8");
+ const sandbox=fs.readFileSync(path.join(root,"online","footera-stripe-checkout.ts"),"utf8");
+ for(const src of [live,sandbox]){
+  assert.match(src,/allowed_payment_method_types:\s*\["card", "link", "paypal"\]/);
+  assert.doesNotMatch(src,/^\s*payment_method_types\s*:/m);
+  assert.doesNotMatch(src,/allowed_payment_method_types:[^\n]*"klarna"/);
+  assert.doesNotMatch(src,/allowed_payment_method_types:[^\n]*"sepa_debit"/);
+ }
+ assert.match(live,/FOOTERA_LIVE_PAYMENTS_ENABLED/);
+ assert.match(sandbox,/sk_test_/);
 });
