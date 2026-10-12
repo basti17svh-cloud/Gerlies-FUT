@@ -198,6 +198,7 @@
     if(!session){
      if(localStorage.getItem("footera-cloud-owner")){
        const status=$("onlineStatus");if(status)status.textContent="Bitte dein Footera-Konto wieder anmelden. Gastkonto wird nicht automatisch neu erstellt.";
+       started=null; // Account login can succeed later without a page reload.
        return;
      }
      const r=await client.auth.signInAnonymously();if(r.error)throw r.error;session=r.data.session
@@ -209,6 +210,7 @@
        (localStorage.getItem("footera-cloud-owner")&&localStorage.getItem("footera-cloud-owner")!==online.userId)){
       online.ready=false;
       const status=$("onlineStatus");if(status)status.textContent="Konto-Wechsel vorbereitet: erst die bestätigte E-Mail und Vereinsübernahme abschließen.";
+      started=null; // Retry the online handshake after the verified transfer.
       return;
     }
     online.ready=true;
