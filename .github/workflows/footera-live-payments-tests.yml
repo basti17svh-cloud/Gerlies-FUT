@@ -1,0 +1,23 @@
+name: Footera LIVE payment safety tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/footera-live-payments-tests.yml'
+      - 'online/footera-live-*.ts'
+      - 'online/footera-live-*.sql'
+      - 'tests/footera-live-payments.test.cjs'
+      - 'footera-points-shop.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify LIVE integration stays fail-closed
+        run: node --test tests/footera-live-payments.test.cjs
