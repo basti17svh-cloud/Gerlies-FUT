@@ -963,6 +963,12 @@
      const signedIn=await user();
      if(isPermanent(signedIn)){
        await reconcileCompletedTransfer(signedIn).catch(err=>console.warn("Footera Konto-Abgleich:",err));
+       // Restore friends/online identity after a verified account conversion.
+       // This is idempotent if the normal game startup already initialized it.
+       if(root.localStorage.getItem(OWNER)===signedIn.id&&!pendingLocalTransfer()&&!root.FooteraOnline?.ready){
+         root.setTimeout(()=>Promise.resolve(root.FooteraOnline?.init?.())
+           .catch(err=>console.warn("Footera Online-Start:",err)),0);
+       }
      }else if(pendingEmail()||pendingLocalTransfer()||root.location.hash.includes("access_token")||root.location.search.includes("code="))show();
      render().catch(console.warn);
      if(callbackError)msg(safeMessage({code:callbackError,message:"Der Anmeldelink ist ungültig oder abgelaufen. Bitte einen neuen Link anfordern."}),true);
