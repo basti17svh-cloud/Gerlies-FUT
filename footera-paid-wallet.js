@@ -13,6 +13,10 @@
  function emit(){try{render()}catch(e){console.warn("Footera wallet rendering",e)}}
  function invalidate(){owner="";verified=false;balance=0;invalidateLive();emit()}
  function invalidateLive(){liveOwner="";liveVerified=false;liveBalance=0;liveReceipts=[]}
+ function liveChanged(){
+  try{if(typeof window.dispatchEvent==="function"&&typeof Event==="function")
+   window.dispatchEvent(new Event("footera:live-wallet-updated"))}catch(_){}
+ }
  function ownedBy(u){return !!u&&localStorage.getItem(OWNER_KEY)===u}
  async function connect(){
   if(!client)client=await window.FooteraOnline.authClient();
@@ -78,6 +82,7 @@
       delivery_status:x.delivery_status,created_at:x.created_at
     })):[];
     liveVerified=true;
+    liveChanged();
     return true;
    }catch(e){
     invalidateLive();
@@ -124,12 +129,27 @@
   render=typeof callbacks?.render==="function"?callbacks.render:()=>{};
   grant=typeof callbacks?.grant==="function"?callbacks.grant:()=>{};
   connect().then(c=>{
-   c.auth.onAuthStateChange(()=>{invalidateLive();setTimeout(()=>refresh().catch(console.warn),0)});
-   return refresh();
+   c.auth.onAuthStateChange(()=>{
+    invalidateLive();
+    setTimeout(()=>{
+     refresh().catch(console.warn);
+     refreshLive().catch(console.warn);
+    },0);
+   });
+   return Promise.all([refresh(),refreshLive()]);
   }).catch(e=>console.warn("Footera Points startup",e));
-  window.addEventListener("focus",()=>refresh().catch(console.warn));
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh().catch(console.warn)});
-  setInterval(()=>{if(!document.hidden&&navigator.onLine!==false)refresh().catch(console.warn)},30000);
+  window.addEventListener("focus",()=>{
+   refresh().catch(console.warn);
+   refreshLive().catch(console.warn);
+  });
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){
+   refresh().catch(console.warn);
+   refreshLive().catch(console.warn);
+  }});
+  setInterval(()=>{if(!document.hidden&&navigator.onLine!==false){
+   refresh().catch(console.warn);
+   refreshLive().catch(console.warn);
+  }},30000);
  }
  window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState});
 })();
