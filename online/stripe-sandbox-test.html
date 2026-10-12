@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="de">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="robots" content="noindex,nofollow">
+ <meta name="theme-color" content="#14080f">
+ <title>Footera – Stripe Sandbox-Test</title>
+ <style>
+ :root{color-scheme:dark;font-family:system-ui,-apple-system,Arial,sans-serif;background:#0d070b;color:#fff}
+ *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#4a1026 0,#13090f 45%,#0b070b 100%);padding:22px 14px 60px}
+ main{max-width:530px;margin:auto}h1{margin:4px 0 6px;font-size:26px;letter-spacing:.02em}h2{font-size:18px;margin:0 0 12px}
+ .sub{color:#dfb4c6;margin:0 0 22px;font-size:14px;line-height:1.5}
+ .box{background:rgba(22,16,22,.94);border:1px solid #533043;border-radius:19px;padding:18px;margin:13px 0;box-shadow:0 8px 26px #0004}
+ .pill{display:inline-block;padding:6px 11px;border-radius:20px;color:#ffc8e1;background:#652442;font-size:12px;font-weight:800;letter-spacing:.06em}
+ label{display:block;margin-bottom:8px;color:#eed5e1;font-weight:650}
+ select,button{font:inherit;border-radius:12px;width:100%;padding:13px 12px}
+ select{color:white;background:#261622;border:1px solid #89506d;font-weight:700}
+ button{background:linear-gradient(110deg,#aa2359,#ea346f);color:white;border:1px solid #ef6d96;cursor:pointer;font-weight:800;margin-top:12px}
+ button:disabled{opacity:.5;cursor:not-allowed}button.secondary{background:#271a24;border-color:#664355}
+ #status{line-height:1.5;font-size:14px;margin-top:8px;color:#fbd1e1;overflow-wrap:anywhere}
+ #balance{font-size:29px;font-weight:850;color:#ff70b1;margin:8px 0}
+ .fine{font-size:12px;line-height:1.6;color:#c8a5b7}
+ .highlight{background:#3b1729;border-color:#b34573}
+ a{color:#ffc0df}.space{height:10px}
+ </style>
+</head>
+<body>
+<main>
+ <span class="pill">NUR STRIPE-SANDBOX · KEIN ECHTES GELD</span>
+ <h1>FOOTERA POINTS</h1>
+ <p class="sub">Geschützter Test für Stripe-Zahlung und Supabase-Gutschrift. Dein normaler Footera-Shop bleibt unverändert.</p>
+ <section class="box">
+  <h2>1. Footera-Konto</h2>
+  <p id="user" class="sub">Anmeldestatus wird geprüft …</p>
+  <div id="status" role="status" aria-live="polite"></div>
+  <button class="secondary" id="check" type="button">Anmeldung erneut prüfen</button>
+ </section>
+ <section class="box">
+  <h2>2. Stripe-Testzahlung</h2>
+  <label for="pack">Points-Paket auswählen</label>
+  <select id="pack">
+   <option value="100">100 Points · 0,59 € (Test)</option>
+   <option value="500" selected>500 Points · 2,99 € (Test)</option>
+   <option value="1050">1.050 Points · 5,99 € (Test)</option>
+   <option value="1600">1.600 Points · 8,99 € (Test)</option>
+   <option value="2800">2.800 Points · 14,99 € (Test)</option>
+   <option value="5900">5.900 Points · 29,99 € (Test)</option>
+   <option value="12000">12.000 Points · 59,99 € (Test)</option>
+   <option value="18500">18.500 Points · 89,99 € (Test)</option>
+  </select>
+  <button id="buy" disabled type="button">Testkauf starten</button>
+  <p class="fine">Der Bezahlvorgang öffnet Stripe Checkout im Testmodus. Verwende ausschließlich Stripe-Testkartendaten, niemals eine echte Kreditkarte.</p>
+ </section>
+ <section class="box highlight">
+  <h2>3. Serverguthaben prüfen</h2>
+  <p class="sub">Nur über den signierten Stripe-Webhook gebuchte Sandbox-Points werden hier angezeigt.</p>
+  <div id="balance">–</div>
+  <button class="secondary" id="refresh" disabled type="button">Serverguthaben aktualisieren</button>
+  <p class="fine">Wichtig: Diese Sandbox-Points erscheinen noch nicht im normalen Footera-Spiel und können dort noch nicht ausgegeben werden. Dafür muss der reguläre Shop auf eine serverseitig kontrollierte Wallet umgestellt werden.</p>
+ </section>
+ <p class="fine"><a href="../">Zurück zu Footera</a></p>
+</main>
+<script src="../online-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+"use strict";
+(()=>{
+ const $=id=>document.getElementById(id);
+ const config=window.FOOTERA_ONLINE_CONFIG||{};
+ const qs=new URLSearchParams(location.search);
+ let client=null,user=null,busy=false;
+ const setStatus=msg=>{$("status").textContent=msg;};
+ function buttons(){$("buy").disabled=!user||busy;$("refresh").disabled=!user||busy;}
+ async function check(){
+  user=null;buttons();
+  if(!window.supabase?.createClient||!config.url||!config.publishableKey){
+   $("user").textContent="Footera-Onlinebibliothek ist nicht verfügbar.";
+   setStatus("Bitte Seite neu laden. Wenn das Problem bleibt, prüfen wir die Online-Anbindung.");return;
+  }
+  if(!client)client=window.supabase.createClient(config.url,config.publishableKey,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+  });
+  try{
+   const {data:{user:current},error}=await client.auth.getUser();
+   if(error||!current||current.is_anonymous||!current.email||!current.email_confirmed_at){
+    $("user").textContent="Kein bestätigtes E-Mail-Konto angemeldet.";
+    setStatus("Bitte zuerst Footera im selben Browser öffnen und mit deinem bestätigten E-Mail-Konto anmelden.");
+    $("balance").textContent="–";return;
+   }
+   user=current;$("user").textContent="Angemeldet: "+current.email;
+   setStatus("Das bestätigte Footera-Konto ist bereit für einen Sandbox-Testkauf.");
+   buttons();await wallet();
+  }catch(e){$("user").textContent="Kontoprüfung fehlgeschlagen.";setStatus(String(e?.message||e))}
+ }
+ async function wallet(){
+  if(!client||!user)return;
+  const {data,error}=await client.from("footera_points_wallets")
+   .select("balance_points").eq("user_id",user.id).maybeSingle();
+  if(error){setStatus("Wallet-Abfrage fehlgeschlagen: "+error.message);return}
+  $("balance").textContent=Number(data?.balance_points||0).toLocaleString("de-DE")+" Sandbox-Points";
+ }
+ async function purchase(){
+  if(!client||!user||busy)return;
+  busy=true;buttons();setStatus("Sicherer Stripe-Testcheckout wird vorbereitet …");
+  try{
+   const {data,error}=await client.functions.invoke("footera-stripe-checkout",{body:{pack_id:$("pack").value}});
+   if(error)throw error;
+   if(!/^https:\/\/checkout\.stripe\.com\//.test(data?.checkout_url||""))
+    throw new Error("Stripe hat keine gültige Checkout-Adresse zurückgegeben.");
+   location.assign(data.checkout_url);
+  }catch(e){
+   let reason=e?.message||String(e);
+   if(e?.context?.json){try{const body=await e.context.json();reason=body.error||reason}catch(_){}}
+   setStatus("Checkout fehlgeschlagen: "+reason);
+   busy=false;buttons();
+  }
+ }
+ $("check").addEventListener("click",check);
+ $("refresh").addEventListener("click",()=>wallet().catch(e=>setStatus(String(e))));
+ $("buy").addEventListener("click",purchase);
+ if(qs.get("result")==="success")setStatus("Stripe-Testcheckout abgeschlossen. Prüfe das Serverguthaben. Die Bestätigung kann einige Sekunden dauern.");
+ else if(qs.get("result")==="cancelled")setStatus("Testzahlung abgebrochen. Keine Points gebucht.");
+ check();
+})();
+</script>
+</body>
+</html>
