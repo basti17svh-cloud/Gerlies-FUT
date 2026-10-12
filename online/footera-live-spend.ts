@@ -1,4 +1,4 @@
-// Footera V21.130 – staged LIVE Points spend endpoint. DO NOT DEPLOY/ENABLE until release audit.
+// Footera V21.135 – LIVE spend endpoint deployed but spending and delivery flags OFF.
 // Account identity and wallet authority are verified on server. No price from browser.
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 

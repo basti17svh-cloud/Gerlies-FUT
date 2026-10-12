@@ -1,4 +1,4 @@
-// Footera V21.129 – STAGED Stripe LIVE webhook. DO NOT DEPLOY/ENABLE YET.
+// Footera V21.135 – LIVE webhook endpoint deployed, but activation still prohibited until E2E approval.
 // Needs independent LIVE signing secret, signed event validation and settlement tests.
 // Refund/dispute handling still requires a complete production review before launch.
 import Stripe from "npm:stripe@22.0.0";

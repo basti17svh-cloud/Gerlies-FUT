@@ -1,4 +1,4 @@
-// Footera V21.129 – STAGED Stripe LIVE checkout. NOT DEPLOYED / NOT ENABLED.
+// Footera V21.135 – LIVE checkout endpoint deployed but release flag OFF; no real charges.
 // Requires a human-approved business model, independent Stripe LIVE secret,
 // live webhook, server-authoritative entitlements, and explicit release flag.
 import Stripe from "npm:stripe@22.0.0";
