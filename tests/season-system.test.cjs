@@ -23,6 +23,7 @@ function setup(initial={}){
   claims:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},...initial};
  const ctx={state,SEASON_REWARDS:structuredClone(firstTen),TASKS:[{id:'starter',title:'Starter',desc:'Start',stat:'packs',target:1,reward:{coins:100}}],
   $:element,save(){},renderAll(){},renderHome(){},toast(){},confirm(){return true},activeEventObjectives:()=>[],
+  openFooteraPointsOverview(required,source,available){state.topup={required,source,available}},
   fmt:n=>String(n),esc:s=>String(s),rewardText:r=>JSON.stringify(r),setInterval(){},
   grant:r=>{state.coins+=r.coins||0;state.sp+=r.sp||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1)},
   grantSeasonOnly:r=>{state.coins+=r.coins||0;state.points+=r.points||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)state.storyGrants.push(r.story)},
@@ -205,4 +206,15 @@ test('Berlin week boundaries retain 09:00 wall time through winter and summer ti
  assert.equal(api.seasonInfo(new Date('2026-10-30T17:59:59Z')).key,'s1');
  assert.equal(api.seasonInfo(new Date('2026-10-30T18:00:00Z')).key,'s2');
  assert.equal(ctx.seasonCountdown(new Date('2026-10-30T18:00:00Z'),new Date('2026-10-30T09:36:00Z')),'Endet in 8 Std. 24 Min.');
+});
+
+test('not enough premium-pass Points opens the Points overview instead of silently disabling the purchase',()=>{
+ const app=setup({points:40,coins:60000});
+ app.api.ensureObjectiveWindows();
+ app.click('seasonPass','[data-pass-buy]',{passBuy:'points'});
+ assert.equal(app.state.topup.required,500);
+ assert.equal(app.state.topup.available,40);
+ assert.equal(app.state.topup.source,'Premium Season Pass');
+ assert.equal(app.state.points,40);
+ assert.equal(app.state.seasonPass.premium,false);
 });

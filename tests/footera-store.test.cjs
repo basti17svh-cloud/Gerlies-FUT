@@ -22,6 +22,8 @@ function store(){
   sbcDateKey:()=>"",promoPackReleaseForKey:()=>null,PROMO_PACK_RELEASE:{key:"2026-10-05"},nextPromoReset:()=>new Date(Date.now()+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),
   generatePack:()=>Array.from({length:5},(_,i)=>({uid:`test-${i}`})),consumePromoPurchase:()=>true,
   renderWallet:()=>{},save:()=>{},toast:()=>{},
+  window:{FooteraPaidWallet:{ready:()=>true,paidBalance:()=>20}},
+  openFooteraPointsOverview:(required,source,available)=>{ctx.topup={required,source,available}},
   openPack:(id,items)=>{ctx.opened={id,items}}
  };
  vm.createContext(ctx);
@@ -83,4 +85,17 @@ test('a pack that cannot be generated leaves balances untouched',()=>{
  buy(app,'bronze','coins');
  assert.equal(app.ctx.state.coins,3000);
  assert.equal(app.ctx.opened,undefined);
+});
+
+test('an unaffordable Points pack opens the existing Points overview without changing any balances',()=>{
+ const app=store();app.ctx.state.points=10;
+ app.run('renderStore()');buy(app,'silver','points');
+ assert.equal(app.ctx.topup.required,50);
+ assert.equal(app.ctx.topup.source,'Silber-Pack');
+ assert.equal(app.ctx.topup.available,20);
+ assert.equal(app.ctx.state.points,10);
+ assert.equal(app.ctx.opened,undefined);
+ app.ctx.state.coins=0;app.ctx.topup=undefined;
+ buy(app,'silver','coins');
+ assert.equal(app.ctx.topup,undefined);
 });

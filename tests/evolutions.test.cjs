@@ -14,6 +14,7 @@ function setup(){
  const ctx={Date:Clock,Intl,console,$:()=>({addEventListener(){}}),
   state:{club:[],coins:60000,points:1000,activeEvos:[],evoProgress:{},evoHistory:[],transferList:[]},
   save(){},renderAll(){},switchView(){},closeUiLayer(){},toast(){},
+  openFooteraPointsOverview(required,source,available){ctx.topup={required,source,available}},
   isFounderItem:i=>!!i.founder,isStoryItem:i=>!!i.story,
   displayBase:i=>({...i.base,ovr:i.base.ovr+Number(i.evo||0),...Object.fromEntries(Object.entries(i.evoStats||{}).map(([k,v])=>[k,i.base[k]+v]))}),
   itemRating:i=>i.base.ovr+Number(i.evo||0),resolvedPlayer:p=>p,
@@ -55,6 +56,9 @@ test('unaffordable and invalid payments never start an evolution or change curre
  const c=setup();c.item('a');c.state.coins=100;c.state.points=1;
  for(const pay of ['coins','points','free'])c.startEvolution('s1_low_athletik','a',pay);
  assert.equal(c.activeEvolutionCount(),0);assert.equal(c.state.coins,100);assert.equal(c.state.points,1);
+ assert.ok(c.topup,'insufficient Evo Points should open purchase overview');
+ assert.ok(c.topup.required>c.topup.available);
+ assert.match(c.topup.source,/Evolution/);
 });
 
 test('progress requires the kickoff XI, survives substitution and waits for each claimed stage',()=>{
