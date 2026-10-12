@@ -44,3 +44,28 @@ Migration: `online/footera-live-wallet-v21.129.sql` (in Supabase angewendet).
 - Live-Checkout bleibt ohne Flag unbenutzbar; niemals Live-Zahlungen durch Secrets allein aktivieren.
 - Für einen sofortigen Stop bei späterer Aktivierung `FOOTERA_LIVE_PAYMENTS_ENABLED` auf `false` setzen, laufende Webhook-Verarbeitung und Belegbuchhaltung aber nicht blind deaktivieren.
 - Nicht die LIVE-Tabellen oder Zahlungsbelege löschen, wenn reale Käufe stattgefunden haben.
+
+
+## V21.130–V21.132 – Sicherheitsausbau (12.10.2026)
+- Migration `online/footera-live-spend-v21.130.sql` ist in Supabase angewendet.
+  - `public.footera_live_store_items`: vertrauenswürdige, standardmäßig **deaktivierte** Katalogeinträge für 13 Packs und den Season Pass S1.
+  - `public.footera_live_point_spends`: pro Kauf eine eindeutige UUID und Eigentümer/Artikel/Preis-Buchung. Season-Pass-S1 zusätzlich pro Nutzer eindeutig (zweiter Kauf wird abgelehnt).
+  - `public.footera_spend_verified_live_points`: service_role-only, Preis kommt nur aus dem serverseitigen Katalog. Keine negativen Salden durch normale Käufe. Abgebrochene/fehlgeschlagene Käufe führen zum Rollback.
+  - `online/footera-live-spend.ts` liegt als **nicht deployte** Edge-Funktion bereit; verweigert jeden Kauf ohne `FOOTERA_LIVE_SPENDING_ENABLED=true`.
+- Migration `online/footera-live-risk-v21.131.sql` ist in Supabase angewendet.
+  - `footera_reconcile_verified_live_payment_risk`: prüft kumulierte, bestätigte Rückerstattungen und aktuellen Streitfall-Haltebetrag; Bearbeitung wiederholter Events ist idempotent. Bei gewonnenem Streitfall werden zuvor gesperrte Points wiederhergestellt; bestätigte Rückerstattungen werden dadurch **nicht** rückgängig gemacht.
+  - `footera_reconcile_verified_live_payment_loss` ist als veraltete Funktion für service_role deaktiviert.
+  - `online/footera-live-webhook.ts` wurde als vorbereiteter **nicht deployter** Quellcode auf die aktuelle Risk-API umgestellt. Stripe Live API liefert den aktuellen Zustand der Charge, Refunds und Disputes. Vor Produktion auf echten Live-Events und mit automatisierten API-Mocks prüfen.
+- Migration `online/footera-live-auth-rls-v21.132.sql` schließt anonym angemeldete Sessions vom Lesen des Live-Guthabens und der Live-Ausgaben aus.
+- SQL-Transaktionstests mit ROLLBACK bestanden:
+  - Doppelgutschrift, Pack-Debit-Wiederholung, Guthabenmangel, pro Saison eindeutiger Premium Pass;
+  - Streitfall-Eröffnung, wiederholte Streitfallmeldungen, Streitfall-Gewinn, Teilrefund, veraltete Refunddaten;
+  - volle Rückerstattung, obwohl der Käufer Points bereits ausgegeben hat, erzeugt negative Bilanz statt Punkte-Inflation.
+- Live-Wallet, Live-Zahlungen und Live-Spends hatten zum Testabschluss jeweils **0 Datensätze**. Katalogeinträge sind `enabled=false`.
+- Supabase Security Advisors weisen projektweit auf bestehende, ältere SECURITY DEFINER RPCs hin, die mit `authenticated` aufrufbar sind. Unsere neuen Echtgeld-RPCs sind ausdrücklich nur für `service_role` ausführbar. Die RLS-Info `RLS enabled no policy` für die geheimen Live-Tabellen ist **absichtlich**: öffentliche Lese-/Schreiboperationen bleiben gesperrt.
+
+### Weiterhin harte Release-Blocker
+- Kein Echtgeld-Webhooks/Checkout/Spending-Endpoint wurde deployed, kein Echtgeld-Flag aktiviert.
+- Echtgeld-Entitlements sind **noch nicht** mit dem Browser-Spiel, serverautoritativem Verein/Inventar, Season-Pass-Zustand und den Evolutionen verbunden. Der bisherige Cloud-Spielstand ist nicht sicher genug für Echtgeldgegenstände.
+- Nicht nur SQL-Tests: komplette End-to-End-Integration mit Stripe Live, Signaturprüfungen, Fehlzuständen und automatisierten Tests steht noch aus.
+- Refunds/Disputes-Prozess (auch Rückläufer, Teilstreitfälle, widersprüchliche Events), Steuer/Verbraucherschutz/Altersvorgaben und Geschäftsmodellfreigabe noch abschließend prüfen.
