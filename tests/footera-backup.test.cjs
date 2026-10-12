@@ -12,3 +12,30 @@ test('backup integrity accepts a valid save and rejects altered contents',async(
  await assert.rejects(ctx.FooteraBackup.inspect(JSON.stringify({...payload,data:data.replace('100','900')})),/Beschädigte/);
  assert.throws(()=>ctx.FooteraBackup.validateState({...state,coins:-1}),/Guthaben/);
 });
+
+test('local FC Gerlies export downloads JSON without any account or cloud authorization',async()=>{
+ const state={version:126,profile:{clubName:'FC Gerlies',saveId:'main-club'},club:[{uid:'c1',pid:'p1'}],squad:Array(23).fill(null),coins:8000,points:150};
+ let downloaded='',appended=0;
+ const backupStatus={textContent:'',dataset:{}};
+ const doc={readyState:'loading',addEventListener(){},querySelector(){return null},getElementById:id=>id==='footeraBackupStatus'?backupStatus:null,
+  createElement(){return {click(){downloaded=this.download},remove(){}}},body:{append(){appended++}}};
+ const root={document:doc,crypto:webcrypto,TextEncoder,Blob,
+  URL:{createObjectURL(){return 'blob:local-only'},revokeObjectURL(){}},
+  localStorage:{getItem:k=>k==='gerliesFutV9'?JSON.stringify(state):null},
+  setTimeout(){},console};
+ vm.createContext(root);
+ vm.runInContext(file,root);
+ await root.FooteraBackup.exportBackup();
+ assert.match(downloaded,/^Footera_FC_Gerlies_\d{4}-\d{2}-\d{2}\.json$/);
+ assert.equal(appended,1);
+ assert.match(backupStatus.textContent,/Sicherung erstellt/);
+ assert.equal(backupStatus.dataset.error,'false');
+});
+test('account profile has an independent local-export control and safeguards mismatched cloud saves',()=>{
+ const account=fs.readFileSync(path.join(__dirname,'../footera-account.js'),'utf8');
+ assert.match(account,/id="footeraProfileExport"/);
+ assert.match(account,/footeraProfileExport"\)\.addEventListener\("click"/);
+ assert.match(account,/root\.FooteraBackup\.exportBackup\(\)/);
+ assert.match(account,/cloudButton\.disabled=owner!==u\.id/);
+ assert.match(account,/id="footeraProfileBackupHint"/);
+});
