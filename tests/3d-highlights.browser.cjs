@@ -10,6 +10,14 @@ async function fixture(page,mode='important'){
  await page.evaluate(mode=>{
   cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
   for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
+  // This is an isolated match rendering test, not an account/consent test. Other
+  // startup modules may open their dialogs asynchronously after the match starts.
+  // Suppress these test-only overlays without changing production behavior.
+  if(!document.getElementById('footeraMatchFixtureOverlayGuard')){
+   const guard=document.createElement('style');guard.id='footeraMatchFixtureOverlayGuard';
+   guard.textContent='#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important;pointer-events:none!important}';
+   document.head.append(guard);
+  }
   const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW','CM','ST','CB','GK','LB','RW','CM'];
   PLAYERS=positions.map((position,i)=>({id:'qa-'+i,name:'Musiala',fullName:'Jamal Musiala',position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:'Germany',team:'FC Bayern München',league:'Bundesliga'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
   const homeIdentity=defaultClubIdentity(),awayIdentity=defaultClubIdentity();
