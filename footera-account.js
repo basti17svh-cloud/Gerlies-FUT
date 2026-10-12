@@ -157,12 +157,18 @@
    if(!transferMatches(local,p))
       throw Error("Lokaler Spielstand oder bisherige Zuordnung wurden verändert. Es wurde nichts übertragen.");
    if(root.FooteraBackup?.blocked?.())throw Error("Während einer Spielaktion nicht möglich.");
-   if(await cloudInfo())throw Error("Dieses Konto hat bereits einen Cloud-Spielstand. Keine Überschreibung.");
+   const existing=await cloudInfo();
+   if(existing&&(existing.save_data?.profile?.saveId!==local.profile.saveId||!structurallyEqual(existing.save_data,local)))
+      throw Error("Dieses Konto hat bereits einen anderen Cloud-Spielstand. Keine Überschreibung.");
    if(!root.confirm(p.clubName+" jetzt zu "+p.targetEmail+" zuordnen und sicher in der Cloud speichern?\\n\\nDie bisherige Gast-Online-ID und der alte Freundescode werden NICHT automatisch übernommen. Holy FC bleibt unverändert."))return false;
-   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
-   if(error)throw error;
+   let revision=existing?.revision||0;
+   if(!existing){
+     const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
+     if(error)throw error;
+     revision=data;
+   }
    root.localStorage.setItem(OWNER,u.id);
-   savePoint(u,local,data);
+   savePoint(u,local,revision);
    root.localStorage.removeItem(TRANSFER);
    if(pendingEmail()?.email===p.targetEmail)clearPending();
    root.location.reload();
@@ -766,7 +772,7 @@
      '<button type="button" id="footeraProfileTransferFinish" hidden>FC Gerlies zuordnen &amp; sichern</button>'+
      '<p id="footeraProfileTransferFeedback" role="status"></p>'+
      '<small>Nur der lokale Verein wird übertragen. Holy FC und die WEB.DE-Cloud bleiben erhalten. Die alte Gast-Online-ID und der bisherige Freundescode werden nicht automatisch übertragen.</small>';
-   profilePage.querySelector(".footera-profile-actions").insertAdjacentElement("afterend",profileTransfer);
+   profilePage.querySelector(".footera-profile-hero").insertAdjacentElement("afterend",profileTransfer);
    const accountTransfer=document.createElement("section");
    accountTransfer.className="footera-transfer";accountTransfer.id="footeraAccountTransferProgress";accountTransfer.hidden=true;
    accountTransfer.innerHTML='<strong>Vereinsübernahme vorbereitet</strong><p id="footeraAccountTransferDescription"></p><button type="button" id="footeraAccountTransferFinish" hidden>FC Gerlies zuordnen &amp; in Cloud sichern</button>';
