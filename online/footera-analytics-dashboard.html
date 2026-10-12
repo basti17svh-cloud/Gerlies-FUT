@@ -24,7 +24,7 @@ h1{font-size:clamp(23px,5vw,33px);line-height:1.2;margin:18px 0 10px}h2{font-siz
 .sectionTitle{margin:22px 0 0;font-size:18px}
 .chart{height:175px;display:flex;align-items:end;gap:3px;border-bottom:1px solid #6f4b60;padding:8px 3px}
 .bar{flex:1;min-width:0;border-radius:5px 5px 0 0;background:#f05285;position:relative;min-height:2px}
-.bar.instagram{background:#b285ef}
+.bar.instagram{background:#b285ef}.barInstagram{position:absolute;bottom:0;left:0;right:0;background:#b285ef;border-radius:3px 3px 0 0;min-height:0}
 .legend{display:flex;gap:18px;margin:7px 0;font-size:12px;color:#dac0cb}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;background:#f05285}
 .dot.purple{background:#b285ef}
@@ -126,7 +126,9 @@ footer{margin-top:20px}
     const b=document.createElement("div");b.className="bar";
     b.style.height=Math.max(2,Math.round(100*(Number(d.visitors)||0)/max))+"%";
     b.title=d.day+": "+fmt(d.visitors)+" Browser, Instagram "+fmt(d.instagram);
-    chart.append(b);
+    const ig=document.createElement("span");ig.className="barInstagram";
+    ig.style.height=Math.max(0,Math.min(100,Math.round(100*Number(d.instagram||0)/Math.max(1,Number(d.visitors||0)))))+"%";
+    b.append(ig);chart.append(b);
    }
    const labels={instagram:"Instagram",facebook:"Facebook",tiktok:"TikTok",google:"Google",direct:"Direkt/ohne Angabe",other:"Andere"};
    const src=$("sources");src.replaceChildren();
