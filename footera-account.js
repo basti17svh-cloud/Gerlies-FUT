@@ -511,6 +511,22 @@
    labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
    labelValue("footeraProfilePoints",state?integerValue(Number(state.points||0)+(root.FooteraPaidWallet?.paidBalance()||0)):"–");
    labelValue("footeraProfileStatus","Dauerhaftes Footera-Konto");
+   const transfer=pendingLocalTransfer();
+   let local=null;
+   try{const v=JSON.parse(root.localStorage.getItem(KEY)||"null");if(v?.profile?.clubName&&Array.isArray(v.club))local=v}catch(_){}
+   const foreign=!!local&&root.localStorage.getItem(OWNER)!==u.id;
+   const box=$("footeraProfileTransferSection");
+   if(box){
+     box.hidden=!foreign;
+     if(foreign){
+       if(transfer&&!$("footeraProfileTransferEmail").value)$("footeraProfileTransferEmail").value=transfer.targetEmail;
+       $("footeraProfileTransferInfo").textContent=transfer
+         ?"Die Übernahme von "+transfer.clubName+" wurde vorbereitet. Melde dich mit "+transfer.targetEmail+" an und bestätige die E-Mail."
+         :"Der lokale Verein "+local.profile.clubName+" ("+local.club.length+" Spielerkarten) gehört nicht zu "+(u.email||"diesem Konto")+". Deine Cloud-Sicherung dieses Kontos wird nicht überschrieben.";
+       $("footeraProfileTransferStart").hidden=!!transfer;
+       $("footeraProfileTransferFinish").hidden=!transfer||!u.email_confirmed_at||String(u.email||"").toLowerCase()!==transfer.targetEmail;
+     }
+   }
    const owner=root.localStorage.getItem(OWNER);
    const cloudButton=$("footeraProfileBackup");
    const cloudNote=$("footeraProfileBackupHint");
@@ -629,6 +645,18 @@
          ?"E-Mail-Änderung läuft: "+changeRequest.previousEmail+" → "+changeRequest.newEmail+". Prüfe beide E-Mail-Postfächer auf Supabase-Bestätigungslinks."
          :"Es wird nur die E-Mail-Adresse geändert. Dein Verein bleibt mit derselben Footera-Konto-ID verbunden.";
    }
+   const transfer=pendingLocalTransfer(),transferBox=$("footeraAccountTransferProgress");
+   if(transferBox){
+     transferBox.hidden=!transfer;
+     if(transfer){
+       const correct=logged&&u.email_confirmed_at&&String(u.email||"").toLowerCase()===transfer.targetEmail;
+       $("footeraAccountTransferDescription").textContent=correct
+         ? "E-Mail bestätigt. "+transfer.clubName+" kann diesem Konto jetzt ausdrücklich zugeordnet und in der Cloud gesichert werden."
+         : "Vorbereitet: "+transfer.clubName+" → "+transfer.targetEmail+". Bitte dieses neue Konto registrieren, Bestätigungs-E-Mail öffnen und anmelden. Nicht das bisherige WEB.DE-Konto verwenden.";
+       $("footeraAccountTransferFinish").hidden=!correct;
+       if(!logged&&!$("footeraAccountEmail").value)$("footeraAccountEmail").value=transfer.targetEmail;
+     }
+   }
    const pending=pendingEmail();
    const belongsToPending=!!pending&&(!u||!pending.userId||pending.userId===u.id);
    $("footeraPendingEmail").hidden=!belongsToPending;
@@ -728,6 +756,21 @@
      '<div class="footera-profile-danger"><small>GEFAHRENBEREICH</small><h3>Konto endgültig löschen</h3><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
      '</section>';
    document.body.append(profilePage);
+   const profileTransfer=document.createElement("section");
+   profileTransfer.className="footera-transfer";profileTransfer.id="footeraProfileTransferSection";profileTransfer.hidden=true;
+   profileTransfer.innerHTML='<strong>FC Gerlies · Konto-Zuordnung korrigieren</strong>'+
+     '<p id="footeraProfileTransferInfo"></p>'+
+     '<label>Ziel-E-Mail für FC Gerlies<input type="email" id="footeraProfileTransferEmail" autocomplete="email" placeholder="neue-adresse@beispiel.de" required></label>'+
+     '<button type="button" id="footeraProfileTransferStart">Gesicherte JSON prüfen &amp; Konto wechseln</button>'+
+     '<input type="file" id="footeraProfileTransferFile" accept=".json,application/json" hidden>'+
+     '<button type="button" id="footeraProfileTransferFinish" hidden>FC Gerlies zuordnen &amp; sichern</button>'+
+     '<p id="footeraProfileTransferFeedback" role="status"></p>'+
+     '<small>Nur der lokale Verein wird übertragen. Holy FC und die WEB.DE-Cloud bleiben erhalten. Die alte Gast-Online-ID und der bisherige Freundescode werden nicht automatisch übertragen.</small>';
+   profilePage.querySelector(".footera-profile-actions").insertAdjacentElement("afterend",profileTransfer);
+   const accountTransfer=document.createElement("section");
+   accountTransfer.className="footera-transfer";accountTransfer.id="footeraAccountTransferProgress";accountTransfer.hidden=true;
+   accountTransfer.innerHTML='<strong>Vereinsübernahme vorbereitet</strong><p id="footeraAccountTransferDescription"></p><button type="button" id="footeraAccountTransferFinish" hidden>FC Gerlies zuordnen &amp; in Cloud sichern</button>';
+   dialog.querySelector(".footera-account-cloud").insertAdjacentElement("beforebegin",accountTransfer);
    deleteDialog=document.createElement("div");
    deleteDialog.id="footeraDeleteDialog";
    deleteDialog.className="footera-account-overlay footera-delete-overlay";
@@ -785,6 +828,21 @@
        button.disabled=!u||root.localStorage.getItem(OWNER)!==u.id;
      }
    });
+   $("footeraProfileTransferStart").addEventListener("click",()=>{
+     try{checkedEmail($("footeraProfileTransferEmail").value);$("footeraProfileTransferFile").click()}
+     catch(e){$("footeraProfileTransferFeedback").textContent=safeMessage(e)}
+   });
+   $("footeraProfileTransferFile").addEventListener("change",async e=>{
+     const file=e.target.files?.[0];e.target.value="";if(!file)return;
+     const out=$("footeraProfileTransferFeedback"),btn=$("footeraProfileTransferStart");
+     btn.disabled=true;out.textContent="JSON-Sicherung wird überprüft …";
+     try{const result=await beginLocalTransfer(file,$("footeraProfileTransferEmail").value);if(!result)out.textContent="Abgebrochen. Es wurde nichts verändert."}
+     catch(error){out.textContent=safeMessage(error)}
+     finally{btn.disabled=false}
+   });
+   $("footeraProfileTransferFinish").addEventListener("click",async()=>{
+     try{await finishLocalTransfer()}catch(e){$("footeraProfileTransferFeedback").textContent=safeMessage(e)}
+   });
    $("footeraProfileSignOut").addEventListener("click",()=>run(signOut));
    $("footeraProfileDelete").addEventListener("click",async()=>{
      const u=await user();
@@ -803,6 +861,7 @@
    $("footeraGuest").addEventListener("click",()=>run(continueAsGuest));
    $("footeraAccountContinue").addEventListener("click",()=>run(async()=>{await autoAttachAndBackup();root.localStorage.setItem(WELCOME,"1");hide()}));
    $("footeraResendEmail").addEventListener("click",()=>run(resendEmail));
+   $("footeraAccountTransferFinish").addEventListener("click",()=>run(finishLocalTransfer));
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
    $("footeraAccountForm").addEventListener("submit",e=>{e.preventDefault();run(()=>emailLogin($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value))});
    $("footeraSetPassword").addEventListener("click",()=>run(()=>password($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
@@ -814,7 +873,7 @@
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
    $("footeraSignOut").addEventListener("click",()=>run(signOut));
-   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||callbackError||pendingEmail()||shouldWelcome())show();
+   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||callbackError||pendingEmail()||pendingLocalTransfer()||shouldWelcome())show();
    getClient().then(()=>{
      render().catch(console.warn);
      if(callbackError)msg(safeMessage({code:callbackError,message:"Der Anmeldelink ist ungültig oder abgelaufen. Bitte einen neuen Link anfordern."}),true);
