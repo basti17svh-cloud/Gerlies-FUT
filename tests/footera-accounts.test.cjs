@@ -364,3 +364,44 @@ test("confirmed fresh signup clears the prompt because its password already exis
  const t=runtime("registered");t.store.set("footera-pending-email-v1",JSON.stringify({email:"registered@example.org",userId:"existing-a",kind:"signup"}));
  await t.win.FooteraAccount.autoAttachAndBackup();assert.equal(t.store.has("footera-pending-email-v1"),false);assert.equal(t.store.get("footera-cloud-owner"),"existing-a");
 });
+
+test("changing the login email uses existing authenticated identity and preserves cloud club",async()=>{
+ const t=runtime("registered"),club=sampleGame("preserve-this-club");
+ t.setCloud({save_data:club,revision:5,saved_at:"2026-10-12T07:45:06Z"});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.requestAccountEmailChange(" BASTI17SVH@GMAIL.COM ");
+ const changes=t.calls.filter(x=>x[0]==="update");
+ assert.equal(changes.length,1);
+ assert.equal(changes[0][1].email,"basti17svh@gmail.com");
+ assert.equal(changes[0][2].emailRedirectTo,"https://example.test/Gerlies-FUT/");
+ assert.equal(t.calls.filter(x=>["signup","signout","cloud"].includes(x[0])).length,0);
+ const pending=JSON.parse(t.store.get("footera-account-email-change-v1"));
+ assert.equal(pending.userId,"existing-a");
+ assert.equal(pending.previousEmail,"registered@example.org");
+ assert.equal(pending.newEmail,"basti17svh@gmail.com");
+ assert.equal(t.wasReloaded(),false);
+});
+test("email change is blocked until existing club has been backed up",async()=>{
+ const t=runtime("registered");t.win.confirm=()=>true;
+ await assert.rejects(t.win.FooteraAccount.requestAccountEmailChange("new@example.org"),/Cloud gespeichert/);
+ assert.equal(t.calls.length,0);
+});
+test("email change blocks unsynced local club and never overwrites its save",async()=>{
+ const t=runtime("registered"),remote=sampleGame("existing-club");
+ const local={...remote,coins:99999};
+ t.setCloud({save_data:remote,revision:4,saved_at:"2026-10-12T09:00:00Z"});
+ t.store.set("footera-cloud-owner","existing-a");
+ t.store.set("gerliesFutV9",JSON.stringify(local));
+ t.win.confirm=()=>true;
+ await assert.rejects(t.win.FooteraAccount.requestAccountEmailChange("new@example.org"),/nicht gesicherte Änderungen/);
+ assert.equal(t.store.get("gerliesFutV9"),JSON.stringify(local));
+ assert.equal(t.calls.length,0);
+});
+test("cancelled email change neither mutates account nor saves",async()=>{
+ const t=runtime("registered");
+ t.setCloud({save_data:sampleGame(),revision:2,saved_at:"2026-10-12T09:00:00Z"});
+ t.win.confirm=()=>false;
+ await t.win.FooteraAccount.requestAccountEmailChange("new@example.org");
+ assert.equal(t.calls.length,0);
+ assert.equal(t.store.has("footera-account-email-change-v1"),false);
+});
