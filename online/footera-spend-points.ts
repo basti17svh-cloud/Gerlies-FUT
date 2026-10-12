@@ -22,6 +22,9 @@ Deno.serve(async (req: Request) => {
   if (req.method!=="POST") return reply({error:"Method not allowed"},405);
   const origin=req.headers.get("origin");
   if (origin && origin!==allowedOrigin) return reply({error:"Origin not allowed"},403);
+  // Separate Sandbox spending from LIVE. This is off by default for backwards compatibility.
+  if (Deno.env.get("FOOTERA_SANDBOX_PURCHASES_ENABLED") === "false")
+    return reply({error:"Sandbox-Points können im Echtgeldbetrieb nicht ausgegeben werden."},503);
   const auth=/^Bearer\s+(.+)$/i.exec(req.headers.get("authorization")||"")?.[1];
   if (!auth) return reply({error:"Sign in required"},401);
   const url=Deno.env.get("SUPABASE_URL")||"";
