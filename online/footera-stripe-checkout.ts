@@ -12,7 +12,7 @@ const packs: Record<string, { cents: number; title: string }> = {
   "12000": { cents: 5999, title: "12.000 Footera Points" },
   "18500": { cents: 8999, title: "18.500 Footera Points" },
 };
-const baseUrl = "https://basti17svh-cloud.github.io/Gerlies-FUT/";
+const baseUrl = "https://basti17svh-cloud.github.io/Gerlies-FUT/online/stripe-sandbox-test.html";
 const trustedOrigin = "https://basti17svh-cloud.github.io";
 const headers = {
   "Access-Control-Allow-Origin": trustedOrigin,
@@ -77,8 +77,8 @@ Deno.serve(async (req: Request) => {
       client_reference_id: user.id,
       customer_email: user.email,
       metadata: { footera_pack_id: packId, footera_points: packId, footera_user_id: user.id },
-      success_url: baseUrl + "?footera_purchase=sandbox_success&session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: baseUrl + "?footera_purchase=cancelled",
+      success_url: baseUrl + "?result=success",
+      cancel_url: baseUrl + "?result=cancelled",
       payment_method_types: ["card"],
       submit_type: "pay",
     });
