@@ -1,0 +1,23 @@
+name: Footera LIVE fulfilment checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/footera-live-delivery-tests.yml'
+      - 'tests/footera-live-delivery.test.cjs'
+      - 'online/footera-live-delivery-*.sql'
+      - 'online/footera-live-spend.ts'
+      - 'footera-paid-wallet.js'
+      - 'season-system.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  delivery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/footera-live-delivery.test.cjs tests/footera-live-payments.test.cjs
