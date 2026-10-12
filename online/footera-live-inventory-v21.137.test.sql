@@ -5,7 +5,7 @@ declare
   u uuid:=gen_random_uuid();
   other_user uuid:=gen_random_uuid();
   pay_id uuid:=gen_random_uuid();
-  card_id uuid:=gen_random_uuid();
+  v_card_id uuid:=gen_random_uuid();
   denied integer:=0;
   snapshot jsonb;
 begin
@@ -33,8 +33,8 @@ begin
   end;
   update public.footera_live_player_catalog set approved_for_paid=true where player_id='test-v2137-unique';
   insert into public.footera_live_cards(card_id,spend_id,user_id,item_key,slot,player_id,card_snapshot)
-    values(card_id,pay_id,u,'pack:gold',0,'test-v2137-unique','{"hacked":true}');
-  select card_snapshot into snapshot from public.footera_live_cards where public.footera_live_cards.card_id=card_id;
+    values(v_card_id,pay_id,u,'pack:gold',0,'test-v2137-unique','{"hacked":true}');
+  select card_snapshot into snapshot from public.footera_live_cards where public.footera_live_cards.card_id=v_card_id;
   if snapshot->>'acquisitionSource' <> 'stripe-live' or snapshot->>'tradeable'<>'false' then
     raise exception 'FAIL: signed card metadata not enforced';
   end if;
