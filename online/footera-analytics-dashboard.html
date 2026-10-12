@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#130b11">
+<title>Footera · Spielerstatistik</title>
+<style>
+:root{color-scheme:dark;font:15px/1.55 system-ui,-apple-system,sans-serif;background:#100a10;color:#fff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#441326,#120a11 70%)}
+main{max-width:970px;margin:0 auto;padding:22px 15px 70px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+a{color:#ffc9dc}
+h1{font-size:clamp(23px,5vw,33px);line-height:1.2;margin:18px 0 10px}h2{font-size:17px;margin:0 0 13px}
+.muted{color:#d4b7c3}.note{font-size:12px;color:#d5b1c1}
+.brand{font-weight:900;letter-spacing:.17em;color:#f87ea6}
+.btn{background:#c62659;border:1px solid #ff6292;border-radius:11px;padding:10px 14px;color:#fff;font:700 14px system-ui;cursor:pointer}
+.btn:disabled{opacity:.5}
+.layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:11px}
+.box{border:1px solid #604052;border-radius:16px;background:#22141e;padding:17px;margin:12px 0;box-shadow:0 5px 18px #0003}
+.stat{margin:0}.stat label{display:block;font-size:12px;color:#f1c6d7}.stat strong{display:block;font-size:clamp(23px,5vw,34px);font-weight:850;margin:7px 0}
+.stat small{font-size:11px;color:#cfaebe}
+.sectionTitle{margin:22px 0 0;font-size:18px}
+.chart{height:175px;display:flex;align-items:end;gap:3px;border-bottom:1px solid #6f4b60;padding:8px 3px}
+.bar{flex:1;min-width:0;border-radius:5px 5px 0 0;background:#f05285;position:relative;min-height:2px}
+.bar.instagram{background:#b285ef}
+.legend{display:flex;gap:18px;margin:7px 0;font-size:12px;color:#dac0cb}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;background:#f05285}
+.dot.purple{background:#b285ef}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:right;padding:8px 6px;border-bottom:1px solid #503445}
+th:first-child,td:first-child{text-align:left}
+footer{margin-top:20px}
+#status{min-height:28px;color:#f8cedb;font-size:13px}
+#app{display:none}
+</style>
+</head>
+<body>
+<main>
+<header><span class="brand">FOOTERA</span><a href="../">Zum Spiel</a></header>
+<h1>Spieler- & Besucherstatistik</h1>
+<p class="muted">Geschützter Bericht für Footera. Zeiten nach Deutschland (Europe/Berlin). Aktualisierung nur nach Anmeldung mit einem freigegebenen Statistik-Admin-Konto.</p>
+<div class="box">
+  <button class="btn" type="button" id="refresh">Aktualisieren</button>
+  <p id="status" role="status" aria-live="polite">Prüfe Berechtigung …</p>
+</div>
+<div id="app">
+ <h2 class="sectionTitle">Registrierungen und Vereine</h2>
+ <div class="layout" id="players"></div>
+ <h2 class="sectionTitle">Freiwillig erfasste Besucher</h2>
+ <div class="layout" id="visitors"></div>
+ <div class="box">
+   <h2>Besuche der letzten 30 Tage</h2>
+   <div class="legend"><span><i class="dot"></i>Zustimmende Browser</span><span><i class="dot purple"></i>Instagram</span></div>
+   <div id="chart" class="chart" aria-label="Tägliche Besucherzahlen der letzten 30 Tage"></div>
+   <p class="note">Ein Browser ist keine eindeutige Person. Besucher werden nur nach ausdrücklicher Zustimmung gezählt, daher können die tatsächlichen Besucherzahlen höher sein.</p>
+ </div>
+ <div class="box">
+   <h2>Besucherherkunft · letzte 30 Tage</h2>
+   <div id="sources"></div>
+   <p class="note">Für Instagram am besten diesen Link verwenden: <span id="iglink"></span></p>
+ </div>
+ <div class="box">
+   <h2>Letzte 14 Tage</h2>
+   <div style="overflow-x:auto"><table><thead><tr><th>Tag</th><th>Besucher*</th><th>Instagram*</th><th>Neue Konten</th><th>Neue Vereine</th></tr></thead><tbody id="days"></tbody></table></div>
+   <p class="note">*Nur mit Besuchsstatistik-Einwilligung. Vereinsgründungen werden erst ab Einführung dieser Statistik datiert.</p>
+ </div>
+ <footer class="note">Anmeldungen und Vereinsprofile stammen aus der Supabase-Datenbank; freiwillige Besucherzahlen sind ein separates Messsystem. Alte Website-Besuche lassen sich nicht rückwirkend rekonstruieren.</footer>
+</div>
+</main>
+<script src="../online-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(()=>{
+ "use strict";
+ const $=id=>document.getElementById(id);
+ const fmt=x=>Number(x||0).toLocaleString("de-DE");
+ const ig="https://basti17svh-cloud.github.io/Gerlies-FUT/?utm_source=instagram";
+ const config=window.FOOTERA_ONLINE_CONFIG||{};
+ let client=null;
+ const card=(label,value,detail)=>{const el=document.createElement("div");el.className="box stat";
+   const title=document.createElement("label");title.textContent=label;
+   const strong=document.createElement("strong");strong.textContent=fmt(value);
+   const small=document.createElement("small");small.textContent=detail;
+   el.append(title,strong,small);return el};
+ async function load(){
+  $("refresh").disabled=true;$("status").textContent="Statistik wird geladen …";
+  try{
+   if(!window.supabase?.createClient||!config.publishableKey)throw Error("Supabase-Bibliothek nicht verfügbar");
+   client||=window.supabase.createClient(config.url,config.publishableKey,{
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+   const {data:{user},error}=await client.auth.getUser();
+   if(error||!user||user.is_anonymous||!user.email_confirmed_at){
+    throw Error("Bitte zuerst Footera im selben Browser mit einem bestätigten E-Mail-Konto anmelden.");
+   }
+   const {data,error:rpcError}=await client.functions.invoke("footera-analytics-admin",{body:{}});
+   if(rpcError){
+    let detail=rpcError.message;
+    if(rpcError.context?.json){try{const body=await rpcError.context.json();detail=body.error||detail}catch{}}
+    throw Error(detail);
+   }
+   if(!data?.report)throw Error("Der Statistikbericht ist leer.");
+   const r=data.report, a=r.accounts||{},p=r.profiles||{},v=r.visitor_counts||{};
+   const c=r.club_creations||{},activity=r.consented_active||{};
+   const players=$("players");players.replaceChildren(
+    card("Registrierte Konten",a.real_registrations,"Ohne Gastkonten"),
+    card("E-Mail bestätigt",a.verified_registrations,"Bestätigte Registrierungen"),
+    card("Neue Konten · 7 Tage",a.new_week,"Ohne Gastkonten"),
+    card("Gastkonten",a.guest_accounts,"Keine persönlichen Registrierungen"),
+    card("Vereine insgesamt",p.total,"Alle bestehenden Vereinsprofile"),
+    card("Neue Vereine · 7 Tage",c.created_week,"Ab Trackingstart"),
+    card("Vereine gesehen · 7 Tage",p.seen_7d,"Laut last_seen_at"),
+    card("Aktive Konten · 7 Tage*",activity.week,"Nur mit Analyse-Einwilligung")
+   );
+   $("visitors").replaceChildren(
+    card("Besucher · heute",v.today,"Zustimmende Browser"),
+    card("Besucher · 7 Tage",v.week,"Über Tage hinweg dedupliziert"),
+    card("Besucher · 30 Tage",v.month,"Über Tage hinweg dedupliziert"),
+    card("Besucher gesamt",v.all_recorded,"Seit Beginn der Messung")
+   );
+   const days=Array.isArray(r.daily_30d)?r.daily_30d:[];
+   const max=Math.max(1,...days.map(d=>Number(d.visitors)||0));
+   const chart=$("chart");chart.replaceChildren();
+   for(const d of days){
+    const b=document.createElement("div");b.className="bar";
+    b.style.height=Math.max(2,Math.round(100*(Number(d.visitors)||0)/max))+"%";
+    b.title=d.day+": "+fmt(d.visitors)+" Browser, Instagram "+fmt(d.instagram);
+    chart.append(b);
+   }
+   const labels={instagram:"Instagram",facebook:"Facebook",tiktok:"TikTok",google:"Google",direct:"Direkt/ohne Angabe",other:"Andere"};
+   const src=$("sources");src.replaceChildren();
+   for(const [k,l] of Object.entries(labels)){
+    const line=document.createElement("p");line.textContent=l+": "+fmt((r.sources_30d||{})[k]);src.append(line);
+   }
+   const link=document.createElement("a");link.href=ig;link.textContent=ig;
+   $("iglink").replaceChildren(link);
+   const tbody=$("days");tbody.replaceChildren();
+   for(const d of days.slice(-14).reverse()){
+     const tr=document.createElement("tr");
+     for(const val of [d.day,d.visitors,d.instagram,d.registrations,d.club_creations]){
+       const td=document.createElement("td");td.textContent=typeof val==="number"?fmt(val):String(val);tr.append(td);
+     }tbody.append(tr);
+   }
+   $("app").style.display="block";
+   $("status").textContent="Aktualisiert: "+new Date(r.as_of).toLocaleString("de-DE")+".";
+  }catch(e){
+   $("status").textContent=String(e.message||e);
+   $("app").style.display="none";
+  }finally{$("refresh").disabled=false}
+ }
+ $("refresh").addEventListener("click",load);
+ load();
+})();
+</script>
+</body></html>
