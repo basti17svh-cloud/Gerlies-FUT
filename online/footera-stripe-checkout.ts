@@ -28,6 +28,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
   const origin = req.headers.get("origin");
   if (origin && origin !== trustedOrigin) return reply({ error: "Not allowed" }, 403);
+  // At LIVE cutover, stop issuing new Sandbox Checkout sessions without deleting test data.
+  if (Deno.env.get("FOOTERA_SANDBOX_PURCHASES_ENABLED") === "false")
+    return reply({ error: "Sandbox-Käufe sind im Echtgeldbetrieb deaktiviert." }, 503);
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
   if (!stripeKey.startsWith("sk_test_")) return reply({ error: "Sandbox not configured" }, 503);
   const authorization = req.headers.get("authorization") ?? "";
