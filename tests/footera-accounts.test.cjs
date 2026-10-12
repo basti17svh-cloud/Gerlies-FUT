@@ -657,3 +657,22 @@ test("blocked online startup must remain retryable after ownership reconciliatio
  assert.match(online,/Konto-Wechsel vorbereitet: erst die bestätigte E-Mail und Vereinsübernahme abschließen\."\;\s*started=null/);
  assert.match(online,/Gastkonto wird nicht automatisch neu erstellt\."\;\s*started=null/);
 });
+
+test("live online schema accepts every formation offered by the Footera squad editor",()=>{
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const migration=fs.readFileSync(path.join(__dirname,"../online/footera-online-formations-v21.128.sql"),"utf8");
+ const found=html.match(/const SQUAD_FORMATION_NAMES=(\[[^;]+\]);/);
+ assert.ok(found,"squad formation list missing");
+ const names=JSON.parse(found[1]);
+ assert.equal(names.length,11);
+ for(const formation of names){
+   assert.ok(migration.includes("'"+formation+"'::text"),"Online database excludes "+formation);
+ }
+ assert.match(migration,/add constraint footera_online_profiles_formation_check/);
+});
+test("verified FC Gerlies account retries online initialization and provides friend code errors",()=>{
+ assert.match(js,/if\(!online\.ready\)await online\.init\(\)/);
+ assert.match(js,/const code=await online\.getFriendCode\?\.\(\)/);
+ assert.match(js,/Online-Fehler:/);
+ assert.match(online,/formation:state\.formation/);
+});
