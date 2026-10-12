@@ -481,7 +481,7 @@ test("preexisting Gmail cloud save prevents accidental club overwrites",async()=
  await t.win.FooteraAccount.beginLocalTransfer({size:40,text:async()=>""},"new@example.org");
  t.setUser({id:"gmail-user",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false,identities:[]});
  t.setCloud({save_data:sampleGame("someone-else"),revision:3,saved_at:"2026-10-12"});
- await assert.rejects(t.win.FooteraAccount.finishLocalTransfer(),/bereits einen Cloud-Spielstand/);
+ await assert.rejects(t.win.FooteraAccount.finishLocalTransfer(),/bereits einen anderen Cloud-Spielstand/);
  assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
  assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
 });
