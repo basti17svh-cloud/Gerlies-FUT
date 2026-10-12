@@ -45,12 +45,12 @@
 .fh3d-hud-goal .fh3d-team-crest{width:48px;height:48px;margin-top:auto;opacity:.72;filter:saturate(.9) brightness(.9)}
 .fh3d-hud-goal .fh3d-team-crest .club-crest{width:48px!important;height:48px!important;min-width:48px!important}
 .fh3d-hud-big_chance_saved{grid-template-columns:54px minmax(0,1fr) auto}
-.fh3d-hud-big_chance_saved .fh3d-player-card,.fh3d-hud-big_chance_saved .fh3d-team-crest{display:none}
+.fh3d-hud-big_chance_saved .fh3d-team-crest:empty{display:none}
 .fh3d-hud-big_chance_saved .fh3d-headline{font-size:clamp(28px,8.5vw,44px)}
 .fh3d-hud-big_chance_saved .fh3d-name{font-size:clamp(13px,4vw,19px);letter-spacing:1.2px}
 .fh3d-hud-big_chance_saved .fh3d-event{font-size:9px;color:#aebcb6}
 .fh3d-hud-shot_post,.fh3d-hud-big_chance_missed{grid-template-columns:54px minmax(0,1fr) auto}
-.fh3d-hud-shot_post .fh3d-player-card,.fh3d-hud-big_chance_missed .fh3d-player-card,.fh3d-hud-shot_post .fh3d-team-crest,.fh3d-hud-big_chance_missed .fh3d-team-crest{display:none}
+
 #match.highlight3d-pending .match-live-stage{height:clamp(430px,64svh,620px);min-height:430px;position:relative;border-color:#4c7558;background:#071018;box-shadow:0 20px 44px #000b,inset 0 1px #ffffff22}
 #match.highlight3d-active .match-live-stage> :not(.fh3d){visibility:hidden}
 #match.highlight3d-pending .match-timeline-wrap{visibility:hidden}
@@ -142,4 +142,54 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
  .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-minute{min-width:36px;min-height:25px;padding:4px 7px;font-size:13px}
  .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest:not(:empty){width:40px;height:40px}
  .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}
+}
+
+
+/* Matchday identity card: every 3D action uses its actual actor's Footera card.
+   Keep its intrinsic 7:10 ratio; card-shell uses inline-size containment and
+   otherwise collapses when placed outside a squad mini-card. */
+#match .fh3d .fh3d-hud{
+ grid-template-columns:98px minmax(0,1fr) 60px;
+ min-height:132px;
+}
+#match .fh3d .fh3d-hud .fh3d-player-card{
+ display:block!important;
+ visibility:visible!important;
+ width:94px;
+ min-width:0;
+ aspect-ratio:7 / 10;
+ margin:0 0 0 2px;
+ align-self:center;
+ overflow:visible;
+}
+#match .fh3d .fh3d-hud .fh3d-mark{display:none}
+#match .fh3d .fh3d-hud .fh3d-player-card .card-shell{
+ display:block;
+ position:relative;
+ width:100%!important;
+ max-width:100%!important;
+ aspect-ratio:7 / 10;
+ min-height:0;
+}
+#match .fh3d .fh3d-hud .fh3d-player-card .custom-card{
+ display:block;
+ width:100%;
+ height:100%;
+}
+#match .fh3d .fh3d-hud .fh3d-player-card .fh3d-identity-fallback{
+ min-height:0;
+ height:100%;
+ box-sizing:border-box;
+}
+@media(max-width:560px){
+ #match .fh3d .fh3d-hud{
+  grid-template-columns:82px minmax(0,1fr) 52px;
+  column-gap:7px;
+  min-height:124px;
+ }
+ #match .fh3d .fh3d-hud .fh3d-player-card{width:78px}
+}
+@media(max-height:720px){
+ #match .fh3d .fh3d-hud{min-height:114px}
+ #match .fh3d .fh3d-hud .fh3d-player-card{width:min(74px,100%)}
 }
