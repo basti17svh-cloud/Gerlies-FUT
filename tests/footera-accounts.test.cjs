@@ -592,3 +592,39 @@ test("already backed up target club completes pending migration without rewritin
  assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
  assert.equal(JSON.parse(t.store.get("footera-cloud-sync-point-v1")).revision,1);
 });
+
+test("verified account automatically clears a stale completed transfer without changing the cloud save",async()=>{
+ const t=runtime("registered"),club=sampleGame("club-complete");
+ club.profile.clubName="Test FC";club.club=[{uid:"card-a",pid:"player-a"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));
+ t.store.set("footera-cloud-owner","earlier-owner");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:30,text:async()=>""},"confirmed@example.org");
+ t.setUser({id:"new-verified-user",email:"confirmed@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.store.set("footera-cloud-owner","new-verified-user");
+ t.setCloud({save_data:JSON.parse(JSON.stringify(club)),revision:1,saved_at:"2026-10-12"});
+ const success=await t.win.FooteraAccount.reconcileCompletedTransfer(await t.win.FooteraAccount.user());
+ assert.equal(success,true);
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),false);
+ assert.equal(t.store.get("footera-cloud-owner"),"new-verified-user");
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
+ assert.equal(JSON.parse(t.store.get("gerliesFutV9")).profile.saveId,"club-complete");
+});
+test("stale transfer is not cleared when new account owns a different cloud save",async()=>{
+ const t=runtime("registered"),club=sampleGame("club-original");
+ club.club=[{uid:"card-a",pid:"player-a"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));t.store.set("footera-cloud-owner","earlier-owner");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:30,text:async()=>""},"confirmed@example.org");
+ t.setUser({id:"new-verified-user",email:"confirmed@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.store.set("footera-cloud-owner","new-verified-user");
+ t.setCloud({save_data:sampleGame("different-club"),revision:1,saved_at:"2026-10-12"});
+ assert.equal(await t.win.FooteraAccount.reconcileCompletedTransfer(await t.win.FooteraAccount.user()),false);
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),true);
+ assert.equal(t.calls.filter(x=>x[0]==="cloud").length,0);
+});
+test("verified account never automatically opens the account modal solely for transfer markers",()=>{
+ assert.doesNotMatch(js,/\|\|pendingLocalTransfer\(\)\|\|shouldWelcome\(\)\)show\(\)/);
+ assert.match(js,/else if\(pendingEmail\(\)\|\|pendingLocalTransfer\(\)\)show\(\)/);
+});
