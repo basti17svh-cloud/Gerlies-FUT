@@ -176,9 +176,9 @@
      return true;
    }
    if(!transferMatches(local,p))
-     throw Error("Der lokale Spielstand wurde seit der Vorbereitung verändert. Die Gmail-Cloud wird nicht überschrieben. Bitte zuerst die Sicherungen vergleichen.");
+     throw Error("Lokaler Spielstand oder bisherige Zuordnung wurden verändert. Die Gmail-Cloud wird nicht überschrieben. Bitte zuerst die Sicherungen vergleichen.");
    if(existing)
-     throw Error("Das Gmail-Konto hat bereits einen abweichenden Cloud-Spielstand. Keine Überschreibung.");
+     throw Error("Dieses Konto hat bereits einen anderen Cloud-Spielstand. Keine Überschreibung.");
    if(!root.confirm(p.clubName+" jetzt zu "+p.targetEmail+" zuordnen und sicher in der Cloud speichern?\n\nDie bisherige Gast-Online-ID und der alte Freundescode werden NICHT automatisch übernommen. Holy FC bleibt unverändert."))return false;
    const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:0});
    if(error)throw error;
