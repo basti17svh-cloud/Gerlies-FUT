@@ -96,6 +96,23 @@
   return {verified:liveVerified&&ownedBy(liveOwner),balance:liveVerified&&ownedBy(liveOwner)?liveBalance:0,
    receipts:liveVerified&&ownedBy(liveOwner)?liveReceipts.map(r=>({...r})):[]};
  }
+ async function spendLivePass(){
+  if(!(await refreshLive()))throw Error("Echtgeld-Wallet nicht verfügbar.");
+  const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
+  if(e||!user||!ownedBy(user.id)||user.id!==liveOwner)throw Error("Footera-Konto nicht bestätigt.");
+  const item="season_pass:s1";
+  const cacheKey="footera-live-request:"+user.id+":"+item;
+  const stored=localStorage.getItem(cacheKey);
+  const id=stored||crypto.randomUUID();
+  if(!stored)localStorage.setItem(cacheKey,id);
+  const {data,error}=await c.functions.invoke("footera-live-spend",{body:{item_key:item,request_id:id}});
+  if(error||!data||data.request_id!==id||data.item_key!==item||
+     !["spent","already_processed"].includes(data.status)||data.delivery_status!=="delivered")
+   throw Error("Live-Kauf noch nicht bestätigt. Bitte erneut versuchen.");
+  localStorage.removeItem(cacheKey);
+  await refreshLive();
+  return data;
+ }
  async function spend(packId){
   if(spending)throw Error("Ein anderer Points-Kauf wird gerade abgeschlossen.");
   spending=true;
@@ -151,5 +168,5 @@
    refreshLive().catch(console.warn);
   }},30000);
  }
- window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState});
+ window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState,spendLivePass});
 })();
