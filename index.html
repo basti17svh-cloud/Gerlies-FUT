@@ -5285,7 +5285,8 @@ function openPlayerDetails(item,index=null,fromPreview=false){
  showUiLayer("playerModal","player")
 }
 function packItemKey(item){const b=item?displayBase(item):null;return [String(item?.pid||""),String(item?.variant||""),String(item?.eventName||""),String(item?.boost||0),String(item?.overridePosition||""),String(item?.evo||0),isCardRare(b,item)?"1":"0"].join("|")}
-function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=owned.has(key)||seen.has(key);map.set(k,dup);seen.add(key)});return map}
+function isFooteraLiveCard(item){return item?.acquisitionSource==="stripe-live"}
+function packDuplicateMap(){const owned=new Set([...(state.club||[]),...(state.sbcStorage||[])].map(packItemKey)),seen=new Set(),map=new Map();pendingPack.forEach((item,k)=>{const key=packItemKey(item),dup=!isFooteraLiveCard(item)&&(owned.has(key)||seen.has(key));map.set(k,dup);seen.add(key)});return map}
 function openPackPlayerDetails(k){
  const item=pendingPack[k];if(!item||pendingResolved.has(k))return;const b=displayBase(item);if(!b)return;
  const duplicate=!!packDuplicateMap().get(k),twin=duplicate&&!item.tradeable?tradeableClubTwinForPackItem(item):null;
@@ -5852,14 +5853,14 @@ function resolvePackToSquad(k){
 }
 function resolvePackToSbcStorage(k){
  const i=pendingPack[k],dup=packDuplicateMap().get(k);
- if(!i||isFounderItem(i)||pendingResolved.has(k)||i.tradeable||!dup)return false;
+ if(!i||isFounderItem(i)||isFooteraLiveCard(i)||pendingResolved.has(k)||i.tradeable||!dup)return false;
  state.sbcStorage=state.sbcStorage||[];if(state.sbcStorage.length>=100){toast("SBC-Speicher voll (100/100).");return false}
  state.sbcStorage.push(i);pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();toast("Duplikat im SBC-Speicher abgelegt.");
  packResultsRefresh();return true
 }
 function resolvePackSwapTradeable(k){
  const incoming=pendingPack[k],dup=packDuplicateMap().get(k);
- if(!incoming||pendingResolved.has(k)||incoming.tradeable||!dup)return false;
+ if(!incoming||isFooteraLiveCard(incoming)||pendingResolved.has(k)||incoming.tradeable||!dup)return false;
  const existing=tradeableClubTwinForPackItem(incoming);if(!existing){toast("Keine tauschbare Vereinskarte verfügbar.");return false}
  const clubIndex=state.club.findIndex(x=>x.uid===existing.uid);if(clubIndex<0)return false;
  state.club[clubIndex]=incoming;state.squad=state.squad.map(id=>id===existing.uid?incoming.uid:id);
@@ -5869,7 +5870,7 @@ function resolvePackSwapTradeable(k){
  toast("Getauscht: Die tauschbare Vereinskarte kann jetzt verkauft werden.");renderPackResults();renderAll();return true
 }
 function resolvePackSell(k){
- const i=pendingPack[k];if(!i||pendingResolved.has(k)||isFounderItem(i))return false;
+ const i=pendingPack[k];if(!i||pendingResolved.has(k)||isFounderItem(i)||isFooteraLiveCard(i))return false;
  const duplicate=!!packDuplicateMap().get(k);
  if(i.tradeable){const value=quickSell(i);state.coins+=value;toast(`+${fmt(value)} Coins`)}
  else toast(duplicate?"Untauschbares Duplikat abgestoßen.":"Untauschbarer Spieler abgestoßen.");
@@ -5877,7 +5878,7 @@ function resolvePackSell(k){
 }
 function packSellBatch(duplicatesOnly=false){
  const dupMap=duplicatesOnly?packDuplicateMap():null;
- return pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)&&!isFounderItem(x.i)&&(!duplicatesOnly||dupMap.get(x.k)))
+ return pendingPack.map((i,k)=>({i,k})).filter(x=>!pendingResolved.has(x.k)&&!isFounderItem(x.i)&&!isFooteraLiveCard(x.i)&&(!duplicatesOnly||dupMap.get(x.k)))
 }
 function resolvePackSellBatch(duplicatesOnly=false){
  const items=packSellBatch(duplicatesOnly);if(!items.length)return false;
@@ -6873,6 +6874,7 @@ function startEvolution(evoId,uid,payment="free"){
  if(activeEvolutionForUid(uid))return toast("Dieser Spieler steckt bereits in einer aktiven Evolution.");
  if(activeEvolutionDefinitionRunning(evoId))return toast("Diese Evolution läuft bereits mit einem anderen Spieler.");
  const evo=EVOLUTION_POOL.find(x=>x.id===evoId),item=state.club.find(x=>x.uid===uid);
+ if(isFooteraLiveCard(item))return toast("Gekaufte Echtgeldkarten sind erst nach dem sicheren Server-Evolutionssystem evolvierbar.");
  if(!evo||!item||!evoEligible(item,evo))return toast("Dieser Spieler erfüllt die Voraussetzungen nicht.");
  const active=activeEvolutionDefinitions().some(x=>x.id===evo.id),sch=evolutionSchedule(evo);
  if(!active||Date.now()>=sch.signupEnd)return toast("Diese Evolution kann nicht mehr gestartet werden.");
@@ -7351,7 +7353,7 @@ function maybeGrantSbcGroupReward(sbc){
 }
 function finalizeSbcSubmission(id){
  const sbc=getActiveSbcById(id);if(!sbc)return;if(sbc.scoreSbc)return toast("Öffne diese POTM-SBC über die Punkteabgabe.");if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
- if(stats.items.some(isFounderItem)||stats.items.some(isStoryItem))return toast("Founder- und Story-Karten können nicht in SBCs abgegeben werden.");
+ if(stats.items.some(isFounderItem)||stats.items.some(isStoryItem)||stats.items.some(isFooteraLiveCard))return toast("Founder-, Story- und Echtgeldkarten können nicht in SBCs abgegeben werden.");
  ensureObjectiveWindows();const ids=new Set(stats.items.map(i=>i.uid));persistActiveSquadPreset(state);
  const teams=[...new Set((state.squadPresets||[]).filter(p=>p?.squad?.some(uid=>ids.has(uid))).map(p=>p.name).filter(Boolean))];
  state.squad=state.squad.map(uid=>uid&&ids.has(uid)?null:uid);
