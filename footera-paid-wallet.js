@@ -8,8 +8,11 @@
  let render=()=>{},grant=()=>{};
  const OWNER_KEY="footera-cloud-owner";
  const asPoints=v=>Number.isSafeInteger(Number(v))&&Number(v)>=0?Number(v):0;
- function paidBalance(){return verified?balance:0}
- function ready(){return verified&&!!owner}
+ // A LIVE shop never incorporates Sandbox wallet balances into in-game Points.
+ // LIVE Points are a separate, server-verified wallet and must be spent using LIVE RPCs only.
+ const liveMode=()=>window.FOOTERA_LIVE_STORE_ENABLED===true;
+ function paidBalance(){return !liveMode()&&verified?balance:0}
+ function ready(){return !liveMode()&&verified&&!!owner}
  function emit(){try{render()}catch(e){console.warn("Footera wallet rendering",e)}}
  function invalidate(){owner="";verified=false;balance=0;invalidateLive();emit()}
  function invalidateLive(){liveOwner="";liveVerified=false;liveBalance=0;liveReceipts=[]}
@@ -39,7 +42,7 @@
     balance=asPoints(w?.balance_points);
     verified=true;
     emit();
-    if(ownedBy(user.id)&&Array.isArray(orders)&&orders.length){
+    if(!liveMode()&&ownedBy(user.id)&&Array.isArray(orders)&&orders.length){
      grant(orders,user.id);
     }
     return true;
@@ -202,6 +205,7 @@
   return data;
  }
  async function spend(packId){
+  if(liveMode())throw Error("Sandbox-Points können im Echtgeldmodus nicht ausgegeben werden.");
   if(spending)throw Error("Ein anderer Points-Kauf wird gerade abgeschlossen.");
   spending=true;
   try{
