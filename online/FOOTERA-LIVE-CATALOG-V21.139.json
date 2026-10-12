@@ -1,0 +1,17 @@
+{
+  "version": "fc27-20261007-530525ed",
+  "source_repository": "mzafram2001/ea-fc",
+  "source_file": "data/dataset_ea_fc_27.csv",
+  "source_git_blob": "530525ed3d5b37a08174f39cded06047e4309dd9",
+  "snapshot_date": "2026-10-07",
+  "rows": 18524,
+  "distinct_ids": 18524,
+  "ratings": {
+    "gold": 1975,
+    "silver": 9415,
+    "bronze": 7134
+  },
+  "engine": "exact-weighted-subset-v1",
+  "stripes_live_enabled": false,
+  "note": "Manifest pins the validated paid catalog; activation requires wallet, draw and ownership end-to-end checks."
+}
