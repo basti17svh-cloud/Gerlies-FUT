@@ -73,11 +73,20 @@ Deno.serve(async (req: Request) => {
         !Number.isSafeInteger(Number(data.points_cost)) ||
         !["pending", "delivered"].includes(data.delivery_status))
       return respond({ error: "Buchungsbestätigung ungültig." }, 502);
-    // Points spending is not a delivered pack/pass. Never mark success when
-    // the game-server has not yet persisted the purchased entitlement.
-    if (data.delivery_status !== "delivered")
-      return respond({ ...data, status: "delivery_pending" }, 202);
-    return respond(data);
+    // The database transaction may upgrade a receipt to delivered in a
+    // BEFORE INSERT trigger. The stored receipt, not the RPC's response hint,
+    // is the sole authority on whether a purchase can be presented as delivered.
+    const { data: receipt, error: receiptError } = await admin
+      .from("footera_live_entitlements")
+      .select("spend_id,user_id,item_key,delivery_status")
+      .eq("spend_id", requestId).maybeSingle();
+    if (receiptError || !receipt || receipt.user_id !== user.id ||
+        receipt.item_key !== itemKey || receipt.spend_id !== requestId)
+      return respond({ error: "Verifizierter Lieferbeleg fehlt. Support kontaktieren." }, 502);
+    const verified = { ...data, delivery_status: receipt.delivery_status };
+    if (receipt.delivery_status !== "delivered")
+      return respond({ ...verified, status: "delivery_pending" }, 202);
+    return respond(verified);
   } catch (e) {
     console.error("Footera live spend runtime", String(e));
     return respond({ error: "Server vorübergehend nicht erreichbar." }, 503);
