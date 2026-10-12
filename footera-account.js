@@ -443,6 +443,20 @@
    labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
    labelValue("footeraProfilePoints",state?integerValue(Number(state.points||0)+(root.FooteraPaidWallet?.paidBalance()||0)):"–");
    labelValue("footeraProfileStatus","Dauerhaftes Footera-Konto");
+   const owner=root.localStorage.getItem(OWNER);
+   const cloudButton=$("footeraProfileBackup");
+   const cloudNote=$("footeraProfileBackupHint");
+   if(cloudButton){
+     cloudButton.disabled=owner!==u.id;
+     cloudButton.title=owner===u.id
+       ?"Diesen Verein in deinem angemeldeten Konto sichern"
+       :"Cloud-Sicherung gesperrt: Der lokale Verein gehört nicht zu diesem angemeldeten Konto.";
+   }
+   if(cloudNote){
+     cloudNote.textContent=owner===u.id
+       ?"Für eine zusätzliche Datei-Sicherung verwende 'Sicherung herunterladen'."
+       :"Dein lokaler Verein und das angemeldete Footera-Konto sind nicht zugeordnet. Eine Cloud-Sicherung ist deshalb gesperrt. Lade zuerst eine lokale Sicherungsdatei herunter. Der vorhandene Cloud-Spielstand wird nicht verändert.";
+   }
    const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
    labelValue("footeraProfileMethod",providers.map(x=>x==="email"?"E-Mail":x==="google"?"Google":x).join(" · ")||"Anmeldung");
    labelValue("footeraProfileSince",u.created_at?new Date(u.created_at).toLocaleDateString("de-DE"):"–");
@@ -640,7 +654,9 @@
      '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
      '<h3 class="footera-profile-section-title">Mein Konto</h3>'+
      '<dl class="footera-profile-details"><div><dt>E-Mail-Adresse</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Anmeldung über</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Cloud-Spielstand</dt><dd id="footeraProfileCloud">–</dd></div></dl>'+
-     '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileChangeEmail" type="button">E-Mail ändern</button><button id="footeraProfileBackup" type="button">Spielstand sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
+     '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileChangeEmail" type="button">E-Mail ändern</button><button id="footeraProfileExport" type="button">Sicherung herunterladen</button><button id="footeraProfileBackup" type="button">In Cloud sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
+     '<p class="footera-profile-backup-hint" id="footeraProfileBackupHint"></p>'+
+     '<p class="footera-profile-backup-feedback" id="footeraProfileBackupFeedback" role="status" aria-live="polite"></p>'+
      '<div class="footera-profile-danger"><small>GEFAHRENBEREICH</small><h3>Konto endgültig löschen</h3><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
      '</section>';
    document.body.append(profilePage);
@@ -667,7 +683,40 @@
      hideProfile();show();
      root.setTimeout(()=>$("footeraNewEmail")?.focus(),80);
    });
-   $("footeraProfileBackup").addEventListener("click",()=>run(async()=>{await saveCloud();await renderProfile()}));
+   $("footeraProfileExport").addEventListener("click",async()=>{
+     const status=$("footeraProfileBackupFeedback");
+     const button=$("footeraProfileExport");
+     if(!status||button.disabled)return;
+     button.disabled=true;
+     status.dataset.error="false";
+     status.textContent="Lokale Sicherungsdatei wird vorbereitet. Es wird nichts in die Cloud geschrieben.";
+     try{
+       if(!root.FooteraBackup?.exportBackup)throw Error("Dateisicherung nicht verfügbar.");
+       await root.FooteraBackup.exportBackup();
+       const output=$("footeraBackupStatus");
+       status.textContent=output?.textContent||"Download gestartet. Bitte prüfe deinen Download-Ordner.";
+       status.dataset.error=output?.dataset.error==="true"?"true":"false";
+     }catch(e){
+       status.textContent=safeMessage(e);
+       status.dataset.error="true";
+     }finally{button.disabled=false}
+   });
+   $("footeraProfileBackup").addEventListener("click",async()=>{
+     const status=$("footeraProfileBackupFeedback");
+     const button=$("footeraProfileBackup");
+     if(button.disabled)return;
+     button.disabled=true;
+     try{
+       await saveCloud();
+       if(status){status.textContent="Cloud-Sicherung wurde geprüft. Bitte den angezeigten Zeitstempel kontrollieren.";status.dataset.error="false";}
+       await renderProfile();
+     }catch(e){
+       if(status){status.textContent=safeMessage(e);status.dataset.error="true";}
+     }finally{
+       const u=await user().catch(()=>null);
+       button.disabled=!u||root.localStorage.getItem(OWNER)!==u.id;
+     }
+   });
    $("footeraProfileSignOut").addEventListener("click",()=>run(signOut));
    $("footeraProfileDelete").addEventListener("click",async()=>{
      const u=await user();
