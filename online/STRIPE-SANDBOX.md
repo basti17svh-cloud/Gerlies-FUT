@@ -49,3 +49,10 @@ Bei einer erfolgreichen Testzahlung sind die serverseitigen Points in `public.fo
 - Deckender Sticky-Header verhindert überlappenden Hinweistext im Points-Kaufdialog.
 - Dialog scrollt beim Öffnen an den Anfang.
 - Erster Sandbox-Checkout am 12.10.2026 durch Betreiber bestätigt, Datenbank: genau eine Points-Buchung über 500 und Wallet-Summe 500.
+
+## V21.125 – gebuchte Sandbox-Points jetzt im Spiel
+- Stripe-Webhooks schreiben Points ausschließlich serverseitig gut. Der Spielstand `state.points` bleibt unberührt; die obere Währungsanzeige und Mein Profil addieren den verifizierten Serverstand.
+- Beim Packkauf: genügend **kostenlose lokale** Points → bestehender lokaler Kauf; ansonsten geprüftes Serverguthaben → serverseitig fester Packpreis, niemals Browserpreis. Geteilte Zahlung über zwei Wallets noch nicht möglich.
+- RPC `footera_spend_verified_sandbox_points` ist nur für `service_role` ausführbar und nutzt eine UUID-Spend-Ledgerbuchung, doppelter Debit ausgeschlossen. `footera-spend-points` Edge benötigt Supabase JWT.
+- Bezahlte Pack-Berechtigungen werden anhand der Serverbuchungen bei unterbrochener Nutzung in **Meine Packs** wiederhergestellt (nur für den Besitzer des lokalen Clubs). `paidPackClaims` verhindern Mehrfachzustellung im synchronisierten Spielstand.
+- **Sandbox only**: kein echter Checkout, keine umsatzwirksamen Spielkäufe. Kostenlose Points, Rewards, Evolutions, Transfermarkt und Karten selbst bleiben vor Echtgeld-Livebetrieb zusätzlich serverseitig abzusichern.

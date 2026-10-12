@@ -400,7 +400,7 @@
    labelValue("footeraProfileFriendCode",root.FooteraOnline?.friendCode||"Noch nicht synchronisiert");
    labelValue("footeraProfileCards",state?.club?.length??"–");
    labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
-   labelValue("footeraProfilePoints",state?integerValue(state.points):"–");
+   labelValue("footeraProfilePoints",state?integerValue(Number(state.points||0)+(root.FooteraPaidWallet?.paidBalance()||0)):"–");
    labelValue("footeraProfileStatus","Dauerhaftes Footera-Konto");
    const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
    labelValue("footeraProfileMethod",providers.map(x=>x==="email"?"E-Mail":x==="google"?"Google":x).join(" · ")||"Anmeldung");
