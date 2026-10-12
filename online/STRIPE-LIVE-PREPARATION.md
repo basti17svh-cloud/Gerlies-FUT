@@ -1,3 +1,26 @@
+# Footera Stripe Live – Vorbereitung V21.135 (12.10.2026)
+
+## AKTUELLER STAND V21.135 (ersetzt ältere Statusmeldungen unten)
+- **Stripe-Geschäftsmodell:** Der Betreiber berichtet von zwei ausdrücklichen Stripe-Supportaussagen: (a) Zahlungen seien zulässig, weil Footera Points nicht in Echtgeld rückwandelbar seien; (b) gegen die zufallsgenerierten Pack-Spieler bestünden "keinerlei Einwand oder Bedenken". Dies ist eine Betreiberangabe; die originale Stripe-Korrespondenz liegt hier nicht zur unabhängigen Prüfung vor. Allgemeine Kontofreigabe und spezielle Pack-Freigabe sind sachlich zu trennen.
+- **Betreiberfreigabe:** Veröffentlichung wurde im Chat am 12.10.2026 ausdrücklich gewünscht. **Technische Go-Live-Voraussetzungen sind trotzdem nicht erfüllt. Echtgeld bleibt OFF.**
+- **Supabase LIVE Edge Functions deployed (aber gesperrt):** `footera-live-checkout` (JWT verpflichtend), `footera-live-webhook` (JWT aus, erfordert Stripe-Signatur), `footera-live-spend` (JWT verpflichtend). Die Sandbox-Endpoints bleiben unverändert.
+- **Keine Stripe-Live-Webhook-Registrierung:** Read-only-Abfrage im LIVE-Stripe-Konto zeigte null Webhook-Endpunkte. `FOOTERA_LIVE_PAYMENTS_ENABLED`, `FOOTERA_LIVE_WEBHOOK_ENABLED`, `FOOTERA_LIVE_SPENDING_ENABLED` bleiben ungesetzt/aus; außerdem ist für Points-Ausgabe nun `FOOTERA_LIVE_DELIVERY_ENABLED=true` notwendig. Nie ohne abgeschlossene Backend-Delivery aktivieren.
+- **Migration tatsächlich angewendet:** `online/footera-live-entitlements-v21.135.sql`. Jeder verifizierte Live-Points-Abzug schreibt in **derselben DB-Transaktion** ein serverseitiges, nutzergebundenes Entitlement (`pending`). Fehlgeschlagene Debits hinterlassen kein Entitlement; Replay derselben ID bucht nicht erneut, auch wenn das Angebot inzwischen geschlossen wurde.
+- **Aktueller LIVE-Katalog:** 13 Packs + 1 Season Pass; 0 Artikel aktiviert. Evolution-Katalogtypen im Schema vorbereitet, noch keine freigeschalteten Angebote. Bereits ausgerollte 8 Stripe-Pakete bleiben unverändert.
+- **Client-Anbindung vorläufig lesend:** `FooteraPaidWallet.refreshLive()` und `liveState()` lesen nur die eigene Live-Wallet und serverseitige Entitlements; kein Vermischen mit Sandbox-Points und keine automatische Kartenvergabe.
+- **Sicherheits- und Rollback-Tests:** SQL-Test in `BEGIN`/`ROLLBACK` für Abbuchung + Entitlement, Replay, deaktivierten Katalog, veränderte Kauf-ID/Artikel-Kombination und unzureichendes Guthaben durchgeführt. Nach Testabschluss: 0 Live-Wallets, 0 Live-Payments, 0 Live-Spends, 0 Live-Entitlements. Sensible Echtgeld-RPCs sind für `anon` und `authenticated` nicht aufrufbar.
+- **Regression:** `tests/footera-live-payments.test.cjs` + GitHub-Actions-Workflow. Statische Sicherheitsverträge sind nicht gleichbedeutend mit Zahlungs-End-to-End-Tests.
+
+### Harte Blocker für den öffentlichen Echtgeldstart
+1. Signierten Stripe-LIVE-Webhook mit eigenem LIVE-Secret beim Stripe-Konto registrieren; Secrets nur in Supabase hinterlegen, niemals in GitHub. Checkout darf erst nach verifiziertem Webhook aktiviert werden.
+2. Serverautoritatives Inventar, nachvollziehbares Pack-Ergebnis, Evolutionen und Premium-Season-Pass-Berechtigungen implementieren: Ein `pending`-Entitlement ist absichtlich **keine** ausgelieferte Ware. Keine Points ausgeben, bevor die Lieferung transaktional und nach Browserabbruch wiederherstellbar ist.
+3. Tests: signierter Erfolg, schlechte Signatur, Test-/Live-Trennung, abgebrochener/verspäteter Kauf, doppelte Events, Teil-/Vollrefund, Dispute gewonnen/verloren, ungültige Identität, Reload/Logout/Endgerätewechsel, Lieferung genau einmal, fehlendes/abgelaufenes Pack und Ausfallszenarien.
+4. Steuer, digitale Inhalte, Altersfreigabe, zufallsbasierte Kaufhinweise und Verbraucherrechte prüfen. Eine Stripe-Zahlungsfreigabe ist keine eigenständige jugend- oder verbraucherschutzrechtliche Freigabe.
+5. Erst dann kontrollierter Canary-Rollout und explizite Flag-Aktivierung. Kein Echtgeld-Testkauf automatisch auslösen.
+
+---
+## Historische Dokumentation V21.129–V21.132 (teilweise überholt)
+
 # Footera Stripe Live – Vorbereitung V21.129 (12.10.2026)
 
 ## Status: ABSICHTLICH NICHT LIVE
