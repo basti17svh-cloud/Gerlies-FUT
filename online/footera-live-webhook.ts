@@ -17,6 +17,58 @@ const packs: Record<string, { cents: number; priceId: string; name: string }> = 
 const respond = (text: string, status = 200) =>
   new Response(text, { status, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 
+// Always obtain CURRENT risk from the Stripe LIVE API, not from webhook-supplied amounts.
+// This allows a dispute WIN to restore a hold while successful refunds remain permanent.
+async function reconcileLiveRisk(stripe: Stripe, admin: ReturnType<typeof createClient>, chargeId: string) {
+  const charge = await stripe.charges.retrieve(chargeId);
+  if (!charge.livemode || !charge.paid || charge.currency !== "eur") throw Error("Not a settled LIVE charge");
+  const paymentIntentId = typeof charge.payment_intent === "string"
+    ? charge.payment_intent : charge.payment_intent?.id;
+  if (!paymentIntentId) throw Error("Charge has no Payment Intent");
+  const { data: payment, error: findError } = await admin.from("footera_live_stripe_payments")
+    .select("stripe_checkout_session_id,amount_cents")
+    .eq("stripe_payment_intent_id", paymentIntentId).maybeSingle();
+  if (findError) throw findError;
+  if (!payment) return "not_a_recorded_footera_charge";
+  if (payment.amount_cents !== charge.amount) throw Error("Charge does not match Footera payment");
+
+  let refundsTotal = 0;
+  let cursor: string | undefined;
+  for (let pageNo = 0; pageNo < 10; pageNo++) {
+    const page = await stripe.refunds.list({
+      charge: charge.id, limit: 100, ...(cursor ? { starting_after: cursor } : {}),
+    });
+    for (const refund of page.data) if (refund.status === "succeeded") refundsTotal += refund.amount;
+    if (!page.has_more) { cursor = undefined; break; }
+    cursor = page.data.at(-1)?.id;
+    if (!cursor) throw Error("Cannot continue Stripe refund pagination");
+  }
+  if (cursor) throw Error("Too many refunds to reconcile automatically");
+
+  let disputeHold = 0;
+  let disputeCursor: string | undefined;
+  for (let pageNo = 0; pageNo < 10; pageNo++) {
+    const page = await stripe.disputes.list({
+      charge: charge.id, limit: 100, ...(disputeCursor ? { starting_after: disputeCursor } : {}),
+    });
+    for (const dispute of page.data) {
+      if (["won", "warning_closed", "prevented"].includes(dispute.status)) continue;
+      disputeHold = Math.max(disputeHold, dispute.amount);
+    }
+    if (!page.has_more) { disputeCursor = undefined; break; }
+    disputeCursor = page.data.at(-1)?.id;
+    if (!disputeCursor) throw Error("Cannot continue Stripe dispute pagination");
+  }
+  if (disputeCursor) throw Error("Too many disputes to reconcile automatically");
+  const { error } = await admin.rpc("footera_reconcile_verified_live_payment_risk", {
+    p_checkout_session_id: payment.stripe_checkout_session_id,
+    p_confirmed_refund_cents: refundsTotal,
+    p_current_dispute_hold_cents: disputeHold,
+  });
+  if (error) throw Error("LIVE risk ledger: " + error.message);
+  return "reconciled";
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return respond("Method not allowed", 405);
   if (Deno.env.get("FOOTERA_LIVE_WEBHOOK_ENABLED") !== "true")
@@ -86,43 +138,20 @@ Deno.serve(async (req: Request) => {
         console.error("Stripe LIVE credit failed", error.code, error.message);
         return respond("Credit unavailable: retry", 500);
       }
+      // Reconcile any refund/dispute that was emitted before this payment was recorded.
+      const charge = typeof pi.latest_charge === "string" ? pi.latest_charge : pi.latest_charge?.id;
+      if (!charge) throw Error("Paid Checkout is missing its settled charge");
+      await reconcileLiveRisk(stripe, admin, charge);
       console.info("Footera LIVE payment processed", { session: session.id, result: data });
       return respond("ok", 200);
     }
-    // Refunds are reconciled by cumulative amount confirmed through the LIVE Stripe API.
-    // Never trust a refund amount passed by the browser or event alone.
-    if (event.type === "charge.refunded") {
-      const incoming = event.data.object as Stripe.Charge;
-      const charge = await stripe.charges.retrieve(incoming.id);
-      if (!charge.livemode || !charge.paid) return respond("Charge not settled", 422);
-      const piId = typeof charge.payment_intent === "string"
-        ? charge.payment_intent : charge.payment_intent?.id;
-      if (!piId) return respond("Unlinked charge", 200);
-      const { data: payment, error: lookupError } = await admin.from("footera_live_stripe_payments")
-        .select("stripe_checkout_session_id,amount_cents")
-        .eq("stripe_payment_intent_id", piId).maybeSingle();
-      if (lookupError) return respond("Live refund ledger unavailable", 500);
-      if (!payment) return respond("No Footera ledger entry for this charge", 200);
-      const refunds = await stripe.refunds.list({ charge: charge.id, limit: 100 });
-      if (refunds.has_more) return respond("Refund pagination requires review", 500);
-      const total = refunds.data.filter(r => r.status === "succeeded")
-        .reduce((n, r) => n + r.amount, 0);
-      if (total > payment.amount_cents) return respond("Refund exceeds original amount", 422);
-      const { error: reverseError } = await admin.rpc("footera_reconcile_verified_live_payment_loss", {
-        p_checkout_session_id: payment.stripe_checkout_session_id,
-        p_total_lost_cents: total,
-      });
-      if (reverseError) {
-        console.error("Stripe LIVE reversal failed", reverseError.code, reverseError.message);
-        return respond("Reversal unavailable: retry", 500);
-      }
-      return respond("reconciled", 200);
-    }
-    // Never silently treat a dispute as resolved. Dedicated dispute lifecycle,
-    // win/reinstatement, and manual review are required before any production launch.
-    if (event.type.startsWith("charge.dispute.")) {
-      console.error("Footera LIVE dispute needs operator handling", event.id, event.type);
-      return respond("Dispute processing not released", 503);
+    if (event.type === "charge.refunded" || event.type.startsWith("charge.dispute.")) {
+      const chargeId = event.type === "charge.refunded"
+        ? (event.data.object as Stripe.Charge).id
+        : (event.data.object as Stripe.Dispute).charge;
+      if (!chargeId || typeof chargeId !== "string")
+        return respond("Cannot resolve Stripe charge", 422);
+      return respond(await reconcileLiveRisk(stripe, admin, chargeId), 200);
     }
     return respond("ignored", 200);
   } catch (e) {
