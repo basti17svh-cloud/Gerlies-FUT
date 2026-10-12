@@ -311,6 +311,12 @@
    try{
      const c=await getClient(),u=await user();
      if(!isPermanent(u))return;
+     if(pendingLocalTransfer()){
+       // Do not automatically claim a local club while its ownership transfer
+       // is pending, even if signup itself has already been verified.
+       autoStatus="Vereinsübernahme nach der E-Mail-Bestätigung ausdrücklich abschließen.";
+       return;
+     }
      noteVerifiedRegistration(u);
      const owner=root.localStorage.getItem(OWNER);
      if(owner&&owner!==u.id){
@@ -415,15 +421,29 @@
  }
  async function emailRegister(email,password){
    const c=await getClient(),u=await user(),address=checkedEmail(email);
+   const transfer=pendingLocalTransfer();
+   if(transfer){
+     // Staged account transfer is NOT normal guest ownership. Never set OWNER
+     // until the verified target account has explicitly backed up FC Gerlies.
+     if(address!==transfer.targetEmail)
+       throw Error("Die vorbereitete Übernahme gilt nur für "+transfer.targetEmail+".");
+     if(!transferMatches(localData(),transfer))
+       throw Error("Gesicherter lokaler Verein oder bisherige Zuordnung verändert. Nichts registriert.");
+     if(u?.id===transfer.previousLogin)
+       throw Error("Das bisherige WEB.DE-Konto ist noch angemeldet.");
+   }
    if(u?.is_anonymous){
      const owner=root.localStorage.getItem(OWNER);
-     if(owner&&owner!==u.id)throw Error("Dieser lokale Verein gehört zu einem anderen Konto. Bitte zuerst das zugehörige Konto anmelden.");
-     // Upgrade the existing guest. Password is only allowed after email verification.
+     if(owner&&owner!==u.id&&!transfer)
+       throw Error("Dieser lokale Verein gehört zu einem anderen Konto. Bitte zuerst das zugehörige Konto anmelden.");
+     // Upgrade this guest but defer all local/online club ownership to finishLocalTransfer.
      const r=await c.auth.updateUser({email:address},{emailRedirectTo:callbackURL()});
      if(r.error)throw r.error;
-     root.localStorage.setItem(OWNER,u.id);
+     if(!transfer)root.localStorage.setItem(OWNER,u.id);
      rememberPending(address,u.id);
-     msg("Bestätigungslink an "+address+" verschickt. Öffne ihn auf diesem Gerät und lege danach ein Passwort fest.");
+     msg(transfer
+       ?"Bestätigungslink an "+address+" verschickt. Nach der Bestätigung die Vereinsübernahme ausdrücklich abschließen."
+       :"Bestätigungslink an "+address+" verschickt. Öffne ihn auf diesem Gerät und lege danach ein Passwort fest.");
    }else if(u){
      throw Error("Du bist bereits angemeldet. Nutze 'Passwort festlegen / ändern'.");
    }else{
