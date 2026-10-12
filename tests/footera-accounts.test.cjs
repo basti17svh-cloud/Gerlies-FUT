@@ -628,3 +628,32 @@ test("verified account never automatically opens the account modal solely for tr
  assert.doesNotMatch(js,/\|\|pendingLocalTransfer\(\)\|\|shouldWelcome\(\)\)show\(\)/);
  assert.match(js,/else if\(pendingEmail\(\)\|\|pendingLocalTransfer\(\)\)show\(\)/);
 });
+
+test("completed verified account remains in game on stale callback URLs, without forced account dialog",()=>{
+ assert.match(js,/if\(callbackError\|\|shouldWelcome\(\)\)show\(\)/);
+ assert.doesNotMatch(js,/if\(root\.location\.hash\.includes\("access_token"\)\|\|root\.location\.search\.includes\("code="\)\|\|callbackError\|\|shouldWelcome\(\)\)show\(\)/);
+ assert.match(js,/else if\(pendingEmail\(\)\|\|pendingLocalTransfer\(\)\|\|root\.location\.hash\.includes\("access_token"\)\|\|root\.location\.search\.includes\("code="\)\)show\(\)/);
+});
+test("completed transfer restarts online setup after clearing stale marker without cloud writes",async()=>{
+ const t=runtime("registered"),club=sampleGame("same-save");
+ club.club=[{uid:"fixture",pid:"player"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:100,text:async()=>"backup"},"new@example.org");
+ let starts=0;
+ t.win.setTimeout=fn=>fn();
+ t.win.FooteraOnline.init=async()=>{starts++;assert.equal(t.store.has("footera-local-account-transfer-v1"),false)};
+ t.setUser({id:"new-owner",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.store.set("footera-cloud-owner","new-owner");
+ t.setCloud({save_data:JSON.parse(JSON.stringify(club)),revision:1,saved_at:"2026-10-12"});
+ assert.equal(await t.win.FooteraAccount.reconcileCompletedTransfer(await t.win.FooteraAccount.user()),true);
+ await Promise.resolve();
+ assert.equal(starts,1);
+ assert.equal(t.calls.filter(v=>v[0]==="cloud").length,0);
+});
+test("blocked online startup must remain retryable after ownership reconciliation",()=>{
+ assert.match(online,/Konto-Wechsel vorbereitet: erst die bestätigte E-Mail und Vereinsübernahme abschließen\."\;\s*started=null/);
+ assert.match(online,/Gastkonto wird nicht automatisch neu erstellt\."\;\s*started=null/);
+});
