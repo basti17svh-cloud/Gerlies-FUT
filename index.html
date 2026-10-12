@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.127</title>
+<title>Footera V21.128</title>
 <style>
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
@@ -1506,7 +1506,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=2199">
+<link rel="stylesheet" href="./3d-highlights.css?v=21128">
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css?v=2130">
 <link rel="stylesheet" href="./club-crest-premium.css?v=2130">
@@ -1523,7 +1523,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./pack-odds.css?v=21120">
 <link rel="stylesheet" href="./footera-backup.css?v=21106">
 <link rel="stylesheet" href="./footera-account.css?v=21122">
-<link rel="stylesheet" href="./footera-points-shop.css?v=21127">
+<link rel="stylesheet" href="./footera-points-shop.css?v=21128">
 </head>
 <body>
 
@@ -1594,7 +1594,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.127</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.128</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -3369,14 +3369,14 @@ function ensureClubIdentityState(){
 }
 function clubIdentitySnapshot(){ensureClubIdentityState();return JSON.parse(JSON.stringify(state.profile.clubIdentity))}
 function baseState(){return{
- version:127,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
+ version:128,onboarded:false,starterLeague:"",coins:5000,points:0,sp:0,formation:"4-3-3",tactic:"balanced",club:[],squad:Array(23).fill(null),activeSquadPreset:0,squadPresets:[null,null,null],packs:{},
  stats:{starter:0,full:0,matches:0,wins:0,draws:0,losses:0,competitiveMatches:0,competitiveWins:0,rivalsMatches:0,rivalsWins:0,championsMatches:0,championsWins:0,squadMatches:0,squadWins:0,packs:0,sbcs:0,market:0,friendlies:0,friendlyWins:0},rivals:{division:10,points:0},champions:null,squadBattle:null,weeklyRewards:[],rewardPackQueue:[],claims:{},seasonClaims:{},seasonPass:null,storyPassPending:[],storyPassGranted:{},objectiveWindows:{},objectiveClaims:{},objectiveBonuses:{},eventObjectives:{},
  roles:{},focus:{},activeEvo:null,activeEvos:[],evoProgress:{},evoHistory:[],profile:{username:"",clubName:"Footera Club",clubShortName:"FTR",clubIdentity:defaultClubIdentity(),saveId:newFooteraSaveId()},friends:[],auctions:[],transferList:[],transferSales:[],sbcStorage:[],sbcCompletions:{},sbcGroupClaims:{},pendingPack:[],pendingResolved:[],chemBoostInventory:{},pendingChemBoosts:[],promoClaims:{},directClaims:{},paidPackClaims:{},packLimits:{},coinBoost:{games:0,amount:0},coinBoostQueue:[]
 }}
 function loadState(){
  try{
   const x=JSON.parse(localStorage.getItem("gerliesFutV9")||localStorage.getItem("uc27v7")||"null"),b=baseState();
-  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:127,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},paidPackClaims:{...(x.paidPackClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
+  return migrateLegacyEventState(initializeSquadPresets(x?{...b,...x,version:128,squad:Array.from({length:23},(_,i)=>Array.isArray(x.squad)?(x.squad[i]??null):null),stats:{...b.stats,...(x.stats||{})},rivals:{...b.rivals,...(x.rivals||{})},packs:{...(x.packs||{})},claims:{...(x.claims||{})},seasonClaims:{...(x.seasonClaims||{})},roles:{...(x.roles||{})},focus:{...(x.focus||{})},activeEvo:null,activeEvos:Array.isArray(x.activeEvos)?x.activeEvos.filter(Boolean).slice(0,3):(x.activeEvo?[x.activeEvo]:[]),evoProgress:{...(x.evoProgress||{})},evoHistory:Array.isArray(x.evoHistory)?x.evoHistory:[],profile:{...b.profile,...(x.profile||{})},friends:Array.isArray(x.friends)?x.friends:[],auctions:Array.isArray(x.auctions)?x.auctions:[],transferList:Array.isArray(x.transferList)?x.transferList:[],transferSales:Array.isArray(x.transferSales)?x.transferSales:[],sbcStorage:Array.isArray(x.sbcStorage)?x.sbcStorage:[],sbcCompletions:{...(x.sbcCompletions||{})},sbcGroupClaims:{...(x.sbcGroupClaims||{})},weeklyRewards:Array.isArray(x.weeklyRewards)?x.weeklyRewards:[],rewardPackQueue:Array.isArray(x.rewardPackQueue)?x.rewardPackQueue:[],pendingPack:Array.isArray(x.pendingPack)?x.pendingPack:[],pendingResolved:Array.isArray(x.pendingResolved)?x.pendingResolved:[],promoClaims:{...(x.promoClaims||{})},directClaims:{...(x.directClaims||{})},paidPackClaims:{...(x.paidPackClaims||{})},packLimits:{...(x.packLimits||{})},coinBoost:{...b.coinBoost,...(x.coinBoost||{})}}:b))
  }catch(e){return migrateLegacyEventState(initializeSquadPresets(baseState()))}
 }
 function squadPresetName(name,index){return String(name||'').trim().slice(0,24)||`Team ${index+1}`}
@@ -9245,7 +9245,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.127";
+const GFUT_BUILD="V21.128";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9298,7 +9298,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21127",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21128",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9310,12 +9310,12 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 }else window.addEventListener("load",()=>FOOTERA_INTRO_DONE.then(checkForGerliesUpdate));
 
 </script>
-<script src="./season-system.js?v=21127"></script>
+<script src="./season-system.js?v=21128"></script>
 <script src="./competition-system.js"></script>
 <script src="./champions-system.js?v=2115"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js?v=21101"></script>
-<script src="./3d-highlights-match.js?v=2205"></script>
+<script src="./3d-highlights-match.js?v=21128"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
@@ -9324,10 +9324,10 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./potm.js"></script>
 <script src="./squad-tactics.js?v=2124"></script>
 <script src="./squad-numbers.js?v=2185"></script>
-<script src="./footera-backup.js?v=21127"></script>
+<script src="./footera-backup.js?v=21128"></script>
 <script src="./footera-account.js?v=21122"></script>
 <script src="./footera-paid-wallet.js?v=21125"></script>
-<script src="./footera-points-shop.js?v=21127"></script>
+<script src="./footera-points-shop.js?v=21128"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
