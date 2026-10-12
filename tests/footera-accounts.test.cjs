@@ -409,6 +409,7 @@ test("cancelled email change neither mutates account nor saves",async()=>{
 
 test("wrong WEB.DE session can be safely disconnected only after matching local JSON backup",async()=>{
  const t=runtime("registered"),local=sampleGame("gerlies-main"),cloud=sampleGame("holy");
+ local.club=[{uid:"fixture-1",pid:"player-fixture"}];
  local.profile.clubName="FC Gerlies";cloud.profile.clubName="Holy FC";
  t.store.set("gerliesFutV9",JSON.stringify(local));
  t.store.set("footera-cloud-owner","original-guest");
