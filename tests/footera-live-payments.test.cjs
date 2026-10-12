@@ -11,6 +11,7 @@ const webhook=read("online/footera-live-webhook.ts");
 const spend=read("online/footera-live-spend.ts");
 const migration=read("online/footera-live-entitlements-v21.135.sql");
 const shop=read("footera-points-shop.js");
+const wallet=read("footera-paid-wallet.js");
 
 test("all live Points tiers have identical fixed cents and price IDs in checkout and webhook",()=>{
  const parse=code=>{
@@ -86,4 +87,22 @@ test("public shop still routes to Sandbox only; no accidental live purchase UI",
  assert.match(shop,/stripe-sandbox-test\.html/);
  assert.doesNotMatch(shop,/footera-live-checkout/);
  assert.doesNotMatch(shop,/sk_live_/);
+});
+
+test("switching to LIVE never counts Sandbox Points in main balance or spends Sandbox value",()=>{
+ assert.match(wallet,/const liveMode=\(\)=>window\.FOOTERA_LIVE_STORE_ENABLED===true/);
+ assert.match(wallet,/function paidBalance\(\)\{return !liveMode\(\)&&verified\?balance:0\}/);
+ assert.match(wallet,/function ready\(\)\{return !liveMode\(\)&&verified&&!!owner\}/);
+ assert.match(wallet,/if\(!liveMode\(\)&&ownedBy\(user\.id\)&&Array\.isArray\(orders\)/);
+ assert.match(wallet,/if\(liveMode\(\)\)throw Error\("Sandbox-Points können im Echtgeldmodus nicht ausgegeben werden\."\)/);
+ assert.match(wallet,/footera_live_points_wallets/);
+ assert.match(wallet,/footera_points_wallets/);
+});
+test("Points shop labels mode honestly but remains Sandbox by default",()=>{
+ assert.match(shop,/const liveStore=window\.FOOTERA_LIVE_STORE_ENABLED===true/);
+ assert.match(shop,/Mit Echtgeld kaufen/);
+ assert.match(shop,/Testkauf/);
+ assert.match(shop,/if\(liveStore\)/);
+ assert.match(shop,/stripe-sandbox-test\.html/);
+ assert.match(shop,/FooteraPaidWallet\.checkoutLive/);
 });
