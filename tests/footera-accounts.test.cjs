@@ -573,3 +573,22 @@ test("verified Gmail registration never auto-adopts the club until explicit tran
  assert.equal(t.store.get("footera-cloud-owner"),"new-guest");
  assert.equal(t.calls.filter(c=>c[0]==="cloud").length,1);
 });
+
+test("already backed up target club completes pending migration without rewriting the cloud",async()=>{
+ const t=runtime("registered"),club=sampleGame("already-saved-club");
+ club.profile.clubName="Test Club";
+ club.club=[{uid:"card-one",pid:"player-one"}];
+ t.store.set("gerliesFutV9",JSON.stringify(club));
+ t.store.set("footera-cloud-owner","original-guest");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(club))});
+ t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:100,text:async()=>""},"new@example.org");
+ t.setUser({id:"new-user",email:"new@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.store.set("footera-cloud-owner","new-user");
+ t.setCloud({save_data:JSON.parse(JSON.stringify(club)),revision:1,saved_at:"2026-10-12"});
+ await t.win.FooteraAccount.finishLocalTransfer();
+ assert.equal(t.store.get("footera-cloud-owner"),"new-user");
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),false);
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+ assert.equal(JSON.parse(t.store.get("footera-cloud-sync-point-v1")).revision,1);
+});
