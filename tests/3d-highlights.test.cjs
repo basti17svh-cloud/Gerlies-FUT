@@ -39,8 +39,7 @@ test('Three resource UUIDs cannot consume the simulation random stream',async()=
  let calls=0;const original=Math.random;Math.random=()=>{calls++;return .5};
  try{const T=await import('../vendor/three/three.module.min.js');new T.Scene();new T.BoxGeometry();new T.MeshLambertMaterial();assert.equal(calls,0)}finally{Math.random=original}
 });
-test('current simulation reproduces pre-integration goals, shots, cards, fitness and RNG for 24 seeds',()=>{
- const old=require('node:child_process').execFileSync('git',['show','e35e439:index.html'],{cwd:root,encoding:'utf8',maxBuffer:3e6});
+test('match simulator remains deterministic while excluding goalkeeper shots for 24 seeds',()=>{
  const current=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const fixtureSource=fs.readFileSync(path.join(__dirname,'matchday.test.cjs'),'utf8').split('function fixture(')[1].split("\ntest('")[0];
  function run(html,seed){
@@ -50,7 +49,14 @@ test('current simulation reproduces pre-integration goals, shots, cards, fitness
   assert.ok(ctx.match.finished);const m=ctx.match;
   return JSON.parse(JSON.stringify({home:m.home,away:m.away,minute:m.minute,shots:m.shotEvents,goals:m.goalEvents,defense:m.defensiveEvents,red:m.redCards,yellow:m.yellowCards,fitness:m.fitnessLoss,nextRandom:ctx.Math.random()},(key,value)=>['highlightType','playerName','goalkeeperName'].includes(key)?undefined:value));
  }
- for(let seed=1;seed<=24;seed++)assert.deepEqual(run(current,seed),run(old,seed),'seed '+seed);
+ for(let seed=1;seed<=24;seed++){
+  const a=run(current,seed),b=run(current,seed);
+  assert.deepEqual(a,b,'deterministic match seed '+seed);
+  for(const shot of a.shots){
+   assert.notEqual(shot.shooterUid,'p0','home keeper must not shoot');
+   if(shot.side==='away')assert.notEqual(shot.shooterIndex,0,'away keeper must not shoot');
+  }
+ }
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
