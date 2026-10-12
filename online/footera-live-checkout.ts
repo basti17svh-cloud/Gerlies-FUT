@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
   if (Deno.env.get("FOOTERA_LIVE_PAYMENTS_ENABLED") !== "true")
     return reply({ error: "Footera Echtgeldzahlungen sind noch nicht freigeschaltet." }, 503);
   const key = Deno.env.get("FOOTERA_STRIPE_LIVE_SECRET_KEY") ?? "";
-  if (!key.startsWith("sk_live_")) return reply({ error: "Live payment service unavailable" }, 503);
+  if (!/^(?:sk|rk)_live_/.test(key)) return reply({ error: "Live payment service unavailable" }, 503);
   const match = /^Bearer\s+(.+)$/i.exec(req.headers.get("authorization") ?? "");
   if (!match) return reply({ error: "Verified Footera account required" }, 401);
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
