@@ -213,6 +213,13 @@
    root.localStorage.removeItem(TRANSFER);
    if(pendingEmail()?.email===pending.targetEmail)clearPending();
    autoStatus="";
+   // A previous online init could have been blocked by the transfer marker.
+   // Retry only after verifying the account, owner and matching cloud save.
+   root.setTimeout(()=>{
+     Promise.resolve(root.FooteraOnline?.init?.())
+       .then(()=>{if(profilePage&&!profilePage.hidden)renderProfile().catch(console.warn)})
+       .catch(err=>console.warn("Footera Online-Abgleich:",err));
+   },0);
    return true;
  }
  function structurallyEqual(a,b){
@@ -575,6 +582,12 @@
    labelValue("footeraProfileClub",club.clubName||"Noch kein Verein");
    labelValue("footeraProfileEmail",u.email||"Über Google angemeldet");
    labelValue("footeraProfileFriendCode",root.FooteraOnline?.friendCode||"Noch nicht synchronisiert");
+   if(root.FooteraOnline?.ready&&!root.FooteraOnline.friendCode){
+     try{
+       const code=await root.FooteraOnline.getFriendCode?.();
+       if(code)labelValue("footeraProfileFriendCode",code);
+     }catch(err){console.warn("Footera Freundescode:",err)}
+   }
    labelValue("footeraProfileCards",state?.club?.length??"–");
    labelValue("footeraProfileCoins",state?integerValue(state.coins):"–");
    labelValue("footeraProfilePoints",state?integerValue(Number(state.points||0)+(root.FooteraPaidWallet?.paidBalance()||0)):"–");
@@ -943,12 +956,14 @@
    $("footeraSignOut").addEventListener("click",()=>run(signOut));
    // A lingering transfer or verification marker must not force the account
    // modal open on every normal launch of an already-verified player.
-   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||callbackError||shouldWelcome())show();
+   // OAuth/email callbacks may leave a stale ?code= URL on installed PWAs.
+   // Show any callback UI only after checking the actual authenticated user.
+   if(callbackError||shouldWelcome())show();
    getClient().then(async()=>{
      const signedIn=await user();
      if(isPermanent(signedIn)){
        await reconcileCompletedTransfer(signedIn).catch(err=>console.warn("Footera Konto-Abgleich:",err));
-     }else if(pendingEmail()||pendingLocalTransfer())show();
+     }else if(pendingEmail()||pendingLocalTransfer()||root.location.hash.includes("access_token")||root.location.search.includes("code="))show();
      render().catch(console.warn);
      if(callbackError)msg(safeMessage({code:callbackError,message:"Der Anmeldelink ist ungültig oder abgelaufen. Bitte einen neuen Link anfordern."}),true);
      autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
