@@ -498,3 +498,36 @@ test("new Gmail account cannot claim a local save modified during handoff",async
  assert.equal(t.store.get("footera-cloud-owner"),"original-guest");
  assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
 });
+
+test("a successful cloud RPC may be resumed without overwriting the same save",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";local.club=[{uid:"c1",pid:"p1"}];
+ t.store.set("gerliesFutV9",JSON.stringify(local));t.store.set("footera-cloud-owner","guest-original");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
+ await t.win.FooteraAccount.beginLocalTransfer({size:40,text:async()=>""},"gmail@example.org");
+ t.setUser({id:"gmail-new",email:"gmail@example.org",email_confirmed_at:"2026-10-12",is_anonymous:false});
+ t.setCloud({save_data:JSON.parse(JSON.stringify(local)),revision:1,saved_at:"2026-10-12"});
+ await t.win.FooteraAccount.finishLocalTransfer();
+ assert.equal(t.store.get("footera-cloud-owner"),"gmail-new");
+ assert.equal(JSON.parse(t.store.get("footera-cloud-sync-point-v1")).revision,1);
+ assert.equal(t.calls.filter(c=>c[0]==="cloud").length,0);
+});
+test("failed sign-out leaves both current login ownership and local FC Gerlies intact",async()=>{
+ const t=runtime("registered"),local=sampleGame("gerlies-main");
+ local.profile.clubName="FC Gerlies";local.club=[{uid:"c1",pid:"p1"}];
+ t.store.set("gerliesFutV9",JSON.stringify(local));t.store.set("footera-cloud-owner","guest-original");
+ t.win.FooteraBackup.inspect=async()=>({state:JSON.parse(JSON.stringify(local))});t.win.confirm=()=>true;
+ t.client.auth.signOut=async()=>({error:Error("offline")});
+ await assert.rejects(t.win.FooteraAccount.beginLocalTransfer({size:40,text:async()=>""},"gmail@example.org"),/offline/);
+ assert.equal(t.store.get("gerliesFutV9"),JSON.stringify(local));
+ assert.equal(t.store.get("footera-cloud-owner"),"guest-original");
+ assert.equal(t.store.has("footera-local-account-transfer-v1"),false);
+ assert.equal(t.wasReloaded(),false);
+});
+test("mismatched account is visibly called out before profile controls",()=>{
+ const source=fs.readFileSync(path.join(__dirname,"../footera-account.js"),"utf8");
+ assert.match(source,/footera-profile-hero"\)\.insertAdjacentElement\("afterend",profileTransfer\)/);
+ assert.match(source,/footeraAccountTransferProgress/);
+ assert.match(source,/footeraProfileTransferFile/);
+ assert.match(source,/root\.FooteraBackup\.inspect\(await file\.text\(\)\)/);
+});
