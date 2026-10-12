@@ -34,7 +34,7 @@
   <h2>1. Footera-Konto</h2>
   <p id="user" class="sub">Anmeldestatus wird geprüft …</p>
   <div id="status" role="status" aria-live="polite"></div>
-  <button class="secondary" id="check" type="button">Anmeldung erneut prüfen</button>
+  <button class="secondary" id="check" type="button" hidden>Kontostatus aktualisieren</button>
  </section>
  <section class="box">
   <h2>2. Stripe-Testzahlung</h2>
@@ -76,10 +76,13 @@
  const setStatus=msg=>{$("status").textContent=msg;};
  function buttons(){$("buy").disabled=!user||busy;$("refresh").disabled=!user||busy;}
  async function check(){
-  user=null;buttons();
+  user=null;
+  $("check").hidden=true;
+  buttons();
   if(!window.supabase?.createClient||!config.url||!config.publishableKey){
    $("user").textContent="Footera-Onlinebibliothek ist nicht verfügbar.";
-   setStatus("Bitte Seite neu laden. Wenn das Problem bleibt, prüfen wir die Online-Anbindung.");return;
+   setStatus("Bitte Seite neu laden. Wenn das Problem bleibt, prüfen wir die Online-Anbindung.");
+   $("check").hidden=false;return;
   }
   if(!client)client=window.supabase.createClient(config.url,config.publishableKey,{
    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
@@ -89,12 +92,17 @@
    if(error||!current||current.is_anonymous||!current.email||!current.email_confirmed_at){
     $("user").textContent="Kein bestätigtes E-Mail-Konto angemeldet.";
     setStatus("Bitte zuerst Footera im selben Browser öffnen und mit deinem bestätigten E-Mail-Konto anmelden.");
-    $("balance").textContent="–";return;
+    $("balance").textContent="–";
+    $("check").hidden=false;return;
    }
    user=current;$("user").textContent="Angemeldet: "+current.email;
    setStatus("Das bestätigte Footera-Konto ist bereit für einen Sandbox-Testkauf.");
    buttons();await wallet();
-  }catch(e){$("user").textContent="Kontoprüfung fehlgeschlagen.";setStatus(String(e?.message||e))}
+  }catch(e){
+   $("user").textContent="Kontoprüfung fehlgeschlagen.";
+   setStatus(String(e?.message||e));
+   $("check").hidden=false;
+  }
  }
  async function wallet(){
   if(!client||!user)return;
