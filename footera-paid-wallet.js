@@ -149,7 +149,7 @@
       data.delivery_status!=="delivered")
     throw Error("Server-Lieferbeleg nicht bestätigt. Kauf erneut prüfen.");
    const cards=await fetchLiveCards(requestId);
-   if(cards.length!==(packId==="silver"?5:5) ||
+   if(cards.length!==5 ||
       cards.some(x=>x.item_key!==itemKey) ||
       new Set(cards.map(x=>x.slot)).size!==cards.length)
     throw Error("Nicht alle Karten sind sichtbar. Kauf-ID bleibt zur Wiederherstellung gespeichert.");
