@@ -373,7 +373,13 @@ $("seasonPass").addEventListener("click",event=>{
  if(buy){
   ensureObjectiveWindows();
   if(state.seasonPass.premium)return;
-  const currency=buy.dataset.passBuy,price=PASS_PRICE[currency];
+  const currency=buy.dataset.passBuy;
+  if(currency==="live"){
+   buy.disabled=true;
+   window.FooteraPaidWallet.spendLivePass().then(()=>syncVerifiedLiveSeasonPass()).catch(e=>toast(e.message)).finally(()=>{buy.disabled=false});
+   return;
+  }
+  const price=PASS_PRICE[currency];
   if(!price||!Number.isFinite(state[currency]))return toast("Guthaben nicht verfügbar.");
   if(state[currency]<price){
    if(currency==="points")return openFooteraPointsOverview(price,"Premium Season Pass",Number(state.points||0));
