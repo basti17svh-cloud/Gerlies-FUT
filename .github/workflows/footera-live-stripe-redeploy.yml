@@ -66,13 +66,24 @@ jobs:
 
       - name: Deploy LIVE checkout (JWT required)
         run: |
-          supabase functions deploy footera-live-checkout \
-            --project-ref "$SUPABASE_PROJECT_REF" \
-            --use-api
+          if ! supabase functions deploy footera-live-checkout \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --use-api; then
+            echo "::warning::API bundling failed; trying Docker bundle."
+            supabase functions deploy footera-live-checkout \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --use-docker
+          fi
 
       - name: Deploy signed Stripe LIVE webhook (Stripe signature authentication)
         run: |
-          supabase functions deploy footera-live-webhook \
-            --project-ref "$SUPABASE_PROJECT_REF" \
-            --no-verify-jwt \
-            --use-api
+          if ! supabase functions deploy footera-live-webhook \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --no-verify-jwt \
+              --use-api; then
+            echo "::warning::API bundling failed; trying Docker bundle."
+            supabase functions deploy footera-live-webhook \
+              --project-ref "$SUPABASE_PROJECT_REF" \
+              --no-verify-jwt \
+              --use-docker
+          fi
