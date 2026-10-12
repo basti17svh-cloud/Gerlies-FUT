@@ -4,7 +4,7 @@
 (function(root){
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
- const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1";
+ const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1";
  const maxLength=12*1024*1024;
  let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoStatus="",autoTimer=null,deleteBusy=false;
  const $=id=>document.getElementById(id);
@@ -33,6 +33,47 @@
    root.localStorage.setItem(PENDING_EMAIL,JSON.stringify({email,userId:userId||null,kind}));
  }
  function clearPending(){root.localStorage.removeItem(PENDING_EMAIL);}
+ function pendingAccountEmailChange(){
+   try{
+     const request=JSON.parse(root.localStorage.getItem(EMAIL_CHANGE)||"null");
+     if(!request||typeof request.newEmail!=="string"||typeof request.userId!=="string"
+       ||!Number.isFinite(request.createdAt)||Date.now()-request.createdAt>7*86400000)return null;
+     return request;
+   }catch(_){return null}
+ }
+ function acknowledgeAccountEmailChange(u){
+   const request=pendingAccountEmailChange();
+   if(!u||!request||request.userId!==u.id)return false;
+   if(String(u.email||"").toLowerCase()!==request.newEmail)return false;
+   root.localStorage.removeItem(EMAIL_CHANGE);
+   return true;
+ }
+ async function requestAccountEmailChange(value){
+   const {c,u}=await requirePermanent();
+   if(!u.email_confirmed_at)throw Error("Bitte bestätige zuerst deine bisherige E-Mail-Adresse.");
+   const newEmail=checkedEmail(value);
+   const previousEmail=String(u.email||"").toLowerCase();
+   if(newEmail===previousEmail)throw Error("Die neue E-Mail-Adresse muss sich von der bisherigen unterscheiden.");
+   const cloud=await cloudInfo();
+   if(!cloud?.save_data?.profile?.clubName||!Array.isArray(cloud.save_data.club))
+     throw Error("Dein Vereins-Spielstand ist noch nicht sicher in der Cloud gespeichert. Bitte erst den Verein sichern.");
+   if(root.localStorage.getItem(OWNER)===u.id&&hasLocalGame()){
+     let saved=null;
+     try{saved=localData()}catch(e){throw Error("Der lokale Spielstand konnte nicht geprüft werden: "+safeMessage(e))}
+     if(saved?.profile?.saveId!==cloud.save_data.profile.saveId)
+       throw Error("Cloud und lokaler Verein stimmen nicht überein. Bitte die Cloud-Sicherung vor einem E-Mail-Wechsel prüfen.");
+     if(!structurallyEqual(saved,cloud.save_data))
+       throw Error("Der lokale Verein enthält noch nicht gesicherte Änderungen. Bitte zuerst auf 'Spielstand sichern' tippen und dann erneut versuchen.");
+   }
+   if(!root.confirm("E-Mail-Adresse dieses bestehenden Footera-Kontos ändern?\n\nBisher: "+previousEmail+"\nNeu: "+newEmail+"\n\nVerein und Cloud-Sicherung bleiben derselben Konto-ID zugeordnet. Bitte bestätige die Nachrichten von Supabase in deinen Postfächern."))return;
+   const result=await c.auth.updateUser({email:newEmail},{emailRedirectTo:callbackURL()});
+   if(result.error)throw result.error;
+   root.localStorage.setItem(EMAIL_CHANGE,JSON.stringify({
+     userId:u.id,newEmail,previousEmail,createdAt:Date.now()
+   }));
+   $("footeraNewEmail").value="";
+   msg("E-Mail-Wechsel angefordert. Öffne die Bestätigungslinks von Supabase in der bisherigen und der neuen Mailbox (je nach Kontoeinstellungen). Nicht abmelden oder ein neues Konto erstellen.");
+ }
  function prepareSaveReplacement(){
    if(typeof flushSave==="function")flushSave();
    // pagehide and delayed game writes must not restore the previous in-memory club.
@@ -493,6 +534,19 @@
    if(!dialog)return;
    let u=null;try{u=await user()}catch(e){msg(safeMessage(e),true);return}
    const logged=isPermanent(u),guest=!!u?.is_anonymous,owner=root.localStorage.getItem(OWNER);
+   const emailChanged=logged&&acknowledgeAccountEmailChange(u);
+   const changeRequest=pendingAccountEmailChange();
+   const changeSection=$("footeraEmailChangeSection");
+   if(changeSection)changeSection.hidden=!logged;
+   if(logged&&$("footeraExistingEmail"))$("footeraExistingEmail").textContent=u.email||"–";
+   const changeMessage=$("footeraEmailChangeProgress");
+   if(changeMessage){
+     changeMessage.textContent=emailChanged
+       ?"Die neue E-Mail-Adresse wurde bestätigt. Dein Footera-Konto und deine Cloud-Sicherung bleiben zugeordnet."
+       :logged&&changeRequest?.userId===u.id
+         ?"E-Mail-Änderung läuft: "+changeRequest.previousEmail+" → "+changeRequest.newEmail+". Prüfe beide E-Mail-Postfächer auf Supabase-Bestätigungslinks."
+         :"Es wird nur die E-Mail-Adresse geändert. Dein Verein bleibt mit derselben Footera-Konto-ID verbunden.";
+   }
    const pending=pendingEmail();
    const belongsToPending=!!pending&&(!u||!pending.userId||pending.userId===u.id);
    $("footeraPendingEmail").hidden=!belongsToPending;
@@ -565,6 +619,7 @@
      '<div class="footera-account-actions"><button type="submit" id="footeraEmailLogin">Anmelden</button><button type="button" id="footeraEmailRegister">Registrieren</button><button type="button" id="footeraSetPassword">Passwort vergessen</button></div></form>'+
      '<button type="button" id="footeraGuest" class="footera-account-guest">Als Gast spielen · ohne Registrierung</button>'+
      '<button type="button" id="footeraAccountContinue" class="footera-account-guest" hidden>Weiter zu meinem Verein</button>'+
+     '<section class="footera-email-change" id="footeraEmailChangeSection" hidden><strong>Anmelde-E-Mail ändern</strong><p>Aktuell: <span id="footeraExistingEmail">–</span></p><p>Dein Verein bleibt dem bisherigen Konto zugeordnet. Bestätige den Wechsel in deinen E-Mail-Postfächern.</p><form id="footeraEmailChangeForm"><label>Neue E-Mail-Adresse<input id="footeraNewEmail" type="email" inputmode="email" autocomplete="email" placeholder="neue-adresse@beispiel.de" maxlength="254" required></label><button type="submit" id="footeraEmailChangeButton">Änderung per E-Mail bestätigen</button></form><p id="footeraEmailChangeProgress" role="status" aria-live="polite"></p></section>'+
      '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
      '<p id="footeraAccountMessage" role="status" aria-live="polite"></p>'+
      '<button type="button" id="footeraSignOut" class="footera-account-link" hidden>Abmelden</button>'+
@@ -585,7 +640,7 @@
      '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
      '<h3 class="footera-profile-section-title">Mein Konto</h3>'+
      '<dl class="footera-profile-details"><div><dt>E-Mail-Adresse</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Anmeldung über</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Cloud-Spielstand</dt><dd id="footeraProfileCloud">–</dd></div></dl>'+
-     '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileBackup" type="button">Spielstand sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
+     '<div class="footera-profile-actions"><button id="footeraProfileSettings" type="button">Kontoeinstellungen</button><button id="footeraProfileChangeEmail" type="button">E-Mail ändern</button><button id="footeraProfileBackup" type="button">Spielstand sichern</button><button id="footeraProfileSignOut" type="button">Abmelden</button></div>'+
      '<div class="footera-profile-danger"><small>GEFAHRENBEREICH</small><h3>Konto endgültig löschen</h3><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
      '</section>';
    document.body.append(profilePage);
@@ -608,6 +663,10 @@
    document.body.append(deleteDialog);
    $("footeraProfileClose").addEventListener("click",hideProfile);
    $("footeraProfileSettings").addEventListener("click",()=>{hideProfile();show()});
+   $("footeraProfileChangeEmail").addEventListener("click",()=>{
+     hideProfile();show();
+     root.setTimeout(()=>$("footeraNewEmail")?.focus(),80);
+   });
    $("footeraProfileBackup").addEventListener("click",()=>run(async()=>{await saveCloud();await renderProfile()}));
    $("footeraProfileSignOut").addEventListener("click",()=>run(signOut));
    $("footeraProfileDelete").addEventListener("click",async()=>{
@@ -630,6 +689,10 @@
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
    $("footeraAccountForm").addEventListener("submit",e=>{e.preventDefault();run(()=>emailLogin($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value))});
    $("footeraSetPassword").addEventListener("click",()=>run(()=>password($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
+   $("footeraEmailChangeForm").addEventListener("submit",e=>{
+     e.preventDefault();
+     run(()=>requestAccountEmailChange($("footeraNewEmail").value));
+   });
    $("footeraAccountSave").addEventListener("click",()=>run(saveCloud));
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
