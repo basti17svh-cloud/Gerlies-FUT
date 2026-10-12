@@ -1667,7 +1667,13 @@ export function play(event,signal){
   modelStatus.textContent='MODELL PRÜFEN';
   const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,modelStatus,skip);layer.append(top);
   const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}`;hud.setAttribute('aria-live','polite');
-  const card=document.createElement('div');card.className='fh3d-player-card';if((event.type==='goal'||event.type==='ball_won')&&event.playerCardHTML)card.innerHTML=event.playerCardHTML;else if(event.type==='ball_won')card.innerHTML='<span class="fh3d-defense-fallback" aria-label="Defensivaktion">DEF</span>';
+  const card=document.createElement('div');card.className='fh3d-player-card';
+  if(event.playerCardHTML)card.innerHTML=event.playerCardHTML;
+  else{
+   const placeholder=document.createElement('div');placeholder.className='fh3d-identity-fallback';
+   placeholder.textContent=event.type==='big_chance_saved'?event.keeperName||'Torwart':event.type==='ball_won'?event.defenderName||'Verteidiger':event.playerName||'Spieler';
+   card.append(placeholder);
+  }
   const mark=document.createElement('span');mark.className='fh3d-mark';mark.textContent='F';mark.setAttribute('aria-hidden','true');
   const copy=document.createElement('div');copy.className='fh3d-copy';
   const headline=document.createElement('span');headline.className='fh3d-headline';
