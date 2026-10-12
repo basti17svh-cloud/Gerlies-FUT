@@ -626,7 +626,7 @@ test("stale transfer is not cleared when new account owns a different cloud save
 });
 test("verified account never automatically opens the account modal solely for transfer markers",()=>{
  assert.doesNotMatch(js,/\|\|pendingLocalTransfer\(\)\|\|shouldWelcome\(\)\)show\(\)/);
- assert.match(js,/else if\(pendingEmail\(\)\|\|pendingLocalTransfer\(\)\)show\(\)/);
+ assert.match(js,/else if\(pendingEmail\(\)\|\|pendingLocalTransfer\(\)\|\|root\.location\.hash\.includes\("access_token"\)\|\|root\.location\.search\.includes\("code="\)\)show\(\)/);
 });
 
 test("completed verified account remains in game on stale callback URLs, without forced account dialog",()=>{
