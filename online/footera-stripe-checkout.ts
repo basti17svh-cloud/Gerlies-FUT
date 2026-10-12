@@ -79,7 +79,10 @@ Deno.serve(async (req: Request) => {
       metadata: { footera_pack_id: packId, footera_points: packId, footera_user_id: user.id },
       success_url: baseUrl + "?result=success",
       cancel_url: baseUrl + "?result=cancelled",
-      payment_method_types: ["card"],
+      // Use Stripe's dashboard-controlled dynamic eligibility for supported wallet methods.
+      // Limit to immediate-settlement methods: no BNPL, bank debits or delayed delivery.
+      // Apple Pay and Google Pay use 'card'; PayPal and Link need account enablement.
+      allowed_payment_method_types: ["card", "link", "paypal"],
       submit_type: "pay",
     });
     if (!checkout.url) return reply({ error: "Stripe did not return checkout URL" }, 502);
