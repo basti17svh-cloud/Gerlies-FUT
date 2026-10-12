@@ -5,6 +5,9 @@ on:
     paths:
       - '.github/workflows/footera-live-pack-tests.yml'
       - 'tests/footera-live-pack-draw.test.cjs'
+      - 'tests/footera-live-pack-client.test.cjs'
+      - 'footera-paid-wallet.js'
+      - 'index.html'
       - 'online/footera-live-pack-odds.mjs'
       - 'online/footera-live-pack-purchase.ts'
       - 'online/footera-live-atomic-packs-v21.139.sql'
@@ -20,4 +23,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/footera-live-pack-draw.test.cjs tests/footera-live-payments.test.cjs tests/footera-live-delivery.test.cjs tests/footera-live-pass.test.cjs
+      - run: node --test tests/footera-live-pack-draw.test.cjs tests/footera-live-payments.test.cjs tests/footera-live-delivery.test.cjs tests/footera-live-pass.test.cjs tests/footera-live-pack-client.test.cjs
