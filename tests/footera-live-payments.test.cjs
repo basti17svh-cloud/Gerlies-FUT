@@ -73,7 +73,7 @@ test("database provides atomic server-owned entitlements and replay protection",
  assert.match(migration,/user_id = \(select auth\.uid\(\)\)/);
  assert.match(migration,/is_anonymous/);
  assert.match(migration,/insert into public\.footera_live_entitlements/);
- assert.match(migration,/delivery_status','pending'/);
+ assert.match(migration,/v_item\.item_type,'pending'/);
  assert.match(migration,/status','already_processed'/);
  assert.match(migration,/Insufficient verified live Footera Points/);
  assert.match(migration,/revoke all on function public\.footera_spend_verified_live_points/);
