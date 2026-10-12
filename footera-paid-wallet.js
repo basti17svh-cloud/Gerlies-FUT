@@ -3,14 +3,14 @@
 */
 (()=>{
  "use strict";
- let client=null,owner="",verified=false,balance=0,fetchInFlight=null,spending=false;
+ let client=null,owner="",verified=false,balance=0,fetchInFlight=null,spending=false;\n let liveOwner="",liveVerified=false,liveBalance=0,liveReceipts=[],liveFetchInFlight=null;
  let render=()=>{},grant=()=>{};
  const OWNER_KEY="footera-cloud-owner";
  const asPoints=v=>Number.isSafeInteger(Number(v))&&Number(v)>=0?Number(v):0;
  function paidBalance(){return verified?balance:0}
  function ready(){return verified&&!!owner}
  function emit(){try{render()}catch(e){console.warn("Footera wallet rendering",e)}}
- function invalidate(){owner="";verified=false;balance=0;emit()}
+ function invalidate(){owner="";verified=false;balance=0;invalidateLive();emit()}\n function invalidateLive(){liveOwner="";liveVerified=false;liveBalance=0;liveReceipts=[]}
  function ownedBy(u){return !!u&&localStorage.getItem(OWNER_KEY)===u}
  async function connect(){
   if(!client)client=await window.FooteraOnline.authClient();
@@ -46,6 +46,49 @@
   })();
   try{return await fetchInFlight}finally{fetchInFlight=null}
  }
+ // LIVE is read-only until trusted server delivery and all release gates are met.
+ // Never merge these balances or receipts with Sandbox or locally minted Points.
+ async function refreshLive(){
+  if(liveFetchInFlight)return liveFetchInFlight;
+  liveFetchInFlight=(async()=>{
+   try{
+    const c=await connect(),{data:{user},error:authError}=await c.auth.getUser();
+    if(authError||!user||user.is_anonymous||!user.email||!user.email_confirmed_at||!ownedBy(user.id)){
+     invalidateLive();return false;
+    }
+    const [{data:wallet,error:walletError},{data:receipts,error:receiptError}]=await Promise.all([
+     c.from("footera_live_points_wallets").select("balance_points").eq("user_id",user.id).maybeSingle(),
+     c.from("footera_live_entitlements")
+       .select("spend_id,item_key,item_type,delivery_status,created_at")
+       .eq("user_id",user.id).order("created_at",{ascending:false}).limit(250),
+    ]);
+    if(walletError||receiptError)throw walletError||receiptError;
+    const nextBalance=Number(wallet?.balance_points??0);
+    if(!Number.isSafeInteger(nextBalance))throw Error("LIVE balance out of safe range");
+    const {data:{user:currentUser}}=await c.auth.getUser();
+    if(!currentUser||currentUser.id!==user.id||!ownedBy(user.id)) {
+     invalidateLive();return false;
+    }
+    liveOwner=user.id;
+    liveBalance=nextBalance; // negative balances after chargebacks must remain visible
+    liveReceipts=Array.isArray(receipts)?receipts.map(x=>({
+      spend_id:x.spend_id,item_key:x.item_key,item_type:x.item_type,
+      delivery_status:x.delivery_status,created_at:x.created_at
+    })):[];
+    liveVerified=true;
+    return true;
+   }catch(e){
+    invalidateLive();
+    console.warn("Footera LIVE wallet could not be loaded",e);
+    return false;
+   }
+  })();
+  try{return await liveFetchInFlight}finally{liveFetchInFlight=null}
+ }
+ function liveState(){
+  return {verified:liveVerified&&ownedBy(liveOwner),balance:liveVerified&&ownedBy(liveOwner)?liveBalance:0,
+   receipts:liveVerified&&ownedBy(liveOwner)?liveReceipts.map(r=>({...r})):[]};
+ }
  async function spend(packId){
   if(spending)throw Error("Ein anderer Points-Kauf wird gerade abgeschlossen.");
   spending=true;
@@ -79,12 +122,12 @@
   render=typeof callbacks?.render==="function"?callbacks.render:()=>{};
   grant=typeof callbacks?.grant==="function"?callbacks.grant:()=>{};
   connect().then(c=>{
-   c.auth.onAuthStateChange(()=>setTimeout(()=>refresh().catch(console.warn),0));
+   c.auth.onAuthStateChange(()=>{invalidateLive();setTimeout(()=>refresh().catch(console.warn),0)});
    return refresh();
   }).catch(e=>console.warn("Footera Points startup",e));
   window.addEventListener("focus",()=>refresh().catch(console.warn));
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh().catch(console.warn)});
   setInterval(()=>{if(!document.hidden&&navigator.onLine!==false)refresh().catch(console.warn)},30000);
  }
- window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready});
+ window.FooteraPaidWallet=Object.freeze({start,refresh,spend,paidBalance,ready,refreshLive,liveState});
 })();
