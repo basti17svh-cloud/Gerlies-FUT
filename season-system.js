@@ -1,6 +1,22 @@
 "use strict";
 
 const PASS_PRICE={coins:50000,points:500};
+// Keep a server-delivered LIVE Season Pass recoverable after reinstall/login.
+// A browser-only claim never mints an authoritative paid receipt.
+function syncVerifiedLiveSeasonPass(){
+ if(typeof window==="undefined"||!window.FooteraPaidWallet?.liveState)return false;
+ const verified=window.FooteraPaidWallet.liveState();
+ if(!verified?.verified||!Array.isArray(verified.receipts))return false;
+ const season=seasonInfo();
+ if(!state.seasonPass||state.seasonPass.key!==season.key||state.seasonPass.premium)return false;
+ if(!verified.receipts.some(r=>r.item_key==="season_pass:"+season.key&&r.delivery_status==="delivered"))return false;
+ state.seasonPass.premium=true;
+ save();renderAll();
+ return true;
+}
+if(typeof window!=="undefined"&&typeof window.addEventListener==="function")
+ window.addEventListener("footera:live-wallet-updated",syncVerifiedLiveSeasonPass);
+
 const FREE_EXTRA=[
  {coins:2000},{pack:"gold"},{coinBoost:{games:5,amount:300}},{points:50},{pack:"82"},
  {coins:3000},{pack:"silver",qty:2},{coins:3500},{points:75},{pack:"goldplayers"},
