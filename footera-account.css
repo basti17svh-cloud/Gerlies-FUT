@@ -51,3 +51,24 @@
 .footera-profile-danger{margin-top:24px;padding:17px;border:1px solid #984f51;border-radius:13px;background:#2b1a1e}.footera-profile-danger h3{font-size:18px;margin:9px 0}.footera-profile-danger p{color:#ead6d6;font-size:12px;line-height:1.55}.footera-profile-danger button{background:#882c38;color:#fff;border:1px solid #cb5f68;border-radius:10px;padding:12px;font-size:13px;font-weight:750}
 .footera-delete-overlay{z-index:10002}.footera-delete-card{width:min(100%,440px);max-height:94dvh;overflow:auto;background:#231b1e;border:1px solid #ad5961;border-radius:16px;padding:19px;color:#fff}.footera-delete-card header{display:flex;justify-content:space-between;gap:8px;align-items:center}.footera-delete-card h2{font-size:21px;margin:0}.footera-delete-card header button{background:#47343a;border:0;color:#fff;border-radius:50%;width:36px;height:36px}.footera-delete-card p{font-size:13px;line-height:1.5;color:#e8cece}.footera-delete-label{display:block;margin:13px 0;font-size:13px;font-weight:700}.footera-delete-label input{width:100%;box-sizing:border-box;display:block;margin-top:6px;padding:12px;border:1px solid #94737a;border-radius:9px;background:#130f11;color:#fff;min-height:45px;font-size:14px}.footera-delete-check{display:flex;align-items:flex-start;gap:10px;margin:15px 0;color:#ffdbdb;font-size:12px;line-height:1.45}.footera-delete-check input{margin-top:2px;width:18px;height:18px;flex:none}.footera-delete-confirm,.footera-delete-cancel{width:100%;min-height:45px;margin-top:8px;border-radius:9px;font-weight:800}.footera-delete-confirm{background:#b53142;border:1px solid #ed7b8a;color:#fff}.footera-delete-confirm:disabled{opacity:.35}.footera-delete-cancel{background:#39433b;border:1px solid #738874;color:#fff}#footeraDeleteError{color:#ffb3b9;font-weight:700}
 @media(max-width:390px){.footera-profile-page{padding:14px 12px}.footera-profile-stats strong{font-size:16px}.footera-profile-hero h3{font-size:19px}}
+
+/* Footera V21.135: non-destructive, opt-in email-change controls. */
+.footera-email-change{
+  margin:14px 0;padding:14px 15px;border-radius:13px;
+  border:1px solid #6e885b;background:#18271e;color:#ecffcb;
+}
+.footera-email-change[hidden]{display:none!important}
+.footera-email-change strong{display:block;font-weight:850;font-size:15px;margin-bottom:8px}
+.footera-email-change p{font-size:12px;line-height:1.5;margin:8px 0;color:#d0ddbf;overflow-wrap:anywhere}
+.footera-email-change label{display:block;font-size:12px;color:#e1ecce;font-weight:700;margin:8px 0}
+.footera-email-change input{
+  display:block;width:100%;min-width:0;min-height:44px;margin-top:6px;
+  border-radius:9px;border:1px solid #8ca479;background:#102019;
+  color:#fff;font:inherit;font-size:15px;padding:10px 12px
+}
+.footera-email-change button{
+  width:100%;min-height:43px;border-radius:9px;background:#d9f58a;
+  color:#122015;border:1px solid #edffaa;font-weight:850;margin:6px 0;cursor:pointer
+}
+.footera-email-change button:disabled{opacity:.5;cursor:not-allowed}
+#footeraEmailChangeProgress{font-size:12px;color:#e5f3cd}
