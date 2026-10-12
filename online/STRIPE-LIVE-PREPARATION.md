@@ -1,3 +1,27 @@
+# Footera V21.140 – Serverbasierte Packziehung und Rücklieferung (12.10.2026)
+
+## Tatsächlich abgeschlossen
+- **Neuester Ausgangspunkt:** GitHub `main`, ohne Neustart der bestehenden Spielentwicklung. PWA-App, Manifest, Service Worker und Hauptanzeige nutzen Build `V21.140`.
+- **Katalog:** 18.524 FC27-Spieler des Snapshots vom 07.10.2026 plus 136 bereits im Spiel enthaltene Icons; zusammen **18.660 verifizierte Spieler/Icons**. Eine festgehaltene Quell-Git-Blob-ID und `fc27-20261007-530525ed` sichern die Katalogversion. Genau 13 Packdefinitionen wurden mit dieser Version verknüpft, weiterhin deaktiviert.
+- **DB und Draw:** Migrationen `footera-live-atomic-packs-v21.139.sql`, `footera-live-draw-pool-v21.140.sql` angewendet. `footera_purchase_verified_live_pack` atomisiert verifizierte Points-Abbuchung, Spielerplatz-Zuordnung, 5 Karten und dauerhaftes Liefer-Entitlement; vollständiger Rollback bei Fehlern. Doppelte Kauf-ID liefert nachweislich `already_processed`. Keine Webbrowser-Daten über Spieler-IDs, Geldbeträge oder Ziehung werden als Kaufentscheidung akzeptiert.
+- **Wahrscheinlichkeiten:** `footera-live-pack-odds.mjs` enthält exakt die bereits verwendete `pack-odds.js`-Ziehungslogik; statt Browser-`Math.random` verwendet der neue Endpunkt kryptografisch zufällige Werte. Das Modul, Ratinggarantien und SQL-Schutzregeln sind per Test geprüft.
+- **Kaufendpunkt:** `footera-live-pack-purchase` in Supabase Version 2 deployed, JWT-Verifikation an. Aktuell ausschließlich serverfähig für Silber-/Gold-Packs, weil Promo-Rare/Boost/Event-Varianten noch gesonderte exakte Serverimplementierung benötigen.
+- **Client:** `FooteraPaidWallet.spendLivePack` und `fetchLiveCards` verwenden bestätigte Accounts, persistente UUID, echte Serverbelege und die individuelle RLS-Kartenleseberechtigung. Im Spiel kann die vorhandene Packanimation die servergezogenen Karten darstellen; nach Geräte-/Browserneustart kann das kontogebundene Inventar wiederhergestellt werden. Echtgeldkarten sind derzeit untauschbar sowie gegen lokale SBC-Abgabe, Schnellverkauf und nicht abgesicherte Evolution gesperrt. Vollständige serverautoritativ kontrollierte Markt-/SBC-/Evo-Disposition ist noch nicht umgesetzt.
+- **Stripe Checkout:** `FooteraPaidWallet.checkoutLive` und der Points-Shop unterstützen alle acht Live-Pakete *hinter* der Client-Freigabe `FOOTERA_LIVE_STORE_ENABLED=true`. Der serverseitige Checkout bleibt separat durch `FOOTERA_LIVE_PAYMENTS_ENABLED` geschützt. Die bisherige Testumgebung bleibt standardmäßig aktiv.
+- **Live Pack UI:** Der Echtgeld-Packkaufbutton ist zusätzlich durch `FOOTERA_LIVE_PACK_STORE_ENABLED=true` verborgen. Serverseitig müssen alle vier `FOOTERA_LIVE_PAYMENTS_ENABLED`, `FOOTERA_LIVE_SPENDING_ENABLED`, `FOOTERA_LIVE_DELIVERY_ENABLED`, `FOOTERA_LIVE_PACKS_ENABLED` gleich `true` sein. Alle 13 LIVE Pack-Spezifikationen und der Echtgeld-Store sind heute **enabled=false**. Kein Echtgeldkauf ausgelöst, keine dauerhaften Testspieler oder Testguthaben verbucht.
+- **Tests:** echter SQL-Rollback-Test mit Serverkatalog (fünf Silber-Karten, einmaliger Debit, Replay, verweigerte doppelte Spielerauswahl), 18.660 Einträge verifiziert, Node/CI-Tests für gemeinsame Wahrscheinlichkeiten, Client-Wiederholungen, fremde Konten und nicht vollständig gelieferte Karten. Bestehende Accounts/Wappen/Reward-Tests geprüft; app-relevante Version/Manifest/SW-Fehler aus CI behoben.
+
+## Produktions-Start weiterhin BLOCKIERT
+1. **Noch immer kein Stripe-LIVE-Webhook registriert**, die unabhängigen LIVE-Secrets/Webhook-Signaturen sind nicht end-to-end getestet. Ohne verifizierten Checkout+Webhook können bezahlte Points nicht zuverlässig gutgeschrieben werden. Keine Secrets in GitHub speichern.
+2. Gold-/Silber-Backend wurde für Basis-/Icon-Karten aufgebaut. **Aktuelle Event-/TOTW-Karten, seltene Promo-Garantien, Chemie-Boosts und Evolutions** sind damit noch nicht vollständig serverseitig identisch zum Browser-Spiel. Weitere Packtypen und die öffentliche UI nicht einschalten.
+3. Vollständiger Echtgeld-Cart-Checkout-, Chargeback-, Partial-Refund- und Inhaltsrevokations-End-to-End-Test fehlt. Bisher sind SQL-Rollback- und simulierte Browser-/Serverantwort-Tests durchgeführt, keine echten Echtgeld-Transaktionen.
+4. Verbindliche Alters-, Verbraucher-, Lootbox-, Widerrufs-/Steuer- und Glücksspielanforderungen unabhängig von der im Chat berichteten Stripe-Zustimmung prüfen.
+5. Browser-Klubdaten sind weiterhin keine vollständig serverautoritativ abgesicherten Transfers/SBCs/Evo-Transaktionen. Für die öffentliche Ausgabe digitaler Echtgeld-Inhalte müssen diese Wege geprüft und gesichert werden.
+
+**Ergebnis:** API und Datenbank für verifizierte Gold-/Silber-Packziehungen sind vorbereitet und getestet, **Go-live bleibt deaktiviert**, bis die obigen Blocker erfüllt sind.
+
+---
+
 # Footera Stripe Live – Vorbereitung V21.136 (12.10.2026)
 
 ## V21.136: Nachverfolgte Umsetzung
