@@ -44,10 +44,27 @@
   window.FooteraPointsShop=Object.freeze({open:showOffers});
   open.addEventListener("click",()=>showOffers());
   close.addEventListener("click",()=>closeUiLayer("footeraPointsPurchaseModal","footera-points"));
-  grid.addEventListener("click",e=>{
+  grid.addEventListener("click",async e=>{
    const choice=e.target.closest("button[data-footera-points-pack]");
    if(!choice || !permitted.has(choice.dataset.footeraPointsPack))return;
-   // Sandbox-only flow. Do not credit client-generated state.points.
+   // LIVE only after explicit public release; server still verifies identity,
+   // EUR price, independent keys and payment flags.
+   if(window.FOOTERA_LIVE_STORE_ENABLED===true){
+    if(typeof window.FooteraPaidWallet?.checkoutLive!=="function"){
+     if(typeof toast==="function")toast("Echtgeld-Checkout nicht verfügbar.");
+     return;
+    }
+    choice.disabled=true;
+    try{
+     const url=await window.FooteraPaidWallet.checkoutLive(choice.dataset.footeraPointsPack);
+     location.assign(url);
+    }catch(error){
+     if(typeof toast==="function")toast(error?.message||"Stripe Checkout nicht erreichbar.");
+     else console.warn("Footera LIVE Checkout",error);
+    }finally{choice.disabled=false}
+    return;
+   }
+   // Default remains Sandbox. Never credit browser-generated local Points.
    location.assign("./online/stripe-sandbox-test.html?pack="+encodeURIComponent(choice.dataset.footeraPointsPack));
   });
  }
