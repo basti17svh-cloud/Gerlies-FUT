@@ -40,6 +40,27 @@ test('the 3D Matchday bridge resolves the defender for saves and the shooter for
  assert.ok(scene.includes('if(event.playerCardHTML)card.innerHTML=event.playerCardHTML'));
  assert.ok(css.includes('same real card, club crest, minute and grid'));
 });
+test('every action renders a sized Footera player card on mobile, including saves',()=>{
+ assert.match(css,/#match \.fh3d \.fh3d-hud \.fh3d-player-card\s*\{[^}]*display:block!important/s);
+ assert.match(css,/#match \.fh3d \.fh3d-hud \.fh3d-player-card \.card-shell\s*\{[^}]*aspect-ratio:7 \/ 10/s);
+ assert.match(css,/@media\(max-width:560px\)\s*\{[^}]*?\.fh3d-player-card\{width:78px\}/s);
+ assert.doesNotMatch(css,/\.fh3d-hud-big_chance_saved \.fh3d-player-card\s*[,\{]/);
+ assert.doesNotMatch(css,/\.fh3d-hud-shot_post \.fh3d-player-card\s*[,\{]/);
+ assert.match(scene,/hud\.append\(card,mark,copy,meta\)/);
+});
+test('saved highlight prefers the actual named goalkeeper over a stale lineup index',()=>{
+ const code=section(bridge,'function match3DPresentationMeta(', '// Resolve styles from copies');
+ const away=[
+  {index:0,name:'Wrong Player',slot:'ST',base:{name:'Wrong Player',ovr:81,position:'ST'}},
+  {index:1,name:'Alisson Ramses Becker',slot:'GK',base:{name:'Alisson Ramses Becker',ovr:90,position:'GK'}}
+ ];
+ const ctx={state:{profile:{clubName:'FC Gerlies'}},matchActorRows:s=>s==='away'?away:[],
+  cardHTML:base=>'<div class="card-shell">'+base.name+'</div>',esc:String,console};
+ vm.createContext(ctx);vm.runInContext(code,ctx);
+ const meta=ctx.match3DPresentationMeta({type:'big_chance_saved',team:'home',playerId:'striker',playerName:'Franck Ribery',keeperName:'Alisson Ramses Becker',goalkeeperIndex:0},{opponentProfile:{name:'Athletic Lacosta'}});
+ assert.ok(meta.playerCardHTML.includes('Alisson Ramses Becker'));
+ assert.ok(!meta.playerCardHTML.includes('Wrong Player'));
+});
 test('match attacker selection excludes keepers by tactical slot and actual player position',()=>{
  const chooser=section(html,'function chooseMatchAttacker(side){','function matchDefensiveSkill(row){');
  const pick=section(html,'function weightedMatchPick(rows){','function scorerSlotWeight(slot){');
