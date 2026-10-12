@@ -57,27 +57,32 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
 }
 function match3DPresentationMeta(event,current){
- // The 3D ball still travels in the attacking team's direction. Only the
- // HUD actor, card, club label and crest belong to the team that won the ball.
- const ballWon=event.type==='ball_won';
- const displaySide=ballWon?(event.team==='home'?'away':'home'):event.team;
- const uid=ballWon?event.defenderUid:event.playerId;
- const index=ballWon?event.defenderSourceIndex:event.playerId;
- const actorName=ballWon?event.defenderName:event.playerName;
+ // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.
+ const ballWon=event.type==='ball_won',saved=event.type==='big_chance_saved';
+ const displaySide=(ballWon||saved)?(event.team==='home'?'away':'home'):event.team;
+ const uid=saved?event.goalkeeperUid:ballWon?event.defenderUid:event.playerId;
+ const index=saved?event.goalkeeperIndex:ballWon?event.defenderSourceIndex:event.playerId;
+ const actorName=saved?event.keeperName:ballWon?event.defenderName:event.playerName;
  const rows=typeof matchActorRows==='function'?(matchActorRows(displaySide)||[]):[];
  const row=(displaySide==='home'
   ?(uid?rows.find(r=>String(r.uid)===String(uid)):null)
   :(Number.isInteger(Number(index))&&Number(index)>=0?rows.find(r=>r.index===Number(index)):null))
-  ||rows.find(r=>String(r.name||'').toLowerCase()===String(actorName||'').toLowerCase());
+  ||rows.find(r=>String(r.name||r.base?.fullName||'').toLowerCase()===String(actorName||'').toLowerCase())
+  ||(saved?rows.find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||''))):null);
  let playerCardHTML='';
- if((event.type==='goal'||ballWon)&&row?.base&&typeof cardHTML==='function'){
-  const homeItem=displaySide==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):null;
+ if(row?.base&&typeof cardHTML==='function'){
+  const homeItem=displaySide==='home'&&typeof state!=='undefined'?(current?.clubIndex?.get(row.uid)||state.club?.find(i=>String(i.uid)===String(row.uid))):null;
   const awayCandidate=displaySide==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
   const item=homeItem||awayCandidate||null;
   try{
    const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;
    playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||'';
-  }catch(_){}
+  }catch(e){console.warn('Matchday card fallback',e)}
+ }
+ if(!playerCardHTML){
+  const safe=typeof esc==='function'?esc:s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const label=String(row?.name||actorName||'Spieler'),rating=Math.max(0,Math.round(Number(row?.base?.ovr)||0));
+  playerCardHTML='<div class="fh3d-identity-fallback"><strong>'+safe(rating||'–')+'</strong><span>'+safe(row?.slot||row?.base?.position||'')+'</span><b>'+safe(label)+'</b></div>';
  }
  const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam');
  const awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
@@ -89,8 +94,6 @@ function match3DPresentationMeta(event,current){
  if(teamIdentity&&typeof crestHTML==='function'){
   try{teamCrestHTML=crestHTML(teamIdentity,true)||''}catch(_){}
  }
- // Generated AI opponents often do not own an editable crest. Never use the
- // user's badge as a substitute for an opponent's missing identity.
  if(!teamCrestHTML&&displaySide==='away'){
   const initials=teamName.trim().split(/\s+/).filter(Boolean).map(word=>word[0]).join('').slice(0,3).toUpperCase()||'G';
   const safe=typeof esc==='function'?esc:txt=>String(txt).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -211,7 +214,7 @@ function queueMatchGoal3D(event){
 function queueMatchChance3D(shot){
  if(!shot.highlightType)return false;
  return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
-  creatorName:shot.creator||'',creationType:'chance'});
+  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creationType:'chance'});
 }
 (function(){
  document.addEventListener('footera-highlight-impact',e=>{
