@@ -189,6 +189,32 @@
    root.location.reload();
    return true;
  }
+
+ // Registration may already have completed the same club upload while the
+ // transfer marker remains. Only clear that stale marker after verifying:
+ // authenticated confirmed target, matching local owner AND matching cloud club.
+ // No cloud or local save writes are performed here.
+ async function reconcileCompletedTransfer(u){
+   const pending=pendingLocalTransfer();
+   if(!pending||!isPermanent(u)||!u.email_confirmed_at||
+      String(u.email||"").toLowerCase()!==pending.targetEmail||
+      u.id===pending.previousLogin||
+      root.localStorage.getItem(OWNER)!==u.id)return false;
+   let local;
+   try{local=localData()}catch(_){return false}
+   if(local.profile?.saveId!==pending.saveId||local.profile?.clubName!==pending.clubName)return false;
+   const cloud=await cloudInfo();
+   if(!cloud?.save_data||cloud.save_data.profile?.saveId!==pending.saveId||
+      cloud.save_data.profile?.clubName!==pending.clubName||
+      !Array.isArray(cloud.save_data.club))return false;
+   // A newer local save is not mistaken for the last cloud revision; leave
+   // existing conflict handling to autoAttachAndBackup.
+   if(structurallyEqual(local,cloud.save_data))savePoint(u,local,cloud.revision);
+   root.localStorage.removeItem(TRANSFER);
+   if(pendingEmail()?.email===pending.targetEmail)clearPending();
+   autoStatus="";
+   return true;
+ }
  function structurallyEqual(a,b){
    const norm=v=>Array.isArray(v)?v.map(norm):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,norm(v[k])])):v;
    return JSON.stringify(norm(a))===JSON.stringify(norm(b));
@@ -326,6 +352,7 @@
    try{
      const c=await getClient(),u=await user();
      if(!isPermanent(u))return;
+     await reconcileCompletedTransfer(u);
      if(pendingLocalTransfer()){
        // Do not automatically claim a local club while its ownership transfer
        // is pending, even if signup itself has already been verified.
@@ -914,8 +941,14 @@
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
    $("footeraSignOut").addEventListener("click",()=>run(signOut));
-   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||callbackError||pendingEmail()||pendingLocalTransfer()||shouldWelcome())show();
-   getClient().then(()=>{
+   // A lingering transfer or verification marker must not force the account
+   // modal open on every normal launch of an already-verified player.
+   if(root.location.hash.includes("access_token")||root.location.search.includes("code=")||callbackError||shouldWelcome())show();
+   getClient().then(async()=>{
+     const signedIn=await user();
+     if(isPermanent(signedIn)){
+       await reconcileCompletedTransfer(signedIn).catch(err=>console.warn("Footera Konto-Abgleich:",err));
+     }else if(pendingEmail()||pendingLocalTransfer())show();
      render().catch(console.warn);
      if(callbackError)msg(safeMessage({code:callbackError,message:"Der Anmeldelink ist ungültig oder abgelaufen. Bitte einen neuen Link anfordern."}),true);
      autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
@@ -924,6 +957,6 @@
      },20000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,signOut};
+ root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
