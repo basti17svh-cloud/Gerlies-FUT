@@ -41,9 +41,9 @@ async function roster(admin: ReturnType<typeof createClient>, version: string) {
     const icons: {id:string;ovr:number}[] = [];
     let offset = 0;
     while (offset < 30000) {
-      const { data, error } = await admin.from("footera_live_player_catalog")
-        .select("player_id,base_rating,card_snapshot")
-        .eq("catalog_version",version).eq("approved_for_paid",true)
+      const { data, error } = await admin.from("footera_live_draw_pool")
+        .select("player_id,base_rating,is_icon")
+        .eq("catalog_version",version)
         .order("player_id",{ascending:true}).range(offset,offset+999);
       if (error) throw Error("Approved player catalogue inaccessible");
       const batch = data || [];
@@ -51,7 +51,7 @@ async function roster(admin: ReturnType<typeof createClient>, version: string) {
         const id = String(row.player_id||""), ovr = Number(row.base_rating);
         if (!id || !Number.isInteger(ovr) || ovr < 40 || ovr > 99)
           throw Error("Invalid approved roster player");
-        (row.card_snapshot?.isIcon === true ? icons : players).push({id,ovr});
+        (row.is_icon === true ? icons : players).push({id,ovr});
       }
       offset += batch.length;
       if (batch.length < 1000) break;
