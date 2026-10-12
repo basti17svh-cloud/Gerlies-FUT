@@ -119,3 +119,27 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
  .fh3d-defense-fallback{width:72px;height:96px;font-size:15px}
 }
 @media(max-height:720px){.fh3d-hud-ball_won{min-height:112px}.fh3d-hud-ball_won .fh3d-defense-fallback{width:66px;height:88px}}
+
+/* V21.128: same real card, club crest, minute and grid for all 3D highlight outcomes. */
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won){
+ min-height:116px;grid-template-columns:98px minmax(0,1fr) 60px;column-gap:12px;padding:8px 9px 8px 7px
+}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-player-card{display:block;align-self:center}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-mark{display:none}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-copy{min-width:0;align-self:center}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-headline{font:950 clamp(18px,4.6vw,27px)/1.04 system-ui;letter-spacing:0}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-name{margin-top:7px;font:950 clamp(14px,4vw,20px)/1.08 system-ui;letter-spacing:.1px;overflow-wrap:break-word}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-event{margin-top:7px;font:750 clamp(10px,2.65vw,12px)/1.25 system-ui;letter-spacing:.1px;overflow-wrap:break-word;color:#c9d8d1}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-goal-meta{align-self:stretch;flex-direction:column;justify-content:space-between;gap:8px;padding:7px 0 5px}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-minute{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:27px;padding:5px 8px;border:1px solid #76ff7740;border-radius:8px;background:#172719d9;color:#d5ff4b;font:950 14px/1 system-ui}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest:not(:empty){display:grid;place-items:center;width:48px;height:48px;margin-top:auto;opacity:.78}
+.fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest .club-crest{width:48px!important;height:48px!important;min-width:48px!important}
+.fh3d-identity-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:115px;padding:5px;border:2px solid #63dca4;border-radius:10px;background:linear-gradient(155deg,#205144,#0a1a1c);color:#eaffea;text-align:center;word-break:break-word;font:850 10px/1.2 system-ui}
+.fh3d-identity-fallback strong{font-size:25px}.fh3d-identity-fallback b{font-size:10px}
+@media(max-width:560px){
+ .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won){grid-template-columns:82px minmax(0,1fr) 52px;column-gap:7px;min-height:108px;padding:7px 7px 7px 5px}
+ .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-goal-meta{gap:6px;padding:6px 0 4px}
+ .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-minute{min-width:36px;min-height:25px;padding:4px 7px;font-size:13px}
+ .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest:not(:empty){width:40px;height:40px}
+ .fh3d-hud:is(.fh3d-hud-goal,.fh3d-hud-big_chance_saved,.fh3d-hud-big_chance_missed,.fh3d-hud-shot_post,.fh3d-hud-ball_won) .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}
+}
