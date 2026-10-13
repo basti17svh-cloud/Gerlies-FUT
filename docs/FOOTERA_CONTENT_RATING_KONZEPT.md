@@ -1,6 +1,6 @@
 # Footera – Content- & Rating-Konzept
 
-Stand: 25.09.2026
+Stand: 25.09.2026 · TOTW-Vereinslimit aktualisiert am 13.10.2026: maximal ein Spieler pro Verein.
 
 ## 1. Grundidee
 
@@ -235,7 +235,7 @@ ECHTE SPIELDATEN
 → Footera Performance Engine
 → Positions-Ranking
 → Regelprüfung
-→ max. 2 Spieler pro Verein
+→ max. 1 Spieler pro Verein
 → Weekly-Stars-Kader
 → Footera Rating Engine
 → individuelle Stat-Boosts
@@ -409,7 +409,7 @@ Pro Spieler:
 - Karte entfernen
 
 Automatische Prüfungen:
-- max. 2 Spieler pro Verein
+- max. 1 Spieler pro Verein
 - Power Curve
 - Dubletten
 - zu häufige Spezialkarten
@@ -452,7 +452,7 @@ Spielerdaten
 Reale Wochenleistung
 → Performance Score
 → Positions-Ranking
-→ max. 2 Spieler pro Verein
+→ max. 1 Spieler pro Verein
 → individuelle Boosts
 → Weekly-Stars-Karte
 → Admin-Freigabe

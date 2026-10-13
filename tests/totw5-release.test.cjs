@@ -17,12 +17,14 @@ function setup(at='2026-10-14T19:00:00+02:00'){
  ].join('\n'),context);
  context.team=vm.runInContext('TOTW_WEEK_5',context);return context;
 }
-test('TOTW 5 draft has eighteen unique men, exact 2/5/6/5 positions and at most two per club',()=>{
+test('TOTW 5 draft has eighteen unique men and clubs, exact 2/5/6/5 positions and Doku instead of Cherki',()=>{
  const c=setup();assert.equal(c.team.sourceStatus,'pending-approval');assert.equal(c.team.releaseDate,'2026-10-14');
  assert.equal(c.totwRosterErrors(c.team).length,0);
  assert.equal(new Set(c.team.players.map(p=>p.names[0])).size,18);
- for(const name of ['James Bree','Petar Sučić','Rayan Cherki'])assert.ok(c.team.players.some(p=>p.names[0]===name));
- for(const name of ['Jeff Chabot','Antonio Nusa','Jérémy Doku'])assert.ok(!c.team.players.some(p=>p.names[0]===name));
+ assert.equal(new Set(c.team.players.map(p=>p.fallback.team)).size,18);
+ for(const name of ['James Bree','Petar Sučić','Jérémy Doku','Pascal Groß'])assert.ok(c.team.players.some(p=>p.names[0]===name));
+ for(const name of ['Jeff Chabot','Antonio Nusa','Rayan Cherki','João Pedro'])assert.ok(!c.team.players.some(p=>p.names[0]===name));
+ const doku=c.team.players.find(p=>p.names[0]==='Jérémy Doku');assert.equal(doku.position,'LW');assert.equal(doku.fallback.team,'Manchester City');
 });
 test('pending, rejected and missing approval cannot enter packs, archive or market at the release time',()=>{
  for(const status of ['pending-approval','rejected',undefined]){
@@ -50,7 +52,8 @@ test('explicit approval opens the real pack and archive gate at 19:00 Berlin and
 });
 test('approval cannot bypass club limits, missing players, positions, gender, duplicates or invalid attributes',()=>{
  const mutations=[
-  t=>{t.players[3].fallback.team=t.players[0].fallback.team;t.players[2].fallback.team=t.players[0].fallback.team},
+  t=>{t.players[1].fallback.team=t.players[0].fallback.team},
+  t=>{t.players[1].fallback.team='  WÉRDER   BREMEN  '},
   t=>t.players.pop(),t=>t.players[7].position='ST',t=>t.players[0].fallback.gender='female',
   t=>t.players[1].names=t.players[0].names,t=>t.players[0].stats[0]=100,
   t=>t.players[0].fallback.team='',t=>t.players[0].ovr=NaN
