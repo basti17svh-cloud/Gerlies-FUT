@@ -172,6 +172,11 @@ if(require.main===module)(async()=>{
     const attacker=matchActorRows('home').find(x=>x.index===9);
     const action=recordMatchDefense('home','interception',0,2);
     const queued=queueMatchDefensive3D(action,'home',attacker);
+    // Compare at the real queue completion boundary. A slow CI screenshot can
+    // outlast the clip; ordinary simTick events after resumption are not 3D mutations.
+    const snapshot=()=>JSON.stringify({home:match.home,away:match.away,shots:match.shotEvents,goals:match.goalEvents,defense:match.defensiveEvents});
+    window.footeraDefenseBefore=snapshot();window.footeraDefenseAfter=null;
+    if(queued){const idle=match3DQueue.onIdle;match3DQueue.onIdle=function(){idle.call(this);stopMatchTimer();window.footeraDefenseAfter=snapshot()};}
     return{queued,count:match.defensiveEvents.length,defender:action?.name};
    });
    check(width+': opponent interception uses a real event',defense.queued&&defense.count===1&&defense.defender==='K. Laimer');
@@ -194,9 +199,10 @@ if(require.main===module)(async()=>{
    check(width+': defender card, name and rendered opponent crest',hud.headline==='ABGEFANGEN'&&hud.name==='K. Laimer'&&hud.card&&hud.crestVisible);
    check(width+': one-line name and no clipped columns',hud.contained&&hud.noOverlap&&hud.copyFits&&hud.lines===1&&hud.headerLines===1&&hud.minuteAboveCrest&&hud.metaWidth<=54);
    await page.screenshot({path:path.join(output,'interception-'+width+'.png')});
-   await page.locator('.fh3d-skip').click();
+   await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
    await page.waitForSelector('.fh3d',{state:'detached'});
-   check(width+': no fabricated goal or shot',await page.evaluate(()=>match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
+   await page.waitForFunction(()=>window.footeraDefenseAfter!==null);
+   check(width+': no fabricated goal or shot',await page.evaluate(()=>window.footeraDefenseBefore===window.footeraDefenseAfter&&match.home===0&&match.away===0&&match.shotEvents.length===0&&match.defensiveEvents.length===1));
    await page.evaluate(()=>stopMatchTimer());
   }
   // Generated opponents without custom badges get their own initials.
@@ -212,7 +218,9 @@ if(require.main===module)(async()=>{
   await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
   check('generated opponent badge is distinct from FC Gerlies',await page.locator('.fh3d-team-crest').evaluate(c=>
    c.querySelector('.fh3d-opponent-crest')?.textContent==='SMC'&&!c.querySelector('.club-crest')));
-  await page.locator('.fh3d-skip').click();
+  // The badge assertion can finish as the clip ends naturally. Only skip a
+  // still-present clip, rather than waiting for a later match event's button.
+  await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
   await page.waitForSelector('.fh3d',{state:'detached'});
   await page.evaluate(()=>stopMatchTimer());
   check('no uncaught JavaScript errors during mobile matches',errors.length===0);

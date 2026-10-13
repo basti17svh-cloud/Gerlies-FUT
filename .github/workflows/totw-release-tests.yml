@@ -5,17 +5,45 @@ on:
     paths:
       - '.github/workflows/totw-release-tests.yml'
       - 'tests/totw5-release.test.cjs'
+      - 'tests/totw5-preview.browser.cjs'
+      - 'tests/live-content.test.cjs'
       - 'index.html'
+      - 'manifest.webmanifest'
+      - 'service-worker.js'
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/totw-release-tests.yml'
+      - 'tests/totw5-release.test.cjs'
+      - 'tests/totw5-preview.browser.cjs'
+      - 'tests/live-content.test.cjs'
+      - 'index.html'
+      - 'manifest.webmanifest'
+      - 'service-worker.js'
 permissions:
   contents: read
 jobs:
   totw-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Validate TOTW 5 roster and scheduled availability
-        run: node --test tests/totw5-release.test.cjs
+        run: node --test tests/totw5-release.test.cjs tests/live-content.test.cjs
+      - name: Install isolated mobile browser
+        run: |
+          npm install --prefix /tmp/footera-totw-browser playwright@1.51.1
+          /tmp/footera-totw-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Read-only TOTW preview and real online/offline PWA startup
+        env:
+          NODE_PATH: /tmp/footera-totw-browser/node_modules
+        run: node tests/totw5-preview.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-totw5-preview
+          path: test-artifacts/totw5-preview-*.png
+          retention-days: 7
