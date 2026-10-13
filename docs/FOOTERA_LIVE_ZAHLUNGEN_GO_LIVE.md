@@ -16,6 +16,7 @@ Stand: 12.10.2026 · GitHub: `basti17svh-cloud/Gerlies-FUT` · Branch: `main`
 ### 1. Rechtliche und vertragliche Eignung
 
 - [ ] Ausdrückliche, nachvollziehbare **schriftliche Stripe-Freigabe** für **Footera Points**, ihren Erwerb mit Euro, zufallsbasierte Spieler-Packs, Handels-/Transfermarktmechanik und alle relevanten Zahlungsarten. Kontoverifizierung oder aktivierte Kartenzahlungen allein genügen nicht.
+  - **Stand 13.10.2026:** Der Projektinhaber bestätigt, eine schriftliche Genehmigung erhalten zu haben. Das Dokument selbst liegt hier noch nicht vor; vor öffentlicher Freischaltung Gegenstand/Umfang, Bedingungen und etwaige Ausschlüsse prüfen und dokumentieren.
 - [ ] Klärung des Geschäftsmodells in Deutschland und Zielmärkten, insbesondere Lootbox-/Verbraucherschutz, Minderjährigenschutz und digitales Guthaben durch qualifizierte rechtliche Prüfung.
 - [ ] Rechte/Nutzungsfreigaben für betroffene Spielerbilder, Namen, Logos und sonstige kommerzielle Spielinhalte geklärt.
 - [ ] Vollständige Nutzertexte und Pflichtinformationen: Impressum, Datenschutzerklärung, Bedingungen für digitale Inhalte/virtuelle Punkte, Preise, Widerrufserklärungen, Support/Kontakt, transparente Pack-Wahrscheinlichkeiten, Verfügbarkeit und Zahlungshinweise.
