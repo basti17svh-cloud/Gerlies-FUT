@@ -19,8 +19,9 @@ const root=path.join(__dirname,'..');
    document.querySelectorAll('.event-player .face img').forEach(img=>{img.loading='eager'});
   },csv);
   await page.waitForFunction(()=>[...document.querySelectorAll('.event-player .face img')].length===18&&[...document.querySelectorAll('.event-player .face img')].every(img=>img.complete&&img.naturalWidth>=100&&img.currentSrc.includes('/assets/footera/totw/5/')),{},{timeout:45000});
-  const source=await page.evaluate(()=>({styles:[...document.querySelectorAll('style,link[rel="stylesheet"]')].map(el=>el.outerHTML).join('\n'),cards:[...document.querySelectorAll('.event-player .card-shell')].map(el=>el.outerHTML),names:TOTW_WEEK_5.players.map(p=>p.names[0]),ids:TOTW_WEEK_5.players.map(p=>p.eaId)}));
+  const source=await page.evaluate(()=>({styles:[...document.querySelectorAll('style,link[rel="stylesheet"]')].map(el=>el.outerHTML).join('\n'),cards:[...document.querySelectorAll('.event-player .card-shell')].map((el,index)=>({html:el.outerHTML,rating:TOTW_WEEK_5.players[index].ovr})).sort((a,b)=>b.rating-a.rating),names:TOTW_WEEK_5.players.map(p=>p.names[0]),ids:TOTW_WEEK_5.players.map(p=>p.eaId)}));
   assert.equal(source.cards.length,18);assert.equal(new Set(source.ids).size,18);
+  assert.ok(source.cards.every((card,index)=>!index||source.cards[index-1].rating>=card.rating),'poster ratings are descending');
   const poster=await context.newPage();
   await poster.setContent(`<!doctype html><html><head><meta charset="utf-8"><base href="${base}/">${source.styles}<style>
    html,body{margin:0!important;padding:0!important;min-width:1080px!important;width:1080px!important;height:1350px!important;overflow:hidden!important;background:#080b09!important;color:#f9eabe;font-family:Arial,sans-serif}
@@ -34,10 +35,11 @@ const root=path.join(__dirname,'..');
    .card-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:24px 8px;margin-top:57px;align-items:start}
    .poster-card{min-width:0;filter:drop-shadow(0 5px 9px #000b)}.poster-card .card-shell{width:100%!important;max-width:none!important;margin:0!important}.poster-card img{loading:eager}
    .poster-bottom{position:absolute;left:55px;right:55px;bottom:57px;text-align:center}.line{height:1px;background:linear-gradient(90deg,transparent,#b89553aa,transparent);margin-bottom:24px}
-   .tagline{font-size:28px;font-weight:900;letter-spacing:6px;color:#efe1b8}.website{margin-top:14px;font-size:14px;letter-spacing:1.5px;color:#b1b09c}.availability{margin-top:17px;font-size:20px;font-weight:700;color:#d9c38a}
-  </style></head><body><main class="poster"><div class="brandline"><img src="assets/footera/emblem.png" alt="">FOOTERA</div><div class="kicker">TEAM OF THE WEEK</div><h1>TOTW 5</h1><div class="launch">MITTWOCH · 19:00 UHR <span>14. OKTOBER 2026</span></div><div class="card-grid">${source.cards.map(card=>'<div class="poster-card">'+card+'</div>').join('')}</div><footer class="poster-bottom"><div class="line"></div><div class="tagline">BUILD YOUR ERA.</div><div class="availability">18 SPIELER. DEIN NÄCHSTES TEAM.</div><div class="website">basti17svh-cloud.github.io/Gerlies-FUT</div></footer></main></body></html>`,{waitUntil:'networkidle'});
+   .tagline{font-size:28px;font-weight:900;letter-spacing:6px;color:#efe1b8}.availability{margin-top:17px;font-size:20px;font-weight:700;color:#d9c38a}
+  </style></head><body><main class="poster"><div class="brandline"><img src="assets/footera/emblem.png" alt="">FOOTERA</div><div class="kicker">TEAM OF THE WEEK</div><h1>TOTW 5</h1><div class="launch">MITTWOCH · 19:00 UHR <span>14. OKTOBER 2026</span></div><div class="card-grid">${source.cards.map(card=>'<div class="poster-card">'+card.html+'</div>').join('')}</div><footer class="poster-bottom"><div class="line"></div><div class="tagline">BUILD YOUR ERA.</div><div class="availability">18 SPIELER. DEIN NÄCHSTES TEAM.</div></footer></main></body></html>`,{waitUntil:'networkidle'});
   await poster.evaluate(()=>document.querySelectorAll('.face img').forEach(img=>{img.loading='eager'}));
   await poster.waitForFunction(()=>[...document.querySelectorAll('.face img')].length===18&&[...document.querySelectorAll('.face img')].every(img=>img.complete&&img.naturalWidth>=100),{},{timeout:30000});
+  assert.ok(!/basti17|github/i.test(await poster.locator('body').innerText()),'no personal account name or hosting address on the poster');
   const geometry=await poster.evaluate(()=>{const cards=[...document.querySelectorAll('.poster-card')].map(el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right,bottom:r.bottom}});return{cards,footer:document.querySelector('.poster-bottom').getBoundingClientRect().top}});
   assert.ok(geometry.cards.every(card=>card.left>=35&&card.right<=1045&&card.bottom<geometry.footer-12),JSON.stringify(geometry));
   fs.mkdirSync(path.join(root,'assets/footera/social'),{recursive:true});
