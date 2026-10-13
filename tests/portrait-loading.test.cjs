@@ -36,6 +36,22 @@ test('correct custom/local images and verified Icon identities retain priority',
  assert.ok(arr.includes('https://cdn.futwiz.com/assets/img/fc27/faces/488.png'));assert.ok(!arr.some(u=>u.includes('midicon')||u.includes('/27/.png')));
 });
 
+test('review and fallback IDs cannot select unrelated players from their embedded digits',()=>{
+ const{ctx}=setup();
+ for(const id of ['totw-review-5-1','totw-5-preview-1','fallback-107'])assert.deepEqual(Array.from(ctx.portraitCandidates({id})),[]);
+ const candidates=Array.from(ctx.portraitCandidates({id:'totw-review-5-1',futwizId:'211515',face:'./assets/footera/totw/5/211515.png'}));
+ assert.equal(candidates[0],'./assets/footera/totw/5/211515.png');
+ assert.ok(candidates.some(url=>url.endsWith('/211515.png')));
+ assert.ok(!candidates.some(url=>url.endsWith('/51.png')||url.includes('/000/051/')));
+});
+
+test('a TOTW item uses its verified local portrait even when its ordinary base or cache is stale',()=>{
+ const{ctx}=setup();ctx.TOTW_WEEKS=[{id:5,name:'Team of the Week 5',players:[{eaId:'211515',fallback:{face:'./assets/footera/totw/5/211515.png'}}]}];
+ const p={id:'211515',face:'stale.png'},item={variant:'special',eventType:'totw',eventName:'Team of the Week 5',eventReleaseId:'totw-5'};
+ assert.match(ctx.portraitHTML(p,false,item),/src="\.\/assets\/footera\/totw\/5\/211515.png"/);
+ assert.equal(ctx.eventDynamicFace(p,{...item,eventName:'Team of the Week 4',eventReleaseId:'totw-4'}),'');
+});
+
 test('a persisted network miss cannot suppress a portrait for a whole day',()=>{
  const old=Date.parse('2026-10-02T16:50:00Z'),url='https://cdn.futwiz.com/assets/img/fc27/faces/237383.png';
  const{ctx}=setup({gfutImageFailureCacheV9:JSON.stringify({[url]:old})});assert.equal(ctx.imageFailedRecently(url),false);

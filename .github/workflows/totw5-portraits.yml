@@ -1,0 +1,53 @@
+name: Footera TOTW 5 portraits and social poster
+on:
+  push:
+    branches: [codex/totw5-portraits-v21145]
+    paths:
+      - '.github/workflows/totw5-portraits.yml'
+      - 'scripts/import-totw5-portraits.py'
+      - 'scripts/totw5-portraits.json'
+      - 'scripts/render-totw5-poster.cjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  portraits:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import eighteen verified transparent portraits
+        run: |
+          python -m pip install Pillow
+          python scripts/import-totw5-portraits.py
+      - name: Verify portrait identities, gates and unchanged card renderer
+        run: node --test tests/totw5-release.test.cjs tests/live-content.test.cjs tests/portrait-loading.test.cjs tests/card-layout.test.cjs
+      - name: Install isolated browser
+        run: |
+          npm install --prefix /tmp/footera-totw-browser playwright@1.51.1
+          /tmp/footera-totw-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify real mobile and offline portrait loading
+        env:
+          NODE_PATH: /tmp/footera-totw-browser/node_modules
+        run: node tests/totw5-preview.browser.cjs
+      - name: Render poster with exact production cards
+        env:
+          NODE_PATH: /tmp/footera-totw-browser/node_modules
+        run: node scripts/render-totw5-poster.cjs
+      - name: Commit verified images and poster on the preparation branch
+        run: |
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add assets/footera/totw/5 assets/footera/social/totw5-2026-10-14.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets(totw): verified team 5 portraits and original-card social poster [skip ci]'
+          git push origin HEAD:codex/totw5-portraits-v21145
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-totw5-portraits
+          path: test-artifacts/totw5-preview-*.png
+          retention-days: 7
