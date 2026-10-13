@@ -54,8 +54,17 @@ const server=http.createServer((req,res)=>{
    return runtime===original&&runtime.ovr===78&&['pac','sho','pas','dri','def','phy'].every(k=>runtime[k]===70)&&review.item.pid.startsWith('totw-review-5-')&&review.player.ovr===info.ovr&&['pac','sho','pas','dri','def','phy'].every((k,i)=>review.player[k]===info.stats[i]);
   })),true,'preview uses exact TOTW stats and never overwrites actual base players');
   const before=await page.evaluate(()=>{save();flushSave();return{coins:state.coins,points:state.points,club:JSON.stringify(state.club),packs:JSON.stringify(state.packs),clubName:state.profile.clubName}});
+  async function checkPortraits(){
+   for(let index=0;index<18;index++){
+    await page.locator('.event-player').nth(index).scrollIntoViewIfNeeded();
+    await page.waitForFunction(index=>{const image=document.querySelectorAll('.event-player .face img')[index];return image?.complete&&image.naturalWidth>=100&&image.currentSrc.includes('/assets/footera/totw/5/'+TOTW_WEEK_5.players[index].eaId+'.png')},index,{timeout:10000});
+   }
+   console.log('PASS eighteen correct locally loaded TOTW portraits');
+  }
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
+   await checkPortraits();
+   await page.evaluate(()=>scrollTo(0,0));
    const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,cards:[...document.querySelectorAll('.event-player')].map(el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right}})}));
    assert.ok(layout.scroll<=width+2,JSON.stringify(layout));assert.ok(layout.cards.every(r=>r.left>=0&&r.right<=width+1));
    await page.screenshot({path:path.join(output,'totw5-preview-'+width+'.png'),fullPage:true});
@@ -65,13 +74,14 @@ const server=http.createServer((req,res)=>{
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('footera-v21-143-qa-old'));
   await page.evaluate(()=>navigator.serviceWorker.ready);
   await context.setOffline(true);
-  await page.goto(new URL(manifest.start_url,base+'/').href,{waitUntil:'load'});
+  await page.goto(new URL(manifest.start_url+'&totwPreview=5',base+'/').href,{waitUntil:'load'});
   await page.locator('#bootIntroSkip').click();
   await page.waitForFunction(()=>typeof gerliesStartupReady!=='undefined'&&gerliesStartupReady&&document.getElementById('dbGate')?.style.display==='none',{},{timeout:30000});
   assert.equal(await page.title(),'Footera '+build);
   const after=await page.evaluate(()=>({coins:state.coins,points:state.points,club:JSON.stringify(state.club),packs:JSON.stringify(state.packs),clubName:state.profile.clubName,route:DATA_ROUTE,worker:!!navigator.serviceWorker.controller}));
   for(const key of ['coins','points','club','packs','clubName'])assert.equal(after[key],before[key],key+' survives offline PWA restart');
   assert.ok(after.worker);assert.ok(after.route.includes('Cache'));
+  await checkPortraits();
   assert.deepEqual(errors,[]);
   console.log('PASS real online/offline '+build+' PWA startup, old cache eviction and save preservation');
  }finally{await browser.close();server.close()}

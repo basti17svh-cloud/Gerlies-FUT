@@ -1,8 +1,8 @@
 # Footera – TOTW 5 freigegeben
 
-Stand: V21.144, 13.10.2026. **Von Basti am 13.10.2026 für Mittwoch, 14.10.2026, 19:00 Uhr freigegeben.**
+Stand: V21.145, 13.10.2026. **Von Basti am 13.10.2026 für Mittwoch, 14.10.2026, 19:00 Uhr freigegeben.**
 
-[Karten im Spiel ansehen](https://basti17svh-cloud.github.io/Gerlies-FUT/index.html?totwPreview=5). Die Spielvorschau funktioniert nach Veröffentlichung von V21.144; bis dahin ist der vollständige Entwurf unten prüfbar.
+[Karten im Spiel ansehen](https://basti17svh-cloud.github.io/Gerlies-FUT/index.html?totwPreview=5). Die Spielvorschau funktioniert nach Veröffentlichung von V21.145; bis dahin ist der vollständige Entwurf unten prüfbar.
 
 Automatischer Start: **14.10.2026, 19:00 Europe/Berlin**. Ende: **21.10.2026, 18:59** (bis zum Wechsel um 19:00). Bis zum Start bleibt TOTW 5 aus Packs, Markt und Archiv ausgeschlossen.
 
@@ -66,3 +66,7 @@ Torhüter: HEC / FAN / ABS / REF / SPE / POS. Feldspieler: TEM / SCH / PAS / DRI
 - Der Status ist `admin-approved`. Die freigegebene, regelkonforme Mannschaft wird zum Releasezeitpunkt aktiviert.
 
 Freigabe erteilt: „Totw5 ist freigegeben zur Veröffentlichung am Mittwoch um 19 Uhr“.
+
+## Portrait-Korrektur V21.145
+
+Alle 18 Portraits sind über die echte Spieler-ID dem FC27-Datensatz zugeordnet und werden lokal mit der App gespeichert. Vorschau-IDs werden nicht mehr in numerische Bild-IDs umgewandelt. TOTW-Karten verwenden das geprüfte lokale Portrait auch dann, wenn die Basisdaten oder der Bildcache noch eine ältere URL enthalten. Kader, Ratings, Attribute, Freigabe und Starttermin bleiben unverändert.
