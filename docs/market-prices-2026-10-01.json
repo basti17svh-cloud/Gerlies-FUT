@@ -1,6 +1,6 @@
 {
   "title": "Footera FC27 market calibration snapshot",
-  "captured_at": "2026-10-01",
+  "captured_at": "2026-10-13",
   "platform_basis": "Console-market references where available; prices are guide anchors, not live API values.",
   "notes": [
     "FUTBIN FC27 public player index is available but its crawl currently exposes 0/blank market prices for many FC27 cards.",
@@ -43,7 +43,7 @@
     "231747": {
       "name": "Kylian Mbappé",
       "rating": 91,
-      "price": 3740000
+      "price": 2850000
     },
     "231866": {
       "name": "Rodri",
@@ -68,7 +68,7 @@
     "238794": {
       "name": "Vini Jr.",
       "rating": 89,
-      "price": 1060000
+      "price": 675000
     },
     "239085": {
       "name": "Erling Haaland",
@@ -140,12 +140,12 @@
     "277643|91": {
       "name": "Lamine Yamal",
       "rating": 91,
-      "price": 1641000
+      "price": 1350000
     },
     "247827|91": {
       "name": "Michael Olise",
       "rating": 91,
-      "price": 1575000
+      "price": 975000
     },
     "220901|89": {
       "name": "David Raya",
