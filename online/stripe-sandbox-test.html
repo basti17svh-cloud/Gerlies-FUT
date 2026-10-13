@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-footera-payments="paused">
 <head>
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -67,6 +67,11 @@
 "use strict";
 (()=>{
  const $=id=>document.getElementById(id);
+ if(document.documentElement.dataset.footeraPayments!=="enabled"){
+  document.querySelectorAll("main > section.box").forEach(section=>{section.hidden=true});
+  document.querySelector("main > p.sub").textContent="Footera Points können derzeit nicht erworben werden. Der Test-Checkout ist vorübergehend geschlossen.";
+  return;
+ }
  const config=window.FOOTERA_ONLINE_CONFIG||{};
  const qs=new URLSearchParams(location.search);
  const selectedPack=qs.get("pack");
