@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.141</title>
+<title>Footera V21.142</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1597,7 +1597,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.141</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.142</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2602,7 +2602,39 @@ const TOTW_WEEK_4={id:4,name:"Team of the Week 4",releaseDate:"2026-10-07",activ
  {names:["Goncalo Ramos","Gonçalo Ramos"],ovr:84,position:"ST",stats:[84,87,76,82,42,84]},
  {names:["Rasmus Hojlund","Rasmus Højlund"],ovr:84,position:"ST",stats:[88,85,71,80,41,86]}
 ]};
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4];
+// TOTW 5: Spielleistungen 09.–12.10.2026; Footera-Ratings/Attribute sind redaktionelles Balancing.
+// Belege: https://www.bundesliga.com/en/bundesliga/news/rb-leipzig-eintracht-frankfurt-match-report-highlights-matchday-5-39497
+//  https://www.bundesliga.com/en/bundesliga/news/paderborn-vfb-stuttgart-match-report-highlights-matchday-5-stiller-fuhrich-39482
+//  https://www.laliga.com/en-US/match/temporada-2026-2027-laliga-ea-sports-fc-barcelona-getafe-cf-8
+//  https://www.theguardian.com/football/2026/oct/11/european-football-lazio-maintain-strong-start-with-win-over-monza
+//  https://www.reuters.com/sports/soccer/inter-rout-parma-de-bruyne-double-lifts-napoli-2026-10-10/
+//  https://www.reuters.com/sports/soccer/guimaraes-grabs-winner-arsenal-rally-beat-leeds-2026-10-10/
+//  https://www.liverpoolfc.com/matches/mens-team/liverpool-v-manchester-city-english-premier-league-20261011
+//  https://www.bundesliga.com/en/bundesliga/news/cologne-borussia-monchengladbach-match-report-highlights-matchday-5-said-el-mala-39507
+//  https://www.ouest-france.fr/sport/football/resultats-matchs/match-auxerre-rennes-1334-1337/
+//  https://www.bundesliga.com/en/bundesliga/news/sport-club-freiburg-schalke-match-report-highlights-matchday-5-39510
+//  https://www.thetimes.com/sport/football/article/chelsea-bournemouth-score-result-premier-league-xt8pxwrcz
+const TOTW_WEEK_5={id:5,name:"Team of the Week 5",releaseDate:"2026-10-14",activeUntil:"21.10.2026 18:59",sourceStatus:"admin-approved",players:[
+  {names:["Maarten Vandevoordt","Marten Vandevoordt"],ovr:84,position:"GK",stats:[86,83,79,88,51,84],fallback:{name:"Maarten Vandevoordt",fullName:"Maarten Vandevoordt",team:"RB Leipzig",league:"Bundesliga",nation:"Belgium"}},
+  {names:["Dennis Seimen"],ovr:80,position:"GK",stats:[81,79,70,83,49,80],fallback:{name:"Dennis Seimen",fullName:"Dennis Seimen",team:"VfB Stuttgart",league:"Bundesliga",nation:"Germany"}},
+  {names:["Jules Koundé","Jules Kounde"],ovr:87,position:"RB",stats:[84,66,78,82,86,82],fallback:{name:"Jules Koundé",fullName:"Jules Kounde",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"France"}},
+  {names:["Jeff Chabot"],ovr:83,position:"CB",stats:[73,55,67,70,84,87],fallback:{name:"Jeff Chabot",fullName:"Jeff Chabot",team:"VfB Stuttgart",league:"Bundesliga",nation:"Germany"}},
+  {names:["Johan Vásquez","Johan Vasquez"],ovr:82,position:"CB",stats:[72,52,68,71,84,84],fallback:{name:"Johan Vásquez",fullName:"Johan Vasquez",team:"Genoa",league:"Serie A",nation:"Mexico"}},
+  {names:["Gerard Martín","Gerard Martin"],ovr:82,position:"LB",stats:[80,48,75,76,81,77],fallback:{name:"Gerard Martín",fullName:"Gerard Martin",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Alessandro Bastoni"],ovr:88,position:"CB",stats:[79,56,84,80,88,83],fallback:{name:"Alessandro Bastoni",fullName:"Alessandro Bastoni",team:"Inter",league:"Serie A",nation:"Italy"}},
+  {names:["Isco","Francisco Román Alarcón Suárez"],ovr:88,position:"CAM",stats:[75,85,90,91,52,62],fallback:{name:"Isco",fullName:"Francisco Román Alarcón Suárez",team:"Real Betis",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Jordan Henderson"],ovr:84,position:"CM",stats:[69,83,86,79,75,78],fallback:{name:"Jordan Henderson",fullName:"Jordan Henderson",team:"Chelsea",league:"Premier League",nation:"England"}},
+  {names:["Angelo Stiller"],ovr:85,position:"CM",stats:[69,70,88,82,78,71],fallback:{name:"Angelo Stiller",fullName:"Angelo Stiller",team:"VfB Stuttgart",league:"Bundesliga",nation:"Germany"}},
+  {names:["Antonio Nusa"],ovr:86,position:"LM",stats:[94,81,80,90,37,63],fallback:{name:"Antonio Nusa",fullName:"Antonio Nusa",team:"RB Leipzig",league:"Bundesliga",nation:"Norway"}},
+  {names:["Bruno Guimarães","Bruno Guimaraes"],ovr:88,position:"CM",stats:[72,81,87,85,84,82],fallback:{name:"Bruno Guimarães",fullName:"Bruno Guimaraes",team:"Arsenal",league:"Premier League",nation:"Brazil"}},
+  {names:["Christopher Nkunku"],ovr:89,position:"ST",stats:[88,90,84,91,50,71],fallback:{name:"Christopher Nkunku",fullName:"Christopher Nkunku",team:"RB Leipzig",league:"Bundesliga",nation:"France"}},
+  {names:["Saïd El Mala","Said El Mala"],ovr:83,position:"LW",stats:[91,81,73,88,39,68],fallback:{name:"Saïd El Mala",fullName:"Said El Mala",team:"1. FC Köln",league:"Bundesliga",nation:"Germany"}},
+  {names:["João Pedro","Joao Pedro"],ovr:87,position:"ST",stats:[85,88,83,87,42,79],fallback:{name:"João Pedro",fullName:"Joao Pedro",team:"Chelsea",league:"Premier League",nation:"Brazil"}},
+  {names:["Jérémy Doku","Jeremy Doku"],ovr:87,position:"LW",stats:[96,77,82,93,31,65],fallback:{name:"Jérémy Doku",fullName:"Jeremy Doku",team:"Manchester City",league:"Premier League",nation:"Belgium"}},
+  {names:["Boulaye Dia"],ovr:83,position:"ST",stats:[84,85,73,80,37,76],fallback:{name:"Boulaye Dia",fullName:"Boulaye Dia",team:"Rennes",league:"Ligue 1",nation:"Senegal"}},
+  {names:["Keisuke Gotō","Keisuke Goto"],ovr:80,position:"ST",stats:[75,81,67,75,34,78],fallback:{name:"Keisuke Gotō",fullName:"Keisuke Goto",team:"SC Freiburg",league:"Bundesliga",nation:"Japan"}}
+]};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -2842,7 +2874,7 @@ function bestEaTotwAsset(info,rows){
 function mergeTotwWeekBase(team,base,a,index){
  const info=team?.players?.[index]||{},fallback=info.fallback||{};
  const seed={...(base||{}),
-  id:fallback.id||base?.id||("totw-preview-"+index),
+  id:fallback.id||base?.id||("totw-"+(team?.id||0)+"-preview-"+index),
   name:fallback.name||base?.name||info.names?.[0]||"TOTW Spieler",
   fullName:fallback.fullName||base?.fullName||base?.name||info.names?.[0]||"",
   firstName:fallback.firstName||base?.firstName||"",lastName:fallback.lastName||base?.lastName||"",
@@ -9321,7 +9353,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.141";
+const GFUT_BUILD="V21.142";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
