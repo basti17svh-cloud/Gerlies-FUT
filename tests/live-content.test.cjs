@@ -38,7 +38,7 @@ test('a prepared next team remains gated until Wednesday 19:00 and replaces the 
 test('the weekly 19:00 gate uses Berlin wall time across the October clock change',()=>{
  vm.runInContext("TOTW_WEEKS.push({...TOTW_WEEK_5,id:6,releaseDate:'2026-10-21',sourceStatus:'admin-approved'},{...TOTW_WEEK_5,id:7,releaseDate:'2026-10-28',sourceStatus:'admin-approved'})",ctx);
  try{
-  assert.equal(ctx.activeTotwWeek(new Date('2026-10-21T16:59:59Z')),null);
+  assert.equal(ctx.activeTotwWeek(new Date('2026-10-21T16:59:59Z')).id,5);
   assert.equal(ctx.activeTotwWeek(new Date('2026-10-21T17:00:00Z')).id,6);
   assert.equal(ctx.activeTotwWeek(new Date('2026-10-28T17:59:59Z')).id,6);
   assert.equal(ctx.activeTotwWeek(new Date('2026-10-28T18:00:00Z')).id,7);

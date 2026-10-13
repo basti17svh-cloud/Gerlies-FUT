@@ -18,6 +18,10 @@ const server=http.createServer((req,res)=>{
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'Europe/Berlin',serviceWorkers:'allow'});
   await context.route('**/*',route=>route.request().url().startsWith(base)?route.continue():route.abort());
+  await context.addInitScript(()=>{
+   const NativeDate=Date,at=NativeDate.parse('2026-10-13T13:00:00+02:00');
+   window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[at]))}static now(){return at}};
+  });
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/seed.html');
   await page.evaluate(async names=>{
@@ -41,8 +45,10 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.title(),'Footera '+build);
   assert.equal(await page.evaluate(()=>currentViewId()),'eventsView');
   assert.equal(await page.locator('.event-player').count(),18);
-  assert.ok((await page.locator('.event-foot').innerText()).includes('wartet auf deine Freigabe'));
-  assert.equal(await page.evaluate(()=>TOTW_WEEK_5.sourceStatus),'pending-approval');
+  assert.ok((await page.locator('.event-foot').innerText()).includes('Freigegeben · wartet auf den geplanten Start'));
+  assert.equal(await page.evaluate(()=>TOTW_WEEK_5.sourceStatus),'admin-approved');
+  assert.equal(await page.evaluate(()=>activeTotwWeek()?.id),4,'approved TOTW 5 stays out of packs before Wednesday 19:00');
+  assert.equal(await page.evaluate(()=>publishedTotwWeeks().some(team=>team.id===5)),false);
   assert.equal(await page.evaluate(()=>TOTW_WEEK_5.players.every((info,index)=>{
    const original=PLAYERS.find(p=>p.id==='pwa-qa-'+(index+20)),runtime=P_BY_ID.get(original.id),review=totwReviewEntries(TOTW_WEEK_5)[index];
    return runtime===original&&runtime.ovr===78&&['pac','sho','pas','dri','def','phy'].every(k=>runtime[k]===70)&&review.item.pid.startsWith('totw-review-5-')&&review.player.ovr===info.ovr&&['pac','sho','pas','dri','def','phy'].every((k,i)=>review.player[k]===info.stats[i]);

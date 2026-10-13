@@ -17,8 +17,8 @@ function setup(at='2026-10-14T19:00:00+02:00'){
  ].join('\n'),context);
  context.team=vm.runInContext('TOTW_WEEK_5',context);return context;
 }
-test('TOTW 5 draft has eighteen unique men and clubs, exact 2/5/6/5 positions and Doku instead of Cherki',()=>{
- const c=setup();assert.equal(c.team.sourceStatus,'pending-approval');assert.equal(c.team.releaseDate,'2026-10-14');
+test('Approved TOTW 5 has eighteen unique men and clubs, exact 2/5/6/5 positions and Doku instead of Cherki',()=>{
+ const c=setup();assert.equal(c.team.sourceStatus,'admin-approved');assert.equal(c.team.releaseDate,'2026-10-14');
  assert.equal(c.totwRosterErrors(c.team).length,0);
  assert.equal(new Set(c.team.players.map(p=>p.names[0])).size,18);
  assert.equal(new Set(c.team.players.map(p=>p.fallback.team)).size,18);
@@ -41,7 +41,7 @@ test('explicit approval opens the real pack and archive gate at 19:00 Berlin and
   ['2026-10-14T18:59:59+02:00',4,false],['2026-10-14T19:00:00+02:00',5,true],
   ['2026-10-21T18:59:59+02:00',5,true],['2026-10-21T19:00:00+02:00',null,true]
  ]){
-  const c=setup(at);c.team.sourceStatus='admin-approved';
+  const c=setup(at);assert.equal(c.team.sourceStatus,'admin-approved');
   assert.equal(c.activeTotwWeek()?.id||null,active);
   assert.equal(c.publishedTotwWeeks().some(t=>t.id===5),published);
   assert.equal(c.allTotwMarketBases().some(base=>base.id.startsWith('totw-5-')),published);
@@ -61,7 +61,7 @@ test('approval cannot bypass club limits, missing players, positions, gender, du
  for(const mutate of mutations){const c=setup();c.team.sourceStatus='admin-approved';mutate(c.team);assert.ok(c.totwRosterErrors(c.team).length);assert.equal(c.activeTotwWeek(),null);assert.equal(c.publishedTotwWeeks().some(t=>t.id===5),false)}
 });
 test('read-only preview resolves the draft without approving, publishing or modifying it',()=>{
- const c=setup();const before=JSON.stringify(c.team);assert.equal(c.requestedTotwPreview().id,5);
+ const c=setup();c.team.sourceStatus='pending-approval';const before=JSON.stringify(c.team);assert.equal(c.requestedTotwPreview().id,5);
  assert.equal(c.activeTotwWeek(),null);assert.equal(JSON.stringify(c.team),before);
  c.location.href='https://footera.test/index.html?totwPreview=999';assert.equal(c.requestedTotwPreview(),null);
  c.location.href='https://footera.test/index.html';assert.equal(c.requestedTotwPreview(),null);

@@ -1,10 +1,10 @@
-# Footera – TOTW 5 zur Prüfung
+# Footera – TOTW 5 freigegeben
 
-Stand: V21.144, 13.10.2026. **Vorschlag, noch nicht freigegeben.**
+Stand: V21.144, 13.10.2026. **Von Basti am 13.10.2026 für Mittwoch, 14.10.2026, 19:00 Uhr freigegeben.**
 
 [Karten im Spiel ansehen](https://basti17svh-cloud.github.io/Gerlies-FUT/index.html?totwPreview=5). Die Spielvorschau funktioniert nach Veröffentlichung von V21.144; bis dahin ist der vollständige Entwurf unten prüfbar.
 
-Geplanter Start nach ausdrücklicher Freigabe: **14.10.2026, 19:00 Europe/Berlin**. Ende: **21.10.2026, 18:59** (bis zum Wechsel um 19:00). Ohne Freigabe bleibt TOTW 5 aus Packs, Markt und Archiv ausgeschlossen.
+Automatischer Start: **14.10.2026, 19:00 Europe/Berlin**. Ende: **21.10.2026, 18:59** (bis zum Wechsel um 19:00). Bis zum Start bleibt TOTW 5 aus Packs, Markt und Archiv ausgeschlossen.
 
 18 Männer · 2 TW / 5 Verteidiger / 6 Mittelfeldspieler / 5 Angreifer · maximal 1 je Verein (18 verschiedene Vereine).
 
@@ -63,6 +63,6 @@ Torhüter: HEC / FAN / ABS / REF / SPE / POS. Feldspieler: TEM / SCH / PAS / DRI
 - O’Shea ersetzt Keven Schlotterbeck, Nuno Tavares ersetzt Gerard Martín und Jon Martín ersetzt Bisseck. Southampton, Barcelona und Inter sind damit jeweils nur einmal vertreten.
 - Groß ersetzt João Pedro: Henderson bleibt der Chelsea-Vertreter, und der zusätzliche Mittelfeldplatz gleicht Dokus Wechsel in den Angriff aus.
 - Ergebnis: 18 Spieler aus 18 Vereinen, 2 TW / 5 DEF / 6 MID / 5 ANG. Eine zweite Vereinsbelegung sperrt die Veröffentlichung auch bei gesetztem Freigabestatus.
-- Der Status bleibt `pending-approval`. Nur eine ausdrücklich freigegebene, regelkonforme Mannschaft wird zum Releasezeitpunkt aktiviert.
+- Der Status ist `admin-approved`. Die freigegebene, regelkonforme Mannschaft wird zum Releasezeitpunkt aktiviert.
 
-Zur Freigabe genügt eine Nachricht mit deinen gewünschten Änderungen oder „TOTW 5 so freigeben“.
+Freigabe erteilt: „Totw5 ist freigegeben zur Veröffentlichung am Mittwoch um 19 Uhr“.
