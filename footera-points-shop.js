@@ -12,6 +12,8 @@
   {id:"18500",amount:"18.500",price:"89,99 €"},
  ];
  const permitted=new Set(offers.map(o=>o.id));
+ // Paused by default: UI hiding is backed by a guard on every purchase route.
+ const purchasesEnabled=()=>document.documentElement.dataset.footeraPayments==="enabled";
  function init(){
   const open=document.getElementById("footeraPointsBuyTrigger");
   const modal=document.getElementById("footeraPointsPurchaseModal");
@@ -27,6 +29,10 @@
     '</button>'
   ).join("");
   function showOffers({required=0,available=0,source=""}={}){
+   if(!purchasesEnabled()){
+    if(typeof toast==="function")toast("Footera Points sind derzeit nicht zum Kauf verfügbar.");
+    return false;
+   }
    const note=document.getElementById("footeraPointsNeedNote");
    const price=Math.max(0,Math.trunc(Number(required)||0));
    const usable=Math.max(0,Math.trunc(Number(available)||0));
@@ -48,6 +54,10 @@
   grid.addEventListener("click",async e=>{
    const choice=e.target.closest("button[data-footera-points-pack]");
    if(!choice || !permitted.has(choice.dataset.footeraPointsPack))return;
+   if(!purchasesEnabled()){
+    if(typeof toast==="function")toast("Footera Points sind derzeit nicht zum Kauf verfügbar.");
+    return;
+   }
    // LIVE only after explicit public release; server still verifies identity,
    // EUR price, independent keys and payment flags.
    if(liveStore){
