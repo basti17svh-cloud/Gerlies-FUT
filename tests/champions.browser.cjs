@@ -12,6 +12,8 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   const page=await context.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.message));
   await page.route("**/*",route=>route.request().url().startsWith(url)?route.continue():route.abort());
   await page.goto(url,{waitUntil:"load"});
+  // This isolated gameplay fixture does not exercise account or analytics consent.
+  await page.addStyleTag({content:"#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important;pointer-events:none!important}"});
   await page.evaluate(()=>{
    for(const id of ["bootIntro","dbGate","onboarding","usernameRequiredModal"])document.getElementById(id)?.remove();
    const positions=["GK","LB","CB","CB","RB","CM","CM","CM","LW","ST","RW","CM","ST","CB","GK","LB","RW","CM"];
