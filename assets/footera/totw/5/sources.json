@@ -1,0 +1,164 @@
+[
+  {
+    "name": "Karl Hein",
+    "id": "248732",
+    "club": "Werder Bremen",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/248732.png",
+    "sha256": "48b0dafab45957c4dc0eb638d8b36c04e5af73f92d49beef5798993091be7218",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Pierluigi Gollini",
+    "id": "211515",
+    "club": "AS Roma",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/211515.png",
+    "sha256": "581e80c0df7ff4ac86b5ac92d9ab3863d5feef76fa41eee9a8c9c390886f3361",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Jules Koundé",
+    "id": "241486",
+    "club": "FC Barcelona",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/241486.png",
+    "sha256": "e1836cb6df2742a5be58f80c6145baa9ead4f8dcf6c06756fef357505157a370",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "James Bree",
+    "id": "222156",
+    "club": "Southampton FC",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/222156.png",
+    "sha256": "8f7a93f42adac8a8107191d4523ddec87ec6936ea8e7849e2a8fb1d2ff490709",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Dara O'Shea",
+    "id": "235405",
+    "club": "Ipswich Town",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/235405.png",
+    "sha256": "05def9adc3a4d546ce53448ba2f31e949c1665e7d7ce3ad2a2e8a344661a4723",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Nuno Albertino Varela Tavares",
+    "id": "251530",
+    "club": "SS Lazio",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/251530.png",
+    "sha256": "c1fcc92cc1b17781c32bcd0d6ac8b5d7f320f78f9c6fceec498fe991eac891ae",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Jon Martín Vicente",
+    "id": "277225",
+    "club": "Real Sociedad",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/277225.png",
+    "sha256": "100d38c79bdd12955aba6c0d6bec2568cec9b4242874dae239e9db4365978783",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Francisco Román Alarcón Suárez",
+    "id": "197781",
+    "club": "Real Betis Balompié",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/197781.png",
+    "sha256": "45b5745161efcdd0c382fea6c981e1b36043fbd13d10ef095368d746585176c1",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Jordan Henderson",
+    "id": "183711",
+    "club": "Chelsea FC",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/183711.png",
+    "sha256": "4d07a940f75538713b6b7f75dd45b62d786a71dc074e18c12f87154a747592d1",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Angelo Stiller",
+    "id": "250959",
+    "club": "VfB Stuttgart",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/250959.png",
+    "sha256": "de15581801367df2f3259e60dedbd781dc586db8f50f6fbb7cd3119bb4f4f1c0",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Petar Sučić",
+    "id": "276278",
+    "club": "Inter Milan",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/276278.png",
+    "sha256": "2b875b1d227846ce1d1840844586c6e502a5f282ce61975008d026fd4a48aef4",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Bruno Guimarães Moura",
+    "id": "247851",
+    "club": "Arsenal FC",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/247851.png",
+    "sha256": "d44355b1c817e2faf8bb408e67288f12b0069b57e13f89edf7420fb9a85b36b1",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Christopher Nkunku",
+    "id": "232411",
+    "club": "RB Leipzig",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/232411.png",
+    "sha256": "33b0f9dfc7442586185512d6896942e9efe87fb8d25a611c71067f3ef2955975",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Saïd El Mala",
+    "id": "71178",
+    "club": "1. FC Köln",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/71178.png",
+    "sha256": "101fac57cae08e9ff6043874aaeca96437c7164961d00d08effba26021923cb9",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Pascal Groß",
+    "id": "190765",
+    "club": "Brighton & Hove Albion",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/190765.png",
+    "sha256": "94d72bf49dcf450816bee6d0d472bc9349ebd3887c695415d8b65a59d0f5fca5",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Jérémy Doku",
+    "id": "246420",
+    "club": "Manchester City",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/246420.png",
+    "sha256": "a84df2a3859dac0f8c949ee14b9795dfb1723f6789246005a27b664e91cce1c0",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Boulaye Dia",
+    "id": "246242",
+    "club": "Stade Rennais",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/246242.png",
+    "sha256": "3189dbc095dba180e82718223afedf876a957c2354328c3173928194a4039966",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Keisuke Gotō",
+    "id": "76570",
+    "club": "SC Freiburg",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/76570.png",
+    "sha256": "917f87b90c3c483c7ea4e7be317e660d36e462898dd3a530a216cec4ad75ccf5",
+    "width": 160,
+    "height": 160
+  }
+]
