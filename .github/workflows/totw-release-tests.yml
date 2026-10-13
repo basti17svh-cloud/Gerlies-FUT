@@ -1,0 +1,21 @@
+name: Footera TOTW release regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/totw-release-tests.yml'
+      - 'tests/totw5-release.test.cjs'
+      - 'index.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  totw-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate TOTW 5 roster and scheduled availability
+        run: node --test tests/totw5-release.test.cjs

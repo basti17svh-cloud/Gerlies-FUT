@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.142</title>
+<title>Footera V21.143</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1597,7 +1597,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.142</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.143</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2830,6 +2830,9 @@ function totwAliasMatch(p,info){
  if(!p||!info)return 0;
  if(info.eaId&&String(p.id||"")===String(info.eaId))return 100;
  const keys=new Set(totwSearchKeys(p)),aliases=totwAliases(info);
+ // Some players (e.g. Isco) use one-word primary names; match only exact mononyms.
+ const primary=normalizeKey(info?.names?.[0]||"");
+ if(primary.length>=4&&!primary.includes(" ")&&keys.has(primary))return 100;
  return aliases.some(a=>keys.has(a))?100:0
 }
 function uniqueTotwPlayer(matches){
@@ -9353,7 +9356,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.142";
+const GFUT_BUILD="V21.143";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
