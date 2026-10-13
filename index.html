@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-footera-payments="paused">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -18,8 +18,11 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.140</title>
+<title>Footera V21.141</title>
 <style>
+/* Points purchase interface remains staged until verified Stripe clearance. */
+html:not([data-footera-payments="enabled"]) .footera-points-entry,
+html:not([data-footera-payments="enabled"]) #footeraPointsPurchaseModal{display:none!important}
 :root{
   --bg:#050807;--panel:#0d1412;--panel2:#131d19;--line:#293833;--text:#f4f8f6;--muted:#8b9994;
   --lime:#d8ff3e;--mint:#4ef1b9;--blue:#65a8ff;--gold:#e8c660;--silver:#cbd3d1;--bronze:#b97945;--danger:#ff647a;
@@ -1594,7 +1597,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.140</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.141</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -5576,6 +5579,7 @@ function renderStore(){
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
   const verifiedLive=typeof window!=="undefined"?window.FooteraPaidWallet?.liveState?.():null;
   const livePackReady=typeof window!=="undefined"&&window.FOOTERA_LIVE_PACK_STORE_ENABLED===true &&
+    document.documentElement.dataset.footeraPayments==="enabled" &&
    ["silver","gold"].includes(p.id)&&verifiedLive?.verified&&
    verifiedLive.balance>=Number(p.points||0);
   const liveBuy=livePackReady?`<button type="button" class="store-buy-button points"
@@ -5660,7 +5664,7 @@ function recoverFooteraPaidPackOrders(orders,userId){
 $("storeView").addEventListener("click",async event=>{
  const button=event.target.closest("[data-buy-live]");if(!button)return;
  if(footeraLiveCheckoutBusy||footeraStorePurchaseBusy)return;
- if(window.FOOTERA_LIVE_PACK_STORE_ENABLED!==true)return;
+ if(window.FOOTERA_LIVE_PACK_STORE_ENABLED!==true || document.documentElement.dataset.footeraPayments!=="enabled")return;
  const id=button.dataset.buyLive,pack=PACKS.find(p=>p.id===id);
  if(!pack||!["silver","gold"].includes(id)||pendingPack.length)return;
  if(!confirm("Für "+fmt(pack.points)+" verifizierte gekaufte Footera Points "+pack.name+" öffnen?"))return;
@@ -9317,7 +9321,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.140";
+const GFUT_BUILD="V21.141";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9398,8 +9402,8 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21128"></script>
 <script src="./footera-account.js?v=21122"></script>
-<script src="./footera-paid-wallet.js?v=21140"></script>
-<script src="./footera-points-shop.js?v=21140"></script>
+<script src="./footera-paid-wallet.js?v=21141"></script>
+<script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
