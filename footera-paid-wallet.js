@@ -104,6 +104,8 @@
  // Stage LIVE card checkout; the Supabase endpoint stays fail-closed without
  // explicit production flags and valid independent LIVE Stripe secrets.
  async function checkoutLive(packId){
+  if(document.documentElement.dataset.footeraPayments!=="enabled")
+   throw Error("Der Erwerb von Footera Points ist vorübergehend pausiert.");
   const permitted=new Set(["100","500","1050","1600","2800","5900","12000","18500"]);
   if(!permitted.has(String(packId)))throw Error("Unbekanntes Footera Points Paket.");
   const c=await connect(),{data:{user},error:e}=await c.auth.getUser();
