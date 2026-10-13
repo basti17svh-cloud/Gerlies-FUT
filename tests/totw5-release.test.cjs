@@ -45,6 +45,7 @@ test('explicit approval opens the real pack and archive gate at 19:00 Berlin and
   assert.equal(c.allTotwMarketBases().some(base=>base.id.startsWith('totw-5-')),published);
   const item=c.makeLivePackItem({id:'nkunku',name:'Christopher Nkunku',ovr:82},true);
   assert.equal(item.eventName,active===5?'Team of the Week 5':undefined);
+  if(active===5){const info=c.team.players.find(p=>p.names[0]==='Christopher Nkunku');assert.equal(item.displayRating,info.ovr);assert.deepEqual(Array.from(item.eventStats),Array.from(info.stats));assert.equal(item.eventReleaseId,'totw-5')}
  }
 });
 test('approval cannot bypass club limits, missing players, positions, gender, duplicates or invalid attributes',()=>{

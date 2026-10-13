@@ -3172,11 +3172,22 @@ function totwEventEntries(team){
   return{index,info,base,item,player:displayBase(item)||{...base,ovr:info.ovr,position:info.position||base.position}}
  })
 }
+function totwReviewEntries(team){
+ // A draft must never replace an owned player's real base row in P_BY_ID.
+ return team.players.map((info,index)=>{
+  const real=uniqueTotwPlayer(PLAYERS.filter(player=>totwAliasMatch(player,info)===100));
+  const base={...mergeTotwWeekBase(team,real,null,index),id:`totw-review-${team.id}-${index}`,ovr:info.ovr};
+  if(real?.id&&/^\d+$/.test(String(real.id)))base.futwizId=String(real.id);
+  P_BY_ID.set(base.id,base);
+  const item={uid:`totw-review-item-${team.id}-${index}`,pid:base.id,evo:0,variant:"special",eventType:"totw",eventName:team.name,eventReleaseId:`totw-${team.id}`,displayRating:info.ovr,eventStats:info.stats,overridePosition:info.position,rare:true};
+  return{index,info,base,item,player:displayBase(item)||base}
+ })
+}
 function eventShowcases(){
  const activeId=String(activeTotwWeek()?.id||"");
  const totw=publishedTotwWeeks().map(team=>({id:`totw-${team.id}`,name:totwDisplayName(team.name),shortName:`TOTW ${team.id}`,subtitle:String(team.id)===activeId?"Aktuelles Team der Woche":"TOTW Archiv",activeUntil:team.activeUntil,releaseDate:team.releaseDate,theme:"totw",kind:"totw",team,entries:()=>totwEventEntries(team)}));
  const preview=requestedTotwPreview();
- if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>totwEventEntries(preview)});
+ if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>totwReviewEntries(preview)});
  const promos=EVENT_PROMO_RELEASES.filter(event=>(event.players||[]).length>0&&Date.now()>=Date.parse(event.activeFrom)).map(event=>({...event,theme:event.theme||"event",kind:"promo",entries:()=>promoEventEntries(event)}));
  return [...promos.filter(e=>eventPackIsActive(e)),...totw,...promos.filter(e=>!eventPackIsActive(e))]
 }
@@ -3243,7 +3254,7 @@ function makeLivePackItem(base,tradeable=true){
  if(isActiveEventSbcBase(base))return makeItem(base,tradeable);
  const promo=activePromoPackEntry(base);if(promo){const special=makePromoPackItem(base,promo,tradeable);if(special)return special}
  const team=activeTotwWeek(),info=totwInfo(base);
- return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position,rare:true}):makeItem(base,tradeable)
+ return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position,rare:true,...(Number(team.id)>=5?{displayRating:info.ovr,eventStats:info.stats,eventType:"totw",eventReleaseId:`totw-${team.id}`}:{})}):makeItem(base,tradeable)
 }
 let promoEventClockId=null,promoObjectiveClockId="",promoEventClockTimer=0;
 function schedulePromoEventClock(){

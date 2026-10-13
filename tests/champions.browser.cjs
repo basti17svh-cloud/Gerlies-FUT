@@ -9,6 +9,8 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
  const browser=await chromium.launch({headless:true});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,serviceWorkers:"block",timezoneId:"Europe/Berlin"});
+  // Freeze Date inside a real open weekend; keep animation and interval timers live.
+  await context.addInitScript(()=>{const NativeDate=Date,fixed=NativeDate.parse('2026-10-10T12:00:00+02:00');window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[fixed]))}static now(){return fixed}}});
   const page=await context.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.message));
   await page.route("**/*",route=>route.request().url().startsWith(url)?route.continue():route.abort());
   await page.goto(url,{waitUntil:"load"});
@@ -20,9 +22,6 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    PLAYERS=positions.map((position,i)=>({id:"champ-"+i,name:"Champ "+i,fullName:"Champions Spieler "+i,position,ovr:84,pac:84,sho:84,pas:84,dri:84,def:84,phy:84,nation:"Germany",team:"FC Bayern München",league:"Bundesliga"}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
    state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation="4-3-3";state.profile.clubName="Champions Test";state.tactic="balanced";
    state.stats={...state.stats,championsMatches:0,championsWins:0};state.champions=null;ensureChampionsState().qualPoints=600;
-   const start=new Date("2026-10-09T19:00:00+02:00"),end=new Date("2026-10-12T09:00:00+02:00");
-   championsWindow=()=>({key:String(start.getTime()),start,end,open:true,lastStart:start,lastEnd:end,lastKey:String(start.getTime())});
-   championsWindowText=()=>"Offen bis Mo., 12.10., 09:00";
    renderAll();switchView("playView",{push:false});
   });
   check("only one Champions mode entry exists",await page.locator('[data-play-mode="champions"]').count()===1);
