@@ -218,7 +218,9 @@ if(require.main===module)(async()=>{
   await page.waitForSelector('.fh3d-hud.visible',{timeout:25000});
   check('generated opponent badge is distinct from FC Gerlies',await page.locator('.fh3d-team-crest').evaluate(c=>
    c.querySelector('.fh3d-opponent-crest')?.textContent==='SMC'&&!c.querySelector('.club-crest')));
-  await page.locator('.fh3d-skip').click();
+  // The badge assertion can finish as the clip ends naturally. Only skip a
+  // still-present clip, rather than waiting for a later match event's button.
+  await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());
   await page.waitForSelector('.fh3d',{state:'detached'});
   await page.evaluate(()=>stopMatchTimer());
   check('no uncaught JavaScript errors during mobile matches',errors.length===0);
