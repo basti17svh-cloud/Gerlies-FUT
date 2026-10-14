@@ -30,3 +30,5 @@ new vm.Script(fs.readFileSync("footera-cosmetic-evolutions.js","utf8"));
 assert(count>0&&html.includes("Footera V21.150")&&sw.includes("footera-v21-150"));
 fs.writeFileSync("index.html",html);fs.writeFileSync("service-worker.js",sw);
 console.log("V21.150 integrated; compiled inline scripts: "+count);
+
+// Re-run verified integration after test extraction fix.
