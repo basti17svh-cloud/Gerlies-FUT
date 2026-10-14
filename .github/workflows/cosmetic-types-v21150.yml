@@ -1,0 +1,33 @@
+name: Footera Cosmetic Special Types V21.150
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-cosmetic-types-v21150.cjs'
+      - '.github/workflows/cosmetic-types-v21150.yml'
+permissions:
+  contents: write
+concurrency:
+  group: footera-cosmetic-types-v21150
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Integrate SBC-aware special card types
+        run: node scripts/apply-cosmetic-types-v21150.cjs
+      - name: Regression tests
+        run: node --test tests/cosmetic-evolutions.test.cjs tests/evolutions.test.cjs tests/sbc-submission.test.cjs tests/sbc-assistant.test.cjs tests/live-content.test.cjs
+      - name: Commit verified Footera update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html service-worker.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera V21.150: SBC-recognized cosmetic TOTW and MOMENTUM cards"
+          git push origin HEAD:main
