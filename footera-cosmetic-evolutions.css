@@ -1,0 +1,65 @@
+/* Footera V21.149 – cosmetic Evolutions: design only, same universal card layout. */
+.card-shell .custom-card.champions-red,
+.card-shell .custom-card.champions-pro {
+  color:#ffecc6;
+  background:
+   radial-gradient(ellipse at 73% 21%,#fff1bd50 0%,transparent 33%),
+   repeating-linear-gradient(137deg,transparent 0 18%,#facf6855 18.5%,transparent 20%,transparent 37%),
+   linear-gradient(155deg,#5c0918 2%,#a6172a 28%,#4d0417 64%,#19070f 100%);
+  border:1px solid #d6a94c;
+  clip-path:polygon(12% 0,88% 0,100% 8%,100% 91%,88% 100%,12% 100%,0 91%,0 8%);
+  box-shadow:inset 0 0 0 2px #ffe5a34d,inset 0 0 24px #10000696,0 4px 16px #2b000b95;
+  --card-column-fill:linear-gradient(180deg,#30050899,#47061266);
+  --card-name-fill:linear-gradient(90deg,#4b081baa,#9c1e2ddd,#4b081baa);
+  --card-name-border:#e7c17c;
+  --card-stats-fill:linear-gradient(180deg,#460a1944,#28061099);
+  --card-name-color:#fff1cb;--card-stats-color:#f1d6a5;--card-value-color:#fff5d9;
+}
+.card-shell .custom-card.champions-red:before,
+.card-shell .custom-card.champions-pro:before{
+  content:"";position:absolute;inset:5% 5% 8%;pointer-events:none;z-index:1;
+  border:1px solid #e9bd765c;clip-path:polygon(13% 0,87% 0,100% 9%,100% 91%,87% 100%,13% 100%,0 91%,0 9%);
+  background:linear-gradient(120deg,transparent 23%,#ffd68c1d 25%,transparent 27%,transparent 58%,#ffe6aa16 60%,transparent 62%);
+}
+.card-shell .custom-card.champions-red:after,
+.card-shell .custom-card.champions-pro:after{
+  content:"FOOTERA CHAMPIONS";position:absolute;top:7.5%;right:8%;z-index:9;
+  padding:.5cqw 1cqw;border:1px solid #f6d9a68a;border-radius:1cqw;
+  background:#340718dc;color:#ffe4ad;font-size:max(3px,2.45cqw);
+  letter-spacing:.04em;font-weight:900;text-shadow:0 0 3px #1a0611;
+}
+.card-shell .custom-card.champions-pro{
+  background:radial-gradient(ellipse at 65% 10%,#fff4c177 0%,transparent 29%),
+   repeating-linear-gradient(145deg,transparent 0 14%,#ffd37648 15%,transparent 17%),
+   linear-gradient(150deg,#3b0015,#a80a28 33%,#750921 65%,#200011);
+  border-color:#ffe7a3;
+}
+.card-shell .custom-card.champions-pro:after{content:"CHAMPIONS ELITE";background:#500715;color:#fff2bc;border-color:#fff0ae;}
+.card-shell .custom-card:is(.champions-red,.champions-pro) .card-top{z-index:8;}
+.card-shell .custom-card:is(.champions-red,.champions-pro) .ovr,
+.card-shell .custom-card:is(.champions-red,.champions-pro) .pos{color:#ffe5aa;text-shadow:0 1px 4px #260209;}
+.card-shell .custom-card:is(.champions-red,.champions-pro) .pname{color:#ffeec6;text-shadow:0 1px 3px #2e0711;}
+.card-shell .custom-card:is(.champions-red,.champions-pro) .stats b{color:#fff4d5;}
+.cosmetic-note{padding:12px 14px;border:1px solid #ffffff26;border-radius:12px;background:#ffffff08;color:#c6cbd4;font-size:12px;line-height:1.6;}
+.cosmetic-note strong{color:#f5dfae;}
+.cosmetic-offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px;}
+.cosmetic-offer{border:1px solid #ffffff28;border-radius:14px;background:linear-gradient(155deg,#1c212c,#10131b);padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0;}
+.cosmetic-offer h3{margin:0;font-size:17px;color:#fff;}
+.cosmetic-offer p{margin:0;color:#bac4cf;font-size:12px;line-height:1.5;}
+.cosmetic-offer .cosmetic-tag{font-weight:800;font-size:10px;letter-spacing:.1em;color:#dfc690;}
+.cosmetic-offer .cosmetic-offer-preview{display:flex;justify-content:center;min-height:125px;align-items:center;}
+.cosmetic-offer .cosmetic-offer-preview .card-shell{width:min(120px,36vw);margin:auto;}
+.cosmetic-offer .cosmetic-meta{font-size:12px;color:#e6ca8b;font-weight:700;}
+.cosmetic-offer button{margin-top:auto;}
+.cosmetic-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.cosmetic-head h3{margin:0;color:#fff;font-size:19px;}
+.cosmetic-player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:12px;margin-top:12px;}
+.cosmetic-player-choice{display:flex;flex-direction:column;gap:6px;align-items:center;background:#151b25;border:1px solid #ffffff30;border-radius:13px;padding:10px 5px;color:#fff;min-width:0;}
+.cosmetic-player-choice .card-shell{width:92px;max-width:100%;}
+.cosmetic-player-choice strong{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.cosmetic-before-after{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:10px auto;}
+.cosmetic-before-after>div{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.cosmetic-before-after .card-shell{width:min(160px,34vw);}
+.cosmetic-before-after>span{font-size:25px;color:#d6bc84;font-weight:900;}
+.cosmetic-footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;}
+.cosmetic-footer button{flex:1;min-width:130px;}
