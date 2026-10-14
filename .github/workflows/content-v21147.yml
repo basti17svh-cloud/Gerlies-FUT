@@ -1,0 +1,33 @@
+name: Footera SBC & Evolution Update V21.147
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-content-v21147.cjs'
+      - '.github/workflows/content-v21147.yml'
+permissions:
+  contents: write
+concurrency:
+  group: footera-content-v21147
+  cancel-in-progress: false
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply content update on current source
+        run: node scripts/apply-content-v21147.cjs
+      - name: Focused regression tests
+        run: node --test tests/evolutions.test.cjs tests/sbc-submission.test.cjs tests/sbc-assistant.test.cjs tests/live-content.test.cjs
+      - name: Commit tested game update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html service-worker.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera V21.147: new grind SBCs and elite 87-88 evolutions"
+          git push origin HEAD:main
