@@ -1,0 +1,33 @@
+name: Footera Cosmetic Evolutions V21.149
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cosmetic-evolutions-v21149.yml'
+      - 'scripts/apply-cosmetics-v21149.cjs'
+permissions:
+  contents: write
+concurrency:
+  group: footera-cosmetics-v21149
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Integrate decorative category into latest main
+        run: node scripts/apply-cosmetics-v21149.cjs
+      - name: Tests
+        run: node --test tests/cosmetic-evolutions.test.cjs tests/evolutions.test.cjs tests/sbc-submission.test.cjs tests/live-content.test.cjs
+      - name: Commit tested update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html service-worker.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera V21.149: decorative Evolutions and red Champions cards"
+          git push origin HEAD:main
