@@ -1,3 +1,4 @@
+import {sampleFlowRun} from './3d-attack-flow.mjs?v=2160';
 /* Footera V21.86 — football playbook. Pure, deterministic visual choreography.
    All turnovers are AUTHORED by the match simulator, never by this module. */
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
@@ -58,8 +59,39 @@ const catalog=[
  ['wing_isolation_left','dribble',7,'finesse','short',[6,1,0],'medium'],
  ['wing_isolation_right','dribble',7,'finesse','short',[7,2,0],'medium'],
  ['late_cutback_left','cutback',7,'normal','driven',[6,1,4,3,0],'medium'],
- ['late_cutback_right','cutback',7,'normal','driven',[7,2,5,3,0],'medium']
+ ['late_cutback_right','cutback',7,'normal','driven',[7,2,5,3,0],'medium'],
+ // V21.146: twelve distinct finishes with authored positions, not central aliases.
+ ["layoff_distance","distance",7,"power","short",[6,3,0],"short"],
+ ["switch_distance_left","distance",6,"finesse","short",[7,1,0],"medium"],
+ ["near_post_driven_left","nearpost",8,"low_driven","driven",[3,1,0],"medium"],
+ ["near_post_header_right","nearpost",7,"header","cross",[7,2,0],"medium"],
+ ["six_yard_square_left","lowcross",8,"low_driven","driven",[6,1,0],"medium"],
+ ["counter_square_right","through",8,"normal","driven",[7,2,0],"medium"],
+ ["byline_pullback_left","cutback",7,"normal","driven",[6,1,4,0],"medium"],
+ ["edge_pullback_right","cutback",7,"power","driven",[7,2,0],"medium"],
+ ["back_post_volley_left","lowcross",6,"volley","cross",[6,1,0],"medium"],
+ ["overlap_clipped_right","overlap",6,"header","cross",[3,2,5,0],"long"],
+ ["striker_wall_return","combination",8,"low_driven","through",[6,0,3,0],"medium"],
+ ["diagonal_lob_finish","through",6,"chip","through",[7,3,0],"medium"]
 ];
+// Coordinates are lateral/forward metres; 5.4s is the shared shot instant.
+// Only these new plays override routes. Existing 48 plays retain their geometry.
+const STORIES={
+ "layoff_distance":{"routes":{"0":[[0,1,-24],[2.6,0,-25],[4.6,1,-27],[5.4,1,-28]],"3":[[0,-5,-29],[2,-3,-32],[5.4,-1,-34]]},"beats":[[0.45,1.15],[3.95,5.4]],"direct":true},
+ "switch_distance_left":{"routes":{"0":[[0,-12,-23],[2.4,-11,-25],[4.5,-9,-29],[5.4,-8,-30]],"1":[[0,-21,-27],[2.4,-19,-31],[5.4,-18,-36]]},"beats":[[0.45,1.75],[3.7,4.75]],"direct":false},
+ "near_post_driven_left":{"routes":{"0":[[0,0,-32],[2.5,-1,-36],[4.3,-2,-42],[5.4,-3,-47]],"1":[[0,-19,-33],[2,-17,-38],[3.9,-14,-45],[5.4,-13,-47]]},"beats":[[0.4,1.2],[3.95,5.4]],"direct":true},
+ "near_post_header_right":{"routes":{"0":[[0,-2,-33],[2.6,0,-37],[4.4,2,-43],[5.4,3,-46]],"2":[[0,20,-32],[2,20,-36],[3.8,18,-42],[5.4,17,-44]]},"beats":[[0.4,1.3],[3.8,5.4]],"direct":true},
+ "six_yard_square_left":{"routes":{"0":[[0,6,-34],[2.7,6,-39],[4.3,4,-44],[5.4,2,-47]],"1":[[0,-15,-33],[2.1,-13,-39],[4,-10,-47],[5.4,-9,-49]]},"beats":[[0.4,1.2],[4.05,5.4]],"direct":true},
+ "counter_square_right":{"routes":{"0":[[0,-7,-27],[2.5,-5,-34],[4.3,-3,-41],[5.4,-2,-45]],"2":[[0,12,-26],[2,12,-33],[3.9,11,-43],[5.4,10,-47]]},"beats":[[0.45,1.4],[4.0,5.4]],"direct":true},
+ "byline_pullback_left":{"routes":{"0":[[0,1,-29],[2.6,1,-33],[4.3,0,-36],[5.4,0,-39]],"1":[[0,-22,-30],[2.3,-20,-38],[5.4,-19,-42]],"4":[[0,-26,-32],[2.4,-23,-40],[4.05,-18,-48],[5.4,-16,-49]]},"beats":[[0.4,1.0],[2.0,2.7],[4.05,5.4]],"direct":true},
+ "edge_pullback_right":{"routes":{"0":[[0,3,-24],[2.5,4,-27],[4.4,4,-30],[5.4,4,-32]],"2":[[0,21,-30],[2.5,20,-37],[3.8,18,-45],[5.4,16,-48]]},"beats":[[0.4,1.15],[3.8,5.4]],"direct":true},
+ "back_post_volley_left":{"routes":{"0":[[0,10,-31],[2.6,9,-36],[4.4,6,-42],[5.4,4,-46]],"1":[[0,-23,-30],[2.4,-22,-35],[3.5,-21,-40],[5.4,-20,-43]]},"beats":[[0.45,1.3],[3.5,5.4]],"direct":true},
+ "overlap_clipped_right":{"routes":{"0":[[0,-6,-30],[2.5,-6,-34],[4.3,-4,-40],[5.4,-3,-44]],"2":[[0,20,-29],[2.2,19,-34],[5.4,16,-39]],"5":[[0,26,-30],[2.5,25,-37],[3.85,22,-43],[5.4,20,-46]]},"beats":[[0.4,1.05],[2,2.7],[3.85,5.4]],"direct":true},
+ "striker_wall_return":{"routes":{"0":[[0,-5,-29],[1.6,-4,-31],[2.7,-6,-33],[4.1,-6,-38],[5.4,-4,-42]],"3":[[0,3,-29],[2,2,-32],[3.5,1,-35],[5.4,2,-39]]},"beats":[[0.45,1.25],[2.0,2.6],[3.5,4.65]],"direct":false},
+ "diagonal_lob_finish":{"routes":{"0":[[0,16,-28],[2.5,13,-32],[4.4,9,-38],[5.4,7,-41]],"3":[[0,2,-25],[2.4,3,-29],[5.4,4,-34]]},"beats":[[0.4,1.2],[3.1,4.5]],"direct":false}
+};
+export const NEW_ATTACK_IDS=Object.freeze(Object.keys(STORIES));
+export const hasAuthoredFinish=id=>Object.hasOwn(STORIES,id);
 const tags=Object.freeze({
  combination:['tiki-taka','first-touch','incisive-pass'],
  switch:['long-ball-pass','flair'],
@@ -93,6 +125,8 @@ export function playRouteSignature(plan){
 const ENDS=[[0,-37],[-24,-39],[24,-39],[-1,-32],[-26,-42],[26,-42],[-6,-30],[6,-31]];
 export function playPosition(index,time,plan){
  if(!plan||index<0||index>7)return null;
+ const route=STORIES[plan.id]?.routes[index];
+ if(route)return sampleFlowRun(route,time,0,-1.3);
  const start=STARTS[index],end=ENDS[index],u=clamp(time/5.4),shape=playRouteSignature(plan);
  let p=interpolate(start,end,u);
  // All player tracks are distinct even when the same passer appears across
@@ -150,11 +184,11 @@ export function playTouches(plan){
  if(!plan)return [];
  const count=plan.order.length-1,slot=4.38/count;
  // Distinct passing tempos preserve the 1-v-1 before the final cross.
- const beats=plan.family==='overlap'&&count===3?[[.42,1.06],[2.58,2.99],[3.72,4.80]]:
+ const beats=STORIES[plan.id]?.beats||(plan.family==='overlap'&&count===3?[[.42,1.06],[2.58,2.99],[3.72,4.80]]:
   plan.family==='lowcross'&&count===2?[[.42,1.10],[3.62,4.82]]:
   plan.family==='cutback'&&count===4?[[.40,.94],[2.35,2.76],[3.25,3.60],[4.02,4.84]]:
   plan.family==='switch'&&count===4?[[.34,.88],[1.10,1.77],[2.12,2.69],[3.60,4.83]]:
-  plan.family==='nearpost'&&count===2?[[.42,1.10],[3.69,4.79]]:null;
+  plan.family==='nearpost'&&count===2?[[.42,1.10],[3.69,4.79]]:null);
  return Array.from({length:count},(_,i)=>Object.freeze({
   passer:plan.order[i],receiver:plan.order[i+1],
   release:beats?beats[i][0]:.45+i*slot,arrival:beats?beats[i][1]:.45+i*slot+slot*.80,
@@ -186,12 +220,13 @@ export function playBall(plan,time,shotContact){
  if(!plan)return null;
  const touches=playTouches(plan),t=clamp(time,0,5.4);
  if(t>=5.4)return shotContact.slice();
- if(t>=5.14){const pos=foot(0,5.14,plan),u=clamp((t-5.14)/.26);return interpolate(pos,shotContact,u)}
+ if(t>=5.14&&!STORIES[plan.id]?.direct){const pos=foot(0,5.14,plan),u=clamp((t-5.14)/.26);return interpolate(pos,shotContact,u)}
  for(const pass of touches){
   if(t>=pass.release&&t<pass.arrival){
-   const start=foot(pass.passer,pass.release,plan),end=foot(pass.receiver,pass.arrival,plan);
+   const start=foot(pass.passer,pass.release,plan),direct=STORIES[plan.id]?.direct&&pass===touches.at(-1),
+    end=direct?shotContact:foot(pass.receiver,pass.arrival,plan);
    const u=clamp((t-pass.release)/(pass.arrival-pass.release));
-   const p=interpolate(start,end,u);p[1]=.14+pass.arc*Math.sin(Math.PI*u);
+   const p=interpolate(start,end,u);p[1]=mix(start[1],end[1],ease(u))+pass.arc*Math.sin(Math.PI*u);
    return p;
   }
  }

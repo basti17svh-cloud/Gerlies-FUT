@@ -3,8 +3,8 @@ const root=path.join(__dirname,'..');
 const importPlaybook=()=>import('../3d-playbook.mjs');
 test('V21.86: thirty distinct authored attacking sequences, not just different labels',async()=>{
  const {PLAYBOOK,getPlay,PLAYBOOK_IDS,playTouches}=await importPlaybook();
- assert.equal(PLAYBOOK.length,48);
- assert.equal(new Set(PLAYBOOK_IDS).size,48);
+ assert.equal(PLAYBOOK.length,60);
+ assert.equal(new Set(PLAYBOOK_IDS).size,60);
  assert.ok(PLAYBOOK.every(p=>p.order.length>=2&&p.order.at(-1)===0&&p.seconds>=9&&p.seconds<=20));
  assert.ok(new Set(PLAYBOOK.map(p=>p.order.join(','))).size>=18);
  assert.ok(PLAYBOOK.every(p=>playTouches(p).length===p.order.length-1));
@@ -13,6 +13,8 @@ test('V21.86: thirty distinct authored attacking sequences, not just different l
 test('V21.86: ball flight reaches the actual animated passer and receiver in every sequence',async()=>{
  const {PLAYBOOK,playTouches,playBall,playPosition}=await importPlaybook(),contact=[.105,.17,-37.25];
  for(const p of PLAYBOOK){
+  const {shotContact}=await import('../3d-highlights-scene.mjs');
+  const contact=shotContact(p.id,p.finish);
   for(const beat of playTouches(p)){
    const from=playBall(p,beat.release,contact),to=playBall(p,beat.arrival-.00001,contact);
    const origin=playPosition(beat.passer,beat.release,p),receiver=playPosition(beat.receiver,beat.arrival,p);

@@ -19,7 +19,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=2200';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21146';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -100,8 +100,8 @@ const sequenceSide=sequence=>sequence.endsWith('_left')?-1:sequence.endsWith('_r
 // The contact point follows the winger's final position and shooting direction.
 export function shotContact(sequence='central',finish='normal',placement=null){
  const style=normalizeFinish(finish),base=contactFor(style),seq=normalizeSequence(sequence);
- if(!INVERTED_SEQUENCES.has(seq))return base;
- const [x,z]=invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style,placement);
+ if(!INVERTED_SEQUENCES.has(seq)&&!hasAuthoredFinish(seq))return base;
+ const [x,z]=hasAuthoredFinish(seq)?playPosition(0,SHOT_TIME,getPlay(seq)):invertedRunPosition(seq,SHOT_TIME),impact=shotImpact('goal',seq,style,placement);
  const heading=Math.atan2(x-impact[0],z-impact[2]),dx=base[0],dz=base[2]+37;
  return[x+Math.cos(heading)*dx-Math.sin(heading)*dz,base[1],
         z+Math.sin(heading)*dx+Math.cos(heading)*dz];
@@ -186,7 +186,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
  if(DEFENSIVE_SCENES.includes(seq))return defenseBall(time,seq);
  const plan=getPlay(seq);
- if(plan&&time<SHOT_TIME)return playBall(plan,time,contactFor(style));
+ if(plan&&time<SHOT_TIME)return playBall(plan,time,shotContact(seq,style,placement));
  if(INVERTED_SEQUENCES.has(seq)&&time<SHOT_TIME){
   const entry=entryPassBall(time,seq,1,0);if(entry)return entry;
   const release=SHOT_TIME-.24,contact=shotContact(seq,style,placement);
@@ -403,7 +403,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
    let tan=Math.tan(fov*Math.PI/360);
    if(authoredPlay&&!wide){
     // Fit the ball into frame and only include goal corners near the shot.
-    const goalReveal=smooth((time-3.8)/1.5),essential=[{point:bp,weight:1},...[-3.72,3.72].map(x=>({point:worldPosition([x,2.5,-52.5],direction),weight:goalReveal}))];
+    const authoredFinish=hasAuthoredFinish(seq),goalReveal=authoredFinish?smooth((time-2.8)/1.3):smooth((time-3.8)/1.5),
+     essential=[{point:bp,weight:1},...[-3.72,3.72].flatMap(x=>(authoredFinish?[-52.5,-54.45]:[-52.5]).map(z=>({point:worldPosition([x,2.5,z],direction),weight:goalReveal})))];
     for(const {point,weight} of essential){
      const vx=point[0]-position[0],vy=point[1]-position[1],vz=point[2]-position[2],
       depth=vx*fx+vy*fy+vz*fz;
@@ -1163,7 +1164,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const broadcastFor=aspect=>{
    const key=Math.round(aspect*100)/100;
    if(!broadcastTracks.has(key)){
-    const sample=createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})});
+    // New off-centre finishes need the fitted lens in the actual smoothed
+    // broadcast track as well. Choose it once; never pump zoom during a pass.
+    const authoredLens=hasAuthoredFinish(sequence)?Math.max(35.5,...[3.8,4.4,4.8,5.4,6].map(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction).fov))+3:0;
+    const sample=createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(authoredLens?{fovFloor:authoredLens,fovCeiling:authoredLens}:direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})});
     // Temporal smoothing can bring an off-axis broadcast camera closer than
     // the unsmoothed safety rail. Preserve the same TV sightline while keeping
     // the measured target clearance at every frame, including wide overlaps.
@@ -1392,7 +1396,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // V21.78 planted shot preparation; fully released before the canonical kick.
    if(event.type!=='ball_won')applyShotApproach(striker,time,finish,sequence);
    if(event.type!=='ball_won'&&time>=4.9&&time<=6.05){const k=kickPose(time),blend=smooth((time-4.9)/.25)*(1-smooth((time-5.7)/.35));
-    if(INVERTED_SEQUENCES.has(sequence)){
+    if(INVERTED_SEQUENCES.has(sequence)||hasAuthoredFinish(sequence)){
      const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish);
      const shotHeading=Math.atan2(sx-aim[0],sz-aim[2]);
      striker.root.rotation.y=mix(striker.root.rotation.y,shotHeading,blend);
@@ -1642,7 +1646,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}

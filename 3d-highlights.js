@@ -36,7 +36,7 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21128').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21146').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
   if(root.document&&mode!=='off'){
@@ -108,7 +108,19 @@
    ['wing_isolation_left','dribble',7,'finesse','medium'],
    ['wing_isolation_right','dribble',7,'finesse','medium'],
    ['late_cutback_left','cutback',7,'normal','medium'],
-   ['late_cutback_right','cutback',7,'normal','medium']
+   ['late_cutback_right','cutback',7,'normal','medium'],
+  ["layoff_distance","distance",7,"power","short"],
+  ["switch_distance_left","distance",6,"finesse","medium"],
+  ["near_post_driven_left","nearpost",8,"low_driven","medium"],
+  ["near_post_header_right","nearpost",7,"header","medium"],
+  ["six_yard_square_left","lowcross",8,"low_driven","medium"],
+  ["counter_square_right","through",8,"normal","medium"],
+  ["byline_pullback_left","cutback",7,"normal","medium"],
+  ["edge_pullback_right","cutback",7,"power","medium"],
+  ["back_post_volley_left","lowcross",6,"volley","medium"],
+  ["overlap_clipped_right","overlap",6,"header","long"],
+  ["striker_wall_return","combination",8,"low_driven","medium"],
+  ["diagonal_lob_finish","through",6,"chip","medium"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
