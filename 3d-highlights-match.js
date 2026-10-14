@@ -201,7 +201,7 @@ function queueMatchDefensive3D(action,attackingSide,attacker){
  if(shown>=2||!Number.isFinite(minute)||minute<(shown?55:18)||minute-Number(match.lastDefenseHighlightMinute||-100)<17)return false;
  const styles=match3DActorStyles(action.side,{uid:action.uid,index:action.index,name:action.name});
  const sliding=action.kind==='tackle'&&styles.some(style=>style.id==='slide-tackle');
- const sequence=action.kind==='interception'?(minute%2?'defense_interception':'defense_press_recovery'):(sliding?'defense_slide_tackle':'defense_standing_tackle');
+ const sequence=action.kind==='interception'?'defense_interception':(sliding?'defense_slide_tackle':'defense_standing_tackle');
  const queued=queueMatch3D({id:'defense:'+match.defensiveEvents.length,type:'ball_won',minute,team:attackingSide,playerId:attacker.uid??attacker.index,
   playerName:attacker.name||'Angreifer',defenderUid:action.uid,defenderSourceIndex:action.index,defenseKind:action.kind,sequence,finish:'normal'});
  if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute}
