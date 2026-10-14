@@ -14,7 +14,7 @@ const changes=[
  ['if(sbc.minTotw)reqs.push({label:"TOTW",value:', 'if(sbc.minMomentum)reqs.push({label:"MOMENTUM",value:String(stats.momentumCount)+"/"+String(sbc.minMomentum),ok:stats.minMomentumOk});\n  if(sbc.minTotw)reqs.push({label:"TOTW",value:'],
  ['const cls=x.item.variant||x.item.evo?"special":rarityOf(b);','const cls=x.item.variant||x.item.evo||x.item.cosmeticDesign?"special":rarityOf(b);'],
  ['if(item?.variant||item?.evo)return"special";return rarityOf(b)','if(item?.variant||item?.evo||item?.cosmeticDesign)return"special";return rarityOf(b)'],
- ['if(isStoryItem(item))return"STORY";\n  if(isMomentumItem(item))return"MOMENTUM";',
+ ['if(isStoryItem(item))return"STORY";\n if(isMomentumItem(item))return"MOMENTUM";',
   'if(isStoryItem(item))return"STORY";\n  if(item?.cosmeticDesign==="totw")return"TEAM OF THE WEEK · EVO";\n  if(item?.cosmeticDesign==="momentum")return"MOMENTUM · EVO";\n  if(item?.cosmeticDesign==="red")return"CHAMPIONS ROT";\n  if(item?.cosmeticDesign==="red-pro")return"CHAMPIONS ELITE ROT";\n  if(isMomentumItem(item))return"MOMENTUM";'],
  ['footera-cosmetic-evolutions.js?v=21149','footera-cosmetic-evolutions.js?v=21150'],
  ['service-worker.js?v=21149','service-worker.js?v=21150']
