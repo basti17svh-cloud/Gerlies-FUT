@@ -1,4 +1,4 @@
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21152';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21153';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21114';
@@ -984,6 +984,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;
    return track(new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));
   });
+  // Load the actual transparent Footera shield from the existing app icon.
+  // Repaint only the Footera map; the Instagram map stays fully vector-sharp.
+  const boardLogo=new Image();boardLogo.decoding='async';
+  boardLogo.onload=()=>{
+   const boardMap=adMaterials[0].map,canvas=boardMap?.image;
+   if(!canvas||!boardLogo.naturalWidth)return;
+   drawPerimeterBoard(canvas.getContext('2d'),canvas.width,canvas.height,'footera',boardLogo);
+   boardMap.needsUpdate=true;
+  };
+  boardLogo.src=new URL('./icon-512.png',import.meta.url).href;
   const adgeo=geo('ad',()=>new THREE.PlaneGeometry(12.96,1.5));
   function advertisingPanel(x,z,rotation,index){
    const backing=box(13.04,1.58,.16,'#10191c',x,.84,z,scene);backing.rotation.y=rotation;
@@ -993,7 +1003,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   for(const side of [-1,1]){
    for(let z=-45.5,i=0;z<=45.5;z+=13,i++)advertisingPanel(side*37,z,-side*Math.PI/2,i);
-   for(let x=-26,i=0;x<=26;x+=13,i++)advertisingPanel(x,side*57,side===-1?0:Math.PI,i);
+   for(let x=-26,i=0;x<=26;x+=13,i++)advertisingPanel(x,side*57,side===-1?0:Math.PI,i+(side===-1?1:0));
    for(const z of [-61,61]){box(.35,20,.35,'#7d8b8c',side*47,10,z,scene);const lights=box(5,1.1,.25,'#f1f4de',side*47,19.3,z,scene);lights.rotation.y=-side*.5}
   }
   // Player draw calls are batched below. Each bone retains its own articulation.
@@ -1620,6 +1630,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function reduceQuality(soft=false){if(!soft)renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*(soft?.82:.62)),dynamicCount=Math.floor(crowdDynamic.specs.length*(soft?.64:.46)),flags=Math.max(2,Math.floor(flagSpecs.length*(soft?.82:.6)));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flags;flagCloth.count=flags*flagSegments;if(!soft)supporterBanners.forEach(x=>x.visible=false);fill.intensity=soft?.48:.12}
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){
+   boardLogo.onload=null;
    for(const glb of importedPlayers)glb?.dispose();
    importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
