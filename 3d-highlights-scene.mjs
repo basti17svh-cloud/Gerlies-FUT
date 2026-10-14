@@ -445,6 +445,47 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   }
   return{position,target,fov,distance,phase};
 }
+// Existing deliveries retain their giver through the kicking follow-through.
+export function cameraDelivery(sequence){
+ if(hasAuthoredFinish(sequence))return null;
+ const plan=getPlay(sequence),base=baseSequence(sequence);
+ if(plan){
+  const crossing=['overlap','lowcross','cutback','nearpost'].includes(plan.family)||plan.family==='switch'&&plan.order.some(i=>i===4||i===5);
+  return crossing?playTouches(plan).at(-1):null;
+ }
+ if(base.startsWith('wing_')||base.startsWith('cutback_'))return{passer:1,release:wideLaunch(sequence)};
+ return null;
+}
+export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',sequence='central',finish='normal',keeperAction='classic',placement=null}={}){
+ const delivery=cameraDelivery(sequence);
+ const cameraAt=time=>{
+  // Delay only the handover, then catch up smoothly. Actors and ball keep
+  // their exact original clocks; no pan toward a cross before boot contact.
+  const lag=delivery ? .28*smooth((time-delivery.release+.45)/.45)*(1-smooth((time-delivery.release-.2)/.8)):0;
+  const frame=cameraState(direction,time-lag,aspect,type,sequence,finish,keeperAction,placement);
+  if(delivery){
+   frame.target[0]*=.85;frame.target[1]-=4.5;
+   // Once the cross has left the foot, bring the box into frame by panning,
+   // rather than widening the lens and filling the top with more stands.
+   const boxShift=(-51.25*direction-frame.target[2])*.27*smooth((time-delivery.release-.3)/1.25);
+   frame.target[2]+=boxShift;frame.position[2]+=boxShift;
+  }
+  return frame;
+ };
+ // New off-centre finishes need the fitted lens in the actual smoothed
+ // broadcast track as well. Choose it once; never pump zoom during a pass.
+ const authoredLens=hasAuthoredFinish(sequence)?Math.max(35.5,...[3.8,4.4,4.8,5.4,6].map(t=>cameraState(direction,t,aspect,type,sequence,finish,keeperAction,placement).fov))+3:0;
+ const sample=createStableCameraTrack(cameraAt,{duration:DURATION,...(authoredLens?{fovFloor:authoredLens,fovCeiling:authoredLens}:direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:delivery?{fovFloor:getPlay(sequence)?.family==='overlap'?35.5:27.5,fovCeiling:40}:{})});
+ // Temporal smoothing can bring an off-axis broadcast camera closer than
+ // the unsmoothed safety rail. Preserve the same TV sightline while keeping
+ // the measured target clearance at every frame, including wide overlaps.
+ return time=>{
+  const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
+  if(gap>=37.65)return state;
+  const factor=37.65/Math.max(.01,gap);
+  return {...state,position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
+ };
+}
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
 export function kitColors(event){
@@ -1164,19 +1205,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const broadcastFor=aspect=>{
    const key=Math.round(aspect*100)/100;
    if(!broadcastTracks.has(key)){
-    // New off-centre finishes need the fitted lens in the actual smoothed
-    // broadcast track as well. Choose it once; never pump zoom during a pass.
-    const authoredLens=hasAuthoredFinish(sequence)?Math.max(35.5,...[3.8,4.4,4.8,5.4,6].map(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction).fov))+3:0;
-    const sample=createStableCameraTrack(t=>eventCameraState(direction,t,key,event.type,sequence,finish,keeperAction),{duration:DURATION,...(authoredLens?{fovFloor:authoredLens,fovCeiling:authoredLens}:direction===1&&['overlap_right_low','overlap_right_high'].includes(sequence)?{fovFloor:43.5,fovCeiling:43.5}:{})});
-    // Temporal smoothing can bring an off-axis broadcast camera closer than
-    // the unsmoothed safety rail. Preserve the same TV sightline while keeping
-    // the measured target clearance at every frame, including wide overlaps.
-    broadcastTracks.set(key,time=>{
-     const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
-     if(gap>=37.65)return state;
-     const factor=37.65/Math.max(.01,gap);
-     return {...state,position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
-    });
+    broadcastTracks.set(key,createBroadcastCameraTrack({direction,aspect:key,type:event.type,sequence,finish,keeperAction,placement}));
    }
    return broadcastTracks.get(key);
   };
@@ -1646,7 +1675,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
