@@ -1,0 +1,33 @@
+name: Footera Elite Catch-Up V21.148
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-elite-catchup-v21148.cjs'
+      - '.github/workflows/elite-catchup-v21148.yml'
+permissions:
+  contents: write
+concurrency:
+  group: footera-elite-catchup-v21148
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Modify and validate elite EVOs
+        run: node scripts/apply-elite-catchup-v21148.cjs
+      - name: Regressions
+        run: node --test tests/evolutions.test.cjs tests/sbc-submission.test.cjs tests/live-content.test.cjs
+      - name: Commit updated Footera
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html service-worker.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Footera V21.148: elastic elite EVOs, broader eligibility and pace caps"
+          git push origin HEAD:main
