@@ -2,7 +2,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const base=path.join(__dirname,".."),code=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.js"),"utf8"),html=fs.readFileSync(path.join(base,"index.html"),"utf8"),css=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.css"),"utf8");
 function setup(){
  const player={uid:"player-1",pid:"1",tradeable:true,base:{name:"Testspieler",ovr:82,pac:83,sho:79,pas:75,dri:82,def:35,phy:77}};
- const state={club:[player],coins:15000,champions:{totalWins:5},cosmeticClaims:{}};
+ const state={club:[player],coins:15000,champions:{totalWins:5},cosmeticClaims:{},transferList:[]};
  const nodes={evoGrid:{innerHTML:""},evolutionView:{classList:{contains:()=>true}}};
  let callback,renderCount=0,saved=0;
  const ctx={state,globalThis:null,
@@ -40,7 +40,7 @@ test("four cosmetic themes are selectable; red is unlocked from Weekend League w
  assert.equal(c.state.cosmeticClaims.red,1);
  assert.equal(c.player.base.ovr,82);
  assert.equal(c.player.base.pac,83);
- assert.equal(c.player.tradeable,true);
+ assert.equal(c.player.tradeable,false);
  assert.equal(c.state.coins,15000);
  c.click("data-cosmetic-apply");
  assert.equal(c.state.cosmeticClaims.red,1,"duplicate application should not consume another token");
@@ -51,11 +51,54 @@ test("four cosmetic themes are selectable; red is unlocked from Weekend League w
 test("momentum cosmetic charges coins once and preserves player gameplay data",()=>{
  const c=setup();c.click("data-cosmetic-open",{cosmeticOpen:"momentum"});c.click("data-cosmetic-player",{cosmeticPlayer:"player-1"});
  c.click("data-cosmetic-apply");
- assert.equal(c.player.cosmeticDesign,"momentum");assert.equal(c.state.coins,10000);
- assert.equal(c.player.base.pac,83);assert.equal(c.player.base.ovr,82);assert.equal(c.player.tradeable,true);
+ assert.equal(c.player.cosmeticDesign,"momentum");assert.equal(c.state.coins,3000);
+ assert.equal(c.player.base.pac,83);assert.equal(c.player.base.ovr,82);assert.equal(c.player.tradeable,false);
 });
 test("red prestige requires wins and purchased live cards are excluded",()=>{
  const c=setup();c.click("data-cosmetic-open",{cosmeticOpen:"red-pro"});c.click("data-cosmetic-player",{cosmeticPlayer:"player-1"});
  c.click("data-cosmetic-apply");assert.equal(c.player.cosmeticDesign,undefined);
  assert.equal(c.state.cosmeticClaims["red-pro"],undefined);
+});
+
+test("TOTW cosmetic costs 20000 and makes a genuine SBC-eligible nontradeable special card",()=>{
+ const c=setup();c.state.coins=30000;
+ c.state.transferList.push("player-1");
+ c.click("data-cosmetic-open",{cosmeticOpen:"totw"});
+ c.click("data-cosmetic-player",{cosmeticPlayer:"player-1"});
+ c.click("data-cosmetic-apply");
+ assert.equal(c.player.cosmeticDesign,"totw");
+ assert.equal(c.state.coins,10000);
+ assert.equal(c.player.tradeable,false);
+ assert.deepEqual(c.state.transferList,[]);
+ assert.equal(c.player.base.ovr,82);
+ assert.equal(c.player.base.pac,83);
+ c.click("data-cosmetic-clear");
+ assert.equal(c.player.tradeable,false,"reverting cosmetics must not restore tradeability");
+});
+test("TOTW and MOMENTUM conversion only accepts normal gold cards, not ICONs or bronze",()=>{
+ const c=setup();c.player.base.ovr=69;
+ c.click("data-cosmetic-open",{cosmeticOpen:"totw"});
+ c.click("data-cosmetic-player",{cosmeticPlayer:"player-1"});
+ c.click("data-cosmetic-apply");
+ assert.equal(c.player.cosmeticDesign,undefined);
+ c.player.base.ovr=83;c.player.variant="icon-mid";
+ c.click("data-cosmetic-apply");
+ assert.equal(c.player.cosmeticDesign,undefined);
+});
+test("SBC rules recognize TOTW and MOMENTUM special types, not only their artwork",()=>{
+ const src=html.match(/^function isTotwSbcItem\([^\\n]*$/m);
+ const msrc=html.match(/^function isMomentumSbcItem\([^\\n]*$/m);
+ assert(src&&msrc,"SBC helper must exist");
+ const c={};vm.createContext(c);
+ vm.runInContext(src[0]+"\n"+msrc[0],c);
+ assert.equal(c.isTotwSbcItem({cosmeticDesign:"totw"}),true);
+ assert.equal(c.isTotwSbcItem({cosmeticDesign:"momentum"}),false);
+ assert.equal(c.isTotwSbcItem({cosmeticDesign:"red"}),false);
+ assert.equal(c.isTotwSbcItem({eventName:"Team of the Week 5",variant:"special"}),true);
+ assert.equal(c.isMomentumSbcItem({cosmeticDesign:"momentum"}),true);
+ assert.equal(c.isMomentumSbcItem({cosmeticDesign:"totw"}),false);
+ assert.match(html,/items\.filter\(isTotwSbcItem\)/);
+ assert.match(html,/items\.filter\(isMomentumSbcItem\)/);
+ assert.match(html,/x\.item\.cosmeticDesign/);
+ assert.match(html,/item\?\.cosmeticDesign==="totw"\)return"TEAM OF THE WEEK · EVO"/);
 });
