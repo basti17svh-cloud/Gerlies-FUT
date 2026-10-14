@@ -193,7 +193,7 @@ Beispiel:
 
 ### Verbindliche Regel
 
-**MAXIMAL 2 SPIELER PRO VEREIN.**
+**MAXIMAL 1 SPIELER PRO VEREIN.**
 
 Weitere Regeln:
 - keine dauerhafte Bevorzugung von Top-5-Ligen
@@ -246,7 +246,7 @@ ECHTE SPIELDATEN
 
 Optional:
 - Mittwoch 18:45 automatische Vorbereitung
-- ohne Änderung automatische Veröffentlichung um 19:00
+- Veröffentlichung um 19:00 ausschließlich nach ausdrücklicher Admin-Freigabe; ohne Freigabe bleibt der Entwurf gesperrt
 
 ## 11. Events
 
@@ -421,7 +421,7 @@ Buttons:
 - Speichern
 - Veröffentlichen
 
-Optional kann Footera vorbereiteten Content automatisch veröffentlichen, wenn bis zur Deadline keine manuelle Änderung erfolgt.
+Footera darf vorbereiteten Content zur geplanten Zeit automatisch veröffentlichen, wenn vorher eine ausdrückliche Admin-Freigabe erteilt wurde. Das Ausbleiben manueller Änderungen ist keine Freigabe.
 
 ## 19. Zielbild
 

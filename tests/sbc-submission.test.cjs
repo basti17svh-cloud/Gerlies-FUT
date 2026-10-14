@@ -17,6 +17,7 @@ function setup(){
   activeEvolutionEntries:()=>state.activeEvos,activeEvolutionForUid:uid=>state.activeEvos.find(e=>e.uid===uid)||null,
   displayBase:i=>i,itemRating:i=>i.ovr,positionLabel:()=>'',cardHTML:()=>'',esc:s=>String(s)};
  vm.createContext(ctx);
+ vm.runInContext(html.match(/^function isFooteraLiveCard\(.*$/m)[0],ctx);
  vm.runInContext(section('function removeActiveEvolutionForUid(','function removeActiveEvolutionInstance(')+section('function sbcTeamUsageForUid(','function sbcPickerFacetRows(')+section('function finalizeSbcSubmission(','$("sbcTabs").addEventListener('),ctx);
  return ctx
 }
@@ -36,3 +37,4 @@ test('confirmed SBC consumption clears its active evolution and all squad refere
  assert.equal(c.state.club.length,1);assert.equal(c.state.club[0].uid,'other');assert.equal(c.state.stats.sbcs,1);assert.equal(c.state.coins,100);
  c.finalizeSbcSubmission('qa');assert.equal(c.state.stats.sbcs,1);assert.equal(c.state.coins,100);
 });
+

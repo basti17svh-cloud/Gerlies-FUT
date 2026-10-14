@@ -27,6 +27,7 @@ function app(saved=new Map()){
   FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',founderRuleForPack:()=>undefined,isFounderItem:()=>false,
  };
  vm.createContext(ctx);
+ vm.runInContext(html.match(/^function isFooteraLiveCard\(.*$/m)[0],ctx);
  vm.runInContext(`${stateCode}\n${artCode}\nlet state=loadState(),pendingPack=state.pendingPack;\n${packCode}\n${specialCode}\n${resultCode}\n${finishCode}`,ctx);
  return{ctx,elements,saved,read:expr=>vm.runInContext(expr,ctx)}
 }
@@ -57,3 +58,4 @@ test('partially distributed pack restores only unresolved actions after reload',
  assert.equal(recovered.read('pendingResolved.has(0)'),true);
  assert.equal(recovered.elements.get('resultDone').disabled,true);
 });
+

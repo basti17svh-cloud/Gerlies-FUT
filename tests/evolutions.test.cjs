@@ -19,7 +19,7 @@ function setup(){
   displayBase:i=>({...i.base,ovr:i.base.ovr+Number(i.evo||0),...Object.fromEntries(Object.entries(i.evoStats||{}).map(([k,v])=>[k,i.base[k]+v]))}),
   itemRating:i=>i.base.ovr+Number(i.evo||0),resolvedPlayer:p=>p,
   playerPositions:p=>[p.position,...(p.alt||'').split(',').filter(Boolean)],parsePlayStyles:()=>[]};
- vm.createContext(ctx);vm.runInContext([time,definitions,code].join('\n'),ctx);
+ vm.createContext(ctx);vm.runInContext([time,html.match(/^function isFooteraLiveCard\(.*$/m)[0],definitions,code].join('\n'),ctx);
  ctx.showEvoClaimReveal=()=>{};ctx.setNow=value=>now=Date.parse(value);
  ctx.item=(uid,position='CM',rating=74)=>{const i={uid,tradeable:true,evo:0,evoStats:{},base:{name:uid,position,ovr:rating,pac:60,sho:55,pas:59,dri:62,def:60,phy:65}};ctx.state.club.push(i);return i};
  ctx.definition=id=>vm.runInContext(`EVOLUTION_POOL.find(e=>e.id===${JSON.stringify(id)})`,ctx);
@@ -108,3 +108,4 @@ test('every Evolution preview and claimed stage keeps the common design through 
  c.applyEvoStage(capped,{ovr:1,stats:{}},{maxFinalOvr:99});
  assert.equal(capped.evo,0);assert.equal(capped.evoDesign,true);
 });
+
