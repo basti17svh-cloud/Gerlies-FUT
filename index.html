@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21149">
-<title>Footera V21.149</title>
+<title>Footera V21.150</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1598,7 +1598,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.149</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.150</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -2154,7 +2154,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
-<script src="./footera-cosmetic-evolutions.js?v=21149"></script>
+<script src="./footera-cosmetic-evolutions.js?v=21150"></script>
 <script>
 const DB_SOURCES=[
  {name:"GitHub FC27 CSV",url:"https://raw.githubusercontent.com/mzafram2001/ea-fc/main/data/dataset_ea_fc_27.csv"},
@@ -4547,7 +4547,11 @@ function playerProfileTypeLabel(item,friend=false){
  if(friend)return"FREUNDESKARTE";
  if(isFounderItem(item))return"FOOTERA FOUNDER";
  if(isStoryItem(item))return"STORY";
- if(isMomentumItem(item))return"MOMENTUM";
+  if(item?.cosmeticDesign==="totw")return"TEAM OF THE WEEK · EVO";
+  if(item?.cosmeticDesign==="momentum")return"MOMENTUM · EVO";
+  if(item?.cosmeticDesign==="red")return"CHAMPIONS ROT";
+  if(item?.cosmeticDesign==="red-pro")return"CHAMPIONS ELITE ROT";
+  if(isMomentumItem(item))return"MOMENTUM";
  if(item?.variant==="icon-mid")return"ICON";
  if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"TEAM OF THE WEEK";
  if(item?.variant==="special")return String(item?.eventName||"SPEZIALKARTE").toUpperCase();
@@ -7184,12 +7188,14 @@ function sbcDisplayedSquadRating(avg){
  const value=Math.max(0,Number(avg)||0),whole=Math.floor(value),fraction=value-whole;
  return whole+(fraction>=.8-1e-9?1:0)
 }
+function isTotwSbcItem(item){return !!item&&(item.cosmeticDesign==="totw"||String(item.eventType||"").toLowerCase().startsWith("totw")||/^team of the week/i.test(String(item.eventName||"")))}
+function isMomentumSbcItem(item){return !!item&&(item.cosmeticDesign==="momentum"||String(item.eventType||"").toLowerCase().startsWith("momentum")||item.eventName==="MOMENTUM")}
 function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
  const map=sbcSourceMap(),items=draft.squad.map(uid=>uid?map.get(String(uid))?.item:null).filter(Boolean),count=items.length;
  const avg=count?items.reduce((n,i)=>n+itemRating(i),0)/count:0,teamRating=sbcDisplayedSquadRating(avg),allRule=count===sbc.count&&items.every(i=>sbc.filter(displayBase(i)));
  const bases=items.map(i=>displayBase(i)),affiliations=bases.map(b=>resolvedAffiliation(b)),leagues=[...new Set(affiliations.map(a=>a?.league).filter(Boolean))],clubs=[...new Set(affiliations.map(a=>a?.team).filter(Boolean))],nations=[...new Set(bases.map(b=>chemNationKey(b?.nation)).filter(Boolean))],allHaveLeague=items.every(i=>!!resolvedAffiliation(displayBase(i))?.league);
  const clubCounts={};for(const a of affiliations){const club=String(a?.team||"");if(club)clubCounts[club]=(clubCounts[club]||0)+1}
- const maxSameClub=Math.max(0,...Object.values(clubCounts)),rareCount=items.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length,goldCount=items.filter(i=>rarityOf(displayBase(i))==="gold"||!!i.variant||!!i.evo).length,chem=sbcDraftChemistry(sbc,draft,map);
+ const maxSameClub=Math.max(0,...Object.values(clubCounts)),rareCount=items.filter(i=>!!i.variant||!!i.cosmeticDesign||isCardRare(displayBase(i),i)).length,goldCount=items.filter(i=>rarityOf(displayBase(i))==="gold"||!!i.variant||!!i.evo||!!i.cosmeticDesign).length,chem=sbcDraftChemistry(sbc,draft,map);
  const avgOk=(!sbc.maxAvg||teamRating<=sbc.maxAvg)&&(!sbc.minAvg||teamRating>=sbc.minAvg),leagueOk=!sbc.sameLeague||(count===sbc.count&&allHaveLeague&&leagues.length===1);
  const minLeaguesOk=!sbc.minLeagues||leagues.length>=sbc.minLeagues,minClubsOk=!sbc.minClubs||clubs.length>=sbc.minClubs,maxSameClubOk=!sbc.maxSameClub||maxSameClub<=sbc.maxSameClub,minRareOk=!sbc.minRare||rareCount>=sbc.minRare,minGoldOk=!sbc.minGold||goldCount>=sbc.minGold;
  const requiredNationKey=chemNationKey(sbc.requiredNation||""),requiredNationCount=requiredNationKey?bases.filter(b=>chemNationKey(b?.nation)===requiredNationKey).length:0,requiredNationOk=!sbc.requiredNation||requiredNationCount>=1;
@@ -7197,11 +7203,11 @@ function sbcDraftStats(sbc,draft=sbcDraft(sbc.id)){
  const minNationsOk=!sbc.minNations||nations.length>=sbc.minNations,maxNationsOk=!sbc.maxNations||nations.length<=sbc.maxNations;
  const matchClubCounts=(sbc.matchClubs||[]).map(aliases=>affiliations.filter(a=>marqueeClubMatch(a?.team,aliases)).length),eitherMatchClubCount=matchClubCounts.reduce((a,b)=>a+b,0),minEitherMatchClubOk=!sbc.minEitherMatchClub||eitherMatchClubCount>=sbc.minEitherMatchClub,requireBothMatchClubsOk=!sbc.requireBothMatchClubs||matchClubCounts.every(n=>n>=1);
  const minChemOk=!sbc.minChem||chem>=sbc.minChem;
- const totwCount=items.filter(i=>String(i.eventType||"").toLowerCase().startsWith("totw")||/^team of the week/i.test(String(i.eventName||""))).length,minTotwOk=!sbc.minTotw||totwCount>=sbc.minTotw;
+ const totwCount=items.filter(isTotwSbcItem).length,minTotwOk=!sbc.minTotw||totwCount>=sbc.minTotw,momentumCount=items.filter(isMomentumSbcItem).length,minMomentumOk=!sbc.minMomentum||momentumCount>=sbc.minMomentum;
  const requiredClubCount=sbc.requiredClub?affiliations.filter(a=>marqueeClubMatch(a?.team,sbc.requiredClub==="Borussia Dortmund"?["Borussia Dortmund","Dortmund","BVB","BVB 09"]:[sbc.requiredClub])).length:0,requiredClubOk=!sbc.requiredClub||requiredClubCount>=1;
  const requiredLeagueCount=sbc.requiredLeague?affiliations.filter(a=>{const k=normalizeKey(a?.league||"");return sbc.requiredLeague==="MLS"?(k==="mls"||k==="major league soccer"):marqueeLeagueMatch(a?.league,sbc.requiredLeague)}).length:0,requiredLeagueOk=!sbc.requiredLeague||requiredLeagueCount>=1;
- const extrasOk=minLeaguesOk&&minClubsOk&&maxSameClubOk&&minRareOk&&minGoldOk&&requiredNationOk&&minMatchLeaguePlayersOk&&minNationsOk&&maxNationsOk&&minEitherMatchClubOk&&requireBothMatchClubsOk&&minChemOk&&minTotwOk&&requiredClubOk&&requiredLeagueOk;
- return{items,count,avg,teamRating,leagues,clubs,nations,maxSameClub,rareCount,goldCount,chem,requiredNationCount,matchLeaguePlayers,matchClubCounts,eitherMatchClubCount,allRule,avgOk,leagueOk,minLeaguesOk,minClubsOk,maxSameClubOk,minRareOk,minGoldOk,requiredNationOk,minMatchLeaguePlayersOk,minNationsOk,maxNationsOk,minEitherMatchClubOk,requireBothMatchClubsOk,minChemOk,totwCount,minTotwOk,requiredClubCount,requiredClubOk,requiredLeagueCount,requiredLeagueOk,extrasOk,ok:count===sbc.count&&allRule&&avgOk&&leagueOk&&extrasOk}
+ const extrasOk=minLeaguesOk&&minClubsOk&&maxSameClubOk&&minRareOk&&minGoldOk&&requiredNationOk&&minMatchLeaguePlayersOk&&minNationsOk&&maxNationsOk&&minEitherMatchClubOk&&requireBothMatchClubsOk&&minChemOk&&minTotwOk&&minMomentumOk&&requiredClubOk&&requiredLeagueOk;
+ return{items,count,avg,teamRating,leagues,clubs,nations,maxSameClub,rareCount,goldCount,chem,requiredNationCount,matchLeaguePlayers,matchClubCounts,eitherMatchClubCount,allRule,avgOk,leagueOk,minLeaguesOk,minClubsOk,maxSameClubOk,minRareOk,minGoldOk,requiredNationOk,minMatchLeaguePlayersOk,minNationsOk,maxNationsOk,minEitherMatchClubOk,requireBothMatchClubsOk,minChemOk,totwCount,minTotwOk,momentumCount,minMomentumOk,requiredClubCount,requiredClubOk,requiredLeagueCount,requiredLeagueOk,extrasOk,ok:count===sbc.count&&allRule&&avgOk&&leagueOk&&extrasOk}
 }
 function sbcRequirementSummary(sbc,stats){
  const reqs=[{label:"Spieler",value:`${stats.count}/${sbc.count}`,ok:stats.count===sbc.count}];
@@ -7210,7 +7216,8 @@ function sbcRequirementSummary(sbc,stats){
  if(sbc.sameLeague)reqs.push({label:"Liga",value:stats.leagues.length===1&&stats.count===sbc.count?"1 Liga":`${stats.leagues.length} Ligen`,ok:stats.leagueOk&&stats.count===sbc.count});
  if(sbc.minLeagues)reqs.push({label:"Ligen",value:`${stats.leagues.length}/${sbc.minLeagues}`,ok:stats.minLeaguesOk});
  if(sbc.minClubs)reqs.push({label:"Vereine",value:`${stats.clubs.length}/${sbc.minClubs}`,ok:stats.minClubsOk});
- if(sbc.minTotw)reqs.push({label:"TOTW",value:`${stats.totwCount}/${sbc.minTotw}`,ok:stats.minTotwOk});
+ if(sbc.minMomentum)reqs.push({label:"MOMENTUM",value:String(stats.momentumCount)+"/"+String(sbc.minMomentum),ok:stats.minMomentumOk});
+  if(sbc.minTotw)reqs.push({label:"TOTW",value:`${stats.totwCount}/${sbc.minTotw}`,ok:stats.minTotwOk});
  if(sbc.requiredClub)reqs.push({label:sbc.requiredClub==="Borussia Dortmund"?"BVB-Spieler":"Verein",value:`${stats.requiredClubCount}/1`,ok:stats.requiredClubOk});
  if(sbc.requiredLeague)reqs.push({label:sbc.requiredLeague==="MLS"?"MLS-Spieler":"Liga-Spieler",value:`${stats.requiredLeagueCount}/1`,ok:stats.requiredLeagueOk});
  if(sbc.minRare)reqs.push({label:"Seltene",value:`${stats.rareCount}/${sbc.minRare}`,ok:stats.minRareOk});
@@ -7303,7 +7310,7 @@ function sbcWarningHTML(sbc){
 }
 function sbcPickerFacetRows(){
  if(!sbcPickerState)return[];const source=String(sbcPickerState.source||""),quality=String(sbcPickerState.quality||""),pos=String(sbcPickerState.position||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
- return sbcSourceItems().filter(x=>{const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;if(source&&x.source!==source)return false;if(pos&&!playerPositions(b).includes(pos))return false;if(rating<min||rating>max)return false;if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}return true})
+ return sbcSourceItems().filter(x=>{const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;if(source&&x.source!==source)return false;if(pos&&!playerPositions(b).includes(pos))return false;if(rating<min||rating>max)return false;if(quality){const cls=x.item.variant||x.item.evo||x.item.cosmeticDesign?"special":rarityOf(b);if(cls!==quality)return false}return true})
 }
 function sbcPickerLeagues(){
  return [...new Set(sbcPickerFacetRows().map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))
@@ -7322,7 +7329,7 @@ function sbcPickerCandidates(){
   const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;const a=resolvedAffiliation(b);
   if(q&&!playerSearchText(b).includes(q))return false;if(pos&&!playerPositions(b).includes(pos))return false;
   if(source&&x.source!==source)return false;if(rating<min||rating>max)return false;
-  if(quality){const cls=x.item.variant||x.item.evo?"special":rarityOf(b);if(cls!==quality)return false}
+  if(quality){const cls=x.item.variant||x.item.evo||x.item.cosmeticDesign?"special":rarityOf(b);if(cls!==quality)return false}
   if(league&&String(a?.league||"")!==league)return false;if(club&&String(a?.team||"")!==club)return false;
   const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
@@ -7391,7 +7398,7 @@ function sbcAssistantHTML(sbc){
  <div class="sbc-assistant-summary">Quelle: Mein Verein + SBC-Speicher</div></div></div></div>`
 }
 function sbcAssistantQuality(item,b){
- if(item?.variant||item?.evo)return"special";return rarityOf(b)
+ if(item?.variant||item?.evo||item?.cosmeticDesign)return"special";return rarityOf(b)
 }
 function sbcAssistantBasePool(sbc,draft,a){
  const used=new Set([...draft.squad,...draft.test].filter(Boolean)),seen=new Set();
@@ -9414,7 +9421,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.149";
+const GFUT_BUILD="V21.150";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9471,7 +9478,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21149",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21150",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
