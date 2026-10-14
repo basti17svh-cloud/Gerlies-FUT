@@ -1,25 +1,40 @@
-// Shared high-contrast perimeter advertising artwork.
-export function drawPerimeterBoard(ctx,w,h,kind='footera'){
- const sx=w/2048,sy=h/256;ctx.save();ctx.scale(sx,sy);
+// Sharp, centered perimeter artwork shared by the 3D stadium boards.
+// The Footera crest is the game's original transparent icon-512.png, not a
+// hand-drawn approximation. Its image is supplied once it has loaded.
+const WIDTH=2048, HEIGHT=256;
+function instagramGlyph(ctx,x,y,size){
+ const gradient=ctx.createLinearGradient(x,y+size,x+size,y);
+ gradient.addColorStop(0,'#ffb340');gradient.addColorStop(.38,'#f53565');
+ gradient.addColorStop(.72,'#d52da0');gradient.addColorStop(1,'#7041d7');
+ ctx.fillStyle=gradient;
+ ctx.beginPath();ctx.roundRect(x,y,size,size,43);ctx.fill();
+ ctx.strokeStyle='#ffffff';ctx.lineWidth=13;
+ ctx.beginPath();ctx.roundRect(x+40,y+40,size-80,size-80,33);ctx.stroke();
+ ctx.beginPath();ctx.arc(x+size/2,y+size/2,29,0,Math.PI*2);ctx.stroke();
+ ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(x+size*.70,y+size*.30,8,0,Math.PI*2);ctx.fill();
+}
+export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
+ ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
  const instagram=kind==='instagram';
- ctx.fillStyle=instagram?'#f5f6ee':'#101f27';ctx.fillRect(0,0,2048,256);
- ctx.fillStyle=instagram?'#d62c85':'#a8ff61';ctx.fillRect(0,0,2048,8);
- ctx.fillStyle=instagram?'#d8ddd6':'#29464a';ctx.fillRect(0,248,2048,8);
+ ctx.fillStyle=instagram?'#fffaf8':'#0d1b24';
+ ctx.fillRect(0,0,WIDTH,HEIGHT);
+ ctx.fillStyle=instagram?'#e83191':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
+ ctx.fillStyle=instagram?'#d6d9db':'#374955';ctx.fillRect(0,249,WIDTH,7);
+ ctx.textBaseline='middle';ctx.textAlign='center';
  if(instagram){
-  // One camera glyph per panel. Its rounded square, lens and dot stay clear
-  // even when the panel is seen obliquely from the broadcast camera.
-  const x=64,y=30,size=196,g=ctx.createLinearGradient(x,y+size,x+size,y);
-  g.addColorStop(0,'#ffb340');g.addColorStop(.38,'#f53565');g.addColorStop(.72,'#d52da0');g.addColorStop(1,'#7041d7');
-  ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x,y,size,size,44);ctx.fill();
-  ctx.strokeStyle='#ffffff';ctx.lineWidth=13;ctx.beginPath();ctx.roundRect(x+40,y+40,116,116,33);ctx.stroke();
-  ctx.beginPath();ctx.arc(x+98,y+98,29,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(x+137,y+59,8,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#14252a';ctx.font='800 168px Arial, sans-serif';ctx.textBaseline='middle';
-  ctx.fillText('official_footera',314,139,1665);
+  // Equal spacing: logo / handle / logo, readable from the match camera.
+  instagramGlyph(ctx,58,29,198);
+  instagramGlyph(ctx,WIDTH-58-198,29,198);
+  ctx.fillStyle='#111e26';ctx.font='800 174px Arial, sans-serif';
+  ctx.fillText('official_footera',WIDTH/2,136,1440);
  }else{
-  ctx.fillStyle='#a8ff61';ctx.beginPath();ctx.moveTo(63,35);ctx.lineTo(242,35);ctx.lineTo(216,221);ctx.lineTo(37,221);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#102027';ctx.font='italic 900 158px Arial, sans-serif';ctx.textBaseline='middle';ctx.fillText('F',85,139);
-  ctx.fillStyle='#f5f7ed';ctx.font='italic 900 198px Arial, sans-serif';ctx.fillText('FOOTERA',324,144,1645);
+  if(footeraLogo?.complete&&footeraLogo.naturalWidth>0){
+   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   ctx.drawImage(footeraLogo,24,12,232,232);
+   ctx.drawImage(footeraLogo,WIDTH-24-232,12,232,232);
+  }
+  ctx.fillStyle='#f7f9f9';ctx.font='900 211px Arial, sans-serif';
+  ctx.fillText('FOOTERA',WIDTH/2,137,1420);
  }
  ctx.restore();
 }
