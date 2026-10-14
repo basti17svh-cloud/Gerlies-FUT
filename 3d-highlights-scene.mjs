@@ -1,3 +1,4 @@
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21152';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2195';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21114';
@@ -17,7 +18,7 @@ import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefend
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
-import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2159';
+import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21146';
 
@@ -975,11 +976,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const mesh of [crowdDynamic.torso,crowdDynamic.head,crowdDynamic.arms,crowdDynamic.legs])mesh.instanceMatrix.needsUpdate=true;
    flagSpecs.forEach((spec,i)=>writeFlag(spec,i,time,false));flagCloth.instanceMatrix.needsUpdate=true;
   }
-  const brandTex=canvasTexture(1024,128,(ctx,w,h)=>{ctx.fillStyle='#182b30';ctx.fillRect(0,0,w,h);ctx.fillStyle='#70ed86';ctx.font='italic 900 74px system-ui';ctx.fillText('F',25,92);ctx.fillStyle='#f6f7ee';ctx.font='800 49px system-ui';ctx.fillText('FOOTERA',112,87);ctx.fillStyle='#82e792';ctx.font='700 31px system-ui';ctx.fillText('BUILD YOUR ERA',490,83)});
-  const admat=track(new THREE.MeshBasicMaterial({map:brandTex})),adgeo=geo('ad',()=>new THREE.PlaneGeometry(13,1.15));
+  // Two shared high-contrast textures; anisotropic mip filtering
+  // keeps the touchline text stable at acute camera angles without shimmer.
+  const adMaterials=['footera','instagram'].map(kind=>{
+   const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
+   tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
+   tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;
+   return track(new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));
+  });
+  const adgeo=geo('ad',()=>new THREE.PlaneGeometry(12.96,1.5));
+  function advertisingPanel(x,z,rotation,index){
+   const backing=box(13.04,1.58,.16,'#10191c',x,.84,z,scene);backing.rotation.y=rotation;
+   const ad=mesh(adgeo,adMaterials[index%2],scene);
+   ad.position.set(x+Math.sin(rotation)*.085,.84,z+Math.cos(rotation)*.085);
+   ad.rotation.y=rotation;staticBoxes.push(ad);
+  }
   for(const side of [-1,1]){
-   for(let z=-45.5;z<=45.5;z+=13){const ad=mesh(adgeo,admat,scene);ad.position.set(side*37,.7,z);ad.rotation.y=-side*Math.PI/2;staticBoxes.push(ad)}
-   for(let x=-26;x<=26;x+=13){const ad=mesh(adgeo,admat,scene);ad.position.set(x,.7,side*57);ad.rotation.y=side===-1?0:Math.PI;staticBoxes.push(ad)}
+   for(let z=-45.5,i=0;z<=45.5;z+=13,i++)advertisingPanel(side*37,z,-side*Math.PI/2,i);
+   for(let x=-26,i=0;x<=26;x+=13,i++)advertisingPanel(x,side*57,side===-1?0:Math.PI,i);
    for(const z of [-61,61]){box(.35,20,.35,'#7d8b8c',side*47,10,z,scene);const lights=box(5,1.1,.25,'#f1f4de',side*47,19.3,z,scene);lights.rotation.y=-side*.5}
   }
   // Player draw calls are batched below. Each bone retains its own articulation.
