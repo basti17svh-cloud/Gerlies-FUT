@@ -711,7 +711,7 @@ export function passStrikePose(progress){
  const hip=mix(-.78,.84,swing)+.19*follow,knee=mix(-.70,-.12,swing);
  return{hip,knee,ankle:-hip-knee,follow};
 }
-export function playerPosition(index,time,type='goal',sequence='central'){
+export function playerPosition(index,time,type='goal',sequence='central',placement=null,finish='normal'){
  const p=runPosition(index,time,sequence);
  if(DEFENSIVE_SCENES.includes(normalizeSequence(sequence)))return p;
  if(time>SHOT_TIME&&[8,9,10,11,12,14,15].includes(index))p[1]-=smooth((time-SHOT_TIME)/1.8)*(.35+hash(index+200)*.8);
@@ -727,7 +727,7 @@ export function playerPosition(index,time,type='goal',sequence='central'){
   else if(type==='goal'||type==='shot_post'){
    // Support reacts to the visible outcome, without staging another shot.
    const anchor=runPosition(index,REVEAL_TIME,sequence),scorer=runPosition(0,REVEAL_TIME,sequence);
-   const rebound=type==='shot_post'?ballPosition(type,IMPACT_TIME+.65,sequence):null;
+   const rebound=type==='shot_post'?ballPosition(type,IMPACT_TIME+.65,sequence,finish,'classic',placement):null;
    const target=rebound?[rebound[0],rebound[2]+1.8]:[scorer[0]+(index===2?-1.8:1.8),scorer[1]+1.2];
    const dx=target[0]-anchor[0],dz=target[1]-anchor[1],d=Math.hypot(dx,dz)||1;
    const travel=Math.min(type==='goal'?4.5:3,d)*smooth((time-REVEAL_TIME)/2.7);
@@ -756,11 +756,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const labBallAt=t=>eventBallPosition(event.type,t,sequence,finish,keeperAction);
  const trackingTimeline=labTrackingPreview?createTrackingTimeline(defenderAction,sequence,t=>playerPosition(0,t,event.type,sequence),DURATION):null;
  const defensiveUnit=labFocusedPreview?null:createDefensiveUnit({
-  positionAt:(i,t)=>playerPosition(i,t,event.type,sequence),ballAt:t=>eventBallPosition(event.type,t),
+  positionAt:(i,t)=>playerPosition(i,t,event.type,sequence,placement,finish),ballAt:t=>eventBallPosition(event.type,t),
   defenderIndex,ballWon:event.type==='ball_won',duration:DURATION
  });
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
-  const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq);
+  const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
   if(index!==defenderIndex)return original;
   if(labDuelPreview)return stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original);
   if(labTrackingPreview)return trackingTimeline.sample(time).position;
