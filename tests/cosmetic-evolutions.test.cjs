@@ -86,8 +86,8 @@ test("TOTW and MOMENTUM conversion only accepts normal gold cards, not ICONs or 
  assert.equal(c.player.cosmeticDesign,undefined);
 });
 test("SBC rules recognize TOTW and MOMENTUM special types, not only their artwork",()=>{
- const src=html.match(/^function isTotwSbcItem\([^\\n]*$/m);
- const msrc=html.match(/^function isMomentumSbcItem\([^\\n]*$/m);
+ const src=html.match(/^function isTotwSbcItem\([^\n]*$/m);
+ const msrc=html.match(/^function isMomentumSbcItem\([^\n]*$/m);
  assert(src&&msrc,"SBC helper must exist");
  const c={};vm.createContext(c);
  vm.runInContext(src[0]+"\n"+msrc[0],c);
