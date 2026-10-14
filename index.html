@@ -18,7 +18,8 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<title>Footera V21.148</title>
+<link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21149">
+<title>Footera V21.149</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1597,7 +1598,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.148</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.149</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1770,7 +1771,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <section id="seasonPassView" class="view"><div class="headline"><h2>Season Pass</h2><p>Spiele, erfülle Ziele und hole Belohnungen auf dem kostenlosen und Premium-Pfad ab.</p></div><div class="section"><button class="pass-link" data-go="objectivesView">Ziele für Season Points ansehen →</button><div id="seasonPass"></div></div></section>
 
 <section id="evolutionView" class="view"><div class="headline"><h2>Evolutions</h2><p>Nur qualifizierte Spieler werden vorgeschlagen. Jede Stufe zeigt dir vor dem Start die resultierende Karte und ihre Upgrades.</p></div><div class="section">
-  <div class="evo-tabs" id="evoTabs"><button class="evo-tab active" data-evo-tab="available">Verfügbar</button><button class="evo-tab" data-evo-tab="active">Aktiv</button><button class="evo-tab" data-evo-tab="completed">Abgeschlossen</button><button class="evo-tab" data-evo-tab="past">Vergangen</button></div>
+  <div class="evo-tabs" id="evoTabs"><button class="evo-tab active" data-evo-tab="available">Verfügbar</button><button class="evo-tab" data-evo-tab="cosmetic">Dekorativ</button><button class="evo-tab" data-evo-tab="active">Aktiv</button><button class="evo-tab" data-evo-tab="completed">Abgeschlossen</button><button class="evo-tab" data-evo-tab="past">Vergangen</button></div>
   <div id="evoSummary" class="evo-summary"></div><div id="evoGrid" class="evo-grid"></div>
 </div></section>
 
@@ -2153,6 +2154,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=2114"></script>
 <script src="./footera-time.js"></script>
+<script src="./footera-cosmetic-evolutions.js?v=21149"></script>
 <script>
 const DB_SOURCES=[
  {name:"GitHub FC27 CSV",url:"https://raw.githubusercontent.com/mzafram2001/ea-fc/main/data/dataset_ea_fc_27.csv"},
@@ -3826,7 +3828,7 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
@@ -4606,7 +4608,7 @@ function openBiography(item,index,fallbackBase=null){
 }
 function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=true){
   if(!p)return"";p=resolvedPlayer(p);if(!mini&&item?.variant==="special"&&isLegacyEventName(item?.eventName)&&!p.face)ensureEaPlayerAssets(p);const cls=cardClass(p,item),r=item?(itemRating(item)||Number(item.displayRating)||Number(p.ovr)||0):p.ovr,pos=shownPosition||p.position;
-  const baseRare=isCardRare(p,item)&&!item?.variant&&cls!=="evolution";
+  const baseRare=isCardRare(p,item)&&!item?.variant&&!item?.cosmeticDesign&&cls!=="evolution";
   const rareMark=baseRare?`<div class="rare-mark">SELTEN</div>`:"";
   const fullName=String(p.name||"Spieler").trim(),parts=fullName.split(/\s+/),shortName=fullName.length>19&&parts.length>1?`${parts[0][0]}. ${parts.slice(1).join(" ")}`:fullName;
   const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;const playstyleMarker=typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.badgeHTML(item,p,mini):"";
@@ -7105,7 +7107,7 @@ function renderActiveEvolution(){
 }
 function renderEvoHistory(status){const rows=(state.evoHistory||[]).filter(x=>status==="completed"?x.status==="completed":x.status!=="completed");if(!rows.length)return'<div class="evo-empty">Hier gibt es noch keine Einträge.</div>';return rows.slice(0,20).map(h=>{const evo=EVOLUTION_POOL.find(x=>x.id===h.evoId),item=state.club.find(x=>x.uid===h.uid),b=item?displayBase(item):null;return`<div class="evo-history"><div><strong>${esc(evo?.name||h.evoId)}</strong><span>${b?esc(b.name):'Spieler'} · ${h.status==='completed'?'Abgeschlossen':h.status==='expired'?'Abgelaufen':'Abgebrochen'}</span></div>${b?`<div class="evo-history-card">${cardHTML(b,item,true)}</div>`:''}</div>`}).join("")}
 function renderPastEvolutions(){const nowDefs=new Set(activeEvolutionDefinitions().map(x=>x.id)),previous=activeEvolutionDefinitions(new Date(Date.now()-7*86400000)).filter(x=>!nowDefs.has(x.id));const old=previous.map(evo=>{const sch=evolutionSchedule(evo,new Date(),-1);return`<div class="evo-offer expired"><div class="evo-offer-top"><div><span class="evo-live">ABGELAUFEN</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Startphase beendet <b>${evoDate(sch.signupEnd)}</b></span></div></div>`}).join("");return old+renderEvoHistory("past")}
-function renderEvos(){if(!$("evoGrid"))return;expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
+function renderEvos(){if(!$("evoGrid"))return;expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
@@ -9412,7 +9414,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.148";
+const GFUT_BUILD="V21.149";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9469,7 +9471,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21148",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21149",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
