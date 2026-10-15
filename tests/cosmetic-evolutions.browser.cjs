@@ -1,6 +1,6 @@
 /* Champions + Rivals qualification mobile integration smoke test. Run with NODE_PATH pointing to Playwright. */
 const {chromium}=require("playwright"),http=require("node:http"),fs=require("node:fs"),path=require("node:path"),assert=require("node:assert/strict");
-const root=path.join(__dirname,".."),output=path.join(root,"test-artifacts","cosmetics-v21.156");fs.mkdirSync(output,{recursive:true});
+const root=path.join(__dirname,".."),output=path.join(root,"test-artifacts","cosmetics-v21.157");fs.mkdirSync(output,{recursive:true});
 const mime={".js":"text/javascript",".mjs":"text/javascript",".html":"text/html",".css":"text/css",".json":"application/json",".webp":"image/webp",".png":"image/png",".svg":"image/svg+xml",".webmanifest":"application/manifest+json"};
 const server=http.createServer((req,res)=>{let file=path.resolve(root,"."+new URL(req.url,"http://localhost").pathname);if(file===root)file=path.join(root,"index.html");if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return}try{let body=fs.readFileSync(file);if(file.endsWith("index.html")){let html=body.toString(),last=html.lastIndexOf("<script>");html=html.slice(0,last)+html.slice(html.indexOf("</script>",last)+9);body=Buffer.from(html)}res.setHeader("Content-Type",mime[path.extname(file)]||"application/octet-stream");res.end(body)}catch(_){res.writeHead(404).end()}});
 const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};

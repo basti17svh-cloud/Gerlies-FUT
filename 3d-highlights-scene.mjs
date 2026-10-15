@@ -1,3 +1,4 @@
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21157';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
@@ -1749,7 +1750,7 @@ export function play(event,signal){
  return new Promise(resolve=>{
   const host=document.getElementById('matchLiveStage');
   if(!host||signal.aborted||document.hidden){resolve('skipped');return}
-  let renderer,world,observer,raf,timer,done=false,start,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
+  let renderer,world,observer,raf,timer,done=false,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
   const previousFocus=document.activeElement;
   const layer=document.createElement('div');layer.className='fh3d';layer.setAttribute('data-defense-action',event.defenderAction||'jockey');layer.setAttribute('data-keeper-action',event.keeperAction||'classic');layer.setAttribute('role','region');layer.setAttribute('aria-label','Footera 3D-Highlight');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
@@ -1790,9 +1791,8 @@ export function play(event,signal){
   function onLost(e){e.preventDefault();finish('fallback')}
   function onKey(e){if(e.key==='Escape'){e.preventDefault();finish('skipped')}}
   skip.addEventListener('click',()=>finish('skipped'));signal.addEventListener('abort',onAbort,{once:true});canvas.addEventListener('webglcontextlost',onLost);window.addEventListener('keydown',onKey);
-  const seconds=Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(20,Number(event.playSeconds))):DURATION;
-  const timeScale=DURATION/seconds;
-  timer=setTimeout(()=>finish('fallback'),Math.max(16000,seconds*1000+4500));
+  const playback=createHighlightPlayback(event,DURATION);
+  timer=setTimeout(()=>finish('fallback'),30000);
   try{
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,weak=memory<=4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
    renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
@@ -1824,13 +1824,15 @@ export function play(event,signal){
    function frame(now){
     if(done)return;
     try{
-     if(start===undefined)start=now;const elapsed=(now-start)/1000;
+     const sample=playback.tick(now);
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
      if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileStandard?1.55:1.35));world.reduceQuality(mobileStandard);resize()}
-     const displayTime=elapsed*timeScale;
+     const displayTime=sample.time;
      world.update(displayTime);
      if(!layer.classList.contains('fh3d-ready')){
+      playback.presented(performance.now());
+      last=0;
       layer.classList.add('fh3d-ready');
       document.getElementById('match')?.classList.add('highlight3d-active');
      }
@@ -1846,6 +1848,7 @@ export function play(event,signal){
       layer.dataset.capturedActors=String(count);
      }
      if(event.type==='goal'&&!impactSent&&displayTime>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
+     layer.dataset.playbackTime=displayTime.toFixed(3);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      const revealAt=REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
@@ -1856,7 +1859,7 @@ export function play(event,signal){
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
-     if(elapsed>=seconds){finish('played');return}raf=requestAnimationFrame(frame);
+     if(sample.done){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
    }
    raf=requestAnimationFrame(frame);

@@ -1,18 +1,19 @@
 /* Cosmetic studio and Champions artwork; shared card proportions stay authoritative. */
 .card-shell .custom-card:is(.champions-red,.champions-pro){
- color:#f7dfaa;background:url('./assets/footera/champions-red.svg') center/100% 100% no-repeat;
+ color:#f7dfaa;background:url('./assets/footera/card-champions-ruby-v1.webp') center/100% 100% no-repeat;
  border:0;clip-path:none;box-shadow:none;
  --card-portrait-top:17%;--card-portrait-height:48%;
- --card-name-top:65%;--card-bottom-bottom:18%;--card-name-height:43%;--card-stats-top:50%;
+ --card-name-top:63.5%;--card-bottom-bottom:18%;--card-name-height:38%;--card-stats-top:55%;
  --card-stats-left:3%;--card-stats-right:3%;
  --card-emblems-top:38.5%;--card-emblems-gap:1cqw;--card-club-size:10cqw;--card-league-size:9cqw;
- --card-column-fill:linear-gradient(180deg,#41071999,#22071177);
- --card-name-fill:linear-gradient(90deg,#480b1e,#7a1830,#480b1e);
- --card-name-border:#d7ae68;--card-stats-fill:linear-gradient(180deg,#35091b33,#1d0815bb);
+ --card-column-fill:transparent;
+ --card-name-fill:transparent;
+ --card-name-border:transparent;--card-stats-fill:transparent;
  --card-name-color:#fff0c9;--card-stats-color:#d8bd8b;--card-value-color:#fff2cf;
 }
-.card-shell .custom-card.champions-pro{background-image:url('./assets/footera/champions-prestige.svg');--card-name-fill:linear-gradient(90deg,#23101b,#4a182c,#23101b);--card-name-border:#f4d894;--card-column-fill:linear-gradient(180deg,#24101bcc,#210d1688);}
+.card-shell .custom-card.champions-pro{background-image:url('./assets/footera/card-champions-prestige-v1.webp');--card-name-color:#fff3d5;--card-value-color:#fff8e8;}
 .card-shell .custom-card:is(.champions-red,.champions-pro):before{content:none;}
+.card-shell .custom-card:is(.champions-red,.champions-pro) .card-top:before{border:0;}
 .card-shell .custom-card:is(.champions-red,.champions-pro):after{content:'CHAMPIONS';position:absolute;left:16%;right:16%;top:17%;transform:translateY(-100%);z-index:3;text-align:center;color:#f9e5ad;font-size:3.6cqw;font-weight:900;letter-spacing:.17em;text-shadow:0 1px 3px #210513;}
 .card-shell .custom-card.champions-pro:after{content:'CHAMPIONS PRESTIGE';font-size:2.8cqw;letter-spacing:.1em;}
 .card-shell .custom-card:is(.champions-red,.champions-pro) :is(.ovr,.pos){color:#ffe6b1;text-shadow:0 1px 3px #290514;}
