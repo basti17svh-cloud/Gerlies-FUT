@@ -26,10 +26,13 @@ test("Legacy-only coordinates reserve separate slots for portrait, six attribute
  assert.match(playstyles,/\.custom-card\.legacy \.card-alt-positions\{bottom:2.8%!important\}/);
  assert.match(css,/\.legacy-shell \.custom-card\.legacy \.face img/);
 });
-test("V21.158 resources and application cache are coordinated",()=>{
- assert.match(html,/<title>Footera V21\.158<\/title>/);
- assert.match(html,/const GFUT_BUILD="V21\.158"/);
- assert.match(html,/service-worker\.js\?v=21158/);
- assert.match(sw,/const CACHE="footera-v21-158-legacy-violet"/);
+test("Legacy resources stay cached while the application version advances",()=>{
+ const build=html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/);
+ assert.ok(build,'Application build exists');
+ assert.ok(html.includes('<title>Footera V'+build[1]+'.'+build[2]+'</title>'));
+ assert.ok(html.includes('service-worker.js?v='+build[1]+build[2]));
+ assert.ok(sw.includes('const CACHE="footera-v'+build[1]+'-'+build[2]+'-'));
+ const manifest=JSON.parse(read('manifest.webmanifest'));
+ assert.equal(manifest.start_url,'./index.html?v='+build[1]+'.'+build[2]);
  for(const asset of ["legacy-card.css?v=21158","card-layout.css?v=21158","playstyles.css?v=21158","assets/footera/legacy-event-aura.svg"])assert.ok(sw.includes(asset),"cache "+asset);
 });
