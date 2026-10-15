@@ -44,6 +44,15 @@ test('all finishes share build-up; foot contact precedes flight; rebound follows
  assert.ok(Math.abs(post[0]-3.66)<.15&&Math.abs(post[2]+52.5)<.01);assert.ok(rebound[2]>-52.5);
  for(const type of H.TYPES){const impact=ballPosition(type,IMPACT_TIME);for(const t of [IMPACT_TIME-.00001,IMPACT_TIME+.00001])assert.ok(Math.hypot(...ballPosition(type,t).map((v,i)=>v-impact[i]))<.001,'continuous impact '+type)}
 });
+test('shot ball travels promptly without changing impact time or end position',async()=>{
+ const {ballPosition,SHOT_TIME,IMPACT_TIME}=await import('../3d-highlights-scene.mjs');
+ const start=ballPosition('goal',SHOT_TIME),end=ballPosition('goal',IMPACT_TIME);
+ const halfway=ballPosition('goal',(SHOT_TIME+IMPACT_TIME)/2);
+ const total=Math.hypot(...end.map((v,i)=>v-start[i]));
+ const covered=Math.hypot(...halfway.map((v,i)=>v-start[i]));
+ assert.ok(covered/total>.55,'the ball should not float at constant slow pace');
+ assert.deepEqual(ballPosition('goal',IMPACT_TIME),end);
+});
 test('Three resource UUIDs cannot consume the simulation random stream',async()=>{
  let calls=0;const original=Math.random;Math.random=()=>{calls++;return .5};
  try{const T=await import('../vendor/three/three.module.min.js');new T.Scene();new T.BoxGeometry();new T.MeshLambertMaterial();assert.equal(calls,0)}finally{Math.random=original}
