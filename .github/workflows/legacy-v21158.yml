@@ -1,0 +1,41 @@
+name: Footera Legacy Event V21.158
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'legacy-card.css'
+      - 'card-layout.css'
+      - 'playstyles.css'
+      - 'assets/footera/legacy-event-aura.svg'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'tests/legacy-event.test.cjs'
+      - 'tests/legacy-event.browser.cjs'
+      - '.github/workflows/legacy-v21158.yml'
+permissions:
+  contents: read
+jobs:
+  legacy-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Card renderer, Legacy theme and market regressions
+        run: node --test tests/legacy-event.test.cjs tests/card-layout.test.cjs tests/market-auctions.test.cjs tests/portrait-loading.test.cjs tests/playstyles.test.cjs
+      - name: Install Chromium for actual mobile layout verification
+        run: |
+          npm install --prefix /tmp/footera-legacy-browser playwright@1.51.1
+          /tmp/footera-legacy-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check 320, 360, 390, 412 and 768 pixels on four card surfaces
+        env:
+          NODE_PATH: /tmp/footera-legacy-browser/node_modules
+        run: node tests/legacy-event.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: footera-legacy-v21158-mobile
+          path: test-artifacts/legacy-v21158/*.png
+          retention-days: 7
