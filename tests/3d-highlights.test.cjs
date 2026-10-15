@@ -53,6 +53,22 @@ test('shot ball travels promptly without changing impact time or end position',a
  assert.ok(covered/total>.55,'the ball should not float at constant slow pace');
  assert.deepEqual(ballPosition('goal',IMPACT_TIME),end);
 });
+test('extended highlight plans cover goalkeeper buildup, turnovers and all four set pieces',async()=>{
+ const {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight}=await import('../3d-playbook.mjs');
+ for(const kind of EXTENDED_HIGHLIGHT_TYPES){
+  const plan=createExtendedHighlightPlan(kind,{team:'home',result:'saved'});
+  assert.ok(plan&&plan.duration>=13);
+  assert.equal(plan.presentationOnly,true);
+  assert.equal(plan.result,'saved');
+  assert.equal(sampleExtendedHighlight(plan,0).time,0);
+  assert.equal(sampleExtendedHighlight(plan,999).time,plan.duration);
+  for(let i=1;i<plan.beats.length;i++)assert.equal(plan.beats[i-1].end,plan.beats[i].start);
+ }
+ const counter=createExtendedHighlightPlan('turnover_counter',{team:'away'});
+ assert.equal(sampleExtendedHighlight(counter,1).team,'away');
+ assert.equal(sampleExtendedHighlight(counter,10).team,'home');
+ assert.equal(createExtendedHighlightPlan('not_a_real_scene'),null);
+});
 test('Three resource UUIDs cannot consume the simulation random stream',async()=>{
  let calls=0;const original=Math.random;Math.random=()=>{calls++;return .5};
  try{const T=await import('../vendor/three/three.module.min.js');new T.Scene();new T.BoxGeometry();new T.MeshLambertMaterial();assert.equal(calls,0)}finally{Math.random=original}
