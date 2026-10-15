@@ -51,9 +51,11 @@ const server=http.createServer((req,res)=>{
      const bounds=[name,stats,face,alt,top,emblems,styles].filter(Boolean).every(el=>inside(rect(el),cardRect));
      const readable=statItems.every(el=>el.querySelector("b")?.textContent.trim()&&el.querySelector("small")?.textContent.trim())&&name.textContent.trim()==="E. Anderson";
      const purple=getComputedStyle(card).backgroundImage.includes("rgb(50, 16, 82)")||getComputedStyle(card).backgroundImage.includes("#321052");
-     return {context:wrap.dataset.context,six,order,bounds,readable,purple,styles:styles.querySelectorAll(".playstyle-card-icon").length};
+     return {context:wrap.dataset.context,six,order,bounds,readable,purple,styles:styles.querySelectorAll(".playstyle-card-icon").length,statCount:statItems.length,statsRect:{top:statsRect.top,bottom:statsRect.bottom,left:statsRect.left,right:statsRect.right},statRects:statItems.map(el=>({left:rect(el).left,right:rect(el).right,top:rect(el).top,bottom:rect(el).bottom})),nameRect:{top:nameRect.top,bottom:nameRect.bottom},playRect:{top:playRect.top,bottom:playRect.bottom},altRect:{top:altRect.top,bottom:altRect.bottom},faceRect:{top:faceRect.top,bottom:faceRect.bottom},cardRect:{top:cardRect.top,bottom:cardRect.bottom}};
     });
    });
+   console.log("MEASURED",viewport,JSON.stringify(result));
+   await page.locator("#legacy-v21158-fixtures").screenshot({path:path.join(out,"legacy-"+viewport+".png")});
    for(const r of result){
     assert.equal(r.error,undefined,viewport+"px "+r.context+" "+r.error);
     assert.equal(r.six,true,viewport+"px "+r.context+" all six stats visible");
