@@ -69,7 +69,9 @@ function match3DSkinTones(event){
  const match=(list,id,name)=>list.find(r=>id!=null&&(String(r.uid)===String(id)||String(r.index)===String(id)))||list.find(r=>String(r.name||'').toLowerCase()===String(name||'').toLowerCase());
  const scorer=match(source,event.playerId,event.playerName),defender=match(opposition,event.defenderUid??event.defenderSourceIndex,event.defenderName);
  const orderedAttack=[scorer,...source.filter(r=>r!==scorer)].filter(Boolean).slice(0,8);
- const orderedDefense=[defender,...opposition.filter(r=>r!==defender)].filter(Boolean).slice(0,8);
+ const orderedDefense=opposition.filter(r=>r!==defender).slice(0,8);
+ const defenderSlot=Number.isInteger(event.defenderIndex)?Math.max(0,Math.min(7,event.defenderIndex-8)):0;
+ if(defender){orderedDefense.splice(defenderSlot,0,defender);orderedDefense.length=Math.min(8,orderedDefense.length);}
  const tones=Array(16).fill(null);
  orderedAttack.forEach((r,i)=>tones[i]=tone(r));
  orderedDefense.forEach((r,i)=>tones[8+i]=tone(r));
@@ -187,7 +189,7 @@ function queueMatch3D(event){
  presentation.defenderName=defender?.name||'';
  presentation.defenderIndex=event.type==='ball_won'?8:wideLeft?9:wideRight?10:8;
   const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
-  Object.assign(presentation,match3DSkinTones({...event,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name}));
+  Object.assign(presentation,match3DSkinTones({...event,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name,defenderIndex:presentation.defenderIndex}));
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
