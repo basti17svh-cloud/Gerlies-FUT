@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-10-13",
+  "asOf": "2026-10-15",
   "edition": "EA FC 27",
   "source": "Futbin",
   "preferredPlatform": "console",
@@ -76,10 +76,10 @@
       "name": "Lothar Matthäus",
       "ovr": 90,
       "slug": "lothar-matthaus",
-      "price": 3990000,
-      "observedPrice": 3990000,
+      "price": 4600000,
+      "observedPrice": 4600000,
       "platform": "pc",
-      "basis": "base-icon-pc-fallback",
+      "basis": "footera-manual-market-calibration-2026-10-15",
       "sourceUrl": "https://www.futbin.com/27/players?page=4"
     },
     {
