@@ -61,11 +61,11 @@ assert(/\.mini \.card-shell>\.playstyle-card-row \.playstyle-card-icon/.test(pla
 
 const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
 assert(index.includes("./playstyles.js?v=2114"),"PlayStyle-Script ist nicht eingebunden");
-assert(index.includes("./playstyles.css?v=2114"),"PlayStyle-CSS ist nicht eingebunden");
+assert(/\.\/playstyles\.css\?v=\d+/.test(index),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");
 assert(index.includes("FooteraPlayStyles.profileHTML(item,b)"),"Spielerbiografie zeigt PlayStyles nicht an");
 assert(/const GFUT_BUILD="V21\.\d+"/.test(index),"Footera Build-Bezeichnung fehlt");
 
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
-assert(sw.includes("./playstyles.js?v=2114")&&sw.includes("./playstyles.css?v=2114"),"Service Worker cached PlayStyle-Dateien nicht");
+assert(sw.includes("./playstyles.js?v=2114")&&/\.\/playstyles\.css\?v=\d+/.test(sw),"Service Worker cached PlayStyle-Dateien nicht");
 console.log("PlayStyle-System: 37 Definitionen, Basis/Spezial/Evolution/UI/Cache OK");

@@ -50,7 +50,7 @@ const server=http.createServer((req,res)=>{
      const order=faceRect.bottom<=nameRect.top+1.5&&nameRect.bottom<=statsRect.top+1.5&&statsRect.bottom<=playRect.top+1.5&&playRect.bottom<=altRect.top+1.5;
      const bounds=[name,stats,face,alt,top,emblems,styles].filter(Boolean).every(el=>inside(rect(el),cardRect));
      const readable=statItems.every(el=>el.querySelector("b")?.textContent.trim()&&el.querySelector("small")?.textContent.trim())&&name.textContent.trim()==="E. Anderson";
-     const purple=getComputedStyle(card).backgroundImage.includes("rgb(49, 16, 82)")||getComputedStyle(card).backgroundImage.includes("#321052");
+     const purple=getComputedStyle(card).backgroundImage.includes("rgb(50, 16, 82)")||getComputedStyle(card).backgroundImage.includes("#321052");
      return {context:wrap.dataset.context,six,order,bounds,readable,purple,styles:styles.querySelectorAll(".playstyle-card-icon").length};
     });
    });
