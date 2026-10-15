@@ -525,6 +525,17 @@ export function crowdReactionState(type,attackTeam,supporterTeam,time){
  return{suspense,mood:mood*after*fade};
 }
 function skinTone(name='',offset=0){const tones=['#ecc2a0','#dca17d','#bd7b59','#8d5a3e','#6d422e'];let n=offset;for(const c of name)n=(n*33+c.charCodeAt(0))>>>0;return tones[n%tones.length]}
+// Player complexion must never be derived from names, nationality or scene RNG.
+const PLAYER_SKIN_PALETTE=Object.freeze(['#f1d2b3','#dbad88','#c88f69','#a96d4b','#805035','#503326']);
+export function resolvePlayerSkinTone(value){
+ if(typeof value==='number'&&Number.isInteger(value)&&value>=1&&value<=6)return PLAYER_SKIN_PALETTE[value-1];
+ if(typeof value==='string'){
+  const v=value.trim().toLowerCase();
+  if(/^[1-6]$/.test(v))return PLAYER_SKIN_PALETTE[Number(v)-1];
+  if(/^#[0-9a-f]{6}$/.test(v))return v;
+ }
+ return PLAYER_SKIN_PALETTE[2];
+}
 
 // Root paths are independent of the result until the finish. Distances/time keep
 // the carrying player, chasing line, support runs and ball in the same phase.
@@ -1051,14 +1062,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Oval cross-sections describe chest, waist, jaw and muscles with smooth
   // normals. Shared geometry is instanced, keeping the existing joint hierarchy.
   function anatomy(key,rings){return geo(key,()=>athleticGeometry(rings,weak?10:high?18:14))}
-  function player(kit,name,keeper=false,modern=false,shirtNumber=0,lead=false){
+  function player(kit,name,keeper=false,modern=false,shirtNumber=0,lead=false,skinValue=null){
    const Joint=modern?THREE.Bone:THREE.Group;
    const root=new THREE.Group(),rig=new Joint(),upper=new Joint(),chest=new Joint();
    const motion=modern?new THREE.Bone():null;
    root.name=keeper?'FooteraKeeperRoot':lead?'FooteraScorerRoot':'';field.add(root);root.add(rig);rig.add(upper);upper.position.y=1;
    if(motion){upper.add(motion);motion.add(chest)}else upper.add(chest);
    chest.position.y=-1;
-   const skin=skinTone(name),variant=Array.from(name).reduce((n,c)=>n+c.charCodeAt(0),0),hair=['#201b17','#382820','#574032','#826444'][variant%4],shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});
+   const skin=resolvePlayerSkinTone(skinValue),variant=Array.from(name).reduce((n,c)=>n+c.charCodeAt(0),0),hair=['#201b17','#382820','#574032','#826444'][variant%4],shirt=shirtMaterial(kit),sleeve=mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92});
    if(!keeper)chest.scale.x=.97+(variant%4)*.025;
    if(!modern)part(anatomy('athletic-shirt',[[1.00,.163,.105],[1.035,.174,.114],[1.09,.166,.108],[1.18,.171,.119],[1.28,.194,.14],[1.36,.219,.144],[1.43,.238,.126],[1.47,.229,.105],[1.51,.168,.08],[1.535,.071,.065]]),shirt,chest);
    if(!modern)part(anatomy('athletic-pelvis',[[.86,.142,.099],[.94,.173,.127],[1.015,.168,.107],[1.03,.161,.105]]),mat(kit.shorts,{roughness:.96}),rig);
@@ -1125,19 +1136,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const keeperNumber=Number(event.keeperShirtNumber);
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
    i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
-   false,detailedActors.has(i),squadNumbers[i],i===0));
-  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true);
+   false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
+  const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
   // Use a single CC0 source and one skeleton clone for EACH visible player.
   // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
   const allQuaternius=allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
   const importedPlayers=new Array(players.length).fill(null);
   let importedPlayer=null,importedKeeper=null;
   const fallbackKitAtlases=new Map();
-  function lowKitAtlas(kit,shirtNumber){
-   const key=JSON.stringify([kit,shirtNumber]);
+  function lowKitAtlas(kit,shirtNumber,skinValue=null){
+   const key=JSON.stringify([kit,shirtNumber,resolvePlayerSkinTone(skinValue)]);
    if(!fallbackKitAtlases.has(key)){
     const atlas=createFootballKitAtlas(THREE,[shirtMaterial(kit),
-     mat(kit.shorts,{roughness:.96}),mat('#bd8c70'),
+     mat(kit.shorts,{roughness:.96}),mat(resolvePlayerSkinTone(skinValue)),
      mat(kit.socks,{roughness:1}),mat(['sleeves','shoulders'].includes(kit.pattern)?kit.shirtSecondary:kit.shirt,{roughness:.92})],8,shirtNumber,kit);
     track(atlas.texture);track(atlas.material);fallbackKitAtlases.set(key,atlas.texture);
    }
@@ -1159,7 +1170,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
       const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
       const name=i===0?event.playerName:'footballer '+i;
       const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
-       'quaternius',actor.skinned?null:lowKitAtlas(kit,squadNumbers[i]));
+       'quaternius',actor.skinned?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
       importedPlayers[i]=glb;staged.push(glb);
      }
