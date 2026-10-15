@@ -299,7 +299,9 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  }
  const impact=shotImpact(type,seq,style,placement);
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
- if(t<1){const p=lerp(contact,impact,t),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(t*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(t*Math.PI);return p}
+  // Faster initial ball flight; retain keeper, net and HUD impact timing.
+  const flight=1-Math.pow(1-t,1.55);
+ if(t<1){const p=lerp(contact,impact,flight),arc=style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
   const u=clamp((time-IMPACT_TIME)/1.35),sign=Math.sign(impact[0])||1;
