@@ -97,12 +97,52 @@ test('V21.90: closer camera shows the beginning and continuation of real passes 
  }
 });
 
-test('V21.90: all authored receivers have independent ball cushioning, without touching HUD',()=>{
- const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(scene,/authoredTouches&&i<8&&time<SHOT_TIME-\.25/);
- assert.match(scene,/touch\.receiver!==i/);
- assert.match(scene,/p\.ankles\[0\]\.rotation\.x\+=\.19\*receive/);
- const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
- assert.match(css,/\.fh3d-headline/);
- assert.match(css,/\.fh3d-event/);
+test('V21.159: receptions cushion every actor and release before the next kick',async()=>{
+ const P=await importPlaybook(),M=await import('../3d-highlights-scene.mjs');
+ const C=await import('../3d-action-continuity.mjs');
+ let count=0;const actors=new Set();
+ const joint=()=>({rotation:{x:.4,y:0,z:0}});
+ for(const plan of P.PLAYBOOK)for(const touch of P.playTouches(plan)){
+  const r=P.playReception(plan,touch.receiver,touch.arrival);
+  assert.equal(M.controlCarrier(touch.release,plan.id).weight,0,'release detaches boot guide');
+  if(!r)continue;
+  count++;actors.add(touch.receiver);
+  const bone=()=>({root:joint(),upper:joint(),legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()],arms:[joint(),joint()]});
+  const p=bone();C.applyReceptionContinuity(p,r,Math.PI,0);
+  assert.ok(Math.abs(p.root.rotation.y)<=.42,'never face backwards to trap a pass');
+  assert.ok(p.knees.some(k=>k.rotation.x<0),'receiving knee cushions');
+  assert.equal(P.playReception(plan,touch.receiver,r.end),null,'release pose before kick');
+  assert.ok(M.controlCarrier(touch.arrival,plan.id).weight<.001,'no ball snap on reception');
+  for(let t=r.start+.001;t<r.end-.001;t+=.01){
+   const a=P.playReception(plan,touch.receiver,t-.0001)?.routeTime??t-.0001;
+   const b=P.playReception(plan,touch.receiver,t+.0001)?.routeTime??t+.0001;
+   assert.ok(b>a,'controlled movement never reverses the route clock');
+  }
+ }
+ assert.ok(count>100);assert.ok(actors.size>=7);
+ for(const id of ['near_post_header_right','back_post_volley_left','six_yard_square_left'])
+  assert.equal(P.playReception(P.getPlay(id),0,5.4),null,'direct finish never traps');
+});
+
+test('V21.159: support runs open a return lane while contact anchors stay continuous',async()=>{
+ const P=await importPlaybook(),M=await import('../3d-highlights-scene.mjs');
+ let runs=0;
+ for(const plan of P.PLAYBOOK){
+  const contact=M.shotContact(plan.id,plan.finish);
+  for(let t=0;t<5.4;t+=.1)for(let actor=0;actor<8;actor++){
+   const shift=P.playSupportRun(plan,actor,t);
+   assert.ok(Math.hypot(...shift)<1.3,'bounded support run');
+   if(Math.hypot(...shift)>.6)runs++;
+  }
+  for(const touch of P.playTouches(plan)){
+   assert.deepEqual(P.playSupportRun(plan,touch.passer,touch.release),[0,0]);
+   assert.deepEqual(P.playSupportRun(plan,touch.receiver,touch.arrival),[0,0]);
+   for(const t of [touch.release,touch.arrival]){
+    const a=P.playBall(plan,t-.000001,contact),b=P.playBall(plan,t+.000001,contact);
+    assert.ok(Math.hypot(...a.map((v,i)=>v-b[i]))<.002,plan.id+' continuous contact');
+   }
+  }
+  assert.deepEqual(P.playBall(plan,5.4,contact),contact);
+ }
+ assert.ok(runs>100,'passers actually move into supporting lanes');
 });

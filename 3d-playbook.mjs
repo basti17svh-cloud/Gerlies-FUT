@@ -123,7 +123,7 @@ export function playRouteSignature(plan){
 }
 
 const ENDS=[[0,-37],[-24,-39],[24,-39],[-1,-32],[-26,-42],[26,-42],[-6,-30],[6,-31]];
-export function playPosition(index,time,plan){
+function basePlayPosition(index,time,plan){
  if(!plan||index<0||index>7)return null;
  const route=STORIES[plan.id]?.routes[index];
  if(route)return sampleFlowRun(route,time,0,-1.3);
@@ -180,8 +180,10 @@ export function playPosition(index,time,plan){
  }
  return p;
 }
+const touchCache=new WeakMap();
 export function playTouches(plan){
  if(!plan)return [];
+ if(touchCache.has(plan))return touchCache.get(plan);
  const count=plan.order.length-1,slot=4.38/count;
  // Distinct passing tempos preserve the 1-v-1 before the final cross.
  const beats=STORIES[plan.id]?.beats||(plan.family==='overlap'&&count===3?[[.42,1.06],[2.58,2.99],[3.72,4.80]]:
@@ -189,14 +191,58 @@ export function playTouches(plan){
   plan.family==='cutback'&&count===4?[[.40,.94],[2.35,2.76],[3.25,3.60],[4.02,4.84]]:
   plan.family==='switch'&&count===4?[[.34,.88],[1.10,1.77],[2.12,2.69],[3.60,4.83]]:
   plan.family==='nearpost'&&count===2?[[.42,1.10],[3.69,4.79]]:null);
- return Array.from({length:count},(_,i)=>Object.freeze({
+ const touches=Object.freeze(Array.from({length:count},(_,i)=>Object.freeze({
   passer:plan.order[i],receiver:plan.order[i+1],
   release:beats?beats[i][0]:.45+i*slot,arrival:beats?beats[i][1]:.45+i*slot+slot*.80,
   arc:plan.delivery==='cross'&&i===count-1?2.3:
       plan.delivery==='loft'&&(i===count-1||plan.family==='switch')?2.1:
       plan.delivery==='driven'&&i===count-1?.10:
       plan.delivery==='through'&&i===count-1?.15:.06
- }));
+ })));
+ touchCache.set(plan,touches);return touches;
+}
+// Reception and the next run share the pass schedule. Keep every contact anchor
+// and direct finish intact; all offsets are absolute-time visual choreography.
+export function playReception(plan,index,time){
+ if(!plan||index<0||index>7)return null;
+ const touches=playTouches(plan);
+ for(let n=0;n<touches.length;n++){
+  const touch=touches[n];
+  if(touch.receiver!==index)continue;
+  const next=touches.slice(n+1).find(p=>p.passer===index);
+  const end=Math.min(touch.arrival+.42,next?next.release-.21:index===0?4.9:5.14);
+  // One-touch finishes keep their shot preparation, without a fake trap.
+  if(end-touch.arrival<.08)continue;
+  const start=Math.max(touch.release+.05,touch.arrival-.22);
+  if(time<=start||time>=end)continue;
+  const cushion=ease((time-start)/(touch.arrival-start))*(1-ease((time-touch.arrival)/(end-touch.arrival)));
+  return{touch,start,end,cushion,open:ease((time-touch.arrival)/(end-touch.arrival)),
+   routeTime:time-.35*(time-touch.arrival)*cushion};
+ }
+ return null;
+}
+export function playSupportRun(plan,index,time){
+ if(!plan||index<0||index>7)return[0,0];
+ const touches=playTouches(plan);
+ for(let n=touches.length-1;n>=0;n--){
+  const touch=touches[n];
+  if(touch.passer!==index||time<=touch.release+.20)continue;
+  const next=touches.slice(n+1).find(p=>p.receiver===index||p.passer===index);
+  const start=touch.release+.20,end=Math.min(5.14,next?(next.receiver===index?next.arrival-.25:next.release-.25):5.14);
+  if(end-start<.65||time>=end)continue;
+  const u=(time-start)/(end-start),weight=16*u*u*(1-u)*(1-u);
+  const from=basePlayPosition(index,touch.release,plan),to=basePlayPosition(touch.receiver,touch.arrival,plan);
+  // Offer an inside return lane, while keeping the passer behind the receiver.
+  const lateral=clamp((to[0]-from[0])*.10,-1.1,1.1);
+  return[lateral*weight,-.65*weight];
+ }
+ return[0,0];
+}
+export function playPosition(index,time,plan){
+ const reception=playReception(plan,index,time),p=basePlayPosition(index,reception?.routeTime??time,plan);
+ if(!p)return null;
+ const support=playSupportRun(plan,index,time);
+ return[p[0]+support[0],p[1]+support[1]];
 }
 function foot(index,time,plan){
  const p=playPosition(index,time,plan);
@@ -204,7 +250,8 @@ function foot(index,time,plan){
  // Place the ball ahead of the receiver's moving boot.
  const future=playPosition(index,Math.min(5.4,time+.05),plan);
  const vx=future[0]-p[0],vz=future[1]-p[1],len=Math.hypot(vx,vz)||1;
- return[p[0]+vx/len*.45,.14,p[1]+vz/len*.45];
+ const lead=.45-.16*(playReception(plan,index,time)?.cushion||0);
+ return[p[0]+vx/len*lead,.14,p[1]+vz/len*lead];
 }
 export function playCarrier(plan,time){
  if(!plan||time>=5.15)return -1;

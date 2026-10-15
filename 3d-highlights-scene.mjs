@@ -15,14 +15,14 @@ import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} 
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
-import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity} from './3d-action-continuity.mjs?v=2144';
+import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity,applyReceptionContinuity} from './3d-action-continuity.mjs?v=21159';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
 import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21155';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21159';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -137,7 +137,16 @@ function entryPassBall(time,sequence,source,target){
 export function controlCarrier(time,sequence='central'){
  const seq=normalizeSequence(sequence),base=baseSequence(seq);
  const plan=getPlay(seq);
- if(plan){const index=playCarrier(plan,time);return{index,weight:index<0?0:Math.min(.94,.75+smooth((time-.05)/.6)*.15)}}
+ if(plan){
+  const index=playCarrier(plan,time);
+  if(index<0)return{index,weight:0};
+  let weight=Math.min(.94,.75+smooth((time-.05)/.6)*.15);
+  for(const touch of playTouches(plan)){
+   if(touch.receiver===index&&time>=touch.arrival)weight*=smooth((time-touch.arrival)/.16);
+   if(touch.passer===index&&time<touch.release)weight*=smooth((touch.release-time)/.14);
+  }
+  return{index,weight:weight*(1-smooth((time-5.01)/.14))};
+ }
  if(DEFENSIVE_SCENES.includes(seq)){
   if(time<.65)return{index:1,weight:.88*(1-smooth((time-.47)/.18))};
   if(time<1.42)return{index:-1,weight:0};
@@ -1361,7 +1370,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // Make every surrounding instanced athlete readable without new draw calls.
     if(enhancedRigMotion&&i!==0&&!(pilotMotion&&i>=1&&i<=4))
      applySquadLocomotion(p,i,time,speed,turn,stride,acceleration,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
-    if(pilotMotion&&i<2&&time<SHOT_TIME-.25)applyFootballReception(p,i,time,sequence,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
+    if(pilotMotion&&!authoredTouches&&i<2&&time<SHOT_TIME-.25)applyFootballReception(p,i,time,sequence,Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z));
     // Add bracing and release motions without moving roots, ball or match events.
     if(pilotMotion&&i<8){
      const role=i===0?'carrier':i===1?'provider':'support';
@@ -1445,20 +1454,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      p.upper.rotation.x=clamp(p.upper.rotation.x,-.20,.20);p.rig.rotation.x=0;
     }
     if(pilotMotion&&authoredTouches&&i<8&&time<SHOT_TIME-.25){
-     let receive=0;
-     for(const touch of authoredTouches){
-      if(touch.receiver!==i)continue;
-      const anticipate=smooth((time-(touch.arrival-.22))/.17),
-       recover=1-smooth((time-(touch.arrival+.09))/.24),
-       nearby=1-smooth((Math.hypot(defensiveBall[0]-x,defensiveBall[2]-z)-1.4)/1.8);
-      receive=Math.max(receive,anticipate*recover*nearby);
-     }
-     if(receive>.001){
-      // A planted receiving foot cushions the pass into the next running step,
-      // then releases before this same actor's subsequent passing contact.
-      p.legs[0].rotation.x-=.12*receive;p.knees[0].rotation.x-=.19*receive;
-      p.ankles[0].rotation.x+=.19*receive;p.upper.rotation.x+=.11*receive;
-      p.arms[0].rotation.z-=.16*receive;p.arms[1].rotation.z+=.15*receive;
+     const plan=getPlay(sequence),reception=playReception(plan,i,time);
+     if(reception){
+      const from=playPosition(reception.touch.passer,reception.touch.release,plan);
+      applyReceptionContinuity(p,reception,Math.atan2(x-from[0],z-from[1]),heading);
      }
     }
    });

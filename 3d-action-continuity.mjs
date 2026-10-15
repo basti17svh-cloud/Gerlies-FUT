@@ -5,6 +5,24 @@
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=n=>{n=clamp(n);return n*n*(3-2*n)};
 export const CONTINUITY_VERSION='21.44';
+export function applyReceptionContinuity(p,reception,incomingHeading,runHeading){
+ if(!reception)return;
+ const {cushion,open}=reception;
+ const angle=Math.atan2(Math.sin(incomingHeading-runHeading),Math.cos(incomingHeading-runHeading));
+ const foot=angle<0?0:1,plant=1-foot,weight=cushion*.78;
+ const blend=(a,b)=>a+(b-a)*weight;
+ // Keep feet facing the travel lane; open the hips just enough to meet the
+ // pass, then unwind into the next step instead of turning the runner backwards.
+ p.root.rotation.y+=clamp(angle,-.42,.42)*cushion*(1-open);
+ p.upper.rotation.y+=clamp(angle,-.50,.50)*cushion*(1-open);
+ p.legs[foot].rotation.x=blend(p.legs[foot].rotation.x,-.20+.24*open);
+ p.knees[foot].rotation.x=blend(p.knees[foot].rotation.x,-.32);
+ p.ankles[foot].rotation.x=blend(p.ankles[foot].rotation.x,.30-.18*open);
+ p.legs[plant].rotation.x=blend(p.legs[plant].rotation.x,.06);
+ p.knees[plant].rotation.x=blend(p.knees[plant].rotation.x,-.20);
+ p.upper.rotation.x=blend(p.upper.rotation.x,.12);
+ p.arms[0].rotation.z-=.18*cushion;p.arms[1].rotation.z+=.18*cushion;
+}
 export function styleAccent(styles,...ids){
  let value=0;
  for(const s of Array.isArray(styles)?styles:[]){
