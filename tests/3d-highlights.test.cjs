@@ -13,6 +13,15 @@ test('queue serializes, deduplicates and only passes immutable display snapshots
  await turn();assert.equal(played[0].playerName,'Jamal Musiala');assert.equal('match' in played[0],false);assert.ok(Object.isFrozen(played[0]));releases.shift()();await turn();releases.shift()();await turn();
  assert.equal(max,1);assert.equal(played.length,2);assert.equal(busy,1);assert.equal(idle,1);assert.equal(q.busy,false);
 });
+test('player complexion survives queue snapshots without leaking mutable input',async()=>{
+ const seen=[];const q=new H.Queue({play:e=>{seen.push(e);return Promise.resolve('played')}});
+ const original={...event(),playerSkinTones:[1,'#a96d4b',null],keeperSkinTone:6};
+ assert.equal(q.enqueue(original),true);original.playerSkinTones[0]=5;
+ await turn();assert.equal(seen[0].playerSkinTones[0],1);
+ assert.equal(seen[0].playerSkinTones[1],'#a96d4b');
+ assert.equal(seen[0].keeperSkinTone,6);
+ assert.ok(Object.isFrozen(seen[0].playerSkinTones));
+});
 test('skip settles immediately even when rendering never resolves; event is never replayed',async()=>{
  let idle=0;const q=new H.Queue({play:()=>new Promise(()=>{}),onIdle:()=>idle++});q.enqueue(event());await turn();q.skip();await turn();assert.equal(idle,1);assert.equal(q.enqueue(event()),false);
 });
