@@ -56,6 +56,26 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
  return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
 }
+// Cosmetic-only complexion metadata from explicit player records; no ancestry inference.
+function match3DSkinTones(event){
+ const rows=side=>typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
+ const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||'')));
+ const tone=row=>{
+  const candidates=[row?.entry?.skinTone,row?.base?.skinTone,row?.entry?.skinColor,row?.base?.skinColor];
+  return candidates.find(v=>typeof v==='string'&&(/^[1-6]$/.test(v.trim())||/^#[0-9a-f]{6}$/i.test(v.trim()))||Number.isInteger(v)&&v>=1&&v<=6)??null;
+ };
+ const attack=event.team==='away'?'away':'home',defend=attack==='home'?'away':'home';
+ const source=field(attack),opposition=field(defend);
+ const match=(list,id,name)=>list.find(r=>id!=null&&(String(r.uid)===String(id)||String(r.index)===String(id)))||list.find(r=>String(r.name||'').toLowerCase()===String(name||'').toLowerCase());
+ const scorer=match(source,event.playerId,event.playerName),defender=match(opposition,event.defenderUid??event.defenderSourceIndex,event.defenderName);
+ const orderedAttack=[scorer,...source.filter(r=>r!==scorer)].filter(Boolean).slice(0,8);
+ const orderedDefense=[defender,...opposition.filter(r=>r!==defender)].filter(Boolean).slice(0,8);
+ const tones=Array(16).fill(null);
+ orderedAttack.forEach((r,i)=>tones[i]=tone(r));
+ orderedDefense.forEach((r,i)=>tones[8+i]=tone(r));
+ const keeper=rows(defend).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
+ return {playerSkinTones:tones,keeperSkinTone:tone(keeper)};
+}
 function match3DPresentationMeta(event,current){
  // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.
  const ballWon=event.type==='ball_won',saved=event.type==='big_chance_saved';
@@ -167,6 +187,7 @@ function queueMatch3D(event){
  presentation.defenderName=defender?.name||'';
  presentation.defenderIndex=event.type==='ball_won'?8:wideLeft?9:wideRight?10:8;
   const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
+  Object.assign(presentation,match3DSkinTones({...event,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name}));
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
