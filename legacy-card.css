@@ -6,7 +6,7 @@
  filter:drop-shadow(0 0 .9cqw #9b47e17a) drop-shadow(0 0 2.1cqw #53218c70)
 }
 .legacy-shell .custom-card.legacy{
- z-index:1;position:relative;
+ z-index:1;
  clip-path:polygon(10% 2%,19% 1%,39% 2.8%,50% .3%,61% 2.8%,81% 1%,90% 2%,99% 9%,97% 87%,89% 95%,70% 98%,50% 100%,30% 98%,11% 95%,3% 87%,1% 9%);
  color:#f9e6b4;
  --card-column-fill:transparent;
