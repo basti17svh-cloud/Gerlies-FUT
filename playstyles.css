@@ -87,3 +87,8 @@
  .playstyle-entry p{font-size:7.5px}
  .playstyle-chip{font-size:7px}
 }
+
+/* Legacy Event footer: always below the six attributes, above secondary positions. */
+.card-shell.legacy-shell>.playstyle-card-row{bottom:7.4%}
+.card-shell.legacy-shell:has(.card-alt-positions)>.playstyle-card-row{bottom:9.1%}
+.card-shell.legacy-shell:has(>.playstyle-card-row) .custom-card.legacy .card-alt-positions{bottom:2.8%!important}

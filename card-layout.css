@@ -475,3 +475,20 @@
 .opening.theme-founder-worms .reveal .card-shell{filter:drop-shadow(0 0 30px #f838568c)!important}
 
 .card-shell.founder-shell:has(>.playstyle-card-row) .custom-card.worms-founder .card-alt-positions{bottom:5.2%!important}
+
+/* V21.158: Legacy-only geometry on the universal Footera card (no alternate renderer).
+   Name + six stats end at 83%; PlayStyles start below, secondary positions occupy the foot. */
+.card-shell.legacy-shell .custom-card.legacy{
+ --card-info-left:10%;--card-info-width:21%;
+ --card-emblems-top:39%;--card-emblems-gap:1.1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
+ --card-portrait-left:28%;--card-portrait-right:5%;
+ --card-portrait-top:15%;--card-portrait-height:47%;
+ --card-name-top:62.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:17%;--card-name-height:34%;--card-stats-top:40%;
+ --card-stats-left:1.5%;--card-stats-right:1.5%;
+ --card-alt-bottom:5%;
+}
+.card-shell.legacy-shell .custom-card.legacy:has(>.card-alt-positions){--card-bottom-bottom:17%}
+.card-shell.legacy-shell .custom-card.legacy .stats{align-items:center!important}
+.card-shell.legacy-shell .custom-card.legacy .pname{padding:0 1.2cqw!important}

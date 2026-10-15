@@ -1,57 +1,70 @@
-/* One Legacy design scales from the full player view down to the squad slots. */
-.legacy-shell{container-type:inline-size}
-.legacy-shell .custom-card.legacy{
- clip-path:polygon(10% 2%,18% 1%,38% 3%,50% .3%,62% 3%,82% 1%,90% 2%,100% 10%,97% 88%,89% 95%,70% 98%,50% 100%,30% 98%,11% 95%,3% 88%,0 10%);
- background:
-  radial-gradient(circle at 15% 13%,#ffe9ad85,transparent 2.4%),
-  radial-gradient(circle at 89% 18%,#ffe8a880,transparent 2.6%),
-  radial-gradient(circle at 10% 74%,#ff284670,transparent 6%),
-  radial-gradient(circle at 92% 67%,#ff2f6665,transparent 8%),
-  radial-gradient(ellipse at 50% 105%,#ffaf4b59,transparent 30%),
-  linear-gradient(128deg,transparent 0 15%,#ffdd8f33 15.4% 17%,transparent 17.5% 31%,#750415a6 31.5% 47%,transparent 47.5%),
-  linear-gradient(36deg,transparent 0 20%,#ffcd7a2b 20.5% 23%,transparent 23.5% 56%,#84061eb3 56.5% 72%,transparent 72.5%),
-  linear-gradient(154deg,#090102 0%,#43050f 18%,#160204 35%,#750b23 56%,#34050b 77%,#080102 100%);
- box-shadow:inset 0 0 34px #0009,inset 0 0 22px #ffa73e29,0 0 0 1px #89521bb8
-}
-.legacy-shell .custom-card.legacy:before{
- background:linear-gradient(143deg,transparent 0 10%,#ffe8ac1f 10.5% 11.3%,transparent 12% 28%,#ff584d1f 28.5% 40%,transparent 40.5%),
-  linear-gradient(29deg,transparent 0 37%,#ffd79126 37.5% 39%,transparent 39.5% 64%,#75041950 64.5% 77%,transparent 77.5%);
- box-shadow:inset 0 0 35px #ffac4b17
-}
-.legacy-shell .custom-card.legacy .legacy-facets{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none}
-.legacy-shell .custom-card.legacy .legacy-shards{z-index:3}
-.legacy-shell .custom-card.legacy .legacy-shards i{box-shadow:inset 0 0 10px #ffe6aa1a,0 0 5px #ff53431a}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(1){width:47%;height:26%;right:-15%;top:22%}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(2){width:39%;height:34%;left:-15%;top:51%}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(3){width:49%;height:22%;right:-16%;bottom:20%}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(4){width:39%;height:18%;left:10%;bottom:-4%}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(5){width:31%;height:23%;left:-8%;top:15%;clip-path:polygon(0 30%,100% 0,69% 100%,18% 74%)}
-.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(6){width:30%;height:19%;right:-5%;top:49%;clip-path:polygon(0 0,100% 24%,74% 100%,18% 71%)}
-.legacy-shell .custom-card.legacy .legacy-frame{z-index:11;filter:drop-shadow(0 0 4px #ffbc5460) drop-shadow(0 0 1px #fff0bf)}
-.legacy-shell .custom-card.legacy .legacy-frame .outer{stroke:#f7d58d;stroke-width:3.1}
-.legacy-shell .custom-card.legacy .legacy-frame .mid{stroke:#8c5922;stroke-width:1.5}
-.legacy-shell .custom-card.legacy .legacy-frame .inner{stroke:#ffefc2e0;stroke-width:.72}
-.legacy-shell .custom-card.legacy .legacy-crown{top:1.2%;width:14%;height:auto;z-index:13;filter:drop-shadow(0 1px 2px #000) drop-shadow(0 0 5px #ffce6f60)}
-.legacy-shell .custom-card.legacy:after{
- top:7.2%;min-width:45%;padding:.7cqw 2cqw;border-top:1px solid #ffe2a0c7;border-bottom:1px solid #744219eb;
- background:linear-gradient(90deg,transparent,#33070c 12%,#64101d 50%,#33070c 88%,transparent);
- color:#ffe0a0;font-size:max(2px,2.8cqw);letter-spacing:.14em;z-index:12
-}
-.legacy-shell .custom-card.legacy .legacy-laurel{right:5%;top:39%;width:15%;height:auto;opacity:.73;z-index:6}
-
-/* Coordinates come from card-layout.css; keep the red/gold Legacy treatment. */
-.legacy-shell .custom-card.legacy .ovr{color:#ffe2a2;text-shadow:0 2px 5px #000,0 0 10px #e99c4d55}
-.legacy-shell .custom-card.legacy .pos{color:#f8d797}
-.legacy-shell .custom-card.legacy .face img{filter:drop-shadow(0 5px 7px #000b) saturate(1.06) contrast(1.04)}
-.legacy-shell .custom-card.legacy .pname{color:#ffe7b1;text-shadow:0 1px 3px #000}
-.legacy-shell .custom-card.legacy .stats{color:#e7c281}
-.legacy-shell .custom-card.legacy .stats b{color:#ffe6a8;text-shadow:0 1px 2px #000}
-
-/* The crystalline extensions belong to the event shell, never to base/TOTW. */
+/* V21.158 — Premium violet Legacy Event. All player fields use the Footera master renderer. */
 .legacy-shell{isolation:isolate;overflow:visible}
 .legacy-shell:before{
  content:"";position:absolute;z-index:0;inset:-3% -7%;pointer-events:none;
- background:url("./assets/footera/legacy-event-aura.svg") center / 100% 100% no-repeat;
- filter:drop-shadow(0 0 .8cqw #db103f) drop-shadow(0 0 2cqw #d787394d);
+ background:url("./assets/footera/legacy-event-aura.svg") center/100% 100% no-repeat;
+ filter:drop-shadow(0 0 .9cqw #9b47e17a) drop-shadow(0 0 2.1cqw #53218c70)
 }
-.legacy-shell .custom-card.legacy{z-index:1}
+.legacy-shell .custom-card.legacy{
+ z-index:1;position:relative;
+ clip-path:polygon(10% 2%,19% 1%,39% 2.8%,50% .3%,61% 2.8%,81% 1%,90% 2%,99% 9%,97% 87%,89% 95%,70% 98%,50% 100%,30% 98%,11% 95%,3% 87%,1% 9%);
+ color:#f9e6b4;
+ --card-column-fill:transparent;
+ --card-name-fill:linear-gradient(90deg,#19092de8,#3f1762ed 50%,#19092de8);
+ --card-name-border:#f0ce89;
+ --card-stats-fill:linear-gradient(180deg,#1e0835f2,#090516fc);
+ --card-name-color:#ffebb9;
+ --card-stats-color:#d5b5f5;
+ --card-value-color:#fff0bd;
+ background:
+  radial-gradient(ellipse at 52% 28%,#873ac34a 0%,transparent 44%),
+  radial-gradient(ellipse at 86% 59%,#b94de03c 0%,transparent 32%),
+  radial-gradient(ellipse at 15% 75%,#67259e43 0%,transparent 37%),
+  linear-gradient(135deg,transparent 0 15%,#eacb9238 15.3% 15.8%,transparent 16.2% 50%,#ae72eb24 50.4% 51%,transparent 51.4%),
+  linear-gradient(35deg,transparent 0 37%,#e3bb8130 37.2% 37.7%,transparent 38.1% 70%,#8b42ce2c 70.4% 71%,transparent 71.4%),
+  linear-gradient(153deg,#080411 0%,#321052 21%,#190a35 40%,#512080 65%,#180823 85%,#090512 100%);
+ box-shadow:inset 0 0 30px #06020fd9,inset 0 0 1.7cqw #f4d39329,0 0 0 1px #be955d9c
+}
+.legacy-shell .custom-card.legacy:before{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(152deg,transparent 0 11%,#fce4ac24 11.3% 11.8%,transparent 12.2% 38%,#bb7de92c 38.4% 39%,transparent 39.4%),
+ linear-gradient(32deg,transparent 0 58%,#f2d7ae18 58.3% 58.8%,transparent 59.3%);
+ box-shadow:inset 0 0 2.7cqw #e5bcee20
+}
+.legacy-shell .custom-card.legacy .legacy-facets{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none}
+.legacy-shell .custom-card.legacy .legacy-shards{position:absolute;z-index:3;inset:0;pointer-events:none}
+.legacy-shell .custom-card.legacy .legacy-shards i{
+ position:absolute;display:block;
+ background:linear-gradient(146deg,#f4d49d55 0%,#7839af94 37%,#2a1158c9 72%,#ba76f454 100%);
+ border:1px solid #e7bf8747;box-shadow:inset 0 0 9px #fbde9b1d,0 0 6px #a65cf02d
+}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(1){width:41%;height:23%;right:-14%;top:18%;clip-path:polygon(0 37%,100% 0,61% 100%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(2){width:32%;height:32%;left:-12%;top:41%;clip-path:polygon(100% 0,76% 100%,0 65%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(3){width:40%;height:20%;right:-13%;bottom:19%;clip-path:polygon(0 0,100% 46%,29% 100%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(4){width:38%;height:15%;left:8%;bottom:-2%;clip-path:polygon(0 0,100% 25%,63% 100%,17% 80%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(5){width:20%;height:17%;left:-5%;top:13%;clip-path:polygon(0 30%,100% 0,68% 100%,20% 74%)}
+.legacy-shell .custom-card.legacy .legacy-shards i:nth-child(6){width:20%;height:15%;right:-4%;top:47%;clip-path:polygon(0 0,100% 24%,74% 100%,18% 71%)}
+.legacy-shell .custom-card.legacy .legacy-frame{position:absolute;z-index:11;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 0 3px #edc88969)}
+.legacy-shell .custom-card.legacy .legacy-frame .outer{fill:none;stroke:#f6d793;stroke-width:2.6;stroke-linejoin:round}
+.legacy-shell .custom-card.legacy .legacy-frame .mid{fill:none;stroke:#8b579f;stroke-width:1.45;stroke-linejoin:round}
+.legacy-shell .custom-card.legacy .legacy-frame .inner{fill:none;stroke:#fff1c4ca;stroke-width:.65;stroke-linejoin:round}
+.legacy-shell .custom-card.legacy .legacy-crown{position:absolute;z-index:13;left:50%;top:1.2%;transform:translateX(-50%);width:14%;height:auto;filter:drop-shadow(0 1px 2px #000) drop-shadow(0 0 4px #efd19c80)}
+.legacy-shell .custom-card.legacy .legacy-crown path{fill:#f7d890;stroke:#fff4c4;stroke-width:.45}
+.legacy-shell .custom-card.legacy:after{
+ content:"LEGACY EVENT";position:absolute;z-index:12;left:50%;right:auto;top:7%;transform:translateX(-50%);
+ min-width:47%;padding:.7cqw 2cqw;border-top:1px solid #ffe7b1de;border-bottom:1px solid #9a6b45cf;
+ background:linear-gradient(90deg,#15082300,#180b30f5 16%,#45166c 50%,#180b30f5 84%,#15082300);
+ color:#ffe4ae;font-size:max(2.5px,2.8cqw);font-weight:1000;letter-spacing:.1em;text-align:center;white-space:nowrap;text-shadow:0 1px 3px #000;box-shadow:0 2px 6px #0301097d
+}
+.legacy-shell .custom-card.legacy .legacy-laurel{position:absolute;z-index:6;right:4%;top:35%;width:14%;height:auto;opacity:.7;pointer-events:none;filter:drop-shadow(0 1px 2px #0b0417)}
+.legacy-shell .custom-card.legacy .legacy-laurel path{fill:#dcb86f;stroke:#ffe3a2;stroke-width:.4}
+.legacy-shell .custom-card.legacy .card-top:before{content:none!important}
+.legacy-shell .custom-card.legacy .ovr{color:#fff0c2;text-shadow:0 1px 3px #06020b,0 0 10px #dab6fb61}
+.legacy-shell .custom-card.legacy .pos{color:#ffe7ae;text-shadow:0 1px 3px #06020b}
+.legacy-shell .custom-card.legacy .face{background:none}
+.legacy-shell .custom-card.legacy .face img{filter:drop-shadow(0 5px 7px #05010bba) saturate(1.05) contrast(1.06)}
+.legacy-shell .custom-card.legacy .pname{color:#fff0bf;text-shadow:0 1px 2px #070312}
+.legacy-shell .custom-card.legacy .stats{color:#d6b9f7}
+.legacy-shell .custom-card.legacy .stats span{border-color:#e5c88b4a}
+.legacy-shell .custom-card.legacy .stats b{color:#ffedc0;text-shadow:0 1px 2px #070312}
+.quality-tag.legacy{border-color:#a47bd5!important;background:linear-gradient(135deg,#1b0b32,#512383 58%,#1a0b35)!important;color:#ffe2b3!important;box-shadow:inset 0 0 0 1px #e3c09338,0 0 9px #995ad13b}

@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.157</title>
+<title>Footera V21.158</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -58,74 +58,7 @@ body{min-height:100dvh}button,select,input{font:inherit}.app{max-width:860px;mar
 .onboard.active{display:block}.oninner{max-width:650px;margin:auto}.leaguegrid{display:grid;gap:8px;margin-top:15px}.leaguebtn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;border:1px solid #30403a;background:#101814;color:#fff;text-align:left}.leaguebtn strong{font-size:13px}.leaguebtn span{display:block;color:#8e9b97;font-size:7px;margin-top:3px}.leaguebtn b{font-size:18px;color:var(--lime)}.starterstage{display:none;text-align:center}.starterstage.active{display:block}.starterpack{width:180px;height:250px;margin:23px auto;display:grid;place-items:center;clip-path:polygon(10% 0,100% 4%,92% 100%,0 94%);background:linear-gradient(145deg,#a67527,#eedc94 40%,#768985 61%,#b46f3f);box-shadow:0 0 55px rgba(215,255,62,.25);color:#0c140f;font-weight:1000;font-size:23px;font-style:italic}.starterpack.pulse{animation:starterPulse .65s infinite alternate}@keyframes starterPulse{to{transform:scale(1.07);filter:brightness(1.4)}}
 /* cards */
 .card-shell{position:relative;width:158px;aspect-ratio:.7;filter:drop-shadow(0 13px 17px rgba(0,0,0,.42))}.official-card{width:100%;height:100%;object-fit:contain;display:block}.custom-card{position:absolute;inset:0;overflow:hidden;clip-path:polygon(8% 0,92% 0,100% 9%,96% 91%,84% 100%,16% 100%,4% 91%,0 9%);color:#212007}.custom-card.gold{background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.55),transparent 20%),linear-gradient(145deg,#f4e2a1,#bc8b26 31%,#f0d27a 64%,#8a5d12)}.custom-card.silver{color:#18201e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.7),transparent 20%),linear-gradient(145deg,#eef3f1,#9ca8a5 34%,#dfe5e3 63%,#667370)}.custom-card.bronze{color:#27180e;background:radial-gradient(circle at 55% 30%,rgba(255,255,255,.34),transparent 20%),linear-gradient(145deg,#d39969,#875130 34%,#c17b4b 63%,#55311f)}.custom-card.special{color:#fff;background:radial-gradient(circle at 55% 28%,rgba(255,255,255,.45),transparent 18%),linear-gradient(145deg,#18efbc,#2f5ecb 39%,#962bdc 68%,#191d26)}
-.custom-card.legacy{
- color:#f9d991;
- background:
-  radial-gradient(circle at 69% 30%,rgba(255,105,73,.27),transparent 18%),
-  radial-gradient(circle at 50% 72%,rgba(255,24,58,.16),transparent 27%),
-  radial-gradient(ellipse at 50% 104%,rgba(232,145,53,.28),transparent 31%),
-  linear-gradient(125deg,transparent 0 12%,rgba(255,202,111,.16) 12.4% 13.2%,transparent 13.6% 35%,rgba(109,4,20,.58) 35.5% 51%,transparent 51.5%),
-  linear-gradient(37deg,transparent 0 18%,rgba(249,190,92,.13) 18.5% 20%,transparent 20.5% 54%,rgba(132,7,31,.67) 54.5% 69%,transparent 69.5%),
-  linear-gradient(153deg,#120305 0%,#4f0713 22%,#160305 43%,#72094e 64%,#290408 83%,#090203 100%);
- box-shadow:
-  inset 0 0 30px rgba(0,0,0,.46),
-  inset 0 0 16px rgba(255,173,73,.15),
-  0 0 0 1px rgba(126,76,25,.72)
-}
-.custom-card.legacy:before{
- content:"";position:absolute;z-index:1;inset:0;border:0;clip-path:inherit;pointer-events:none;
- background:
-  linear-gradient(152deg,transparent 0 14%,rgba(255,226,154,.14) 14.5% 15.4%,transparent 16% 32%,rgba(255,89,74,.12) 32.5% 46%,transparent 46.5%),
-  linear-gradient(28deg,transparent 0 34%,rgba(255,208,121,.13) 34.5% 36%,transparent 36.5% 67%,rgba(131,9,28,.30) 67.5% 78%,transparent 78.5%),
-  repeating-linear-gradient(118deg,transparent 0 29px,rgba(255,226,156,.045) 30px 31px,transparent 32px 55px);
- box-shadow:inset 0 0 26px rgba(247,170,72,.12)
-}
-.custom-card.legacy:after{
- content:"LEGACY EVENT";position:absolute;z-index:8;left:50%;right:auto;top:11px;transform:translateX(-50%);
- min-width:62px;padding:2px 8px 2.5px;border-top:1px solid rgba(255,224,151,.70);border-bottom:1px solid rgba(112,59,23,.84);
- background:linear-gradient(90deg,transparent,#481018 18%,#731320 50%,#481018 82%,transparent);
- color:#f9d996;font-size:4.1px;font-weight:1000;letter-spacing:.20em;text-align:center;white-space:nowrap;
- text-shadow:0 1px 3px #000;box-shadow:0 3px 9px rgba(0,0,0,.36)
-}
-.custom-card.legacy .legacy-frame{position:absolute;z-index:7;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 0 4px rgba(255,199,103,.28))}
-.custom-card.legacy .legacy-frame .outer{fill:none;stroke:#f4cf84;stroke-width:2.3;stroke-linejoin:round}
-.custom-card.legacy .legacy-frame .mid{fill:none;stroke:#8d5a25;stroke-width:1.1;stroke-linejoin:round}
-.custom-card.legacy .legacy-frame .inner{fill:none;stroke:rgba(255,232,177,.78);stroke-width:.58;stroke-linejoin:round}
-.custom-card.legacy .legacy-crown{position:absolute;z-index:9;left:50%;top:2px;transform:translateX(-50%);width:20px;height:10px;filter:drop-shadow(0 1px 2px #000)}
-.custom-card.legacy .legacy-crown path{fill:#f6d27d;stroke:#fff0b9;stroke-width:.35}
-.custom-card.legacy .legacy-laurel{position:absolute;z-index:5;right:7px;top:70px;width:22px;height:57px;opacity:.74;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
-.custom-card.legacy .legacy-laurel path{fill:#d8aa59;stroke:#ffdfa0;stroke-width:.45}
-.custom-card.legacy .legacy-shards{position:absolute;z-index:1;inset:0;pointer-events:none}
-.custom-card.legacy .legacy-shards i{position:absolute;display:block;background:linear-gradient(145deg,rgba(255,225,157,.36),rgba(139,7,25,.45) 48%,rgba(255,78,57,.18));border:1px solid rgba(255,208,118,.20);filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
-.custom-card.legacy .legacy-shards i:nth-child(1){width:54px;height:42px;right:-15px;top:41px;clip-path:polygon(0 42%,100% 0,63% 100%)}
-.custom-card.legacy .legacy-shards i:nth-child(2){width:43px;height:61px;left:-18px;top:101px;clip-path:polygon(100% 0,76% 100%,0 64%)}
-.custom-card.legacy .legacy-shards i:nth-child(3){width:61px;height:37px;right:-17px;bottom:36px;clip-path:polygon(0 0,100% 47%,28% 100%)}
-.custom-card.legacy .legacy-shards i:nth-child(4){width:50px;height:30px;left:18px;bottom:-8px;clip-path:polygon(0 0,100% 22%,62% 100%,17% 78%)}
-.custom-card.legacy .card-top{z-index:6;top:28px;left:15px}
-.custom-card.legacy .ovr{color:#f9d986;font-size:28px;letter-spacing:-.04em;text-shadow:0 2px 4px #000,0 0 8px rgba(255,200,101,.12)}
-.custom-card.legacy .pos{color:#f7d791;text-shadow:0 1px 3px #000}
-.custom-card.legacy .card-icons{z-index:6;top:67px}
-.custom-card.legacy .face{z-index:3;left:36px;right:3px;top:44px;height:112px;background:radial-gradient(circle at 55% 39%,rgba(255,211,145,.13),transparent 36%)}
-.custom-card.legacy .face img{filter:drop-shadow(0 6px 7px rgba(0,0,0,.58)) saturate(1.06) contrast(1.04)}
-.custom-card.legacy .card-bottom{z-index:6;left:12px;right:12px;bottom:12px;padding:5px 4px 2px;background:linear-gradient(180deg,rgba(26,3,6,.04),rgba(18,2,5,.66) 28%,rgba(13,2,4,.84));clip-path:polygon(4% 0,96% 0,100% 18%,96% 100%,4% 100%,0 18%)}
-.custom-card.legacy .pname{padding-top:5px;border-color:#d9a650;color:#ffe6ad;font-size:9px;letter-spacing:.03em;text-shadow:0 1px 3px #000}
-.custom-card.legacy .meta{color:#c9954b;letter-spacing:.05em}
-.custom-card.legacy .stats{color:#e5bf78}
-.custom-card.legacy .stats b{color:#ffe5a8;text-shadow:0 1px 2px #000}
-.mini .custom-card.legacy:after{top:7px;min-width:42px;padding:1px 4px;font-size:2.4px;letter-spacing:.12em}
-.mini .custom-card.legacy .legacy-crown{top:1px;width:14px;height:7px}
-.mini .custom-card.legacy .legacy-laurel{right:4px;top:47px;width:14px;height:38px}
-.mini .custom-card.legacy .legacy-shards i:nth-child(1){width:35px;height:27px;right:-10px;top:28px}
-.mini .custom-card.legacy .legacy-shards i:nth-child(2){width:28px;height:40px;left:-12px;top:67px}
-.mini .custom-card.legacy .legacy-shards i:nth-child(3){width:40px;height:25px;right:-11px;bottom:24px}
-.mini .custom-card.legacy .legacy-shards i:nth-child(4){width:33px;height:20px;left:12px;bottom:-6px}
-.mini .custom-card.legacy .card-top{top:19px;left:9px}
-.mini .custom-card.legacy .ovr{font-size:18px}
-.mini .custom-card.legacy .card-icons{top:43px}
-.mini .custom-card.legacy .face{left:26px;right:2px;top:30px;height:79px}
-.mini .custom-card.legacy .card-bottom{left:6px;right:6px;bottom:7px;padding:3px 2px 1px}
-.mini .custom-card.legacy .pname{font-size:5.8px;padding-top:3px}
-.quality-tag.legacy{border-color:#b47a35!important;background:linear-gradient(135deg,#240608,#6f1020 58%,#2e0b08)!important;color:#ffd98f!important;box-shadow:inset 0 0 0 1px rgba(255,218,143,.14),0 0 8px rgba(218,149,59,.08)}
+/* Legacy Event art and dimensions: legacy-card.css + universal card-layout.css */
 .custom-card.totw{color:#f5e8b0;background:
  radial-gradient(circle at 62% 24%,rgba(255,224,118,.28),transparent 18%),
  linear-gradient(155deg,#050606 0,#171813 28%,#070807 52%,#2a2312 75%,#080908 100%);
@@ -1502,9 +1435,9 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
-<link rel="stylesheet" href="./legacy-card.css">
+<link rel="stylesheet" href="./legacy-card.css?v=21158">
 <link rel="stylesheet" href="./momentum-card.css">
-<link rel="stylesheet" href="./card-layout.css?v=21101">
+<link rel="stylesheet" href="./card-layout.css?v=21158">
 <link rel="stylesheet" href="./flashback-card.css?v=2173">
 <link rel="stylesheet" href="./story-card.css">
 <link rel="stylesheet" href="./evolution-card.css">
@@ -1519,7 +1452,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <link rel="stylesheet" href="./friends-hub.css">
 <link rel="stylesheet" href="./potm.css">
 <link rel="stylesheet" href="./chem-boosts.css?v=2114">
-<link rel="stylesheet" href="./playstyles.css?v=2114">
+<link rel="stylesheet" href="./playstyles.css?v=21158">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <script src="./club-crest-art.js?v=2130"></script>
 <script src="./pack-odds.js?v=21121"></script>
@@ -1598,7 +1531,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.157</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.158</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -4621,11 +4554,11 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
    return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
   }
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
-    <path fill="#b10931" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
-    <path fill="#6c0517" opacity=".73" d="M57 28 84 8 93 36 63 57 32 50Z"/><path fill="#dd2042" opacity=".4" d="M84 8 96 20 93 36 63 57Z"/>
-    <path fill="#ffbd63" opacity=".24" d="M32 50 63 57 23 70Z"/><path fill="#ff244b" opacity=".24" d="M7 62 23 70 35 95 10 109Z"/>
-    <path fill="#f6bf68" opacity=".24" d="M10 109 35 95 49 123 29 136Z"/><path fill="#cf1740" opacity=".44" d="M49 123 78 92 93 111 71 136Z"/>
-    <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#ff5367" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
+    <path fill="#6c27aa" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
+    <path fill="#25104e" opacity=".73" d="M57 28 84 8 93 36 63 57 32 50Z"/><path fill="#9856d5" opacity=".4" d="M84 8 96 20 93 36 63 57Z"/>
+    <path fill="#ffbd63" opacity=".24" d="M32 50 63 57 23 70Z"/><path fill="#7935b7" opacity=".24" d="M7 62 23 70 35 95 10 109Z"/>
+    <path fill="#f6bf68" opacity=".24" d="M10 109 35 95 49 123 29 136Z"/><path fill="#54207f" opacity=".44" d="M49 123 78 92 93 111 71 136Z"/>
+    <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#c083ee" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
    </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"?(p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":p.id==="footera-founder-niklas-bergstraesser"?" worms-founder":""):"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
@@ -9421,7 +9354,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.157";
+const GFUT_BUILD="V21.158";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9478,7 +9411,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21157",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21158",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
