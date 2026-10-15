@@ -113,6 +113,34 @@ export const PLAYBOOK_IDS=Object.freeze(PLAYBOOK.map(p=>p.id));
 export const DEFENSIVE_SCENES=Object.freeze([
  'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery'
 ]);
+// Match Engine 2.0: deterministic, result-neutral multi-phase highlight plans.
+// These plans describe possession and camera beats; they never award a goal.
+export const EXTENDED_HIGHLIGHT_TYPES=Object.freeze(['keeper_buildout','turnover_counter','corner','free_kick','penalty','throw_in']);
+const EXTENDED_BEATS=Object.freeze({
+ keeper_buildout:[['keeper_control',0,4,'home'],['short_distribution',4,9,'home'],['midfield_progression',9,17,'home'],['final_third',17,25,'home']],
+ turnover_counter:[['possession_build',0,7,'home'],['interception',7,9,'away'],['transition',9,17,'away'],['counter_finish',17,25,'away']],
+ corner:[['setup',0,4,'home'],['delivery',4,8,'home'],['aerial_duel',8,11,'contested'],['second_ball',11,18,'contested']],
+ free_kick:[['setup',0,5,'home'],['run_up',5,8,'home'],['delivery',8,11,'home'],['rebound',11,16,'contested']],
+ penalty:[['setup',0,6,'home'],['run_up',6,9,'home'],['strike',9,10,'home'],['keeper_response',10,13,'contested']],
+ throw_in:[['setup',0,3,'home'],['throw',3,5,'home'],['reception',5,8,'home'],['combination',8,16,'home']]
+});
+export function createExtendedHighlightPlan(kind,options={}){
+ if(!Object.hasOwn(EXTENDED_BEATS,kind))return null;
+ const attackingTeam=options.team==='away'?'away':'home';
+ const opposite=attackingTeam==='home'?'away':'home';
+ const beats=EXTENDED_BEATS[kind].map(([action,start,end,owner])=>Object.freeze({
+  action,start,end,team:owner==='contested'?null:owner==='away'?opposite:attackingTeam
+ }));
+ return Object.freeze({kind,duration:beats[beats.length-1].end,beats:Object.freeze(beats),
+  result:String(options.result||'unresolved'),presentationOnly:true});
+}
+export function sampleExtendedHighlight(plan,time){
+ if(!plan?.beats?.length)return null;
+ const t=clamp(Number.isFinite(time)?time:0,0,plan.duration);
+ const beat=plan.beats.find(b=>t<b.end)||plan.beats[plan.beats.length-1];
+ return Object.freeze({action:beat.action,team:beat.team,elapsed:t-beat.start,
+  progress:clamp((t-beat.start)/(beat.end-beat.start)),time:t});
+}
 const STARTS=[[-7,-28],[-23,-22],[23,-22],[-4,-21],[-27,-15],[27,-15],[-9,-16],[8,-17]];
 // Stable per-play movement fingerprint; no RNG or additional match events.
 const routeHash=plan=>Array.from(plan.id).reduce((n,c)=>(Math.imul(n,33)+c.charCodeAt(0))|0,5381)>>>0;
