@@ -31,7 +31,7 @@ const server=http.createServer((req,res)=>{
    const contexts=[["market",150,false],["squad",98,true],["profile",205,false],["pack",185,false]];
    for(const [name,width,mini] of contexts){
     const wrap=document.createElement("div");wrap.dataset.context=name;wrap.style.cssText="width:"+width+"px;max-width:100%;flex:none;";
-    wrap.innerHTML=cardHTML(player,item,mini);box.appendChild(wrap)
+    wrap.innerHTML=cardHTML(player,item,mini);wrap.querySelector('.card-shell').style.width=width+'px';box.appendChild(wrap)
    }
    document.body.appendChild(box);
   });
