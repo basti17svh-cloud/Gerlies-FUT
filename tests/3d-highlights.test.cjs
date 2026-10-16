@@ -979,3 +979,10 @@ test('V21.166: freekick taker and both goal posts share a frame, wall faces take
  const pose=fs.readFileSync(path.join(root,'3d-extended-match.mjs'),'utf8');
  assert.doesNotMatch(pose,/p\.elbows\[0\]\.rotation\.x=-1/);
 });
+
+// Grounded waiting and real aerial finishes use disjoint height rules.
+test('V21.167: GLB feet stay planted except real wall jumps and aerial shot actions',()=>{
+ const script=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(script,/frame\.grounded=!\(wall&&physical>=7\.85&&physical<=8\.55\)/);
+ assert.match(script,/importedMotionFrame\.grounded=time<4\.9\|\|!\['header','volley','bicycle'\]\.includes\(finish\)/);
+});

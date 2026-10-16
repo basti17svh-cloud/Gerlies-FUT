@@ -1,10 +1,10 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21166';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21167';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21166';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21167';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
@@ -23,7 +23,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21166';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21167';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -1673,7 +1673,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // Keep the same grounded gait as ordinary play; never disable the GLB
     // locomotion while moving sixteen footballers across the pitch.
     const timing=extendedTiming(sequence),physical=extendedSeconds(sequence,time),rate=time<SHOT_TIME?5.4/timing.shot:1;
-    importedMotionFrame.grounded=true;importedMotionFrame.clipEnabled=clipEnabled;
+    // Header/volley/bicycle still need their explicitly authored airborne
+   // strike, unlike running or waiting actors.
+   importedMotionFrame.grounded=time<4.9||!['header','volley','bicycle'].includes(finish);
+   importedMotionFrame.clipEnabled=clipEnabled;
     players.forEach((p,i)=>{
      if(i===0&&time>=4.9)return;
      const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
@@ -1687,7 +1690,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      p.rig.position.y=clamp(p.rig.position.y,-.055,.020);
      poseExtendedActor(p,i,time,sequence);
      const frame=squadMotionFrames[i];frame.speed=speed;frame.control=control;
-     frame.stride=stride;frame.clipEnabled=clipEnabled;frame.grounded=!wall;
+     frame.stride=stride;frame.clipEnabled=clipEnabled;
+     frame.grounded=!(wall&&physical>=7.85&&physical<=8.55);
      if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.control=control;importedMotionFrame.stride=stride}
     });
     if(buildKeeper){resetPose(buildKeeper);const pos=extendedPosition(16,time,sequence);buildKeeper.root.position.set(pos[0],0,pos[1]);poseExtendedActor(buildKeeper,16,time,sequence);}
