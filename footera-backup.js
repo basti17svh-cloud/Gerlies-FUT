@@ -46,7 +46,8 @@ async function downloadSnapshot(snapshot,tag="Local"){
  const link=root.document.createElement("a"),url=root.URL.createObjectURL(new Blob([JSON.stringify(b)],{type:"application/json"}));
  try{
   link.href=url;
-  link.download="Footera_"+label+"_"+b.clubName.replace(/[^a-z0-9_-]/gi,"_").slice(0,32)+"_"+when.replace(/[:.]/g,"-")+".json";
+  const clubPart=b.clubName.replace(/[^a-z0-9_-]/gi,"_").slice(0,32);
+  link.download=label==="Local"?"Footera_"+clubPart+"_"+when.slice(0,10)+".json":"Footera_"+label+"_"+clubPart+"_"+when.replace(/[:.]/g,"-")+".json";
   root.document.body.append(link);link.click();link.remove();
  }finally{root.setTimeout(()=>root.URL.revokeObjectURL(url),1000)}
  return b;
