@@ -405,8 +405,8 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  // not only its ground centre. Camera position/target/choreography stay intact.
  if(wide&&sequenceSide(seq)*direction>0)fov+=2.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  // Permanent elevated touchline camera: framing changes, camera side never does.
- const sideline=55.0,height=32.8,trail=wide?(time<deliveryAt?5.9:time<SHOT_TIME-.2?mix(5.9,5.1,smooth((time-deliveryAt)/(SHOT_TIME-.2-deliveryAt))):5.1):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
- const position=[sideline*scale,height*scale,targetZ+trail*direction*scale],target=[targetX,targetY,targetZ];
+ const sideline=52.0,height=31.2,trail=wide?(time<deliveryAt?5.9:time<SHOT_TIME-.2?mix(5.9,5.1,smooth((time-deliveryAt)/(SHOT_TIME-.2-deliveryAt))):5.1):4.8,length=Math.hypot(sideline,height,trail),scale=distance/length;
+ const position=[sideline*scale*.94,height*scale*.94,targetZ+trail*direction*scale*.94],target=[targetX,targetY,targetZ];
  // An off-axis wing target can shorten the actual camera-to-action distance.
  // Slide back along the SAME existing sightline only if the lens becomes too close.
  const measuredDistance=Math.hypot(position[0]-targetX,position[1]-targetY,position[2]-targetZ);
