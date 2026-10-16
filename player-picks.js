@@ -6,7 +6,14 @@
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
  async function account(){
-  const api=window.FooteraAccount,c=await api.getClient(),u=await api.user();
+  const api=window.FooteraAccount,c=await api.getClient();
+  // Reading a valid local auth session avoids an extra network round-trip
+  // merely to list or open offers. Every RPC still verifies auth server-side.
+  let session=null;
+  if(c.auth?.getSession){
+   try{session=(await c.auth.getSession()).data?.session}catch(_){}
+  }
+  const u=session?.user||await api.user();
   if(!u||u.is_anonymous||!u.email_confirmed_at||localStorage.getItem('footera-cloud-owner')!==u.id)
    throw Error('Melde dich mit dem Konto deines Vereins an, um deine Picks zu laden.');
   return {c,u};
