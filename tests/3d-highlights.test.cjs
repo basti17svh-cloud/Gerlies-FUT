@@ -140,13 +140,13 @@ test('period flags control sides, including stoppage time, with no per-highlight
  }
  for(const period of [1,2,3,4])assert.equal(H.getAttackDirection('home',period),-H.getAttackDirection('away',period));
 });
-test('the whole match space rotates together; the permanent broadcast camera pushes smoothly into the box',async()=>{
+test('all orientations keep a stable camera range while tracking the ball',async()=>{
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=56);assert.ok(c.position[0]>28&&c.position[1]>17,'broadcast camera remains elevated on the same touchline after closer framing');assert.ok(c.fov>=25.8&&c.fov<=29.5);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.equal(c.distance,48);assert.ok(Math.abs(Math.hypot(...c.position.map((x,i)=>x-c.target[i]))-48)<.0001,'exact world-space camera range');assert.ok(c.position[0]>0&&c.position[1]>20,'camera remains on elevated broadcast side');assert.ok(c.fov>=30.5&&c.fov<=65);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
- const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>3.9,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>1.5,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
+ const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.equal(early.distance,shot.distance,'no distance zoom in buildup');assert.equal(shot.distance,late.distance,'no distance zoom at shot');assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
  assert.equal(keeperPose('big_chance_saved',SHOT_TIME).dive,0);
  assert.ok(keeperPose('big_chance_saved',6.65).dive>.95);
@@ -171,7 +171,7 @@ test('presentation choreography has distinct football actions without changing t
  assert.notDeepEqual(paths.get('one_two'),paths.get('through_ball'));
  const wingLeftCam=M.cameraState(1,2.7,1.15,'goal','wing_left'),wingRightCam=M.cameraState(1,2.7,1.15,'goal','wing_right'),centralCam=M.cameraState(1,2.7,1.15,'goal','central');
  assert.equal(wingLeftCam.phase,'build');assert.equal(wingRightCam.phase,'build');assert.ok(wingLeftCam.target[0]<-5&&wingRightCam.target[0]>5,'build camera must frame the active flank');assert.ok(Math.abs(wingLeftCam.target[0]-centralCam.target[0])>5,'wing framing must differ materially from central');
- const deliveryCam=M.cameraState(1,4.3,1.15,'goal','wing_right'),finishCam=M.cameraState(1,5.6,1.15,'goal','wing_right');assert.equal(deliveryCam.phase,'delivery');assert.equal(finishCam.phase,'finish');assert.ok(deliveryCam.distance>finishCam.distance&&deliveryCam.fov>finishCam.fov,'broadcast camera must push in smoothly through delivery to finish');
+ const deliveryCam=M.cameraState(1,4.3,1.15,'goal','wing_right'),finishCam=M.cameraState(1,5.6,1.15,'goal','wing_right');assert.equal(deliveryCam.phase,'delivery');assert.equal(finishCam.phase,'finish');assert.equal(deliveryCam.distance,finishCam.distance,'delivery and finish have identical camera clearance');
  for(const seq of ['wing_left','wing_right','cutback_left','cutback_right'])for(const boundary of [3.65,M.SHOT_TIME-.2]){const a=M.cameraState(1,boundary-.002,1.15,'goal',seq),b=M.cameraState(1,boundary+.002,1.15,'goal',seq),jump=Math.hypot(...a.target.map((v,i)=>v-b.target[i])),cameraJump=Math.hypot(...a.position.map((v,i)=>v-b.position[i]));assert.ok(jump<.12,`${seq} target jump at ${boundary}: ${jump}`);assert.ok(cameraJump<.12,`${seq} camera jump at ${boundary}: ${cameraJump}`)}
  for(const seq of ['wing_left','wing_right','cutback_left','cutback_right']){let prev=M.cameraState(1,3.5,1.05,'goal',seq);for(let t=3.55;t<=5.15;t+=.05){const next=M.cameraState(1,t,1.05,'goal',seq),step=Math.hypot(...prev.target.map((v,i)=>v-next.target[i]));assert.ok(step<1.7,`${seq} camera target must pan continuously @ ${t}: ${step}`);prev=next}}
  const dribbleEarly=M.runPosition(0,1,'dribble'),dribbleLate=M.runPosition(0,4.2,'dribble');assert.ok(dribbleEarly[0]<-4&&dribbleLate[0]>1,'dribble must change lane before cutting inside');
@@ -302,8 +302,8 @@ test('visual, playbook, defensive and extended scenes correspond to actual rende
  const M=await import('../3d-highlights-scene.mjs');
  const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in'];
  assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,60);
- assert.equal(M.PLAY_SEQUENCES.length,113);
- assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery',...extended]),new Set(M.PLAY_SEQUENCES));
+ assert.equal(M.PLAY_SEQUENCES.length,115);
+ assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
   assert.ok(finishes.has(v.finish),v.id);
@@ -760,6 +760,28 @@ test('V21.107: simulator-backed ball wins display only in allowed modes',()=>{
  assert.ok(shot.some(r=>r.defenderAction==='block_attempt'));
  const source=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
  assert.match(source,/function queueMatchDefensive3D\(action,attackingSide,attacker\)/);
+});
+
+test('special cameras keep the 48m broadcast range and the counter begins with a real pressured turnover',async()=>{
+ const M=await import('../3d-highlights-scene.mjs');
+ const E=await import('../3d-extended-match.mjs');
+ for(const seq of E.EXTENDED_SEQUENCES)for(const aspect of [.9,1.3,1.8])for(const direction of [-1,1])for(const time of [0,1.5,3.5,5.4,7,10.3]){
+  const camera=M.cameraState(direction,time,aspect,'goal',seq);
+  assert.equal(camera.distance,M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
+  assert.ok(Math.abs(Math.hypot(...camera.position.map((v,i)=>v-camera.target[i]))-camera.distance)<.00001,seq+' geometric range');
+  assert.ok(camera.position[0]>0&&camera.position[1]>15,seq+' keeps broadcast side');
+ }
+ const seq='extended_turnover_counter',t=s=>s/20*5.4;
+ const start=E.extendedPosition(8,t(0),seq),late=E.extendedPosition(8,t(7.8),seq);
+ assert.ok(Math.hypot(start[0]-late[0],start[1]-late[1])>15,'carrier must move rather than stand at halfway');
+ assert.ok(!E.extendedPasses(seq).some(pass=>pass[0]===8&&pass[1]===6),'turnover is a duel, never a gift pass to opposition');
+ const before=E.extendedBall(t(7.95)-.0001,seq,[0,.14,-37]),after=E.extendedBall(t(8.3)+.0001,seq,[0,.14,-37]);
+ assert.ok(Math.hypot(...before.map((v,i)=>v-after[i]))<1.5,'controlled recovery without ball teleportation');
+ const P=await import('../3d-playbook.mjs');
+ for(const base of ['defense_standing_tackle','defense_slide_tackle']){
+  assert.notDeepEqual(P.defensePosition(8,2.5,base),P.defensePosition(8,2.5,base+'_wide'),'two distinct recovery lanes');
+  assert.ok(P.defenseBall(2.5,base+'_wide').every(Number.isFinite));
+ }
 });
 
 test('V21.89: close match camera is nearer but holds a fixed TV side',async()=>{

@@ -111,7 +111,8 @@ const plans=new Map(PLAYBOOK.map(p=>[p.id,p]));
 export const getPlay=id=>plans.get(id)||null;
 export const PLAYBOOK_IDS=Object.freeze(PLAYBOOK.map(p=>p.id));
 export const DEFENSIVE_SCENES=Object.freeze([
- 'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery'
+ 'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery',
+ 'defense_standing_tackle_wide','defense_slide_tackle_wide'
 ]);
 // Match Engine 2.0: deterministic, result-neutral multi-phase highlight plans.
 // These plans describe possession and camera beats; they never award a goal.
@@ -322,27 +323,29 @@ function interceptedPass(){
 }
 export function defensePosition(index,time,sequence){
  if(!DEFENSIVE_SCENES.includes(sequence))return null;
- const t=clamp(time,0,10.4),slide=sequence==='defense_slide_tackle';
+ const t=clamp(time,0,10.4),slide=sequence.startsWith('defense_slide_tackle');
+ const mirrored=sequence==='defense_press_recovery'||sequence.endsWith('_wide');
+ const orient=point=>mirrored?[-point[0],point[1]]:point;
  if(index===1){
   // The opposition's midfielder starts in possession and supplies a visible pass.
-  return interpolate([-15,-21],[-12,-29],t/3.15);
+  return orient(interpolate([-18,-21],[-12,-29],t/3.15));
  }
- if(index===2&&isInterception(sequence))return interpolate([7,-30],[3,-39],t/4.95);
+ if(index===2&&isInterception(sequence))return orient(interpolate([7,-30],[3,-39],t/4.95));
  if(index===0){
-  const a=interpolate([-13,-27],[-7.25,-34.35],t/4.4);
+  const a=interpolate([-14,-26],[-7.25,-34.35],t/4.4);
   if(t>4.4){a[0]-=1.1*ease((t-4.4)/2);a[1]+=2*ease((t-4.4)/2)}
-  return a;
+  return orient(a);
  }
  if(index===8){
   const hit=interceptedPass().contact;
   const intercept=isInterception(sequence)?[hit[0]-.12,hit[2]+.3]:slide?[-6.45,-34.45]:[-6.05,-34.35];
-  if(t<=4.4)return interpolate([-3.2,-42],intercept,t/4.4);
+  if(t<=4.4)return orient(interpolate([-3.2,-42],intercept,t/4.4));
   if(slide){
    const settled=[intercept[0]-.35,intercept[1]-.32];
-   if(t<5.8)return interpolate(intercept,settled,(t-4.4)/.6);
-   return interpolate(settled,[1.6,-24.5],(t-5.8)/3.8);
+   if(t<5.8)return orient(interpolate(intercept,settled,(t-4.4)/.6));
+   return orient(interpolate(settled,[1.6,-24.5],(t-5.8)/3.8));
   }
-  return interpolate(intercept,[1.6,-24.5],(t-4.4)/4.6);
+  return orient(interpolate(intercept,[1.6,-24.5],(t-4.4)/4.6));
  }
  return null;
 }
@@ -361,7 +364,7 @@ export function defenseBall(time,sequence){
   point[1]+=.28*Math.sin(Math.PI*u);return point}
  if(isInterception(sequence)&&t>=3.2&&t<4.4){
   const pass=interceptedPass(),u=(t-3.2)/(4.95-3.2);
-  return pass.from.map((v,i)=>mix(v,pass.to[i],u));
+  const point=pass.from.map((v,i)=>mix(v,pass.to[i],u));return sequence==='defense_press_recovery'?[-point[0],point[1],point[2]]:point;
  }
  if(t<(isInterception(sequence)?3.2:4.03))return[a[0]+.27,.14,a[1]-.42];
  if(!isInterception(sequence)&&t<4.4){
@@ -373,5 +376,5 @@ export function defenseBall(time,sequence){
  // The first recovered touch MUST start exactly where the ball was intercepted.
  // Blend its short escape dribble from that contact instead of teleporting.
  const taken=[owner[0]+.12,.14,owner[1]-.3],carried=[owner[0]+dx/len*.43,.14,owner[1]+dz/len*.43];
- return interpolate(taken,carried,(t-(sequence==='defense_slide_tackle'?5.8:4.4))/.32);
+ return interpolate(taken,carried,(t-(sequence.startsWith('defense_slide_tackle')?5.8:4.4))/.32);
 }

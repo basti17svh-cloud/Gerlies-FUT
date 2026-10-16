@@ -38,17 +38,17 @@ export function createStableCameraTrack(cameraAt,{duration=10.4,step=.05,sigma=.
  const requestedLens=frames.map(frame=>frame.fov).sort((a,b)=>a-b);
  // A fixed per-clip lens deliberately ignores isolated player-fit spikes.
  // Zoom is from the actual 3D dolly, not abruptly widening the field of view.
- const fov=clamp(requestedLens[Math.floor(requestedLens.length*.84)],fovFloor,fovCeiling);
+ const fov=clamp(requestedLens[Math.floor(requestedLens.length*.96)],fovFloor,fovCeiling);
  const axisAt=(t,key,axis)=>{
   const u=clamp(t,0,duration)/dt,i=Math.min(count-1,Math.floor(u)),v=u-i;
   const val=j=>weighted[clamp(j,0,count)][key][axis];
   return cubic(val(i-1),val(i),val(i+1),val(i+2),v);
  };
  return function sampleStableCamera(time){
-  const t=clamp(Number.isFinite(time)?time:0,0,duration),push=smooth((t-2.1)/6);
+  const t=clamp(Number.isFinite(time)?time:0,0,duration);
   return{position:[0,1,2].map(axis=>axisAt(t,'position',axis)),
    target:[0,1,2].map(axis=>axisAt(t,'target',axis)),
-   fov:fov-.42*push,
+   fov,
    distance:frames[Math.min(count,Math.round(t/dt))].distance,
    phase:frames[Math.min(count,Math.round(t/dt))].phase};
  };
