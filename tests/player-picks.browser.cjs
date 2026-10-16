@@ -14,10 +14,13 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    window.testOffer={id:'00000000-0000-4000-8000-000000001161',type:'champions-red',min_rating:85,choices:4,options};
    state.onboarded=true;state.club=[];state.squad=Array(23).fill(null);state.profile.saveId='pick-test';state.profile.username='Tester';state.profile.clubName='Testclub';
    PLAYERS=options.map(o=>o.item.baseSnapshot);P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
-   localStorage.setItem('footera-cloud-owner','test-owner');let claimed=false;
-   FooteraAccount.getClient=async()=>({rpc:async(name,args)=>({data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null})});
+   localStorage.setItem('footera-cloud-owner','test-owner');let claimed=false;window.cloudAutoSyncCalls=0;
+   FooteraAccount.getClient=async()=>({rpc:async(name,args)=>{
+    if(name==='footera_open_player_pick')await new Promise(resolve=>setTimeout(resolve,350));
+    return {data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null};
+   }});
    FooteraAccount.user=async()=>({id:'test-owner',email_confirmed_at:'2026-10-01',is_anonymous:false});
-   FooteraAccount.autoAttachAndBackup=async()=>{};FooteraAccount.pendingPlayerPick=()=>null;
+   FooteraAccount.autoAttachAndBackup=async()=>{window.cloudAutoSyncCalls++};FooteraAccount.pendingPlayerPick=()=>null;
    FooteraAccount.choosePlayerPick=async(id,option,apply)=>{
     await new Promise(r=>setTimeout(r,80));
     const item={...options.find(x=>x.id===option).item,uid:id,playerPickId:id,acquisitionSource:'reward-pick'};
@@ -26,12 +29,16 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    renderAll();switchView('storeView',{push:false});
   });
   await page.evaluate(()=>FooteraPlayerPicks.refresh());
+  assert.equal(await page.evaluate(()=>window.cloudAutoSyncCalls),0,'Listing Picks must not trigger full cloud synchronization');
   await page.evaluate(()=>switchView('homeView',{push:false,scroll:false}));
   assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),true,'Home banner for outstanding Picks');
   assert.match(await page.locator('#homePlayerPickCopy').textContent(),/1 Player Pick/);
   await page.locator('[data-picks-jump]').click();
   assert.equal(await page.locator('#storeView.active').count(),1,'Home banner routes to Store');
-  await page.locator('[data-pick-open]').click();await page.locator('#playerPickModal.active').waitFor();
+  await page.locator('[data-pick-open]').click();
+  await page.locator('#playerPickModal.active').waitFor();
+  assert.equal(await page.locator('.pick-loading-card').count(),4,'Opening appears immediately before server offer');
+  await page.locator('.pick-option').first().waitFor();
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
    assert.equal(await page.locator('.pick-option').count(),4);assert.equal(await page.locator('.pick-option .champions-red').count(),4);
