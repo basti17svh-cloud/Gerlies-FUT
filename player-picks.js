@@ -45,7 +45,7 @@
  function modal(){
   if($('playerPickModal'))return;
   const el=document.createElement('div');el.id='playerPickModal';el.className='modal player-pick-modal';
-  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><button type="button" class="pick-cloud-recover" data-pick-cloud-restore hidden>Cloud-Abgleich sicher prüfen</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
+  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><button type="button" class="primary pick-retry-open" data-pick-reopen hidden>Gespeicherte Karten erneut laden</button><button type="button" class="pick-cloud-recover" data-pick-cloud-restore hidden>Cloud-Abgleich sicher prüfen</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
   document.body.appendChild(el);
  }
  function renderOffer(){
@@ -60,6 +60,7 @@
   const b=document.querySelector('[data-pick-confirm]');b.disabled=!selected||busy;b.textContent=busy?'Wird eingelöst …':'Auswahl bestätigen';
   document.querySelector('[data-pick-close]').disabled=busy;
   const recovery=document.querySelector('[data-pick-cloud-restore]');recovery.hidden=!needsCloudRestore;recovery.disabled=busy;
+  document.querySelector('[data-pick-reopen]').hidden=true;
  }
  function showOpening(id){
   modal();
@@ -70,6 +71,7 @@
   $('playerPickFeedback').textContent='Deine Auswahl wird sicher vorbereitet.';
   const button=document.querySelector('[data-pick-confirm]');button.disabled=true;button.textContent='Bitte kurz warten …';
   document.querySelector('[data-pick-cloud-restore]').hidden=true;
+  document.querySelector('[data-pick-reopen]').hidden=true;
   showUiLayer('playerPickModal','player-pick');
  }
  async function open(id){
@@ -78,10 +80,19 @@
   try{
    if(window.FooteraBackup.blocked())throw Error('Bitte zuerst die aktuelle Spielaktion abschließen.');
    const {c,u}=await account(),sid=saveId();
-   const {data,error}=await Promise.race([
-     c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid}),
-     new Promise((_,reject)=>setTimeout(()=>reject(Error('Die Verbindung dauert zu lange. Schließe das Fenster und öffne den Pick erneut. Deine Karten bleiben gespeichert.')),12000))
-   ]);
+   const controller=typeof AbortController!=='undefined'?new AbortController():null;
+   let request=c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid});
+   if(controller&&typeof request.abortSignal==='function')request=request.abortSignal(controller.signal);
+   let timeoutReject;
+   const deadline=new Promise((_,reject)=>{timeoutReject=reject});
+   const timer=setTimeout(()=>{
+     controller?.abort();
+     timeoutReject(Error('Der Server antwortet gerade zu langsam. Deine Karten bleiben gespeichert. Tippe auf „Gespeicherte Karten erneut laden“.'));
+   },16000);
+   let response;
+   try{response=await Promise.race([request,deadline])}
+   finally{clearTimeout(timer)}
+   const {data,error}=response;
    if(error)throw error;
    if(localStorage.getItem('footera-cloud-owner')!==u.id||sid!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
    if(!data||!Array.isArray(data.options)||data.options.length!==data.choices)throw Error('Unvollständige Kartenauswahl. Bitte erneut öffnen.');
@@ -93,6 +104,8 @@
    if($('playerPickFeedback'))$('playerPickFeedback').textContent=message;
    $('playerPickDescription').textContent='Dein Pick bleibt unverändert. Bitte erneut öffnen.';
    $('playerPickOptions').innerHTML='';
+   const retryButton=document.querySelector('[data-pick-reopen]');
+   retryButton.hidden=false;retryButton.dataset.pickReopen=id;retryButton.disabled=false;
   }finally{busy=false;render();if(offer)renderOffer();else document.querySelector('[data-pick-close]').disabled=false}
  }
  function applyDelivery(data){
@@ -132,6 +145,7 @@
   const original=renderStore;renderStore=function(){original();render()};
   document.addEventListener('click',e=>{
    if(e.target.closest('[data-picks-refresh]')){refresh(true);return}
+   const retryOpen=e.target.closest('[data-pick-reopen]');if(retryOpen&&!busy){open(retryOpen.dataset.pickReopen);return}
    const openButton=e.target.closest('[data-pick-open]');if(openButton){open(openButton.dataset.pickOpen);return}
    const option=e.target.closest('[data-pick-option]');if(option&&!busy){
     const id=option.dataset.pickOption;
