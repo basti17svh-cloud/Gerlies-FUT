@@ -144,7 +144,7 @@ test('the whole match space rotates together; the permanent broadcast camera pus
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=56);assert.ok(c.position[0]>35&&c.position[1]>21);assert.ok(c.fov>=25.8&&c.fov<=29.5);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.ok(c.distance>=MIN_CAMERA_DISTANCE&&c.distance<=56);assert.ok(c.position[0]>28&&c.position[1]>17,'broadcast camera remains elevated on the same touchline after closer framing');assert.ok(c.fov>=25.8&&c.fov<=29.5);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
  const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.ok(early.distance-shot.distance>3.9,'camera must move materially closer for the finish');assert.ok(early.fov-shot.fov>1.5,'finish must read larger without a cut');assert.ok(Math.abs(shot.distance-late.distance)<1);assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
