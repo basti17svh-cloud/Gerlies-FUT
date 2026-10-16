@@ -66,6 +66,7 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    return {special,gold};
   });
   assert.deepEqual(qualityCounts,{special:5,gold:1},'Verein Spezial includes icon, momentum, evolution, cosmetics and founder');
+  assert.deepEqual(errors,[],'Immutable Founder cards render with PlayStyles without JavaScript errors');
   await page.evaluate(()=>FooteraPlayerPicks.refresh());
   assert.equal(await page.evaluate(()=>window.cloudAutoSyncCalls),0,'Listing Picks must not trigger full cloud synchronization');
   await page.evaluate(()=>switchView('homeView',{push:false,scroll:false}));
