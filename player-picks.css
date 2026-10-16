@@ -34,3 +34,10 @@
 .pick-loading-card .pick-back-emblem{font-size:42px}
 @keyframes pick-load-shimmer{0%{background-position:100% 0}100%{background-position:-120% 0}}
 @media(prefers-reduced-motion:reduce){.pick-loading-card{animation:none}}
+
+/* EAFC-style duplicate warning, visible only on the revealed face. */
+.pick-option .pick-flip-front{overflow:visible}
+.pick-option .pick-duplicate-badge{position:absolute;left:50%;bottom:0;z-index:3;transform:translateX(-50%);width:max-content;max-width:98%;padding:4px 10px;border:1px solid #ffe1a5;border-radius:6px;background:linear-gradient(110deg,#3d1823,#802c37);box-shadow:0 4px 15px #000d;color:#ffedbc;font-size:10px;font-weight:950;letter-spacing:.1em;text-shadow:0 1px 2px #000;pointer-events:none}
+.pick-option.duplicate.revealed .pick-select-label{color:#ffe0aa}
+.pick-option.duplicate.selected{border-color:#f4b878}
+@media(max-width:600px){.pick-option .pick-duplicate-badge{font-size:9px;padding:3px 7px}}
