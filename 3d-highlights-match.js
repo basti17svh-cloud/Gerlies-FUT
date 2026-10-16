@@ -250,8 +250,15 @@ function queueMatchGoal3D(event){
  return queued;
 }
 function queueMatchChance3D(shot){
- if(!shot.highlightType)return false;
- return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
+ // The authoritative shot result is already final. Rich counter highlights
+ // also appear on saves and misses below the ordinary xG highlight threshold.
+ // Otherwise seeing this build-up would predict a goal, even though the
+ // simulator had already generated perfectly valid non-goal outcomes.
+ const counterMiss=shot.sceneKind==='turnover_counter'&&
+  (shot.outcome==='save'||shot.outcome==='wide');
+ const type=shot.highlightType||(counterMiss?(shot.outcome==='save'?'big_chance_saved':'big_chance_missed'):'');
+ if(!type)return false;
+ return queueMatch3D({id:`shot:${match.shotEvents.length}`,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
   goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
 }
 (function(){

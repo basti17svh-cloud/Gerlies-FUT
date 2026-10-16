@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21164';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21165';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -494,15 +494,20 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  const portrait=aspect<1.12,isExtended=!!extendedKind(sequence),counter=sequence==='extended_turnover_counter';
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended?.16:.34,focusSpeed:isExtended?24:12,railSpeed:isExtended?24:14,
-  // Keep one lens for the whole clip, with the counter fitted to the full goal.
-  fovFloor:counter?(portrait?32:30.8):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?32:30.8):isExtended?(portrait?31:30):(portrait?42:40)});
- // Smoothing target and camera separately can change clearance. Normalize the
- // rendered pose back to the common range, including on dropped mobile frames.
+  // The new counter uses a gradual, authored lens fit. All other scenes keep
+  // their original fixed lens and broadcast camera distance.
+  fovFloor:counter?(portrait?27.5:26.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:counter?(portrait?35:33.5):isExtended?(portrait?31:30):(portrait?42:40)});
+ // Gaussian stabilization still controls the camera's entire travel. Restore
+ // exact physical clearance after smoothing the camera and target separately.
  return time=>{
   const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
-  const factor=BROADCAST_CAMERA_DISTANCE/Math.max(.01,gap);
-  return {...state,distance:BROADCAST_CAMERA_DISTANCE,
+  const distance=counter?32:BROADCAST_CAMERA_DISTANCE;
+  const factor=distance/Math.max(.01,gap);
+  // Preserve the gradual authored fit for the counter: a fixed percentile
+  // would keep the lens wide during the whole buildup and hide the players.
+  const fov=counter?cameraState(direction,time,aspect,type,sequence,finish,keeperAction,placement).fov:state.fov;
+  return {...state,fov,distance,
    position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
  };
 }

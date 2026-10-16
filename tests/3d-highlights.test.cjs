@@ -767,7 +767,7 @@ test('special cameras keep the 40m TV range and the counter opens with active fo
  const E=await import('../3d-extended-match.mjs');
  for(const seq of E.EXTENDED_SEQUENCES)for(const aspect of [.9,1.3,1.8])for(const direction of [-1,1])for(const time of [0,1.5,3.5,5.4,7,10.3]){
   const camera=M.cameraState(direction,time,aspect,'goal',seq);
-  assert.equal(camera.distance,M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
+  assert.equal(camera.distance,seq==='extended_turnover_counter'?32:M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
   assert.ok(Math.abs(Math.hypot(...camera.position.map((v,i)=>v-camera.target[i]))-camera.distance)<.00001,seq+' geometric range');
   assert.ok(camera.position[0]>0&&camera.position[1]>15,seq+' keeps broadcast side');
  }
@@ -866,7 +866,7 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
  for(const dir of [-1,1])for(const time of [0,1,2.5,4.2,5.4,6.65,9]){
   const camera=M.cameraState(dir,time,.98,'big_chance_saved',seq);
   const gap=dist(camera.position,camera.target);
-  assert.ok(Math.abs(gap-40)<.00001&&camera.fov<=31&&camera.fov>=28,'no distant special camera');
+  assert.ok(Math.abs(gap-32)<.00001&&camera.fov<=35.1&&camera.fov>=26.5,'close counter camera');
  }
 });
 
@@ -893,6 +893,51 @@ test('V21.164: counter keeps moving passers and receivers and the whole goal in 
    const roof=project(c,[x*direction,2.5,z*direction],aspect);
    assert.ok(Math.abs(roof[0])<.94&&Math.abs(roof[1])<.94,'goal roof cropped '+seconds+'/'+direction+': '+roof);
   }
-  assert.ok(Math.abs(Math.hypot(...c.position.map((p,i)=>p-c.target[i]))-40)<.000001,'camera distance changed');
+  assert.ok(Math.abs(Math.hypot(...c.position.map((p,i)=>p-c.target[i]))-32)<.000001,'camera distance changed');
  }
+});
+
+
+test('V21.165: counter goal/save/miss/post share one build-up; low-xG misses are still offered',()=>{
+ const outcomes=['goal','big_chance_saved','big_chance_missed','shot_post'];
+ const variants=outcomes.map((type,i)=>H.choosePresentation({...event(type,'counter:'+i),sceneKind:'turnover_counter',actionKind:'through',finish:'normal'},[]));
+ assert.ok(variants.every(v=>v.sequence==='extended_turnover_counter'));
+ assert.ok(variants.every(v=>v.seconds===25));
+ const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
+ assert.match(bridge,/shot\.sceneKind==='turnover_counter'/);
+ assert.match(bridge,/shot\.outcome==='save'\|\|shot\.outcome==='wide'/);
+ assert.match(bridge,/type=shot\.highlightType\|\|/);
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ assert.match(html,/shot\.outcome="goal"/);
+ assert.match(html,/shot\.outcome==="wide"/);
+});
+test('V21.165: closer counter has constant 32m camera clearance with ball, active partners and full finish in portrait',async()=>{
+ const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
+ const normalize=a=>a.map(v=>v/Math.hypot(...a)),subtract=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+ function project(camera,p,aspect){
+  const f=normalize(subtract(camera.target,camera.position)),right=normalize([f[2],0,-f[0]]);
+  const up=[right[1]*f[2]-right[2]*f[1],right[2]*f[0]-right[0]*f[2],right[0]*f[1]-right[1]*f[0]],v=subtract(p,camera.position),depth=dot(v,f),tan=Math.tan(camera.fov*Math.PI/360);
+  return [dot(v,right)/(aspect*depth*tan),dot(v,up)/(depth*tan)];
+ }
+ const sequence='extended_turnover_counter';
+ const stages=[[0,[9]],[2.7,[9,8]],[3.8,[9,8]],[4.4,[9,8]],[7.95,[8,6]],[13.5,[6,1]],[14.6,[6,1]],[17,[1,0]],[17.7,[1,0]],[18.3,[1,0]],[19,[0]],[19.5,[0]],[20,[0]]];
+ for(const direction of [-1,1])for(const [physical,actors]of stages){
+  const time=physical/20*M.SHOT_TIME,ball=E.extendedBall(time,sequence,[0,.14,-37]),aspect=.93;
+  const cam=E.extendedCamera(sequence,time,direction,aspect,ball);
+  assert.ok(Math.abs(Math.hypot(...cam.position.map((v,i)=>v-cam.target[i]))-32)<.00001);
+  const ballScreen=project(cam,[ball[0]*direction,ball[1],ball[2]*direction],aspect);
+  assert.ok(Math.max(...ballScreen.map(Math.abs))<.92,'lost ball at '+physical);
+  for(const actor of actors){const p=E.extendedPosition(actor,time,sequence),q=project(cam,[p[0]*direction,1,p[1]*direction],aspect);
+   assert.ok(Math.max(...q.map(Math.abs))<1.02,'cropped relevant run '+actor+' at '+physical+': '+q);
+  }
+  if(physical>=19)for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
+   const roof=project(cam,[x*direction,2.5,z*direction],aspect);
+   assert.ok(Math.max(...roof.map(Math.abs))<.97,'cropped goal roof at '+physical+': '+roof);
+  }
+ }
+ const wide=E.extendedCamera(sequence,0,1,.93,E.extendedBall(0,sequence,[0,.14,-37]));
+ const finish=E.extendedCamera(sequence,19/20*M.SHOT_TIME,1,.93,E.extendedBall(19/20*M.SHOT_TIME,sequence,[0,.14,-37]));
+ assert.ok(wide.fov<finish.fov&&wide.fov<29,'build-up lens must be materially closer');
+ const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(source,/const distance=counter\?32:BROADCAST_CAMERA_DISTANCE/);
 });

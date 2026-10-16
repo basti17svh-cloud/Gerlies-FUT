@@ -137,7 +137,9 @@ export function extendedCamera(seq,time,direction,aspect,ball){
    target[0]=mix(target[0],(p[0]+r[0])/2,.86*weight);
    target[2]=mix(target[2],(p[1]+r[1])/2,.86*weight);
   }
-  const finish=smooth((t-17.2)/2.6);
+  // Keep the approach in shot; switch the focus toward the full goal only
+  // during the finishing delivery, instead of zooming the players out.
+  const finish=smooth((t-17.6)/2.2);
   target[0]=mix(target[0],0,finish*.22);
   target[2]=mix(target[2],-47,finish);
  }
@@ -147,9 +149,17 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  target[0]*=direction;target[2]*=direction;
  // The counter's slightly diagonal TV rail sees ball, passer, receiver AND
  // the whole goal without increasing camera distance or cutting to a close-up.
- const distance=40,rail=kind==='turnover_counter'?[39.3,32,39*direction]:[39.3,27,5.8*direction],size=Math.hypot(...rail);
+ // The counter stays on a closer 32m TV rail. The camera never jumps or
+ // changes its physical distance; only a slow lens allowance accommodates
+ // the opening pass and the complete goal at the finishing touch.
+ const distance=kind==='turnover_counter'?32:40;
+ const rail=kind==='turnover_counter'?[39.3,32,48*direction]:[39.3,27,5.8*direction];
+ const size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- const fov=kind==='turnover_counter'?(portrait?32:30.8):(portrait?29.4:28.6);
+ const opening=kind==='turnover_counter'?smooth((t-1.5)/1.2)*(1-smooth((t-4.4)/1.0)):0;
+ const finish=kind==='turnover_counter'?smooth((t-16)/2.4):0;
+ const lensAllowance=Math.max(opening*.52,finish);
+ const fov=kind==='turnover_counter'?(portrait?27.5+7.5*lensAllowance:26.5+7*lensAllowance):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // Applied after generic locomotion, so a throw uses arms and a wall stays a wall.
