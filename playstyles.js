@@ -272,7 +272,12 @@ function applyValues(map,value,plus){
 function resolve(base,item){
  if(!base)return{styles:[],normal:[],plus:[],kind:"gold",source:"footera"};
  let built=base._footeraPlaystyles;
- if(!built || !Array.isArray(built.styles)){enrichPlayer(base);built=base._footeraPlaystyles}
+ if(!built || !Array.isArray(built.styles)){
+  // Founder and curated event bases can be frozen. Resolve their PlayStyles
+  // without attempting to mutate an immutable source object.
+  if(Object.isExtensible(base)){enrichPlayer(base);built=base._footeraPlaystyles}
+  else built=buildBase(base);
+ }
  const map=new Map();
  for(const style of built.styles||[])mergeStyle(map,{...style});
  applyValues(map,item&&item.playstyleAdds,false);
