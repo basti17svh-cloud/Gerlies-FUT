@@ -1435,7 +1435,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
-<link rel="stylesheet" href="./player-picks.css?v=21172">
+<link rel="stylesheet" href="./player-picks.css?v=21176">
 <link rel="stylesheet" href="./legacy-card.css?v=21158">
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css?v=21158">
@@ -5197,6 +5197,8 @@ function renderPickerPreview(){
 }
 function pickerItemQuality(item,base=displayBase(item)){
  const cls=cardClass(base,item);
+ // Include Icons, Founders, Momentum, Champions, Story, TOTW and Evolutions.
+ if(item?.variant||item?.cosmeticDesign||item?.eventType||isEvolutionItem(item))return "special";
  return ["gold","silver","bronze"].includes(cls)?cls:"special"
 }
 function pickerAffiliationOptions(){
@@ -6124,7 +6126,7 @@ function renderClub(){
  const rows=clubFilterItems();syncClubFilterOptions(rows);
  const rar=$("clubRarity").value,pos=$("clubPosition").value,sort=$("clubSort").value,league=$("clubLeague").value,club=$("clubClub").value,trade=$("clubTradeability")?.value||"",min=Number($("clubRatingMin")?.value||0),max=Number($("clubRatingMax")?.value||99);
  updateClubRatingLabel();
- let arr=rows.filter(x=>(!rar||cardClass(x.b,x.item)===rar)&&(!pos||x.positions.includes(pos))&&(!league||String(x.a?.league||"")===league)&&(!club||String(x.a?.team||"")===club)&&(!trade||(trade==="tradeable"?!!x.item.tradeable:!x.item.tradeable))&&x.rating>=min&&x.rating<=max);
+ let arr=rows.filter(x=>(!rar||pickerItemQuality(x.item,x.b)===rar)&&(!pos||x.positions.includes(pos))&&(!league||String(x.a?.league||"")===league)&&(!club||String(x.a?.team||"")===club)&&(!trade||(trade==="tradeable"?!!x.item.tradeable:!x.item.tradeable))&&x.rating>=min&&x.rating<=max);
  arr.sort((a,b)=>{if(sort==="new")return Number(b.item.acquired||0)-Number(a.item.acquired||0);if(sort==="old")return Number(a.item.acquired||0)-Number(b.item.acquired||0);if(sort==="rating-asc")return a.rating-b.rating;return b.rating-a.rating});
  const signature=[rar,pos,sort,league,club,trade,min,max,rows.length,(state.transferList||[]).length].join("|");if(signature!==clubRenderSignature){clubRenderSignature=signature;clubRenderLimit=CLUB_RENDER_BATCH}
  const shown=arr.slice(0,clubRenderLimit);
@@ -7262,7 +7264,7 @@ function sbcWarningHTML(sbc){
 }
 function sbcPickerFacetRows(){
  if(!sbcPickerState)return[];const source=String(sbcPickerState.source||""),quality=String(sbcPickerState.quality||""),pos=String(sbcPickerState.position||""),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
- return sbcSourceItems().filter(x=>{const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;if(source&&x.source!==source)return false;if(pos&&!playerPositions(b).includes(pos))return false;if(rating<min||rating>max)return false;if(quality){const cls=x.item.variant||x.item.evo||x.item.cosmeticDesign?"special":rarityOf(b);if(cls!==quality)return false}return true})
+ return sbcSourceItems().filter(x=>{const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;if(source&&x.source!==source)return false;if(pos&&!playerPositions(b).includes(pos))return false;if(rating<min||rating>max)return false;if(quality){const cls=pickerItemQuality(x.item,b);if(cls!==quality)return false}return true})
 }
 function sbcPickerLeagues(){
  return [...new Set(sbcPickerFacetRows().map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))
@@ -7281,7 +7283,7 @@ function sbcPickerCandidates(){
   const b=displayBase(x.item),rating=itemRating(x.item);if(!b)return false;const a=resolvedAffiliation(b);
   if(q&&!playerSearchText(b).includes(q))return false;if(pos&&!playerPositions(b).includes(pos))return false;
   if(source&&x.source!==source)return false;if(rating<min||rating>max)return false;
-  if(quality){const cls=x.item.variant||x.item.evo||x.item.cosmeticDesign?"special":rarityOf(b);if(cls!==quality)return false}
+  if(quality){const cls=pickerItemQuality(x.item,b);if(cls!==quality)return false}
   if(league&&String(a?.league||"")!==league)return false;if(club&&String(a?.team||"")!==club)return false;
   const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
@@ -9471,7 +9473,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./footera-account.js?v=21174"></script>
 <script src="./footera-paid-wallet.js?v=21141"></script>
 <script src="./champions-player-picks.js?v=21174"></script>
-<script src="./player-picks.js?v=21174"></script>
+<script src="./player-picks.js?v=21176"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>
