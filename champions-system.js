@@ -40,7 +40,8 @@ function championsRewardForWins(wins){
  for(const spec of row.rated||[])packs.push({id:ratingRewardPack(spec[0],spec[1]),tradeable:false});
  for(let i=0;i<(row.totw||0);i++)packs.push({id:"totw-reward",tradeable:false});
  if(row.bonus)packs.push({id:"champions-bonus",tradeable:false});
- return{coins:row.coins||0,packs}
+ const playerPicks=typeof FooteraChampionsPicks!=="undefined"?FooteraChampionsPicks.rankEntitlements(row.name):[];
+ return{coins:row.coins||0,packs,playerPicks}
 }
 function ensureChampionsState(){
  state.champions=state.champions&&typeof state.champions==="object"?state.champions:{};
