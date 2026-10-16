@@ -41,6 +41,31 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    localStorage.setItem('footera-cloud-sync-point-v1',JSON.stringify({userId:'test-owner',saveId:'pick-test',revision:1}));
    renderAll();switchView('storeView',{push:false});
   });
+  // The Verein > Spezial filter must include every custom card family,
+  // not only items whose computed CSS card class is literally "special".
+  const qualityCounts=await page.evaluate(()=>{
+   const b=window.testOffer.options[0].item;
+   const base=(uid,overrides={})=>({...b,uid,variant:'',eventName:'',eventType:'',cosmeticDesign:'',evo:0,...overrides});
+   const preserved=state.club;
+   state.club=[
+    base('normal-gold'),
+    base('own-icon',{variant:'icon-mid'}),
+    base('own-momentum',{variant:'special',eventType:'momentum',eventName:'MOMENTUM'}),
+    base('own-evolution',{evo:2,evoStats:{pac:3}}),
+    base('own-cosmetic',{cosmeticDesign:'champions'}),
+    founderItem()
+   ];
+   document.getElementById('clubRarity').value='special';
+   renderClub();
+   const special=document.querySelectorAll('#clubGrid .club-item').length;
+   document.getElementById('clubRarity').value='gold';
+   renderClub();
+   const gold=document.querySelectorAll('#clubGrid .club-item').length;
+   document.getElementById('clubRarity').value='';
+   state.club=preserved;renderClub();
+   return {special,gold};
+  });
+  assert.deepEqual(qualityCounts,{special:5,gold:1},'Verein Spezial includes icon, momentum, evolution, cosmetics and founder');
   await page.evaluate(()=>FooteraPlayerPicks.refresh());
   assert.equal(await page.evaluate(()=>window.cloudAutoSyncCalls),0,'Listing Picks must not trigger full cloud synchronization');
   await page.evaluate(()=>switchView('homeView',{push:false,scroll:false}));
@@ -70,11 +95,23 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    console.log('PASS mobile four-card selection',width);
   }
   fs.mkdirSync(path.join(root,'test-artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'test-artifacts/player-picks-412.png')});
-  await page.locator('[data-pick-close]').click();await page.locator('[data-pick-open]').click();
+  await page.locator('[data-pick-close]').click();
+  await page.evaluate(()=>{
+   const options=window.testOffer.options;
+   state.sbcStorage=[
+    {...options[0].item,uid:'stored-exact-duplicate'},
+    {...options[1].item,uid:'stored-different-promo',eventName:'A different event'}
+   ];
+  });
+  await page.locator('[data-pick-open]').click();
   await page.locator('.pick-option').first().waitFor();
   assert.equal(await page.locator('.pick-option').count(),4);
+  assert.equal(await page.locator('.pick-option.duplicate').count(),1,'Only an exact same-version card counts as duplicate');
   await page.locator('.pick-option').first().click();
   assert.equal(await page.locator('.pick-option.revealed').count(),1);
+  assert.equal(await page.locator('.pick-option.revealed .pick-duplicate-badge').count(),1,'A revealed owned card has a duplicate ribbon');
+  assert.match(await page.locator('.pick-option').first().locator('.pick-select-label').textContent(),/Duplikat/);
+  await page.evaluate(()=>{state.sbcStorage=[]});
   assert.ok(await page.locator('[data-pick-confirm]').isDisabled(),'Reveal alone must not select a player');
   await page.locator('.pick-option').first().click();assert.ok(await page.locator('[data-pick-confirm]').isEnabled());
   await page.locator('[data-pick-confirm]').click();await page.waitForFunction(()=>state.club.length===1);
