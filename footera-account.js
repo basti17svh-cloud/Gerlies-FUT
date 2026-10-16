@@ -6,7 +6,7 @@
  if(!root.FooteraOnline?.available||!root.document)return;
  const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1",TRANSFER="footera-local-account-transfer-v1";
  const maxLength=12*1024*1024;
- let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoStatus="",autoTimer=null,deleteBusy=false;
+ let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoBusyDone=null,autoStatus="",autoTimer=null,deleteBusy=false;
  const $=id=>document.getElementById(id);
  const safeMessage=e=>{
    const messages={invalid_credentials:"E-Mail oder Passwort stimmt nicht.",email_not_confirmed:"Bitte zuerst deine E-Mail-Adresse bestätigen.",email_exists:"Diese E-Mail-Adresse ist bereits registriert. Bitte anmelden oder Passwort vergessen verwenden.",user_already_exists:"Diese E-Mail-Adresse ist bereits registriert. Bitte anmelden oder Passwort vergessen verwenden.",over_email_send_rate_limit:"Zu viele E-Mail-Anfragen. Bitte warte etwas und versuche es erneut.",otp_expired:"Der Bestätigungslink ist abgelaufen oder bereits verwendet. Bitte einen neuen Link anfordern."};
@@ -393,7 +393,15 @@
    try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
  }
  async function choosePlayerPick(pickId,optionId,applyDelivery){
-   if(autoBusy)throw Error("Die Cloud synchronisiert gerade. Bitte kurz erneut versuchen.");
+   // A background save must never turn a valid Player Pick confirmation into
+   // an error. Queue behind its existing transaction rather than rejecting.
+   if(autoBusy&&autoBusyDone){
+     await Promise.race([
+       autoBusyDone,
+       new Promise((_,reject)=>root.setTimeout(()=>reject(Error("Die Verbindung reagiert zu langsam. Deine Auswahl bleibt erhalten; bitte erneut bestätigen.")),10000))
+     ]);
+   }
+   if(autoBusy)throw Error("Eine andere Einlösung läuft noch. Bitte kurz warten.");
    autoBusy=true;
    try{
      changeLocked();
@@ -464,8 +472,13 @@
  // Verified accounts receive an automatic owner link and first cloud backup.
  // Only missing local data may be restored automatically. Existing clubs are never replaced.
  async function autoAttachAndBackup(){
-   if(autoBusy)return;
+   // No background cloud writes or heavy club validation while the Pick UI is
+   // open. Claims own the server transaction and must have priority.
+   if(autoBusy||root.FooteraPlayerPicks?.isActive?.())return;
    autoBusy=true;
+   let finishAutoSync;
+   const done=new Promise(resolve=>{finishAutoSync=resolve});
+   autoBusyDone=done;
    try{
      const c=await getClient(),u=await user();
      if(!isPermanent(u))return;
@@ -557,7 +570,7 @@
      if(error)throw error;
      savePoint(u,save,data);
      autoStatus="Dein Verein wurde automatisch in der Cloud aktualisiert.";
-   }finally{autoBusy=false}
+   }finally{autoBusy=false;finishAutoSync();if(autoBusyDone===done)autoBusyDone=null}
  }
  async function adoptLocal(){
    changeLocked();
@@ -1117,7 +1130,7 @@
      autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
      if(!autoTimer&&root.setInterval)autoTimer=root.setInterval(()=>{
        autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
-     },20000);
+     },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
  root.FooteraAccount={getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
