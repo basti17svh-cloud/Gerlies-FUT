@@ -7,7 +7,7 @@ const p=rating=>({name:'Testspieler',position:'CM',ovr:rating,pac:rating,sho:rat
 function make(seed=12345){
  let randomSeed=seed>>>0;const math=Object.create(Math);
  math.random=()=>((randomSeed=(1664525*randomSeed+1013904223)>>>0)/4294967296);
- const ctx={Math:math,match:null,matchSpeed:550,state:{roles:{},focus:{}},P_BY_ID:new Map(),
+ const ctx={FooteraMatchActions:require("../footera-match-actions.js"),Math:math,match:null,matchSpeed:550,state:{roles:{},focus:{}},P_BY_ID:new Map(),
   matchPower:()=>ctx.match.basePower,currentMatchBase:()=>p(ctx.match?.homeRating||82),
   resolvedPlayer:x=>x,displayBase:x=>x,
   roleFocusContext:()=>({attack:0,defense:0,poss:0,scorer:1,assist:1,defender:1,drain:1}),

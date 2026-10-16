@@ -118,7 +118,7 @@ export const DEFENSIVE_SCENES=Object.freeze([
 export const EXTENDED_HIGHLIGHT_TYPES=Object.freeze(['keeper_buildout','turnover_counter','corner','free_kick','penalty','throw_in']);
 const EXTENDED_BEATS=Object.freeze({
  keeper_buildout:[['keeper_control',0,4,'home'],['short_distribution',4,9,'home'],['midfield_progression',9,17,'home'],['final_third',17,25,'home']],
- turnover_counter:[['possession_build',0,7,'home'],['interception',7,9,'away'],['transition',9,17,'away'],['counter_finish',17,25,'away']],
+ turnover_counter:[['possession_build',0,7,'home'],['interception',7,9,'contested'],['transition',9,17,'away'],['counter_finish',17,25,'away']],
  corner:[['setup',0,4,'home'],['delivery',4,8,'home'],['aerial_duel',8,11,'contested'],['second_ball',11,18,'contested']],
  free_kick:[['setup',0,5,'home'],['run_up',5,8,'home'],['delivery',8,11,'home'],['rebound',11,16,'contested']],
  penalty:[['setup',0,6,'home'],['run_up',6,9,'home'],['strike',9,10,'home'],['keeper_response',10,13,'contested']],

@@ -4,7 +4,7 @@ const extract=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)))
 const code=extract('const FORMATIONS={','const SEASON_REWARDS=')+'\n'+extract('function chemBoostMatchBase(','function currentMatchRating(')+'\n'+extract('function tacticMods(','function stopMatchTimer(')+'\n'+extract('function eventChance(','let matchManagerDraft=null;');
 function harness(){
  let seed=1;const math=Object.create(Math);math.random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
- const ctx={Math:math,FooteraChemBoosts:C,match:null,state:{club:[],roles:{},focus:{}},P_BY_ID:new Map(),matchSpeed:550,
+ const ctx={FooteraMatchActions:require("../footera-match-actions.js"),Math:math,FooteraChemBoosts:C,match:null,state:{club:[],roles:{},focus:{}},P_BY_ID:new Map(),matchSpeed:550,
   resolvedPlayer:x=>x,displayBase:x=>x.base||x,matchPower:()=>ctx.match.basePower,
   recordMatchScene(){},recordMatchEvent(){},addLog(){},updateMatchUI(){},finishMatch(){ctx.match.finished=true},pauseForManagement(){},matchHomeTeamName:()=>"Heim",matchAwayTeamName:()=>"Gast",$(){return{textContent:'',classList:{add(){}}}}};
  vm.createContext(ctx);vm.runInContext(code,ctx);

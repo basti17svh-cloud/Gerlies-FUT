@@ -32,7 +32,7 @@ async function fixture(page,mode='important'){
 }
 async function force(page,type,team='home'){
  return page.evaluate(({type,team})=>{
-  const random=Math.random;Math.random=()=>type==='goal'?.001:type==='big_chance_saved'?.2:type==='shot_post'?.99:.94;
+  const random=Math.random;let draws=0;Math.random=()=>type==='goal'?(++draws===3?.5:.001):type==='big_chance_saved'?.2:type==='shot_post'?.99:.94;
   try{
    if(type==='goal')simAttack(team==='home');
    else{const shot={side:team,minute:Math.floor(match.minute),at:match.minute,xg:.35,playerName:'Jamal Musiala',shooter:'Musiala',shooterUid:match.lineup[9],shooting:84,goal:false};match.shotEvents.push(shot);if(team==='home'){match.shotsHome++;match.xgHome+=shot.xg}else{match.shotsAway++;match.xgAway+=shot.xg}resolveMissedMatchShot(shot,'Heimteam');updateMatchUI()}

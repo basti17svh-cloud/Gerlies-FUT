@@ -13,7 +13,7 @@ function fixture(seed=20261001){
  const away=positions.slice(0,11).map((position,i)=>({id:`a${i}`,name:`Gast ${i}`,position,ovr:84,phy:70,sho:80,pas:80,def:75}));
  const math=Object.create(Math);math.random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
  const elements=new Map(),node=id=>{if(!elements.has(id))elements.set(id,{textContent:'',value:'',scrollIntoView(){},addEventListener(){}});return elements.get(id)};
- const ctx={Math:math,match:null,matchSpeed:800,state:{club,roles:[]},resolvedPlayer:p=>p,displayBase:p=>p,
+ const ctx={FooteraMatchActions:require("../footera-match-actions.js"),Math:math,match:null,matchSpeed:800,state:{club,roles:[]},resolvedPlayer:p=>p,displayBase:p=>p,
   currentMatchBase:uid=>bases.get(uid)||null,currentMatchRating:uid=>bases.get(uid)?.ovr||0,
   posFit:(base,pos)=>base?.position===pos?1:0,positionLabel:p=>p,esc:String,P_BY_ID:new Map(),$:node,
   stopMatchTimer(){},dismissMatchGoalMoment(){},setMatchPill(){},penaltyShootoutTimer:null,requestAnimationFrame:fn=>fn(),clearTimeout(){},timers:[],setTimeout:fn=>ctx.timers.push(fn),

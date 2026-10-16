@@ -76,7 +76,8 @@ function match3DSkinTones(event){
  orderedAttack.forEach((r,i)=>tones[i]=tone(r));
  orderedDefense.forEach((r,i)=>tones[8+i]=tone(r));
  const keeper=rows(defend).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- return {playerSkinTones:tones,keeperSkinTone:tone(keeper)};
+ const buildKeeper=rows(attack).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
+ return {playerSkinTones:tones,keeperSkinTone:tone(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
 }
 function match3DPresentationMeta(event,current){
  // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.
@@ -135,11 +136,12 @@ function match3DActorStyles(side,{uid='',index=-1,name=''}={}){
    (side==='away'&&Number.isInteger(num)&&num>=0?rows.find(r=>r.index===num):null)||
    (key?rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===key):null);
  if(!row?.base)return[];
+ if(Array.isArray(row.styles))return row.styles.map(p=>({...p}));
  const item=side==='home'&&typeof state!=='undefined'?state.club?.find(i=>String(i.uid)===String(row.uid)):
    row.entry&&typeof row.entry==='object'?row.entry:null;
  try{return FooteraPlayStyles.resolve({...row.base},item).styles.map(p=>({id:String(p.id),plus:!!p.plus})).filter(p=>!p.id.startsWith('custom-'))}catch(_){return[]}
 }
-function match3DSequence(event){if(['freekick','penalty'].includes(event.creationType))return 'central';return FooteraHighlights.choosePresentation(event,match3DQueue?.history||[]).sequence}
+function match3DSequence(event){if(!event.sceneKind&&['freekick','penalty'].includes(event.creationType))return 'central';return FooteraHighlights.choosePresentation(event,match3DQueue?.history||[]).sequence}
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -180,7 +182,7 @@ function queueMatch3D(event){
   wideRight?/^(RB|RV|RWB)$/.test(p)?0:/^(CB|IV)$/.test(p)?1:2:
   /^(CB|IV)$/.test(p)?0:/^(CDM|ZDM)$/.test(p)?1:2};
  const closest=defenders.slice().sort((a,b)=>priority(a)-priority(b)||a.index-b.index);
- const picked=event.type==='ball_won'?(opponents.find(row=>(event.defenderUid&&String(row.uid)===String(event.defenderUid))||(Number.isInteger(event.defenderSourceIndex)&&Number(row.index)===event.defenderSourceIndex))||closest[0]||null):(closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null);
+ const picked=event.type==='ball_won'||Number.isInteger(event.defenderSourceIndex)?(opponents.find(row=>(event.defenderUid&&String(row.uid)===String(event.defenderUid))||(Number.isInteger(event.defenderSourceIndex)&&Number(row.index)===event.defenderSourceIndex))||closest[0]||null):(closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null);
  const defender=picked;
  const styleFor=row=>row?match3DActorStyles(defending,{uid:row.uid,index:row.index,name:row.name}):[];
  presentation.keeperName=event.keeperName||goalie?.name||'';
@@ -233,7 +235,7 @@ function queueMatchDefensive3D(action,attackingSide,attacker){
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
-  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',scoreBeforeHome,scoreBeforeAway});
+  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
  return queued;
@@ -241,7 +243,7 @@ function queueMatchGoal3D(event){
 function queueMatchChance3D(shot){
  if(!shot.highlightType)return false;
  return queueMatch3D({id:`shot:${match.shotEvents.length}`,type:shot.highlightType,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
-  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creationType:'chance'});
+  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
 }
 (function(){
  document.addEventListener('footera-highlight-impact',e=>{

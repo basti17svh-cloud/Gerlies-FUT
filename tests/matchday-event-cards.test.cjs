@@ -62,11 +62,11 @@ test('saved highlight prefers the actual named goalkeeper over a stale lineup in
  assert.ok(!meta.playerCardHTML.includes('Wrong Player'));
 });
 test('match attacker selection excludes keepers by tactical slot and actual player position',()=>{
- const chooser=section(html,'function chooseMatchAttacker(side){','function matchDefensiveSkill(row){');
+ const chooser=section(html,'function chooseMatchAttacker(side,actionKind=','function matchDefensiveSkill(row){');
  const pick=section(html,'function weightedMatchPick(rows){','function scorerSlotWeight(slot){');
  const weight=section(html,'function scorerSlotWeight(slot){','function assistSlotWeight(slot){');
  const players=[{uid:'keeper',slot:'GK',base:{position:'GK'}},{uid:'wrong-slot',slot:'ST',base:{position:'GK'}},{uid:'forward',slot:'ST',base:{position:'ST'}}].map(p=>({...p,attrs:{sho:95,pac:95,dri:95},fitness:100,ctx:{scorer:1}}));
- const ctx={Math,matchActorRows:()=>players};
+ const ctx={FooteraMatchActions:require("../footera-match-actions.js"),Math,matchActorRows:()=>players};
  vm.createContext(ctx);vm.runInContext(pick+weight+chooser,ctx);
  for(let i=0;i<100;i++)assert.equal(ctx.chooseMatchAttacker('home').uid,'forward');
  players.pop();

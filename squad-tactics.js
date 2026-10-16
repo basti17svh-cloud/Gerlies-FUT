@@ -115,7 +115,6 @@
   const rawRender=renderSquad;renderSquad=function(){const out=rawRender.apply(this,arguments);syncSummaries();return out};
   const rawStart=startMatch;startMatch=function(){const out=rawStart.apply(this,arguments);if(match){const plan=planFor();match.customTactics={...plan.tactics};match.assignments={...normalizeAssignments(plan.assignments,{auto:true,persist:true})}}return out};
   const rawMods=tacticMods;tacticMods=function(t,custom){return applyCustomMods(rawMods(t),custom)};
-  const rawGoal=logGoal;logGoal=function(side,scorer,assist,type){if(side==="home"&&(type==="freekick"||type==="penalty")){const key=type==="freekick"?"freeKicks":"penalties",uid=String(match?.assignments?.[key]||""),picked=uid?matchActorRows("home").find(row=>String(row.uid)===uid):null;if(picked)scorer=picked}return rawGoal(side,scorer,assist,type)};
   const rawFriend=friendAsOpponent;friendAsOpponent=function(fr){const out=rawFriend(fr),team=friendProfileTeams(fr)[0]||fr;out.customTactics=cleanTactics(team?.customTactics||fr?.customTactics);return out};
   const rawSnapshot=friendTeamSnapshotForPreset;friendTeamSnapshotForPreset=function(preset,indexSlot,isActive){const out=rawSnapshot(preset,indexSlot,isActive);if(out)out.customTactics={...planFor(indexSlot).tactics};return out};
   const rawEncode=encodeFriendProfile;encodeFriendProfile=function(){const code=rawEncode();try{const payload=decodeFriendProfile(code);if(!payload)return code;payload.customTactics={...currentTactics()};return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))}catch(e){return code}}

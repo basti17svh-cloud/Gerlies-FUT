@@ -17,7 +17,7 @@ function simulator(){
  const math=Object.create(Math);
  math.random=()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
  const player=rating=>({name:'Spieler',position:'CM',ovr:rating,pac:rating,sho:rating,pas:rating,dri:rating,def:rating,phy:rating});
- const ctx={Math:math,match:null,matchSpeed:550,state:{roles:{},focus:{}},P_BY_ID:new Map(),
+ const ctx={FooteraMatchActions:require("../footera-match-actions.js"),Math:math,match:null,matchSpeed:550,state:{roles:{},focus:{}},P_BY_ID:new Map(),
   matchPower:()=>ctx.match.basePower,currentMatchBase:()=>player(ctx.match?.homeRating||70),
   resolvedPlayer:x=>x,displayBase:x=>x,
   roleFocusContext:()=>({attack:0,defense:0,poss:0,scorer:1,assist:1,defender:1,drain:1}),
@@ -156,3 +156,43 @@ test('a goal shows the real scorer card and resumes only after the celebration',
  assert.equal(resumed,1,'a manager pause does not restart the clock');
 });
 
+
+test('simulation resolves actual tactics, styles and assigned taker before recording or presenting a shot',()=>{
+ const {ctx,sample}=simulator();sample({rating:80,chem:20,opponentRating:80,opponentChem:20,count:1});
+ ctx.match.finished=false;ctx.match.minute=30;ctx.match.goalEvents=[];ctx.match.shotEvents=[];
+ ctx.state.club=[{uid:'p9',playStyles:[{id:'power-shot',plus:true}]}];
+ ctx.FooteraPlayStyles={resolve:(base,item)=>({styles:item?.playStyles||[]})};delete ctx.match.actionStyles;
+ assert.equal(ctx.matchActorRows('home').find(r=>r.uid==='p9').styles[0].id,'power-shot');
+ delete ctx.match.nextRestart;delete ctx.match.nextCounter;
+ ctx.match.assignments={penalties:'p2',freeKicks:'p3'};
+ ctx.currentMatchBase=uid=>({name:uid,position:uid==='p0'?'GK':'ST',ovr:99,pac:80,sho:uid==='p2'?40:90,pas:80,dri:80,def:80,phy:80});
+ assert.equal(ctx.matchSetPieceTaker('home','penalty').uid,'p2');
+ const original=ctx.FooteraMatchActions;let observed;
+ ctx.FooteraMatchActions={...original,goalChance:(xg,row,shot,...rest)=>{observed={uid:row.uid,shooting:row.attrs.sho,creation:shot.creationType};return original.goalChance(xg,row,shot,...rest)}};
+ ctx.Math.random=()=>0;ctx.simAttack(true);
+ assert.deepEqual(observed,{uid:'p2',shooting:40,creation:'penalty'});
+ assert.equal(ctx.match.shotEvents.at(-1).shooterUid,'p2');assert.equal(ctx.match.goalEvents.at(-1).scorerUid,'p2');
+ // An open-play cross must stay a header from chance calculation through the goal event.
+ ctx.FooteraMatchActions={...original,pick:()=> 'cross'};ctx.Math.random=()=>.05;ctx.simAttack(true);
+ const cross=ctx.match.shotEvents.at(-1),goal=ctx.match.goalEvents.at(-1);
+ assert.equal(cross.actionKind,'cross');assert.equal(cross.finish,'header');assert.equal(goal.shotId,cross.id);assert.equal(goal.finish,'header');
+ assert.equal(goal.scorerUid,cross.shooterUid);assert.notEqual(cross.creatorUid,cross.shooterUid);
+ // Forcing failure changes the outcome, not the simulated attack or finish.
+ ctx.FooteraMatchActions={...original,pick:()=> 'distance',goalChance:()=>0};ctx.simAttack(true);
+ assert.equal(ctx.match.shotEvents.at(-1).actionKind,'distance');assert.equal(ctx.match.shotEvents.at(-1).finish,'power');assert.equal(ctx.match.shotEvents.at(-1).goal,false);
+});
+
+test('real saves, blocks, touchline losses and interceptions create the matching next attack',()=>{
+ const {ctx,sample}=simulator();sample({rating:84,chem:20,opponentRating:84,opponentChem:20,count:1});
+ const m=ctx.match;m.finished=false;m.minute=24;m.assignments={cornerLeft:'p3',cornerRight:'p4'};m.shotEvents=[];m.goalEvents=[];delete m.nextRestart;delete m.nextCounter;
+ const chance=ctx.eventChance;ctx.eventChance=()=>true;
+ const shot={side:'home',minute:24,xg:.2,shooting:75,shooter:'Test',defenderIndex:2};
+ ctx.Math.random=()=>.60;ctx.resolveMissedMatchShot({...shot},'Heim');assert.equal(m.nextRestart.kind,'corner');
+ ctx.Math.random=()=>.1;ctx.simAttack(true);assert.equal(m.shotEvents.at(-1).sceneKind,'corner');assert.equal(m.shotEvents.at(-1).creatorUid,'p4');assert.notEqual(m.shotEvents.at(-1).creatorUid,m.shotEvents.at(-1).shooterUid);
+ ctx.Math.random=()=>.1;ctx.resolveMissedMatchShot({...shot},'Heim');assert.equal(m.nextRestart.kind,'keeper_buildout');ctx.simAttack(true);assert.equal(m.shotEvents.at(-1).side,'away');assert.equal(m.shotEvents.at(-1).sceneKind,'keeper_buildout');
+ delete m.nextRestart;delete m.nextCounter;ctx.eventChance=()=>false;ctx.Math.random=()=>.1;ctx.simAttack(true);assert.equal(m.nextRestart.kind,'throw_in');
+ ctx.eventChance=()=>true;ctx.simAttack(false);assert.equal(m.shotEvents.at(-1).side,'home');assert.equal(m.shotEvents.at(-1).sceneKind,'throw_in');
+ delete m.nextRestart;delete m.nextCounter;ctx.eventChance=()=>false;ctx.Math.random=()=>.5;ctx.simAttack(true);assert.equal(m.nextCounter.side,'away');
+ ctx.eventChance=()=>true;ctx.simAttack(false);assert.equal(m.shotEvents.at(-1).sceneKind,'turnover_counter');assert.equal(m.shotEvents.at(-1).actionKind,'through');
+ ctx.eventChance=chance;
+});

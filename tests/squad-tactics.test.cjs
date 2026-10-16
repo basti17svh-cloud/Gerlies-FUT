@@ -6,16 +6,13 @@ const css=fs.readFileSync(path.join(root,"squad-tactics.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 const manifest=JSON.parse(fs.readFileSync(path.join(root,"manifest.webmanifest"),"utf8"));
 
-test("V21.25 wires the squad-planning module into the live shell and offline cache",()=>{
- assert.match(html,/<title>Footera V21\.25<\/title>/);
- assert.match(html,/\.\/squad-tactics\.css\?v=2124/);
- assert.match(html,/\.\/squad-tactics\.js\?v=2124/);
- assert.match(html,/const GFUT_BUILD="V21\.25"/);
- assert.match(html,/service-worker\.js\?v=2125/);
- assert.ok(sw.includes('"./squad-tactics.js?v=2124"'));
- assert.ok(sw.includes('"./squad-tactics.css?v=2124"'));
- assert.ok(sw.includes('footera-v21-25-root-shell'));
- assert.equal(manifest.start_url,"./index.html?v=21.25");
+test("squad planning and match actions load in the shell and offline cache",()=>{
+ const build=html.match(/const GFUT_BUILD="V([\d.]+)"/)[1];
+ assert.ok(html.includes('<title>Footera V'+build+'</title>'));
+ for(const name of ['squad-tactics','footera-match-actions']){
+  const url=html.match(new RegExp('\\./'+name+'\\.js\\?v=\\d+'))[0];assert.ok(sw.includes('"'+url+'"'));
+ }
+ assert.equal(manifest.start_url,'./index.html?v='+build);
  new vm.Script(js);
 });
 
@@ -37,10 +34,8 @@ test("individual tactics persist per saved team and feed the match simulation wi
  assert.match(js,/const rawMods=tacticMods;tacticMods=function\(t,custom\)/);
 });
 
-test("set-piece assignments normalize to the current XI and selected free-kick or penalty takers own scored events",()=>{
+test("set-piece assignments are resolved before finishing, without replacing the scorer afterward",()=>{
  assert.match(js,/normalizeAssignments/);
- assert.match(js,/starterRows\(\)/);
- assert.match(js,/type==="freekick"\|\|type==="penalty"/);
- assert.match(js,/match\?\.assignments\?\.\[key\]/);
- assert.match(js,/if\(picked\)scorer=picked/);
+ assert.match(html,/attacker=setPiece\?matchSetPieceTaker\(side,creationType\)/);
+ assert.doesNotMatch(js,/scorer=picked/);
 });
