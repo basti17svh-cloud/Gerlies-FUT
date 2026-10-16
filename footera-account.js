@@ -446,7 +446,7 @@
      },25000);
      let response;
      try{response=await Promise.race([request,timeout])}
-     finally{root.clearTimeout(timer)}
+     finally{root.clearTimeout?.(timer)}
      const {data,error}=response;
      if(error){
        // These server rejections are atomic and cannot have delivered a card.
