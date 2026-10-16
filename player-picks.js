@@ -99,13 +99,13 @@
    let request=c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid});
    if(controller&&typeof request.abortSignal==='function')request=request.abortSignal(controller.signal);
    let timeoutReject;
-   const deadline=new Promise((_,reject)=>{timeoutReject=reject});
+   const requestDeadline=new Promise((_,reject)=>{timeoutReject=reject});
    const timer=setTimeout(()=>{
      controller?.abort();
      timeoutReject(Error('Der Server antwortet gerade zu langsam. Deine Karten bleiben gespeichert. Tippe auf „Gespeicherte Karten erneut laden“.'));
    },16000);
    let response;
-   try{response=await Promise.race([request,deadline])}
+   try{response=await Promise.race([request,requestDeadline])}
    finally{clearTimeout(timer)}
    const {data,error}=response;
    if(error)throw error;
