@@ -398,7 +398,7 @@
    if(autoBusy&&autoBusyDone){
      await Promise.race([
        autoBusyDone,
-       new Promise((_,reject)=>root.setTimeout(()=>reject(Error("Die Verbindung reagiert zu langsam. Deine Auswahl bleibt erhalten; bitte erneut bestätigen.")),10000))
+       new Promise((_,reject)=>root.setTimeout(()=>reject(Error("Der Cloud-Abgleich dauert ungewöhnlich lange. Der Player Pick bleibt gespeichert. Bitte die Einlösung erneut bestätigen.")),20000))
      ]);
    }
    if(autoBusy)throw Error("Eine andere Einlösung läuft noch. Bitte kurz warten.");
@@ -406,8 +406,17 @@
    try{
      changeLocked();
      const {c,u}=await requirePermanent();ensureOwned(u);
-     const local=localData(),cloud=await cloudInfo(),point=syncPoint(u),pending=pendingPlayerPick();
-     if(!cloud||cloud.save_data?.profile?.saveId!==local.profile?.saveId)
+     const local=localData(),point=syncPoint(u),pending=pendingPlayerPick();
+     // Normal claims only need the current revision. Avoid transferring the
+     // entire cloud save and repeating the authenticated-user request.
+     const metadataOnly=!pending&&point?.saveId===local.profile?.saveId;
+     const {data:initialCloud,error:cloudError}=await c.from("footera_cloud_saves")
+       .select(metadataOnly?"revision,saved_at":"save_data,revision,saved_at").maybeSingle();
+     if(cloudError)throw cloudError;
+     let cloud=initialCloud;
+     if(metadataOnly&&cloud&&cloud.revision!==point.revision)
+       cloud=await cloudInfo(); // On a conflict, compare complete snapshots.
+     if(!cloud||(cloud.save_data&&cloud.save_data?.profile?.saveId!==local.profile?.saveId))
        throw Error("Bitte zuerst deinen Verein mit der Cloud synchronisieren.");
      if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.pickId!==pickId||pending.optionId!==optionId))
        throw Error("Bitte zuerst die ausstehende Pick-Einlösung abschließen.");
@@ -423,7 +432,22 @@
        }
      }
      root.localStorage.setItem("footera-pending-player-pick-v1",JSON.stringify({userId:u.id,saveId:local.profile.saveId,pickId,optionId,revision}));
-     const {data,error}=await c.rpc("footera_choose_player_pick",{p_id:pickId,p_option:optionId,p_save:local,p_base_revision:revision});
+     // Keep the retry marker until the server has confirmed the atomic claim.
+     // Aborting a slow HTTP response is safe: retrying the same choice is
+     // idempotent even if the first transaction already committed.
+     const controller=typeof AbortController!=="undefined"?new AbortController():null;
+     let request=c.rpc("footera_choose_player_pick",{p_id:pickId,p_option:optionId,p_save:local,p_base_revision:revision});
+     if(controller&&typeof request.abortSignal==="function")request=request.abortSignal(controller.signal);
+     let timedOut,timeoutReject;
+     const timeout=new Promise((_,reject)=>{timeoutReject=reject});
+     const timer=root.setTimeout(()=>{
+       controller?.abort();
+       timeoutReject(Error("Die Bestätigung dauert zu lange. Dein Spieler und deine Auswahl sind gesichert. Bitte dieselbe Auswahl erneut bestätigen."));
+     },25000);
+     let response;
+     try{response=await Promise.race([request,timeout])}
+     finally{root.clearTimeout(timer)}
+     const {data,error}=response;
      if(error){
        // These server rejections are atomic and cannot have delivered a card.
        if(["22023","42501","P0001","40001"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
