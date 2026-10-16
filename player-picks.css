@@ -28,3 +28,9 @@
 .pick-cloud-recover{display:block;width:min(100%,380px);margin:9px auto 0;padding:11px;border:1px solid #e2b96c;border-radius:9px;background:#30291e;color:#ffda8d;font-weight:800;cursor:pointer}
 @media(max-width:600px){.home-player-picks-notice{gap:10px;padding:13px}.home-pick-stamp{flex-basis:43px;width:43px;height:51px}.home-pick-body strong{font-size:15px}.home-pick-action{padding:9px 8px;font-size:11px}.pick-option .pick-flip{max-width:137px}.pick-flip-back{gap:5px}.pick-back-brand{font-size:10px}.pick-back-type{font-size:8px}.pick-back-prompt{font-size:6.5px;bottom:11px}}
 @media(prefers-reduced-motion:reduce){.pick-option .pick-flip{transition:none}}
+
+/* Reveal the pick window immediately while its server-owned cards are loaded. */
+.pick-loading-card{width:100%;aspect-ratio:.74;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;border:2px solid #d7aa69;border-radius:12px;color:#fbe4af;letter-spacing:.14em;font-size:10px;font-weight:900;background:linear-gradient(110deg,#401925 8%,#773748 28%,#401925 48%);background-size:220% 100%;animation:pick-load-shimmer 1.5s ease-in-out infinite}
+.pick-loading-card .pick-back-emblem{font-size:42px}
+@keyframes pick-load-shimmer{0%{background-position:100% 0}100%{background-position:-120% 0}}
+@media(prefers-reduced-motion:reduce){.pick-loading-card{animation:none}}
