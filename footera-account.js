@@ -362,7 +362,17 @@
     if(!root.FooteraBackup?.downloadSnapshot)throw Error("Sicherer Cloud-Export fehlt. Footera neu laden.");
     await root.FooteraBackup.downloadSnapshot(cloud.save_data,"Cloud_V"+cloud.revision);
     const conflict=!point||point.saveId!==local.profile.saveId||point.revision!==cloud.revision;
-    if(!root.confirm((conflict?"CLOUD-KONFLIKT: Beide Spielstände sind verschieden.\n\n":"Cloud-Sicherung aktualisieren?\n\n")+
+    if(conflict){
+     // We cannot reconstruct wallet transactions or distinguish a legitimate
+     // sale from a lost card from two independent snapshots. Never overwrite a
+     // diverged revision, even if the user taps through the native warning.
+     // The cloud version was exported immediately above for a later audit.
+     const currentIds=cloudInventoryIds(local),remoteIds=cloudInventoryIds(cloud.save_data);
+     const remoteOnly=[...remoteIds].filter(id=>!currentIds.has(id)).length;
+     autoStatus="Cloud-Konflikt: Gerät und Cloud haben getrennte Änderungen. Zusammenführung nötig, automatisches Ersetzen gesperrt.";
+     throw Error("Sicherheitsstopp: Cloud und Gerät haben getrennte Änderungen ("+remoteOnly+" Karten nur in Cloud). Kein Überschreiben. Die Cloud wurde als JSON gesichert. Beide Sicherungen für eine kontrollierte Zusammenführung aufbewahren.");
+    }
+    if(!root.confirm("Cloud-Sicherung aktualisieren?\n\n"+
      describeCloudDifference(local,cloud.save_data)+"\n\nCloud-Version "+cloud.revision+" wurde als Sicherungsdatei angeboten."+
      "\nDeine lokale JSON-Sicherung ebenfalls aufbewahren."+
      "\n\nSoll der AKTUELLE LOKALE Spielstand in die Cloud übernommen werden? Die vorige Cloud-Version wird ersetzt. Abbrechen ändert nichts."))return false;
