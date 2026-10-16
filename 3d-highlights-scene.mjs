@@ -1031,8 +1031,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const banner=mesh(track(new THREE.PlaneGeometry(12,.72)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,.62,z);banner.rotation.y=z<0?0:Math.PI;return banner;
   }
   const supporterBanners=[supporterBanner(crowdKits.home,-58.15),supporterBanner(crowdKits.away,58.15)];
-  let lastCrowdUpdate=-1;
+  let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
+   if(crowdDetailReduced)return;
    const cadence=weak?.18:mobileStandard?.11:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
    crowdDynamic.specs.forEach((spec,i)=>writeCrowdFan(spec,i,crowdDynamic,time,false));
    for(const mesh of [crowdDynamic.torso,crowdDynamic.head,crowdDynamic.arms,crowdDynamic.legs])mesh.instanceMatrix.needsUpdate=true;
@@ -1728,7 +1729,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
   }
-  function reduceQuality(soft=false){if(!soft)renderer.shadowMap.enabled=false;const staticCount=Math.floor(crowdStatic.specs.length*(soft?.82:.62)),dynamicCount=Math.floor(crowdDynamic.specs.length*(soft?.64:.46)),flags=Math.max(2,Math.floor(flagSpecs.length*(soft?.82:.6)));crowdStatic.torso.count=crowdStatic.head.count=staticCount;crowdStatic.arms.count=crowdStatic.legs.count=staticCount*2;crowdDynamic.torso.count=crowdDynamic.head.count=dynamicCount;crowdDynamic.arms.count=crowdDynamic.legs.count=dynamicCount*2;flagPole.count=flags;flagCloth.count=flags*flagSegments;if(!soft)supporterBanners.forEach(x=>x.visible=false);fill.intensity=soft?.48:.12}
+  function reduceQuality(){
+   // Spend the performance budget on the match and readable pitch-side boards.
+   // Reduce only spectator geometry and stop all crowd/flag animation work.
+   crowdDetailReduced=true;
+   for(const group of [crowdStatic,crowdDynamic]){
+    const count=Math.floor(group.specs.length*.35);
+    group.torso.count=group.head.count=count;
+    group.arms.count=group.legs.count=count*2;
+   }
+   flagPole.visible=flagCloth.visible=false;
+   supporterBanners.forEach(x=>x.visible=false);
+  }
   function resize(width,height){camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false)}
   function dispose(){
    boardLogo.onload=null;
@@ -1801,7 +1813,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdSpecs.length,crowdAnimated:crowdDynamic.specs.length,crowdFlags:flagSpecs.length,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
@@ -1887,7 +1899,7 @@ export function play(event,signal){
      const sample=playback.tick(now);
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
-     if(frames===40&&slowFrames>14){quality='adaptive';renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileStandard?1.55:1.35));world.reduceQuality(mobileStandard);resize()}
+     if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality()}
      const displayTime=sample.time;
      world.update(displayTime);
      if(!layer.classList.contains('fh3d-ready')){
