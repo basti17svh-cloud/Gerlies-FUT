@@ -112,8 +112,19 @@ test('scripts, module, stylesheet and pinned Three are in the new offline shell;
  assert.ok(sw.includes('./3d-highlights-scene.mjs?v='+sceneVersion),'Offline scene version must match renderer');
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);assert.ok(html.includes("service-worker.js?v="+(html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/)||[]).slice(1).join("")));
  for(const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))if(script[1].trim())new vm.Script(script[1]);
+ // These assets evolve independently of highlights. Check their shell/cache
+ // integration here; card-layout.test.cjs and chem-boosts.test.cjs cover behavior.
+ const shell=sw.match(/const SHELL=(\[[\s\S]*?\]);/);
+ assert.ok(shell,'Offline shell asset list must be present');
+ const cachedAssets=JSON.parse(shell[1]);
  for(const file of ['card-layout.css','legacy-card.css','chem-boosts.js','chem-boosts-ui.js','chem-boosts.css']){
-  const old=require('node:child_process').execFileSync('git',['show','3d0f03f131a000601aea327096914b24ad5c0736:'+file],{cwd:root});assert.deepEqual(fs.readFileSync(path.join(root,file)),old,file+' remains byte-identical');
+  const attribute=file.endsWith('.css')?'href':'src';
+  const url=(html.match(new RegExp(attribute+'="(\\./'+file.replace(/\./g,'\\.')+'(?:\\?v=\\d+)?)"'))||[])[1];
+  assert.ok(url,file+' must be loaded by the HTML shell');
+  assert.ok(cachedAssets.includes(url),file+' offline URL must match the HTML shell');
+  const source=fs.readFileSync(path.join(root,file),'utf8');
+  assert.ok(source.trim().length,file+' must not be empty');
+  if(file.endsWith('.js'))new vm.Script(source,{filename:file});
  }
 });
 
