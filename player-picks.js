@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',loading=false,busy=false,offer=null,selected='',message='',mounted=false;
+ let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false;
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -11,7 +11,15 @@
    throw Error('Melde dich mit dem Konto deines Vereins an, um deine Picks zu laden.');
   return {c,u};
  }
+ function renderHomeNotice(){
+  const box=$('homePlayerPickNotice');if(!box)return;
+  const count=rows.length;
+  box.hidden=!count;
+  const qty=$('homePlayerPickCount');if(qty)qty.textContent=String(count);
+  const copy=$('homePlayerPickCopy');if(copy)copy.textContent=count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
+ }
  function render(){
+  renderHomeNotice();
   const host=$('playerPicks');if(!host)return;
   const pending=window.FooteraAccount?.pendingPlayerPick?.();
   const retry=pending&&pending.userId===owner&&pending.saveId===saveId();
@@ -37,18 +45,21 @@
  function modal(){
   if($('playerPickModal'))return;
   const el=document.createElement('div');el.id='playerPickModal';el.className='modal player-pick-modal';
-  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
+  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><button type="button" class="pick-cloud-recover" data-pick-cloud-restore hidden>Cloud-Spielstand sicher laden</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
   document.body.appendChild(el);
  }
  function renderOffer(){
+  if(!offer)return;
   modal();$('playerPickTitle').textContent=title(offer)+' · '+offer.min_rating+'+';
-  $('playerPickDescription').textContent='1 aus '+offer.choices+' · Untauschbar · Auswahl bleibt beim Schließen erhalten';
-  $('playerPickOptions').innerHTML=offer.options.map(o=>{
-   const item={...o.item,uid:'preview-'+o.id,acquisitionSource:'reward-pick'},base=item.baseSnapshot;
-   return '<button type="button" class="pick-option '+(selected===o.id?'selected':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+esc(base?.name||'Spieler')+' auswählen">'+cardHTML(base,item)+'<span class="pick-select-label">'+(selected===o.id?'✓ Ausgewählt':'Auswählen')+'</span></button>';
+  $('playerPickDescription').textContent='1 aus '+offer.choices+' · Tippe eine Karte zum Aufdecken an. Auswahl bleibt gespeichert.';
+  $('playerPickOptions').innerHTML=offer.options.map((o,i)=>{
+   const item={...o.item,uid:'preview-'+o.id,acquisitionSource:'reward-pick'},base=item.baseSnapshot,shown=revealed.has(o.id);
+   const label=base?.name||'Spieler';
+   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">PLAYER PICK</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+'</span></span><span class="pick-select-label">'+(selected===o.id?'✓ Ausgewählt':shown?'Auswählen':'Aufdecken')+'</span></button>';
   }).join('');
   const b=document.querySelector('[data-pick-confirm]');b.disabled=!selected||busy;b.textContent=busy?'Wird eingelöst …':'Auswahl bestätigen';
   document.querySelector('[data-pick-close]').disabled=busy;
+  const recovery=document.querySelector('[data-pick-cloud-restore]');recovery.hidden=!needsCloudRestore;recovery.disabled=busy;
  }
  async function open(id){
   if(busy)return;busy=true;render();
@@ -57,7 +68,7 @@
    const {c,u}=await account(),sid=saveId();
    const {data,error}=await c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid});if(error)throw error;
    if((await window.FooteraAccount.user())?.id!==u.id||sid!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
-   offer=data;selected='';busy=false;renderOffer();$('playerPickFeedback').textContent='';
+   offer=data;selected='';revealed=new Set();needsCloudRestore=false;busy=false;renderOffer();$('playerPickFeedback').textContent='';
    showUiLayer('playerPickModal','player-pick');document.querySelector('[data-pick-close]').focus();
   }catch(e){message=e.message||'Pick konnte nicht geöffnet werden.'}
   finally{busy=false;render()}
@@ -85,11 +96,12 @@
   busy=true;render();if(offer)renderOffer();
   try{
    const data=await window.FooteraAccount.choosePlayerPick(id,option,applyDelivery);
-   rows=rows.filter(p=>p.id!==id);message='';
+   rows=rows.filter(p=>p.id!==id);message='';needsCloudRestore=false;
    if($('playerPickModal'))closeUiLayer('playerPickModal','player-pick');offer=null;selected='';
    renderAll();toast((data.item.baseSnapshot?.name||'Spieler')+((data.save_data.sbcStorage||[]).some(i=>i.uid===id)?' wurde im SBC-Speicher abgelegt.':' ist jetzt in deinem Verein.'));
   }catch(e){
    message=e.message||'Verbindung unterbrochen. Die Einlösung kann sicher erneut versucht werden.';
+   needsCloudRestore=/Cloud-Spielstand und Gerät sind nicht synchron|Verein mit der Cloud synchronisieren/.test(message);
    if($('playerPickFeedback'))$('playerPickFeedback').textContent=message;
   }finally{busy=false;render();if(offer)renderOffer()}
  }
@@ -99,14 +111,28 @@
   document.addEventListener('click',e=>{
    if(e.target.closest('[data-picks-refresh]')){refresh();return}
    const openButton=e.target.closest('[data-pick-open]');if(openButton){open(openButton.dataset.pickOpen);return}
-   const option=e.target.closest('[data-pick-option]');if(option&&!busy){selected=option.dataset.pickOption;renderOffer();return}
+   const option=e.target.closest('[data-pick-option]');if(option&&!busy){
+    const id=option.dataset.pickOption;
+    if(!revealed.has(id)){
+     revealed.add(id);option.classList.add('revealed');
+     option.setAttribute('aria-label',(offer?.options.find(o=>o.id===id)?.item?.baseSnapshot?.name||'Spieler')+' auswählen');
+     option.querySelector('.pick-select-label').textContent='Auswählen';
+    }else{selected=id;renderOffer()}
+    return;
+   }
    if(e.target.closest('[data-pick-confirm]')){choose();return}
    if(e.target.closest('[data-pick-recover]')){choose(true);return}
+   if(e.target.closest('[data-pick-cloud-restore]')&&!busy){window.FooteraAccount.restoreCloud().catch(err=>{const feedback=$('playerPickFeedback');if(feedback)feedback.textContent=err.message||'Cloud-Spielstand konnte nicht geladen werden.'});return}
+   if(e.target.closest('[data-picks-jump]')){
+    switchView('storeView');refresh();
+    setTimeout(()=>$('playerPicks')?.scrollIntoView({behavior:'smooth',block:'start'}),90);
+    return;
+   }
    if(e.target.closest('[data-pick-close]')&&!busy){closeUiLayer('playerPickModal','player-pick');offer=null;refresh();return}
   });
   window.addEventListener('focus',refresh);
   setTimeout(refresh,3500);
-  setInterval(()=>{if(!document.hidden&&currentViewId()==='storeView')refresh()},20000);
+  setInterval(()=>{if(!document.hidden&&['storeView','homeView'].includes(currentViewId()))refresh()},30000);
  }
  window.FooteraPlayerPicks={refresh,applyDelivery};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
