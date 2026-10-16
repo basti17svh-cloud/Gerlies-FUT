@@ -5,6 +5,14 @@
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
+ async function deadline(work,ms){
+  let timer;
+  try{
+   return await Promise.race([work,new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(Error('Keine Antwort vom Kontodienst. Bitte erneut versuchen; deine Picks bleiben gespeichert.')),ms);
+   })]);
+  }finally{clearTimeout(timer)}
+ }
  async function account(){
   const api=window.FooteraAccount,c=await api.getClient();
   // Reading a valid local auth session avoids an extra network round-trip
@@ -40,10 +48,10 @@
   if(!force&&rows.length&&Date.now()-lastRefresh<15000)return;
   loading=true;render();
   try{
-   const {c,u}=await account(),id=saveId();
+   const {c,u}=await deadline(account(),10000),id=saveId();
    if(owner!==u.id){rows=[];owner=u.id}
    // Listing picks should never trigger full-cloud synchronization.
-   const {data,error}=await c.rpc('footera_list_player_picks',{p_save_id:id});if(error)throw error;
+   const {data,error}=await deadline(c.rpc('footera_list_player_picks',{p_save_id:id}),15000);if(error)throw error;
    if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
    rows=Array.isArray(data)?data:[];message='';lastRefresh=Date.now();
   }catch(e){message=e.message||'Picks konnten nicht geladen werden.'}
@@ -86,7 +94,7 @@
   showOpening(id);
   try{
    if(window.FooteraBackup.blocked())throw Error('Bitte zuerst die aktuelle Spielaktion abschließen.');
-   const {c,u}=await account(),sid=saveId();
+   const {c,u}=await deadline(account(),10000),sid=saveId();
    const controller=typeof AbortController!=='undefined'?new AbortController():null;
    let request=c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid});
    if(controller&&typeof request.abortSignal==='function')request=request.abortSignal(controller.signal);
