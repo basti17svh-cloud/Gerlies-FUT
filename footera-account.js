@@ -389,6 +389,13 @@
  }
  // A pick and its inventory delivery share one server transaction. Keep a retry
  // marker until both the local save and its cloud revision have been recorded.
+ async function pickDeadline(work,ms){
+   let timer;
+   try{return await Promise.race([work,new Promise((_,reject)=>{
+     timer=root.setTimeout(()=>reject(Error("Der Kontodienst antwortet zu langsam. Der Pick und deine Auswahl bleiben unverändert; bitte erneut bestätigen.")),ms);
+   })])}
+   finally{root.clearTimeout?.(timer)}
+ }
  function pendingPlayerPick(){
    try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
  }
@@ -405,17 +412,17 @@
    autoBusy=true;
    try{
      changeLocked();
-     const {c,u}=await requirePermanent();ensureOwned(u);
+     const {c,u}=await pickDeadline(requirePermanent(),12000);ensureOwned(u);
      const local=localData(),point=syncPoint(u),pending=pendingPlayerPick();
      // Normal claims only need the current revision. Avoid transferring the
      // entire cloud save and repeating the authenticated-user request.
      const metadataOnly=!pending&&point?.saveId===local.profile?.saveId;
-     const {data:initialCloud,error:cloudError}=await c.from("footera_cloud_saves")
-       .select(metadataOnly?"revision,saved_at":"save_data,revision,saved_at").maybeSingle();
+     const {data:initialCloud,error:cloudError}=await pickDeadline(c.from("footera_cloud_saves")
+       .select(metadataOnly?"revision,saved_at":"save_data,revision,saved_at").maybeSingle(),12000);
      if(cloudError)throw cloudError;
      let cloud=initialCloud;
      if(metadataOnly&&cloud&&cloud.revision!==point.revision)
-       cloud=await cloudInfo(); // On a conflict, compare complete snapshots.
+       cloud=await pickDeadline(cloudInfo(),12000); // On a conflict, compare complete snapshots.
      if(!cloud||(cloud.save_data&&cloud.save_data?.profile?.saveId!==local.profile?.saveId))
        throw Error("Bitte zuerst deinen Verein mit der Cloud synchronisieren.");
      if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.pickId!==pickId||pending.optionId!==optionId))
@@ -456,7 +463,7 @@
      const saved=root.FooteraBackup.validateState(data?.save_data);
      if(!data?.item||data.pick_id!==pickId||data.revision!==revision+1||saved.profile.saveId!==local.profile.saveId)
        throw Error("Die Einlösung konnte noch nicht bestätigt werden. Bitte erneut versuchen.");
-     const current=await user();
+     const current=await pickDeadline(user(),12000);
      if(current?.id!==u.id)throw Error("Das Konto wurde gewechselt. Bitte mit dem ursprünglichen Konto fortfahren.");
      ensureOwned(current);
      if(localData().profile.saveId!==local.profile.saveId)throw Error("Der lokale Verein hat sich geändert.");
