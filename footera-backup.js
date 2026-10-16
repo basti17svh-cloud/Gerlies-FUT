@@ -38,16 +38,26 @@ async function inspect(text){
  if(String(b.clubName)!==String(s.profile.clubName))fail("Vereinsdaten stimmen nicht überein.");
  return{backup:b,state:s};
 }
+// A cloud conflict export uses the SAME checksummed, importable format as local saves.
+async function downloadSnapshot(snapshot,tag="Local"){
+ const s=validateState(snapshot),data=JSON.stringify(s),when=new Date().toISOString();
+ const label=String(tag).replace(/[^a-z0-9_-]/gi,"").slice(0,24)||"Backup";
+ const b={format:FORMAT,schema:1,exportedAt:when,clubName:String(s.profile.clubName||"Footera"),appVersion:typeof GFUT_BUILD==="string"?GFUT_BUILD:"",checksum:await hash(data),data};
+ const link=root.document.createElement("a"),url=root.URL.createObjectURL(new Blob([JSON.stringify(b)],{type:"application/json"}));
+ try{
+  link.href=url;
+  link.download="Footera_"+label+"_"+b.clubName.replace(/[^a-z0-9_-]/gi,"_").slice(0,32)+"_"+when.replace(/[:.]/g,"-")+".json";
+  root.document.body.append(link);link.click();link.remove();
+ }finally{root.setTimeout(()=>root.URL.revokeObjectURL(url),1000)}
+ return b;
+}
 async function exportBackup(){
  const why=blocked();if(why)return status("Nicht möglich "+why+".",true);
  try{
   if(typeof flushSave==="function")flushSave();
   const raw=root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
   if(!raw)fail("Noch kein gespeicherter Spielstand.");
-  const s=validateState(JSON.parse(raw)),data=JSON.stringify(s),when=new Date().toISOString();
-  const b={format:FORMAT,schema:1,exportedAt:when,clubName:String(s.profile.clubName||"Footera"),appVersion:typeof GFUT_BUILD==="string"?GFUT_BUILD:"",checksum:await hash(data),data};
-  const link=root.document.createElement("a"),url=root.URL.createObjectURL(new Blob([JSON.stringify(b)],{type:"application/json"}));
-  try{link.href=url;link.download="Footera_"+b.clubName.replace(/[^a-z0-9_-]/gi,"_").slice(0,32)+"_"+when.slice(0,10)+".json";root.document.body.append(link);link.click();link.remove()}finally{root.setTimeout(()=>root.URL.revokeObjectURL(url),1000)}
+  await downloadSnapshot(JSON.parse(raw),"Local");
   status("Sicherung erstellt. Datei außerhalb des Browsers aufbewahren.");
  }catch(e){status(String(e.message||e),true)}
 }
@@ -77,6 +87,6 @@ function mount(){
  p.querySelector("#footeraBackupImport").addEventListener("click",()=>p.querySelector("#footeraBackupFile").click());
  p.querySelector("#footeraBackupFile").addEventListener("change",async e=>{const f=e.target.files?.[0];e.target.value="";await importBackup(f)});
 }
-root.FooteraBackup={validateState,inspect,exportBackup,importBackup,blocked};
+root.FooteraBackup={validateState,inspect,exportBackup,downloadSnapshot,importBackup,blocked};
 if(root.document.readyState==="loading")root.document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(globalThis);
