@@ -29,7 +29,12 @@
   const allowed=pool(cards,activeTotwId,activeEvents);
   return {eligible:allowed,canOfferFour:allowed.length>=4,reason:allowed.length>=4?"":"Zu wenige berechtigte 85+-Karten; keine falschen Spieler oder Ratings als Ersatz erzeugen."}
  }
- const api=Object.freeze({rankEntitlements,eligible,pool,validateOptions});
+ function validateSelection(offer,selectedId){
+  if(!offer||!Array.isArray(offer.options)||offer.options.length!==Number(offer.choices||4))return false;
+  const ids=offer.options.map(option=>String(option&&option.id||""));
+  return ids.every(Boolean)&&new Set(ids).size===ids.length&&ids.includes(String(selectedId||""));
+ }
+ const api=Object.freeze({rankEntitlements,eligible,pool,validateOptions,validateSelection});
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
  else root.FooteraChampionsPicks=api;
 })(typeof globalThis!=="undefined"?globalThis:this);
