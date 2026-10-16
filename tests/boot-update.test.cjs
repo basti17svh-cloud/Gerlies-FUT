@@ -40,13 +40,23 @@ test('an existing worker with the same release URL cannot trigger another app st
  a.serviceWorker.controller={scriptURL:old.scriptURL};a.serviceWorker.listeners.controllerchange();assert.equal(a.navigations.length,0);
 });
 
-test('a genuine worker update waits for the intro and startup and preserves the current screen',async()=>{
+test('an old cache catching up with the current page does not restart after the intro',async()=>{
  const a=app({controller:{scriptURL:'https://footera.test/game/service-worker.js?v=2024'}});a.listeners.load();await new Promise(r=>setImmediate(r));
  assert.equal(a.serviceWorker.listeners.controllerchange,undefined);a.c.completeFooteraIntroGate();await new Promise(r=>setImmediate(r));
- a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();assert.equal(a.navigations.length,0);assert.ok([...a.timers.values()].some(t=>t.ms===500));
- a.ready();assert.equal(a.navigations.length,1);assert.equal(a.flushes(),1);const resume=JSON.parse(a.storage.get('gfut-update-resume'));assert.equal(resume.view,'objectivesView');assert.equal(resume.scrollY,210);
- assert.equal(a.storage.get('gfut-sw-reloaded-'+BUILD),'1');assert.match(a.navigations[0],/^https:\/\/footera.test\/game\/\?_gfut_updated=/);
- a.serviceWorker.listeners.controllerchange();assert.equal(a.navigations.length,1);
+ a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();
+ a.ready();await new Promise(r=>setImmediate(r));
+ assert.equal(a.navigations.length,0);assert.equal(a.flushes(),0);assert.equal(a.storage.has('gfut-update-resume'),false);
+});
+
+test('an actually newer page still updates once and preserves the current screen',async()=>{
+ const a=app({controller:{scriptURL:'https://footera.test/game/service-worker.js?v=2024'},remote:NEXT});
+ a.listeners.load();a.c.completeFooteraIntroGate();await new Promise(r=>setImmediate(r));
+ a.serviceWorker.controller={scriptURL:'https://footera.test/game/service-worker.js?v='+WORKER};a.serviceWorker.listeners.controllerchange();
+ assert.equal(a.navigations.length,0);a.ready();await new Promise(r=>setImmediate(r));
+ assert.equal(a.navigations.length,1);assert.equal(a.flushes(),1);
+ const resume=JSON.parse(a.storage.get('gfut-update-resume'));assert.equal(resume.view,'objectivesView');assert.equal(resume.scrollY,210);
+ assert.equal(a.storage.get('gfut-update-'+NEXT),'1');
+ a.serviceWorker.listeners.controllerchange();await new Promise(r=>setImmediate(r));assert.equal(a.navigations.length,1);
 });
 
 test('two simultaneous update sources coalesce into one refresh after the unfinished installation',()=>{

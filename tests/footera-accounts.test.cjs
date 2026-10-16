@@ -72,7 +72,7 @@ test("account switch and cloud saves cannot silently replace online profile",()=
  assert.match(online,/localStorage\.getItem\("footera-cloud-owner"\)!==online\.userId/);
  assert.match(online,/if\(!session\)[\s\S]*?footera-cloud-owner/);
  assert.match(online,/authClient/);
- assert.match(worker,/footera-account\.js\?v=21173/);
+ assert.match(worker,/footera-account\.js\?v=21174/);
  assert.match(worker,/footera-account\.css\?v=21122/);
 });
 test("cloud save schema enforces ownership and revision checks",()=>{
@@ -265,7 +265,7 @@ test("Google login and linking are absent from account UI while email flows rema
 
 test("the real entry page loads accounts after online and backup, including the stylesheet",()=>{
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
- assert.match(html,/<script src="\.\/footera-account\.js\?v=21172"><\/script>/);
+ assert.match(html,/<script src="\.\/footera-account\.js\?v=21174"><\/script>/);
  assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=21122">/);
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./footera-backup.js'));
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./friend-online.js'));
@@ -795,4 +795,88 @@ test('missing cloud snapshot exporter never sends a destructive update',async()=
  t.win.confirm=()=>true;
  await assert.rejects(t.win.FooteraAccount.saveCloud(),/Cloud-Export fehlt/);
  assert.equal(t.calls.length,0);
+});
+
+test('an open Player Pick prevents background cloud reads and writes',async()=>{
+ const t=runtime('registered');
+ t.win.FooteraPlayerPicks={isActive:()=>true};
+ t.client.auth.getUser=async()=>{throw Error('background auth must not start')};
+ t.client.from=()=>{throw Error('background cloud lookup must not start')};
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(t.calls.length,0);
+});
+
+test('confirming a Pick waits for an already running backup and uses its new revision',async()=>{
+ const t=runtime('registered'),s=sampleGame(),events=[];
+ t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1,hash:'changed'}));
+ t.setCloud({save_data:s,revision:1});
+ let release,started;
+ const held=new Promise(resolve=>release=resolve),backupStarted=new Promise(resolve=>started=resolve);
+ const item={uid:'pick-queued',pid:'123',playerPickId:'pick-queued',tradeable:false,baseSnapshot:{id:'123'}};
+ const saved={...s,club:[item],playerPickClaims:{'pick-queued':'option-a'}};
+ t.client.rpc=async(name,args)=>{
+  if(name==='footera_store_cloud_save'){
+   events.push('backup-start');started();await held;
+   t.setCloud({save_data:s,revision:2});events.push('backup-finish');return{data:2};
+  }
+  assert.equal(name,'footera_choose_player_pick');assert.equal(args.p_base_revision,2);
+  events.push('pick');return{data:{pick_id:'pick-queued',item,save_data:saved,revision:3}};
+ };
+ const backup=t.win.FooteraAccount.autoAttachAndBackup();await backupStarted;
+ t.win.FooteraPlayerPicks={isActive:()=>true};
+ let applied=0;
+ const claim=t.win.FooteraAccount.choosePlayerPick('pick-queued','option-a',()=>applied++);
+ await Promise.resolve();assert.deepEqual(events,['backup-start']);
+ release();await Promise.all([backup,claim]);
+ assert.deepEqual(events,['backup-start','backup-finish','pick']);
+ assert.equal(applied,1);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,3);
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+});
+
+test('normal Pick claim uses local auth and small revision metadata, without remote auth checks',async()=>{
+ const t=runtime('registered'),s=sampleGame();
+ t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:2}));
+ let sessionReads=0,applied=0;
+ t.client.auth.getSession=async()=>{sessionReads++;return {data:{session:{user:{id:'existing-a',is_anonymous:false,email_confirmed_at:'2026-10-11'}}}}};
+ t.client.auth.getUser=async()=>{throw Error('unnecessary remote auth round-trip')};
+ t.client.from=table=>({select:fields=>{
+  assert.equal(table,'footera_cloud_saves');assert.equal(fields,'revision,saved_at');
+  return{maybeSingle:async()=>({data:{revision:2}})};
+ }});
+ const item={uid:'pick-fast',pid:'123',playerPickId:'pick-fast',tradeable:false,baseSnapshot:{id:'123'}};
+ const saved={...s,club:[item],playerPickClaims:{'pick-fast':'option-a'}};
+ t.client.rpc=async(name,args)=>{
+  assert.equal(name,'footera_choose_player_pick');assert.equal(args.p_base_revision,2);
+  return{data:{pick_id:'pick-fast',item,save_data:saved,revision:3}};
+ };
+ await t.win.FooteraAccount.choosePlayerPick('pick-fast','option-a',()=>applied++);
+ assert.equal(applied,1);assert.equal(sessionReads,2);assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+});
+
+test('account switch during Pick delivery cannot apply a card to the other local account',async()=>{
+ const t=runtime('registered'),s=sampleGame();
+ t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));t.setCloud({save_data:s,revision:1});
+ let uid='existing-a',applied=0;
+ t.client.auth.getSession=async()=>({data:{session:{user:{id:uid,is_anonymous:false,email_confirmed_at:'2026-10-11'}}}});
+ const item={uid:'pick-switch',pid:'123',playerPickId:'pick-switch',tradeable:false,baseSnapshot:{id:'123'}};
+ t.client.rpc=async()=>{
+  uid='other-user';
+  return{data:{pick_id:'pick-switch',item,save_data:{...s,club:[item]},revision:2}};
+ };
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPick('pick-switch','option-a',()=>applied++),/Konto wurde gewechselt/);
+ assert.equal(applied,0);assert.ok(t.win.FooteraAccount.pendingPlayerPick());
+});
+
+test('first cloud backup initializes online services without restarting the game',async()=>{
+ const t=runtime('registered');let initialized=0;
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(sampleGame()));
+ t.win.FooteraOnline.ready=false;
+ t.win.FooteraOnline.init=async()=>{initialized++;t.win.FooteraOnline.ready=true};
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ assert.equal(initialized,1);assert.equal(t.wasReloaded(),false);
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,1);
 });

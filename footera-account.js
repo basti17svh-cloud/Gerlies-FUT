@@ -399,6 +399,14 @@
  function pendingPlayerPick(){
    try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
  }
+ // The RPC verifies the token and owner on the server. Use the local auth
+ // session for UI identity checks instead of two extra /auth/user requests.
+ async function pickUser(c){
+   if(typeof c.auth.getSession!=="function")return user();
+   const {data,error}=await c.auth.getSession();
+   if(error)throw error;
+   return data?.session?.user||null;
+ }
  async function choosePlayerPick(pickId,optionId,applyDelivery){
    // A background save must never turn a valid Player Pick confirmation into
    // an error. Queue behind its existing transaction rather than rejecting.
@@ -412,7 +420,9 @@
    autoBusy=true;
    try{
      changeLocked();
-     const {c,u}=await pickDeadline(requirePermanent(),12000);ensureOwned(u);
+     const c=await pickDeadline(getClient(),12000),u=await pickDeadline(pickUser(c),12000);
+     if(!isPermanent(u))throw Error("Bitte zuerst dein E-Mail-Konto registrieren oder anmelden.");
+     ensureOwned(u);
      const local=localData(),point=syncPoint(u),pending=pendingPlayerPick();
      // Normal claims only need the current revision. Avoid transferring the
      // entire cloud save and repeating the authenticated-user request.
@@ -463,7 +473,7 @@
      const saved=root.FooteraBackup.validateState(data?.save_data);
      if(!data?.item||data.pick_id!==pickId||data.revision!==revision+1||saved.profile.saveId!==local.profile.saveId)
        throw Error("Die Einlösung konnte noch nicht bestätigt werden. Bitte erneut versuchen.");
-     const current=await pickDeadline(user(),12000);
+     const current=await pickDeadline(pickUser(c),12000);
      if(current?.id!==u.id)throw Error("Das Konto wurde gewechselt. Bitte mit dem ursprünglichen Konto fortfahren.");
      ensureOwned(current);
      if(localData().profile.saveId!==local.profile.saveId)throw Error("Der lokale Verein hat sich geändert.");
@@ -560,7 +570,9 @@
        autoStatus="Dein Verein ist automatisch mit deinem Konto verbunden und in der Cloud gesichert.";
        // A verified guest still needs to set a password. Do not interrupt typing
        // with a background reload or hide that required step.
-       if(root.FooteraOnline&&!root.FooteraOnline.ready&&pendingEmail()?.kind!=="email_change")root.location.reload();
+       if(root.FooteraOnline&&!root.FooteraOnline.ready&&pendingEmail()?.kind!=="email_change"){
+         Promise.resolve(root.FooteraOnline.init?.()).catch(err=>console.warn("Footera Online-Start:",err));
+       }
        return;
      }
      const point=syncPoint(u);

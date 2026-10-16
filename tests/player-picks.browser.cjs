@@ -15,17 +15,30 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    state.onboarded=true;state.club=[];state.squad=Array(23).fill(null);state.profile.saveId='pick-test';state.profile.username='Tester';state.profile.clubName='Testclub';
    PLAYERS=options.map(o=>o.item.baseSnapshot);P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
    localStorage.setItem('footera-cloud-owner','test-owner');let claimed=false;window.cloudAutoSyncCalls=0;
-   FooteraAccount.getClient=async()=>({rpc:async(name,args)=>{
-    if(name==='footera_open_player_pick')await new Promise(resolve=>setTimeout(resolve,350));
-    return {data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null};
-   }});
-   FooteraAccount.user=async()=>({id:'test-owner',email_confirmed_at:'2026-10-01',is_anonymous:false});
-   FooteraAccount.autoAttachAndBackup=async()=>{window.cloudAutoSyncCalls++};FooteraAccount.pendingPlayerPick=()=>null;
-   FooteraAccount.choosePlayerPick=async(id,option,apply)=>{
-    await new Promise(r=>setTimeout(r,80));
-    const item={...options.find(x=>x.id===option).item,uid:id,playerPickId:id,acquisitionSource:'reward-pick'};
-    const data={pick_id:id,item,save_data:{sbcStorage:[],playerPickClaims:{[id]:option}}};apply(data);apply(data);claimed=true;return data;
+   const user={id:'test-owner',email_confirmed_at:'2026-10-01',is_anonymous:false};
+   window.pickTransportCalls=[];
+   const client={
+    auth:{getSession:async()=>({data:{session:{user}}}),getUser:async()=>({data:{user}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
+    from:()=>({select:fields=>{
+     window.pickTransportCalls.push(fields);
+     return{maybeSingle:async()=>({data:{revision:1},error:null})};
+    }}),
+    rpc:async(name,args)=>{
+     if(name==='footera_open_player_pick')await new Promise(resolve=>setTimeout(resolve,350));
+     if(name==='footera_choose_player_pick'){
+      window.pickTransportCalls.push(name);
+      if(args.p_base_revision!==1)throw Error('wrong revision');
+      const item={...options.find(x=>x.id===args.p_option).item,uid:args.p_id,playerPickId:args.p_id,acquisitionSource:'reward-pick'};
+      const saved={...args.p_save,club:[...args.p_save.club,item],playerPickClaims:{[args.p_id]:args.p_option}};
+      window.testDelivery={pick_id:args.p_id,item,save_data:saved,revision:2};claimed=true;
+      return {data:window.testDelivery,error:null};
+     }
+     return {data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null};
+    }
    };
+   FooteraOnline.authClient=async()=>client;
+   FooteraAccount.autoAttachAndBackup=async()=>{window.cloudAutoSyncCalls++};
+   localStorage.setItem('footera-cloud-sync-point-v1',JSON.stringify({userId:'test-owner',saveId:'pick-test',revision:1}));
    renderAll();switchView('storeView',{push:false});
   });
   await page.evaluate(()=>FooteraPlayerPicks.refresh());
@@ -65,6 +78,10 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   assert.ok(await page.locator('[data-pick-confirm]').isDisabled(),'Reveal alone must not select a player');
   await page.locator('.pick-option').first().click();assert.ok(await page.locator('[data-pick-confirm]').isEnabled());
   await page.locator('[data-pick-confirm]').click();await page.waitForFunction(()=>state.club.length===1);
+  await page.evaluate(()=>FooteraPlayerPicks.applyDelivery(window.testDelivery));
+  assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls),['revision,saved_at','footera_choose_player_pick']);
+  assert.equal(await page.evaluate(()=>FooteraAccount.pendingPlayerPick()),null);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('footera-cloud-sync-point-v1')).revision),2);
   assert.equal(await page.evaluate(()=>state.club.length),1);assert.equal(await page.evaluate(()=>state.club[0].tradeable),false);
   assert.equal(await page.evaluate(()=>Object.keys(state.playerPickClaims).length),1);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gerliesFutV9')).club.length),1);
