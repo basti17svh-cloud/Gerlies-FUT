@@ -53,6 +53,7 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   }
   fs.mkdirSync(path.join(root,'test-artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'test-artifacts/player-picks-412.png')});
   await page.locator('[data-pick-close]').click();await page.locator('[data-pick-open]').click();
+  await page.locator('.pick-option').first().waitFor();
   assert.equal(await page.locator('.pick-option').count(),4);
   await page.locator('.pick-option').first().click();
   assert.equal(await page.locator('.pick-option.revealed').count(),1);
