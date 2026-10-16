@@ -127,17 +127,30 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  // Keep the ball and receiving player centered, not half a pitch ahead.
  const target=[ball[0]*.94,.86,ball[2]-1.35];
  if(kind==='turnover_counter'){
-  const arriving=smooth((t-17)/4);
-  target[0]=mix(target[0],0,arriving*.22);
-  target[2]=mix(target[2],-44.5,arriving*.20);
+  // Follow actual passing partners so a receiver is visible BEFORE the ball
+  // arrives. Release the pass-wide composition before the shot to fit the goal.
+  for(const [passer,receiver,release,arrival] of extendedPasses(seq)){
+   const fade=passer===1&&receiver===0?arrival-.8:arrival+.1;
+   const weight=smooth((t-release+1.2)/.9)*(1-smooth((t-fade)/.65));
+   if(weight<=0)continue;
+   const p=extendedPosition(passer,time,seq),r=extendedPosition(receiver,time,seq);
+   target[0]=mix(target[0],(p[0]+r[0])/2,.86*weight);
+   target[2]=mix(target[2],(p[1]+r[1])/2,.86*weight);
+  }
+  const finish=smooth((t-17.2)/2.6);
+  target[0]=mix(target[0],0,finish*.22);
+  target[2]=mix(target[2],-47,finish);
  }
  if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-40.5}
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
- const distance=40,rail=[39.3,27,5.8*direction],size=Math.hypot(...rail);
+ // The counter's slightly diagonal TV rail sees ball, passer, receiver AND
+ // the whole goal without increasing camera distance or cutting to a close-up.
+ const distance=40,rail=kind==='turnover_counter'?[39.3,32,39*direction]:[39.3,27,5.8*direction],size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- return{position,target,fov:portrait?29.4:28.6,distance,phase:extendedPhase(seq,time)?.action||'build'};
+ const fov=kind==='turnover_counter'?(portrait?32:30.8):(portrait?29.4:28.6);
+ return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // Applied after generic locomotion, so a throw uses arms and a wall stays a wall.
 export function poseExtendedActor(p,index,time,seq){

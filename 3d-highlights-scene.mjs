@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21163';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21164';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -491,11 +491,12 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  };
  // A single fitted lens for each highlight. The camera follows the ball,
  // without changing range at a pass, shot or goalkeeper action.
- const portrait=aspect<1.12,isExtended=!!extendedKind(sequence);
+ const portrait=aspect<1.12,isExtended=!!extendedKind(sequence),counter=sequence==='extended_turnover_counter';
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended?.16:.34,focusSpeed:isExtended?24:12,railSpeed:isExtended?24:14,
-  fovFloor:isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:isExtended?(portrait?31:30):(portrait?42:40)});
+  // Keep one lens for the whole clip, with the counter fitted to the full goal.
+  fovFloor:counter?(portrait?32:30.8):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:counter?(portrait?32:30.8):isExtended?(portrait?31:30):(portrait?42:40)});
  // Smoothing target and camera separately can change clearance. Normalize the
  // rendered pose back to the common range, including on dropped mobile frames.
  return time=>{

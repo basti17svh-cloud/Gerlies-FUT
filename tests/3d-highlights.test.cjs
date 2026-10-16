@@ -869,3 +869,30 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
   assert.ok(Math.abs(gap-40)<.00001&&camera.fov<=31&&camera.fov>=28,'no distant special camera');
  }
 });
+
+
+test('V21.164: counter keeps moving passers and receivers and the whole goal in a tight mobile frame',async()=>{
+ const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
+ const norm=a=>a.map(v=>v/Math.hypot(...a)),sub=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+ function project(camera,point,aspect){
+  const forward=norm(sub(camera.target,camera.position)),right=norm([forward[2],0,-forward[0]]);
+  const up=[right[1]*forward[2]-right[2]*forward[1],right[2]*forward[0]-right[0]*forward[2],right[0]*forward[1]-right[1]*forward[0]];
+  const rel=sub(point,camera.position),depth=dot(rel,forward),h=Math.tan(camera.fov*Math.PI/360);
+  return[dot(rel,right)/(aspect*depth*h),dot(rel,up)/(depth*h)];
+ }
+ const seq='extended_turnover_counter',events=[[2.7,[9,8]],[3.8,[9,8]],[4.4,[9,8]],[7.95,[8,6]],[13.5,[6,1]],[14.6,[6,1]],[17,[1,0]],[17.7,[1,0]],[18.3,[1,0]],[19,[0]],[19.5,[0]],[20,[0]]];
+ for(const direction of [-1,1])for(const [seconds,players] of events){
+  const time=seconds/20*M.SHOT_TIME,ball=E.extendedBall(time,seq,[0,.14,-37]);
+  const aspect=.95,c=E.extendedCamera(seq,time,direction,aspect,ball);
+  const ballNDC=project(c,[ball[0]*direction,ball[1],ball[2]*direction],aspect);
+  assert.ok(Math.abs(ballNDC[0])<.90&&Math.abs(ballNDC[1])<.90,'ball cropped '+seconds+'/'+direction);
+  for(const actor of players){const p=E.extendedPosition(actor,time,seq),q=project(c,[p[0]*direction,1,p[1]*direction],aspect);
+   assert.ok(Math.abs(q[0])<.97&&Math.abs(q[1])<.97,'relevant actor cropped '+actor+'/'+seconds+'/'+direction+': '+q);
+  }
+  if(seconds>=19)for(const x of [-3.72,3.72])for(const z of [-52.5,-54.45]){
+   const roof=project(c,[x*direction,2.5,z*direction],aspect);
+   assert.ok(Math.abs(roof[0])<.94&&Math.abs(roof[1])<.94,'goal roof cropped '+seconds+'/'+direction+': '+roof);
+  }
+  assert.ok(Math.abs(Math.hypot(...c.position.map((p,i)=>p-c.target[i]))-40)<.000001,'camera distance changed');
+ }
+});
