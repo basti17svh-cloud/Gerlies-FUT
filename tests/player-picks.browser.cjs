@@ -25,10 +25,17 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    };
    renderAll();switchView('storeView',{push:false});
   });
-  await page.evaluate(()=>FooteraPlayerPicks.refresh());await page.locator('[data-pick-open]').click();await page.locator('#playerPickModal.active').waitFor();
+  await page.evaluate(()=>FooteraPlayerPicks.refresh());
+  await page.evaluate(()=>switchView('homeView',{push:false,scroll:false}));
+  assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),true,'Home banner for outstanding Picks');
+  assert.match(await page.locator('#homePlayerPickCopy').textContent(),/1 Player Pick/);
+  await page.locator('[data-picks-jump]').click();
+  assert.equal(await page.locator('#storeView.active').count(),1,'Home banner routes to Store');
+  await page.locator('[data-pick-open]').click();await page.locator('#playerPickModal.active').waitFor();
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
    assert.equal(await page.locator('.pick-option').count(),4);assert.equal(await page.locator('.pick-option .champions-red').count(),4);
+   assert.equal(await page.locator('.pick-option.revealed').count(),0,'All Picks are initially face down');
    assert.ok(await page.evaluate(()=>document.getElementById('playerPickModal').scrollWidth<=innerWidth+1));
    assert.ok(await page.locator('[data-pick-confirm]').isDisabled());
    const bounds=await page.locator('.pick-option').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return{width:r.width,right:r.right,left:r.left}}));
@@ -40,12 +47,16 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   fs.mkdirSync(path.join(root,'test-artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'test-artifacts/player-picks-412.png')});
   await page.locator('[data-pick-close]').click();await page.locator('[data-pick-open]').click();
   assert.equal(await page.locator('.pick-option').count(),4);
+  await page.locator('.pick-option').first().click();
+  assert.equal(await page.locator('.pick-option.revealed').count(),1);
+  assert.ok(await page.locator('[data-pick-confirm]').isDisabled(),'Reveal alone must not select a player');
   await page.locator('.pick-option').first().click();assert.ok(await page.locator('[data-pick-confirm]').isEnabled());
   await page.locator('[data-pick-confirm]').click();await page.waitForFunction(()=>state.club.length===1);
   assert.equal(await page.evaluate(()=>state.club.length),1);assert.equal(await page.evaluate(()=>state.club[0].tradeable),false);
   assert.equal(await page.evaluate(()=>Object.keys(state.playerPickClaims).length),1);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('gerliesFutV9')).club.length),1);
   assert.equal(await page.locator('[data-pick-open]').count(),0);
+  assert.equal(await page.evaluate(()=>document.getElementById('homePlayerPickNotice').hidden),true,'Home Pick hint disappears after claim');
   assert.equal(await page.evaluate(()=>cardClass(displayBase(state.club[0]),state.club[0])),'champions-red');
   assert.deepEqual(errors,[]);console.log('PASS reopen, confirm, duplicate delivery, stored red card and consumed pick');
  }finally{await browser.close();server.close()}
