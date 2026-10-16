@@ -732,30 +732,47 @@ test('cloud revision drift with identical contents re-adopts revision without an
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,13);
 });
-test('manual conflict compares and preserves remote snapshot before local CAS upload',async()=>{
- const t=runtime('registered'),remote=sampleGame(),local={...remote,coins:7100,club:[{uid:'local-card',pid:'123'}]};
+test('DIVERGED cloud revision refuses overwrite, preserving cloud-only cards and points',async()=>{
+ const t=runtime('registered'),remote={...sampleGame(),points:335000,coins:981600,club:[{uid:'cloud-card',pid:'123'}]},
+  local={...sampleGame(),points:324100,coins:1545805,club:[{uid:'device-card',pid:'456'}]};
  t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
  t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1,hash:'old'}));
  t.setCloud({save_data:remote,revision:13,saved_at:'2026-10-13'});
- let backedUp=null,display='';
- t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>{backedUp={save:s,tag};};
- t.win.confirm=(message)=>{display=message;return true;};
- assert.equal(await t.win.FooteraAccount.saveCloud(),true);
- assert.equal(backedUp.save.coins,5000);
+ let backedUp=null,confirmed=false;
+ t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>{backedUp={save:s,tag}};
+ t.win.confirm=()=>{confirmed=true;return true};
+ await assert.rejects(t.win.FooteraAccount.saveCloud(),/Sicherheitsstopp/);
+ assert.equal(backedUp.save.points,335000);
  assert.match(backedUp.tag,/Cloud_V13/);
- assert.match(display,/7.100/);assert.match(display,/5.000/);
+ assert.equal(confirmed,false,'never present an unsafe replace confirmation');
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,1545805);
+});
+
+test('normal save with known current revision still writes via CAS',async()=>{
+ const t=runtime('registered'),remote=sampleGame(),local={...remote,coins:7100};
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:13,hash:'old'}));
+ t.setCloud({save_data:remote,revision:13,saved_at:'2026-10-13'});
+ let backedUp=null,confirmed=false;
+ t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>{backedUp={s,tag}};
+ t.win.confirm=()=>{confirmed=true;return true};
+ assert.equal(await t.win.FooteraAccount.saveCloud(),true);
+ assert.equal(confirmed,true);
+ assert.equal(backedUp.s.coins,5000);
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,1);
  assert.equal(t.calls.find(x=>x[0]==='cloud')[1].p_base_revision,13);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,14);
- assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,7100);
 });
-test('manual conflict cancellation leaves both sides and sync marker unchanged',async()=>{
+
+test('diverged revision with no sync point cannot be silently confirmed',async()=>{
  const t=runtime('registered'),remote=sampleGame(),local={...remote,coins:8400};
  t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
  t.setCloud({save_data:remote,revision:13,saved_at:'2026-10-13'});
  t.win.FooteraBackup.downloadSnapshot=async()=>{};
- t.win.confirm=()=>false;
- assert.equal(await t.win.FooteraAccount.saveCloud(),false);
+ t.win.confirm=()=>{throw Error('confirmation should not appear')};
+ await assert.rejects(t.win.FooteraAccount.saveCloud(),/Sicherheitsstopp/);
  assert.equal(t.calls.length,0);
  assert.equal(t.store.get('footera-cloud-sync-point-v1'),undefined);
 });
