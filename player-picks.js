@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false;
+ let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0;
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -28,18 +28,18 @@
    '<p class="pick-status" role="status">'+esc(message||(loading?'Picks werden geladen …':rows.length?'Wähle pro Pick einen Spieler. Alle Picks sind untauschbar.':'Noch keine offenen Player Picks.'))+'</p>'+
    rows.map(p=>'<article class="pick-ticket '+(p.type==='champions-red'?'pick-red':'')+'"><span class="pick-ticket-rating">'+p.min_rating+'+</span><div><strong>'+title(p)+'</strong><small>1 aus '+p.choices+' · '+(p.type==='champions-red'?'Aktive TOTW- und Eventkarten':'Goldspieler')+'</small></div><button type="button" class="primary" data-pick-open="'+esc(p.id)+'" '+(busy||retry?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('');
  }
- async function refresh(){
-  if(loading||busy||!state.onboarded)return;
+ async function refresh(force=false){
+  if(loading||busy||offer||!state.onboarded)return;
+  if(!force&&rows.length&&Date.now()-lastRefresh<15000)return;
   loading=true;render();
   try{
    const {c,u}=await account(),id=saveId();
    if(owner!==u.id){rows=[];owner=u.id}
-   await window.FooteraAccount.autoAttachAndBackup();
+   // Listing picks should never trigger full-cloud synchronization.
    const {data,error}=await c.rpc('footera_list_player_picks',{p_save_id:id});if(error)throw error;
-   const current=await window.FooteraAccount.user();
-   if(current?.id!==u.id||localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
-   rows=Array.isArray(data)?data:[];message='';
-  }catch(e){rows=[];message=e.message||'Picks konnten nicht geladen werden.'}
+   if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
+   rows=Array.isArray(data)?data:[];message='';lastRefresh=Date.now();
+  }catch(e){message=e.message||'Picks konnten nicht geladen werden.'}
   finally{loading=false;render()}
  }
  function modal(){
@@ -61,17 +61,39 @@
   document.querySelector('[data-pick-close]').disabled=busy;
   const recovery=document.querySelector('[data-pick-cloud-restore]');recovery.hidden=!needsCloudRestore;recovery.disabled=busy;
  }
+ function showOpening(id){
+  modal();
+  const pick=rows.find(x=>x.id===id);
+  $('playerPickTitle').textContent=pick?title(pick)+' · '+pick.min_rating+'+':'Player Pick';
+  $('playerPickDescription').textContent='Deine Karten werden geladen …';
+  $('playerPickOptions').innerHTML=Array.from({length:pick?.choices||4},()=>'<div class="pick-loading-card" aria-hidden="true"><span class="pick-back-emblem">F</span><span>FOOTERA</span></div>').join('');
+  $('playerPickFeedback').textContent='Deine Auswahl wird sicher vorbereitet.';
+  const button=document.querySelector('[data-pick-confirm]');button.disabled=true;button.textContent='Bitte kurz warten …';
+  document.querySelector('[data-pick-cloud-restore]').hidden=true;
+  showUiLayer('playerPickModal','player-pick');
+ }
  async function open(id){
   if(busy)return;busy=true;render();
+  showOpening(id);
   try{
    if(window.FooteraBackup.blocked())throw Error('Bitte zuerst die aktuelle Spielaktion abschließen.');
    const {c,u}=await account(),sid=saveId();
-   const {data,error}=await c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid});if(error)throw error;
-   if((await window.FooteraAccount.user())?.id!==u.id||sid!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
-   offer=data;selected='';revealed=new Set();needsCloudRestore=false;busy=false;renderOffer();$('playerPickFeedback').textContent='';
-   showUiLayer('playerPickModal','player-pick');document.querySelector('[data-pick-close]').focus();
-  }catch(e){message=e.message||'Pick konnte nicht geöffnet werden.'}
-  finally{busy=false;render()}
+   const {data,error}=await Promise.race([
+     c.rpc('footera_open_player_pick',{p_id:id,p_save_id:sid}),
+     new Promise((_,reject)=>setTimeout(()=>reject(Error('Die Verbindung dauert zu lange. Schließe das Fenster und öffne den Pick erneut. Deine Karten bleiben gespeichert.')),12000))
+   ]);
+   if(error)throw error;
+   if(localStorage.getItem('footera-cloud-owner')!==u.id||sid!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
+   if(!data||!Array.isArray(data.options)||data.options.length!==data.choices)throw Error('Unvollständige Kartenauswahl. Bitte erneut öffnen.');
+   offer=data;selected='';revealed=new Set();needsCloudRestore=false;
+   busy=false;renderOffer();$('playerPickFeedback').textContent='';
+   document.querySelector('[data-pick-close]').focus();
+  }catch(e){
+   message=e.message||'Pick konnte nicht geöffnet werden.';
+   if($('playerPickFeedback'))$('playerPickFeedback').textContent=message;
+   $('playerPickDescription').textContent='Dein Pick bleibt unverändert. Bitte erneut öffnen.';
+   $('playerPickOptions').innerHTML='';
+  }finally{busy=false;render();if(offer)renderOffer();else document.querySelector('[data-pick-close]').disabled=false}
  }
  function applyDelivery(data){
   const item=data.item,id=data.pick_id;
@@ -109,7 +131,7 @@
   if(mounted)return;mounted=true;modal();render();
   const original=renderStore;renderStore=function(){original();render()};
   document.addEventListener('click',e=>{
-   if(e.target.closest('[data-picks-refresh]')){refresh();return}
+   if(e.target.closest('[data-picks-refresh]')){refresh(true);return}
    const openButton=e.target.closest('[data-pick-open]');if(openButton){open(openButton.dataset.pickOpen);return}
    const option=e.target.closest('[data-pick-option]');if(option&&!busy){
     const id=option.dataset.pickOption;
@@ -139,12 +161,12 @@
     setTimeout(()=>$('playerPicks')?.scrollIntoView({behavior:'smooth',block:'start'}),90);
     return;
    }
-   if(e.target.closest('[data-pick-close]')&&!busy){closeUiLayer('playerPickModal','player-pick');offer=null;refresh();return}
+   if(e.target.closest('[data-pick-close]')&&!busy){closeUiLayer('playerPickModal','player-pick');offer=null;refresh(true);return}
   });
   window.addEventListener('focus',refresh);
   setTimeout(refresh,3500);
   setInterval(()=>{if(!document.hidden&&['storeView','homeView'].includes(currentViewId()))refresh()},30000);
  }
- window.FooteraPlayerPicks={refresh,applyDelivery};
+ window.FooteraPlayerPicks={refresh,applyDelivery,isActive:()=>busy||!!offer||!!$('playerPickModal')?.classList.contains('active')};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
