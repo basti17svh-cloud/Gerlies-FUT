@@ -5,6 +5,19 @@
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
+ // Matches the server's duplicate decision. Different card variants,
+ // promo versions and cosmetic designs are not mistaken for duplicates.
+ function samePickCard(a,b){
+  return !!a&&!!b&&!!a.pid&&String(a.pid)===String(b.pid)
+   &&String(a.variant||'')===String(b.variant||'')
+   &&String(a.eventName||'')===String(b.eventName||'')
+   &&String(a.cosmeticDesign||'')===String(b.cosmeticDesign||'');
+ }
+ function pickDuplicateLocation(item){
+  if((state.club||[]).some(owned=>samePickCard(item,owned)))return 'club';
+  if((state.sbcStorage||[]).some(owned=>samePickCard(item,owned)))return 'storage';
+  return '';
+ }
  async function deadline(work,ms){
   let timer;
   try{
@@ -69,8 +82,9 @@
   $('playerPickDescription').textContent='1 aus '+offer.choices+' · Tippe eine Karte zum Aufdecken an. Auswahl bleibt gespeichert.';
   $('playerPickOptions').innerHTML=offer.options.map((o,i)=>{
    const item={...o.item,uid:'preview-'+o.id,acquisitionSource:'reward-pick'},base=item.baseSnapshot,shown=revealed.has(o.id);
-   const label=base?.name||'Spieler';
-   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">PLAYER PICK</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+'</span></span><span class="pick-select-label">'+(selected===o.id?'✓ Ausgewählt':shown?'Auswählen':'Aufdecken')+'</span></button>';
+   const label=base?.name||'Spieler',duplicate=pickDuplicateLocation(o.item),ownedLabel=duplicate==='club'?'Bereits im Verein':'Bereits im SBC-Speicher';
+   const selectionLabel=selected===o.id?'✓ Ausgewählt':shown?(duplicate?'Duplikat · Auswählen':'Auswählen'):'Aufdecken';
+   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+(duplicate?' duplicate':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+(duplicate?' · '+ownedLabel:'')+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">PLAYER PICK</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+(duplicate?'<span class="pick-duplicate-badge" aria-hidden="true">DUPLIKAT</span>':'')+'</span></span><span class="pick-select-label">'+selectionLabel+'</span></button>';
   }).join('');
   const b=document.querySelector('[data-pick-confirm]');b.disabled=!selected||busy;b.textContent=busy?'Wird eingelöst …':'Auswahl bestätigen';
   document.querySelector('[data-pick-close]').disabled=busy;
@@ -167,7 +181,7 @@
     if(!revealed.has(id)){
      revealed.add(id);option.classList.add('revealed');
      option.setAttribute('aria-label',(offer?.options.find(o=>o.id===id)?.item?.baseSnapshot?.name||'Spieler')+' auswählen');
-     option.querySelector('.pick-select-label').textContent='Auswählen';
+     option.querySelector('.pick-select-label').textContent=pickDuplicateLocation(offer?.options.find(o=>o.id===id)?.item)?'Duplikat · Auswählen':'Auswählen';
     }else{selected=id;renderOffer()}
     return;
    }
