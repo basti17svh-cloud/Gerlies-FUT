@@ -1,10 +1,10 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21165';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21166';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21114';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21166';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
@@ -23,7 +23,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21161';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21166';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -31,7 +31,7 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=40;
+export const MIN_CAMERA_DISTANCE=34;
 // Identical physical range for all broadcast phases and event types.
 export const BROADCAST_CAMERA_DISTANCE=40;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
@@ -389,15 +389,13 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   phase=time<1.15?'build':time<5.03?'delivery':'finish';
  }
  if(DEFENSIVE_SCENES.includes(seq)){
-  // One sideline camera follows the passer, closing defender and ball win.
-  const focus=smooth((time-.55)/4.1),defender=defensePosition(8,time,seq);
-  const chaser=worldPosition([defender[0],.85,defender[1]],direction);
-  targetX=mix(bp[0],chaser[0],.18*(1-focus));
-  targetZ=mix(bp[2],chaser[2],.18*(1-focus));
-  targetY=.83;
-  distance=mix(50.8+portraitPad*.48,43.6+portraitPad*.23,focus);
-  fov=mix(28.5,26.1,focus);
-  phase=time<1.42?'build':time<4.4?'delivery':'finish';
+  // This is a BALL WIN, not another shot toward the former attacker's goal.
+  const won=smooth((time-4.30)/.72),defender=defensePosition(8,time,seq);
+  const recovered=worldPosition([defender[0],.85,defender[1]],direction);
+  targetX=mix(bp[0],recovered[0],.18+.40*won);
+  targetZ=mix(bp[2],recovered[2],.18+.38*won)+won*2.5*direction;
+  targetY=.88;fov=aspect<1.12?31.5:29.5;
+  phase=time<1.42?'build':time<4.4?'press':'recovery';
  }
  if(seq==='diagonal_switch'){
   targetX=mix(targetX,goal[0],.46);
@@ -408,8 +406,12 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  if(wide&&sequenceSide(seq)*direction>0)fov+=2.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  // Track the ball with a fixed TV-side offset rather than an unrelated rail.
  // Far-wing, set-piece and finish positions remain exactly the same distance.
- distance=BROADCAST_CAMERA_DISTANCE;fov=Math.max(30.5,fov);
- const target=[targetX,targetY,targetZ],rail=[39.3,27,5.8*direction],railSize=Math.hypot(...rail);
+ const defenseView=DEFENSIVE_SCENES.includes(seq);
+ distance=defenseView?34:BROADCAST_CAMERA_DISTANCE;
+ fov=Math.max(defenseView?29.5:30.5,fov);
+ const target=[targetX,targetY,targetZ],
+  rail=defenseView?[39.3,29,24*direction]:[39.3,27,5.8*direction],
+  railSize=Math.hypot(...rail);
  const position=target.map((coordinate,axis)=>coordinate+rail[axis]*distance/railSize);
   // The goal must stay fully in the mobile picture even with a closer lens.
   // Widen ONLY enough to clear the roof; never zoom out or switch sides.
@@ -492,17 +494,16 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  // A single fitted lens for each highlight. The camera follows the ball,
  // without changing range at a pass, shot or goalkeeper action.
  const portrait=aspect<1.12,isExtended=!!extendedKind(sequence),counter=sequence==='extended_turnover_counter';
+ const defending=DEFENSIVE_SCENES.includes(sequence);
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
-  sigma:isExtended?.16:.34,focusSpeed:isExtended?24:12,railSpeed:isExtended?24:14,
-  // The new counter uses a gradual, authored lens fit. All other scenes keep
-  // their original fixed lens and broadcast camera distance.
-  fovFloor:counter?(portrait?27.5:26.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?35:33.5):isExtended?(portrait?31:30):(portrait?42:40)});
+  sigma:isExtended||defending?.16:.34,focusSpeed:isExtended||defending?24:12,railSpeed:isExtended||defending?24:14,
+  fovFloor:counter?(portrait?27.5:26.5):defending?(portrait?31.5:29.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:counter?(portrait?35:33.5):defending?(portrait?32.5:31):isExtended?(portrait?39:36):(portrait?42:40)});
  // Gaussian stabilization still controls the camera's entire travel. Restore
  // exact physical clearance after smoothing the camera and target separately.
  return time=>{
   const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
-  const distance=counter?32:BROADCAST_CAMERA_DISTANCE;
+  const distance=counter?32:defending?34:BROADCAST_CAMERA_DISTANCE;
   const factor=distance/Math.max(.01,gap);
   // Preserve the gradual authored fit for the counter: a fixed percentile
   // would keep the lens wide during the whole buildup and hide the players.
@@ -1669,20 +1670,31 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const positions=net.geometry.attributes.position;
    if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    if(extended){
-    if(time<4.9)importedMotionFrame.clipEnabled=false;
+    // Keep the same grounded gait as ordinary play; never disable the GLB
+    // locomotion while moving sixteen footballers across the pitch.
     const timing=extendedTiming(sequence),physical=extendedSeconds(sequence,time),rate=time<SHOT_TIME?5.4/timing.shot:1;
+    importedMotionFrame.grounded=true;importedMotionFrame.clipEnabled=clipEnabled;
     players.forEach((p,i)=>{
-     if(i===0&&time>=4.9)return; // Preserve the existing physical finishing animation.
-     resetPose(p);const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence),dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
-     p.root.position.set(point[0],0,point[1]);
-     if(Math.hypot(dx,dz)>.001)p.root.rotation.y=Math.atan2(-dx,-dz);
-     else if(extended==='throw_in'&&i===1)p.root.rotation.y=Math.PI/2;
-     else if(extended==='free_kick'&&i>=8&&i<=11)p.root.rotation.y=Math.PI;
-     const stride=gaitPhase(i,time);
-     for(let leg=0;leg<2;leg++){const g=runningLeg(stride+leg*Math.PI,speed,p.gait[leg]);p.legs[leg].rotation.x=g.hip*speed;p.knees[leg].rotation.x=g.knee*speed;p.ankles[leg].rotation.x=g.ankle*speed;p.arms[leg].rotation.x=-g.hip*.65*speed;p.elbows[leg].rotation.x=.6;}
-     poseExtendedActor(p,i,time,sequence);squadMotionFrames[i].clipEnabled=false;
+     if(i===0&&time>=4.9)return;
+     const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
+     const dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
+     const wall=extended==='free_kick'&&i>=8&&i<=11&&physical<8.6;
+     const heading=wall?Math.PI:extended==='throw_in'&&i===1&&physical<3.5?Math.PI/2:
+      Math.hypot(dx,dz)>.001?Math.atan2(-dx,-dz):p.root.rotation.y;
+     const stride=gaitPhase(i,time),control=carrierIndex===i?carrierState.weight:0;
+     pose(p,point[0],point[1],time,speed,heading,0,stride,0,control,Math.hypot(defensiveBall[0]-point[0],defensiveBall[2]-point[1]));
+     // Plant the boots unless an actual jump is authored below.
+     p.rig.position.y=clamp(p.rig.position.y,-.055,.020);
+     poseExtendedActor(p,i,time,sequence);
+     const frame=squadMotionFrames[i];frame.speed=speed;frame.control=control;
+     frame.stride=stride;frame.clipEnabled=clipEnabled;frame.grounded=!wall;
+     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.control=control;importedMotionFrame.stride=stride}
     });
     if(buildKeeper){resetPose(buildKeeper);const pos=extendedPosition(16,time,sequence);buildKeeper.root.position.set(pos[0],0,pos[1]);poseExtendedActor(buildKeeper,16,time,sequence);}
+   }
+   if(event.type==='ball_won'){
+    importedMotionFrame.grounded=true;
+    for(const frame of squadMotionFrames)frame.grounded=true;
    }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);

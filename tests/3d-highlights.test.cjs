@@ -941,3 +941,41 @@ test('V21.165: closer counter has constant 32m camera clearance with ball, activ
  const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(source,/const distance=counter\?32:BROADCAST_CAMERA_DISTANCE/);
 });
+
+test('V21.166: ball-won defenders carry upfield, boots grounded, camera follows the recovery',async()=>{
+ const M=await import('../3d-highlights-scene.mjs'),P=await import('../3d-playbook.mjs');
+ for(const sequence of P.DEFENSIVE_SCENES){
+  const start=P.defensePosition(8,4.5,sequence),finish=P.defensePosition(8,9.7,sequence);
+  assert.ok(finish[1]>start[1]+12,'winner must advance AWAY from defended -Z goal');
+  for(const direction of [-1,1])for(const t of [0,2,4.3,5.4,7.8,9.5]){
+   const c=M.cameraState(direction,t,.93,'ball_won',sequence);
+   assert.ok(Math.abs(Math.hypot(...c.position.map((v,i)=>v-c.target[i]))-34)<.00001);
+   assert.ok(c.position[0]>0,'TV camera stays on one side');
+  }
+ }
+ const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(src,/pose\(p,point\[0\],point\[1\],time,speed,heading/);
+ assert.doesNotMatch(src,/squadMotionFrames\[i\]\.clipEnabled=false/);
+ const imported=fs.readFileSync(path.join(root,'3d-player-prototype.mjs'),'utf8');
+ assert.match(imported,/normalized\.position\.y=info\.grounded/);
+});
+test('V21.166: freekick taker and both goal posts share a frame, wall faces taker and guards hips',async()=>{
+ const M=await import('../3d-highlights-scene.mjs'),E=await import('../3d-extended-match.mjs');
+ const norm=a=>a.map(v=>v/Math.hypot(...a)),sub=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+ const project=(c,point,aspect)=>{
+  const f=norm(sub(c.target,c.position)),r=norm([f[2],0,-f[0]]);
+  const u=[r[1]*f[2]-r[2]*f[1],r[2]*f[0]-r[0]*f[2],r[0]*f[1]-r[1]*f[0]],v=sub(point,c.position),d=dot(v,f),h=Math.tan(c.fov*Math.PI/360);
+  return[dot(v,r)/(aspect*d*h),dot(v,u)/(d*h)];
+ };
+ for(const dir of [-1,1])for(const aspect of [.9,.93,1.3,1.8])for(const sec of [0,2.5,4.8,5.2,5.4]){
+  const time=sec/8*M.SHOT_TIME,sequence='extended_free_kick',ball=E.extendedBall(time,sequence,[0,.14,-28.75]);
+  const cam=E.extendedCamera(sequence,time,dir,aspect,ball),k=E.extendedPosition(0,time,sequence);
+  const points=[[k[0]*dir,1.15,k[1]*dir],[0,.14,-28.75*dir],
+   ...[-3.72,3.72].flatMap(x=>[-52.5,-54.45].map(z=>[x*dir,2.5,z*dir]))];
+  for(const point of points)assert.ok(Math.max(...project(cam,point,aspect).map(Math.abs))<.94,'freekick crop '+dir+'/'+aspect+'/'+sec+'/'+point);
+ }
+ const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(src,/const heading=wall\?Math\.PI/);
+ const pose=fs.readFileSync(path.join(root,'3d-extended-match.mjs'),'utf8');
+ assert.doesNotMatch(pose,/p\.elbows\[0\]\.rotation\.x=-1/);
+});

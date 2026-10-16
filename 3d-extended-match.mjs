@@ -143,7 +143,7 @@ export function extendedCamera(seq,time,direction,aspect,ball){
   target[0]=mix(target[0],0,finish*.22);
   target[2]=mix(target[2],-47,finish);
  }
- if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-40.5}
+ if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-38}
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
@@ -153,13 +153,17 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  // changes its physical distance; only a slow lens allowance accommodates
  // the opening pass and the complete goal at the finishing touch.
  const distance=kind==='turnover_counter'?32:40;
- const rail=kind==='turnover_counter'?[39.3,32,48*direction]:[39.3,27,5.8*direction];
+ // Freekick uses a diagonal TV rail: shooter, wall and BOTH goalposts
+ // appear in the same continuous mobile shot rather than cropping either.
+ const rail=kind==='turnover_counter'?[39.3,32,48*direction]:
+  kind==='free_kick'?[39.3,29,50*direction]:[39.3,27,5.8*direction];
  const size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
  const opening=kind==='turnover_counter'?smooth((t-1.5)/1.2)*(1-smooth((t-4.4)/1.0)):0;
  const finish=kind==='turnover_counter'?smooth((t-16)/2.4):0;
  const lensAllowance=Math.max(opening*.52,finish);
- const fov=kind==='turnover_counter'?(portrait?27.5+7.5*lensAllowance:26.5+7*lensAllowance):(portrait?29.4:28.6);
+ const fov=kind==='turnover_counter'?(portrait?27.5+7.5*lensAllowance:26.5+7*lensAllowance):
+  kind==='free_kick'?(portrait?38:35.5):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // Applied after generic locomotion, so a throw uses arms and a wall stays a wall.
@@ -179,8 +183,11 @@ export function poseExtendedActor(p,index,time,seq){
  }
  // Only the four wall players are aligned, with nonidentical jump timings.
  if(kind==='free_kick'&&index>=8&&index<=11){
-  p.arms[0].rotation.x=-.45;p.arms[1].rotation.x=-.45;
-  p.elbows[0].rotation.x=-1;p.elbows[1].rotation.x=-1;
+  // Tuck hands in front of the hips/torso instead of holding both arms out.
+  // Root heading PI faces the freekick taker at positive local Z.
+  p.arms[0].rotation.x=-.10;p.arms[1].rotation.x=-.10;
+  p.arms[0].rotation.z=-.08;p.arms[1].rotation.z=.08;
+  p.elbows[0].rotation.x=-.28;p.elbows[1].rotation.x=-.28;
   const delay=(index-8)*.065;
   const jump=smooth((t-7.91-delay)/.14)*(1-smooth((t-8.19-delay)/.21));
   p.rig.position.y+=.23*jump;p.upper.rotation.x-=.08*jump;

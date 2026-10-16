@@ -447,7 +447,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    apply('pelvis',0,0,0);
   }else{
    normalized.position.set(0,0,0);
-   normalized.position.y=clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
+   // No independent hover/bob over the planted procedural boots.
+   normalized.position.y=info.grounded?
+    clamp(driver.rig.position.y*.45+m.bob*.18,-.06,.035):
+    clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
    normalized.quaternion.copy(authoredFacing);
    apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,
     driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);

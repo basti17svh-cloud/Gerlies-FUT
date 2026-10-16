@@ -343,9 +343,15 @@ export function defensePosition(index,time,sequence){
   if(slide){
    const settled=[intercept[0]-.35,intercept[1]-.32];
    if(t<5.8)return orient(interpolate(intercept,settled,(t-4.4)/.6));
-   return orient(interpolate(settled,[1.6,-24.5],(t-5.8)/3.8));
+   return orient(interpolate(settled,[5.8,-15.5],(t-5.8)/4.6));
   }
-  return orient(interpolate(intercept,[1.6,-24.5],(t-4.4)/4.6));
+  // The ball winner drives toward midfield (+Z), AWAY from the
+  // defended -Z goal, rather than turning into that goal's box.
+  return orient(interpolate(intercept,[5.8,-14.5],(t-4.4)/5.2));
+ }
+ if(index>=9&&index<=15){
+  const n=index-9,from=[-21+n*6,-40+(n%3)*4],u=ease((t-4.45)/5.2);
+  return orient([from[0]+(n%2?2.2:-1.2)*u,from[1]+(10+(n%3)*2.3)*u]);
  }
  return null;
 }
