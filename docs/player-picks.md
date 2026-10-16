@@ -20,7 +20,7 @@ Anzahl, Mindestwertung, Optionen und Einlösung werden serverseitig bestimmt. Di
 ## Prüfung
 
 ```sh
-node --test tests/champions-player-picks.test.cjs tests/weekly-rewards.test.cjs tests/champions.test.cjs tests/card-layout.test.cjs tests/footera-accounts.test.cjs
+node --test tests/champions-player-picks.test.cjs tests/competition-system.test.cjs tests/weekly-rewards.test.cjs tests/champions.test.cjs tests/card-layout.test.cjs tests/footera-accounts.test.cjs
 NODE_PATH=/tmp/footera-browser/node_modules node tests/player-picks.browser.cjs
 ```
 
