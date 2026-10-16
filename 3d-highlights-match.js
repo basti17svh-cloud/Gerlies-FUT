@@ -197,7 +197,11 @@ function queueMatch3D(event){
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  const selected=FooteraHighlights.choosePresentation(presentation,match3DQueue.history||[]);
- presentation.sequence=event.sequence||match3DSequence({...presentation,id:event.id||'',minute:event.minute||0});
+ // Use the deterministic playstyle-aware director for ordinary attacks.
+ // An event-provided generic sequence is only a hint; retaining it verbatim
+ // caused identical camera/action choreography throughout an entire match.
+ const lockedScene=!!event.sceneKind||['freekick','penalty'].includes(event.creationType)||event.type==='ball_won';
+ presentation.sequence=lockedScene?(event.sequence||selected.sequence):selected.sequence;
  presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
