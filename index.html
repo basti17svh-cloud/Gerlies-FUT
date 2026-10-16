@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.169</title>
+<title>Footera V21.170</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -9384,7 +9384,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.169";
+const GFUT_BUILD="V21.170";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9441,7 +9441,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21168",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21170",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9467,8 +9467,8 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./potm.js"></script>
 <script src="./squad-tactics.js?v=21160"></script>
 <script src="./squad-numbers.js?v=2185"></script>
-<script src="./footera-backup.js?v=21128"></script>
-<script src="./footera-account.js?v=21169"></script>
+<script src="./footera-backup.js?v=21170"></script>
+<script src="./footera-account.js?v=21170"></script>
 <script src="./footera-paid-wallet.js?v=21141"></script>
 <script src="./champions-player-picks.js?v=21169"></script>
 <script src="./player-picks.js?v=21169"></script>
