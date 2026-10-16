@@ -59,6 +59,8 @@
  }
  function renderRewardDetails(row){
   const packs=row.reward.packs||[],groupedPacks=groupedRewardPacks(packs),coins=Math.max(0,Number(row.reward.coins||0));
+  const picks=row.reward.playerPicks||[];
+  const pickHtml=picks.map(p=>'<div class="weekly-reward-pack"><strong>'+p.minRating+'+ '+(p.type==='champions-red'?'Champions Player Pick':'Player Pick')+'</strong><small>1 aus '+p.choices+' · Untauschbar</small></div>').join("");
   const coinHtml=coins?'<div class="weekly-reward-coin"><img src="./assets/footera/coins.webp" alt="" loading="lazy">'+
    '<strong>'+fmt(coins)+'</strong><span>Footera Coins</span></div>':"";
   const week=Number(row.week),date=Number.isFinite(week)&&week>0?new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(week)):"";
@@ -67,8 +69,8 @@
    '<span class="weekly-reward-rank-icon" aria-hidden="true">◆</span><strong>'+esc(rankTitle(row))+'</strong>'+
    '<span>'+esc(details(row))+'</span></div>'+
    '<div class="weekly-reward-detail-head"><h4>DEINE BELOHNUNGEN</h4><small>'+packs.length+' '+(packs.length===1?"Pack":"Packs")+(coins?" + Coins":"")+'</small></div>'+
-   '<div class="weekly-reward-prizes">'+coinHtml+groupedPacks.map(packPreview).join("")+'</div>'+
-   '<p class="weekly-reward-note">Beim Abholen werden Münzen direkt gutgeschrieben. Packs landen in deinem Store-Inventar.</p>'+
+   '<div class="weekly-reward-prizes">'+coinHtml+groupedPacks.map(packPreview).join("")+pickHtml+'</div>'+
+   '<p class="weekly-reward-note">Beim Abholen werden Münzen direkt gutgeschrieben. Packs und Player Picks findest du im Store. Für Player Picks ist ein verknüpftes Konto erforderlich.</p>'+
    '<button type="button" class="weekly-reward-claim" data-weekly-reward-claim="'+esc(String(row.mode))+'" data-week="'+esc(String(row.week))+'">Belohnungen abholen <span aria-hidden="true">→</span></button>'+
    '</section>';
  }

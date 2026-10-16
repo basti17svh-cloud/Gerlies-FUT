@@ -72,7 +72,7 @@ test("account switch and cloud saves cannot silently replace online profile",()=
  assert.match(online,/localStorage\.getItem\("footera-cloud-owner"\)!==online\.userId/);
  assert.match(online,/if\(!session\)[\s\S]*?footera-cloud-owner/);
  assert.match(online,/authClient/);
- assert.match(worker,/footera-account\.js\?v=21122/);
+ assert.match(worker,/footera-account\.js\?v=21161/);
  assert.match(worker,/footera-account\.css\?v=21122/);
 });
 test("cloud save schema enforces ownership and revision checks",()=>{
@@ -265,7 +265,7 @@ test("Google login and linking are absent from account UI while email flows rema
 
 test("the real entry page loads accounts after online and backup, including the stylesheet",()=>{
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
- assert.match(html,/<script src="\.\/footera-account\.js\?v=21122"><\/script>/);
+ assert.match(html,/<script src="\.\/footera-account\.js\?v=21161"><\/script>/);
  assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=21122">/);
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./footera-backup.js'));
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./friend-online.js'));
@@ -675,4 +675,30 @@ test("verified FC Gerlies account retries online initialization and provides fri
  assert.match(js,/const code=await online\.getFriendCode\?\.\(\)/);
  assert.match(js,/Online-Fehler:/);
  assert.match(online,/formation:state\.formation/);
+});
+
+test('pick delivery resumes after a lost response and records the committed cloud revision',async()=>{
+ const t=runtime('registered'),s=sampleGame();
+ t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));t.setCloud({save_data:s,revision:1});
+ let attempts=0,applied=0;
+ const item={uid:'pick-a',pid:'123',playerPickId:'pick-a',tradeable:false,baseSnapshot:{id:'123'}};
+ const saved={...s,club:[item],playerPickClaims:{'pick-a':'option-a'}};
+ t.client.rpc=async(name,args)=>{
+  assert.equal(name,'footera_choose_player_pick');assert.equal(args.p_base_revision,1);
+  if(++attempts===1){t.setCloud({save_data:saved,revision:2});throw Error('Network interrupted')}
+  return{data:{pick_id:'pick-a',item,save_data:saved,revision:2}};
+ };
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPick('pick-a','option-a',()=>applied++),/Network/);
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick().revision,1);assert.equal(applied,0);
+ await t.win.FooteraAccount.choosePlayerPick('pick-a','option-a',()=>applied++);
+ assert.equal(applied,1);assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,2);
+});
+
+test('pick delivery rejects a stale cloud revision before requesting a selection',async()=>{
+ const t=runtime('registered'),s=sampleGame();t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));t.setCloud({save_data:s,revision:3});
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPick('pick-a','option-a',()=>{}),/nicht synchron/);
+ assert.equal(t.calls.length,0);
 });

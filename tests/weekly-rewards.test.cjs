@@ -34,9 +34,9 @@ function setup(rows){
 test("reward banner sits between rotating hero and season countdown and is loaded in shell",()=>{
  const a=html.indexOf('id="homeHeroCard"'),b=html.indexOf('id="weeklyRewardHome"'),c=html.indexOf('id="competitionHome"');
  assert.ok(a>=0&&a<b&&b<c);
- assert.match(html,/weekly-rewards\.js\?v=2128/);
+ assert.match(html,/weekly-rewards\.js\?v=21161/);
  assert.match(html,/weekly-rewards\.css\?v=2128/);
- assert.match(worker,/weekly-rewards\.js\?v=2128/);
+ assert.match(worker,/weekly-rewards\.js\?v=21161/);
  assert.match(worker,/weekly-rewards\.css\?v=2128/);
  assert.doesNotThrow(()=>new vm.Script(src));
  assert.match(css,/\.weekly-reward-claim/);

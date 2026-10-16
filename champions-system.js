@@ -40,7 +40,8 @@ function championsRewardForWins(wins){
  for(const spec of row.rated||[])packs.push({id:ratingRewardPack(spec[0],spec[1]),tradeable:false});
  for(let i=0;i<(row.totw||0);i++)packs.push({id:"totw-reward",tradeable:false});
  if(row.bonus)packs.push({id:"champions-bonus",tradeable:false});
- return{coins:row.coins||0,packs}
+ const playerPicks=Array.from({length:({"Rang I":3,"Rang II":2,"Rang III":2,"Rang IV":1,"Rang V":1,"Rang VI":1}[row.name]||0)},()=>({type:"champions-red",choices:4,minRating:85,tradeable:false}));
+ return{coins:row.coins||0,packs,playerPicks}
 }
 function ensureChampionsState(){
  state.champions=state.champions&&typeof state.champions==="object"?state.champions:{};

@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.160</title>
+<title>Footera V21.168</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1435,6 +1435,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
+<link rel="stylesheet" href="./player-picks.css?v=21161">
 <link rel="stylesheet" href="./legacy-card.css?v=21158">
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css?v=21158">
@@ -1531,7 +1532,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.160</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.168</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -1680,7 +1681,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <span class="footera-points-entry-icon"><img src="./assets/footera/points.webp" alt="" aria-hidden="true"></span>
 <span class="footera-points-entry-copy"><strong>Footera Points erwerben</strong><small>8 Points-Pakete entdecken · aktuell nur Testmodus</small></span>
 <span class="footera-points-entry-arrow" aria-hidden="true">›</span>
-</button></div><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><div id="ownedPacks"></div></div></section>
+</button></div><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><section id="playerPicks" class="player-picks" aria-label="Meine Player Picks"></section><div id="ownedPacks"></div></div></section>
 
 <div id="footeraPointsPurchaseModal" class="modal footera-points-modal" role="dialog" aria-modal="true" aria-labelledby="footeraPointsPurchaseTitle">
 <div class="modalinner">
@@ -3775,7 +3776,7 @@ function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
 function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
-function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return P_BY_ID.get(String(item.pid))}
+function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
 function displayBase(item){
  const b=itemBase(item);if(!b)return null;
@@ -9377,7 +9378,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.160";
+const GFUT_BUILD="V21.168";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9434,7 +9435,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21167",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21168",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // The first cache claim and an unchanged worker URL do not require a second app start.
@@ -9447,22 +9448,24 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 
 </script>
 <script src="./season-system.js?v=21128"></script>
-<script src="./competition-system.js"></script>
-<script src="./champions-system.js?v=2115"></script>
+<script src="./competition-system.js?v=21161"></script>
+<script src="./champions-system.js?v=21161"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js?v=21101"></script>
 <script src="./3d-highlights-match.js?v=21167"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./play-hub.js"></script>
-<script src="./weekly-rewards.js?v=2128"></script>
+<script src="./weekly-rewards.js?v=21161"></script>
 <script src="./friends-hub.js"></script>
 <script src="./potm.js"></script>
 <script src="./squad-tactics.js?v=21160"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21128"></script>
-<script src="./footera-account.js?v=21122"></script>
+<script src="./footera-account.js?v=21161"></script>
 <script src="./footera-paid-wallet.js?v=21141"></script>
+<script src="./champions-player-picks.js?v=21161"></script>
+<script src="./player-picks.js?v=21161"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>

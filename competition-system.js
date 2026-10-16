@@ -47,11 +47,13 @@ function sbRankReward(rank){
  const row=SB_RANKS.find(x=>x.name===rank)||SB_RANKS[0],packs=[];
  if(row.primary)packs.push({id:ratingRewardPack(...row.primary),tradeable:row.primary[1]>=5});
  if(row.bonus)packs.push({id:ratingRewardPack(...row.bonus),tradeable:false});
- return{coins:row.coins||0,packs}
+ const playerPicks=/^Elite|^Gold 1$|^Gold 2$/.test(rank)?[{type:"standard",choices:3,minRating:rank==="Elite 1"?83:80,tradeable:false}]:[];
+ return{coins:row.coins||0,packs,playerPicks}
 }
 function rivalsReward(division,milestone){
  const [coins,ids]=RIVALS_REWARDS[division]?.[milestone]||[0,[]];
- return{coins,packs:ids.map(id=>({id,tradeable:true}))}
+ const playerPicks=Number(division)<=5?[{type:"standard",choices:3,minRating:Number(division)<=2?84:82,tradeable:false}]:[];
+ return{coins,packs:ids.map(id=>({id,tradeable:true})),playerPicks}
 }
 function ratingRewardPack(min,count){
  const id=`reward-${min}-${count}`;
@@ -97,7 +99,7 @@ function claimCompetitionReward(mode,week){
  const row=competitionPending(mode).find(x=>x.week===week);if(!row)return false;
  row.claimed=true;state.coins+=row.reward.coins||0;
  for(const pack of row.reward.packs){state.packs[pack.id]=(state.packs[pack.id]||0)+1;if(!pack.tradeable)state.rewardPackQueue.push({id:pack.id,tradeable:false})}
- save();renderAll();if(currentViewId()==="playView")renderPlay();toast(`${mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abgeholt.`);return true
+ save();renderAll();window.FooteraPlayerPicks?.refresh();if(currentViewId()==="playView")renderPlay();toast(`${mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abgeholt.`);return true
 }
 function recordRivalsResult(result){
  const r=state.rivals,before={division:r.division,step:r.step,skill:r.skill,weekly:r.weeklyPoints,streak:r.streak};
@@ -233,7 +235,7 @@ function battleSpecialOpponent(kind,key){
 }
 
 function rewardLabel(row){
- const packs=row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id).join(" · ");
+ const packs=[...row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),...(row.reward.playerPicks||[]).map(p=>`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices})`)].join(" · ");
  return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${packs}`
 }
 function competitionClaimButtons(mode){return competitionPending(mode).map(row=>`<button class="primary competition-claim" type="button" data-claim-competition="${row.mode}" data-competition-week="${row.week}">${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholen · ${esc(rewardLabel(row))}</button>`).join("")}

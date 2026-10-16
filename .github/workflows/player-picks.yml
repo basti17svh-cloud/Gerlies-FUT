@@ -1,0 +1,43 @@
+name: Footera Player Picks
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*player-picks*'
+      - 'footera-account.js'
+      - 'champions-system.js'
+      - 'competition-system.js'
+      - 'weekly-rewards.js'
+      - 'index.html'
+      - 'tests/*picks*'
+      - 'tests/footera-accounts.test.cjs'
+      - '.github/workflows/player-picks.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  player-picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rewards, cards and account recovery
+        run: node --test tests/champions-player-picks.test.cjs tests/weekly-rewards.test.cjs tests/champions.test.cjs tests/card-layout.test.cjs tests/footera-accounts.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Mobile selection and inventory delivery
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/player-picks.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: player-picks-mobile
+          path: test-artifacts/player-picks-*.png
+          retention-days: 7

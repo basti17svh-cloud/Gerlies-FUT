@@ -324,6 +324,45 @@
    msg("Cloud-Sicherung erfolgreich gespeichert (Version "+data+").");
    await render();
  }
+ // A pick and its inventory delivery share one server transaction. Keep a retry
+ // marker until both the local save and its cloud revision have been recorded.
+ function pendingPlayerPick(){
+   try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
+ }
+ async function choosePlayerPick(pickId,optionId,applyDelivery){
+   if(autoBusy)throw Error("Die Cloud synchronisiert gerade. Bitte kurz erneut versuchen.");
+   autoBusy=true;
+   try{
+     changeLocked();
+     const {c,u}=await requirePermanent();ensureOwned(u);
+     const local=localData(),cloud=await cloudInfo(),point=syncPoint(u),pending=pendingPlayerPick();
+     if(!cloud||cloud.save_data?.profile?.saveId!==local.profile?.saveId)
+       throw Error("Bitte zuerst deinen Verein mit der Cloud synchronisieren.");
+     if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.pickId!==pickId||pending.optionId!==optionId))
+       throw Error("Bitte zuerst die ausstehende Pick-Einlösung abschließen.");
+     const revision=pending?pending.revision:point?.revision;
+     if(!pending&&(!point||point.saveId!==local.profile.saveId||cloud.revision!==revision))
+       throw Error("Cloud-Spielstand und Gerät sind nicht synchron. Bitte den aktuellen Cloud-Spielstand laden.");
+     root.localStorage.setItem("footera-pending-player-pick-v1",JSON.stringify({userId:u.id,saveId:local.profile.saveId,pickId,optionId,revision}));
+     const {data,error}=await c.rpc("footera_choose_player_pick",{p_id:pickId,p_option:optionId,p_save:local,p_base_revision:revision});
+     if(error){
+       // These server rejections are atomic and cannot have delivered a card.
+       if(["22023","42501","P0001","40001"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
+       throw error;
+     }
+     const saved=root.FooteraBackup.validateState(data?.save_data);
+     if(!data?.item||data.pick_id!==pickId||data.revision!==revision+1||saved.profile.saveId!==local.profile.saveId)
+       throw Error("Die Einlösung konnte noch nicht bestätigt werden. Bitte erneut versuchen.");
+     const current=await user();
+     if(current?.id!==u.id)throw Error("Das Konto wurde gewechselt. Bitte mit dem ursprünglichen Konto fortfahren.");
+     ensureOwned(current);
+     if(localData().profile.saveId!==local.profile.saveId)throw Error("Der lokale Verein hat sich geändert.");
+     applyDelivery(data);
+     savePoint(u,saved,data.revision);
+     root.localStorage.removeItem("footera-pending-player-pick-v1");
+     return data;
+   }finally{autoBusy=false}
+ }
  async function restoreCloud(){
    changeLocked();
    const {u}=await requirePermanent(),existing=await cloudInfo();
@@ -993,6 +1032,6 @@
      },20000);
    }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
  }
- root.FooteraAccount={getClient,user,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
