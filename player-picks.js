@@ -45,7 +45,7 @@
  function modal(){
   if($('playerPickModal'))return;
   const el=document.createElement('div');el.id='playerPickModal';el.className='modal player-pick-modal';
-  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><button type="button" class="pick-cloud-recover" data-pick-cloud-restore hidden>Cloud-Spielstand sicher laden</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
+  el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="playerPickTitle"><button type="button" class="pick-close" data-pick-close aria-label="Auswahl später fortsetzen">×</button><small class="pick-eyebrow">DEINE ENTSCHEIDUNG</small><h2 id="playerPickTitle"></h2><p id="playerPickDescription"></p><div id="playerPickOptions" class="pick-options"></div><p id="playerPickFeedback" role="status"></p><button type="button" class="primary pick-confirm" data-pick-confirm disabled>Spieler auswählen</button><button type="button" class="pick-cloud-recover" data-pick-cloud-restore hidden>Cloud-Abgleich sicher prüfen</button><p class="pick-footnote">Du erhältst genau einen Spieler. Die übrigen Optionen verfallen nach deiner Bestätigung.</p></section>';
   document.body.appendChild(el);
  }
  function renderOffer(){
@@ -122,7 +122,18 @@
    }
    if(e.target.closest('[data-pick-confirm]')){choose();return}
    if(e.target.closest('[data-pick-recover]')){choose(true);return}
-   if(e.target.closest('[data-pick-cloud-restore]')&&!busy){window.FooteraAccount.restoreCloud().catch(err=>{const feedback=$('playerPickFeedback');if(feedback)feedback.textContent=err.message||'Cloud-Spielstand konnte nicht geladen werden.'});return}
+   if(e.target.closest('[data-pick-cloud-restore]')&&!busy){
+    const button=e.target.closest('[data-pick-cloud-restore]');button.disabled=true;
+    window.FooteraAccount.saveCloud().then(saved=>{
+     const feedback=$('playerPickFeedback');
+     if(saved){
+      needsCloudRestore=false;renderOffer();
+      if(feedback)feedback.textContent='Cloud-Abgleich abgeschlossen. Deine Auswahl kannst du jetzt bestätigen.';
+     }else if(feedback)feedback.textContent='Abgebrochen. Deine Spielstände und dieser Pick bleiben erhalten.';
+    }).catch(err=>{const feedback=$('playerPickFeedback');if(feedback)feedback.textContent=err.message||'Cloud-Abgleich nicht möglich. Keine Daten überschrieben.'})
+     .finally(()=>{if(button.isConnected)button.disabled=false});
+    return;
+   }
    if(e.target.closest('[data-picks-jump]')){
     switchView('storeView');refresh();
     setTimeout(()=>$('playerPicks')?.scrollIntoView({behavior:'smooth',block:'start'}),90);
