@@ -10,18 +10,65 @@ const R={
  keeper_buildout:{16:[[0,0,45],[4,0,45],[9,1,43]],0:[[0,1,-7],[12,2,-16],[16,0,-24],[20,0,-37]],1:[[0,-17,32],[6,-16,28],[9,-14,20],[14,-10,8],[20,-13,-16]],6:[[0,-7,12],[9,-7,10],[12,-5,4],[17,-4,-16],[20,-4,-21]]},
  turnover_counter:{0:[[0,3,-8],[8,3,-10],[13,3,-20],[17,1,-29],[20,0,-37]],8:[[0,-14,3],[3,-10,-2],[5.5,-6,-7],[7.95,-1,-12],[9.3,0,-13],[12,1,-14],[20,2,-17]],6:[[0,-13,-20],[4,-8,-17],[6.8,-4,-14],[7.95,-1.25,-12.35],[8.3,-1,-12.7],[13,-3,-19],[16,-4,-29],[20,-4,-31]],1:[[0,-17,-4],[9,-17,-8],[14,-15,-19],[17,-13,-27],[20,-13,-36]]},
  corner:{0:[[0,-2,-42],[4,-2,-42],[7,0,-43],[10.5,2,-46.5]],1:[[0,-33.8,-50.6],[3.6,-33.8,-50.6],[4.3,-33.65,-51.65],[10.5,-29,-46]],8:[[0,1,-44],[4,1,-44],[8,3,-45],[10.5,3.1,-46.3]]},
- free_kick:{0:[[0,0,-25],[5,0,-25],[7.2,0,-27],[8,0,-28.75]],8:[[0,-1.2,-39]],9:[[0,-.4,-39]],10:[[0,.4,-39]],11:[[0,1.2,-39]]},
+ free_kick:{0:[[0,0,-25],[5,0,-25],[7.2,0,-27],[8,0,-28.75]]},
  penalty:{0:[[0,0,-37.3],[6,0,-37.3],[8,0,-39.5],[9,-.105,-40.68988172767776]]},
  throw_in:{1:[[0,34.15,-20],[3.2,34.15,-20],[5,34.15,-20],[9,28,-27],[12,26,-34]],6:[[0,24,-23],[3,24,-23],[5,23,-25],[8,20,-28],[10,14,-32],[12,10,-35]],0:[[0,9,-28],[5,9,-28],[8,7,-31],[10,3,-35],[12,1,-39]]}
 };
+
+/* Authored restarts, not a j-based grid. Each player has a real support,
+ * covering, marking or rebound lane; goalkeepers/takers stay in R routes. */
+const RESTART_FORMATIONS={
+ penalty:{
+  attack:[null,[-12.8,-33.8],[10.9,-33.2],[-3.9,-30.3],[5.4,-31],[-20.4,-33.4],[20,-34.3],[-8.6,-31.5]],
+  defend:[[-10.9,-31.9],[12.5,-32],[-.7,-30.8],[7.4,-30],[-18.3,-32.5],[18.4,-31.9],[-6.4,-32.7],[15.1,-34]],
+  targets:{attack:[null,[-9,-42.8],[7,-43.5],[-1,-39.6],[3,-40.2],[-17.2,-35.5],[15,-37.5],[-4,-38]],
+   defend:[[-8.9,-41],[9,-40.6],[0,-38.2],[4,-38],[-18,-36.6],[17,-37],[-5.8,-37.3],[12,-39.2]]}
+ },
+ free_kick:{
+  attack:[null,[-13.3,-36.1],[10.5,-37.1],[-22,-31.5],[20,-32.5],[-7.2,-28],[6.6,-27.4],[-2.8,-33.7]],
+  defend:[[-2.12,-39],[-.70,-39],[.73,-39],[2.16,-39],[-12,-42],[11,-43],[-21.2,-37.5],[18.3,-42]],
+  targets:{attack:[null,[-9.7,-45.2],[7.2,-46.7],[-17.5,-36.9],[16.4,-38.5],[-5.1,-34.5],[6,-35],[-1.9,-41.7]],
+   defend:[[-3.8,-42.1],[-.6,-40.7],[1.5,-42.4],[3.4,-41.5],[-10.2,-44.7],[9.6,-45.5],[-19,-39.7],[15.8,-43.5]]}
+ },
+ corner:{
+  attack:[null,null,[-7.8,-41.5],[8,-41.4],[-16,-36.5],[15,-38.5],[.8,-35.2],[-11.2,-44.2]],
+  defend:[null,[-4.6,-43.5],[10,-44],[-14,-42.3],[16.5,-43.2],[.2,-40],[-8.5,-48.5],[7.8,-48.9]],
+  targets:{attack:[null,null,[-4.8,-49],[6,-50.5],[-12.5,-46],[11,-46],[-1.5,-41.2],[-8,-48]],
+   defend:[null,[-5.4,-48.1],[6.8,-49],[-12,-46.5],[12,-46],[.8,-46],[-6.5,-50],[5.5,-50.8]]}
+ },
+ throw_in:{
+  attack:[null,null,[27,-18],[22,-24],[16,-15],[31,-26],null,[17,-30]],
+  defend:[[29,-23],[20.5,-25.7],[25.4,-17],[13,-19],[30,-31],[12,-28],[22,-36],[5,-32]],
+  targets:{attack:[null,null,[25,-25],[19,-28],[17,-19],[28,-30],null,[15,-33]],
+   defend:[[26.5,-27],[19,-28.5],[22,-22],[12,-23],[27,-34],[10.5,-31],[18.5,-39],[5.5,-34]]}
+ }
+};
+const RESTART_RELEASE={penalty:9,free_kick:8,corner:4.3,throw_in:3.2};
+function restartPosition(index,seconds,kind){
+ const shape=RESTART_FORMATIONS[kind],attack=index<8,j=attack?index:index-8;
+ const start=(attack?shape?.attack:shape?.defend)?.[j];
+ if(!start)return null;
+ const end=(attack?shape.targets.attack:shape.targets.defend)[j]||start;
+ const release=RESTART_RELEASE[kind],wall=kind==='free_kick'&&!attack&&j<4;
+ // Micro-positioning before delivery stays behind the penalty line and arc.
+ const drift=wall?0:kind==='penalty'?.075:.18;
+ const idle=drift*Math.sin(seconds*(.62+(index%4)*.09)+index*.83)
+   *smooth(seconds/1.8)*(1-smooth((seconds-release+.38)/.42));
+ // Individual reaction timing prevents synchronized sprints into the box.
+ const delay=kind==='penalty'?(index%4)*.13:(index%3)*.16+(index%4)*.12;
+ const travel=kind==='penalty'?2.2:kind==='free_kick'?2.5:kind==='corner'?4.4:4.6;
+ const run=smooth((seconds-release-delay)/travel);
+ const lateral=(wall?0:(j%3-1)*.65)*Math.sin(Math.PI*run);
+ return[mix(start[0],end[0],run)+lateral+idle,
+  mix(start[1],end[1],run)+idle*.32];
+}
+
 export function extendedPosition(index,time,seq){
- const kind=extendedKind(seq);if(!kind)return null;const t=extendedSeconds(seq,Math.min(time,5.4));
+ const kind=extendedKind(seq);if(!kind)return null;const t=extendedSeconds(seq,time);
  if(R[kind][index]){const point=route(R[kind][index],t);if(seq.endsWith('_right'))point[0]*=-1;return point;}
+ const staged=restartPosition(index,t,kind);
+ if(staged){if(seq.endsWith('_right'))staged[0]*=-1;return staged;}
  const attack=index<8,j=attack?index:index-8;
- if(kind==='penalty')return[(j-3.5)*3.2,attack?-31:-33.5];
- if(kind==='corner')return[(j-3)*3.5,attack?-38-(j%3)*2:-42-(j%3)*2.1];
- if(kind==='free_kick')return[(j-3)*4,attack?-23-(j%2)*4:-43-(j%2)*3];
- if(kind==='throw_in')return[(j%4)*6-2,attack?-23-(j%3)*4:-36-(j%3)*3];
  const progress=smooth(t/shots[kind]),initial=kind==='keeper_buildout'?24:0;
  return[(j-3)*6+(attack?0:2),mix(initial+(attack?10:0)-(j%3)*6,(attack?-23:-38)-(j%3)*3,progress)];
 }
@@ -63,7 +110,25 @@ export function extendedCamera(seq,time,direction,aspect,ball){
 export function poseExtendedActor(p,index,time,seq){
  const kind=extendedKind(seq),t=extendedSeconds(seq,time);if(!kind)return;
  if(kind==='throw_in'&&index===1&&t<=4.4){const u=smooth((t-3.2)/.6),w=1-smooth((t-3.5)/.9);for(let i=0;i<2;i++){p.arms[i].rotation.x=mix(2.8,1.6,u)*w;p.arms[i].rotation.z=(i?-1:1)*.22*w;p.elbows[i].rotation.x=.5*w}p.upper.rotation.x=mix(-.18,.25,u)*w;}
- if(kind==='free_kick'&&index>=8&&index<=11){p.arms[0].rotation.x=-.45;p.arms[1].rotation.x=-.45;p.elbows[0].rotation.x=-1;p.elbows[1].rotation.x=-1;p.rig.position.y=.24*Math.sin(Math.PI*clamp((t-7.85)/.75));}
+ // Individual waiting posture: players shift weight and scan for their marker.
+ if(RESTART_FORMATIONS[kind]&&index<16){
+  const stance=Math.sin(t*(.78+(index%4)*.09)+index*.87);
+  const recovery=smooth((t-RESTART_RELEASE[kind])/.9);
+  p.upper.rotation.y+=.065*stance*(1-recovery);
+  p.upper.rotation.z+=(index%2?1:-1)*.035*(1-recovery);
+  p.arms[0].rotation.z-=.10+.055*stance;
+  p.arms[1].rotation.z+=.08+.06*Math.cos(t*.72+index);
+  p.elbows[0].rotation.x=.16+.045*Math.cos(t+index);
+  p.elbows[1].rotation.x=.14+.045*Math.sin(t*.75+index);
+ }
+ // Only the four wall players are aligned, with nonidentical jump timings.
+ if(kind==='free_kick'&&index>=8&&index<=11){
+  p.arms[0].rotation.x=-.45;p.arms[1].rotation.x=-.45;
+  p.elbows[0].rotation.x=-1;p.elbows[1].rotation.x=-1;
+  const delay=(index-8)*.065;
+  const jump=smooth((t-7.91-delay)/.14)*(1-smooth((t-8.19-delay)/.21));
+  p.rig.position.y+=.23*jump;p.upper.rotation.x-=.08*jump;
+ }
  for(const [passer,,release]of extendedPasses(seq))if(index===passer&&!(kind==='throw_in'&&index===1)&&index!==16){const u=clamp((t-release+.3)/.7),w=Math.sin(Math.PI*u);p.legs[1].rotation.x=mix(-.6,1,u)*w;p.knees[1].rotation.x=-.45*w;}
  if(kind==='turnover_counter'&&index===8&&t>7.9&&t<9.7){const w=Math.sin(Math.PI*(t-7.9)/1.8);p.legs[1].rotation.x=.42*w;p.upper.rotation.x=.18*w;}
  if(kind==='corner'&&index===8){const w=Math.sin(Math.PI*clamp((t-9.8)/1.2));p.rig.position.y=.2*w;p.upper.rotation.x=.2*w;}

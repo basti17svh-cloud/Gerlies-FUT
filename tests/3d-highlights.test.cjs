@@ -815,3 +815,30 @@ test('V21.98: field remains visible until first rendered frame and model loading
  assert.ok(script.includes('function prewarm()'));
  assert.ok(!script.includes('setTimeout(()=>resolve(false),4500)'));
 });
+
+
+test('V21.162: set-piece staging is varied, legal at penalties and continues through rebounds',async()=>{
+ const E=await import('../3d-extended-match.mjs');
+ const when=(kind,seconds)=>seconds/E.extendedTiming('extended_'+kind).shot*5.4;
+ const pos=(kind,i,seconds)=>E.extendedPosition(i,when(kind,seconds),'extended_'+kind);
+ for(const physical of [0,2,5,8,8.9])for(let i=1;i<16;i++){
+  const [x,z]=pos('penalty',i,physical);
+  assert.ok(z>=-36,'penalty player illegally inside area: '+i);
+  assert.ok(Math.hypot(x,z+41.5)>=9.15,'penalty player illegally inside arc: '+i);
+ }
+ for(const kind of ['penalty','free_kick','corner','throw_in']){
+  const lineup=Array.from({length:16},(_,i)=>pos(kind,i,0));
+  const count=new Set(lineup.map(([x,z])=>x.toFixed(2)+':'+z.toFixed(2))).size;
+  assert.ok(count>=15,kind+' overlapping line-up');
+  assert.ok(Math.max(...lineup.map(p=>p[1]))-Math.min(...lineup.map(p=>p[1]))>=6,kind+' grid/row formation');
+  for(const actor of [2,3,4,5,9,12,13])for(const seconds of [0,2,4,6,8,10.5,12.5])
+   assert.ok(pos(kind,actor,seconds).every(Number.isFinite),kind+' invalid position');
+ }
+ const b=pos('penalty',1,8.9),a=pos('penalty',1,12.9);
+ assert.ok(Math.hypot(a[0]-b[0],a[1]-b[1])>5,'penalty rebound runs must not freeze at 5.4');
+ for(let i=2;i<16;i++)if(i!==8){
+  const l=E.extendedPosition(i,when('corner',5),'extended_corner');
+  const r=E.extendedPosition(i,when('corner',5),'extended_corner_right');
+  assert.ok(Math.abs(l[0]+r[0])<.00001,'right corner must mirror every field player '+i);
+ }
+});
