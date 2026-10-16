@@ -144,7 +144,7 @@ test('all orientations keep a stable camera range while tracking the ball',async
  const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.equal(c.distance,48);assert.ok(Math.abs(Math.hypot(...c.position.map((x,i)=>x-c.target[i]))-48)<.0001,'exact world-space camera range');assert.ok(c.position[0]>0&&c.position[1]>20,'camera remains on elevated broadcast side');assert.ok(c.fov>=30.5&&c.fov<=65);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.equal(c.distance,40);assert.ok(Math.abs(Math.hypot(...c.position.map((x,i)=>x-c.target[i]))-40)<.0001,'exact world-space camera range');assert.ok(c.position[0]>0&&c.position[1]>20,'camera remains on elevated broadcast side');assert.ok(c.fov>=30.5&&c.fov<=65);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
  const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.equal(early.distance,shot.distance,'no distance zoom in buildup');assert.equal(shot.distance,late.distance,'no distance zoom at shot');assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
@@ -762,7 +762,7 @@ test('V21.107: simulator-backed ball wins display only in allowed modes',()=>{
  assert.match(source,/function queueMatchDefensive3D\(action,attackingSide,attacker\)/);
 });
 
-test('special cameras keep the 48m broadcast range and the counter begins with a real pressured turnover',async()=>{
+test('special cameras keep the 40m TV range and the counter opens with active football',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const E=await import('../3d-extended-match.mjs');
  for(const seq of E.EXTENDED_SEQUENCES)for(const aspect of [.9,1.3,1.8])for(const direction of [-1,1])for(const time of [0,1.5,3.5,5.4,7,10.3]){
@@ -774,7 +774,8 @@ test('special cameras keep the 48m broadcast range and the counter begins with a
  const seq='extended_turnover_counter',t=s=>s/20*5.4;
  const start=E.extendedPosition(8,t(0),seq),late=E.extendedPosition(8,t(7.8),seq);
  assert.ok(Math.hypot(start[0]-late[0],start[1]-late[1])>15,'carrier must move rather than stand at halfway');
- assert.ok(!E.extendedPasses(seq).some(pass=>pass[0]===8&&pass[1]===6),'turnover is a duel, never a gift pass to opposition');
+ assert.ok(E.extendedPasses(seq).some(pass=>pass[0]===9&&pass[1]===8),'opening phase includes actual opposition pass');
+ assert.ok(!E.extendedPasses(seq).some(pass=>pass[0]===8&&pass[1]===6),'ball loss is a tackle rather than a deliberate pass to the opponent');
  const before=E.extendedBall(t(7.95)-.0001,seq,[0,.14,-37]),after=E.extendedBall(t(8.3)+.0001,seq,[0,.14,-37]);
  assert.ok(Math.hypot(...before.map((v,i)=>v-after[i]))<1.5,'controlled recovery without ball teleportation');
  const P=await import('../3d-playbook.mjs');
@@ -840,5 +841,31 @@ test('V21.162: set-piece staging is varied, legal at penalties and continues thr
   const l=E.extendedPosition(i,when('corner',5),'extended_corner');
   const r=E.extendedPosition(i,when('corner',5),'extended_corner_right');
   assert.ok(Math.abs(l[0]+r[0])<.00001,'right corner must mirror every field player '+i);
+ }
+});
+
+
+test('V21.163: moving midfield pass, possession handoff and close smoothed broadcast camera',async()=>{
+ const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
+ const seq='extended_turnover_counter',t=seconds=>seconds/20*M.SHOT_TIME;
+ const dist=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i])),foot=(i,s)=>{const p=E.extendedPosition(i,t(s),seq);return[p[0]+.1,.14,p[1]-.45]};
+ assert.equal(M.BROADCAST_CAMERA_DISTANCE,40);
+ assert.ok(dist(E.extendedPosition(9,t(0),seq),E.extendedPosition(9,t(2.7),seq))>3);
+ assert.ok(dist(E.extendedPosition(8,t(4.5),seq),E.extendedPosition(8,t(7.95),seq))>8);
+ assert.ok(dist(E.extendedPosition(6,t(4),seq),E.extendedPosition(6,t(7.95),seq))>4);
+ for(const cut of [2.7,4.5,7.95,8.3,13,15,17,19]){
+  const a=E.extendedBall(t(cut-.001),seq,[0,.14,-37]),b=E.extendedBall(t(cut+.001),seq,[0,.14,-37]);
+  assert.ok(dist(a,b)<.85,'ball jumps at '+cut+' by '+dist(a,b));
+ }
+ for(const [seconds,index] of [[2.6,9],[6,8],[10,6],[16,1]]){
+  const ball=E.extendedBall(t(seconds),seq,[0,.14,-37]);
+  assert.ok(dist(ball,foot(index,seconds))<.001,'wrong possessor at '+seconds);
+ }
+ const script=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+ assert.match(script,/labFocusedPreview\?eventCameraState[^\n]*:broadcastFor\(camera.aspect\)\(time\)/);
+ for(const dir of [-1,1])for(const time of [0,1,2.5,4.2,5.4,6.65,9]){
+  const camera=M.cameraState(dir,time,.98,'big_chance_saved',seq);
+  const gap=dist(camera.position,camera.target);
+  assert.ok(Math.abs(gap-40)<.00001&&camera.fov<=31&&camera.fov>=28,'no distant special camera');
  }
 });

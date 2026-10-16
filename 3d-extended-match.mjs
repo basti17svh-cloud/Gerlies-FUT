@@ -8,7 +8,25 @@ export function extendedSeconds(seq,time){const t=extendedTiming(seq);if(!t)retu
 function route(keys,t){if(t<=keys[0][0])return keys[0].slice(1);for(let n=1;n<keys.length;n++)if(t<keys[n][0]){const a=keys[n-1],b=keys[n],u=smooth((t-a[0])/(b[0]-a[0]));return [mix(a[1],b[1],u),mix(a[2],b[2],u)]}return keys.at(-1).slice(1)}
 const R={
  keeper_buildout:{16:[[0,0,45],[4,0,45],[9,1,43]],0:[[0,1,-7],[12,2,-16],[16,0,-24],[20,0,-37]],1:[[0,-17,32],[6,-16,28],[9,-14,20],[14,-10,8],[20,-13,-16]],6:[[0,-7,12],[9,-7,10],[12,-5,4],[17,-4,-16],[20,-4,-21]]},
- turnover_counter:{0:[[0,3,-8],[8,3,-10],[13,3,-20],[17,1,-29],[20,0,-37]],8:[[0,-14,3],[3,-10,-2],[5.5,-6,-7],[7.95,-1,-12],[9.3,0,-13],[12,1,-14],[20,2,-17]],6:[[0,-13,-20],[4,-8,-17],[6.8,-4,-14],[7.95,-1.25,-12.35],[8.3,-1,-12.7],[13,-3,-19],[16,-4,-29],[20,-4,-31]],1:[[0,-17,-4],[9,-17,-8],[14,-15,-19],[17,-13,-27],[20,-13,-36]]},
+ // Coordinated opponent build-up, first touch under pressure and a genuine ball win.
+ turnover_counter:{
+  0:[[0,3,-8],[8,3,-10],[13,3,-20],[17,1,-29],[20,0,-37]],
+  1:[[0,-17,-4],[9,-17,-8],[14,-15,-19],[17,-13,-27],[20,-13,-36]],
+  2:[[0,14,-5],[8,12,-10],[13,8,-19],[17,7,-30],[20,5,-39]],
+  3:[[0,-10,-9],[6,-7,-12],[10,-8,-16],[16,-5,-24],[20,-3,-30]],
+  4:[[0,-22,-2],[9,-21,-10],[14,-19,-15],[20,-19,-33]],
+  5:[[0,22,0],[9,20,-7],[15,20,-23],[20,17,-37]],
+  6:[[0,-13,-20],[4,-11,-16],[6.8,-5,-10],[7.95,-1.25,-12.35],[8.3,-1,-12.7],[13,-3,-19],[16,-4,-29],[20,-4,-31]],
+  7:[[0,2,-15],[7,1,-17],[13,1,-22],[20,-2,-33]],
+  8:[[0,-9,2],[2.7,-8,0],[4.5,-8,-3],[6,-5,-7],[7.95,-1,-12],[9.3,0,-13],[12,1,-14],[20,2,-17]],
+  9:[[0,-22,12],[2.7,-19,8],[4.5,-16,5],[7,-12,0],[10,-10,-8],[20,-8,-23]],
+  10:[[0,-8,10],[5,-4,4],[8,-2,-4],[13,-2,-14],[20,-3,-23]],
+  11:[[0,12,10],[6,9,5],[10,8,-7],[20,9,-21]],
+  12:[[0,-21,-2],[8,-19,-8],[14,-18,-15],[20,-17,-29]],
+  13:[[0,19,2],[7,17,-5],[13,16,-12],[20,13,-28]],
+  14:[[0,-1,13],[7,-1,6],[13,-6,-4],[20,-7,-17]],
+  15:[[0,25,13],[7,21,7],[13,23,-2],[20,19,-17]]
+ },
  corner:{0:[[0,-2,-42],[4,-2,-42],[7,0,-43],[10.5,2,-46.5]],1:[[0,-33.8,-50.6],[3.6,-33.8,-50.6],[4.3,-33.65,-51.65],[10.5,-29,-46]],8:[[0,1,-44],[4,1,-44],[8,3,-45],[10.5,3.1,-46.3]]},
  free_kick:{0:[[0,0,-25],[5,0,-25],[7.2,0,-27],[8,0,-28.75]]},
  penalty:{0:[[0,0,-37.3],[6,0,-37.3],[8,0,-39.5],[9,-.105,-40.68988172767776]]},
@@ -75,15 +93,24 @@ export function extendedPosition(index,time,seq){
 export function extendedContact(seq,base){const p=extendedPosition(0,5.4,seq);return p?[p[0]+base[0],['penalty','free_kick'].includes(extendedKind(seq))?.14:base[1],p[1]+base[2]+37]:null}
 const foot=(i,t,seq)=>{const p=extendedPosition(i,t/extendedTiming(seq).shot*5.4,seq);return[p[0]+.1,i===16?1.08:.14,p[1]-.45]};
 // Physical seconds, exact receiver endpoints; the final pass meets the actual finishing contact.
-export function extendedPasses(seq){const k=extendedKind(seq);return({keeper_buildout:[[16,1,4,6,.65],[1,6,9,12,.25],[6,0,17,19,.3]],turnover_counter:[[6,1,13,15,.25],[1,0,17,19,.25]],corner:[[1,0,4.3,10.5,4.2]],throw_in:[[1,6,3.2,5,2.1],[6,0,9,11,.25]],free_kick:[],penalty:[]})[k]||[]}
-export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSeconds(seq,time);if(!k||time>=5.15||['penalty','free_kick','corner','throw_in'].includes(k)&&t<(k==='throw_in'?5:99))return{index:-1,weight:0};let owner=k==='keeper_buildout'?16:k==='turnover_counter'?(t<8.3?8:6):6;for(const [a,b,start,end]of extendedPasses(seq)){if(t>=start&&t<end)return{index:-1,weight:0};if(t>=end)owner=b}return{index:owner,weight:.85}}
+export function extendedPasses(seq){const k=extendedKind(seq);return({keeper_buildout:[[16,1,4,6,.65],[1,6,9,12,.25],[6,0,17,19,.3]],turnover_counter:[[9,8,2.7,4.5,.18],[6,1,13,15,.25],[1,0,17,19,.25]],corner:[[1,0,4.3,10.5,4.2]],throw_in:[[1,6,3.2,5,2.1],[6,0,9,11,.25]],free_kick:[],penalty:[]})[k]||[]}
+export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSeconds(seq,time);if(!k||time>=5.15||['penalty','free_kick','corner','throw_in'].includes(k)&&t<(k==='throw_in'?5:99))return{index:-1,weight:0};
+ // The counter has explicit possession states; completed opponent passes must
+ // never overwrite the later defender's recovery or return to an old carrier.
+ if(k==='turnover_counter'){
+  const owner=t<2.7?9:t<4.5?-1:t<7.95?8:t<8.3?-1:t<13?6:t<15?-1:t<17?1:t<19?-1:0;
+  return{index:owner,weight:owner<0?0:.85};
+ }
+ let owner=k==='keeper_buildout'?16:6;for(const [a,b,start,end]of extendedPasses(seq)){if(t>=start&&t<end)return{index:-1,weight:0};if(t>=end)owner=b}return{index:owner,weight:.85}}
 export function extendedBall(time,seq,contact){
  const k=extendedKind(seq),t=extendedSeconds(seq,time);if(time>=5.4)return contact.slice();
  if(k==='penalty'||k==='free_kick')return contact.slice();
- // A chase, tackle and controlled recovery, NOT an opposition-to-attack pass.
+ // Opponent combines in midfield; the first pass and receiving touch are
+ // visible BEFORE our defender presses and wins a real duel.
  if(k==='turnover_counter'){
-  if(t<7.95)return foot(8,t,seq);
-  if(t<8.3){
+  if(t<2.7)return foot(9,t,seq);
+  if(t>=4.5&&t<7.95)return foot(8,t,seq);
+  if(t>=7.95&&t<8.3){
    const from=foot(8,7.95,seq),to=foot(6,8.3,seq),u=smooth((t-7.95)/.35);
    return from.map((v,i)=>mix(v,to[i],u));
   }
@@ -96,15 +123,21 @@ export function extendedBall(time,seq,contact){
 }
 export function extendedPhase(seq,time,team='home',result='unresolved'){const kind=extendedKind(seq);if(!kind)return null;return sampleExtendedHighlight(createExtendedHighlightPlan(kind,{team:kind==='turnover_counter'?(team==='home'?'away':'home'):team,result}),extendedSeconds(seq,time))}
 export function extendedCamera(seq,time,direction,aspect,ball){
- const kind=extendedKind(seq),target=[ball[0]*.68,.8,Math.max(-44,ball[2]-5)],portrait=aspect<1.12;
- // The same fixed-range sideline camera as ordinary highlights.
+ const kind=extendedKind(seq),portrait=aspect<1.12,t=extendedSeconds(seq,time);
+ // Keep the ball and receiving player centered, not half a pitch ahead.
+ const target=[ball[0]*.94,.86,ball[2]-1.35];
+ if(kind==='turnover_counter'){
+  const arriving=smooth((t-17)/4);
+  target[0]=mix(target[0],0,arriving*.22);
+  target[2]=mix(target[2],-44.5,arriving*.20);
+ }
  if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-40.5}
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
- const distance=48,rail=[39.3,27,5.8*direction],size=Math.hypot(...rail);
+ const distance=40,rail=[39.3,27,5.8*direction],size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- return{position,target,fov:portrait?35:32,distance,phase:extendedPhase(seq,time)?.action||'build'};
+ return{position,target,fov:portrait?29.4:28.6,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // Applied after generic locomotion, so a throw uses arms and a wall stays a wall.
 export function poseExtendedActor(p,index,time,seq){
@@ -130,7 +163,15 @@ export function poseExtendedActor(p,index,time,seq){
   p.rig.position.y+=.23*jump;p.upper.rotation.x-=.08*jump;
  }
  for(const [passer,,release]of extendedPasses(seq))if(index===passer&&!(kind==='throw_in'&&index===1)&&index!==16){const u=clamp((t-release+.3)/.7),w=Math.sin(Math.PI*u);p.legs[1].rotation.x=mix(-.6,1,u)*w;p.knees[1].rotation.x=-.45*w;}
- if(kind==='turnover_counter'&&index===8&&t>7.9&&t<9.7){const w=Math.sin(Math.PI*(t-7.9)/1.8);p.legs[1].rotation.x=.42*w;p.upper.rotation.x=.18*w;}
+ if(kind==='turnover_counter'&&index===8&&t>7.9&&t<9.7){
+  const w=Math.sin(Math.PI*(t-7.9)/1.8);
+  p.legs[1].rotation.x=.42*w;p.upper.rotation.x=.18*w;
+  p.arms[1].rotation.z+=.34*w;
+ }
+ if(kind==='turnover_counter'&&index===6&&t>7.65&&t<8.85){
+  const w=Math.sin(Math.PI*clamp((t-7.65)/1.2));
+  p.legs[1].rotation.x-=.40*w;p.upper.rotation.x-=.12*w;
+ }
  if(kind==='corner'&&index===8){const w=Math.sin(Math.PI*clamp((t-9.8)/1.2));p.rig.position.y=.2*w;p.upper.rotation.x=.2*w;}
  if(index===16){const w=1-smooth((t-4)/.8);p.arms[0].rotation.x=.8*w;p.arms[1].rotation.x=.8*w;p.arms[0].rotation.z=.2*w;p.arms[1].rotation.z=-.2*w;p.elbows[0].rotation.x=.7*w;p.elbows[1].rotation.x=.7*w;}
 }

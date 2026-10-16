@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21162';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21163';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -31,9 +31,9 @@ export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
-export const MIN_CAMERA_DISTANCE=42.2;
+export const MIN_CAMERA_DISTANCE=40;
 // Identical physical range for all broadcast phases and event types.
-export const BROADCAST_CAMERA_DISTANCE=48;
+export const BROADCAST_CAMERA_DISTANCE=40;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -491,9 +491,11 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  };
  // A single fitted lens for each highlight. The camera follows the ball,
  // without changing range at a pass, shot or goalkeeper action.
- const portrait=aspect<1.12;
+ const portrait=aspect<1.12,isExtended=!!extendedKind(sequence);
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
-  fovFloor:portrait?32:30.5,fovCeiling:portrait?42:40});
+  sigma:isExtended?.16:.34,focusSpeed:isExtended?24:12,railSpeed:isExtended?24:14,
+  fovFloor:isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:isExtended?(portrait?31:30):(portrait?42:40)});
  // Smoothing target and camera separately can change clearance. Normalize the
  // rendered pose back to the common range, including on dropped mobile frames.
  return time=>{
@@ -1680,7 +1682,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
-   const cam=labFocusedPreview||extended?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
+   // Extended match scenes must use the exact same stable broadcast track.
+   const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
    if(labFocusedPreview){
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
