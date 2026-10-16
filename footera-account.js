@@ -340,9 +340,17 @@
        throw Error("Bitte zuerst deinen Verein mit der Cloud synchronisieren.");
      if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.pickId!==pickId||pending.optionId!==optionId))
        throw Error("Bitte zuerst die ausstehende Pick-Einlösung abschließen.");
-     const revision=pending?pending.revision:point?.revision;
-     if(!pending&&(!point||point.saveId!==local.profile.saveId||cloud.revision!==revision))
-       throw Error("Cloud-Spielstand und Gerät sind nicht synchron. Bitte den aktuellen Cloud-Spielstand laden.");
+     let revision=pending?pending.revision:point?.revision;
+     if(!pending&&(!point||point.saveId!==local.profile.saveId||cloud.revision!==revision)){
+       // Reconcile only when the server holds the exact same club contents.
+       // A newer, genuinely different cloud save must never be overwritten here.
+       if(structurallyEqual(cloud.save_data,local)){
+         revision=cloud.revision;
+         savePoint(u,local,revision);
+       }else{
+         throw Error("Cloud-Spielstand und Gerät sind nicht synchron. Dein lokaler Verein wird nicht überschrieben. Lade den Cloud-Spielstand nach Bestätigung; vorher wird eine Rückfallsicherung angelegt.");
+       }
+     }
      root.localStorage.setItem("footera-pending-player-pick-v1",JSON.stringify({userId:u.id,saveId:local.profile.saveId,pickId,optionId,revision}));
      const {data,error}=await c.rpc("footera_choose_player_pick",{p_id:pickId,p_option:optionId,p_save:local,p_base_revision:revision});
      if(error){
