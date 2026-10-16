@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.168</title>
+<title>Footera V21.169</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -1435,7 +1435,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 </style>
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
-<link rel="stylesheet" href="./player-picks.css?v=21161">
+<link rel="stylesheet" href="./player-picks.css?v=21169">
 <link rel="stylesheet" href="./legacy-card.css?v=21158">
 <link rel="stylesheet" href="./momentum-card.css">
 <link rel="stylesheet" href="./card-layout.css?v=21158">
@@ -1573,6 +1573,12 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
           <span class="home-slider-dot" data-home-slide="2" aria-hidden="true"></span>
         </div>
       </div>
+
+      <button type="button" id="homePlayerPickNotice" class="home-player-picks-notice" data-picks-jump hidden aria-label="Offene Player Picks im Store öffnen">
+        <span class="home-pick-stamp" aria-hidden="true">F</span>
+        <span class="home-pick-body"><span class="home-pick-eyebrow">DEINE REWARDS · <span id="homePlayerPickCount">0</span> OFFEN</span><strong>Du hast offene Player Picks!</strong><small id="homePlayerPickCopy">Deine Spielerwahl wartet im Store.</small></span>
+        <span class="home-pick-action" aria-hidden="true">ÖFFNEN ›</span>
+      </button>
 
       <div id="weeklyRewardHome" class="weekly-reward-home" hidden></div>
       <div id="competitionHome" class="home-competition"></div>
@@ -9378,7 +9384,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.168";
+const GFUT_BUILD="V21.169";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9462,10 +9468,10 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
 <script src="./squad-tactics.js?v=21160"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21128"></script>
-<script src="./footera-account.js?v=21161"></script>
+<script src="./footera-account.js?v=21169"></script>
 <script src="./footera-paid-wallet.js?v=21141"></script>
-<script src="./champions-player-picks.js?v=21161"></script>
-<script src="./player-picks.js?v=21161"></script>
+<script src="./champions-player-picks.js?v=21169"></script>
+<script src="./player-picks.js?v=21169"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script>
