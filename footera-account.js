@@ -308,21 +308,74 @@
  function cloudText(data){
    return data?"Letzte Cloud-Sicherung: "+new Date(data.saved_at).toLocaleString("de-DE")+" · Version "+data.revision:"Noch keine Cloud-Sicherung vorhanden.";
  }
- async function saveCloud(){
-   changeLocked();
-   const {c,u}=await requirePermanent();
-   ensureOwned(u);
-   const save=localData(),existing=await cloudInfo();
-   if(existing){
-     const same=existing.save_data?.profile?.saveId===save.profile?.saveId;
-     if(!same)throw Error("Die Cloud enthält einen anderen Verein. Laden und prüfen statt überschreiben.");
-     if(!root.confirm("Bestehende Cloud-Sicherung überschreiben?\n\nVerein: "+String(save.profile?.clubName||"Footera")+"\nVorhandene Sicherung: "+new Date(existing.saved_at).toLocaleString("de-DE")))return;
+ // Manual conflict resolution: preserve cloud snapshot, prevent reward loss,
+ // compare snapshots and commit only via the server's expected revision.
+ function cloudInventoryIds(save){
+  const ids=new Set();
+  for(const field of ["club","sbcStorage","pendingPack"]){
+   for(const card of Array.isArray(save?.[field])?save[field]:[]){
+    if(typeof card?.uid==="string")ids.add(card.uid);
    }
-   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:existing?.revision||0});
-   if(error)throw error;
-   savePoint(u,save,data);
-   msg("Cloud-Sicherung erfolgreich gespeichert (Version "+data+").");
+  }
+  return ids;
+ }
+ function checkProtectedCloudRewards(local,cloud){
+  for(const field of ["playerPickClaims","paidPackClaims"]){
+   const claims=cloud?.[field]||{},current=local?.[field]||{};
+   for(const [id,value] of Object.entries(claims)){
+    if(!Object.prototype.hasOwnProperty.call(current,id)||!structurallyEqual(value,current[id]))
+     throw Error("Cloud enthält bestätigte Belohnungen ("+field+"), die lokal fehlen. Überschreiben gesperrt.");
+   }
+  }
+  const ids=cloudInventoryIds(local);
+  for(const field of ["club","sbcStorage","pendingPack"]){
+   for(const card of Array.isArray(cloud?.[field])?cloud[field]:[]){
+    if(card?.uid&&!ids.has(card.uid)&&(card.playerPickId||["reward-pick","paid-pack","live-pack"].includes(card.acquisitionSource)))
+     throw Error("Eine serverseitige Belohnung existiert nur im Cloud-Verein. Überschreiben gesperrt.");
+   }
+  }
+ }
+ function describeCloudDifference(local,cloud){
+  const localIds=cloudInventoryIds(local),cloudIds=cloudInventoryIds(cloud);
+  const fmt=n=>Number(n||0).toLocaleString("de-DE");
+  return "Gerät: "+fmt(local.club?.length)+" Spielerkarten · "+fmt(local.coins)+" Münzen · "+fmt(local.points)+" Points"+
+   "\nCloud: "+fmt(cloud.club?.length)+" Spielerkarten · "+fmt(cloud.coins)+" Münzen · "+fmt(cloud.points)+" Points"+
+   "\nNur auf Gerät: "+[...localIds].filter(id=>!cloudIds.has(id)).length+" Karten; nur Cloud: "+[...cloudIds].filter(id=>!localIds.has(id)).length+" Karten.";
+ }
+ async function saveCloud(){
+  changeLocked();
+  if(autoBusy)throw Error("Ein Cloud-Abgleich läuft bereits. Bitte erneut versuchen.");
+  autoBusy=true;
+  try{
+   const {c,u}=await requirePermanent();ensureOwned(u);
+   if(pendingPlayerPick())throw Error("Zuerst die ausstehende Pick-Einlösung abschließen. Nichts überschrieben.");
+   const local=localData(),cloud=await cloudInfo(),point=syncPoint(u);
+   if(cloud){
+    if(cloud.save_data?.profile?.saveId!==local.profile?.saveId)
+     throw Error("Cloud und Gerät gehören zu unterschiedlichen Vereinen. Keine Überschreibung.");
+    root.FooteraBackup?.validateState(cloud.save_data);
+    if(structurallyEqual(local,cloud.save_data)){
+     savePoint(u,local,cloud.revision);autoStatus="";
+     msg("Beide Spielstände sind identisch. Cloud-Version "+cloud.revision+".");await render();return true;
+    }
+    checkProtectedCloudRewards(local,cloud.save_data);
+    if(!root.FooteraBackup?.downloadSnapshot)throw Error("Sicherer Cloud-Export fehlt. Footera neu laden.");
+    await root.FooteraBackup.downloadSnapshot(cloud.save_data,"Cloud_V"+cloud.revision);
+    const conflict=!point||point.saveId!==local.profile.saveId||point.revision!==cloud.revision;
+    if(!root.confirm((conflict?"CLOUD-KONFLIKT: Beide Spielstände sind verschieden.\n\n":"Cloud-Sicherung aktualisieren?\n\n")+
+     describeCloudDifference(local,cloud.save_data)+"\n\nCloud-Version "+cloud.revision+" wurde als Sicherungsdatei angeboten."+
+     "\nDeine lokale JSON-Sicherung ebenfalls aufbewahren."+
+     "\n\nSoll der AKTUELLE LOKALE Spielstand in die Cloud übernommen werden? Die vorige Cloud-Version wird ersetzt. Abbrechen ändert nichts."))return false;
+   }
+   changeLocked();
+   if(!structurallyEqual(localData(),local))throw Error("Spielstand wurde während des Abgleichs verändert. Erneut vergleichen.");
+   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:cloud?.revision||0});
+   if(error)throw error; // Backend compare-and-swap prevents concurrent overwrite.
+   savePoint(u,local,data);autoStatus="";
+   msg("Cloud-Synchronisierung erfolgreich, Version "+data+".");
    await render();
+   return true;
+  }finally{autoBusy=false}
  }
  // A pick and its inventory delivery share one server transaction. Keep a retry
  // marker until both the local save and its cloud revision have been recorded.
@@ -468,11 +521,28 @@
        }else autoStatus="Der lokale und der Cloud-Spielstand unterscheiden sich. Keine automatische Überschreibung.";
        return;
      }
-     if(point.saveId!==save.profile?.saveId||point.revision!==cloud.revision){
-       autoStatus="Cloud-Spielstand wurde auf einem anderen Gerät geändert. Automatische Sicherung angehalten.";
-       return;
-     }
-     if(point.hash===fingerprint(save))return;
+     if(point.saveId!==save.profile?.saveId){
+   autoStatus="Cloud und Gerät gehören zu unterschiedlichen Vereinen. Keine Überschreibung.";
+   return;
+  }
+  if(point.revision!==cloud.revision){
+   const latest=await cloudInfo(); // metadata-only revision is not a real content conflict
+   if(latest?.save_data?.profile?.saveId!==save.profile?.saveId){
+    autoStatus="Unterschiedliche Vereine. Cloud-Abgleich gesperrt.";
+    return;
+   }
+   if(structurallyEqual(latest.save_data,save)){
+    savePoint(u,save,latest.revision);autoStatus="";return;
+   }
+   if(point.hash&&point.hash===fingerprint(latest.save_data)){
+    const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:latest.revision});
+    if(error)throw error;
+    savePoint(u,save,data);autoStatus="";return;
+   }
+   autoStatus="Cloud und Gerät enthalten unterschiedliche Fortschritte. Automatischer Upload angehalten; beide Stände bleiben erhalten.";
+   return;
+  }
+  if(point.hash===fingerprint(save)){autoStatus="";return;}
      const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:point.revision});
      if(error)throw error;
      savePoint(u,save,data);
@@ -873,7 +943,7 @@
      '<button type="button" id="footeraGuest" class="footera-account-guest">Als Gast spielen · ohne Registrierung</button>'+
      '<button type="button" id="footeraAccountContinue" class="footera-account-guest" hidden>Weiter zu meinem Verein</button>'+
      '<section class="footera-email-change" id="footeraEmailChangeSection" hidden><strong>Anmelde-E-Mail ändern</strong><p>Aktuell: <span id="footeraExistingEmail">–</span></p><p>Dein Verein bleibt dem bisherigen Konto zugeordnet. Bestätige den Wechsel in deinen E-Mail-Postfächern.</p><form id="footeraEmailChangeForm"><label>Neue E-Mail-Adresse<input id="footeraNewEmail" type="email" inputmode="email" autocomplete="email" placeholder="neue-adresse@beispiel.de" maxlength="254" required></label><button type="submit" id="footeraEmailChangeButton">Änderung per E-Mail bestätigen</button></form><p id="footeraEmailChangeProgress" role="status" aria-live="polite"></p></section>'+
-     '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
+     '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><p>Die JSON-Datei ist nur eine lokale Sicherung. „In Cloud sichern“ prüft beide Spielstände und sichert die bisherige Cloud-Version vor einem Überschreiben.</p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
      '<p id="footeraAccountMessage" role="status" aria-live="polite"></p>'+
      '<button type="button" id="footeraSignOut" class="footera-account-link" hidden>Abmelden</button>'+
      '<p class="footera-account-note">Neue registrierte Vereine werden automatisch zugeordnet und gesichert. Gastkonten bleiben bis zur Registrierung nicht wiederherstellbar. Bei Cloud-Konflikten wird nichts überschrieben.</p>'+
@@ -961,8 +1031,8 @@
      if(button.disabled)return;
      button.disabled=true;
      try{
-       await saveCloud();
-       if(status){status.textContent="Cloud-Sicherung wurde geprüft. Bitte den angezeigten Zeitstempel kontrollieren.";status.dataset.error="false";}
+       const complete=await saveCloud();
+       if(status){status.textContent=complete?"Cloud-Abgleich abgeschlossen. Bitte Zeitstempel kontrollieren.":"Abgebrochen. Beide Spielstände bleiben unverändert.";status.dataset.error="false";}
        await renderProfile();
      }catch(e){
        if(status){status.textContent=safeMessage(e);status.dataset.error="true";}
