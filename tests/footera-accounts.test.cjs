@@ -696,9 +696,29 @@ test('pick delivery resumes after a lost response and records the committed clou
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,2);
 });
 
-test('pick delivery rejects a stale cloud revision before requesting a selection',async()=>{
+test('pick delivery reconciles an identical remote save at a newer revision',async()=>{
+ const t=runtime('registered'),s=sampleGame();
+ t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));
+ t.setCloud({save_data:JSON.parse(JSON.stringify(s)),revision:3});
+ const item={uid:'pick-a',pid:'123',playerPickId:'pick-a',tradeable:false,baseSnapshot:{id:'123'}};
+ const saved={...s,club:[item],playerPickClaims:{'pick-a':'option-a'}};
+ let applied=0;
+ t.client.rpc=async(name,args)=>{
+   assert.equal(name,'footera_choose_player_pick');
+   assert.equal(args.p_base_revision,3);
+   return{data:{pick_id:'pick-a',item,save_data:saved,revision:4}};
+ };
+ await t.win.FooteraAccount.choosePlayerPick('pick-a','option-a',()=>applied++);
+ assert.equal(applied,1);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,4);
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+});
+
+test('pick delivery refuses a newer DIFFERENT cloud save without rewriting it',async()=>{
  const t=runtime('registered'),s=sampleGame();t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
- t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));t.setCloud({save_data:s,revision:3});
+ t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',revision:1}));
+ t.setCloud({save_data:{...s,coins:Number(s.coins||0)+1},revision:3});
  await assert.rejects(t.win.FooteraAccount.choosePlayerPick('pick-a','option-a',()=>{}),/nicht synchron/);
  assert.equal(t.calls.length,0);
 });
