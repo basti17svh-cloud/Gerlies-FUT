@@ -37,8 +37,13 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   assert.equal(await page.locator('#storeView.active').count(),1,'Home banner routes to Store');
   await page.locator('[data-pick-open]').click();
   await page.locator('#playerPickModal.active').waitFor();
-  assert.ok((await page.locator('.pick-loading-card').count())===4 || (await page.locator('.pick-option').count())===4,'Opening shows either loading cards or the already resolved offer');
-  await page.locator('.pick-option').first().waitFor();
+  // Loading can resolve between individual Playwright reads; only the
+  // fully available offer is a stable assertion across fast and slow devices.
+  try{await page.locator('.pick-option').first().waitFor({timeout:8000})}
+  catch(e){
+   const diagnostics=await page.evaluate(()=>({feedback:document.querySelector('#playerPickFeedback')?.textContent,description:document.querySelector('#playerPickDescription')?.textContent,visibleOptions:document.querySelectorAll('.pick-option').length,loading:document.querySelectorAll('.pick-loading-card').length}));
+   throw Error('Player Pick opening failed: '+JSON.stringify(diagnostics)+'; '+e.message);
+  }
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
    assert.equal(await page.locator('.pick-option').count(),4);assert.equal(await page.locator('.pick-option .champions-red').count(),4);
