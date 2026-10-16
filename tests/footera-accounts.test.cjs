@@ -72,7 +72,7 @@ test("account switch and cloud saves cannot silently replace online profile",()=
  assert.match(online,/localStorage\.getItem\("footera-cloud-owner"\)!==online\.userId/);
  assert.match(online,/if\(!session\)[\s\S]*?footera-cloud-owner/);
  assert.match(online,/authClient/);
- assert.match(worker,/footera-account\.js\?v=21172/);
+ assert.match(worker,/footera-account\.js\?v=21173/);
  assert.match(worker,/footera-account\.css\?v=21122/);
 });
 test("cloud save schema enforces ownership and revision checks",()=>{
