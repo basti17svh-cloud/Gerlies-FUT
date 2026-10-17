@@ -22,5 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Matchups, attributes, styles and 90/33 vs 84/20 regression
-        run: node --test tests/match-simulation.test.cjs tests/match-actions.test.cjs tests/footera-opponent-balancing.test.cjs
+      - name: Seeded 90/33 vs 84/20 matchup distribution
+        run: node --test --test-name-pattern="90 OVR / 33 chemistry" tests/match-simulation.test.cjs
+      - name: Player attributes and playing style regressions
+        run: node --test tests/match-actions.test.cjs tests/footera-opponent-balancing.test.cjs
