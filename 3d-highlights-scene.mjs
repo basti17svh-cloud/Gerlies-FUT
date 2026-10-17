@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21167';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21179';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -497,17 +497,15 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  const defending=DEFENSIVE_SCENES.includes(sequence);
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended||defending?.16:.34,focusSpeed:isExtended||defending?24:12,railSpeed:isExtended||defending?24:14,
-  fovFloor:counter?(portrait?27.5:26.5):defending?(portrait?31.5:29.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?35:33.5):defending?(portrait?32.5:31):isExtended?(portrait?39:36):(portrait?42:40)});
+  fovFloor:counter?(portrait?32:30.5):defending?(portrait?31.5:29.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:counter?(portrait?42:40):defending?(portrait?32.5:31):isExtended?(portrait?39:36):(portrait?42:40)});
  // Gaussian stabilization still controls the camera's entire travel. Restore
  // exact physical clearance after smoothing the camera and target separately.
  return time=>{
   const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
-  const distance=counter?32:defending?34:BROADCAST_CAMERA_DISTANCE;
+  const distance=defending?34:BROADCAST_CAMERA_DISTANCE;
   const factor=distance/Math.max(.01,gap);
-  // Preserve the gradual authored fit for the counter: a fixed percentile
-  // would keep the lens wide during the whole buildup and hide the players.
-  const fov=counter?cameraState(direction,time,aspect,type,sequence,finish,keeperAction,placement).fov:state.fov;
+  const fov=state.fov;
   return {...state,fov,distance,
    position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
  };

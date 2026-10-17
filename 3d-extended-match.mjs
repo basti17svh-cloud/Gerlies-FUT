@@ -8,7 +8,8 @@ export function extendedSeconds(seq,time){const t=extendedTiming(seq);if(!t)retu
 function route(keys,t){if(t<=keys[0][0])return keys[0].slice(1);for(let n=1;n<keys.length;n++)if(t<keys[n][0]){const a=keys[n-1],b=keys[n],u=smooth((t-a[0])/(b[0]-a[0]));return [mix(a[1],b[1],u),mix(a[2],b[2],u)]}return keys.at(-1).slice(1)}
 const R={
  keeper_buildout:{16:[[0,0,45],[4,0,45],[9,1,43]],0:[[0,1,-7],[12,2,-16],[16,0,-24],[20,0,-37]],1:[[0,-17,32],[6,-16,28],[9,-14,20],[14,-10,8],[20,-13,-16]],6:[[0,-7,12],[9,-7,10],[12,-5,4],[17,-4,-16],[20,-4,-21]]},
- // Coordinated opponent build-up, first touch under pressure and a genuine ball win.
+ // Local -Z is the eventual shooting team's TARGET goal. Opponents build toward +Z;
+ // after the duel the recovering team turns back toward -Z. Never flip the world.
  turnover_counter:{
   0:[[0,3,-8],[8,3,-10],[13,3,-20],[17,1,-29],[20,0,-37]],
   1:[[0,-17,-4],[9,-17,-8],[14,-15,-19],[17,-13,-27],[20,-13,-36]],
@@ -16,16 +17,16 @@ const R={
   3:[[0,-10,-9],[6,-7,-12],[10,-8,-16],[16,-5,-24],[20,-3,-30]],
   4:[[0,-22,-2],[9,-21,-10],[14,-19,-15],[20,-19,-33]],
   5:[[0,22,0],[9,20,-7],[15,20,-23],[20,17,-37]],
-  6:[[0,-13,-20],[4,-11,-16],[6.8,-5,-10],[7.95,-1.25,-12.35],[8.3,-1,-12.7],[13,-3,-19],[16,-4,-29],[20,-4,-31]],
+  6:[[0,-13,0],[4,-11,-4],[6.8,-5,-10],[7.95,-1.25,-12.35],[8.3,-1,-12.7],[13,-3,-19],[16,-4,-29],[20,-4,-31]],
   7:[[0,2,-15],[7,1,-17],[13,1,-22],[20,-2,-33]],
-  8:[[0,-9,2],[2.7,-8,0],[4.5,-8,-3],[6,-5,-7],[7.95,-1,-12],[9.3,0,-13],[12,1,-14],[20,2,-17]],
-  9:[[0,-22,12],[2.7,-19,8],[4.5,-16,5],[7,-12,0],[10,-10,-8],[20,-8,-23]],
-  10:[[0,-8,10],[5,-4,4],[8,-2,-4],[13,-2,-14],[20,-3,-23]],
-  11:[[0,12,10],[6,9,5],[10,8,-7],[20,9,-21]],
-  12:[[0,-21,-2],[8,-19,-8],[14,-18,-15],[20,-17,-29]],
-  13:[[0,19,2],[7,17,-5],[13,16,-12],[20,13,-28]],
-  14:[[0,-1,13],[7,-1,6],[13,-6,-4],[20,-7,-17]],
-  15:[[0,25,13],[7,21,7],[13,23,-2],[20,19,-17]]
+  8:[[0,-9,-26],[2.7,-8,-24],[4.5,-8,-21],[6,-5,-17],[7.95,-1,-12],[9.3,0,-13],[12,1,-14],[20,2,-17]],
+  9:[[0,-22,-36],[2.7,-19,-32],[4.5,-16,-29],[7,-12,-24],[10,-10,-20],[20,-8,-23]],
+  10:[[0,-8,-34],[5,-4,-28],[8,-2,-20],[13,-2,-22],[20,-3,-23]],
+  11:[[0,12,-34],[6,9,-29],[10,8,-22],[20,9,-21]],
+  12:[[0,-21,-22],[8,-19,-16],[14,-18,-22],[20,-17,-29]],
+  13:[[0,19,-26],[7,17,-19],[13,16,-23],[20,13,-28]],
+  14:[[0,-1,-37],[7,-1,-30],[13,-6,-24],[20,-7,-17]],
+  15:[[0,25,-37],[7,21,-31],[13,23,-25],[20,19,-17]]
  },
  corner:{0:[[0,-2,-42],[4,-2,-42],[7,0,-43],[10.5,2,-46.5]],1:[[0,-33.8,-50.6],[3.6,-33.8,-50.6],[4.3,-33.65,-51.65],[10.5,-29,-46]],8:[[0,1,-44],[4,1,-44],[8,3,-45],[10.5,3.1,-46.3]]},
  free_kick:{0:[[0,0,-25],[5,0,-25],[7.2,0,-27],[8,0,-28.75]]},
@@ -91,7 +92,7 @@ export function extendedPosition(index,time,seq){
  return[(j-3)*6+(attack?0:2),mix(initial+(attack?10:0)-(j%3)*6,(attack?-23:-38)-(j%3)*3,progress)];
 }
 export function extendedContact(seq,base){const p=extendedPosition(0,5.4,seq);return p?[p[0]+base[0],['penalty','free_kick'].includes(extendedKind(seq))?.14:base[1],p[1]+base[2]+37]:null}
-const foot=(i,t,seq)=>{const p=extendedPosition(i,t/extendedTiming(seq).shot*5.4,seq);return[p[0]+.1,i===16?1.08:.14,p[1]-.45]};
+const foot=(i,t,seq)=>{const p=extendedPosition(i,t/extendedTiming(seq).shot*5.4,seq);return[p[0]+.1,i===16?1.08:.14,p[1]+(extendedKind(seq)==='turnover_counter'&&i>=8&&i<16?.45:-.45)]};
 // Physical seconds, exact receiver endpoints; the final pass meets the actual finishing contact.
 export function extendedPasses(seq){const k=extendedKind(seq);return({keeper_buildout:[[16,1,4,6,.65],[1,6,9,12,.25],[6,0,17,19,.3]],turnover_counter:[[9,8,2.7,4.5,.18],[6,1,13,15,.25],[1,0,17,19,.25]],corner:[[1,0,4.3,10.5,4.2]],throw_in:[[1,6,3.2,5,2.1],[6,0,9,11,.25]],free_kick:[],penalty:[]})[k]||[]}
 export function extendedControl(time,seq){const k=extendedKind(seq),t=extendedSeconds(seq,time);if(!k||time>=5.15||['penalty','free_kick','corner','throw_in'].includes(k)&&t<(k==='throw_in'?5:99))return{index:-1,weight:0};
@@ -140,29 +141,21 @@ export function extendedCamera(seq,time,direction,aspect,ball){
   // Keep the approach in shot; switch the focus toward the full goal only
   // during the finishing delivery, instead of zooming the players out.
   const finish=smooth((t-17.6)/2.2);
-  target[0]=mix(target[0],0,finish*.22);
+  target[0]=mix(target[0],0,finish*.5);
   target[2]=mix(target[2],-47,finish);
+  // Once struck, keep the whole goal and the actual rebound/miss together.
+  target[2]=mix(target[2],(ball[2]-51.25)/2,smooth((time-5.4)/1.25));
  }
  if(kind==='penalty'||kind==='free_kick'){target[0]=0;target[2]=kind==='penalty'?-44:-38}
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
- // The counter's slightly diagonal TV rail sees ball, passer, receiver AND
- // the whole goal without increasing camera distance or cutting to a close-up.
- // The counter stays on a closer 32m TV rail. The camera never jumps or
- // changes its physical distance; only a slow lens allowance accommodates
- // the opening pass and the complete goal at the finishing touch.
- const distance=kind==='turnover_counter'?32:40;
- // Freekick uses a diagonal TV rail: shooter, wall and BOTH goalposts
- // appear in the same continuous mobile shot rather than cropping either.
- const rail=kind==='turnover_counter'?[39.3,32,48*direction]:
-  kind==='free_kick'?[39.3,29,50*direction]:[39.3,27,5.8*direction];
+ // Open-play counters use the ordinary elevated touchline rail and range.
+ const distance=40;
+ const rail=kind==='free_kick'?[39.3,29,50*direction]:[39.3,27,5.8*direction];
  const size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- const opening=kind==='turnover_counter'?smooth((t-1.5)/1.2)*(1-smooth((t-4.4)/1.0)):0;
- const finish=kind==='turnover_counter'?smooth((t-16)/2.4):0;
- const lensAllowance=Math.max(opening*.52,finish);
- const fov=kind==='turnover_counter'?(portrait?27.5+7.5*lensAllowance:26.5+7*lensAllowance):
+ const fov=kind==='turnover_counter'?(portrait?42:32):
   kind==='free_kick'?(portrait?38:35.5):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
