@@ -83,6 +83,19 @@
   if(kind==='cross'&&phase==='duel')return stat(row,'def')*.45+stat(row,'phy')*.55+(clamp(row?.base?.height??180,155,210)-180)*.12+bonus(row,'aerial','bruiser');
   return stat(row,'def')*.60+stat(row,'phy')*.20+stat(row,'pac')*.20+bonus(row,...(phase==='build'?['intercept']:['anticipate','jockey','slide-tackle','bruiser','enforcer']));
  }
+ // A rating/chemistry advantage must create sustained pressure, not merely
+ // a marginal shot modifier. Symmetric and bounded: strong underdogs can win,
+ // individual attributes and PlayStyles still decide the actual chances.
+ function matchupBalance(sidePower,opponentPower,sideChem=0,opponentChem=0){
+  const power=clamp(Number(sidePower)-Number(opponentPower),-25,25);
+  const chemistry=clamp(Number(sideChem)-Number(opponentChem),-33,33);
+  return{
+   possession:clamp(power*1.05+chemistry*.085,-16,16),
+   build:clamp(power*.006+chemistry*.0008,-.14,.14),
+   duel:clamp(power*.0055+chemistry*.0007,-.14,.14),
+   xg:clamp(power*.0012+chemistry*.00016,-.028,.028)
+  };
+ }
  function chanceQuality(base,shot,opponentTactics={}){
   if(shot.creationType==='penalty')return .75;
   if(shot.creationType==='freekick')return .075;
@@ -106,6 +119,6 @@
  function staminaMultiplier(raw={},row=null){
   const t=tactics(raw);return (1+(t.pressing-50)*.004+(t.depth-50)*.001+(t.buildUp==='fast'?.06:0))*(1-style(row,'relentless')*.065);
  }
- const api={tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,chanceQuality,goalChance,staminaMultiplier};
+ const api={tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,matchupBalance,chanceQuality,goalChance,staminaMultiplier};
  root.FooteraMatchActions=Object.freeze(api);if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
