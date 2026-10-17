@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: '22'
       - name: Rewards, cards and account recovery
-        run: node --test tests/champions-player-picks.test.cjs tests/competition-system.test.cjs tests/weekly-rewards.test.cjs tests/champions.test.cjs tests/card-layout.test.cjs tests/footera-accounts.test.cjs
+        run: node --test tests/champions-player-picks.test.cjs tests/competition-system.test.cjs tests/weekly-rewards.test.cjs tests/champions.test.cjs tests/card-layout.test.cjs tests/footera-accounts.test.cjs tests/pack-bulk-sell.test.cjs
       - name: Install Chromium
         run: |
           npm install --prefix /tmp/footera-browser playwright@1.51.1
