@@ -32,10 +32,10 @@ function simulator(){
  vm.runInContext(engine,ctx);
  function sample({rating,chem,opponentRating,opponentChem,speed=550,count=2000}){
   ctx.matchSpeed=speed;
-  let wins=0,draws=0,goalless=0,goals=0,conceded=0,halftimes=0;
+  let wins=0,draws=0,goalless=0,goals=0,conceded=0,halftimes=0,shots=0,opponentShots=0,control=0,xg=0,opponentXg=0;
   for(let i=0;i<count;i++){
    ctx.match={mode:'rivals',basePower:rating+1.2,homeRating:rating,chem,opp:opponentRating+1.2+opponentChem*.12,
-    opponentProfile:{formation:'4-3-3',tactic:'balanced',roles:{},focus:{},squad:Array.from({length:11},()=>player(opponentRating))},
+    opponentProfile:{formation:'4-3-3',chem:opponentChem,tactic:'balanced',roles:{},focus:{},squad:Array.from({length:11},()=>player(opponentRating))},
     lineup:Array.from({length:18},(_,i)=>`p${i}`),formation:'4-3-3',tactic:'balanced',roles:{},focus:{},
     minute:0,home:0,away:0,shotsHome:0,shotsAway:0,xgHome:0,xgAway:0,poss:50,
     injuryTriggered:true,redTriggered:true,yellowCards:[],goalEvents:[],shotEvents:[],timeline:[]};
@@ -44,9 +44,11 @@ function simulator(){
    assert.ok(ctx.match.finished,'a match reaches full time');
    const m=ctx.match;
    wins+=m.home>m.away;draws+=m.home===m.away;goalless+=m.home===0&&m.away===0;
-   goals+=m.home;conceded+=m.away;halftimes+=Boolean(m.halftimeLogged)
+   goals+=m.home;conceded+=m.away;halftimes+=Boolean(m.halftimeLogged);
+   shots+=m.shotsHome;opponentShots+=m.shotsAway;control+=m.poss;xg+=m.xgHome;opponentXg+=m.xgAway;
   }
-  return{win:wins/count,draw:draws/count,goalless:goalless/count,goals:goals/count,conceded:conceded/count,halftimes}
+  return{win:wins/count,draw:draws/count,goalless:goalless/count,goals:goals/count,conceded:conceded/count,
+   shots:shots/count,opponentShots:opponentShots/count,control:control/count,xg:xg/count,opponentXg:opponentXg/count,halftimes}
  }
  return{ctx,sample}
 }
@@ -82,6 +84,21 @@ test('rating advantages scale without making normal underdogs irrelevant',()=>{
  assert.ok(ten.win>.65&&ten.win<.84,`+10 GES win rate ${ten.win}`);
  assert.ok(two.win<six.win&&six.win<ten.win,'larger rating gaps should increase the favorite win rate');
  assert.ok(1-ten.win-ten.draw>.07,`+10 GES upset rate ${1-ten.win-ten.draw}`);
+});
+
+test('90 OVR / 33 chemistry is consistently stronger than 84 / 20, without forced wins',()=>{
+ const{sample}=simulator();
+ const strong=sample({rating:90,chem:33,opponentRating:84,opponentChem:20,count:2500});
+ const reversed=sample({rating:84,chem:20,opponentRating:90,opponentChem:33,count:2500});
+ const equal=sample({rating:90,chem:33,opponentRating:90,opponentChem:33,count:2500});
+ console.log('FOOTERA 90/33 vs 84/20 BALANCE',JSON.stringify({strong,reversed,equal}));
+ assert.ok(strong.win>.65&&strong.win<.90,'strong team should win most, not every match: '+strong.win);
+ assert.ok(strong.draw<.24,'strong team reaches extra time too frequently: '+strong.draw);
+ assert.ok(strong.shots>strong.opponentShots*1.35,'better team must create more shots');
+ assert.ok(strong.xg>strong.opponentXg*1.5,'better team must generate more high-quality attacks');
+ assert.ok(strong.control>56&&strong.control<65,'chemistry and quality should yield sustained, bounded possession');
+ assert.ok(reversed.win>.06&&reversed.win<.23,'underdog still has a genuine chance: '+reversed.win);
+ assert.ok(equal.win>.26&&equal.win<.49,'equally matched teams stay competitive: '+equal.win);
 });
 
 test('the fast setting preserves the match outcome distribution and halftime',()=>{
