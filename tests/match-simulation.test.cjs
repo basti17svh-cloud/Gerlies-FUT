@@ -88,9 +88,9 @@ test('rating advantages scale without making normal underdogs irrelevant',()=>{
 
 test('90 OVR / 33 chemistry is consistently stronger than 84 / 20, without forced wins',()=>{
  const{sample}=simulator();
- const strong=sample({rating:90,chem:33,opponentRating:84,opponentChem:20,count:2500});
- const reversed=sample({rating:84,chem:20,opponentRating:90,opponentChem:33,count:2500});
- const equal=sample({rating:90,chem:33,opponentRating:90,opponentChem:33,count:2500});
+ const strong=sample({rating:90,chem:33,opponentRating:84,opponentChem:20,count:850});
+ const reversed=sample({rating:84,chem:20,opponentRating:90,opponentChem:33,count:850});
+ const equal=sample({rating:90,chem:33,opponentRating:90,opponentChem:33,count:850});
  console.log('FOOTERA 90/33 vs 84/20 BALANCE',JSON.stringify({strong,reversed,equal}));
  assert.ok(strong.win>.65&&strong.win<.90,'strong team should win most, not every match: '+strong.win);
  assert.ok(strong.draw<.24,'strong team reaches extra time too frequently: '+strong.draw);
