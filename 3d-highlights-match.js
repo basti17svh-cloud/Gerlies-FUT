@@ -168,6 +168,10 @@ function queueMatch3D(event){
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
  const presentation={...event,...match3DPresentationMeta(event,current)};
+ // Retire the faulty scripted possession -> interception -> offside counter
+ // only in the 3D presentation. The authoritative match event is unchanged.
+ const retiredCounter=event.sceneKind==='turnover_counter'||event.sequence==='extended_turnover_counter';
+ if(retiredCounter){presentation.sceneKind='';presentation.sequence=''}
  if(event.team==='away')presentation.opponentStyle=String(current.opponentProfile?.styleProfile?.id||'');
  presentation.playerStyles=match3DActorStyles(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorStyles=match3DActorStyles(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
@@ -200,7 +204,7 @@ function queueMatch3D(event){
  // Use the deterministic playstyle-aware director for ordinary attacks.
  // An event-provided generic sequence is only a hint; retaining it verbatim
  // caused identical camera/action choreography throughout an entire match.
- const lockedScene=!!event.sceneKind||['freekick','penalty'].includes(event.creationType)||event.type==='ball_won';
+ const lockedScene=!retiredCounter&&(!!event.sceneKind||['freekick','penalty'].includes(event.creationType)||event.type==='ball_won');
  presentation.sequence=lockedScene?(event.sequence||selected.sequence):selected.sequence;
  presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
@@ -250,13 +254,9 @@ function queueMatchGoal3D(event){
  return queued;
 }
 function queueMatchChance3D(shot){
- // The authoritative shot result is already final. Rich counter highlights
- // also appear on saves and misses below the ordinary xG highlight threshold.
- // Otherwise seeing this build-up would predict a goal, even though the
- // simulator had already generated perfectly valid non-goal outcomes.
- const counterMiss=shot.sceneKind==='turnover_counter'&&
-  (shot.outcome==='save'||shot.outcome==='wide');
- const type=shot.highlightType||(counterMiss?(shot.outcome==='save'?'big_chance_saved':'big_chance_missed'):'');
+ // Do not force a 3D chance solely because it used the retired counter scene.
+ // Existing simulator-highlight eligibility, saves and misses remain unchanged.
+ const type=shot.highlightType||'';
  if(!type)return false;
  return queueMatch3D({id:`shot:${match.shotEvents.length}`,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
   goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
