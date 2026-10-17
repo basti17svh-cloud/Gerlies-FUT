@@ -5347,9 +5347,10 @@ function openPackPlayerDetails(k){
  $("playerDetailSub").textContent=`Pack · ${duplicate?"DUPLIKAT · ":""}${playerClubLabel(b)} · ${playerLeagueLabel(b)}`;
  const normalActions=!duplicate?`<button class="menu-action" data-pack-profile-club="${k}"><span><span>In den Verein</span><small>Spieler deinem Verein hinzufügen.</small></span><b>›</b></button><button class="menu-action" data-pack-profile-insert="${k}"><span><span>In Mannschaft</span><small>Spieler hinzufügen und direkt einen Kaderplatz auswählen.</small></span><b>›</b></button>`:"";
  const tradeActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Startpreis, Sofortkauf und Dauer festlegen.</small></span><b>›</b></button>`:"";
- const duplicateUntradeable=duplicate&&!item.tradeable?`<button class="menu-action" data-pack-profile-sbcstore="${k}"><span><span>In SBC-Speicher</span><small>Untauschbares Duplikat für spätere SBCs sichern.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
+ const storeAvailable=(state.sbcStorage||[]).length<100;
+ const duplicateStorageActions=duplicate&&!isFounderItem(item)&&!isFooteraLiveCard(item)?`<button class="menu-action" data-pack-profile-sbcstore="${k}" ${storeAvailable?"":"disabled"}><span><span>${storeAvailable?"In SBC-Speicher":"SBC-Speicher voll (100/100)"}</span><small>Duplikat für spätere SBCs sichern${item.tradeable?" · bleibt tauschbar":""}.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
  const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Münzen auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
- $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateUntradeable}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateStorageActions}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player")
 }
 let suppressSquadClick=false;
@@ -5978,8 +5979,10 @@ function resolvePackToSquad(k){
 }
 function resolvePackToSbcStorage(k){
  const i=pendingPack[k],dup=packDuplicateMap().get(k);
- if(!i||isFounderItem(i)||isFooteraLiveCard(i)||pendingResolved.has(k)||i.tradeable||!dup)return false;
+ if(!i||isFounderItem(i)||isFooteraLiveCard(i)||pendingResolved.has(k)||!dup)return false;
  state.sbcStorage=state.sbcStorage||[];if(state.sbcStorage.length>=100){toast("SBC-Speicher voll (100/100).");return false}
+ if(state.sbcStorage.some(x=>x.uid===i.uid))return false;
+ // The stored card retains its original tradeability and all attributes.
  state.sbcStorage.push(i);pendingResolved.add(k);state.pendingResolved=[...pendingResolved];save();toast("Duplikat im SBC-Speicher abgelegt.");
  packResultsRefresh();return true
 }
@@ -6024,11 +6027,11 @@ function renderPackResults(){
  sortPackRows(normal);sortPackRows(dups);
  if(hint){const total=normal.length+dups.length;hint.textContent=total?`Noch ${total} Karte${total===1?"":"n"} offen · ${normal.length} neu · ${dups.length} Duplikat${dups.length===1?"":"e"}. Profil und Transferoptionen über den jeweiligen Button öffnen.`:"Alle Pack-Karten wurden zugewiesen."}
  const card=({i,k},duplicate)=>{
-  const b=displayBase(i),canTransfer=duplicate&&!!i.tradeable,twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null;
+  const b=displayBase(i),twin=duplicate&&!i.tradeable?tradeableClubTwinForPackItem(i):null,storeAvailable=(state.sbcStorage||[]).length<100;
   const profileAction=`<button class="primary" data-pack-open="${k}">Profil & Transferoptionen</button>`;
-  const duplicateActions=canTransfer
-   ?`${profileAction}<button class="secondary" data-pack-sell="${k}">Schnellverkaufen · +${fmt(quickSell(i))} Coins</button>`
-   :`${profileAction}<button class="secondary" data-pack-sbcstore="${k}">In SBC-Speicher</button>${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}<button class="secondary" data-pack-sell="${k}">Abstoßen</button>`;
+  const storeAction=`<button class="secondary" data-pack-sbcstore="${k}" ${storeAvailable?"":"disabled"}>${storeAvailable?"In SBC-Speicher":"SBC-Speicher voll (100/100)"}</button>`;
+  const sellAction=`<button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`;
+  const duplicateActions=`${profileAction}${storeAction}${twin?`<button class="secondary" data-pack-swap-tradeable="${k}">Mit Vereinskarte tauschen</button>`:""}${sellAction}`;
   const normalActions=`${profileAction}<button class="secondary" data-pack-club="${k}">In den Verein</button><button class="secondary" data-pack-insert="${k}">In Mannschaft</button><button class="secondary" data-pack-sell="${k}">${i.tradeable?`Schnellverkaufen · +${fmt(quickSell(i))} Coins`:"Abstoßen"}</button>`;
   return `<div class="result-item ${duplicate?"duplicate":""}" data-result-item="${k}"><div class="pack-profile-card">${cardHTML(b,i)}</div>${duplicate?'<div class="duplicate-pill">DUPLIKAT</div>':""}<div class="result-item-actions">${duplicate?duplicateActions:normalActions}</div>${duplicate?'<div class="duplicate-note">Duplikat zuerst auflösen, bevor du fortfährst.</div>':""}</div>`
  };
