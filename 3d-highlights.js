@@ -221,8 +221,11 @@
   return Object.freeze({defenderAction:defenseAction,keeperAction});
  }
  function choosePresentation(event,history=[]){
-  const extendedKinds=['keeper_buildout','turnover_counter','corner','free_kick','penalty','throw_in'];
-  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.finish||'normal',seconds:({keeper_buildout:25,turnover_counter:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind]});
+  // Retired: extended_turnover_counter. Its scripted interception left
+  // defenders motionless and the final runner offside. Preserve the simulator's
+  // real chance outcome but select a normal, continuous 3D attacking play.
+  const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
+  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind]});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
