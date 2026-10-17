@@ -1,0 +1,26 @@
+name: Footera Match Balance
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'footera-match-actions.js'
+      - 'footera-opponent-styles.js'
+      - 'tests/match-simulation.test.cjs'
+      - 'tests/match-actions.test.cjs'
+      - 'tests/footera-opponent-balancing.test.cjs'
+      - '.github/workflows/match-balance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  match-balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Matchups, attributes, styles and 90/33 vs 84/20 regression
+        run: node --test tests/match-simulation.test.cjs tests/match-actions.test.cjs tests/footera-opponent-balancing.test.cjs
