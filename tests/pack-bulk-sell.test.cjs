@@ -134,3 +134,49 @@ test('a partially sold pack restores its remaining batch and correct total after
  assert.equal(complete.read('state.coins'),1750);
  assert.deepEqual(complete.json('pendingPack'),[]);
 });
+
+
+test('tradeable duplicate displays an SBC storage action and preserves tradeability when stored',()=>{
+ const owned=card('owned','Z',85,true),incoming=card('dup','Z',85,true),untouched=card('new','N',78,true);
+ const saved=new Map(),game=app({coins:2200,club:[owned],sbcStorage:[],pendingPack:[incoming,untouched]},saved);
+ const markup=game.elements.get('resultGrid').innerHTML;
+ const duplicateHtml=markup.match(/<div class="result-item duplicate" data-result-item="0">[\s\S]*?<div class="duplicate-note">/);
+ assert.ok(duplicateHtml,'The tradeable duplicate is listed in the duplicate section');
+ assert.match(duplicateHtml[0],/data-pack-sbcstore="0"/);
+ assert.match(duplicateHtml[0],/In SBC-Speicher/);
+ assert.match(duplicateHtml[0],/Schnellverkaufen/);
+ assert.equal(game.read('resolvePackToSbcStorage(0)'),true);
+ assert.deepEqual(game.json('state.sbcStorage'),[incoming]);
+ assert.equal(game.read('state.sbcStorage[0].tradeable'),true);
+ assert.deepEqual(game.json('state.club'),[owned]);
+ assert.equal(game.read('state.coins'),2200);
+ assert.deepEqual(game.json('[...pendingResolved]'),[0]);
+ assert.doesNotMatch(game.elements.get('resultGrid').innerHTML,/data-result-item="0"/);
+ assert.equal(game.read('resolvePackToSbcStorage(0)'),false,'The same duplicate cannot be stored twice');
+ game.persist();
+ const restored=app({},saved);
+ assert.deepEqual(restored.json('state.sbcStorage'),[incoming]);
+ assert.deepEqual(restored.json('state.club'),[owned]);
+ assert.equal(restored.read('state.sbcStorage[0].tradeable'),true);
+});
+
+test('untradeable duplicate also goes into SBC storage while keeping its flag',()=>{
+ const owned=card('owned','F',85,false),duplicate=card('dup','F',85,false);
+ const game=app({club:[owned],pendingPack:[duplicate,card('new','N',76)]});
+ assert.match(game.elements.get('resultGrid').innerHTML,/data-pack-sbcstore="0"/);
+ assert.equal(game.read('resolvePackToSbcStorage(0)'),true);
+ assert.deepEqual(game.json('state.sbcStorage'),[duplicate]);
+ assert.equal(game.read('state.sbcStorage[0].tradeable'),false);
+ assert.equal(game.read('state.coins'),1000);
+});
+
+test('full SBC storage disables direct action without consuming the duplicate',()=>{
+ const owned=card('owned','F',85,true),duplicate=card('dup','F',85,true),storage=Array.from({length:100},(_,i)=>card('stored-'+i,'X'+i,70,false));
+ const game=app({club:[owned],pendingPack:[duplicate],sbcStorage:storage});
+ assert.match(game.elements.get('resultGrid').innerHTML,/data-pack-sbcstore="0" disabled/);
+ assert.match(game.elements.get('resultGrid').innerHTML,/SBC-Speicher voll \(100\/100\)/);
+ assert.equal(game.read('resolvePackToSbcStorage(0)'),false);
+ assert.equal(game.read('state.sbcStorage.length'),100);
+ assert.deepEqual(game.json('[...pendingResolved]'),[]);
+ assert.equal(game.read('state.coins'),1000);
+});
