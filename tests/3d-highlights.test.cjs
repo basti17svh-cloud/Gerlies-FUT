@@ -898,18 +898,28 @@ test('V21.164: counter keeps moving passers and receivers and the whole goal in 
 });
 
 
-test('V21.165: counter goal/save/miss/post share one build-up; low-xG misses are still offered',()=>{
+test('retired turnover counter is never selected: existing goal/save/miss/post use ordinary 3D attacks',()=>{
  const outcomes=['goal','big_chance_saved','big_chance_missed','shot_post'];
- const variants=outcomes.map((type,i)=>H.choosePresentation({...event(type,'counter:'+i),sceneKind:'turnover_counter',actionKind:'through',finish:'normal'},[]));
- assert.ok(variants.every(v=>v.sequence==='extended_turnover_counter'));
- assert.ok(variants.every(v=>v.seconds===25));
+ const visualIds=new Set([...H.VISUAL_SCENES,...H.PLAYBOOK_SCENES].map(p=>p.id));
+ for(const outcome of outcomes)for(const actionKind of ['combination','through','dribble','cross','cutback','distance','switch']){
+  for(let i=0;i<30;i++){
+   const original={...event(outcome,'counter:'+outcome+':'+actionKind+':'+i),sceneKind:'turnover_counter',
+    actionKind,finish:actionKind==='cross'?'header':'normal',creatorName:'Playmaker',creatorStyles:[{id:'incisive-pass'}]};
+   const selected=H.choosePresentation(original,[]);
+   assert.ok(visualIds.has(selected.sequence),'retired counter must resolve to normal play: '+selected.sequence);
+   assert.notEqual(selected.sequence,'extended_turnover_counter');
+   assert.ok(selected.seconds<25,'25-second turnover sequence cannot run');
+   assert.deepEqual(selected,H.choosePresentation(original,[]),'visual-only selection remains deterministic');
+  }
+ }
  const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
- assert.match(bridge,/shot\.sceneKind==='turnover_counter'/);
- assert.match(bridge,/shot\.outcome==='save'\|\|shot\.outcome==='wide'/);
- assert.match(bridge,/type=shot\.highlightType\|\|/);
+ assert.match(bridge,/const retiredCounter=event\.sceneKind==='turnover_counter'/);
+ assert.match(bridge,/if\(retiredCounter\)\{presentation\.sceneKind='';presentation\.sequence=''\}/);
+ assert.match(bridge,/const lockedScene=!retiredCounter/);
+ assert.match(bridge,/const type=shot\.highlightType\|\|''/);
+ assert.doesNotMatch(bridge,/const counterMiss=/,'do not force 3D for otherwise unhighlighted shots');
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
- assert.match(html,/shot\.outcome="goal"/);
- assert.match(html,/shot\.outcome==="wide"/);
+ assert.match(html,/counter\?"turnover_counter"/,'simulator still owns its own shot types');
 });
 test('V21.165: closer counter has constant 32m camera clearance with ball, active partners and full finish in portrait',async()=>{
  const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
