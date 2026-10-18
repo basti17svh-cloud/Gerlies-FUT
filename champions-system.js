@@ -20,9 +20,16 @@ function championsRank(wins=0){
  const value=Math.max(0,Math.min(CHAMPIONS_MAX_GAMES,Number(wins)||0));
  return CHAMPIONS_RANKS.find(row=>value>=row.min&&value<=row.max)||CHAMPIONS_RANKS[CHAMPIONS_RANKS.length-1]
 }
+// One-time extension for the 16 October 2026 Champions weekend only.
+const CHAMPIONS_EXTRA_WINDOW_START=Date.parse("2026-10-16T19:00:00+02:00");
+const CHAMPIONS_EXTRA_WINDOW_END=Date.parse("2026-10-20T09:00:00+02:00");
+function championsWeekEnd(start){
+ const stamp=new Date(start).getTime();
+ return stamp===CHAMPIONS_EXTRA_WINDOW_START?new Date(CHAMPIONS_EXTRA_WINDOW_END):berlinShiftDays(new Date(stamp),3,9)
+}
 function championsWindow(at=new Date()){
- const now=new Date(at),lastStart=berlinWeekStart(now,5,19),lastEnd=berlinShiftDays(lastStart,3,9),open=now>=lastStart&&now<lastEnd;
- const start=open?lastStart:berlinShiftDays(lastStart,7,19),end=open?lastEnd:berlinShiftDays(start,3,9);
+ const now=new Date(at),lastStart=berlinWeekStart(now,5,19),lastEnd=championsWeekEnd(lastStart),open=now>=lastStart&&now<lastEnd;
+ const start=open?lastStart:berlinShiftDays(lastStart,7,19),end=open?lastEnd:championsWeekEnd(start);
  return{key:String(start.getTime()),start,end,open,lastStart,lastEnd,lastKey:String(lastStart.getTime())}
 }
 function championsDate(date){
@@ -57,7 +64,7 @@ function ensureChampionsState(){
  return c
 }
 function championsRunEnd(week){
- const start=new Date(Number(week));return Number.isFinite(start.getTime())?berlinShiftDays(start,3,9):null
+ const start=new Date(Number(week));return Number.isFinite(start.getTime())?championsWeekEnd(start):null
 }
 function settleChampionsRun(){
  const c=ensureChampionsState();if(!c.week||c.completed)return false;
@@ -80,7 +87,7 @@ function championsCanEnter(at=new Date()){
 }
 function startChampionsRun(at=new Date()){
  syncChampionsCompetition(at);const c=ensureChampionsState(),w=championsWindow(at);
- if(!w.open)return{ok:false,reason:"Champions ist nur Freitag 19:00 bis Montag 09:00 geöffnet."};
+ if(!w.open)return{ok:false,reason:"Champions ist derzeit geschlossen. "+championsWindowText(at)};
  if(c.active&&c.week===w.key)return{ok:true,active:true};
  if(c.week===w.key)return{ok:false,reason:"Deine Champions-Teilnahme für dieses Wochenende ist bereits beendet."};
  if(c.qualPoints<CHAMPIONS_ENTRY_POINTS)return{ok:false,reason:`Dir fehlen noch ${fmt(CHAMPIONS_ENTRY_POINTS-c.qualPoints)} Champions-Punkte aus Division Rivals.`};
@@ -120,7 +127,7 @@ function championsBestRecordText(){
 }
 function championsProgressHtml(snapshot){
  const a=snapshot.after,b=snapshot.before,rankChanged=a.rank!==b.rank,remaining=Math.max(0,CHAMPIONS_MAX_GAMES-a.games);
- return `<div class="post-progress-summary"><small>FOOTERA CHAMPIONS · ${snapshot.result==="win"?"SIEG":"NIEDERLAGE"}</small><strong>${a.wins}-${a.losses}</strong><span>${a.games}/${CHAMPIONS_MAX_GAMES} Spiele absolviert</span></div>${rankChanged?'<div class="post-progress-promotion">'+esc(a.rank.toUpperCase())+'</div>':""}<div class="post-progress-status"><span>VORHER<b>${b.wins}-${b.losses}</b></span><i>→</i><span>AKTUELL<b>${a.wins}-${a.losses}</b></span></div><div class="post-progress-note accent">Aktueller Rang: ${esc(a.rank)} · ${remaining} Spiele übrig</div><div class="post-progress-foot">Freitag 19:00 – Montag 09:00 · kein Unentschieden</div>`
+ return `<div class="post-progress-summary"><small>FOOTERA CHAMPIONS · ${snapshot.result==="win"?"SIEG":"NIEDERLAGE"}</small><strong>${a.wins}-${a.losses}</strong><span>${a.games}/${CHAMPIONS_MAX_GAMES} Spiele absolviert</span></div>${rankChanged?'<div class="post-progress-promotion">'+esc(a.rank.toUpperCase())+'</div>':""}<div class="post-progress-status"><span>VORHER<b>${b.wins}-${b.losses}</b></span><i>→</i><span>AKTUELL<b>${a.wins}-${a.losses}</b></span></div><div class="post-progress-note accent">Aktueller Rang: ${esc(a.rank)} · ${remaining} Spiele übrig</div><div class="post-progress-foot">Finals bis ${esc(championsDate(championsRunEnd(ensureChampionsState().week)||championsWindow().end))} · kein Unentschieden</div>`
 }
 
 /* Extend the existing competition layer without changing Rivals/Squad-Battles behavior. */
