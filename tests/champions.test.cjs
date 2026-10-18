@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21161/);
+ assert.match(html,/champions-system\.js\?v=21183/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21161/);
+ assert.match(sw,/champions-system\.js\?v=21183/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -55,7 +55,7 @@ test("Champions has 1000 CP qualification, 15 matches and the approved rank ladd
  ]);
  for(const [wins,name] of [[15,"Rang I"],[14,"Rang II"],[12,"Rang III"],[10,"Rang IV"],[8,"Rang V"],[6,"Rang VI"],[4,"Rang VII"],[0,"Rang VIII"]])assert.equal(box.rank(wins).name,name);
  assert.match(champions,/berlinWeekStart\(now,5,19\)/);
- assert.match(champions,/berlinShiftDays\(lastStart,3,9\)/);
+ assert.match(champions,/championsWeekEnd\(lastStart\)/);
 });
 
 test("Champions rewards, qualification and record-based AI are integrated without owning results",()=>{
@@ -118,3 +118,28 @@ test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+
 });
 
 console.log("Footera Champions V21.23: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");
+
+test("Champions extension is exactly one weekend through Tuesday 20 Oct at 09:00 Berlin",()=>{
+ const clock=fs.readFileSync(path.join(root,"footera-time.js"),"utf8");
+ const windowFunctions=champions.slice(champions.indexOf("const CHAMPIONS_EXTRA_WINDOW_START="),champions.indexOf("function championsDate("));
+ const endFunction=champions.slice(champions.indexOf("function championsRunEnd("),champions.indexOf("function settleChampionsRun("));
+ const box={};vm.createContext(box);
+ vm.runInContext(clock+"\n"+windowFunctions+"\n"+endFunction+"\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
+ const date=iso=>new Date(iso);
+ const start=date("2026-10-16T19:00:00+02:00").getTime();
+ for(const iso of ["2026-10-16T19:00:00+02:00","2026-10-18T21:33:00+02:00","2026-10-19T09:00:00+02:00","2026-10-20T08:59:59+02:00"]){
+  const w=box.getWindow(date(iso));
+  assert.equal(w.open,true,iso);
+  assert.equal(w.start.getTime(),start);
+  assert.equal(w.end.getTime(),date("2026-10-20T09:00:00+02:00").getTime());
+  assert.equal(box.runEnd(String(start)).getTime(),w.end.getTime());
+ }
+ const closed=box.getWindow(date("2026-10-20T09:00:00+02:00"));
+ assert.equal(closed.open,false);
+ assert.equal(closed.start.getTime(),date("2026-10-23T19:00:00+02:00").getTime());
+ assert.equal(closed.end.getTime(),date("2026-10-26T09:00:00+01:00").getTime());
+ assert.equal(box.getWindow(date("2026-10-24T16:00:00+02:00")).open,true);
+ assert.match(hub,/championsSpecial\?"/);
+ assert.match(hub,/championsDate\(w\.end\)/);
+ assert.match(champions,/const end=c.active\?championsRunEnd\(c\.week\):null/);
+});
