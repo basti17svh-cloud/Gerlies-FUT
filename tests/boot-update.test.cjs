@@ -67,12 +67,13 @@ test('two simultaneous update sources coalesce into one refresh after the unfini
 });
 
 test('updates are retained while playing, opening a pack, editing an SBC or using a modal/input',()=>{
- for(const mode of ['match','pack','results','pendingPack','pendingBoost','sbc','potm','modal','input','database']){
+ for(const mode of ['match','pack','results','pendingPack','pendingBoost','sbc','pickRecovery','potm','modal','input','database']){
   const a=app();a.ready();let blocked=true;
   if(mode==='match'||mode==='pack'||mode==='results'){const id={match:'match',pack:'opening',results:'results'}[mode];a.c.$(id).classList.contains=()=>blocked;}
   if(mode==='pendingPack')a.c.pendingPack=[{uid:'unassigned'}];
   if(mode==='pendingBoost')a.c.state.pendingChemBoosts=[{uid:'boost-unassigned'}];
   if(mode==='sbc')a.c.activeSbcId='sbc-in-progress';
+  if(mode==='pickRecovery')a.c.FooteraPlayerPicks={isActive:()=>blocked};
   if(mode==='potm')a.c.FooteraPotm={busy:()=>blocked};
   if(mode==='modal')a.c.document.querySelector=()=>blocked?{}:null;
   if(mode==='input')a.c.document.activeElement.matches=()=>blocked;
@@ -102,4 +103,11 @@ test('same or older cached HTML never refreshes a newer app; newer numeric versi
 
 test('unavailable session storage leaves the screen intact instead of forcing a blind restart',()=>{
  const a=app({storageFails:true});a.ready();a.c.requestGerliesUpdate('gfut-update-'+NEXT);assert.equal(a.navigations.length,0);assert.equal(a.flushes(),1);assert.equal(a.warnings.length,1);
+});
+
+// Some privacy/storage settings reject reads, not only writes.
+test('unavailable update marker reads do not throw or interrupt the current screen',()=>{
+ const a=app();a.ready();a.c.sessionStorage.getItem=()=>{throw Error('Storage unavailable')};
+ assert.doesNotThrow(()=>a.c.requestGerliesUpdate('gfut-update-'+NEXT));
+ assert.equal(a.navigations.length,0);assert.equal(a.flushes(),0);assert.equal(a.warnings.length,1);
 });

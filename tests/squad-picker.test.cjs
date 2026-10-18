@@ -20,7 +20,8 @@ function setup(){
   displayBase:item=>item,itemRating:item=>item.ovr,posFit:(item,slot)=>item?.position===slot?1:0,
   positionLabel:x=>x,normalizeKey:x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
   resolvedAffiliation:item=>({league:item?.league||'',team:item?.team||''}),cardClass:p=>p.ovr>=75?'gold':p.ovr>=65?'silver':'bronze',esc:x=>x};
- vm.createContext(ctx);vm.runInContext(code,ctx);
+ ctx.activeEvolutionForUid=()=>null;
+ vm.createContext(ctx);vm.runInContext(html.match(/^function isEvolutionItem\(.*$/m)[0]+'\n'+code,ctx);
  return{ctx,state}
 }
 

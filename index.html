@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.181</title>
+<title>Footera V21.182</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -9393,7 +9393,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.181";
+const GFUT_BUILD="V21.182";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9403,7 +9403,7 @@ function newerGerliesBuild(remote){
 }
 function gerliesUpdateBlocked(){
  const reg=gerliesUpdateRegistration;
- return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
+ return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPlayerPicks?.isActive?.()||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
 }
 function applyGerliesUpdate(){
  clearTimeout(gerliesUpdateTimer);gerliesUpdateTimer=0;
@@ -9418,7 +9418,8 @@ function applyGerliesUpdate(){
  }catch(e){gerliesUpdateReloading=false;console.warn("Update konnte nicht angewendet werden",e)}
 }
 function requestGerliesUpdate(key){
- if(gerliesUpdateReloading||sessionStorage.getItem(key))return;
+ if(gerliesUpdateReloading)return;
+ try{if(sessionStorage.getItem(key))return}catch(e){console.warn("Update-Speicher nicht verfügbar",e);return}
  gerliesUpdatePending=gerliesUpdatePending||new Set();gerliesUpdatePending.add(key);applyGerliesUpdate()
 }
 function completeGerliesStartup(){
@@ -9450,7 +9451,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21181",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21182",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

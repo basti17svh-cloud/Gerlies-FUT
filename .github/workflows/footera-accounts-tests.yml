@@ -10,6 +10,7 @@ on:
       - 'tests/footera-accounts.test.cjs'
       - 'tests/startup-state.test.cjs'
       - 'tests/boot-update.test.cjs'
+      - 'tests/service-worker-recovery.test.cjs'
       - 'tests/footera-account-deletion-server.test.cjs'
       - 'tests/fixtures/footera-delete-account.deployed.ts'
       - 'index.html'
@@ -28,4 +29,4 @@ jobs:
         with:
           node-version: '22'
       - name: Check account and online friend regressions
-        run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs
+        run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs tests/service-worker-recovery.test.cjs
