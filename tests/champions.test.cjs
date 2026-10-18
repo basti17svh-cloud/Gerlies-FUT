@@ -141,5 +141,5 @@ test("Champions extension is exactly one weekend through Tuesday 20 Oct at 09:00
  assert.equal(box.getWindow(date("2026-10-24T16:00:00+02:00")).open,true);
  assert.match(hub,/championsSpecial\?"/);
  assert.match(hub,/championsDate\(w\.end\)/);
- assert.match(champions,/const end=c.active\?championsRunEnd\(c\.week\):null/);
+ assert.match(champions,/end=c.active\?championsRunEnd\(c\.week\):null/);
 });
