@@ -6,7 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21185';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 
@@ -463,7 +463,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   apply('spine_01',driver.upper.rotation.x*(keeperRole?.67:.48)+m.spinePitch*.37+clipState.torsoPitch*.38,driver.upper.rotation.y*(keeperRole?.65:.48)+m.spineYaw*.38,driver.upper.rotation.z*(keeperRole?.66:.45)+m.spineRoll*.37+clipState.torsoRoll*.40);
   apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35+clipState.torsoPitch*.32,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34+clipState.torsoRoll*.35);
   apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28+clipState.torsoPitch*.30,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29+clipState.torsoRoll*.25);
-  apply('Head',m.headPitch,m.headYaw,m.headRoll);
+  // A celebrating scorer looks up to the stand or the sky (x>0 looks up).
+  const celebration=!keeperRole&&info.celebrate>0?info.celebration:null;
+  apply('Head',m.headPitch+(celebration?.head?.[0]||0),m.headYaw+(celebration?.head?.[1]||0),m.headRoll);
   for(let i=0;i<2;i++){
    const side=i?'r':'l',sign=i?1:-1;
    apply('thigh_'+side,driver.legs[i].rotation.x,driver.legs[i].rotation.y,driver.legs[i].rotation.z);
@@ -477,7 +479,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
   // V21.184: captured CC0 arms, shoulders, spine and hips on top; legs keep IK.
   bodyState=capturedBody.apply(frameTime,info,keeperRole);
-  if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands();
+  if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands(celebration?.open);
+  // Raised arms lift the shoulders with them instead of hinging at a fixed joint.
+  if(celebration?.shrug){apply('clavicle_l',0,0,-celebration.shrug[0]);apply('clavicle_r',0,0,celebration.shrug[1])}
   matchFeet();
   if(keeperRole)matchKeeperHands();
  }

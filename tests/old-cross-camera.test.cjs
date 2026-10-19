@@ -30,7 +30,11 @@ test('V21.151: pitch framing reduces far-side stands without changing new attack
   const time=M.cameraDelivery(sequence).release,aspect=390/340;
   const before=createStableCameraTrack(t=>M.cameraState(1,t,aspect,'goal',sequence))(time),after=M.createBroadcastCameraTrack({sequence,direction:1,aspect})(time);
   const edge=s=>{const c=new T.PerspectiveCamera(s.fov,aspect,.1,250);c.position.set(...s.position);c.lookAt(...s.target);c.updateMatrixWorld();return new T.Vector3(-34,0,s.target[2]).project(c).y};
-  assert.ok(edge(after)>edge(before)+.15,sequence+' less of screen above far touchline');
+  // Since the fixed-distance camera both tracks share one close rail, so the old
+  // +.15 gap to the long V21.150 camera no longer exists. The delivery pan must
+  // still show less stand than the plain track, and the stand stays a strip.
+  assert.ok(edge(after)>edge(before),sequence+' less of screen above far touchline');
+  assert.ok(edge(after)>.4,sequence+' far stand stays below a third of the screen');
  }
  for(const sequence of ['layoff_distance','six_yard_square_left','diagonal_lob_finish','central'])assert.equal(M.cameraDelivery(sequence),null);
 });

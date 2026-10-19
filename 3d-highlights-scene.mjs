@@ -4,10 +4,10 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21185';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21187';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21185';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21187';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
@@ -490,6 +490,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
    // rather than widening the lens and filling the top with more stands.
    const boxShift=(-51.25*direction-frame.target[2])*.27*smooth((time-delivery.release-.3)/1.25);
    frame.target[2]+=boxShift;frame.position[2]+=boxShift;
+   return keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence);
   }
   return frame;
  };
@@ -508,9 +509,36 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
   const distance=defending?34:BROADCAST_CAMERA_DISTANCE;
   const factor=distance/Math.max(.01,gap);
   const fov=state.fov;
-  return {...state,fov,distance,
+  const framed={...state,fov,distance,
    position:state.position.map((v,i)=>state.target[i]+(v-state.target[i])*factor)};
+  return framed;
  };
+}
+// The closer 40 m TV camera can drop a crosser on the near touchline below the
+// bottom edge of a narrow phone (a long diagonal switch). Around the delivery,
+// glide camera and target together towards him, just enough to keep his boots
+// and head inside the picture. Lens, distance and camera side are unchanged.
+const CROSSER_EDGE=.82,frameCamera=new THREE.PerspectiveCamera(),frameProbe=new THREE.Vector3();
+function crosserOverflow(frame,shift,aspect,points){
+ // Judge with the narrowest lens the stable track may pick for this screen.
+ frameCamera.fov=aspect<1.12?32:30.5;frameCamera.aspect=aspect;frameCamera.near=.1;frameCamera.far=250;
+ frameCamera.position.set(frame.position[0]+shift[0],frame.position[1],frame.position[2]+shift[1]);
+ frameCamera.lookAt(frame.target[0]+shift[0],frame.target[1],frame.target[2]+shift[1]);
+ frameCamera.updateProjectionMatrix();frameCamera.updateMatrixWorld();
+ let worst=0;
+ for(const p of points){frameProbe.set(...p).project(frameCamera);worst=Math.max(worst,Math.abs(frameProbe.x),Math.abs(frameProbe.y))}
+ return worst-CROSSER_EDGE;
+}
+function keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence){
+ const envelope=smooth((time-delivery.release+1.3)/.7)*(1-smooth((time-delivery.release-.3)/.9));
+ if(envelope<=0)return frame;
+ const run=runPosition(delivery.passer,time,sequence),points=[0,1.8].map(y=>worldPosition([run[0],y,run[1]],direction));
+ if(crosserOverflow(frame,[0,0],aspect,points)<=0)return frame;
+ const toward=[points[0][0]-frame.target[0],points[0][2]-frame.target[2]];
+ let low=0,high=1;
+ for(let i=0;i<14;i++){const k=(low+high)/2;crosserOverflow(frame,[toward[0]*k,toward[1]*k],aspect,points)>0?low=k:high=k}
+ const k=high*envelope,shift=[toward[0]*k,0,toward[1]*k];
+ return{...frame,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -1728,7 +1756,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedMotionFrame.celebrate=0;importedMotionFrame.rootY=null;celebrationState.rootY=0;
    if(celebrationActive&&time>CELEBRATION_START){
     applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState);
-    importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;
+    importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;importedMotionFrame.celebration=celebrationState;
    }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
