@@ -24,5 +24,19 @@ for(const type of ['goal','big_chance_saved','ball_won']){
  });
 }
 test('long authored scenes retain their requested duration',()=>{
- for(const type of ['goal','ball_won'])assert.equal(createHighlightPlayback({type,playSeconds:20}).totalSeconds,20);
+ for(const type of ['big_chance_saved','ball_won'])assert.equal(createHighlightPlayback({type,playSeconds:20}).totalSeconds,20);
+ // A goal adds only its slow-motion moment on top.
+ const goal=createHighlightPlayback({type:'goal',playSeconds:20});
+ assert.ok(goal.totalSeconds>20&&goal.totalSeconds<23);
+});
+test('goal slow motion: full-speed shot, slow net impact, continuous time',()=>{
+ const clock=createHighlightPlayback({type:'goal'});
+ clock.tick(0);clock.presented(0);
+ let previous=0,steps=[];
+ for(let now=10;now<=clock.totalSeconds*1000+20;now+=10){const t=clock.tick(now).time;steps.push([previous,t]);assert.ok(t>=previous);previous=t}
+ const rate=at=>{const s=steps.find(([a,b])=>a<=at&&b>at);return (s[1]-s[0])/.01};
+ assert.ok(Math.abs(rate(5.8)-1)<.05,'shot flight at full speed');
+ assert.ok(Math.abs(rate(6.7)-.4)<.05,'net impact in slow motion');
+ assert.ok(Math.abs(rate(8)-1)<.05,'celebration back to full speed');
+ assert.equal(previous,10.4);
 });
