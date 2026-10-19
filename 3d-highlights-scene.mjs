@@ -4,7 +4,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21184';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21185';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
@@ -795,6 +795,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   positionAt:(i,t)=>playerPosition(i,t,event.type,sequence,placement,finish),ballAt:t=>eventBallPosition(event.type,t),
   defenderIndex,ballWon:event.type==='ball_won',duration:DURATION
  });
+ // V21.185 goal celebration: after the ball is in the net the scorer peels
+ // away towards the broadcast touchline. Field-local metres; the camera side
+ // is local +x for direction 1 and -x for direction -1.
+ const celebrationActive=event.type==='goal'&&!extended&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
+ const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
+ const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
+ function celebrationShift(time){
+  if(!celebrationActive||time<=CELEBRATION_START)return 0;
+  // Burst away, then keep jogging slowly towards the camera until the end,
+  // so the scorer never stops and snaps back to his tactical facing.
+  const u=clamp((time-CELEBRATION_START)/3.6);return 9*(1-(1-u)*(1-u));
+ }
+ function actorPosition(index,time,type=event.type,seq=sequence){
+  const p=stagedPlayerPosition(index,time,type,seq);
+  if(index!==0)return p;
+  const d=celebrationShift(time);
+  return d?[p[0]+celebrationRun[0]*d,p[1]+celebrationRun[1]*d]:p;
+ }
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
   const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
   if(index!==defenderIndex)return original;
@@ -1298,6 +1316,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    return broadcastTracks.get(key);
   };
+  const celebrationAnchor=new THREE.Vector3();
   let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
@@ -1376,9 +1395,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
-   players.forEach((p,i)=>{const [x,z]=stagedPlayerPosition(i,time,event.type,sequence),prev=stagedPlayerPosition(i,Math.max(0,time-.02),event.type,sequence),next=stagedPlayerPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
+   players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
-    const back=stagedPlayerPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=stagedPlayerPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
+    const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
@@ -1702,6 +1721,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     importedMotionFrame.grounded=true;
     for(const frame of squadMotionFrames)frame.grounded=true;
    }
+   // Arms out while running away, then both fists up for the close-up.
+   importedMotionFrame.celebrate=celebrationActive?smooth((time-CELEBRATION_START)/.5):0;
+   importedMotionFrame.celebrateRaise=celebrationActive?smooth((time-CELEBRATION_START-2.1)/.45):0;
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
@@ -1723,6 +1745,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     camera.fov=mix(camera.fov,desiredFov,follow);
    }else{
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
+   }
+   if(celebrationActive&&time>=CELEBRATION_CUT){
+    // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
+    // drifting slowly as he runs towards it.
+    const root=players[0].root.getWorldPosition(celebrationAnchor),k=direction;
+    const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,drift=(time-CELEBRATION_CUT)*.35;
+    camera.position.set(root.x+runX*6.2-runZ*(1.6-drift),root.y+1.55,root.z+runZ*6.2+runX*(1.6-drift));
+    camTarget.set(root.x,root.y+1.12,root.z);camera.fov=30;
    }
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
@@ -1867,9 +1897,13 @@ export function play(event,signal){
   const playback=createHighlightPlayback(event,DURATION);
   timer=setTimeout(()=>finish('fallback'),Math.max(30000,playback.totalSeconds*1000+12000));
   try{
-   const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,weak=memory<=4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
-   renderer=new THREE.WebGLRenderer({canvas,antialias:!weak,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
-   renderer.setPixelRatio(Math.min(dpr,weak?1.15:mobileStandard?2:high?2.25:1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+   const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,
+    // V21.185: Chrome reports 6 GB phones as deviceMemory 4. Only 2-3 GB or
+    // four-core devices stay on LOW; the slow-frame watchdog still protects them.
+    weak=memory<4||cores<=4,mobileStandard=mobile&&!weak,high=!mobile&&!weak&&memory>=8&&cores>=8&&dpr>=1.5;let quality=weak?'low':high?'high':'standard';
+   // Edge smoothing on every tier: without it pitch lines and stands looked pixelated.
+   renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:weak?'low-power':'high-performance',failIfMajorPerformanceCaveat:true});
+   renderer.setPixelRatio(Math.min(dpr,weak?1.3:mobileStandard?2:high?2.25:1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.shadowMap.enabled=!weak;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
    // V21.42 rollout: fluid motion is standard on capable devices.
    // Low-spec phones keep the established instanced route; QA/users can force
    // legacy without affecting results: localStorage footera-3d-motion-mode=legacy.

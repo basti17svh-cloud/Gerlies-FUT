@@ -52,3 +52,11 @@ test('running drives the arms with the capture and follows the travelled distanc
  }
  assert.ok(Math.max(...angles)-Math.min(...angles)>.2,'arm swing over one stride');
 });
+
+test('a celebrating scorer keeps the authored celebration arms', ()=>{
+ const bones=skeleton(),layer=createUalPoseLayer(bones),arm=bones.get('upperarm_l');
+ procedural(bones);
+ const before=arm.quaternion.clone();
+ layer.apply(8,{speed:.6,stride:2,celebrate:1});
+ assert.ok(arm.quaternion.angleTo(before)<1e-6);
+});

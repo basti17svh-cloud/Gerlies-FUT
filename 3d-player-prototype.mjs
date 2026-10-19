@@ -6,7 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21184';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21185';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 
@@ -462,6 +462,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   apply('spine_02',driver.upper.rotation.x*.33+m.spinePitch*.35+clipState.torsoPitch*.32,driver.upper.rotation.y*.34+m.spineYaw*.36,driver.upper.rotation.z*.35+m.spineRoll*.34+clipState.torsoRoll*.35);
   apply('spine_03',driver.upper.rotation.x*.28+m.spinePitch*.28+clipState.torsoPitch*.30,driver.upper.rotation.y*.26+m.spineYaw*.26,driver.upper.rotation.z*.28+m.spineRoll*.29+clipState.torsoRoll*.25);
   apply('Head',m.headPitch,m.headYaw,m.headRoll);
+  // Goal celebration (scorer only): arms spread while running, then fists up.
+  const celebrate=keeperRole?0:clamp(info.celebrate||0),raise=keeperRole?0:clamp(info.celebrateRaise||0);
+  const celebrationArm=celebrate*(1.25*(1-raise)+2.6*raise),celebrationElbow=-.85*raise*celebrate;
   for(let i=0;i<2;i++){
    const side=i?'r':'l',sign=i?1:-1;
    apply('thigh_'+side,driver.legs[i].rotation.x,driver.legs[i].rotation.y,driver.legs[i].rotation.z);
@@ -470,8 +473,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    apply('foot_'+side,driver.ankles[i].rotation.x+(i?m.rightToeLift:m.leftToeLift)*swing,
      driver.ankles[i].rotation.y,driver.ankles[i].rotation.z);
    apply('upperarm_'+side,driver.arms[i].rotation.x*.94+sign*m.armSwing+(i?clipState.rightArmPitch:clipState.leftArmPitch),
-     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll));
-   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow),0,driver.elbows[i].rotation.z);
+     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll)+sign*celebrationArm);
+   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow)+celebrationElbow,0,driver.elbows[i].rotation.z);
   }
   // V21.184: captured CC0 arms, shoulders, spine and hips on top; legs keep IK.
   bodyState=capturedBody.apply(frameTime,info,keeperRole);

@@ -111,8 +111,10 @@ export function createUalPoseLayer(bones){
     middle.slerp(centre.fromArray(data[next].mean,index*4),alpha);
    }
   }
+  // A celebrating scorer's arms belong to the authored celebration pose.
+  const armWeight=weight*(1-clamp(info.celebrate||0));
   for(const name of ARMS){
-   const bone=bones.get(name);if(bone)bone.quaternion.slerp(targets.get(name),weight);
+   const bone=bones.get(name);if(bone)bone.quaternion.slerp(targets.get(name),armWeight);
   }
   for(const [name,share] of ADDITIVE){
    const bone=bones.get(name);if(!bone)continue;
