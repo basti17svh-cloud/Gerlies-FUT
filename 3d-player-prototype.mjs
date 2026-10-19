@@ -9,6 +9,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
+import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -109,6 +110,100 @@ export function footballerKitColorAt(nx,ny,nz,kit={},hair=0){
  return skin;
 }
 
+const HAIR_COLORS=['#201b17','#392921','#624932','#171b1d','#2b2320','#83664a'];
+const SKIN_FALLBACK=['#dfac87','#c68a66','#ad7558','#80533f'];
+// sRGB 0..1 components; the face is painted on a 2D canvas, not lit colour.
+function hexColor(hex){const n=parseInt(String(hex).slice(1),16);return{r:(n>>16&255)/255,g:(n>>8&255)/255,b:(n&255)/255}}
+// Skin tone exactly as the kit atlas paints it (slot 2), so face and arms match.
+function atlasSkin(atlas,tintIndex){
+ try{
+  const image=atlas?.image,ctx=image?.getContext?.('2d');
+  if(ctx){const d=ctx.getImageData(Math.floor(image.width*2.5/5),Math.floor(image.height/2),1,1).data;return{r:d[0]/255,g:d[1]/255,b:d[2]/255}}
+ }catch(_){}
+ return hexColor(SKIN_FALLBACK[tintIndex%4]);
+}
+
+// V21.191 close-up face: move the head's triangles (all corners in the skin
+// slot above the collar) into their own geometry with a wrap-around face UV.
+// Corners are copied, normals included, so the neck joins without a crease.
+export function extractFooteraHead(geometry,heights,zones,normalized){
+ const index=geometry.index;if(!index)return null;
+ const source=index.array,body=[],head=[];
+ for(let i=0;i<source.length;i+=3){
+  const a=source[i],b=source[i+1],c=source[i+2];
+  const isHead=[a,b,c].every(k=>zones[k]===2&&heights[k]>FACE_NY_MIN&&Math.abs(normalized[k*3])<.14);
+  (isHead?head:body).push(a,b,c);
+ }
+ if(head.length<300)return null;
+ let x0=Infinity,x1=-Infinity,z0=Infinity,z1=-Infinity;
+ for(const k of head){x0=Math.min(x0,normalized[k*3]);x1=Math.max(x1,normalized[k*3]);
+  z0=Math.min(z0,normalized[k*3+2]);z1=Math.max(z1,normalized[k*3+2])}
+ const cx=(x0+x1)/2,cz=(z0+z1)/2,face=new THREE.BufferGeometry();
+ for(const name of Object.keys(geometry.attributes)){
+  if(name==='uv')continue;
+  // The face texture paints the hairline itself; drop the coarse per-vertex
+  // hair tint, which left a jagged notch in the forehead.
+  if(name==='color'){face.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(head.length*3).fill(1),3));continue}
+  const attr=geometry.getAttribute(name),size=attr.itemSize;
+  const raw=attr.isInterleavedBufferAttribute?(v,n)=>attr.data.array[v*attr.data.stride+attr.offset+n]:(v,n)=>attr.array[v*size+n];
+  const array=new attr.array.constructor(head.length*size);
+  head.forEach((vertex,j)=>{for(let n=0;n<size;n++)array[j*size+n]=raw(vertex,n)});
+  face.setAttribute(name,new THREE.BufferAttribute(array,size,attr.normalized));
+ }
+ const uv=new Float32Array(head.length*2);
+ for(let i=0;i<head.length;i+=3){
+  const tri=[0,1,2].map(n=>{const k=head[i+n];return faceUV(normalized[k*3],normalized[k*3+1],normalized[k*3+2],cx,cz)});
+  // Triangles across the back seam wrap instead of smearing the whole face.
+  const wrap=Math.max(...tri.map(t=>t[0]))-Math.min(...tri.map(t=>t[0]))>.5;
+  tri.forEach((t,n)=>{uv[(i+n)*2]=wrap&&t[0]<.5?t[0]+1:t[0];uv[(i+n)*2+1]=t[1]});
+ }
+ face.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+ geometry.setIndex(body);
+ return face;
+}
+
+// V21.191: a triangle between the shirt (slot 0) and sleeve (slot 4) tiles
+// used to interpolate its UV across the shorts, skin and sock tiles, painting
+// thin dark and pale stripes down the torso sides. Those triangles now get
+// their own copies of the off-slot corners, re-mapped into one slot; normals
+// are copied, so shading stays smooth. Hems against skin keep their soft
+// trim, since a hard per-triangle edge there looks torn.
+export function splitAtlasSeams(geometry,zones,normalized){
+ const index=geometry.index;if(!index)return 0;
+ const source=index.array,next=Array.from(source),extra=[],copies=new Map();
+ const count=geometry.getAttribute('position').count;
+ for(let i=0;i<source.length;i+=3){
+  const a=zones[source[i]],b=zones[source[i+1]],c=zones[source[i+2]];
+  if(a===b&&b===c)continue;
+  if(![a,b,c].every(z=>z===0||z===4))continue;
+  const slot=a===b||a===c?a:b===c?b:a;
+  for(let k=0;k<3;k++){
+   const vertex=source[i+k];if(zones[vertex]===slot)continue;
+   const key=vertex*8+slot;
+   let copy=copies.get(key);
+   if(copy===undefined){copy=count+extra.length;copies.set(key,copy);extra.push([vertex,slot])}
+   next[i+k]=copy;
+  }
+ }
+ if(!extra.length)return 0;
+ for(const name of Object.keys(geometry.attributes)){
+  // Read through the accessors: glTF attributes may be interleaved.
+  const attr=geometry.getAttribute(name),size=attr.itemSize;
+  const raw=attr.isInterleavedBufferAttribute?(v,n)=>attr.data.array[v*attr.data.stride+attr.offset+n]:(v,n)=>attr.array[v*size+n];
+  const array=new attr.array.constructor((count+extra.length)*size);
+  for(let v=0;v<count;v++)for(let n=0;n<size;n++)array[v*size+n]=raw(v,n);
+  extra.forEach(([vertex,slot],j)=>{
+   if(name==='uv'){
+    const uv=footeraAtlasUV(normalized[vertex*3],normalized[vertex*3+1],normalized[vertex*3+2],slot);
+    array[(count+j)*2]=uv[0];array[(count+j)*2+1]=uv[1];
+   }else for(let n=0;n<size;n++)array[(count+j)*size+n]=raw(vertex,n);
+  });
+  geometry.setAttribute(name,new THREE.BufferAttribute(array,size,attr.normalized));
+ }
+ geometry.setIndex(next);
+ return extra.length;
+}
+
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
@@ -149,7 +244,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const sourceGeometry=mesh.geometry,sourceMaterial=mesh.material;
   const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
   const colors=new Float32Array(pos.count*3),uv=new Float32Array(pos.count*2),
-   heights=new Float32Array(pos.count),zones=new Uint8Array(pos.count),p=new THREE.Vector3();
+   heights=new Float32Array(pos.count),zones=new Uint8Array(pos.count),p=new THREE.Vector3(),
+   normalized=new Float32Array(pos.count*3);
   // vertex position in the original GLB's unscaled world coordinates.
   const localToModel=model.matrixWorld.clone().invert().multiply(mesh.matrixWorld);
   const modelToLocal=localToModel.clone().invert();
@@ -160,7 +256,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    p.fromBufferAttribute(pos,i).applyMatrix4(localToModel);
    const nx=(p.x-center.x)*scale,ny=(p.y-bounds.min.y)*scale/1.83,nz=(p.z-center.z)*scale;
    const brow=/eyebrow/i.test(mesh.name),eye=/^eyes$/i.test(mesh.name);
-   heights[i]=ny;
+   heights[i]=ny;normalized[i*3]=nx;normalized[i*3+1]=ny;normalized[i*3+2]=nz;
    const bareArm=Math.abs(nx)>.43;
    const hairline=.934+(nz>0?.018:0);
    let slot=ny<.056?2:ny<.31?3:ny<.445?2:ny<.557?1:
@@ -215,8 +311,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   geometry.computeVertexNormals();
   // Both PBR maps share this atlas: UV for normal/roughness, UV2 for AO.
   // Each slot already encodes the real material zone, so skin never gets knit.
-  const uvAttr=new THREE.Float32BufferAttribute(uv,2);
-  geometry.setAttribute('uv',uvAttr);
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  const face=detail&&isBody&&!makehuman&&kitAtlas?extractFooteraHead(geometry,heights,zones,normalized):null;
+  if(!makehuman&&kitAtlas)splitAtlasSeams(geometry,zones,normalized);
+  const uvAttr=geometry.getAttribute('uv');
   if(surfaceMaps&&isBody)geometry.setAttribute('uv2',uvAttr);
   const kitMaterial=new THREE.MeshStandardMaterial({vertexColors:true,
    map:/eye/i.test(mesh.name)?null:kitAtlas,
@@ -245,6 +343,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    mesh.geometry=geometry;mesh.material=kitMaterial;
    colorsByMesh.push({geometry,material:kitMaterial});
   }
+  const faceMap=face&&createFooteraFaceTexture(THREE,atlasSkin(kitAtlas,tintIndex),
+   hexColor(HAIR_COLORS[hairStyle]),name);
+  if(faceMap){
+   // Same skeleton and bind pose as the body; only the material differs.
+   const faceMaterial=new THREE.MeshStandardMaterial({vertexColors:true,map:faceMap,
+    roughness:.66,metalness:0,side:THREE.DoubleSide});
+   const head=new THREE.SkinnedMesh(face,faceMaterial);
+   head.name='FooteraCloseUpFace';
+   head.bind(mesh.skeleton,mesh.bindMatrix);
+   head.position.copy(mesh.position);head.quaternion.copy(mesh.quaternion);head.scale.copy(mesh.scale);
+   head.frustumCulled=false;head.castShadow=true;head.receiveShadow=true;
+   mesh.parent.add(head);
+   colorsByMesh.push({geometry:face,material:faceMaterial,texture:faceMap});
+  }else face?.dispose();
  }
  // Neutral T pose is converted once into normal running arm-down posture.
  const aim=new THREE.Vector3(),from=new THREE.Vector3();
@@ -305,7 +417,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     pos.setXYZ(i,x*(1+wave)+(hairStyle===5?Math.max(0,y)*.13:0),y*(1+wave*.18),z*(1+wave));
    }
    geometry.computeVertexNormals();
-   const color=['#201b17','#392921','#624932','#171b1d','#2b2320','#83664a'][hairStyle];
+   const color=HAIR_COLORS[hairStyle];
    // Root shadows and directional strand tones make the six silhouettes
    // distinguishable without transparency or additional mobile draw calls.
    const strandColors=new Float32Array(pos.count*3),
@@ -503,6 +615,6 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
   boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,
   surfaceDetail:!!surfaceMaps,
-  dispose(){normalized.removeFromParent();for(const {geometry,material} of colorsByMesh){geometry.dispose();material.dispose()}surfaceMaps?.dispose()}
+  dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry.dispose();material.dispose();texture?.dispose()}surfaceMaps?.dispose()}
  };
 }
