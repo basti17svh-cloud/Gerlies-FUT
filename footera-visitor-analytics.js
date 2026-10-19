@@ -139,8 +139,13 @@
    const manage=document.createElement("button");manage.type="button";
    manage.textContent="Statistik";manage.title="Optionale Besucherstatistik verwalten";
    manage.id="footeraAnalyticsSettings";
-   manage.style.cssText="position:fixed;z-index:900;left:8px;bottom:calc(4px + env(safe-area-inset-bottom,0px));padding:2px 6px;border-radius:7px;background:#160b12d9;border:1px solid #653048;color:#cba8b8;font:10px system-ui;opacity:.83;cursor:pointer";
-   manage.addEventListener("click",panel);document.body.append(manage);
+   manage.className="secondary";
+   manage.textContent="Besucherstatistik verwalten";
+   manage.addEventListener("click",panel);
+   // Lives in Extras → Datenschutz instead of floating over the navigation.
+   const slot=document.getElementById("analyticsSettingsSlot");
+   if(slot)slot.append(manage);
+   else{manage.style.cssText="position:fixed;z-index:50;left:8px;top:calc(8px + env(safe-area-inset-top,0px));padding:4px 8px;border-radius:8px;font:11px system-ui;opacity:.83";document.body.append(manage)}
    finishPendingDeletion();
    if(safe(CONSENT)==="yes")track(true);
    else if(safe(CONSENT)!=="no")panel();

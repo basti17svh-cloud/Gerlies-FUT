@@ -235,7 +235,9 @@ function battleSpecialOpponent(kind,key){
 }
 
 function rewardLabel(row){
- const packs=[...row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),...(row.reward.playerPicks||[]).map(p=>`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices})`)].join(" · ");
+ // Same pack twice reads "2× Premium Gold Pack", not the name twice.
+ const names=row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),counts=new Map();names.forEach(n=>counts.set(n,(counts.get(n)||0)+1));
+ const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...(row.reward.playerPicks||[]).map(p=>`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices})`)].join(" · ");
  return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${packs}`
 }
 function competitionClaimButtons(mode){return competitionPending(mode).map(row=>`<button class="primary competition-claim" type="button" data-claim-competition="${row.mode}" data-competition-week="${row.week}">${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholen · ${esc(rewardLabel(row))}</button>`).join("")}

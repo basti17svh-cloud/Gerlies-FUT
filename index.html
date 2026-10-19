@@ -99,7 +99,7 @@
       <div class="onboard-profile">
         <h2>Dein Benutzername</h2>
         <p>Aus dem Benutzernamen wird automatisch dein erster Teamname erstellt. Beispiel: <b>Ranger</b> → <b>Ranger FC</b>.</p>
-        <p style="margin-top:-4px;color:#91a09a;font-size:8px">Du kannst deinen Benutzernamen später jederzeit unter <b>Extras → Vereinsprofil</b> ändern.</p>
+        <p style="margin-top:-4px;color:#91a09a;font-size:11px">Du kannst deinen Benutzernamen später jederzeit unter <b>Extras → Footera-Profil</b> ändern.</p>
         <input id="firstUsername" maxlength="20" placeholder="z. B. Ranger" autocomplete="nickname">
         <div id="firstTeamPreview" class="preview">Teamname: –</div>
         <button id="saveFirstUsername" class="primary" style="width:100%">Weiter</button>
@@ -200,7 +200,7 @@
   </div>
 </section>
 
-<section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
+<section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
   <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
@@ -271,7 +271,7 @@
  </div>
 </section>
 
-<section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
+<section id="storeView" class="view"><div class="headline"><h2>Store</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
 <span class="footera-points-entry-icon"><img src="./assets/footera/points.webp" alt="" aria-hidden="true"></span>
 <span class="footera-points-entry-copy"><strong>Footera Points erwerben</strong><small>8 Points-Pakete entdecken · aktuell nur Testmodus</small></span>
 <span class="footera-points-entry-arrow" aria-hidden="true">›</span>
@@ -377,6 +377,7 @@
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>3D Highlights</h3><p>Kurze Live-Szenen für Tore und große Chancen. Bei nicht unterstützten Geräten läuft die gewohnte Spieldarstellung weiter.</p><label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights"></select></label></div>
+  <div class="extras-card"><span class="extras-kicker">DATENSCHUTZ</span><h3>Besucherstatistik</h3><p>Optionale, anonyme Besucherstatistik. Du kannst deine Einwilligung hier jederzeit ändern.</p><div id="analyticsSettingsSlot"></div></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 

@@ -3544,7 +3544,7 @@ function renderStore(){
   return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
+   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${Array.isArray(p.composition)||p.type==="gold"?`<span>${esc(packCompositionText(p))}</span>`:""}${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
    <button type="button" class="store-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Wahrscheinlichkeiten für ${esc(p.name)} ansehen">ⓘ Wahrscheinlichkeiten</button>
@@ -5125,17 +5125,17 @@ function sbcRequirementSummary(sbc,stats){
  if(sbc.minEitherMatchClub)reqs.push({label:"Beteiligter Verein",value:`${stats.eitherMatchClubCount}/${sbc.minEitherMatchClub}`,ok:stats.minEitherMatchClubOk});
  if(sbc.requireBothMatchClubs)reqs.push({label:"Beide Vereine",value:`${stats.matchClubCounts.filter(n=>n>0).length}/2`,ok:stats.requireBothMatchClubsOk});
  if(sbc.minChem)reqs.push({label:"Chemie",value:`${stats.chem}/${sbc.minChem}`,ok:stats.minChemOk});
- if(reqs.length===1)reqs.push({label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule});
+ if(reqs.length===1)reqs.push({label:"Passende Spieler",value:stats.allRule?"Erfüllt":"Alle Plätze füllen",ok:stats.allRule});
  return reqs
 }
 function sbcFailedRequirementText(sbc,stats){
  const failed=sbcRequirementSummary(sbc,stats).filter(r=>!r.ok);
- if(!stats.allRule&&!failed.some(r=>r.label==="Bedingung"))failed.unshift({label:"Bedingung",value:"Offen"});
+ if(!stats.allRule&&!failed.some(r=>r.label==="Passende Spieler"))failed.unshift({label:"Passende Spieler",value:"Alle Plätze füllen"});
  if(!failed.length)return"";
  return "Noch offen: "+failed.map(r=>`${r.label} (${r.value})`).join(" · ")
 }
 function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
-function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${reward.qty||1}× ${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
+function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${(reward.qty||1)>1?`${reward.qty}× `:""}${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
 function sbcRewardPackLabel(reward){
  if(reward?.pack)return sbcPackName(reward.pack);
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
