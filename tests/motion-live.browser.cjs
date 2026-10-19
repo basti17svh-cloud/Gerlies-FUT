@@ -19,6 +19,8 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
     Object.defineProperty(navigator,'deviceMemory',{get:()=>memory});
     Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>cores});
     if(preference==='legacy')localStorage.setItem('footera-3d-motion-mode','legacy');
+    // Software WebGL runs at 1-2 fps: keep wall-clock highlight pace in CI.
+    globalThis.FOOTERA_TEST_REALTIME_3D=true;
    },setup);
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());

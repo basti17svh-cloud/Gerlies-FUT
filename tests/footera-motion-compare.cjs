@@ -59,7 +59,8 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
   for(const baseline of [true,false]){
    const name=baseline?'footera-v21.37-reference':'footera-v21.41-pilot';
    ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block',recordVideo:{dir:out,size:{width:390,height:844}}});
-   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
+   // Software WebGL runs at 1-2 fps: keep wall-clock highlight pace in CI.
+   await ctx.addInitScript(flag=>{window.__FOOTERA_V2137_BASELINE=flag;globalThis.FOOTERA_TEST_REALTIME_3D=true;Object.defineProperty(navigator,'deviceMemory',{get:()=>8});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>8})},baseline);
    const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>r.request().url().startsWith(url)?r.continue():r.abort());
    await page.goto(url);await fixture(page);
@@ -73,7 +74,7 @@ const out=path.resolve(__dirname,'../test-artifacts');fs.mkdirSync(out,{recursiv
    });
    await force(page,'goal');await page.evaluate(()=>{window.__restoreSequence();delete window.__restoreSequence});
    await page.waitForSelector('.fh3d canvas',{timeout:12000});
-   await page.waitForSelector('.fh3d',{state:'detached',timeout:22000});
+   await page.waitForSelector('.fh3d',{state:'detached',timeout:40000});
    const state=await page.evaluate(()=>({goals:match.goalEvents.length,score:[match.home,match.away],pending:!!match.highlight3DPending,disabled:!!match3DQueue.disabled}));
    console.log('REAL-TIME VIDEO CHECK',name,JSON.stringify(state),'pageErrors=',JSON.stringify(errors));
    assert.deepEqual(state,{goals:1,score:[1,0],pending:false,disabled:false});assert.deepEqual(errors,[]);

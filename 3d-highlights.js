@@ -38,7 +38,7 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21187').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21188').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
   if(root.document&&mode!=='off'){

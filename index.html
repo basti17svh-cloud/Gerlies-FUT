@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.187</title>
+<title>Footera V21.188</title>
 <style>
 /* Points purchase interface remains staged until verified Stripe clearance. */
 html:not([data-footera-payments="enabled"]) .footera-points-entry,
@@ -2090,7 +2090,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=21187"></script>
+<script src="./3d-highlights.js?v=21188"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=21177"></script>
 <script src="./footera-match-actions.js?v=21181"></script>
@@ -9395,7 +9395,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.187";
+const GFUT_BUILD="V21.188";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9453,7 +9453,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21187",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21188",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

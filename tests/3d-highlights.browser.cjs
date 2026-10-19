@@ -45,7 +45,8 @@ if(require.main===module)(async()=>{
  const browser=await chromium.launch({headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,serviceWorkers:'block'});
-  await context.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>4});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>4})});
+  // The CI renderer is software WebGL at 1-2 fps: keep wall-clock highlight pace.
+  await context.addInitScript(()=>{Object.defineProperty(navigator,'deviceMemory',{get:()=>4});Object.defineProperty(navigator,'hardwareConcurrency',{get:()=>4});globalThis.FOOTERA_TEST_REALTIME_3D=true});
   const page=await context.newPage(),errors=[];activePage=page;page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>route.request().url().startsWith(url)?route.continue():route.abort());
   await page.goto(url,{waitUntil:'load'});check('app initializes without JS errors',errors.length===0);
@@ -102,6 +103,9 @@ if(require.main===module)(async()=>{
    check(`${width}: minute is compact above the crest in a narrow right column`,hud.minute===`${before.minute}'`&&hud.minuteAboveCrest&&hud.metaWidth<=54&&hud.crestSize>=39&&hud.minuteFont<=13.5);
    check(`${width}: goal overlay has no clipping or column overlap`,hud.cardContained&&hud.allContained&&hud.noOverlap);
    await page.evaluate(()=>document.querySelector('.fh3d-skip')?.click());await page.waitForSelector('.fh3d',{state:'detached'});
+   // On a slow software renderer the scene may hand over to the 2D goal moment
+   // (very-slow-frame fallback). That card holds the match ~2.7 s, then resumes.
+   await page.waitForFunction(()=>!match.highlightActive&&matchTimer!==null,null,{timeout:8000}).catch(()=>{});
    check(`${width}: skip or natural completion resumes once without duplicate goal`,await page.evaluate(()=>!match.highlight3DPending&&!match.highlightActive&&match.goalEvents.length===1&&match.home===1&&matchTimer!==null));
    check(`${width}: viewport lock is completely released after highlight`,await page.evaluate(()=>!document.documentElement.classList.contains('fh3d-scroll-lock')&&getComputedStyle(document.body).position!=='fixed'));
    await page.evaluate(()=>{stopMatchTimer();const minute=match.minute;simTick();if(match.minute<=minute)throw Error('Ticker did not continue');stopMatchTimer()});

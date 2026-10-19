@@ -19,6 +19,12 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
     try{simAttack(!away)}finally{FooteraMatchActions=original;Math.random=random}
     stopMatchTimer();dismissMatchGoalMoment(false);
     const shot=match.shotEvents.at(-1),event=window.qaExtendedEvent;
+    // The scripted turnover counter is retired in 3D only (3d-highlights-match.js):
+    // the match keeps its event, the highlight plays an ordinary attack instead.
+    if(kind==='turnover_counter'){
+     if(shot?.sceneKind!==kind||event?.sceneKind!==''||String(event?.sequence||'').startsWith('extended_'))throw Error('Counter not retired '+JSON.stringify({kind,event:event&&{sceneKind:event.sceneKind,sequence:event.sequence},shot:shot?.sceneKind}));
+     return{kind,width,retired:true};
+    }
     if(event?.sceneKind!==kind)throw Error('Wrong production event '+JSON.stringify({kind,event,shot}));
     const M=await import('../3d-highlights-scene.mjs?v=21160'),T=await import('../vendor/three/three.module.min.js');
     await M.prepareFooteraPlayerModel();
@@ -31,8 +37,13 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
     return{kind,width,event,shot,frames};
    },{kind,n,width});
    if(process.env.FOOTERA_EXTENDED_PROOF)await page.locator('#extended-proof').screenshot({path:process.env.FOOTERA_EXTENDED_PROOF+'-'+kind+'.png'});
+   if(proof.retired){console.log('PASS',kind,width,'retired in 3D, match event kept');continue}
    assert.equal(proof.shot.sceneKind,kind);assert.equal(proof.event.finish,proof.shot.finish);
-   for(const f of proof.frames){assert.ok(f.ball.every(Number.isFinite));assert.ok(f.visible>=4,kind+' actors '+f.visible);if(f.time>=5.4)for(const g of f.goal)assert.ok(Math.abs(g[0])<1&&Math.abs(g[1])<1,kind+' goal cropped');assert.ok(Math.abs(f.screen[0])<1&&Math.abs(f.screen[1])<1,kind+' ball outside '+JSON.stringify(f.screen));}
+   // Since 16.10 long highlights use the close 40 m TV camera. On a portrait
+   // phone it follows the ball (and its taker) rather than showing the whole
+   // block, and it frames the entire goal once the ball arrives.
+   for(const f of proof.frames){assert.ok(f.ball.every(Number.isFinite));if(f.time<5.4)assert.ok(f.visible>=1,kind+' actors '+f.visible);if(f.time>=6.65)for(const g of f.goal)assert.ok(Math.abs(g[0])<1&&Math.abs(g[1])<1,kind+' goal cropped');assert.ok(Math.abs(f.screen[0])<1&&Math.abs(f.screen[1])<1,kind+' ball outside '+JSON.stringify(f.screen));}
+   assert.ok(Math.max(...proof.frames.map(f=>f.visible))>=2,kind+' never shows a second player');
    if(kind==='keeper_buildout')assert.ok(proof.frames[0].keeper);
    if(kind==='turnover_counter'){assert.notEqual(proof.frames[0].phase.team,proof.event.team);assert.equal(proof.frames[3].phase.team,proof.event.team)}
    if(process.env.FOOTERA_EXTENDED_PROOF)await page.locator('#extended-proof').screenshot({path:process.env.FOOTERA_EXTENDED_PROOF+'-'+kind+'.png'});
