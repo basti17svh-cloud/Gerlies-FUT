@@ -5,7 +5,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
 const source=fs.readFileSync(path.join(__dirname,"../footera-paid-wallet.js"),"utf8");
-const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')();
 const account="550e8400-e29b-41d4-a716-446655440000";
 const request="a5e6d451-31c5-4db1-bdd8-b5293de02671";
 function setup({owned=true,fail=false,incomplete=false}={}){

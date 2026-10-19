@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const main=html.match(/<script>\s*(const DB_SOURCES=[\s\S]*?)<\/script>/)[1];
 const stateDeclaration=main.match(/^let PLAYERS=.*;$/m)[0];
 // Keep the real script order and hoisted functions. Stop only after the first

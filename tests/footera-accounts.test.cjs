@@ -264,7 +264,7 @@ test("Google login and linking are absent from account UI while email flows rema
 });
 
 test("the real entry page loads accounts after online and backup, including the stylesheet",()=>{
- const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const html=require('./helpers/app-html.cjs')();
  assert.match(html,/<script src="\.\/footera-account\.js\?v=21174"><\/script>/);
  assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=21122">/);
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./footera-backup.js'));
@@ -659,7 +659,7 @@ test("blocked online startup must remain retryable after ownership reconciliatio
 });
 
 test("live online schema accepts every formation offered by the Footera squad editor",()=>{
- const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const html=require('./helpers/app-html.cjs')();
  const migration=fs.readFileSync(path.join(__dirname,"../online/footera-online-formations-v21.128.sql"),"utf8");
  const found=html.match(/const SQUAD_FORMATION_NAMES=(\[[^;]+\]);/);
  assert.ok(found,"squad formation list missing");

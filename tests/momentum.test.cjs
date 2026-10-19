@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const {line}=require('./helpers/item-pricing.cjs');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const css=fs.readFileSync(path.join(__dirname,'../momentum-card.css'),'utf8');
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
 function context(extra={}){

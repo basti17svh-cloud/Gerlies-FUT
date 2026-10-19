@@ -5,7 +5,7 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const between=(from,to)=>{const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)};
 const founderCode=between('const FOUNDER_SAVE_ID=','let PLAYERS=');
 const packCode=between('function generatePack(','function renderStore(');

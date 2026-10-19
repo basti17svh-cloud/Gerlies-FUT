@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const section=(from,to)=>{
  const a=html.indexOf(from),b=html.indexOf(to,a);
  assert.ok(a>=0&&b>a,from);return html.slice(a,b)

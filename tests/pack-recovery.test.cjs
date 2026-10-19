@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const stateCode=html.match(/^const SQUAD_FORMATION_NAMES=.*;$/m)[0]+'\n'+html.slice(html.indexOf('function defaultClubIdentity(){'),html.indexOf('function toast(t){'));
 const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let storeTab='));
 const packCode=html.slice(html.indexOf('let pendingResolved='),html.indexOf('function packIsSpecial('));

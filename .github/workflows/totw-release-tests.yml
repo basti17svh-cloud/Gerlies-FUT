@@ -8,6 +8,8 @@ on:
       - 'tests/totw5-preview.browser.cjs'
       - 'tests/live-content.test.cjs'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'manifest.webmanifest'
       - 'service-worker.js'
   workflow_dispatch:
@@ -18,6 +20,8 @@ on:
       - 'tests/totw5-preview.browser.cjs'
       - 'tests/live-content.test.cjs'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'manifest.webmanifest'
       - 'service-worker.js'
 permissions:

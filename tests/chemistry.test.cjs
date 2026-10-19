@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const iconCode=html.slice(html.indexOf('const MID_ICON_DATA='),html.indexOf('function randomMidIconBase('));
 const nationsCode=html.slice(html.indexOf('const COUNTRY_CODES='),html.indexOf('function flagEmoji('));
 const chemCode=html.slice(html.indexOf('function chemThreshold('),html.indexOf('function slotHTML('));

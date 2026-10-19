@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'footera-match-actions.js'
       - 'footera-opponent-styles.js'
       - 'tests/match-simulation.test.cjs'

@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),season=fs.readFileSync(path.join(root,'season-system.js'),'utf8'),competition=fs.readFileSync(path.join(root,'competition-system.js'),'utf8');
+const root=path.join(__dirname,'..'),html=require('./helpers/app-html.cjs')(root),season=fs.readFileSync(path.join(root,'season-system.js'),'utf8'),competition=fs.readFileSync(path.join(root,'competition-system.js'),'utf8');
 function section(source,from,to){const a=source.indexOf(from),b=source.indexOf(to,a);assert.ok(a>=0&&b>a,from);return source.slice(a,b)}
 function app(at='2026-10-02T19:00:00+02:00'){
  let now=Date.parse(at),next=0;const storage=new Map(),elements=new Map();

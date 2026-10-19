@@ -32,6 +32,8 @@ on:
       - '3d-highlights.js'
       - 'service-worker.js'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - '.github/workflows/footera-motion-lab.yml'
   pull_request:
     paths:
@@ -64,6 +66,8 @@ on:
       - '3d-highlights.js'
       - 'service-worker.js'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - '.github/workflows/footera-motion-lab.yml'
 permissions:
   contents: read

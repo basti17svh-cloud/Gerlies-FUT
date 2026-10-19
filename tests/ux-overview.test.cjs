@@ -1,6 +1,6 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const root=path.join(__dirname,"..");
-const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')(root);
 const css=fs.readFileSync(path.join(root,"ux-overview.css"),"utf8");
 const sw=fs.readFileSync(path.join(root,"service-worker.js"),"utf8");
 

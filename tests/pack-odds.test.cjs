@@ -45,7 +45,7 @@ test('empty player pool never yields invented odds',()=>{
  assert.equal(res.available,false);
 });
 test('the store provides an odds button for purchased and owned packs',()=>{
- const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const html=require('./helpers/app-html.cjs')();
  assert.match(html,/id="packOddsModal"[^>]+aria-modal="true"/);
  assert.match(html,/data-pack-odds="\$\{esc\(p\.id\)\}"/);
  assert.match(html,/pack-odds\.js\?v=21121/);

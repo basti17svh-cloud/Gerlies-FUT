@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const source=html.slice(html.indexOf('function sbcAssistantQuality('),html.indexOf('function renderSbcEditor('));
 const positions=['GK','LB','CB','CB','RB','CM','CM','CM','LW','ST','RW'];
 const player=(uid,position,rating=78,source='club')=>({uid,position,rating,quality:'gold',league:'Bundesliga',source});

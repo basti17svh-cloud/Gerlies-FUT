@@ -74,7 +74,7 @@ test('Three resource UUIDs cannot consume the simulation random stream',async()=
  try{const T=await import('../vendor/three/three.module.min.js');new T.Scene();new T.BoxGeometry();new T.MeshLambertMaterial();assert.equal(calls,0)}finally{Math.random=original}
 });
 test('match simulator remains deterministic while excluding goalkeeper shots for 24 seeds',()=>{
- const current=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const current=require('./helpers/app-html.cjs')(root);
  const fixtureSource=fs.readFileSync(path.join(__dirname,'matchday.test.cjs'),'utf8').split('function fixture(')[1].split("\ntest('")[0];
  function run(html,seed){
   const extract=(from,to)=>html.slice(html.indexOf(from),html.indexOf(to,html.indexOf(from)));
@@ -93,7 +93,7 @@ test('match simulator remains deterministic while excluding goalkeeper shots for
  }
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ const html=require('./helpers/app-html.cjs')(root),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  for(const file of ['3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  const cssVersion=(html.match(/3d-highlights\.css\?v=(\d+)/)||[])[1];
  assert.ok(cssVersion&&sw.includes('./3d-highlights.css?v='+cssVersion),'Offline CSS version must match HTML');
@@ -925,7 +925,7 @@ test('retired turnover counter is never selected: existing goal/save/miss/post u
  assert.match(bridge,/const lockedScene=!retiredCounter/);
  assert.match(bridge,/const type=shot\.highlightType\|\|''/);
  assert.doesNotMatch(bridge,/const counterMiss=/,'do not force 3D for otherwise unhighlighted shots');
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const html=require('./helpers/app-html.cjs')(root);
  assert.match(html,/counter\?"turnover_counter"/,'simulator still owns its own shot types');
 });
 test('V21.165: closer counter has constant 32m camera clearance with ball, active partners and full finish in portrait',async()=>{

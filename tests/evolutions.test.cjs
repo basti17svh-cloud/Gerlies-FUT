@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const time=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const definitions=html.slice(html.indexOf('const EVOLUTION_POOL='),html.indexOf('const CAMPAIGNS='));
 const code=html.slice(html.indexOf('let activeEvoTab='),html.indexOf(' let activeSbcGroup='));

@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(root,'potm.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(root,'potm.js'),'utf8'),html=require('./helpers/app-html.cjs')(root);
 function app(saved){
  let now=Date.parse('2026-10-04T12:00:00Z'),seq=0;class Clock extends Date{constructor(...args){super(...(args.length?args:[now]))}static now(){return now}}
  const state=saved||{club:[],sbcStorage:[],transferList:[],squad:Array(23).fill(null),squadPresets:[{name:'Main Team',squad:Array(23).fill(null),roles:{},focus:{}}],roles:{},focus:{},stats:{sbcs:0},sbcCompletions:{},activeEvos:[]};

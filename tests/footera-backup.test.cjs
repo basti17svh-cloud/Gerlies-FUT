@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const file=fs.readFileSync(path.join(__dirname,'../footera-backup.js'),'utf8');
-test('backup module is linked and keeps original local save',()=>{const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');const sw=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');assert.match(html,/footera-backup\.js\?v=\d+/);assert.match(sw,/footera-backup\.js\?v=\d+/);assert.match(file,/footera-before-restore/);assert.match(file,/SHA-256/);});
+test('backup module is linked and keeps original local save',()=>{const html=require('./helpers/app-html.cjs')();const sw=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');assert.match(html,/footera-backup\.js\?v=\d+/);assert.match(sw,/footera-backup\.js\?v=\d+/);assert.match(file,/footera-before-restore/);assert.match(file,/SHA-256/);});
 
 const vm=require('node:vm'),webcrypto=require('node:crypto').webcrypto;
 test('backup integrity accepts a valid save and rejects altered contents',async()=>{
@@ -41,7 +41,7 @@ test('account profile has an independent local-export control and safeguards mis
 });
 
 test('Footera current save schema and export validator stay in sync',()=>{
- const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ const html=require('./helpers/app-html.cjs')();
  const saveVersion=Number(html.match(/function baseState\(\)\{return\{\s*version:(\d+)/)?.[1]);
  const maxVersion=Number(file.match(/MAX_GAME_VERSION=(\d+)/)?.[1]);
  assert.ok(saveVersion>0,'baseState save version should be discoverable');

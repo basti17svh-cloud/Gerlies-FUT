@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const {line,pricingCode}=require('./helpers/item-pricing.cjs');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const between=(start,end)=>html.slice(html.indexOf(start),html.indexOf(end));
 function setup(){
  const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',NIKLAS_FOUNDER_BASE:{},FLASHBACK_REUS_BASE:{id:'flashback-reus'},LIVE_TOTW_BASE_CACHE:new Map(),

@@ -9,6 +9,8 @@ on:
       - 'competition-system.js'
       - 'weekly-rewards.js'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'tests/*picks*'
       - 'tests/footera-accounts.test.cjs'
       - '.github/workflows/player-picks.yml'
