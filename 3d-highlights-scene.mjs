@@ -7,6 +7,7 @@ import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21185';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21185';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
@@ -800,13 +801,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // is local +x for direction 1 and -x for direction -1.
  const celebrationActive=event.type==='goal'&&!extended&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
+ const celebrationKind=pickCelebration(event);
  const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
-  // Burst away, then keep jogging slowly towards the camera until the end,
-  // so the scorer never stops and snaps back to his tactical facing.
-  const u=clamp((time-CELEBRATION_START)/3.6);return 9*(1-(1-u)*(1-u));
+  return celebrationDistance(celebrationKind,time-CELEBRATION_START);
  }
+ // Facing along the run-away line for the whole celebration, even while
+ // the scorer stands still (no snap back to his tactical facing).
+ const celebrationHeading=Math.atan2(-celebrationRun[0],-celebrationRun[1]);
  function actorPosition(index,time,type=event.type,seq=sequence){
   const p=stagedPlayerPosition(index,time,type,seq);
   if(index!==0)return p;
@@ -1316,7 +1319,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    return broadcastTracks.get(key);
   };
-  const celebrationAnchor=new THREE.Vector3();
+  const celebrationAnchor=new THREE.Vector3(),celebrationState={arms:0,rootY:0,kind:celebrationKind};
   let lastCameraTime=null,currentCameraPhase='build',renderTime=0,motion23Sample=null,duelSample=null,balanceSample=null,contactPose=null,trackingPose=null;
   // Aim an arm's local -Y axis at a field-space interception point.
   function aimArm(arm,point){
@@ -1396,7 +1399,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
-    const heading=moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
+    const heading=i===0&&celebrationActive&&time>CELEBRATION_START?celebrationHeading:moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
@@ -1721,9 +1724,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     importedMotionFrame.grounded=true;
     for(const frame of squadMotionFrames)frame.grounded=true;
    }
-   // Arms out while running away, then both fists up for the close-up.
-   importedMotionFrame.celebrate=celebrationActive?smooth((time-CELEBRATION_START)/.5):0;
-   importedMotionFrame.celebrateRaise=celebrationActive?smooth((time-CELEBRATION_START-2.1)/.45):0;
+   // Authored goal celebration on the scorer's driver; the GLB follows it.
+   importedMotionFrame.celebrate=0;importedMotionFrame.rootY=null;celebrationState.rootY=0;
+   if(celebrationActive&&time>CELEBRATION_START){
+    applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState);
+    importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;
+   }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
@@ -1752,7 +1758,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const root=players[0].root.getWorldPosition(celebrationAnchor),k=direction;
     const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,drift=(time-CELEBRATION_CUT)*.35;
     camera.position.set(root.x+runX*6.2-runZ*(1.6-drift),root.y+1.55,root.z+runZ*6.2+runX*(1.6-drift));
-    camTarget.set(root.x,root.y+1.12,root.z);camera.fov=30;
+    camTarget.set(root.x,root.y+1.12+celebrationState.rootY*.75,root.z);camera.fov=30;
    }
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
