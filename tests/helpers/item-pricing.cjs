@@ -1,7 +1,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
-const html=fs.readFileSync(path.join(__dirname,'../../index.html'),'utf8');
+const html=require('./app-html.cjs')();
 const line=prefix=>{
  const value=html.split('\n').find(row=>row.startsWith(prefix));
  assert.ok(value,`Missing app source: ${prefix}`);

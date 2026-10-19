@@ -9,6 +9,7 @@ on:
       - 'footera-paid-wallet.js'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - 'online/footera-live-pack-odds.mjs'
       - 'online/footera-live-pack-purchase.ts'
