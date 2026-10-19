@@ -33,7 +33,7 @@
 .card-shell .custom-card.evolution .face img{filter:drop-shadow(0 .7cqw 1cqw #001e1bc9)}
 .card-shell .custom-card.evolution .pname{border:0!important;clip-path:none;text-shadow:0 1px 3px #00140e!important}
 /* The skin is 111% wide: size the name to the visible frame so it is not clipped. */
-:is(.card-shell,.pitch .slot .mini .card-shell) .custom-card.evolution .pname{font-size:max(3.5px,calc(6.3cqw * var(--card-name-scale,1)))!important}
+:is(.card-shell,.pitch .slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card.evolution .pname{font-size:max(3.5px,calc(6.3cqw * var(--card-name-scale,1)))!important}
 .card-shell .custom-card.evolution .stats span{border-color:#6eefc755}
 .card-shell .custom-card.evolution .stats small{font-size:max(3px,3cqw)}
 .card-shell .custom-card.evolution .stats b{font-size:max(5px,6.5cqw)!important}
