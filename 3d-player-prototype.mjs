@@ -10,7 +10,7 @@ import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21192';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21193';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -208,7 +208,7 @@ export function splitAtlasSeams(geometry,zones,normalized){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-// look (V21.192 human players): {number, shirtName, skinTone, crest, boots}.
+// look (V21.193 human players): {number, shirtName, skinTone, crest, boots}.
 export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null,look={}){
  const human=variant==='human';
  const asset=human?footeraHumanSource():variant==='makehuman'?sourceMakeHuman:source;
@@ -528,7 +528,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
  }
  const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
- // The old MakeHuman lab model uses other bone axes; the V21.192 human rig
+ // The old MakeHuman lab model uses other bone axes; the V21.193 human rig
  // copies the Quaternius bone frames, so it shares the capture.
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
  // The keeper's guide rotates about the feet, not the imported pelvis.

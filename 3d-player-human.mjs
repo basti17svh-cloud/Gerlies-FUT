@@ -1,4 +1,4 @@
-/* Footera V21.192 human players.
+/* Footera V21.193 human players.
  * One CC0 MakeHuman body (tools/build-footera-humans.py) with real haircuts,
  * beards, eyebrows and eyes, dressed in a kit painted per player: the saved
  * club pattern and colours, the club crest on the chest and the squad number

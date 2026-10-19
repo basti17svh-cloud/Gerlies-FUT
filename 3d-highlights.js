@@ -38,11 +38,11 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21192').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21193').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
-   // V21.192 human squad: fetched once while idle, then cached by the service worker.
+   // V21.193 human squad: fetched once while idle, then cached by the service worker.
    if(m.footeraHumanPlayersWanted?.())return m.prepareFooteraHumanModel?.();
   }).catch(()=>{})}
   if(root.document&&mode!=='off'){
