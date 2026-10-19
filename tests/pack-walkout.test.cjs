@@ -43,3 +43,44 @@ test('walkout travels through nation, position and club before revealing the pla
  assert.ok(get('results').classList.contains('active'));
  assert.equal(get('walkoutClue').innerHTML,'');
 });
+
+function walkoutContext(sleep){
+ const elements=new Map();
+ const element=id=>{const classes=new Set();return {id,innerHTML:'',textContent:'',style:{},className:'',offsetWidth:1,classList:{add:n=>classes.add(n),remove:n=>classes.delete(n),contains:n=>classes.has(n)},querySelector:()=>null}};
+ for(const id of ['opening','openPackBtn','openStage','bigPack','packCountdown','flash','boardIntro','boardCue','walkoutTunnel','walkoutClue','reveal','revealBadge','revealCard','revealSecondCard','walkoutTitle','results'])elements.set(id,element(id));
+ const base={name:'Testspieler',position:'ST',nation:'Germany',team:'FC Gerlies'};
+ const ctx={$:id=>elements.get(id),displayBase:()=>base,cardHTML:()=>'<div class="card-shell">Spielerkarte</div>',
+  positionLabel:()=> 'ST',flagAsset:()=>'',badgeAsset:()=>'',clubShort:()=> 'FC',normalizeKey:v=>v.toLowerCase(),countryCode:()=> 'DE',nationLabel:()=> 'Deutschland',esc:String,
+  addPackFloorLights:()=>{},spawnPackSparks:()=>{},spawnPackConfetti:()=>{},renderPackResults:()=>{},isMomentumItem:()=>false,isFounderItem:()=>false,pendingPack:[],sleep,Date:{now:()=>ctx.now},now:0};
+ vm.createContext(ctx);
+ vm.runInContext(section('function packRevealTheme(','function packIsWalkout(')+section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
+ return ctx;
+}
+
+test('better cards take longer: tunnel and card hold scale with the pace, the flash does not',async()=>{
+ const times=[];const ctx=walkoutContext(ms=>{times.push(ms);return Promise.resolve()});
+ await vm.runInContext('runPackReveal({mode:"walkout",cards:[{}],label:"WALKOUT",duration:5200,pace:1.5})',ctx);
+ assert.deepEqual(times,[1800,1500,1350,1725,380,1050,6750]);
+ assert.ok(ctx.$('results').classList.contains('active'));
+});
+
+test('tap skips the tunnel to the card, a second tap skips the card hold',async()=>{
+ const pending=[];const ctx=walkoutContext(ms=>new Promise(resolve=>pending.push({ms,resolve})));
+ const done=vm.runInContext('runPackReveal({mode:"walkout",cards:[{}],label:"WALKOUT",duration:5200})',ctx);
+ await new Promise(r=>setImmediate(r));
+ assert.equal(ctx.$('revealCard').innerHTML,'');
+ ctx.now=200;vm.runInContext('skipPackReveal()',ctx);await new Promise(r=>setImmediate(r));
+ assert.equal(ctx.$('revealCard').innerHTML,'','a tap right after opening is ignored');
+ ctx.now=1000;vm.runInContext('skipPackReveal()',ctx);
+ for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ // Only the flash is still waited on; then the card is up.
+ pending.filter(p=>p.ms===380).forEach(p=>p.resolve());
+ for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ assert.match(ctx.$('revealCard').innerHTML,/Spielerkarte/);
+ assert.ok(!ctx.$('results').classList.contains('active'),'the card stays up until the next tap');
+ vm.runInContext('skipPackReveal()',ctx);
+ for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
+ vm.runInContext('skipPackReveal()',ctx);
+ await done;
+ assert.ok(ctx.$('results').classList.contains('active'));
+});

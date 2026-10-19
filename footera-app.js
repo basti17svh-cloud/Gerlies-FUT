@@ -3693,7 +3693,22 @@ function packIsWalkout(item){
  return item.variant==="special"?itemRating(item)>=84:itemRating(item)>=86
 }
 function packWalkoutPriority(item){const theme=packRevealTheme(item);return theme==="icon"?0:theme==="gold"?2:1}
+// Better cards build more tension: every tunnel stage and the final hold get
+// longer with the rating (gold 86 x1.3 up to icons x1.8).
+function packRevealPace(item,mode){
+ const r=itemRating(item),theme=packRevealTheme(item);
+ if(mode==="board")return 1.15;
+ if(isFounderItem(item))return 1.7;
+ if(theme==="icon")return 1.8;
+ const pace=theme==="gold"?(r>=90?1.75:r>=88?1.5:1.3):1.3+Math.max(0,Math.min(.4,(r-84)*.05));
+ return mode==="double"?Math.max(1.6,pace):pace
+}
 function packRevealPlan(){
+ const plan=packRevealPlanBase();
+ if(plan.mode!=="plain"&&plan.cards[0])plan.pace=packRevealPace(plan.cards[0],plan.mode);
+ return plan
+}
+function packRevealPlanBase(){
  const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
  if(ranked.length===1&&isFounderItem(ranked[0]))return{mode:"walkout",cards:ranked,label:"FOOTERA FOUNDER",duration:5600};
  // Order double walkouts: ICONS, special cards of 84+, then gold cards of 86+.
@@ -3789,44 +3804,49 @@ function showWalkoutClue(kind,base){
 }
 async function runPackReveal(plan){
  const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
- const theme=packRevealTheme(plan.cards[0]);
- opening.className="opening active mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
+ const theme=packRevealTheme(plan.cards[0]),pace=plan.pace||1;
+ packRevealSkip={started:Date.now(),tunnel:false,card:false,phase:null,wake:null};
+ const tunnelWait=ms=>packRevealWait(Math.round(ms*pace),"tunnel"),cardWait=ms=>packRevealWait(Math.round(ms*pace),"card");
+ try{await runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait)}finally{packRevealSkip=null}
+}
+async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
+ opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
  opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
 
  if(plan.mode==="plain"){
   $("openStage").style.display="none";
   if(!showPackRevealCard(plan)){finishPack();return}
-  await sleep(plan.duration);finishPack();return
+  await cardWait(plan.duration);finishPack();return
  }
 
  $("bigPack").classList.add("pulse");
  if(plan.mode==="board"){
   const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
   addPackFloorLights();
-  await sleep(250);
+  await tunnelWait(250);
   $("openStage").style.display="none";
   $("boardIntro").classList.add("active");
-  showBoardCue("nation",firstBase);await sleep(850);
-  showBoardCue("position",firstBase);await sleep(800);
-  showBoardCue("club",firstBase);await sleep(1000);
+  showBoardCue("nation",firstBase);await tunnelWait(850);
+  showBoardCue("position",firstBase);await tunnelWait(800);
+  showBoardCue("club",firstBase);await tunnelWait(1000);
   resetBoardIntro();
   $("bigPack").classList.remove("pulse");
   flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
   await sleep(350);
   if(!showPackRevealCard(plan)){finishPack();return}
   spawnPackSparks(22);
-  await sleep(plan.duration);finishPack();return
+  await cardWait(plan.duration);finishPack();return
  }
 
  const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
  addPackFloorLights();
  $("openStage").style.display="none";
  $("walkoutTunnel").classList.add("active");
- await sleep(1200);
- showWalkoutClue("nation",firstBase);await sleep(1000);
- showWalkoutClue("position",firstBase);await sleep(900);
- showWalkoutClue("club",firstBase);await sleep(1150);
+ await tunnelWait(1200);
+ showWalkoutClue("nation",firstBase);await tunnelWait(1000);
+ showWalkoutClue("position",firstBase);await tunnelWait(900);
+ showWalkoutClue("club",firstBase);await tunnelWait(1150);
  resetWalkoutTunnel();
  $("bigPack").classList.remove("pulse");
  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
@@ -3836,16 +3856,31 @@ async function runPackReveal(plan){
  if(!showPackRevealCard(plan)){finishPack();return}
 
  if(plan.mode==="double"&&plan.cards[1]){
-  await sleep(700);
+  await cardWait(700);
   const second=plan.cards[1],secondBase=displayBase(second);
   if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,theme)}
  }
- if(plan.mode==="walkout"){await sleep(700);spawnPackConfetti(55,theme)}
- if(plan.mode==="special"){await sleep(650);spawnPackConfetti(50,theme)}
- await sleep(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
+ if(plan.mode==="walkout"){await cardWait(700);spawnPackConfetti(55,theme)}
+ if(plan.mode==="special"){await cardWait(650);spawnPackConfetti(50,theme)}
+ await cardWait(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
  finishPack();
 }
+// Tap during a reveal: the first tap skips the tunnel straight to the card,
+// the next one skips the card hold to the pack results.
+let packRevealSkip=null;
+function packRevealWait(ms,phase){
+ const skip=packRevealSkip;
+ if(!skip)return sleep(ms);
+ if(skip[phase])return Promise.resolve();
+ return new Promise(resolve=>{skip.phase=phase;skip.wake=resolve;sleep(ms).then(resolve)})
+}
+function skipPackReveal(){
+ const skip=packRevealSkip;if(!skip||!skip.phase||Date.now()-skip.started<400)return;
+ skip[skip.phase]=true;if(skip.phase==="tunnel")skip.card=false;
+ const wake=skip.wake;skip.wake=null;wake?.()
+}
 $("openPackBtn").addEventListener("click",async()=>{try{await runPackReveal(packRevealPlan())}catch(err){console.error("Pack reveal failed",err);finishPack();toast("Pack geöffnet. Animation wurde übersprungen.")}})
+$("opening").addEventListener("click",e=>{if(!e.target.closest?.("#openPackBtn"))skipPackReveal()});
 function tradeableClubTwinForPackItem(item){
  if(!item||item.tradeable)return null;
  const key=packItemKey(item),listed=new Set(state.transferList||[]);
