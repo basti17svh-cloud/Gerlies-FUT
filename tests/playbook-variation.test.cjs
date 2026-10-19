@@ -36,7 +36,7 @@ test('V21.86: attacking choreography and interceptions are stateless and indepen
   assert.ok(point.every(Number.isFinite),p.id);
   assert.deepEqual(point,playBall(p,t,[.105,.17,-37.25]));
  }
- assert.equal(DEFENSIVE_SCENES.length,4);
+ assert.equal(DEFENSIVE_SCENES.length,6); // wide standing and slide tackles added on 16.10.2026
  for(const id of DEFENSIVE_SCENES){
   const take=defenseBall(4.4,id),defender=defensePosition(8,4.4,id),after=defenseBall(7.2,id);
   assert.ok(Math.hypot(take[0]-defender[0],take[2]-defender[1])<.65,id+' ball won at foot');

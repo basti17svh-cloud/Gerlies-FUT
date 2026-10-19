@@ -30,7 +30,7 @@ test('walkout travels through nation, position and club before revealing the pla
   sleep:ms=>{snapshots.push({ms,clue:get('walkoutClue').innerHTML,tunnel:get('walkoutTunnel').classList.contains('active'),card:get('revealCard').innerHTML});return Promise.resolve()}
  };
  vm.createContext(ctx);
- vm.runInContext(section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
+ vm.runInContext(section('function packRevealTheme(','function packIsWalkout(')+section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
  await vm.runInContext('runPackReveal({mode:"walkout",cards:[{}],label:"WALKOUT",duration:5200})',ctx);
  assert.deepEqual(snapshots.map(x=>x.ms),[1200,1000,900,1150,380,700,4500]);
  assert.match(snapshots[1].clue,/NATION.*Deutschland/s);

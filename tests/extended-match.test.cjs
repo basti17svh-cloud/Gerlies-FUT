@@ -3,7 +3,8 @@ test('all six live scenes keep continuous ball/player paths and a genuine finish
  const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
  for(const sequence of E.EXTENDED_SEQUENCES){
   const kind=E.extendedKind(sequence),finish=kind==='corner'?'header':'normal',event={id:kind,sceneKind:kind,restartSide:sequence.endsWith('_right')?'right':'left',finish};
-  assert.equal(H.choosePresentation(event).sequence,sequence);
+  // The turnover counter is retired from live selection since 17.10.2026; its scene data is still checked below.
+  if(kind!=='turnover_counter')assert.equal(H.choosePresentation(event).sequence,sequence);
   assert.equal(M.normalizeSequence(sequence),sequence);
   let prev=M.ballPosition('goal',0,sequence,finish);
   for(let n=1;n<=1040;n++){

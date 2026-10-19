@@ -30,7 +30,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
   activePromoPacks:()=>vm.runInContext('PACKS.filter(p=>p.rotation).slice(0,3)',ctx),activeStorePacks:()=>vm.runInContext('PACKS.filter(p=>p.store)',ctx),
   consumePromoPurchase:()=>true,renderWallet(){},toast:message=>ctx.lastToast=message,
   ensureObjectiveWindows(){},updateObjectiveIndicators(){},resetBoardIntro(){},resetWalkoutTunnel(){},persistActiveSquadPreset(){},
-  setTimeout:()=>1,clearTimeout(){},localStorage:{setItem:(key,value)=>storage.set(key,value)},console
+  setTimeout:()=>1,clearTimeout(){},localStorage:{setItem:(key,value)=>storage.set(key,value)},console,FooteraPackOdds:require('../pack-odds.js')
  };
  vm.createContext(ctx);
  vm.runInContext([

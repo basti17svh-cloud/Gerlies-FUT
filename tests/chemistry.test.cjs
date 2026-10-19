@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-const iconCode=html.slice(html.indexOf('const MID_ICON_DATA='),html.indexOf('function randomMidIconBase()'));
+const iconCode=html.slice(html.indexOf('const MID_ICON_DATA='),html.indexOf('function randomMidIconBase('));
 const nationsCode=html.slice(html.indexOf('const COUNTRY_CODES='),html.indexOf('function flagEmoji('));
 const chemCode=html.slice(html.indexOf('function chemThreshold('),html.indexOf('function slotHTML('));
 const normalizeCode=html.match(/^function normalizeKey\(v\).*$/m)?.[0];
@@ -99,12 +99,12 @@ test('Founder always has 3/3 on ST and ZOM while preserving Icon-like teammate l
  assert.equal(api.playerChem(1,line(founder,teammate,other)),1);
 });
 
-test('Marco receives 3/3 on ST and ZOM, none out of position, and shows no chemistry markers on his card',()=>{
+test('Marco receives 3/3 on ST and ZOM, none out of position; chemistry dots only on filled slots (V20.99)',()=>{
  const{api,formation}=setup(),founder={pid:'footera-founder-marco-gerlach',position:'ST',alt:'CAM',nation:'Germany',team:'Schweinfurt Rangers 09',league:'Footera'};
  const teammate=ordinary('CM','France','Ligue 1','Paris SG');
  formation[0].p='ST';assert.equal(api.playerChem(0,line(founder,teammate)),3);
  formation[0].p='CAM';assert.equal(api.playerChem(0,line(founder,teammate)),3);
  formation[0].p='CB';assert.equal(api.playerChem(0,line(founder,teammate)),0);
  const slotCode=html.slice(html.indexOf('function slotHTML('),html.indexOf('function renderSquad('));
- assert.match(slotCode,/isFounderItem\(item\)\?"":`<div class="chem-dots">/);
+ assert.match(slotCode,/\$\{base\?`<div class="chem-dots"/);
 });

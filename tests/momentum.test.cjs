@@ -40,16 +40,18 @@ test('MOMENTUM owns its rating/stats without mutating the base item; window clos
 test('board and walkout reveal choose the real lead item; regular modes stay regular',()=>{
  const c=context({pendingPack:[],itemRating:item=>item.rating,totwDisplayName:s=>s});
  vm.runInContext(section('function packIsSpecial(item){','function finishPack(){'),c);
- const board={pid:'204970',variant:'special',eventType:'momentum',eventName:'MOMENTUM',rating:84};
+ // Since V21.103 special cards of 84+ get their own themed walkout; lower specials keep the short board.
+ const board={pid:'204970',variant:'special',eventType:'momentum',eventName:'MOMENTUM',rating:83};
  const walkout={pid:'247827',variant:'special',eventName:'MOMENTUM',rating:89};
  const ordinary={pid:'ordinary',variant:'',rating:86};
- for(const [pack,expected] of [[[board],'board'],[[walkout],'walkout'],[[ordinary],'walkout']]){c.pendingPack=pack;assert.equal(c.packRevealPlan().mode,expected)}
- c.pendingPack=[ordinary,board];assert.equal(c.isMomentumItem(c.packRevealPlan().cards[0]),true);
+ for(const [pack,expected] of [[[board],'board'],[[walkout],'special'],[[ordinary],'walkout']]){c.pendingPack=pack;assert.equal(c.packRevealPlan().mode,expected)}
+ c.pendingPack=[ordinary,walkout];assert.equal(c.packRevealPlan().mode,'double');assert.equal(c.isMomentumItem(c.packRevealPlan().cards[0]),true);
+ c.pendingPack=[ordinary,board];assert.equal(c.isMomentumItem(c.packRevealPlan().cards[0]),false);
  const code=section('async function runPackReveal(plan){','$("openPackBtn").addEventListener("click"');
  assert.match(code,/isMomentumItem\(plan\.cards\[0\]\)\?" theme-momentum"/);
  const source=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
  const build=html.match(/const GFUT_BUILD="V(\d+)\.(\d+)"/);
- assert.ok(build);assert.ok(source.includes(`footera-v${build[1]}-${build[2]}-root-shell`));assert.match(source,/momentum-card\.css/);
+ assert.ok(build);assert.ok(source.includes(`const CACHE="footera-v${build[1]}-${build[2]}-`));assert.match(source,/momentum-card\.css/);
  assert.match(css,/\.momentum-shell \.custom-card\.momentum/);
  assert.doesNotMatch(css,/momentum-master\.jpg/);
 });
@@ -61,7 +63,7 @@ test('MOMENTUM changes the light theme only; board and walkout timings match ord
    const classes=new Set();nodes.set(id,{className:'',style:{},offsetWidth:1,querySelector:()=>null,classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x)}});
   }
   const c=context({$:id=>nodes.get(id),sleep:ms=>{times.push(ms);return Promise.resolve()},displayBase:()=>({name:'Test',position:'ST'}),addPackFloorLights:()=>{},resetBoardIntro:()=>{},resetWalkoutTunnel:()=>{},showBoardCue:()=>{},showWalkoutClue:()=>{},showPackRevealCard:()=>true,spawnPackSparks:()=>{},spawnPackConfetti:()=>{},finishPack:()=>{}});
-  const times=[];vm.runInContext(script,c);
+  const times=[];vm.runInContext(section('function packRevealTheme(','function packIsWalkout(')+script,c);
   await c.runPackReveal({mode,cards:[{pid:momentum?mode==='board'?'204970':'241461':'none',variant:momentum?'special':'',eventName:momentum?'MOMENTUM':''}],label:mode==='walkout'?'WALKOUT':'',duration:mode==='board'?2350:5200});
   return {times,theme:nodes.get('opening').className.includes('theme-momentum')};
  }
@@ -95,7 +97,7 @@ test('gold packs can hit MOMENTUM during the window; no new hits after expiry',(
   class Clock extends Date{static now(){return at}}
   const fixedMath=Object.create(Math);fixedMath.random=()=>0;
   const base={id:'247827',ovr:89,position:'RM',name:'M. Olise'},bronze={id:'bronze',ovr:64,position:'ST',name:'Bronze'};
-  const c=context({Date:Clock,Math:fixedMath,PACKS:[{id:'test',type,count:1,min:type==='gold'?75:0,max:type==='gold'?99:64}],PLAYERS:[base,bronze],weightedPlayer:()=>type==='bronze'?bronze:base,rarityOf:()=>type,isCardRare:()=>false,displayBase:()=>base,isActiveEventSbcBase:()=>false,activeTotwWeek:()=>null,totwInfo:()=>null,makeItem:(p,tradeable,opts={})=>({pid:p.id,tradeable,...opts})});
+  const c=context({Date:Clock,Math:fixedMath,PACKS:[{id:'test',type,count:1,min:type==='gold'?75:0,max:type==='gold'?99:64}],PLAYERS:[base,bronze],weightedPlayer:()=>type==='bronze'?bronze:base,rarityOf:()=>type,isCardRare:()=>false,displayBase:()=>base,isActiveEventSbcBase:()=>false,activeTotwWeek:()=>null,totwInfo:()=>null,makeItem:(p,tradeable,opts={})=>({pid:p.id,tradeable,...opts}),FooteraPackOdds:require('../pack-odds.js'),MID_ICON_BASES:[]});
   c.activePromoPackEntry=p=>p.id===base.id&&at<Date.parse(vm.runInContext('MOMENTUM_EVENT.activeUntilAt',c))?{event:vm.runInContext('MOMENTUM_EVENT',c),info:{pid:p.id}}:null;
   vm.runInContext(script,c);return c.generatePack('test')[0];
  }
@@ -103,4 +105,12 @@ test('gold packs can hit MOMENTUM during the window; no new hits after expiry',(
  assert.equal(roll(start).eventType,'momentum');
  assert.equal(roll(start,'bronze').eventType,undefined);
  assert.equal(roll(end).eventType,undefined);
+});
+
+test('MOMENTUM Courtois saved with the mistyped ID 192120 is repaired on load',()=>{
+ const c=context({isLegacyEventName:()=>false});
+ vm.runInContext(html.match(/^function isMomentumItem\(item\).*$/m)[0]+'\n'+section('function migrateLegacyEventItem(item){','function migrateLegacyEventState(s){'),c);
+ assert.equal(c.migrateLegacyEventItem({pid:'192120',variant:'special',eventType:'momentum',eventName:'MOMENTUM'}).pid,'192119');
+ assert.equal(c.migrateLegacyEventItem({pid:'192120',variant:''}).pid,'192120');
+ assert.ok(vm.runInContext('MOMENTUM_BY_ID.has("192119")',c));
 });

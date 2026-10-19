@@ -45,5 +45,6 @@ test('V21.85: renderer receives immutable presentation numbers without simulatio
  assert.equal(queue.items[0].keeperShirtNumber,1);
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  assert.match(scene,/event\.shirtNumbers/);
- assert.match(scene,/lowKitAtlas\(kit,shirtNumber\)/);
+ assert.match(scene,/lowKitAtlas\(kit,shirtNumber,skinValue=null\)/);
+ assert.match(scene,/lowKitAtlas\(kit,squadNumbers\[i\],/);
 });

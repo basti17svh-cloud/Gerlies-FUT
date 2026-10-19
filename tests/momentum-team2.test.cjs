@@ -38,7 +38,7 @@ test('regular Team 2 is 18 unique identities/clubs, two keepers and no Team 1 re
 
 test('real gold pack generation rotates all eighteen Team 2 items and preserves owned Team 1 items',()=>{
  const {c,run,setTime}=app(),one=run('MOMENTUM_EVENT'),two=run('MOMENTUM_TEAM_2'),players=[...one.players,...two.players].map(p=>c.P_BY_ID.get(p.pid));let index=0;
- Object.assign(c,{PLAYERS:players,PACKS:[{id:'test-gold',type:'gold',count:players.length,min:0,max:99}],founderRuleForPack:()=>null,weightedPlayer:()=>players[index++%players.length],isActiveEventSbcBase:()=>false,activeTotwWeek:()=>null,totwInfo:()=>null,isCardRare:()=>false,rarityOf:()=> 'gold'});
+ Object.assign(c,{PLAYERS:players,PACKS:[{id:'test-gold',type:'gold',count:players.length,min:0,max:99}],founderRuleForPack:()=>null,weightedPlayer:()=>players[index++%players.length],isActiveEventSbcBase:()=>false,activeTotwWeek:()=>null,totwInfo:()=>null,isCardRare:()=>false,rarityOf:()=> 'gold',FooteraPackOdds:require('../pack-odds.js'),MID_ICON_BASES:[]});
  vm.runInContext(section('function makeLivePackItem(','let promoEventClockId=')+section('function generatePack(id,tradeable=true){','function generateMarcoSurprisePack('),c);
  const historical=c.makeMomentumItem(c.P_BY_ID.get('233419'),true,one);
  for(const [time,id,count] of [['2026-10-02T18:59:00+02:00',one.id,14],['2026-10-02T19:00:00+02:00',two.id,18],['2026-10-09T18:59:00+02:00',two.id,18],['2026-10-09T19:00:00+02:00',null,0]]){
@@ -96,16 +96,18 @@ test('dynamic imagery wins over cached heads only on event items, then fails saf
 
 test('Team 2 builds an eleven plus seven, keeps the second keeper on the bench and uses no bronze fillers',()=>{
  const {c,run}=app('2026-10-02T19:00:00+02:00');c.posFit=(p,pos)=>p.position===pos||p.alt.split(',').includes(pos)?1:0;
- vm.runInContext(section('const MOMENTUM_TEAM_SLOTS=','function momentumTeamCard('),c);
+ const competition=fs.readFileSync(path.join(root,'competition-system.js'),'utf8');
+ vm.runInContext(section('const FORMATIONS={','const ROLE_OPTIONS='),c);
+ vm.runInContext(competition.slice(competition.indexOf('function eventTeamEntryRating('),competition.indexOf('function rewardLabel(')),c);
+ vm.runInContext(html.match(/^function momentumTeamLineup\(entries\).*$/m)[0],c);
  const event=run('MOMENTUM_TEAM_2'),entries=event.players.map((p,index)=>({index,player:c.displayBase(c.makeMomentumItem(c.P_BY_ID.get(p.pid),true,event)),item:c.makeMomentumItem(c.P_BY_ID.get(p.pid),true,event)}));
- const slots=run('MOMENTUM_TEAM_2_SLOTS'),lineup=c.momentumTeamLineup(entries,slots);
- assert.equal(lineup.xi.length,11);assert.equal(lineup.bench.length,7);assert.equal(new Set([...lineup.xi,...lineup.bench].map(e=>e.index)).size,18);
+ const lineup=c.momentumTeamLineup(entries);
+ assert.equal(lineup.xi.filter(Boolean).length,11);assert.equal(lineup.bench.length,7);assert.equal(new Set([...lineup.xi,...lineup.bench].map(e=>e.index)).size,18);
  assert.equal(lineup.xi.filter(e=>e.player.position==='GK').length,1);assert.equal(lineup.bench.filter(e=>e.player.position==='GK').length,1);
- slots.forEach((slot,i)=>assert.ok(c.posFit(lineup.xi[i].player,slot.p)>0));
- Object.assign(c,{FORMATIONS:{'4-2-3-1':[{p:'GK'},{p:'LB'},{p:'CB'},{p:'CB'},{p:'RB'},{p:'CDM'},{p:'CDM'},{p:'CAM'},{p:'LM'},{p:'RM'},{p:'ST'}]},promoEventEntries:()=>entries,opponentChemistryTotal:()=>0});
- vm.runInContext(fs.readFileSync(path.join(root,'competition-system.js'),'utf8').split('function rewardLabel(')[0].slice(fs.readFileSync(path.join(root,'competition-system.js'),'utf8').indexOf('function battleEventTeam(')),c);
+ // Team 2 has two centre-backs and no full-backs, so one defensive slot can never fit: 10 of 11 is the best possible.
+ assert.equal(lineup.fitCount,10);assert.equal(lineup.xi.filter((e,i)=>c.posFit(e.player,lineup.slots[i].p)>0).length,10);
+ Object.assign(c,{promoEventEntries:()=>entries,opponentChemistryTotal:()=>0});
  const opponent=c.battleSpecialOpponent('event','week');assert.equal(opponent.name,'MOMENTUM TEAM 2');assert.equal(opponent.squad.length,18);assert.ok(opponent.items.every(i=>i.eventReleaseId===event.id));
  assert.equal(opponent.squad.slice(0,11).filter(p=>p.position==='GK').length,1);assert.equal(opponent.squad.slice(11).filter(p=>p.position==='GK').length,1);
- assert.equal(opponent.formation,'4-2-3-1');assert.equal(opponent.squad[7].name,'Jamal Musiala');
- assert.ok(opponent.squad[1].def>=80&&opponent.squad[4].def>=80);
+ assert.equal(opponent.formation,lineup.formation);assert.deepEqual(Array.from(opponent.squad.slice(0,11),p=>p.name),Array.from(lineup.xi,e=>e.player.name));
 });

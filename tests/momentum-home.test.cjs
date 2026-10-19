@@ -19,14 +19,19 @@ test('active MOMENTUM goes before Rivals, and its actual event deadline is displ
 });
 
 test('complete MOMENTUM team draws from the event list once, with 11 on the pitch and 3 on the bench',()=>{
+ const competition=fs.readFileSync(path.join(__dirname,'../competition-system.js'),'utf8');
  const c={Set,posFit:(p,slot)=>p.position===slot||String(p.alt||'').split(',').includes(slot)};vm.createContext(c);
+ vm.runInContext(section('const FORMATIONS={','const ROLE_OPTIONS='),c);
  vm.runInContext(section('const MOMENTUM_EVENT=','let eventSelectedId='),c);
- vm.runInContext(section('const MOMENTUM_TEAM_SLOTS=','function momentumTeamCard('),c);
+ vm.runInContext(competition.slice(competition.indexOf('function eventTeamEntryRating('),competition.indexOf('function battleEventTeam(')),c);
+ vm.runInContext(html.match(/^function momentumTeamLineup\(entries\).*$/m)[0],c);
  const players=vm.runInContext('MOMENTUM_EVENT.players',c);
  const entries=players.map((player,index)=>({index,player:{...player,position:player.position,alt:player.alt}}));
- const {xi,bench}=c.momentumTeamLineup(entries);
- assert.equal(xi.length,11);assert.equal(bench.length,3);
+ const {xi,bench,slots,fitCount}=c.momentumTeamLineup(entries);
+ assert.equal(xi.filter(Boolean).length,11);assert.equal(bench.length,3);
  assert.equal(new Set([...xi,...bench].map(e=>e.index)).size,14);
- assert.equal(xi[0].player.position,'GK');
- for(let i=0;i<xi.length;i++)assert.equal(xi[i].player.position,vm.runInContext(`MOMENTUM_TEAM_SLOTS[${i}].p`,c));
+ assert.equal(slots[0].p,'GK');assert.equal(xi[0].player.position,'GK');
+ // Team 1 has only one CB and one full-back, so no back line fits perfectly: 9 of 11 is the best possible.
+ assert.equal(fitCount,9);
+ assert.equal(xi.filter((e,i)=>c.posFit(e.player,slots[i].p)).length,fitCount);
 });

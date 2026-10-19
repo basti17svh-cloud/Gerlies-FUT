@@ -9,18 +9,20 @@ const previewCode=html.slice(html.indexOf('function ownLineupHTML(){'),html.inde
 const imageCode=html.slice(html.indexOf('function officialCardCandidates('),html.indexOf('function playerGender('));
 const cardCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));
 const positionsCode=html.slice(html.indexOf('function playerPositions('),html.indexOf('function detailChemHTML('));
+const tacticsCode=html.slice(html.indexOf('const FORMATIONS={'),html.indexOf('/* V20.71 — Rollen'));
 const swapCode=html.slice(html.indexOf('function swapPreviewSlots('),html.indexOf('let previewDrag=null'));
 
 test('pre-match preview exposes XI, bench and reserve slots and responds to squad changes',()=>{
- const state={squad:Array.from({length:23},(_,i)=>i<18?`p${i}`:null),formation:'4-3-3',tactic:'attacking',profile:{clubName:'Mein Team'},club:[]};
+ const state={squad:Array.from({length:23},(_,i)=>i<18?`p${i}`:null),formation:'4-3-3',tactic:'attacking',roles:{},focus:{},profile:{clubName:'Mein Team'},club:[]};
  const elements=Object.fromEntries(['squadBattleModal','squadBattleModalBody','squadBattleModalSub','matchPreviewModalTitle'].map(id=>[id,{innerHTML:'',textContent:'',classList:{contains:()=>true}}]));
  const ctx={state,pendingMatchContext:null,squadBattleStage:'closed',previewSwapFrom:-1,
   $:id=>elements[id],esc:x=>String(x),showUiLayer:()=>{},squadPresetTabsHTML:()=>'<button data-select-squad="0">Mein Team</button>',
   squadMetrics:()=>({filled:state.squad.slice(0,18).filter(Boolean).length,rating:state.squad[0]==='p11'?85:82,chem:state.squad[0]==='p11'?27:24}),
   currentFormation:()=>Array.from({length:11},(_,i)=>({p:'ST',x:10+i*8,y:15+i*7})),
   squadItems:()=>state.squad.map(uid=>uid?{uid,name:uid,position:'ST'}:null),
-  displayBase:item=>item,posFit:()=>1,positionLabel:pos=>pos,cardHTML:(b)=>`<span>${b.name}</span>`};
- vm.createContext(ctx);vm.runInContext(previewCode,ctx);
+  displayBase:item=>item,posFit:()=>1,positionLabel:pos=>pos,cardHTML:(b)=>`<span>${b.name}</span>`,
+  createDefaultMatchKitSelection:()=>({home:'home',away:'away'}),previewKitSelectorHTML:()=>''};
+ vm.createContext(ctx);vm.runInContext(`${tacticsCode}\n${previewCode}`,ctx);
  ctx.renderMatchPreview('rivals',null);
  const body=()=>elements.squadBattleModalBody.innerHTML;
  assert.equal((body().match(/data-preview-slot="\d+"/g)||[]).length,23);

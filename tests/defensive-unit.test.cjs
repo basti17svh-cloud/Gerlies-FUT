@@ -54,5 +54,6 @@ test('interception visibly interrupts a pass; tackles start in opposition posses
  assert.deepEqual(p,q,'slide recovers before dribbling');
  assert.equal(M.controlCarrier(5.3,'defense_slide_tackle').weight,0);
  const bridge=require('node:fs').readFileSync(require('node:path').join(__dirname,'../3d-highlights-match.js'),'utf8');
- assert.ok(!bridge.includes('defense_press_recovery'),'duplicate recovery removed from live selection');
+ // Since 16.10.2026 every second interception alternates with the active press recovery instead of repeating one scene.
+ assert.match(bridge,/action\.kind==='interception'\?\(alternate\?'defense_press_recovery':'defense_interception'\)/);
 });

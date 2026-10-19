@@ -18,19 +18,20 @@ test('TV camera prevents sudden refocusing and lens pumping at scripted cuts',as
  assert.deepEqual(sampled(99),sampled(10.4),'clip is clamped at end');
 });
 test('Footera authored attacks use a close, stable camera from either direction',async()=>{
- const {createStableCameraTrack}=await maybe();
- const {cameraState}=await import('../3d-highlights-scene.mjs');
+ const {createBroadcastCameraTrack}=await import('../3d-highlights-scene.mjs');
  for(const seq of ['central','through_ball','wing_left','wing_right','cutback_left','cutback_right','diagonal_switch','triangle_left','triangle_right','midfield_switch','overlap_left_high','inside_link_right']){
   for(const direction of [-1,1]){
-   const frame=createStableCameraTrack(t=>cameraState(direction,t,1.1,'goal',seq));
+   // Check the track the renderer actually uses: it keeps the smoothed pose at the common broadcast range.
+   const frame=createBroadcastCameraTrack({direction,aspect:1.1,sequence:seq,type:'goal'});
    let prev=frame(0),minFov=100,maxFov=0;
    for(let i=1;i<=260;i++){
     const t=i*.04,cam=frame(t);
     for(const x of [...cam.position,...cam.target,cam.fov])assert.ok(Number.isFinite(x),seq+' camera values must be finite');
-    assert.ok(cam.position[0]>30&&cam.position[1]>20,seq+' camera stays on same broadcast side');
+    // Since 16.10.2026 the camera follows the ball with a fixed touchline-side offset instead of a fixed rail.
+    assert.ok(cam.position[0]-cam.target[0]>30&&cam.position[1]>20,seq+' camera stays on same broadcast side');
     assert.ok(Math.hypot(...cam.target.map((v,j)=>v-prev.target[j]))<.75,seq+' camera cannot jerk between frames');
     assert.ok(Math.abs(cam.fov-prev.fov)<.05,seq+' no sudden zoom');
-    assert.ok(cam.fov<=35.5&&cam.fov>=27.0,seq+' tight match framing');
+    assert.ok(cam.fov<=42&&cam.fov>=30.5,seq+' fitted match framing');
     minFov=Math.min(minFov,cam.fov);maxFov=Math.max(maxFov,cam.fov);prev=cam;
    }
    assert.ok(maxFov-minFov<.5,seq+' zoom should not oscillate across a highlight');

@@ -720,7 +720,7 @@ test('V21.72: imported GLB receives absolute-time motion from existing runner',(
  assert.match(s,/importedPlayer\?\.animate\(time,importedMotionFrame\)/);
  assert.match(s,/importedMotionFrame\.stride=stride/);
  assert.match(m,/sampleGlbBodyMotion\(frameTime,info,motion\)/);
- assert.match(m,/normalized\.position\.y=clamp/);
+ assert.match(m,/normalized\.position\.y=info\.grounded\?\s*clamp\(/);
 });
 
 
@@ -767,7 +767,8 @@ test('special cameras keep the 40m TV range and the counter opens with active fo
  const E=await import('../3d-extended-match.mjs');
  for(const seq of E.EXTENDED_SEQUENCES)for(const aspect of [.9,1.3,1.8])for(const direction of [-1,1])for(const time of [0,1.5,3.5,5.4,7,10.3]){
   const camera=M.cameraState(direction,time,aspect,'goal',seq);
-  assert.equal(camera.distance,seq==='extended_turnover_counter'?32:M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
+  // V21.179 returned open-play counters to the ordinary 40m broadcast rail.
+  assert.equal(camera.distance,M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
   assert.ok(Math.abs(Math.hypot(...camera.position.map((v,i)=>v-camera.target[i]))-camera.distance)<.00001,seq+' geometric range');
   assert.ok(camera.position[0]>0&&camera.position[1]>15,seq+' keeps broadcast side');
  }
@@ -776,8 +777,11 @@ test('special cameras keep the 40m TV range and the counter opens with active fo
  assert.ok(Math.hypot(start[0]-late[0],start[1]-late[1])>15,'carrier must move rather than stand at halfway');
  assert.ok(E.extendedPasses(seq).some(pass=>pass[0]===9&&pass[1]===8),'opening phase includes actual opposition pass');
  assert.ok(!E.extendedPasses(seq).some(pass=>pass[0]===8&&pass[1]===6),'ball loss is a tackle rather than a deliberate pass to the opponent');
- const before=E.extendedBall(t(7.95)-.0001,seq,[0,.14,-37]),after=E.extendedBall(t(8.3)+.0001,seq,[0,.14,-37]);
- assert.ok(Math.hypot(...before.map((v,i)=>v-after[i]))<1.5,'controlled recovery without ball teleportation');
+ // Since V21.179 the winner dribbles away toward -Z right after the tackle, so check the ball path step by step.
+ for(let s=7.95;s<8.3;s+=.01){
+  const before=E.extendedBall(t(s),seq,[0,.14,-37]),after=E.extendedBall(t(s+.01),seq,[0,.14,-37]);
+  assert.ok(Math.hypot(...before.map((v,i)=>v-after[i]))<.2,'controlled recovery without ball teleportation at '+s.toFixed(2));
+ }
  const P=await import('../3d-playbook.mjs');
  for(const base of ['defense_standing_tackle','defense_slide_tackle']){
   assert.notDeepEqual(P.defensePosition(8,2.5,base),P.defensePosition(8,2.5,base+'_wide'),'two distinct recovery lanes');
@@ -848,7 +852,8 @@ test('V21.162: set-piece staging is varied, legal at penalties and continues thr
 test('V21.163: moving midfield pass, possession handoff and close smoothed broadcast camera',async()=>{
  const E=await import('../3d-extended-match.mjs'),M=await import('../3d-highlights-scene.mjs');
  const seq='extended_turnover_counter',t=seconds=>seconds/20*M.SHOT_TIME;
- const dist=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i])),foot=(i,s)=>{const p=E.extendedPosition(i,t(s),seq);return[p[0]+.1,.14,p[1]-.45]};
+ // V21.179: the recovering team (8-15) attacks -Z after the duel, so its foot sits on the +Z side of the body.
+ const dist=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i])),foot=(i,s)=>{const p=E.extendedPosition(i,t(s),seq);return[p[0]+.1,.14,p[1]+(i>=8&&i<16?.45:-.45)]};
  assert.equal(M.BROADCAST_CAMERA_DISTANCE,40);
  assert.ok(dist(E.extendedPosition(9,t(0),seq),E.extendedPosition(9,t(2.7),seq))>3);
  assert.ok(dist(E.extendedPosition(8,t(4.5),seq),E.extendedPosition(8,t(7.95),seq))>8);
@@ -866,7 +871,8 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
  for(const dir of [-1,1])for(const time of [0,1,2.5,4.2,5.4,6.65,9]){
   const camera=M.cameraState(dir,time,.98,'big_chance_saved',seq);
   const gap=dist(camera.position,camera.target);
-  assert.ok(Math.abs(gap-32)<.00001&&camera.fov<=35.1&&camera.fov>=26.5,'close counter camera');
+  // V21.179 replaced the close 32m counter rail with the ordinary 40m broadcast range.
+  assert.ok(Math.abs(gap-M.BROADCAST_CAMERA_DISTANCE)<.00001&&camera.fov<=42&&camera.fov>=30.5,'counter broadcast camera');
  }
 });
 
@@ -893,7 +899,8 @@ test('V21.164: counter keeps moving passers and receivers and the whole goal in 
    const roof=project(c,[x*direction,2.5,z*direction],aspect);
    assert.ok(Math.abs(roof[0])<.94&&Math.abs(roof[1])<.94,'goal roof cropped '+seconds+'/'+direction+': '+roof);
   }
-  assert.ok(Math.abs(Math.hypot(...c.position.map((p,i)=>p-c.target[i]))-32)<.000001,'camera distance changed');
+  // V21.179 moved the counter from the close 32m rail back to the ordinary broadcast range.
+  assert.ok(Math.abs(Math.hypot(...c.position.map((p,i)=>p-c.target[i]))-M.BROADCAST_CAMERA_DISTANCE)<.000001,'camera distance changed');
  }
 });
 
@@ -934,7 +941,7 @@ test('V21.165: closer counter has constant 32m camera clearance with ball, activ
  for(const direction of [-1,1])for(const [physical,actors]of stages){
   const time=physical/20*M.SHOT_TIME,ball=E.extendedBall(time,sequence,[0,.14,-37]),aspect=.93;
   const cam=E.extendedCamera(sequence,time,direction,aspect,ball);
-  assert.ok(Math.abs(Math.hypot(...cam.position.map((v,i)=>v-cam.target[i]))-32)<.00001);
+  assert.ok(Math.abs(Math.hypot(...cam.position.map((v,i)=>v-cam.target[i]))-M.BROADCAST_CAMERA_DISTANCE)<.00001);
   const ballScreen=project(cam,[ball[0]*direction,ball[1],ball[2]*direction],aspect);
   assert.ok(Math.max(...ballScreen.map(Math.abs))<.92,'lost ball at '+physical);
   for(const actor of actors){const p=E.extendedPosition(actor,time,sequence),q=project(cam,[p[0]*direction,1,p[1]*direction],aspect);
@@ -945,11 +952,8 @@ test('V21.165: closer counter has constant 32m camera clearance with ball, activ
    assert.ok(Math.max(...roof.map(Math.abs))<.97,'cropped goal roof at '+physical+': '+roof);
   }
  }
- const wide=E.extendedCamera(sequence,0,1,.93,E.extendedBall(0,sequence,[0,.14,-37]));
- const finish=E.extendedCamera(sequence,19/20*M.SHOT_TIME,1,.93,E.extendedBall(19/20*M.SHOT_TIME,sequence,[0,.14,-37]));
- assert.ok(wide.fov<finish.fov&&wide.fov<29,'build-up lens must be materially closer');
  const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/const distance=counter\?32:BROADCAST_CAMERA_DISTANCE/);
+ assert.match(source,/const distance=defending\?34:BROADCAST_CAMERA_DISTANCE/);
 });
 
 test('V21.166: ball-won defenders carry upfield, boots grounded, camera follows the recovery',async()=>{

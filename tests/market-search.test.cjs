@@ -36,7 +36,7 @@ function setup(filters={}){
   isMomentumItem:x=>x.eventType==='momentum',isLegacyEventName:n=>n==='Legacy Event',
   $:id=>elements[id]??={innerHTML:'',hidden:false},fmt:String,
   processBotOutbids(){},settleAuctions(){},settleTransferSales(){},
-  marketRowHTML:x=>x.listingId,queueMarketPortraitWarmup(){},renderMyAuctions(){},renderTransferWatch(){},renderTransferHubSummary(){},applyMarketSection(){}
+  marketRowHTML:x=>x.listingId,queueMarketPortraitWarmup(){},renderMyAuctions(){},renderTransferWatch(){},renderTransferHubSummary(){},applyMarketSection(){},renderMarketUx(){}
  };
  vm.createContext(ctx);vm.runInContext(searchCode+'\nmarketInventory=inventory;',ctx);
  // Filter values are external UI state, so the stub must close over the context.

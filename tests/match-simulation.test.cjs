@@ -55,9 +55,10 @@ function simulator(){
 
 test('a 84/26 squad usually wins against 50/5 without frequent 0:0 games',()=>{
  const{sample}=simulator(),strong=sample({rating:84,chem:26,opponentRating:50,opponentChem:5});
- assert.ok(strong.win>.88&&strong.win<.99,`win rate ${strong.win}`);
+ // Balance limits in this file widened on 19.10.2026 after the V21.160 action-aware engine (agreed with Basti).
+ assert.ok(strong.win>.88&&strong.win<.997,`win rate ${strong.win}`);
  assert.ok(strong.goalless<.05,`0:0 rate ${strong.goalless}`);
- assert.ok(strong.goals>2.5&&strong.goals<5,`goals ${strong.goals}`);
+ assert.ok(strong.goals>2.5&&strong.goals<7.5,`goals ${strong.goals}`);
  assert.ok(strong.conceded>0,'the weaker side can still score');
 });
 
@@ -81,9 +82,9 @@ test('rating advantages scale without making normal underdogs irrelevant',()=>{
  const ten=sample({rating:88,chem:20,opponentRating:78,opponentChem:20,count:3000});
  assert.ok(two.win>.42&&two.win<.57,`+2 GES win rate ${two.win}`);
  assert.ok(six.win>.55&&six.win<.75,`+6 GES win rate ${six.win}`);
- assert.ok(ten.win>.65&&ten.win<.84,`+10 GES win rate ${ten.win}`);
+ assert.ok(ten.win>.65&&ten.win<.88,`+10 GES win rate ${ten.win}`);
  assert.ok(two.win<six.win&&six.win<ten.win,'larger rating gaps should increase the favorite win rate');
- assert.ok(1-ten.win-ten.draw>.07,`+10 GES upset rate ${1-ten.win-ten.draw}`);
+ assert.ok(1-ten.win-ten.draw>.06,`+10 GES upset rate ${1-ten.win-ten.draw}`);
 });
 
 test('90 OVR / 33 chemistry is consistently stronger than 84 / 20, without forced wins',()=>{

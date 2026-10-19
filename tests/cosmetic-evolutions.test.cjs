@@ -99,6 +99,8 @@ test("SBC rules recognize TOTW and MOMENTUM special types, not only their artwor
  assert.equal(c.isMomentumSbcItem({cosmeticDesign:"totw"}),false);
  assert.match(html,/items\.filter\(isTotwSbcItem\)/);
  assert.match(html,/items\.filter\(isMomentumSbcItem\)/);
- assert.match(html,/x\.item\.cosmeticDesign/);
+ // Since V21.176 SBC and club filters share pickerItemQuality, which counts cosmetic designs as special.
+ assert.match(html,/pickerItemQuality\(x\.item,/);
+ assert.match(html,/item\?\.variant\|\|item\?\.cosmeticDesign\|\|item\?\.eventType/);
  assert.match(html,/item\?\.cosmeticDesign==="totw"\)return"TEAM OF THE WEEK · EVO"/);
 });

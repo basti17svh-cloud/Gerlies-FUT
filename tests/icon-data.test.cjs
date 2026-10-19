@@ -8,14 +8,14 @@ const {line,pricingCode}=require('./helpers/item-pricing.cjs');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const between=(start,end)=>html.slice(html.indexOf(start),html.indexOf(end));
 function setup(){
- const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map(),
+ const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',NIKLAS_FOUNDER_BASE:{},FLASHBACK_REUS_BASE:{id:'flashback-reus'},LIVE_TOTW_BASE_CACHE:new Map(),
   ICON_PORTRAIT_CACHE:{},isWholeCardAsset:()=>false,futwizFaceCandidates:id=>[`https://cdn.futwiz.com/assets/img/fc27/faces/${id}.png`],
   sofifaFaceCandidates:()=>[],fifaRostersFaceCandidates:()=>[],marketSnapshotHash:()=>100,promoWindowKey:()=>'',totwInfo:()=>null};
  vm.createContext(ctx);
  vm.runInContext([pricingCode,line('const SPECIAL_PRICE_CURVE='),line('const TOTW_PRICE_CURVE='),
   html.match(/^function normalizeKey\(v\).*$/m)[0],
   html.match(/^const MARKET_PRICE_CURVE=.*$/m)[0],
-  between('const MID_ICON_DATA=','function randomMidIconBase()'),
+  between('const MID_ICON_DATA=','function randomMidIconBase('),
   between('function restoreSyntheticPlayerIds()','function bestEaTotwAsset('),
   between('function marketPlayStyleCount(','function marketPreviewItem('),
   between('function portraitCandidates(','const API_SPORTS_LEAGUE_IDS='),

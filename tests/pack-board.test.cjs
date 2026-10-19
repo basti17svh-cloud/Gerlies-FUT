@@ -28,7 +28,7 @@ test('nation, position and club pop up in the short pack intro before the card',
   sleep:ms=>{frames.push({ms,intro:$('boardIntro').classList.contains('active'),cue:$('boardCue').innerHTML,card:$('revealCard').innerHTML,pack:$('openStage').style.display});return Promise.resolve()}
  };
  vm.createContext(ctx);
- vm.runInContext(section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
+ vm.runInContext(section('function packRevealTheme(','function packIsWalkout(')+section('function finishPack(){','function packFxLayer(){')+section('function showPackRevealCard(plan){','$("openPackBtn").addEventListener("click"'),ctx);
  await vm.runInContext('runPackReveal({mode:"board",cards:[{}],label:"",duration:2350})',ctx);
  assert.deepEqual(frames.map(f=>f.ms),[250,850,800,1000,350,2350]);
  assert.equal(frames[0].intro,false);
