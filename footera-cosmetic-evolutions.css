@@ -11,11 +11,11 @@
  --card-name-border:transparent;--card-stats-fill:transparent;
  --card-name-color:#fff0c9;--card-stats-color:#d8bd8b;--card-value-color:#fff2cf;
 }
-.card-shell .custom-card.champions-pro{background-image:url('./assets/footera/card-champions-prestige-v1.webp');--card-name-color:#fff3d5;--card-value-color:#fff8e8;}
+.card-shell .custom-card.champions-pro{background-image:url('./assets/footera/card-champions-prestige-v1.webp');--card-name-color:#fff3d5;--card-value-color:#fff8e8;--card-bottom-left:11%;--card-bottom-right:11%;--card-stats-left:0;--card-stats-right:0;}
 .card-shell .custom-card:is(.champions-red,.champions-pro):before{content:none;}
 .card-shell .custom-card:is(.champions-red,.champions-pro) .card-top:before{border:0;}
 .card-shell .custom-card:is(.champions-red,.champions-pro):after{content:'CHAMPIONS';position:absolute;left:16%;right:16%;top:17%;transform:translateY(-100%);z-index:3;text-align:center;color:#f9e5ad;font-size:3.6cqw;font-weight:900;letter-spacing:.17em;text-shadow:0 1px 3px #210513;}
-.card-shell .custom-card.champions-pro:after{content:'CHAMPIONS PRESTIGE';font-size:2.8cqw;letter-spacing:.1em;}
+.card-shell .custom-card.champions-pro:after{content:'CHAMPIONS PRESTIGE';font-size:2.8cqw;letter-spacing:.1em;left:30%;right:13%;}
 .card-shell .custom-card:is(.champions-red,.champions-pro) :is(.ovr,.pos){color:#ffe6b1;text-shadow:0 1px 3px #290514;}
 .card-shell .custom-card:is(.champions-red,.champions-pro) .stats b{color:#fff2cf;}
 #evoSummary[hidden]{display:none!important;}
