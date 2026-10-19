@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const start=html.indexOf('const PACKS=[');
 const end=html.indexOf('const TOTW_WEEK_1=',start);
 assert.ok(start>=0&&end>start,'pack definitions exist');

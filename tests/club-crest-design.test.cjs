@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const root=path.join(__dirname,'..'),html=require('./helpers/app-html.cjs')(root);
 const code=fs.readFileSync(path.join(root,'club-crest-art.js'),'utf8');
 function api(){const c={window:{}};vm.createContext(c);vm.runInContext(code,c);return c.window.FooteraCrestArt}
 function normalize(raw){const c={};vm.createContext(c);vm.runInContext(html.slice(html.indexOf('function defaultClubIdentity()'),html.indexOf('function ensureClubIdentityState()')),c);return JSON.parse(JSON.stringify(c.cleanClubIdentity(raw)))}

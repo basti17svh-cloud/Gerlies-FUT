@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const time=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const competitions=fs.readFileSync(path.join(__dirname,'../competition-system.js'),'utf8');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 
 function setup({initial={},now='2026-09-27T12:00:00Z',eventPlayers=[]}={}){
  const fixed=new Date(now).getTime();

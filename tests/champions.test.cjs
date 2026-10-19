@@ -1,7 +1,7 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const root=path.join(__dirname,"..");
 const champions=fs.readFileSync(path.join(root,"champions-system.js"),"utf8");
-const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')(root);
 const hub=fs.readFileSync(path.join(root,"play-hub.js"),"utf8");
 const competition=fs.readFileSync(path.join(root,"competition-system.js"),"utf8");
 const css=fs.readFileSync(path.join(root,"play-hub.css"),"utf8");

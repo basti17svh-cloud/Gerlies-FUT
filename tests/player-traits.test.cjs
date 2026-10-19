@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const root=path.join(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')(root);
 const official=require(path.join(root,'assets/player-traits.json'));
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
 const code=section('function first(raw,','function keyNameTeam(')+

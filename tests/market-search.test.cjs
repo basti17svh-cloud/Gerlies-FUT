@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const searchCode=html.slice(html.indexOf('const MARKET_PAGE_SIZE='),html.indexOf('function marketSnapshotHash('))+'\n'+
  html.slice(html.indexOf('function marketListingMatchesFilters('),html.indexOf('function bidIncrement('))+'\n'+
  html.slice(html.indexOf('function renderMarket(){'),html.indexOf('function openMarketPlayerDetails('));

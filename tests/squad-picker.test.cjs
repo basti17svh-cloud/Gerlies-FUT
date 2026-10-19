@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const code=html.slice(html.indexOf('let pickerFilterPosition='),html.indexOf('function playerPositions('))
  +html.slice(html.indexOf('function playerPositions('),html.indexOf('function detailChemHTML('));
 

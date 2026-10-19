@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const classCode=html.slice(html.indexOf('function cardClass('),html.indexOf('function itemBase('));
 const emblemsCode=html.slice(html.indexOf('function emblemsHTML('),html.indexOf('function playerClubLabel('));
 const rendererCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));

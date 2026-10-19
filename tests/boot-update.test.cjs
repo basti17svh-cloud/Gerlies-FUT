@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const BUILD=html.match(/const GFUT_BUILD="([^"]+)"/)[1],WORKER=html.match(/service-worker\.js\?v=(\d+)/)[1];
 const [MAJOR,MINOR]=BUILD.slice(1).split('.').map(Number),NEXT=`V${MAJOR}.${MINOR+1}`,LATER=`V${MAJOR}.${MINOR+2}`;
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}

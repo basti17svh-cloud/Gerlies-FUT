@@ -1,5 +1,5 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
-const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')();
 const extract=(a,b)=>{const from=html.indexOf(a),to=html.indexOf(b,from);assert.ok(from>=0&&to>from);return html.slice(from,to)};
 const logic=extract("function packIsSpecial(item)","function finishPack()");
 const item=(id,ovr,variant="",eventName="",eventType="")=>({id,ovr,variant,eventName,eventType});

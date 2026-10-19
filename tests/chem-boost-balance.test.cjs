@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),C=require('../chem-boosts.js');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const extract=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));
 const code=extract('const FORMATIONS={','const SEASON_REWARDS=')+'\n'+extract('function chemBoostMatchBase(','function currentMatchRating(')+'\n'+extract('function tacticMods(','function stopMatchTimer(')+'\n'+extract('function eventChance(','let matchManagerDraft=null;');
 function harness(){

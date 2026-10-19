@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b));
 function setup(saved={}){
  let now=Date.parse('2026-10-02T17:00:00Z'),sequence=0;const timers=new Map(),stored={...saved},contexts=[];

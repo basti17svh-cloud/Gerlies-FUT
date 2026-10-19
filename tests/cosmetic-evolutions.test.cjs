@@ -1,5 +1,5 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
-const base=path.join(__dirname,".."),code=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.js"),"utf8"),html=fs.readFileSync(path.join(base,"index.html"),"utf8"),css=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.css"),"utf8");
+const base=path.join(__dirname,".."),code=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.js"),"utf8"),html=require('./helpers/app-html.cjs')(base),css=fs.readFileSync(path.join(base,"footera-cosmetic-evolutions.css"),"utf8");
 function setup(){
  const player={uid:"player-1",pid:"1",tradeable:true,base:{name:"Testspieler",ovr:82,pac:83,sho:79,pas:75,dri:82,def:35,phy:77}};
  const state={club:[player],coins:15000,champions:{totalWins:5},cosmeticClaims:{},transferList:[]};

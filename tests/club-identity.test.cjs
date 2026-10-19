@@ -1,6 +1,6 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const root=path.join(__dirname,"..");
-const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')(root);
 const css=fs.readFileSync(path.join(root,"club-identity.css"),"utf8");
 const oldSymbols=["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull"];
 const newSymbols=["bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"];

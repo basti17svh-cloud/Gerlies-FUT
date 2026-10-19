@@ -2,7 +2,7 @@ const assert=require("assert");
 const fs=require("fs");
 const path=require("path");
 const root=path.resolve(__dirname,"..");
-const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const html=require('./helpers/app-html.cjs')(root);
 const css=fs.readFileSync(path.join(root,"player-profile.css"),"utf8");
 assert.match(html,/<h3>Spielerprofil<\/h3>/);
 assert.match(html,/function playerBiographyHTML\(/);

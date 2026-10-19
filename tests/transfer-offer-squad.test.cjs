@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const {pricingCode}=require('./helpers/item-pricing.cjs');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const offerCode=html.slice(html.indexOf('function openTransferOfferModal('),html.indexOf('function movePackItemToTransferList('));
 const saleCode=html.slice(html.indexOf('function transferSalePlayerInSquad('),html.indexOf('function settleTransferSales('));
 const priceCode=html.slice(html.indexOf('const MARKET_MAX_PRICE='),html.indexOf('// Futbin FC 27 snapshot'));

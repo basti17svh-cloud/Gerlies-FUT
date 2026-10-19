@@ -14,6 +14,8 @@ on:
       - 'tests/footera-account-deletion-server.test.cjs'
       - 'tests/fixtures/footera-delete-account.deployed.ts'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'service-worker.js'
       - 'manifest.webmanifest'
       - '.github/workflows/footera-accounts-tests.yml'

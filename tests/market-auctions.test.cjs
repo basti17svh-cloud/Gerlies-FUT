@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const {pricingCode}=require('./helpers/item-pricing.cjs');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const code=html.slice(html.indexOf('const MARKET_MAX_PRICE='),html.indexOf('// Futbin FC 27 snapshot'))+'\n'+
  html.slice(html.indexOf('function bidIncrement('),html.indexOf('function listingToClubItem('))+'\n'+
  html.slice(html.indexOf('function settleAuctions('),html.indexOf('function renderTransferWatch('))+'\n'+

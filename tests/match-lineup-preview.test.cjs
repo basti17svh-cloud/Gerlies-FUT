@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const previewCode=html.slice(html.indexOf('function ownLineupHTML(){'),html.indexOf('function renderSquadBattleSelection('));
 const imageCode=html.slice(html.indexOf('function officialCardCandidates('),html.indexOf('function playerGender('));
 const cardCode=html.slice(html.indexOf('function cardHTML('),html.indexOf('function normalizeKey('));

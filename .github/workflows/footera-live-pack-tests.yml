@@ -8,6 +8,8 @@ on:
       - 'tests/footera-live-pack-client.test.cjs'
       - 'footera-paid-wallet.js'
       - 'index.html'
+      - 'footera-app.css'
+      - 'tests/helpers/**'
       - 'online/footera-live-pack-odds.mjs'
       - 'online/footera-live-pack-purchase.ts'
       - 'online/footera-live-atomic-packs-v21.139.sql'

@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const root=path.join(__dirname,'..'),html=require('./helpers/app-html.cjs')(root);
 const opponentCode=fs.readFileSync(path.join(root,'footera-opponent-styles.js'),'utf8');
 function extract(from,to){const a=html.indexOf(from),b=html.indexOf(to,a+from.length);assert.ok(a>=0&&b>a,'missing '+from);return html.slice(a,b)}
 const engine=extract('function matchClamp(', 'const SEASON_REWARDS=')+'\n'+extract('function tacticMods(', 'function stopMatchTimer(')+'\n'+extract('function eventChance(', 'let matchManagerDraft=null;');

@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const root=path.join(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')(root);
 const artCode=html.slice(html.indexOf('const STORE_PACK_ART='),html.indexOf('let storeTab='));
 const sbcCode=html.slice(html.indexOf('function sbcOverviewCard('),html.indexOf('function sbcPickerTargetLabel('));
 

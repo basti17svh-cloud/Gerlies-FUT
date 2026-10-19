@@ -1,7 +1,7 @@
 /* Real PWA startup and draft preview with an isolated cached database and save. */
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const root=path.join(__dirname,'..'),output=path.join(root,'test-artifacts');fs.mkdirSync(output,{recursive:true});
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),build=html.match(/const GFUT_BUILD="([^"]+)"/)[1];
+const html=require('./helpers/app-html.cjs')(root),build=html.match(/const GFUT_BUILD="([^"]+)"/)[1];
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
 const cache=fs.readFileSync(path.join(root,'service-worker.js'),'utf8').match(/const CACHE="([^"]+)"/)[1];
 const draftNames=[...html.slice(html.indexOf('const TOTW_WEEK_5='),html.indexOf('const TOTW_WEEKS=')).matchAll(/names:\[(.*?)\]/g)].map(m=>JSON.parse('['+m[1]+']')[0]);

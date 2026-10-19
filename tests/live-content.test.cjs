@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const time=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const weeks=html.slice(html.indexOf('const TOTW_WEEK_1='),html.indexOf('const MID_ICON_DATA='));
 const active=html.slice(html.indexOf('function totwIsActive('),html.indexOf('function updateTotwMarketOption('));

@@ -59,7 +59,7 @@ assert(/below the stats/.test(playstyleCss)&&/card-alt-positions/.test(playstyle
 assert(/background:rgba\(4,8,11,.84\);color:#f7fbff/.test(playstyleCss),"Normale PlayStyle-Icons brauchen neutralen Hochkontrast statt Ton-in-Ton");
 assert(/\.mini \.card-shell>\.playstyle-card-row \.playstyle-card-icon/.test(playstyleCss),"Aufstellungs-Icons brauchen eine eigene kompakte Darstellung");
 
-const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
+const index=require('./helpers/app-html.cjs')(root);
 assert(/\.\/playstyles\.js\?v=\d+/.test(index),"PlayStyle-Script ist nicht eingebunden");
 assert(/\.\/playstyles\.css\?v=\d+/.test(index),"PlayStyle-CSS ist nicht eingebunden");
 assert(index.includes("FooteraPlayStyles.enrichPlayers(PLAYERS)"),"Spielerdaten werden nicht mit PlayStyles angereichert");

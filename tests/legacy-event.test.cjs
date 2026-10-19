@@ -1,7 +1,7 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const root=path.join(__dirname,"..");
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
-const css=read("legacy-card.css"),layout=read("card-layout.css"),playstyles=read("playstyles.css"),html=read("index.html"),sw=read("service-worker.js");
+const css=read("legacy-card.css"),layout=read("card-layout.css"),playstyles=read("playstyles.css"),html=require("./helpers/app-html.cjs")(root),sw=read("service-worker.js");
 test("Legacy renderer remains universal in every view",()=>{
  assert.match(html,/function cardHTML\(p,item=null,mini=false/);
  assert.match(html,/cls==="legacy"\?" legacy-shell"/);

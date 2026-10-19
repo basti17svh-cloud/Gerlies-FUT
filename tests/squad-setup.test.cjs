@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const formCode=html.slice(html.indexOf('const FORMATIONS='),html.indexOf('const ROLE_OPTIONS='));
 const starterCode=html.slice(html.indexOf('function buildStarter('),html.indexOf('function prepareOnboarding('));
 const lineupCode=html.slice(html.indexOf('function posFit('),html.indexOf('$("formationSelect").addEventListener('));

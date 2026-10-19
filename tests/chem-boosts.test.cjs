@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const C=require('../chem-boosts.js'),html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+const C=require('../chem-boosts.js'),html=require('./helpers/app-html.cjs')();
 const base=Object.freeze({name:'L. König',ovr:88,position:'CAM',pac:86,sho:84,pas:84,dri:87,def:65,phy:78});
 const fresh=()=>({club:[{uid:'one',pid:'one',eventStats:[86,84,84,87,65,78]}],chemBoostInventory:Object.fromEntries(C.DEFINITIONS.map(d=>[d.id,4]))});
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b,html.indexOf(a)));

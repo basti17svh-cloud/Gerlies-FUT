@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 function section(start,end){return html.slice(html.indexOf(start),html.indexOf(end))}
 function setup(){
  const player={uid:'evo-player',name:'QA Evo',ovr:70},other={uid:'other',name:'Other',ovr:75};

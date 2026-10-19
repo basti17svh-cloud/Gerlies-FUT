@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=require('./helpers/app-html.cjs')();
 const source=html.slice(html.indexOf('function storyBase('),html.indexOf('function portraitFallback('));
 
 test('Story entitlement waits for player data, grants once and migrates already claimed tiers',()=>{

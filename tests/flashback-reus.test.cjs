@@ -1,5 +1,5 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
-const root=path.join(__dirname,".."),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),css=fs.readFileSync(path.join(root,"flashback-card.css"),"utf8"),ps=fs.readFileSync(path.join(root,"playstyles.js"),"utf8");
+const root=path.join(__dirname,".."),html=require('./helpers/app-html.cjs')(root),css=fs.readFileSync(path.join(root,"flashback-card.css"),"utf8"),ps=fs.readFileSync(path.join(root,"playstyles.js"),"utf8");
 const event=html.slice(html.indexOf("const FLASHBACK_REUS_BASE="),html.indexOf("function completeEventRoster("));
 test("Reus Flashback gets LA Galaxy MLS, 88 OVR, 87/86/88/90/52/72 and Design 3",()=>{
  for(const x of ['id:"footera-flashback-reus-20261009"','team:"LA Galaxy"','league:"Major League Soccer"','ovr:88,position:"CAM"','stats:[87,86,88,90,52,72]','playstylePlusAdds:["technical"]'])assert.ok(event.includes(x),x);
