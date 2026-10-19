@@ -4,7 +4,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21187';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21191';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21187';
@@ -1799,9 +1799,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
     // drifting slowly as he runs towards it.
     const root=players[0].root.getWorldPosition(celebrationAnchor),k=direction;
-    const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,drift=(time-CELEBRATION_CUT)*.35;
-    camera.position.set(root.x+runX*6.2-runZ*(1.6-drift),root.y+1.55,root.z+runZ*6.2+runX*(1.6-drift));
-    camTarget.set(root.x,root.y+1.12+celebrationState.rootY*.75,root.z);camera.fov=30;
+    // V21.191: a real close-up. Head and chest stay above the result card,
+    // with a slow push-in (3.9 m to 3.0 m) instead of a static medium shot.
+    const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,since=time-CELEBRATION_CUT,drift=since*.3;
+    const pu=clamp(since/2.6),push=pu*pu*pu*(pu*(pu*6-15)+10),near=mix(3.9,3.0,push),side=mix(1.1,.75,push)-drift*.3;
+    const lift=celebrationState.rootY*.75;
+    camera.position.set(root.x+runX*near-runZ*side,root.y+1.55+lift*.5,root.z+runZ*near+runX*side);
+    camTarget.set(root.x,root.y+1.3+lift,root.z);camera.fov=30;
    }
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
