@@ -34,3 +34,20 @@ test('poses are a pure function of time and the knee slide reaches the ground', 
  const jump=applyCelebrationPose(driver(),'jump_spin',1.75);
  assert.ok(jump.rootY>.3);
 });
+
+test('celebration arms move smoothly, never lock straight and lift the shoulders', ()=>{
+ for(const kind of CELEBRATIONS){
+  let previous=null,shrug=0;
+  for(let s=0;s<=3.6;s+=1/30){
+   const p=driver(),out=applyCelebrationPose(p,kind,s);
+   const angles=[...p.arms.flatMap(a=>[a.rotation.x,a.rotation.z]),...p.elbows.map(e=>e.rotation.x)];
+   // A fist pump or badge tap may be quick, but no joint may pop between frames.
+   if(previous)angles.forEach((v,i)=>assert.ok(Math.abs(v-previous[i])<.4,`${kind} jumps at ${s.toFixed(2)}`));
+   previous=angles;
+   if(s>.6)p.elbows.forEach(e=>assert.ok(e.rotation.x>.2,`${kind} locked elbow at ${s.toFixed(2)}`));
+   shrug=Math.max(shrug,...out.shrug);
+   assert.equal(out.head.length,2);assert.equal(out.open.length,2);
+  }
+  assert.ok(shrug>.1,kind+' shoulders move with the arms');
+ }
+});

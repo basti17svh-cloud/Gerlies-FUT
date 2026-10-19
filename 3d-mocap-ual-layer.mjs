@@ -1,4 +1,4 @@
-/* Footera V21.184: full-body CC0 motion capture on the imported footballers.
+/* Footera V21.184 (hands V21.187): full-body CC0 motion capture on the imported footballers.
  * Real captured Quaternius gait cycles drive arms, shoulders, spine, neck and
  * hips with their own bone rotations (not the reduced angle deltas of V21.75).
  * Legs stay on the existing distance-based gait and foot IK, so boots stay
@@ -77,6 +77,8 @@ export function createUalPoseLayer(bones){
  const targets=new Map(),centres=new Map();
  for(const name of BONES){targets.set(name,new THREE.Quaternion());centres.set(name,new THREE.Quaternion())}
  const fingerBones=FOOTERA_UAL_POSE.fingers.map(name=>bones.get(name));
+ const fingerRest=FOOTERA_UAL_POSE.fingers.map(name=>new THREE.Quaternion().fromArray(FOOTERA_UAL_POSE.rest[name]));
+ const fingerSide=FOOTERA_UAL_POSE.fingers.map(name=>name.endsWith('_r')?1:0),fingerPose=new THREE.Quaternion();
  // Joints the procedural rig never writes restart from their rest pose every
  // frame, so seeking or replaying gives exactly the same pose (no history).
  const unowned=['neck_01','clavicle_l','clavicle_r','hand_l','hand_r']
@@ -84,8 +86,15 @@ export function createUalPoseLayer(bones){
  const second=new THREE.Quaternion(),delta=new THREE.Quaternion(),centre=new THREE.Quaternion();
  const state={clip:'Idle_Loop',phase:0,weight:0,source:'Quaternius UAL CC0'};
  // Relaxed, slightly closed hands instead of the flat bind-pose fingers.
- function shapeHands(){
-  for(let i=0;i<fingerBones.length;i++)fingerBones[i]?.quaternion.fromArray(data.fingers,i*4);
+ // open[side] (0..1) spreads that hand towards the flat palm, e.g. for wings
+ // or arms pointing to the sky in a goal celebration.
+ function shapeHands(open=null){
+  for(let i=0;i<fingerBones.length;i++){
+   const bone=fingerBones[i];if(!bone)continue;
+   fingerPose.fromArray(data.fingers,i*4);
+   const spread=open?clamp(open[fingerSide[i]])*.8:0;
+   bone.quaternion.slerpQuaternions(fingerPose,fingerRest[i],spread);
+  }
  }
  function apply(time=0,info={},keeperRole=false){
   for(const [bone,rest] of unowned)bone.quaternion.copy(rest);
