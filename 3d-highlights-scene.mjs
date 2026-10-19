@@ -1,5 +1,5 @@
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21179';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21160';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21188';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
@@ -492,6 +492,8 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
    frame.target[2]+=boxShift;frame.position[2]+=boxShift;
    return keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence);
   }
+  // The turnover counter composes its own pass-and-goal frame (counter test).
+  if(extendedKind(sequence)&&extendedKind(sequence)!=='turnover_counter')return keepExtendedActionInFrame(frame,time,direction,aspect,worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction));
   return frame;
  };
  // A single fitted lens for each highlight. The camera follows the ball,
@@ -515,30 +517,43 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  };
 }
 // The closer 40 m TV camera can drop a crosser on the near touchline below the
-// bottom edge of a narrow phone (a long diagonal switch). Around the delivery,
-// glide camera and target together towards him, just enough to keep his boots
-// and head inside the picture. Lens, distance and camera side are unchanged.
+// bottom edge of a narrow phone (a long diagonal switch), and a fixed set-piece
+// composition can leave the ball or the net outside a portrait phone frame.
+// Glide camera and target together towards what must be seen, just enough to
+// keep it inside the picture. Lens, distance and camera side are unchanged.
 const CROSSER_EDGE=.82,frameCamera=new THREE.PerspectiveCamera(),frameProbe=new THREE.Vector3();
-function crosserOverflow(frame,shift,aspect,points){
- // Judge with the narrowest lens the stable track may pick for this screen.
- frameCamera.fov=aspect<1.12?32:30.5;frameCamera.aspect=aspect;frameCamera.near=.1;frameCamera.far=250;
+function frameOverflow(frame,shift,aspect,points,fov,edge){
+ frameCamera.fov=fov;frameCamera.aspect=aspect;frameCamera.near=.1;frameCamera.far=250;
  frameCamera.position.set(frame.position[0]+shift[0],frame.position[1],frame.position[2]+shift[1]);
  frameCamera.lookAt(frame.target[0]+shift[0],frame.target[1],frame.target[2]+shift[1]);
  frameCamera.updateProjectionMatrix();frameCamera.updateMatrixWorld();
  let worst=0;
  for(const p of points){frameProbe.set(...p).project(frameCamera);worst=Math.max(worst,Math.abs(frameProbe.x),Math.abs(frameProbe.y))}
- return worst-CROSSER_EDGE;
+ return worst-edge;
+}
+// Smallest ground shift towards anchor that brings every point inside edge.
+function glideToFit(frame,points,anchor,aspect,fov,edge,weight){
+ if(weight<=0||frameOverflow(frame,[0,0],aspect,points,fov,edge)<=0)return frame;
+ const toward=[anchor[0]-frame.target[0],anchor[2]-frame.target[2]];
+ let low=0,high=1;
+ for(let i=0;i<14;i++){const k=(low+high)/2;frameOverflow(frame,[toward[0]*k,toward[1]*k],aspect,points,fov,edge)>0?low=k:high=k}
+ const k=high*weight,shift=[toward[0]*k,0,toward[1]*k];
+ return{...frame,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
 }
 function keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence){
- const envelope=smooth((time-delivery.release+1.3)/.7)*(1-smooth((time-delivery.release-.3)/.9));
+ // Hold him through the follow-through of the cross (about one second).
+ const envelope=smooth((time-delivery.release+1.3)/.7)*(1-smooth((time-delivery.release-1.05)/.8));
  if(envelope<=0)return frame;
  const run=runPosition(delivery.passer,time,sequence),points=[0,1.8].map(y=>worldPosition([run[0],y,run[1]],direction));
- if(crosserOverflow(frame,[0,0],aspect,points)<=0)return frame;
- const toward=[points[0][0]-frame.target[0],points[0][2]-frame.target[2]];
- let low=0,high=1;
- for(let i=0;i<14;i++){const k=(low+high)/2;crosserOverflow(frame,[toward[0]*k,toward[1]*k],aspect,points)>0?low=k:high=k}
- const k=high*envelope,shift=[toward[0]*k,0,toward[1]*k];
- return{...frame,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
+ // Judge with the narrowest lens the stable track may pick for this screen.
+ return glideToFit(frame,points,points[0],aspect,aspect<1.12?32:30.5,CROSSER_EDGE,envelope);
+}
+// Long highlights: the ball always, and from the shot on the whole goal too.
+function keepExtendedActionInFrame(frame,time,direction,aspect,ball){
+ const goal=smooth((time-SHOT_TIME)/.6),points=[ball];
+ if(goal>0)for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+ const anchor=goal>0?[(ball[0]+0)/2,0,(ball[2]+worldPosition([0,0,-53.4],direction)[2])/2]:ball;
+ return glideToFit(frame,points,anchor,aspect,aspect<1.12?28.5:27.8,.86,1);
 }
 const LABELS={goal:'TOR',big_chance_saved:'PARADE',big_chance_missed:'SCHUSS VORBEI',shot_post:'PFOSTEN'};
 const hex=(value,fallback)=>/^#[a-f0-9]{6}$/i.test(value)?value:fallback;
@@ -1928,7 +1943,10 @@ export function play(event,signal){
   function onLost(e){e.preventDefault();finish('fallback')}
   function onKey(e){if(e.key==='Escape'){e.preventDefault();finish('skipped')}}
   skip.addEventListener('click',()=>finish('skipped'));signal.addEventListener('abort',onAbort,{once:true});canvas.addEventListener('webglcontextlost',onLost);window.addEventListener('keydown',onKey);
-  const playback=createHighlightPlayback(event,DURATION);
+  // Browser tests on a software renderer (1-2 fps) keep wall-clock pace and
+  // skip the very-slow 2D fallback; real phones keep both safety nets.
+  const realtimeTest=!!globalThis.FOOTERA_TEST_REALTIME_3D;
+  const playback=createHighlightPlayback(event,DURATION,realtimeTest?{maxFrameMs:2000}:undefined);
   timer=setTimeout(()=>finish('fallback'),Math.max(30000,playback.totalSeconds*1000+12000));
   try{
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,
@@ -1967,7 +1985,7 @@ export function play(event,signal){
     try{
      const sample=playback.tick(now);
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
-     if(frames>=24&&verySlowFrames/frames>.65){finish('fallback');return}
+     if(frames>=24&&verySlowFrames/frames>.65&&!realtimeTest){finish('fallback');return}
      if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality()}
      const displayTime=sample.time;
      world.update(displayTime);
