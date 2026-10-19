@@ -39,6 +39,7 @@ import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier
 export const DURATION=10.4;
 export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
+const SHOT_DRAG=.6;
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
 export const MIN_CAMERA_DISTANCE=34;
@@ -315,12 +316,14 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  }
  const impact=shotImpact(type,seq,style,placement);
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
-  // Faster initial ball flight; retain keeper, net and HUD impact timing.
-  const flight=1-Math.pow(1-t,1.55);
+  // Air-drag flight: fast off the boot and still ~73% of mean speed at impact,
+  // so the ball never crawls into the keeper. Keeper, net and HUD timing unchanged.
+  const flight=(1-Math.exp(-SHOT_DRAG*t))/(1-Math.exp(-SHOT_DRAG));
  if(t<1){const p=lerp(contact,impact,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
-  const u=clamp((time-IMPACT_TIME)/1.35),sign=Math.sign(impact[0])||1;
+  // Parries spring off the glove and slow down instead of drifting at a constant pace.
+  const u=1-Math.pow(1-clamp((time-IMPACT_TIME)/1.35),2.2),sign=Math.sign(impact[0])||1;
   // Distinct deflections all START at the identical saved-ball contact.
   const destinations={
    classic:[sign*7,.12,-46],fingertip:[sign*8,.14,-49.7],
@@ -331,8 +334,12 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   p[1]+=(keeperAction==='high_reach'?.85:keeperAction==='fingertip'?.65:keeperAction==='low_reflex'?.18:.5)*Math.sin(u*Math.PI);
   return p
  }
- if(type==='shot_post')return lerp(impact,[Math.sign(impact[0])*8,.12,-45],(time-IMPACT_TIME)/1.35);
- return lerp(impact,[Math.sign(impact[0])*8,.12,-60],(time-IMPACT_TIME)/1.4);
+ if(type==='shot_post')return lerp(impact,[Math.sign(impact[0])*8,.12,-45],1-Math.pow(1-clamp((time-IMPACT_TIME)/1.35),2));
+ // A miss keeps the speed it had at the goal line, then rolls out behind the goal.
+ const s=Math.max(0,time-IMPACT_TIME),exit=SHOT_DRAG*Math.exp(-SHOT_DRAG)/(1-Math.exp(-SHOT_DRAG))/(IMPACT_TIME-SHOT_TIME);
+ const roll=(1-Math.exp(-1.1*s))/1.1,p=[impact[0]+(impact[0]-contact[0])*exit*roll,0,impact[2]+(impact[2]-contact[2])*exit*roll];
+ const drop=smooth(s/.55);p[1]=mix(impact[1],.12,drop)+.18*(1-drop)*Math.abs(Math.sin(s*9));
+ return p;
 }
 // Every camera is on the SAME world touchline. Only its target follows the attack.
 // There is no event-dependent camera side, orbit, result zoom or celebration cut.
