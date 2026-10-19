@@ -6,6 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21184';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 
@@ -402,6 +403,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
  }
  const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
+ // MakeHuman uses other bone axes; the capture fits the Quaternius skeleton only.
+ const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
  // The keeper's guide rotates about the feet, not the imported pelvis.
  // Preserve that entire transform before retargeting individual joints.
  const authoredFacing=normalized.quaternion.clone();
@@ -470,6 +473,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
      driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll));
    apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow),0,driver.elbows[i].rotation.z);
   }
+  // V21.184: captured CC0 arms, shoulders, spine and hips on top; legs keep IK.
+  bodyState=capturedBody.apply(frameTime,info,keeperRole);
+  if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands();
   matchFeet();
   if(keeperRole)matchKeeperHands();
  }
@@ -481,6 +487,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    shot:motion.shot||0,follow:motion.follow||0,running:motion.running||0,
    capturedClip:clipState?.clip||'none',capturedWeight:clipState?.weight||0,
    capturedPhase:clipState?.phase||0,capturedSource:clipState?.source||'none',
+   bodyClip:bodyState.weight>0?bodyState.clip:'none',bodyWeight:bodyState.weight,
    hipLeft:bones.get('thigh_l').quaternion.toArray(),hipRight:bones.get('thigh_r').quaternion.toArray(),
    feet:[local('foot_l'),local('foot_r')],toes:[local('ball_l'),local('ball_r')],
    footTargets:existingDriver.ankles.map(ankle=>playerRoot.worldToLocal(ankle.getWorldPosition(new THREE.Vector3())).toArray()),

@@ -4,8 +4,9 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21167';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21184';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
+import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
@@ -1212,6 +1213,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      delete node.userData.hideForFooteraPrototype;
    }
   }
+  // V21.184: broadcast light and fabric only where the real GLB squad is shown.
+  if(importedPlayer&&!weak)track(applyBroadcastLook(scene,renderer,{high}));
   // Motion 2.2 shapes first touch, mirrored cuts and finesse preparation.
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
   const motion2CutAnchor=motion2Active?runPosition(0,3.08,sequence):null;
