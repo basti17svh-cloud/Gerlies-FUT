@@ -38,9 +38,13 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21191').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21192').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
-  function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>m.prepareFooteraPlayerModel()).catch(()=>{})}
+  function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
+   m.prepareFooteraPlayerModel().catch(()=>{});
+   // V21.192 human squad: fetched once while idle, then cached by the service worker.
+   if(m.footeraHumanPlayersWanted?.())return m.prepareFooteraHumanModel?.();
+  }).catch(()=>{})}
   if(root.document&&mode!=='off'){
    const schedule=()=>{if(typeof root.requestIdleCallback==='function')root.requestIdleCallback(prewarm,{timeout:2500});else root.setTimeout(prewarm,1100)};
    if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
@@ -69,6 +73,9 @@
       if(model==='makehuman')root.localStorage?.removeItem('footera-3d-player-model');
     }catch(_){}
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
+    if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
+    // The club crest for the shirts decodes in a few milliseconds; never wait long.
+    if(module.loadFooteraCrestImage)await Promise.race([module.loadFooteraCrestImage(event.teamCrestHTML),new Promise(r=>setTimeout(r,250))]);
    }
    remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
   }),skippedPromise])}

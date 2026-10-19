@@ -4,12 +4,20 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21191';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21192';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21192';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21187';
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
-export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady};
+export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
+// V21.192: phones below the LOW line and players who chose the previous model
+// (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
+export function footeraHumanPlayersWanted(){
+ try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
+ const memory=globalThis.navigator?.deviceMemory||8,cores=globalThis.navigator?.hardwareConcurrency||8;
+ return !(memory<4||cores<=4);
+}
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
@@ -1214,14 +1222,20 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const defaultNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
   const squadNumbers=defaultNumbers.map((fb,i)=>{const n=Number(event.shirtNumbers?.[i]);return Number.isInteger(n)&&n>=1&&n<=99?n:fb});
   const keeperNumber=Number(event.keeperShirtNumber);
+  const squadNames=RUNS.map((r,i)=>i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i);
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
-   i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i,
-   false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
+   squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
   const buildKeeper=extended==='keeper_buildout'?player({shirt:'#e8b545',shirtSecondary:'#e8b545',pattern:'solid',shorts:'#273a37',socks:'#e8b545'},event.buildKeeperName||'Aufbau-Torwart',true,true,1,false,event.buildKeeperSkinTone):null;
   // Use a single CC0 source and one skeleton clone for EACH visible player.
   // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
-  const allQuaternius=allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
+  const humanSquad=allowImported&&!baselineRig&&modelVariant==='human'&&isFooteraHumanModelReady();
+  const squadVariant=humanSquad?'human':'quaternius';
+  const allQuaternius=humanSquad||allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
+  // Real names only on real players; the club crest on the scoring team's chest.
+  const squadCrest=footeraCrestImageNow(event.teamCrestHTML);
+  const humanLook=(i,number,skinTone)=>({number,skinTone:resolvePlayerSkinTone(skinTone),
+   shirtName:/^footballer /.test(squadNames[i]||'')?'':undefined,crest:RUNS[i]?.team==='attack'?squadCrest:null});
   const importedPlayers=new Array(players.length).fill(null);
   let importedPlayer=null,importedKeeper=null;
   const fallbackKitAtlases=new Map();
@@ -1243,21 +1257,23 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      if(parent===actor.root){node.userData.hideForFooteraPrototype=true;break}
    }
   }
-  if(allowImported&&!baselineRig&&(modelVariant==='makehuman'?isFooteraMakeHumanModelReady():isFooteraPlayerModelReady())){
+  if(allowImported&&!baselineRig&&(modelVariant==='human'?humanSquad:modelVariant==='makehuman'?isFooteraMakeHumanModelReady():isFooteraPlayerModelReady())){
    const staged=[];
    try{
     if(allQuaternius){
      for(let i=0;i<players.length;i++){
       const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
-      const name=i===0?event.playerName:'footballer '+i;
+      const name=humanSquad?squadNames[i]:i===0?event.playerName:'footballer '+i;
       const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
-       'quaternius',actor.skinned?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]));
+       squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]),
+       humanLook(i,squadNumbers[i],event.playerSkinTones?.[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
       importedPlayers[i]=glb;staged.push(glb);
      }
      const keeperKit={shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper};
      importedKeeper=mountFooteraPlayerModel(keeper.root,keeper,keeperKit,event.keeperName||'Goalkeeper',
-      !weak,'quaternius');
+      !weak,squadVariant,null,{number:Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,
+       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417'});
      if(!importedKeeper)throw new Error('GLB unavailable on goalkeeper');
      staged.push(importedKeeper);
      players.forEach(p=>hideOriginal(p));
@@ -1875,7 +1891,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23:pilotMotion,motion23Phase:motion23Sample?.phase||'inactive',
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
-     playerModelTier:allQuaternius&&importedKeeper?'quaternius-entire-squad':weak?'low-hybrid':'full-squad',
+     playerModelTier:allQuaternius&&importedKeeper?(humanSquad?'human-entire-squad':'quaternius-entire-squad'):weak?'low-hybrid':'full-squad',
      importedSquadCount:importedPlayers.filter(Boolean).length,
       importedHairStyles:importedPlayers.filter(Boolean).map(p=>p.hairStyle),
      importedKeeper:!!importedKeeper,
@@ -1968,14 +1984,15 @@ export function play(event,signal){
    if(typeof window!=='undefined'&&window.__FOOTERA_FORCE_LEGACY_MOTION===true)fluidMotion=false;
    let forceLegacyModel=false;
    try{forceLegacyModel=window.localStorage?.getItem('footera-3d-player-model')==='legacy'}catch(_){}
-   // MakeHuman remains a laboratory-only A/B asset. The real Matchday always
-   // selects the last verified Quaternius model until visual quality is accepted.
-   const modelVariant='quaternius';
+   // V21.192: the MakeHuman-based human squad where the phone can carry it;
+   // otherwise (or until its file has loaded) the verified Quaternius squad.
+   const modelVariant=!weak&&footeraHumanPlayersWanted()&&isFooteraHumanModelReady()?'human':'quaternius';
    world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant);
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
    const imported=!!modelInfo.importedFootballer;
    layer.dataset.playerModel=imported?'glb':'legacy';
+   layer.dataset.playerModelVariant=imported?modelVariant:'legacy';
    layer.dataset.playerModelReason=imported?'loaded':forceLegacyModel?'user-disabled':isFooteraPlayerModelReady()?'mount-failed':'not-ready';
    modelStatus.dataset.modelStatus=imported?'glb':'legacy';
    modelStatus.textContent=imported?'GLB AKTIV':forceLegacyModel?'ALT · MANUELL':weak?'ALT · LOW':'ALTES MODELL';

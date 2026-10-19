@@ -8,7 +8,9 @@ const worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
 test('V21.81: broken MakeHuman variant is not enabled by localStorage in live Matchday',()=>{
  assert.match(bridge,/if\(model==='makehuman'\)root\.localStorage\?\.removeItem\('footera-3d-player-model'\)/);
  assert.doesNotMatch(bridge,/module\.prepareFooteraMakeHumanModel\(/);
- assert.match(scene,/const modelVariant='quaternius'/);
+ // V21.192: the live Matchday picks the new human squad or Quaternius, never the old lab model.
+ assert.match(scene,/const modelVariant=!weak&&footeraHumanPlayersWanted\(\)&&isFooteraHumanModelReady\(\)\?'human':'quaternius'/);
+ assert.doesNotMatch(scene,/const modelVariant=[^;]*'makehuman'/);
  assert.match(scene,/makeScene\(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant\)/);
 });
 test('V21.81: diagnostics remain honest and cannot re-enable failed model',()=>{
