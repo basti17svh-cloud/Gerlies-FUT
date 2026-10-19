@@ -70,7 +70,7 @@ const out=path.join(__dirname,'../test-artifacts');
    await capture('21-volley-right-412','goal',5.4,1,412,false,'volley_right','volley');
    await capture('22-low-driven-390','goal',6.1,1,390,false,'low_driven_duel','low_driven');
    await capture('23-counter-left-390','goal',2.7,1,390,false,'counter_left');
-  await page.evaluate(()=>Object.defineProperty(navigator,'deviceMemory',{configurable:true,get:()=>4}));
+  await page.evaluate(()=>Object.defineProperty(navigator,'deviceMemory',{configurable:true,get:()=>2}));
   await capture('18-low-mobile-390','goal',4.8,1,390,true,'central');
   await page.evaluate(()=>Object.defineProperty(navigator,'deviceMemory',{configurable:true,get:()=>8}));
   }

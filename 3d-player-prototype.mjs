@@ -6,7 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21184';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21185';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 
@@ -454,6 +454,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    normalized.position.y=info.grounded?
     clamp(driver.rig.position.y*.45+m.bob*.18,-.06,.035):
     clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
+   // An authored goal celebration may kneel or jump: follow the driver hips.
+   if(Number.isFinite(info.rootY))normalized.position.y=info.rootY;
    normalized.quaternion.copy(authoredFacing);
    apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,
     driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);
