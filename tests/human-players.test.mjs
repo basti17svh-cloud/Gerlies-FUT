@@ -40,7 +40,8 @@ test('human GLB: CC0 source, mobile-sized, every garment and haircut present',()
  const meshes=human.json.meshes.map(m=>m.name);
  for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots','FooteraEyes'])assert.ok(meshes.includes(name),name);
  for(const hair of info.hair)assert.ok(meshes.includes('FooteraHair-'+hair),hair);
- assert.ok(info.hair.length>=5&&!info.hair.includes('short03'));
+ assert.ok(info.hair.length>=4&&!info.hair.includes('short03'));
+ assert.ok(!info.hair.some(h=>/ponytail|long|bob|curly|braid/i.test(h)),'footballers keep short haircuts');
  assert.deepEqual(human.json.meshes[0].extras.targetNames,info.morphs);
 });
 

@@ -106,8 +106,10 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
    for(const side of [-1,1]){ctx.save();ctx.translate(side>0?.215:-.62,1.6);ctx.scale(.405,-.74);
     paintFooteraKitTile(ctx,kit,1,1,'sleeves');ctx.restore()}
   }
-  ctx.save();ctx.translate(-.215,1.52);ctx.scale(.43,-.66);
-  ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();paintFooteraKitTile(ctx,kit,1,1,'shirt');ctx.restore();
+  // The back stays plain under name and number, like real kits, so no stripe
+  // or sash ever runs through the squad number.
+  if(half==='front'||sleeves){ctx.save();ctx.translate(-.215,1.52);ctx.scale(.43,-.66);
+  ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();paintFooteraKitTile(ctx,kit,1,1,'shirt');ctx.restore()}
   // Collar trim and a soft side seam.
   ctx.strokeStyle=second;ctx.lineWidth=.014;
   ctx.beginPath();if(half==='front'){ctx.moveTo(-.075,1.5);ctx.quadraticCurveTo(0,1.44,.075,1.5)}else{ctx.moveTo(-.08,1.52);ctx.quadraticCurveTo(0,1.505,.08,1.52)}ctx.stroke();

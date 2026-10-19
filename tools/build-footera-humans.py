@@ -498,7 +498,7 @@ shoe_mat = g.material(name='FooteraBoots', pbrMetallicRoughness={
     'metallicFactor': 0, 'roughnessFactor': .45})
 add('FooteraBoots', shoe_mesh, shoe_mat, morph=False)
 
-HAIR = ['short02', 'short04', 'short01', 'afro01', 'ponytail01']  # short03 (side fringe) and the long styles read wrong on footballers
+HAIR = ['short02', 'short04', 'short01', 'afro01']  # short03 (side fringe), ponytail and the long styles read wrong on footballers
 FACIAL = ['Full_beard', 'Moustache']
 BROWS = ['eyebrow001', 'eyebrow002', 'eyebrow004']
 parts = {'hair': [], 'facial': [], 'brows': []}
