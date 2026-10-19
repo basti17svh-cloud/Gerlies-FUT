@@ -4,7 +4,7 @@
 <iframe id="game" title="Shop mit fester Testzeit"></iframe>
 <script>
 (async()=>{
- const [html,time]=await Promise.all(['../index.html','../footera-time.js'].map(async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('Testquelle fehlt');return r.text()}));
+ const [page,time,app]=await Promise.all(['../index.html','../footera-time.js','../footera-app.js'].map(async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('Testquelle fehlt');return r.text()})),html=page+app;
  const section=(from,to)=>{const a=html.indexOf(from),b=html.indexOf(to,a+from.length);if(a<0||b<0)throw new Error('Testquelle geändert: '+from);return html.slice(a,b)};
  const line=pattern=>{const m=html.match(pattern);if(!m)throw new Error('Testfunktion fehlt');return m[0]};
  const script=[

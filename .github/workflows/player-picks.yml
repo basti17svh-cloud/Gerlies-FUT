@@ -10,6 +10,7 @@ on:
       - 'weekly-rewards.js'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - 'tests/*picks*'
       - 'tests/footera-accounts.test.cjs'

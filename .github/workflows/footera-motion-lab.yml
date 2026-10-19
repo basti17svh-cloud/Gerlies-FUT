@@ -33,6 +33,7 @@ on:
       - 'service-worker.js'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - '.github/workflows/footera-motion-lab.yml'
   pull_request:
@@ -67,6 +68,7 @@ on:
       - 'service-worker.js'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - '.github/workflows/footera-motion-lab.yml'
 permissions:

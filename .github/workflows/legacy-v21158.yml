@@ -9,6 +9,7 @@ on:
       - 'assets/footera/legacy-event-aura.svg'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - 'service-worker.js'
       - 'tests/legacy-event.test.cjs'

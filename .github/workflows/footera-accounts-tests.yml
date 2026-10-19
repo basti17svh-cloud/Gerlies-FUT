@@ -15,6 +15,7 @@ on:
       - 'tests/fixtures/footera-delete-account.deployed.ts'
       - 'index.html'
       - 'footera-app.css'
+      - 'footera-app.js'
       - 'tests/helpers/**'
       - 'service-worker.js'
       - 'manifest.webmanifest'
