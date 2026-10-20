@@ -136,7 +136,16 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,'front');
  if(opts.crest)try{ctx.save();ctx.translate(.095,1.40);ctx.scale(1,-1);ctx.drawImage(opts.crest,-.036,-.04,.072,.08);ctx.restore()}catch(_){}
  else{ctx.fillStyle=second;ctx.beginPath();ctx.moveTo(.06,1.425);ctx.lineTo(.13,1.425);ctx.lineTo(.13,1.385);ctx.quadraticCurveTo(.095,1.35,.06,1.385);ctx.closePath();ctx.fill()}
- if(number)text(number,-.085,1.345,.04);
+ // Chest sponsor instead of a front number, like real club kits.
+ if(opts.sponsor!==false){
+  // Own outline in the opposite tone so it stays readable over stripes.
+  const word=typeof opts.sponsor==='string'?opts.sponsor:'FOOTERA',dark=ink==='#141820';
+  ctx.save();ctx.translate(0,1.21);ctx.scale(.056/100*.8,-.056/100);
+  ctx.font='900 132px "Arial Narrow","Roboto Condensed",Arial,sans-serif';ctx.textAlign='center';
+  const w=ctx.measureText(word).width,max=.3/(.056/100*.8);if(w>max)ctx.scale(max/w,1);
+  ctx.lineJoin='round';ctx.lineWidth=14;ctx.strokeStyle=dark?'#f6f4ee':'#141820';ctx.strokeText(word,0,0);
+  ctx.fillStyle=ink;ctx.fillText(word,0,0);ctx.restore();
+ }
  ctx.restore();
  // Shorts with side piping; the small number sits on the front left leg.
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=shorts;ctx.fillRect(0,size*bands.shorts[0]-2,size,size*(bands.shorts[1]-bands.shorts[0])+4);
