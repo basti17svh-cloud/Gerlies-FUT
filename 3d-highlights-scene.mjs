@@ -1,5 +1,5 @@
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21195';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21194';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21196';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
@@ -43,6 +43,46 @@ let celebrationMemory={key:null,kind:null};
 export const SHOT_TIME=5.4;
 export const IMPACT_TIME=6.65;
 const SHOT_DRAG=.6;
+// Pace at the end of the drag flight, per metre of flight, per second.
+const SHOT_EXIT=SHOT_DRAG*Math.exp(-SHOT_DRAG)/(1-Math.exp(-SHOT_DRAG))/(IMPACT_TIME-SHOT_TIME);
+const KEEPER_LINE=-50.6;
+// Where the shot crosses the keeper's line, and how long it then needs, at
+// its exit pace, to reach its real end point (net, post, wide or the line).
+export function shotGate(contact,impact){
+ const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+ if(impact[2]>=KEEPER_LINE||contact[2]<=KEEPER_LINE)return{gate:impact,delay:0,speed:SHOT_EXIT*dist(impact,contact)};
+ const u=(KEEPER_LINE-contact[2])/(impact[2]-contact[2]),gate=contact.map((v,i)=>v+(impact[i]-v)*u);
+ // Short headers still arrive briskly instead of floating into the net.
+ const speed=Math.max(14,SHOT_EXIT*dist(gate,contact));
+ return{gate,delay:dist(impact,gate)/speed,speed};
+}
+// Scene time at which the shot really arrives (net, post, wide); the keeper's
+// line is always crossed at IMPACT_TIME.
+export function shotArrival(type,sequence='central',finish='normal',placement=null){
+ const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
+ return IMPACT_TIME+shotGate(shotContact(seq,style,placement),shotImpact(type,seq,style,placement)).delay;
+}
+// V21.196 PlayStyle+ signature moments: when the badge, camera and gold
+// ball trail show. A finisher's window runs into the strike; a creator's
+// covers the last pass of the move.
+const SIGNATURE_CAMERAS=Object.freeze({'power-shot':'behind','finesse-shot':'behind','trivela':'behind','low-driven-shot':'behind','chip-shot':'behind','power-header':'side','aerial':'side','acrobatic':'side','trickster':'feint','technical':'feint','rapid':'feint','quick-step':'feint'});
+// The last fast ball of the build-up before the shot: the decisive pass.
+export function lastPassWindow(sequence){
+ const seq=normalizeSequence(sequence);
+ if(extendedKind(seq)||DEFENSIVE_SCENES.includes(seq))return null;
+ let last=null,run=null,prev=ballPosition('goal',.25,seq);
+ for(let t=.3;t<=SHOT_TIME-.2+1e-9;t+=.05){
+  const p=ballPosition('goal',t,seq),fast=Math.hypot(p[0]-prev[0],p[2]-prev[2])/.05>9;prev=p;
+  if(fast){if(run)run[1]=t;else run=[t-.05,t]}else if(run){last=run;run=null}
+ }
+ return run||last;
+}
+export function signatureWindow(event,sequence=event?.sequence){
+ const sig=event?.signature;if(!sig||event.type==='ball_won')return null;
+ if(sig.who==='creator'){const pass=lastPassWindow(sequence);return pass?{badge:[pass[0]-.8,pass[1]+.9],trail:[pass[0],pass[1]+.1]}:null}
+ if(extendedKind(normalizeSequence(sequence)))return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,IMPACT_TIME+.1]};
+ return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,Math.min(IMPACT_TIME+.4,shotArrival(event.type,sequence,event.finish,event.shotPlacement||null)+.1)],camera:SIGNATURE_CAMERAS[sig.id]||null};
+}
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
 export const MIN_CAMERA_DISTANCE=34;
@@ -338,7 +378,12 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   // Air-drag flight: fast off the boot and still ~73% of mean speed at impact,
   // so the ball never crawls into the keeper. Keeper, net and HUD timing unchanged.
   const flight=(1-Math.exp(-SHOT_DRAG*t))/(1-Math.exp(-SHOT_DRAG));
- if(t<1){const p=lerp(contact,impact,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
+ // V21.196: every shot reaches the keeper's line at the same moment and with
+ // the same pace, so the speed never tells a goal from a save or a miss.
+ // Shots that go on past the keeper keep that pace into the net or wide.
+ const {gate,delay,speed}=shotGate(contact,impact);
+ if(t<1){const p=lerp(contact,gate,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
+ if(delay>0){if(time<IMPACT_TIME+delay)return lerp(gate,impact,(time-IMPACT_TIME)/delay);time-=delay}
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
   // Parries spring off the glove and slow down instead of drifting at a constant pace.
@@ -360,7 +405,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  }
  if(type==='shot_post')return lerp(impact,[Math.sign(impact[0])*8,.12,-45],1-Math.pow(1-clamp((time-IMPACT_TIME)/1.35),2));
  // A miss keeps the speed it had at the goal line, then rolls out behind the goal.
- const s=Math.max(0,time-IMPACT_TIME),exit=SHOT_DRAG*Math.exp(-SHOT_DRAG)/(1-Math.exp(-SHOT_DRAG))/(IMPACT_TIME-SHOT_TIME);
+ const s=Math.max(0,time-IMPACT_TIME),exit=speed/Math.max(.01,Math.hypot(impact[0]-contact[0],impact[1]-contact[1],impact[2]-contact[2]));
  const roll=(1-Math.exp(-1.1*s))/1.1,p=[impact[0]+(impact[0]-contact[0])*exit*roll,0,impact[2]+(impact[2]-contact[2])*exit*roll];
  const drop=smooth(s/.55);p[1]=mix(impact[1],.12,drop)+.18*(1-drop)*Math.abs(Math.sin(s*9));
  return p;
@@ -435,7 +480,7 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
   const recovered=worldPosition([defender[0],.85,defender[1]],direction);
   targetX=mix(bp[0],recovered[0],.18+.40*won);
   targetZ=mix(bp[2],recovered[2],.18+.38*won)+won*2.5*direction;
-  targetY=.88;fov=aspect<1.12?31.5:29.5;
+  targetY=.88;
   phase=time<1.42?'build':time<4.4?'press':'recovery';
  }
  if(seq==='diagonal_switch'){
@@ -447,11 +492,12 @@ export function cameraState(direction,time,aspect=1.3,type='goal',sequence='cent
  if(wide&&sequenceSide(seq)*direction>0)fov+=2.3*(1-smooth((time-(SHOT_TIME-.2))/1.25));
  // Track the ball with a fixed TV-side offset rather than an unrelated rail.
  // Far-wing, set-piece and finish positions remain exactly the same distance.
- const defenseView=DEFENSIVE_SCENES.includes(seq);
- distance=defenseView?34:BROADCAST_CAMERA_DISTANCE;
- fov=Math.max(defenseView?29.5:30.5,fov);
+ distance=BROADCAST_CAMERA_DISTANCE;
+ fov=Math.max(30.5,fov);
  const target=[targetX,targetY,targetZ],
-  rail=defenseView?[39.3,29,24*direction]:[39.3,27,5.8*direction],
+  // V21.196: ball wins share the normal TV rail. Their old steep, tilted
+  // angle gave away at once that nothing would come of the attack.
+  rail=[39.3,27,5.8*direction],
   railSize=Math.hypot(...rail);
  const position=target.map((coordinate,axis)=>coordinate+rail[axis]*distance/railSize);
   // The goal must stay fully in the mobile picture even with a closer lens.
@@ -541,13 +587,13 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  const defending=DEFENSIVE_SCENES.includes(sequence);
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended||defending?.16:.34,focusSpeed:isExtended||defending?24:12,railSpeed:isExtended||defending?24:14,
-  fovFloor:counter?(portrait?32:30.5):defending?(portrait?31.5:29.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?42:40):defending?(portrait?32.5:31):isExtended?(portrait?39:36):(portrait?42:40)});
+  fovFloor:counter?(portrait?32:30.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
+  fovCeiling:counter?(portrait?42:40):isExtended?(portrait?39:36):(portrait?42:40)});
  // Gaussian stabilization still controls the camera's entire travel. Restore
  // exact physical clearance after smoothing the camera and target separately.
  return time=>{
   const state=sample(time),gap=Math.hypot(...state.position.map((v,i)=>v-state.target[i]));
-  const distance=defending?34:BROADCAST_CAMERA_DISTANCE;
+  const distance=BROADCAST_CAMERA_DISTANCE;
   const factor=distance/Math.max(.01,gap);
   const fov=state.fov;
   const framed={...state,fov,distance,
@@ -864,6 +910,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const placement=event.shotPlacement||null;
  const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
+ const netArrival=shotArrival('goal',sequence,finish,placement);
+ const signature=event.motionDuelPreview===true?null:signatureWindow(event,sequence);
  const eventKeeperPose=(type,time,style=finish,seq=sequence,action=keeperAction)=>keeperPose(type,time,style,seq,action,placement);
  const eventCameraState=(dir,time,aspect=1.3,type=event.type,seq=sequence,style=finish,action=keeperAction)=>cameraState(dir,time,aspect,type,seq,style,action,placement);
  // All match-space objects, pitch markings and both goals share one transform.
@@ -942,7 +990,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const [x,z]=lineClearer.spot,side=Math.sign(x)||1;
    return{position:worldPosition([x+side*8.5,1.45,z+3.2],direction),target:worldPosition([x-side*1.2,.85,z-.2],direction),fov:34,kind:'line'};
   }
-  const kind=labFocusedPreview?null:STAR_CAMERAS[sequence];if(!kind)return null;
+  const kind=labFocusedPreview?null:STAR_CAMERAS[sequence]||signature?.camera;if(!kind)return null;
   const from=kind==='feint'?SHOT_TIME-2.4:SHOT_TIME-.95,to=kind==='feint'?SHOT_TIME-.15:kind==='side'?SHOT_TIME+.5:celebrationActive?CELEBRATION_CUT:IMPACT_TIME+.5;
   if(time<from||time>=to)return null;
   const a=actorPosition(0,from),s=actorPosition(0,Math.min(time,SHOT_TIME));
@@ -1399,6 +1447,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // A restrained ground cue keeps the real-size ball readable on a phone.
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
+  // PlayStyle+ signature: a gold trail of fading dots behind the ball.
+  const trail=signature?Array.from({length:22},(_,i)=>{const dot=mesh(geo('signature-trail',()=>new THREE.SphereGeometry(.11,10,8)),track(new THREE.MeshBasicMaterial({color:'#ffd35a',transparent:true,opacity:.5*(1-i/22),depthWrite:false,blending:THREE.AdditiveBlending})));dot.scale.setScalar((event.signature.who==='creator'?2:1)*(1-i/30));dot.visible=false;return dot}):[];
   for(const batch of batches.values()){batch.mesh=new THREE.InstancedMesh(batch.g,batch.m,batch.nodes.length);batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);batch.mesh.castShadow=!weak&&!batch.m.transparent;batch.mesh.receiveShadow=!weak&&!batch.m.transparent;batch.mesh.frustumCulled=false;scene.add(batch.mesh);track(batch.mesh)}
   // Merge stadium structures by material into static instance batches as well.
   scene.updateMatrixWorld(true);
@@ -1852,12 +1902,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
    ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
    ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.25:.18;
+   if(trail.length){const [from,to]=signature.trail;trail.forEach((dot,i)=>{const t=time-i*.012;dot.visible=t>=from&&time<=to;if(dot.visible)dot.position.set(...(i?eventBallPosition(event.type,t):bp))})}
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
    if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&!labDuelPreview&&time>=IMPACT_TIME&&time<IMPACT_TIME+1.5){const t=time-IMPACT_TIME;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    if(extended){
     // Keep the same grounded gait as ordinary play; never disable the GLB
     // locomotion while moving sixteen footballers across the pitch.
@@ -2071,7 +2122,17 @@ export function play(event,signal){
   const minute=document.createElement('b');minute.className='fh3d-minute';minute.textContent=`${event.minute}'`;
   const crest=document.createElement('div');crest.className='fh3d-team-crest';if(event.teamCrestHTML)crest.innerHTML=event.teamCrestHTML;
   const meta=document.createElement('div');meta.className='fh3d-goal-meta';meta.append(minute,crest);
-  hud.append(card,mark,copy,meta);layer.append(hud);host.append(layer);
+  hud.append(card,mark,copy,meta);layer.append(hud);
+  // PlayStyle+ signature badge, shown before the outcome is known.
+  const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null);
+  const signatureTime=signatureWindow(event,normalizeSequence(event.sequence));let signatureBadge=null;
+  if(signatureTime){
+   signatureBadge=document.createElement('div');signatureBadge.className='fh3d-signature';signatureBadge.setAttribute('aria-hidden','true');
+   const styleName=document.createElement('strong');styleName.textContent=event.signature.name.toUpperCase()+'+';
+   const who=document.createElement('span');who.textContent='PLAYSTYLE+ · '+((event.signature.who==='creator'?event.creatorName||event.assistName:event.playerName)||'');
+   signatureBadge.append(styleName,who);layer.append(signatureBadge);
+  }
+  host.append(layer);
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
@@ -2145,10 +2206,11 @@ export function play(event,signal){
       modelStatus.dataset.motionCaption=off?'CC0 AUS':count?`CC0 AKTIV · ${count}`:'CC0 BEREIT';
       layer.dataset.capturedActors=String(count);
      }
-     if(event.type==='goal'&&!impactSent&&displayTime>=IMPACT_TIME){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
+     if(event.type==='goal'&&!impactSent&&displayTime>=goalArrival){impactSent=true;document.dispatchEvent(new CustomEvent('footera-highlight-impact',{detail:{id:event.id,type:event.type}}))}
      layer.dataset.playbackTime=displayTime.toFixed(3);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
-     const revealAt=REVEAL_TIME;
+     // The result card never comes before the ball is actually in the net.
+     const revealAt=event.type==='goal'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
       if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
@@ -2158,6 +2220,7 @@ export function play(event,signal){
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
+     if(signatureBadge)signatureBadge.classList.toggle('visible',displayTime>=signatureTime.badge[0]&&displayTime<signatureTime.badge[1]);
      if(sample.done){finish('played');return}raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
    }

@@ -211,6 +211,7 @@ function queueMatch3D(event){
  presentation.sequence=lockedScene?(event.sequence||selected.sequence):selected.sequence;
  presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
+ presentation.signature=event.type==='ball_won'||typeof FooteraHighlights.signatureStyle!=='function'?null:FooteraHighlights.signatureStyle(presentation);
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
  presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':String(event.sequence||'').startsWith('defense_slide_tackle')?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;

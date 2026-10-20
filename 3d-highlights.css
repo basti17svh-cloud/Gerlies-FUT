@@ -203,3 +203,9 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 }
 /* In Extras the mode select gets the full card width so its labels fit. */
 #extrasView .highlight-mode{flex-direction:column;align-items:stretch;gap:6px}#extrasView .highlight-mode select{width:100%;max-width:none}
+/* V21.196 PlayStyle+ signature badge: gold, under the top bar, before the outcome. */
+.fh3d-signature{position:absolute;z-index:4;top:76px;left:50%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 18px 7px;border-radius:12px;background:linear-gradient(135deg,#3a2a06f2,#14110af2 60%);border:1px solid #ffd35a;box-shadow:0 0 18px #ffd35a55,0 6px 18px #0008;color:#fff;text-align:center;opacity:0;transform:translate(-50%,-8px) scale(.94);transition:opacity .22s ease,transform .22s ease;pointer-events:none;max-width:calc(100% - 32px);box-sizing:border-box}
+.fh3d-signature strong{font:800 17px/1.1 system-ui,sans-serif;letter-spacing:.06em;color:#ffd35a;text-shadow:0 0 10px #ffd35a88}
+.fh3d-signature span{font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.12em;color:#f3ead2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.fh3d-signature.visible{opacity:1;transform:translate(-50%,0) scale(1)}
+@media(prefers-reduced-motion:reduce){.fh3d-signature{transition:none}}

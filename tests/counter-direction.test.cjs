@@ -11,7 +11,7 @@ test('counter reverses possession and forward travel without changing either tea
   }
   assert.equal(E.extendedPhase(sequence,0,team).team,other);
   assert.equal(E.extendedPhase(sequence,time(10),team).team,team);
-  const finish=M.worldPosition(M.ballPosition('goal',6.65,sequence),direction);
+  const finish=M.worldPosition(M.ballPosition('goal',M.shotArrival('goal',sequence),sequence),direction);
   assert.ok(finish[2]*direction< -52.5,'shot enters opponent goal');
  }
 });

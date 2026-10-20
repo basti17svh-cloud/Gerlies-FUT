@@ -14,9 +14,11 @@ test('all six live scenes keep continuous ball/player paths and a genuine finish
    for(let i=0;i<16;i++){const p=M.playerPosition(i,t,'goal',sequence);assert.ok(p.every(Number.isFinite));assert.ok(Math.abs(p[0])<=34.3&&Math.abs(p[1])<=53,sequence+' pitch bounds')}
   }
   assert.deepEqual(M.ballPosition('goal',5.4,sequence,finish),M.shotContact(sequence,finish));
-  assert.ok(M.ballPosition('goal',6.65,sequence,finish)[2]<-52.5);
+  // Every outcome crosses the keeper's line together; the goal then goes on into the net.
+  assert.ok(Math.abs(M.ballPosition('goal',6.65,sequence,finish)[2]+50.6)<1e-6);
+  assert.ok(M.ballPosition('goal',M.shotArrival('goal',sequence,finish),sequence,finish)[2]<-52.5);
   assert.ok(M.ballPosition('big_chance_saved',6.65,sequence,finish)[2]>-52.5);
-  assert.ok(M.ballPosition('big_chance_missed',6.65,sequence,finish)[0]>3.66);
+  assert.ok(M.ballPosition('big_chance_missed',M.shotArrival('big_chance_missed',sequence,finish),sequence,finish)[0]>3.66);
  }
 });
 test('penalty is at eleven metres, free kick clears its wall, throw starts above two hands',async()=>{
@@ -30,9 +32,9 @@ test('penalty is at eleven metres, free kick clears its wall, throw starts above
 test('planner ownership, camera direction and physical shot speed survive both teams and halves',async()=>{
  const E=await import('../3d-extended-match.mjs'),{createHighlightPlayback}=await import('../3d-playback-clock.mjs'),M=await import('../3d-highlights-scene.mjs');
  for(const sequence of E.EXTENDED_SEQUENCES){
-  const timing=E.extendedTiming(sequence),clock=createHighlightPlayback({sequence,type:'goal'});assert.equal(clock.totalSeconds,timing.duration);
+  const timing=E.extendedTiming(sequence),clock=createHighlightPlayback({sequence,type:'goal'});assert.ok(Math.abs(clock.totalSeconds-(timing.duration-1.25+1.25/1.5))<1e-9);
   clock.presented(0);let state;for(let n=1;n<=Math.round(timing.shot*20);n++)state=clock.tick(n*50);
-  assert.ok(Math.abs(state.time-5.4)<1e-8);for(let n=1;n<=25;n++)state=clock.tick((timing.shot*20+n)*50);assert.ok(Math.abs(state.time-6.65)<1e-8);
+  assert.ok(Math.abs(state.time-5.4)<1e-8);for(let n=1;n<=10;n++)state=clock.tick((timing.shot+n/10*1.25/1.5)*1000);assert.ok(Math.abs(state.time-6.65)<1e-8);
   for(const direction of [-1,1])for(const aspect of [.85,1.8])for(const t of [0,1,3,5.4,6.65]){const c=M.cameraState(direction,t,aspect,'goal',sequence);assert.ok(c.position[0]-c.target[0]>0,'permanent TV side');assert.ok([...c.position,...c.target].every(Number.isFinite));}
  }
  for(const team of ['home','away']){const seq='extended_turnover_counter';assert.notEqual(E.extendedPhase(seq,0,team).team,team);assert.equal(E.extendedPhase(seq,3,team).team,team)}

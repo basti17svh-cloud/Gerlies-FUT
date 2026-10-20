@@ -24,19 +24,28 @@ for(const type of ['goal','big_chance_saved','ball_won']){
  });
 }
 test('long authored scenes retain their requested duration',()=>{
- for(const type of ['big_chance_saved','ball_won'])assert.equal(createHighlightPlayback({type,playSeconds:20}).totalSeconds,20);
+ assert.equal(createHighlightPlayback({type:'ball_won',playSeconds:20}).totalSeconds,20);
+ // A shot loses only the time its 1.5x faster flight saves.
+ const saved=createHighlightPlayback({type:'big_chance_saved',playSeconds:20}).totalSeconds,scale=10.4/20;
+ assert.ok(Math.abs(saved-(20-1.25/scale*(1-1/1.5)))<1e-9);
  // A goal adds only its slow-motion moment on top.
  const goal=createHighlightPlayback({type:'goal',playSeconds:20});
  assert.ok(goal.totalSeconds>20&&goal.totalSeconds<23);
 });
-test('goal slow motion: full-speed shot, slow net impact, continuous time',()=>{
+test('goal slow motion: fast shot, slow net impact only after the keeper, continuous time',()=>{
  const clock=createHighlightPlayback({type:'goal'});
  clock.tick(0);clock.presented(0);
  let previous=0,steps=[];
  for(let now=10;now<=clock.totalSeconds*1000+20;now+=10){const t=clock.tick(now).time;steps.push([previous,t]);assert.ok(t>=previous);previous=t}
  const rate=at=>{const s=steps.find(([a,b])=>a<=at&&b>at);return (s[1]-s[0])/.01};
- assert.ok(Math.abs(rate(5.8)-1)<.05,'shot flight at full speed');
- assert.ok(Math.abs(rate(6.7)-.4)<.05,'net impact in slow motion');
+ assert.ok(Math.abs(rate(5.8)-1.5)<.05,'shot flight 1.5x');
+ assert.ok(Math.abs(rate(6.5)-1.5)<.05,'no slow motion before the keeper line');
+ assert.ok(Math.abs(rate(6.9)-.4)<.05,'net impact in slow motion');
  assert.ok(Math.abs(rate(8)-1)<.05,'celebration back to full speed');
  assert.equal(previous,10.4);
+});
+test('V21.196: goals, saves and misses fly at the same pace up to the keeper',()=>{
+ const pace=type=>{const c=createHighlightPlayback({type});c.tick(0);c.presented(0);let prev=0,steps=[];for(let now=10;now<=c.totalSeconds*1000+20;now+=10){const t=c.tick(now).time;steps.push([prev,t]);prev=t}
+  return [5.6,6.0,6.4,6.6].map(at=>{const s=steps.find(([a,b])=>a<=at&&b>at);return Math.round((s[1]-s[0])/.01*100)/100})};
+ const goal=pace('goal');for(const type of ['big_chance_saved','big_chance_missed','shot_post'])assert.deepEqual(pace(type),goal);
 });

@@ -42,7 +42,7 @@ test('V21.96: the selected visual finish and shot result remain unchanged',async
   const shot=S.ballPosition(type,S.SHOT_TIME,seq);
   assert.ok(dist3(shot,S.ballPosition(type,S.SHOT_TIME-.001,seq))<.05,seq+' smooth approach');
   assert.ok(dist3(shot,S.ballPosition(type,S.SHOT_TIME+.001,seq))<.05,seq+' continuous release');
-  assert.deepEqual(S.ballPosition(type,S.IMPACT_TIME,seq),S.shotImpact(type,seq,'normal'));
+  assert.deepEqual(S.ballPosition(type,S.shotArrival(type,seq),seq),S.shotImpact(type,seq,'normal'));
  }
 });
 
