@@ -977,7 +977,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const sx=Math.sign(side)||0;
   return[mix(p[0],s[0]-rz*sx*wide-rx*back,u),mix(p[1],s[1]+rx*sx*wide-rz*back,u)];
  }
- // V21.199 (Basti): no zoom cameras in match scenes. Star finishes and
+ // V21.200 (Basti): no zoom cameras in match scenes. Star finishes and
  // goal-line clearances stay in the normal TV picture; only the scorer
  // close-up after a goal and the set-piece TV angles remain.
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
@@ -1424,7 +1424,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
   // PlayStyle+ signature: a gold trail of fading dots behind the ball.
   const trail=signature?Array.from({length:22},(_,i)=>{const dot=mesh(geo('signature-trail',()=>new THREE.SphereGeometry(.085,10,8)),track(new THREE.MeshBasicMaterial({color:'#ffd35a',transparent:true,opacity:.3*(1-i/22),depthWrite:false,blending:THREE.AdditiveBlending})));dot.scale.setScalar((event.signature.who==='creator'?1.6:1)*(1-i/30));dot.visible=false;return dot}):[];
-  // V21.199 PlayStyle+ (Basti): instead of a banner a small glowing icon
+  // V21.200 PlayStyle+ (Basti): instead of a banner a small glowing icon
   // lights up above the player, like in EA FC.
   const signatureIcon=signature?(()=>{
    const tex=canvasTexture(128,128,(g,w,h)=>{

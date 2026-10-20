@@ -145,7 +145,7 @@ const out=path.join(__dirname,'../test-artifacts');
   const minimumPlayers=row=>row.scenario==='sequence'?(String(row.sequence).startsWith('extended_')?3:row.sequence==='cutback_right'||row.sequence.startsWith('byline_pullback_')||(row.sequence.endsWith('_right')&&row.sequence!=='inside_right')?4:6):row.scenario==='finish'?4:8;
   // Big saves stay on the broadcast camera (the keeper close-up was removed again).
   assert.ok(!checks.some(row=>row.cameraShot==='keeper-close-up'),'no keeper close-up');
-  // V21.199: only set pieces keep their own TV angle (no star or goal-line
+  // V21.200: only set pieces keep their own TV angle (no star or goal-line
   // zooms any more); the broadcast envelope applies to every other frame.
   assert.ok(!checks.some(row=>/^star-/.test(String(row.cameraShot||''))),'no star zoom cameras');
   const closeAngle=row=>/^set-piece/.test(String(row.cameraShot||''));

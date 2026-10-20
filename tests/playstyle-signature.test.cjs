@@ -38,7 +38,7 @@ test('signature scene: slow motion into the strike and gold trail in the normal 
  const creator=M.signatureWindow({type:'goal',sequence:'wing_left',signature:{id:'incisive-pass',name:'Entscheidender Pass',who:'creator'}});
  assert.ok(creator.trail[1]<M.SHOT_TIME);
 });
-test('V21.199: PlayStyle+ is a small icon above the player, no banner and no zoom cameras in match scenes',()=>{
+test('V21.200: PlayStyle+ is a small icon above the player, no banner and no zoom cameras in match scenes',()=>{
  const fs=require('node:fs'),path=require('node:path'),P=require('../playstyles.js');
  assert.match(P.iconBody('power-shot'),/<circle/);assert.equal(P.iconBody('nope'),null);
  for(const style of ['power-shot','finesse-shot','trivela','low-driven-shot','chip-shot','power-header','aerial','acrobatic','dead-ball','trickster','technical','rapid','incisive-pass'])assert.ok(P.iconBody(style),style);
