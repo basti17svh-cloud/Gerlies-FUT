@@ -36,10 +36,11 @@ test('pending, rejected and missing approval cannot enter packs, archive or mark
   assert.equal(item.variant,undefined);
  }
 });
+// At the next Wednesday 19:00 the approved TOTW 6 takes over; TOTW 5 stays in the archive.
 test('explicit approval opens the real pack and archive gate at 19:00 Berlin and closes at next 19:00',()=>{
  for(const [at,active,published] of [
   ['2026-10-14T18:59:59+02:00',4,false],['2026-10-14T19:00:00+02:00',5,true],
-  ['2026-10-21T18:59:59+02:00',5,true],['2026-10-21T19:00:00+02:00',null,true]
+  ['2026-10-21T18:59:59+02:00',5,true],['2026-10-21T19:00:00+02:00',6,true]
  ]){
   const c=setup(at);assert.equal(c.team.sourceStatus,'admin-approved');
   assert.equal(c.activeTotwWeek()?.id||null,active);

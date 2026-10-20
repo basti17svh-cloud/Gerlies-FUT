@@ -22,7 +22,7 @@ test("TOTW 4 is admin-approved for Wednesday 7 October at 19:00 with the Footera
  assert.equal((totw.match(/position:"(?:CM|CAM)"/g)||[]).length,6);
  assert.equal((totw.match(/position:"(?:ST|RW)"/g)||[]).length,5);
  for(const name of ["Giorgi Mamardashvili","Gianluigi Donnarumma","Joao Cancelo","Ciaron Brown","David Hancko","Lasha Dvali","Neco Williams","Jude Bellingham","Mikel Merino","Kevin De Bruyne","Florian Wirtz","Tom Bischof","Fabian Rieder","Harry Kane","Bukayo Saka","Robert Lewandowski","Goncalo Ramos","Rasmus Hojlund"])assert.ok(totw.includes(name),name);
- assert.match(html,/const TOTW_WEEKS=\[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5\]/);
+ assert.match(html,/const TOTW_WEEKS=\[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5(?:,TOTW_WEEK_\d+)*\]/);
 });
 
 test("Takefusa Kubo is the Team 2 MOMENTUM SBC player from Wednesday 19:00 to event end",()=>{

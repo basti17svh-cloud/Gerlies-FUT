@@ -500,7 +500,7 @@ const TOTW_WEEK_5={id:5,name:"Team of the Week 5",releaseDate:"2026-10-14",activ
   {names:["Boulaye Dia"],eaId:"246242",ovr:83,position:"ST",stats:[84,85,73,80,37,76],fallback:{face:"./assets/footera/totw/5/246242.png",gender:"male",name:"Boulaye Dia",fullName:"Boulaye Dia",team:"Rennes",league:"Ligue 1",nation:"Senegal"}},
   {names:["Keisuke Gotō","Keisuke Goto"],eaId:"76570",ovr:80,position:"ST",stats:[75,81,67,75,34,78],fallback:{face:"./assets/footera/totw/5/76570.png",gender:"male",name:"Keisuke Gotō",fullName:"Keisuke Goto",team:"SC Freiburg",league:"Bundesliga",nation:"Japan"}}
 ]};
-const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activeUntil:"28.10.2026 18:59",sourceStatus:"pending-approval",players:[
+const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activeUntil:"28.10.2026 18:59",sourceStatus:"admin-approved",players:[
   {names:["Filip Stanković","Filip Stankovic"],eaId:"269271",ovr:80,position:"GK",stats:[79,78,75,80,50,76],fallback:{face:"./assets/footera/totw/6/269271.png",gender:"male",name:"Filip Stanković",fullName:"Filip Stanković",team:"Venezia",league:"Serie A",nation:"Serbia"}},
   {names:["Nahuel Noll"],eaId:"262322",ovr:76,position:"GK",stats:[74,75,69,78,61,75],fallback:{face:"./assets/footera/totw/6/262322.png",gender:"male",name:"Nahuel Noll",fullName:"Nahuel Noll",team:"SC Paderborn 07",league:"Bundesliga",nation:"Germany"}},
   {names:["Carlos Augusto","Carlos Augusto Zopolato Neves"],eaId:"258648",ovr:84,position:"LB",stats:[81,75,80,82,82,79],fallback:{face:"./assets/footera/totw/6/258648.png",gender:"male",name:"Carlos Augusto",fullName:"Carlos Augusto Zopolato Neves",team:"Inter",league:"Serie A",nation:"Brazil"}},
