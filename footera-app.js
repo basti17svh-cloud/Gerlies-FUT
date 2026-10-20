@@ -499,7 +499,27 @@ const TOTW_WEEK_5={id:5,name:"Team of the Week 5",releaseDate:"2026-10-14",activ
   {names:["Boulaye Dia"],eaId:"246242",ovr:83,position:"ST",stats:[84,85,73,80,37,76],fallback:{face:"./assets/footera/totw/5/246242.png",gender:"male",name:"Boulaye Dia",fullName:"Boulaye Dia",team:"Rennes",league:"Ligue 1",nation:"Senegal"}},
   {names:["Keisuke Gotō","Keisuke Goto"],eaId:"76570",ovr:80,position:"ST",stats:[75,81,67,75,34,78],fallback:{face:"./assets/footera/totw/5/76570.png",gender:"male",name:"Keisuke Gotō",fullName:"Keisuke Goto",team:"SC Freiburg",league:"Bundesliga",nation:"Japan"}}
 ]};
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5];
+const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activeUntil:"28.10.2026 18:59",sourceStatus:"admin-approved",players:[
+  {names:["Filip Stanković","Filip Stankovic"],eaId:"269271",ovr:80,position:"GK",stats:[79,78,75,80,50,76],fallback:{face:"./assets/footera/totw/6/269271.png",gender:"male",name:"Filip Stanković",fullName:"Filip Stanković",team:"Venezia",league:"Serie A",nation:"Serbia"}},
+  {names:["Nahuel Noll"],eaId:"262322",ovr:76,position:"GK",stats:[74,75,69,78,61,75],fallback:{face:"./assets/footera/totw/6/262322.png",gender:"male",name:"Nahuel Noll",fullName:"Nahuel Noll",team:"SC Paderborn 07",league:"Bundesliga",nation:"Germany"}},
+  {names:["Carlos Augusto","Carlos Augusto Zopolato Neves"],eaId:"258648",ovr:84,position:"LB",stats:[81,75,80,82,82,79],fallback:{face:"./assets/footera/totw/6/258648.png",gender:"male",name:"Carlos Augusto",fullName:"Carlos Augusto Zopolato Neves",team:"Inter",league:"Serie A",nation:"Brazil"}},
+  {names:["Oliver Provstgaard"],eaId:"266123",ovr:77,position:"CB",stats:[75,43,62,66,74,85],fallback:{face:"./assets/footera/totw/6/266123.png",gender:"male",name:"Oliver Provstgaard",fullName:"Oliver Provstgaard",team:"Lazio",league:"Serie A",nation:"Denmark"}},
+  {names:["Waldemar Anton"],eaId:"229476",ovr:84,position:"CB",stats:[71,48,69,68,86,86],fallback:{face:"./assets/footera/totw/6/229476.png",gender:"male",name:"Waldemar Anton",fullName:"Waldemar Anton",team:"Borussia Dortmund",league:"Bundesliga",nation:"Germany"}},
+  {names:["Miro Muheim"],eaId:"232839",ovr:80,position:"LB",stats:[77,70,77,77,75,77],fallback:{face:"./assets/footera/totw/6/232839.png",gender:"male",name:"Miro Muheim",fullName:"Miro Muheim",team:"Hamburger SV",league:"Bundesliga",nation:"Switzerland"}},
+  {names:["Timothy Weah","Tim Weah"],eaId:"241496",ovr:81,position:"RB",stats:[91,79,76,82,72,69],fallback:{face:"./assets/footera/totw/6/241496.png",gender:"male",name:"Timothy Weah",fullName:"Timothy Weah",team:"Olympique de Marseille",league:"Ligue 1",nation:"United States"}},
+  {names:["Diego Gómez","Diego Gomez"],eaId:"269278",ovr:81,position:"CM",stats:[76,74,78,82,79,82],fallback:{face:"./assets/footera/totw/6/269278.png",gender:"male",name:"Diego Gómez",fullName:"Diego Gómez",team:"Brighton & Hove Albion",league:"Premier League",nation:"Paraguay"}},
+  {names:["Nico Paz","Nicolás Paz Martínez", "Nicolas Paz"],eaId:"277846",ovr:84,position:"CAM",stats:[82,75,81,86,55,68],fallback:{face:"./assets/footera/totw/6/277846.png",gender:"male",name:"Nico Paz",fullName:"Nicolás Paz Martínez",team:"Como",league:"Serie A",nation:"Argentina"}},
+  {names:["Ibrahim Maza"],eaId:"275029",ovr:79,position:"CAM",stats:[82,73,73,86,43,69],fallback:{face:"./assets/footera/totw/6/275029.png",gender:"male",name:"Ibrahim Maza",fullName:"Ibrahim Maza",team:"Bayer 04 Leverkusen",league:"Bundesliga",nation:"Algeria"}},
+  {names:["Álex Baena","Alex Baena", "Alejandro Baena Rodríguez"],eaId:"257279",ovr:86,position:"LM",stats:[81,78,86,84,67,70],fallback:{face:"./assets/footera/totw/6/257279.png",gender:"male",name:"Álex Baena",fullName:"Alejandro Baena Rodríguez",team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Adrien Rabiot"],eaId:"210008",ovr:85,position:"CM",stats:[83,81,83,82,79,86],fallback:{face:"./assets/footera/totw/6/210008.png",gender:"male",name:"Adrien Rabiot",fullName:"Adrien Rabiot",team:"AC Milan",league:"Serie A",nation:"France"}},
+  {names:["Alexander Prass"],eaId:"263041",ovr:79,position:"LM",stats:[78,69,78,79,73,78],fallback:{face:"./assets/footera/totw/6/263041.png",gender:"male",name:"Alexander Prass",fullName:"Alexander Prass",team:"TSG Hoffenheim",league:"Bundesliga",nation:"Austria"}},
+  {names:["Luis Díaz","Luis Diaz", "Luis Fernando Díaz Marulanda"],eaId:"241084",ovr:89,position:"LW",stats:[92,85,80,91,47,79],fallback:{face:"./assets/footera/totw/6/241084.png",gender:"male",name:"Luis Díaz",fullName:"Luis Díaz",team:"FC Bayern München",league:"Bundesliga",nation:"Colombia"}},
+  {names:["Kylian Mbappé","Kylian Mbappe"],eaId:"231747",ovr:93,position:"ST",stats:[99,92,83,94,38,78],fallback:{face:"./assets/footera/totw/6/231747.png",gender:"male",name:"Kylian Mbappé",fullName:"Kylian Mbappé Lottin",team:"Real Madrid",league:"LALIGA EA SPORTS",nation:"France"}},
+  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",stats:[87,83,88,92,24,55],fallback:{face:"./assets/footera/totw/6/277643.png",gender:"male",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:92,position:"ST",stats:[88,93,72,82,46,90],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
+  {names:["Pedro Neto","Pedro Lomba Neto"],eaId:"238616",ovr:84,position:"RW",stats:[95,80,78,86,42,72],fallback:{face:"./assets/footera/totw/6/238616.png",gender:"male",name:"Pedro Neto",fullName:"Pedro Lomba Neto",team:"Chelsea",league:"Premier League",nation:"Portugal"}}
+]};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -527,6 +547,9 @@ function totwRosterErrors(team){
  }
  if(counts.GK!==2||counts.DEF!==5||counts.MID!==6||counts.ATT!==5)errors.push("Positionsverteilung muss 2 TW / 5 DEF / 6 MID / 5 ANG sein");
  if([...clubs.values()].some(count=>count>1))errors.push("Maximal ein Spieler pro Verein");
+ // From TOTW 6 on, nobody may appear in two consecutive weeks.
+ const previous=Number(team?.id)>=6?TOTW_WEEKS.find(week=>Number(week.id)===Number(team.id)-1):null;
+ if(previous){const before=new Set(previous.players.flatMap(p=>[String(p.eaId||""),key(p.names?.[0])]).filter(Boolean));if(rows.some(p=>before.has(String(p.eaId||""))||before.has(key(p.names?.[0]))))errors.push("Kein Spieler zwei Wochen hintereinander")}
  return [...new Set(errors)]
 }
 function totwReleaseApproved(team){
@@ -7332,7 +7355,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.198";
+const GFUT_BUILD="V21.199";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7390,7 +7413,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21198",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21199",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
