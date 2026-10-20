@@ -1,0 +1,26 @@
+name: Footera TOTW weekly lookup, portraits and poster
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - '.github/workflows/totw-weekly-assets.yml'
+      - 'scripts/totw-lookup.cjs'
+      - 'scripts/totw-candidates.txt'
+      - 'scripts/import-totw-portraits.py'
+      - 'scripts/totw-portraits-*.json'
+      - 'scripts/render-totw-poster.cjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Look up candidates in the FC27 dataset
+        if: hashFiles('scripts/totw-candidates.txt') != ''
+        run: node scripts/totw-lookup.cjs "$(cat scripts/totw-candidates.txt)"
