@@ -108,3 +108,11 @@ html body :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-s
 #squadView .slot>.mini>.cb-player-badge.cb-symbol-only{position:absolute;z-index:11;right:-8%;top:30%;width:19px;min-height:19px;margin:0;padding:2px;border-radius:50%}
 #squadView .slot>.mini>.cb-player-badge.cb-symbol-only svg{width:13px;height:13px}
 #squadView .slot>.chem-dots{position:absolute;left:0;right:0;top:100%;margin-top:1px}
+/* Founder cards: same idea, tuned per artwork rail. */
+html body .bastian-static-founder-shell .founder-card-art:after{font-size:15.5cqw;letter-spacing:-.03em}
+html body .bastian-static-founder-shell .founder-card-art{--founder-position-left:17.6%}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .ovr{font-size:12.5cqw!important;letter-spacing:-.03em!important}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .pos{font-size:5.6cqw!important}
+html body .card-shell .custom-card.founder.worms-founder{--card-info-left:15%;--card-info-width:17.5%}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .ovr{font-size:11cqw!important;letter-spacing:-.03em!important}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .pos{font-size:5.2cqw!important}
