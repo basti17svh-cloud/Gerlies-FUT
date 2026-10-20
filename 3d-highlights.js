@@ -22,7 +22,8 @@
    shotPlacement:event.shotPlacement?Object.freeze({
     side:event.shotPlacement.side===-1?-1:1,
     zone:['inside','channel','corner'].includes(event.shotPlacement.zone)?event.shotPlacement.zone:'channel',
-    height:['low','mid','high'].includes(event.shotPlacement.height)?event.shotPlacement.height:'mid'
+    height:['low','mid','high'].includes(event.shotPlacement.height)?event.shotPlacement.height:'mid',
+    ...(GOAL_STYLES.includes(event.shotPlacement.style)?{style:event.shotPlacement.style}:{})
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
@@ -39,7 +40,7 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21203').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21204').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -130,7 +131,49 @@
   ["back_post_volley_left","lowcross",6,"volley","medium"],
   ["overlap_clipped_right","overlap",6,"header","long"],
   ["striker_wall_return","combination",8,"low_driven","medium"],
-  ["diagonal_lob_finish","through",6,"chip","medium"]
+  ["diagonal_lob_finish","through",6,"chip","medium"],
+  ["false_nine_drop_left", "combination", 6, "finesse", "medium"],
+  ["false_nine_drop_right", "combination", 6, "finesse", "medium"],
+  ["winger_one_two_left", "combination", 7, "normal", "short"],
+  ["winger_one_two_right", "combination", 7, "normal", "short"],
+  ["box_rondo", "combination", 6, "low_driven", "medium"],
+  ["fullback_link_left", "combination", 6, "normal", "medium"],
+  ["fullback_link_right", "combination", 6, "normal", "medium"],
+  ["channel_ball_left", "through", 7, "low_driven", "short"],
+  ["channel_ball_right", "through", 7, "low_driven", "short"],
+  ["playmaker_slide_left", "through", 7, "normal", "short"],
+  ["playmaker_slide_right", "through", 7, "normal", "short"],
+  ["dink_over_line", "through", 5, "chip", "short"],
+  ["long_ball_sprint", "through", 5, "normal", "medium"],
+  ["underlap_left", "overlap", 6, "normal", "medium"],
+  ["underlap_right", "overlap", 6, "normal", "medium"],
+  ["overlap_volley_left", "overlap", 4, "volley", "medium"],
+  ["overlap_volley_right", "overlap", 4, "volley", "medium"],
+  ["byline_drive_left", "lowcross", 6, "low_driven", "short"],
+  ["byline_drive_right", "lowcross", 6, "low_driven", "short"],
+  ["far_post_slide_right", "lowcross", 5, "normal", "medium"],
+  ["whipped_header_left", "nearpost", 6, "header", "medium"],
+  ["whipped_header_right", "nearpost", 6, "header", "medium"],
+  ["deep_cross_header_left", "overlap", 5, "header", "long"],
+  ["deep_cross_header_right", "overlap", 5, "header", "long"],
+  ["slalom_left", "dribble", 5, "finesse", "short"],
+  ["slalom_right", "dribble", 5, "power", "short"],
+  ["winger_takeon_left", "dribble", 6, "finesse", "medium"],
+  ["winger_takeon_right", "dribble", 6, "finesse", "medium"],
+  ["pullback_power_left", "cutback", 6, "power", "medium"],
+  ["pullback_power_right", "cutback", 6, "power", "medium"],
+  ["cutback_volley_left", "cutback", 4, "volley", "medium"],
+  ["edge_rocket", "distance", 5, "power", "short"],
+  ["recycle_rocket_left", "distance", 5, "power", "medium"],
+  ["recycle_curler_right", "distance", 5, "finesse", "medium"],
+  ["halfvolley_drive", "distance", 4, "volley", "short"],
+  ["switch_cut_left", "switch", 5, "finesse", "long"],
+  ["switch_cut_right", "switch", 5, "finesse", "long"],
+  ["near_post_flick_header_left", "nearpost", 5, "header", "medium"],
+  ["near_post_flick_header_right", "nearpost", 5, "header", "medium"],
+  ["counter_sprint_left", "through", 7, "normal", "short"],
+  ["counter_sprint_right", "through", 7, "normal", "short"],
+  ["rebound_drive", "combination", 5, "power", "short"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -178,6 +221,17 @@
  ].map(([id,family,weight,finish,tags])=>Object.freeze({id,family,weight,finish,tags:Object.freeze(tags)})));
  function visualHash(input){let n=2166136261;for(const ch of String(input)){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
 
+ const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
+ const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick']);
+ function goalStyle(event,key){
+  const finish=String(event.finish||'normal'),seq=String(event.sequence||'');
+  if(['header','chip','bicycle'].includes(finish)||/^extended_(?:penalty|corner|throw_in)/.test(seq))return null;
+  const n=visualHash(key+':goal-style')%100,far=LONG_RANGE.has(seq)||/(?:distance|rocket|curler|halfvolley)/.test(seq);
+  // Long shots often fly into the top corner; elsewhere these stay special.
+  if(far)return n<38?'top_corner':n<50?'crossbar_in':n<58?'post_in':null;
+  if(finish==='low_driven')return n<12?'post_in':null;
+  return n<8?'crossbar_in':n<16?'post_in':n<22?'top_corner':null;
+ }
  function chooseShotPlacement(event,history=[]){
   // A deterministic, presentation-only corner: no match RNG is consumed.
   const key=[event.id||'',event.minute||0,event.team||'',event.playerId||'',event.sequence||'',event.finish||'',event.type||''].join('|');
@@ -186,8 +240,14 @@
   if(prior.length>1&&prior[prior.length-1].shotSide===prior[prior.length-2].shotSide)
    side=-prior[prior.length-1].shotSide;
   const zones=['inside','channel','corner'],heights=['low','mid','high'];
-  return Object.freeze({side,zone:zones[visualHash(key+':zone')%3],
-   height:event.finish==='low_driven'?'low':event.finish==='chip'?'high':heights[visualHash(key+':height')%3]});
+  const placement={side,zone:zones[visualHash(key+':zone')%3],
+   height:event.finish==='low_driven'?'low':event.finish==='chip'?'high':heights[visualHash(key+':height')%3]};
+  // V21.204 goal variants (Basti): in off the bar, in off the post, top corner.
+  // Only the picture of a goal changes; the simulation already decided it.
+  const style=event.type==='goal'?goalStyle(event,key):null;
+  if(style==='top_corner'){placement.zone='corner';placement.height='high'}
+  if(style)placement.style=style;
+  return Object.freeze(placement);
  }
  function visualStyleMap(input){const map=new Map();for(const s of Array.isArray(input)?input:[]){const id=typeof s==='string'?s:s?.id;if(typeof id==='string'&&id)map.set(id,s?.plus?2:1)}return map}
  // Deterministic presentation-only choreography. Every action is an attempt;
@@ -280,7 +340,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right'];
+  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive'];
   const pool=simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='distance')return distanceIds.includes(v.id);
    if(event.actionKind==='cross')return v.finish===event.finish;
