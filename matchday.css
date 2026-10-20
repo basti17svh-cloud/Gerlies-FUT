@@ -1,12 +1,12 @@
 /* Matchday: keep the match and its controls visible while managing the team. */
 #match.match{padding-bottom:calc(106px + env(safe-area-inset-bottom));scroll-padding-top:150px;overscroll-behavior:contain}
 #match .match-sticky-header{position:sticky;top:calc(-16px - env(safe-area-inset-top));z-index:30;padding:calc(12px + env(safe-area-inset-top)) 0 10px;background:linear-gradient(180deg,#080e0bf9,#080e0bf2);backdrop-filter:blur(14px)}
-#match .match-broadcast-head{margin-bottom:7px;font-size:10px}
+#match .match-broadcast-head{margin-bottom:7px;font-size:11px}
 #match .scoreboard{padding:9px 13px;border-radius:15px;box-shadow:0 8px 24px #0005,inset 0 1px #ffffff14}
 #match .match-score-line{margin:5px 0 2px;gap:10px}
 #match .score{font-size:clamp(34px,9vw,46px)}
 #match .match-team-name{font-size:clamp(12px,3vw,15px);line-height:1.2}
-#match .match-running-pill{padding:4px 8px;font-size:10px}
+#match .match-running-pill{padding:4px 8px;font-size:11px}
 #match .minute{padding:3px 8px;font-size:14px}
 #match .match-progress-track{height:3px;margin:7px 5px 0;overflow:hidden;border-radius:99px;background:#ffffff16}
 #match .match-progress-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#39dca6,#d8ff3e);transition:width .25s linear}
@@ -17,7 +17,7 @@
 #match .mstat span{font-size:11px}
 #match .match-tactical-summary{margin-top:8px;text-align:center;color:#9fb5a7;font-size:11px;line-height:1.4}
 #match .match-card-events:empty{display:none}
-#match .match-yellow-card,#match .match-red-card{font-size:10px;padding:4px 7px}
+#match .match-yellow-card,#match .match-red-card{font-size:11px;padding:4px 7px}
 #match .match-primary-controls,#match .match-manager-actions{position:fixed;z-index:40;left:50%;bottom:0;transform:translateX(-50%);width:min(680px,calc(100% - 24px));margin:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#080e0bea,#080e0b 24px);box-shadow:0 -12px 25px #080e0bda}
 #match .match-controls button{min-height:48px;line-height:1.25;white-space:normal;padding:10px 12px;font-size:13px;touch-action:manipulation}
 #match .match-primary-controls #manageTeamBtn{border-color:#90ba6a;background:linear-gradient(135deg,#233922,#142419);color:#edffca}
@@ -52,21 +52,21 @@
 #match .manager-grid.match-settings label{font-size:12px}
 #match .manager-grid.match-settings select{font-size:14px}
 #match .match-performance-player strong,#match .match-report-event strong{font-size:12px}
-#match .match-performance-player span,#match .match-report-event span{font-size:10px}
+#match .match-performance-player span,#match .match-report-event span{font-size:11px}
 #match .match-performance-row{min-height:48px;grid-template-columns:minmax(0,1fr) repeat(3,30px) 42px}
 #match .match-performance-row>div b{font-size:13px}
-#match .match-performance-row>div span{font-size:9px}
-#match .match-performance-row .match-performance-player span{font-size:10px}
+#match .match-performance-row>div span{font-size:11px}
+#match .match-performance-row .match-performance-player span{font-size:11px}
 #match .match-rating{height:32px;font-size:13px}
-#match .match-performance-key{margin:10px 0 0;text-align:left;color:#93a99c;font-size:10px;line-height:1.5}
+#match .match-performance-key{margin:10px 0 0;text-align:left;color:#93a99c;font-size:11px;line-height:1.5}
 #match .match-report-section-title strong{font-size:13px}
-#match .match-report-section-title span{font-size:9px}
+#match .match-report-section-title span{font-size:11px}
 #match .match-report-event time{font-size:11px}
 #match .match-report-event{padding:9px;grid-template-columns:36px 20px minmax(0,1fr)}
 #match .match-report-empty{font-size:12px}
 #match .match-report-performance-details>summary strong{font-size:14px}
-#match .match-report-performance-details>summary span{font-size:10px;line-height:1.3}
-#match .match-report-performance-summary>span{font-size:10px;line-height:1.3}
+#match .match-report-performance-details>summary span{font-size:11px;line-height:1.3}
+#match .match-report-performance-summary>span{font-size:11px;line-height:1.3}
 #match .match-report-performance-summary strong{font-size:12px}
 #match .match-potm-copy>small,#match .match-potm-copy p,#match .match-potm-copy>div em{font-size:11px;line-height:1.4}
 #match :is([data-scene="home-save"],[data-scene="home-block"],[data-scene="home-defense"]) .match-ball{left:18%;top:52%;animation:matchDriveAway .6s ease-out both}
@@ -76,7 +76,7 @@
 @media(max-width:560px){
  #match.match{scroll-padding-top:140px}
  #match .match-primary-controls,#match .match-manager-actions{width:calc(100% - 20px);gap:8px}
- #match .match-controls button{font-size:12px;padding:10px 8px}
+ #match .match-controls button{font-size:13px;padding:10px 8px}
  #match .manager-panel{padding:11px}
  #match .match-manager-bench{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 11px;padding:8px 4px}
  #match .match-performance-card{display:grid;grid-template-columns:65px minmax(0,1fr);gap:3px 8px}
@@ -98,22 +98,22 @@
 #match .post-match-progress-screen{display:none;position:fixed;inset:0;z-index:120;overflow:auto;place-items:center;padding:calc(22px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 0,#17372b 0,transparent 34%),linear-gradient(180deg,#07100c,#020504 82%)}
 #match .post-match-progress-screen.active{display:grid}
 #match .post-match-progress-card{width:min(100%,680px);padding:22px;border:1px solid #375247;border-radius:22px;background:linear-gradient(145deg,#101a15,#080d0b);box-shadow:0 24px 70px #000b,inset 0 1px #ffffff0b}
-#match .post-match-progress-kicker{color:#a9ff69;font-size:10px;font-weight:1000;letter-spacing:.18em}
+#match .post-match-progress-kicker{color:#a9ff69;font-size:11px;font-weight:1000;letter-spacing:.18em}
 #match .post-match-progress-card>h2{margin:7px 0 3px;font-size:30px;line-height:1;text-transform:uppercase;font-style:italic}
 #match .post-match-progress-card>p{margin:0 0 20px;color:#91a099;font-size:11px;line-height:1.45}
 #match .post-match-progress-body{display:grid;gap:15px}
 #match .post-progress-summary{display:grid;grid-template-columns:1fr auto;align-items:end;gap:3px 10px;padding:15px;border:1px solid #32493f;border-radius:15px;background:linear-gradient(135deg,#14231b,#0b120f)}
-#match .post-progress-summary small{grid-column:1;color:#91a59a;font-size:9px;font-weight:950;letter-spacing:.12em}
+#match .post-progress-summary small{grid-column:1;color:#91a59a;font-size:11px;font-weight:950;letter-spacing:.12em}
 #match .post-progress-summary strong{grid-column:2;grid-row:1 / 3;color:#dfff68;font-size:27px;line-height:1}
 #match .post-progress-summary span{grid-column:1;color:#edf7f1;font-size:12px;font-weight:850}
 #match .post-progress-promotion{padding:13px 15px;border:1px solid #c7ef5c;border-radius:12px;background:linear-gradient(110deg,#334d17,#17250e);color:#edff9e;text-align:center;font-size:16px;font-weight:1000;letter-spacing:.06em;animation:postProgressPulse .9s ease-out both}
 #match .post-progress-status{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
-#match .post-progress-status>span{min-width:0;padding:11px;border:1px solid #2d4138;border-radius:11px;background:#0b120f;color:#7f9188;font-size:8px;font-weight:900}
+#match .post-progress-status>span{min-width:0;padding:11px;border:1px solid #2d4138;border-radius:11px;background:#0b120f;color:#7f9188;font-size:11px;font-weight:900}
 #match .post-progress-status>span:last-child{border-color:#5f7f45;background:#111d11;color:#a9c49d}
 #match .post-progress-status b{display:block;margin-top:4px;color:#f2f8f4;font-size:12px;white-space:normal}
 #match .post-progress-status>i{color:#a9ff69;font-size:20px;font-style:normal;font-weight:1000}
 #match .post-progress-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:-5px}
-#match .post-progress-section-head span{color:#8fa098;font-size:8px;font-weight:950;letter-spacing:.12em}
+#match .post-progress-section-head span{color:#8fa098;font-size:11px;font-weight:950;letter-spacing:.12em}
 #match .post-progress-section-head strong{color:#edf8f1;font-size:11px;text-align:right}
 #match .post-progress-axis{position:relative;padding:13px 3px 48px;--from:0%;--to:0%}
 #match .post-progress-track{position:relative;height:13px;border:1px solid #344b40;border-radius:999px;background:#080d0b;box-shadow:inset 0 2px 5px #0009}
@@ -130,17 +130,17 @@
 #match .post-progress-marker i{display:block;width:1px;height:8px;margin:0 auto 3px;background:#4c6157}
 #match .post-progress-marker:first-child i{margin-left:0}
 #match .post-progress-marker:last-child i{margin-right:0}
-#match .post-progress-marker b{display:block;font-size:8px;line-height:1.15;white-space:normal}
-#match .post-progress-marker small{display:block;margin-top:2px;color:#63736c;font-size:7px;line-height:1.1}
+#match .post-progress-marker b{display:block;font-size:11px;line-height:1.15;white-space:normal}
+#match .post-progress-marker small{display:block;margin-top:2px;color:#63736c;font-size:11px;line-height:1.1}
 #match .post-progress-marker.checkpoint b{color:#75c9ff}
 #match .post-progress-marker.promotion b{color:#dfff68}
 #match .post-progress-marker.current b{color:#eef9f2}
 #match .post-progress-weekly{padding:12px;border:1px solid #263b32;border-radius:13px;background:#0a110e}
 #match .post-progress-weekly .post-progress-axis{padding-bottom:42px}
-#match .post-progress-note{padding:10px 12px;border-radius:10px;background:#101713;color:#9daaa4;font-size:10px;font-weight:800}
+#match .post-progress-note{padding:10px 12px;border-radius:10px;background:#101713;color:#9daaa4;font-size:11px;font-weight:800}
 #match .post-progress-note.accent{border:1px solid #6d8131;background:#19210d;color:#dbf67a}
-#match .post-progress-foot{color:#77877f;font-size:9px;text-align:center}
-#match #postMatchProgressClose{width:100%;margin-top:20px;min-height:50px;font-size:12px}
+#match .post-progress-foot{color:#77877f;font-size:11px;text-align:center}
+#match #postMatchProgressClose{width:100%;margin-top:20px;min-height:50px;font-size:13px}
 @keyframes postProgressPulse{0%{transform:scale(.96);opacity:.25}65%{transform:scale(1.015);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes postProgressCursorGlow{from{box-shadow:0 0 0 2px #e1ff69,0 0 13px #b8ff54}to{box-shadow:0 0 0 3px #e1ff69,0 0 28px #c8ff63}}
 @media(max-width:560px){
@@ -148,8 +148,8 @@
  #match .post-match-progress-card>h2{font-size:25px}
  #match .post-progress-summary strong{font-size:23px}
  #match .post-progress-marker{max-width:64px}
- #match .post-progress-marker b{font-size:7px}
- #match .post-progress-marker small{font-size:6px}
+ #match .post-progress-marker b{font-size:11px}
+ #match .post-progress-marker small{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){
  #match .post-progress-fill,#match .post-progress-cursor{transition:none!important}
@@ -238,7 +238,7 @@
  color:#edf6f1;font-size:11px;font-weight:900
 }
 .squad-battle-preview .preview-team-controls small{
- display:block;margin-top:3px;color:#839b90;font-size:7px;font-weight:700;line-height:1.35
+ display:block;margin-top:3px;color:#839b90;font-size:11px;font-weight:700;line-height:1.35
 }
 .squad-battle-preview .preview-team-controls select,
 .squad-battle-preview .preview-role-row select{
@@ -254,7 +254,7 @@
 }
 .squad-battle-preview .preview-role-editor>summary::-webkit-details-marker{display:none}
 .squad-battle-preview .preview-role-editor>summary small{
- color:#839b90;font-size:7px;font-weight:750
+ color:#839b90;font-size:11px;font-weight:750
 }
 .squad-battle-preview .preview-role-editor>summary>span{flex:0 1 auto}
 .squad-battle-preview .preview-role-editor>summary small{margin-left:auto}
@@ -270,14 +270,14 @@
 }
 .squad-battle-preview .preview-role-player{min-width:0;padding:0 2px 5px}
 .squad-battle-preview .preview-role-player b{
- display:inline-flex;min-width:26px;color:#d8ff3e;font-size:9px
+ display:inline-flex;min-width:26px;color:#d8ff3e;font-size:11px
 }
 .squad-battle-preview .preview-role-player span{
- display:block;margin-top:3px;color:#edf5f1;font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+ display:block;margin-top:3px;color:#edf5f1;font-size:11px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 .squad-battle-preview .preview-role-row label{min-width:0}
 .squad-battle-preview .preview-role-row label>span{
- display:block;margin:0 0 4px;color:#789087;font-size:7px;font-weight:850;text-transform:uppercase;letter-spacing:.07em
+ display:block;margin:0 0 4px;color:#789087;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.07em
 }
 @media(max-width:560px){
  .squad-battle-preview .preview-team-editor{padding:10px}
@@ -287,7 +287,7 @@
   grid-template-columns:minmax(88px,.8fr) minmax(0,1.15fr) minmax(0,.9fr);gap:5px;padding:7px 6px
  }
  .squad-battle-preview .preview-role-row select{min-height:38px;padding:0 5px;font-size:9px}
- .squad-battle-preview .preview-role-player span{font-size:9px}
+ .squad-battle-preview .preview-role-player span{font-size:11px}
 }
 
 
@@ -325,13 +325,13 @@
  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px
 }
 .squad-battle-preview .preview-kit-title>div>span{
- display:block;color:#d8ff3e;font-size:10px;font-weight:1000;letter-spacing:.08em
+ display:block;color:#d8ff3e;font-size:11px;font-weight:1000;letter-spacing:.08em
 }
 .squad-battle-preview .preview-kit-title small{
- display:block;margin-top:3px;color:#839b90;font-size:7px;font-weight:750
+ display:block;margin-top:3px;color:#839b90;font-size:11px;font-weight:750
 }
 .squad-battle-preview .preview-kit-auto{
- min-height:34px;padding:7px 10px;font-size:8px
+ min-height:34px;padding:7px 10px;font-size:13px
 }
 .squad-battle-preview .preview-kit-grid{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
@@ -343,10 +343,10 @@
  min-width:0;margin-bottom:8px
 }
 .squad-battle-preview .preview-kit-team-head strong{
- display:block;color:#edf6f1;font-size:8px;font-weight:1000;letter-spacing:.06em
+ display:block;color:#edf6f1;font-size:11px;font-weight:1000;letter-spacing:.06em
 }
 .squad-battle-preview .preview-kit-team-head span{
- display:block;margin-top:3px;color:#80968c;font-size:7px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+ display:block;margin-top:3px;color:#80968c;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 .squad-battle-preview .preview-kit-choices{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px
@@ -367,10 +367,10 @@
  width:61px;height:66px;filter:drop-shadow(0 5px 8px #0008)
 }
 .squad-battle-preview .preview-kit-choice b{
- font-size:8px;font-weight:950
+ font-size:11px;font-weight:950
 }
 .squad-battle-preview .preview-kit-status{
- margin-top:9px;padding:8px 9px;border-radius:9px;font-size:7.5px;font-weight:900;text-align:center
+ margin-top:9px;padding:8px 9px;border-radius:9px;font-size:11px;font-weight:900;text-align:center
 }
 .squad-battle-preview .preview-kit-status.ok{
  color:#91efb9;border:1px solid #2e6a4c;background:#0e251b
@@ -386,8 +386,8 @@
  .squad-battle-preview .preview-kit-choice{min-height:100px;padding:5px 2px}
  .squad-battle-preview .preview-kit-choice .preview-kit-art{height:61px}
  .squad-battle-preview .preview-kit-choice .kit-shirt{width:53px;height:58px}
- .squad-battle-preview .preview-kit-title>div>span{font-size:9px}
- .squad-battle-preview .preview-kit-auto{min-height:32px;padding:6px 8px;font-size:7px}
+ .squad-battle-preview .preview-kit-title>div>span{font-size:11px}
+ .squad-battle-preview .preview-kit-auto{min-height:32px;padding:6px 8px;font-size:13px}
 }
 
 /* V21.27 — keep live statistics fully visible on narrow devices. */

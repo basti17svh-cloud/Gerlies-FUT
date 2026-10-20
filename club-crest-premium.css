@@ -20,7 +20,7 @@
 .crest-vector-icon{width:35px;height:35px;display:block;filter:drop-shadow(0 1px 3px #0009)}
 .crest-option-art .crest-vector-icon-mini{width:31px;height:31px}
 .crest-eagle-symbol{font-size:25px;line-height:1}
-.crest-option-name{font-size:10px;font-weight:900;color:#dcebe2;text-align:center;line-height:1.25;overflow-wrap:anywhere}
+.crest-option-name{font-size:11px;font-weight:900;color:#dcebe2;text-align:center;line-height:1.25;overflow-wrap:anywhere}
 .kit-crest-stamp{position:absolute;top:25%;left:57%;display:grid;place-items:center;width:22%;aspect-ratio:200/240;pointer-events:none}
 .kit-crest-stamp .club-crest.kit-badge-mini{position:static!important;left:auto!important;top:auto!important;transform:none!important;width:100%!important;height:auto!important;aspect-ratio:200/240;--crest-border-size:2px!important}
 .kit-mini .kit-crest-stamp{width:26%;top:23%;left:54%}
@@ -32,7 +32,7 @@
 #identityHeroCrest{align-self:center}
 #identityHeroCrest .club-crest{width:clamp(112px,32vw,143px)}
 .identity-hero-copy h3{font-size:clamp(16px,4.7vw,21px)}
-.identity-hero-copy p{font-size:9px;line-height:1.35}
+.identity-hero-copy p{font-size:11px;line-height:1.35}
 #identityCrestSymbols{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:380px){
@@ -42,7 +42,7 @@
 #identityCrestSymbols button{min-height:75px;padding:7px 3px}
 .crest-option-art{width:35px;height:35px}
 .crest-option-art .crest-vector-icon-mini{width:27px;height:27px}
-.crest-option-name{font-size:9px}
+.crest-option-name{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){#identityCrestSymbols button{transition:none}}
 /* V21.30 — compact club badges, optional ornament and distinct silhouettes. */
