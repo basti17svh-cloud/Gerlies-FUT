@@ -24,4 +24,4 @@
 .pack-odds-note{color:#b8c9be;margin:14px 0}
 .pack-odds-disclaimer{color:#a6b8ad;border-top:1px solid #34473b;padding-top:12px;margin-top:16px}
 .pack-odds-error{padding:14px;border:1px solid #86694b;border-radius:10px;color:#f1cead}
-@media(max-width:430px){.pack-odds-modal .modalinner{width:100%}.pack-odds-special-row{align-items:flex-start;flex-direction:column;gap:2px}.pack-odds-special-row strong{text-align:left}.owned-odds-trigger{padding:7px;font-size:10px}}
+@media(max-width:430px){.pack-odds-modal .modalinner{width:100%}.pack-odds-special-row{align-items:flex-start;flex-direction:column;gap:2px}.pack-odds-special-row strong{text-align:left}.owned-odds-trigger{padding:7px;font-size:11px}}

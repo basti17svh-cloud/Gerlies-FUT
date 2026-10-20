@@ -43,7 +43,10 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  const attacker=field(attackSide).find(row=>attackSide==="home"?String(row.uid)===String(event.playerId):String(row.index)===String(event.playerId))||
   field(attackSide).find(row=>String(row.name).toLowerCase()===String(event.playerName||"").toLowerCase());
  const fill=(side,offset,lead,target)=>{
-  const list=field(side),anchor=list.includes(lead)?lead:null,ordered=anchor?[anchor,...list.filter(row=>row!==anchor)]:list;
+  // matchActorRows builds fresh row objects on every call, so the lead is
+  // matched by identity (uid at home, line-up index away), not by reference.
+  const same=(a,b)=>!!a&&!!b&&(side==="home"?String(a.uid)===String(b.uid):Number(a.index)===Number(b.index));
+  const list=field(side),anchor=list.find(row=>same(row,lead))||null,ordered=anchor?[anchor,...list.filter(row=>row!==anchor)]:list;
   let slot=0;
   for(let i=0;i<ordered.length&&i<8;i++){
    if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);continue}

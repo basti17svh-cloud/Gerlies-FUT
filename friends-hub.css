@@ -10,7 +10,7 @@
 #socialView .friends-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 #socialView .friends-metric{padding:12px 9px;border-radius:12px;background:#070f115e;border:1px solid #8cdbd81c;min-width:0}
 #socialView .friends-metric strong{display:block;font-size:22px;color:#eaffde;line-height:1.15}
-#socialView .friends-metric span{display:block;margin-top:4px;font-size:10px;color:#afc1bd;overflow-wrap:anywhere}
+#socialView .friends-metric span{display:block;margin-top:4px;font-size:11px;color:#afc1bd;overflow-wrap:anywhere}
 #socialView .friends-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:flex-end}
 #socialView .friends-filters{display:flex;gap:6px}
 #socialView .friends-filters button{font-size:11px;padding:8px 12px;border:1px solid #3d514b;border-radius:20px;color:#a6b8b1;background:#101b17}

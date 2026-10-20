@@ -1444,8 +1444,10 @@ function normCSV(raw){
  return{id,name,commonName,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physical","physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),preferredFoot:preferredFootName(first(raw,"preferred_foot","preferredFoot")),weakFoot:cleanNum(first(raw,"weak_foot","weakFoot")),skillMoves:cleanNum(first(raw,"skill_moves","skillMoves")),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId,gender,"fc27-open-data"),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender,baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 const COMMON_PLAYER_NAMES_BY_ID=Object.freeze({"232580":"Gabriel","207865":"Marquinhos"});
-function preferredPlayerName(p){return COMMON_PLAYER_NAMES_BY_ID[String(p?.id||"")]||String(p?.commonName||p?.name||"").trim()}
-function applyPreferredPlayerNames(players){for(const p of players){if(!p||isExclusiveFounderBase(p))continue;const name=preferredPlayerName(p);if(name)p.name=name}}
+const COMMON_PLAYER_NAMES_BY_FULL_NAME=Object.freeze([[/\bronaldo dos santos aveiro\b/,"Cristiano Ronaldo"]]);
+function commonNameForFullName(p){const keys=[p?.fullName,p?.name,p?.commonName].map(x=>String(x||"").toLowerCase());for(const[re,name]of COMMON_PLAYER_NAMES_BY_FULL_NAME)if(keys.some(k=>re.test(k)))return name;return""}
+function preferredPlayerName(p){return COMMON_PLAYER_NAMES_BY_ID[String(p?.id||"")]||commonNameForFullName(p)||String(p?.commonName||p?.name||"").trim()}
+function applyPreferredPlayerNames(players){for(const p of players){if(!p||isExclusiveFounderBase(p))continue;const name=preferredPlayerName(p);if(name)p.name=name;const full=commonNameForFullName(p);if(full){p.fullName=full;p.commonName=full}}}
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function eaObject(raw,key){
  const v=raw?.[key];
@@ -4196,7 +4198,7 @@ function changeClubRating(which){
 }
 $("clubRatingMin")?.addEventListener("input",()=>changeClubRating("min"));
 $("clubRatingMax")?.addEventListener("input",()=>changeClubRating("max"));
-$("clubGrid").addEventListener("click",e=>{const more=e.target.closest("[data-club-more]"),open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(more){clubRenderLimit+=CLUB_RENDER_BATCH;renderClub();return}if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||isFounderItem(i)||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;switchView("evolutionView");renderEvos();return}})
+$("clubGrid").addEventListener("click",e=>{const more=e.target.closest("[data-club-more]"),open=e.target.closest("[data-club-open]"),ins=e.target.closest("[data-insert-item]"),q=e.target.closest("[data-qs]"),ev=e.target.closest("[data-evo-open-player]");if(more){clubRenderLimit+=CLUB_RENDER_BATCH;renderClub();return}if(open){const item=state.club.find(x=>x.uid===open.dataset.clubOpen);if(item)openPlayerDetails(item,null);return}if(ins){openSlotPickerForItem(ins.dataset.insertItem);return}if(q){const i=state.club.find(x=>x.uid===q.dataset.qs);if(!i||isFounderItem(i)||!i.tradeable)return;persistActiveSquadPreset(state);const teams=state.squadPresets.filter(p=>p?.squad.includes(i.uid)).map(p=>p.name);if(teams.length&&!confirm(`Diese Karte steht in ${teams.join(', ')}. Schnellverkaufen und aus allen Mannschaften entfernen?`))return;state.coins+=quickSell(i);state.club=state.club.filter(x=>x.uid!==i.uid);state.squad=state.squad.map(id=>id===i.uid?null:id);removeActiveEvolutionForUid(i.uid);save();renderAll();toast("Schnellverkauft. Betroffene Kaderplätze sind frei.");return}if(ev){evoFocusPlayerUid=ev.dataset.evoOpenPlayer;activeEvoTab="available";switchView("evolutionView");renderEvos();return}})
 
 /* V18.32 meta-sensitive market, German positions and goalkeeper card stats */
 // FC27 early-cycle market baseline, calibrated against public console-price snapshots on 2026-10-01.
@@ -7187,7 +7189,7 @@ function closeUiLayer(id,kind){
  if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
  removeUiLayer(id)
 }
-function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();if(id==="marketView"&&prev!=="marketView")marketSection="hub";document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();renderActiveView(id);updateObjectiveIndicators();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
+function switchView(id,{push=true,scroll=true}={}){const prev=currentViewId();if(id==="marketView"&&prev!=="marketView")marketSection="hub";if(id==="evolutionView"&&prev!=="evolutionView"&&!evoFocusPlayerUid)activeEvoTab=activeEvolutionCount()?"active":"available";document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$(id).classList.add("active");const secondaryViews=["evolutionView","objectivesView","seasonPassView","sbcView","clubView","socialView","extrasView"];const activeNavKey=secondaryViews.includes(id)?"moreView":id;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===activeNavKey));hideMoreTray();renderActiveView(id);updateObjectiveIndicators();if(push&&!uiHistoryApplying&&prev!==id)pushUiState("view",{view:id});if(scroll)window.scrollTo({top:0,behavior:"smooth"})}
 function protectLockedBack(message,kind){history.pushState(uiState(kind),"",location.href);toast(message)}
 function handleAppBack(targetState){
   if($("usernameRequiredModal")?.classList.contains("active")&&!String(state.profile?.username||"").trim()){protectLockedBack("Bitte zuerst einen Benutzernamen festlegen.","username-required");return true}
@@ -7331,7 +7333,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.193";
+const GFUT_BUILD="V21.194";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7389,7 +7391,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21193",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21194",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

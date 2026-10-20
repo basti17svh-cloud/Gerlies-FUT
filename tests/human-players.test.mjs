@@ -130,7 +130,7 @@ function recordingContext(){
  return ctx;
 }
 
-test('kit canvas: big number and name on the back, crest on the left chest',()=>{
+test('kit canvas: big number and name on the back, crest and Footera sponsor on the chest',()=>{
  const ctx=recordingContext(),size=1024,crest={};
  paintFooteraHumanKit(ctx,size,{shirt:'#d8ff3e',shirtSecondary:'#173627',pattern:'stripes',shorts:'#173627',socks:'#d8ff3e'},
   {number:10,shirtName:'MUSIALA',crest},info);
@@ -139,8 +139,9 @@ test('kit canvas: big number and name on the back, crest on the left chest',()=>
  assert.ok(back,'number on the back half');
  assert.ok(Math.abs(back.at[0]-size*.75)<2,'centred on the back');
  assert.ok(back.height>size*.12,'back number is big: '+back.height);
- const front=texts.find(c=>c.text==='10'&&c.at[0]<size/2);
- assert.ok(front&&front.height<back.height/3,'small chest number');
+ assert.ok(!texts.some(c=>c.text==='10'&&c.at[0]<size/2&&c.at[1]<size*footeraKitLayout(info).bands.shirt[1]),'no number on the chest');
+ const sponsor=texts.find(c=>c.text==='FOOTERA');
+ assert.ok(sponsor&&Math.abs(sponsor.at[0]-size*.25)<2,'Footera sponsor centred on the chest');
  const name=texts.find(c=>c.text==='MUSIALA');
  assert.ok(name.at[0]>size/2&&name.at[1]<back.at[1],'name above the number');
  const badge=ctx.calls.find(c=>c.op==='drawImage');

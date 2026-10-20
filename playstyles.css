@@ -19,21 +19,23 @@
 .playstyle-entry p{margin:0;padding:0 9px 9px 46px;color:#9aaba4;font-size:7px;line-height:1.5}
 
 .playstyle-chip-row{display:flex;flex-wrap:wrap;gap:5px}
-.playstyle-chip{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border-radius:999px;border:1px solid #30423a;background:#121d18;color:#d9e8e1;font-size:6.5px;font-weight:900}
+.playstyle-chip{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border-radius:999px;border:1px solid #30423a;background:#121d18;color:#d9e8e1;font-size:11px;font-weight:900}
 .playstyle-chip b{width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#203028;color:#bde5d2}
 .playstyle-chip b .playstyle-glyph{width:72%;height:72%}
 .playstyle-chip.plus{border-color:#75693a;color:#f0dc98;background:#1b1c13}
 .playstyle-chip.plus b{background:#302a16;color:#f0d984}
 
-/* Card display: symbols only. They live below the stats, never on top of them. */
+/* Card display: symbols only. They sit below the stats, in the free strip
+   above the alternate positions; --ps-y (centre, % of card height) and
+   --ps-size (diamond size) are set per card design below, so they never
+   cover numbers or positions. */
 .card-shell>.playstyle-card-row{
- position:absolute;z-index:34;left:10.5%;right:10.5%;bottom:7.4%;
+ position:absolute;z-index:34;left:10.5%;right:10.5%;top:calc(var(--ps-y,87.6%) - 4.3cqw);
  display:flex;align-items:center;justify-content:center;gap:max(1px,1.3cqw);
  height:8.6cqw;margin:0;padding:0;pointer-events:none;opacity:.98;
 }
-.card-shell:has(.card-alt-positions)>.playstyle-card-row{bottom:9.4%}
 .card-shell>.playstyle-card-row .playstyle-card-icon{
- position:relative;flex:0 0 7.8cqw;width:7.8cqw;height:7.8cqw;
+ position:relative;flex:0 0 var(--ps-size,7cqw);width:var(--ps-size,7cqw);height:var(--ps-size,7cqw);
  display:grid;place-items:center;box-sizing:border-box;
  border:1px solid rgba(255,255,255,.66);border-radius:1.2cqw;
  background:rgba(4,8,11,.84);color:#f7fbff;
@@ -54,7 +56,7 @@
  bottom:2.8%!important;font-size:max(3.5px,3.9cqw);
 }
 /* The static Founder art already reserves a lower strip for alternate positions. */
-.bastian-static-founder-shell>.playstyle-card-row{bottom:7.2%}
+.bastian-static-founder-shell{--ps-y:87.6%}
 .bastian-static-founder-shell:has(>.playstyle-card-row) .founder-card-art>.card-alt-positions{bottom:17%}
 
 /* Keep the badges neutral and high-contrast on every card skin. The card artwork
@@ -66,13 +68,8 @@
 /* Full profile cards get a little more clarity; XI cards stay compact but legible. */
 .player-detail-card .card-shell>.playstyle-card-row,
 .bio-card .card-shell>.playstyle-card-row{opacity:1;gap:max(1px,1.45cqw)}
-.player-detail-card .card-shell>.playstyle-card-row .playstyle-card-icon,
-.bio-card .card-shell>.playstyle-card-row .playstyle-card-icon{
- flex-basis:8.5cqw;width:8.5cqw;height:8.5cqw;
-}
 .mini .card-shell>.playstyle-card-row{opacity:.96;gap:max(.5px,.9cqw)}
 .mini .card-shell>.playstyle-card-row .playstyle-card-icon{
- flex-basis:6.4cqw;width:6.4cqw;height:6.4cqw;
  border-color:rgba(255,255,255,.72);background:rgba(3,7,10,.88);color:#fff;
  box-shadow:0 .4cqw 1cqw rgba(0,0,0,.34);
 }
@@ -85,10 +82,19 @@
  .playstyles-list{grid-template-columns:1fr}
  .playstyle-entry summary{min-height:45px}
  .playstyle-entry p{font-size:7.5px}
- .playstyle-chip{font-size:7px}
+ .playstyle-chip{font-size:11px}
 }
 
-/* Legacy Event footer: always below the six attributes, above secondary positions. */
-.card-shell.legacy-shell>.playstyle-card-row{bottom:7.4%}
-.card-shell.legacy-shell:has(.card-alt-positions)>.playstyle-card-row{bottom:9.1%}
 .card-shell.legacy-shell:has(>.playstyle-card-row) .custom-card.legacy .card-alt-positions{bottom:2.8%!important}
+
+/* Free strip per design (measured on 158/200 px cards and 104/66 px minis). */
+.card-shell:has(>.custom-card.totw):not(:has(.card-alt-positions)){--ps-y:88.4%}
+.card-shell:has(>.custom-card.flashback){--ps-y:83%;--ps-size:5.6cqw}
+.card-shell:has(>.custom-card.icon){--ps-y:88.7%;--ps-size:6.2cqw}
+.card-shell:has(>.custom-card.special){--ps-y:89.4%;--ps-size:5.6cqw}
+.card-shell:has(>.custom-card.potm){--ps-y:90.3%;--ps-size:5.2cqw}
+.card-shell:has(>.custom-card.worms-founder){--ps-y:89.6%;--ps-size:5.2cqw}
+.card-shell:has(>.custom-card.evolution){--ps-y:90.6%;--ps-size:6.2cqw}
+/* Where the stats sit low, the positions move a little further into the tip. */
+.card-shell:has(>.playstyle-card-row) .custom-card:is(.potm,.special) .card-alt-positions{bottom:1.6%!important}
+.card-shell.founder-shell:has(>.playstyle-card-row) .custom-card.worms-founder .card-alt-positions{bottom:2.4%!important}

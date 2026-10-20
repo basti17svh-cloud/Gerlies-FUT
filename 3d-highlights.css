@@ -53,6 +53,14 @@
 
 #match.highlight3d-pending .match-live-stage{height:clamp(430px,64svh,620px);min-height:430px;position:relative;border-color:#4c7558;background:#071018;box-shadow:0 20px 44px #000b,inset 0 1px #ffffff22}
 #match.highlight3d-active .match-live-stage> :not(.fh3d){visibility:hidden}
+/* Until the 3D scene is on screen the taller stage stays a calm, dark broadcast
+   frame instead of the small 2D pitch with an empty area underneath. */
+#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage{animation:fh3d-stage-open .32s cubic-bezier(.2,.8,.2,1) both;background:radial-gradient(120% 70% at 50% 45%,#12352a 0,#071018 70%)}
+#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage>:not(.fh3d,.fh3d-warming){visibility:hidden}
+#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{content:'';position:absolute;z-index:1;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #d5ff4b;box-shadow:0 0 18px #d5ff4b66;pointer-events:none;animation:fh3d-stage-pulse .9s ease-in-out infinite alternate}
+@keyframes fh3d-stage-open{from{clip-path:inset(0 0 52% 0 round 18px);opacity:.6}to{clip-path:inset(0 round 18px);opacity:1}}
+@keyframes fh3d-stage-pulse{from{opacity:.3;transform:scale(.8)}to{opacity:.9;transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{animation:none}}
 #match.highlight3d-pending .match-timeline-wrap{visibility:hidden}
 #match.highlight3d-pending #matchStatePill span{font-size:0}
 #match.highlight3d-pending #matchStatePill span::after{content:'Live-Chance';font-size:10px}
