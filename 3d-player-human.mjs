@@ -142,7 +142,7 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   const word=typeof opts.sponsor==='string'?opts.sponsor:'FOOTERA',dark=ink==='#141820';
   ctx.save();ctx.translate(0,1.21);ctx.scale(.056/100*.8,-.056/100);
   ctx.font='900 132px "Arial Narrow","Roboto Condensed",Arial,sans-serif';ctx.textAlign='center';
-  const w=ctx.measureText(word).width,max=.3/(.056/100*.8);if(w>max)ctx.scale(max/w,1);
+  const w=ctx.measureText?.(word).width||0,max=.3/(.056/100*.8);if(w>max)ctx.scale(max/w,1);
   ctx.lineJoin='round';ctx.lineWidth=14;ctx.strokeStyle=dark?'#f6f4ee':'#141820';ctx.strokeText(word,0,0);
   ctx.fillStyle=ink;ctx.fillText(word,0,0);ctx.restore();
  }
