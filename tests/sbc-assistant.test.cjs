@@ -56,3 +56,15 @@ test('fünf manuelle Karten bleiben, sechs freie Plätze werden positionsgerecht
  assert.equal(result.draft.test[0],'testkarte');
  assert.match(result.messages[0],/6 Spieler eingesetzt/);
 });
+
+test('Sparsam setzt zuerst Duplikate aus dem SBC-Speicher und dann die schwächsten passenden Karten ein',()=>{
+ const strong=positions.map((position,i)=>player(`s${i}`,position,90));
+ const weak=positions.map((position,i)=>player(`w${i}`,position,70));
+ const duplicate=player('dup','CM',75,'storage');
+ const result=scenario([...strong,...weak,duplicate],[],{assistant:{sort:'smart'}});
+ assert.equal(result.writes,1);
+ const squad=Array.from(result.draft.squad);
+ assert.ok(squad.includes('dup'),'Duplikat aus dem SBC-Speicher wird verwendet');
+ assert.ok(squad.every(uid=>!uid.startsWith('s')),'keine 90er-Karte wird verbraucht');
+ assert.match(result.messages[0],/11\/11 belegt/);
+});
