@@ -605,7 +605,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
    // rather than widening the lens and filling the top with more stands.
    const boxShift=(-51.25*direction-frame.target[2])*.27*smooth((time-delivery.release-.3)/1.25);
    frame.target[2]+=boxShift;frame.position[2]+=boxShift;
-   return keepInBroadcastFrame(keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence),time);
+   return keepInBroadcastFrame(keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence),time,/^(wing|cutback)_/.test(sequence));
   }
   // The turnover counter composes its own pass-and-goal frame (counter test).
   if(extendedKind(sequence)&&extendedKind(sequence)!=='turnover_counter')return keepExtendedActionInFrame(frame,time,direction,aspect,worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction));
@@ -614,11 +614,13 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  // V21.205: the closer 34 m camera glides (never zooms) to keep the ball, and
  // from the shot on the whole goal, inside a phone picture. Judged at the
  // final range and the narrowest lens, before the track smooths the pan.
- function keepInBroadcastFrame(frame,time){
+ function keepInBroadcastFrame(frame,time,holdGoal=false){
   const gap=Math.hypot(...frame.position.map((v,i)=>v-frame.target[i]))||1,k=BROADCAST_CAMERA_DISTANCE/gap;
   const real={...frame,position:frame.position.map((v,i)=>frame.target[i]+(v-frame.target[i])*k)},lens=aspect<1.12?32:30.5;
   const ball=worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction);
   let fit=glideToFit(real,[ball],ball,aspect,lens,.78,1);
+  // A wide delivery also keeps the goal mouth in the picture (wide crosses).
+  if(holdGoal){const mouth=worldPosition([0,0,-52.5],direction);fit=glideToFit(fit,[ball,mouth],[(ball[0]+mouth[0])/2,0,(ball[2]+mouth[2])/2],aspect,lens,.9,1)}
   const goal=smooth((time-SHOT_TIME+1.2)/1.0);
   if(goal>0){
    const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
