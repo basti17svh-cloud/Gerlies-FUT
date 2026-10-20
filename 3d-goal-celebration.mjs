@@ -10,8 +10,15 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.187-fluid-celebrations';
-export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump']);
+export const CELEBRATION_VERSION='21.193-signature-celebrations';
+export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms']);
+// Trademark celebrations of real stars (matched on the card name). The jump
+// spin with the wide landing is the famous Ronaldo jump.
+const SIGNATURES=[[/\bcristiano\b|^ronaldo$|\bc\. ?ronaldo\b/,'jump_spin'],[/\bmessi\b/,'badge'],[/\bmbappe\b/,'arms_crossed'],[/\bbellingham\b/,'open_arms'],[/\bhaaland\b/,'fist_pump']];
+export function signatureCelebration(name=''){
+ const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ return key?(SIGNATURES.find(([pattern])=>pattern.test(key))?.[1]||null):null;
+}
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(v)?v:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const mix=(a,b,u)=>a+(b-a)*u;
@@ -24,12 +31,17 @@ const spring=(s,start,duration)=>{
 // Forearms and hands follow the upper arm a moment later (follow-through).
 const FOREARM_LAG=.11;
 
-export function pickCelebration(event={}){
+// avoid: the previous goal's celebration, so two goals in a row never repeat
+// the same one (a star's trademark celebration always wins).
+export function pickCelebration(event={},avoid=null){
  if(CELEBRATIONS.includes(event.celebration))return event.celebration;
+ const signature=signatureCelebration(event.playerName);
+ if(signature)return signature;
  const key=`${event.id??''}|${event.playerName??''}|${event.minute??''}`;
  let hash=2166136261;
  for(let i=0;i<key.length;i++){hash^=key.charCodeAt(i);hash=Math.imul(hash,16777619)>>>0}
- return CELEBRATIONS[hash%CELEBRATIONS.length];
+ const kind=CELEBRATIONS[hash%CELEBRATIONS.length];
+ return kind===avoid?CELEBRATIONS[(hash+1+(hash>>>8)%(CELEBRATIONS.length-1))%CELEBRATIONS.length]:kind;
 }
 
 // Metres travelled along the run-away line, s seconds after the start.
@@ -42,6 +54,8 @@ export function celebrationDistance(kind,s){
  // Sprint, then a decelerating slide on the knees.
  if(kind==='knee_slide')return s<1?4.6*s:4.6+ease(s-1,1.1,3.2);
  if(kind==='badge')return ease(s,1.8,6.4);
+ if(kind==='arms_crossed')return ease(s,1.4,5.2);
+ if(kind==='open_arms')return ease(s,1.7,6);
  return ease(s,1.5,5.6);
 }
 
@@ -124,6 +138,31 @@ function pose(t,kind,s){
   t.upper[0]+=mix(-.06*stop,.22,sky);t.upper[1]=-.16*stop*(1-sky);
   t.head=[mix(-.1*stop,.5,sky),0];t.shrug=[.32*sky,.32*sky];t.open=[sky,sky];
   looseStance(t,s,stop);
+ }else if(kind==='arms_crossed'){
+  // Stop dead, fold the arms across the chest and stare the stand down,
+  // chin up with a slow nod.
+  const stop=spring(s,1.15,.55),fold=spring(s,1.35,.6),nod=Math.sin(s*1.6)*.05*fold;
+  arms(t,[mix(.3,.95,fold),0,mix(.38,-.5,fold)],[mix(.3,.88,fold),0,mix(.38,-.42,fold)],mix(.5,2.05,fold),mix(.5,2.0,fold));
+  t.upper[0]+=.12*stop;t.upper[1]=.06*stop;t.head=[.22*stop+nod,-.08*stop];
+  t.shrug=[.14*fold,.14*fold];t.open=[0,0];
+  looseStance(t,s,stop);
+ }else if(kind==='open_arms'){
+  // Arms spread wide, palms open to the fans, soaking it in.
+  const stop=spring(s,1.4,.6),spread=spring(s,1.2,.8),sway=Math.sin(s*1.5)*.07*spread;
+  arms(t,[mix(.3,.32,spread),0,mix(.38,1.18,spread)+sway],[mix(.3,.32,spread),0,mix(.38,1.18,spread)-sway],.32,.32);
+  t.upper[0]+=.2*spread;t.upper[2]=sway*.5;t.head=[.3*spread,sway];
+  t.shrug=[.2*spread,.2*spread];t.open=[spread,spread];
+  looseStance(t,s,stop);
+ }else if(kind==='hug_left'||kind==='hug_right'){
+  // A teammate arriving beside the scorer: the near arm goes round his
+  // shoulders, the other fist pumps, both bouncing with him.
+  const wrap=spring(s,0,.5),bounce=Math.abs(Math.sin(s*5.5))*wrap,pump=Math.sin(s*6.2)*.18*wrap;
+  const around=[mix(.3,.36,wrap),0,mix(.38,1.22,wrap)],fist=[mix(.3,1.55,wrap)+pump,0,mix(.38,.35,wrap)];
+  const nearLeft=kind==='hug_left';
+  arms(t,nearLeft?around:fist,nearLeft?fist:around,nearLeft?mix(.5,1.0,wrap):mix(.5,1.6,wrap),nearLeft?mix(.5,1.6,wrap):mix(.5,1.0,wrap));
+  t.upper[2]=(nearLeft?-.1:.1)*wrap;t.upper[0]+=.06*wrap;t.head=[.12*wrap,(nearLeft?-.25:.25)*wrap];
+  t.shrug=nearLeft?[.3*wrap,.12*wrap]:[.12*wrap,.3*wrap];t.open=nearLeft?[.8*wrap,0]:[0,.8*wrap];
+  looseStance(t,s,wrap);t.lift=.05*bounce;
  }else{
   // Fist pump: plant, crouch and pull the right fist down twice, roaring.
   const stop=spring(s,1.1,.5),pump=Math.max(pulse(s,1.45,1.6,1.75,1.95),pulse(s,2.15,2.3,2.45,2.7));

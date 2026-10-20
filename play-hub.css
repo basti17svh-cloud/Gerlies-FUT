@@ -68,7 +68,8 @@
 #playView .play-rank-progress>strong{font-size:12px;color:#cce6d8}
 #playView .play-note{font-size:11px!important;line-height:1.55;color:#93aa9e!important}
 #playView .play-form-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #31473c;margin-top:16px;padding-top:15px;font-size:12px;color:#b8cec3}
-#playView .play-form{display:flex;gap:5px}
+#playView .play-form{display:flex;gap:5px;flex:1 1 auto;min-width:0;justify-content:flex-end}
+#playView .play-form .play-note{margin:0;white-space:normal;text-align:right}
 #playView .play-form>span[class]{display:grid;place-items:center;width:29px;min-height:29px;border-radius:8px;font-size:11px;font-weight:850}
 #playView .play-form .play-form-win{background:#225f3c;color:#bdffd4}
 #playView .play-form .play-form-draw{background:#47524f;color:#e6ece9}

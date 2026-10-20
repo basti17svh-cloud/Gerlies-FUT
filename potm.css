@@ -7,6 +7,8 @@
  --card-name-border:var(--potm-accent);--card-stats-fill:transparent;
  --card-name-color:#f8f5f8;--card-stats-color:var(--potm-accent);--card-value-color:#f8f5f8;
  --card-bottom-left:10%;--card-bottom-right:10%;--card-stats-left:3%;--card-stats-right:3%;
+ /* Keep the PlayStyle diamonds below the stat values. */
+ --card-bottom-bottom:16%;--card-alt-bottom:5%;
  --card-bottom-bottom:12%;--card-alt-bottom:6.5%;
  color:#f8edf1;background:transparent url("./assets/footera/events/potm/frames/bundesliga.svg") center / 100% 100% no-repeat;
  clip-path:none;box-shadow:none;overflow:hidden;

@@ -10,6 +10,7 @@ import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21193';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -207,21 +208,33 @@ export function splitAtlasSeams(geometry,zones,normalized){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null){
- const asset=variant==='makehuman'?sourceMakeHuman:source;
+// look (V21.193 human players): {number, shirtName, skinTone, crest, boots}.
+export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null,look={}){
+ const human=variant==='human';
+ const asset=human?footeraHumanSource():variant==='makehuman'?sourceMakeHuman:source;
  if(!asset)return null;
  const makehuman=variant==='makehuman';
  const model=asset.clone(asset.scene);
  model.name='FooteraImportedFootballer';
+ let dressed=null;
+ // Haircuts the player does not wear leave the clone before it is measured.
+ if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone),kit||{},
+  {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
   if(node.isBone)bones.set(node.name,node);
   if(node.isSkinnedMesh){node.frustumCulled=false;node.castShadow=true;node.receiveShadow=true;meshes.push(node)}
  });
  if(makehuman&&bones.has('head'))bones.set('Head',bones.get('head'));
- if(REQUIRED.some(key=>!bones.has(key))||!meshes.length)return null;
+ if(REQUIRED.some(key=>!bones.has(key))||!meshes.length){
+  for(const {geometry,material,texture} of dressed?.owned||[]){geometry?.dispose();material?.dispose();texture?.dispose()}
+  return null;
+ }
  model.updateMatrixWorld(true);
- const bounds=new THREE.Box3().setFromObject(model);
+ // A human's height is his body and boots, never a tall haircut.
+ const bounds=new THREE.Box3();
+ if(human)for(const mesh of meshes){if(mesh.name==='FooteraBody'||mesh.name==='FooteraBoots')bounds.expandByObject(mesh)}
+ else bounds.setFromObject(model);
  const size=new THREE.Vector3();bounds.getSize(size);
  if(size.y<.05||size.y>100)return null;
  const center=bounds.getCenter(new THREE.Vector3());
@@ -238,9 +251,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const hairStyle=([...String(name)].reduce((n,ch)=>(Math.imul(n,31)+ch.charCodeAt(0))|0,2166136261)>>>0)%6;
  model.updateMatrixWorld(true);
  // Shared textile-detail textures stay off on LOW mobile devices.
- const surfaceMaps=detail?createFooteraSurfaceMaps(THREE):null;
- const colorsByMesh=[],kitAtlas=existingDriver.skinned?.atlasTexture||fallbackAtlas;
- for(const mesh of meshes){
+ const surfaceMaps=!human&&detail?createFooteraSurfaceMaps(THREE):null;
+ const colorsByMesh=dressed?dressed.owned:[],kitAtlas=existingDriver.skinned?.atlasTexture||fallbackAtlas;
+ for(const mesh of human?[]:meshes){
   const sourceGeometry=mesh.geometry,sourceMaterial=mesh.material;
   const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
   const colors=new Float32Array(pos.count*3),uv=new Float32Array(pos.count*2),
@@ -379,7 +392,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const apply=createPlayerSpaceRetarget(bones,playerRoot);
  // Lightweight football boots, shaped around each real ankle in its rest
  // frame. They follow the imported foot bone and use one draw call per boot.
- for(const side of ['l','r']){
+ for(const side of human?[]:['l','r']){
   const foot=bones.get('foot_'+side),ankle=playerRoot.worldToLocal(foot.getWorldPosition(new THREE.Vector3()));
   const vertices=[],colors=[],indices=[],point=new THREE.Vector3(),segments=16;
   const rings=[[.052,.055,.008,.025],[.035,.070,.057,.066],[0,.070,.065,.064],[-.065,.057,.068,.050],[-.14,.037,.065,.030],[-.19,.030,.054,.023],[-.211,.027,.025,.017],[-.217,.027,.002,.002]];
@@ -398,7 +411,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const boot=new THREE.Mesh(geometry,material);boot.name='FooteraBoot-'+side;boot.castShadow=true;boot.receiveShadow=true;foot.add(boot);colorsByMesh.push({geometry,material});
  }
  // One bound haircut mesh on every real match player's head (mobile-safe).
- if(!makehuman){
+ if(!makehuman&&!human){
   const head=bones.get('Head');
   if(head){
    playerRoot.updateMatrixWorld(true);
@@ -515,7 +528,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
  }
  const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
- // MakeHuman uses other bone axes; the capture fits the Quaternius skeleton only.
+ // The old MakeHuman lab model uses other bone axes; the V21.193 human rig
+ // copies the Quaternius bone frames, so it shares the capture.
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
  // The keeper's guide rotates about the feet, not the imported pelvis.
  // Preserve that entire transform before retargeting individual joints.
@@ -613,7 +627,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  }
  animate();
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
-  boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,
+  boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,kitCanvas:dressed?.canvas||null,
   surfaceDetail:!!surfaceMaps,
   dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry.dispose();material.dispose();texture?.dispose()}surfaceMaps?.dispose()}
  };

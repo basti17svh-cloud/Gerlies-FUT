@@ -193,3 +193,5 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
  #match .fh3d .fh3d-hud{min-height:114px}
  #match .fh3d .fh3d-hud .fh3d-player-card{width:min(74px,100%)}
 }
+/* In Extras the mode select gets the full card width so its labels fit. */
+#extrasView .highlight-mode{flex-direction:column;align-items:stretch;gap:6px}#extrasView .highlight-mode select{width:100%;max-width:none}

@@ -124,7 +124,8 @@ function seasonCountdown(end,at=new Date()){
  const minutes=Math.max(0,Math.ceil((new Date(end)-new Date(at))/60000));
  if(minutes===0)return"Beendet";
  if(minutes<1440)return`Endet in ${Math.floor(minutes/60)} Std. ${minutes%60} Min.`;
- return`Endet in ${Math.ceil(minutes/1440)} Tagen`
+ const days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60);
+ return`Endet in ${days} ${days===1?"Tag":"Tagen"}${hours?` ${hours} Std.`:""}`
 }
 function catchupStart(group,season){
  if(!season?.end)return null;

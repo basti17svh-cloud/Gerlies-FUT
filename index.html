@@ -18,9 +18,9 @@
 
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
-<link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21157">
-<title>Footera V21.191</title>
-<link rel="stylesheet" href="./footera-app.css?v=21189">
+<link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21193">
+<title>Footera V21.193</title>
+<link rel="stylesheet" href="./footera-app.css?v=21193">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
 <link rel="stylesheet" href="./player-picks.css?v=21176">
@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=21128">
+<link rel="stylesheet" href="./3d-highlights.css?v=21193">
 <link rel="stylesheet" href="./club-stats.css">
 <link rel="stylesheet" href="./club-identity.css?v=2130">
 <link rel="stylesheet" href="./club-crest-premium.css?v=2130">
@@ -99,7 +99,7 @@
       <div class="onboard-profile">
         <h2>Dein Benutzername</h2>
         <p>Aus dem Benutzernamen wird automatisch dein erster Teamname erstellt. Beispiel: <b>Ranger</b> → <b>Ranger FC</b>.</p>
-        <p style="margin-top:-4px;color:#91a09a;font-size:8px">Du kannst deinen Benutzernamen später jederzeit unter <b>Extras → Vereinsprofil</b> ändern.</p>
+        <p style="margin-top:-4px;color:#91a09a;font-size:11px">Du kannst deinen Benutzernamen später jederzeit unter <b>Extras → Footera-Profil</b> ändern.</p>
         <input id="firstUsername" maxlength="20" placeholder="z. B. Ranger" autocomplete="nickname">
         <div id="firstTeamPreview" class="preview">Teamname: –</div>
         <button id="saveFirstUsername" class="primary" style="width:100%">Weiter</button>
@@ -200,7 +200,7 @@
   </div>
 </section>
 
-<section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>EAFC-inspiriertes Squad-Layout: Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
+<section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
   <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
   <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
@@ -271,7 +271,7 @@
  </div>
 </section>
 
-<section id="storeView" class="view"><div class="headline"><h2>Shop</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
+<section id="storeView" class="view"><div class="headline"><h2>Store</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
 <span class="footera-points-entry-icon"><img src="./assets/footera/points.webp" alt="" aria-hidden="true"></span>
 <span class="footera-points-entry-copy"><strong>Footera Points erwerben</strong><small>8 Points-Pakete entdecken · aktuell nur Testmodus</small></span>
 <span class="footera-points-entry-arrow" aria-hidden="true">›</span>
@@ -377,6 +377,7 @@
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>3D Highlights</h3><p>Kurze Live-Szenen für Tore und große Chancen. Bei nicht unterstützten Geräten läuft die gewohnte Spieldarstellung weiter.</p><label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights"></select></label></div>
+  <div class="extras-card"><span class="extras-kicker">DATENSCHUTZ</span><h3>Besucherstatistik</h3><p>Optionale, anonyme Besucherstatistik. Du kannst deine Einwilligung hier jederzeit ändern.</p><div id="analyticsSettingsSlot"></div></div>
   <div class="extras-card"><span class="extras-kicker">SPIEL</span><h3>Spieldaten</h3><p id="homeDb">Deine Spieldaten werden vorbereitet.</p><button id="syncAgain" class="secondary">Spieldaten aktualisieren</button></div>
 </div></div></section>
 
@@ -580,7 +581,7 @@
 <div id="opponentTeamModal" class="modal friend-team-modal opponent-team-modal"><div class="modalinner"><div class="modalhead"><div><h3 id="opponentTeamModalTitle">Gegner</h3><div id="opponentTeamModalSub" style="font-size:7px;color:#87958f"></div></div><button id="opponentTeamModalClose" class="secondary">Schließen</button></div><div id="opponentTeamModalBody"></div></div></div>
 
 
-<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div></div>
+<div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div><div class="reveal-skip-hint" aria-hidden="true">Tippen zum Überspringen</div></div>
 
 <div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Karten zum Verein hinzufügen oder den verbleibenden Pack-Inhalt schnellverkaufen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellDuplicates" class="secondary">Duplikate schnellverkaufen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
@@ -678,15 +679,15 @@
 <div id="toast" class="toast"></div>
 
 
-<script src="./3d-highlights.js?v=21191"></script>
+<script src="./3d-highlights.js?v=21193"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=21177"></script>
 <script src="./footera-match-actions.js?v=21181"></script>
 <script src="./footera-time.js"></script>
 <script src="./footera-cosmetic-evolutions.js?v=21156"></script>
-<script src="./footera-app.js?v=21191"></script>
-<script src="./season-system.js?v=21128"></script>
-<script src="./competition-system.js?v=21161"></script>
+<script src="./footera-app.js?v=21193"></script>
+<script src="./season-system.js?v=21193"></script>
+<script src="./competition-system.js?v=21193"></script>
 <script src="./champions-system.js?v=21183"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js?v=21101"></script>

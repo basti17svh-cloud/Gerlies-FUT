@@ -3544,7 +3544,7 @@ function renderStore(){
   return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span><span>${esc(packCompositionText(p))}</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
+   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${Array.isArray(p.composition)||p.type==="gold"?`<span>${esc(packCompositionText(p))}</span>`:""}${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
    <button type="button" class="store-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Wahrscheinlichkeiten für ${esc(p.name)} ansehen">ⓘ Wahrscheinlichkeiten</button>
@@ -3693,7 +3693,22 @@ function packIsWalkout(item){
  return item.variant==="special"?itemRating(item)>=84:itemRating(item)>=86
 }
 function packWalkoutPriority(item){const theme=packRevealTheme(item);return theme==="icon"?0:theme==="gold"?2:1}
+// Better cards build more tension: every tunnel stage and the final hold get
+// longer with the rating (gold 86 x1.3 up to icons x1.8).
+function packRevealPace(item,mode){
+ const r=itemRating(item),theme=packRevealTheme(item);
+ if(mode==="board")return 1.15;
+ if(isFounderItem(item))return 1.7;
+ if(theme==="icon")return 1.8;
+ const pace=theme==="gold"?(r>=90?1.75:r>=88?1.5:1.3):1.3+Math.max(0,Math.min(.4,(r-84)*.05));
+ return mode==="double"?Math.max(1.6,pace):pace
+}
 function packRevealPlan(){
+ const plan=packRevealPlanBase();
+ if(plan.mode!=="plain"&&plan.cards[0])plan.pace=packRevealPace(plan.cards[0],plan.mode);
+ return plan
+}
+function packRevealPlanBase(){
  const ranked=[...pendingPack].sort((a,b)=>itemRating(b)-itemRating(a));
  if(ranked.length===1&&isFounderItem(ranked[0]))return{mode:"walkout",cards:ranked,label:"FOOTERA FOUNDER",duration:5600};
  // Order double walkouts: ICONS, special cards of 84+, then gold cards of 86+.
@@ -3789,44 +3804,49 @@ function showWalkoutClue(kind,base){
 }
 async function runPackReveal(plan){
  const opening=$("opening"),reveal=$("reveal"),flash=$("flash");
- const theme=packRevealTheme(plan.cards[0]);
- opening.className="opening active mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
+ const theme=packRevealTheme(plan.cards[0]),pace=plan.pace||1;
+ packRevealSkip={started:Date.now(),tunnel:false,card:false,phase:null,wake:null};
+ const tunnelWait=ms=>packRevealWait(Math.round(ms*pace),"tunnel"),cardWait=ms=>packRevealWait(Math.round(ms*pace),"card");
+ try{await runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait)}finally{packRevealSkip=null}
+}
+async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
+ opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
  opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
 
  if(plan.mode==="plain"){
   $("openStage").style.display="none";
   if(!showPackRevealCard(plan)){finishPack();return}
-  await sleep(plan.duration);finishPack();return
+  await cardWait(plan.duration);finishPack();return
  }
 
  $("bigPack").classList.add("pulse");
  if(plan.mode==="board"){
   const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
   addPackFloorLights();
-  await sleep(250);
+  await tunnelWait(250);
   $("openStage").style.display="none";
   $("boardIntro").classList.add("active");
-  showBoardCue("nation",firstBase);await sleep(850);
-  showBoardCue("position",firstBase);await sleep(800);
-  showBoardCue("club",firstBase);await sleep(1000);
+  showBoardCue("nation",firstBase);await tunnelWait(850);
+  showBoardCue("position",firstBase);await tunnelWait(800);
+  showBoardCue("club",firstBase);await tunnelWait(1000);
   resetBoardIntro();
   $("bigPack").classList.remove("pulse");
   flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
   await sleep(350);
   if(!showPackRevealCard(plan)){finishPack();return}
   spawnPackSparks(22);
-  await sleep(plan.duration);finishPack();return
+  await cardWait(plan.duration);finishPack();return
  }
 
  const firstBase=displayBase(plan.cards[0]);if(!firstBase){finishPack();return}
  addPackFloorLights();
  $("openStage").style.display="none";
  $("walkoutTunnel").classList.add("active");
- await sleep(1200);
- showWalkoutClue("nation",firstBase);await sleep(1000);
- showWalkoutClue("position",firstBase);await sleep(900);
- showWalkoutClue("club",firstBase);await sleep(1150);
+ await tunnelWait(1200);
+ showWalkoutClue("nation",firstBase);await tunnelWait(1000);
+ showWalkoutClue("position",firstBase);await tunnelWait(900);
+ showWalkoutClue("club",firstBase);await tunnelWait(1150);
  resetWalkoutTunnel();
  $("bigPack").classList.remove("pulse");
  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
@@ -3836,16 +3856,31 @@ async function runPackReveal(plan){
  if(!showPackRevealCard(plan)){finishPack();return}
 
  if(plan.mode==="double"&&plan.cards[1]){
-  await sleep(700);
+  await cardWait(700);
   const second=plan.cards[1],secondBase=displayBase(second);
   if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,theme)}
  }
- if(plan.mode==="walkout"){await sleep(700);spawnPackConfetti(55,theme)}
- if(plan.mode==="special"){await sleep(650);spawnPackConfetti(50,theme)}
- await sleep(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
+ if(plan.mode==="walkout"){await cardWait(700);spawnPackConfetti(55,theme)}
+ if(plan.mode==="special"){await cardWait(650);spawnPackConfetti(50,theme)}
+ await cardWait(Math.max(1200,plan.duration-(plan.mode==="double"?700:0)-700));
  finishPack();
 }
+// Tap during a reveal: the first tap skips the tunnel straight to the card,
+// the next one skips the card hold to the pack results.
+let packRevealSkip=null;
+function packRevealWait(ms,phase){
+ const skip=packRevealSkip;
+ if(!skip)return sleep(ms);
+ if(skip[phase])return Promise.resolve();
+ return new Promise(resolve=>{skip.phase=phase;skip.wake=resolve;sleep(ms).then(resolve)})
+}
+function skipPackReveal(){
+ const skip=packRevealSkip;if(!skip||!skip.phase||Date.now()-skip.started<400)return;
+ skip[skip.phase]=true;if(skip.phase==="tunnel")skip.card=false;
+ const wake=skip.wake;skip.wake=null;wake?.()
+}
 $("openPackBtn").addEventListener("click",async()=>{try{await runPackReveal(packRevealPlan())}catch(err){console.error("Pack reveal failed",err);finishPack();toast("Pack geöffnet. Animation wurde übersprungen.")}})
+$("opening").addEventListener("click",e=>{if(!e.target.closest?.("#openPackBtn"))skipPackReveal()});
 function tradeableClubTwinForPackItem(item){
  if(!item||item.tradeable)return null;
  const key=packItemKey(item),listed=new Set(state.transferList||[]);
@@ -4956,8 +4991,8 @@ function claimEvolutionStage(instanceKey=""){
 }
 function renderAvailableEvolution(evo){
  const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo),focus=evoFocusPlayerUid&&eligible.some(x=>x.uid===evoFocusPlayerUid),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),disabled=!eligible.length||full||running;
- const label=!eligible.length?"Keine geeigneten Spieler":running?"Evolution bereits aktiv":full?"3/3 Evolutionen aktiv":"Spieler wählen & Vorschau";
- return`<div class="evo-offer ${focus?"focus":""}"><div class="evo-offer-top"><div><div class="evo-tags"><span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
+ const label=running?"Evolution läuft":!eligible.length?"Keine geeigneten Spieler":full?"3/3 Evolutionen aktiv":"Spieler wählen & Vorschau";
+ return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
 }
 function renderActiveEvolution(){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();
@@ -4971,7 +5006,7 @@ function renderActiveEvolution(){
 }
 function renderEvoHistory(status){const rows=(state.evoHistory||[]).filter(x=>status==="completed"?x.status==="completed":x.status!=="completed");if(!rows.length)return'<div class="evo-empty">Hier gibt es noch keine Einträge.</div>';return rows.slice(0,20).map(h=>{const evo=EVOLUTION_POOL.find(x=>x.id===h.evoId),item=state.club.find(x=>x.uid===h.uid),b=item?displayBase(item):null;return`<div class="evo-history"><div><strong>${esc(evo?.name||h.evoId)}</strong><span>${b?esc(b.name):'Spieler'} · ${h.status==='completed'?'Abgeschlossen':h.status==='expired'?'Abgelaufen':'Abgebrochen'}</span></div>${b?`<div class="evo-history-card">${cardHTML(b,item,true)}</div>`:''}</div>`}).join("")}
 function renderPastEvolutions(){const nowDefs=new Set(activeEvolutionDefinitions().map(x=>x.id)),previous=activeEvolutionDefinitions(new Date(Date.now()-7*86400000)).filter(x=>!nowDefs.has(x.id));const old=previous.map(evo=>{const sch=evolutionSchedule(evo,new Date(),-1);return`<div class="evo-offer expired"><div class="evo-offer-top"><div><span class="evo-live">ABGELAUFEN</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Startphase beendet <b>${evoDate(sch.signupEnd)}</b></span></div></div>`}).join("");return old+renderEvoHistory("past")}
-function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
+function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.slice().sort((a,b)=>activeEvolutionDefinitionRunning(b.id)-activeEvolutionDefinitionRunning(a.id)).map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
@@ -5090,17 +5125,17 @@ function sbcRequirementSummary(sbc,stats){
  if(sbc.minEitherMatchClub)reqs.push({label:"Beteiligter Verein",value:`${stats.eitherMatchClubCount}/${sbc.minEitherMatchClub}`,ok:stats.minEitherMatchClubOk});
  if(sbc.requireBothMatchClubs)reqs.push({label:"Beide Vereine",value:`${stats.matchClubCounts.filter(n=>n>0).length}/2`,ok:stats.requireBothMatchClubsOk});
  if(sbc.minChem)reqs.push({label:"Chemie",value:`${stats.chem}/${sbc.minChem}`,ok:stats.minChemOk});
- if(reqs.length===1)reqs.push({label:"Bedingung",value:stats.allRule?"Erfüllt":"Offen",ok:stats.allRule});
+ if(reqs.length===1)reqs.push({label:"Passende Spieler",value:stats.allRule?"Erfüllt":"Alle Plätze füllen",ok:stats.allRule});
  return reqs
 }
 function sbcFailedRequirementText(sbc,stats){
  const failed=sbcRequirementSummary(sbc,stats).filter(r=>!r.ok);
- if(!stats.allRule&&!failed.some(r=>r.label==="Bedingung"))failed.unshift({label:"Bedingung",value:"Offen"});
+ if(!stats.allRule&&!failed.some(r=>r.label==="Passende Spieler"))failed.unshift({label:"Passende Spieler",value:"Alle Plätze füllen"});
  if(!failed.length)return"";
  return "Noch offen: "+failed.map(r=>`${r.label} (${r.value})`).join(" · ")
 }
 function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
-function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${reward.qty||1}× ${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
+function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${(reward.qty||1)>1?`${reward.qty}× `:""}${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
 function sbcRewardPackLabel(reward){
  if(reward?.pack)return sbcPackName(reward.pack);
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
@@ -7296,7 +7331,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.191";
+const GFUT_BUILD="V21.193";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7354,7 +7389,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21191",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21193",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
