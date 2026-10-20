@@ -22,7 +22,7 @@ test('signatures show for goals, saves and misses alike and steer towards the st
  assert.equal(H.snapshot({id:'x',type:'goal',signature:{id:'power-shot',who:'scorer'}}).signature.name,'Powerschuss');
  assert.equal(H.snapshot({id:'x',type:'goal',signature:{id:'<script>',who:'scorer'}}).signature,null);
 });
-test('signature scene: slow motion into the strike, gold trail and close camera, never for ball wins',async()=>{
+test('signature scene: slow motion into the strike and gold trail in the normal TV picture, never for ball wins',async()=>{
  const {createHighlightPlayback}=await import('../3d-playback-clock.mjs'),M=await import('../3d-highlights-scene.mjs');
  const signature={id:'power-shot',name:'Powerschuss',who:'scorer'};
  for(const type of ['goal','big_chance_saved']){
@@ -33,8 +33,8 @@ test('signature scene: slow motion into the strike, gold trail and close camera,
   assert.ok(Math.abs(rate(5.1)-.4)<.05);assert.ok(Math.abs(rate(6)-1.5)<.05,'the flight keeps the common pace');
  }
  const win=M.signatureWindow({type:'big_chance_saved',sequence:'long_shot',finish:'power',signature});
- assert.equal(win.camera,'behind');assert.ok(win.badge[0]<M.SHOT_TIME&&win.trail[0]===M.SHOT_TIME);
+ assert.ok(!win.camera,'normal TV picture, no close-up (Basti)');assert.ok(win.badge[0]<M.SHOT_TIME&&win.trail[0]===M.SHOT_TIME);
  assert.equal(M.signatureWindow({type:'ball_won',sequence:'defense_interception',signature}),null);
  const creator=M.signatureWindow({type:'goal',sequence:'wing_left',signature:{id:'incisive-pass',name:'Entscheidender Pass',who:'creator'}});
- assert.ok(creator.trail[1]<M.SHOT_TIME&&!creator.camera);
+ assert.ok(creator.trail[1]<M.SHOT_TIME);
 });

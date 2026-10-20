@@ -1,6 +1,6 @@
 # Footera – TOTW 6 Vorschlag
 
-Stand: V21.197, 20.10.2026. **Von Basti am 20.10.2026 für Mittwoch, 21.10.2026, 19:00 Uhr freigegeben** (Status `admin-approved`).
+Stand: V21.198, 20.10.2026. **Von Basti am 20.10.2026 für Mittwoch, 21.10.2026, 19:00 Uhr freigegeben** (Status `admin-approved`).
 
 Geplanter Start: **21.10.2026, 19:00 Europe/Berlin**. Ende: **28.10.2026, 18:59**. Ohne Freigabe bleibt TOTW 6 aus Packs, Markt und Archiv ausgeschlossen und TOTW 5 bleibt die letzte veröffentlichte Woche.
 
