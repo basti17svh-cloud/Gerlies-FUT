@@ -1,0 +1,56 @@
+name: Footera player database from EA
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - '.github/workflows/player-database.yml'
+      - 'scripts/build-player-db.cjs'
+  pull_request:
+    paths:
+      - '.github/workflows/player-database.yml'
+      - 'scripts/build-player-db.cjs'
+      - 'assets/players-db.csv'
+      - 'tests/player-database.test.cjs'
+      - 'footera-app.js'
+  schedule:
+    # Thursdays 06:00 UTC, after EA's weekly rating updates.
+    - cron: '0 6 * * 4'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: player-database-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download every player from EA's rating database
+        run: node scripts/build-player-db.cjs
+      - name: Check that the game reads the new file
+        run: node --test tests/player-database.test.cjs
+      - name: Commit the player database to this branch
+        run: |
+          git add assets/players-db.csv
+          if git diff --cached --quiet; then echo "Player database unchanged"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Player database: refresh from EA ratings"
+          git push origin HEAD:${GITHUB_REF_NAME}
+  check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: The game loads the checked-in player database
+        run: node --test tests/player-database.test.cjs tests/player-traits.test.cjs tests/startup-state.test.cjs
