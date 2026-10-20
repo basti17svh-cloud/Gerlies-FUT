@@ -1,6 +1,6 @@
 /* Isolated Chromium + real Supabase SDK, mocked HTTP backend. No production writes.
  * Run with FOOTERA_TEST_CHROMIUM, FOOTERA_TEST_SDK and FOOTERA_TEST_PLAYERS_CSV.
- * Fixtures: Supabase UMD SDK and the CSV at DB_SOURCES[0] in index.html.
+ * Fixtures: Supabase UMD SDK and the CSV at DB_SOURCES[0] (assets/players-db.csv).
  */
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright':'playwright');
@@ -52,7 +52,7 @@ async function routes(ctx){
    return respond([]);
   }
   if(url.href.includes('supabase-js@'))return route.fulfill({contentType:'application/javascript',body:sdk});
-  if(url.pathname.endsWith('dataset_ea_fc_27.csv'))return route.fulfill({contentType:'text/csv',body:csv});
+  if(url.pathname.endsWith('players-db.csv'))return route.fulfill({contentType:'text/csv',body:csv});
   if(url.origin===new URL(base).origin&&url.pathname.startsWith('/Gerlies-FUT/')){
    const rel=decodeURIComponent(url.pathname.slice('/Gerlies-FUT/'.length))||'index.html',file=path.resolve(repo,rel);
    if(!file.startsWith(repo+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});

@@ -1,6 +1,5 @@
 const DB_SOURCES=[
- {name:"GitHub FC27 CSV",url:"https://raw.githubusercontent.com/mzafram2001/ea-fc/main/data/dataset_ea_fc_27.csv"},
- {name:"jsDelivr FC27 CSV",url:"https://cdn.jsdelivr.net/gh/mzafram2001/ea-fc@main/data/dataset_ea_fc_27.csv"}
+ {name:"Footera Spielerdatenbank (EA)",url:"./assets/players-db.csv"}
 ];
 const EA_RATINGS_API="https://drop-api.ea.com/rating/ea-sports-fc";
 const DB_MIN_PLAYERS=10000;
@@ -2728,8 +2727,8 @@ function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
 function validateDatabase(players){
  if(!Array.isArray(players)||players.length<DB_MIN_PLAYERS)return{ok:false,reason:`Nur ${players?.length||0} Spieler gefunden`};
  const valid=players.filter(p=>p.id&&p.name&&p.ovr>=40&&p.ovr<=99&&p.position).length;if(valid/players.length<.95)return{ok:false,reason:"Zu viele unvollständige Datensätze"};
- const anchors=[['mbapp',91],['haaland',91],['yamal',90]];
- for(const [needle,ovr] of anchors){const p=players.find(x=>normalizeKey(x.name).includes(needle));if(!p||p.ovr!==ovr)return{ok:false,reason:`Ratinganker ${needle} fehlt oder ist nicht ${ovr}`}}
+ // EA updates ratings during the season, so anchors only check that the stars are there and rated like stars.
+ for(const needle of ['mbapp','haaland','yamal']){const p=players.find(x=>normalizeKey(x.name).includes(needle));if(!p||p.ovr<85)return{ok:false,reason:`Ratinganker ${needle} fehlt oder liegt unter 85`}}
  const counts={gold:0,silver:0,bronze:0};players.forEach(p=>counts[rarityOf(p)]++);if(counts.gold<1000||counts.silver<1000||counts.bronze<500)return{ok:false,reason:"Gold/Silber/Bronze-Verteilung unplausibel"};
  const leagueCounts={};players.forEach(p=>{if(p.league)leagueCounts[p.league]=(leagueCounts[p.league]||0)+1});
  const must=["Bundesliga","Premier League","LALIGA EA SPORTS","Serie A","Ligue 1"];
@@ -7356,7 +7355,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.198";
+const GFUT_BUILD="V21.199";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7414,7 +7413,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21198",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21199",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
