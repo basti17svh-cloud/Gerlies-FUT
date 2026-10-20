@@ -44,8 +44,10 @@ test('3D respects the simulated finish and attack type for goals, saves and miss
   const event={type,id:String(i),actionKind:kind,finish,creatorName:'Creator',playerStyles:[{id:'finesse-shot',plus:true}]};
   const visual=H.choosePresentation(event);
   assert.equal(visual.finish,finish);
-  if(kind==='distance')assert.ok(['layoff_distance','switch_distance_left','edge_pullback_right'].includes(visual.sequence));
+  // V21.195 star moments: a screamer, a volley or a solo feint may show instead.
+  if(kind==='distance')assert.ok(['layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive'].includes(visual.sequence));
   else if(kind==='cross')assert.match(visual.sequence,finish==='header'?/header|high|clipped/:/volley/);
+  else if(kind==='dribble')assert.ok(visual.family===kind||/^double_feint_(left|right)$/.test(visual.sequence),visual.sequence);
   else assert.equal(visual.family,kind);
   assert.equal(H.snapshot({...event,...visual}).actionKind,kind);
  }

@@ -38,7 +38,7 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21194').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21195').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -225,14 +225,29 @@
     ['high_reach',aerial?5*(1+styles(keeper,'cross-claimer','far-reach')*1.05):.14]
    ],':keeper');
   }
+  // V21.195 drama: some missed chances become a clearance off the goal line.
+  // Still a miss for the match; only the picture changes.
+  if(event.type==='big_chance_missed'&&!seq.startsWith('extended_')&&!['chip','bicycle'].includes(finish)&&visualHash(hashKey+':line')%4===0)keeperAction='line_clear';
   return Object.freeze({defenderAction:defenseAction,keeperAction});
+ }
+ // V21.195 star moments: simulated chances may also show the matching big
+ // visual finishes (screamer from distance, volley or bicycle kick, solo
+ // feint). Presentation only; the simulated outcome and finish stay.
+ const STAR_SCENES=Object.freeze({
+  distance:{power:['long_shot','power_drive'],finesse:['finesse_halfspace']},
+  cross:{volley:['volley_left','volley_right','bicycle']},
+  dribble:{normal:['dribble','double_feint_left','double_feint_right'],finesse:['double_feint_left','double_feint_right','inside_left','inside_right'],low_driven:['dribble']}
+ });
+ function starScenes(event,scorer){
+  const ids=STAR_SCENES[event.actionKind]?.[event.finish]||[];
+  return VISUAL_SCENES.filter(v=>ids.includes(v.id)&&(v.id!=='bicycle'||scorer.has('acrobatic'))).map(v=>v.id==='bicycle'?Object.freeze({...v,weight:scorer.get('acrobatic')===2?2.2:.9}):v);
  }
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
   // defenders motionless and the final runner offside. Preserve the simulator's
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
-  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind]});
+  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind]});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
@@ -248,7 +263,7 @@
    if(['header','volley','bicycle'].includes(v.finish)||distanceIds.includes(v.id))return false;
    if(event.finish==='chip')return v.finish==='chip';
    return v.family===event.actionKind;
-  }):[...VISUAL_SCENES,...PLAYBOOK_SCENES];
+  }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES];
   const choices=pool.map(v=>{
    let w=v.weight;
    if(PLAYBOOK_SCENES.includes(v)){
@@ -300,7 +315,7 @@
   let pick=visualHash(key)/4294967296*choices.reduce((n,x)=>n+x[1],0);
   const chosen=choices.find(x=>(pick-=x[1])<0)?.[0]||choices[0][0];
   // Finishing module is independent from the attack build-up and never touches match outcomes.
-  const finish=simulated?event.finish||'normal':chosen.finish==='normal'&&scorer.has('finesse-shot')&&visualHash(key+':finish')%7===0?'finesse':
+  const finish=simulated?(chosen.id==='bicycle'?'bicycle':event.finish||'normal'):chosen.finish==='normal'&&scorer.has('finesse-shot')&&visualHash(key+':finish')%7===0?'finesse':
    chosen.finish==='normal'&&scorer.has('low-driven-shot')&&visualHash(key+':low')%8===0?'low_driven':chosen.finish;
   return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4});
  }

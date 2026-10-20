@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21179';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21195';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21194';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -194,6 +194,21 @@ export function controlCarrier(time,sequence='central'){
  if(index<0||time<start||time>=end)return{index:-1,weight:0};
  return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
 }
+// V21.195: an equaliser or winner from the 88th minute on ('winner',
+// 'equaliser' or null), for the bigger celebration and its own headline.
+export function lateGoalDrama(event){
+ if(event?.type!=='goal'||!(Number(event.minute)>=88))return null;
+ const home=Number(event.scoreBeforeHome),away=Number(event.scoreBeforeAway);
+ if(!Number.isFinite(home)||!Number.isFinite(away))return null;
+ const lead=(event.team==='away'?away-home:home-away)+1;
+ return lead===1?'winner':lead===0?'equaliser':null;
+}
+// V21.195: a miss shown as a goal-line clearance heads for the goal, and a
+// defender standing on the line blocks it just in front of the net.
+export function lineClearImpact(sequence='central',finish='normal',placement=null){
+ const sign=Math.sign(shotImpact('big_chance_missed',sequence,finish,placement)[0])||1;
+ return[sign*1.55,normalizeFinish(finish)==='low_driven'?.3:.62,-52.05];
+}
 // The simulated goal/save/miss stays unchanged; only the visual shot lane varies.
 // Event-specific finishing direction stays cosmetic: the simulation determines
 // whether the exact same kick results in a goal, save, post or miss.
@@ -317,7 +332,8 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   if(time<SHOT_TIME-.24)return carry;
   return movingBall(carry,contact,(time-(SHOT_TIME-.24))/.24,.02)
  }
- const impact=shotImpact(type,seq,style,placement);
+ const lineClear=type==='big_chance_missed'&&keeperAction==='line_clear';
+ const impact=lineClear?lineClearImpact(seq,style,placement):shotImpact(type,seq,style,placement);
  const t=clamp((time-SHOT_TIME)/(IMPACT_TIME-SHOT_TIME));
   // Air-drag flight: fast off the boot and still ~73% of mean speed at impact,
   // so the ball never crawls into the keeper. Keeper, net and HUD timing unchanged.
@@ -336,6 +352,11 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   const end=destinations[keeperAction]||destinations.classic,p=lerp(impact,end,u);
   p[1]+=(keeperAction==='high_reach'?.85:keeperAction==='fingertip'?.65:keeperAction==='low_reflex'?.18:.5)*Math.sin(u*Math.PI);
   return p
+ }
+ if(lineClear){
+  // Hacked off the line by a defender, high and wide towards the touchline.
+  const u=1-Math.pow(1-clamp((time-IMPACT_TIME)/1.5),2),sign=Math.sign(impact[0])||1,p=lerp(impact,[sign*15,.12,-41],u);
+  p[1]+=2.6*Math.sin(u*Math.PI);return p;
  }
  if(type==='shot_post')return lerp(impact,[Math.sign(impact[0])*8,.12,-45],1-Math.pow(1-clamp((time-IMPACT_TIME)/1.35),2));
  // A miss keeps the speed it had at the goal line, then rolls out behind the goal.
@@ -857,10 +878,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   positionAt:(i,t)=>playerPosition(i,t,event.type,sequence,placement,finish),ballAt:t=>eventBallPosition(event.type,t),
   defenderIndex,ballWon:event.type==='ball_won',duration:DURATION
  });
+ const lineClearer=event.type==='big_chance_missed'&&keeperAction==='line_clear'&&!extended&&!labFocusedPreview?(()=>{
+  const impact=lineClearImpact(sequence,finish,placement),spot=[impact[0]-Math.sign(impact[0])*.28,-51.72];
+  const raw=i=>defensiveUnit?defensiveUnit.position(i,SHOT_TIME-1.1):playerPosition(i,SHOT_TIME-1.1,event.type,sequence,placement,finish);
+  const pick=RUNS.map((r,i)=>r.team==='defend'&&i!==defenderIndex?{index:i,d:Math.hypot(raw(i)[0]-spot[0],raw(i)[1]-spot[1])}:null).filter(Boolean).sort((a,b)=>a.d-b.d)[0];
+  return pick?{index:pick.index,spot}:null;
+ })():null;
  // V21.185 goal celebration: after the ball is in the net the scorer peels
  // away towards the broadcast touchline. Field-local metres; the camera side
  // is local +x for direction 1 and -x for direction -1.
- const celebrationActive=event.type==='goal'&&!extended&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
+ // V21.195 drama: a late equaliser or winner (88th minute on) brings the
+ // whole nearby team running to the scorer and its own headline.
+ const lateDrama=lateGoalDrama(event);
+ const celebrationActive=event.type==='goal'&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
  const celebrationKey=`${event.matchId??''}|${event.id??''}|${event.minute??''}|${event.playerName??''}`;
  const celebrationKind=celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind);
@@ -885,8 +915,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const huggers=celebrationActive?(()=>{
   const s=actorPosition(0,HUG_START);
   return RUNS.map((r,i)=>{const p=stagedPlayerPosition(i,HUG_START);return{index:i,d:i&&r.team==='attack'?Math.hypot(p[0]-s[0],p[1]-s[1]):Infinity}})
-   .filter(h=>h.d<24).sort((a,b)=>a.d-b.d).slice(0,2)
-   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/6.2,1.3,2.4),state:{arms:0,rootY:0}}));
+   .filter(h=>h.d<(lateDrama?42:24)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
+   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/6.2,1.3,lateDrama?3.4:2.4),state:{arms:0,rootY:0}}));
  })():[];
  function hugWeight(index,time){
   const h=time>HUG_START?huggers.find(x=>x.index===index):null;
@@ -894,11 +924,46 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  }
  function hugPosition(index,time,p){
   const u=hugWeight(index,time);if(!u)return p;
-  const h=huggers.find(x=>x.index===index),s=actorPosition(0,time),side=h.slot?-1:1,[rx,rz]=celebrationRun;
-  return[mix(p[0],s[0]-rz*side*.46-rx*.14,u),mix(p[1],s[1]+rx*side*.46-rz*.14,u)];
+  const h=huggers.find(x=>x.index===index),s=actorPosition(0,time),[rx,rz]=celebrationRun;
+  // Slots 0/1 hug from the sides; a late-drama pile-up adds a ring behind him.
+  const side=h.slot<2?(h.slot?-1:1):[-.75,.75,0][h.slot-2],back=h.slot<2?.14:h.slot<4?.72:1.05,wide=h.slot<2?.46:Math.abs(side)>0?.52:0;
+  const sx=Math.sign(side)||0;
+  return[mix(p[0],s[0]-rz*sx*wide-rx*back,u),mix(p[1],s[1]+rx*sx*wide-rz*back,u)];
+ }
+ // V21.195 star moments: a close TV angle for the big finishes. Behind the
+ // shooter for a screamer from distance, side-on for a volley or
+ // bicycle kick, and following the dribbler for a solo feint. Then the usual
+ // broadcast picture (or the scorer close-up) takes over again.
+ const STAR_CAMERAS={long_shot:'behind',power_drive:'behind',finesse_halfspace:'behind',volley_left:'side',volley_right:'side',bicycle:'side',double_feint_left:'feint',double_feint_right:'feint'};
+ function starCamera(time){
+  if(lineClearer){
+   // Low along the goal line: the shot coming in and the defender hacking it clear.
+   if(time<IMPACT_TIME-.6||time>=IMPACT_TIME+1)return null;
+   const [x,z]=lineClearer.spot,side=Math.sign(x)||1;
+   return{position:worldPosition([x+side*8.5,1.45,z+3.2],direction),target:worldPosition([x-side*1.2,.85,z-.2],direction),fov:34,kind:'line'};
+  }
+  const kind=labFocusedPreview?null:STAR_CAMERAS[sequence];if(!kind)return null;
+  const from=kind==='feint'?SHOT_TIME-2.4:SHOT_TIME-.95,to=kind==='feint'?SHOT_TIME-.15:kind==='side'?SHOT_TIME+.5:celebrationActive?CELEBRATION_CUT:IMPACT_TIME+.5;
+  if(time<from||time>=to)return null;
+  const a=actorPosition(0,from),s=actorPosition(0,Math.min(time,SHOT_TIME));
+  const gl=Math.hypot(a[0],-52.5-a[1])||1,gx=-a[0]/gl,gz=(-52.5-a[1])/gl;
+  let position,target,fov;
+  if(kind==='behind'){position=[a[0]-gx*5.4+gz*1.2,2.15,a[1]-gz*5.4-gx*1.2];target=[mix(s[0],0,.55),1,mix(s[1],-52.5,.55)];fov=34}
+  else if(kind==='side'){
+   // Side-on, on the side away from the nearest defender so nobody blocks the strike.
+   const k=actorPosition(0,SHOT_TIME),near=RUNS.map((r,i)=>r.team==='defend'?actorPosition(i,SHOT_TIME):null).filter(Boolean).sort((p,q)=>Math.hypot(p[0]-k[0],p[1]-k[1])-Math.hypot(q[0]-k[0],q[1]-k[1]))[0]||[k[0]+1,k[1]];
+   const side=((near[0]-k[0])*gz-(near[1]-k[1])*gx)>0?-1:1;
+   position=[k[0]+gz*side*8.5+gx*1.5,2.3,k[1]-gx*side*8.5+gz*1.5];target=[mix(s[0],k[0],.5),1.15,mix(s[1],k[1],.5)];fov=28}
+  else{const side=sequence.endsWith('_right')?-1:1;position=[s[0]+gz*side*6.8-gx*4.2,2.5,s[1]-gx*side*6.8-gz*4.2];target=[s[0]+gx*2,.9,s[1]+gz*2];fov=36}
+  return{position:worldPosition(position,direction),target:worldPosition(target,direction),fov};
  }
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
   const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
+  if(lineClearer&&index===lineClearer.index){
+   // The covering defender sprints back onto the line and blocks the shot there.
+   const u=smooth((time-(SHOT_TIME-1.1))/1.65);
+   return u?[mix(original[0],lineClearer.spot[0],u),mix(original[1],lineClearer.spot[1],u)]:original;
+  }
   if(index!==defenderIndex)return original;
   if(labDuelPreview)return stagedDefenderPosition(defenderAction,time,sequence,labBallAt,original);
   if(labTrackingPreview)return trackingTimeline.sample(time).position;
@@ -1802,7 +1867,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedMotionFrame.grounded=time<4.9||!['header','volley','bicycle'].includes(finish);
    importedMotionFrame.clipEnabled=clipEnabled;
     players.forEach((p,i)=>{
-     if(i===0&&time>=4.9)return;
+     // V21.195: scorer and hugging teammates celebrate like in open play.
+     if(i===0&&time>=4.9||hugWeight(i,time)>0)return;
      const point=extendedPosition(i,time,sequence),before=extendedPosition(i,Math.max(0,time-.02),sequence),after=extendedPosition(i,time+.02,sequence);
      const dx=after[0]-before[0],dz=after[1]-before[1],speed=clamp(Math.hypot(dx,dz)/.04*rate/6.5);
      const wall=extended==='free_kick'&&i>=8&&i<=11&&physical<8.6;
@@ -1833,7 +1899,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const h of huggers){
     const frame=squadMotionFrames[h.index],u=hugWeight(h.index,time);
     if(u>.8){
-     applyCelebrationPose(players[h.index],h.slot?'hug_right':'hug_left',time-HUG_START-h.arrive*.8,h.state);
+     applyCelebrationPose(players[h.index],h.slot%2?'hug_right':'hug_left',time-HUG_START-h.arrive*.8,h.state);
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
    }
@@ -1842,7 +1908,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);
    // Extended match scenes must use the exact same stable broadcast track.
-   const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):broadcastFor(camera.aspect)(time);
+   const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect))||broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
    if(labFocusedPreview){
     const focus=stagedPlayerPosition(defenderIndex,time,event.type,sequence);
@@ -1859,6 +1925,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }else{
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
    }
+   const star=starCamera(time);
+   if(star){camera.position.set(...star.position);camTarget.set(...star.target);camera.fov=star.fov}
    if(celebrationActive&&time>=CELEBRATION_CUT){
     // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
     // drifting slowly as he runs towards it.
@@ -1866,7 +1934,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // V21.191: a real close-up. Head and chest stay above the result card,
     // with a slow push-in (3.9 m to 3.0 m) instead of a static medium shot.
     const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,since=time-CELEBRATION_CUT,drift=since*.3;
-    const pu=clamp(since/2.6),push=pu*pu*pu*(pu*(pu*6-15)+10),near=mix(3.9,3.0,push),side=mix(1.1,.75,push)-drift*.3;
+    const pu=clamp(since/2.6),push=pu*pu*pu*(pu*(pu*6-15)+10),near=lateDrama?mix(4.9,4.1,push):mix(3.9,3.0,push),side=mix(1.1,.75,push)-drift*.3;
     const lift=celebrationState.rootY*.75;
     camera.position.set(root.x+runX*near-runZ*side,root.y+1.55+lift*.5,root.z+runZ*near+runX*side);
     camTarget.set(root.x,root.y+1.3+lift,root.z);camera.fov=30;
@@ -1961,7 +2029,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':starCamera(renderTime)?'star-'+(starCamera(renderTime).kind||STAR_CAMERAS[sequence]):extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect)?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   return{update,resize,dispose,inspect,reduceQuality};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
@@ -2080,10 +2148,11 @@ export function play(event,signal){
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      const revealAt=REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
-      if(event.type==='goal'){headline.textContent='TOR';name.textContent=event.playerName;detail.textContent=event.teamName?`für ${event.teamName}`:'TOR'}
+      if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
+      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';name.textContent=event.playerName;detail.textContent='Auf der Linie geklärt'}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
