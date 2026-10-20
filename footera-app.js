@@ -6638,7 +6638,7 @@ function renderHomeRewards(){
  $("homeReadyPanel")?.classList.toggle("home-ready-empty",!total);
  renderHomeNow({pending:pending.length,tasks:claimable.length+objectivesReady,pass:passReady,packs:packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0)})
 }
-// "Jetzt dran": the next useful steps sit above the hero, so nothing waits below the fold.
+// "Jetzt dran": rewards and unopened packs sit above the hero, so nothing waits below the fold.
 function renderHomeNow({pending,tasks,pass,packs}){
  const box=$("homeNow");if(!box)return;
  const item=(kind,icon,title,sub,go,cta)=>`<button type="button" class="home-now-item ${kind}" data-go="${go}"><span class="home-now-icon" aria-hidden="true">${icon}</span><span class="home-now-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="home-now-go">${esc(cta)}</span></button>`;
@@ -6646,8 +6646,7 @@ function renderHomeNow({pending,tasks,pass,packs}){
  const rewards=pending+tasks+pass,parts=[pending&&`${pending}× Wettbewerb`,tasks&&`${tasks}× Ziele`,pass&&`${pass}× Season Pass`].filter(Boolean);
  if(rewards)rows.push(item("rewards",String(rewards),`${rewards} Belohnung${rewards===1?"":"en"} abholen`,parts.join(" · "),pending?"playView":tasks?"objectivesView":"seasonPassView","Abholen"));
  if(packs)rows.push(item("packs",String(packs),`${packs} Pack${packs===1?"":"s"} ungeöffnet`,"Liegen unter Meine Packs im Store","storeView","Öffnen"));
- const r=state.rivals||{};
- rows.push(item("play","▶","Nächstes Spiel",`Rivals · ${r.division?`Division ${r.division}`:"Elite"} · ${r.weeklyPoints||0}/35 Punkte`,"playView","Spielen"));
+ box.hidden=!rows.length;
  box.innerHTML=rows.join("")
 }
 function renderHomeProgress(){
