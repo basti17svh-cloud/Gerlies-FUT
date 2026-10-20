@@ -138,21 +138,26 @@ test('the gift uses the existing double-walkout and ordinary distribution flow',
 });
 
 const GIFT='jumbo-rare-20261020',GIFT_CLAIM='jumbo_rare_gift_20261020';
-test('every club gets one tester Jumbo pack in the gift window, and only once',()=>{
- for(const owner of [OWNER,'GF-OTHER','GF-9AE6CDDEFE8A458D']){
-  const a=app({owner,at:'2026-10-21T10:00:00Z'});
+const NIKLAS_USER='4af57ea2-9b89-44f7-b7ca-ffdbb7400317';
+function niklasApp(opts={}){const a=app({owner:'GF-NIKLAS',...opts});a.ctx.state.profile.founderOnlineUserId=NIKLAS_USER;return a}
+test('only the tester clubs Rangers and Worms get one Jumbo pack in the gift window, and only once',()=>{
+ for(const a of [app({at:'2026-10-21T10:00:00Z'}),niklasApp({at:'2026-10-21T10:00:00Z'})]){
   assert.ok(a.run(`grantDirectRewards().some(reward=>reward.id==='${GIFT_CLAIM}')`));assert.equal(a.ctx.state.packs[GIFT],1);
   assert.equal(a.run(`grantDirectRewards().filter(reward=>reward.id==='${GIFT_CLAIM}').length`),0);assert.equal(a.ctx.state.packs[GIFT],1)
  }
+ for(const owner of ['GF-OTHER','GF-9AE6CDDEFE8A458D']){
+  const a=app({owner,at:'2026-10-21T10:00:00Z'});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[GIFT],undefined);
+  a.ctx.state.packs[GIFT]=1;assert.equal(a.run(`generatePack('${GIFT}').length`),0)
+ }
  for(const at of ['2026-10-19T12:00:00Z','2026-11-04T12:00:00Z']){
-  const a=app({owner:'GF-OTHER',at});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[GIFT],undefined)
+  const a=niklasApp({at});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[GIFT],undefined)
  }
 });
 
 test('the tester pack looks like the normal Jumbo pack and always holds Gullit and Mbappé, all tradeable',()=>{
  const draws=new Set();
  for(let seed=1;seed<=15;seed++){
-  const a=app({owner:'GF-OTHER',seed,at:'2026-10-21T10:00:00Z'});a.run('grantDirectRewards();renderStore()');
+  const a=niklasApp({seed,at:'2026-10-21T10:00:00Z'});a.run('grantDirectRewards();renderStore()');
   const owned=a.get('ownedPacks').innerHTML;assert.match(owned,/Jumbo-Seltene-Spieler-Pack/);assert.doesNotMatch(owned,/Gullit|Mbapp|Dankesch|Tester/i);
   assert.equal(a.run(`packArtSrc('${GIFT}')`),a.run('packArtSrc("jumbo-rare")'));
   const items=a.run(`generatePack('${GIFT}')`);assert.equal(items.length,24);assert.ok(items.every(item=>item.tradeable===true));

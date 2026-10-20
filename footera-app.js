@@ -389,7 +389,7 @@ const PACKS=[
 ];
 // This account-only gift shares the ordinary pack's name, artwork and description.
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
-// Thank-you gift for every tester club: shown and described exactly like the ordinary Jumbo pack.
+// Thank-you gift for the tester clubs: shown and described exactly like the ordinary Jumbo pack.
 PACKS.push({...PACKS.find(p=>p.id==="jumbo-rare"),id:"jumbo-rare-20261020",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,surpriseGift:{base:"jumbo-rare",icons:["Ruud Gullit"],players:["231747"]}});
 const TOTW_WEEK_1={id:1,name:"Team of the Week 1",releaseDate:"2026-09-16",activeUntil:"23.09.2026 18:59",players:[
  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",fallback:{id:"277643",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",ovr:91,position:"RW",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/277643.png",pac:87,sho:85,pas:88,dri:94,def:40,phy:63,source:"fc27-totw-verified"}},{names:["David Raya","David Raya Martin","David Raya Martín"],eaId:"220941",ovr:89,position:"GK",fallback:{id:"220941",name:"David Raya",fullName:"David Raya Martín",ovr:89,position:"GK",team:"Arsenal FC",league:"Premier League",nation:"Spain",face:"https://cdn.futwiz.com/assets/img/fc27/faces/220941.png",pac:88,sho:87,pas:89,dri:89,def:60,phy:88,source:"fc27-totw-verified"}},{names:["Melchie Dumornay","Melchie Daëlle Dumornay"],eaId:"265898",ovr:89,position:"LW",fallback:{id:"265898",name:"Melchie Dumornay",fullName:"Melchie Dumornay",ovr:88,position:"LW",team:"OL Lyonnes",league:"Arkema Première Ligue",nation:"Haiti",face:"https://cdn.futwiz.com/assets/img/fc27/faces/265898.png",pac:93,sho:86,pas:81,dri:91,def:62,phy:75,source:"fc27-totw-verified"}},
@@ -3600,7 +3600,7 @@ function generatePack(id,tradeable=true){
 // Fixed cards first, then the rest of the pack drawn like the ordinary pack it imitates.
 function generateSurpriseGiftPack(pack,tradeable=true){
  const gift=pack.surpriseGift,base=PACKS.find(p=>p.id===gift.base);
- if(!base)return[];
+ if(!base||!isTesterClub())return[];
  const icons=gift.icons.map(name=>MID_ICON_BASES.find(p=>p.name===name)),players=gift.players.map(id=>P_BY_ID.get(String(id)));
  if(icons.some(x=>!x)||players.some(x=>!x))return[];
  const fixed=[...icons.map(b=>makeMidIconItem(b,tradeable)),...players.map(b=>{const item=makeLivePackItem(b,tradeable);item.rare=true;return item})];
@@ -3655,7 +3655,7 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>';
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!p.surpriseGift||isTesterClub())&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>';
  {const n=owned.reduce((sum,p)=>sum+(state.packs[p.id]||0),0),badge=$("storeMyPacksCount");if(badge){badge.textContent=String(n);if(badge.dataset)badge.dataset.count=String(n)}}
 }
 
@@ -7284,12 +7284,14 @@ const DIRECT_REWARDS=Object.freeze({
  "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
-// Gifts for every existing club, claimable once per save until the window closes.
-const ALL_CLUB_REWARDS=Object.freeze([
+// Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
+const TESTER_FOUNDER_PACKS=Object.freeze([MARCO_FOUNDER_PACK_ID,NIKLAS_FOUNDER_PACK_ID]);
+function isTesterClub(s=state){return TESTER_FOUNDER_PACKS.some(id=>ownsFounderRule(s,founderRuleForPack(id)))}
+const TESTER_REWARDS=Object.freeze([
  {id:"jumbo_rare_gift_20261020",pack:"jumbo-rare-20261020",qty:1,label:"Jumbo-Seltene-Spieler-Pack",from:"2026-10-20T00:00:00+02:00",until:"2026-11-03T23:59:59+01:00"}
 ]);
 function grantDirectRewards(){
- const saveId=String(state.profile?.saveId||"").trim().toUpperCase(),rewards=[...(DIRECT_REWARDS[saveId]||[]),...(saveId?ALL_CLUB_REWARDS.filter(r=>Date.now()>=Date.parse(r.from)&&Date.now()<=Date.parse(r.until)):[])];
+ const saveId=String(state.profile?.saveId||"").trim().toUpperCase(),rewards=[...(DIRECT_REWARDS[saveId]||[]),...(isTesterClub()?TESTER_REWARDS.filter(r=>Date.now()>=Date.parse(r.from)&&Date.now()<=Date.parse(r.until)):[])];
  if(!rewards.length)return[];
  state.directClaims=state.directClaims||{};
  const granted=[];
