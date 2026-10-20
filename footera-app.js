@@ -528,6 +528,9 @@ function totwRosterErrors(team){
  }
  if(counts.GK!==2||counts.DEF!==5||counts.MID!==6||counts.ATT!==5)errors.push("Positionsverteilung muss 2 TW / 5 DEF / 6 MID / 5 ANG sein");
  if([...clubs.values()].some(count=>count>1))errors.push("Maximal ein Spieler pro Verein");
+ // From TOTW 6 on, nobody may appear in two consecutive weeks.
+ const previous=Number(team?.id)>=6?TOTW_WEEKS.find(week=>Number(week.id)===Number(team.id)-1):null;
+ if(previous){const before=new Set(previous.players.flatMap(p=>[String(p.eaId||""),key(p.names?.[0])]).filter(Boolean));if(rows.some(p=>before.has(String(p.eaId||""))||before.has(key(p.names?.[0]))))errors.push("Kein Spieler zwei Wochen hintereinander")}
  return [...new Set(errors)]
 }
 function totwReleaseApproved(team){
