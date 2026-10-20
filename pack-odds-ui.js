@@ -20,7 +20,7 @@
   formerFocus=null;
  }
  function open(packId){
-  const pack=PACKS.find(p=>p.id===packId),modal=byId("packOddsModal"),body=byId("packOddsBody");
+  const own=PACKS.find(p=>p.id===packId),pack=own?.surpriseGift?PACKS.find(p=>p.id===own.surpriseGift.base)||own:own,modal=byId("packOddsModal"),body=byId("packOddsBody");
   if(!pack||!modal||!body)return;
   byId("packOddsTitle").textContent=pack.name+" – Wahrscheinlichkeiten";
   let html='<p class="pack-odds-intro">Die Prozentwerte gelten pro vollständigem Pack. Sie werden mit den tatsächlich verwendeten Ziehungsgewichten mathematisch berechnet; Rating-Grenzen können sich überschneiden.</p>';
