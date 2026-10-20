@@ -1414,3 +1414,10 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 /* Running Evolutions come first in the list and say so. */
 .evo-running{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;background:#0f3b24;border:1px solid #39f28a;color:#9dffc4;font-size:5.5px;font-weight:1000;letter-spacing:.08em}.evo-running:before{content:"";width:5px;height:5px;border-radius:50%;background:#39f28a;box-shadow:0 0 6px #39f28a}
 .evo-offer.running{border-color:#39f28a8c;box-shadow:0 0 0 1px rgba(57,242,138,.14)}
+/* V21.197 (Basti): pack results stay rigid on phones. New cards are as compact as duplicates:
+   two per row, columns may shrink below the long button labels, buttons stack. */
+.result-items-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.result-item{min-width:0}
+.result-item-actions{grid-template-columns:minmax(0,1fr)}
+.result-item-actions button{min-width:0;overflow-wrap:anywhere}
+@media(max-width:560px){.result-items-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
