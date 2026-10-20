@@ -335,7 +335,7 @@ function badgeHTML(item,base,mini){
   return '<span class="playstyle-card-icon '+(style.plus?'plus':'')+'" title="'+htmlEsc(style.name)+(style.plus?'+':'')+'">'+iconSVG(style)+'</span>';
  }).join("")+'</span>';
 }
-const api={definitions:DEFINITIONS,resolve:resolve,enrichPlayer:enrichPlayer,enrichPlayers:enrichPlayers,profileHTML:profileHTML,compactHTML:compactHTML,badgeHTML:badgeHTML};
+const api={definitions:DEFINITIONS,resolve:resolve,enrichPlayer:enrichPlayer,enrichPlayers:enrichPlayers,profileHTML:profileHTML,compactHTML:compactHTML,badgeHTML:badgeHTML,iconBody:function(id){return ICON_BODIES[id]||null}};
 root.FooteraPlayStyles=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
