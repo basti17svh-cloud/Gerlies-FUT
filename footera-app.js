@@ -1240,6 +1240,37 @@ function activeGrindSBCs(now=new Date()){
  const pick=(pool,window,n)=>[...pool].sort((a,b)=>hashNum(window.key+"|"+a.key)-hashNum(window.key+"|"+b.key)).slice(0,n).map((v,i)=>({...v,id:"grind_"+window.key+"_"+v.key,group:"Grind",filter:b=>true,count:11,once:true,live:true,expiresAt:window.expiresAt,releaseKey:window.key,order:i}));
  return[...pick(GRIND_SBC_TEMPLATES_4D,w4,4),...pick(GRIND_SBC_TEMPLATES_3D,w3,2),{...GRIND_SBC_REPEATABLE,id:"grind_"+w3.key+"_recycle",group:"Grind",filter:b=>true,count:11,once:false,live:true,expiresAt:w3.expiresAt,releaseKey:w3.key,order:9}];
 }
+// Tägliche SBCs: every day at 19:00 three fresh, quick challenges (easy, medium, highlight) with rotating reward packs.
+const DAILY_SBC_TEMPLATES={
+ easy:[
+  {key:"bronzeblitz",name:"Bronze-Blitz",desc:"Schnell erledigt: 11 Bronzekarten gegen Silber.",req:"11× Bronze",filter:b=>rarityOf(b)==="bronze",reward:{pack:"silver",qty:2}},
+  {key:"silbersprint",name:"Silber-Sprint",desc:"11 Silberkarten mit etwas Chemie.",req:"11× Silber · 12 Chemie",filter:b=>rarityOf(b)==="silver",minChem:12,reward:{pack:"gold",qty:1}},
+  {key:"bunt",name:"Bunte Truppe",desc:"Irgendwelche 11, Hauptsache aus vielen Ländern.",req:"11 Spieler · min. 5 Nationen",minNations:5,reward:{pack:"silver",qty:2}},
+  {key:"bundesabend",name:"Bundesliga-Abend",desc:"Ein Abend in der Bundesliga.",req:"11 Spieler · min. 4 aus Bundesliga",matchLeague:"Bundesliga",minMatchLeaguePlayers:4,reward:{pack:"gold",qty:1}},
+  {key:"premierabend",name:"Premier-League-Abend",desc:"Ein Abend auf der Insel.",req:"11 Spieler · min. 4 aus Premier League",matchLeague:"Premier League",minMatchLeaguePlayers:4,reward:{pack:"gold",qty:1}}
+ ],
+ medium:[
+  {key:"weltauswahl",name:"Weltauswahl",desc:"Ein Team quer über den Globus.",req:"11 Spieler · min. 6 Nationen · Ø GES 75",minNations:6,minAvg:75,reward:{pack:"premium-electrum-reward",qty:1}},
+  {key:"chemiecheck",name:"Chemie-Check",desc:"Passt das zusammen?",req:"11 Spieler · Ø GES 74 · 24 Chemie",minAvg:74,minChem:24,reward:{pack:"small-prime-gold",qty:1}},
+  {key:"ligentour",name:"Ligen-Tour",desc:"Fünf Ligen, viele Vereine.",req:"11 Spieler · min. 5 Ligen · min. 8 Vereine · Ø GES 74",minLeagues:5,minClubs:8,minAvg:74,reward:{pack:"premium-electrum-reward",qty:1}},
+  {key:"heimatliebe",name:"Heimatliebe",desc:"Wenige Länder, viel Zusammenhalt.",req:"11 Spieler · max. 3 Nationen · Ø GES 74",maxNations:3,minAvg:74,reward:{pack:"small-prime-gold",qty:1}},
+  {key:"laliganacht",name:"LALIGA-Nacht",desc:"Spanische Nacht mit Gold.",req:"11 Spieler · min. 4 aus LALIGA EA SPORTS · Ø GES 76",matchLeague:"LALIGA EA SPORTS",minMatchLeaguePlayers:4,minAvg:76,reward:{pack:"82",qty:1}},
+  {key:"serieanacht",name:"Serie-A-Nacht",desc:"Calcio unter Flutlicht.",req:"11 Spieler · min. 4 aus Serie A · Ø GES 76",matchLeague:"Serie A",minMatchLeaguePlayers:4,minAvg:76,reward:{pack:"82",qty:1}}
+ ],
+ highlight:[
+  {key:"seltenesieben",name:"Seltene Sieben",desc:"Tageshighlight: sieben seltene Karten.",req:"11 Spieler · min. 7 selten · Ø GES 79",minRare:7,minAvg:79,reward:{pack:"83x3-sbc",qty:1}},
+  {key:"goldjunge",name:"Goldjunge",desc:"Tageshighlight: starkes Gold mit Chemie.",req:"11 Spieler · min. 9 Gold · Ø GES 80 · 22 Chemie",minGold:9,minAvg:80,minChem:22,reward:{pack:"prime-electrum-reward",qty:1}},
+  {key:"topklasse",name:"Topklasse",desc:"Tageshighlight für volle Vereine.",req:"11 Spieler · Ø GES 82 · 2 selten",minAvg:82,minRare:2,reward:{pack:"84x3-sbc",qty:1}},
+  {key:"jumbotag",name:"Jumbo-Tag",desc:"Tageshighlight mit großem Goldpack.",req:"11 Spieler · Ø GES 78 · min. 4 Ligen · 20 Chemie",minAvg:78,minLeagues:4,minChem:20,reward:{pack:"jumbo-gold",qty:1}}
+ ]
+};
+function activeDailySBCs(now=new Date()){
+ const key=promoWindowKey(now,19),expiresAt=nextPromoReset(now,19).getTime();
+ return ["easy","medium","highlight"].map((tier,order)=>{
+  const pool=DAILY_SBC_TEMPLATES[tier],t=[...pool].sort((a,b)=>hashNum(key+"|"+tier+"|"+a.key)-hashNum(key+"|"+tier+"|"+b.key))[0];
+  return{filter:b=>true,...t,id:`daily_${key}_${t.key}`,group:"Täglich",dailyTier:tier,count:11,once:true,live:true,expiresAt,releaseKey:key,order}
+ })
+}
 function marqueeClubMatch(team,aliases){const key=normalizeKey(team||"");return (aliases||[]).some(a=>normalizeKey(a)===key)}
 function marqueeLeagueMatch(league,target){const a=normalizeKey(league||""),b=normalizeKey(target||"");return !!a&&!!b&&(a===b||a.startsWith(b+" ")||b.startsWith(a+" "))}
 function activeMarqueeSBCs(now=new Date()){
@@ -1267,7 +1298,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeEventPlayerSBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -1299,6 +1330,7 @@ function eventSbcRewardLabel(reward){
 }
 function sbcGroupBannerHTML(group,rows){
  if(!rows.length)return"";
+ if(group==="Täglich")return `<div class="sbc-live-banner daily"><div><span class="sbc-live-kicker">TÄGLICH NEU · NOCH ${esc(sbcTimeLeft(rows[0].expiresAt)).toUpperCase()}</span><h3>Drei frische SBCs pro Tag.</h3><p>Eine schnelle, eine mittlere und ein Tageshighlight. Jeden Abend um 19:00 Uhr kommen neue Aufgaben und andere Packs.</p></div></div>`;
  if(group==="Grind")return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">SBC GRIND · 3–4 TAGE</span><h3>Neue SBCs. Bessere Packs.</h3><p>Neue 3- und 4-Tage-Challenges mit starken Belohnungen. Gold-Recycling ist wiederholbar; alle anderen Aufgaben sind pro Rotation einmalig.</p></div></div>`;
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  if(group==="Profis"&&sample.eventSbc){
@@ -5083,7 +5115,7 @@ function progressEvolution(resultKey="loss"){
 
 
 
- let activeSbcGroup="Grind",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
+ let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
@@ -5188,6 +5220,18 @@ function sbcFailedRequirementText(sbc,stats){
  if(!failed.length)return"";
  return "Noch offen: "+failed.map(r=>`${r.label} (${r.value})`).join(" · ")
 }
+// One live checklist: every requirement with its current value, plus "passende Spieler" whenever a card breaks the SBC filter.
+function sbcChecklist(sbc,stats){
+ const rows=sbcRequirementParts(sbc,stats);
+ if(!rows.length)return sbcRequirementSummary(sbc,stats);
+ if(!stats.allRule&&stats.count&&stats.count===sbc.count&&rows.every(r=>!/^11×/.test(r.label)))rows.push({label:"Passende Spieler",value:"Karte passt nicht",ok:false});
+ return rows
+}
+function sbcMissingButtonText(sbc,stats){
+ const open=sbcChecklist(sbc,stats).filter(r=>!r.ok);
+ if(!open.length)return"Noch nicht abgabebereit";
+ const first=open[0];return `Noch offen: ${first.label} ${first.value}${open.length>1?` · +${open.length-1}`:""}`
+}
 function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
 function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${(reward.qty||1)>1?`${reward.qty}× `:""}${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
 function sbcRewardPackLabel(reward){
@@ -5195,12 +5239,15 @@ function sbcRewardPackLabel(reward){
  if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
 }
 function sbcRequirementChips(s,stats){
+ return sbcRequirementParts(s,stats).map(({label,ok})=>`<span class="sbc-part-req ${ok?"ok":""}">${ok?"✓ ":""}${esc(label)}</span>`).join("")
+}
+// The SBC's own requirement text, split into parts, each with a live ✓/✗ and the current value.
+function sbcRequirementParts(s,stats){
  const raw=String(s.req||"").split("·").map(x=>x.trim()).filter(Boolean);
- if(!raw.length)return"";
- const summary=sbcRequirementSummary(s,stats),statusByLabel=new Map(summary.map(x=>[x.label,x.ok]));
  return raw.map((label,index)=>{
-  let ok=false;
-  if(/^11 Spieler/i.test(label)||/^11×/i.test(label))ok=stats.count===s.count;
+  let ok=false,value="";
+  if(/^11 Spieler/i.test(label))ok=stats.count===s.count;
+  else if(/^11×/i.test(label)||/^11 Gold/i.test(label)&&!s.minGold)ok=stats.count===s.count&&stats.allRule;
   else if(/GES/i.test(label))ok=stats.avgOk&&stats.count===s.count;
   else if(/Chemie/i.test(label))ok=stats.minChemOk;
   else if(/TOTW/i.test(label))ok=stats.minTotwOk;
@@ -5218,9 +5265,40 @@ function sbcRequirementChips(s,stats){
   else if(/selten/i.test(label))ok=stats.minRareOk;
   else if(/Gold/i.test(label))ok=stats.minGoldOk;
   else if(/gleicher Verein/i.test(label))ok=stats.maxSameClubOk;
-  else if(index===0)ok=stats.count===s.count;
-  return `<span class="sbc-part-req ${ok?"ok":""}">${ok?"✓ ":""}${esc(label)}</span>`
- }).join("")
+  else if(index===0)ok=stats.count===s.count&&stats.allRule;
+  if(/^11/.test(label))value=`${stats.count}/${s.count}`;
+  else if(/GES/i.test(label))value=stats.count?String(stats.teamRating):"–";
+  else if(/Chemie/i.test(label))value=String(stats.chem);
+  else if(/selten/i.test(label))value=String(stats.rareCount);
+  else if(/Ligen/i.test(label))value=String(stats.leagues.length);
+  else if(/Vereine/i.test(label))value=String(stats.clubs.length);
+  else if(/Nationen/i.test(label))value=String(stats.nations.length);
+  else if(/Gold/i.test(label))value=String(stats.goldCount);
+  return{label,ok,value}
+ })
+}
+// Can the club build this SBC right now? Uses the same "Sparsam" assistant on an empty squad, cached per club state.
+let sbcFeasibilityCache={key:"",map:new Map()};
+function sbcFeasibilityKey(){return [(state.club||[]).length,(state.sbcStorage||[]).length,(state.club||[]).reduce((n,i)=>n+itemRating(i),0),JSON.stringify((state.squadPresets||[]).map(p=>p?.squad||[]))].join("|")}
+function sbcFeasibility(sbc){
+ const key=sbcFeasibilityKey();if(sbcFeasibilityCache.key!==key)sbcFeasibilityCache={key,map:new Map()};
+ if(sbcFeasibilityCache.map.has(sbc.id))return sbcFeasibilityCache.map.get(sbc.id);
+ const draft={squad:Array(sbc.count||11).fill(null),test:[]},a={...sbcAssistantDefaults(),anyPositionFallback:true};
+ let result;
+ const free=sbcAssistantBest(sbc,draft,a);
+ if(free?.valid)result={ok:true,teams:false};
+ else{
+  const all=sbcAssistantBest(sbc,draft,{...a,protectTeams:false});
+  if(all?.valid)result={ok:true,teams:true};
+  else{const count=Math.max(free?.count||0,all?.count||0),missing=(sbc.count||11)-count;result={ok:false,missing,reason:missing>0?"":(sbcChecklist(sbc,sbcDraftStats(sbc,(all||free).draft)).find(r=>!r.ok)?.label||"")}}
+ }
+ sbcFeasibilityCache.map.set(sbc.id,result);return result
+}
+function sbcFeasibilityHTML(sbc){
+ const f=sbcFeasibility(sbc);
+ if(f.ok)return `<span class="sbc-feasible ok">${f.teams?"✓ Machbar, nur mit Spielern aus deinen Teams":"✓ Mit deinem Verein machbar"}</span>`;
+ if(f.missing>0)return `<span class="sbc-feasible">Dir ${f.missing===1?"fehlt 1 passender Spieler":`fehlen ${f.missing} passende Spieler`}</span>`;
+ return `<span class="sbc-feasible">Noch nicht machbar${f.reason?` · ${esc(f.reason)} fehlt`:""}</span>`
 }
 function sbcOverviewCard(s){
  const stats=sbcDraftStats(s),done=sbcIsCompleted(s),ready=!done&&stats.ok,pct=done?100:Math.round(Math.min(1,stats.count/Math.max(1,s.count))*100),rewardName=sbcRewardPackLabel(s.reward);
@@ -5228,10 +5306,10 @@ function sbcOverviewCard(s){
   const rows=allActiveSBCs().filter(x=>x.groupSet===s.groupSet),idx=Math.max(0,rows.findIndex(x=>x.id===s.id)),total=Math.max(1,rows.length);
   const rewardVisual=s.reward?.pack?`<img src="${packArtSrc(s.reward.pack)}" alt="${esc(rewardName)}" loading="lazy">`:"";
   const stateClass=done?"done":ready?"ready":"",stateText=done?"ABGESCHLOSSEN":ready?"ABGABEBEREIT":"OFFEN";
-  return `<article class="sbc-part-card ${done?"completed":ready?"ready":""}"><div class="sbc-part-copy"><div class="sbc-part-head"><span class="sbc-part-index">TEIL-SBC ${idx+1}/${total}</span><span class="sbc-part-state ${stateClass}">${stateText}</span>${s.live&&s.expiresAt&&!done?`<span class="sbc-part-state">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-part-req-title">ANFORDERUNGEN</div><div class="sbc-part-reqs">${sbcRequirementChips(s,stats)}</div><div class="sbc-part-prep"><span>Vorbereitung</span><div class="sbc-part-prep-track"><i style="width:${pct}%"></i></div><b>${done?"✓":`${stats.count}/${s.count}`}</b></div></div><div class="sbc-part-reward">${done?'<span class="done-mark">✓</span>':rewardVisual}<strong>${esc(rewardName)}</strong><button class="${ready?"primary":"secondary"}" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":ready?"Abgeben":"Öffnen"}</button></div></article>`
+  return `<article class="sbc-part-card ${done?"completed":ready?"ready":""}"><div class="sbc-part-copy"><div class="sbc-part-head"><span class="sbc-part-index">TEIL-SBC ${idx+1}/${total}</span><span class="sbc-part-state ${stateClass}">${stateText}</span>${s.live&&s.expiresAt&&!done?`<span class="sbc-part-state">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-part-req-title">ANFORDERUNGEN</div><div class="sbc-part-reqs">${sbcRequirementChips(s,stats)}</div><div class="sbc-part-prep"><span>Vorbereitung</span><div class="sbc-part-prep-track"><i style="width:${pct}%"></i></div><b>${done?"✓":`${stats.count}/${s.count}`}</b></div>${done||ready?"":`<div class="sbc-hub-status">${sbcFeasibilityHTML(s)}</div>`}</div><div class="sbc-part-reward">${done?'<span class="done-mark">✓</span>':rewardVisual}<strong>${esc(rewardName)}</strong><button class="${ready?"primary":"secondary"}" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":ready?"Abgeben":"Bauen"}</button></div></article>`
  }
  const rewardArt=s.reward?.pack?`<div class="sbc-hub-pack"><img src="${packArtSrc(s.reward.pack)}" alt="${esc(rewardName)}" loading="lazy"></div><span class="sbc-reward-name">${esc(rewardName)}</span>`:`<span class="sbc-reward-name">${esc(rewardName)}</span>`;
- return `<article class="sbc-hub-card ${done?"completed":""}"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta"><span class="sbc-hub-chip">${esc(s.req)}</span><span class="sbc-hub-chip ${stats.ok||done?"done":""}">${done?"Abgeschlossen":`${stats.count}/${s.count} Spieler`}</span><span class="sbc-hub-chip">${done?"✓":`${pct}% vorbereitet`}</span>${s.live&&s.expiresAt&&!done?`<span class="sbc-hub-chip">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div></div><div class="sbc-hub-reward">${rewardArt}<button class="secondary" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":"Öffnen"}</button></div></article>`
+ return `<article class="sbc-hub-card ${done?"completed":""}"><div><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="sbc-hub-meta">${String(s.req||"").split("·").map(x=>x.trim()).filter(Boolean).map(x=>`<span class="sbc-hub-chip req">${esc(x)}</span>`).join("")}</div><div class="sbc-hub-status">${done?`<span class="sbc-feasible ok">✓ Abgeschlossen</span>`:ready?`<span class="sbc-feasible ok">✓ Abgabebereit</span>`:sbcFeasibilityHTML(s)}${!done&&stats.count?`<span class="sbc-hub-progress">${stats.count}/${s.count} eingesetzt</span>`:""}${s.live&&s.expiresAt&&!done?`<span class="sbc-hub-progress">Noch ${sbcTimeLeft(s.expiresAt)}</span>`:""}</div></div><div class="sbc-hub-reward">${rewardArt}<button class="secondary" type="button" data-sbc-open="${esc(s.id)}" ${done?"disabled":""}>${done?"Erledigt":"Bauen"}</button></div></article>`
 }
 function sbcWorkSlotHTML(sbc,area,index,slot=null){
  const draft=sbcDraft(sbc.id),uid=sbcSlotUid(draft,area,index),row=sbcItemRecord(uid),item=row?.item,b=item?displayBase(item):null,label=slot?.p||"";
@@ -5328,8 +5406,14 @@ function sbcAssistantLeagues(sbc){
 }
 function openSbcAssistant(){
  if(!activeSbcId)return;const sbc=getActiveSbcById(activeSbcId);if(!sbc)return;
- sbcSlotDetailState=null;sbcPickerState=null;sbcAssistantState={sort:"high",min:0,max:99,quality:"",ignorePosition:false,league:"",protectTeams:true};renderSBC()
+ sbcSlotDetailState=null;sbcPickerState=null;sbcAssistantState=sbcAssistantDefaults();renderSBC()
 }
+// "Sparsam" spends SBC-Speicher duplicates first, then untradeable cards, then the weakest cards that still meet the SBC.
+function sbcQuickFill(){
+ if(!activeSbcId)return;sbcSlotDetailState=null;sbcPickerState=null;sbcAssistantState={...sbcAssistantDefaults(),anyPositionFallback:true};runSbcAssistant();
+ if(sbcAssistantState){sbcAssistantState=null;renderSBC()}
+}
+function sbcAssistantDefaults(){return{sort:"smart",min:0,max:99,quality:"",ignorePosition:false,league:"",protectTeams:true}}
 function sbcAssistantHTML(sbc){
  if(!sbcAssistantState)return"";
  const a=sbcAssistantState,leagues=sbcAssistantLeagues(sbc),available=sbcSourceItems().length,protectedCount=sbcSourceItems().filter(x=>sbcTeamUsageForUid(x.item.uid).length).length;
@@ -5337,7 +5421,7 @@ function sbcAssistantHTML(sbc){
  <div class="sbc-assistant-toggle"><div><strong>Spieler aus meinen 3 Teams schützen</strong><small>Verwendete Karten werden vom Assistenten übersprungen.</small></div><label class="sbc-switch"><input id="sbcAssistantProtect" type="checkbox" ${a.protectTeams?"checked":""}><span></span></label></div>
  <div class="sbc-assistant-toggle"><div><strong>Position ignorieren</strong><small>An: beste Karten beliebig einsetzen · Aus: nur passende Positionen.</small></div><label class="sbc-switch"><input id="sbcAssistantIgnorePosition" type="checkbox" ${a.ignorePosition?"checked":""}><span></span></label></div>
  <div class="sbc-assistant-grid">
-  <div class="sbc-assistant-field full"><label>Sortieren nach</label><select id="sbcAssistantSort"><option value="high" ${a.sort==="high"?"selected":""}>GES: hoch bis niedrig</option><option value="low" ${a.sort==="low"?"selected":""}>GES: niedrig bis hoch</option></select></div>
+  <div class="sbc-assistant-field full"><label>Sortieren nach</label><select id="sbcAssistantSort"><option value="smart" ${a.sort==="smart"?"selected":""}>Sparsam: Duplikate und schwächste zuerst</option><option value="high" ${a.sort==="high"?"selected":""}>GES: hoch bis niedrig</option><option value="low" ${a.sort==="low"?"selected":""}>GES: niedrig bis hoch</option></select></div>
   <div class="sbc-assistant-field full"><label>GES-Bereich</label><div class="sbc-assistant-range"><input id="sbcAssistantMin" type="number" min="0" max="99" value="${Number(a.min)}" placeholder="Min. GES"><input id="sbcAssistantMax" type="number" min="0" max="99" value="${Number(a.max)}" placeholder="Max. GES"></div></div>
   <div class="sbc-assistant-field"><label>Qualität</label><select id="sbcAssistantQuality"><option value="">Alle</option><option value="bronze" ${a.quality==="bronze"?"selected":""}>Bronze</option><option value="silver" ${a.quality==="silver"?"selected":""}>Silber</option><option value="gold" ${a.quality==="gold"?"selected":""}>Gold</option><option value="special" ${a.quality==="special"?"selected":""}>Spezial</option></select></div>
   <div class="sbc-assistant-field"><label>Liga</label><select id="sbcAssistantLeague"><option value="">Alle / automatisch</option>${leagues.map(l=>`<option value="${esc(l)}" ${a.league===l?"selected":""}>${esc(l)}</option>`).join("")}</select></div>
@@ -5359,8 +5443,33 @@ function sbcAssistantBasePool(sbc,draft,a){
   if(a.league&&String(resolvedAffiliation(b)?.league||"")!==a.league)return false;
   const uid=String(x.item.uid);if(seen.has(uid))return false;seen.add(uid);return true
  });
- rows.sort((x,y)=>{const d=itemRating(y.item)-itemRating(x.item);return a.sort==="low"?-d:d});
+ if(a.sort==="smart")rows.sort((x,y)=>sbcAssistantCost(x)-sbcAssistantCost(y));
+ else rows.sort((x,y)=>{const d=itemRating(y.item)-itemRating(x.item);return a.sort==="low"?-d:d});
  return rows
+}
+function sbcAssistantCost(row){return itemRating(row.item)-(row.source==="storage"?100:0)-(row.item?.tradeable===false?3:0)}
+function sbcAssistantBetter(x,y,a){
+ if(!y)return true;if(x.valid!==y.valid)return x.valid;if(x.count!==y.count)return x.count>y.count;
+ if(a.sort==="smart")return x.cost<y.cost;
+ return a.sort==="low"?x.rating<y.rating:x.rating>y.rating
+}
+// Cheapest valid squad: try every rating floor so an average requirement is met with the weakest cards possible.
+function sbcAssistantSmartPlan(sbc,draft,a,rows,empty,league){
+ const floors=[...new Set(rows.map(r=>itemRating(r.item)))].sort((x,y)=>x-y);let best=null;
+ for(const floor of floors){
+  const pool=rows.filter(r=>itemRating(r.item)>=floor);if(pool.length<empty.length&&best)break;
+  const plan=sbcAssistantPlan(sbc,draft,a,pool,empty,league);if(plan&&sbcAssistantBetter(plan,best,a))best=plan
+ }
+ return best
+}
+function sbcAssistantBest(sbc,draft,a,manualLeagues=[]){
+ const empty=draft.squad.map((uid,i)=>uid?null:i).filter(i=>i!==null),rows=sbcAssistantBasePool(sbc,draft,a);
+ const leagues=a.league?[a.league]:sbc.sameLeague?(manualLeagues.length?manualLeagues:[...new Set(rows.map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")).filter(Boolean))]):[""];
+ let best=null;
+ for(const league of leagues){const plan=a.sort==="smart"?sbcAssistantSmartPlan(sbc,draft,a,rows,empty,league):sbcAssistantPlan(sbc,draft,a,rows,empty,league);if(plan&&sbcAssistantBetter(plan,best,a))best=plan}
+ // One-tap fill: SBCs do not require positions, so fall back to any position when position matching leaves gaps.
+ if(a.anyPositionFallback&&!a.ignorePosition&&!best?.valid){const loose=sbcAssistantBest(sbc,draft,{...a,ignorePosition:true,anyPositionFallback:false},manualLeagues);if(loose&&sbcAssistantBetter(loose,best,a))best=loose}
+ return best
 }
 function sbcAssistantPlan(sbc,draft,a,rows,empty,league){
  const pool=league?rows.filter(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")===league):rows;if(!pool.length)return null;
@@ -5373,12 +5482,11 @@ function sbcAssistantPlan(sbc,draft,a,rows,empty,league){
   for(const slot of [...empty].sort((x,y)=>(choices.get(x)?.length||0)-(choices.get(y)?.length||0)))if((choices.get(slot)||[]).length)place(slot,new Set());
   if(!assigned.size)return null;
   const planned={...draft,squad:[...draft.squad]};for(const [i,slot] of assigned)planned.squad[slot]=String(ordered[i].item.uid);
-  const stats=sbcDraftStats(sbc,planned),rating=[...assigned.entries()].reduce((n,[i])=>n+itemRating(ordered[i].item),0);
-  return{draft:planned,league,rating,count:assigned.size,valid:stats.ok}
+  const stats=sbcDraftStats(sbc,planned),rating=[...assigned.entries()].reduce((n,[i])=>n+itemRating(ordered[i].item),0),cost=[...assigned.keys()].reduce((n,i)=>n+sbcAssistantCost(ordered[i]),0);
+  return{draft:planned,league,rating,cost,count:assigned.size,valid:stats.ok}
  };
- const variants=[build(pool),build([...pool].reverse())].filter(Boolean);
- variants.sort((x,y)=>Number(y.valid)-Number(x.valid)||y.count-x.count||(a.sort==="low"?x.rating-y.rating:y.rating-x.rating));
- return variants[0]||null
+ let best=null;for(const plan of [build(pool),build([...pool].reverse())])if(plan&&sbcAssistantBetter(plan,best,a))best=plan;
+ return best
 }
 function runSbcAssistant(){
  const sbc=getActiveSbcById(activeSbcId),a=sbcAssistantState;if(!sbc||!a)return;
@@ -5390,23 +5498,19 @@ function runSbcAssistant(){
  const manualLeagues=[...new Set(manual.map(item=>String(resolvedAffiliation(displayBase(item))?.league||"")))];
  if(sbc.sameLeague&&(manualLeagues.length>1||manualLeagues.includes("")))return toast("Die manuell eingesetzten Spieler müssen aus derselben Liga stammen.");
  if(sbc.sameLeague&&a.league&&manualLeagues.length&&manualLeagues[0]!==a.league)return toast("Die gewählte Liga passt nicht zu den bereits eingesetzten Spielern.");
- const rows=sbcAssistantBasePool(sbc,draft,a);
- const leagues=a.league?[a.league]:sbc.sameLeague?(manualLeagues.length?manualLeagues:[...new Set(rows.map(x=>String(resolvedAffiliation(displayBase(x.item))?.league||"")).filter(Boolean))]):[""];
- const plans=leagues.map(league=>sbcAssistantPlan(sbc,draft,a,rows,empty,league)).filter(Boolean);
- if(!plans.length)return toast("Keine passenden Spieler für die freien Plätze gefunden. Bitte Filter oder Teamschutz ändern.");
- plans.sort((x,y)=>Number(y.valid)-Number(x.valid)||y.count-x.count||(a.sort==="low"?x.rating-y.rating:y.rating-x.rating));
- const chosen=plans[0];sbcSetDraft(sbc.id,chosen.draft);const total=chosen.draft.squad.filter(Boolean).length,inserted=chosen.count,complete=sbcDraftStats(sbc,chosen.draft).ok;sbcAssistantState=null;renderSBC();
- toast(complete?`Assistent: ${inserted} Spieler eingesetzt${chosen.league?` · Liga: ${chosen.league}`:""}. 11/11 belegt.`:`Teilbefüllung: ${inserted} passende Spieler eingesetzt. ${total}/11 belegt.`)
+ const chosen=sbcAssistantBest(sbc,draft,a,manualLeagues);
+ if(!chosen)return toast("Keine passenden Spieler für die freien Plätze gefunden. Bitte Filter oder Teamschutz ändern.");sbcSetDraft(sbc.id,chosen.draft);const total=chosen.draft.squad.filter(Boolean).length,inserted=chosen.count,complete=sbcDraftStats(sbc,chosen.draft).ok;sbcAssistantState=null;renderSBC();
+ toast(complete?`Assistent: ${inserted} Spieler eingesetzt${chosen.league?` · Liga: ${chosen.league}`:""}. 11/11 belegt.`:total===chosen.draft.squad.length&&typeof sbcChecklist==="function"?`${inserted} Spieler eingesetzt, aber noch nicht abgabebereit: ${sbcChecklist(sbc,sbcDraftStats(sbc,chosen.draft)).filter(r=>!r.ok).map(r=>r.label).join(", ")||"Bedingung"} fehlt.`:`Teilbefüllung: ${inserted} passende Spieler eingesetzt. ${total}/11 belegt.`)
 }
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),reqs=sbcRequirementSummary(sbc,stats),formation=FORMATIONS["4-3-3"];
  const activeSelected=stats.items.filter(i=>state.squad.includes(i.uid)).length,storageSelected=stats.items.filter(i=>(state.sbcStorage||[]).some(x=>x.uid===i.uid)).length;
  return `<div class="sbc-builder"><div class="sbc-builder-head"><button type="button" class="sbc-builder-back" data-sbc-back>‹</button><div class="sbc-builder-title"><strong>${esc(sbc.name)}</strong><span>${esc(sbc.req)}</span></div><div class="sbc-builder-reward">${esc(sbcRewardPackLabel(sbc.reward))}</div></div>
- <div class="sbc-condition-bar">${reqs.map(r=>`<div class="sbc-condition ${r.ok?"ok":""}"><b>${esc(r.value)}</b><span>${esc(r.label)}</span></div>`).join("")}</div>
+ <ul class="sbc-checklist" aria-label="Bedingungen">${sbcChecklist(sbc,stats).map(r=>`<li class="${r.ok?"ok":""}"><i aria-hidden="true">${r.ok?"✓":"✗"}</i><span>${esc(r.label)}</span><b>${esc(r.value)}</b></li>`).join("")}</ul>
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,"squad",i,slot)).join("")}</div>
  <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle><div><strong>⚒ Testareal</strong><span>12 Zusatzplätze · Spieler vorbereiten und per Drag & Drop einsetzen</span></div><b class="sbc-test-chevron">⌃</b></button>
  <div class="sbc-test-drawer ${draft.testOpen?"open":""}"><div class="sbc-test-note"><span>3 Reihen × 4 Plätze</span><span>${draft.test.filter(Boolean).length}/12 belegt</span></div><div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcWorkSlotHTML(sbc,"test",i)).join("")}</div></div>
- <div class="sbc-builder-footer assistant-ready"><button type="button" class="secondary" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>Abgeben · ${esc(sbcRewardText(sbc.reward))}</button><div class="sbc-submit-state ${stats.ok?"ok":""}">${stats.ok?"Alle Bedingungen erfüllt. Die SBC kann abgegeben werden.":esc(sbcFailedRequirementText(sbc,stats)||`Noch nicht abgabebereit · ${stats.count}/${sbc.count} Spieler`)}${activeSelected?` · ${activeSelected} aus aktivem Kader`:""}${storageSelected?` · ${storageSelected} aus SBC-Speicher`:""}</div></div>
+ <div class="sbc-builder-footer assistant-ready quick-fill"><button type="button" class="sbc-quick-fill" data-sbc-quick-fill>⚡ Automatisch füllen</button><button type="button" class="secondary sbc-assistant-gear" data-sbc-assistant-open aria-label="Assistent-Einstellungen" title="Assistent-Einstellungen">⚙</button><button type="button" class="secondary" data-sbc-player-search>Spieler suchen</button><button type="button" class="primary" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>${stats.ok?`Abgeben · ${esc(sbcRewardText(sbc.reward))}`:esc(sbcMissingButtonText(sbc,stats))}</button>${activeSelected||storageSelected?`<div class="sbc-submit-state">${[activeSelected?`${activeSelected} aus aktivem Kader`:"",storageSelected?`${storageSelected} aus SBC-Speicher`:""].filter(Boolean).join(" · ")}</div>`:""}</div>
  </div>${sbcSlotDetailHTML(sbc)}${sbcPickerHTML()}${sbcWarningHTML(sbc)}${sbcAssistantHTML(sbc)}`
 }
 function sbcFeatureGroupCard(rows,detail=false){
@@ -5440,7 +5544,7 @@ function sbcSetDetailHTML(rows){
 }
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
- const rows=allActiveSBCs(),preferred=["POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
+ const rows=allActiveSBCs(),preferred=["Täglich","POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
  if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
@@ -5459,7 +5563,10 @@ function renderSBC(){
   const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>sbcFeatureGroupCard(x)).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
  }
  const banner=sbcGroupBannerHTML(activeSbcGroup,groupRows);
- $("sbcGrid").innerHTML=banner+groupRows.map(sbcOverviewCard).join("")||'<div class="online-note">Keine SBCs in dieser Kategorie.</div>'
+ // Doable SBCs first, then the rest, finished ones at the bottom.
+ const rank=x=>sbcIsCompleted(x)?2:sbcDraftStats(x).ok||sbcFeasibility(x).ok?0:1;
+ const sorted=groupRows.map((x,i)=>({x,i,r:rank(x)})).sort((a,b)=>a.r-b.r||a.i-b.i).map(e=>e.x);
+ $("sbcGrid").innerHTML=banner+sorted.map(sbcOverviewCard).join("")||'<div class="online-note">Keine SBCs in dieser Kategorie.</div>'
 }
 let queuedSbcGroupRewardPack=null;
 function maybeGrantSbcGroupReward(sbc){
@@ -5497,7 +5604,7 @@ function submitSbcById(id){
 }
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;activeSbcSet=null;activeSbcId=null;renderSBC()});
 let sbcContentRefreshKey=promoWindowKey(new Date(),19)+"|"+sbcRotationWindow(new Date(),3).key+"|"+sbcRotationWindow(new Date(),4).key;
-setInterval(()=>{const key=promoWindowKey(new Date(),19)+"|"+sbcRotationWindow(new Date(),3).key+"|"+sbcRotationWindow(new Date(),4).key;if(key===sbcContentRefreshKey)return;sbcContentRefreshKey=key;if(currentViewId()==="sbcView"){activeSbcId=null;activeSbcSet=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcGroup=activeEventPlayerSBCs().length?"Profis":"Grind";renderSBC();toast("SBC-Angebot aktualisiert.")}},60000);
+setInterval(()=>{const key=promoWindowKey(new Date(),19)+"|"+sbcRotationWindow(new Date(),3).key+"|"+sbcRotationWindow(new Date(),4).key;if(key===sbcContentRefreshKey)return;sbcContentRefreshKey=key;if(currentViewId()==="sbcView"){activeSbcId=null;activeSbcSet=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcGroup="Täglich";renderSBC();toast("Neue Tages-SBCs sind da.")}},60000);
 
 $("sbcView").addEventListener("click",e=>{
  const setOpen=e.target.closest("[data-sbc-set]"),setBack=e.target.closest("[data-sbc-set-back]"),open=e.target.closest("[data-sbc-open]"),back=e.target.closest("[data-sbc-back]"),toggle=e.target.closest("[data-sbc-test-toggle]"),remove=e.target.closest("[data-sbc-remove]"),slot=e.target.closest(".sbc-work-slot"),search=e.target.closest("[data-sbc-player-search]"),close=e.target.closest("[data-sbc-picker-close]"),pick=e.target.closest("[data-sbc-pick-uid]"),submit=e.target.closest("[data-submit]"),sourceQuick=e.target.closest("[data-sbc-source-quick]"),warnReplace=e.target.closest("[data-sbc-warning-replace]"),warnConfirm=e.target.closest("[data-sbc-warning-confirm]"),warnCancel=e.target.closest("[data-sbc-warning-cancel]"),assistantOpen=e.target.closest("[data-sbc-assistant-open]"),assistantClose=e.target.closest("[data-sbc-assistant-close]"),assistantBuild=e.target.closest("[data-sbc-assistant-build]"),slotDetailClose=e.target.closest("[data-sbc-slot-detail-close]"),slotPrev=e.target.closest("[data-sbc-slot-prev]"),slotNext=e.target.closest("[data-sbc-slot-next]"),slotAdd=e.target.closest("[data-sbc-slot-add]"),slotRemoveDetail=e.target.closest("[data-sbc-slot-remove-detail]");
@@ -5511,6 +5618,7 @@ $("sbcView").addEventListener("click",e=>{
   if(assistantClose){sbcAssistantState=null;renderSBC();return}
  if(assistantBuild){runSbcAssistant();return}
  if(assistantOpen){openSbcAssistant();return}
+ if(e.target.closest("[data-sbc-quick-fill]")){sbcQuickFill();return}
   if(warnCancel){pendingSbcSubmissionId=null;renderSBC();return}
  if(warnConfirm&&pendingSbcSubmissionId){const id=pendingSbcSubmissionId;pendingSbcSubmissionId=null;finalizeSbcSubmission(id);return}
  if(warnReplace&&pendingSbcSubmissionId){const sbc=getActiveSbcById(pendingSbcSubmissionId),draft=sbcDraft(pendingSbcSubmissionId),risks=sbc?new Set(sbcSubmissionRisks(sbc).map(r=>r.item.uid)):new Set(),idx=draft.squad.findIndex(uid=>risks.has(uid));pendingSbcSubmissionId=null;if(idx>=0){sbcSlotDetailState={index:idx};openSbcPicker("squad",idx)}else renderSBC();return}
