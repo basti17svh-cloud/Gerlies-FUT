@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),H=require('../3d-highlights.js');
 // V21.195: more and more varied 3D scenes. All of it is presentation only.
-test('set pieces cut to their own TV angle: behind the penalty taker, over the wall, from the corner flag',async()=>{
+test('set pieces cut to their own TV angle: behind the penalty taker, over the wall; corners use the normal TV camera',async()=>{
  const E=await import('../3d-extended-match.mjs');
  for(const direction of [1,-1]){
   const penalty=E.extendedSetPieceCamera('extended_penalty',5,direction,.9);
@@ -9,8 +9,8 @@ test('set pieces cut to their own TV angle: behind the penalty taker, over the w
   assert.ok(Math.abs(penalty.position[2])<Math.abs(penalty.target[2]));
   assert.ok(Math.sign(penalty.target[2])===-direction);
   assert.ok(E.extendedSetPieceCamera('extended_free_kick',3,direction,.9));
-  const left=E.extendedSetPieceCamera('extended_corner',4,direction,.9),right=E.extendedSetPieceCamera('extended_corner_right',4,direction,.9);
-  assert.ok(left&&right);assert.equal(Math.sign(left.position[0]),-Math.sign(right.position[0]));
+  // V21.203 (Basti): no corner-flag angle any more.
+  for(const t of [1,2.5,4,6])for(const seq of ['extended_corner','extended_corner_right'])assert.equal(E.extendedSetPieceCamera(seq,t,direction,.9),null);
  }
  // The ordinary broadcast picture returns afterwards and for other restarts.
  assert.equal(E.extendedSetPieceCamera('extended_penalty',8,1,.9),null);

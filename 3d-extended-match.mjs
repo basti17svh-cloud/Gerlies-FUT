@@ -166,11 +166,9 @@ export function extendedCamera(seq,time,direction,aspect,ball){
 export function extendedSetPieceCamera(seq,time,direction,aspect,ball=null){
  const kind=extendedKind(seq),portrait=aspect<1.12;
  const behind=kind==='penalty'&&time<7.7?{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?28:25}:
-  kind==='free_kick'&&time<7.3?{from:[-2,3.3,-18],to:[.3,1.2,-46],fov:portrait?31:28}:
-  kind==='corner'&&time>=2.2&&time<7.3?{from:[-31,4.4,-55.4],to:[-3.5,.9,-50.8],fov:portrait?32:28,mirror:seq.endsWith('_right')}:null;
+  kind==='free_kick'&&time<7.3?{from:[-2,3.3,-18],to:[.3,1.2,-46],fov:portrait?31:28}:null;
+ // V21.203 (Basti): corners stay in the normal TV camera, no corner-flag angle.
  if(!behind)return null;
- // At a corner the lens pans with the delivery so the ball never leaves the frame.
- if(kind==='corner'&&ball)behind.to=[mix(behind.to[0],ball[0],.5),mix(behind.to[1],ball[1],.3),mix(behind.to[2],ball[2],.5)];
  const f=v=>[v[0]*(behind.mirror?-1:1)*direction,v[1],v[2]*direction],position=f(behind.from),target=f(behind.to);
  return{position,target,fov:behind.fov,distance:Math.hypot(...position.map((v,i)=>v-target[i])),phase:extendedPhase(seq,time)?.action||'build',shot:'behind-taker'};
 }
