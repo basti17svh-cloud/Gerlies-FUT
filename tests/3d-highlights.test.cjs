@@ -867,7 +867,7 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
   assert.ok(dist(ball,foot(index,seconds))<.001,'wrong possessor at '+seconds);
  }
  const script=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(script,/labFocusedPreview\?eventCameraState[^\n]*:broadcastFor\(camera.aspect\)\(time\)/);
+ assert.match(script,/labFocusedPreview\?eventCameraState[^\n]*:(?:\(extended&&extendedSetPieceCamera\([^\n]*\)\)\|\|)?broadcastFor\(camera.aspect\)\(time\)/);
  for(const dir of [-1,1])for(const time of [0,1,2.5,4.2,5.4,6.65,9]){
   const camera=M.cameraState(dir,time,.98,'big_chance_saved',seq);
   const gap=dist(camera.position,camera.target);

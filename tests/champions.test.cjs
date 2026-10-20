@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21183/);
+ assert.match(html,/champions-system\.js\?v=21195/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21183/);
+ assert.match(sw,/champions-system\.js\?v=21195/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -96,7 +96,7 @@ test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+
  assert.ok(generateCode.startsWith("function generatePack(id,tradeable=true)"));
  let sequence=0;
  const sandbox={
-  PACKS:[],MID_ICON_BASES:[{id:"low",ovr:84},{id:"high",ovr:90}],
+  PACKS:[],CHAMPIONS_RANKS:[],ratingRewardPack:()=>{},MID_ICON_BASES:[{id:"low",ovr:84},{id:"high",ovr:90}],
   PLAYERS:Array.from({length:30},(_,i)=>({id:"gold-"+i,ovr:87+i%5})),Math:{floor:Math.floor,max:Math.max,random:()=>0},
   FooteraPackOdds:require("../pack-odds.js"),
   founderRuleForPack:()=>null,weightedPlayer:()=>({id:"gold-"+(++sequence),ovr:87+sequence}),
@@ -142,4 +142,16 @@ test("Champions extension is exactly one weekend through Tuesday 20 Oct at 09:00
  assert.match(hub,/championsSpecial\?"/);
  assert.match(hub,/championsDate\(w\.end\)/);
  assert.match(champions,/end=c.active\?championsRunEnd\(c\.week\):null/);
+});
+
+test("claimed rated Champions reward packs stay listed in Meine Packs after a reload",()=>{
+ // V21.195: "20× 84+ Spieler-Pack" was only added to the pack catalogue when the
+ // Champions card rendered, so after a reload it sat invisible in the save.
+ const ranks=champions.slice(champions.indexOf("const CHAMPIONS_RANKS="),champions.indexOf("];",champions.indexOf("const CHAMPIONS_RANKS="))+2);
+ const ensure=champions.slice(champions.indexOf("function ensureChampionsPacks()"),champions.indexOf("function championsRewardForWins("));
+ const rated=competition.slice(competition.indexOf("function ratingRewardPack("),competition.indexOf("if(!PACKS.some(p=>p.id===\"totw-reward\"))"));
+ const box={PACKS:[],state:{packs:{"reward-84-20":1,"reward-86-5":1,"reward-79-7":1}}};vm.createContext(box);
+ vm.runInContext(ranks+"\n"+rated+"\n"+ensure+"\nensureChampionsPacks();",box);
+ for(const id of ["reward-84-20","reward-86-5","reward-86-10","reward-83-15","reward-79-7"])assert.ok(box.PACKS.some(p=>p.id===id),id+" registered");
+ assert.equal(box.PACKS.find(p=>p.id==="reward-84-20").count,20);
 });

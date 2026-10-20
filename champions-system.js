@@ -40,6 +40,11 @@ function championsWindowText(at=new Date()){
  return w.open?`Offen bis ${championsDate(w.end)} · ${seasonCountdown(w.end)}`:`Öffnet ${championsDate(w.start)} · ${seasonCountdown(w.start).replace("Endet","Startet")}`
 }
 function ensureChampionsPacks(){
+ // Rated reward packs (e.g. "20× 84+ Spieler-Pack") must be in the catalogue
+ // from page load on; otherwise a claimed pack sits in the save but "Meine
+ // Packs" cannot list or open it after a reload.
+ for(const rank of CHAMPIONS_RANKS)for(const spec of rank.rated||[])ratingRewardPack(spec[0],spec[1]);
+ for(const id of Object.keys(typeof state!=="undefined"&&state?.packs||{})){const m=/^reward-(\d+)-(\d+)$/.exec(id);if(m)ratingRewardPack(Number(m[1]),Number(m[2]))}
  if(!PACKS.some(p=>p.id==="champions-bonus"))PACKS.push({id:"champions-bonus",name:"Champions Bonus Pack",coins:null,points:null,type:"gold",count:5,min:87,max:99,store:false,reward:true,desc:"5 Spieler · jeder mindestens 87 GES · 5 % ICON-Chance (87+)",iconChance:0.05});
 }
 function championsRewardForWins(wins){
