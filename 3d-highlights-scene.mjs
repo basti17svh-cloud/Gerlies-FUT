@@ -1428,7 +1428,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // lights up above the player, like in EA FC.
   const signatureIcon=signature?(()=>{
    const tex=canvasTexture(128,128,(g,w,h)=>{
-    const glow=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);glow.addColorStop(0,'rgba(255,211,90,.55)');glow.addColorStop(.55,'rgba(255,190,60,.22)');glow.addColorStop(1,'rgba(255,190,60,0)');
+    const glow=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);glow.addColorStop(0,'rgba(255,211,90,.75)');glow.addColorStop(.55,'rgba(255,190,60,.32)');glow.addColorStop(1,'rgba(255,190,60,0)');
     g.fillStyle=glow;g.fillRect(0,0,w,h);
     g.beginPath();g.arc(w/2,h/2,34,0,Math.PI*2);g.fillStyle='rgba(40,28,6,.88)';g.fill();g.lineWidth=4;g.strokeStyle='#ffd35a';g.stroke();
    });
@@ -1436,7 +1436,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(typeof Image!=='undefined'){
     const img=new Image();
     img.onload=()=>{const c=tex.image,g=c.getContext('2d');g.drawImage(img,40,40,48,48);tex.needsUpdate=true};
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#ffe8a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+body+'</svg>');
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#ffe8a3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+body+'</svg>');
    }
    const sprite=new THREE.Sprite(track(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false})));
    sprite.renderOrder=30;sprite.visible=false;sprite.userData.owner=event.signature.who==='creator'?-1:0;scene.add(sprite);
@@ -1904,7 +1904,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const head=players[signatureIcon.userData.owner].root.getWorldPosition(new THREE.Vector3());
      signatureIcon.position.set(head.x,head.y+2.45,head.z);
      signatureIcon.material.opacity=smooth((time-from)/.25)*(1-smooth((time-to+.3)/.3));
-     signatureIcon.scale.setScalar(.95*(1+.07*Math.sin(time*9)));
+     signatureIcon.scale.setScalar(1.35*(1+.07*Math.sin(time*9)));
     }
    }
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
