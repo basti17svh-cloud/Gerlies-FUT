@@ -34,11 +34,11 @@ test('cancelling an old match prevents a stale completion resuming a new match',
  let idle=0,resolve;const q=new H.Queue({play:()=>new Promise(r=>resolve=r),onIdle:()=>idle++});q.enqueue(event());await turn();q.cancel();resolve('played');await turn();assert.equal(idle,0);assert.equal(q.busy,false);
 });
 test('all finishes share build-up; foot contact precedes flight; rebound follows physical impact',async()=>{
- const {ballPosition,SHOT_TIME,IMPACT_TIME,shotFootPosition}=await import('../3d-highlights-scene.mjs');
+ const {ballPosition,SHOT_TIME,IMPACT_TIME,shotFootPosition,shotArrival}=await import('../3d-highlights-scene.mjs');
  for(const t of [0,1,2,3.09,4.9,SHOT_TIME])for(const type of H.TYPES)assert.deepEqual(ballPosition(type,t),ballPosition('goal',t));
  assert.deepEqual(ballPosition('goal',SHOT_TIME),shotFootPosition());
  assert.ok(Math.hypot(...ballPosition('goal',SHOT_TIME+.001).map((v,i)=>v-shotFootPosition()[i]))<.03,'continuous foot release');
- const goal=ballPosition('goal',7.5),save=ballPosition('big_chance_saved',8),miss=ballPosition('big_chance_missed',8),post=ballPosition('shot_post',IMPACT_TIME),rebound=ballPosition('shot_post',8);
+ const goal=ballPosition('goal',7.5),save=ballPosition('big_chance_saved',8),miss=ballPosition('big_chance_missed',8),post=ballPosition('shot_post',shotArrival('shot_post')),rebound=ballPosition('shot_post',8);
  assert.ok(goal[2]<-52.5&&goal[2]>-54.4&&Math.abs(goal[0])<3.66&&goal[1]<2.44);
  assert.ok(save[2]>-52.5);assert.ok(miss[0]>3.66&&miss[2]<-52.5);
  assert.ok(Math.abs(post[0]-3.66)<.15&&Math.abs(post[2]+52.5)<.01);assert.ok(rebound[2]>-52.5);
@@ -311,7 +311,7 @@ test('visual, playbook, defensive and extended scenes correspond to actual rende
   for(const direction of [-1,1])for(const outcome of H.TYPES.filter(t=>t!=='ball_won')){
    const c=M.cameraState(direction,4.2,360/340,outcome,v.id,v.finish);
    const p=M.ballPosition(outcome,M.SHOT_TIME,v.id,v.finish);
-   const impact=M.ballPosition(outcome,M.IMPACT_TIME,v.id,v.finish);
+   const impact=M.ballPosition(outcome,M.shotArrival(outcome,v.id,v.finish),v.id,v.finish);
    assert.ok([...c.position,...c.target,...p,...impact].every(Number.isFinite),v.id);
    assert.ok(Math.hypot(...p.map((x,i)=>x-M.ballPosition(outcome,M.SHOT_TIME+.0001,v.id,v.finish)[i]))<.03,'strike continuity: '+v.id);
    assert.deepEqual(impact,M.shotImpact(outcome,v.id,v.finish),'outcome class unchanged: '+v.id);
@@ -571,7 +571,7 @@ test('V21.35: physical cut and defensive range are deterministic and presentatio
   assert.equal(M.defensiveMotion(action,5.2,9,8,2).intensity,0,'only selected defender reacts');
   assert.ok(Number.isFinite(nearby.plant)&&Number.isFinite(nearby.recover));
  }
- assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),
+ assert.deepEqual(M.ballPosition('goal',M.shotArrival('goal','cut_inside_right','finesse'),'cut_inside_right','finesse'),
   M.shotImpact('goal','cut_inside_right','finesse'),'presentation never changes the final shot result');
 });
 
@@ -600,7 +600,7 @@ test('V21.36: authored motion clips blend into foot-planted movement safely',asy
  assert.equal(C.motionClipBlend(4,4.9,6.05),0);
  assert.equal(C.motionClipBlend(5.4,4.9,6.05,.16),1);
  assert.equal(C.motionClipBlend(7,4.9,6.05),0);
- assert.deepEqual(M.ballPosition('goal',M.IMPACT_TIME,'cut_inside_right','finesse'),M.shotImpact('goal','cut_inside_right','finesse'));
+ assert.deepEqual(M.ballPosition('goal',M.shotArrival('goal','cut_inside_right','finesse'),'cut_inside_right','finesse'),M.shotImpact('goal','cut_inside_right','finesse'));
 });
 
 test('V21.37: a real connected skinned skeleton deforms a weighted football body',async()=>{
@@ -953,7 +953,7 @@ test('V21.165: closer counter has constant 32m camera clearance with ball, activ
   }
  }
  const source=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
- assert.match(source,/const distance=defending\?34:BROADCAST_CAMERA_DISTANCE/);
+ assert.match(source,/const distance=BROADCAST_CAMERA_DISTANCE;/);
 });
 
 test('V21.166: ball-won defenders carry upfield, boots grounded, camera follows the recovery',async()=>{
@@ -963,8 +963,11 @@ test('V21.166: ball-won defenders carry upfield, boots grounded, camera follows 
   assert.ok(finish[1]>start[1]+12,'winner must advance AWAY from defended -Z goal');
   for(const direction of [-1,1])for(const t of [0,2,4.3,5.4,7.8,9.5]){
    const c=M.cameraState(direction,t,.93,'ball_won',sequence);
-   assert.ok(Math.abs(Math.hypot(...c.position.map((v,i)=>v-c.target[i]))-34)<.00001);
+   // V21.196: the same TV distance and rail as an attack, so the angle never gives the ball win away.
+   assert.ok(Math.abs(Math.hypot(...c.position.map((v,i)=>v-c.target[i]))-M.BROADCAST_CAMERA_DISTANCE)<.00001);
    assert.ok(c.position[0]>0,'TV camera stays on one side');
+   const attack=M.cameraState(direction,t,.93,'big_chance_saved','central'),dir=c=>c.position.map((v,i)=>v-c.target[i]);
+   assert.ok(Math.hypot(...dir(c).map((v,i)=>v-dir(attack)[i]))<.5,'same camera angle as an attack');
   }
  }
  const src=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');

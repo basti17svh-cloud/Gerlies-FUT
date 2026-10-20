@@ -18,7 +18,7 @@ test('each visual result remains a goal, save, miss or post for either corner',a
  for(const type of H.TYPES)for(const side of [-1,1]){
   const placement={side,zone:'corner',height:'high'},impact=S.shotImpact(type,'central','normal',placement);
   assert.equal(Math.sign(impact[0]),side);
-  assert.deepEqual(S.ballPosition(type,S.IMPACT_TIME,'central','normal','classic',placement),impact);
+  assert.deepEqual(S.ballPosition(type,S.shotArrival(type,'central','normal',placement),'central','normal','classic',placement),impact);
   assert.equal(Math.sign(S.keeperPose(type,S.IMPACT_TIME,'normal','central','classic',placement).x),side);
   if(type==='goal')assert.ok(Math.abs(impact[0])<3.66&&impact[1]<2.44);
   if(type==='big_chance_missed')assert.ok(Math.abs(impact[0])>3.66);

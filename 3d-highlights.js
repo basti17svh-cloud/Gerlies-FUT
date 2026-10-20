@@ -26,6 +26,7 @@
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
+   signature:event.signature&&SIGNATURE_NAMES[event.signature.id]?Object.freeze({id:String(event.signature.id),name:SIGNATURE_NAMES[event.signature.id],who:event.signature.who==='creator'?'creator':'scorer'}):null,
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
    scoreBeforeAway:Number.isFinite(Number(event.scoreBeforeAway))?Number(event.scoreBeforeAway):null,
@@ -38,7 +39,7 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21195').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21196').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -53,7 +54,7 @@
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.type==='ball_won'?'LIVE-BALLGEWINN':'LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent='LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
   let skipped=false,skipResolve;
@@ -238,16 +239,39 @@
   cross:{volley:['volley_left','volley_right','bicycle']},
   dribble:{normal:['dribble','double_feint_left','double_feint_right'],finesse:['double_feint_left','double_feint_right','inside_left','inside_right'],low_driven:['dribble']}
  });
+ const STAR_IDS=new Set(Object.values(STAR_SCENES).flatMap(x=>Object.values(x).flat()));
  function starScenes(event,scorer){
   const ids=STAR_SCENES[event.actionKind]?.[event.finish]||[];
   return VISUAL_SCENES.filter(v=>ids.includes(v.id)&&(v.id!=='bicycle'||scorer.has('acrobatic'))).map(v=>v.id==='bicycle'?Object.freeze({...v,weight:scorer.get('acrobatic')===2?2.2:.9}):v);
+ }
+ // V21.196 PlayStyle+ signature moments. A plus PlayStyle that matches what
+ // the player actually does in this chance gets its own scene: name badge,
+ // slow motion into the strike, close camera and a gold ball trail.
+ // Presentation only; it shows for goals, saves and misses alike.
+ const SIGNATURE_NAMES=Object.freeze({'power-shot':'Powerschuss','finesse-shot':'Angeschnittener Schuss','trivela':'Außenrist','low-driven-shot':'Flacher Vollspannschuss','chip-shot':'Lupfer','power-header':'Präziser Kopfball','aerial':'Kopfballmacht','acrobatic':'Akrobatik','dead-ball':'Ruhender Ball','trickster':'Tricks','technical':'Technik','rapid':'Raserei','quick-step':'Schneller Schritt','incisive-pass':'Entscheidender Pass','through-ball':'Schnittstellenpass','long-ball-pass':'Weiter Pass','pinged-pass':'Harter Pass','tiki-taka':'Tiki-Taka'});
+ function signatureStyle(event,finish=event.finish){
+  const plus=list=>new Set((Array.isArray(list)?list:[]).filter(s=>s&&s.plus).map(s=>typeof s==='string'?s:s.id));
+  const scorer=plus(event.playerStyles),creator=plus(event.creatorStyles),kind=String(event.actionKind||''),scene=String(event.sceneKind||'');
+  const first=(set,ids)=>ids.find(id=>set.has(id));
+  const shot=scene==='free_kick'||scene==='penalty'?first(scorer,['dead-ball']):
+   finish==='power'?first(scorer,['power-shot']):finish==='finesse'?first(scorer,['finesse-shot','trivela']):
+   finish==='low_driven'?first(scorer,['low-driven-shot']):finish==='chip'?first(scorer,['chip-shot']):
+   finish==='header'?first(scorer,['power-header','aerial']):finish==='volley'||finish==='bicycle'?first(scorer,['acrobatic']):
+   kind==='dribble'?first(scorer,['trickster','technical','rapid','quick-step']):null;
+  if(shot)return Object.freeze({id:shot,name:SIGNATURE_NAMES[shot],who:'scorer'});
+  const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&String(event.creationType||'')!=='solo';
+  const pass=scene==='corner'?first(creator,['dead-ball']):!hasCreator||scene?null:
+   kind==='through'?first(creator,['incisive-pass','through-ball']):kind==='switch'?first(creator,['long-ball-pass']):
+   kind==='cross'?first(creator,['long-ball-pass','pinged-pass']):kind==='cutback'?first(creator,['pinged-pass']):
+   kind==='combination'?first(creator,['tiki-taka']):null;
+  return pass?Object.freeze({id:pass,name:SIGNATURE_NAMES[pass],who:'creator'}):null;
  }
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
   // defenders motionless and the final runner offside. Preserve the simulator's
   // real chance outcome but select a normal, continuous 3D attacking play.
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
-  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind]});
+  if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
@@ -264,6 +288,7 @@
    if(event.finish==='chip')return v.finish==='chip';
    return v.family===event.actionKind;
   }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES];
+  const starSignature=simulated&&signatureStyle(event)?.who==='scorer';
   const choices=pool.map(v=>{
    let w=v.weight;
    if(PLAYBOOK_SCENES.includes(v)){
@@ -308,6 +333,8 @@
      style==='block'?['counter','through','duel'].includes(family):false;
     if(matches)w*=3.05;else w*=.90;
    }
+   // A PlayStyle+ finisher strongly favours the big star version of his finish.
+   if(starSignature&&STAR_IDS.has(v.id))w*=v.id==='bicycle'?1.6:4;
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
   });
@@ -317,7 +344,7 @@
   // Finishing module is independent from the attack build-up and never touches match outcomes.
   const finish=simulated?(chosen.id==='bicycle'?'bicycle':event.finish||'normal'):chosen.finish==='normal'&&scorer.has('finesse-shot')&&visualHash(key+':finish')%7===0?'finesse':
    chosen.finish==='normal'&&scorer.has('low-driven-shot')&&visualHash(key+':low')%8===0?'low_driven':chosen.finish;
-  return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4});
+  return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4,signature:signatureStyle(event,finish)});
  }
  class Queue{
   constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000}={}){
@@ -347,6 +374,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);
