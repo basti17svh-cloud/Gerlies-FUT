@@ -121,7 +121,8 @@ if(require.main===module)(async()=>{
      return{headline:h.querySelector('.fh3d-headline').textContent,name:h.querySelector('.fh3d-name').textContent,event:h.querySelector('.fh3d-event').textContent,
       performerVisible:!!shell&&!!art&&getComputedStyle(performer).display!=='none'&&outer.width>=65&&outer.height>=90&&inner.width>=65&&inner.height>=90};
     });
-   check(`${type}: correct event headline`,hudState.headline.includes({big_chance_saved:'PARADE',big_chance_missed:'VORBEI',shot_post:'PFOSTEN'}[type]));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
+   // V21.195: a miss may also be shown as a goal-line clearance ('GEKLÄRT').
+   check(`${type}: correct event headline`,({big_chance_saved:['PARADE'],big_chance_missed:['VORBEI','GEKLÄRT'],shot_post:['PFOSTEN']}[type]).some(x=>hudState.headline.includes(x)));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
    await page.screenshot({path:path.join(output,type+'.png')});
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
