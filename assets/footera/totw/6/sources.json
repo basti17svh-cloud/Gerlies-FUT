@@ -1,0 +1,164 @@
+[
+  {
+    "name": "Filip Stanković",
+    "id": "269271",
+    "club": "Venezia",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/269271.png",
+    "sha256": "841b3d0ccccf5bac32e966fbe16b5cb12d754b68b6ee2ecac81305c545e95c9a",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Nahuel Noll",
+    "id": "262322",
+    "club": "SC Paderborn 07",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/262322.png",
+    "sha256": "c171c807b8cc6b724ca413a080478adc197672a2df1597e68fa40634782d466a",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Carlos Augusto",
+    "id": "258648",
+    "club": "Inter",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/258648.png",
+    "sha256": "45f4ea636d101e4cae3c06241dc79eea5e87f698fc34946ebe419873ce61f6fe",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Oliver Provstgaard",
+    "id": "266123",
+    "club": "Lazio",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/266123.png",
+    "sha256": "0bdb9de7702dd796e74ec34d17162444632a1affaab90e48631a9b56745e8cba",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Waldemar Anton",
+    "id": "229476",
+    "club": "Borussia Dortmund",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/229476.png",
+    "sha256": "3814aa9242532e6d4e40c04c6e320106709a38abb16625d8a9ae657ccbf40625",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Miro Muheim",
+    "id": "232839",
+    "club": "Hamburger SV",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/232839.png",
+    "sha256": "561eb80a827499b1e95322128737fde885b9ea60f1ecfc7ab01bb0ee71427986",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Timothy Weah",
+    "id": "241496",
+    "club": "Olympique de Marseille",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/241496.png",
+    "sha256": "c4900d83f8daca91e7ed9d6f3416b3ab0b1e41d723f8a7e3fb39bede7d33e1ec",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Diego Gómez",
+    "id": "269278",
+    "club": "Brighton & Hove Albion",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/269278.png",
+    "sha256": "cdc164fc7ba8a543f9c299ef1f4ddcca2a0411074e6ddd45e5928095841dbbfa",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Nico Paz",
+    "id": "277846",
+    "club": "Como",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/277846.png",
+    "sha256": "153bf917ffdfc3b3b02402a9159888628e0559679da3e31524803584d90f1c87",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Ibrahim Maza",
+    "id": "275029",
+    "club": "Bayer 04 Leverkusen",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/275029.png",
+    "sha256": "803fe9a2e1a49dcfb10e61a540ed3d6bdac321cf193b3e0df529409db2660d5e",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Álex Baena",
+    "id": "257279",
+    "club": "Atlético de Madrid",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/257279.png",
+    "sha256": "9ca69c6b9c8dacb7300c742c32ea167543dfff1d060d5a337b0fce3a15eadb1d",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Adrien Rabiot",
+    "id": "210008",
+    "club": "AC Milan",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/210008.png",
+    "sha256": "4ae1b191c42944d19f3f22a047371d8fc7742f6b34b961b31a640875c081a554",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Alexander Prass",
+    "id": "263041",
+    "club": "TSG Hoffenheim",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/263041.png",
+    "sha256": "04fff31b20388a9b9e9b399041a2e4721b9e491545b7f1db700858dff68518e1",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Luis Díaz",
+    "id": "241084",
+    "club": "FC Bayern München",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/241084.png",
+    "sha256": "5715bfbeaae9ce02546bd958ac7b15aeb2de66df260a7b8d2b1b0aa46c72dc1d",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Kylian Mbappé",
+    "id": "231747",
+    "club": "Real Madrid",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/231747.png",
+    "sha256": "686a4221a04c68ad5e2ac226351db68ec16549849bf4645732543f56701f4231",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Lamine Yamal",
+    "id": "277643",
+    "club": "FC Barcelona",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/277643.png",
+    "sha256": "cc493433e5b95e81b0cbdab16257bab2b64b3c0ce2a2fa542e32b90ff1bf6e9f",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Erling Haaland",
+    "id": "239085",
+    "club": "Manchester City",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/239085.png",
+    "sha256": "2a83222f4e177808df2c75ae03896c424330954ec21c7ce48a7e37e40ac7b2c3",
+    "width": 160,
+    "height": 160
+  },
+  {
+    "name": "Pedro Neto",
+    "id": "238616",
+    "club": "Chelsea",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/238616.png",
+    "sha256": "1be854752ceebdc097855e7f36d401302fbb98baa175b15c347212a84f7e4d9f",
+    "width": 160,
+    "height": 160
+  }
+]
