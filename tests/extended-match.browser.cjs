@@ -31,7 +31,7 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
     const host=document.getElementById('matchLiveStage'),canvas=document.createElement('canvas');canvas.id='extended-proof';host.append(canvas);
     const renderer=new T.WebGLRenderer({canvas,antialias:false,preserveDrawingBuffer:true});renderer.setPixelRatio(1);
     const world=M.makeScene(renderer,event,n%2===1,false,true,false,true,true);world.resize(width-16,500);
-    const frames=[];for(const time of [0,1.7,3.5,5.2,5.4,6.65,8.5]){world.update(time);const x=world.inspect();frames.push({time,ball:x.ball,screen:x.ballScreen,visible:x.visibleFieldPlayers,phase:x.extendedPhase,keeper:x.buildKeeperPosition,positions:x.playerPositions,draws:x.drawCalls,goal:x.goalFrameScreen});}
+    const frames=[];for(const time of [0,1.7,3.5,5.2,5.4,6.65,8.5]){world.update(time);const x=world.inspect();frames.push({time,ball:x.ball,screen:x.ballScreen,visible:x.visibleFieldPlayers,phase:x.extendedPhase,keeper:x.buildKeeperPosition,positions:x.playerPositions,draws:x.drawCalls,goal:x.goalFrameScreen,shot:x.cameraShot});}
     world.update(kind==='throw_in'?.9:kind==='keeper_buildout'?.8:kind==='corner'?3.4:4.8);
     window.qaExtendedCleanup=()=>{world.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove()};
     return{kind,width,event,shot,frames};
@@ -42,7 +42,8 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
    // Since 16.10 long highlights use the close 40 m TV camera. On a portrait
    // phone it follows the ball (and its taker) rather than showing the whole
    // block, and it frames the entire goal once the ball arrives.
-   for(const f of proof.frames){assert.ok(f.ball.every(Number.isFinite));if(f.time<5.4)assert.ok(f.visible>=1,kind+' actors '+f.visible);if(f.time>=6.65)for(const g of f.goal)assert.ok(Math.abs(g[0])<1&&Math.abs(g[1])<1,kind+' goal cropped');assert.ok(Math.abs(f.screen[0])<1&&Math.abs(f.screen[1])<1,kind+' ball outside '+JSON.stringify(f.screen));}
+   // V21.195: after a goal the scorer close-up (as in open play) takes over.
+   for(const f of proof.frames){assert.ok(f.ball.every(Number.isFinite));if(f.time<5.4)assert.ok(f.visible>=1,kind+' actors '+f.visible);if(f.time>=6.65&&f.shot!=='scorer-close-up')for(const g of f.goal)assert.ok(Math.abs(g[0])<1&&Math.abs(g[1])<1,kind+' goal cropped');if(f.shot!=='scorer-close-up')assert.ok(Math.abs(f.screen[0])<1&&Math.abs(f.screen[1])<1,kind+' ball outside '+JSON.stringify([f.time,width,f.shot,f.screen]));}
    assert.ok(Math.max(...proof.frames.map(f=>f.visible))>=2,kind+' never shows a second player');
    if(kind==='keeper_buildout')assert.ok(proof.frames[0].keeper);
    if(kind==='turnover_counter'){assert.notEqual(proof.frames[0].phase.team,proof.event.team);assert.equal(proof.frames[3].phase.team,proof.event.team)}
