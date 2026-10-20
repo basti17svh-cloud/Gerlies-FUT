@@ -62,10 +62,9 @@ export function shotArrival(type,sequence='central',finish='normal',placement=nu
  const seq=normalizeSequence(sequence),style=normalizeFinish(finish);
  return IMPACT_TIME+shotGate(shotContact(seq,style,placement),shotImpact(type,seq,style,placement)).delay;
 }
-// V21.196 PlayStyle+ signature moments: when the badge, camera and gold
+// V21.196 PlayStyle+ signature moments: when the badge and the gold
 // ball trail show. A finisher's window runs into the strike; a creator's
 // covers the last pass of the move.
-const SIGNATURE_CAMERAS=Object.freeze({'power-shot':'behind','finesse-shot':'behind','trivela':'behind','low-driven-shot':'behind','chip-shot':'behind','power-header':'side','aerial':'side','acrobatic':'side','trickster':'feint','technical':'feint','rapid':'feint','quick-step':'feint'});
 // The last fast ball of the build-up before the shot: the decisive pass.
 export function lastPassWindow(sequence){
  const seq=normalizeSequence(sequence);
@@ -81,7 +80,7 @@ export function signatureWindow(event,sequence=event?.sequence){
  const sig=event?.signature;if(!sig||event.type==='ball_won')return null;
  if(sig.who==='creator'){const pass=lastPassWindow(sequence);return pass?{badge:[pass[0]-.8,pass[1]+.9],trail:[pass[0],pass[1]+.1]}:null}
  if(extendedKind(normalizeSequence(sequence)))return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,IMPACT_TIME+.1]};
- return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,Math.min(IMPACT_TIME+.4,shotArrival(event.type,sequence,event.finish,event.shotPlacement||null)+.1)],camera:SIGNATURE_CAMERAS[sig.id]||null};
+ return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,Math.min(IMPACT_TIME+.4,shotArrival(event.type,sequence,event.finish,event.shotPlacement||null)+.1)]};
 }
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
@@ -990,7 +989,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const [x,z]=lineClearer.spot,side=Math.sign(x)||1;
    return{position:worldPosition([x+side*8.5,1.45,z+3.2],direction),target:worldPosition([x-side*1.2,.85,z-.2],direction),fov:34,kind:'line'};
   }
-  const kind=labFocusedPreview?null:STAR_CAMERAS[sequence]||signature?.camera;if(!kind)return null;
+  // PlayStyle+ moments stay in the normal TV picture (Basti, V21.197).
+  const kind=labFocusedPreview||signature?null:STAR_CAMERAS[sequence];if(!kind)return null;
   const from=kind==='feint'?SHOT_TIME-2.4:SHOT_TIME-.95,to=kind==='feint'?SHOT_TIME-.15:kind==='side'?SHOT_TIME+.5:celebrationActive?CELEBRATION_CUT:IMPACT_TIME+.5;
   if(time<from||time>=to)return null;
   const a=actorPosition(0,from),s=actorPosition(0,Math.min(time,SHOT_TIME));
@@ -1448,7 +1448,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
   // PlayStyle+ signature: a gold trail of fading dots behind the ball.
-  const trail=signature?Array.from({length:22},(_,i)=>{const dot=mesh(geo('signature-trail',()=>new THREE.SphereGeometry(.11,10,8)),track(new THREE.MeshBasicMaterial({color:'#ffd35a',transparent:true,opacity:.5*(1-i/22),depthWrite:false,blending:THREE.AdditiveBlending})));dot.scale.setScalar((event.signature.who==='creator'?2:1)*(1-i/30));dot.visible=false;return dot}):[];
+  const trail=signature?Array.from({length:22},(_,i)=>{const dot=mesh(geo('signature-trail',()=>new THREE.SphereGeometry(.085,10,8)),track(new THREE.MeshBasicMaterial({color:'#ffd35a',transparent:true,opacity:.3*(1-i/22),depthWrite:false,blending:THREE.AdditiveBlending})));dot.scale.setScalar((event.signature.who==='creator'?1.6:1)*(1-i/30));dot.visible=false;return dot}):[];
   for(const batch of batches.values()){batch.mesh=new THREE.InstancedMesh(batch.g,batch.m,batch.nodes.length);batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);batch.mesh.castShadow=!weak&&!batch.m.transparent;batch.mesh.receiveShadow=!weak&&!batch.m.transparent;batch.mesh.frustumCulled=false;scene.add(batch.mesh);track(batch.mesh)}
   // Merge stadium structures by material into static instance batches as well.
   scene.updateMatrixWorld(true);

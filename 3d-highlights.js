@@ -39,7 +39,7 @@
    keeperSkinTone:event.keeperSkinTone??null,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21196').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21197').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -246,7 +246,7 @@
  }
  // V21.196 PlayStyle+ signature moments. A plus PlayStyle that matches what
  // the player actually does in this chance gets its own scene: name badge,
- // slow motion into the strike, close camera and a gold ball trail.
+ // slow motion into the strike and a gold ball trail, in the normal TV picture.
  // Presentation only; it shows for goals, saves and misses alike.
  const SIGNATURE_NAMES=Object.freeze({'power-shot':'Powerschuss','finesse-shot':'Angeschnittener Schuss','trivela':'Außenrist','low-driven-shot':'Flacher Vollspannschuss','chip-shot':'Lupfer','power-header':'Präziser Kopfball','aerial':'Kopfballmacht','acrobatic':'Akrobatik','dead-ball':'Ruhender Ball','trickster':'Tricks','technical':'Technik','rapid':'Raserei','quick-step':'Schneller Schritt','incisive-pass':'Entscheidender Pass','through-ball':'Schnittstellenpass','long-ball-pass':'Weiter Pass','pinged-pass':'Harter Pass','tiki-taka':'Tiki-Taka'});
  function signatureStyle(event,finish=event.finish){
