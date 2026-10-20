@@ -141,8 +141,8 @@ const out=path.join(__dirname,'../test-artifacts');
    }
   }
   // Long highlights follow the ball with the close 40 m camera (since 16.10), and a
-  // byline pull-back starts as a 1v1 at the byline like the right-side cutbacks.
-  const minimumPlayers=row=>row.scenario==='sequence'?(String(row.sequence).startsWith('extended_')?3:row.sequence==='cutback_right'||row.sequence.startsWith('byline_pullback_')||(row.sequence.endsWith('_right')&&row.sequence!=='inside_right')?4:6):row.scenario==='finish'?4:8;
+  // byline pull-back (and the V21.204 byline drive) starts as a 1v1 at the byline like the right-side cutbacks.
+  const minimumPlayers=row=>row.scenario==='sequence'?(String(row.sequence).startsWith('extended_')?3:row.sequence==='cutback_right'||row.sequence.startsWith('byline_pullback_')||row.sequence.startsWith('byline_drive_')||(row.sequence.endsWith('_right')&&row.sequence!=='inside_right')?4:6):row.scenario==='finish'?4:8;
   // Big saves stay on the broadcast camera (the keeper close-up was removed again).
   assert.ok(!checks.some(row=>row.cameraShot==='keeper-close-up'),'no keeper close-up');
   // V21.200: only set pieces keep their own TV angle (no star or goal-line

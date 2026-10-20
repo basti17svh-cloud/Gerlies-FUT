@@ -301,8 +301,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 test('visual, playbook, defensive and extended scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in'];
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,60);
- assert.equal(M.PLAY_SEQUENCES.length,115);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,102);
+ assert.equal(M.PLAY_SEQUENCES.length,157);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
@@ -346,7 +346,8 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  const sample=(fields,predicate,count=4000,hist=[])=>{let n=0;for(let i=0;i<count;i++)if(predicate(H.choosePresentation(make(i,fields),hist)))n++;return n};
  const power=e=>['long_shot','power_drive'].includes(e.sequence);
  assert.ok(sample({playerStyles:[{id:'power-shot',plus:true}]},power)>sample({},power)*1.15,'power shot selection is weighted');
- const through=e=>['through_ball','one_two','one_on_one'].includes(e.sequence);
+ // V21.204: more through-ball and combination plays share the passing styles.
+ const through=e=>['through_ball','one_two','one_on_one'].includes(e.sequence)||['through','combination'].includes(e.family);
  assert.ok(sample({creatorStyles:[{id:'incisive-pass',plus:true}]},through)>sample({},through)*1.1,'assist provider matters');
  const central=e=>e.sequence==='central';
  assert.ok(sample({},central,1200,[{sequence:'central',family:'central'}])<sample({},central,1200)*.55,'immediate repeat is penalized');

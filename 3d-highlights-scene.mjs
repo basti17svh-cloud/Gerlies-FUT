@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21203';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21204';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21196';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -33,7 +33,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21167';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21204';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -266,7 +266,24 @@ export function shotImpact(type,sequence='central',finish='normal',placement=nul
  else if(style==='header')y=type==='shot_post'?1.25:placement?.height==='high'?2.02:1.38;
  else if(style==='power')y=type==='shot_post'?1.25:placement?.height==='high'?1.92:.83;
  else if(style==='chip')y=type==='shot_post'?1.25:1.64;
+ if(type==='goal'&&placement?.style){
+  // V21.204 goal variants (Basti): in off the bar, in off the inside of the
+  // post, or a screamer into the top corner. Same goal, different picture.
+  if(placement.style==='crossbar_in')return[sign*1.85,2.3,-52.55];
+  if(placement.style==='post_in')return[sign*3.46,Math.min(y,1.5),-52.55];
+  if(placement.style==='top_corner')return[sign*3.22,2.2,-54.25];
+ }
  return[sign*x,y,type==='big_chance_saved'?-50.6:type==='shot_post'?-52.5:type==='big_chance_missed'?-53.4:-54.25];
+}
+export const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
+// After hitting the bar or the post the ball still needs a moment to reach the net.
+export function goalNetDelay(placement=null){return placement?.style==='crossbar_in'?.62:placement?.style==='post_in'?.3:0}
+// Where the ball meets the back of the net (for the net ripple).
+export function goalNetPoint(sequence='central',finish='normal',placement=null){
+ const impact=shotImpact('goal',sequence,finish,placement);
+ if(placement?.style==='crossbar_in')return[impact[0]*.9,.55,-54.05];
+ if(placement?.style==='post_in')return[impact[0]*.55,impact[1]*.7+.1,-54.15];
+ return impact;
 }
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
@@ -383,6 +400,19 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  const {gate,delay,speed}=shotGate(contact,impact);
  if(t<1){const p=lerp(contact,gate,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(delay>0){if(time<IMPACT_TIME+delay)return lerp(gate,impact,(time-IMPACT_TIME)/delay);time-=delay}
+ if(type==='goal'&&placement?.style==='crossbar_in'){
+  // Off the underside of the bar: down behind the line, one bounce, into the net.
+  const s=time-IMPACT_TIME,[x]=impact,down=[x*1.02,.13,-53.02],net=goalNetPoint(seq,style,placement);
+  if(s<.16){const u=s/.16;return[mix(x,down[0],u),mix(impact[1],down[1],u*u),mix(impact[2],down[2],u)]}
+  if(s<.62){const u=(s-.16)/.46,p=lerp(down,net,u);p[1]=mix(down[1],net[1],u)+.7*Math.sin(Math.PI*u);return p}
+  const u=smooth((s-.62)/.5),p=lerp(net,[net[0],.12,-53.8],u);return p;
+ }
+ if(type==='goal'&&placement?.style==='post_in'){
+  // Off the inside of the post and across into the side netting.
+  const s=time-IMPACT_TIME,net=goalNetPoint(seq,style,placement);
+  if(s<.3)return lerp(impact,net,s/.3);
+  const u=smooth((s-.3)/.5);return lerp(net,[net[0],.12,-53.85],u);
+ }
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
   // Parries spring off the glove and slow down instead of drifting at a constant pace.
@@ -909,7 +939,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const placement=event.shotPlacement||null;
  const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
- const netArrival=shotArrival('goal',sequence,finish,placement);
+ const netArrival=shotArrival('goal',sequence,finish,placement)+goalNetDelay(placement),netPoint=goalNetPoint(sequence,finish,placement);
  const signature=event.motionDuelPreview===true?null:signatureWindow(event,sequence);
  const eventKeeperPose=(type,time,style=finish,seq=sequence,action=keeperAction)=>keeperPose(type,time,style,seq,action,placement);
  const eventCameraState=(dir,time,aspect=1.3,type=event.type,seq=sequence,style=finish,action=keeperAction)=>cameraState(dir,time,aspect,type,seq,style,action,placement);
@@ -1075,7 +1105,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(weak){const edges=track(new THREE.BufferGeometry());edges.setAttribute('position',new THREE.Float32BufferAttribute(markingCenters,3));field.add(new THREE.LineSegments(edges,track(new THREE.LineBasicMaterial({color:'#eff1db'}))))}
   function goal(z,sign){
    const g=new THREE.Group();field.add(g);g.position.z=z;g.rotation.y=sign===-1?0:Math.PI;
-   const posts=mat('#f7faf7');for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak}
+   const posts=mat('#f7faf7'),uprights=[];for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak;uprights.push(p)}
    const bar=mesh(geo('bar',()=>new THREE.CylinderGeometry(.06,.06,7.44,12)),posts,g);bar.position.y=2.44;bar.rotation.z=Math.PI/2;bar.castShadow=!weak;
    const net=[],seg=(a,b)=>net.push(...a,...b);
    for(let x=-3.66;x<=3.67;x+=.244){seg([x,0,-1.9],[x,2.44,-1.9]);seg([x,2.44,-1.9],[x,2.44,0])}
@@ -1087,7 +1117,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const fg=track(new THREE.BufferGeometry());fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#e2e5db'}))));
    const ng=track(new THREE.BufferGeometry());ng.setAttribute('position',new THREE.Float32BufferAttribute(net,3));const base=new Float32Array(net);
    const nm=track(new THREE.LineBasicMaterial({color:'#edf0e7',transparent:true,opacity:weak?.46:.56,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
-   return{geometry:ng,base};
+   return{geometry:ng,base,bar,uprights};
   }
   const net=goal(-52.5,-1);goal(52.5,1);
 
@@ -1912,7 +1942,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   // The woodwork rattles when a goal goes in off the bar or the post.
+   if(event.type==='goal'&&placement?.style&&placement.style!=='top_corner'){
+    const t=time-(netArrival-goalNetDelay(placement)),shake=t>0&&t<1.2?Math.sin(t*46)*Math.exp(-t*4.5):0;
+    if(placement.style==='crossbar_in')net.bar.position.y=2.44+.035*shake;
+    else{const post=net.uprights[(Math.sign(eventShotImpact('goal')[0])||1)>0?1:0];post.position.x=Math.sign(post.position.x)*3.66+.03*shake}
+   }
+   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=netPoint[1],netX=netPoint[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    if(extended){
     // Keep the same grounded gait as ordinary play; never disable the GLB
     // locomotion while moving sixteen footballers across the pitch.
@@ -2125,7 +2161,7 @@ export function play(event,signal){
   const crest=document.createElement('div');crest.className='fh3d-team-crest';if(event.teamCrestHTML)crest.innerHTML=event.teamCrestHTML;
   const meta=document.createElement('div');meta.className='fh3d-goal-meta';meta.append(minute,crest);
   hud.append(card,mark,copy,meta);layer.append(hud);
-  const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null);
+  const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null)+goalNetDelay(event.shotPlacement||null);
   host.append(layer);
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);

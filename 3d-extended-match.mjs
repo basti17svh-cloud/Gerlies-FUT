@@ -1,4 +1,4 @@
-import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21161';
+import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21204';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),smooth=v=>{v=clamp(v);return v*v*(3-2*v)},mix=(a,b,u)=>a+(b-a)*u;
 export const EXTENDED_SEQUENCES=[...EXTENDED_HIGHLIGHT_TYPES.map(k=>'extended_'+k),'extended_corner_right'];
 const shots={keeper_buildout:20,turnover_counter:20,corner:10.5,free_kick:8,penalty:9,throw_in:12};
