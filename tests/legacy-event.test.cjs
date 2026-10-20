@@ -22,7 +22,8 @@ test("Legacy uses violet art with the golden title/frame and no residual ruby",(
 test("Legacy-only coordinates reserve separate slots for portrait, six attributes, PlayStyles and alternate positions",()=>{
  assert.match(layout,/\.card-shell\.legacy-shell \.custom-card\.legacy\{/);
  for(const field of ["--card-name-top:62.5%","--card-bottom-bottom:17%","--card-portrait-top:15%","--card-portrait-height:47%","--card-emblems-top:39%"])assert.ok(layout.includes(field),field);
- assert.match(playstyles,/\.card-shell\.legacy-shell:has\(\.card-alt-positions\)>\.playstyle-card-row\{bottom:9.1%\}/);
+ // PlayStyles sit in the free strip below the stats (per-design --ps-y), Legacy uses the default strip.
+ assert.match(playstyles,/\.card-shell>\.playstyle-card-row\{[^}]*top:calc\(var\(--ps-y,87\.6%\)/);
  assert.match(playstyles,/\.custom-card\.legacy \.card-alt-positions\{bottom:2.8%!important\}/);
  assert.match(css,/\.legacy-shell \.custom-card\.legacy \.face img/);
 });
