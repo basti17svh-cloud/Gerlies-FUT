@@ -20,7 +20,7 @@ import urllib.request
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "assets" / "player-traits.json"
 API = "https://drop-api.ea.com/rating/ea-sports-fc"
-ROSTER = "https://raw.githubusercontent.com/mzafram2001/ea-fc/main/data/dataset_ea_fc_27.csv"
+ROSTER = ROOT / "assets" / "players-db.csv"  # built by scripts/build-player-db.cjs
 PAGE_SIZE = 100
 
 
@@ -81,21 +81,12 @@ def main():
     official_count = len(traits)
     if official_count < (totals[0] + totals[1]) * .95:
         raise ValueError(f"Too few complete player traits: {len(traits)} of {sum(totals.values())}")
-    for attempt in range(4):
-        try:
-            with urllib.request.urlopen(ROSTER, timeout=90) as response:
-                roster_bytes = response.read()
-            break
-        except (OSError, http.client.IncompleteRead):
-            if attempt == 3:
-                raise
-            time.sleep(2 ** attempt)
-    roster = csv.DictReader(io.StringIO(roster_bytes.decode("utf-8-sig")))
+    roster = csv.DictReader(io.StringIO(ROSTER.read_text(encoding="utf-8-sig")))
     physical_count = 0
     for player in roster:
-        player_id = str(player.get("sofifa_id", ""))
+        player_id = str(player.get("player_id", ""))
         try:
-            physical = int(player.get("physical") or 0)
+            physical = int(player.get("physic") or 0)
         except ValueError:
             continue
         if not player_id.isdecimal() or not 20 <= physical <= 99:
@@ -104,7 +95,7 @@ def main():
         foot = 2 if foot_name == "left" else 1 if foot_name == "right" else 0
         traits.setdefault(player_id, [0, 0, foot, 0])[3] = physical
         physical_count += 1
-    if physical_count < 18000:
+    if physical_count < 17000:
         raise ValueError(f"Too few physical ratings in source roster: {physical_count}")
     payload = {
         "date": datetime.date.today().isoformat(),
