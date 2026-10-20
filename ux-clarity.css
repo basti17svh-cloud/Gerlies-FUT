@@ -1,4 +1,4 @@
-/* V21.201–202 Übersicht: Mannschaft mit Spielfeld zuerst, Zentrale mit Belohnungen und Packs oben,
+/* V21.201–204 Übersicht: Mannschaft mit Spielfeld zuerst, Zentrale mit Belohnungen und Packs oben,
    Store mit unterscheidbaren Packs und "Meine Packs" oben. Loaded last, so it only
    overrides layout; card designs and pack art stay untouched. */
 
@@ -93,3 +93,18 @@
 .sbc-feasible.ok{border-color:rgba(125,255,170,.45);background:rgba(125,255,170,.1);color:#9dffbe}
 .sbc-hub-progress{color:#9fb0b7;font-size:11px;font-weight:800}
 .sbc-test-toggle strong{margin-right:6px}
+
+/* ---------- Karten: Rating-Spalte passt in die Leiste des Kartendesigns ---------- */
+/* The rating used to be wider than the dark rail of the card art and touched its edges.
+   A slightly smaller number and position keep it inside the rail on every design. */
+html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .ovr{font-size:15.5cqw!important;letter-spacing:-.03em!important}
+html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .pos{font-size:6.6cqw!important;margin-top:1.6cqw!important}
+html body :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .card-top{top:19%!important}
+
+/* ---------- Aufstellung: Chemie-Boost und Chemie-Punkte ohne Turm unter der Karte ---------- */
+/* The boost icon sits on the right edge of the card and the chemistry diamonds tuck under
+   the card tip, so nothing stacks into the card below. */
+#squadView .slot>.mini{position:relative}
+#squadView .slot>.mini>.cb-player-badge.cb-symbol-only{position:absolute;z-index:11;right:-8%;top:30%;width:19px;min-height:19px;margin:0;padding:2px;border-radius:50%}
+#squadView .slot>.mini>.cb-player-badge.cb-symbol-only svg{width:13px;height:13px}
+#squadView .slot>.chem-dots{position:absolute;left:0;right:0;top:100%;margin-top:1px}
