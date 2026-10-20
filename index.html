@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.200</title>
+<title>Footera V21.201</title>
 <link rel="stylesheet" href="./footera-app.css?v=21197">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
@@ -50,6 +50,7 @@
 <link rel="stylesheet" href="./footera-backup.css?v=21106">
 <link rel="stylesheet" href="./footera-account.css?v=21122">
 <link rel="stylesheet" href="./footera-points-shop.css?v=21128">
+<link rel="stylesheet" href="./ux-clarity.css?v=21201">
 </head>
 <body>
 
@@ -129,6 +130,7 @@
   <div class="section">
     <div class="home-dashboard">
       <div id="homeUnreadMessages" class="home-unread-messages" hidden aria-live="polite"></div>
+      <div id="homeNow" class="home-now" aria-label="Jetzt dran" hidden></div>
       <div id="homeHeroCard" class="home-hero-card" data-theme="gold">
         <div class="home-hero-copy">
           <small id="homeHeroKicker">LIVE HUB</small>
@@ -171,17 +173,7 @@
       <div id="weeklyRewardHome" class="weekly-reward-home" hidden></div>
       <div id="competitionHome" class="home-competition"></div>
 
-      <div class="home-action-grid">
-        <button class="home-action" data-go="squadView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="18" cy="16" r="7"/><circle cx="34" cy="19" r="5"/><path d="M5 40c1-10 6-15 13-15s12 5 13 15M29 29c7 0 11 4 12 11"/></svg></span><span class="home-action-copy"><strong>Mannschaft</strong><small>Dein Team verwalten</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action evo" data-go="evolutionView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M14 6h20M16 6v10l10 9-10 17h16L22 25l10-9V6"/><path d="M18 34h12"/></svg></span><span class="home-action-copy"><strong>Evolutions</strong><small>Spieler weiterentwickeln</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action sbc" data-go="sbcView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="m24 4 17 10v20L24 44 7 34V14L24 4Z"/><circle cx="18" cy="22" r="4"/><circle cx="30" cy="22" r="4"/><path d="M12 34c1-6 4-9 8-9M36 34c-1-6-4-9-8-9"/></svg></span><span class="home-action-copy"><strong>SBC</strong><small>Challenges meistern</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action transfer" data-go="marketView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M5 15h31M29 8l7 7-7 7M43 33H12M19 26l-7 7 7 7"/></svg></span><span class="home-action-copy"><strong>Transfers</strong><small>Markt durchsuchen</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action store" data-go="storeView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 9h5l4 23h21l4-16H15"/><circle cx="19" cy="39" r="2.5"/><circle cx="35" cy="39" r="2.5"/></svg></span><span class="home-action-copy"><strong>Store</strong><small>Packs und Angebote</small></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action objectives" data-go="objectivesView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="10"/><circle cx="24" cy="24" r="3"/><path d="M32 16 43 5M36 5h7v7"/></svg></span><span class="home-action-copy"><strong>Ziele</strong><small id="homeObjectiveHint">Belohnungen freischalten</small></span><span id="homeObjectiveBadge" class="ready-count" hidden aria-label="Abholbare Ziele"></span><span class="home-action-arrow">›</span></button>
-        <button class="home-action season" data-go="seasonPassView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 8h34v32H7zM13 8v32M35 8v32M19 23l5-11 5 11-5 13z"/></svg></span><span class="home-action-copy"><strong>Season Pass</strong><small id="homePassHint">Kostenlos & Premium · 30 Stufen</small></span><span id="homePassBadge" class="ready-count" hidden aria-label="Abholbare Passbelohnungen"></span><span class="home-action-arrow">›</span></button>
-      </div>
-
-      <div class="home-panel">
+      <div id="homeReadyPanel" class="home-panel">
         <div class="home-section-head">
           <div class="home-section-title"><span><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></span><div><h3>Abholbereit <span id="homeReadyCount" class="section-count">0</span></h3><p id="homeReadySummary">Aktuell warten keine Belohnungen auf dich.</p></div></div>
           <button class="home-link" data-go="storeView">Alle anzeigen →</button>
@@ -196,14 +188,24 @@
         </div>
         <div id="homeProgressGrid" class="home-progress-grid"></div>
       </div>
+
+      <div class="home-action-grid">
+        <button class="home-action" data-go="squadView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="18" cy="16" r="7"/><circle cx="34" cy="19" r="5"/><path d="M5 40c1-10 6-15 13-15s12 5 13 15M29 29c7 0 11 4 12 11"/></svg></span><span class="home-action-copy"><strong>Mannschaft</strong><small>Dein Team verwalten</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action evo" data-go="evolutionView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M14 6h20M16 6v10l10 9-10 17h16L22 25l10-9V6"/><path d="M18 34h12"/></svg></span><span class="home-action-copy"><strong>Evolutions</strong><small>Spieler weiterentwickeln</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action sbc" data-go="sbcView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="m24 4 17 10v20L24 44 7 34V14L24 4Z"/><circle cx="18" cy="22" r="4"/><circle cx="30" cy="22" r="4"/><path d="M12 34c1-6 4-9 8-9M36 34c-1-6-4-9-8-9"/></svg></span><span class="home-action-copy"><strong>SBC</strong><small>Challenges meistern</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action transfer" data-go="marketView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M5 15h31M29 8l7 7-7 7M43 33H12M19 26l-7 7 7 7"/></svg></span><span class="home-action-copy"><strong>Transfers</strong><small>Markt durchsuchen</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action store" data-go="storeView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 9h5l4 23h21l4-16H15"/><circle cx="19" cy="39" r="2.5"/><circle cx="35" cy="39" r="2.5"/></svg></span><span class="home-action-copy"><strong>Store</strong><small>Packs und Angebote</small></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action objectives" data-go="objectivesView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="10"/><circle cx="24" cy="24" r="3"/><path d="M32 16 43 5M36 5h7v7"/></svg></span><span class="home-action-copy"><strong>Ziele</strong><small id="homeObjectiveHint">Belohnungen freischalten</small></span><span id="homeObjectiveBadge" class="ready-count" hidden aria-label="Abholbare Ziele"></span><span class="home-action-arrow">›</span></button>
+        <button class="home-action season" data-go="seasonPassView"><span class="home-action-icon"><svg viewBox="0 0 48 48"><path d="M7 8h34v32H7zM13 8v32M35 8v32M19 23l5-11 5 11-5 13z"/></svg></span><span class="home-action-copy"><strong>Season Pass</strong><small id="homePassHint">Kostenlos & Premium · 30 Stufen</small></span><span id="homePassBadge" class="ready-count" hidden aria-label="Abholbare Passbelohnungen"></span><span class="home-action-arrow">›</span></button>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="squadView" class="view"><div class="headline"><h2>Mannschaft</h2><p>Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p></div><div class="section">
-  <div class="saved-squads"><h3>Meine Mannschaften</h3><p>Drei Teams für verschiedene Spielmodi und Ziele. Ein neuer Platz kopiert dein aktuelles Team.</p><div id="squadPresetTabs" class="squad-preset-tabs"></div><label class="squad-preset-name">Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
+<section id="squadView" class="view squad-compact"><div class="headline"><h2>Mannschaft</h2></div><div class="section">
+  <div class="saved-squads"><div id="squadPresetTabs" class="squad-preset-tabs"></div><button type="button" id="squadPresetRename" class="squad-preset-rename" aria-expanded="false" aria-controls="squadPresetNameRow" aria-label="Teamname ändern" title="Teamname ändern">✎</button><label id="squadPresetNameRow" class="squad-preset-name" hidden>Teamname <input id="squadPresetName" maxlength="24" aria-label="Teamname" placeholder="Mein Team"></label></div>
   <div class="squadbar"><div class="kpi"><strong id="sqRating">–</strong><span>Rating</span></div><div class="kpi"><strong id="sqChem">0/33</strong><span>Chemie</span></div><div class="kpi"><strong id="sqFilled">0/18</strong><span>Kader</span></div></div>
-  <div class="toolbar"><select id="formationSelect"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button></div>
+  <div class="toolbar"><select id="formationSelect" aria-label="Formation"><option>4-3-3</option><option>4-3-3 (2)</option><option>4-3-3 (3)</option><option>4-3-3 (4)</option><option>4-4-2</option><option>4-4-1-1</option><option>4-2-3-1</option><option>4-1-2-1-2 (2)</option><option>4-2-2-2</option><option>4-2-4</option><option>3-5-2</option></select><button id="autoSquad" class="primary">Auto-Team</button><button id="clearSquad" class="secondary">Leeren</button><button id="squadTacticsShortcut" class="secondary squad-tactics-shortcut" type="button">Taktik</button></div>
   <div class="squad-stage">
     <div id="pitch" class="pitch"></div>
     <div class="squad-drawer-tabs">
@@ -215,6 +217,7 @@
       <div id="reserve" class="reserve squad-drawer-grid" data-drawer-drop="reserve"></div>
     </div>
   </div>
+  <p class="squad-hint">Spieler antippen für Details, per Drag & Drop tauschen. Falsche Position = 0 Chemie.</p>
   <div id="rolePanel" class="role-panel collapsed"><div class="role-panel-head"><h3>Rollen & Fokus</h3><button id="roleToggle" class="role-toggle" type="button" aria-expanded="false">Aufklappen</button></div><p>Rollen beeinflussen das simulierte Verhalten. Natürliche Position und passende Rolle geben einen kleinen Match-Bonus.</p><div id="roleList" class="role-list"></div></div>
 </div></section>
 
@@ -271,11 +274,11 @@
  </div>
 </section>
 
-<section id="storeView" class="view"><div class="headline"><h2>Store</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
+<section id="storeView" class="view"><div class="headline"><h2>Store</h2><p>Entdecke Packs für deinen Club. Wähle Footera Coins oder Footera Points und öffne dein Pack direkt.</p></div><div class="section"><div id="storeMyPacks" class="store-my-packs"><div class="store-my-head"><h3>Meine Packs</h3><span id="storeMyPacksCount" class="store-my-count" data-count="0" aria-label="Ungeöffnete Packs">0</span></div><section id="playerPicks" class="player-picks" aria-label="Meine Player Picks"></section><div id="ownedPacks"></div></div><div class="footera-points-entry"><button type="button" id="footeraPointsBuyTrigger" class="footera-points-entry-btn" aria-haspopup="dialog" aria-controls="footeraPointsPurchaseModal">
 <span class="footera-points-entry-icon"><img src="./assets/footera/points.webp" alt="" aria-hidden="true"></span>
 <span class="footera-points-entry-copy"><strong>Footera Points erwerben</strong><small>8 Points-Pakete entdecken · aktuell nur Testmodus</small></span>
 <span class="footera-points-entry-arrow" aria-hidden="true">›</span>
-</button></div><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div><div class="headline" style="padding-left:0;margin-top:10px"><h2 style="font-size:17px">Meine Packs</h2><p>Belohnungspacks aus Zielen, SBCs und dem Saisonpass.</p></div><section id="playerPicks" class="player-picks" aria-label="Meine Player Picks"></section><div id="ownedPacks"></div></div></section>
+</button></div><div class="store-tabs" role="tablist" aria-label="Pack-Kategorien"><button type="button" id="storeTabClassic" role="tab" data-store-tab="classic" aria-controls="packGrid">Klassische Packs</button><button type="button" id="storeTabPromo" role="tab" data-store-tab="promo" aria-controls="packGrid">Promo Packs</button></div><p class="store-context" id="storeContext"></p><div id="packGrid" class="packgrid"></div></div></section>
 
 <div id="footeraPointsPurchaseModal" class="modal footera-points-modal" role="dialog" aria-modal="true" aria-labelledby="footeraPointsPurchaseTitle">
 <div class="modalinner">
@@ -685,7 +688,7 @@
 <script src="./footera-match-actions.js?v=21181"></script>
 <script src="./footera-time.js"></script>
 <script src="./footera-cosmetic-evolutions.js?v=21156"></script>
-<script src="./footera-app.js?v=21200"></script>
+<script src="./footera-app.js?v=21201"></script>
 <script src="./season-system.js?v=21194"></script>
 <script src="./competition-system.js?v=21194"></script>
 <script src="./champions-system.js?v=21195"></script>
@@ -698,7 +701,7 @@
 <script src="./weekly-rewards.js?v=21161"></script>
 <script src="./friends-hub.js"></script>
 <script src="./potm.js"></script>
-<script src="./squad-tactics.js?v=21160"></script>
+<script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21170"></script>
 <script src="./footera-account.js?v=21174"></script>

@@ -984,7 +984,8 @@
    open.type="button";open.id="footeraAccountEntry";open.className="footera-account-entry";
    open.textContent="Konto";
    open.addEventListener("click",()=>user().then(u=>isPermanent(u)?showProfile():show()).catch(()=>show()));
-   document.body.append(open);
+   // Sits in the header so it never covers page content above the navigation.
+   (document.querySelector(".topbar .toprow")||document.body).append(open);
    user().then(u=>{open.textContent=isPermanent(u)?"Mein Profil":"Konto"}).catch(()=>{});
    const panel=document.createElement("section");
    panel.className="footera-account-panel";

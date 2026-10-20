@@ -3095,6 +3095,14 @@ $("squadPresetName").addEventListener("change",e=>{
  state.squadPresets[state.activeSquadPreset].name=name;e.target.value=name;
  renderSquadPresetControls();save();toast(`Team heißt jetzt ${name}.`)
 });
+$("squadPresetRename").addEventListener("click",e=>{
+ const row=$("squadPresetNameRow"),open=row.hidden;
+ row.hidden=!open;e.currentTarget.setAttribute("aria-expanded",String(open));
+ if(open)$("squadPresetName").focus()
+});
+$("squadTacticsShortcut").addEventListener("click",()=>{
+ const tiles=$("squadPlanMenu");if(tiles)tiles.scrollIntoView({behavior:"smooth",block:"center"})
+});
 function renderSquad(){
  ensureSquadSlots();
  renderSquadPresetControls();
@@ -3509,6 +3517,24 @@ function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
+// Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
+function storePackParts(p){
+ if(Array.isArray(p.composition))return p.composition.map(x=>({quality:x.quality,count:Number(x.count)||0})).filter(x=>x.count>0);
+ const quality=p.type==="gold"||p.type==="silver"||p.type==="bronze"?p.type:"";
+ return quality?[{quality,count:Number(p.count)||0}]:[]
+}
+function storePackTier(p){
+ const kinds=new Set(storePackParts(p).map(x=>x.quality));
+ if(kinds.size>=3)return{id:"mixed",label:"MIX"};
+ if(kinds.size===2&&kinds.has("gold")&&kinds.has("silver"))return{id:"electrum",label:"ELECTRUM"};
+ if(kinds.size===1){const q=[...kinds][0];return{id:q,label:q==="gold"?"GOLD":q==="silver"?"SILBER":"BRONZE"}}
+ return{id:"mixed",label:"MIX"}
+}
+function storePackMixHTML(p){
+ const parts=storePackParts(p);if(!parts.length)return"";
+ const name={gold:"Gold",silver:"Silber",bronze:"Bronze"};
+ return `<div class="store-mix" aria-label="${esc(packCompositionText(p))}">${parts.map(x=>`<i class="${x.quality}" style="flex:${x.count}">${x.count} ${name[x.quality]||""}</i>`).join("")}</div>`
+}
 let storeTab="promo";
 let storePromoKey="";
 function storeCountdown(end){const minutes=Math.max(0,Math.ceil((end-Date.now())/60000));return `${Math.floor(minutes/60)} Std. ${minutes%60} Min.`}
@@ -3565,10 +3591,13 @@ function renderStore(){
    data-buy-live="${esc(p.id)}"><span class="store-price">${currencyAmountHTML("points",p.points)}
    </span><strong>Gekaufte Points</strong></button>`:"";
   const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span class="store-price">${currencyAmountHTML(currency,p[currency],"store-currency")}</span><strong>Kaufen</strong></button>`;
-  return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}">
-   <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"></div>
+  const tier=storePackTier(p);
+  return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}" data-pack-tier="${tier.id}">
+   <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"><span class="store-pack-badge ${tier.id}">${tier.label}</span></div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${Array.isArray(p.composition)||p.type==="gold"?`<span>${esc(packCompositionText(p))}</span>`:""}${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.guarantee?`<span>${p.guarantee}+ garantiert</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
+   ${p.guarantee?`<span class="store-pack-promise">mind. 1× ${p.guarantee}+</span>`:""}
+   <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
+   ${storePackMixHTML(p)}
    <p>${esc(p.desc||"")}</p>
    ${promo?`<div class="store-pack-limit">${sold?"Limit erreicht":`${lim.remaining} von ${p.dailyLimit} Käufen übrig`}</div>`:""}
    <button type="button" class="store-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Wahrscheinlichkeiten für ${esc(p.name)} ansehen">ⓘ Wahrscheinlichkeiten</button>
@@ -3576,7 +3605,8 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>'
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>';
+ {const n=owned.reduce((sum,p)=>sum+(state.packs[p.id]||0),0),badge=$("storeMyPacksCount");if(badge){badge.textContent=String(n);if(badge.dataset)badge.dataset.count=String(n)}}
 }
 
 let footeraLiveRecoveryBusy=false,footeraLiveCheckoutBusy=false;
@@ -6604,7 +6634,20 @@ function renderHomeRewards(){
  if(passReady)cards.push(`<div class="home-reward-card"><div class="reward-gift">PASS</div><div class="home-reward-copy"><strong>Season Pass</strong><small>${passReady} Belohnung${passReady===1?"":"en"} abholbereit</small><p>Belohnungen aus dem kostenlosen oder Premium-Pfad warten auf dich.</p><button class="primary" data-go="seasonPassView">Jetzt abholen</button></div></div>`);
  for(const pack of packs.slice(0,Math.max(0,2-cards.length))){const qty=state.packs[pack.id]||0;cards.push(`<div class="home-reward-card"><img class="mini-pack" src="${packArtSrc(pack.id)}" alt="${esc(pack.name)}" loading="lazy"><div class="home-reward-copy"><strong>${esc(pack.name)}</strong><small>${qty} verfügbar · ${esc(pack.desc||"")}</small><p>Dein Reward-Pack liegt im Store bereit und kann direkt geöffnet werden.</p><button class="primary" data-go="storeView">Jetzt abholen</button></div></div>`)}
  if(!cards.length)cards.push(`<div class="home-empty-note">Noch nichts abholbereit. Schließe Ziele, SBCs oder Season-Stufen ab – neue Rewards erscheinen hier automatisch ganz oben.</div>`);
- $("homeRewardGrid").innerHTML=cards.join("")
+ $("homeRewardGrid").innerHTML=cards.join("");
+ $("homeReadyPanel")?.classList.toggle("home-ready-empty",!total);
+ renderHomeNow({pending:pending.length,tasks:claimable.length+objectivesReady,pass:passReady,packs:packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0)})
+}
+// "Jetzt dran": rewards and unopened packs sit above the hero, so nothing waits below the fold.
+function renderHomeNow({pending,tasks,pass,packs}){
+ const box=$("homeNow");if(!box)return;
+ const item=(kind,icon,title,sub,go,cta)=>`<button type="button" class="home-now-item ${kind}" data-go="${go}"><span class="home-now-icon" aria-hidden="true">${icon}</span><span class="home-now-copy"><strong>${esc(title)}</strong><small>${esc(sub)}</small></span><span class="home-now-go">${esc(cta)}</span></button>`;
+ const rows=[];
+ const rewards=pending+tasks+pass,parts=[pending&&`${pending}× Wettbewerb`,tasks&&`${tasks}× Ziele`,pass&&`${pass}× Season Pass`].filter(Boolean);
+ if(rewards)rows.push(item("rewards",String(rewards),`${rewards} Belohnung${rewards===1?"":"en"} abholen`,parts.join(" · "),pending?"playView":tasks?"objectivesView":"seasonPassView","Abholen"));
+ if(packs)rows.push(item("packs",String(packs),`${packs} Pack${packs===1?"":"s"} ungeöffnet`,"Liegen unter Meine Packs im Store","storeView","Öffnen"));
+ box.hidden=!rows.length;
+ box.innerHTML=rows.join("")
 }
 function renderHomeProgress(){
  const m=squadMetrics(),starterDone=[(state.stats.starter||0)>0,m.filled===18,(state.stats.matches||0)>0,((state.stats.sbcs||0)>0||(state.stats.market||0)>0)].filter(Boolean).length,starterTotal=4,seasonUnlocked=SEASON_REWARDS.filter(r=>(state.sp||0)>=r.sp).length,seasonTotal=SEASON_REWARDS.length,sbcDone=Math.min(SBCS.length,state.stats.sbcs||0);
@@ -7355,7 +7398,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.200";
+const GFUT_BUILD="V21.201";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7413,7 +7456,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21200",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21201",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
