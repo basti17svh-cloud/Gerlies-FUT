@@ -62,7 +62,9 @@
  }
  function mountUi(){
   const toolbar=document.querySelector("#squadView .toolbar");if(!toolbar||document.getElementById("squadPlanMenu"))return false;
-  toolbar.insertAdjacentHTML("afterend",`<div id="squadPlanMenu" class="squad-plan-menu" aria-label="Mannschaft planen">
+  // The pitch comes first; the planning tiles sit below it (the toolbar has a Taktik shortcut).
+  const anchor=document.querySelector("#squadView .squad-hint")||toolbar;
+  anchor.insertAdjacentHTML("afterend",`<div id="squadPlanMenu" class="squad-plan-menu" aria-label="Mannschaft planen">
    <button id="openSquadTactics" class="squad-plan-btn tactics" type="button"><span class="squad-plan-icon">${icon("tactics")}</span><span class="squad-plan-copy"><small>Matchplan</small><strong>Individuelle Taktik</strong><em id="squadTacticsSummary">Breite 50 · Tiefe 50</em></span><b>›</b></button>
    <button id="openSquadRoles" class="squad-plan-btn roles" type="button"><span class="squad-plan-icon">${icon("roles")}</span><span class="squad-plan-copy"><small>Spieler</small><strong>Rollen & Fokus</strong><em id="squadRolesSummary">11 Positionen bearbeiten</em></span><b>›</b></button>
    <button id="openSquadAssignments" class="squad-plan-btn assignments" type="button"><span class="squad-plan-icon">${icon("assignments")}</span><span class="squad-plan-copy"><small>Standards</small><strong>Aufgaben</strong><em id="squadAssignmentsSummary">Kapitän · Ecken · Freistöße</em></span><b>›</b></button>

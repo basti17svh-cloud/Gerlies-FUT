@@ -1,0 +1,78 @@
+/* V21.200 Übersicht: Mannschaft mit Spielfeld zuerst, Zentrale mit "Jetzt dran" oben,
+   Store mit unterscheidbaren Packs und "Meine Packs" oben. Loaded last, so it only
+   overrides layout; card designs and pack art stay untouched. */
+
+/* ---------- Mannschaft: compact header, pitch first ---------- */
+#squadView.squad-compact .headline{padding:10px 13px 4px;border-bottom:0}
+#squadView.squad-compact .headline h2{font-size:20px}
+#squadView.squad-compact .saved-squads{display:grid;grid-template-columns:minmax(0,1fr) 38px;gap:6px;align-items:stretch;margin-bottom:8px;padding:0;border:0;background:none}
+#squadView.squad-compact .squad-preset-tabs{gap:6px}
+#squadView.squad-compact .squad-preset-tab{min-height:40px;padding:5px 8px;gap:1px;border-radius:10px}
+#squadView.squad-compact .squad-preset-tab strong,#squadView.squad-compact .squad-preset-tab small{overflow:hidden;font-size:11px;line-height:1.2;white-space:nowrap;text-overflow:ellipsis}
+.squad-preset-rename{min-height:40px;padding:0;border:1px solid #355243;border-radius:10px;background:#0f1a15;color:#d8ff6a;font-size:16px;font-weight:900}
+.squad-preset-rename[aria-expanded="true"]{border-color:#d8ff6a;background:#1b2a16}
+#squadView.squad-compact .squad-preset-name{grid-column:1/-1;margin-top:0}
+#squadView.squad-compact .squad-preset-name[hidden]{display:none}
+#squadView.squad-compact .squadbar{display:flex;gap:0;margin-bottom:8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:linear-gradient(180deg,#0c1312,#101817);overflow:hidden}
+#squadView.squad-compact .squadbar .kpi{flex:1;display:flex;align-items:baseline;justify-content:center;gap:6px;min-height:0;padding:8px 4px;border:0;border-radius:0;background:none;box-shadow:none}
+#squadView.squad-compact .squadbar .kpi+.kpi{border-left:1px solid rgba(255,255,255,.08)}
+#squadView.squad-compact .squadbar .kpi strong{font-size:17px;line-height:1}
+#squadView.squad-compact .squadbar .kpi span{font-size:11px;letter-spacing:.06em}
+#squadView.squad-compact .toolbar{grid-template-columns:minmax(0,1.25fr) minmax(0,1.1fr) minmax(0,.9fr) minmax(0,.9fr);gap:6px;margin-bottom:10px}
+#squadView.squad-compact .toolbar select,#squadView.squad-compact .toolbar .primary,#squadView.squad-compact .toolbar .secondary{min-height:42px;padding:0 6px;border-radius:12px;font-size:12px}
+#squadView.squad-compact .toolbar select{padding:0 8px}
+#squadView.squad-compact .squad-hint{margin:8px 2px 12px;color:var(--muted,#9aa8a2);font-size:11px;line-height:1.45;text-align:center}
+#squadView.squad-compact .squad-plan-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+/* ---------- Zentrale: "Jetzt dran" first, no duplicate nav tiles ---------- */
+.home-now{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.home-now[hidden]{display:none}
+.home-now-item{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;min-height:60px;padding:9px 12px;border:1px solid rgba(216,255,90,.32);border-radius:16px;background:linear-gradient(135deg,#1b2612,#10170f);color:#fff;text-align:left;font:inherit}
+.home-now-item.play{border-color:rgba(255,214,90,.3);background:linear-gradient(135deg,#251d0d,#14110b)}
+.home-now-item.packs{border-color:rgba(122,190,255,.32);background:linear-gradient(135deg,#0f1c29,#0b1219)}
+.home-now-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:rgba(216,255,90,.14);color:#e3ff7a;font-size:13px;font-weight:950}
+.home-now-item.play .home-now-icon{background:rgba(255,214,90,.14);color:#ffd85a}
+.home-now-item.packs .home-now-icon{background:rgba(122,190,255,.14);color:#9fd0ff}
+.home-now-copy{min-width:0}
+.home-now-copy strong{display:block;font-size:14px;line-height:1.25}
+.home-now-copy small{display:block;margin-top:2px;overflow:hidden;color:#b4c0b9;font-size:11px;line-height:1.3;white-space:nowrap;text-overflow:ellipsis}
+.home-now-go{padding:8px 11px;border-radius:999px;background:#d8ff5a;color:#172008;font-size:12px;font-weight:950;white-space:nowrap}
+.home-now-item.play .home-now-go{background:#ffd85a;color:#241a04}
+.home-now-item.packs .home-now-go{background:#9fd0ff;color:#071827}
+.home-action-grid .home-action[data-go="squadView"],.home-action-grid .home-action[data-go="marketView"],.home-action-grid .home-action[data-go="storeView"]{display:none}
+.home-panel.home-ready-empty{display:none}
+
+/* ---------- Konto: in the header instead of floating over content ---------- */
+.topbar .footera-account-entry{position:static;flex:0 0 auto;align-self:center;margin-left:6px;padding:7px 10px;font-size:11px;box-shadow:none}
+.topbar .brand .mark{flex:0 0 auto}
+@media(max-width:400px){.topbar .toprow{gap:6px}.topbar .brand{gap:7px}.topbar .brand .mark{width:38px;height:38px}.topbar .wallet{gap:5px}.topbar .walletbox{min-width:0;padding:6px 7px}
+ .topbar .footera-account-entry{flex:0 0 34px;width:34px;height:34px;margin-left:0;padding:0;overflow:hidden;color:transparent;border-radius:50%;background:#14221c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e5ff95' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c1-5 4-7 8-7s7 2 8 7'/%3E%3C/svg%3E") center/18px no-repeat}}
+
+/* ---------- Store: "Meine Packs" on top, clearer pack tiles ---------- */
+.store-my-packs{margin:0 0 14px}
+.store-my-packs .store-my-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 8px}
+.store-my-packs .store-my-head h3{margin:0;font-size:17px;text-transform:uppercase;font-style:italic}
+.store-my-packs .store-my-count{min-width:26px;padding:3px 9px;border-radius:999px;background:#d8ff5a;color:#172008;font-size:12px;font-weight:950;text-align:center}
+.store-my-packs .store-my-count[data-count="0"]{background:#26302c;color:#a9b6b0}
+.store-my-packs #playerPicks:not(:has(.pick-ticket)):not(:has(.pick-notice)){display:none}
+.store-my-packs #ownedPacks .online-note{display:none}
+.store-my-packs:has(.store-my-count[data-count="0"]) .store-my-head::after{content:"Keine ungeöffneten Packs";order:1;flex:1;color:var(--muted,#9aa8a2);font-size:12px}
+.store-my-packs .store-my-head .store-my-count{order:2}
+.store-pack .store-pack-content>p{display:none}
+.store-pack-promise{display:block;width:fit-content;margin:2px 0 6px;padding:4px 9px;border-radius:999px;background:rgba(255,214,90,.14);border:1px solid rgba(255,214,90,.4);color:#ffd85a;font-size:12px;font-weight:950}
+.store-mix{display:flex;gap:2px;height:20px;margin:4px 0 8px;border-radius:7px;overflow:hidden}
+.store-mix i{flex-basis:0;min-width:max-content;padding:0 6px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-style:normal;font-size:11px;font-weight:900;white-space:nowrap}
+.store-mix .gold{background:linear-gradient(180deg,#f3d27a,#c9a03e);color:#2d2105}
+.store-mix .silver{background:linear-gradient(180deg,#e2e7ec,#a9b2bb);color:#1f262c}
+.store-mix .bronze{background:linear-gradient(180deg,#d9a273,#9c6438);color:#2a1607}
+.store-pack-art{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.store-pack-badge{padding:3px 8px;border-radius:999px;font-size:11px;font-weight:950;letter-spacing:.05em;white-space:nowrap;box-shadow:0 4px 12px #0009}
+.store-pack-badge.gold{background:#f3d27a;color:#2d2105}
+.store-pack-badge.electrum{background:linear-gradient(90deg,#f3d27a 50%,#d6dde3 50%);color:#202020}
+.store-pack-badge.mixed{background:linear-gradient(90deg,#f3d27a 33%,#d6dde3 33% 66%,#d9a273 66%);color:#202020}
+.store-pack-badge.silver{background:#d6dde3;color:#1f262c}
+.store-pack-badge.bronze{background:#d9a273;color:#2a1607}
+.store-pack[data-pack-tier="gold"]{border-color:rgba(243,210,122,.45)}
+.store-pack[data-pack-tier="electrum"]{border-color:rgba(214,221,227,.45)}
+.store-pack[data-pack-tier="mixed"]{border-color:rgba(217,162,115,.45)}
+@media(max-width:370px){.topbar .brand h1{font-size:0;letter-spacing:0}.topbar .brand h1 .build-badge{font-size:10px}}
