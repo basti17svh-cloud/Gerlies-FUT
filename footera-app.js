@@ -1444,8 +1444,10 @@ function normCSV(raw){
  return{id,name,commonName,fullName,ovr:cleanNum(first(raw,"overall","ovr","rating")),pac:cleanNum(first(raw,"pace","pac")),sho:cleanNum(first(raw,"shooting","sho")),pas:cleanNum(first(raw,"passing","pas")),dri:cleanNum(first(raw,"dribbling","dri")),def:cleanNum(first(raw,"defending","def")),phy:cleanNum(first(raw,"physical","physic","physicality","phy")),position:positions[0]||"CM",alt:positions.slice(1).join(','),preferredFoot:preferredFootName(first(raw,"preferred_foot","preferredFoot")),weakFoot:cleanNum(first(raw,"weak_foot","weakFoot")),skillMoves:cleanNum(first(raw,"skill_moves","skillMoves")),nation:String(first(raw,"nationality_name","nationality","nation")),nationCode:String(first(raw,"nationality_id","nation_id","country_id")),nationFlag:String(first(raw,"nation_flag_url","nationality_flag_url","country_flag_url","nation_logo_url")),league:leagueFromClub(team,rawLeague,leagueId,gender,"fc27-open-data"),leagueId,leagueLogo:String(first(raw,"league_logo_url","competition_logo_url","league_logo")),team,teamId:String(first(raw,"club_team_id","team_id","club_id")),clubLogo:String(first(raw,"club_logo_url","team_logo_url","club_logo","team_logo")),face,card:"",playstyles:String(first(raw,"playstyles","player_traits")),playstylesPlus:String(first(raw,"playstyles_plus","playstylesPlus")),gender,baseRare:parseRareValue(first(raw,"rarity","card_rarity","item_rarity","rare","is_rare","isRare")),source:"fc27-open-data"}
 }
 const COMMON_PLAYER_NAMES_BY_ID=Object.freeze({"232580":"Gabriel","207865":"Marquinhos"});
-function preferredPlayerName(p){return COMMON_PLAYER_NAMES_BY_ID[String(p?.id||"")]||String(p?.commonName||p?.name||"").trim()}
-function applyPreferredPlayerNames(players){for(const p of players){if(!p||isExclusiveFounderBase(p))continue;const name=preferredPlayerName(p);if(name)p.name=name}}
+const COMMON_PLAYER_NAMES_BY_FULL_NAME=Object.freeze([[/\bronaldo dos santos aveiro\b/,"Cristiano Ronaldo"]]);
+function commonNameForFullName(p){const keys=[p?.fullName,p?.name,p?.commonName].map(x=>String(x||"").toLowerCase());for(const[re,name]of COMMON_PLAYER_NAMES_BY_FULL_NAME)if(keys.some(k=>re.test(k)))return name;return""}
+function preferredPlayerName(p){return COMMON_PLAYER_NAMES_BY_ID[String(p?.id||"")]||commonNameForFullName(p)||String(p?.commonName||p?.name||"").trim()}
+function applyPreferredPlayerNames(players){for(const p of players){if(!p||isExclusiveFounderBase(p))continue;const name=preferredPlayerName(p);if(name)p.name=name;const full=commonNameForFullName(p);if(full){p.fullName=full;p.commonName=full}}}
 function keyNameTeam(name,team){return `${normalizeKey(name)}__${normalizeKey(team)}`}
 function eaObject(raw,key){
  const v=raw?.[key];
@@ -7331,7 +7333,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.193";
+const GFUT_BUILD="V21.194";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7389,7 +7391,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21193",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21194",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
