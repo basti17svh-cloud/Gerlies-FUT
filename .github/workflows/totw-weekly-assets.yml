@@ -6,6 +6,7 @@ on:
       - '.github/workflows/totw-weekly-assets.yml'
       - 'scripts/totw-lookup.cjs'
       - 'scripts/totw-candidates.txt'
+      - 'scripts/totw-current.json'
       - 'scripts/import-totw-portraits.py'
       - 'scripts/totw-portraits-*.json'
       - 'scripts/render-totw-poster.cjs'
@@ -21,6 +22,40 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Look up candidates in the FC27 dataset
+      # Candidate research: put "Name|Name|..." in scripts/totw-candidates.txt to print EA ids, clubs and base stats.
+      - name: Look up candidates in EA's rating database
         if: hashFiles('scripts/totw-candidates.txt') != ''
         run: node scripts/totw-lookup.cjs "$(cat scripts/totw-candidates.txt)"
+      - name: Read the current week
+        if: hashFiles('scripts/totw-candidates.txt') == ''
+        id: week
+        run: |
+          echo "week=$(jq -r .week scripts/totw-current.json)" >> "$GITHUB_OUTPUT"
+          echo "release=$(jq -r .release scripts/totw-current.json)" >> "$GITHUB_OUTPUT"
+      - name: Import eighteen transparent portraits
+        if: steps.week.outputs.week != ''
+        run: |
+          python -m pip install Pillow
+          python scripts/import-totw-portraits.py "${{ steps.week.outputs.week }}"
+      - name: Check the TOTW rules
+        if: steps.week.outputs.week != ''
+        run: node --test tests/totw-rules.test.cjs tests/totw5-release.test.cjs tests/live-content.test.cjs
+      - name: Install isolated browser
+        if: steps.week.outputs.week != ''
+        run: |
+          npm install --prefix /tmp/footera-totw-browser playwright@1.51.1
+          /tmp/footera-totw-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Render the poster with the exact production cards
+        if: steps.week.outputs.week != ''
+        env:
+          NODE_PATH: /tmp/footera-totw-browser/node_modules
+        run: node scripts/render-totw-poster.cjs "${{ steps.week.outputs.week }}" "${{ steps.week.outputs.release }}"
+      - name: Commit portraits and poster to this branch
+        if: steps.week.outputs.week != ''
+        run: |
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add "assets/footera/totw/${{ steps.week.outputs.week }}" assets/footera/social
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets(totw): portraits and social poster for TOTW ${{ steps.week.outputs.week }} [skip ci]'
+          git push origin HEAD:"${GITHUB_REF_NAME}"

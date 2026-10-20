@@ -12,7 +12,7 @@ test('from TOTW 6 on, nobody appears in two consecutive weeks and the release ga
  const c=setup();
  for(const team of c.WEEKS.filter(w=>Number(w.id)>=6)){
   const prev=c.WEEKS.find(w=>Number(w.id)===Number(team.id)-1),before=new Set(prev.players.map(p=>key(p.names[0])));
-  assert.deepEqual(team.players.map(p=>p.names[0]).filter(n=>before.has(key(n))),[],`TOTW ${team.id}`);
+  assert.equal(team.players.map(p=>p.names[0]).filter(n=>before.has(key(n))).join(', '),'',`TOTW ${team.id}`);
   const clone={...team,sourceStatus:'admin-approved',players:[...team.players.slice(1),{...prev.players.find(p=>p.position===team.players[0].position)}]};
   assert.ok(c.totwRosterErrors(clone).includes('Kein Spieler zwei Wochen hintereinander'));
  }
@@ -23,6 +23,6 @@ test('from TOTW 6 on, no TOTW player is part of a promo event or event SBC runni
   const [from,to]=weekWindow(c,team);
   const running=c.EVENTS.filter(e=>Date.parse(e.activeFrom)<to&&Date.parse(e.activeUntilAt)>from);
   const busy=new Set(running.flatMap(e=>[...(e.players||[]),...(e.sbcPlayer?[e.sbcPlayer]:[])]).flatMap(p=>[p.name,...(p.names||[])]).map(key));
-  assert.deepEqual(team.players.map(p=>p.names[0]).filter(n=>busy.has(key(n))),[],`TOTW ${team.id}`);
+  assert.equal(team.players.map(p=>p.names[0]).filter(n=>busy.has(key(n))).join(', '),'',`TOTW ${team.id}`);
  }
 });
