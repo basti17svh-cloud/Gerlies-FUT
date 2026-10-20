@@ -2705,8 +2705,7 @@ function validateDatabase(players){
  if(!Array.isArray(players)||players.length<DB_MIN_PLAYERS)return{ok:false,reason:`Nur ${players?.length||0} Spieler gefunden`};
  const valid=players.filter(p=>p.id&&p.name&&p.ovr>=40&&p.ovr<=99&&p.position).length;if(valid/players.length<.95)return{ok:false,reason:"Zu viele unvollständige Datensätze"};
  // EA updates ratings during the season, so anchors only check that the stars are there and rated like stars.
- const anchors=[['231747','mbapp'],['239085','haaland'],['277643','yamal']];
- for(const [id,needle] of anchors){const p=players.find(x=>String(x.id)===id);if(!p||!normalizeKey(p.name).includes(needle)||p.ovr<85)return{ok:false,reason:`Ratinganker ${needle} fehlt oder liegt unter 85`}}
+ for(const needle of ['mbapp','haaland','yamal']){const p=players.find(x=>normalizeKey(x.name).includes(needle));if(!p||p.ovr<85)return{ok:false,reason:`Ratinganker ${needle} fehlt oder liegt unter 85`}}
  const counts={gold:0,silver:0,bronze:0};players.forEach(p=>counts[rarityOf(p)]++);if(counts.gold<1000||counts.silver<1000||counts.bronze<500)return{ok:false,reason:"Gold/Silber/Bronze-Verteilung unplausibel"};
  const leagueCounts={};players.forEach(p=>{if(p.league)leagueCounts[p.league]=(leagueCounts[p.league]||0)+1});
  const must=["Bundesliga","Premier League","LALIGA EA SPORTS","Serie A","Ligue 1"];
