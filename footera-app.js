@@ -1981,6 +1981,7 @@ const LOCAL_LEAGUE_LOGOS={
  "calcio a femminile":"./assets/leagues/calcio-a-femminile.png",
  "ceska liga zen":"./assets/leagues/ceska-liga-zen.jpg",
  "gpfbl":"./assets/leagues/gpfbl.png",
+ "iceland league":"./assets/leagues/iceland-league.png",
  "liga f moeve":"./assets/leagues/liga-f-moeve.png",
  "liga portugal feminino":"./assets/leagues/liga-portugal-feminino.png",
  "nwsl":"./assets/leagues/nwsl.png",
