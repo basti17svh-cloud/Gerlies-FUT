@@ -20,6 +20,7 @@
      if(["fb","facebook"].includes(u))return"facebook";
      if(["tiktok","tt"].includes(u))return"tiktok";
      if(["google","search"].includes(u))return"google";
+     if(["share","invite","whatsapp"].includes(u))return"other";
      const r=new URL(document.referrer||"https://example.invalid");
      if(/(^|\.)instagram\.com$/.test(r.hostname))return"instagram";
      if(/(^|\.)facebook\.com$/.test(r.hostname)||r.hostname==="l.facebook.com")return"facebook";
