@@ -22,11 +22,20 @@ const LEAGUES={
 };
 const slug=name=>name.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const UA={'User-Agent':'FooteraLeagueLogos/1.0 (https://github.com/basti17svh-cloud/gerlies-fut)'};
+const api=async params=>{
+ const res=await fetch('https://en.wikipedia.org/w/api.php?format=json&redirects=1&'+new URLSearchParams(params),{headers:UA});
+ if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();
+};
+// Logos are mostly non-free files, which the lead-image API leaves out, so read the infobox first.
 async function leadImage(title){
- const url='https://en.wikipedia.org/w/api.php?action=query&format=json&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=256&titles='+encodeURIComponent(title);
- const res=await fetch(url,{headers:UA});if(!res.ok)throw new Error(`HTTP ${res.status}`);
- const pages=Object.values((await res.json()).query?.pages||{});
- const src=pages[0]?.thumbnail?.source;if(!src)throw new Error('no lead image');
+ const wikitext=(await api({action:'parse',page:title,prop:'wikitext',section:0})).parse?.wikitext?.['*']||'';
+ const file=(wikitext.match(/\|\s*(?:logo|image)\s*=\s*(?:\[\[)?(?:File:|Image:)?([^|\]\n<{}]+\.(?:png|svg|jpe?g|webp))/i)||[])[1];
+ if(file){
+  const pages=Object.values((await api({action:'query',prop:'imageinfo',iiprop:'url',iiurlwidth:256,titles:'File:'+file.trim()})).query?.pages||{});
+  const src=pages[0]?.imageinfo?.[0]?.thumburl||pages[0]?.imageinfo?.[0]?.url;if(src)return src;
+ }
+ const pages=Object.values((await api({action:'query',prop:'pageimages',piprop:'thumbnail',pithumbsize:256,titles:title})).query?.pages||{});
+ const src=pages[0]?.thumbnail?.source;if(!src)throw new Error('no logo in infobox or lead image');
  return src;
 }
 (async()=>{
