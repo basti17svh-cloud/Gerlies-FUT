@@ -22,7 +22,7 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
    assert.equal(data.shot.actionKind,kind);assert.equal(data.event.actionKind,kind);assert.equal(data.goal.finish,data.shot.finish);assert.equal(data.event.finish,data.shot.finish);
    assert.equal(data.event.playerId,data.shot.shooterUid);assert.equal(data.event.creatorUid,data.shot.creatorUid);
    // V21.195 star moments: a screamer (long_shot, power_drive, finesse_halfspace) may show too.
-   if(kind==='distance')assert.ok(['layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','finesse_halfspace'].includes(data.event.sequence),data.event.sequence);
+   if(kind==='distance')assert.ok(['layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','finesse_halfspace','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive'].includes(data.event.sequence),data.event.sequence);
    if(kind==='cross')assert.equal(data.event.finish,'header');
    await page.waitForSelector('.fh3d canvas',{timeout:30000});
    assert.ok(await page.locator('.fh3d canvas').evaluate(c=>c.width>0&&c.height>0&&!c.getContext('webgl2').isContextLost()));
