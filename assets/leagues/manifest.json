@@ -42,5 +42,9 @@
  "Arkema PL": {
   "url": "./assets/leagues/arkema-pl.png",
   "source": "https://upload.wikimedia.org/wikipedia/en/7/74/Premi%C3%A8re_Ligue.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "Iceland League": {
+  "url": "./assets/leagues/iceland-league.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/BestaLeague.png/330px-BestaLeague.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  }
 }
