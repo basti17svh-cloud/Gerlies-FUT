@@ -10,7 +10,7 @@ import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21214';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21215';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -208,7 +208,7 @@ export function splitAtlasSeams(geometry,zones,normalized){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-// look (V21.193 human players): {number, shirtName, skinTone, crest, boots}.
+// look (V21.193 human players): {number, shirtName, skinTone, crest, boots, custom}.
 export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null,look={}){
  const human=variant==='human';
  const asset=human?footeraHumanSource():variant==='makehuman'?sourceMakeHuman:source;
@@ -218,7 +218,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone),kit||{},
+ if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone,undefined,look.custom),kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
  model.traverse(node=>{

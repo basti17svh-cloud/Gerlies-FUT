@@ -38,9 +38,11 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    playerSkinTones:Object.freeze((Array.isArray(event.playerSkinTones)?event.playerSkinTones:[]).slice(0,16).map(v=>typeof v==='string'&&(/^#[0-9a-f]{6}$/i.test(v)||/^[1-6]$/.test(v))?v:Number.isInteger(v)&&v>=1&&v<=6?v:null)),
    keeperSkinTone:event.keeperSkinTone??null,
+   playerLooks:Object.freeze(Array.from({length:16},(_,i)=>cleanLook((Array.isArray(event.playerLooks)?event.playerLooks:[])[i]))),
+   keeperLook:cleanLook(event.keeperLook),
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21214').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21215').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -222,6 +224,16 @@
  function visualHash(input){let n=2166136261;for(const ch of String(input)){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
 
  const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
+ // V21.215 Aussehen-Editor: only known haircut/beard ids and plain hex colours reach the scene.
+ const LOOK_HAIR=/^(bald|short0[1-4]|afro01)$/,LOOK_BEARD=/^(none|Full_beard|Moustache)$/,LOOK_HEX=/^#[0-9a-f]{6}$/i;
+ function cleanLook(v){
+  if(!v||typeof v!=='object')return null;
+  const out={};
+  if(LOOK_HAIR.test(String(v.hair||'')))out.hair=String(v.hair);
+  if(LOOK_BEARD.test(String(v.beard||'')))out.beard=String(v.beard);
+  if(LOOK_HEX.test(String(v.hairColor||'')))out.hairColor=String(v.hairColor).toLowerCase();
+  return Object.keys(out).length?Object.freeze(out):null;
+ }
  const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick']);
  function goalStyle(event,key){
   const finish=String(event.finish||'normal'),seq=String(event.sequence||'');

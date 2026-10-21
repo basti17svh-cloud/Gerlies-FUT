@@ -1,0 +1,17 @@
+/* Footera V21.215 Aussehen-Editor im Spielerprofil. */
+#bioModal .bio-look-panel{margin-top:10px}
+#bioModal .look-body{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;align-items:start}
+#bioModal .look-preview{aspect-ratio:1;border:1px solid #273731;border-radius:12px;background:radial-gradient(circle at 50% 35%,#1d2b26,#0a110f 72%);overflow:hidden}
+#bioModal .look-preview-head{display:block;width:100%;height:100%}
+#bioModal .look-rows{display:grid;gap:9px;min-width:0}
+#bioModal .look-row{display:grid;gap:5px;min-width:0}
+#bioModal .look-label{color:#788b82;font-size:11px;font-weight:850}
+#bioModal .look-chips{display:flex;flex-wrap:wrap;gap:6px}
+#bioModal .look-chip{min-height:30px;padding:5px 10px;border:1px solid #385044;border-radius:9px;background:#121f1a;color:#c7d9d0;font-size:11px;font-weight:900;cursor:pointer}
+#bioModal .look-chip.active{border-color:#93bc51;background:#233018;color:#e9ff94}
+#bioModal .look-swatch{width:30px;min-width:30px;padding:0;background:var(--look-color);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+#bioModal .look-chip.is-default{border-style:dashed;border-color:#93bc51}
+#bioModal .look-swatch.active,#bioModal .look-swatch.is-default{background:var(--look-color)}
+#bioModal .look-swatch.active{border-color:#e9ff94;box-shadow:0 0 0 2px #93bc51,inset 0 0 0 2px rgba(0,0,0,.25)}
+#bioModal .look-note{margin:10px 0 0;color:#75867f;font-size:11px;line-height:1.35}
+@media(max-width:560px){#bioModal .look-body{grid-template-columns:1fr}#bioModal .look-preview{width:96px;justify-self:center}}
