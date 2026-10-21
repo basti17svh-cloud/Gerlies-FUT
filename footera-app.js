@@ -3845,6 +3845,8 @@ function finishPack(){
  $("reveal").classList.remove("active");
  $("bigPack").classList.remove("pulse");
  $("packCountdown").textContent="";
+ let sharePlan=null;try{sharePlan=pendingPack.length?packRevealPlan():null}catch(e){}
+ globalThis.FooteraShare?.preparePack(sharePlan&&sharePlan.mode!=="plain"&&sharePlan.cards[0]?{item:sharePlan.cards[0],label:sharePlan.label,mode:sharePlan.mode}:null);
  renderPackResults();
  $("results").classList.add("active");
 }
@@ -3998,7 +4000,8 @@ function tradeableClubTwinForPackItem(item){
 function closeResolvedPackResults(){
  $("results").classList.remove("active");
  pendingPack=[];pendingResolved=new Set();state.pendingPack=[];state.pendingResolved=[];state.pendingChemBoosts=[];
- save();renderAll()
+ save();renderAll();
+ globalThis.FooteraShare?.afterPack()
 }
 function finishPackIfResolved(){
  const unresolved=pendingPack.some((_,k)=>!pendingResolved.has(k));
@@ -7273,13 +7276,17 @@ $("addFriendCode").addEventListener("click",async()=>{
  }else{
   f=decodeFriendProfile(raw);
  }
- if(!f||!Array.isArray(f.squad))return toast("Freundescode ungültig.");
- if(f.onlineUid&&f.onlineUid===window.FooteraOnline?.userId)return toast("Das ist dein eigener Freundescode.");
+ if(storeFriendProfile(f)==="saved"){$("friendCodeInput").value="";toast("Freundesprofil gespeichert.")}
+});
+// Shared by the code field and invite links (?invite=): "saved", "own" or "invalid".
+function storeFriendProfile(f,{quiet=false}={}){
+ if(!f||!Array.isArray(f.squad)){if(!quiet)toast("Freundescode ungültig.");return"invalid"}
+ if(f.onlineUid&&f.onlineUid===window.FooteraOnline?.userId){if(!quiet)toast("Das ist dein eigener Freundescode.");return"own"}
  const key=f.onlineUid||((f.clubName||"Freund")+"|"+(f.rating||0)+"|"+(f.division||10)),idx=state.friends.findIndex(x=>x._key===key||(f.onlineUid&&x.onlineUid===f.onlineUid));
  f._key=key;
  if(idx>=0)state.friends[idx]={...state.friends[idx],...f,_key:key};else state.friends.push(f);
- save();$("friendCodeInput").value="";renderSocial();renderPlay();toast("Freundesprofil gespeichert.")
-});
+ save();renderSocial();renderPlay();return"saved"
+}
 $("friendList").addEventListener("click",e=>{const r=e.target.closest("[data-friend-remove]"),v=e.target.closest("[data-friend-squad]"),f=e.target.closest("[data-friend-friendly]"),chat=e.target.closest("[data-friend-chat]"),live=e.target.closest("[data-friend-live]"),compare=e.target.closest("[data-friend-compare]");if(r){state.friends.splice(Number(r.dataset.friendRemove),1);save();renderSocial();renderPlay();return}if(v){openFriendTeam(Number(v.dataset.friendSquad));return}if(chat){window.FooteraOnline?.openChat(state.friends[Number(chat.dataset.friendChat)]);return}if(live){window.FooteraOnline?.invite(state.friends[Number(live.dataset.friendLive)]);return}if(compare){window.FooteraOnline?.showComparison(state.friends[Number(compare.dataset.friendCompare)]);return}if(f){const idx=Number(f.dataset.friendFriendly);if(!state.friends[idx])return;switchView("playView");$("friendlyFriendSelect").value=String(idx);renderPlay();window.FooteraPlayHub?.open("friendly-friend");toast(`${state.friends[idx].clubName}: bereit für Friendly.`);return}});
 $("friendTeamModalClose").addEventListener("click",()=>closeUiLayer("friendTeamModal","friend-team"));
 $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.closest("[data-friend-player]");if(player){const friendIndex=Number(player.dataset.friendIndex),teamIndex=Number(player.dataset.friendTeam),playerIndex=Number(player.dataset.friendPlayer),fr=state.friends[friendIndex],team=fr?friendProfileTeams(fr)[teamIndex]:null,fp=team?.squad?.[playerIndex];if(fp){const form=FORMATIONS[team.formation]||FORMATIONS["4-3-3"],slot=playerIndex<11?(form[playerIndex]?.p||""):"BANK";openFriendBiography(fp,slot)}return}const tab=e.target.closest("[data-friend-team-tab]");if(tab){renderFriendTeamModal(Number(tab.dataset.friendIndex),Number(tab.dataset.friendTeamTab));return}const b=e.target.closest("[data-friend-modal-play]");if(!b)return;const idx=Number(b.dataset.friendModalPlay),fr=state.friends[idx];if(!fr)return;$("friendTeamModal").classList.remove("active");replaceUiState("view",{view:"playView"});switchView("playView",{push:false});$("friendlyFriendSelect").value=String(idx);renderPlay();window.FooteraPlayHub?.open("friendly-friend");renderMatchPreview("friendly-friend",friendAsOpponent(fr))});
@@ -7530,7 +7537,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.209";
+const GFUT_BUILD="V21.210";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7588,7 +7595,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21209",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21210",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
