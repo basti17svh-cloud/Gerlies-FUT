@@ -18,7 +18,7 @@ test('TV camera prevents sudden refocusing and lens pumping at scripted cuts',as
  assert.deepEqual(sampled(99),sampled(10.4),'clip is clamped at end');
 });
 test('Footera authored attacks use a close, stable camera from either direction',async()=>{
- const {createBroadcastCameraTrack}=await import('../3d-highlights-scene.mjs');
+ const M=await import('../3d-highlights-scene.mjs'),{createBroadcastCameraTrack}=M;
  for(const seq of ['central','through_ball','wing_left','wing_right','cutback_left','cutback_right','diagonal_switch','triangle_left','triangle_right','midfield_switch','overlap_left_high','inside_link_right']){
   for(const direction of [-1,1]){
    // Check the track the renderer actually uses: it keeps the smoothed pose at the common broadcast range.
@@ -28,7 +28,9 @@ test('Footera authored attacks use a close, stable camera from either direction'
     const t=i*.04,cam=frame(t);
     for(const x of [...cam.position,...cam.target,cam.fov])assert.ok(Number.isFinite(x),seq+' camera values must be finite');
     // Since 16.10.2026 the camera follows the ball with a fixed touchline-side offset instead of a fixed rail.
-    assert.ok(cam.position[0]-cam.target[0]>30&&cam.position[1]>20,seq+' camera stays on same broadcast side');
+    // V21.205: the side offset and height scale with the 34 m broadcast range.
+    const D=M.BROADCAST_CAMERA_DISTANCE;
+    assert.ok(cam.position[0]-cam.target[0]>30*D/40&&cam.position[1]>20*D/40,seq+' camera stays on same broadcast side');
     assert.ok(Math.hypot(...cam.target.map((v,j)=>v-prev.target[j]))<.75,seq+' camera cannot jerk between frames');
     assert.ok(Math.abs(cam.fov-prev.fov)<.05,seq+' no sudden zoom');
     assert.ok(cam.fov<=42&&cam.fov>=30.5,seq+' fitted match framing');
@@ -46,7 +48,8 @@ test('V21.99: wing camera cannot rush closer than broadcast safety envelope',asy
    for(const direction of [-1,1])for(const time of [0,2.7,4.3,5.1]){
     const c=S.cameraState(direction,time,aspect,'goal',sequence);
     const measured=Math.hypot(...c.position.map((v,i)=>v-c.target[i]));
-    assert.ok(measured>=37.5,sequence+' time '+time+' measured '+measured);
+    // V21.205: the safety envelope scales with the 34 m broadcast range.
+    assert.ok(measured>=37.5*S.BROADCAST_CAMERA_DISTANCE/40,sequence+' time '+time+' measured '+measured);
     assert.ok(c.position[0]>0,'broadcast camera stays on the same sideline');
    }
 });

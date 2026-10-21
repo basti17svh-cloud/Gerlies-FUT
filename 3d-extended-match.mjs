@@ -150,13 +150,17 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
- // Open-play counters use the ordinary elevated touchline rail and range.
- const distance=40;
+ // Open-play counters use the ordinary elevated touchline rail and range
+ // (V21.205: 34 m, the same as BROADCAST_CAMERA_DISTANCE in the scene).
+ const distance=34;
  const rail=kind==='free_kick'?[39.3,29,50*direction]:[39.3,27,5.8*direction];
  const size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- const fov=kind==='turnover_counter'?(portrait?42:32):
-  kind==='free_kick'?(portrait?38:35.5):(portrait?29.4:28.6);
+ // V21.205: at 34 m a narrow phone needs a slightly wider, still fixed lens
+ // so the whole goal fits next to the ball (counter) or the taker (free kick).
+ const wide=width=>2*Math.atan(width/aspect)*180/Math.PI;
+ const fov=kind==='turnover_counter'?Math.max(portrait?42:32,wide(.384)):
+  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355)):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // V21.195 set-piece TV angles, cut in directly (not through the stabilized

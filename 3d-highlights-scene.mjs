@@ -1,4 +1,4 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21204';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21205';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21196';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
@@ -86,7 +86,8 @@ export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
 export const MIN_CAMERA_DISTANCE=34;
 // Identical physical range for all broadcast phases and event types.
-export const BROADCAST_CAMERA_DISTANCE=40;
+// V21.205 (Basti): 34 m instead of 40 m, so players read bigger on a phone.
+export const BROADCAST_CAMERA_DISTANCE=34;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -604,12 +605,38 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
    // rather than widening the lens and filling the top with more stands.
    const boxShift=(-51.25*direction-frame.target[2])*.27*smooth((time-delivery.release-.3)/1.25);
    frame.target[2]+=boxShift;frame.position[2]+=boxShift;
-   return keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence);
+   return keepInBroadcastFrame(keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence),time,/^(wing|cutback)_/.test(sequence));
   }
   // The turnover counter composes its own pass-and-goal frame (counter test).
   if(extendedKind(sequence)&&extendedKind(sequence)!=='turnover_counter')return keepExtendedActionInFrame(frame,time,direction,aspect,worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction));
-  return frame;
+  return DEFENSIVE_SCENES.includes(sequence)?frame:keepInBroadcastFrame(frame,time);
  };
+ // V21.205: the closer 34 m camera glides (never zooms) to keep the ball, and
+ // from the shot on the whole goal, inside a phone picture. Judged at the
+ // final range and the narrowest lens, before the track smooths the pan.
+ function keepInBroadcastFrame(frame,time,holdGoal=false){
+  const gap=Math.hypot(...frame.position.map((v,i)=>v-frame.target[i]))||1,k=BROADCAST_CAMERA_DISTANCE/gap;
+  const real={...frame,position:frame.position.map((v,i)=>frame.target[i]+(v-frame.target[i])*k)},lens=aspect<1.12?32:30.5;
+  const ball=worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction);
+  let fit=glideToFit(real,[ball],ball,aspect,lens,.78,1);
+  // A wide delivery also keeps the goal mouth in the picture (wide crosses).
+  if(holdGoal){const mouth=worldPosition([0,0,-52.5],direction);fit=glideToFit(fit,[ball,mouth],[(ball[0]+mouth[0])/2,0,(ball[2]+mouth[2])/2],aspect,lens,.9,1)}
+  const goal=smooth((time-SHOT_TIME+1.2)/1.0);
+  if(goal>0){
+   const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+   const net=worldPosition([0,0,-53.4],direction);
+   fit=glideToFit(fit,points,[(ball[0]+net[0])/2,0,(ball[2]+net[2])/2],aspect,lens,.9,goal);
+  }
+  const shift=fit.target.map((v,i)=>v-real.target[i]);
+  // Where gliding alone cannot hold the ball and the goal, ask for a slightly
+  // wider lens; the track keeps one lens for the whole highlight.
+  let lensNeeded=frame.fov;
+  if(goal>=1){
+   const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+   if(frameOverflow(fit,[0,0],aspect,points,lens,.86)>0){let lo=lens,hi=60;for(let i=0;i<12;i++){const m=(lo+hi)/2;frameOverflow(fit,[0,0],aspect,points,m,.86)>0?lo=m:hi=m}lensNeeded=Math.max(lensNeeded,hi)}
+  }
+  return{...frame,fov:lensNeeded,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
+ }
  // A single fitted lens for each highlight. The camera follows the ball,
  // without changing range at a pass, shot or goalkeeper action.
  const portrait=aspect<1.12,isExtended=!!extendedKind(sequence),counter=sequence==='extended_turnover_counter';
@@ -617,7 +644,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended||defending?.16:.34,focusSpeed:isExtended||defending?24:12,railSpeed:isExtended||defending?24:14,
   fovFloor:counter?(portrait?32:30.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?42:40):isExtended?(portrait?39:36):(portrait?42:40)});
+  fovCeiling:counter?(portrait?47:44):isExtended?(portrait?39:36):(portrait?42:40)});
  // Gaussian stabilization still controls the camera's entire travel. Restore
  // exact physical clearance after smoothing the camera and target separately.
  return time=>{
@@ -630,7 +657,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
   return framed;
  };
 }
-// The closer 40 m TV camera can drop a crosser on the near touchline below the
+// The closer 34 m TV camera can drop a crosser on the near touchline below the
 // bottom edge of a narrow phone (a long diagonal switch), and a fixed set-piece
 // composition can leave the ball or the net outside a portrait phone frame.
 // Glide camera and target together towards what must be seen, just enough to
