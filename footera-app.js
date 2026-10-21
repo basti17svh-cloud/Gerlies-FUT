@@ -6666,7 +6666,7 @@ function finishMatch(){
  dismissMatchGoalMoment(false);
  match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();
  recordMatchEvent("break","", "Abpfiff");
- state.stats.matches++;
+ state.stats.matches++;globalThis.FooteraShare?.afterMatch();
  const isFriendly=String(match.mode).startsWith("friendly");
  const decidedByPens=match.home===match.away&&!!match.penaltyWinner;
  const homeWon=match.home>match.away||(decidedByPens&&match.penaltyWinner==="home");

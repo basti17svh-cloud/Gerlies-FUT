@@ -25,6 +25,14 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    const online=window.FooteraOnline;
    Object.assign(online,{available:true,ready:true,registered:true,userId:'me-uid',friendCode:'',init:async()=>{},getFriendCode:async()=>'XYZW2345',
     resolveFriendCode:async code=>code==='AB7K3P9Q'?{v:5,onlineUid:'friend-uid',clubName:'FC Einlader',squad:PLAYERS.map(p=>({pid:p.id})),rating:84}:null});
+   // V21.211 invite reward: the server decides; the same reward id never grants twice.
+   window.rpcCalls=[];
+   const reward={id:'referral-invitee-11111111-2222-4333-8444-555555555555',role:'invitee'};
+   online.authClient=async()=>({rpc:async(name,args)=>{window.rpcCalls.push([name,args]);
+    if(name==='footera_register_referral')return{data:'registered',error:null};
+    if(name==='footera_referral_progress')return{data:args.p_matches>=3?'qualified':'pending',error:null};
+    if(name==='footera_claim_referral_rewards')return{data:{rewards:[reward],invited:0,qualified:0,invitedBy:true,ownQualified:true},error:null};
+    return{data:null,error:{message:'unknown'}}}});
    window.shared=[];
    navigator.canShare=data=>!!data.files;
    navigator.share=async data=>{window.shared.push({...data,files:(data.files||[]).map(f=>({name:f.name,type:f.type,size:f.size}))})};
@@ -34,6 +42,15 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   await page.evaluate(()=>FooteraShare.acceptInvite());
   const friends=await page.evaluate(()=>({names:state.friends.map(f=>f.clubName),pending:FooteraShare.pendingInvite()}));
   assert.deepEqual(friends,{names:['FC Einlader'],pending:null},'invite link adds the friend once');
+  const referral=await page.evaluate(async()=>{
+   const before=state.packs['82']||0,registered=window.rpcCalls.find(c=>c[0]==='footera_register_referral')?.[1]?.p_code,pending=state.referral?.pending;
+   state.stats.matches=2;await FooteraShare.afterMatch();const early=state.packs['82']||0;
+   state.stats.matches=3;await FooteraShare.afterMatch();const after=state.packs['82']||0;
+   await FooteraShare.claimReferralRewards();
+   return{registered,pending,early:early-before,granted:after-before,again:(state.packs['82']||0)-after,stillPending:state.referral.pending,info:document.getElementById('referralInfo').textContent}
+  });
+  assert.deepEqual({...referral,info:undefined},{registered:'AB7K3P9Q',pending:true,early:0,granted:1,again:0,stillPending:false,info:undefined},'invite reward: one 82+ pack after 3 matches, never twice');
+  assert.match(referral.info,/3 Spiele gespielt hat, bekommt ihr beide ein 82\+ Players Pack/);
 
   // 3. A TOTW walkout shows the share bar and builds a story picture of the card.
   await page.evaluate(()=>{

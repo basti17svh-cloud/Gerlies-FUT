@@ -24,3 +24,8 @@ Bei bestehenden Supabase-Projekten einmal `online/footera-friend-squads-v20.32.s
 Supabase vergibt jetzt automatisch einen eindeutigen 8-stelligen Freundescode pro Online-Profil. In der App wird er lesbar als `ABCD-EFGH` angezeigt. Beim Hinzufügen eines Freundes wird der Code serverseitig aufgelöst und der aktuelle Kader direkt aus Supabase geladen. Die bisherigen langen Base64-Profilcodes bleiben als Fallback kompatibel.
 
 Bestehende Supabase-Projekte: `online/footera-short-friend-codes-v20.34.sql` einmal ausführen. Im verbundenen Footera-Projekt wurde diese Migration bereits angewendet.
+
+
+## V21.211 – Einladungsbonus
+
+`online/footera-referrals-v21.211.sql` einmal im SQL Editor ausführen (rein additiv: neue Tabelle `footera_referrals` und drei Funktionen). Wer über einen Einladungslink (`?invite=CODE`) mit einem neuen Online-Konto startet, wird mit dem Einladenden verknüpft. Nach 3 Spielen des neuen Spielers bekommen beide je ein 82+ Players Pack. Regeln auf dem Server: nur Konten, die höchstens 2 Tage alt sind, frühestens 10 Minuten nach der Verknüpfung, höchstens 10 Belohnungen pro Einladendem, jede Belohnung nur einmal. Ohne die Migration läuft das Spiel normal weiter, nur ohne Bonus.

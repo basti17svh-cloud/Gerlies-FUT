@@ -51,7 +51,7 @@
 <link rel="stylesheet" href="./footera-account.css?v=21122">
 <link rel="stylesheet" href="./footera-points-shop.css?v=21128">
 <link rel="stylesheet" href="./ux-clarity.css?v=21202">
-<link rel="stylesheet" href="./footera-share.css?v=21209">
+<link rel="stylesheet" href="./footera-share.css?v=21211">
 </head>
 <body>
 
@@ -509,7 +509,7 @@
    <div id="onlinePanel" class="profile-card friends-box" hidden><h3>Live-Duelle &amp; Einladungen</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div></div>
   </section>
   <section id="friendsPanelAdd" class="friends-panel" data-friends-panel="add" hidden><div class="profile-card"><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><label class="friends-field-label" for="friendCodeInput">Freundescode</label><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div></section>
-  <section id="friendsPanelCode" class="friends-panel" data-friends-panel="code" hidden><div class="profile-card"><p><strong id="socialClubName">Footera Club</strong><br>Teile diesen Code, damit Freunde dich hinzufügen können. Dein Team wird automatisch synchronisiert.</p><label class="friends-field-label" for="myFriendCode">Dein Freundescode</label><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="shareInviteLink" class="primary">Einladungslink teilen</button><button id="copyFriendCode" class="secondary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></section>
+  <section id="friendsPanelCode" class="friends-panel" data-friends-panel="code" hidden><div class="profile-card"><p><strong id="socialClubName">Footera Club</strong><br>Teile diesen Code, damit Freunde dich hinzufügen können. Dein Team wird automatisch synchronisiert.</p><p id="referralInfo" class="referral-info"></p><label class="friends-field-label" for="myFriendCode">Dein Freundescode</label><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="shareInviteLink" class="primary">Einladungslink teilen</button><button id="copyFriendCode" class="secondary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></section>
  </div>
 </div></section>
 
@@ -710,7 +710,7 @@
 <script src="./player-picks.js?v=21176"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
-<script src="./footera-share.js?v=21209"></script>
+<script src="./footera-share.js?v=21211"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
