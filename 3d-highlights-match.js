@@ -209,7 +209,8 @@ function queueMatch3D(event){
  // caused identical camera/action choreography throughout an entire match.
  const lockedScene=!retiredCounter&&(!!event.sceneKind||['freekick','penalty'].includes(event.creationType)||event.type==='ball_won');
  presentation.sequence=lockedScene?(event.sequence||selected.sequence):selected.sequence;
- presentation.finish=event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
+ // V21.208: the bicycle scene is an overhead kick whatever finish the simulation named.
+ presentation.finish=presentation.sequence==='bicycle'?'bicycle':event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
  presentation.signature=event.type==='ball_won'||typeof FooteraHighlights.signatureStyle!=='function'?null:FooteraHighlights.signatureStyle(presentation);
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);

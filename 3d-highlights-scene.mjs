@@ -1,10 +1,10 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21205';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21208';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21196';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21194';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21208';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21194';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
@@ -21,14 +21,14 @@ export function footeraHumanPlayersWanted(){
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
-import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
+import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=21208';
 import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity,applyReceptionContinuity} from './3d-action-continuity.mjs?v=21159';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
-import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
+import {applyMotion23} from './3d-motion-transition.mjs?v=21208';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
@@ -102,6 +102,27 @@ export function kickPose(time){
  if(t<=0)return{hip:mix(-.8,.75,(t+.22)/.22),knee:mix(-.8,-.05,(t+.22)/.22)};
  if(t<.18)return{hip:mix(.75,1.08,t/.18),knee:-.05};
  return{hip:mix(1.08,0,(t-.18)/.45),knee:mix(-.05,0,(t-.18)/.45)};
+}
+// V21.208 (Basti): a real overhead kick for the human squad. The striker turns
+// his back to goal, leans back, takes off and turns over his pelvis so the
+// kicking leg meets the ball above him at SHOT_TIME (scissor: the other leg
+// swings up first), lands on his back and is up again before the celebration.
+// pitch: backwards body turn (rad), lift: pelvis height change (m), back:
+// pelvis shift towards goal (m), legs: [thigh, knee] per leg (1 = kicking).
+export function bicycleKickPose(time){
+ const weight=smooth((time-4.9)/.12)*(1-smooth((time-6.72)/.2));
+ if(weight<=0)return null;
+ const over=smooth((time-5.04)/.4),land=smooth((time-5.48)/.3),sit=smooth((time-6.08)/.36),stand=smooth((time-6.4)/.42);
+ const pitch=mix(.32*smooth((time-4.92)/.14)+1.36*over-.2*land,.05,sit)*(1-stand);
+ const lift=mix(.14*Math.sin(Math.PI*clamp((time-5.02)/.52))-.8*land,-.45,sit)*(1-stand);
+ const back=mix(.5*over+.3*land,.5,sit)*(1-stand);
+ const swing=smooth((time-5.16)/.26),follow=smooth((time-SHOT_TIME)/.2),scissor=smooth((time-5.0)/.2),drop=smooth((time-5.2)/.2);
+ const kick=[mix(mix(-.3,.75,swing),1.05,follow),mix(mix(-1.1,-.12,swing),-.4,follow)];
+ const other=[mix(mix(0,1.25,scissor),-.1,drop),mix(-.9,-.3,drop)];
+ // Sit up into a crouch, then stand: never pivot upright from flat on the back.
+ const legs=[[mix(other[0],.65,land),mix(other[1],-1.05,land)],[mix(kick[0],.45,land),mix(kick[1],-.7,land)]]
+  .map(([thigh,knee])=>[mix(thigh,1.5,sit)*(1-stand),mix(knee,-2.1,sit)*(1-stand)]);
+ return{weight,pitch,lift,back,legs,arms:mix(mix(1.15,.6,land),.3,sit)*(1-stand)};
 }
 export function shotFootPosition(time=SHOT_TIME){
  const {hip,knee}=kickPose(time);
@@ -859,8 +880,10 @@ export function stanceHeight(hipA,kneeA,hipB,kneeB){
 // travels towards +Z relative to the pelvis, cancelling forward root travel.
 // Acceleration, lateral plant and counter-rotation are presentation-only.
 // No frame history, result, simulation RNG or extra mesh allocations.
+// V21.208: a walking pace already takes visible steps (was a glide below ~1 m/s).
+export const locomotionEffort=speed=>smooth(clamp(speed)/.09);
 export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl=false){
- const effort=smooth(clamp(speed)/.16),drive=clamp(acceleration,-1,1);
+ const effort=locomotionEffort(speed),drive=clamp(acceleration,-1,1);
  const bank=clamp(turn*1.7,-.28,.28)*effort;
  const plant=smooth(Math.abs(turn)/.10)*effort;
  return{
@@ -875,6 +898,14 @@ export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl
 // One complete left/right gait cycle follows travelled distance. Restrained reach
 // prevents the overextended sprint lunge without increasing step frequency wildly.
 export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/(.60-.32*clamp(speed));
+// Support-foot plant of a ground shot: the boot steps in (lift) beside the
+// ball before SHOT_TIME, holds through contact, then steps out again.
+export function plantFootSample(time){
+ const weight=smooth((time-4.98)/.14)*(1-smooth((time-5.6)/.16));
+ if(weight<=0)return null;
+ const lift=.09*Math.sin(Math.PI*clamp((time-4.98)/.16))+.09*Math.sin(Math.PI*clamp((time-5.6)/.16));
+ return{weight,lift};
+}
 export function runningLeg(phase,speed,out={}){
  speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.32*speed,reach=.15+.145*speed;
  const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
@@ -1514,7 +1545,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=0;i<2;i++){
     const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=1-.74*g.swingWeight;
     // Keep the IK stride authoritative. Clip reach adds nuance, not a second lunge.
-    p.legs[i].rotation.x=g.hip*motion*d.strideReach*Math.min(1.045,c.reach);
+    // V21.208: compact reach only shapes the swing; a planted boot never slides.
+    p.legs[i].rotation.x=g.hip*motion*mix(1,d.strideReach*Math.min(1.045,c.reach),g.swingWeight);
     p.knees[i].rotation.x=g.knee*motion;
     p.ankles[i].rotation.x=g.ankle*motion;
     // A support leg braces during a cut while the free leg pushes through.
@@ -1542,7 +1574,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // the feint, cut and shot preparation for these finesse sequences.
     if(!(motion2Active&&p===players[0]))
      applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
-    if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
+    // V21.208: the swinging boot touches the ball; the planted one stays put.
+    if(controlWeight>.001){applyFootballControl(p,stride+Math.PI,controlWeight,sequence);applyTouchContinuity(p,stride+Math.PI,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
    }else if(enhancedRigMotion&&p.skinned&&p===players[0]&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
@@ -1550,7 +1583,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
+  // V21.208: steps follow the path actually shown (actorPosition) and the
+  // effort-scaled reach of pose(), so planted boots stop sliding when slow.
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();
@@ -2020,6 +2055,25 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      applyCelebrationPose(players[h.index],h.slot%2?'hug_right':'hug_left',time-HUG_START-h.arrive*.8,h.state);
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
+   }
+   // V21.208: the overhead kick turns the scorer's back to goal until he is up.
+   const bike=finish==='bicycle'&&event.type!=='ball_won'&&!extended?bicycleKickPose(time):null;
+   importedMotionFrame.acrobatic=bike;
+   if(bike){
+    const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish),away=Math.atan2(sx-aim[0],sz-aim[2])+Math.PI;
+    const from=players[0].root.rotation.y,turn=Math.atan2(Math.sin(away-from),Math.cos(away-from));
+    players[0].root.rotation.y=from+turn*bike.weight;
+   }
+   // V21.208 (Basti): the support boot is planted beside the ball and stays
+   // there while the body runs over it; it used to glide along with the hips.
+   const plant=event.type!=='ball_won'&&!['header','volley','bicycle'].includes(finish)?plantFootSample(time):null;
+   if(plant){const p=players[0],h=p.root.rotation.y,fx=-Math.sin(h),fz=-Math.cos(h),rx=Math.cos(h),rz=-Math.sin(h);
+    const [ax,az]=actorPosition(0,SHOT_TIME,event.type,sequence),spot=[ax-.108*rx+.05*fx,az-.108*rz+.05*fz];
+    const hx=p.root.position.x-.108*rx,hz=p.root.position.z-.108*rz,dx=spot[0]-hx,dz=spot[1]-hz;
+    const ahead=dx*fx+dz*fz,aside=dx*rx+dz*rz,down=.94+p.rig.position.y-(.055+plant.lift);
+    const reach=Math.min(.8599,Math.hypot(ahead,down)),bend=Math.acos(reach/.86),hip=Math.atan2(ahead,down)+bend,w=plant.weight;
+    p.legs[0].rotation.x=mix(p.legs[0].rotation.x,hip,w);p.knees[0].rotation.x=mix(p.knees[0].rotation.x,-2*bend,w);
+    p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
    }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
