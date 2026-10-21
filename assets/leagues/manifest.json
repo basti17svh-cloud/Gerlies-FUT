@@ -1,14 +1,42 @@
 {
  "Calcio A Femminile": {
   "url": "./assets/leagues/calcio-a-femminile.png",
-  "source": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Serie_A_Women_%282025-Now%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+  "source": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Serie_A_Women_%282025-Now%29.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
  },
  "Liga Portugal Feminino": {
   "url": "./assets/leagues/liga-portugal-feminino.png",
-  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Liga_BPI_logo.png/330px-Liga_BPI_logo.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Liga_BPI_logo.png/330px-Liga_BPI_logo.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  },
  "Scottish Women's League": {
   "url": "./assets/leagues/scottish-women-s-league.png",
-  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/SWPL_Logo_Brandmarque_Colour.png/330px-SWPL_Logo_Brandmarque_Colour.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/SWPL_Logo_Brandmarque_Colour.png/330px-SWPL_Logo_Brandmarque_Colour.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "GPFBL": {
+  "url": "./assets/leagues/gpfbl.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/c9/Frauen-Bundesliga_logo_%282019%29.svg/330px-Frauen-Bundesliga_logo_%282019%29.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Barclays WSL": {
+  "url": "./assets/leagues/barclays-wsl.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/e/e6/Women%27s_Super_League.svg/330px-Women%27s_Super_League.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Liga F Moeve": {
+  "url": "./assets/leagues/liga-f-moeve.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/b/b3/Ligafwomen.svg/330px-Ligafwomen.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "NWSL": {
+  "url": "./assets/leagues/nwsl.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/1e/NWSL_logo.svg/330px-NWSL_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Ceska Liga Žen": {
+  "url": "./assets/leagues/ceska-liga-zen.jpg",
+  "source": "https://upload.wikimedia.org/wikipedia/en/2/24/FORTUNA_LYGA%2C_Czech_Women%27s_First_League%2C_logo_2026.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "Nederland Vrouwen Liga": {
+  "url": "./assets/leagues/nederland-vrouwen-liga.jpg",
+  "source": "https://upload.wikimedia.org/wikipedia/en/0/0e/Vrouwen_Eredivisie_logo.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "Sverige Liga": {
+  "url": "./assets/leagues/sverige-liga.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/2/2b/OBOS_Damallsvenskan_logo.svg/330px-OBOS_Damallsvenskan_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  }
 }
