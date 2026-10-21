@@ -17,6 +17,8 @@ const PARALLEL=6;
 const MIN_MEN=10000,MIN_WOMEN=1000;
 // EA ships some clubs under licence names; the game shows the real clubs.
 const CLUB_ALIASES={'Lombardia FC':'Inter','Milano FC':'AC Milan','Bergamo Calcio':'Atalanta','Latium':'Lazio','Piemonte Calcio':'Juventus','OM':'Olympique de Marseille'};
+// Transfers EA's ratings site has not picked up yet: EA id -> club. Remove an entry once EA shows the club itself.
+const CLUB_OVERRIDES={232411:{club_name:'RB Leipzig',club_team_id:112172,club_logo_url:'https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png',league_name:'Bundesliga'}}; // Nkunku
 const COLUMNS=['player_id','common_name','short_name','long_name','positions','overall','pace','shooting','passing','dribbling','defending','physic',
  'preferred_foot','weak_foot','skill_moves','nationality_name','nationality_id','nation_flag_url','club_name','club_team_id','club_logo_url',
  'league_name','player_face_url','playstyles','playstyles_plus','gender'];
@@ -122,7 +124,7 @@ function check(rows,men,women){
  const sample=men.items.find(p=>Array.isArray(p.playerAbilities)&&p.playerAbilities.length);
  if(sample)console.log('Sample playerAbilities',JSON.stringify(sample.playerAbilities.slice(0,3)));
  const seen=new Set(),rows=[];
- for(const p of[...men.items,...women.items]){if(p?.id==null||seen.has(String(p.id)))continue;seen.add(String(p.id));rows.push(row(p))}
+ for(const p of[...men.items,...women.items]){if(p?.id==null||seen.has(String(p.id)))continue;seen.add(String(p.id));rows.push({...row(p),...CLUB_OVERRIDES[p.id]})}
  rows.sort((a,b)=>b.overall-a.overall||Number(a.player_id)-Number(b.player_id));
  const{fail,leagues}=check(rows,men.items.length,women.items.length);
  console.log('Top leagues',JSON.stringify(Object.entries(leagues).sort((a,b)=>b[1]-a[1]).slice(0,12)));

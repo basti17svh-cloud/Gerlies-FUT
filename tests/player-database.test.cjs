@@ -86,4 +86,5 @@ test('the database holds the current game, not the previous one',()=>{
  assert.equal(version.game,game,'rebuild the database with scripts/build-player-db.cjs');
  const lewandowski=load().players.find(p=>p.id==='188545');
  assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27 (he plays for Chicago Fire)');
+ assert.equal(load().players.find(p=>p.id==='232411')?.team,'RB Leipzig','Nkunku plays for RB Leipzig (CLUB_OVERRIDES in the build script)');
 });
