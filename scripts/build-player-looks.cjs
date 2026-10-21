@@ -49,7 +49,11 @@ const lum=([r,g,b])=>.2126*r+.7152*g+.0722*b;
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
 function measure(img){
  if(!img)return null;
- const skin=median([...patch(img,REGION.cheekL),...patch(img,REGION.cheekR)]);if(!skin)return null;
+ // Skin: the whole mid-face, keeping only the middle brightness band so
+ // highlights, eyes, brows and beard do not pull the tone.
+ const face=patch(img,[.36,.42,.64,.62]).sort((a,b)=>lum(a)-lum(b));if(face.length<20)return null;
+ const band=face.slice(Math.floor(face.length*.35),Math.ceil(face.length*.75));
+ const skin=[0,1,2].map(c=>band.reduce((t,p)=>t+p[c],0)/band.length);
  // Top of the head: first opaque row in the centre columns.
  let top=-1;for(let y=0;y<img.height*.5&&top<0;y++)for(let x=img.width*.45;x<img.width*.55;x+=2)if(px(img,x,y)[3]>200){top=y;break}
  const hairPatch=top<0?[]:patch(img,[.44,(top/img.height)+.015,.56,(top/img.height)+.06]);
@@ -80,9 +84,9 @@ function measure(img){
  const nearest=(cents,v)=>Object.entries(cents).sort((a,b)=>dist3(a[1],v)-dist3(b[1],v))[0][0];
  const dist3=(a,b)=>Math.hypot(...a.map((x,j)=>x-b[j]));
  // Skin by brightness plus warmth (r-b), hair by colour, both against the hand-set medians.
- const skinKey=m=>[m.skinL,(m.skin[0]-m.skin[2])*.5,0],hairKey=m=>m.hair;
+ const skinKey=m=>[m.skinL,0,0],hairKey=m=>m.hair;
  const skinC=centroid(0,skinKey),hairC=centroid(2,hairKey);
- delete hairC.P;delete hairC.Y;delete hairC.W; // too few hand samples; dyed/grey stay hand-set only
+ delete hairC.P;delete hairC.Y;delete hairC.W;delete hairC.R; // too few hand samples; dyed/grey stay hand-set only
  const beardRatio=m=>m.chinL/m.skinL;
  let best={acc:0,t:.8};for(let t=.4;t<1.05;t+=.01){const acc=labelled.filter(([c,m])=>(beardRatio(m)<t)===(c[3]!=='n')).length/labelled.length;if(acc>best.acc)best={acc,t}}
  const decide=m=>{
