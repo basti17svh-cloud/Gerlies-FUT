@@ -6670,7 +6670,7 @@ function finishMatch(){
  dismissMatchGoalMoment(false);
  match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();
  recordMatchEvent("break","", "Abpfiff");
- state.stats.matches++;
+ state.stats.matches++;globalThis.FooteraShare?.afterMatch();
  const isFriendly=String(match.mode).startsWith("friendly");
  const decidedByPens=match.home===match.away&&!!match.penaltyWinner;
  const homeWon=match.home>match.away||(decidedByPens&&match.penaltyWinner==="home");
@@ -7537,7 +7537,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.210";
+const GFUT_BUILD="V21.213";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7595,7 +7595,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21210",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21213",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
