@@ -85,5 +85,5 @@ test('the database holds the current game, not the previous one',()=>{
  const game=fs.readFileSync(path.join(root,'scripts','build-player-db.cjs'),'utf8').match(/const GAME='([^']+)'/)[1];
  assert.equal(version.game,game,'rebuild the database with scripts/build-player-db.cjs');
  const lewandowski=load().players.find(p=>p.id==='188545');
- assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27');
+ assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27 (he plays for Chicago Fire)');
 });
