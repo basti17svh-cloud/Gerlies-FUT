@@ -134,7 +134,7 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  }
  ctx.restore();
  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,'front');
- // V21.209 (Basti): the club crest is a real 10 cm badge, big enough to read
+ // V21.214 (Basti): the club crest is a real 10 cm badge, big enough to read
  // in the celebration close-up, with a soft dark edge so it stands out on
  // any shirt colour.
  if(opts.crest)try{ctx.save();ctx.translate(.098,1.365);ctx.scale(1,-1);

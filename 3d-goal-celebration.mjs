@@ -10,7 +10,7 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.209-star-celebrations';
+export const CELEBRATION_VERSION='21.214-star-celebrations';
 export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms']);
 // Celebrations only a star performs, never picked at random.
 export const STAR_CELEBRATIONS=Object.freeze(['zen','cold','samba','mask']);
