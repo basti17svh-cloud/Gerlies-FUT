@@ -146,6 +146,7 @@ test("Champions run card tracks each game and shows the next rank above the star
  assert.match(hub,/Weiter zu Spiel \$\{/);
  const panel=html.slice(html.indexOf('data-play-panel="champions"'),html.indexOf("</article>",html.indexOf('data-play-panel="champions"')));
  assert.ok(panel.indexOf('data-mode="champions"')<panel.indexOf('id="championsRewards"'),"start button sits in the run card on top");
+ assert.ok(html.indexOf('data-play-mode="champions"')<html.indexOf('data-play-mode="rivals"'),"Champions is the first tile in Spielen");
  for(const [a,c] of [[84,20],[86,10],[83,15],[85,5],[82,10]])assert.match(champions,new RegExp("\\["+a+","+c+"\\]"),"legacy pack "+a+"x"+c+" stays registered");
 });
 
