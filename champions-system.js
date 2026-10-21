@@ -6,26 +6,23 @@
 const CHAMPIONS_ENTRY_POINTS=1000;
 const CHAMPIONS_MAX_GAMES=15;
 const CHAMPIONS_RANKS=[
- {name:"Rang I",min:15,max:15,coins:100000,rated:[[84,20],[86,10]],totw:3,bonus:true},
- {name:"Rang II",min:13,max:14,coins:75000,rated:[[84,20],[86,5]],totw:2},
- {name:"Rang III",min:11,max:12,coins:50000,rated:[[83,15],[85,5]],totw:2},
- {name:"Rang IV",min:9,max:10,coins:35000,rated:[[83,10],[85,3]],totw:1},
- {name:"Rang V",min:7,max:8,coins:25000,rated:[[82,10],[84,2]],totw:1},
- {name:"Rang VI",min:5,max:6,coins:15000,rated:[[82,5]],totw:1},
- {name:"Rang VII",min:3,max:4,coins:10000,rated:[[80,5]],totw:0},
- {name:"Rang VIII",min:0,max:2,coins:5000,rated:[[80,1]],totw:0}
+ {name:"Rang I",min:15,max:15,coins:50000,rated:[[84,10],[86,5]],totw:2,bonus:true},
+ {name:"Rang II",min:13,max:14,coins:40000,rated:[[84,10],[86,3]],totw:1},
+ {name:"Rang III",min:11,max:12,coins:25000,rated:[[83,8],[85,3]],totw:1},
+ {name:"Rang IV",min:9,max:10,coins:18000,rated:[[83,5],[85,2]],totw:1},
+ {name:"Rang V",min:7,max:8,coins:12000,rated:[[82,5],[84,1]],totw:0},
+ {name:"Rang VI",min:5,max:6,coins:8000,rated:[[82,3]],totw:0},
+ {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0},
+ {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0}
 ];
+// V21.212 halved the weekend rewards; rows settled before keep their stored reward.
 
 function championsRank(wins=0){
  const value=Math.max(0,Math.min(CHAMPIONS_MAX_GAMES,Number(wins)||0));
  return CHAMPIONS_RANKS.find(row=>value>=row.min&&value<=row.max)||CHAMPIONS_RANKS[CHAMPIONS_RANKS.length-1]
 }
-// One-time extension for the 16 October 2026 Champions weekend only.
-const CHAMPIONS_EXTRA_WINDOW_START=Date.parse("2026-10-16T19:00:00+02:00");
-const CHAMPIONS_EXTRA_WINDOW_END=Date.parse("2026-10-20T09:00:00+02:00");
 function championsWeekEnd(start){
- const stamp=new Date(start).getTime();
- return stamp===CHAMPIONS_EXTRA_WINDOW_START?new Date(CHAMPIONS_EXTRA_WINDOW_END):berlinShiftDays(new Date(stamp),3,9)
+ return berlinShiftDays(new Date(new Date(start).getTime()),3,9)
 }
 function championsWindow(at=new Date()){
  const now=new Date(at),lastStart=berlinWeekStart(now,5,19),lastEnd=championsWeekEnd(lastStart),open=now>=lastStart&&now<lastEnd;
@@ -44,6 +41,8 @@ function ensureChampionsPacks(){
  // from page load on; otherwise a claimed pack sits in the save but "Meine
  // Packs" cannot list or open it after a reload.
  for(const rank of CHAMPIONS_RANKS)for(const spec of rank.rated||[])ratingRewardPack(spec[0],spec[1]);
+ // Packs of the pre-V21.212 table stay registered so settled rewards can still be opened.
+ for(const spec of [[84,20],[86,10],[86,5],[83,15],[85,5],[83,10],[85,3],[82,10],[84,2],[82,5],[80,5]])ratingRewardPack(spec[0],spec[1]);
  for(const id of Object.keys(typeof state!=="undefined"&&state?.packs||{})){const m=/^reward-(\d+)-(\d+)$/.exec(id);if(m)ratingRewardPack(Number(m[1]),Number(m[2]))}
  if(!PACKS.some(p=>p.id==="champions-bonus"))PACKS.push({id:"champions-bonus",name:"Champions Bonus Pack",coins:null,points:null,type:"gold",count:5,min:87,max:99,store:false,reward:true,desc:"5 Spieler · jeder mindestens 87 GES · 5 % ICON-Chance (87+)",iconChance:0.05});
 }
@@ -66,6 +65,8 @@ function ensureChampionsState(){
  c.streak=Math.max(0,Number(c.streak||0));c.bestWins=Math.max(0,Number(c.bestWins||0));
  c.bestLosses=Number.isFinite(Number(c.bestLosses))?Math.max(0,Number(c.bestLosses)):99;
  c.lastRank=String(c.lastRank||"");c.lastRecord=String(c.lastRecord||"");
+ // Per-game W/L sequence of the running weekend, only used for the 15-game tracker.
+ c.results=String(c.results||"").replace(/[^WL]/g,"").slice(0,c.games);
  return c
 }
 function championsRunEnd(week){
@@ -96,7 +97,7 @@ function startChampionsRun(at=new Date()){
  if(c.active&&c.week===w.key)return{ok:true,active:true};
  if(c.week===w.key)return{ok:false,reason:"Deine Champions-Teilnahme für dieses Wochenende ist bereits beendet."};
  if(c.qualPoints<CHAMPIONS_ENTRY_POINTS)return{ok:false,reason:`Dir fehlen noch ${fmt(CHAMPIONS_ENTRY_POINTS-c.qualPoints)} Champions-Punkte aus Division Rivals.`};
- c.qualPoints-=CHAMPIONS_ENTRY_POINTS;c.week=w.key;c.active=true;c.completed=false;c.games=0;c.wins=0;c.losses=0;c.streak=0;c.participations++;save();
+ c.qualPoints-=CHAMPIONS_ENTRY_POINTS;c.week=w.key;c.active=true;c.completed=false;c.games=0;c.wins=0;c.losses=0;c.streak=0;c.results="";c.participations++;save();
  return{ok:true,active:true}
 }
 function championsCanStartMatch(at=new Date()){
@@ -108,7 +109,7 @@ function championsMatchCoins(result){return result==="win"?850:425}
 function recordChampionsResult(result){
  syncChampionsCompetition();const c=ensureChampionsState(),w=championsWindow(),eligible=championsCanStartMatch(),before={games:c.games,wins:c.wins,losses:c.losses,rank:championsRank(c.wins).name,streak:c.streak};
  if(!eligible)return{mode:"champions",result,before,after:{...before},earned:0,eligible:false};
- c.games++;if(result==="win"){c.wins++;c.totalWins++;c.streak++}else{c.losses++;c.streak=0}
+ c.games++;c.results+=result==="win"?"W":"L";if(result==="win"){c.wins++;c.totalWins++;c.streak++}else{c.losses++;c.streak=0}
  const after={games:c.games,wins:c.wins,losses:c.losses,rank:championsRank(c.wins).name,streak:c.streak};
  if(c.games>=CHAMPIONS_MAX_GAMES)settleChampionsRun();else save();
  return{mode:"champions",result,before,after,earned:result==="win"?1:0,eligible:true,window:w.key}
