@@ -234,10 +234,15 @@ function battleSpecialOpponent(kind,key){
   tier:kind==="event"?(eventPackIsActive(event)?"Event-Team":"Event-Team · Archiv"):"Team der Woche",strengthId:kind,battleId:`${key}:${kind}`,rewards:{win:850,loss:330},sp:100,power:rating+chem*.12}
 }
 
+// Player Picks are issued by the account backend, so the label says so.
+function playerPickLabels(picks){
+ const counts=new Map();for(const p of picks||[]){const key=`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices}, mit Konto)`;counts.set(key,(counts.get(key)||0)+1)}
+ return[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n)
+}
 function rewardLabel(row){
  // Same pack twice reads "2× Premium Gold Pack", not the name twice.
  const names=row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),counts=new Map();names.forEach(n=>counts.set(n,(counts.get(n)||0)+1));
- const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...(row.reward.playerPicks||[]).map(p=>`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices})`)].join(" · ");
+ const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...playerPickLabels(row.reward.playerPicks)].join(" · ");
  return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${packs}`
 }
 function competitionClaimButtons(mode){return competitionPending(mode).map(row=>`<button class="primary competition-claim" type="button" data-claim-competition="${row.mode}" data-competition-week="${row.week}">${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholen · ${esc(rewardLabel(row))}</button>`).join("")}
