@@ -38,5 +38,9 @@
  "Sverige Liga": {
   "url": "./assets/leagues/sverige-liga.png",
   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/2/2b/OBOS_Damallsvenskan_logo.svg/330px-OBOS_Damallsvenskan_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "Arkema PL": {
+  "url": "./assets/leagues/arkema-pl.png",
+  "source": "https://upload.wikimedia.org/wikipedia/en/7/74/Premi%C3%A8re_Ligue.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
  }
 }
