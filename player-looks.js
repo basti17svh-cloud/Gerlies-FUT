@@ -1,4 +1,4 @@
-/* Footera V21.215 Aussehen-Editor: per-player skin tone, hair colour, haircut and
+/* Footera V21.216 Aussehen-Editor: per-player skin tone, hair colour, haircut and
  * beard for the 3D highlights. Purely cosmetic and stored on this device only
  * (own localStorage key, never inside the save or online data). Anything left
  * on "Standard" uses the starting look of a well-known player, else the look the
