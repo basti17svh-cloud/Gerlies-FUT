@@ -1,0 +1,48 @@
+0 231747 Kylian Mbappé
+1 239085 Erling Haaland
+2 192119 Thibaut Courtois
+3 202126 Harry Kane
+4 231443 Ousmane Dembélé
+5 231866 Rodri
+6 247827 Michael Olise
+7 251854 Pedri
+8 252371 Jude Bellingham
+9 255253 Vitinha
+10 277643 Lamine Yamal
+11 158023 Lionel Messi
+12 212198 Bruno Fernandes
+13 230621 Gianluigi Donnarumma
+14 232580 Gabriel
+15 238794 Vini Jr.
+16 247635 Khvicha Kvaratskhelia
+17 252145 Nuno Mendes
+18 256196 Willian Pacho
+19 200389 Jan Oblak
+20 203376 Virgil van Dijk
+21 212622 Joshua Kimmich
+22 220901 David Raya
+23 233419 Raphinha
+24 234378 Declan Rice
+25 235212 Achraf Hakimi
+26 241084 Luis Díaz
+27 243715 William Saliba
+28 272834 João Neves
+29 207865 Marquinhos
+30 209331 Mohamed Salah
+31 212831 Alisson
+32 213331 Jonathan Tah
+33 215698 Mike Maignan
+34 224232 Nicolò Barella
+35 229558 Dayot Upamecano
+36 231478 Lautaro Martínez
+37 235073 Gregor Kobel
+38 239053 Federico Valverde
+39 239818 Rúben Dias
+40 246669 Bukayo Saka
+41 247819 Nico Schlotterbeck
+42 256790 Jamal Musiala
+43 222665 Martin Ødegaard
+44 226268 Federico Dimarco
+45 226271 Fabián Ruiz
+46 228702 Frenkie de Jong
+47 233731 Alexander Isak
