@@ -2515,7 +2515,6 @@ function playerBiographyHTML(b,item,{shownPosition=null,clubPerf=null,friend=fal
    <div class="bio-attributes-grid">${attributes.map(([label,value])=>{const n=Math.max(0,Math.min(99,Number(value)||0));return`<div class="bio-attribute"><span>${esc(label)}</span><strong>${value}</strong><i><b style="width:${n}%"></b></i></div>`}).join("")}</div>
   </section>
   ${performance}
-  ${!friend&&typeof FooteraPlayerLooks!=="undefined"?FooteraPlayerLooks.profileHTML(b):""}
   <div class="bio-feature-stack">${playstyles}${chem}</div>
  </div>`
 }

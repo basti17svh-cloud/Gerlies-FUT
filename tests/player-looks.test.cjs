@@ -1,62 +1,43 @@
 'use strict';
-// V21.215 Aussehen-Editor: storage, scene hand-off and the 3D look override.
+// V21.216 player looks: measured EA-portrait looks + hand-set looks, scene hand-off and the 3D override.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.resolve(__dirname,'..');
-function looksApi(store={}){
- const localStorage={getItem:k=>k in store?store[k]:null,setItem:(k,v)=>{store[k]=String(v)}};
- const ctx={localStorage};ctx.window=ctx;vm.createContext(ctx);
+function looksApi(){
+ const ctx={};ctx.window=ctx;vm.createContext(ctx);
  vm.runInContext(fs.readFileSync(path.join(root,'player-looks.js'),'utf8'),ctx);
- return{api:ctx.FooteraPlayerLooks,store};
+ return ctx.FooteraPlayerLooks;
 }
-test('looks are stored per EA id, only known values, Auto removes a field',()=>{
- const {api,store}=looksApi();
- const mbappe={id:'999001',name:'Testspieler'};
- assert.equal(api.get(mbappe),null);
- api.set(mbappe,'skin','5');api.set(mbappe,'hair','bald');api.set(mbappe,'beard','Moustache');api.set(mbappe,'hairColor','#c9a061');
- api.set(mbappe,'hair','<script>');
- assert.deepEqual({...api.get({id:'999001',name:'anders'})},{skin:'5',hair:'bald',beard:'Moustache',hairColor:'#c9a061'});
- assert.equal(api.sceneSkin(mbappe),'5');
- assert.deepEqual({...api.sceneLook(mbappe)},{hair:'bald',hairColor:'#c9a061',beard:'Moustache'});
- for(const f of ['skin','hair','beard','hairColor'])api.set(mbappe,f,'auto');
- assert.equal(api.get(mbappe),null);
- assert.deepEqual(JSON.parse(store[api.KEY]),{});
- // Players without an id fall back to their name, accents ignored.
- api.set({name:'Gyökeres'},'hair','afro01');
- assert.equal(api.get({name:'Gyokeres'}).hair,'afro01');
+test('hand-set looks win field by field over measured ones',()=>{
+ const api=looksApi();
+ assert.equal(api.get({id:'999001'}),null);
+ api.load({looks:{'999001':'5_Sv','239085':'3_Dv'}});
+ assert.deepEqual({...api.get({id:'999001'})},{skin:'5',hairColor:'#14110f',beard:'Full_beard'});
+ assert.deepEqual({...api.get({id:'239085'})},{skin:'1',hair:'short04',hairColor:'#c9a061',beard:'none'});
+ assert.equal(api.sceneSkin({id:'238794'}),'5');assert.equal(api.sceneLook({id:'238794'}).hair,'afro01');
+ assert.equal(api.load({looks:'kaputt'}),0);assert.equal(api.get({id:'999001'}),null);
 });
-test('well-known players start with a look; the own choice wins and Standard returns to it',()=>{
- const {api}=looksApi();
- const haaland={id:'239085',name:'Erling Haaland'},vini={id:'238794',name:'Vini Jr.'};
- assert.deepEqual({...api.get(haaland)},{skin:'1',hair:'short04',hairColor:'#c9a061',beard:'none'});
- assert.equal(api.sceneSkin(vini),'5');assert.equal(api.sceneLook(vini).hair,'afro01');
- api.set(haaland,'hair','bald');assert.equal(api.get(haaland).hair,'bald');assert.equal(api.get(haaland).hairColor,'#c9a061');
- assert.match(api.profileHTML(haaland),/data-look-field="hair" data-look-value="bald" aria-pressed="true"/);
- api.set(haaland,'hair','auto');assert.equal(api.get(haaland).hair,'short04');assert.equal(api.own(haaland),null);
- // Every starting look decodes to known values only.
- const src=fs.readFileSync(path.join(root,'player-looks.js'),'utf8'),codes=[...src.matchAll(/'(\d+)':'([1-6][frkax][SDBLGPR][nvm])'/g)];
- assert.ok(codes.length>=100,'about 100 well-known players: '+codes.length);
+test('every hand-set and measured look decodes to known values; ids match the player DB',()=>{
+ const api=looksApi();
  const db=new Set(fs.readFileSync(path.join(root,'assets/players-db.csv'),'utf8').split('\n').map(l=>l.split(',')[0]));
- // The weekly DB rebuild may drop a player; a stale preset is harmless, but most must still match.
- const missing=codes.filter(([,id])=>!db.has(id)).map(([,id])=>id);
- assert.ok(missing.length<=codes.length*.1,'EA ids missing from player DB: '+missing.join(', '));
- for(const [,id] of codes){const l=api.get({id});assert.ok(l.skin&&l.hair&&l.hairColor&&l.beard,id)}
+ const hand=Object.entries(api.HAND);
+ assert.ok(hand.length>=100,'about 100 well-known players: '+hand.length);
+ for(const [id,code] of hand){assert.match(code,/^[1-6][kfrax][SDBLGPRYW][nvm]$/,id);const l=api.decode(code);assert.ok(l.skin&&l.hair&&l.hairColor&&l.beard,id)}
+ // The weekly DB rebuild may drop a player; a stale look is harmless, but most must still match.
+ const missing=hand.filter(([id])=>!db.has(id)).map(([id])=>id);
+ assert.ok(missing.length<=hand.length*.1,'EA ids missing from player DB: '+missing.join(', '));
+ const measured=JSON.parse(fs.readFileSync(path.join(root,'assets/player-looks.json'),'utf8'));
+ for(const [id,code] of Object.entries(measured.looks))assert.match(code,/^[1-6_][kfrax_][SDBLGPRYW_][nvm_]$/,id);
 });
-test('broken storage never breaks the profile',()=>{
- const {api}=looksApi({'footera-player-looks-v1':'{kaputt'});
- assert.equal(api.get({id:'1'}),null);
- assert.match(api.profileHTML({id:'1',name:'Test'}),/Aussehen[\s\S]*Hautton[\s\S]*Haarfarbe[\s\S]*Frisur[\s\S]*Bart/);
-});
-test('profile, match and scene are wired; the save stays untouched',()=>{
- const app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8'),match=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
- const hl=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8'),scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
+test('match and scene are wired; nothing is stored on the device',()=>{
+ const match=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8'),hl=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8'),src=fs.readFileSync(path.join(root,'player-looks.js'),'utf8');
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- assert.match(app,/!friend&&typeof FooteraPlayerLooks!=="undefined"\?FooteraPlayerLooks\.profileHTML\(b\)/);
  assert.match(match,/playerLooks:looks/);assert.match(match,/keeperLook:look\(keeper\)/);
  assert.match(hl,/playerLooks:Object\.freeze/);assert.match(scene,/custom:event\.playerLooks\?\.\[i\]/);assert.match(scene,/custom:event\.keeperLook/);
- for(const f of ['player-looks.js','player-looks.css']){assert.ok(html.includes('./'+f+'?v='),f);assert.ok(sw.includes('./'+f+'?v='),f)}
- assert.doesNotMatch(fs.readFileSync(path.join(root,'player-looks.js'),'utf8'),/state\.|footera-save|uc27/);
+ assert.ok(html.includes('./player-looks.js?v='));assert.ok(sw.includes('./player-looks.js?v='));assert.ok(sw.includes('./assets/player-looks.json'));
+ assert.doesNotMatch(src,/localStorage|state\./);
 });
-test('3D look override: haircut, bald, beard and colour; Auto keeps the name pick',async()=>{
+test('3D look override: haircut, bald, beard and colour; nothing keeps the name pick',async()=>{
  const {footeraHumanLook}=await import(path.join(root,'3d-player-human.mjs'));
  const info={hair:['short02','short04','short01','afro01'],facial:['Full_beard','Moustache'],brows:['eyebrow001']};
  const auto=footeraHumanLook('Erling Haaland','#f1d2b3',info);

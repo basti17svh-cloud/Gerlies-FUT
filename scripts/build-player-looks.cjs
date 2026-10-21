@@ -59,13 +59,49 @@ function measure(img){
 (async()=>{
  const list=players();
  if(process.env.SHEET){
-  const n=Number(process.env.SHEET)||48,pick=list.slice(0,n);
+  const [from,count]=String(process.env.SHEET).split(':').map(Number),pick=count?list.slice(from,from+count):list.slice(0,from||48);
   const imgs=await pool(pick,8,p=>fetchPNG(p.player_face_url));
   console.log('sizes',imgs.slice(0,3).map(i=>i&&i.width+'x'+i.height),'missing',imgs.filter(x=>!x).length);
   fs.mkdirSync(path.join(root,'qa'),{recursive:true});
   const ms=imgs.map(measure);
   for(let k=0;k*48<imgs.length;k++)fs.writeFileSync(path.join(root,`qa/looks-sheet-${k+1}.png`),sheet(imgs.slice(k*48,k*48+48),256,8,ms.slice(k*48,k*48+48)));
-  fs.writeFileSync(path.join(root,'qa/looks-sheet.txt'),pick.map((p,i)=>{const m=ms[i]||{};return[i,p.player_id,p.common_name||p.short_name,'skinL',Math.round(m.skinL),'hairL',Math.round(m.hairL),'hairSkin',Math.round(m.hairSkin),'chinL',Math.round(m.chinL),'top',(m.top||0).toFixed(3),'skin',m.skin,'hair',m.hair].join(' ')}).join('\n'));
+  fs.writeFileSync(path.join(root,'qa/looks-sheet.txt'),pick.map((p,i)=>{i+=(count?from:0);const m=ms[i-(count?from:0)]||{};return[i,p.player_id,p.common_name||p.short_name,'skinL',Math.round(m.skinL),'hairL',Math.round(m.hairL),'hairSkin',Math.round(m.hairSkin),'chinL',Math.round(m.chinL),'top',(m.top||0).toFixed(3),'skin',m.skin,'hair',m.hair].join(' ')}).join('\n'));
   return;
  }
+ // Full run: measure every men's portrait, calibrate the cut-offs on the
+ // hand-set looks in player-looks.js and write a 4-character code per player.
+ const hand=Object.fromEntries([...fs.readFileSync(path.join(root,'player-looks.js'),'utf8').matchAll(/'(\d+)':'([1-6][kfrax][SDBLGPRYW][nvm])'/g)].map(m=>[m[1],m[2]]));
+ const minOvr=Number(process.env.MIN_OVR||0),todo=list.filter(p=>Number(p.overall)>=minOvr);
+ let done=0;
+ const ms=await pool(todo,16,async p=>{const m=measure(await fetchPNG(p.player_face_url));if(++done%1000===0)console.log('measured',done);return m});
+ const labelled=todo.map((p,i)=>[hand[p.player_id],ms[i]]).filter(([c,m])=>c&&m&&m.hair);
+ const centroid=(key,pick)=>{const g={};for(const [c,m] of labelled){const k=c[key];(g[k]||(g[k]=[])).push(pick(m))}
+  return Object.fromEntries(Object.entries(g).map(([k,v])=>[k,v[0].map((_,j)=>v.map(x=>x[j]).sort((a,b)=>a-b)[v.length>>1])]))};
+ const nearest=(cents,v)=>Object.entries(cents).sort((a,b)=>dist3(a[1],v)-dist3(b[1],v))[0][0];
+ const dist3=(a,b)=>Math.hypot(...a.map((x,j)=>x-b[j]));
+ // Skin by brightness plus warmth (r-b), hair by colour, both against the hand-set medians.
+ const skinKey=m=>[m.skinL,(m.skin[0]-m.skin[2])*.5,0],hairKey=m=>m.hair;
+ const skinC=centroid(0,skinKey),hairC=centroid(2,hairKey);
+ delete hairC.P;delete hairC.Y;delete hairC.W; // too few hand samples; dyed/grey stay hand-set only
+ const beardRatio=m=>m.chinL/m.skinL;
+ let best={acc:0,t:.8};for(let t=.4;t<1.05;t+=.01){const acc=labelled.filter(([c,m])=>(beardRatio(m)<t)===(c[3]!=='n')).length/labelled.length;if(acc>best.acc)best={acc,t}}
+ const decide=m=>{
+  if(!m||!m.hair)return null;
+  const skin=nearest(skinC,skinKey(m));
+  const bald=m.hairSkin<45&&Math.abs((m.hair[0]-m.hair[2])-(m.skin[0]-m.skin[2]))<25;
+  return skin+(bald?'x':'k')+(bald?'S':nearest(hairC,hairKey(m)))+(beardRatio(m)<best.t?'v':'n');
+ };
+ const report=['labelled '+labelled.length,'beard cut '+best.t.toFixed(2)+' acc '+best.acc.toFixed(2)];
+ for(const [j,name] of [[0,'skin'],[2,'hair'],[3,'beard']]){
+  const ok=labelled.filter(([c,m])=>{const d=decide(m);return d&&d[j]===c[j]}).length;
+  const near=j===0?labelled.filter(([c,m])=>{const d=decide(m);return d&&Math.abs(d[0]-c[0])<=1}).length:ok;
+  report.push(name+' exact '+(ok/labelled.length).toFixed(2)+(j===0?' within1 '+(near/labelled.length).toFixed(2):''));
+ }
+ report.push('skin centroids '+JSON.stringify(skinC),'hair centroids '+JSON.stringify(hairC));
+ const looks={};todo.forEach((p,i)=>{const d=decide(ms[i]);if(d)looks[p.player_id]=d});
+ report.push('players '+todo.length+' coded '+Object.keys(looks).length);
+ console.log(report.join('\n'));
+ fs.mkdirSync(path.join(root,'qa'),{recursive:true});
+ fs.writeFileSync(path.join(root,'qa/looks-report.txt'),report.join('\n')+'\n');
+ fs.writeFileSync(path.join(root,'assets/player-looks.json'),JSON.stringify({version:1,source:'EA player portraits, measured by scripts/build-player-looks.cjs',looks})+'\n');
 })().catch(e=>{console.error(e);process.exit(1)});
