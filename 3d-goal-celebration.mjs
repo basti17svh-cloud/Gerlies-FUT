@@ -168,11 +168,11 @@ function pose(t,kind,s){
   // knees with open palms, back straight and eyes on the stand. Completely still.
   const sit=smooth((s-1.15)/.8),calm=spring(s,1.3,.9),still=1-.85*sit;
   t.upper[0]*=still;t.shrug[0]*=still;t.shrug[1]*=still;
-  t.legs_w=sit;t.drop=.74*sit;
-  t.legs[0][0]=t.legs[1][0]=1.35*sit;t.legs[0][2]=-.72*sit;t.legs[1][2]=.72*sit;
-  t.legs[0][1]=-.35*sit;t.legs[1][1]=.35*sit;
-  t.knees[0]=t.knees[1]=-2.25*sit;t.ankles[0]=t.ankles[1]=.35*sit;
-  arms(t,[mix(.3,.62,calm),0,mix(.38,.42,calm)],[mix(.3,.62,calm),0,mix(.38,.42,calm)],mix(.5,.55,calm),mix(.5,.55,calm));
+  t.legs_w=sit;t.drop=.8*sit;
+  t.legs[0][0]=t.legs[1][0]=1.25*sit;t.legs[0][2]=-1.05*sit;t.legs[1][2]=1.05*sit;
+  t.legs[0][1]=.9*sit;t.legs[1][1]=-.9*sit;
+  t.knees[0]=t.knees[1]=-2.45*sit;t.ankles[0]=t.ankles[1]=.5*sit;
+  arms(t,[mix(.3,.5,calm),0,mix(.38,.62,calm)],[mix(.3,.5,calm),0,mix(.38,.62,calm)],mix(.5,.45,calm),mix(.5,.45,calm));
   t.upper[0]+=-.02*sit;t.head=[mix(.05,.08,sit),0];t.open=[calm,calm];
   // One deep breath in as he settles, shoulders rising and falling slowly.
   t.shrug=[.12*calm+.03*Math.sin(s*1.1),.12*calm+.03*Math.sin(s*1.1)];
@@ -199,8 +199,8 @@ function pose(t,kind,s){
   // Gyökeres: stops with the feet wide, raises both hands to the face and
   // laces the fingers into a mask round the eyes, chin down, staring out.
   const stop=spring(s,1.3,.55),mask=spring(s,1.45,.6);
-  arms(t,[mix(.3,1.38,mask),0,mix(.38,.42,mask)],[mix(.3,1.38,mask),0,mix(.38,.42,mask)],mix(.5,2.42,mask),mix(.5,2.42,mask));
-  t.upper[0]+=-.06*mask;t.head=[-.08*mask,0];t.shrug=[.26*mask,.26*mask];t.open=[0,0];
+  arms(t,[mix(.3,1.45,mask),0,mix(.38,-.28,mask)],[mix(.3,1.45,mask),0,mix(.38,-.28,mask)],mix(.5,2.15,mask),mix(.5,2.15,mask));
+  t.upper[0]+=-.06*mask;t.head=[-.04*mask,0];t.shrug=[.26*mask,.26*mask];t.open=[.6*mask,.6*mask];
   looseStance(t,s,stop);t.legs[0][2]-=.08*stop;t.legs[1][2]+=.08*stop;t.drop+=.04*stop;
  }else if(kind==='hug_left'||kind==='hug_right'){
   // A teammate arriving beside the scorer: the near arm goes round his
