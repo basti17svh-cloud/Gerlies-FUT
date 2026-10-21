@@ -4160,13 +4160,13 @@ function renderClubUx(){
 }
 function marketActiveFilterList(){
  const list=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
- if(name)list.push({key:"name",label:`„${name}“`});if(pos)list.push({key:"position",label:uxSelectedText("marketPosition")});if(quality!=="bronze"&&(min>65||max<99))list.push({key:"rating",label:max<99?`${min}–${max} GES`:`${min}+ GES`,quick:true});
- if(type)list.push({key:"type",label:uxSelectedText("marketSpecialType"),panel:true});if(quality)list.push({key:"quality",label:uxSelectedText("marketQuality"),panel:true});if(league)list.push({key:"league",label:league,panel:true});if(club)list.push({key:"club",label:club,panel:true});if(nation)list.push({key:"nation",label:nation,panel:true});if(pmin||pmax)list.push({key:"price",label:`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`,panel:true});
+ if(name)list.push({key:"name",label:`„${name}“`});if(pos)list.push({key:"position",label:uxSelectedText("marketPosition")});if(quality!=="bronze"&&(min>65||max<99))list.push({key:"rating",label:max<99?`${min}–${max} GES`:`${min}+ GES`,panel:true});
+ if(type)list.push({key:"type",label:uxSelectedText("marketSpecialType"),panel:true});if(quality)list.push({key:"quality",label:uxSelectedText("marketQuality")});if(league)list.push({key:"league",label:league,panel:true});if(club)list.push({key:"club",label:club,panel:true});if(nation)list.push({key:"nation",label:nation,panel:true});if(pmin||pmax)list.push({key:"price",label:`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`,panel:true});
  return list
 }
 function marketFilterSummaryText(){
  const parts=marketActiveFilterList().filter(f=>f.panel).map(f=>f.label);
- return parts.length?parts.join(" · "):"Liga, Verein, Nation, Qualität, Preis"
+ return parts.length?parts.join(" · "):"Liga, Verein, Preis, Nation, GES"
 }
 function clearMarketFilter(key){
  if(key==="name")$("marketName").value="";else if(key==="position")$("marketPosition").value="";else if(key==="rating"){$("marketRatingMin").value=65;$("marketRatingMax").value=99}
@@ -4178,18 +4178,18 @@ function renderMarketUx(){
  const list=marketActiveFilterList(),panelCount=list.filter(f=>f.panel).length;
  if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();
  const count=$("marketFilterCount");if(count){count.hidden=!panelCount;count.textContent=String(panelCount)}
- const pos=$("marketPosition")?.value||"",min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),bronze=$("marketQuality")?.value==="bronze";
+ const pos=$("marketPosition")?.value||"";
  document.querySelectorAll("[data-market-quick-pos]").forEach(b=>{const on=b.dataset.marketQuickPos===pos;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
- document.querySelectorAll("[data-market-quick-rating]").forEach(b=>{const r=Number(b.dataset.marketQuickRating),on=!bronze&&max===99&&min===r;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
+ document.querySelectorAll("[data-market-quick-quality]").forEach(b=>{const on=b.dataset.marketQuickQuality===($("marketQuality")?.value||"");b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
  const box=$("marketActiveFilters");if(box){box.hidden=!list.length;box.innerHTML=list.length?list.map(f=>`<button type="button" data-market-clear="${f.key}" aria-label="${esc(f.label)} entfernen">${esc(f.label)}<span aria-hidden="true">×</span></button>`).join("")+(list.length>1?`<button type="button" class="market-clear-all" data-market-clear="all">Alle löschen</button>`:""):""}
  setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)
 }
 $("clubFilterToggle")?.addEventListener("click",()=>{clubFiltersCollapsed=!clubFiltersCollapsed;renderClubUx()});
 $("marketFilterToggle")?.addEventListener("click",()=>{marketFiltersCollapsed=!marketFiltersCollapsed;renderMarketUx()});
 $("marketQuick")?.addEventListener("click",e=>{
- const pos=e.target.closest("[data-market-quick-pos]"),rating=e.target.closest("[data-market-quick-rating]"),clear=e.target.closest("[data-market-clear]");
+ const pos=e.target.closest("[data-market-quick-pos]"),quality=e.target.closest("[data-market-quick-quality]"),clear=e.target.closest("[data-market-clear]");
  if(pos){$("marketPosition").value=pos.dataset.marketQuickPos;refreshMarket();return}
- if(rating){$("marketRatingMin").value=Number(rating.dataset.marketQuickRating);$("marketRatingMax").value=99;if($("marketQuality").value==="bronze")$("marketQuality").value="";updateRatingUI();refreshMarket();return}
+ if(quality){const q=quality.dataset.marketQuickQuality,t=$("marketSpecialType").value;$("marketQuality").value=q;if(q!=="special"&&t&&t!=="base")$("marketSpecialType").value="";if(q==="special"&&t==="base")$("marketSpecialType").value="";updateRatingUI();refreshMarket();return}
  if(clear){if(clear.dataset.marketClear==="all")resetMarketFilters();else clearMarketFilter(clear.dataset.marketClear)}
 });
 const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
