@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21210/);
+ assert.match(html,/champions-system\.js\?v=21212/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21210/);
+ assert.match(sw,/champions-system\.js\?v=21212/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -74,7 +74,7 @@ test("Champions rewards, qualification and record-based AI are integrated withou
 });
 
 test("Rank rewards match the approved 15-game structure",()=>{
- // V21.210 (Basti): weekend rewards roughly halved; Player Picks unchanged.
+ // V21.212 (Basti): weekend rewards roughly halved; Player Picks unchanged.
  assert.match(champions,/Rang I",min:15,max:15,coins:50000,rated:\[\[84,10\],\[86,5\]\],totw:2,bonus:true/);
  assert.match(champions,/Rang II",min:13,max:14,coins:40000,rated:\[\[84,10\],\[86,3\]\],totw:1/);
  assert.match(champions,/Rang III",min:11,max:12,coins:25000,rated:\[\[83,8\],\[85,3\]\],totw:1/);

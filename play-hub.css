@@ -106,7 +106,7 @@
 
 /* V21.108: CPU team identity displayed beside opponent strength. */
 .sb-playstyle{display:block;margin:4px 0 7px;padding:5px 9px;border:1px solid #79c7ac66;border-radius:7px;background:#122d284d;color:#d6efe6;font-size:11px;font-weight:750;letter-spacing:.2px}
-/* V21.210 Champions: run card with 15-game tracker, next rank and start button on top */
+/* V21.212 Champions: run card with 15-game tracker, next rank and start button on top */
 #playView #playDetailTitle:focus{outline:none}
 #playView .champions-standing{display:grid;gap:12px}
 #playView .champions-standing .startmode{width:100%;margin:2px 0 0}

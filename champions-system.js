@@ -15,7 +15,7 @@ const CHAMPIONS_RANKS=[
  {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0},
  {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0}
 ];
-// V21.210 halved the weekend rewards; rows settled before keep their stored reward.
+// V21.212 halved the weekend rewards; rows settled before keep their stored reward.
 
 function championsRank(wins=0){
  const value=Math.max(0,Math.min(CHAMPIONS_MAX_GAMES,Number(wins)||0));
@@ -41,7 +41,7 @@ function ensureChampionsPacks(){
  // from page load on; otherwise a claimed pack sits in the save but "Meine
  // Packs" cannot list or open it after a reload.
  for(const rank of CHAMPIONS_RANKS)for(const spec of rank.rated||[])ratingRewardPack(spec[0],spec[1]);
- // Packs of the pre-V21.210 table stay registered so settled rewards can still be opened.
+ // Packs of the pre-V21.212 table stay registered so settled rewards can still be opened.
  for(const spec of [[84,20],[86,10],[86,5],[83,15],[85,5],[83,10],[85,3],[82,10],[84,2],[82,5],[80,5]])ratingRewardPack(spec[0],spec[1]);
  for(const id of Object.keys(typeof state!=="undefined"&&state?.packs||{})){const m=/^reward-(\d+)-(\d+)$/.exec(id);if(m)ratingRewardPack(Number(m[1]),Number(m[2]))}
  if(!PACKS.some(p=>p.id==="champions-bonus"))PACKS.push({id:"champions-bonus",name:"Champions Bonus Pack",coins:null,points:null,type:"gold",count:5,min:87,max:99,store:false,reward:true,desc:"5 Spieler · jeder mindestens 87 GES · 5 % ICON-Chance (87+)",iconChance:0.05});
