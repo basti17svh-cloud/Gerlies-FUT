@@ -7,6 +7,8 @@ const fs=require('fs'),path=require('path');
 
 const API='https://drop-api.ea.com/rating/ea-sports-fc';
 const OUT=path.join(__dirname,'..','assets','players-db.csv');
+// The game compares this revision with its offline copy and downloads the new file only when it changed.
+const VERSION_OUT=path.join(__dirname,'..','assets','players-db-version.json');
 const PAGE=100,PARALLEL=6;
 const MIN_MEN=10000,MIN_WOMEN=1000;
 // EA ships some clubs under licence names; the game shows the real clubs.
@@ -84,6 +86,10 @@ function check(rows,men,women){
  for(const[id,name]of[[231747,'Mbappé'],[239085,'Haaland'],[277643,'Yamal']]){
   const r=rows.find(x=>Number(x.player_id)===id);if(!r||r.overall<85)fail.push(`${name} missing or below 85`);
  }
+ // Cards show the name fans use. EA keeps it in commonName; without it Raphinha would read "Raphael Dias Belloli".
+ for(const[id,name]of[[233419,'Raphinha'],[231866,'Rodri'],[243812,'Rodrygo'],[238794,'Vini Jr.']]){
+  const r=rows.find(x=>Number(x.player_id)===id);if(r&&r.short_name!==name)fail.push(`${name} is called "${r.short_name}"`);
+ }
  const leagues={};for(const r of rows)if(!/women/i.test(r.gender))leagues[r.league_name]=(leagues[r.league_name]||0)+1;
  for(const l of['Bundesliga','Premier League','LALIGA EA SPORTS'])if((leagues[l]||0)<300)fail.push(`${l}: ${leagues[l]||0}`);
  for(const prefix of['Serie A','Ligue 1']){const n=Object.entries(leagues).filter(([k])=>k.startsWith(prefix)&&!/serie b/i.test(k)).reduce((a,[,v])=>a+v,0);if(n<300)fail.push(`${prefix}: ${n}`)}
@@ -106,5 +112,6 @@ function check(rows,men,women){
  }
  const csv=[COLUMNS.join(','),...rows.map(r=>COLUMNS.map(c=>cell(r[c])).join(','))].join('\n')+'\n';
  fs.writeFileSync(OUT,csv);
+ fs.writeFileSync(VERSION_OUT,JSON.stringify({revision:require('crypto').createHash('sha256').update(csv).digest('hex').slice(0,16),players:rows.length})+'\n');
  console.log(`Wrote ${rows.length} players (${(csv.length/1048576).toFixed(1)} MB) to assets/players-db.csv`);
 })().catch(e=>{console.error(e);process.exit(1)});

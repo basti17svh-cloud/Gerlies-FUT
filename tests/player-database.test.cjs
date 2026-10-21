@@ -61,3 +61,20 @@ test('top leagues and real club names come through',()=>{
  assert.equal(players.filter(p=>['Lombardia FC','Milano FC'].includes(p.team)).length,0,'licence names are replaced by the real clubs');
  assert.ok(players.some(p=>/women/i.test(p.gender)),"women's players are included");
 });
+
+test('players carry the name fans use, not their legal name',()=>{
+ const{players}=load(),byId=new Map(players.map(p=>[p.id,p]));
+ for(const[id,name,legal]of[['233419','Raphinha','Raphael Dias Belloli'],['231866','Rodri','Rodrigo Hernández Cascante'],['243812','Rodrygo','Rodrygo Silva de Goes'],['238794','Vini Jr.','Vinícius José de Oliveira Júnior']]){
+  const p=byId.get(id);assert.ok(p,`${name} (${id}) is in the database`);
+  assert.equal(p.name,name);assert.equal(p.fullName,legal,'the legal name stays available for search');
+ }
+});
+
+test('the revision file matches the checked-in database, so installs refresh their offline copy',()=>{
+ const{text}=load(),version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ assert.equal(version.revision,require('node:crypto').createHash('sha256').update(text).digest('hex').slice(0,16),'run scripts/build-player-db.cjs or rewrite the revision after editing the CSV');
+ assert.equal(version.players,text.trim().split('\n').length-1);
+ assert.match(html,/const DB_VERSION_URL="\.\/assets\/players-db-version\.json"/);
+ const worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ assert.match(worker,/players-db\(\?:-version\\\.json\|\\\.csv\)/,'the service worker never answers the database from its own cache');
+});
