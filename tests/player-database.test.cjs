@@ -78,3 +78,12 @@ test('the revision file matches the checked-in database, so installs refresh the
  const worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.match(worker,/players-db\(\?:-version\\\.json\|\\\.csv\)/,'the service worker never answers the database from its own cache');
 });
+
+test('the database holds the current game, not the previous one',()=>{
+ // drop-api.ea.com kept serving FC 26 after FC 27 came out: Lewandowski at Barcelona, Nkunku at Milan.
+ const version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ const game=fs.readFileSync(path.join(root,'scripts','build-player-db.cjs'),'utf8').match(/const GAME='([^']+)'/)[1];
+ assert.equal(version.game,game,'rebuild the database with scripts/build-player-db.cjs');
+ const lewandowski=load().players.find(p=>p.id==='188545');
+ assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27');
+});
