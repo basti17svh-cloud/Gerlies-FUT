@@ -50,7 +50,7 @@ export function applyMotion23(p,time,speed,turn,stride,acceleration,sequence,rol
  // The support knee flexes with the hip so its planted boot stays in place.
  const flex=.18*m.brake+.16*m.cushion;
  p.knees[support].rotation.x-=flex;p.legs[support].rotation.x+=flex/2;p.ankles[support].rotation.x+=flex/2;
- // V21.206: at jogging pace both boots can be down; only a swinging boot
+ // V21.208: at jogging pace both boots can be down; only a swinging boot
  // reaches forward, a planted one no longer slides along the turf.
  const swing=p.gait?.[free]?.swingWeight??1;
  p.legs[free].rotation.x+=(.27*m.launch+.30*m.cushion)*swing;

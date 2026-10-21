@@ -26,3 +26,22 @@ test('from TOTW 6 on, no TOTW player is part of a promo event or event SBC runni
   assert.equal(team.players.map(p=>p.names[0]).filter(n=>busy.has(key(n))).join(', '),'',`TOTW ${team.id}`);
  }
 });
+test('from TOTW 6 on, every TOTW card beats the same player\'s earlier special cards in rating and every face stat',()=>{
+ const c=setup();
+ for(const team of c.WEEKS.filter(w=>Number(w.id)>=6)){
+  const released=Date.parse(team.releaseDate+'T19:00:00+02:00');
+  const earlier=[
+   ...c.WEEKS.filter(w=>Number(w.id)<Number(team.id)).flatMap(w=>w.players.map(p=>({src:`TOTW ${w.id}`,id:String(p.eaId||''),names:p.names,ovr:p.ovr,pos:p.position,stats:p.stats}))),
+   ...c.EVENTS.filter(e=>Date.parse(e.activeFrom)<released).flatMap(e=>[...(e.players||[]),...(e.sbcPlayer?[e.sbcPlayer]:[])].map(p=>({src:e.id,id:String(p.pid||''),names:[p.name,...(p.names||[])],ovr:p.ovr,pos:p.position,stats:p.stats})))
+  ];
+  const problems=[];
+  for(const p of team.players){
+   const keys=new Set(p.names.map(key));
+   for(const old of earlier.filter(o=>(p.eaId&&o.id===String(p.eaId))||o.names.some(n=>keys.has(key(n))))){
+    if(!(p.ovr>old.ovr))problems.push(`${p.names[0]} ${p.ovr} <= ${old.src} ${old.ovr}`);
+    if(Array.isArray(old.stats)&&(old.pos==='GK')===(p.position==='GK')&&old.stats.some((v,i)=>p.stats[i]<v))problems.push(`${p.names[0]} stats below ${old.src}`);
+   }
+  }
+  assert.equal(problems.join('; '),'',`TOTW ${team.id}`);
+ }
+});

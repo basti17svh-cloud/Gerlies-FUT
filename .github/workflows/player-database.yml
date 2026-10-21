@@ -10,6 +10,7 @@ on:
       - '.github/workflows/player-database.yml'
       - 'scripts/build-player-db.cjs'
       - 'assets/players-db.csv'
+      - 'assets/players-db-version.json'
       - 'tests/player-database.test.cjs'
       - 'footera-app.js'
   schedule:
@@ -37,7 +38,7 @@ jobs:
         run: node --test tests/player-database.test.cjs
       - name: Commit the player database to this branch
         run: |
-          git add assets/players-db.csv
+          git add assets/players-db.csv assets/players-db-version.json
           if git diff --cached --quiet; then echo "Player database unchanged"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898729+github-actions[bot]@users.noreply.github.com"

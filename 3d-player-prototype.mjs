@@ -609,7 +609,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands(celebration?.open);
   // Raised arms lift the shoulders with them instead of hinging at a fixed joint.
   if(celebration?.shrug){apply('clavicle_l',0,0,-celebration.shrug[0]);apply('clavicle_r',0,0,celebration.shrug[1])}
-  // V21.206 overhead kick: the whole body turns backwards over the pelvis and
+  // V21.208 overhead kick: the whole body turns backwards over the pelvis and
   // the legs scissor in player space; the planted-boot IK stays off meanwhile.
   const acro=!keeperRole&&info.acrobatic?.weight>0?info.acrobatic:null;
   if(acro){

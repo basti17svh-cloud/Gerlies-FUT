@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-// V21.206 (Basti): the bicycle scene is a real overhead kick, not a standing shot.
+// V21.208 (Basti): the bicycle scene is a real overhead kick, not a standing shot.
 test('bicycle kick turns the striker over his pelvis, kicks above him and gets him up before the celebration',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  assert.equal(M.bicycleKickPose(4.8),null);

@@ -3,6 +3,8 @@ const DB_SOURCES=[
 ];
 const EA_RATINGS_API="https://drop-api.ea.com/rating/ea-sports-fc";
 const DB_MIN_PLAYERS=10000;
+// Written next to the CSV on every refresh. A changed revision replaces the offline copy, so weekly rating and name updates reach existing installs.
+const DB_VERSION_URL="./assets/players-db-version.json";
 const LEAGUE_CHOICES=[
  {id:"bundesliga",label:"Bundesliga",aliases:["Bundesliga"]},
  {id:"premier",label:"Premier League",aliases:["Premier League"]},
@@ -235,6 +237,9 @@ function matchAttributes(base){
  const fallback=matchClamp(p?.ovr||70,35,99);
  return{pac:matchClamp(p?.pac??fallback,35,99),sho:matchClamp(p?.sho??fallback,1,99),pas:matchClamp(p?.pas??fallback,35,99),dri:matchClamp(p?.dri??fallback,35,99),def:matchClamp(p?.def??fallback,20,99),phy:matchClamp(p?.phy??fallback,35,99),ovr:fallback}
 }
+// Match events name players like their cards: the known name (Raphinha, Rodri),
+// never the legal name. Founder cards show their full name, so keep it there too.
+function matchEventPlayerName(row,fallback){const b=row?.base;return String((b&&typeof isExclusiveFounderBase==="function"&&isExclusiveFounderBase(b)?b.fullName||b.name:row?.name||b?.name)||fallback||"").trim()}
 function matchActorRows(side){
  if(!match)return[];
  const home=side==="home",profile=match.opponentProfile,form=FORMATIONS[home?match.formation:profile?.formation]||FORMATIONS["4-3-3"],lineup=home?(match.lineup||[]):(profile?.squad||[]);
@@ -510,13 +515,13 @@ const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activ
   {names:["Diego Gómez","Diego Gomez"],eaId:"269278",ovr:81,position:"CM",stats:[76,74,78,82,79,82],fallback:{face:"./assets/footera/totw/6/269278.png",gender:"male",name:"Diego Gómez",fullName:"Diego Gómez",team:"Brighton & Hove Albion",league:"Premier League",nation:"Paraguay"}},
   {names:["Nico Paz","Nicolás Paz Martínez", "Nicolas Paz"],eaId:"277846",ovr:84,position:"CAM",stats:[82,75,81,86,55,68],fallback:{face:"./assets/footera/totw/6/277846.png",gender:"male",name:"Nico Paz",fullName:"Nicolás Paz Martínez",team:"Como",league:"Serie A",nation:"Argentina"}},
   {names:["Ibrahim Maza"],eaId:"275029",ovr:79,position:"CAM",stats:[82,73,73,86,43,69],fallback:{face:"./assets/footera/totw/6/275029.png",gender:"male",name:"Ibrahim Maza",fullName:"Ibrahim Maza",team:"Bayer 04 Leverkusen",league:"Bundesliga",nation:"Algeria"}},
-  {names:["Álex Baena","Alex Baena", "Alejandro Baena Rodríguez"],eaId:"257279",ovr:86,position:"LM",stats:[81,78,86,84,67,70],fallback:{face:"./assets/footera/totw/6/257279.png",gender:"male",name:"Álex Baena",fullName:"Alejandro Baena Rodríguez",team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Álex Baena","Alex Baena", "Alejandro Baena Rodríguez"],eaId:"257279",ovr:88,position:"LM",stats:[82,84,90,89,67,73],fallback:{face:"./assets/footera/totw/6/257279.png",gender:"male",name:"Álex Baena",fullName:"Alejandro Baena Rodríguez",team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain"}},
   {names:["Adrien Rabiot"],eaId:"210008",ovr:85,position:"CM",stats:[83,81,83,82,79,86],fallback:{face:"./assets/footera/totw/6/210008.png",gender:"male",name:"Adrien Rabiot",fullName:"Adrien Rabiot",team:"AC Milan",league:"Serie A",nation:"France"}},
   {names:["Alexander Prass"],eaId:"263041",ovr:79,position:"LM",stats:[78,69,78,79,73,78],fallback:{face:"./assets/footera/totw/6/263041.png",gender:"male",name:"Alexander Prass",fullName:"Alexander Prass",team:"TSG Hoffenheim",league:"Bundesliga",nation:"Austria"}},
   {names:["Luis Díaz","Luis Diaz", "Luis Fernando Díaz Marulanda"],eaId:"241084",ovr:89,position:"LW",stats:[92,85,80,91,47,79],fallback:{face:"./assets/footera/totw/6/241084.png",gender:"male",name:"Luis Díaz",fullName:"Luis Díaz",team:"FC Bayern München",league:"Bundesliga",nation:"Colombia"}},
   {names:["Kylian Mbappé","Kylian Mbappe"],eaId:"231747",ovr:93,position:"ST",stats:[99,92,83,94,38,78],fallback:{face:"./assets/footera/totw/6/231747.png",gender:"male",name:"Kylian Mbappé",fullName:"Kylian Mbappé Lottin",team:"Real Madrid",league:"LALIGA EA SPORTS",nation:"France"}},
-  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",stats:[87,83,88,92,24,55],fallback:{face:"./assets/footera/totw/6/277643.png",gender:"male",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
-  {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:92,position:"ST",stats:[88,93,72,82,46,90],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
+  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:92,position:"RW",stats:[90,89,91,96,41,65],fallback:{face:"./assets/footera/totw/6/277643.png",gender:"male",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:93,position:"ST",stats:[89,95,74,83,49,92],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
   {names:["Pedro Neto","Pedro Lomba Neto"],eaId:"238616",ovr:84,position:"RW",stats:[95,80,78,86,42,72],fallback:{face:"./assets/footera/totw/6/238616.png",gender:"male",name:"Pedro Neto",fullName:"Pedro Lomba Neto",team:"Chelsea",league:"Premier League",nation:"Portugal"}}
 ]};
 const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6];
@@ -1428,6 +1433,8 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 function openIDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("GFUTPlayerDB1856",1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("players"))db.createObjectStore("players",{keyPath:"id"});if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta",{keyPath:"key"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function idbCount(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbAll(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readonly"),r=t.objectStore("players").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbMetaGet(key){const db=await openIDB();return new Promise((res,rej)=>{const r=db.transaction("meta","readonly").objectStore("meta").get(key);r.onsuccess=()=>res(r.result?.value);r.onerror=()=>rej(r.error)})}
+async function idbMetaPut(key,value){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("meta","readwrite");t.objectStore("meta").put({key,value});t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 async function idbClear(){const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction(["players","meta"],"readwrite");t.objectStore("players").clear();t.objectStore("meta").clear();t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 async function idbPutMany(arr){if(!arr?.length)return;const db=await openIDB();return new Promise((res,rej)=>{const t=db.transaction("players","readwrite"),s=t.objectStore("players");for(const p of arr)s.put(p);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 
@@ -2794,10 +2801,22 @@ function applyPlayerTraits(players){
 }
 async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
 async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
+async function remotePlayerDbRevision(){
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),6000);
+ try{const r=await fetch(DB_VERSION_URL,{cache:"no-store",signal:c.signal});if(!r.ok)return"";return String((await r.json())?.revision||"")}catch(e){return""}finally{clearTimeout(t)}
+}
+// A player EA drops from its database must not vanish from a club that owns the card.
+async function keepOwnedPlayers(players){
+ const owned=new Set((typeof state!=="undefined"&&Array.isArray(state?.club)?state.club:[]).map(item=>String(item?.pid||"")).filter(Boolean));if(!owned.size)return;
+ const known=new Set(players.map(p=>String(p.id)));if([...owned].every(id=>known.has(id)))return;
+ let cached=[];try{cached=await idbAll()}catch(e){}
+ for(const p of cached)if(owned.has(String(p?.id))&&!known.has(String(p.id))){players.push(p);known.add(String(p.id))}
+}
 async function syncDatabase(force=false){
  $("dbGate").classList.remove("has-error");$("dbRetry").style.display="none";$("dbReset").style.display="none";$("dbOffline").style.display="none";$("dbWarn").textContent="";$("dbTitle").textContent="Gleich geht's los";$("dbText").textContent="Daten werden geladen …";$("dbBar").style.width="5%";
  try{
-  if(!force){const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache";return finishDbLoad(true)}}
+  const revision=await remotePlayerDbRevision();
+  if(!force){const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok&&(!revision||revision===await idbMetaGet("revision").catch(()=>""))){PLAYERS=cached;DATA_ROUTE="lokaler Cache";return finishDbLoad(true)}}
   let errors=[];
   for(let i=0;i<DB_SOURCES.length;i++){
    const src=DB_SOURCES[i];$("dbText").textContent="Dein Club wird vorbereitet …";$("dbBar").style.width=`${15+i*20}%`;$("dbPercent").textContent=`${15+i*20}%`;
@@ -2805,7 +2824,7 @@ async function syncDatabase(force=false){
     const text=await fetchText(src.url);$("dbText").textContent="Nur noch einen Moment …";$("dbBar").style.width="65%";
     const raw=parseCSV(text),players=raw.map(normCSV).filter(p=>p.id&&p.name&&p.ovr);const v=validateDatabase(players);if(!v.ok)throw new Error(v.reason);
     $("dbText").textContent="Alles für deinen Anpfiff wird bereitgemacht …";$("dbBar").style.width="82%";
-    await savePlayers(players);PLAYERS=players;DATA_ROUTE=src.name;return finishDbLoad(true)
+    await keepOwnedPlayers(players);await savePlayers(players);if(revision)await idbMetaPut("revision",revision).catch(()=>{});PLAYERS=players;DATA_ROUTE=src.name;return finishDbLoad(true)
    }catch(e){errors.push(`${src.name}: ${e.message||e}`)}
   }
   const cached=await idbAll();const cv=validateDatabase(cached);if(cv.ok){PLAYERS=cached;DATA_ROUTE="lokaler Cache (Netzquelle nicht erreichbar)";return finishDbLoad(true)}
@@ -4600,6 +4619,7 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
 const PLAYER_SEARCH_TEXT_CACHE=new WeakMap();
 function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName,MOMENTUM_BY_ID.get(String(p?.id||""))?.name].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
 function playerDisplaySearchName(p){const event=$("marketSpecialType")?.value==="momentum"?MOMENTUM_BY_ID.get(String(p?.id||"")):null;const full=String(p?.fullName||"").trim();return event?.name||full||String(p?.name||"").trim()}
+function playerDisplayName(p){const event=$("marketSpecialType")?.value==="momentum"?MOMENTUM_BY_ID.get(String(p?.id||"")):null;return String(event?.name||p?.name||p?.fullName||"").trim()}
 function marketNameSuggestionPlayers(query){
  const q=normalizeKey(query);if(q.length<2)return[];
  const seen=new Set(),totw=allTotwMarketBases();
@@ -4610,7 +4630,7 @@ function renderMarketNameSuggestions(){
  const box=$("marketNameSuggestions"),input=$("marketName");if(!box||!input)return;
  const rows=marketNameSuggestionPlayers(input.value);
  if(!rows.length){box.innerHTML="";box.classList.remove("open");return}
- box.innerHTML=rows.map(raw=>{const p=resolvedAffiliation(raw);return `<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}" data-market-name-type="${p.isIcon?"icon":(p._totwWeekId||totwInfo(p))?"totw":""}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplaySearchName(p))}</strong><small>${p.isIcon?"ICON · ":(p._totwWeekId||totwInfo(p))?"TOTW · ":""}${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(p.name)?`${esc(p.name)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`}).join("");
+ box.innerHTML=rows.map(raw=>{const p=resolvedAffiliation(raw);return `<button type="button" class="market-name-suggestion" data-market-name-pid="${esc(p.id)}" data-market-name-type="${p.isIcon?"icon":(p._totwWeekId||totwInfo(p))?"totw":""}"><span class="rating">${Number(p.ovr||0)}</span><span><strong>${esc(playerDisplayName(p))}</strong><small>${p.isIcon?"ICON · ":(p._totwWeekId||totwInfo(p))?"TOTW · ":""}${p.fullName&&normalizeKey(p.fullName)!==normalizeKey(playerDisplayName(p))?`${esc(p.fullName)} · `:""}${esc(p.team)} · ${esc(p.league||"")}</small></span><span class="pos">${esc(positionLabel(p.position,p))}</span></button>`}).join("");
  box.classList.add("open")
 }
 const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
@@ -5969,7 +5989,7 @@ function resolveMissedMatchShot(shot,team){
  shot.highlightType=shot.outcome==="wide"&&roll>=.965?"shot_post":(Number(shot.xg)>=.16||(typeof FooteraHighlights!=="undefined"&&FooteraHighlights.getMode()==="all"))?(shot.outcome==="save"?"big_chance_saved":shot.outcome==="wide"?"big_chance_missed":""):"";
  // Presentation metadata only: name the actual goalkeeper on saved chances.
  const keeperRow=shot.outcome==="save"&&action?matchActorRows(action.side).find(row=>row.index===action.index):null;
- shot.goalkeeperName=shot.outcome==="save"?(keeperRow?.base?.fullName||[keeperRow?.base?.firstName,keeperRow?.base?.lastName].filter(Boolean).join(" ")||action?.name||"Torwart"):"";
+ shot.goalkeeperName=shot.outcome==="save"?(keeperRow?matchEventPlayerName(keeperRow,"Torwart"):action?.name||"Torwart"):"";
  if(shot.outcome==="save"){
   shot.goalkeeperUid=String(action?.uid||"");
   shot.goalkeeperIndex=Number(action?.index??-1);
@@ -6028,7 +6048,7 @@ function chooseOpponentAssist(excludeIndex){return chooseMatchCreator("away",exc
 function logGoal(side,scorer,assist,type,shot={}){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
  const event={
-  sceneKind:shot.sceneKind,restartSide:shot.restartSide,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:scorer?.base?.fullName||[scorer?.base?.firstName,scorer?.base?.lastName].filter(Boolean).join(" ")||scorer?.name||"Spieler",scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
+  sceneKind:shot.sceneKind,restartSide:shot.restartSide,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:matchEventPlayerName(scorer,"Spieler"),scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
   scorerUid:side==="home"?String(scorer?.uid||""):"",
   assistUid:side==="home"?String(assist?.uid||""):"",
   scorerIndex:side==="away"?Number(scorer?.index??-1):-1,
@@ -6089,7 +6109,7 @@ function simAttack(homeSide){
  const xg=actions.chanceQuality(baseXg,context,matchActionTactics(defendingSide));
  const creatorDifferent=side==="home"?creator.uid!==attacker.uid:creator.index!==attacker.index;
  const assist=creationType==="assist"?(creatorDifferent?creator:chooseMatchCreator(side,side==="home"?attacker.uid:attacker.index)):null;
- const shot={...context,id:"attempt:"+(match.shotEvents?.length||0),side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:attacker.base?.fullName||[attacker.base?.firstName,attacker.base?.lastName].filter(Boolean).join(" ")||attacker.name,shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:actions.shotSkill(attacker,context),creator:assist?.name||"",creatorUid:assist?.uid||"",creatorIndex:assist?.index??-1,defenderIndex:duelDefender?.index??-1,goal:false,...(!homeSide&&match.opponentProfile?.kind==='generated'&&match.opponentProfile?.styleProfile?.id?{opponentStyle:String(match.opponentProfile.styleProfile.id)}:{})};
+ const shot={...context,id:"attempt:"+(match.shotEvents?.length||0),side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:matchEventPlayerName(attacker,attacker.name),shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:actions.shotSkill(attacker,context),creator:assist?.name||"",creatorUid:assist?.uid||"",creatorIndex:assist?.index??-1,defenderIndex:duelDefender?.index??-1,goal:false,...(!homeSide&&match.opponentProfile?.kind==='generated'&&match.opponentProfile?.styleProfile?.id?{opponentStyle:String(match.opponentProfile.styleProfile.id)}:{})};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
  const goalChance=matchFinishingChance(xg,attacker,defendingSide,shot,duelDefender);
@@ -7506,7 +7526,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.206";
+const GFUT_BUILD="V21.208";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7564,7 +7584,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21206",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21208",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

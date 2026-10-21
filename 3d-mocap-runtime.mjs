@@ -56,7 +56,7 @@ function applyRun(p,frame,blend){
  p.upper.rotation.z+=-frame[C.torso+2]*blend*.22;
  for(let i=0;i<2;i++){
   const hip=i?C.rightHip:C.leftHip,knee=i?C.rightKnee:C.leftKnee,foot=i?C.rightFoot:C.leftFoot;
-  // V21.206: captured legs shape the swing only; the distance-phased IK owns
+  // V21.208: captured legs shape the swing only; the distance-phased IK owns
   // the planted boot (the clip's own stride slid the support foot).
   const swing=p.gait?.[i]?.swingWeight??1;
   joint(p.legs[i],frame,hip,hip,blend*swing);

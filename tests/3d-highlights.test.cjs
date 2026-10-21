@@ -94,7 +94,7 @@ test('match simulator remains deterministic while excluding goalkeeper shots for
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=require('./helpers/app-html.cjs')(root),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=21206','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=21208','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  const cssVersion=(html.match(/3d-highlights\.css\?v=(\d+)/)||[])[1];
  assert.ok(cssVersion&&sw.includes('./3d-highlights.css?v='+cssVersion),'Offline CSS version must match HTML');
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
