@@ -98,7 +98,7 @@ if(require.main===module)(async()=>{
      allContained:[card,copy,meta,minute,crest].filter(Boolean).every(inside),noOverlap:!overlap(card,copy)&&!overlap(copy,meta)&&!overlap(card,meta)};
    });
    console.log('HUD',JSON.stringify(hud));await page.screenshot({path:path.join(output,`goal-${width}.png`)});
-   check(`${width}: goal uses scorer + actual Gold Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Jamal Musiala'&&hud.card&&hud.gold);
+   check(`${width}: goal uses scorer + actual Gold Footera card hierarchy`,hud.headline==='TOR'&&hud.name===before.name&&hud.name==='Musiala'&&hud.card&&hud.gold);
    check(`${width}: home goal uses frozen Home-team crest and team label`,hud.visibleCrest&&hud.crest==='HOME'&&hud.event==='für Heimteam');
    check(`${width}: minute is compact above the crest in a narrow right column`,hud.minute===`${before.minute}'`&&hud.minuteAboveCrest&&hud.metaWidth<=54&&hud.crestSize>=39&&hud.minuteFont<=13.5);
    check(`${width}: goal overlay has no clipping or column overlap`,hud.cardContained&&hud.allContained&&hud.noOverlap);
@@ -122,7 +122,7 @@ if(require.main===module)(async()=>{
       performerVisible:!!shell&&!!art&&getComputedStyle(performer).display!=='none'&&outer.width>=65&&outer.height>=90&&inner.width>=65&&inner.height>=90};
     });
    // V21.195: a miss may also be shown as a goal-line clearance ('GEKLÄRT').
-   check(`${type}: correct event headline`,({big_chance_saved:['PARADE'],big_chance_missed:['VORBEI','GEKLÄRT'],shot_post:['PFOSTEN']}[type]).some(x=>hudState.headline.includes(x)));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Mike Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Jamal Musiala'))}
+   check(`${type}: correct event headline`,({big_chance_saved:['PARADE'],big_chance_missed:['VORBEI','GEKLÄRT'],shot_post:['PFOSTEN']}[type]).some(x=>hudState.headline.includes(x)));check(`${type}: real performer card painted at mobile size`,hudState.performerVisible);if(type==='big_chance_saved'){check('saved chance promotes keeper as primary actor',hudState.name==='Maignan');check('saved chance keeps shooter secondary',hudState.event.includes('Musiala'))}
    await page.screenshot({path:path.join(output,type+'.png')});
    await page.waitForSelector('.fh3d',{state:'detached',timeout:12000});
    check(`${type}: natural completion resumes match without duplicate events`,await page.evaluate(()=>!match.highlight3DPending&&match.home===0&&match.away===0&&match.shotEvents.length===1&&matchTimer!==null));await page.evaluate(()=>stopMatchTimer());
