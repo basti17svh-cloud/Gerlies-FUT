@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.208</title>
+<title>Footera V21.209</title>
 <link rel="stylesheet" href="./footera-app.css?v=21197">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
@@ -51,6 +51,7 @@
 <link rel="stylesheet" href="./footera-account.css?v=21122">
 <link rel="stylesheet" href="./footera-points-shop.css?v=21128">
 <link rel="stylesheet" href="./ux-clarity.css?v=21202">
+<link rel="stylesheet" href="./footera-share.css?v=21209">
 </head>
 <body>
 
@@ -509,7 +510,7 @@
    <div id="onlinePanel" class="profile-card friends-box" hidden><h3>Live-Duelle &amp; Einladungen</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div></div>
   </section>
   <section id="friendsPanelAdd" class="friends-panel" data-friends-panel="add" hidden><div class="profile-card"><p>Kurzen Freundescode eingeben, z. B. <strong>AB7K-3P9Q</strong>. Alte lange Profilcodes bleiben kompatibel.</p><label class="friends-field-label" for="friendCodeInput">Freundescode</label><textarea id="friendCodeInput" placeholder="Freundescode eingeben"></textarea><button id="addFriendCode" class="primary" style="width:100%;margin-top:7px">Freund hinzufügen / aktualisieren</button></div></section>
-  <section id="friendsPanelCode" class="friends-panel" data-friends-panel="code" hidden><div class="profile-card"><p><strong id="socialClubName">Footera Club</strong><br>Teile diesen Code, damit Freunde dich hinzufügen können. Dein Team wird automatisch synchronisiert.</p><label class="friends-field-label" for="myFriendCode">Dein Freundescode</label><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="copyFriendCode" class="primary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></section>
+  <section id="friendsPanelCode" class="friends-panel" data-friends-panel="code" hidden><div class="profile-card"><p><strong id="socialClubName">Footera Club</strong><br>Teile diesen Code, damit Freunde dich hinzufügen können. Dein Team wird automatisch synchronisiert.</p><label class="friends-field-label" for="myFriendCode">Dein Freundescode</label><textarea id="myFriendCode" readonly></textarea><div class="friend-code-actions"><button id="shareInviteLink" class="primary">Einladungslink teilen</button><button id="copyFriendCode" class="secondary">Code kopieren</button><button id="refreshFriendCode" class="secondary">Aktualisieren</button></div></div></section>
  </div>
 </div></section>
 
@@ -586,7 +587,7 @@
 
 <div id="opening" class="opening"><div id="flash" class="flash"></div><div id="openStage" class="openstage"><div id="bigPack" class="bigpack"><img id="bigPackArt" alt="Footera-Pack" /><span id="bigPackName"></span></div><div id="packCountdown" class="pack-countdown"></div><button id="openPackBtn" class="primary" style="width:260px;margin-top:10px">Öffnen</button></div><div id="boardIntro" class="board-intro"><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><i class="board-stripe"></i><div class="board-plaque"><div id="boardCue" class="board-cue" aria-live="polite"></div></div></div><div id="walkoutTunnel" class="walkout-tunnel" aria-live="polite"><div class="walkout-gate"></div><div class="walkout-gate"></div><div class="walkout-gate"></div><div id="walkoutClue" class="walkout-clue"></div></div><div id="reveal" class="reveal"><div id="revealBadge" class="revealbadge"></div><div class="reveal-cards"><div id="revealCard"></div><div id="revealSecondCard" class="reveal-second"></div></div><div id="walkoutTitle" class="walkout-title">BESTER SPIELER</div></div><div class="reveal-skip-hint" aria-hidden="true">Tippen zum Überspringen</div></div>
 
-<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Karten zum Verein hinzufügen oder den verbleibenden Pack-Inhalt schnellverkaufen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellDuplicates" class="secondary">Duplikate schnellverkaufen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
+<div id="results" class="results"><div style="max-width:760px;margin:auto"><div class="headline" style="padding-left:0"><h2>Pack-Inhalt</h2><p id="resultHint">Karten zum Verein hinzufügen oder den verbleibenden Pack-Inhalt schnellverkaufen. Profil und Transferoptionen öffnest du über den jeweiligen Button.</p></div><div id="resultShare" class="result-share" hidden></div><div id="resultGrid" class="resultgrid"></div><div class="results-actions"><button id="resultAllClub" class="secondary">Zum Verein hinzufügen</button><button id="resultQuickSellDuplicates" class="secondary">Duplikate schnellverkaufen</button><button id="resultQuickSellAll" class="danger">Alles schnellverkaufen</button><button id="resultDone" class="primary" disabled>Weiter</button></div></div></div>
 
 
 <div id="match" class="match">
@@ -688,7 +689,7 @@
 <script src="./footera-match-actions.js?v=21181"></script>
 <script src="./footera-time.js"></script>
 <script src="./footera-cosmetic-evolutions.js?v=21156"></script>
-<script src="./footera-app.js?v=21208"></script>
+<script src="./footera-app.js?v=21209"></script>
 <script src="./season-system.js?v=21194"></script>
 <script src="./competition-system.js?v=21194"></script>
 <script src="./champions-system.js?v=21195"></script>
@@ -710,13 +711,14 @@
 <script src="./player-picks.js?v=21176"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
+<script src="./footera-share.js?v=21209"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&promoEventClockId!==null)syncPromoEventClock()});
 window.FooteraPaidWallet?.start({render:renderWallet,grant:recoverFooteraPaidPackOrders});
 initFooteraBootIntro();
-FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();recoverFooteraLiveCards().catch(console.warn);if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()}).catch(e=>{console.error("Footera Start fehlgeschlagen",e);const gate=$("dbGate");if(gate)gate.style.display="grid";if($("dbTitle"))$("dbTitle").textContent="Start gerade nicht möglich";if($("dbText"))$("dbText").textContent="Der Start wurde unterbrochen. Bitte erneut versuchen.";if($("dbRetry"))$("dbRetry").style.display="block";if($("dbOffline"))$("dbOffline").style.display="block"});
+FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();window.FooteraShare?.start();recoverFooteraLiveCards().catch(console.warn);if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()}).catch(e=>{console.error("Footera Start fehlgeschlagen",e);const gate=$("dbGate");if(gate)gate.style.display="grid";if($("dbTitle"))$("dbTitle").textContent="Start gerade nicht möglich";if($("dbText"))$("dbText").textContent="Der Start wurde unterbrochen. Bitte erneut versuchen.";if($("dbRetry"))$("dbRetry").style.display="block";if($("dbOffline"))$("dbOffline").style.display="block"});
 </script>
 </body>
 </html>
