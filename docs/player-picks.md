@@ -10,7 +10,7 @@ Der Server speichert Angebote beim ersten Öffnen. Schließen oder erneutes Lade
 - `node scripts/build-pick-catalog.cjs` erzeugt `online/footera-pick-catalog.sql` aus den freigegebenen TOTW-Daten in `footera-app.js` mit vollständigen Werten. Die SQL-Datei bei jeder TOTW-Veröffentlichung anwenden. Zeiten werden in Europe/Berlin berechnet.
 - Zusätzliche freigegebene Events benötigen eigene Katalogeinträge mit korrekten Werten und Start-/Endzeit. Der Generator übernimmt derzeit ausschließlich TOTW. Abgelaufene Events gehören nicht in den aktuellen Pool.
 - Normale Goldkarten kommen aus dem freigegebenen `footera_live_player_catalog`. Der Katalog ist nur serverseitig lesbar; RLS ohne Client-Lesepolicy ist beabsichtigt.
-- Weniger berechtigte Sonderkarten als Optionen (z. B. die neue TOTW fehlt noch im Katalog): seit V21.215 (`online/footera-player-picks-fallback-v21.215.sql`) füllen die zuletzt veröffentlichten Katalogkarten das Angebot auf, jeder Spieler höchstens einmal. Erst wenn auch die nicht reichen, bleibt der Pick erhalten und Öffnen meldet den fehlenden Pool. Es werden keine Ersatzratings erzeugt.
+- Weniger berechtigte Sonderkarten als Optionen (z. B. die neue TOTW fehlt noch im Katalog): seit V21.217 (`online/footera-player-picks-fallback-v21.217.sql`) füllen die zuletzt veröffentlichten Katalogkarten das Angebot auf, jeder Spieler höchstens einmal. Erst wenn auch die nicht reichen, bleibt der Pick erhalten und Öffnen meldet den fehlenden Pool. Es werden keine Ersatzratings erzeugt.
 - Testgutschriften erfolgen nur administrativ und mit einem eindeutigen source_key/slot, damit Wiederholung keine zusätzlichen Picks erzeugt.
 
 ## Vertrauensgrenze

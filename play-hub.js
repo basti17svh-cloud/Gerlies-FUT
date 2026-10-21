@@ -8,6 +8,8 @@
  const meter=(value,max,label)=>{const bounded=Math.max(0,Math.min(max,num(value))),percent=max>0?bounded/max*100:0;return `<div class="play-progress" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${bounded}"><span style="width:${percent}%"></span></div>`};
  const reset=mode=>`<div class="play-reset"><span>Wochenwechsel</span><strong>${mode==="squad"?"Montag":"Donnerstag"} · 09:00</strong><small>${esc(competitionCountdown(mode))}</small></div>`;
  const rewardCopy=reward=>esc(rewardLabel({reward}));
+ // V21.215: one broken summary (e.g. an old cached script next to a new one) must never lock all game modes.
+ const safe=fn=>{try{fn()}catch(e){if(typeof console!=="undefined")console.error("Footera Spielmodi:",e)}};
 
  function statsFor(mode){
   const key=mode.startsWith("friendly")?"friendly":mode==="champions"?"weekend":mode,stats=state.stats||{};
@@ -85,8 +87,8 @@
   if($("playFriendRankingNote"))$("playFriendRankingNote").textContent=available?`Siege, Punkte und Tore aus euren Live-Duellen gegen ${friend.clubName||"deinen Freund"}.`:friend?"Für die Online-Rangliste benötigst du einen Freund mit aktuellem Online-Code.":"Wähle einen Online-Freund, um eure Tabelle und direkte Bilanz anzusehen.";
  }
  function renderOverview(){
-  renderRivals();renderChampions();renderSquad();renderFriends();
-  for(const [mode,config]of Object.entries(MODES))put(config.stats,statsHTML(mode));
+  safe(renderRivals);safe(renderChampions);safe(renderSquad);safe(renderFriends);
+  for(const [mode,config]of Object.entries(MODES))safe(()=>put(config.stats,statsHTML(mode)));
  }
  function show(mode,{push=true,focus=true}={}){
   area=MODES[mode]?mode:"hub";
@@ -100,7 +102,7 @@
  const originalStatus=renderCompetitionModeStatus;
  renderCompetitionModeStatus=function(){originalStatus();renderOverview()};
  const originalPlay=renderPlay;
- renderPlay=function(){originalPlay();renderChampions();renderFriends();show(area,{push:false,focus:false})};
+ renderPlay=function(){safe(originalPlay);safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
  window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView")show(target.playMode||"hub",{push:false})},handleBack:target=>{
   if(area==="hub")return false;
   if(target?.gfut&&target.view!=="playView"){area="hub";return false}

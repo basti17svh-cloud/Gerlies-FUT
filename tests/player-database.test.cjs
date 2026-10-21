@@ -96,3 +96,13 @@ test("women's cards show their league logo and EA's crest of the women's team",(
  assert.match(putellas.clubLogo,/^https:\/\/drop-assets\.ea\.com\//);
  assert.equal(ctx.verifiedClubBadge(putellas.team,putellas),null,"the men's crest is never used for a women's team");
 });
+
+test('the database holds the current game, not the previous one',()=>{
+ // drop-api.ea.com kept serving FC 26 after FC 27 came out: Lewandowski at Barcelona, Nkunku at Milan.
+ const version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ const game=fs.readFileSync(path.join(root,'scripts','build-player-db.cjs'),'utf8').match(/const GAME='([^']+)'/)[1];
+ assert.equal(version.game,game,'rebuild the database with scripts/build-player-db.cjs');
+ const lewandowski=load().players.find(p=>p.id==='188545');
+ assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27 (he plays for Chicago Fire)');
+ assert.equal(load().players.find(p=>p.id==='232411')?.team,'RB Leipzig','Nkunku plays for RB Leipzig (CLUB_OVERRIDES in the build script)');
+});

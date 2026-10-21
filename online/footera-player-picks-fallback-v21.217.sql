@@ -1,4 +1,4 @@
--- V21.215: a pick never fails just because the next TOTW is not in the catalog yet.
+-- V21.217: a pick never fails just because the next TOTW is not in the catalog yet.
 -- Current cards come first; only when fewer than the needed choices are live, the most
 -- recently released cards fill the offer. One player appears at most once per offer.
 create or replace function footera_private.open_pick(p_id uuid,p_save_id text)
