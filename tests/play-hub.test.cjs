@@ -54,3 +54,17 @@ test('mode navigation shows exactly one panel and supports Android back and hist
  s.ctx.window.FooteraPlayHub.restore({view:'playView',playMode:'rivals'});assert.equal(s.panels[0].hidden,false);
  s.api.show('unknown');assert.equal(s.el('playModeDetail').hidden,true);
 });
+test('a broken mode summary never locks the game modes (V21.215)',()=>{
+ const s=setup();s.ctx.championsWindow=()=>{throw new ReferenceError('CHAMPIONS_EXTRA_WINDOW_START is not defined')};
+ assert.doesNotThrow(()=>s.ctx.renderPlay());assert.doesNotThrow(()=>s.api.renderOverview());
+ assert.match(s.el('playRivalsSummary').innerHTML,/Division 5/);
+ assert.doesNotThrow(()=>s.ctx.window.FooteraPlayHub.open('rivals'));
+ assert.equal(s.panels.find(p=>p.dataset.playPanel==='rivals').hidden,false);
+});
+test('play-hub files are versioned so a new page never runs an old cached copy (V21.215)',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ const js=html.match(/<script src="(\.\/play-hub\.js\?v=\d+)"><\/script>/)?.[1],css=html.match(/<link rel="stylesheet" href="(\.\/play-hub\.css\?v=\d+)">/)?.[1];
+ assert.ok(js,'play-hub.js needs ?v= in index.html');assert.ok(css,'play-hub.css needs ?v= in index.html');
+ assert.ok(sw.includes(`"${js}"`),'service worker must precache the same play-hub.js URL');
+ assert.ok(sw.includes(`"${css}"`),'service worker must precache the same play-hub.css URL');
+});
