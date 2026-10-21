@@ -1,15 +1,19 @@
-/* Build assets/players-db.csv from EA's FC rating database (drop-api.ea.com).
-   Runs in GitHub Actions (EA's API is not reachable from every network): node scripts/build-player-db.cjs
+/* Build assets/players-db.csv from EA's official ratings site (www.ea.com/games/ea-sports-fc/ratings).
+   Runs in GitHub Actions (EA is not reachable from every network): node scripts/build-player-db.cjs
+   drop-api.ea.com/rating/ea-sports-fc still serves the previous game (FC 26: Lewandowski at Barcelona),
+   so the players come from the ratings page's own data route, which serves the current game.
    Columns are the ones normCSV() in footera-app.js reads. A short or implausible download never
    replaces the checked-in file. */
 'use strict';
 const fs=require('fs'),path=require('path');
 
-const API='https://drop-api.ea.com/rating/ea-sports-fc';
+const SITE='https://www.ea.com',PAGE_PATH='/en/games/ea-sports-fc/ratings';
+// The game the ratings page must show. Raise it when EA switches the page to the next FC.
+const GAME='fc-27';
 const OUT=path.join(__dirname,'..','assets','players-db.csv');
 // The game compares this revision with its offline copy and downloads the new file only when it changed.
 const VERSION_OUT=path.join(__dirname,'..','assets','players-db-version.json');
-const PAGE=100,PARALLEL=6;
+const PARALLEL=6;
 const MIN_MEN=10000,MIN_WOMEN=1000;
 // EA ships some clubs under licence names; the game shows the real clubs.
 const CLUB_ALIASES={'Lombardia FC':'Inter','Milano FC':'AC Milan','Bergamo Calcio':'Atalanta','Latium':'Lazio','Piemonte Calcio':'Juventus','OM':'Olympique de Marseille'};
@@ -18,28 +22,43 @@ const COLUMNS=['player_id','common_name','short_name','long_name','positions','o
  'league_name','player_face_url','playstyles','playstyles_plus','gender'];
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function page(gender,offset){
- const url=`${API}?locale=en&gender=${gender}&limit=${PAGE}&offset=${offset}`;
+const HEADERS={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36','Accept':'application/json,text/html'};
+async function fetchText(url){
  for(let attempt=0;;attempt++){
   try{
-   const res=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (Footera player database)','Accept':'application/json'}});
+   const res=await fetch(url,{headers:HEADERS});
    if(!res.ok)throw new Error(`HTTP ${res.status}`);
-   const data=await res.json();
-   return {items:Array.isArray(data.items)?data.items:[],total:Number(data.totalItems||0)};
+   return await res.text();
   }catch(e){if(attempt>=5)throw new Error(`${url}: ${e.message}`);await sleep(Math.min(16000,1000*2**attempt))}
  }
 }
-async function allPlayers(gender){
- const first=await page(gender,0),items=[...first.items],offsets=[];
- for(let o=PAGE;o<first.total;o+=PAGE)offsets.push(o);
+// The page is a Next.js app: its build id names the JSON route that returns one page of 100 players.
+async function buildId(){
+ const html=await fetchText(SITE+PAGE_PATH.replace(/^\/en/,''));
+ const m=html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+ if(!m)throw new Error('ratings page has no __NEXT_DATA__');
+ const data=JSON.parse(m[1]),game=data.props?.pageProps?.gameDetails?.slug;
+ if(game!==GAME)throw new Error(`ratings page shows ${game}, expected ${GAME}`);
+ return data.buildId;
+}
+async function page(id,n){
+ const props=JSON.parse(await fetchText(`${SITE}/_next/data/${id}${PAGE_PATH}.json?page=${n}`)).pageProps||{};
+ const game=props.gameDetails?.slug;if(game!==GAME)throw new Error(`page ${n} shows ${game}, expected ${GAME}`);
+ const d=props.ratingDetails||{};
+ return {items:Array.isArray(d.items)?d.items:[],total:Number(d.totalItems||0)};
+}
+async function allPlayers(){
+ const id=await buildId(),first=await page(id,1),items=[...first.items],numbers=[];
+ const per=first.items.length||100;
+ for(let n=2;(n-1)*per<first.total;n++)numbers.push(n);
  const pages=new Map();
- for(let i=0;i<offsets.length;i+=PARALLEL){
-  const batch=offsets.slice(i,i+PARALLEL);
-  const got=await Promise.all(batch.map(o=>page(gender,o)));
-  batch.forEach((o,k)=>pages.set(o,got[k].items));
+ for(let i=0;i<numbers.length;i+=PARALLEL){
+  const batch=numbers.slice(i,i+PARALLEL);
+  const got=await Promise.all(batch.map(n=>page(id,n)));
+  batch.forEach((n,k)=>pages.set(n,got[k].items));
   await sleep(150);
  }
- for(const o of offsets)items.push(...pages.get(o));
+ for(const n of numbers)items.push(...pages.get(n));
  return {items,total:first.total};
 }
 
@@ -97,8 +116,9 @@ function check(rows,men,women){
 }
 
 (async()=>{
- const [men,women]=await Promise.all([allPlayers(0),allPlayers(1)]);
- console.log(`EA reports ${men.total} men and ${women.total} women; downloaded ${men.items.length} + ${women.items.length}`);
+ const all=await allPlayers(),isWomen=p=>Number(p?.gender?.id)===1||/women/i.test(label(p?.gender));
+ const men={items:all.items.filter(p=>!isWomen(p))},women={items:all.items.filter(isWomen)};
+ console.log(`EA ${GAME} lists ${all.total} players; downloaded ${men.items.length} men + ${women.items.length} women`);
  const sample=men.items.find(p=>Array.isArray(p.playerAbilities)&&p.playerAbilities.length);
  if(sample)console.log('Sample playerAbilities',JSON.stringify(sample.playerAbilities.slice(0,3)));
  const seen=new Set(),rows=[];
@@ -107,11 +127,11 @@ function check(rows,men,women){
  const{fail,leagues}=check(rows,men.items.length,women.items.length);
  console.log('Top leagues',JSON.stringify(Object.entries(leagues).sort((a,b)=>b[1]-a[1]).slice(0,12)));
  console.log('Licence names replaced',JSON.stringify(Object.fromEntries(Object.keys(CLUB_ALIASES).map(k=>[k,men.items.filter(p=>label(p.team)===k).length]))));
- if(fail.length||men.items.length<men.total*.98||women.items.length<women.total*.98){
+ if(fail.length||all.items.length<all.total*.98){
   console.error('Not writing the player database:',fail.join('; ')||'incomplete download');process.exit(1);
  }
  const csv=[COLUMNS.join(','),...rows.map(r=>COLUMNS.map(c=>cell(r[c])).join(','))].join('\n')+'\n';
  fs.writeFileSync(OUT,csv);
- fs.writeFileSync(VERSION_OUT,JSON.stringify({revision:require('crypto').createHash('sha256').update(csv).digest('hex').slice(0,16),players:rows.length})+'\n');
+ fs.writeFileSync(VERSION_OUT,JSON.stringify({game:GAME,revision:require('crypto').createHash('sha256').update(csv).digest('hex').slice(0,16),players:rows.length})+'\n');
  console.log(`Wrote ${rows.length} players (${(csv.length/1048576).toFixed(1)} MB) to assets/players-db.csv`);
 })().catch(e=>{console.error(e);process.exit(1)});
