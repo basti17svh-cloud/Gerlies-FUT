@@ -510,13 +510,13 @@ const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activ
   {names:["Diego Gómez","Diego Gomez"],eaId:"269278",ovr:81,position:"CM",stats:[76,74,78,82,79,82],fallback:{face:"./assets/footera/totw/6/269278.png",gender:"male",name:"Diego Gómez",fullName:"Diego Gómez",team:"Brighton & Hove Albion",league:"Premier League",nation:"Paraguay"}},
   {names:["Nico Paz","Nicolás Paz Martínez", "Nicolas Paz"],eaId:"277846",ovr:84,position:"CAM",stats:[82,75,81,86,55,68],fallback:{face:"./assets/footera/totw/6/277846.png",gender:"male",name:"Nico Paz",fullName:"Nicolás Paz Martínez",team:"Como",league:"Serie A",nation:"Argentina"}},
   {names:["Ibrahim Maza"],eaId:"275029",ovr:79,position:"CAM",stats:[82,73,73,86,43,69],fallback:{face:"./assets/footera/totw/6/275029.png",gender:"male",name:"Ibrahim Maza",fullName:"Ibrahim Maza",team:"Bayer 04 Leverkusen",league:"Bundesliga",nation:"Algeria"}},
-  {names:["Álex Baena","Alex Baena", "Alejandro Baena Rodríguez"],eaId:"257279",ovr:86,position:"LM",stats:[81,78,86,84,67,70],fallback:{face:"./assets/footera/totw/6/257279.png",gender:"male",name:"Álex Baena",fullName:"Alejandro Baena Rodríguez",team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Álex Baena","Alex Baena", "Alejandro Baena Rodríguez"],eaId:"257279",ovr:88,position:"LM",stats:[82,84,90,89,67,73],fallback:{face:"./assets/footera/totw/6/257279.png",gender:"male",name:"Álex Baena",fullName:"Alejandro Baena Rodríguez",team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain"}},
   {names:["Adrien Rabiot"],eaId:"210008",ovr:85,position:"CM",stats:[83,81,83,82,79,86],fallback:{face:"./assets/footera/totw/6/210008.png",gender:"male",name:"Adrien Rabiot",fullName:"Adrien Rabiot",team:"AC Milan",league:"Serie A",nation:"France"}},
   {names:["Alexander Prass"],eaId:"263041",ovr:79,position:"LM",stats:[78,69,78,79,73,78],fallback:{face:"./assets/footera/totw/6/263041.png",gender:"male",name:"Alexander Prass",fullName:"Alexander Prass",team:"TSG Hoffenheim",league:"Bundesliga",nation:"Austria"}},
   {names:["Luis Díaz","Luis Diaz", "Luis Fernando Díaz Marulanda"],eaId:"241084",ovr:89,position:"LW",stats:[92,85,80,91,47,79],fallback:{face:"./assets/footera/totw/6/241084.png",gender:"male",name:"Luis Díaz",fullName:"Luis Díaz",team:"FC Bayern München",league:"Bundesliga",nation:"Colombia"}},
   {names:["Kylian Mbappé","Kylian Mbappe"],eaId:"231747",ovr:93,position:"ST",stats:[99,92,83,94,38,78],fallback:{face:"./assets/footera/totw/6/231747.png",gender:"male",name:"Kylian Mbappé",fullName:"Kylian Mbappé Lottin",team:"Real Madrid",league:"LALIGA EA SPORTS",nation:"France"}},
-  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:91,position:"RW",stats:[87,83,88,92,24,55],fallback:{face:"./assets/footera/totw/6/277643.png",gender:"male",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
-  {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:92,position:"ST",stats:[88,93,72,82,46,90],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
+  {names:["Lamine Yamal","Lamine Yamal Nasraoui Ebana"],eaId:"277643",ovr:92,position:"RW",stats:[90,89,91,96,41,65],fallback:{face:"./assets/footera/totw/6/277643.png",gender:"male",name:"Lamine Yamal",fullName:"Lamine Yamal Nasraoui Ebana",team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain"}},
+  {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:93,position:"ST",stats:[89,95,74,83,49,92],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
   {names:["Pedro Neto","Pedro Lomba Neto"],eaId:"238616",ovr:84,position:"RW",stats:[95,80,78,86,42,72],fallback:{face:"./assets/footera/totw/6/238616.png",gender:"male",name:"Pedro Neto",fullName:"Pedro Lomba Neto",team:"Chelsea",league:"Premier League",nation:"Portugal"}}
 ]};
 const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6];
@@ -7506,7 +7506,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.205";
+const GFUT_BUILD="V21.206";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7564,7 +7564,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21205",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21206",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
