@@ -134,7 +134,12 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  }
  ctx.restore();
  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,'front');
- if(opts.crest)try{ctx.save();ctx.translate(.095,1.40);ctx.scale(1,-1);ctx.drawImage(opts.crest,-.036,-.04,.072,.08);ctx.restore()}catch(_){}
+ // V21.214 (Basti): the club crest is a real 10 cm badge, big enough to read
+ // in the celebration close-up, with a soft dark edge so it stands out on
+ // any shirt colour.
+ if(opts.crest)try{ctx.save();ctx.translate(.098,1.365);ctx.scale(1,-1);
+  ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=Math.max(1,size/340);
+  ctx.drawImage(opts.crest,-.05,-.055,.1,.11);ctx.restore()}catch(_){}
  else{ctx.fillStyle=second;ctx.beginPath();ctx.moveTo(.06,1.425);ctx.lineTo(.13,1.425);ctx.lineTo(.13,1.385);ctx.quadraticCurveTo(.095,1.35,.06,1.385);ctx.closePath();ctx.fill()}
  // Chest sponsor instead of a front number, like real club kits.
  if(opts.sponsor!==false){
