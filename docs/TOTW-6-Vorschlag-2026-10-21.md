@@ -20,13 +20,13 @@ Ratings und Kartenattribute sind Footera-Vorschläge zur Spielbalance (EA-Basisw
 | Diego Gómez | Brighton & Hove Albion | ZM | 81 | Tor von der Mittellinie (51 m) beim 5:0 gegen Crystal Palace. [Beleg](https://www.beinsports.com/en-us/soccer/premier-league/articles/brighton-5-0-crystal-palace-gomez-stunner-headlines-five-star-rout-2026-10-18) |
 | Nico Paz | Como | ZOM | 84 | Tor und Vorlage beim 3:1 gegen Fiorentina, Bestnote 8,3. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
 | Ibrahim Maza | Bayer 04 Leverkusen | ZOM | 79 | Tor und Vorlage beim 2:1 gegen Freiburg. [Beleg](https://sports.yahoo.com/articles/bundesliga-team-week-matchday-6-085900191.html) |
-| Álex Baena | Atlético de Madrid | LM | 86 | Siegtor in der 89. Minute beim 1:0 bei Espanyol. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
+| Álex Baena | Atlético de Madrid | LM | 88 | Siegtor in der 89. Minute beim 1:0 bei Espanyol. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
 | Adrien Rabiot | AC Milan | ZM | 85 | Tor beim 3:2 gegen Atalanta. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
 | Alexander Prass | TSG Hoffenheim | LM | 79 | Tor und Vorlage beim 2:1 gegen Mönchengladbach. [Beleg](https://sports.yahoo.com/articles/bundesliga-team-week-matchday-6-085900191.html) |
 | Luis Díaz | FC Bayern München | LF | 89 | Hattrick und Vorlage beim 6:1 gegen RB Leipzig. [Beleg](https://sports.yahoo.com/articles/bundesliga-team-week-matchday-6-085900191.html) |
 | Kylian Mbappé | Real Madrid | ST | 93 | Zwei Tore beim 4:1 gegen Sevilla. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
-| Lamine Yamal | FC Barcelona | RF | 91 | Tor und Vorlage beim 5:2 bei Betis. [Beleg](https://www.beinsports.com/en-mena/football/la-liga/articles-video/unstoppable-barca-thrash-betis-to-extend-perfect-start-2026-10-17) |
-| Erling Haaland | Manchester City | ST | 92 | Zwei Tore beim 3:2 gegen Ipswich. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
+| Lamine Yamal | FC Barcelona | RF | 92 | Tor und Vorlage beim 5:2 bei Betis. [Beleg](https://www.beinsports.com/en-mena/football/la-liga/articles-video/unstoppable-barca-thrash-betis-to-extend-perfect-start-2026-10-17) |
+| Erling Haaland | Manchester City | ST | 93 | Zwei Tore beim 3:2 gegen Ipswich. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
 | Pedro Neto | Chelsea | RF | 84 | Beide Tore beim 2:0 in Everton. [Beleg](https://www.flashscore.com/news/football-tracker-october-17-18-2026-live-updates-premier-league-laliga-serie-a-bundesliga-ligue-1/IL4KYCR7/) |
 
 Knapp nicht drin: Oyarzabal (Doppelpack), Dembélé (Tor + Vorlage), Lepaul (Hattrick per Elfmeter in einer Niederlage), Akor Adams (Siegtor in Neapel), Kostoulas, Unai Simón.
@@ -34,3 +34,11 @@ Knapp nicht drin: Oyarzabal (Doppelpack), Dembélé (Tor + Vorlage), Lepaul (Hat
 ## Freigabe
 
 Nach „OK“ wird `sourceStatus` auf `admin-approved` gesetzt. Der Code prüft dann 18 Spieler, 2/5/6/5, einen Spieler pro Verein und dass niemand aus TOTW 5 dabei ist; `tests/totw-rules.test.cjs` prüft zusätzlich laufende Events.
+
+## Korrektur V21.206 (21.10.2026)
+
+Basti hat bemerkt, dass drei Karten schwächer waren als ihre früheren TOTW-Karten. Jede neue TOTW-Karte muss jetzt die beste frühere Spezialkarte desselben Spielers in Gesamtwertung und jedem Kartenwert übertreffen (geprüft in `tests/totw-rules.test.cjs`):
+
+- Álex Baena 86 → **88** (TOTW 3: 87), Werte 82 / 84 / 90 / 89 / 67 / 73
+- Lamine Yamal 91 → **92** (TOTW 1 und 3: 91), Werte 90 / 89 / 91 / 96 / 41 / 65
+- Erling Haaland 92 → **93** (TOTW 3: 92), Werte 89 / 95 / 74 / 83 / 49 / 92
