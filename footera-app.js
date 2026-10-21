@@ -4139,7 +4139,7 @@ function updateClubRatingLabel(){
  if($("clubRatingLabel"))$("clubRatingLabel").textContent=`${min}–${max} GES`
 }
 const UX_COMPACT_MEDIA=window.matchMedia?.("(max-width:620px)");
-let clubFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches,marketFiltersCollapsed=false;
+let clubFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches,marketFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches;
 function uxSelectedText(id,fallback=""){const el=$(id),opt=el?.selectedOptions?.[0];return String(opt?.textContent||fallback).trim()}
 function setUxFilterPanel(panelId,toggleId,collapsed){
  const panel=$(panelId),toggle=$(toggleId);if(!panel||!toggle)return;
@@ -4158,14 +4158,40 @@ function renderClubUx(){
  if($("clubFilterSummary"))$("clubFilterSummary").textContent=clubFilterSummaryText();
  setUxFilterPanel("clubFilterPanel","clubFilterToggle",clubFiltersCollapsed)
 }
-function marketFilterSummaryText(){
- const parts=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
- if(name)parts.push(name);if(type)parts.push(uxSelectedText("marketSpecialType"));else if(quality)parts.push(uxSelectedText("marketQuality"));if(pos)parts.push(uxSelectedText("marketPosition"));if(league)parts.push(league);if(club)parts.push(club);if(nation)parts.push(nation);if(min>65||max<99)parts.push(`${min}–${max} GES`);if(pmin||pmax)parts.push(`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`);
- return parts.length?parts.join(" · "):"Alle Spieler · 65–99 GES"
+function marketActiveFilterList(){
+ const list=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
+ if(name)list.push({key:"name",label:`„${name}“`});if(pos)list.push({key:"position",label:uxSelectedText("marketPosition")});if(quality!=="bronze"&&(min>65||max<99))list.push({key:"rating",label:max<99?`${min}–${max} GES`:`${min}+ GES`,panel:true});
+ if(type)list.push({key:"type",label:uxSelectedText("marketSpecialType"),panel:true});if(quality)list.push({key:"quality",label:uxSelectedText("marketQuality")});if(league)list.push({key:"league",label:league,panel:true});if(club)list.push({key:"club",label:club,panel:true});if(nation)list.push({key:"nation",label:nation,panel:true});if(pmin||pmax)list.push({key:"price",label:`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`,panel:true});
+ return list
 }
-function renderMarketUx(){if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)}
+function marketFilterSummaryText(){
+ const parts=marketActiveFilterList().filter(f=>f.panel).map(f=>f.label);
+ return parts.length?parts.join(" · "):"Liga, Verein, Preis, Nation, GES"
+}
+function clearMarketFilter(key){
+ if(key==="name")$("marketName").value="";else if(key==="position")$("marketPosition").value="";else if(key==="rating"){$("marketRatingMin").value=65;$("marketRatingMax").value=99}
+ else if(key==="type")$("marketSpecialType").value="";else if(key==="quality"){$("marketQuality").value="";if($("marketSpecialType").value!=="base")$("marketSpecialType").value=""}
+ else if(key==="league"){$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value=""}else if(key==="club")$("marketClub").value="";else if(key==="nation")$("marketNation").value="";else if(key==="price"){$("marketPriceMin").value="";$("marketPriceMax").value=""}
+ updateRatingUI();refreshMarket()
+}
+function renderMarketUx(){
+ const list=marketActiveFilterList(),panelCount=list.filter(f=>f.panel).length;
+ if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();
+ const count=$("marketFilterCount");if(count){count.hidden=!panelCount;count.textContent=String(panelCount)}
+ const pos=$("marketPosition")?.value||"";
+ document.querySelectorAll("[data-market-quick-pos]").forEach(b=>{const on=b.dataset.marketQuickPos===pos;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
+ document.querySelectorAll("[data-market-quick-quality]").forEach(b=>{const on=b.dataset.marketQuickQuality===($("marketQuality")?.value||"");b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
+ const box=$("marketActiveFilters");if(box){box.hidden=!list.length;box.innerHTML=list.length?list.map(f=>`<button type="button" data-market-clear="${f.key}" aria-label="${esc(f.label)} entfernen">${esc(f.label)}<span aria-hidden="true">×</span></button>`).join("")+(list.length>1?`<button type="button" class="market-clear-all" data-market-clear="all">Alle löschen</button>`:""):""}
+ setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)
+}
 $("clubFilterToggle")?.addEventListener("click",()=>{clubFiltersCollapsed=!clubFiltersCollapsed;renderClubUx()});
 $("marketFilterToggle")?.addEventListener("click",()=>{marketFiltersCollapsed=!marketFiltersCollapsed;renderMarketUx()});
+$("marketQuick")?.addEventListener("click",e=>{
+ const pos=e.target.closest("[data-market-quick-pos]"),quality=e.target.closest("[data-market-quick-quality]"),clear=e.target.closest("[data-market-clear]");
+ if(pos){$("marketPosition").value=pos.dataset.marketQuickPos;refreshMarket();return}
+ if(quality){const q=quality.dataset.marketQuickQuality,t=$("marketSpecialType").value;$("marketQuality").value=q;if(q!=="special"&&t&&t!=="base")$("marketSpecialType").value="";if(q==="special"&&t==="base")$("marketSpecialType").value="";updateRatingUI();refreshMarket();return}
+ if(clear){if(clear.dataset.marketClear==="all")resetMarketFilters();else clearMarketFilter(clear.dataset.marketClear)}
+});
 const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
 function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
@@ -4723,7 +4749,7 @@ function marketAuctionState(x){
 function marketRowHTML(x,i,tracked=false){
  const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=isMomentumItem(x)?"momentum":String(x.eventName).startsWith("Team of the Week")?"totw":isLegacyEventName(x.eventName)?"legacy":x.variant==="special"?"special":"",next=nextMarketBid(x),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
  const removeAction=tracked&&x.settled?`<button class="secondary auction-remove" data-my-auction-remove="${i}">Aus Liste entfernen</button>`:"";
- return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(isMomentumItem(x)?b.name:(x.base?.name||"Spieler"))} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(isMomentumItem(x)?b.name:(x.base?.name||b.name||"Spieler"))}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(isMomentumItem(x)?b.name:(x.base?.name||"Spieler"))} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(isMomentumItem(x)?b.name:(x.base?.name||b.name||"Spieler"))}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell market-price-time"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)} · Start ${currencyAmountHTML("coins",x.startPrice||x.bid,"compact")}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
 }
 function processBotOutbids(){
  let changed=false;const now=Date.now();
@@ -4896,7 +4922,7 @@ function settleTransferSales(){
 }
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("marketPagination").addEventListener("click",e=>{const b=e.target.closest("[data-market-page]");if(!b||b.disabled)return;if(b.dataset.marketPage==="prev")setMarketPage(marketPage-1);if(b.dataset.marketPage==="next")setMarketPage(marketPage+1)});
-$("refreshMarket").addEventListener("click",()=>{refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
+$("refreshMarket").addEventListener("click",()=>{refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("applyMarketFilters")?.addEventListener("click",()=>$("refreshMarket").click());$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}}else if(e.key==="Escape")hideMarketNameSuggestions()});
 $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;
@@ -7533,7 +7559,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.216";
+const GFUT_BUILD="V21.217";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7591,7 +7617,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21216",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21217",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -1,4 +1,4 @@
-/* Footera V21.216 player looks for the 3D highlights: skin tone, hair colour,
+/* Footera V21.217 player looks for the 3D highlights: skin tone, hair colour,
  * haircut and beard per real player. Two sources, both keyed by EA id:
  * assets/player-looks.json, measured from EA's own player portraits by
  * scripts/build-player-looks.cjs, and hand-set looks for well-known players,
