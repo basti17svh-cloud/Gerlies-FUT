@@ -242,11 +242,30 @@
    return !root.localStorage.getItem(WELCOME)
      && !hasLocalGame();
  }
+ const OFFLINE_WAIT=6000;
+ function offline(){return root.navigator?.onLine===false}
+ // Without internet the Supabase SDK either fails to load or never answers.
+ // Give up after a few seconds so the account dialog cannot hang forever.
+ function clientOrOffline(){
+   if(client)return Promise.resolve(client);
+   let timer;
+   return Promise.race([
+     getClient(),
+     new Promise((_,reject)=>{timer=root.setTimeout(()=>reject(Error("Konto-Dienst antwortet nicht.")),OFFLINE_WAIT)})
+   ]).finally(()=>root.clearTimeout?.(timer));
+ }
+ function playLocally(){
+   // The club stays in localStorage; cloud backup resumes on the next online start.
+   root.localStorage.setItem(WELCOME,"1");
+   hide();
+ }
  async function continueAsGuest(){
-   const c=await getClient();
+   let c;
+   try{c=await clientOrOffline()}catch(e){console.warn("Footera-Konto offline:",e);return playLocally()}
    let u=await user();
    if(!u){
      const result=await c.auth.signInAnonymously();
+     if(result.error&&(offline()||result.error.name==="AuthRetryableFetchError"))return playLocally();
      if(result.error)throw result.error;
      u=result.data?.user||result.data?.session?.user;
      if(!u?.is_anonymous)throw Error("Gastkonto konnte nicht erstellt werden.");
@@ -909,7 +928,15 @@
  }
  async function render(){
    if(!dialog)return;
-   let u=null;try{u=await user()}catch(e){msg(safeMessage(e),true);return}
+   let u=null;
+   try{await clientOrOffline();u=await user()}
+   catch(e){
+     $("footeraAccountStatus").textContent="Offline · du kannst lokal als Gast weiterspielen";
+     $("footeraGuest").hidden=false;
+     console.warn("Footera-Konto:",e);
+     msg((offline()?"Keine Internetverbindung.":"Konto-Dienst gerade nicht erreichbar.")+" Dein Verein wird auf diesem Gerät gespeichert.");
+     return;
+   }
    const logged=isPermanent(u),guest=!!u?.is_anonymous,owner=root.localStorage.getItem(OWNER);
    const emailChanged=logged&&acknowledgeAccountEmailChange(u);
    const changeRequest=pendingAccountEmailChange();
@@ -1175,7 +1202,7 @@
      if(!autoTimer&&root.setInterval)autoTimer=root.setInterval(()=>{
        autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
      },45000);
-   }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
+   }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
  root.FooteraAccount={getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();

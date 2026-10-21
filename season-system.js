@@ -327,7 +327,7 @@ function renderTasks(){
   const readyRotating=groups.flatMap(window=>window.tasks.filter(t=>!state.objectiveClaims[t.key]&&objectiveProgress(t)>=t.target));
   const week=groups.find(window=>window.tasks[0]?.group==="weekly"),readyBonus=week&&weeklyBonusReady(week)&&!state.objectiveBonuses[week.key];
   if(readyFoundations.length||readyRotating.length||readyBonus){
-   sections.push(`<div class="objective-ready-head"><strong>Jetzt abholen</strong><span>${pending} Belohnung${pending===1?"":"en"}</span></div>`+
+   sections.push(`<div class="objective-ready-head"><div><strong>Jetzt abholen</strong><span>${pending} Belohnung${pending===1?"":"en"}</span></div><button type="button" class="primary" data-objective-claim-all>Alle abholen</button></div>`+
     readyFoundations.map(t=>objectiveCard(t,"foundation",true)).join("")+
     readyRotating.map(t=>objectiveCard(t,t.group,true)).join("")+
     (readyBonus?weeklyBonusCard(week):""))
@@ -405,9 +405,30 @@ $("seasonPass").addEventListener("scroll",event=>{
  dots.forEach((dot,i)=>dot.classList.toggle("active",i===index));
  const count=slider.querySelector(".pass-slide-count");if(count)count.textContent=`${index+1}/${dots.length}`
 },true);
+// Same rules as the single "Abholen" buttons, applied to every ready reward.
+// Weekly tasks are claimed first so a now-complete Wochenmeister bonus is included.
+function claimAllObjectives(){
+ ensureObjectiveWindows();
+ let count=0;
+ for(const task of TASKS){
+  if(state.claims[task.id]||Number(state.stats[task.stat]||0)<task.target)continue;
+  state.claims[task.id]=true;grant(task.reward);count++
+ }
+ for(const task of activeObjectiveGroups().flatMap(window=>window.tasks)){
+  if(state.objectiveClaims[task.key]||objectiveProgress(task)<task.target)continue;
+  if(task.group==="event"){if(claimEventObjective(task))count++;continue}
+  state.objectiveClaims[task.key]=true;grant(task.reward);count++
+ }
+ const week=objectiveWindow("weekly");
+ if(week&&!state.objectiveBonuses[week.key]&&weeklyBonusReady(week)){state.objectiveBonuses[week.key]=true;grant(WEEKLY_BONUS);count++}
+ if(!count)return 0;
+ save();renderAll();toast(`${count} Belohnung${count===1?"":"en"} abgeholt.`);
+ return count
+}
 $("taskList").addEventListener("click",event=>{
  const preview=event.target.closest("[data-event-objective-bio]");
  if(preview){const task=activeEventObjectives().find(t=>t.id===preview.dataset.eventObjectiveBio),item=task&&makeEventObjectiveItem(task);if(item)openBiography(item,null);return}
+ if(event.target.closest("[data-objective-claim-all]")){claimAllObjectives();return}
  const taskButton=event.target.closest("[data-objective-claim]"),bonus=event.target.closest("[data-objective-bonus]");
  if(!taskButton&&!bonus)return;
  ensureObjectiveWindows();
