@@ -51,15 +51,25 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
 
   await page.evaluate(()=>{switchView("marketView");renderMarket()});
   await page.locator('[data-market-section="search"]').click();
-  check("market search opens with filters available",await page.locator("#marketFilterPanel").isVisible());
+  check("market search opens with search and quick filters visible",await page.locator("#marketName").isVisible()&&await page.locator('[data-market-quick-pos="ST"]').isVisible()&&await page.locator('[data-market-quick-rating="84"]').isVisible());
+  check("more market filters start compact on mobile",!(await page.locator("#marketFilterPanel").isVisible()));
+  await page.locator("#marketFilterToggle").click();
+  check("more market filters open on tap",await page.locator("#marketFilterPanel").isVisible());
   await page.locator("#marketName").fill("UX Spieler 8");
   await page.locator("#refreshMarket").click();
   check("explicit market search compacts filters on mobile",!(await page.locator("#marketFilterPanel").isVisible()));
-  check("market compact summary keeps the search context",(await page.locator("#marketFilterSummary").textContent()).includes("UX Spieler 8"));
+  check("market active filter chips keep the search context",(await page.locator("#marketActiveFilters").textContent()).includes("UX Spieler 8"));
+  await page.locator('[data-market-quick-pos="ST"]').click();
+  check("position quick filter is applied",await page.evaluate(()=>document.getElementById("marketPosition").value==="ST"&&document.querySelector('[data-market-quick-pos="ST"]').classList.contains("active")));
+  await page.locator('[data-market-clear="position"]').click();
+  check("active filter chip clears its filter",await page.evaluate(()=>document.getElementById("marketPosition").value===""));
+  await page.locator("#marketName").fill("");await page.locator("#refreshMarket").click();
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
    const geometry=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth,toggle:document.getElementById("marketFilterToggle")?.scrollWidth,toggleClient:document.getElementById("marketFilterToggle")?.clientWidth}));
    check(`${width}: market compact filters have no horizontal overflow`,geometry.doc<=geometry.view+1&&geometry.toggle<=geometry.toggleClient+1);
+   const overlap=await page.evaluate(()=>{const row=document.querySelector("#marketGrid .market-row");if(!row)return null;const a=row.querySelector(".market-price-grid").getBoundingClientRect(),b=row.querySelector(".market-row-actions").getBoundingClientRect();return a.bottom>b.top+1&&a.right>b.left+1});
+   check(`${width}: market row buttons do not cover the prices`,overlap===false);
   }
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,"ux-overview-v2112-market-390.png"),fullPage:false});
   check("no uncaught JavaScript errors in usability flow",errors.length===0);

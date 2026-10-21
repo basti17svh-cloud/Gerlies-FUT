@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.214</title>
+<title>Footera V21.216</title>
 <link rel="stylesheet" href="./footera-app.css?v=21197">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
@@ -52,6 +52,7 @@
 <link rel="stylesheet" href="./footera-points-shop.css?v=21128">
 <link rel="stylesheet" href="./ux-clarity.css?v=21202">
 <link rel="stylesheet" href="./footera-share.css?v=21211">
+<link rel="stylesheet" href="./market-clarity.css?v=21216">
 </head>
 <body>
 
@@ -337,14 +338,22 @@
   </div>
 
   <div id="marketSearchShell" class="market-detail-shell" hidden>
-    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Position+ berücksichtigt Haupt- und Nebenpositionen</span></div></div>
-    <div class="online-note" style="margin-bottom:9px"><strong>Marktquelle:</strong> simulierte Bot-Angebote. Andere Spieler müssen dafür nicht online sein oder Karten anbieten.</div>
-    <button id="marketFilterToggle" class="ux-filter-toggle" type="button" aria-expanded="true" aria-controls="marketFilterPanel"><span><strong>Suchfilter</strong><small id="marketFilterSummary">Alle Spieler · 65–99 GES</small></span><b aria-hidden="true">⌄</b></button>
+    <div class="market-detail-nav"><button class="secondary" type="button" data-market-home>← Transfers</button><div><strong>Transfermarkt-Suche</strong><span>Simulierte Bot-Angebote · Position zählt auch Nebenpositionen</span></div></div>
+    <div class="market-quick" id="marketQuick">
+      <div class="market-quick-search"><div class="market-name-wrap"><input id="marketName" type="search" placeholder="Spieler suchen, z. B. Musiala" aria-label="Spielername" autocomplete="off" enterkeyhint="search"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div><button id="refreshMarket" class="primary" type="button">Suchen</button></div>
+      <div class="market-quick-label">Position</div>
+      <div class="market-quick-chips" role="group" aria-label="Position"><button type="button" data-market-quick-pos="" class="active">Alle</button><button type="button" data-market-quick-pos="GK">TW</button><button type="button" data-market-quick-pos="CB">IV</button><button type="button" data-market-quick-pos="LB">LV</button><button type="button" data-market-quick-pos="RB">RV</button><button type="button" data-market-quick-pos="CDM">ZDM</button><button type="button" data-market-quick-pos="CM">ZM</button><button type="button" data-market-quick-pos="CAM">ZOM</button><button type="button" data-market-quick-pos="LM">LM</button><button type="button" data-market-quick-pos="RM">RM</button><button type="button" data-market-quick-pos="LW">LF</button><button type="button" data-market-quick-pos="RW">RF</button><button type="button" data-market-quick-pos="ST">ST</button></div>
+      <div class="market-quick-label">Gesamtwertung</div>
+      <div class="market-quick-chips" role="group" aria-label="Gesamtwertung"><button type="button" data-market-quick-rating="65" class="active">Alle GES</button><button type="button" data-market-quick-rating="75">75+</button><button type="button" data-market-quick-rating="80">80+</button><button type="button" data-market-quick-rating="84">84+</button><button type="button" data-market-quick-rating="87">87+</button><button type="button" data-market-quick-rating="90">90+</button></div>
+      <button id="marketFilterToggle" class="ux-filter-toggle market-more-toggle" type="button" aria-expanded="false" aria-controls="marketFilterPanel"><span><strong>Weitere Filter <em id="marketFilterCount" hidden></em></strong><small id="marketFilterSummary">Liga, Verein, Nation, Qualität, Preis</small></span><b aria-hidden="true">⌄</b></button>
+      <div id="marketActiveFilters" class="market-active-filters" hidden></div>
+    </div>
     <div class="market-filter-panel ux-filter-panel" id="marketFilterPanel">
       <div class="market-filter-grid">
-        <div class="market-field full market-name-field"><label>Spielername</label><div class="market-name-wrap"><input id="marketName" type="search" placeholder="z. B. Bellingham, Modrić, Musiala …" autocomplete="off"><div id="marketNameSuggestions" class="market-name-suggestions" role="listbox"></div></div></div>
         <div class="market-field"><label>Liga</label><select id="marketLeague"><option value="">Alle Ligen</option></select></div>
         <div class="market-field"><label>Verein</label><select id="marketClub"><option value="">Alle Vereine</option></select></div>
+        <div class="market-field"><label>Sofortkauf min.</label><input id="marketPriceMin" type="number" min="0" max="15000000" step="50" inputmode="numeric" placeholder="0 Coins"></div>
+        <div class="market-field"><label>Sofortkauf max.</label><input id="marketPriceMax" type="number" min="0" max="15000000" step="50" inputmode="numeric" placeholder="15.000.000"></div>
         <div class="market-field"><label>Nationalität</label><select id="marketNation"><option value="">Alle Nationen</option></select></div>
         <div class="market-field"><label>Position+</label><select id="marketPosition"><option value="">Alle Positionen</option><option value="GK">TW+</option><option value="CB">IV+</option><option value="LB">LV+</option><option value="RB">RV+</option><option value="LWB">LAV+</option><option value="RWB">RAV+</option><option value="CDM">ZDM+</option><option value="CM">ZM+</option><option value="CAM">ZOM+</option><option value="LM">LM+</option><option value="RM">RM+</option><option value="LW">LF+</option><option value="RW">RF+</option><option value="ST">ST+</option></select></div>
         <div class="market-field"><label>Qualität</label><select id="marketQuality"><option value="">Alle Qualitäten</option><option value="bronze">Bronze</option><option value="silver">Silber</option><option value="gold">Gold</option><option value="special">Spezial</option></select></div>
@@ -354,10 +363,8 @@
           <div class="dual-range"><input id="marketRatingMin" type="range" min="65" max="99" value="65"><input id="marketRatingMax" type="range" min="65" max="99" value="99"></div>
           <div class="range-scale"><span id="marketRatingFloor">65</span><span>99</span></div>
         </div>
-        <div class="market-field"><label>Sofortkauf min.</label><input id="marketPriceMin" type="number" min="0" max="15000000" step="50" inputmode="numeric" placeholder="0 Coins"></div>
-        <div class="market-field"><label>Sofortkauf max.</label><input id="marketPriceMax" type="number" min="0" max="15000000" step="50" inputmode="numeric" placeholder="15.000.000"></div>
       </div>
-      <div class="market-actions"><button id="resetMarketFilters" class="secondary">Filter zurücksetzen</button><button id="refreshMarket" class="primary">Suchen</button></div>
+      <div class="market-actions"><button id="resetMarketFilters" class="secondary" type="button">Filter zurücksetzen</button><button id="applyMarketFilters" class="primary" type="button">Anwenden</button></div>
     </div>
     <div id="marketResultMeta" class="market-result-meta"><span>Filter setzen und suchen.</span><span></span></div>
     <div id="marketGrid" class="itemgrid"></div>
@@ -688,7 +695,7 @@
 <script src="./footera-match-actions.js?v=21181"></script>
 <script src="./footera-time.js"></script>
 <script src="./footera-cosmetic-evolutions.js?v=21156"></script>
-<script src="./footera-app.js?v=21214"></script>
+<script src="./footera-app.js?v=21216"></script>
 <script src="./season-system.js?v=21194"></script>
 <script src="./competition-system.js?v=21212"></script>
 <script src="./champions-system.js?v=21212"></script>
