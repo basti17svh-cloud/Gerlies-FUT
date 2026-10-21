@@ -1,4 +1,5 @@
 /* Footera V21.209 — share walkouts, invite friends by link and suggest the home-screen app.
+   V21.211 — invite reward: both players get an 82+ pack once the new player has played 3 matches.
    Invite links look like ./?invite=AB7K-3P9Q&utm_source=share&utm_medium=invite. The code is
    kept on this device until the online service can resolve it, then the inviter becomes a friend. */
 (()=>{
@@ -48,9 +49,11 @@
   if(file){const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);say("Bild gespeichert. Link: "+url);return"downloaded"}
   say(url);return"shown"
  }
+ function markInviteShared(){if(typeof state==="undefined"||state.referral?.sharedInvite)return;state.referral={...(state.referral||{}),sharedInvite:true};if(typeof save==="function")save()}
  async function shareInvite(){
   const code=await myCode();
   if(!code)return say("Einladungslink noch nicht verfügbar. Startelf und Bank müssen vollständig sein und Footera online.");
+  markInviteShared();
   return share({title:"Footera",text:`Spiel Footera mit mir! Mein Freundescode: ${prettyCode(code)} ⚽`,url:inviteUrl(code,"invite")})
  }
 
@@ -180,6 +183,7 @@
   if(btn){btn.disabled=true;btn.textContent="Wird vorbereitet …"}
   try{
    const [file,code]=await(shareJob||Promise.resolve([null,""]));
+   if(code)markInviteShared();
    const result=await share({title:"Footera",text:shareText(meta),url:inviteUrl(code,meta.mode==="walkout"||meta.mode==="double"?"walkout":"pack"),file});
    if(result==="shared")say("Danke fürs Teilen!")
   }finally{if(btn){btn.disabled=false;btn.textContent="Teilen"}}
@@ -212,9 +216,63 @@
    if(!friend){erase(INVITE_KEY);say("Einladungslink ist nicht mehr gültig.");return}
    const result=storeFriendProfile(friend,{quiet:true});
    erase(INVITE_KEY);
-   if(result==="saved")say(`Einladung angenommen: ${friend.clubName||friend.username||"Dein Freund"} ist jetzt in deiner Freundesliste.`)
+   const referral=result==="saved"?await rpc("footera_register_referral",{p_code:invite.code}):null;
+   if(referral==="registered"||referral==="known"){state.referral={...(state.referral||{}),invitedBy:friend.onlineUid||"",pending:true};if(typeof save==="function")save()}
+   if(result==="saved")say(`Einladung angenommen: ${friend.clubName||friend.username||"Dein Freund"} ist jetzt in deiner Freundesliste.${referral==="registered"?` Nach ${REFERRAL_MATCHES} Spielen bekommt ihr beide ein ${REFERRAL_PACK_NAME}.`:""}`)
   }catch(e){console.warn("Footera Einladung:",e)}
   finally{inviteRunning=false}
+ }
+
+ /* ---------- invite reward: one 82+ pack each once the new player has played 3 matches ---------- */
+ const REFERRAL_PACK="82",REFERRAL_PACK_NAME="82+ Players Pack",REFERRAL_MATCHES=3;
+ // Server answer, or null when the service or the V21.211 migration is missing.
+ async function rpc(name,args){
+  try{
+   const online=window.FooteraOnline;if(!online?.available)return null;
+   await online.init();if(!online.ready)return null;
+   const client=await online.authClient();if(!client)return null;
+   const {data,error}=await client.rpc(name,args);
+   if(error){console.warn("Footera Einladung:",error.message||error);return null}
+   return data
+  }catch(e){console.warn("Footera Einladung:",e);return null}
+ }
+ let claimRunning=null,referralStats=null;
+ function claimReferralRewards(){
+  return claimRunning||(claimRunning=(async()=>{
+   try{
+    // Never start the online service just for this: only players who invited or were invited ask.
+    const online=window.FooteraOnline;
+    if(!online?.ready&&!state.referral?.invitedBy&&!state.referral?.sharedInvite)return 0;
+    const result=await rpc("footera_claim_referral_rewards");
+    if(!result||typeof result!=="object")return 0;
+    referralStats=result;
+    state.referralClaims=state.referralClaims||{};
+    let granted=0;
+    for(const reward of Array.isArray(result.rewards)?result.rewards:[]){
+     const id=String(reward?.id||"");
+     if(!/^referral-(invitee|inviter)-[0-9a-f-]{36}$/.test(id)||state.referralClaims[id])continue;
+     state.packs[REFERRAL_PACK]=(state.packs[REFERRAL_PACK]||0)+1;
+     state.referralClaims[id]={claimedAt:Date.now(),role:reward.role==="inviter"?"inviter":"invitee",pack:REFERRAL_PACK};
+     granted++;
+     say(reward.role==="inviter"?`Einladungsbonus: Dein Freund hat ${REFERRAL_MATCHES} Spiele gespielt – ${REFERRAL_PACK_NAME} erhalten!`:`Einladungsbonus: ${REFERRAL_PACK_NAME} erhalten! Dein Freund bekommt auch eins.`)
+    }
+    if(result.ownQualified&&state.referral?.pending)state.referral.pending=false;
+    if(granted||result.ownQualified){if(typeof save==="function")save();if(typeof flushSave==="function")flushSave();if(typeof renderAll==="function")renderAll()}
+    renderReferralInfo();
+    return granted
+   }finally{claimRunning=null}
+  })())
+ }
+ async function afterMatch(){
+  if(!state.referral?.pending||Number(state.stats?.matches||0)<REFERRAL_MATCHES)return;
+  const status=await rpc("footera_referral_progress",{p_matches:Number(state.stats.matches||0)});
+  if(status==="qualified")await claimReferralRewards();
+  else if(status==="none"){state.referral.pending=false;if(typeof save==="function")save()}
+ }
+ function renderReferralInfo(){
+  const box=document.getElementById("referralInfo");if(!box)return;
+  const s=referralStats,line=s&&Number(s.invited)>0?` Bisher: ${Number(s.invited)} eingeladen, ${Number(s.qualified)} davon mit ${REFERRAL_MATCHES} Spielen.`:"";
+  box.textContent=`Lade Freunde ein: Sobald dein Freund ${REFERRAL_MATCHES} Spiele gespielt hat, bekommt ihr beide ein ${REFERRAL_PACK_NAME}.${line}`
  }
 
  /* ---------- add to home screen ---------- */
@@ -250,13 +308,14 @@
  }
 
  function start(){
-  acceptInvite();
-  window.addEventListener("online",acceptInvite)
+  renderReferralInfo();
+  acceptInvite().then(()=>{if(state.referral?.pending)return afterMatch()}).then(claimReferralRewards);
+  window.addEventListener("online",()=>acceptInvite().then(claimReferralRewards))
  }
  captureInvite();
  document.addEventListener("click",e=>{
   if(e.target.closest("#resultShareBtn")){sharePack();return}
   if(e.target.closest("#shareInviteLink")){shareInvite()}
  });
- window.FooteraShare={inviteUrl,share,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,afterPack,start};
+ window.FooteraShare={inviteUrl,share,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,afterPack,afterMatch,claimReferralRewards,start};
 })();
