@@ -1,0 +1,14 @@
+{
+ "Calcio A Femminile": {
+  "url": "./assets/leagues/calcio-a-femminile.png",
+  "source": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Serie_A_Women_%282025-Now%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+ },
+ "Liga Portugal Feminino": {
+  "url": "./assets/leagues/liga-portugal-feminino.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Liga_BPI_logo.png/330px-Liga_BPI_logo.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+ },
+ "Scottish Women's League": {
+  "url": "./assets/leagues/scottish-women-s-league.png",
+  "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/SWPL_Logo_Brandmarque_Colour.png/330px-SWPL_Logo_Brandmarque_Colour.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+ }
+}
