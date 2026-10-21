@@ -78,3 +78,21 @@ test('the revision file matches the checked-in database, so installs refresh the
  const worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.match(worker,/players-db\(\?:-version\\\.json\|\\\.csv\)/,'the service worker never answers the database from its own cache');
 });
+
+test("women's cards show their league logo and EA's crest of the women's team",()=>{
+ const{ctx,players}=load();
+ const women=players.filter(p=>/women/i.test(p.gender));
+ assert.ok(women.length>1000,'the database holds the women');
+ const perLeague={};for(const p of women)perLeague[p.league]=(perLeague[p.league]||0)+1;
+ for(const[league,count]of Object.entries(perLeague)){
+  if(count<30)continue;
+  const logo=ctx.localLeagueLogo(league);
+  assert.ok(logo,`${league} (${count} players) has a league logo`);
+  assert.ok(fs.existsSync(path.join(root,logo)),`${logo} is checked in`);
+ }
+ const putellas=women.find(p=>p.name==='Alexia Putellas');
+ assert.ok(putellas,'Alexia Putellas is in the database');
+ assert.equal(ctx.womensClubLogo(putellas),putellas.clubLogo,"Barcelona's women's crest comes from EA");
+ assert.match(putellas.clubLogo,/^https:\/\/drop-assets\.ea\.com\//);
+ assert.equal(ctx.verifiedClubBadge(putellas.team,putellas),null,"the men's crest is never used for a women's team");
+});

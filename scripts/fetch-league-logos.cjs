@@ -16,9 +16,11 @@ const LEAGUES={
  'Liga Portugal Feminino':'Campeonato Nacional Feminino',
  'Ceska Liga Žen':"Czech Women's First League",
  'Nederland Vrouwen Liga':'Eredivisie (women)',
- 'Schweizer Damen Liga':["Swiss Women's Super League","Women's Super League (Switzerland)",'AXA Women\'s Super League'],
+ 'Schweizer Damen Liga':["Swiss Women's Super League","Women's Super League (Switzerland)",'AXA Women\'s Super League','Swiss Women\'s Football League'],
  'Sverige Liga':'Damallsvenskan',
- "Scottish Women's League":"Scottish Women's Premier League"
+ "Scottish Women's League":"Scottish Women's Premier League",
+ 'Norge Kvinner Liga':['Toppserien','Norwegian Women\'s Premier League'],
+ 'Iceland League':['Besta deild kvenna','Úrvalsdeild kvenna (football)']
 };
 const slug=name=>name.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const UA={'User-Agent':'FooteraLeagueLogos/1.0 (https://github.com/basti17svh-cloud/gerlies-fut)'};
