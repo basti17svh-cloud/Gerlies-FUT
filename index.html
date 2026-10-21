@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.209</title>
+<title>Footera V21.210</title>
 <link rel="stylesheet" href="./footera-app.css?v=21197">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=2128">
@@ -245,12 +245,11 @@
      <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Bereit für deinen Rivalen?</h4><p>Prüfe deine Aufstellung und Taktik vor dem Anpfiff.</p><button class="primary startmode" data-mode="rivals">Aufstellung ansehen</button></section>
     </article>
     <article class="mode play-mode-panel champions-mode" data-play-panel="champions" hidden>
-     <section class="play-box play-standing champions-standing"><span class="play-kicker">CHAMPIONS FINALS</span><div id="championsRecord" class="record"></div></section>
-     <section class="play-box"><h4>Qualifikation</h4><div id="championsQualification"></div></section>
+     <section class="play-box play-standing champions-standing"><span class="play-kicker" id="championsKicker">CHAMPIONS FINALS</span><div id="championsRecord" class="record"></div><button class="primary startmode" data-mode="champions">Champions öffnen</button><p class="champions-start-note" id="championsWindowSchedule">Freitag 19:00 – Montag 09:00 · 15 Spiele · kein Unentschieden</p></section>
      <section class="play-box"><h4>Belohnungen</h4><div id="championsRewards"></div></section>
-     <section class="play-box"><h4>Deine Statistik</h4><div id="playChampionsStats"></div></section>
+     <section class="play-box"><h4>Qualifikation</h4><div id="championsQualification"></div></section>
      <section class="play-box"><details><summary>Alle Ränge &amp; Rewards</summary><div id="championsRanks" class="play-rank-list"></div></details></section>
-     <section class="play-box play-start-box champions-start"><span class="play-kicker" id="championsWindowSchedule">FREITAG 19:00 – MONTAG 09:00</span><h4>Dein Champions-Run</h4><p>15 Spiele. Kein Unentschieden. Die KI passt sich deinem laufenden Record an.</p><button class="primary startmode" data-mode="champions">Champions öffnen</button></section>
+     <section class="play-box"><h4>Deine Statistik</h4><div id="playChampionsStats"></div></section>
     </article>
     <article class="mode play-mode-panel" data-play-panel="squad" hidden>
      <section class="play-box play-standing"><span class="play-kicker">DEIN WOCHENRANG</span><div id="sbRecord" class="record"></div></section>
@@ -689,10 +688,10 @@
 <script src="./footera-match-actions.js?v=21181"></script>
 <script src="./footera-time.js"></script>
 <script src="./footera-cosmetic-evolutions.js?v=21156"></script>
-<script src="./footera-app.js?v=21209"></script>
+<script src="./footera-app.js?v=21210"></script>
 <script src="./season-system.js?v=21194"></script>
-<script src="./competition-system.js?v=21194"></script>
-<script src="./champions-system.js?v=21195"></script>
+<script src="./competition-system.js?v=21210"></script>
+<script src="./champions-system.js?v=21210"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online.js?v=21101"></script>
 <script src="./3d-highlights-match.js?v=21208"></script>

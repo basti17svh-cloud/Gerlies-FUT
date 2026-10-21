@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21195/);
+ assert.match(html,/champions-system\.js\?v=21210/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21195/);
+ assert.match(sw,/champions-system\.js\?v=21210/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -74,14 +74,15 @@ test("Champions rewards, qualification and record-based AI are integrated withou
 });
 
 test("Rank rewards match the approved 15-game structure",()=>{
- assert.match(champions,/Rang I",min:15,max:15,coins:100000,rated:\[\[84,20\],\[86,10\]\],totw:3,bonus:true/);
- assert.match(champions,/Rang II",min:13,max:14,coins:75000,rated:\[\[84,20\],\[86,5\]\],totw:2/);
- assert.match(champions,/Rang III",min:11,max:12,coins:50000,rated:\[\[83,15\],\[85,5\]\],totw:2/);
- assert.match(champions,/Rang IV",min:9,max:10,coins:35000,rated:\[\[83,10\],\[85,3\]\],totw:1/);
- assert.match(champions,/Rang V",min:7,max:8,coins:25000,rated:\[\[82,10\],\[84,2\]\],totw:1/);
- assert.match(champions,/Rang VI",min:5,max:6,coins:15000,rated:\[\[82,5\]\],totw:1/);
- assert.match(champions,/Rang VII",min:3,max:4,coins:10000,rated:\[\[80,5\]\],totw:0/);
- assert.match(champions,/Rang VIII",min:0,max:2,coins:5000,rated:\[\[80,1\]\],totw:0/);
+ // V21.210 (Basti): weekend rewards roughly halved; Player Picks unchanged.
+ assert.match(champions,/Rang I",min:15,max:15,coins:50000,rated:\[\[84,10\],\[86,5\]\],totw:2,bonus:true/);
+ assert.match(champions,/Rang II",min:13,max:14,coins:40000,rated:\[\[84,10\],\[86,3\]\],totw:1/);
+ assert.match(champions,/Rang III",min:11,max:12,coins:25000,rated:\[\[83,8\],\[85,3\]\],totw:1/);
+ assert.match(champions,/Rang IV",min:9,max:10,coins:18000,rated:\[\[83,5\],\[85,2\]\],totw:1/);
+ assert.match(champions,/Rang V",min:7,max:8,coins:12000,rated:\[\[82,5\],\[84,1\]\],totw:0/);
+ assert.match(champions,/Rang VI",min:5,max:6,coins:8000,rated:\[\[82,3\]\],totw:0/);
+ assert.match(champions,/Rang VII",min:3,max:4,coins:5000,rated:\[\[80,3\]\],totw:0/);
+ assert.match(champions,/Rang VIII",min:0,max:2,coins:2500,rated:\[\[80,1\]\],totw:0/);
 });
 
 test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+ ICONS",()=>{
@@ -119,29 +120,33 @@ test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+
 
 console.log("Footera Champions V21.23: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");
 
-test("Champions extension is exactly one weekend through Tuesday 20 Oct at 09:00 Berlin",()=>{
+test("Champions weekend runs Friday 19:00 to Monday 09:00 Berlin (one-time extension removed)",()=>{
  const clock=fs.readFileSync(path.join(root,"footera-time.js"),"utf8");
- const windowFunctions=champions.slice(champions.indexOf("const CHAMPIONS_EXTRA_WINDOW_START="),champions.indexOf("function championsDate("));
+ assert.doesNotMatch(champions,/CHAMPIONS_EXTRA_WINDOW/);assert.doesNotMatch(hub,/CHAMPIONS_EXTRA_WINDOW|championsSpecial/);
+ const windowFunctions=champions.slice(champions.indexOf("function championsWeekEnd("),champions.indexOf("function championsDate("));
  const endFunction=champions.slice(champions.indexOf("function championsRunEnd("),champions.indexOf("function settleChampionsRun("));
  const box={};vm.createContext(box);
  vm.runInContext(clock+"\n"+windowFunctions+"\n"+endFunction+"\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
- const date=iso=>new Date(iso);
- const start=date("2026-10-16T19:00:00+02:00").getTime();
- for(const iso of ["2026-10-16T19:00:00+02:00","2026-10-18T21:33:00+02:00","2026-10-19T09:00:00+02:00","2026-10-20T08:59:59+02:00"]){
+ const date=iso=>new Date(iso),start=date("2026-10-23T19:00:00+02:00").getTime();
+ for(const iso of ["2026-10-23T19:00:00+02:00","2026-10-25T12:00:00+01:00","2026-10-26T08:59:59+01:00"]){
   const w=box.getWindow(date(iso));
-  assert.equal(w.open,true,iso);
-  assert.equal(w.start.getTime(),start);
-  assert.equal(w.end.getTime(),date("2026-10-20T09:00:00+02:00").getTime());
+  assert.equal(w.open,true,iso);assert.equal(w.start.getTime(),start);
+  assert.equal(w.end.getTime(),date("2026-10-26T09:00:00+01:00").getTime());
   assert.equal(box.runEnd(String(start)).getTime(),w.end.getTime());
  }
- const closed=box.getWindow(date("2026-10-20T09:00:00+02:00"));
- assert.equal(closed.open,false);
- assert.equal(closed.start.getTime(),date("2026-10-23T19:00:00+02:00").getTime());
- assert.equal(closed.end.getTime(),date("2026-10-26T09:00:00+01:00").getTime());
- assert.equal(box.getWindow(date("2026-10-24T16:00:00+02:00")).open,true);
- assert.match(hub,/championsSpecial\?"/);
- assert.match(hub,/championsDate\(w\.end\)/);
+ const closed=box.getWindow(date("2026-10-21T18:00:00+02:00"));
+ assert.equal(closed.open,false);assert.equal(closed.start.getTime(),start);
  assert.match(champions,/end=c.active\?championsRunEnd\(c\.week\):null/);
+});
+
+test("Champions run card tracks each game and shows the next rank above the start button",()=>{
+ assert.match(champions,/c\.results\+=result==="win"\?"W":"L"/);
+ assert.match(champions,/c\.results="";c\.participations\+\+/);
+ assert.match(hub,/function championsDots\(/);
+ assert.match(hub,/Weiter zu Spiel \$\{/);
+ const panel=html.slice(html.indexOf('data-play-panel="champions"'),html.indexOf("</article>",html.indexOf('data-play-panel="champions"')));
+ assert.ok(panel.indexOf('data-mode="champions"')<panel.indexOf('id="championsRewards"'),"start button sits in the run card on top");
+ for(const [a,c] of [[84,20],[86,10],[83,15],[85,5],[82,10]])assert.match(champions,new RegExp("\\["+a+","+c+"\\]"),"legacy pack "+a+"x"+c+" stays registered");
 });
 
 test("claimed rated Champions reward packs stay listed in Meine Packs after a reload",()=>{
