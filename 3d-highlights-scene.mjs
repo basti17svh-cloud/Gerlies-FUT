@@ -4,7 +4,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21194';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21206';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21194';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
@@ -102,6 +102,27 @@ export function kickPose(time){
  if(t<=0)return{hip:mix(-.8,.75,(t+.22)/.22),knee:mix(-.8,-.05,(t+.22)/.22)};
  if(t<.18)return{hip:mix(.75,1.08,t/.18),knee:-.05};
  return{hip:mix(1.08,0,(t-.18)/.45),knee:mix(-.05,0,(t-.18)/.45)};
+}
+// V21.206 (Basti): a real overhead kick for the human squad. The striker turns
+// his back to goal, leans back, takes off and turns over his pelvis so the
+// kicking leg meets the ball above him at SHOT_TIME (scissor: the other leg
+// swings up first), lands on his back and is up again before the celebration.
+// pitch: backwards body turn (rad), lift: pelvis height change (m), back:
+// pelvis shift towards goal (m), legs: [thigh, knee] per leg (1 = kicking).
+export function bicycleKickPose(time){
+ const weight=smooth((time-4.9)/.12)*(1-smooth((time-6.72)/.2));
+ if(weight<=0)return null;
+ const over=smooth((time-5.04)/.4),land=smooth((time-5.48)/.3),sit=smooth((time-6.08)/.36),stand=smooth((time-6.4)/.42);
+ const pitch=mix(.32*smooth((time-4.92)/.14)+1.36*over-.2*land,.05,sit)*(1-stand);
+ const lift=mix(.14*Math.sin(Math.PI*clamp((time-5.02)/.52))-.8*land,-.45,sit)*(1-stand);
+ const back=mix(.5*over+.3*land,.5,sit)*(1-stand);
+ const swing=smooth((time-5.16)/.26),follow=smooth((time-SHOT_TIME)/.2),scissor=smooth((time-5.0)/.2),drop=smooth((time-5.2)/.2);
+ const kick=[mix(mix(-.3,.75,swing),1.05,follow),mix(mix(-1.1,-.12,swing),-.4,follow)];
+ const other=[mix(mix(0,1.25,scissor),-.1,drop),mix(-.9,-.3,drop)];
+ // Sit up into a crouch, then stand: never pivot upright from flat on the back.
+ const legs=[[mix(other[0],.65,land),mix(other[1],-1.05,land)],[mix(kick[0],.45,land),mix(kick[1],-.7,land)]]
+  .map(([thigh,knee])=>[mix(thigh,1.5,sit)*(1-stand),mix(knee,-2.1,sit)*(1-stand)]);
+ return{weight,pitch,lift,back,legs,arms:mix(mix(1.15,.6,land),.3,sit)*(1-stand)};
 }
 export function shotFootPosition(time=SHOT_TIME){
  const {hip,knee}=kickPose(time);
@@ -2020,6 +2041,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      applyCelebrationPose(players[h.index],h.slot%2?'hug_right':'hug_left',time-HUG_START-h.arrive*.8,h.state);
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
+   }
+   // V21.206: the overhead kick turns the scorer's back to goal until he is up.
+   const bike=finish==='bicycle'&&event.type!=='ball_won'&&!extended?bicycleKickPose(time):null;
+   importedMotionFrame.acrobatic=bike;
+   if(bike){
+    const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish),away=Math.atan2(sx-aim[0],sz-aim[2])+Math.PI;
+    const from=players[0].root.rotation.y,turn=Math.atan2(Math.sin(away-from),Math.cos(away-from));
+    players[0].root.rotation.y=from+turn*bike.weight;
    }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
