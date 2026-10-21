@@ -56,9 +56,12 @@ function applyRun(p,frame,blend){
  p.upper.rotation.z+=-frame[C.torso+2]*blend*.22;
  for(let i=0;i<2;i++){
   const hip=i?C.rightHip:C.leftHip,knee=i?C.rightKnee:C.leftKnee,foot=i?C.rightFoot:C.leftFoot;
-  joint(p.legs[i],frame,hip,hip,blend);
-  joint(p.knees[i],frame,knee,knee,blend*.88);
-  joint(p.ankles[i],frame,foot,foot,blend*.53);
+  // V21.206: captured legs shape the swing only; the distance-phased IK owns
+  // the planted boot (the clip's own stride slid the support foot).
+  const swing=p.gait?.[i]?.swingWeight??1;
+  joint(p.legs[i],frame,hip,hip,blend*swing);
+  joint(p.knees[i],frame,knee,knee,blend*.88*swing);
+  joint(p.ankles[i],frame,foot,foot,blend*.53*swing);
   // Original footballer's arm rest is down, Quaternius source is T-pose.
   // Keep the existing base shoulder spread while adding real swing dynamics.
   const arm=i?C.rightArm:C.leftArm,elbow=i?C.rightElbow:C.leftElbow;
