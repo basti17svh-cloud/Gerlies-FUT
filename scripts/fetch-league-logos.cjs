@@ -5,18 +5,18 @@
 'use strict';
 const fs=require('fs'),path=require('path');
 const OUT=path.join(__dirname,'..','assets','leagues');
-// EA league name -> English Wikipedia article.
+// EA league name -> English Wikipedia article (or several titles to try in order).
 const LEAGUES={
  'GPFBL':'Frauen-Bundesliga',
  'Barclays WSL':"Women's Super League",
  'Liga F Moeve':'Liga F',
  'NWSL':"National Women's Soccer League",
- 'Arkema PL':'Première Ligue (women)',
+ 'Arkema PL':['Première Ligue (football)','Division 1 Féminine','Première Ligue'],
  'Calcio A Femminile':"Serie A (women's football)",
  'Liga Portugal Feminino':'Campeonato Nacional Feminino',
  'Ceska Liga Žen':"Czech Women's First League",
  'Nederland Vrouwen Liga':'Eredivisie (women)',
- 'Schweizer Damen Liga':"Swiss Women's Super League",
+ 'Schweizer Damen Liga':["Swiss Women's Super League","Women's Super League (Switzerland)",'AXA Women\'s Super League'],
  'Sverige Liga':'Damallsvenskan',
  "Scottish Women's League":"Scottish Women's Premier League"
 };
@@ -44,7 +44,9 @@ async function leadImage(title){
  const manifest=fs.existsSync(manifestPath)?JSON.parse(fs.readFileSync(manifestPath,'utf8')):{};
  for(const[league,title]of Object.entries(LEAGUES)){
   try{
-   const src=await leadImage(title);
+   let src='';
+   for(const t of[].concat(title)){try{src=await leadImage(t);break}catch(e){console.warn(league,t,e.message)}}
+   if(!src)throw new Error('no article with a logo');
    const res=await fetch(src,{headers:UA});if(!res.ok)throw new Error(`HTTP ${res.status}`);
    const type=res.headers.get('content-type')||'';if(!/^image\/(png|jpeg|webp)/.test(type))throw new Error(`type ${type}`);
    const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg',file=`${slug(league)}.${ext}`;
