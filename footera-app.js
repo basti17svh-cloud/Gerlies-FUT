@@ -3938,7 +3938,7 @@ function showBoardCue(kind,base){
  if(kind==="nation"){label="NATION";art=flagAsset(base);name=packRevealNationName(base.nation)}
  else if(kind==="position"){label="POSITION";art=esc(positionLabel(base.position,base));name=""}
  else{label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"}
- cue.classList.remove("active");cue.innerHTML=`<div class="board-cue-label">${label}</div><div class="board-cue-art">${art}</div>${name?`<div class="board-cue-name">${esc(name)}</div>`:""}`;
+ cue.classList.remove("active");cue.innerHTML=`<div class="board-cue-label">${label}</div><div class="board-cue-art${kind==="position"?" is-position":""}">${art}</div>${name?`<div class="board-cue-name">${esc(name)}</div>`:""}`;
  void cue.offsetWidth;cue.classList.add("active")
 }
 function resetWalkoutTunnel(){
@@ -3954,7 +3954,7 @@ function showWalkoutClue(kind,base){
  }else{
   label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"
  }
- clue.classList.remove("active");clue.innerHTML=`<div class="walkout-clue-label">${label}</div><div class="walkout-clue-art">${art}</div>${name?`<div class="walkout-clue-name">${esc(name)}</div>`:""}`;
+ clue.classList.remove("active");clue.innerHTML=`<div class="walkout-clue-label">${label}</div><div class="walkout-clue-art${kind==="position"?" is-position":""}">${art}</div>${name?`<div class="walkout-clue-name">${esc(name)}</div>`:""}`;
  void clue.offsetWidth;clue.classList.add("active")
 }
 async function runPackReveal(plan){
@@ -7627,7 +7627,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.223";
+const GFUT_BUILD="V21.224";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7685,7 +7685,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21223",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21224",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
