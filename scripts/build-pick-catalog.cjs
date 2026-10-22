@@ -1,6 +1,6 @@
 // Run on each approved TOTW/event release; publish the resulting SQL to Supabase.
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
 const ctx={};vm.createContext(ctx);
 vm.runInContext(html.slice(html.indexOf('const TOTW_WEEK_1='),html.indexOf('function totwAddCalendarDays'))+';this.weeks=TOTW_WEEKS;',ctx);
 const quote=v=>"'"+String(v).replace(/'/g,"''")+"'",rows=[];
