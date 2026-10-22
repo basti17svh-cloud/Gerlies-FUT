@@ -205,3 +205,17 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 #extrasView .highlight-mode{flex-direction:column;align-items:stretch;gap:6px}#extrasView .highlight-mode select{width:100%;max-width:none}
 /* V21.196 PlayStyle+ signature badge: gold, under the top bar, before the outcome. */
 @media(prefers-reduced-motion:reduce){.fh3d-signature{transition:none}}
+/* V21.226 walk-out / final whistle HUD and the goal replay wipe. */
+#match .fh3d .fh3d-hud.fh3d-hud-ceremony{grid-template-columns:minmax(0,1fr) auto;min-height:92px}
+#match .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,.fh3d-hud-ceremony .fh3d-mark{display:none!important}
+.fh3d-hud-ceremony .fh3d-headline{font-size:clamp(20px,6vw,30px)}
+.fh3d-hud-ceremony .fh3d-name{font-size:clamp(13px,3.9vw,18px)}
+.fh3d-ceremony-crests{display:flex;align-items:center;gap:6px}
+.fh3d-ceremony-crests .fh3d-team-crest{width:40px;height:40px}
+.fh3d-ceremony-crests .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}
+.fh3d-wipe{position:absolute;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateX(-112%);background:linear-gradient(100deg,transparent 0 7%,#e3262f 7% 93%,transparent 93%)}
+.fh3d-wipe b{font:950 italic 66px/1 system-ui;color:#fff;text-shadow:0 4px 18px #0007}
+.fh3d-wipe-in .fh3d-wipe,.fh3d-wipe-out .fh3d-wipe{animation:fh3dWipe .64s cubic-bezier(.65,0,.35,1) both}
+@keyframes fh3dWipe{0%{transform:translateX(-112%)}50%{transform:translateX(0)}100%{transform:translateX(112%)}}
+.fh3d-replay-tag{position:absolute;z-index:6;top:74px;left:12px;padding:5px 9px;border-radius:6px;background:#e3262fe8;color:#fff;font:900 11px/1 system-ui;letter-spacing:1.6px;opacity:0;transition:opacity .2s}
+.fh3d-replay-on .fh3d-replay-tag{opacity:1}

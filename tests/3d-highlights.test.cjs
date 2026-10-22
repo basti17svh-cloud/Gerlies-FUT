@@ -27,7 +27,7 @@ test('skip settles immediately even when rendering never resolves; event is neve
 });
 test('load failures, context failures and watchdog timeouts return to fallback without hanging',async()=>{
  for(const play of [()=>{throw Error('WebGL unavailable')},()=>Promise.resolve('fallback'),()=>new Promise(()=>{})]){
-  let idle=0,fail=0;const q=new H.Queue({play,timeout:15,onIdle:()=>idle++,onFallback:()=>fail++});q.enqueue(event());await new Promise(r=>setTimeout(r,30));assert.equal(idle,1);assert.equal(fail,1);assert.equal(q.disabled,true);assert.equal(q.enqueue(event('goal','next')),false);
+  let idle=0,fail=0;const q=new H.Queue({play,timeout:15,replayTimeout:0,onIdle:()=>idle++,onFallback:()=>fail++});q.enqueue(event());await new Promise(r=>setTimeout(r,30));assert.equal(idle,1);assert.equal(fail,1);assert.equal(q.disabled,true);assert.equal(q.enqueue(event('goal','next')),false);
  }
 });
 test('cancelling an old match prevents a stale completion resuming a new match',async()=>{
@@ -134,7 +134,8 @@ test('period flags control sides, including stoppage time, with no per-highlight
    assert.equal(H.getMatchPeriod({...flags,minute}),period);
    for(const team of ['home','away'])for(const type of H.TYPES){
     const e=H.snapshot({...event(type,`${minute}-${type}`),team,minute,period});
-    assert.equal(e.attackDirection,(team==='home'?1:-1)*(period%2?1:-1));
+    // V21.226: walk-out and final whistle are staged with the main stand on +x.
+    assert.equal(e.attackDirection,type==='ceremony'?1:(team==='home'?1:-1)*(period%2?1:-1));
    }
   }
  }

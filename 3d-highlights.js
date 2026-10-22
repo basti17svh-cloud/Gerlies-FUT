@@ -1,12 +1,13 @@
 /* Footera highlights: presentation-only queue. No access to the match or its RNG. */
 (function(root){
  'use strict';
- const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won']);
+ const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won','ceremony']);
  const MODES=Object.freeze({off:'Aus',goals:'Nur Tore',important:'Wichtige Highlights',all:'Alle Highlights'});
  const KEY='footera-3d-highlights-v1';
  let mode='important',loader;
  try{const saved=root.localStorage?.getItem(KEY);if(saved in MODES)mode=saved}catch(_){}
- function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')&&(type!=='ball_won'||value==='important'||value==='all')}
+ // V21.226: walk-out and final whistle belong to Wichtige/Alle Highlights.
+ function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')&&(!['ball_won','ceremony'].includes(type)||value==='important'||value==='all')}
  function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}if(mode!=='off')prewarm();return mode}
  // Period is captured at enqueue time from the simulator's existing lifecycle flags.
  // In particular 45+/90+/105+ belong to the current period until its break is logged.
@@ -15,7 +16,7 @@
  function snapshot(event){
   // Copy only display data. Never pass a live player, match or saved state to WebGL.
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
-   period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:getAttackDirection(event.team,event.period),
+   period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:event.type==='ceremony'?1:getAttackDirection(event.team,event.period),
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),actionKind:String(event.actionKind||''),sceneKind:String(event.sceneKind||''),restartSide:event.restartSide==='right'?'right':'left',buildKeeperName:String(event.buildKeeperName||''),buildKeeperSkinTone:typeof event.buildKeeperSkinTone==='string'||Number.isInteger(event.buildKeeperSkinTone)?event.buildKeeperSkinTone:null,sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
@@ -40,9 +41,15 @@
    keeperSkinTone:event.keeperSkinTone??null,
    playerLooks:Object.freeze(Array.from({length:16},(_,i)=>cleanLook((Array.isArray(event.playerLooks)?event.playerLooks:[])[i]))),
    keeperLook:cleanLook(event.keeperLook),
-   keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
+   keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
+   // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
+   ceremony:['kickoff','fulltime'].includes(event.ceremony)?event.ceremony:'',result:['win','draw'].includes(event.result)?event.result:'',
+   homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
+   homeScore:Number.isFinite(Number(event.homeScore))?Number(event.homeScore):null,awayScore:Number.isFinite(Number(event.awayScore))?Number(event.awayScore):null,
+   defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
+   replay:event.replay!==false});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21215').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21226').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -57,7 +64,7 @@
   if(signal.aborted)return 'skipped';
   const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent='LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
   let skipped=false,skipResolve;
@@ -79,7 +86,7 @@
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
     if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
-    if(module.loadFooteraCrestImage)await Promise.race([module.loadFooteraCrestImage(event.teamCrestHTML),new Promise(r=>setTimeout(r,250))]);
+    if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
    remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
   }),skippedPromise])}
@@ -419,9 +426,9 @@
   return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4,signature:signatureStyle(event,finish)});
  }
  class Queue{
-  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000}={}){
+  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000,replayTimeout=10000}={}){
    this.play=play||defaultPlay;
-   this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
+   this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.replayTimeout=replayTimeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
   }
   enqueue(event){
    if(this.disabled||!accepts(event.type)||this.seen.has(String(event.id)))return false;
@@ -435,7 +442,9 @@
     let timer,abort;
     try{
      const interrupted=new Promise(resolve=>{abort=()=>resolve(controller.signal.reason==='timeout'?'fallback':'skipped');controller.signal.addEventListener('abort',abort,{once:true})});
-     timer=setTimeout(()=>controller.abort('timeout'),String(event.sequence||'').startsWith('extended_')?Math.max(this.timeout,(Number(event.playSeconds)||0)*1000+15000):this.timeout);
+     // A goal also plays its replay (V21.226), roughly eight more seconds.
+     const replayMs=event.type==='goal'&&event.replay!==false?this.replayTimeout:0;
+     timer=setTimeout(()=>controller.abort('timeout'),(String(event.sequence||'').startsWith('extended_')?Math.max(this.timeout,(Number(event.playSeconds)||0)*1000+15000):this.timeout)+replayMs);
      const result=await Promise.race([Promise.resolve().then(()=>this.play(event,controller.signal)),interrupted]);
      if(result==='fallback'&&epoch===this.epoch){this.disabled=true;this.items=[];this.onFallback(event)}
     }catch(error){if(epoch===this.epoch){this.disabled=true;this.items=[];this.onFallback(event,error)}}
