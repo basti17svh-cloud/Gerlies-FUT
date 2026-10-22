@@ -27,6 +27,7 @@ test('every hand-set and measured look decodes to known values; ids match the pl
  assert.ok(missing.length<=hand.length*.1,'EA ids missing from player DB: '+missing.join(', '));
  const measured=JSON.parse(fs.readFileSync(path.join(root,'assets/player-looks.json'),'utf8'));
  for(const [id,code] of Object.entries(measured.looks))assert.match(code,/^[1-6_][kfrax_][SDBLGPRYW_][nvm_]$/,id);
+ assert.ok(Object.keys(measured.looks).length>=5000,'measured looks cover the player DB');
 });
 test('match and scene are wired; nothing is stored on the device',()=>{
  const match=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8'),hl=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
