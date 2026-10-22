@@ -5028,7 +5028,7 @@ function parsePlayStyles(base,item){if(typeof FooteraPlayStyles!=="undefined")re
 function renderTasks(){const ordered=[...TASKS].sort((a,b)=>{const av=Math.min(a.target,state.stats[a.stat]||0),bv=Math.min(b.target,state.stats[b.stat]||0),ac=av>=a.target,bc=bv>=b.target,aa=!!state.claims[a.id],ba=!!state.claims[b.id],ap=ac&&!aa?0:ac?1:2,bp=bc&&!ba?0:bc?1:2;return ap-bp||(bc-ac)||(bv/b.target-av/a.target)});$("taskList").innerHTML=ordered.map(t=>{const v=Math.min(t.target,state.stats[t.stat]||0),complete=v>=t.target,done=!!state.claims[t.id],cls=complete&&!done?"claimable":complete?"completed":"",stateLabel=done?'<span class="task-state done">ABGEHOLT</span>':complete?'<span class="task-state ready">ABGESCHLOSSEN</span>':'<span class="task-state">IN ARBEIT</span>';return`<div class="task ${cls}"><div class="tasktop"><div><h4>${t.title}</h4><p>${t.desc}</p>${stateLabel}</div><div class="reward">${rewardText(t.reward)}</div></div><div class="progress" style="margin-top:7px"><div style="width:${v/t.target*100}%"></div></div><div class="taskfoot"><small>${v}/${t.target}</small>${done?'<span style="font-size:6px;color:#79f2a9">ERLEDIGT</span>':`<button class="primary" data-claim="${t.id}" ${v<t.target?"disabled":""}>Abholen</button>`}</div></div>`}).join("")}
 $("taskList").addEventListener("click",e=>{const b=e.target.closest("[data-claim]");if(!b)return;const t=TASKS.find(x=>x.id===b.dataset.claim);if(!t||state.claims[t.id])return;state.claims[t.id]=true;grant(t.reward);save();renderAll();toast("Belohnung abgeholt.")})
 
-let activeEvoTab="available",evoFocusPlayerUid=null,evoPickerContext=null;
+let activeEvoTab="available",evoFocusPlayerUid=null,evoPickerContext=null,evoPickerListStash=null;
 function evoWeekStart(date=new Date()){return berlinWeekStart(date,1,19)}
 function evoWeekIndex(date=new Date()){const p=berlinParts(evoWeekStart(date));return Math.round((Date.UTC(p.year,p.month-1,p.day)-Date.UTC(2026,8,21))/(7*86400000))}
 function activeEvolutionDefinitions(date=new Date()){return EVOLUTION_POOL.filter(x=>String(x.group||"").startsWith("s1-"))}
@@ -5105,7 +5105,7 @@ function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null,instanceK
   </div>`
  }).join("")}</div>`
 }
-function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}const groups=[...new Set(eligible.map(i=>evoPickerPosGroup(displayBase(i).position)))];$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div>${eligible.length>1?evoPickerFilterHTML(groups,eligible.length):""}<div class="evo-candidate-grid">${eligible.length?eligible.map((i,n)=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}" data-evo-name="${esc(evoPickerKey(b.name))}" data-evo-group="${evoPickerPosGroup(b.position)}" data-evo-ovr="${Number(b.ovr)||0}" data-evo-order="${n}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}<div class="evo-empty evo-filter-empty" hidden>Kein Spieler passt zu deiner Suche.</div></div>`;showUiLayer("evoPickerModal","evo-picker")}
+function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;evoPickerListStash=null;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}const groups=[...new Set(eligible.map(i=>evoPickerPosGroup(displayBase(i).position)))];$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div>${eligible.length>1?evoPickerFilterHTML(groups,eligible.length):""}<div class="evo-candidate-grid">${eligible.length?eligible.map((i,n)=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}" data-evo-name="${esc(evoPickerKey(b.name))}" data-evo-group="${evoPickerPosGroup(b.position)}" data-evo-ovr="${Number(b.ovr)||0}" data-evo-order="${n}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}<div class="evo-empty evo-filter-empty" hidden>Kein Spieler passt zu deiner Suche.</div></div>`;showUiLayer("evoPickerModal","evo-picker")}
 const EVO_PICKER_GROUPS=[["GK","TW"],["DEF","ABW"],["MID","MF"],["ATT","ST"]];
 function evoPickerPosGroup(pos){const p=String(pos||"").toUpperCase();if(p==="GK")return"GK";if(["CB","LB","RB","LWB","RWB"].includes(p))return"DEF";if(["CDM","CM","CAM","LM","RM"].includes(p))return"MID";return"ATT"}
 function evoPickerKey(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ")}
@@ -5121,6 +5121,15 @@ function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){
  else buttons=`<div class="evo-payment-actions">${coins?`<button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="coins" ${state.coins<coins?"disabled":""}>${currencyAmountHTML("coins",coins,"button-currency")}</button>`:""}${points?`<button class="secondary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="points" ${state.points<points?'title="Zu wenig Points – Points-Übersicht öffnen"':""}>${currencyAmountHTML("points",points,"button-currency")}</button>`:""}</div>`;
  $("evoPickerBody").innerHTML=`<button class="secondary evo-picker-back" data-evo-picker-back="${evo.id}">← Andere Spieler</button><div class="evo-selected"><div><h3>${esc(b.name)}</h3><p>${esc(evoRequirementText(evo))}</p>${evoCostHTML(evo)}<div class="evo-result-cap">Aktuell ${itemRating(item)} GES → maximal ${evoProjectedFinalOvr(item,evo)} GES</div><div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div></div>${buttons}</div>${evoStagesHTML(item,evo,-1,{})}`;
  evoPickerContext={evoId:evo.id,uid:item.uid,instanceKey:sch.key}
+}
+// Handy-Zurück aus der Vorschau führt zur Spielerauswahl: Liste samt Suche, Filter und Scrollposition bleibt erhalten.
+function showEvoCandidateFromList(evo,item){
+ const body=$("evoPickerBody");evoPickerListStash={nodes:[...body.childNodes],scroll:body.scrollTop,context:evoPickerContext};
+ renderEvoCandidatePreview(evo,item);body.scrollTop=0;pushUiState("evo-picker-preview",{layer:"evoPickerModal"})
+}
+function restoreEvoPickerList(){
+ const stash=evoPickerListStash,body=$("evoPickerBody");if(!stash||!body)return false;
+ evoPickerListStash=null;body.replaceChildren(...stash.nodes);body.scrollTop=stash.scroll;evoPickerContext=stash.context;return true
 }
 function startEvolution(evoId,uid,payment="free"){
  expireActiveEvolutionIfNeeded();
@@ -5199,7 +5208,7 @@ $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-ta
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
 $("evoPickerBody").addEventListener("input",e=>{if(e.target.id==="evoPickerSearch")applyEvoPickerFilter()});
-$("evoPickerBody").addEventListener("click",e=>{const chip=e.target.closest("[data-evo-filter-pos]"),sortBtn=e.target.closest("[data-evo-filter-sort]");if(chip){chip.parentElement.querySelectorAll("[data-evo-filter-pos]").forEach(b=>{const on=b===chip;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});applyEvoPickerFilter();return}if(sortBtn){const next={"":"high",high:"low",low:""}[sortBtn.dataset.evoFilterSort];sortBtn.dataset.evoFilterSort=next;sortBtn.classList.toggle("active",!!next);sortBtn.textContent=next==="high"?"GES ↓":next==="low"?"GES ↑":"⇅ GES";sortBtn.setAttribute("aria-label",`Sortierung: ${next==="high"?"höchste GES zuerst":next==="low"?"niedrigste GES zuerst":"empfohlen"}`);applyEvoPickerFilter();return}const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)renderEvoCandidatePreview(evo,item);return}if(back){openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
+$("evoPickerBody").addEventListener("click",e=>{const chip=e.target.closest("[data-evo-filter-pos]"),sortBtn=e.target.closest("[data-evo-filter-sort]");if(chip){chip.parentElement.querySelectorAll("[data-evo-filter-pos]").forEach(b=>{const on=b===chip;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});applyEvoPickerFilter();return}if(sortBtn){const next={"":"high",high:"low",low:""}[sortBtn.dataset.evoFilterSort];sortBtn.dataset.evoFilterSort=next;sortBtn.classList.toggle("active",!!next);sortBtn.textContent=next==="high"?"GES ↓":next==="low"?"GES ↑":"⇅ GES";sortBtn.setAttribute("aria-label",`Sortierung: ${next==="high"?"höchste GES zuerst":next==="low"?"niedrigste GES zuerst":"empfohlen"}`);applyEvoPickerFilter();return}const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)showEvoCandidateFromList(evo,item);return}if(back){if(evoPickerListStash){if(history.state?.kind==="evo-picker-preview")history.back();else restoreEvoPickerList()}else openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
 function progressEvolution(resultKey="loss"){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();if(!rows.length)return;
  const kickoffStarters=Array.isArray(match?.initialStarters)?match.initialStarters:match?.lineup?.slice(0,11)||[];let changed=false;
@@ -7470,6 +7479,7 @@ function removeUiLayer(id){
 function closeTopUiLayer(){
  const id=topUiLayer();if(!id)return false;
   if(id==="squadBattleModal"&&squadBattleStage==="preview"&&pendingMatchContext?.mode==="squad"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
+ if(id==="evoPickerModal"&&restoreEvoPickerList())return true;
  removeUiLayer(id);return true
 }
 function showUiLayer(id,kind=id,extra={},historyMode="push"){
@@ -7480,6 +7490,7 @@ function showUiLayer(id,kind=id,extra={},historyMode="push"){
 }
 function closeUiLayer(id,kind){
  const el=$(id);if(!el?.classList.contains("active"))return;
+ if(id==="evoPickerModal"&&evoPickerListStash){evoPickerListStash=null;if(topUiLayer()===id&&history.state?.gfut&&history.state.kind==="evo-picker-preview"){history.go(-2);return}}
  if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
  removeUiLayer(id)
 }
@@ -7627,7 +7638,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.224";
+const GFUT_BUILD="V21.225";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7685,7 +7696,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21224",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21225",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
