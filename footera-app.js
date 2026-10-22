@@ -3078,6 +3078,24 @@ function renderWallet(){const local=Number(state.points)||0,server=window.Footer
 function ensureSquadSlots(){if(!Array.isArray(state.squad))state.squad=[];while(state.squad.length<23)state.squad.push(null);if(state.squad.length>23)state.squad=state.squad.slice(0,23)}
 function squadItems(){ensureSquadSlots();return state.squad.map(id=>state.club.find(x=>x.uid===id)||null)}
 function currentFormation(){return FORMATIONS[state.formation]||FORMATIONS["4-3-3"]}
+// Display-only spots for the squad pitch: nudges the formation spots apart until no card (incl. its chemistry tag) covers another.
+// Geometry in % of the pitch, matching ux-clarity.css (#pitch aspect .68, slot width 18%, card aspect 1.42, tag ~1.1% below the card).
+const PITCH_SPOTS=new WeakMap();
+function squadPitchSpots(form){
+ if(PITCH_SPOTS.has(form))return PITCH_SPOTS.get(form);
+ const W=18,H=W*1.42*.68,TAG=1.1,GAP=.6,spots=form.map(s=>({x:s.x,y:s.y}));
+ for(let pass=0;pass<400;pass++){
+  let moved=false;
+  for(let i=0;i<spots.length;i++)for(let j=i+1;j<spots.length;j++){
+   const a=spots[i],b=spots[j],[up,lo]=a.y<=b.y?[a,b]:[b,a],ox=W+GAP-Math.abs(a.x-b.x),oy=H+TAG+GAP-(lo.y-up.y);
+   if(ox<=0||oy<=0)continue;moved=true;
+   if(ox<oy*.6){const[l,r]=a.x<=b.x?[a,b]:[b,a];l.x-=ox/2+.01;r.x+=ox/2+.01}else{up.y-=oy/2+.01;lo.y+=oy/2+.01}
+  }
+  for(const s of spots){s.x=Math.min(100-W/2-.5,Math.max(W/2+.5,s.x));s.y=Math.min(100-H/2-TAG-.4,Math.max(H/2+.4,s.y))}
+  if(!moved)break;
+ }
+ const out=spots.map(s=>({x:+s.x.toFixed(1),y:+s.y.toFixed(1)}));PITCH_SPOTS.set(form,out);return out;
+}
 function inPosition(base,slot){return posFit(base,slot)>0}
 function chemThreshold(n,a,b,c){return n>=c?3:n>=b?2:n>=a?1:0}
 function chemNationKey(nation){
@@ -3135,8 +3153,10 @@ function opponentChemistryTotal(squad,formation="4-3-3",items=[]){return opponen
 function playerChem(index,items){return index>=0&&index<11?squadChemistry(items)[index]||0:0}
 function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0,chemScores=squadChemistry(items),chem=chemScores.reduce((total,value)=>total+value,0);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem,chemScores}}
 function slotHTML(item,i,chem=0){
- const s=currentFormation()[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
- return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${base?`<div class="chem-dots" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`:""}</button>`
+ const s=currentFormation()[i],spot=squadPitchSpots(currentFormation())[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
+ // Chem style sits with the chemistry diamonds in one tag on the card's bottom edge, outside the layout flow, so it never pushes or covers neighbouring cards.
+ const boost=base&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,true):"";
+ return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${spot.x}%;top:${spot.y}%">${base?cardHTML(base,item,true,shown,false):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${base?`<div class="chem-dots${boost?" has-boost":""}" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${boost}${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`:""}</button>`
 }
 function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Bankplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
 function reserveHTML(item,i){const b=item?displayBase(item):null;return`<div class="reserveslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Reserveplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">RES<br>+</div>'}</button></div>`}
@@ -7587,7 +7607,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.217";
+const GFUT_BUILD="V21.218";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7645,7 +7665,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21217",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21218",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
