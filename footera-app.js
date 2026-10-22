@@ -6394,6 +6394,11 @@ function matchPlayerWindow(uid){
  return{start,end,minutes:start==null?0:Math.max(0,end-start)}
 }
 function matchPlayerMinutes(uid){return matchPlayerWindow(uid).minutes}
+function matchPlayerForm(side,uid,index){
+ let h=2166136261;for(const c of `${match?.resultId||""}|${side}|${uid||index}`)h=Math.imul(h^c.charCodeAt(0),16777619);
+ h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;
+ return((h>>>0)/4294967295)*2-1
+}
 function matchPlayerPerformance(side,uid,index,base){
  const home=side==="home",window=home?matchPlayerWindow(uid):{start:0,end:match.minute,minutes:match.minute},minutes=window.minutes;
  const belongs=(event,uidField,indexField)=>event.side===side&&(home?String(event[uidField]||"")===String(uid):Number(event[indexField]??-1)===index);
@@ -6407,19 +6412,28 @@ function matchPlayerPerformance(side,uid,index,base){
  const formation=home?(activeIndex>=0?match.formation:match.initialFormation||match.formation):match.opponentProfile?.formation;
  const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],position=String((activeIndex>=0?form[activeIndex]?.p:priorSub?.position||form[startIndex]?.p)||base?.position||"").toUpperCase();
  const conceded=(match.goalEvents||[]).filter(e=>e.side!==side&&window.start!=null&&Number(e.at??e.minute)>window.start&&Number(e.at??e.minute)<=window.end).length;
- let rating=6.1+goals*1.15+assists*.7+Math.min(.22,shots.length*.05)+Math.max(-.4,Math.min(.5,(goals-xg)*.2))-yellows*.17-reds*1.35;
- rating+=Math.min(2.3,saves.length*.28+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.4);
- rating+=Math.min(1.6,tackles*.11+interceptions*.13+blocks*.2);
+ const played=Math.min(1,minutes/90),settled=Math.min(1,Math.max(0,(minutes-10)/50)),attacker=["ST","CF","LW","RW","LM","RM","CAM"].includes(position),midfielder=["CM","CDM","CAM"].includes(position),defender=["CB","LB","RB","LWB","RWB"].includes(position);
+ const onTarget=shots.filter(e=>e.onTarget||e.goal).length,quality=Number(base?.ovr||base?.rating||0);
+ // Base, card quality and a stable per-match form (the passes and duels the ticker does not show) spread ratings over the 6-8 range.
+ let rating=6.45+(quality?Math.max(-.4,Math.min(.35,(quality-82)*.03))*settled:0)+matchPlayerForm(side,uid,index)*.4*settled;
+ rating+=goals*.95-Math.max(0,goals-1)*.1+assists*.6;
+ rating+=Math.min(.75,shots.length*.09+onTarget*.13+xg*.35)-Math.min(.35,Math.max(0,xg-goals)*.2)-yellows*.25-reds*1.7;
+ rating+=Math.min(2.4,saves.length*.32+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.45);
+ rating+=Math.min(1.6,tackles*.17+interceptions*.19+blocks*.24);
  if(minutes>=18){
-  const diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*(home?1:-1)));
-  rating+=diff*.035;
-  if(["ST","CF","LW","RW","LM","RM","CAM"].includes(position)&&!goals&&!assists&&!shots.length)rating-=Math.min(.3,(minutes-18)/72*.3);
-  if(["CM","CDM"].includes(position))rating+=(Number(match.poss||50)-50)*(home?1:-1)*.006;
-  if(["CB","LB","RB","LWB","RWB"].includes(position)){rating-=conceded*.12;if(!conceded&&minutes>=40)rating+=.22}
-  if(position==="GK"){rating-=conceded*.24;if(!conceded&&minutes>=40)rating+=.3}
+  const sign=home?1:-1,diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*sign)),share=Math.min(1,(minutes-10)/60);
+  rating+=((diff>0?.3:diff<0?-.25:0)+diff*.1)*share;
+  const xgDiff=Math.max(-2,Math.min(2,(Number(match.xgHome||0)-Number(match.xgAway||0))*sign));
+  if(attacker||midfielder)rating+=xgDiff*.1*share;
+  if(attacker&&!goals&&!assists&&!shots.length)rating-=Math.min(.4,(minutes-18)/72*.4);
+  if(midfielder)rating+=(Number(match.poss||50)-50)*sign*.014;
+  if(defender){rating-=conceded*.16;if(!conceded&&minutes>=40)rating+=.4}
+  if(position==="GK"){rating-=conceded*.3;if(!conceded&&minutes>=40)rating+=.5}
  }
  if(minutes<8&&!goals&&!assists&&!actions.length&&!shots.length&&!yellows&&!reds)rating=6;
- rating=Math.max(4,Math.min(10,rating));
+ // Soften the top end so a brace is a 9, a hat-trick a 9.5+, and only a perfect game reaches 10.
+ if(rating>7.8)rating=7.8+2.2*(1-Math.exp(-(rating-7.8)/2.2));
+ rating=Math.max(3.5,Math.min(10,rating));
  return{rating:Number(rating.toFixed(1)),fitness:matchPlayerFitness(uid,side,index),minutes:Math.round(minutes),position,goals,assists,shots:shots.length,xg:Number(xg.toFixed(2)),saves:saves.length,blocks,tackles,interceptions,defensiveActions:blocks+tackles+interceptions,conceded,yellows,reds}
 }
 function matchPlayerLivePerformance(uid){
