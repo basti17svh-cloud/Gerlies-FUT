@@ -9,7 +9,7 @@ import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE,benchRunner,BENCH_RUNNERS} from './3d-ceremony.mjs?v=21226';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21227';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
@@ -1501,14 +1501,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
   const buildKeeper=extended==='keeper_buildout'?player({shirt:'#e8b545',shirtSecondary:'#e8b545',pattern:'solid',shorts:'#273a37',socks:'#e8b545'},event.buildKeeperName||'Aufbau-Torwart',true,true,1,false,event.buildKeeperSkinTone):null;
-  // V21.226 (Basti): a late winner sends the substitutes, in training bibs,
-  // sprinting onto the pitch to the scorer. Only in the close-up after the cut.
-  const benchStorm=lateDrama==='winner'&&celebrationActive;
-  const benchBib=(()=>{const c=new THREE.Color(attackKit.shirt);return c.g>.6&&c.r>.55&&c.b<.45?'#ff6a1f':'#d8ff3a'})();
-  const benchKit={shirt:benchBib,shirtSecondary:benchBib,pattern:'solid',shorts:attackKit.shorts,socks:attackKit.socks};
-  const benchNumbers=[12,14,19,22],benchSkins=['2','4','1','5'];
-  const bench=benchStorm?Array.from({length:BENCH_RUNNERS},(_,k)=>player(benchKit,'',false,!weak,benchNumbers[k],false,benchSkins[k])):[];
-  const benchImported=bench.map(()=>null),benchFrames=bench.map(()=>null),benchStates=bench.map(()=>({arms:0,rootY:0}));
   // Use a single CC0 source and one skeleton clone for EACH visible player.
   // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
   const humanSquad=allowImported&&!baselineRig&&modelVariant==='human'&&isFooteraHumanModelReady();
@@ -1560,12 +1552,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      staged.push(importedKeeper);
      players.forEach(p=>hideOriginal(p));
      hideOriginal(keeper,true); // preserve existing glove contact meshes
-     // Substitutes are optional: a failed mount keeps their simple figure.
-     bench.forEach((actor,k)=>{try{
-      const glb=mountFooteraPlayerModel(actor.root,actor,benchKit,'',false,squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(benchKit,benchNumbers[k],benchSkins[k]),
-       {number:benchNumbers[k],skinTone:resolvePlayerSkinTone(benchSkins[k]),shirtName:''});
-      if(glb){benchImported[k]=glb;hideOriginal(actor)}
-     }catch(error){console.warn('Footera bench model fallback:',error)}});
     }else{
      const glb=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName,!weak,modelVariant);
      if(!glb)throw new Error('Diagnostic GLB unavailable');
@@ -1804,27 +1790,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
-  }
-  // Substitutes on a late winner: sprint in from the halfway side once the
-  // picture has cut to the scorer, then jump on the pile.
-  const BENCH_START=CELEBRATION_CUT,BENCH_RUN=1.8;
-  const benchTarget=bench.length?actorPosition(0,BENCH_START+BENCH_RUN):null;
-  function updateBench(time){
-   bench.forEach((p,k)=>{
-    const frame=benchFrames[k]||(benchFrames[k]={...importedMotionFrame,celebrate:0,rootY:null,celebration:null});
-    if(time<BENCH_START){resetPose(p);p.root.position.set(0,-60,0);benchImported[k]?.animate(time,frame);return}
-    const at=t=>benchRunner(k,t,BENCH_START,benchTarget,direction),q=at(time),b=at(time-.04),c=at(time+.04);
-    const dx=c[0]-b[0],dz=c[1]-b[1],speed=clamp(Math.hypot(dx,dz)/.08/6.5);
-    const scorer=actorPosition(0,time),heading=Math.hypot(dx,dz)>.004?Math.atan2(-dx,-dz):Math.atan2(-(scorer[0]-q[0]),-(scorer[1]-q[1]));
-    const from=at(BENCH_START),stride=Math.hypot(q[0]-from[0],q[1]-from[1])*Math.PI*2/2.7;
-    pose(p,q[0],q[1],time,speed,heading,0,stride,0,0,99);
-    if(enhancedRigMotion)applyFootwork(p,time,speed,0,0,stride,1);
-    frame.speed=speed;frame.stride=stride;frame.grounded=true;
-    const s=time-(BENCH_START+BENCH_RUN-.25);
-    if(s>0){applyCelebrationPose(p,k%2?'cheer':k?'hug_right':'hug_left',s,benchStates[k]);frame.celebrate=benchStates[k].arms;frame.rootY=benchStates[k].rootY;frame.celebration=benchStates[k]}
-    else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
-    benchImported[k]?.animate(time,frame);
-   });
   }
   function update(time,{replay=false}={}){
    renderTime=time;
@@ -2190,7 +2155,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState);
     importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;importedMotionFrame.celebration=celebrationState;
    }
-   if(bench.length)updateBench(time);
    for(const h of huggers){
     const frame=squadMotionFrames[h.index],u=hugWeight(h.index,time);
     if(u>.8){
@@ -2280,7 +2244,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function dispose(){
    boardLogo.onload=null;
    for(const glb of importedPlayers)glb?.dispose();
-   for(const glb of benchImported)glb?.dispose();
    importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
     actor.skeletonMotion.mixer.stopAllAction();actor.skeletonMotion.mixer.uncacheRoot(actor.skeletonMotion.mixer.getRoot());
