@@ -6,7 +6,7 @@ const css=fs.readFileSync(path.join(root,"ux-clarity.css"),"utf8");
 const ctx={};
 vm.runInNewContext(html.slice(html.indexOf('const FORMATIONS={'),html.indexOf('const ROLE_OPTIONS='))+html.slice(html.indexOf('const PITCH_SPOTS='),html.indexOf('function slotHTML('))+';this.FORMATIONS=FORMATIONS;this.squadPitchSpots=squadPitchSpots;',ctx);
 
-test("V21.217 squad pitch: no card or chemistry tag covers another card in any formation",()=>{
+test("V21.218 squad pitch: no card or chemistry tag covers another card in any formation",()=>{
  // Same geometry as ux-clarity.css: slot width 18%, pitch aspect .68, card aspect 1.42, tag hangs ~1.1% below the card.
  const W=18,H=W*1.42*.68,TAG=1.1;
  const names=Object.keys(ctx.FORMATIONS);assert.ok(names.length>=11);
@@ -22,7 +22,7 @@ test("V21.217 squad pitch: no card or chemistry tag covers another card in any f
  }
 });
 
-test("V21.217 chem style sits with the chemistry diamonds in one tag outside the card flow",()=>{
+test("V21.218 chem style sits with the chemistry diamonds in one tag outside the card flow",()=>{
  const slot=html.slice(html.indexOf('function slotHTML('),html.indexOf('function renderSquad('));
  assert.match(slot,/cardHTML\(base,item,true,shown,false\)/);
  assert.match(slot,/FooteraChemBoosts\.badgeHTML\(item,true\)/);
