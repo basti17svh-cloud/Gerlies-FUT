@@ -1,0 +1,22 @@
+/* Evolutions-Spielerauswahl: Suche und Filter, Liste füllt den Bildschirm bis unten. */
+#evoPickerModal{padding-bottom:0}
+#evoPickerModal .evo-modalinner{display:flex;flex-direction:column;height:100%}
+#evoPickerModal .modalhead{flex:0 0 auto}
+#evoPickerBody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:auto;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#evoPickerBody>*{flex-shrink:0}
+#evoPickerBody:has(.evo-candidate-grid){padding-bottom:0}
+#evoPickerBody .evo-candidate-grid{flex:1 1 auto;min-height:0;max-height:none;align-content:start;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#evoPickerBody .evo-candidate[hidden],#evoPickerBody .evo-filter-empty[hidden]{display:none!important}
+.evo-filter-empty{grid-column:1/-1}
+.evo-filter{display:grid;gap:7px;margin:0 0 10px}
+.evo-filter-search{position:relative}
+.evo-filter-search .evo-filter-sort{margin-left:auto}
+.evo-filter-count{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none}
+.evo-filter input{width:100%;min-height:44px;padding:0 82px 0 13px;border:1px solid #3a3550;border-radius:11px;background:#0c0b10;color:#fff;font-size:16px}
+.evo-filter input::placeholder{color:#8a8698}
+.evo-filter-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.evo-filter-chips::-webkit-scrollbar{display:none}
+.evo-filter-chips button{flex:0 0 auto;min-width:44px;min-height:34px;padding:0 11px;border:1px solid #34304a;border-radius:999px;background:#15131d;color:#e4e0ee;font-size:13px;font-weight:850}
+.evo-filter-chips button.active{border-color:#a78bfa;background:#a78bfa;color:#120c1f}
+.evo-filter-sort{margin-left:auto}
+.evo-filter-count{color:#8f9e98;font-size:11px;font-weight:700}
