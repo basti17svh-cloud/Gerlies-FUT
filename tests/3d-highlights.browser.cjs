@@ -26,7 +26,9 @@ async function fixture(page,mode='important'){
   state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName='Heimteam';state.profile.clubIdentity=homeIdentity;state.tactic='balanced';
   FooteraHighlights.setMode(mode);document.querySelectorAll('[data-highlight-mode]').forEach(s=>s.value=mode);
   const awaySquad=PLAYERS.slice(0,11).map((p,i)=>i===0?{...p,id:'away-gk',name:'Maignan',fullName:'Mike Maignan',nation:'France',team:'AC Milan',league:'Serie A'}:{...p,id:'away-'+i});
-  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad,clubIdentity:awayIdentity});stopMatchTimer();
+  startMatch('rivals',{name:'Auswärtsteam',rating:84,chem:33,power:88,formation:'4-3-3',tactic:'balanced',squad:awaySquad,clubIdentity:awayIdentity});
+  // V21.226: drop the walk-out scene; each test forces its own highlight.
+  cancelMatch3D();stopMatchTimer();
   match.minute=41;match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;updateMatchUI();document.getElementById('match').scrollTop=0;
  },mode);
 }

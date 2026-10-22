@@ -5940,7 +5940,9 @@ function startMatch(mode,opponent=null,kitSelection=null){
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
  recordMatchScene("idle","Anpfiff · Das Spiel läuft.");
- updateMatchUI();setMatchPill(false);startMatchTimer()
+ updateMatchUI();setMatchPill(false);startMatchTimer();
+ // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
+ if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff")
 }
 function addLog(t){
  if(!match)return;
@@ -6812,7 +6814,9 @@ function finishMatch(){
  $("matchReward").textContent=isFriendly?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
  renderCompetitionProgress(null);
  setMatchPill(true);
- renderAll();requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
+ renderAll();
+ // V21.226: the final-whistle scene first; the queue scrolls to the result after it.
+ if(!(typeof queueMatchCeremony3D==="function"&&queueMatchCeremony3D("fulltime")))requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
@@ -7638,7 +7642,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.225";
+const GFUT_BUILD="V21.226";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7696,7 +7700,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21225",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21226",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
