@@ -975,8 +975,36 @@ function claimEventObjective(task,at=Date.now()){
 }
 const MOMENTUM_BY_ID=new Map(MOMENTUM_RELEASES.flatMap(event=>event.players.map(info=>[info.pid,info])));
 const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,teamSize:18,keepers:2,maxPlayersPerClub:1,allowExtraClubPlayer:true,avoidRecentSpecialRepeats:true,considerContent:["totw","events","sbc","objectives","season","evolutions"]};
-// The Halloween window is published here; its player team is released only when its roster is defined.
-const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"EVENT",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",players:[]};
+// HALLOWEEN · BLUTMOND: 18 real FC27 players from 18 clubs, own card artwork (halloween-card.css).
+// In the Halloween night (31.10. 19:00) every Halloween card gets the Blutmond upgrade, see halloweenUpgradeFor().
+const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"BLUTMOND",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",
+ upgrade:{at:"2026-10-31T19:00:00+01:00",ovr:1,stats:1,label:"Blutmond-Upgrade"},
+ sbcPlayer:{id:"halloween-mueller-88",pid:"189596",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:88,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[76,88,90,88,62,76],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Geisterstunde – 83er-Team",desc:"Teil 1/4 · Der Raumdeuter spukt wieder.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
+  {name:"Kürbisfeld – 84er-Team",desc:"Teil 2/4 · Oranje wie ein Kürbis.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus den Niederlanden",minAvg:84,requiredNation:"Holland",reward:{pack:"82",qty:1}},
+  {name:"Transsilvanien – 85er-Team",desc:"Teil 3/4 · Grüße aus Draculas Heimat.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Rumänien",minAvg:85,requiredNation:"Romania",reward:{pack:"goldplayers",qty:1}},
+  {name:"Blutmond – 86er-Team",desc:"Teil 4/4 · Deutschland trifft MLS.",req:"11 Spieler · Ø GES 86 · min. 1 deutscher Spieler · min. 1 MLS-Spieler",minAvg:86,requiredNation:"Germany",requiredLeague:"MLS",reward:{pack:"85",qty:1}}
+ ]},
+ players:[
+ {pid:"200389",name:"Jan Oblak",ovr:91,position:"GK",baseOvr:88,team:"Atlético de Madrid",nation:"Slovenia",alt:"",stats:[89,95,81,92,48,90],playstylePlusAdds:["far-reach"]},
+ {pid:"252154",name:"Marco Carnesecchi",ovr:89,position:"GK",baseOvr:86,team:"Atalanta",nation:"Italy",alt:"",stats:[88,89,78,92,32,91],playstylePlusAdds:["footwork"]},
+ {pid:"213331",name:"Jonathan Tah",ovr:90,position:"CB",baseOvr:87,team:"FC Bayern München",nation:"Germany",alt:"",stats:[66,40,62,67,92,91],playstylePlusAdds:["anticipate"]},
+ {pid:"239818",name:"Rúben Dias",ovr:90,position:"CB",baseOvr:87,team:"Manchester City",nation:"Portugal",alt:"",stats:[60,46,73,73,92,88],playstylePlusAdds:["block"]},
+ {pid:"239580",name:"Bremer",ovr:89,position:"CB",baseOvr:86,team:"Juventus",nation:"Brazil",alt:"",stats:[90,54,61,72,92,89],playstylePlusAdds:["jockey"]},
+ {pid:"226268",name:"Federico Dimarco",ovr:89,position:"LB",baseOvr:86,team:"Inter",nation:"Italy",alt:"LM",stats:[86,80,90,85,84,76],playstylePlusAdds:["dead-ball"]},
+ {pid:"238074",name:"Reece James",ovr:88,position:"RB",baseOvr:84,team:"Chelsea",nation:"England",alt:"CDM,CM",stats:[79,74,89,83,89,87],playstylePlusAdds:["pinged-pass"]},
+ {pid:"199503",name:"Granit Xhaka",ovr:88,position:"CDM",baseOvr:85,team:"Sunderland",nation:"Switzerland",alt:"CM",stats:[47,79,90,76,82,86],playstylePlusAdds:["long-ball-pass"]},
+ {pid:"239053",name:"Federico Valverde",ovr:90,position:"CM",baseOvr:87,team:"Real Madrid",nation:"Uruguay",alt:"RB,RM,CDM",stats:[95,88,87,83,83,90],playstylePlusAdds:["relentless"]},
+ {pid:"237238",name:"Scott McTominay",ovr:89,position:"CM",baseOvr:86,team:"SSC Napoli",nation:"Scotland",alt:"CAM,CDM",stats:[84,88,79,86,82,91],playstylePlusAdds:["power-header"]},
+ {pid:"177003",name:"Luka Modrić",ovr:89,position:"CM",baseOvr:85,team:"AC Milan",nation:"Croatia",alt:"CDM,CAM",stats:[68,80,93,92,78,62],playstylePlusAdds:["tiki-taka"]},
+ {pid:"236772",name:"Dominik Szoboszlai",ovr:89,position:"CAM",baseOvr:86,team:"Liverpool",nation:"Hungary",alt:"CDM,CM",stats:[86,87,91,89,76,79],playstylePlusAdds:["power-shot"]},
+ {pid:"211110",name:"Paulo Dybala",ovr:88,position:"CAM",baseOvr:85,team:"AS Roma",nation:"Argentina",alt:"ST",stats:[81,88,90,91,44,64],playstylePlusAdds:["finesse-shot"]},
+ {pid:"256516",name:"Nico Williams",ovr:88,position:"LW",baseOvr:84,team:"Athletic Club",nation:"Spain",alt:"LM",stats:[99,82,84,92,40,70],playstylePlusAdds:["rapid"]},
+ {pid:"183898",name:"Ángel Di María",ovr:87,position:"RW",baseOvr:82,team:"Rosario Central",nation:"Argentina",alt:"RM,CAM,ST",stats:[77,86,92,92,47,66],playstylePlusAdds:["trivela"]},
+ {pid:"241651",name:"Viktor Gyökeres",ovr:90,position:"ST",baseOvr:86,team:"Arsenal",nation:"Sweden",alt:"",stats:[86,93,75,83,47,93],playstylePlusAdds:["enforcer"]},
+ {pid:"232293",name:"Victor Osimhen",ovr:89,position:"ST",baseOvr:85,team:"Galatasaray",nation:"Nigeria",alt:"",stats:[95,89,68,83,54,92],playstylePlusAdds:["aerial"]},
+ {pid:"244176",name:"Deniz Undav",ovr:88,position:"ST",baseOvr:85,team:"VfB Stuttgart",nation:"Germany",alt:"CAM",stats:[69,91,80,88,35,85],playstylePlusAdds:["low-driven-shot"]}
+]};
 // SBC-only card; never inserted into the ordinary packs or market player pool.
 const FLASHBACK_REUS_BASE={id:"footera-flashback-reus-20261009",name:"Marco Reus",fullName:"Marco Reus",ovr:88,position:"CAM",alt:"LW,ST",nation:"Germany",team:"LA Galaxy",league:"Major League Soccer",clubLogo:"./assets/footera/events/flashback/Los_Angeles_Galaxy_logo.svg",leagueLogo:"./assets/footera/events/flashback/Major_League_Soccer_logo.svg",height:180,preferredFoot:"Right",skillMoves:4,weakFoot:4,pac:87,sho:86,pas:88,dri:90,def:52,phy:72,face:"https://cdn.futwiz.com/assets/img/fc27/faces/188350.png",playstyles:"Finesse Shot,Incisive Pass,First Touch,Trivela,Dead Ball",playstylesPlus:"Technical",dynamicFace:"./assets/footera/events/flashback/reus-dortmund.png",nationFlag:"./assets/footera/events/flashback/de.png",source:"footera-flashback"};
 const FLASHBACK_REUS_EVENT={id:"flashback-reus-20261009",name:"FLASHBACK",shortName:"FLASHBACK",theme:"flashback",activeFrom:"2026-10-09T19:00:00+02:00",activeUntilAt:"2026-10-29T19:00:00+01:00",activeUntil:"29.10.2026 · 18:59",players:[],sbcPlayer:{
@@ -1317,6 +1345,9 @@ function sbcReleaseScheduleLabel(iso){
 function sbcGroupProgress(groupSet){
  const rows=allActiveSBCs().filter(x=>x.groupSet===groupSet),done=rows.filter(sbcIsCompleted).length;return{rows,done,total:rows.length}
 }
+// Event names for player SBC banners; MOMENTUM stays the fallback for older event rows.
+function eventSbcEventLabel(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId&&e.sbcPlayer)?.name||"MOMENTUM"}
+function eventSbcNamedTitle(sample){return [FLASHBACK_REUS_EVENT.id,HALLOWEEN_EVENT.id].includes(sample?.eventId)&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
 function eventSbcRewardDefinition(reward){
  const event=EVENT_PROMO_RELEASES.find(e=>e.id===reward?.playerReward?.eventId),def=event?.sbcPlayer;
  return event&&def&&def.id===reward?.playerReward?.playerId?{event,def}:null
@@ -1339,8 +1370,8 @@ function sbcGroupBannerHTML(group,rows){
  if(group==="Grind")return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">SBC GRIND · 3–4 TAGE</span><h3>Neue SBCs. Bessere Packs.</h3><p>Neue 3- und 4-Tage-Challenges mit starken Belohnungen. Gold-Recycling ist wiederholbar; alle anderen Aufgaben sind pro Rotation einmalig.</p></div></div>`;
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  if(group==="Profis"&&sample.eventSbc){
-  const def=sample.eventPlayer,reward=`${def.ovr} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"FLASHBACK":"MOMENTUM"} ${def.name}`;
-  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · ${esc(sbcReleaseScheduleLabel(def.releaseAt))}</span><h3>${sample.eventId===FLASHBACK_REUS_EVENT.id?"FLASHBACK":"MOMENTUM"} · ${esc(def.name)}</h3><p>Schließe alle ${p.total} Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare Event-Spielerkarte.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
+  const def=sample.eventPlayer,reward=`${def.ovr} ${eventSbcEventLabel(sample.eventId)} ${def.name}`;
+  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · ${esc(sbcReleaseScheduleLabel(def.releaseAt))}</span><h3>${eventSbcEventLabel(sample.eventId)} · ${esc(def.name)}</h3><p>Schließe alle ${p.total} Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare Event-Spielerkarte.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
  }
  if(group!=="Top-Partien")return"";
  const reward=sbcRewardText(sample.groupReward);
@@ -1746,7 +1777,7 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
@@ -2493,6 +2524,8 @@ function playerProfileTypeLabel(item,friend=false){
   if(item?.cosmeticDesign==="momentum")return"MOMENTUM · EVO";
   if(item?.cosmeticDesign==="red")return"CHAMPIONS ROT";
   if(item?.cosmeticDesign==="red-pro")return"CHAMPIONS ELITE ROT";
+  if(item?.cosmeticDesign==="halloween")return isEvolutionItem(item)?"HALLOWEEN · BLUTMOND-EVO":"HALLOWEEN · EVO";
+  if(String(item?.eventType||"").startsWith("halloween"))return"HALLOWEEN · BLUTMOND";
   if(isMomentumItem(item))return"MOMENTUM";
  if(item?.variant==="icon-mid")return"ICON";
  if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"TEAM OF THE WEEK";
@@ -5661,8 +5694,8 @@ function sbcFeatureGroupCard(rows,detail=false){
  if(!rows?.length)return"";
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
- const title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Spieler-SBC")):"Top-Partien";
- const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
+ const title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
+ const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventId===HALLOWEEN_EVENT.id?"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit 88 GES. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward);
  let art="";
  if(isPlayer&&found){
@@ -5673,7 +5706,7 @@ function sbcFeatureGroupCard(rows,detail=false){
  }
  const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`;
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
- return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+ return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":sample.eventId===HALLOWEEN_EVENT.id?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
@@ -5681,7 +5714,7 @@ function sbcGroupedRows(rows){
 }
 function sbcSetDetailHTML(rows){
  if(!rows?.length)return"";
- const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Profi-SBC")):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
+ const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
  const bonusState=claimed?"ERHALTEN":done>=total?"FREIGESCHALTET":`NOCH ${total-done} SBC${total-done===1?"":"s"}`;
  return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
