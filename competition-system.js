@@ -34,6 +34,9 @@ const RIVALS_REWARDS={
  1:{15:[30000,["85","primegold","primegold"]],35:[50000,["86","primegold","primegold","totw-reward"]]},
  0:{15:[40000,["86","primegold","primegold"]],35:[65000,["86","primegold","primegold","primegold","totw-reward"]]}
 };
+// One-time owner grants: this Rivals week pays the full 35-point reward for that save, whatever was played.
+const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000"]});
+function fullRivalsWeek(week){return(FULL_RIVALS_WEEKS[String(state.profile?.saveId||"").trim().toUpperCase()]||[]).includes(String(week))}
 function competitionWindow(mode,at=new Date()){
  const rule=COMPETITION_WEEK[mode],start=berlinWeekStart(at,rule.weekday,rule.hour);
  return{key:String(start.getTime()),start,end:berlinShiftDays(start,7,rule.hour)}
@@ -86,7 +89,7 @@ function syncCompetitionWeeks(at=new Date()){
  }
  const rv=state.rivals,rw=competitionWindow("rivals",at);
  if(rv.week!==rw.key){
-  const milestone=rv.weeklyPoints>=35?35:rv.weeklyPoints>=15?15:0;
+  const milestone=rv.weeklyPoints>=35||fullRivalsWeek(rv.week)?35:rv.weeklyPoints>=15?15:0;
   if(rv.week&&milestone&&!state.weeklyRewards.some(x=>x.mode==="rivals"&&x.week===rv.week)){
    state.weeklyRewards.push({mode:"rivals",week:rv.week,division:rv.division,milestone,points:rv.weeklyPoints,reward:rivalsReward(rv.division,milestone),claimed:false});
   }
