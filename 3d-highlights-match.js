@@ -64,7 +64,8 @@ function match3DSkinTones(event){
  const rows=side=>typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
  const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||'')));
  const tone=row=>{
-  const candidates=[row?.entry?.skinTone,row?.base?.skinTone,row?.entry?.skinColor,row?.base?.skinColor];
+  const chosen=typeof FooteraPlayerLooks!=='undefined'?FooteraPlayerLooks.sceneSkin(row?.base):null;
+  const candidates=[chosen,row?.entry?.skinTone,row?.base?.skinTone,row?.entry?.skinColor,row?.base?.skinColor];
   return candidates.find(v=>typeof v==='string'&&(/^[1-6]$/.test(v.trim())||/^#[0-9a-f]{6}$/i.test(v.trim()))||Number.isInteger(v)&&v>=1&&v<=6)??null;
  };
  const attack=event.team==='away'?'away':'home',defend=attack==='home'?'away':'home';
@@ -75,12 +76,14 @@ function match3DSkinTones(event){
  const orderedDefense=opposition.filter(r=>r!==defender).slice(0,8);
  const defenderSlot=Number.isInteger(event.defenderIndex)?Math.max(0,Math.min(7,event.defenderIndex-8)):0;
  if(defender){orderedDefense.splice(defenderSlot,0,defender);orderedDefense.length=Math.min(8,orderedDefense.length);}
- const tones=Array(16).fill(null);
- orderedAttack.forEach((r,i)=>tones[i]=tone(r));
- orderedDefense.forEach((r,i)=>tones[8+i]=tone(r));
+ // V21.215: hair, haircut and beard from the player's Aussehen editor.
+ const look=row=>typeof FooteraPlayerLooks!=='undefined'&&row?.base?FooteraPlayerLooks.sceneLook(row.base):null;
+ const tones=Array(16).fill(null),looks=Array(16).fill(null);
+ orderedAttack.forEach((r,i)=>{tones[i]=tone(r);looks[i]=look(r)});
+ orderedDefense.forEach((r,i)=>{tones[8+i]=tone(r);looks[8+i]=look(r)});
  const keeper=rows(defend).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
  const buildKeeper=rows(attack).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- return {playerSkinTones:tones,keeperSkinTone:tone(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
+ return {playerSkinTones:tones,playerLooks:looks,keeperSkinTone:tone(keeper),keeperLook:look(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
 }
 function match3DPresentationMeta(event,current){
  // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.

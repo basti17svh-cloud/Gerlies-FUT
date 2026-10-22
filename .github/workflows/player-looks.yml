@@ -1,0 +1,40 @@
+name: Footera player looks from EA portraits
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - '.github/workflows/player-looks.yml'
+      - 'scripts/build-player-looks.cjs'
+      - 'player-looks.js'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: player-looks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix /tmp/looks pngjs@7.0.0
+      - name: Analyse EA portraits
+        env:
+          PNGJS: /tmp/looks/node_modules/pngjs
+          SHEET: ${{ vars.LOOKS_SHEET || '' }}
+        run: |
+          if [ -f qa/looks-debug ]; then SHEET=$(cat qa/looks-debug) node scripts/build-player-looks.cjs; fi
+          node scripts/build-player-looks.cjs
+      - name: Commit results to this branch
+        run: |
+          for f in assets/player-looks.json qa/looks-sheet*.png qa/looks-sheet.txt qa/looks-report.txt; do [ -f "$f" ] && git add -f "$f"; done; true
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Player looks: analyse EA portraits"
+          git pull --rebase origin ${GITHUB_REF_NAME}
+          git push origin HEAD:${GITHUB_REF_NAME}
