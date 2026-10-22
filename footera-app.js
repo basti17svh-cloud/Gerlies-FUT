@@ -3563,9 +3563,40 @@ function moveSquadPointer(e){
  }
  if(!dragState.active)return;
  e.preventDefault();
+ dragState.x=e.clientX;dragState.y=e.clientY;
  if(dragState.ghost){dragState.ghost.style.left=e.clientX+'px';dragState.ghost.style.top=e.clientY+'px'}
+ updateSquadDropTarget();
+ if(!dragState.scrollRaf)dragState.scrollRaf=requestAnimationFrame(squadDragAutoScroll);
+}
+function squadDragScroller(el){
+ for(let n=el?.parentElement;n&&n!==document.body;n=n.parentElement){const oy=getComputedStyle(n).overflowY;if((oy==='auto'||oy==='scroll')&&n.scrollHeight>n.clientHeight+1)return n}
+ return document.scrollingElement||document.documentElement;
+}
+// Finger near the top/bottom edge while dragging scrolls the page, so a bench card can reach the strikers.
+function squadDragScrollSpeed(y,top,bottom){
+ const zone=Math.min(110,Math.max(60,(bottom-top)*.14));
+ if(y<top+zone)return-Math.ceil(22*Math.min(1,(top+zone-y)/zone));
+ if(y>bottom-zone)return Math.ceil(22*Math.min(1,(y-(bottom-zone))/zone));
+ return 0;
+}
+function squadDragAutoScroll(){
+ if(!dragState?.active)return;
+ dragState.scrollRaf=0;
+ const scroller=dragState.scroller||(dragState.scroller=squadDragScroller(dragState.source));
+ const isPage=scroller===document.scrollingElement||scroller===document.documentElement;
+ const r=isPage?{top:0,bottom:window.visualViewport?.height||window.innerHeight}:scroller.getBoundingClientRect();
+ const speed=squadDragScrollSpeed(dragState.y,Math.max(0,r.top),Math.min(window.innerHeight,r.bottom));
+ if(!speed)return;
+ const pos=()=>isPage?window.scrollY:scroller.scrollTop,before=pos();
+ if(isPage)window.scrollBy(0,speed);else scroller.scrollTop+=speed;
+ if(pos()===before)return;
+ updateSquadDropTarget();
+ dragState.scrollRaf=requestAnimationFrame(squadDragAutoScroll);
+}
+function updateSquadDropTarget(){
+ if(!dragState)return;
  clearDropTargets();
- const el=document.elementFromPoint(e.clientX,e.clientY);
+ const el=document.elementFromPoint(dragState.x,dragState.y);
  const tab=el?.closest?.('[data-squad-drawer]');
  if(tab){
   const mode=tab.dataset.squadDrawer;
@@ -3585,6 +3616,7 @@ function endSquadPointer(e){
    if(Number.isInteger(to)&&to!==d.from){const tmp=state.squad[to];state.squad[to]=state.squad[d.from];state.squad[d.from]=tmp;save();renderAll();toast(to>=18?'In Reserve verschoben.':to>=11?'Auf die Bank verschoben.':'Spieler getauscht.')}
   }
  }
+ if(d.scrollRaf)cancelAnimationFrame(d.scrollRaf);
  d.source?.classList.remove('drag-source');d.ghost?.remove();clearDropTargets();dragState=null;
 }
 document.addEventListener('pointerdown',e=>{if(squadDragElement(e))startSquadPointer(e)},{passive:true});
@@ -7642,7 +7674,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.227";
+const GFUT_BUILD="V21.228";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7700,7 +7732,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21227",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21228",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
