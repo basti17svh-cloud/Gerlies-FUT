@@ -106,5 +106,5 @@ test('Marco receives 3/3 on ST and ZOM, none out of position; chemistry dots onl
  formation[0].p='CAM';assert.equal(api.playerChem(0,line(founder,teammate)),3);
  formation[0].p='CB';assert.equal(api.playerChem(0,line(founder,teammate)),0);
  const slotCode=html.slice(html.indexOf('function slotHTML('),html.indexOf('function renderSquad('));
- assert.match(slotCode,/\$\{base\?`<div class="chem-dots"/);
+ assert.match(slotCode,/\$\{base\?`<div class="chem-dots/);
 });
