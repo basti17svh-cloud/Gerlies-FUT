@@ -5105,7 +5105,12 @@ function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null,instanceK
   </div>`
  }).join("")}</div>`
 }
-function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div><div class="evo-candidate-grid">${eligible.length?eligible.map(i=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}</div>`;showUiLayer("evoPickerModal","evo-picker")}
+function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}const groups=[...new Set(eligible.map(i=>evoPickerPosGroup(displayBase(i).position)))];$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div>${eligible.length>1?evoPickerFilterHTML(groups,eligible.length):""}<div class="evo-candidate-grid">${eligible.length?eligible.map((i,n)=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}" data-evo-name="${esc(evoPickerKey(b.name))}" data-evo-group="${evoPickerPosGroup(b.position)}" data-evo-ovr="${Number(b.ovr)||0}" data-evo-order="${n}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}<div class="evo-empty evo-filter-empty" hidden>Kein Spieler passt zu deiner Suche.</div></div>`;showUiLayer("evoPickerModal","evo-picker")}
+const EVO_PICKER_GROUPS=[["GK","TW"],["DEF","ABW"],["MID","MF"],["ATT","ST"]];
+function evoPickerPosGroup(pos){const p=String(pos||"").toUpperCase();if(p==="GK")return"GK";if(["CB","LB","RB","LWB","RWB"].includes(p))return"DEF";if(["CDM","CM","CAM","LM","RM"].includes(p))return"MID";return"ATT"}
+function evoPickerKey(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ")}
+function evoPickerFilterHTML(groups,total){const pos=groups.length>1?`<button type="button" class="active" aria-pressed="true" data-evo-filter-pos="">Alle</button>${EVO_PICKER_GROUPS.filter(([g])=>groups.includes(g)).map(([g,l])=>`<button type="button" aria-pressed="false" data-evo-filter-pos="${g}">${l}</button>`).join("")}`:"";return`<div class="evo-filter"><div class="evo-filter-search"><input id="evoPickerSearch" type="search" placeholder="Spieler suchen …" autocomplete="off" enterkeyhint="search" aria-label="Spieler suchen"><span class="evo-filter-count" aria-live="polite">${total} von ${total}</span></div><div class="evo-filter-chips" role="group" aria-label="Filter">${pos}<button type="button" class="evo-filter-sort" data-evo-filter-sort="" aria-label="Sortierung: empfohlen">⇅ GES</button></div></div>`}
+function applyEvoPickerFilter(){const body=$("evoPickerBody"),grid=body?.querySelector(".evo-candidate-grid");if(!grid)return;const q=evoPickerKey($("evoPickerSearch")?.value),pos=body.querySelector("[data-evo-filter-pos].active")?.dataset.evoFilterPos||"",sort=body.querySelector("[data-evo-filter-sort]")?.dataset.evoFilterSort||"",cards=[...grid.querySelectorAll("[data-evo-candidate]")];let shown=0;cards.forEach(c=>{const ok=(!q||c.dataset.evoName.includes(q))&&(!pos||c.dataset.evoGroup===pos);c.hidden=!ok;if(ok)shown++});const val=c=>Number(c.dataset[sort?"evoOvr":"evoOrder"]);cards.sort((a,b)=>sort==="high"?val(b)-val(a)||a.dataset.evoOrder-b.dataset.evoOrder:val(a)-val(b)||a.dataset.evoOrder-b.dataset.evoOrder).forEach(c=>grid.appendChild(c));const empty=grid.querySelector(".evo-filter-empty");if(empty){empty.hidden=shown>0;grid.appendChild(empty)}const count=body.querySelector(".evo-filter-count");if(count)count.textContent=`${shown} von ${cards.length}`}
 function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){
  const b=displayBase(item),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),playerBusy=!!activeEvolutionForUid(item.uid),blocked=full||running||playerBusy;
  const reason=playerBusy?"Spieler bereits in Evolution":running?"Diese Evolution läuft bereits":full?"3/3 Evolutionen aktiv":"";
@@ -5193,7 +5198,8 @@ function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTa
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
-$("evoPickerBody").addEventListener("click",e=>{const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)renderEvoCandidatePreview(evo,item);return}if(back){openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
+$("evoPickerBody").addEventListener("input",e=>{if(e.target.id==="evoPickerSearch")applyEvoPickerFilter()});
+$("evoPickerBody").addEventListener("click",e=>{const chip=e.target.closest("[data-evo-filter-pos]"),sortBtn=e.target.closest("[data-evo-filter-sort]");if(chip){chip.parentElement.querySelectorAll("[data-evo-filter-pos]").forEach(b=>{const on=b===chip;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});applyEvoPickerFilter();return}if(sortBtn){const next={"":"high",high:"low",low:""}[sortBtn.dataset.evoFilterSort];sortBtn.dataset.evoFilterSort=next;sortBtn.classList.toggle("active",!!next);sortBtn.textContent=next==="high"?"GES ↓":next==="low"?"GES ↑":"⇅ GES";sortBtn.setAttribute("aria-label",`Sortierung: ${next==="high"?"höchste GES zuerst":next==="low"?"niedrigste GES zuerst":"empfohlen"}`);applyEvoPickerFilter();return}const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)renderEvoCandidatePreview(evo,item);return}if(back){openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
 function progressEvolution(resultKey="loss"){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();if(!rows.length)return;
  const kickoffStarters=Array.isArray(match?.initialStarters)?match.initialStarters:match?.lineup?.slice(0,11)||[];let changed=false;
@@ -6394,6 +6400,11 @@ function matchPlayerWindow(uid){
  return{start,end,minutes:start==null?0:Math.max(0,end-start)}
 }
 function matchPlayerMinutes(uid){return matchPlayerWindow(uid).minutes}
+function matchPlayerForm(side,uid,index){
+ let h=2166136261;for(const c of `${match?.resultId||""}|${side}|${uid||index}`)h=Math.imul(h^c.charCodeAt(0),16777619);
+ h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;
+ return((h>>>0)/4294967295)*2-1
+}
 function matchPlayerPerformance(side,uid,index,base){
  const home=side==="home",window=home?matchPlayerWindow(uid):{start:0,end:match.minute,minutes:match.minute},minutes=window.minutes;
  const belongs=(event,uidField,indexField)=>event.side===side&&(home?String(event[uidField]||"")===String(uid):Number(event[indexField]??-1)===index);
@@ -6407,19 +6418,28 @@ function matchPlayerPerformance(side,uid,index,base){
  const formation=home?(activeIndex>=0?match.formation:match.initialFormation||match.formation):match.opponentProfile?.formation;
  const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],position=String((activeIndex>=0?form[activeIndex]?.p:priorSub?.position||form[startIndex]?.p)||base?.position||"").toUpperCase();
  const conceded=(match.goalEvents||[]).filter(e=>e.side!==side&&window.start!=null&&Number(e.at??e.minute)>window.start&&Number(e.at??e.minute)<=window.end).length;
- let rating=6.1+goals*1.15+assists*.7+Math.min(.22,shots.length*.05)+Math.max(-.4,Math.min(.5,(goals-xg)*.2))-yellows*.17-reds*1.35;
- rating+=Math.min(2.3,saves.length*.28+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.4);
- rating+=Math.min(1.6,tackles*.11+interceptions*.13+blocks*.2);
+ const played=Math.min(1,minutes/90),settled=Math.min(1,Math.max(0,(minutes-10)/50)),attacker=["ST","CF","LW","RW","LM","RM","CAM"].includes(position),midfielder=["CM","CDM","CAM"].includes(position),defender=["CB","LB","RB","LWB","RWB"].includes(position);
+ const onTarget=shots.filter(e=>e.onTarget||e.goal).length,quality=Number(base?.ovr||base?.rating||0);
+ // Base, card quality and a stable per-match form (the passes and duels the ticker does not show) spread ratings over the 6-8 range.
+ let rating=6.45+(quality?Math.max(-.4,Math.min(.35,(quality-82)*.03))*settled:0)+matchPlayerForm(side,uid,index)*.4*settled;
+ rating+=goals*.95-Math.max(0,goals-1)*.1+assists*.6;
+ rating+=Math.min(.75,shots.length*.09+onTarget*.13+xg*.35)-Math.min(.35,Math.max(0,xg-goals)*.2)-yellows*.25-reds*1.7;
+ rating+=Math.min(2.4,saves.length*.32+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.45);
+ rating+=Math.min(1.6,tackles*.17+interceptions*.19+blocks*.24);
  if(minutes>=18){
-  const diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*(home?1:-1)));
-  rating+=diff*.035;
-  if(["ST","CF","LW","RW","LM","RM","CAM"].includes(position)&&!goals&&!assists&&!shots.length)rating-=Math.min(.3,(minutes-18)/72*.3);
-  if(["CM","CDM"].includes(position))rating+=(Number(match.poss||50)-50)*(home?1:-1)*.006;
-  if(["CB","LB","RB","LWB","RWB"].includes(position)){rating-=conceded*.12;if(!conceded&&minutes>=40)rating+=.22}
-  if(position==="GK"){rating-=conceded*.24;if(!conceded&&minutes>=40)rating+=.3}
+  const sign=home?1:-1,diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*sign)),share=Math.min(1,(minutes-10)/60);
+  rating+=((diff>0?.3:diff<0?-.25:0)+diff*.1)*share;
+  const xgDiff=Math.max(-2,Math.min(2,(Number(match.xgHome||0)-Number(match.xgAway||0))*sign));
+  if(attacker||midfielder)rating+=xgDiff*.1*share;
+  if(attacker&&!goals&&!assists&&!shots.length)rating-=Math.min(.4,(minutes-18)/72*.4);
+  if(midfielder)rating+=(Number(match.poss||50)-50)*sign*.014;
+  if(defender){rating-=conceded*.16;if(!conceded&&minutes>=40)rating+=.4}
+  if(position==="GK"){rating-=conceded*.3;if(!conceded&&minutes>=40)rating+=.5}
  }
  if(minutes<8&&!goals&&!assists&&!actions.length&&!shots.length&&!yellows&&!reds)rating=6;
- rating=Math.max(4,Math.min(10,rating));
+ // Soften the top end so a brace is a 9, a hat-trick a 9.5+, and only a perfect game reaches 10.
+ if(rating>7.8)rating=7.8+2.2*(1-Math.exp(-(rating-7.8)/2.2));
+ rating=Math.max(3.5,Math.min(10,rating));
  return{rating:Number(rating.toFixed(1)),fitness:matchPlayerFitness(uid,side,index),minutes:Math.round(minutes),position,goals,assists,shots:shots.length,xg:Number(xg.toFixed(2)),saves:saves.length,blocks,tackles,interceptions,defensiveActions:blocks+tackles+interceptions,conceded,yellows,reds}
 }
 function matchPlayerLivePerformance(uid){
@@ -7607,7 +7627,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.220";
+const GFUT_BUILD="V21.223";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7665,7 +7685,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21220",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21223",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

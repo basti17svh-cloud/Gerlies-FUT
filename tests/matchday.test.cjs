@@ -83,6 +83,24 @@ test('conceded goals and minutes only count while a player was on the pitch, inc
  assert.ok(ctx.matchPlayerLivePerformance('p3').rating<6,'dismissals lower the rating');
 });
 
+test('ratings spread over the 6-8 range and reward shots, quality, form and the result',()=>{
+ const{ctx,bases}=fixture();ctx.match.minute=90;ctx.match.resultId='rating-spread';ctx.match.home=3;ctx.match.away=1;ctx.match.xgHome=2.4;ctx.match.xgAway=.9;
+ ctx.match.goalEvents=[{side:'home',minute:20,at:20,scorerUid:'p10',assistUid:'p5'},{side:'home',minute:50,at:50,scorerUid:'p10',assistUid:'p8'},{side:'home',minute:70,at:70,scorerUid:'p6',assistUid:'p10'},{side:'away',minute:80,at:80,scorerIndex:9}];
+ ctx.match.shotEvents=[...['p10','p10','p6'].map((uid,i)=>({side:'home',shooterUid:uid,xg:.3,goal:true,onTarget:true,minute:20+i*25})),
+  ...Array.from({length:3},(_,i)=>({side:'home',shooterUid:'p9',xg:.18,onTarget:i<2,minute:30+i*15}))];
+ const rows=ctx.matchReportPerformanceRows('home'),by=uid=>rows.find(r=>r.uid===uid);
+ const brace=by('p10'),striker=by('p9'),keeper=by('p0');
+ assert.ok(brace.rating>=9&&brace.rating<10,`a brace with an assist is a 9 but not a perfect 10 (${brace.rating})`);
+ assert.ok(striker.rating>=6.6,`a striker with three shots in a 3:1 win is not a 6 (${striker.rating})`);
+ assert.ok(keeper.rating>=6.3,`one conceded goal in a win keeps the keeper solid (${keeper.rating})`);
+ const quiet=rows.filter(r=>!r.goals&&!r.assists&&!r.shots).map(r=>r.rating);
+ assert.ok(new Set(quiet).size>=4,'players without goals or shots do not all get the same grade');
+ assert.ok(rows.filter(r=>r.rating>=7&&r.rating<8.5).length>=3,'a convincing win produces several 7s and 8s');
+ const before=by('p3').rating;bases.get('p3').ovr=92;
+ assert.ok(ctx.matchPlayerLivePerformance('p3').rating>before,'card quality matters');
+ assert.equal(ctx.matchPlayerLivePerformance('p3').rating,ctx.matchPlayerLivePerformance('p3').rating,'live ratings are stable between ticks');
+});
+
 test('a saved shot records the actual defending goalkeeper and does not add a goal',()=>{
  const{ctx}=fixture();ctx.match.minute=24;ctx.Math.random=()=>.2;
  const shot={side:'away',minute:24,shooter:'Gast 9',xg:.35,goal:false};
