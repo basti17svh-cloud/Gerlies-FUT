@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/player-looks.yml'
       - 'scripts/build-player-looks.cjs'
+      - 'player-looks.js'
   workflow_dispatch:
 permissions:
   contents: write
@@ -35,4 +36,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
           git commit -m "Player looks: analyse EA portraits"
+          git pull --rebase origin ${GITHUB_REF_NAME}
           git push origin HEAD:${GITHUB_REF_NAME}

@@ -1844,7 +1844,7 @@ function resolvedAffiliation(p){
   const canonicalSourceLeague=leagueFromClub("",sourceLeague,p.leagueId,p.gender,p.source),canonicalLinkedLeague=leagueFromClub("",linkedLeague,"",p.gender,p.source);
   const sourceLogoMatches=!!canonicalSourceLeague&&normalizeKey(canonicalSourceLeague)===normalizeKey(league),linkedLogoMatches=!!canonicalLinkedLeague&&normalizeKey(canonicalLinkedLeague)===normalizeKey(league);
   const verified=verifiedClubBadge(team,p),women=isWomensAffiliation(team,p);
-  value={...p,league,clubLogo:verified?.url||(!women?(apiSportsTeamLogo(team)||String(p.clubLogo||"").trim()||discoveredBadge("club",team)):""),leagueLogo:apiSportsLeagueLogo(league)||(sourceLogoMatches?String(p.leagueLogo||"").trim():"")||(linkedLogoMatches?String(linked.url||"").trim():"")||discoveredBadge("league",league)}
+  value={...p,league,clubLogo:verified?.url||(!women?(apiSportsTeamLogo(team)||String(p.clubLogo||"").trim()||discoveredBadge("club",team)):womensClubLogo(p)),leagueLogo:localLeagueLogo(league)||apiSportsLeagueLogo(league)||(sourceLogoMatches?String(p.leagueLogo||"").trim():"")||(linkedLogoMatches?String(linked.url||"").trim():"")||discoveredBadge("league",league)}
  }
  RESOLVED_AFFILIATION_CACHE.set(p,{epoch:AFFILIATION_CACHE_EPOCH,sig,value});return value
 }
@@ -1974,6 +1974,27 @@ const API_SPORTS_TEAM_IDS={
 };
 const CLUB_IDENTITY_STOP=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","the"]);
 function clubIdentityKey(v){return normalizeKey(v).split(" ").filter(x=>x&&!CLUB_IDENTITY_STOP.has(x)).join(" ")}
+// Logos the game ships itself (scripts/fetch-league-logos.cjs), keyed by EA's league name.
+const LOCAL_LEAGUE_LOGOS={
+ "arkema pl":"./assets/leagues/arkema-pl.png",
+ "barclays wsl":"./assets/leagues/barclays-wsl.png",
+ "calcio a femminile":"./assets/leagues/calcio-a-femminile.png",
+ "ceska liga zen":"./assets/leagues/ceska-liga-zen.jpg",
+ "gpfbl":"./assets/leagues/gpfbl.png",
+ "iceland league":"./assets/leagues/iceland-league.png",
+ "liga f moeve":"./assets/leagues/liga-f-moeve.png",
+ "liga portugal feminino":"./assets/leagues/liga-portugal-feminino.png",
+ "nwsl":"./assets/leagues/nwsl.png",
+ "nederland vrouwen liga":"./assets/leagues/nederland-vrouwen-liga.jpg",
+ "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
+ "sverige liga":"./assets/leagues/sverige-liga.png"
+};
+// The game shows some leagues under their full name (LEAGUE_NAME_ALIASES); those find the logo too.
+function localLeagueLogo(league){
+ const key=normalizeKey(league);if(LOCAL_LEAGUE_LOGOS[key])return LOCAL_LEAGUE_LOGOS[key];
+ for(const [alias,name] of Object.entries(LEAGUE_NAME_ALIASES))if(LOCAL_LEAGUE_LOGOS[alias]&&normalizeKey(name)===key)return LOCAL_LEAGUE_LOGOS[alias];
+ return""
+}
 function apiSportsLeagueLogo(league){const id=API_SPORTS_LEAGUE_IDS[normalizeKey(league)];return id?`https://media.api-sports.io/football/leagues/${id}.png`:""}
 const API_SPORTS_TEAM_ID_CACHE=new Map();
 function apiSportsTeamId(team){
@@ -1994,6 +2015,8 @@ function isWomensAffiliation(team,p={}){
  return /(?:women|woman|ladies|vrouwen|feminin|femenin|frauen|damen|femminile|lyonnes)/.test(name+" "+gender)||
   /(?:women|woman|ladies|vrouwen|feminin|femenin|frauen|damen|femminile|liga f|arkema premiere ligue)/.test(league)
 }
+// EA ships the women's teams with their own team ids and crests, so only EA's crest is exact for them.
+function womensClubLogo(p){const url=String(p?.clubLogo||"").trim();return /^https:\/\/drop-assets\.ea\.com\//.test(url)?url:""}
 function verifiedClubBadge(team,p={}){
  return isWomensAffiliation(team,p)?null:VERIFIED_BADGES.clubs?.[normalizeKey(team)]||null
 }
@@ -2306,7 +2329,7 @@ function emblemCandidates(kind,p){
  if(kind==="club"){
   const verified=verifiedClubBadge(p?.team,p);
   if(verified){add(verified.url);return arr}
-  if(isWomensAffiliation(p?.team,p))return arr;
+  if(isWomensAffiliation(p?.team,p)){add(womensClubLogo(p));return arr}
   add(apiSportsTeamLogo(p?.team));add(p?.clubLogo);
   if(/^\d+$/.test(String(p?.teamId||"")))add(`https://cdn.sofifa.net/meta/team/${p.teamId}/120.png`);
   add(discoveredBadge("club",p?.team));
@@ -2315,6 +2338,7 @@ function emblemCandidates(kind,p){
  if(kind==="league"){
   const linked=discoveredClubLeague(p?.team),leagueName=String(p?.league||linked.name||"").trim();
   const linkedMatches=!!linked.name&&normalizeKey(leagueFromClub("",linked.name))===normalizeKey(leagueFromClub("",leagueName));
+  add(localLeagueLogo(leagueName));
   add(apiSportsLeagueLogo(leagueName));
   add(p?.leagueLogo);
   if(linkedMatches)add(linked.url);
@@ -2395,7 +2419,7 @@ function officialCardHTML(p,item){
  if(!arr.length)return"";
  return `<img class="official-card" src="${esc(arr[0])}" data-cache-key="${esc(imageCacheKey('official-card',p))}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" alt="${esc(p.name||'Spieler')}" loading="lazy" decoding="async" onload="rememberLoadedImage(this)" onerror="advanceOfficialCard(this)">`
 }
-function playerGender(p){const g=normalizeKey(p?.gender||p?.sex||p?.playerGender||"");if(["female","women","woman","f","1"].includes(g))return"female";if(["male","men","man","m","0"].includes(g))return"male";return""}
+function playerGender(p){const g=normalizeKey(p?.gender||p?.sex||p?.playerGender||"");if(["female","women","woman","f","1"].includes(g)||/^wom[ae]n s football$/.test(g))return"female";if(["male","men","man","m","0","men s football"].includes(g))return"male";return""}
 function positionLabel(pos,p=null){const raw=String(pos||"").toUpperCase();if(raw==="GK")return playerGender(p)==="female"?"TH":"TW";const m={CB:"IV",RB:"RV",LB:"LV",RWB:"RAV",LWB:"LAV",CDM:"ZDM",CM:"ZM",CAM:"ZOM",RM:"RM",RW:"RF",LM:"LM",LW:"LF",CF:"MS",ST:"ST"};return m[raw]||raw}
 function cardStatPairs(p){if(String(p?.position||"").toUpperCase()==="GK")return[["HEC",p.pac],["BSI",p.sho],["ABS",p.pas],["REF",p.dri],["TMP",p.def],["POS",p.phy]];return[["TEM",p.pac],["SCH",p.sho],["PAS",p.pas],["DRI",p.dri],["DEF",p.def],["PHY",p.phy]]}
 function cardStatLongLabel(k){return({HEC:"Hechten",BSI:"Ballsicherheit",ABS:"Abschlag",REF:"Reflexe",TMP:"Tempo",POS:"Stellungsspiel",TEM:"Tempo",SCH:"Schießen",PAS:"Passen",DRI:"Dribbling",DEF:"Defensive",PHY:"Physis"})[k]||k}
@@ -2729,6 +2753,8 @@ function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
  const verified=verifiedClubBadge(team,{gender,league:rawLeague,source});
  if(verified?.league&&(source==="fc27-open-data"||source==="fc27-open-data-men"))return verified.league;
  if(LEAGUE_NAME_ALIASES[rk])return LEAGUE_NAME_ALIASES[rk];
+ // Juventus or Roma women play in their own league; the men's club list must not move them to Serie A.
+ if(rk&&/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(gender)))return String(rawLeague);
  if(rk){
   if(rk==="bundesliga")return"Bundesliga";
   if(rk==="premier league")return"Premier League";
@@ -2801,9 +2827,11 @@ function applyPlayerTraits(players){
 }
 async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
 async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
+// Bumped when the game reads the same file differently, so offline copies are rebuilt once (w1: women's club crests).
+const PLAYER_DB_CLIENT_REVISION=":w1";
 async function remotePlayerDbRevision(){
  const c=new AbortController(),t=setTimeout(()=>c.abort(),6000);
- try{const r=await fetch(DB_VERSION_URL,{cache:"no-store",signal:c.signal});if(!r.ok)return"";return String((await r.json())?.revision||"")}catch(e){return""}finally{clearTimeout(t)}
+ try{const r=await fetch(DB_VERSION_URL,{cache:"no-store",signal:c.signal});if(!r.ok)return"";const rev=String((await r.json())?.revision||"");return rev?rev+PLAYER_DB_CLIENT_REVISION:""}catch(e){return""}finally{clearTimeout(t)}
 }
 // A player EA drops from its database must not vanish from a club that owns the card.
 async function keepOwnedPlayers(players){
@@ -7559,7 +7587,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.217";
+const GFUT_BUILD="V21.218";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7617,7 +7645,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21217",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21218",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
