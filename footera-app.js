@@ -1800,8 +1800,8 @@ function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosme
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
 // Blutmond upgrade: every HALLOWEEN card (team, SBC, objective) gains the event upgrade once the Halloween night starts.
-function halloweenUpgradeFor(item,at=Date.now()){const up=HALLOWEEN_EVENT.upgrade;return up&&String(item?.eventType||"").startsWith("halloween")&&at>=Date.parse(up.at)?up:null}
 function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0)+Number(halloweenUpgradeFor(item)?.ovr||0))}
+function halloweenUpgradeFor(item,at=Date.now()){const up=typeof HALLOWEEN_EVENT!=="undefined"&&HALLOWEEN_EVENT.upgrade;return up&&String(item?.eventType||"").startsWith("halloween")&&at>=Date.parse(up.at)?up:null}
 function displayBase(item){
  const b=itemBase(item);if(!b)return null;
  const momentum=isMomentumItem(item)?promoItemInfo(item):null,eventStats=Array.isArray(item?.eventStats)?item.eventStats:null,extra=item?.evoStats||{};
@@ -5332,7 +5332,7 @@ function progressEvolution(resultKey="loss"){
 
 
  let halloweenSbcShown=false;
-let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
+ let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
@@ -6960,7 +6960,7 @@ function halloweenHeroSlide(at=Date.now()){
  const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(ev.upgrade.at);
  return{kicker:upgrade?"BLUTMOND-UPGRADE AKTIV · +1 AUF ALLE HALLOWEEN-KARTEN":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:upgrade?`Der Blutmond ist aufgegangen: Jede Halloween-Karte hat jetzt +1 GES und +1 auf alle Werte. In Packs bis ${fmtDay(end)} Uhr.`:`18 Spezialkarten in Packs bis ${fmtDay(end)} Uhr. In der Halloween-Nacht (${fmtDay(upAt)} Uhr) bekommt jede Halloween-Karte das Blutmond-Upgrade.`,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:"JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:ev.activeUntil,theme:"halloween",event:ev}
 }
-function homeHeroSlides(){const event=activeMomentumEvent(),halloween=halloweenHeroSlide();return[
+function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null;return[
  ...(halloween?[halloween]:[]),
  ...(event?[{kicker:`NEUES EVENT · ${event.subtitle}`,title:`MOMENTUM<br><span>${event.subtitle}</span>`,text:`${event.name} ${event.subtitle} ist jetzt live. Verfügbar in Packs bis ${new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(event.activeUntilAt))} Uhr.`,button:"Zum Team",action:"momentum-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"M",live:"JETZT IN PACKS",aside:`${event.players.length} SPEZIALKARTEN`,aside2:event.activeUntil,theme:"momentum",event}]:[]),
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division||"ELITE"} · ${state.rivals.weeklyPoints}/35`,theme:"gold"},
