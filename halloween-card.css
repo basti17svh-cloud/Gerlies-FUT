@@ -98,3 +98,12 @@
 .store-pack-promise.event{background:linear-gradient(120deg,#3a1206,#1c0a24);border-color:#ff8a2a;color:#ffd2a0}
 .store-mix i.halloween{background:linear-gradient(90deg,#c43d00,#ff9a3c);color:#1d0700}
 .store-pack-badge.halloween{background:linear-gradient(120deg,#ff9a3c,#c43d00);color:#1d0700}
+.sbc-tab.halloween-live{border-color:#ff8a2a;box-shadow:0 0 12px #ff6a0055;color:#ffd2a0}
+.sbc-tab.halloween-live:after{content:"🎃";margin-left:5px;font-size:.9em}
+.evo-offer.halloween-evo{border-color:#c8611f;background:radial-gradient(circle at 88% 6%,#ff7a1a30,transparent 36%),radial-gradient(circle at 0 100%,#6a2bb02e,transparent 46%),linear-gradient(155deg,#1f0c22,#0e0812)}
+.evo-offer.halloween-evo h3{color:#ffd2a0}
+.evo-lane.event{border-color:#ff8a2a;background:#3a1206;color:#ffd2a0}
+.evo-event-design{display:flex;align-items:center;gap:12px;margin:10px 0;padding:10px;border:1px solid #5a2a3a;border-radius:12px;background:#12081699}
+.evo-event-design-card{width:92px;flex:0 0 92px}
+.evo-event-design-card .mini,.evo-event-design-card .card-shell{width:100%!important}
+.evo-event-design span{color:#ffbf80;font-size:11px;font-weight:800;line-height:1.4}

@@ -987,7 +987,7 @@ const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,team
 // In the Halloween night (31.10. 19:00) every Halloween card gets the Blutmond upgrade, see halloweenUpgradeFor().
 const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"BLUTMOND",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",
  upgrade:{at:"2026-10-31T19:00:00+01:00",ovr:1,stats:1,label:"Blutmond-Upgrade"},
- sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:88,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[76,88,90,88,62,76],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
+ sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:87,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[75,87,89,87,61,75],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
   {name:"Geisterstunde – 83er-Team",desc:"Teil 1/4 · Der Raumdeuter spukt wieder.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
   {name:"Kürbisfeld – 84er-Team",desc:"Teil 2/4 · Oranje wie ein Kürbis.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus den Niederlanden",minAvg:84,requiredNation:"Holland",reward:{pack:"82",qty:1}},
   {name:"Transsilvanien – 85er-Team",desc:"Teil 3/4 · Grüße aus Draculas Heimat.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Rumänien",minAvg:85,requiredNation:"Romania",reward:{pack:"goldplayers",qty:1}},
@@ -1379,8 +1379,9 @@ function makeEventSbcRewardItem(reward){
  const {event,def}=found,base=eventSbcRewardBase(event,def);
  return makeItem(base,false,{variant:"special",eventType:`${event.theme||event.id}-sbc`,eventName:event.name,dynamicFace:def.dynamicFace||"",overridePosition:def.position||base.position,displayRating:def.ovr,eventStats:def.stats,playstyleAdds:def.playstyleAdds||[],playstylePlusAdds:def.playstylePlusAdds||[],rare:true,acquisitionSource:"SBC"})
 }
+function eventDisplayOvr(eventId,ovr){return Number(ovr||0)+(String(eventId||"").startsWith("halloween")?Number(halloweenUpgradeFor({eventType:"halloween"})?.ovr||0):0)}
 function eventSbcRewardLabel(reward){
- const found=eventSbcRewardDefinition(reward);return found?`${found.def.ovr} ${found.event.name} ${found.def.name}`:"Event-Spieler"
+ const found=eventSbcRewardDefinition(reward);return found?`${eventDisplayOvr(found.event.id,found.def.ovr)} ${found.event.name} ${found.def.name}`:"Event-Spieler"
 }
 function sbcGroupBannerHTML(group,rows){
  if(!rows.length)return"";
@@ -5291,7 +5292,8 @@ function claimEvolutionStage(instanceKey=""){
 function renderAvailableEvolution(evo){
  const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo),focus=evoFocusPlayerUid&&eligible.some(x=>x.uid===evoFocusPlayerUid),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),disabled=!eligible.length||full||running;
  const label=running?"Evolution läuft":!eligible.length?"Keine geeigneten Spieler":full?"3/3 Evolutionen aktiv":"Spieler wählen & Vorschau";
- return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
+ const designPreview=evo.design?(()=>{const pick=eligible[0];if(!pick)return`<div class="evo-event-design"><span>Endet im HALLOWEEN-Design · nur normale Karten 78–84 GES</span></div>`;const done=evoPreviewItem(pick,evo,evo.stages.length-1);return`<div class="evo-event-design"><div class="evo-event-design-card">${cardHTML(displayBase(done),done,true)}</div><span>So endet ${esc(displayBase(pick).name)}: ${itemRating(done)} GES im HALLOWEEN-Design</span></div>`})():"";
+ return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}${evo.design?` event-evo ${esc(evo.design)}-evo`:""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div>${designPreview}<div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
 }
 function renderActiveEvolution(){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();
@@ -5305,7 +5307,7 @@ function renderActiveEvolution(){
 }
 function renderEvoHistory(status){const rows=(state.evoHistory||[]).filter(x=>status==="completed"?x.status==="completed":x.status!=="completed");if(!rows.length)return'<div class="evo-empty">Hier gibt es noch keine Einträge.</div>';return rows.slice(0,20).map(h=>{const evo=EVOLUTION_POOL.find(x=>x.id===h.evoId),item=state.club.find(x=>x.uid===h.uid),b=item?displayBase(item):null;return`<div class="evo-history"><div><strong>${esc(evo?.name||h.evoId)}</strong><span>${b?esc(b.name):'Spieler'} · ${h.status==='completed'?'Abgeschlossen':h.status==='expired'?'Abgelaufen':'Abgebrochen'}</span></div>${b?`<div class="evo-history-card">${cardHTML(b,item,true)}</div>`:''}</div>`}).join("")}
 function renderPastEvolutions(){const nowDefs=new Set(activeEvolutionDefinitions().map(x=>x.id)),previous=activeEvolutionDefinitions(new Date(Date.now()-7*86400000)).filter(x=>!nowDefs.has(x.id));const old=previous.map(evo=>{const sch=evolutionSchedule(evo,new Date(),-1);return`<div class="evo-offer expired"><div class="evo-offer-top"><div><span class="evo-live">ABGELAUFEN</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Startphase beendet <b>${evoDate(sch.signupEnd)}</b></span></div></div>`}).join("");return old+renderEvoHistory("past")}
-function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.slice().sort((a,b)=>activeEvolutionDefinitionRunning(b.id)-activeEvolutionDefinitionRunning(a.id)).map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
+function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.slice().sort((a,b)=>(activeEvolutionDefinitionRunning(b.id)*2+(b.group==="event"))-(activeEvolutionDefinitionRunning(a.id)*2+(a.group==="event"))).map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
@@ -5329,7 +5331,8 @@ function progressEvolution(resultKey="loss"){
 
 
 
- let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
+ let halloweenSbcShown=false;
+let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
@@ -5732,12 +5735,12 @@ function sbcFeatureGroupCard(rows,detail=false){
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
  const title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
- const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventId===HALLOWEEN_EVENT.id?"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit 88 GES. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
+ const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventId===HALLOWEEN_EVENT.id?"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit Blutmond-Upgrade. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr?eventDisplayOvr(sample.eventId,sample.eventPlayer.ovr):""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward);
  let art="";
  if(isPlayer&&found){
   const base=eventSbcRewardBase(found.event,found.def),item=makeEventSbcRewardItem(sample.groupReward);
-  if(base&&item)art=`<div class="sbc-feature-player">${cardHTML(base,item)}</div>`;
+  if(base&&item)art=`<div class="sbc-feature-player">${cardHTML(displayBase(item)||base,item)}</div>`;
  }else if(sample.groupReward?.pack){
   art=`<div class="sbc-feature-pack"><img src="${packArtSrc(sample.groupReward.pack)}" alt="${esc(reward)}" loading="lazy"></div>`;
  }
@@ -5759,6 +5762,8 @@ function sbcSetDetailHTML(rows){
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
  const rows=allActiveSBCs(),preferred=["Täglich","POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
+ // The first SBC visit during the Halloween SBC opens the Profis tab with Müller once per session.
+ const halloweenSbcLive=rows.some(r=>r.eventId===HALLOWEEN_EVENT.id&&!state.sbcGroupClaims?.[r.groupSet]);if(halloweenSbcLive&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
  if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
@@ -5771,7 +5776,7 @@ function renderSBC(){
   if(detailRows.length){$("sbcTabs").innerHTML="";$("sbcGrid").innerHTML=sbcSetDetailHTML(detailRows);return}
   activeSbcSet=null
  }
- $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
+ $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
   const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>sbcFeatureGroupCard(x)).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
@@ -7754,7 +7759,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.227";
+const GFUT_BUILD="V21.229";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
