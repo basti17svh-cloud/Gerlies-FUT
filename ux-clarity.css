@@ -93,3 +93,14 @@
 .sbc-feasible.ok{border-color:rgba(125,255,170,.45);background:rgba(125,255,170,.1);color:#9dffbe}
 .sbc-hub-progress{color:#9fb0b7;font-size:11px;font-weight:800}
 .sbc-test-toggle strong{margin-right:6px}
+
+/* ---------- Mannschaft: chem style + chemistry diamonds as one tag on the card's bottom edge (V21.218) ----------
+   Out of the layout flow, so the slot is exactly the card: nothing is pushed up and nothing hangs onto the next row. */
+#pitch .slot>.chem-dots{position:absolute;z-index:6;left:50%;top:100%;transform:translate(-50%,-64%);display:flex;align-items:center;gap:3px;margin:0;padding:3px 5px;border:1px solid #ffffff30;border-radius:8px;background:#081014f0;box-shadow:0 2px 6px #000a;pointer-events:none;white-space:nowrap}
+#pitch .slot>.chem-dots.has-boost{padding:2px 5px 2px 3px}
+#pitch .slot>.chem-dots>.cb-player-badge,#pitch .slot>.chem-dots>.cb-player-badge.cb-symbol-only{display:grid;place-items:center;width:14px;height:14px;min-height:0;margin:0 1px 0 0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#pitch .slot>.chem-dots>.cb-player-badge svg{width:14px;height:14px;stroke-width:1.8}
+#pitch .slot.out>.chem-dots:after{margin:0 0 0 2px}
+/* A touch taller pitch and slightly smaller cards, so every formation fits without cards covering each other (spots: squadPitchSpots in footera-app.js). */
+#pitch{aspect-ratio:.68}
+#pitch .slot{width:18%}
