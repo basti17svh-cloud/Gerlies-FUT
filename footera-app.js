@@ -994,24 +994,24 @@ const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN
   {name:"Blutmond – 86er-Team",desc:"Teil 4/4 · Deutschland trifft MLS.",req:"11 Spieler · Ø GES 86 · min. 1 deutscher Spieler · min. 1 MLS-Spieler",minAvg:86,requiredNation:"Germany",requiredLeague:"MLS",reward:{pack:"85",qty:1}}
  ]},
  players:[
- {pid:"200389",dynamicFace:"assets/footera/events/halloween/faces/200389.webp",name:"Jan Oblak",ovr:90,position:"GK",baseOvr:88,team:"Atlético de Madrid",nation:"Slovenia",alt:"",stats:[88,94,80,91,47,89],playstylePlusAdds:["far-reach"]},
- {pid:"252154",dynamicFace:"assets/footera/events/halloween/faces/252154.webp",name:"Marco Carnesecchi",ovr:87,position:"GK",baseOvr:86,team:"Atalanta",nation:"Italy",alt:"",stats:[86,87,76,90,30,89],playstylePlusAdds:["footwork"]},
- {pid:"213331",dynamicFace:"assets/footera/events/halloween/faces/213331.webp",name:"Jonathan Tah",ovr:88,position:"CB",baseOvr:87,team:"FC Bayern München",nation:"Germany",alt:"",stats:[64,38,60,65,90,89],playstylePlusAdds:["anticipate"]},
- {pid:"239818",dynamicFace:"assets/footera/events/halloween/faces/239818.webp",name:"Rúben Dias",ovr:88,position:"CB",baseOvr:87,team:"Manchester City",nation:"Portugal",alt:"",stats:[58,44,71,71,90,86],playstylePlusAdds:["block"]},
- {pid:"226268",dynamicFace:"assets/footera/events/halloween/faces/226268.webp",name:"Federico Dimarco",ovr:87,position:"LB",baseOvr:86,team:"Inter",nation:"Italy",alt:"LM",stats:[84,78,88,83,82,74],playstylePlusAdds:["dead-ball"]},
- {pid:"239053",dynamicFace:"assets/footera/events/halloween/faces/239053.webp",name:"Federico Valverde",ovr:89,position:"CM",baseOvr:87,team:"Real Madrid",nation:"Uruguay",alt:"RB,RM,CDM",stats:[94,87,86,82,82,89],playstylePlusAdds:["relentless"]},
- {pid:"237238",dynamicFace:"assets/footera/events/halloween/faces/237238.webp",name:"Scott McTominay",ovr:88,position:"CM",baseOvr:86,team:"SSC Napoli",nation:"Scotland",alt:"CAM,CDM",stats:[83,87,78,85,81,90],playstylePlusAdds:["power-header"]},
- {pid:"177003",dynamicFace:"assets/footera/events/halloween/dynamic/177003.webp",name:"Luka Modrić",ovr:87,position:"CM",baseOvr:85,team:"AC Milan",nation:"Croatia",alt:"CDM,CAM",stats:[66,78,91,90,76,60],playstylePlusAdds:["tiki-taka"]},
- {pid:"236772",dynamicFace:"assets/footera/events/halloween/faces/236772.webp",name:"Dominik Szoboszlai",ovr:88,position:"CAM",baseOvr:86,team:"Liverpool",nation:"Hungary",alt:"CDM,CM",stats:[85,86,90,88,75,78],playstylePlusAdds:["power-shot"]},
- {pid:"256516",dynamicFace:"assets/footera/events/halloween/faces/256516.webp",name:"Nico Williams",ovr:85,position:"LW",baseOvr:84,team:"Athletic Club",nation:"Spain",alt:"LM",stats:[96,79,81,89,37,67],playstylePlusAdds:["rapid"]},
- {pid:"183898",dynamicFace:"assets/footera/events/halloween/faces/183898.webp",name:"Ángel Di María",ovr:84,position:"RW",baseOvr:82,team:"Rosario Central",nation:"Argentina",alt:"RM,CAM,ST",stats:[74,83,89,89,44,63],playstylePlusAdds:["trivela"]},
- {pid:"241651",dynamicFace:"assets/footera/events/halloween/dynamic/241651.webp",name:"Viktor Gyökeres",ovr:89,position:"ST",baseOvr:86,team:"Arsenal",nation:"Sweden",alt:"",stats:[85,92,74,82,46,92],playstylePlusAdds:["enforcer"]},
- {pid:"232293",dynamicFace:"assets/footera/events/halloween/faces/232293.webp",name:"Victor Osimhen",ovr:87,position:"ST",baseOvr:85,team:"Galatasaray",nation:"Nigeria",alt:"",stats:[93,87,66,81,52,90],playstylePlusAdds:["aerial"]},
- {pid:"244176",dynamicFace:"assets/footera/events/halloween/dynamic/244176.webp",name:"Deniz Undav",ovr:86,position:"ST",baseOvr:85,team:"VfB Stuttgart",nation:"Germany",alt:"CAM",stats:[67,89,78,86,33,83],playstylePlusAdds:["low-driven-shot"]},
- {pid:"197781",dynamicFace:"assets/footera/events/halloween/dynamic/197781.webp",name:"Isco",ovr:86,position:"CAM",baseOvr:83,team:"Real Betis",nation:"Spain",alt:"CM,CDM",stats:[62,82,89,90,62,64],playstylePlusAdds:["technical"]},
- {pid:"204638",dynamicFace:"assets/footera/events/halloween/faces/204638.webp",name:"Willi Orbán",ovr:85,position:"CB",baseOvr:83,team:"RB Leipzig",nation:"Hungary",alt:"",stats:[62,46,60,60,88,86],playstylePlusAdds:["aerial"]},
- {pid:"243576",dynamicFace:"assets/footera/events/halloween/faces/243576.webp",name:"Pedro Porro",ovr:85,position:"RB",baseOvr:83,team:"Spurs",nation:"Spain",alt:"RM",stats:[80,76,85,82,82,78],playstylePlusAdds:["pinged-pass"]},
- {pid:"215914",dynamicFace:"assets/footera/events/halloween/faces/215914.webp",name:"N'Golo Kanté",ovr:85,position:"CDM",baseOvr:83,team:"Fenerbahçe",nation:"France",alt:"CM",stats:[78,68,77,83,85,82],playstylePlusAdds:["relentless"]}
+ {pid:"220901",dynamicFace:"assets/footera/events/halloween/dynamic/220901.webp",name:"David Raya",ovr:90,position:"GK",baseOvr:88,team:"Arsenal",nation:"Spain",alt:"",stats:[90,89,91,91,61,89],playstylePlusAdds:["far-reach"]},
+ {pid:"193080",dynamicFace:"assets/footera/events/halloween/dynamic/193080.webp",name:"De Gea",ovr:85,position:"GK",baseOvr:83,team:"Fiorentina",nation:"Spain",alt:"",stats:[84,83,79,88,49,87],playstylePlusAdds:["footwork"]},
+ {pid:"207865",dynamicFace:"assets/footera/events/halloween/dynamic/207865.webp",name:"Marquinhos",ovr:88,position:"CB",baseOvr:87,team:"Paris SG",nation:"Brazil",alt:"",stats:[76,58,77,75,91,80],playstylePlusAdds:["anticipate"]},
+ {pid:"232488",dynamicFace:"assets/footera/events/halloween/dynamic/232488.webp",name:"Cristian Romero",ovr:84,position:"CB",baseOvr:82,team:"Atlético de Madrid",nation:"Argentina",alt:"",stats:[67,51,65,67,86,84],playstylePlusAdds:["bruiser"]},
+ {pid:"239231",dynamicFace:"assets/footera/events/halloween/dynamic/239231.webp",name:"Cucurella",ovr:87,position:"LB",baseOvr:86,team:"Real Madrid",nation:"Spain",alt:"",stats:[77,66,81,80,86,80],playstylePlusAdds:["jockey"]},
+ {pid:"277869",dynamicFace:"assets/footera/events/halloween/dynamic/277869.webp",name:"Michael Kayode",ovr:84,position:"RB",baseOvr:81,team:"Brentford",nation:"Italy",alt:"RM",stats:[85,53,76,80,82,84],playstylePlusAdds:["long-throw"]},
+ {pid:"254243",dynamicFace:"assets/footera/events/halloween/dynamic/254243.webp",name:"Elliot Anderson",ovr:86,position:"CDM",baseOvr:84,team:"Manchester City",nation:"England",alt:"CM",stats:[71,74,86,85,84,81],playstylePlusAdds:["intercept"]},
+ {pid:"177003",dynamicFace:"assets/footera/events/halloween/dynamic/177003.webp",name:"Luka Modrić",ovr:87,position:"CM",baseOvr:85,team:"AC Milan",nation:"Croatia",alt:"CDM,CAM",stats:[68,78,90,89,76,62],playstylePlusAdds:["tiki-taka"]},
+ {pid:"246863",dynamicFace:"assets/footera/events/halloween/dynamic/246863.webp",name:"Felix Nmecha",ovr:86,position:"CM",baseOvr:85,team:"Borussia Dortmund",nation:"Germany",alt:"CDM",stats:[85,80,80,86,84,90],playstylePlusAdds:["relentless"]},
+ {pid:"192985",dynamicFace:"assets/footera/events/halloween/dynamic/192985.webp",name:"Kevin De Bruyne",ovr:87,position:"CAM",baseOvr:85,team:"SSC Napoli",nation:"Belgium",alt:"CM",stats:[62,85,92,87,69,70],playstylePlusAdds:["incisive-pass"]},
+ {pid:"197781",dynamicFace:"assets/footera/events/halloween/dynamic/197781.webp",name:"Isco",ovr:85,position:"CAM",baseOvr:83,team:"Real Betis",nation:"Spain",alt:"CM,CDM",stats:[60,81,88,89,62,63],playstylePlusAdds:["technical"]},
+ {pid:"233419",dynamicFace:"assets/footera/events/halloween/dynamic/233419.webp",name:"Raphinha",ovr:89,position:"LW",baseOvr:88,team:"FC Barcelona",nation:"Brazil",alt:"RW,CAM,LM",stats:[93,88,87,89,56,78],playstylePlusAdds:["low-driven-shot"]},
+ {pid:"241084",dynamicFace:"assets/footera/events/halloween/dynamic/241084.webp",name:"Luis Díaz",ovr:89,position:"LM",baseOvr:88,team:"FC Bayern München",nation:"Colombia",alt:"LW,ST",stats:[84,84,85,89,46,76],playstylePlusAdds:["first-touch"]},
+ {pid:"209331",dynamicFace:"assets/footera/events/halloween/dynamic/209331.webp",name:"Mohamed Salah",ovr:88,position:"RM",baseOvr:87,team:"Trabzonspor",nation:"Egypt",alt:"RW,CAM,ST",stats:[86,85,85,88,47,74],playstylePlusAdds:["finesse-shot"]},
+ {pid:"228093",dynamicFace:"assets/footera/events/halloween/dynamic/228093.webp",name:"Marcus Thuram",ovr:87,position:"ST",baseOvr:85,team:"Inter",nation:"France",alt:"",stats:[89,86,78,84,53,84],playstylePlusAdds:["power-shot"]},
+ {pid:"244176",dynamicFace:"assets/footera/events/halloween/dynamic/244176.webp",name:"Deniz Undav",ovr:86,position:"ST",baseOvr:85,team:"VfB Stuttgart",nation:"Germany",alt:"CAM",stats:[69,88,78,85,35,83],playstylePlusAdds:["low-driven-shot"]},
+ {pid:"188545",dynamicFace:"assets/footera/events/halloween/dynamic/188545.webp",name:"Robert Lewandowski",ovr:86,position:"ST",baseOvr:84,team:"Chicago Fire FC",nation:"Poland",alt:"",stats:[70,88,82,83,47,83],playstylePlusAdds:["acrobatic"]},
+ {pid:"266127",dynamicFace:"assets/footera/events/halloween/dynamic/266127.webp",name:"Lewis Hall",ovr:85,position:"LB",baseOvr:83,team:"Newcastle Utd",nation:"England",alt:"",stats:[81,67,84,85,83,71],playstylePlusAdds:["pinged-pass"]}
 ]};
 // SBC-only card; never inserted into the ordinary packs or market player pool.
 const FLASHBACK_REUS_BASE={id:"footera-flashback-reus-20261009",name:"Marco Reus",fullName:"Marco Reus",ovr:88,position:"CAM",alt:"LW,ST",nation:"Germany",team:"LA Galaxy",league:"Major League Soccer",clubLogo:"./assets/footera/events/flashback/Los_Angeles_Galaxy_logo.svg",leagueLogo:"./assets/footera/events/flashback/Major_League_Soccer_logo.svg",height:180,preferredFoot:"Right",skillMoves:4,weakFoot:4,pac:87,sho:86,pas:88,dri:90,def:52,phy:72,face:"https://cdn.futwiz.com/assets/img/fc27/faces/188350.png",playstyles:"Finesse Shot,Incisive Pass,First Touch,Trivela,Dead Ball",playstylesPlus:"Technical",dynamicFace:"./assets/footera/events/flashback/reus-dortmund.png",nationFlag:"./assets/footera/events/flashback/de.png",source:"footera-flashback"};
@@ -7759,7 +7759,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.230";
+const GFUT_BUILD="V21.232";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7817,7 +7817,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21230",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21232",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -21,6 +21,7 @@ test('HALLOWEEN is a complete 18-card release of real players from 18 clubs',()=
   assert.ok(p.ovr>p.baseOvr,`${p.name} is upgraded`);
   assert.equal(p.stats.length,6);
   assert.ok(fs.existsSync(path.join(root,p.dynamicFace)),`${p.name} portrait`);
+  assert.match(p.dynamicFace,/halloween\/dynamic\//,`${p.name} uses an EA dynamic picture`);
  }
 });
 
