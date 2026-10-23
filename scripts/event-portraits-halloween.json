@@ -16,20 +16,8 @@
   "id": "239818"
  },
  {
-  "name": "Bremer",
-  "id": "239580"
- },
- {
   "name": "Federico Dimarco",
   "id": "226268"
- },
- {
-  "name": "Reece James",
-  "id": "238074"
- },
- {
-  "name": "Granit Xhaka",
-  "id": "199503"
  },
  {
   "name": "Federico Valverde",
@@ -46,10 +34,6 @@
  {
   "name": "Dominik Szoboszlai",
   "id": "236772"
- },
- {
-  "name": "Paulo Dybala",
-  "id": "211110"
  },
  {
   "name": "Nico Williams",
@@ -78,5 +62,21 @@
  {
   "name": "Rafael Leão",
   "id": "241721"
+ },
+ {
+  "name": "Isco",
+  "id": "197781"
+ },
+ {
+  "name": "Willi Orbán",
+  "id": "204638"
+ },
+ {
+  "name": "Pedro Porro",
+  "id": "243576"
+ },
+ {
+  "name": "N'Golo Kanté",
+  "id": "215914"
  }
 ]
