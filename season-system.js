@@ -33,12 +33,17 @@ function premiumTierReward(level){
 }
 for(const tier of SEASON_REWARDS)tier.premium=premiumTierReward(tier.level);
 for(let level=11;level<=30;level++)SEASON_REWARDS.push({level,sp:13500+(level-10)*650,reward:FREE_EXTRA[level-11],premium:premiumTierReward(level)});
+// Season-specific reward swaps on top of the shared 30-tier ladder.
+const SEASON_REWARD_OVERRIDES={s2:{free:{4:{pack:"halloween-pack"}},premium:{6:{pack:"halloween-pack"}}}};
+function seasonStoryKey(seasonKey,which,level){
+ const key=`${seasonKey}-${which==="premium"?"premium-":""}${level}`;
+ if(seasonKey==="s1")return level===15||level===30?key:"";
+ return STORY_PASS_PLAYERS[key]?key:""
+}
 function seasonTierReward(tier,which,seasonKey=seasonInfo().key){
- if(seasonKey==="s1"&&(tier.level===15||tier.level===30)){
-  if(which==="free")return{story:`s1-${tier.level}`};
-  if(which==="premium")return{...(tier.premium||{}),story:`s1-premium-${tier.level}`}
- }
- return which==="premium"?tier.premium:tier.reward
+ const base=SEASON_REWARD_OVERRIDES[seasonKey]?.[which]?.[tier.level]||(which==="premium"?tier.premium:tier.reward),story=seasonStoryKey(seasonKey,which,tier.level);
+ if(!story)return base;
+ return which==="free"?{story}:{...(base||{}),story}
 }
 
 const OBJECTIVE_POOLS={
@@ -113,7 +118,8 @@ const OBJECTIVE_STATS=["competitiveMatches","competitiveWins","rivalsMatches","r
 
 const SEASON_SCHEDULE=[
  {number:1,key:"s1",name:"THE BEGINNING",start:"2026-09-17T19:00:00+02:00",end:"2026-10-30T19:00:00+01:00"},
- {number:2,key:"s2",name:"HALLOWEEN",start:"2026-10-30T19:00:00+01:00",end:null}
+ {number:2,key:"s2",name:"BLUTMOND",start:"2026-10-30T19:00:00+01:00",end:"2026-12-11T19:00:00+01:00"},
+ {number:3,key:"s3",name:"SAISON 3",start:"2026-12-11T19:00:00+01:00",end:null}
 ];
 function seasonInfo(at=new Date()){
  const date=new Date(at),current=[...SEASON_SCHEDULE].reverse().find(s=>date>=new Date(s.start))||SEASON_SCHEDULE[0];
@@ -249,7 +255,7 @@ function passRewardItems(reward){
  const out=[];
  if(reward?.story){
   const spec=STORY_PASS_PLAYERS[reward.story];
-  if(spec)out.push({type:"story",label:`${spec.rating} ${spec.name}`,sub:"Story-Spieler · einmalig · untauschbar",visual:`<div class="pass-reward-player">${storyPreviewCard(reward.story)}</div>`})
+  if(spec)out.push({type:"story",label:`${spec.rating} ${spec.name}`,sub:`${spec.season==="s1"?"Story":"Saison"}-Spieler · einmalig · untauschbar`,visual:`<div class="pass-reward-player">${storyPreviewCard(reward.story)}</div>`})
  }
  if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Münzen`,sub:"Footera Münzen",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
  if(reward?.points)out.push({type:"points",label:`${fmt(reward.points)} Footera Points`,sub:"Footera Points",visual:`<div class="pass-reward-currency">${currencyAmountHTML("points",reward.points,"pass-currency-hero")}</div>`});
@@ -276,8 +282,9 @@ function rewardPanel(tier,which){
  return `<div class="pass-path-panel ${which==="free"?"active ":""}${premium?"premium":"free"} ${story?"story-reward":""} ${claimed?"claimed":""} ${!owned?"locked":""}" data-pass-path-panel="${which}">${passRewardSlider(reward,tier,which)}<div class="pass-level-card-action">${action}</div></div>`
 }
 function passLevelCard(tier){
- const freeReward=seasonTierReward(tier,"free"),story=!!freeReward?.story,premiumLocked=!state.seasonPass.premium;
- return `<div class="pass-level-card ${story?"story-level":""}" data-pass-level-card="${tier.level}"><div class="pass-level-card-head"><div><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${story?'<b class="story-badge">STORY</b>':""}</div><div class="pass-path-toggle" role="tablist" aria-label="Belohnungspfad"><button type="button" class="active" data-pass-path-toggle="free" aria-selected="true">Kostenlos</button><button type="button" data-pass-path-toggle="premium" aria-selected="false">Premium${premiumLocked?" 🔒":""}</button></div><div class="pass-path-panels">${rewardPanel(tier,"free")}${rewardPanel(tier,"premium")}</div></div>`
+ const freeReward=seasonTierReward(tier,"free"),story=!!freeReward?.story,premiumStory=!story&&!!seasonTierReward(tier,"premium")?.story,premiumLocked=!state.seasonPass.premium;
+ const badge=story?(seasonInfo().key==="s1"?"STORY":"SPIELER"):premiumStory?"PREMIUM-SPIELER":"";
+ return `<div class="pass-level-card ${story||premiumStory?"story-level":""}" data-pass-level-card="${tier.level}"><div class="pass-level-card-head"><div><span>LEVEL ${tier.level}</span><small>${fmt(tier.sp)} SP</small></div>${badge?`<b class="story-badge">${badge}</b>`:""}</div><div class="pass-path-toggle" role="tablist" aria-label="Belohnungspfad"><button type="button" class="active" data-pass-path-toggle="free" aria-selected="true">Kostenlos</button><button type="button" data-pass-path-toggle="premium" aria-selected="false">Premium${premiumLocked?" 🔒":""}</button></div><div class="pass-path-panels">${rewardPanel(tier,"free")}${rewardPanel(tier,"premium")}</div></div>`
 }
 function storyPassChapters(info){
  if(info.key!=="s1")return"";
