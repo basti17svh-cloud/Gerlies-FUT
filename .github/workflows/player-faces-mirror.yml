@@ -21,6 +21,8 @@ on:
         default: '0'
 permissions:
   contents: read
+  # The upload function only accepts this repository's Actions identity token.
+  id-token: write
 concurrency:
   group: player-faces-mirror
   cancel-in-progress: false
@@ -31,7 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_REF: idxydyrihtyecvfjvtuk
       MIRROR_LIMIT: ${{ github.event.inputs.limit || '25000' }}
       MIRROR_FORCE: ${{ github.event.inputs.force || '0' }}

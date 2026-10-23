@@ -6,7 +6,7 @@
    Each portrait is taken from the same source the game would show (futwiz FC27 first, then the older
    futwiz seasons, EA's own portrait, SoFIFA), shrunk to at most 256 px and stored as WebP.
    Already mirrored files are skipped, so every run only fetches new players.
-   Env: SUPABASE_ACCESS_TOKEN (+ SUPABASE_PROJECT_REF) or SUPABASE_SERVICE_KEY,
+   Env: (in Actions) id-token permission; locally SUPABASE_SERVICE_KEY. Optional SUPABASE_PROJECT_REF,
         MIRROR_LIMIT (max uploads per run), MIRROR_FORCE=1 (re-upload everything). */
 'use strict';
 const fs=require('fs'),path=require('path');
@@ -48,26 +48,34 @@ function iconJobs(){
  return jobs
 }
 
-async function serviceKey(){
- if(process.env.SUPABASE_SERVICE_KEY)return process.env.SUPABASE_SERVICE_KEY;
- const token=process.env.SUPABASE_ACCESS_TOKEN;
- if(!token)throw new Error('Set SUPABASE_ACCESS_TOKEN or SUPABASE_SERVICE_KEY');
- const res=await fetch(`https://api.supabase.com/v1/projects/${REF}/api-keys?reveal=true`,{headers:{Authorization:`Bearer ${token}`}});
- if(!res.ok)throw new Error(`Supabase API keys: HTTP ${res.status}`);
- const keys=await res.json();
- const key=keys.find(k=>k.name==='service_role'&&k.api_key)||keys.find(k=>k.type==='secret'&&k.api_key);
- if(!key)throw new Error('No service key found for the project');
- return key.api_key
+// Writes go through the footera-face-upload edge function (online/footera-face-upload.ts), which accepts
+// this repository's GitHub Actions OIDC token, so GitHub needs no Supabase secret.
+const FUNCTION_URL=`${URL_BASE}/functions/v1/footera-face-upload`;
+let oidc={token:'',at:0};
+async function authHeader(){
+ if(process.env.SUPABASE_SERVICE_KEY)return{Authorization:`Bearer ${process.env.SUPABASE_SERVICE_KEY}`,apikey:process.env.SUPABASE_SERVICE_KEY};
+ const{ACTIONS_ID_TOKEN_REQUEST_URL:reqUrl,ACTIONS_ID_TOKEN_REQUEST_TOKEN:reqToken}=process.env;
+ if(!reqUrl||!reqToken)throw new Error('Run in GitHub Actions with permissions id-token: write (or set SUPABASE_SERVICE_KEY)');
+ // GitHub tokens live a few minutes; fetch a fresh one every 3.
+ if(!oidc.token||Date.now()-oidc.at>180000){
+  const res=await fetch(`${reqUrl}&audience=footera-faces`,{headers:{Authorization:`Bearer ${reqToken}`}});
+  if(!res.ok)throw new Error(`OIDC token: HTTP ${res.status}`);
+  oidc={token:(await res.json()).value,at:Date.now()}
+ }
+ return{Authorization:`Bearer ${oidc.token}`}
 }
+const direct=()=>!!process.env.SUPABASE_SERVICE_KEY;
 
-async function existing(auth){
+async function existing(){
  const have=new Set();
  for(const prefix of ['faces','icons']){
   for(let offset=0;;offset+=1000){
-   const res=await fetch(`${URL_BASE}/storage/v1/object/list/${BUCKET}`,{method:'POST',headers:{...auth,'Content-Type':'application/json'},body:JSON.stringify({prefix,limit:1000,offset,sortBy:{column:'name',order:'asc'}})});
+   const res=direct()
+    ?await fetch(`${URL_BASE}/storage/v1/object/list/${BUCKET}`,{method:'POST',headers:{...await authHeader(),'Content-Type':'application/json'},body:JSON.stringify({prefix,limit:1000,offset,sortBy:{column:'name',order:'asc'}})})
+    :await fetch(`${FUNCTION_URL}?list=${prefix}&offset=${offset}`,{headers:await authHeader()});
    if(!res.ok)throw new Error(`List ${prefix}: HTTP ${res.status} ${await res.text()}`);
-   const rows=await res.json();
-   rows.forEach(r=>r.id&&have.add(`${prefix}/${r.name}`));
+   const rows=(await res.json()).map(r=>typeof r==='string'?r:(r.id?r.name:'')).filter(Boolean);
+   rows.forEach(name=>have.add(`${prefix}/${name}`));
    if(rows.length<1000)break
   }
  }
@@ -89,9 +97,11 @@ async function download(url){
  return null
 }
 
-async function upload(auth,name,body){
+async function upload(name,body){
  for(let attempt=0;attempt<4;attempt++){
-  const res=await fetch(`${URL_BASE}/storage/v1/object/${BUCKET}/${name}`,{method:'POST',headers:{...auth,'Content-Type':'image/webp','Cache-Control':'max-age=2592000','x-upsert':'true'},body});
+  const res=direct()
+   ?await fetch(`${URL_BASE}/storage/v1/object/${BUCKET}/${name}`,{method:'POST',headers:{...await authHeader(),'Content-Type':'image/webp','Cache-Control':'max-age=2592000','x-upsert':'true'},body})
+   :await fetch(`${FUNCTION_URL}?name=${encodeURIComponent(name)}`,{method:'POST',headers:{...await authHeader(),'Content-Type':'image/webp'},body});
   if(res.ok)return true;
   if(res.status<500&&res.status!==429)throw new Error(`Upload ${name}: HTTP ${res.status} ${await res.text()}`);
   await sleep(1000*2**attempt)
@@ -100,9 +110,8 @@ async function upload(auth,name,body){
 }
 
 async function main(){
- const key=await serviceKey(),auth={apikey:key,Authorization:`Bearer ${key}`};
  const jobs=new Map([...iconJobs(),...playerJobs()]);
- const have=FORCE?new Set():await existing(auth);
+ const have=FORCE?new Set():await existing();
  const todo=[...jobs].filter(([name])=>!have.has(name)).slice(0,LIMIT);
  console.log(`${jobs.size} portraits known, ${have.size} already mirrored, ${todo.length} to fetch now`);
  const stats={uploaded:0,missing:0,bytes:0,hosts:{}};const missing=[];
@@ -114,7 +123,7 @@ async function main(){
    for(const src of sources){
     const webp=await download(src);
     if(!webp)continue;
-    if(await upload(auth,name,webp)){stats.uploaded++;stats.bytes+=webp.length;const h=new URL(src).host;stats.hosts[h]=(stats.hosts[h]||0)+1;done=true}
+    if(await upload(name,webp)){stats.uploaded++;stats.bytes+=webp.length;const h=new URL(src).host;stats.hosts[h]=(stats.hosts[h]||0)+1;done=true}
     break
    }
    if(!done){stats.missing++;missing.push(name)}
