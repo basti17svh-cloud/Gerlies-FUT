@@ -56,8 +56,8 @@ async function authHeader(){
  if(process.env.SUPABASE_SERVICE_KEY)return{Authorization:`Bearer ${process.env.SUPABASE_SERVICE_KEY}`,apikey:process.env.SUPABASE_SERVICE_KEY};
  const{ACTIONS_ID_TOKEN_REQUEST_URL:reqUrl,ACTIONS_ID_TOKEN_REQUEST_TOKEN:reqToken}=process.env;
  if(!reqUrl||!reqToken)throw new Error('Run in GitHub Actions with permissions id-token: write (or set SUPABASE_SERVICE_KEY)');
- // GitHub tokens live a few minutes; fetch a fresh one every 3.
- if(!oidc.token||Date.now()-oidc.at>180000){
+ // GitHub tokens live only a few minutes; fetch a fresh one every minute (or after a 401).
+ if(!oidc.token||Date.now()-oidc.at>60000){
   const res=await fetch(`${reqUrl}&audience=footera-faces`,{headers:{Authorization:`Bearer ${reqToken}`}});
   if(!res.ok)throw new Error(`OIDC token: HTTP ${res.status}`);
   oidc={token:(await res.json()).value,at:Date.now()}
@@ -103,6 +103,7 @@ async function upload(name,body){
    ?await fetch(`${URL_BASE}/storage/v1/object/${BUCKET}/${name}`,{method:'POST',headers:{...await authHeader(),'Content-Type':'image/webp','Cache-Control':'max-age=2592000','x-upsert':'true'},body})
    :await fetch(`${FUNCTION_URL}?name=${encodeURIComponent(name)}`,{method:'POST',headers:{...await authHeader(),'Content-Type':'image/webp'},body});
   if(res.ok)return true;
+  if(res.status===401&&!direct()&&attempt<3){oidc.at=0;continue}
   if(res.status<500&&res.status!==429)throw new Error(`Upload ${name}: HTTP ${res.status} ${await res.text()}`);
   await sleep(1000*2**attempt)
  }
