@@ -4,18 +4,21 @@
 const SKINS=[
  {id:"momentum",title:"MOMENTUM-Evolution",text:"Blaues MOMENTUM-Design · zählt auch als MOMENTUM in SBCs.",coins:12000,theme:"MOMENTUM"},
  {id:"totw",title:"TOTW-Evolution",text:"Schwarze TOTW-Karte · zählt als TOTW in SBCs. Kein offizielles Team-der-Woche-Release.",coins:20000,theme:"TOTW"},
+ {id:"halloween",title:"HALLOWEEN-Evolution",text:"Blutmond-Design · nur während des Halloween-Events.",coins:15000,theme:"HALLOWEEN",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00"},
  {id:"red",title:"Champions Rot",text:"Klassisches rot-goldenes Weekend-League-Design.",minWins:5,everyWins:10,theme:"WEEKEND LEAGUE"},
  {id:"red-pro",title:"Champions Prestige Rot",text:"Exklusiver rot-goldener Elite-Rahmen für langjährige Champions.",minWins:25,everyWins:25,theme:"ELITE CHAMPIONS"}
 ];
 let selectedSkin="",selectedUid="",search="",page=0;
 const PAGE_SIZE=12;
-const byId=id=>SKINS.find(x=>x.id===id)||null;
+// Event designs are only offered inside their window; cards that already wear one keep it.
+const live=s=>!s.activeFrom||(Date.now()>=Date.parse(s.activeFrom)&&Date.now()<Date.parse(s.activeUntilAt));
+const byId=id=>SKINS.find(x=>x.id===id&&live(x))||null;
 const htmlEscape=x=>String(x??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const wins=()=>Math.max(0,Number(state.champions?.totalWins||0));
 const earned=s=>s.minWins?(wins()<s.minWins?0:1+Math.floor((wins()-s.minWins)/s.everyWins)):Infinity;
 const spent=s=>Math.max(0,Number(state.cosmeticClaims?.[s.id]||0));
 const remaining=s=>s.minWins?Math.max(0,earned(s)-spent(s)):Infinity;
-const isEligible=(item,skinId="")=>!!item&&!!displayBase(item)&&!isFounderItem(item)&&!isStoryItem(item)&&!isFooteraLiveCard(item)&&!(typeof activeTransferSaleForUid==="function"&&activeTransferSaleForUid(item.uid))&&(!["totw","momentum"].includes(skinId)||(itemRating(item)>=75&&!item.variant));
+const isEligible=(item,skinId="")=>!!item&&!!displayBase(item)&&!isFounderItem(item)&&!isStoryItem(item)&&!isFooteraLiveCard(item)&&!(typeof activeTransferSaleForUid==="function"&&activeTransferSaleForUid(item.uid))&&(!["totw","momentum","halloween"].includes(skinId)||(itemRating(item)>=75&&!item.variant));
 const candidates=(skinId="")=>state.club.filter(i=>isEligible(i,skinId)).sort((a,b)=>itemRating(b)-itemRating(a));
 const selected=()=>state.club.find(i=>String(i.uid)===String(selectedUid))||null;
 const mock=(i,skin)=>({...i,cosmeticDesign:skin});
@@ -41,7 +44,7 @@ function studio(body,step,title,subtitle){
 function offer(s){
  const example=candidates(s.id)[0],available=s.coins?Number(state.coins||0)>=s.coins:remaining(s)>0;
  const next=s.minWins+earned(s)*s.everyWins,progress=s.minWins?Math.min(100,wins()/next*100):0;
- return '<article class="cosmetic-offer cosmetic-theme-'+s.id+'"><div class="cosmetic-offer-top"><span class="cosmetic-tag">'+(s.coins?'COIN-DESIGN':s.id==='red-pro'?'PRESTIGE':'CHAMPIONS')+'</span><span class="cosmetic-availability '+(available?'available':'locked')+'">'+(available?'Verfügbar':'Gesperrt')+'</span></div><div class="cosmetic-offer-preview">'+(example?preview(example,s.id):'<div class="cosmetic-empty-preview">Deine Karte<br>im neuen Design</div>')+'</div><h3>'+htmlEscape(s.title)+'</h3><p>'+(s.id==='red-pro'?'Dunkler Rubin · veredelter Goldrahmen':s.id==='red'?'Rubinrot · goldene Champions-Prägung':s.id==='totw'?'Schwarz-Gold · SBC-Typ TOTW':'Blau · SBC-Typ MOMENTUM')+'</p><div class="cosmetic-meta">'+htmlEscape(status(s))+'</div>'+(s.minWins?'<div class="cosmetic-progress" role="progressbar" aria-label="Champions-Siege für die nächste Marke" aria-valuenow="'+Math.min(wins(),next)+'" aria-valuemin="0" aria-valuemax="'+next+'"><i style="width:'+progress+'%"></i></div><small class="cosmetic-unlock">Erste Marke: '+s.minWins+' Siege · danach alle '+s.everyWins+'</small>':'<small class="cosmetic-unlock">Für normale Goldkarten ab 75 GES</small>')+'<button type="button" class="secondary" data-cosmetic-open="'+s.id+'">Vorschau öffnen <span aria-hidden="true">→</span></button></article>';
+ return '<article class="cosmetic-offer cosmetic-theme-'+s.id+'"><div class="cosmetic-offer-top"><span class="cosmetic-tag">'+(s.activeFrom?'EVENT-DESIGN':s.coins?'COIN-DESIGN':s.id==='red-pro'?'PRESTIGE':'CHAMPIONS')+'</span><span class="cosmetic-availability '+(available?'available':'locked')+'">'+(available?'Verfügbar':'Gesperrt')+'</span></div><div class="cosmetic-offer-preview">'+(example?preview(example,s.id):'<div class="cosmetic-empty-preview">Deine Karte<br>im neuen Design</div>')+'</div><h3>'+htmlEscape(s.title)+'</h3><p>'+(s.id==='red-pro'?'Dunkler Rubin · veredelter Goldrahmen':s.id==='red'?'Rubinrot · goldene Champions-Prägung':s.id==='totw'?'Schwarz-Gold · SBC-Typ TOTW':s.id==='halloween'?'Blutmond · Obsidian mit Glutadern':'Blau · SBC-Typ MOMENTUM')+'</p><div class="cosmetic-meta">'+htmlEscape(status(s))+'</div>'+(s.minWins?'<div class="cosmetic-progress" role="progressbar" aria-label="Champions-Siege für die nächste Marke" aria-valuenow="'+Math.min(wins(),next)+'" aria-valuemin="0" aria-valuemax="'+next+'"><i style="width:'+progress+'%"></i></div><small class="cosmetic-unlock">Erste Marke: '+s.minWins+' Siege · danach alle '+s.everyWins+'</small>':'<small class="cosmetic-unlock">Für normale Goldkarten ab 75 GES</small>')+'<button type="button" class="secondary" data-cosmetic-open="'+s.id+'">Vorschau öffnen <span aria-hidden="true">→</span></button></article>';
 }
 function playerResults(skin){
  const query=search.trim().toLocaleLowerCase('de-DE');
@@ -53,7 +56,7 @@ function render(){
  const el=document.getElementById("evoGrid");if(!el)return;
  const skin=byId(selectedSkin),person=selected();
  if(!skin){
-  const groups=[['Designs für Coins','Sofort mit deinen Coins anwenden.',SKINS.filter(s=>s.coins)],['Deine Champions-Belohnungen','Mit Champions-Siegen Designmarken verdienen.',SKINS.filter(s=>s.minWins)]];
+  const groups=[['Designs für Coins','Sofort mit deinen Coins anwenden.',SKINS.filter(s=>s.coins&&live(s))],['Deine Champions-Belohnungen','Mit Champions-Siegen Designmarken verdienen.',SKINS.filter(s=>s.minWins)]];
   el.innerHTML=studio(groups.map(([title,text,items])=>'<section class="cosmetic-collection"><div class="cosmetic-section-head"><h3>'+title+'</h3><p>'+text+'</p></div><div class="cosmetic-offers">'+items.map(offer).join('')+'</div></section>').join('')+rules(),1,'Dein Spieler. Dein Design.','Wähle einen Look und prüfe ihn auf deiner Vereinskarte.');return;
  }
  if(!person||!isEligible(person,skin.id)){

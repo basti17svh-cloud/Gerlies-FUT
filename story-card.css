@@ -15,6 +15,7 @@
  --card-stats-color:#deb6a3;
  --card-value-color:#fff0df;
 }
+.card-shell .custom-card.story[data-story-label]:after{content:attr(data-story-label)}
 .card-shell .custom-card.story:before,.card-shell .custom-card.story .card-top:before{content:none}
 .card-shell .custom-card.story .pname{clip-path:none;text-shadow:0 1px 2px #000b!important}
 .card-shell .custom-card.story:after{

@@ -1,7 +1,7 @@
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21208';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21226';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21215';
@@ -9,12 +9,20 @@ import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21228';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21232';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
 // V21.193: phones below the LOW line and players who chose the previous model
 // (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
+// HALLOWEEN 2026 (30.10. 19:00 to 06.11. 19:00 Berlin): night stadium, pumpkins and event boards.
+// window.__FOOTERA_HALLOWEEN=true/false overrides the date for previews and QA.
+export function halloweenNight(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_HALLOWEEN:undefined;
+ if(typeof location!=='undefined'&&/[?&]halloween=1\b/.test(location.search))return true;
+ if(typeof forced==='boolean')return forced;
+ return at>=Date.parse('2026-10-30T19:00:00+01:00')&&at<Date.parse('2026-11-06T19:00:00+01:00');
+}
 export function footeraHumanPlayersWanted(){
  try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
  const memory=globalThis.navigator?.deviceMemory||8,cores=globalThis.navigator?.hardwareConcurrency||8;
@@ -995,7 +1003,8 @@ export function playerPosition(index,time,type='goal',sequence='central',placeme
 }
 export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false,allowImported=true,modelVariant='quaternius'){
  const enhancedRigMotion=!baselineRig&&!(typeof window!=='undefined'&&window.__FOOTERA_V2137_BASELINE===true);
- const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
+ const spooky=halloweenNight();
+ const scene=new THREE.Scene();scene.background=new THREE.Color(spooky?'#0b0714':'#16262b');scene.fog=spooky?new THREE.Fog('#160c20',120,262):new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
@@ -1134,10 +1143,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    });map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
    const material=track(new THREE.MeshStandardMaterial({map,roughness:.92,metalness:0}));shirtMaterials.set(key,material);return material;
   }
-  const hemi=new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
-  const sun=new THREE.DirectionalLight('#fff5df',2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
+  const hemi=spooky?new THREE.HemisphereLight('#a596d6','#241a12',1.0):new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
+  const sun=new THREE.DirectionalLight(spooky?'#ffe2c2':'#fff5df',spooky?2.7:2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00018;sun.shadow.normalBias=.018;
-  const fill=new THREE.DirectionalLight('#c6ddff',weak?.24:.48);fill.position.set(40,18,-50);scene.add(fill);
+  const fill=new THREE.DirectionalLight(spooky?'#a070ff':'#c6ddff',(weak?.24:.48)*(spooky?1.6:1));fill.position.set(40,18,-50);scene.add(fill);
 
   // One 1024px map covers the playing surface: visible mowing, broad soil/grass
   // variation and fine blade noise survive mip filtering without extra planes.
@@ -1153,7 +1162,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
+  const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
   const contactTexture=canvasTexture(64,64,(ctx,w,h)=>{const gradient=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);gradient.addColorStop(0,'rgba(5,12,4,.6)');gradient.addColorStop(.3,'rgba(5,12,4,.35)');gradient.addColorStop(1,'rgba(5,12,4,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h)});
   const contactMaterial=track(new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:weak?.80:.58,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));
   // Surface ribbons; LOW widens them slightly to survive its subpixel sampling.
@@ -1386,7 +1395,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Two shared high-contrast textures; anisotropic mip filtering
   // keeps the touchline text stable at acute camera angles without shimmer.
-  const adMaterials=['footera','instagram'].map(kind=>{
+  const adKinds=spooky?['footera','halloween','instagram']:['footera','instagram'];
+  const adMaterials=adKinds.map(kind=>{
    const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
    tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
    tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;
@@ -1405,7 +1415,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const adgeo=geo('ad',()=>new THREE.PlaneGeometry(12.96,1.5));
   function advertisingPanel(x,z,rotation,index){
    const backing=box(13.04,1.58,.16,'#10191c',x,.84,z,scene);backing.rotation.y=rotation;
-   const ad=mesh(adgeo,adMaterials[index%2],scene);
+   const ad=mesh(adgeo,adMaterials[index%adMaterials.length],scene);
    ad.position.set(x+Math.sin(rotation)*.085,.84,z+Math.cos(rotation)*.085);
    ad.rotation.y=rotation;staticBoxes.push(ad);
   }
@@ -1413,6 +1423,35 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let z=-45.5,i=0;z<=45.5;z+=13,i++)advertisingPanel(side*37,z,-side*Math.PI/2,i);
    for(let x=-26,i=0;x<=26;x+=13,i++)advertisingPanel(x,side*57,side===-1?0:Math.PI,i+(side===-1?1:0));
    for(const z of [-61,61]){box(.35,20,.35,'#7d8b8c',side*47,10,z,scene);const lights=box(5,1.1,.25,'#f1f4de',side*47,19.3,z,scene);lights.rotation.y=-side*.5}
+  }
+  // Halloween night: carved jack-o'-lanterns in front of the boards, a blood moon over the far stand.
+  if(spooky){
+   const faceTex=canvasTexture(128,128,(ctx,w,h)=>{
+    const g=ctx.createRadialGradient(w/2,h/2,4,w/2,h/2,w/2);g.addColorStop(0,'#fff2a0');g.addColorStop(1,'#ffb020');ctx.fillStyle=g;
+    for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(w/2+s*10,h*.46);ctx.lineTo(w/2+s*24,h*.22);ctx.lineTo(w/2+s*38,h*.46);ctx.fill()}
+    ctx.beginPath();ctx.moveTo(w*.18,h*.58);ctx.lineTo(w*.32,h*.66);ctx.lineTo(w*.42,h*.58);ctx.lineTo(w*.5,h*.68);ctx.lineTo(w*.58,h*.58);ctx.lineTo(w*.68,h*.66);ctx.lineTo(w*.82,h*.58);ctx.lineTo(w*.66,h*.84);ctx.lineTo(w*.34,h*.84);ctx.fill();
+   });
+   const faceMat=track(new THREE.MeshBasicMaterial({map:faceTex,transparent:true,toneMapped:false,depthWrite:false}));
+   const bodyMat=track(new THREE.MeshStandardMaterial({color:'#f07015',roughness:.62,emissive:'#ff4a00',emissiveIntensity:.28}));
+   const stemMat=mat('#3d5a12');
+   const bodyGeo=geo('pumpkin',()=>{const g=new THREE.SphereGeometry(.5,weak?10:16,weak?8:12),p=g.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),a=Math.atan2(z,x),rib=1-.06*Math.abs(Math.cos(a*4));p.setXYZ(i,x*rib,p.getY(i)*.74,z*rib)}g.computeVertexNormals();return g});
+   const faceGeo=geo('pumpkin-face',()=>new THREE.PlaneGeometry(.62,.5));
+   const stemGeo=geo('pumpkin-stem',()=>new THREE.CylinderGeometry(.045,.07,.2,6));
+   const glowTex=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,140,40,.55)');g.addColorStop(1,'rgba(255,90,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const glowMat=track(new THREE.SpriteMaterial({map:glowTex,transparent:true,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));
+   function pumpkin(x,z,face,scale=1){
+    const root=new THREE.Group();root.position.set(x,.36*scale,z);root.rotation.y=face;root.scale.setScalar(scale);scene.add(root);
+    root.add(new THREE.Mesh(bodyGeo,bodyMat));
+    const f=new THREE.Mesh(faceGeo,faceMat);f.position.set(0,.02,.38);root.add(f);
+    const st=new THREE.Mesh(stemGeo,stemMat);st.position.set(0,.43,0);st.rotation.z=.2;root.add(st);
+    const glow=new THREE.Sprite(glowMat);glow.scale.set(2.4,2.4,1);glow.position.set(0,.05,.5);root.add(glow);
+   }
+   for(const side of [-1,1]){
+    for(let z=-52,i=0;z<=52;z+=6.5,i++)if(i%2===0)pumpkin(side*35.9,z+(hash(i*7+side)-.5)*1.2,-side*Math.PI/2+(hash(i*11)-.5)*.5,.85+hash(i*5+3)*.4);
+    for(let x=-30,i=0;x<=30;x+=7.5,i++)pumpkin(x+(hash(i*13)-.5),side*55.8,side<0?0:Math.PI,.85+hash(i*3+side)*.35);
+   }
+   const moonTex=canvasTexture(256,256,(ctx,w,h)=>{const g=ctx.createRadialGradient(w*.5,h*.5,w*.18,w*.5,h*.5,w*.5);g.addColorStop(0,'rgba(255,214,150,1)');g.addColorStop(.36,'rgba(255,140,50,1)');g.addColorStop(.4,'rgba(255,110,30,.45)');g.addColorStop(1,'rgba(255,80,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.fillStyle='rgba(150,60,20,.22)';for(const [x,y,r] of [[.42,.44,.05],[.56,.55,.035],[.47,.6,.03],[.58,.4,.025]]){ctx.beginPath();ctx.arc(w*x,h*y,w*r,0,Math.PI*2);ctx.fill()}});
+   const moon=new THREE.Sprite(track(new THREE.SpriteMaterial({map:moonTex,transparent:true,depthWrite:false,fog:false,toneMapped:false})));moon.scale.set(70,70,1);moon.position.set(-150,62,-40);scene.add(moon);
   }
   // Player draw calls are batched below. Each bone retains its own articulation.
   const batches=new Map(),parts=[];
@@ -1569,6 +1608,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // V21.184: broadcast light and fabric only where the real GLB squad is shown.
   if(importedPlayer&&!weak)track(applyBroadcastLook(scene,renderer,{high}));
+  if(spooky)renderer.toneMappingExposure=1.06;
   // Motion 2.2 shapes first touch, mirrored cuts and finesse preparation.
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
   const motion2CutAnchor=motion2Active?runPosition(0,3.08,sequence):null;
