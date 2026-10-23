@@ -257,7 +257,7 @@ function passRewardItems(reward){
   const spec=STORY_PASS_PLAYERS[reward.story];
   if(spec)out.push({type:"story",label:`${spec.rating} ${spec.name}`,sub:`${spec.season==="s1"?"Story":"Saison"}-Spieler · einmalig · untauschbar`,visual:`<div class="pass-reward-player">${storyPreviewCard(reward.story)}</div>`})
  }
- if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Münzen`,sub:"Footera Münzen",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
+ if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Coins`,sub:"Footera Coins",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
  if(reward?.points)out.push({type:"points",label:`${fmt(reward.points)} Footera Points`,sub:"Footera Points",visual:`<div class="pass-reward-currency">${currencyAmountHTML("points",reward.points,"pass-currency-hero")}</div>`});
  if(reward?.sp)out.push({type:"sp",label:`${fmt(reward.sp)} Season Points`,sub:"Season Points",visual:`<div class="pass-reward-sp"><strong>SP</strong><b>${fmt(reward.sp)}</b></div>`});
  if(reward?.pack){
@@ -266,7 +266,7 @@ function passRewardItems(reward){
  }
  if(reward?.coinBoost){
   const games=Math.max(0,Number(reward.coinBoost.games||0)),amount=Math.max(0,Number(reward.coinBoost.amount||0));
-  out.push({type:"boost",label:`+${fmt(amount)} Münzen × ${games} Spiele`,sub:"Coin-Boost",visual:`<div class="pass-reward-currency boost">${currencyAmountHTML("coins",amount,"pass-currency-hero")}<small>× ${games} Spiele</small></div>`})
+  out.push({type:"boost",label:`+${fmt(amount)} Coins × ${games} Spiele`,sub:"Coin-Boost",visual:`<div class="pass-reward-currency boost">${currencyAmountHTML("coins",amount,"pass-currency-hero")}<small>× ${games} Spiele</small></div>`})
  }
  return out.length?out:[{type:"reward",label:"Belohnung",sub:"Season Pass",visual:'<div class="pass-reward-sp"><strong>★</strong></div>'}]
 }
@@ -393,7 +393,7 @@ $("seasonPass").addEventListener("click",event=>{
   if(!price||!Number.isFinite(state[currency]))return toast("Guthaben nicht verfügbar.");
   if(state[currency]<price){
    if(currency==="points")return openFooteraPointsOverview(price,"Premium Season Pass",Number(state.points||0));
-   return toast("Nicht genügend Münzen.");
+   return toast("Nicht genügend Coins.");
   }
   if(!confirm(`Premium-Pass für Saison ${seasonInfo().number} für ${fmt(price)} ${currency==="coins"?"Coins":"Footera Points"} freischalten?`))return;
   state[currency]-=price;state.seasonPass.premium=true;save();renderAll();toast("Premium-Pass aktiviert.");return

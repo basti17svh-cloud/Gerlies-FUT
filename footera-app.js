@@ -406,7 +406,7 @@ const PACKS=[
  {id:"raremixed",name:"Seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · Gold/Silber/Bronze gemischt · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"ultimate",name:"Ultimatives Pack",coins:75000,points:2500,type:"gold",count:30,composition:[{quality:"gold",count:30,min:75,max:99}],guarantee:84,rareCount:30,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"30 Goldspieler · alle selten · mind. 1× 84+",tag:"PROMO",iconChance:0.004,dailyLimit:10,resetHour:19},
  {id:"jumbo-rare",name:"Jumbo-Seltene-Spieler-Pack",coins:60000,points:2000,type:"gold",count:24,composition:[{quality:"gold",count:24,min:75,max:99}],guarantee:83,rareCount:24,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"24 Goldspieler · alle selten · mind. 1× 83+",tag:"PROMO",iconChance:0.003,dailyLimit:10,resetHour:19},
- {id:"rare-mixed",name:"Seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
+ {id:"rare-mixed",name:"Komplett seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"mega",name:"Mega Pack",coins:39000,points:1000,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mega",chemBoostSlots:{slots:2,chance:1},desc:"12 Goldspieler · 6 selten · mind. 1× 82+ · 2 Chemie-Boosts garantiert",tag:"PROMO",iconChance:0.002,dailyLimit:20,resetHour:19},
  {id:"83x15",name:"83+ ×15 Spieler-Pack",coins:90000,points:3000,type:"gold",count:15,min:83,max:99,composition:[{quality:"gold",count:15,min:83,max:99}],guarantee:83,rareCount:15,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"15 seltene Goldspieler · jeder Spieler garantiert 83+",tag:"PROMO",iconChance:0.0025,dailyLimit:7,resetHour:19},
  {id:"84x10",name:"84+ ×10 Spieler-Pack",coins:120000,points:4000,type:"gold",count:10,min:84,max:99,composition:[{quality:"gold",count:10,min:84,max:99}],guarantee:84,rareCount:10,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"10 seltene Goldspieler · jeder Spieler garantiert 84+",tag:"PROMO",iconChance:0.003,dailyLimit:5,resetHour:19},
@@ -1259,7 +1259,7 @@ function startPromoEventClock(){promoEventClockId=activePromoEvent()?.id||"";pro
 const TASKS=[
  {id:"starter",title:"Club gegründet",desc:"Öffne dein Starterset.",stat:"starter",target:1,reward:{coins:750,sp:250}},
  {id:"full",title:"Kompletter Kader",desc:"Besetze Startelf und 7er-Bank.",stat:"full",target:1,reward:{pack:"gold",qty:1,sp:350}},
- {id:"match",title:"Münzen-Boost",desc:"Spiele dein erstes Match und erhalte für die nächsten 5 gewerteten Spiele jeweils +500 Coins.",stat:"matches",target:1,reward:{coinBoost:{games:5,amount:500},sp:250}},
+ {id:"match",title:"Coin-Boost",desc:"Spiele dein erstes Match und erhalte für die nächsten 5 gewerteten Spiele jeweils +500 Coins.",stat:"matches",target:1,reward:{coinBoost:{games:5,amount:500},sp:250}},
  {id:"win",title:"Erster Sieg",desc:"Gewinne dein erstes Match.",stat:"wins",target:1,reward:{pack:"silver",qty:1,sp:300}},
  {id:"packs",title:"Pack-Fieber",desc:"Öffne 5 Packs.",stat:"packs",target:5,reward:{pack:"82",qty:1,sp:350}},
  {id:"sbc",title:"Squad Building",desc:"Schließe eine SBC ab.",stat:"sbcs",target:1,reward:{pack:"gold",qty:1,sp:400}},
@@ -3478,7 +3478,7 @@ function openPackPlayerDetails(k){
  const tradeActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Startpreis, Sofortkauf und Dauer festlegen.</small></span><b>›</b></button>`:"";
  const storeAvailable=(state.sbcStorage||[]).length<100;
  const duplicateStorageActions=duplicate&&!isFounderItem(item)&&!isFooteraLiveCard(item)?`<button class="menu-action" data-pack-profile-sbcstore="${k}" ${storeAvailable?"":"disabled"}><span><span>${storeAvailable?"In SBC-Speicher":"SBC-Speicher voll (100/100)"}</span><small>Duplikat für spätere SBCs sichern${item.tradeable?" · bleibt tauschbar":""}.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
- const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Münzen auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
+ const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Coins auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateStorageActions}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player")
 }
@@ -5292,9 +5292,9 @@ function startEvolution(evoId,uid,payment="free"){
  const coins=Number(evo?.cost?.coins||0),points=Number(evo?.cost?.points||0),free=!coins&&!points;
  let paidWith="free",paidAmount=0;
  if(!free){
-  if(payment==="coins"&&coins){if(state.coins<coins)return toast("Nicht genügend Münzen.");state.coins-=coins;paidWith="coins";paidAmount=coins}
+  if(payment==="coins"&&coins){if(state.coins<coins)return toast("Nicht genügend Coins.");state.coins-=coins;paidWith="coins";paidAmount=coins}
   else if(payment==="points"&&points){if(state.points<points)return openFooteraPointsOverview(points,`Evolution ${evo.name}`,Number(state.points||0));state.points-=points;paidWith="points";paidAmount=points}
-  else return toast("Wähle Münzen oder Footera Points.")
+  else return toast("Wähle Coins oder Footera Points.")
  }
  item.tradeable=false;
  const entry={evoId:evo.id,uid:item.uid,instanceKey:sch.key,completionEnd:sch.completionEnd.getTime(),stage:0,paidWith,paidAmount,baseline:{evo:Number(item.evo||0),evoStats:{...(item.evoStats||{})},evoPlaystyles:[...(item.evoPlaystyles||[])],overridePosition:item.overridePosition||""}};
@@ -6096,11 +6096,13 @@ function startMatch(mode,opponent=null,kitSelection=null){
  // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
  if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff")
 }
-function addLog(t){
+function addLog(t,side=""){
  if(!match)return;
  const d=document.createElement("div");
- d.className="logline";
+ d.className="logline"+(side?" logline-"+side:"");
  d.textContent=`${Math.min(120,Math.floor(match.minute))}' ${t}`;
+ // Goals and cards name the team up front, so the feed reads at a glance.
+ if(side){const tag=document.createElement("b");tag.className="logline-team";tag.textContent=side==="home"?matchHomeTeamName():matchAwayTeamName();d.prepend(tag)}
  $("matchLog").prepend(d)
 }
 function updateMatchUI(force=false){
@@ -6306,11 +6308,11 @@ function logGoal(side,scorer,assist,type,shot={}){
  recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
  recordMatchScene(`${side}-goal`,`${event.scorer} trifft für ${team}!`);
  if(typeof document!=="undefined"&&!in3D)showMatchGoalMoment(event,scorer);
- if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`);return}
- if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`);return}
- if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`);return}
- if(type==="penalty"){addLog(`TOR! ${event.scorer} verwandelt einen Elfmeter für ${team}.`);return}
- addLog(`TOR! ${event.scorer} trifft für ${team}.`)
+ if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`,side);return}
+ if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`,side);return}
+ if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`,side);return}
+ if(type==="penalty"){addLog(`TOR! ${event.scorer} verwandelt einen Elfmeter für ${team}.`,side);return}
+ addLog(`TOR! ${event.scorer} trifft für ${team}.`,side)
 }
 function simAttack(homeSide){
  const pending=match.nextRestart,restart=pending&&match.minute-pending.at<=5?pending:null;delete match.nextRestart;
@@ -6420,12 +6422,12 @@ function maybeBookPlayer(){
   const form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],candidates=match.lineup.slice(0,11).map((uid,i)=>({uid,i})).filter(x=>x.uid&&form[x.i]?.p!=="GK"&&!already.has(`home:${x.uid}`));
   if(!candidates.length)return false;
   const picked=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(picked.uid)?.name||"Spieler";
-  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`);return true
+  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`,"home");return true
  }
  const profile=match.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"],candidates=squad.slice(0,11).map((entry,i)=>({entry,i,base:opponentMatchBase(entry)})).filter(x=>x.base&&form[x.i]?.p!=="GK"&&!already.has(`away:${x.i}`));
  if(!candidates.length)return false;
  const picked=candidates[Math.floor(Math.random()*candidates.length)],name=picked.base.name||"Gegenspieler";
- match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name} (${matchAwayTeamName()}).`);return true
+ match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name}.`,"away");return true
 }
 function sendOffPlayer(){
  if(!match)return false;
@@ -6434,7 +6436,7 @@ function sendOffPlayer(){
  const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Spieler",minute=Math.floor(match.minute);
  match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute,at:match.minute});match.redCardSlot=i;
  recordMatchEvent("red","home",name);recordMatchScene("home-card",`Rote Karte für ${name}.`);
- addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`);
+ addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`,"home");
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
 }
@@ -6972,8 +6974,10 @@ function finishMatch(){
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
- if(history.state?.gfut&&history.state.kind==="match")history.back();
- else{stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;switchView("playView")}
+ // After the result the Spielen page starts at the top, not where the match was opened.
+ const toTop=()=>requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"auto"}));
+ if(history.state?.gfut&&history.state.kind==="match"){window.addEventListener("popstate",toTop,{once:true});history.back()}
+ else{stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;switchView("playView");toTop()}
 }
 $("matchClose").addEventListener("click",()=>{
  if(match?.competitionProgress&&!match.progressScreenShown&&typeof showPostMatchProgress==="function"){
@@ -7703,6 +7707,17 @@ function toggleMoreTray(){const t=moreTray();if(!t)return;const open=t.classList
 
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.toggle==="more"){toggleMoreTray();return}switchView(b.dataset.view)}));document.addEventListener("click",e=>{const moreBtn=e.target.closest("[data-toggle=more]");if(!moreBtn&&!e.target.closest("#moreTray"))hideMoreTray();const b=e.target.closest("[data-go]");if(b){hideMoreTray();switchView(b.dataset.go)}})
 $("campaignModal").addEventListener("click",e=>{if(e.target===$("campaignModal"))closeUiLayer("campaignModal","campaign")});
+// V21.254: Escape or a tap on the dark backdrop closes the top window, exactly like the back button.
+// Windows that guard a required step or a purchase/reward flow stay open.
+const BACKDROP_LOCKED_MODALS=new Set(["usernameRequiredModal","footeraPointsPurchaseModal","weeklyRewardModal","onlineDuelModal","squadBattleModal"]);
+function dismissTopModal(){
+ const id=topUiLayer(),el=id&&$(id);
+ if(!el?.classList.contains("modal")||BACKDROP_LOCKED_MODALS.has(id))return false;
+ if(history.state?.gfut)history.back();else closeTopUiLayer();
+ return true
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!e.defaultPrevented&&dismissTopModal())e.preventDefault()});
+document.addEventListener("click",e=>{const id=topUiLayer();if(id&&e.target===$(id)&&id!=="campaignModal")dismissTopModal()});
 
 
 let deferredInstallPrompt=null;
