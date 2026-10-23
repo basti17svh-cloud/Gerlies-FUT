@@ -24,7 +24,7 @@ test('HALLOWEEN is a complete 18-card release of real players from 18 clubs',()=
   assert.ok(p.ovr>p.baseOvr,`${p.name} is upgraded`);
   assert.equal(p.stats.length,6);
   assert.ok(fs.existsSync(path.join(root,p.dynamicFace)),`${p.name} portrait`);
-  if(p.pid!=='158023')assert.match(p.dynamicFace,/halloween\/dynamic\//,`${p.name} uses an EA dynamic picture`);
+  assert.match(p.dynamicFace,/halloween\/dynamic\//,`${p.name} uses an EA dynamic picture`);
  }
 });
 
@@ -102,4 +102,12 @@ test('Halloween card artwork, stylesheet and caches are wired up',()=>{
  assert.match(html,/cosmeticDesign==="halloween"\|\|String\(item\?\.eventType\|\|""\)\.startsWith\("halloween"\)\)return"halloween"/);
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.ok(sw.includes('./halloween-card.css?v=')&&sw.includes('card-halloween-v1.webp'));
+});
+
+test('the event poster always lists cards from the highest to the lowest rating',()=>{
+ const ctx={};vm.createContext(ctx);vm.runInContext(section('function byEventRating(','function eventShowcases('),ctx);
+ const sorted=ctx.byEventRating([86,91,84,90,86].map((ovr,i)=>({i,player:{ovr}})));
+ assert.deepEqual([...sorted].map(e=>e.player.ovr),[91,90,86,86,84]);
+ assert.deepEqual([...sorted].filter(e=>e.player.ovr===86).map(e=>e.i),[0,4],'equal ratings keep their order');
+ for(const kind of ['totwEventEntries(team)','totwReviewEntries(preview)','promoEventEntries(event)'])assert.ok(html.includes(`entries:()=>byEventRating(${kind})`),kind);
 });

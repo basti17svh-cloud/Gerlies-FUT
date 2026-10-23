@@ -100,5 +100,13 @@
     "id": "194765",
     "item": 50526413,
     "source": "https://game-assets.fut.gg/2027/player-item/27-50526413.1ee3a9d6b0cd1ecc551d06d04495de84305d1ee175ab8f24f01d654256aa2a3d.webp"
+  },
+  {
+    "name": "Lionel Messi",
+    "id": "158023",
+    "item": 167930183,
+    "game": 26,
+    "note": "FC 26 Inter Miami item; FC 27 has no dynamic picture of Messi yet",
+    "source": "https://game-assets.fut.gg/2026/player-item/26-167930183.2e2d3a89c49a929e2ee2897f704c0aff5dd44b16a238ec2e27f251b3aa81d062.webp"
   }
 ]

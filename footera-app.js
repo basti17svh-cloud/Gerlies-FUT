@@ -1006,7 +1006,7 @@ const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN
  {pid:"177003",dynamicFace:"assets/footera/events/halloween/dynamic/177003.webp",name:"Luka Modrić",ovr:87,position:"CM",baseOvr:85,team:"AC Milan",nation:"Croatia",alt:"CDM,CAM",stats:[78,78,90,89,76,72],playstylePlusAdds:["tiki-taka"]},
  {pid:"243245",dynamicFace:"assets/footera/events/halloween/dynamic/243245.webp",name:"Orkun Kökçü",ovr:84,position:"CM",baseOvr:82,team:"Beşiktaş",nation:"Turkey",alt:"CDM,CAM",stats:[78,83,87,83,73,83],playstylePlusAdds:["long-ball-pass"]},
  {pid:"260247",dynamicFace:"assets/footera/events/halloween/dynamic/260247.webp",name:"Morgan Rogers",ovr:86,position:"CAM",baseOvr:84,team:"Chelsea",nation:"England",alt:"LM,CM,LW",stats:[80,85,86,87,70,81],playstylePlusAdds:["press-proven"]},
- {pid:"158023",dynamicFace:"assets/footera/events/halloween/faces/158023.webp",name:"Lionel Messi",ovr:91,position:"CAM",baseOvr:89,team:"Inter Miami CF",nation:"Argentina",alt:"RW,ST,RM",stats:[80,90,92,93,36,66],playstylePlusAdds:["finesse-shot"]},
+ {pid:"158023",dynamicFace:"assets/footera/events/halloween/dynamic/158023.webp",name:"Lionel Messi",ovr:91,position:"CAM",baseOvr:89,team:"Inter Miami CF",nation:"Argentina",alt:"RW,ST,RM",stats:[80,90,92,93,36,66],playstylePlusAdds:["finesse-shot"]},
  {pid:"209331",dynamicFace:"assets/footera/events/halloween/dynamic/209331.webp",name:"Mohamed Salah",ovr:89,position:"RM",baseOvr:87,team:"Trabzonspor",nation:"Egypt",alt:"RW,CAM,ST",stats:[88,86,86,89,48,75],playstylePlusAdds:["low-driven-shot"]},
  {pid:"264652",dynamicFace:"assets/footera/events/halloween/dynamic/264652.webp",name:"Bradley Barcola",ovr:87,position:"LW",baseOvr:85,team:"Paris SG",nation:"France",alt:"RW,LM,RM",stats:[95,80,81,87,42,70],playstylePlusAdds:["rapid"]},
  {pid:"228093",dynamicFace:"assets/footera/events/halloween/dynamic/228093.webp",name:"Marcus Thuram",ovr:87,position:"ST",baseOvr:85,team:"Inter",nation:"France",alt:"",stats:[89,86,78,84,53,84],playstylePlusAdds:["power-shot"]},
@@ -1109,12 +1109,14 @@ function totwReviewEntries(team){
   return{index,info,base,item,player:displayBase(item)||base}
  })
 }
+// The event poster always lists the cards from the highest to the lowest rating.
+function byEventRating(entries){return [...entries].sort((a,b)=>Number(b.player?.ovr||0)-Number(a.player?.ovr||0))}
 function eventShowcases(){
  const activeId=String(activeTotwWeek()?.id||"");
- const totw=publishedTotwWeeks().map(team=>({id:`totw-${team.id}`,name:totwDisplayName(team.name),shortName:`TOTW ${team.id}`,subtitle:String(team.id)===activeId?"Aktuelles Team der Woche":"TOTW Archiv",activeUntil:team.activeUntil,releaseDate:team.releaseDate,theme:"totw",kind:"totw",team,entries:()=>totwEventEntries(team)}));
+ const totw=publishedTotwWeeks().map(team=>({id:`totw-${team.id}`,name:totwDisplayName(team.name),shortName:`TOTW ${team.id}`,subtitle:String(team.id)===activeId?"Aktuelles Team der Woche":"TOTW Archiv",activeUntil:team.activeUntil,releaseDate:team.releaseDate,theme:"totw",kind:"totw",team,entries:()=>byEventRating(totwEventEntries(team))}));
  const preview=requestedTotwPreview();
- if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:totwReleaseApproved(preview)?"Freigegeben · startet Mittwoch um 19:00":"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>totwReviewEntries(preview)});
- const promos=EVENT_PROMO_RELEASES.filter(event=>(event.players||[]).length>0&&Date.now()>=Date.parse(event.activeFrom)).map(event=>({...event,theme:event.theme||"event",kind:"promo",entries:()=>promoEventEntries(event)}));
+ if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:totwReleaseApproved(preview)?"Freigegeben · startet Mittwoch um 19:00":"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>byEventRating(totwReviewEntries(preview))});
+ const promos=EVENT_PROMO_RELEASES.filter(event=>(event.players||[]).length>0&&Date.now()>=Date.parse(event.activeFrom)).map(event=>({...event,theme:event.theme||"event",kind:"promo",entries:()=>byEventRating(promoEventEntries(event))}));
  return [...promos.filter(e=>eventPackIsActive(e)),...totw,...promos.filter(e=>!eventPackIsActive(e))]
 }
 function renderEvents(){
