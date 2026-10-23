@@ -109,3 +109,36 @@ test('every Evolution preview and claimed stage keeps the common design through 
  assert.equal(capped.evo,0);assert.equal(capped.evoDesign,true);
 });
 
+
+test('elite evolutions start at 82 GES and keep the player profile instead of uniform target stats',()=>{
+ const c=setup(),elite=vm.runInContext('EVOLUTION_POOL.filter(e=>e.lane==="elite")',c);
+ assert.ok(elite.length>=5);
+ for(const evo of elite){assert.equal(evo.req.minOvr,82,evo.id);assert.equal(evo.statTargets,undefined,evo.id);assert.match(evo.band,/^82–8[45]$/)}
+ const sturm=c.definition('s1_elite_sturm');
+ assert.equal(c.evoEligible(c.item('low','ST',74),sturm),false);
+ const fast=c.item('fast','ST',82),slow=c.item('slow','ST',82);fast.base.pac=90;slow.base.pac=70;
+ const a=c.displayBase(c.evoPreviewItem(fast,sturm,2)),b=c.displayBase(c.evoPreviewItem(slow,sturm,2));
+ assert.equal(a.ovr,88);assert.equal(b.ovr,88);
+ assert.ok(a.pac-b.pac>=15,'pace difference survives the evolution');
+});
+
+test('stage upgrades follow the position: key stats grow with the rating, useless stats are skipped',()=>{
+ const c=setup(),evo=c.definition('s1_low_vereinsprojekt');
+ const st=c.item('st','ST',74),cb=c.item('cb','CB',74);
+ const stEnd=c.displayBase(c.evoPreviewItem(st,evo,2)),cbEnd=c.displayBase(c.evoPreviewItem(cb,evo,2));
+ assert.equal(stEnd.ovr,81);assert.equal(cbEnd.ovr,81);
+ for(const k of ['sho','dri','pac'])assert.ok(stEnd[k]-st.base[k]>=7,`ST ${k} grows at least like the rating`);
+ for(const k of ['def','phy'])assert.ok(cbEnd[k]-cb.base[k]>=7,`CB ${k} grows at least like the rating`);
+ assert.equal(cbEnd.sho,cb.base.sho,'no shooting upgrades for centre backs');
+ assert.equal(stEnd.def,st.base.def,'no defending upgrades for strikers');
+});
+
+test('paid season evolutions end with a PlayStyle+, free ones with a normal PlayStyle',()=>{
+ const c=setup(),pool=vm.runInContext('EVOLUTION_POOL.filter(e=>String(e.group).startsWith("s1-"))',c);
+ for(const evo of pool){
+  const paid=Number(evo.cost.coins||0)+Number(evo.cost.points||0)>0,last=evo.stages[evo.stages.length-1];
+  if(paid){assert.ok(last.playstylePlus,evo.id);assert.equal(last.playstyle,undefined,evo.id)}else assert.ok(last.playstyle&&!last.playstylePlus,evo.id);
+ }
+ const item=c.item('ps','ST',74),end=c.evoPreviewItem(item,c.definition('s1_low_athletik'),2);
+ assert.deepEqual([...end.evoPlaystylesPlus],['Quick Step']);
+});
