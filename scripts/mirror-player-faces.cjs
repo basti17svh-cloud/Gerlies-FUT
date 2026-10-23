@@ -19,7 +19,7 @@ const BUCKET='player-faces';
 const LIMIT=Number(process.env.MIRROR_LIMIT||25000);
 const FORCE=process.env.MIRROR_FORCE==='1';
 const PARALLEL=8,MAX_SIDE=256;
-const HEADERS={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36','Accept':'image/avif,image/webp,image/png,image/*;q=0.8'};
+const HEADERS={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36','Accept':'image/webp,image/png,image/jpeg;q=0.9,*/*;q=0.5'};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 function csvRow(line){const out=[];let cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(c===','&&!q){out.push(cur);cur=''}else cur+=c}out.push(cur);return out}
@@ -91,8 +91,8 @@ async function download(url){
    const buf=Buffer.from(await res.arrayBuffer());
    const meta=await sharp(buf).metadata();
    if(!meta.width||meta.width<24||meta.height<24)return null;
-   return sharp(buf).resize({width:MAX_SIDE,height:MAX_SIDE,fit:'inside',withoutEnlargement:true}).webp({quality:82,alphaQuality:90,effort:5}).toBuffer()
-  }catch(e){if(/unsupported image|Input buffer/i.test(e.message))return null;await sleep(800*2**attempt)}
+   return await sharp(buf).resize({width:MAX_SIDE,height:MAX_SIDE,fit:'inside',withoutEnlargement:true}).webp({quality:82,alphaQuality:90,effort:5}).toBuffer()
+  }catch(e){if(/unsupported image|Input buffer|heif|bitstream/i.test(e.message))return null;await sleep(800*2**attempt)}
  }
  return null
 }
