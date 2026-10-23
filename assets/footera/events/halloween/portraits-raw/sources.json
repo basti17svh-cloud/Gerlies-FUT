@@ -24,28 +24,10 @@
     "sha256": "c235a5d7849669b0db24b41516928d93260d429c5a9ebdbb06b44ba15d3d3e62"
   },
   {
-    "name": "Bremer",
-    "id": "239580",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/239580.png",
-    "sha256": "2a0b6e0a4f0237062a309c5daab3a11c4f40c9182748f7b4a97854de4e82c596"
-  },
-  {
     "name": "Federico Dimarco",
     "id": "226268",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/226268.png",
     "sha256": "32cba1e481ab5bb76e176f95f4f96d80a3c33ebb66d16713b00f7baaaebb12ee"
-  },
-  {
-    "name": "Reece James",
-    "id": "238074",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/238074.png",
-    "sha256": "afc309094c90cb1c59ffd4e9f42f51f35398cdf6953e5be643dce0dca2cab7fc"
-  },
-  {
-    "name": "Granit Xhaka",
-    "id": "199503",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/199503.png",
-    "sha256": "f196a162a1810977a311186f7ef3fd1781c67d10db110063e63c6df6a4cd4812"
   },
   {
     "name": "Federico Valverde",
@@ -70,12 +52,6 @@
     "id": "236772",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/236772.png",
     "sha256": "404114c52183aa846d65e1a24cf3cb6649b446f4160e4f0284d72de3ed132af8"
-  },
-  {
-    "name": "Paulo Dybala",
-    "id": "211110",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/211110.png",
-    "sha256": "b757fb5ba36b13f219de1e8e59d674a966d84bccbdda665962188a7ef47b248d"
   },
   {
     "name": "Nico Williams",
@@ -118,5 +94,29 @@
     "id": "241721",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/241721.png",
     "sha256": "d463baefcb1cfad4f6b626ef66cece0d37c153525ddcd7c39e24cc6c87a5c0ae"
+  },
+  {
+    "name": "Isco",
+    "id": "197781",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/197781.png",
+    "sha256": "45b5745161efcdd0c382fea6c981e1b36043fbd13d10ef095368d746585176c1"
+  },
+  {
+    "name": "Willi Orbán",
+    "id": "204638",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/204638.png",
+    "sha256": "9612e85fa8c4dbde995ce83cba3a713b2077398c962652e1a79622d329a886aa"
+  },
+  {
+    "name": "Pedro Porro",
+    "id": "243576",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/243576.png",
+    "sha256": "1f2c14506622fe9da0ae82dc50f67d95a28109d954307805faee607a409e3edb"
+  },
+  {
+    "name": "N'Golo Kanté",
+    "id": "215914",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/215914.png",
+    "sha256": "d6996fac7c1602480637a568a0dd3d42b49821f037165184541531c07a7affe6"
   }
 ]
