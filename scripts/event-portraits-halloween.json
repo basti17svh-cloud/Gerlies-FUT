@@ -1,82 +1,22 @@
 [
- {
-  "name": "Jan Oblak",
-  "id": "200389"
- },
- {
-  "name": "Marco Carnesecchi",
-  "id": "252154"
- },
- {
-  "name": "Jonathan Tah",
-  "id": "213331"
- },
- {
-  "name": "Rúben Dias",
-  "id": "239818"
- },
- {
-  "name": "Federico Dimarco",
-  "id": "226268"
- },
- {
-  "name": "Federico Valverde",
-  "id": "239053"
- },
- {
-  "name": "Scott McTominay",
-  "id": "237238"
- },
- {
-  "name": "Luka Modrić",
-  "id": "177003"
- },
- {
-  "name": "Dominik Szoboszlai",
-  "id": "236772"
- },
- {
-  "name": "Nico Williams",
-  "id": "256516"
- },
- {
-  "name": "Ángel Di María",
-  "id": "183898"
- },
- {
-  "name": "Viktor Gyökeres",
-  "id": "241651"
- },
- {
-  "name": "Victor Osimhen",
-  "id": "232293"
- },
- {
-  "name": "Deniz Undav",
-  "id": "244176"
- },
- {
-  "name": "Thomas Müller",
-  "id": "189596"
- },
- {
-  "name": "Rafael Leão",
-  "id": "241721"
- },
- {
-  "name": "Isco",
-  "id": "197781"
- },
- {
-  "name": "Willi Orbán",
-  "id": "204638"
- },
- {
-  "name": "Pedro Porro",
-  "id": "243576"
- },
- {
-  "name": "N'Golo Kanté",
-  "id": "215914"
- }
+ {"name": "David Raya", "id": "220901"},
+ {"name": "De Gea", "id": "193080"},
+ {"name": "Dayot Upamecano", "id": "229558"},
+ {"name": "Cristian Romero", "id": "232488"},
+ {"name": "Cucurella", "id": "239231"},
+ {"name": "Lewis Hall", "id": "266127"},
+ {"name": "Jakub Kiwior", "id": "265693"},
+ {"name": "Elliot Anderson", "id": "254243"},
+ {"name": "Luka Modrić", "id": "177003"},
+ {"name": "Felix Nmecha", "id": "246863"},
+ {"name": "Lionel Messi", "id": "158023"},
+ {"name": "Morgan Rogers", "id": "260247"},
+ {"name": "Orkun Kökçü", "id": "243245"},
+ {"name": "Mohamed Salah", "id": "209331"},
+ {"name": "Bradley Barcola", "id": "264652"},
+ {"name": "Marcus Thuram", "id": "228093"},
+ {"name": "Deniz Undav", "id": "244176"},
+ {"name": "Antoine Griezmann", "id": "194765"},
+ {"name": "Thomas Müller", "id": "189596"},
+ {"name": "Rafael Leão", "id": "241721"}
 ]
