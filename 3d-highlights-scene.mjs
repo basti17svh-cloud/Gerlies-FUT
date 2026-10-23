@@ -2396,7 +2396,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
 }
 export function play(event,signal){
  return new Promise(resolve=>{
-  const host=document.getElementById('matchLiveStage');
+  // V21.246: online friendlies bring their own stage (FooteraHighlights.stage).
+  const host=globalThis.FooteraHighlights?.stage?.()||document.getElementById('matchLiveStage');
+  const stageFrame=host?.closest('#match,#onlineMatch')||document.getElementById('match');
   if(!host||signal.aborted||document.hidden){resolve('skipped');return}
   let renderer,world,observer,raf,timer,done=false,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
   const previousFocus=document.activeElement;
@@ -2448,7 +2450,7 @@ export function play(event,signal){
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
-   const focused=layer.contains(document.activeElement);document.getElementById('match')?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
+   const focused=layer.contains(document.activeElement);stageFrame?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
   function onAbort(){finish('skipped')}
   function onLost(e){e.preventDefault();finish('fallback')}
@@ -2522,7 +2524,7 @@ export function play(event,signal){
       playback.presented(performance.now());
       last=0;
       layer.classList.add('fh3d-ready');
-      document.getElementById('match')?.classList.add('highlight3d-active');
+      stageFrame?.classList.add('highlight3d-active');
      }
      // Bounded diagnostics: reflect actual sampled poses, not GLB load state.
      // Once per ~20 frames avoids inspecting an entire football scene per RAF.

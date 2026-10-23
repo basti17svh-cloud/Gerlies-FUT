@@ -20,7 +20,9 @@
 #socialView .friends-person{border:1px solid #3d5149;border-radius:19px;background:linear-gradient(140deg,#15251f,#11191b);padding:17px;min-width:0}
 #socialView .friends-person-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
 #socialView .friends-avatar{width:43px;height:48px;display:grid;place-items:center;flex-shrink:0}
-#socialView .friends-avatar .club-crest{width:40px;height:46px}
+#socialView .friends-avatar{position:relative}
+/* V21.246: the mini crest is a kit badge (absolute, offset); in the friend list it sits beside the club name. */
+#socialView .friends-avatar .club-crest{position:static!important;top:auto!important;left:auto!important;transform:none!important;width:40px;height:46px}
 #socialView .friends-initials{display:grid;place-items:center;width:43px;height:43px;border-radius:13px;color:#b9f4d5;background:#284739;font-size:14px;font-weight:850}
 #socialView .friends-person-name{flex:1;min-width:90px;overflow-wrap:anywhere}
 #socialView .friends-person h4{font-size:16px;line-height:1.3}
