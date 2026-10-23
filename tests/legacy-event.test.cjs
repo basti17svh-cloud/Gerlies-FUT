@@ -35,5 +35,5 @@ test("Legacy resources stay cached while the application version advances",()=>{
  assert.ok(sw.includes('const CACHE="footera-v'+build[1]+'-'+build[2]+'-'));
  const manifest=JSON.parse(read('manifest.webmanifest'));
  assert.equal(manifest.start_url,'./index.html?v='+build[1]+'.'+build[2]);
- for(const asset of ["legacy-card.css?v=21158","card-layout.css?v=21158","playstyles.css?v=21158","assets/footera/legacy-event-aura.svg"])assert.ok(sw.includes(asset),"cache "+asset);
+ for(const asset of ["legacy-card.css?v=21158","card-layout.css?v=21251","playstyles.css?v=21158","assets/footera/legacy-event-aura.svg"])assert.ok(sw.includes(asset),"cache "+asset);
 });

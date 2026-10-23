@@ -51,7 +51,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21250').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21252').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -68,7 +68,7 @@
   const loading=document.createElement('div');loading.className='fh3d-warming';
   const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
-  // V21.250 (Basti): no skip button while loading; it appears with the running scene.
+  // V21.252 (Basti): no skip button while loading; it appears with the running scene.
   loading.append(text,top);host.append(loading);
   const remove=()=>loading.remove();signal.addEventListener('abort',remove,{once:true});
   try{return await loadRenderer().then(async module=>{
