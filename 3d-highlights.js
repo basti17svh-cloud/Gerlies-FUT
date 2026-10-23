@@ -51,7 +51,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21246').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21252').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -68,15 +68,13 @@
   const loading=document.createElement('div');loading.className='fh3d-warming';
   const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
-  const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
-  let skipped=false,skipResolve;
-  const skippedPromise=new Promise(resolve=>{skipResolve=resolve});
+  // V21.252 (Basti): no skip button while loading; it appears with the running scene.
+  loading.append(text,top);host.append(loading);
   const remove=()=>loading.remove();signal.addEventListener('abort',remove,{once:true});
-  skip.onclick=()=>{skipped=true;remove();skipResolve('skipped')};
-  try{return await Promise.race([loadRenderer().then(async module=>{
+  try{return await loadRenderer().then(async module=>{
    // First a genuine 3D skinned GLB, then the existing deterministic highlight.
    // Missing file / slow device => existing Footera actor, never delay results.
-   if(!signal.aborted&&!skipped){
+   if(!signal.aborted){
     let disabled=false;
     try{
       const model=root.localStorage?.getItem('footera-3d-player-model');
@@ -90,8 +88,8 @@
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
     if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
-   remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
-  }),skippedPromise])}
+   remove();return signal.aborted?'skipped':module.play(event,signal);
+  })}
   finally{remove();signal.removeEventListener('abort',remove)}
  }
 

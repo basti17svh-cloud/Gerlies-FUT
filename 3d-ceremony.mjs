@@ -108,11 +108,3 @@ export function replayCamera(direction,shooter,ball){
  return{position:w([mix(shooter[0]*.25,ball[0]*.3,.5),5.6,-61]),target:w([mix(shooter[0],ball[0],.45),mix(.9,ball[1],.3),mix(shooter[1],-52.5,.3)]),fov:33,phase:'replay'};
 }
 
-// ---- late winner: the substitutes storm out from the halfway side.
-export const BENCH_RUNNERS=4;
-export function benchRunner(k,time,start,scorer,direction){
- const d=direction===-1?-1:1,from=[scorer[0]-1.5*d+(k-1.5)*.7,scorer[1]+16+k*.8];
- const to=[scorer[0]-(1.7+.65*(k%2))*d,scorer[1]+(k-1.5)*.95];
- const u=smooth((time-start)/2.3);
- return[mix(from[0],to[0],u),mix(from[1],to[1],u)];
-}
