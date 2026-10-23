@@ -1171,7 +1171,7 @@ function openPromoTeam(eventId=""){
 // Teaser overview before the HALLOWEEN start: what arrives when, with silhouettes instead of names.
 function openHalloweenPreview(){
  const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
- const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir 88 HALLOWEEN Rafael Leão."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu die SBC mit 88 HALLOWEEN Thomas Müller, dem Raumdeuter."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
+ const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir 88 HALLOWEEN Rafael Leão."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
  $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
  $("opponentTeamModalSub").textContent="Vorschau · alle Spieler werden am 30.10. um 19:00 Uhr enthüllt";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
@@ -6974,7 +6974,7 @@ function halloweenHeroSlide(at=Date.now()){
  const ev=HALLOWEEN_EVENT,start=Date.parse(ev.activeFrom),end=Date.parse(ev.activeUntilAt),teaserFrom=Date.parse("2026-10-22T19:00:00+02:00");
  if(at<teaserFrom||at>=end||!eventRosterReady(ev))return null;
  const fmtDay=d=>new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(d));
- if(at<start){const days=Math.max(0,Math.round((start-at)/86400000));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, Thomas Müller als SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
+ if(at<start){const days=Math.max(0,Math.round((start-at)/86400000));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, eine geheime Spieler-SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
  const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(ev.upgrade.at);
  return{kicker:upgrade?"BLUTMOND-UPGRADE AKTIV · +1 AUF ALLE HALLOWEEN-KARTEN":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:upgrade?`Der Blutmond ist aufgegangen: Jede Halloween-Karte hat jetzt +1 GES und +1 auf alle Werte. In Packs bis ${fmtDay(end)} Uhr.`:`18 Spezialkarten in Packs bis ${fmtDay(end)} Uhr. In der Halloween-Nacht (${fmtDay(upAt)} Uhr) bekommt jede Halloween-Karte das Blutmond-Upgrade.`,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:"JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:ev.activeUntil,theme:"halloween",event:ev}
 }
@@ -7777,7 +7777,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.232";
+const GFUT_BUILD="V21.236";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7835,7 +7835,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21232",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21236",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
