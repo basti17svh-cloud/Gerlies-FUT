@@ -1,0 +1,1046 @@
+[
+ {
+  "id": "220901",
+  "name": "David Raya",
+  "ovr": 88,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "GK",
+  "item": 67329765
+ },
+ {
+  "id": "233419",
+  "name": "Raphinha",
+  "ovr": 88,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "LW",
+  "item": 50565067
+ },
+ {
+  "id": "237289",
+  "name": "Patri Guijarro",
+  "ovr": 88,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "CDM",
+  "item": 50568937
+ },
+ {
+  "id": "241084",
+  "name": "Luis Díaz",
+  "ovr": 88,
+  "club": "FC Bayern München",
+  "league": "Bundesliga",
+  "position": "LM",
+  "item": 67349948
+ },
+ {
+  "id": "258980",
+  "name": "Alessia Russo",
+  "ovr": 88,
+  "club": "Arsenal",
+  "league": "Barclays WSL",
+  "position": "ST",
+  "item": 50590628
+ },
+ {
+  "id": "264012",
+  "name": "Sophia Wilson",
+  "ovr": 88,
+  "club": "Portland Thorns",
+  "league": "NWSL",
+  "position": "ST",
+  "item": 50595660
+ },
+ {
+  "id": "265898",
+  "name": "Melchie Dumornay",
+  "ovr": 88,
+  "club": "OL Lyonnes",
+  "league": "Arkema PL",
+  "position": "ST",
+  "item": 67374762
+ },
+ {
+  "id": "207865",
+  "name": "Marquinhos",
+  "ovr": 87,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "CB",
+  "item": 50539513
+ },
+ {
+  "id": "209331",
+  "name": "Mohamed Salah",
+  "ovr": 87,
+  "club": "Trabzonspor",
+  "league": "Trendyol Süper Lig",
+  "position": "RM",
+  "item": 50540979
+ },
+ {
+  "id": "226893",
+  "name": "Debinha",
+  "ovr": 87,
+  "club": "KC Current",
+  "league": "NWSL",
+  "position": "CAM",
+  "item": 50558541
+ },
+ {
+  "id": "227361",
+  "name": "Kadidiatou Diani",
+  "ovr": 87,
+  "club": "London City",
+  "league": "Barclays WSL",
+  "position": "RM",
+  "item": 50559009
+ },
+ {
+  "id": "229558",
+  "name": "Dayot Upamecano",
+  "ovr": 87,
+  "club": "FC Bayern München",
+  "league": "Bundesliga",
+  "position": "CB",
+  "item": 50561206
+ },
+ {
+  "id": "257008",
+  "name": "Lauren Hemp",
+  "ovr": 87,
+  "club": "Manchester City",
+  "league": "Barclays WSL",
+  "position": "LM",
+  "item": 50588656
+ },
+ {
+  "id": "259287",
+  "name": "Pernille Harder",
+  "ovr": 87,
+  "club": "FC Bayern München",
+  "league": "GPFBL",
+  "position": "CAM",
+  "item": 50590935
+ },
+ {
+  "id": "222665",
+  "name": "Martin Ødegaard",
+  "ovr": 86,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50554313
+ },
+ {
+  "id": "233731",
+  "name": "Alexander Isak",
+  "ovr": 86,
+  "club": "Liverpool",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 50565379
+ },
+ {
+  "id": "239231",
+  "name": "Cucurella",
+  "ovr": 86,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "LB",
+  "item": 50570879
+ },
+ {
+  "id": "241651",
+  "name": "Viktor Gyökeres",
+  "ovr": 86,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 50573299
+ },
+ {
+  "id": "271421",
+  "name": "Désiré Doué",
+  "ovr": 86,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "RW",
+  "item": 50603069
+ },
+ {
+  "id": "177003",
+  "name": "Luka Modrić",
+  "ovr": 85,
+  "club": "AC Milan",
+  "league": "Serie A Enilive",
+  "position": "CM",
+  "item": 50508651
+ },
+ {
+  "id": "192985",
+  "name": "Kevin De Bruyne",
+  "ovr": 85,
+  "club": "SSC Napoli",
+  "league": "Serie A Enilive",
+  "position": "CAM",
+  "item": 50524633
+ },
+ {
+  "id": "216393",
+  "name": "Youri Tielemans",
+  "ovr": 85,
+  "club": "Man Utd",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50548041
+ },
+ {
+  "id": "227246",
+  "name": "Lucy Bronze",
+  "ovr": 85,
+  "club": "Chelsea",
+  "league": "Barclays WSL",
+  "position": "RB",
+  "item": 67336110
+ },
+ {
+  "id": "228093",
+  "name": "Marcus Thuram",
+  "ovr": 85,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 67336957
+ },
+ {
+  "id": "232073",
+  "name": "Mallory Swanson",
+  "ovr": 85,
+  "club": "Chicago Stars FC",
+  "league": "NWSL",
+  "position": "LM",
+  "item": 50563721
+ },
+ {
+  "id": "240030",
+  "name": "Ellie Carpenter",
+  "ovr": 85,
+  "club": "Chelsea",
+  "league": "Barclays WSL",
+  "position": "RB",
+  "item": 50571678
+ },
+ {
+  "id": "241236",
+  "name": "Antoine Semenyo",
+  "ovr": 85,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "RW",
+  "item": 50572884
+ },
+ {
+  "id": "244176",
+  "name": "Deniz Undav",
+  "ovr": 85,
+  "club": "VfB Stuttgart",
+  "league": "Bundesliga",
+  "position": "ST",
+  "item": 50575824
+ },
+ {
+  "id": "246863",
+  "name": "Felix Nmecha",
+  "ovr": 85,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "CM",
+  "item": 67355727
+ },
+ {
+  "id": "264652",
+  "name": "Bradley Barcola",
+  "ovr": 85,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "LW",
+  "item": 67373516
+ },
+ {
+  "id": "265249",
+  "name": "Lauren James",
+  "ovr": 85,
+  "club": "Chelsea",
+  "league": "Barclays WSL",
+  "position": "LM",
+  "item": 50596897
+ },
+ {
+  "id": "273153",
+  "name": "Linda Caicedo",
+  "ovr": 85,
+  "club": "Real Madrid",
+  "league": "Liga F Moeve",
+  "position": "LW",
+  "item": 50604801
+ },
+ {
+  "id": "78012",
+  "name": "Yan Diomande",
+  "ovr": 84,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "RW",
+  "item": 50409660
+ },
+ {
+  "id": "188545",
+  "name": "Robert Lewandowski",
+  "ovr": 84,
+  "club": "Chicago Fire FC",
+  "league": "MLS",
+  "position": "ST",
+  "item": 50520193
+ },
+ {
+  "id": "194765",
+  "name": "Antoine Griezmann",
+  "ovr": 84,
+  "club": "Orlando City",
+  "league": "MLS",
+  "position": "ST",
+  "item": 50526413
+ },
+ {
+  "id": "227013",
+  "name": "Fridolina Rolfö",
+  "ovr": 84,
+  "club": "Manchester Utd",
+  "league": "Barclays WSL",
+  "position": "LM",
+  "item": 50558661
+ },
+ {
+  "id": "227678",
+  "name": "Ezri Konsa",
+  "ovr": 84,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50559326
+ },
+ {
+  "id": "230142",
+  "name": "Oyarzabal",
+  "ovr": 84,
+  "club": "Real Sociedad",
+  "league": "LALIGA EA SPORTS",
+  "position": "ST",
+  "item": 50561790
+ },
+ {
+  "id": "241461",
+  "name": "Ferran Torres",
+  "ovr": 84,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "ST",
+  "item": 50573109
+ },
+ {
+  "id": "243014",
+  "name": "Bryan Mbeumo",
+  "ovr": 84,
+  "club": "Man Utd",
+  "league": "Premier League",
+  "position": "RM",
+  "item": 50574662
+ },
+ {
+  "id": "254243",
+  "name": "Elliot Anderson",
+  "ovr": 84,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 100917539
+ },
+ {
+  "id": "259372",
+  "name": "Athenea",
+  "ovr": 84,
+  "club": "Real Madrid",
+  "league": "Liga F Moeve",
+  "position": "RW",
+  "item": 50591020
+ },
+ {
+  "id": "260247",
+  "name": "Morgan Rogers",
+  "ovr": 84,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50591895
+ },
+ {
+  "id": "261740",
+  "name": "Jule Brand",
+  "ovr": 84,
+  "club": "OL Lyonnes",
+  "league": "Arkema PL",
+  "position": "LW",
+  "item": 50593388
+ },
+ {
+  "id": "264947",
+  "name": "Nicole Anyomi",
+  "ovr": 84,
+  "club": "London City",
+  "league": "Barclays WSL",
+  "position": "ST",
+  "item": 50596595
+ },
+ {
+  "id": "265025",
+  "name": "Selina Cerci",
+  "ovr": 84,
+  "club": "Arsenal",
+  "league": "Barclays WSL",
+  "position": "ST",
+  "item": 50596673
+ },
+ {
+  "id": "267530",
+  "name": "Esmee Brugts",
+  "ovr": 84,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "LB",
+  "item": 67376394
+ },
+ {
+  "id": "271446",
+  "name": "Vicky López",
+  "ovr": 84,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "RW",
+  "item": 50603094
+ },
+ {
+  "id": "277846",
+  "name": "Nico Paz",
+  "ovr": 84,
+  "club": "Como",
+  "league": "Serie A Enilive",
+  "position": "CAM",
+  "item": 50609494
+ },
+ {
+  "id": "193080",
+  "name": "De Gea",
+  "ovr": 83,
+  "club": "Fiorentina",
+  "league": "Serie A Enilive",
+  "position": "GK",
+  "item": 50524728
+ },
+ {
+  "id": "197781",
+  "name": "Isco",
+  "ovr": 83,
+  "club": "Real Betis",
+  "league": "LALIGA EA SPORTS",
+  "position": "CAM",
+  "item": 50529429
+ },
+ {
+  "id": "210514",
+  "name": "João Cancelo",
+  "ovr": 83,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "LB",
+  "item": 50542162
+ },
+ {
+  "id": "221697",
+  "name": "Ollie Watkins",
+  "ovr": 83,
+  "club": "Aston Villa",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 100884993
+ },
+ {
+  "id": "224371",
+  "name": "Jarrod Bowen",
+  "ovr": 83,
+  "club": "West Ham",
+  "league": "EFL Championship",
+  "position": "RM",
+  "item": 50556019
+ },
+ {
+  "id": "230899",
+  "name": "Ademola Lookman",
+  "ovr": 83,
+  "club": "Atlético de Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "ST",
+  "item": 50562547
+ },
+ {
+  "id": "231447",
+  "name": "Donyell Malen",
+  "ovr": 83,
+  "club": "AS Roma",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 50563095
+ },
+ {
+  "id": "240225",
+  "name": "Matvey Safonov",
+  "ovr": 83,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "GK",
+  "item": 67349089
+ },
+ {
+  "id": "240717",
+  "name": "Lineth Beerensteyn",
+  "ovr": 83,
+  "club": "Real Madrid",
+  "league": "Liga F Moeve",
+  "position": "ST",
+  "item": 50572365
+ },
+ {
+  "id": "242444",
+  "name": "João Félix",
+  "ovr": 83,
+  "club": "Al Nassr",
+  "league": "ROSHN Saudi League",
+  "position": "CAM",
+  "item": 50574092
+ },
+ {
+  "id": "257279",
+  "name": "Álex Baena",
+  "ovr": 83,
+  "club": "Atlético de Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "LM",
+  "item": 50588927
+ },
+ {
+  "id": "261855",
+  "name": "Kika Nazareth",
+  "ovr": 83,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "CM",
+  "item": 50593503
+ },
+ {
+  "id": "262457",
+  "name": "Olga Carmona",
+  "ovr": 83,
+  "club": "Paris SG",
+  "league": "Arkema PL",
+  "position": "LB",
+  "item": 50594105
+ },
+ {
+  "id": "265035",
+  "name": "Elisa Senß",
+  "ovr": 83,
+  "club": "Real Madrid",
+  "league": "Liga F Moeve",
+  "position": "CM",
+  "item": 50596683
+ },
+ {
+  "id": "266127",
+  "name": "Lewis Hall",
+  "ovr": 83,
+  "club": "Newcastle Utd",
+  "league": "Premier League",
+  "position": "LB",
+  "item": 50597775
+ },
+ {
+  "id": "204970",
+  "name": "Florian Thauvin",
+  "ovr": 82,
+  "club": "RC Lens",
+  "league": "Ligue 1 McDonald's",
+  "position": "RW",
+  "item": 50536618
+ },
+ {
+  "id": "219683",
+  "name": "Corentin Tolisso",
+  "ovr": 82,
+  "club": "OL",
+  "league": "Ligue 1 McDonald's",
+  "position": "CM",
+  "item": 50551331
+ },
+ {
+  "id": "231677",
+  "name": "Marcus Rashford",
+  "ovr": 82,
+  "club": "Man Utd",
+  "league": "Premier League",
+  "position": "LW",
+  "item": 50563325
+ },
+ {
+  "id": "232488",
+  "name": "Cristian Romero",
+  "ovr": 82,
+  "club": "Atlético de Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "CB",
+  "item": 50564136
+ },
+ {
+  "id": "240950",
+  "name": "Pedro Gonçalves",
+  "ovr": 82,
+  "club": "Sporting CP",
+  "league": "Liga Portugal",
+  "position": "LM",
+  "item": 50572598
+ },
+ {
+  "id": "242964",
+  "name": "Anthony Gordon",
+  "ovr": 82,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "LW",
+  "item": 50574612
+ },
+ {
+  "id": "243245",
+  "name": "Orkun Kökçü",
+  "ovr": 82,
+  "club": "Beşiktaş",
+  "league": "Trendyol Süper Lig",
+  "position": "CM",
+  "item": 50574893
+ },
+ {
+  "id": "244067",
+  "name": "Maxence Lacroix",
+  "ovr": 82,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50575715
+ },
+ {
+  "id": "251377",
+  "name": "Rodrigo Zalazar",
+  "ovr": 82,
+  "club": "Sporting CP",
+  "league": "Liga Portugal",
+  "position": "CAM",
+  "item": 50583025
+ },
+ {
+  "id": "251852",
+  "name": "Karim Adeyemi",
+  "ovr": 82,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "RM",
+  "item": 50583500
+ },
+ {
+  "id": "253109",
+  "name": "Joey Veerman",
+  "ovr": 82,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "CM",
+  "item": 50584757
+ },
+ {
+  "id": "256675",
+  "name": "Omar Marmoush",
+  "ovr": 82,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "LW",
+  "item": 100919971
+ },
+ {
+  "id": "256948",
+  "name": "Christos Tzolis",
+  "ovr": 82,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "LW",
+  "item": 50588596
+ },
+ {
+  "id": "264388",
+  "name": "Moleiro",
+  "ovr": 82,
+  "club": "Villarreal CF",
+  "league": "LALIGA EA SPORTS",
+  "position": "LM",
+  "item": 50596036
+ },
+ {
+  "id": "265058",
+  "name": "Erëleta Memeti",
+  "ovr": 82,
+  "club": "Frankfurt",
+  "league": "GPFBL",
+  "position": "RM",
+  "item": 67373922
+ },
+ {
+  "id": "265693",
+  "name": "Jakub Kiwior",
+  "ovr": 82,
+  "club": "FC Porto",
+  "league": "Liga Portugal",
+  "position": "CB",
+  "item": 50597341
+ },
+ {
+  "id": "200104",
+  "name": "Son Heung Min",
+  "ovr": 81,
+  "club": "LAFC",
+  "league": "MLS",
+  "position": "ST",
+  "item": 50531752
+ },
+ {
+  "id": "223710",
+  "name": "Vedat Muriqi",
+  "ovr": 81,
+  "club": "Fenerbahçe",
+  "league": "Trendyol Süper Lig",
+  "position": "ST",
+  "item": 50555358
+ },
+ {
+  "id": "238616",
+  "name": "Pedro Neto",
+  "ovr": 81,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "RM",
+  "item": 50570264
+ },
+ {
+  "id": "260908",
+  "name": "Milos Kerkez",
+  "ovr": 81,
+  "club": "Liverpool",
+  "league": "Premier League",
+  "position": "LB",
+  "item": 50592556
+ },
+ {
+  "id": "261299",
+  "name": "Alex Scott",
+  "ovr": 81,
+  "club": "AFC Bournemouth",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50592947
+ },
+ {
+  "id": "264862",
+  "name": "Maghnes Akliouche",
+  "ovr": 81,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "CAM",
+  "item": 50596510
+ },
+ {
+  "id": "266039",
+  "name": "Pubill",
+  "ovr": 81,
+  "club": "Atlético de Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "CB",
+  "item": 50597687
+ },
+ {
+  "id": "268889",
+  "name": "Álvaro Carreras",
+  "ovr": 81,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "LB",
+  "item": 67377753
+ },
+ {
+  "id": "269136",
+  "name": "Kobbie Mainoo",
+  "ovr": 81,
+  "club": "Man Utd",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50600784
+ },
+ {
+  "id": "269701",
+  "name": "Nathaniel Brown",
+  "ovr": 81,
+  "club": "FC Bayern München",
+  "league": "Bundesliga",
+  "position": "LB",
+  "item": 50601349
+ },
+ {
+  "id": "270531",
+  "name": "Ousmane Diomande",
+  "ovr": 81,
+  "club": "Nott'm Forest",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50602179
+ },
+ {
+  "id": "271918",
+  "name": "Robin Risser",
+  "ovr": 81,
+  "club": "RC Lens",
+  "league": "Ligue 1 McDonald's",
+  "position": "GK",
+  "item": 50603566
+ },
+ {
+  "id": "275192",
+  "name": "Luka Vušković",
+  "ovr": 81,
+  "club": "Brighton",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50606840
+ },
+ {
+  "id": "277869",
+  "name": "Michael Kayode",
+  "ovr": 81,
+  "club": "Brentford",
+  "league": "Premier League",
+  "position": "RB",
+  "item": 50609517
+ },
+ {
+  "id": "279699",
+  "name": "Claire Hutton",
+  "ovr": 81,
+  "club": "Bay FC",
+  "league": "NWSL",
+  "position": "CDM",
+  "item": 50611347
+ },
+ {
+  "id": "77050",
+  "name": "Merveille Kanjinga",
+  "ovr": 80,
+  "club": "Paris SG",
+  "league": "Arkema PL",
+  "position": "ST",
+  "item": 50408698
+ },
+ {
+  "id": "228618",
+  "name": "Ferland Mendy",
+  "ovr": 80,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "LB",
+  "item": 50560266
+ },
+ {
+  "id": "232411",
+  "name": "Christopher Nkunku",
+  "ovr": 80,
+  "club": "RB Leipzig",
+  "league": "Bundesliga",
+  "position": "ST",
+  "item": 100895707
+ },
+ {
+  "id": "238744",
+  "name": "Weston McKennie",
+  "ovr": 80,
+  "club": "Juventus",
+  "league": "Serie A Enilive",
+  "position": "CM",
+  "item": 50570392
+ },
+ {
+  "id": "239807",
+  "name": "Davide Frattesi",
+  "ovr": 80,
+  "club": "SS Lazio",
+  "league": "Serie A Enilive",
+  "position": "CM",
+  "item": 50571455
+ },
+ {
+  "id": "243630",
+  "name": "Jonathan David",
+  "ovr": 80,
+  "club": "Juventus",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 67352494
+ },
+ {
+  "id": "243702",
+  "name": "Djed Spence",
+  "ovr": 80,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "LB",
+  "item": 50575350
+ },
+ {
+  "id": "243780",
+  "name": "Lee Kang In",
+  "ovr": 80,
+  "club": "Atlético de Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "RW",
+  "item": 50575428
+ },
+ {
+  "id": "248165",
+  "name": "Andrei Rațiu",
+  "ovr": 80,
+  "club": "Rayo Vallecano",
+  "league": "LALIGA EA SPORTS",
+  "position": "RB",
+  "item": 50579813
+ },
+ {
+  "id": "251566",
+  "name": "Gabriel Martinelli",
+  "ovr": 80,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "LW",
+  "item": 84137646
+ },
+ {
+  "id": "256903",
+  "name": "Gonçalo Ramos",
+  "ovr": 80,
+  "club": "AC Milan",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 50588551
+ },
+ {
+  "id": "261865",
+  "name": "Miguel Gutiérrez",
+  "ovr": 80,
+  "club": "Leverkusen",
+  "league": "Bundesliga",
+  "position": "LB",
+  "item": 50593513
+ },
+ {
+  "id": "265317",
+  "name": "Laura Blindkilde Brown",
+  "ovr": 80,
+  "club": "Manchester City",
+  "league": "Barclays WSL",
+  "position": "CDM",
+  "item": 50596965
+ },
+ {
+  "id": "269230",
+  "name": "Noah Sadiki",
+  "ovr": 80,
+  "club": "Sunderland",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50600878
+ },
+ {
+  "id": "270409",
+  "name": "Savinho",
+  "ovr": 80,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "RW",
+  "item": 50602057
+ },
+ {
+  "id": "270857",
+  "name": "Mateus Fernandes",
+  "ovr": 80,
+  "club": "Spurs",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50602505
+ },
+ {
+  "id": "271040",
+  "name": "Jaedyn Shaw",
+  "ovr": 80,
+  "club": "Gotham FC",
+  "league": "NWSL",
+  "position": "LM",
+  "item": 67379904
+ },
+ {
+  "id": "275029",
+  "name": "Ibrahim Maza",
+  "ovr": 80,
+  "club": "Leverkusen",
+  "league": "Bundesliga",
+  "position": "CAM",
+  "item": 50606677
+ },
+ {
+  "id": "276694",
+  "name": "Johan Manzambi",
+  "ovr": 80,
+  "club": "Aston Villa",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50608342
+ },
+ {
+  "id": "277951",
+  "name": "Lily Yohannes",
+  "ovr": 80,
+  "club": "OL Lyonnes",
+  "league": "Arkema PL",
+  "position": "CM",
+  "item": 50609599
+ },
+ {
+  "id": "278901",
+  "name": "Ayyoub Bouaddi",
+  "ovr": 80,
+  "club": "LOSC Lille",
+  "league": "Ligue 1 McDonald's",
+  "position": "CDM",
+  "item": 50610549
+ }
+]
