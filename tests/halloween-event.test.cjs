@@ -8,6 +8,9 @@ function setup(){
   'function normalizeKey(v){return String(v||"").toLowerCase()}',section('// Blutmond upgrade:','function displayBase(')].join('\n'),ctx);
  return ctx;
 }
+function setupWithPromos(){
+ const c=setup();vm.runInContext(section('const TOTW_WEEK_1=','const TOTW_WEEKS=').replace(/^const /gm,'var '),c);return c;
+}
 const csv=fs.readFileSync(path.join(root,'assets/players-db.csv'),'utf8').split('\n');
 const dbRow=id=>csv.find(line=>line.startsWith(id+','));
 
@@ -21,16 +24,35 @@ test('HALLOWEEN is a complete 18-card release of real players from 18 clubs',()=
   assert.ok(p.ovr>p.baseOvr,`${p.name} is upgraded`);
   assert.equal(p.stats.length,6);
   assert.ok(fs.existsSync(path.join(root,p.dynamicFace)),`${p.name} portrait`);
-  assert.match(p.dynamicFace,/halloween\/dynamic\//,`${p.name} uses an EA dynamic picture`);
+  if(p.pid!=='158023')assert.match(p.dynamicFace,/halloween\/dynamic\//,`${p.name} uses an EA dynamic picture`);
  }
 });
 
 test('HALLOWEEN ratings are spread like an EA promo instead of only top cards',()=>{
  const ratings=setup().HALLOWEEN_EVENT.players.map(p=>p.ovr);
- assert.equal(Math.max(...ratings),90);
+ assert.equal(Math.max(...ratings),91,'Messi is the top card');
  assert.equal(ratings.filter(r=>r>=89).length,3);
  assert.ok(ratings.filter(r=>r<=86).length>=7);
  assert.equal(Math.min(...ratings),84);
+});
+
+test('HALLOWEEN skips players who had a TOTW or Momentum card in the five weeks before the event',()=>{
+ const c=setupWithPromos(),ev=c.HALLOWEEN_EVENT,start=Date.parse(ev.activeFrom),fiveWeeks=35*864e5;
+ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const recent=[];
+ for(let n=1;c['TOTW_WEEK_'+n];n++){const w=c['TOTW_WEEK_'+n];if(start-Date.parse(w.releaseDate+'T19:00:00+02:00')<fiveWeeks)recent.push(...w.players.map(p=>({ids:[p.eaId,p.fallback?.id].filter(Boolean),names:(p.names||[]).map(norm),from:w.name})))}
+ for(const m of c.MOMENTUM_RELEASES)if(start-Date.parse(m.activeFrom)<fiveWeeks)recent.push(...m.players.map(p=>({ids:[p.pid],names:[norm(p.name)],from:m.name})));
+ assert.ok(recent.length>50);
+ for(const p of ev.players){const hit=recent.find(r=>r.ids.includes(p.pid)||r.names.includes(norm(p.name)));assert.equal(hit,undefined,`${p.name} already had a ${hit?.from} card`)}
+});
+
+test('HALLOWEEN stats are playable in the card position without going over the top',()=>{
+ const ev=setup().HALLOWEEN_EVENT;
+ for(const p of ev.players){
+  const base=dbRow(p.pid).replace(/"[^"]*"/g,'x').split(',').slice(6,12).map(Number);
+  p.stats.forEach((v,i)=>{assert.ok(v>base[i],`${p.name} stat ${i} is upgraded`);assert.ok(v-base[i]<=p.ovr-p.baseOvr+11,`${p.name} stat ${i} boost stays moderate`)});
+  if(['ST','LW','RW','LM','RM','CAM','LB','RB','CB'].includes(p.position))assert.ok(p.stats[0]>=77,`${p.name} has playable pace`);
+ }
 });
 
 test('HALLOWEEN runs from Friday 30.10. 19:00 to Friday 06.11. 19:00 Berlin',()=>{

@@ -12,10 +12,10 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50524728.133b10a66694542b6c179e5609a6d3f18d35e2df2df98b78a632689b2a068170.webp"
   },
   {
-    "name": "Marquinhos",
-    "id": "207865",
-    "item": 50539513,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50539513.166ecdd0ace0bd9604a23741dcb9035bfca5fcd4f476c9665933fd72eca0805c.webp"
+    "name": "Dayot Upamecano",
+    "id": "229558",
+    "item": 50561206,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50561206.681df308dfc88de943d3a49d430170202c1c4787950ff78b0d6f26c204699a38.webp"
   },
   {
     "name": "Cristian Romero",
@@ -30,10 +30,16 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50570879.034dc9f31c82d05bf9bf36754e9a276fbd60302f37da79bfa1a90907bc7d6fe6.webp"
   },
   {
-    "name": "Michael Kayode",
-    "id": "277869",
-    "item": 50609517,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50609517.8076472d4b10f958c4393f91812f3689fd3ebf11d96d89ab36b3a164e8778af5.webp"
+    "name": "Lewis Hall",
+    "id": "266127",
+    "item": 50597775,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50597775.a95e3b5d4092e3d2fa717be9f0e600fc83d4258b2a11597ce9090fb5085ac359.webp"
+  },
+  {
+    "name": "Jakub Kiwior",
+    "id": "265693",
+    "item": 50597341,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50597341.b9d557c24c2fceccc301ecd17581c5a8ad8791870d51bba80206e18716238c11.webp"
   },
   {
     "name": "Elliot Anderson",
@@ -54,34 +60,28 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-67355727.27452636ceaa16ce544c0deb3be7f813ce3e55dc14f592e52a23236b5254fc6c.webp"
   },
   {
-    "name": "Kevin De Bruyne",
-    "id": "192985",
-    "item": 50524633,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50524633.bf58fd8dfa6195aede268f4e067f3c8bb9a7962452cbd575a2b06210592ee544.webp"
+    "name": "Morgan Rogers",
+    "id": "260247",
+    "item": 50591895,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50591895.398cf1cb17dda90826629f9ad7b1a68017542a07c092f8c73fcad79d945a6dd7.webp"
   },
   {
-    "name": "Isco",
-    "id": "197781",
-    "item": 50529429,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50529429.bd549e8dcd794a3b5a4b5ef8e651f4307aec63554c45d94996909f6d19e19002.webp"
-  },
-  {
-    "name": "Raphinha",
-    "id": "233419",
-    "item": 50565067,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50565067.1d587013efc8eb5b5db530d584270db4e3ae3ddb4eca2938cd7d7bec56f607ff.webp"
-  },
-  {
-    "name": "Luis Díaz",
-    "id": "241084",
-    "item": 67349948,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-67349948.b7bc43868bc39299d0a258716e9b9d09fe969875fb9f1376eb73c0fe55ffa233.webp"
+    "name": "Orkun Kökçü",
+    "id": "243245",
+    "item": 50574893,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50574893.adcc71f3ff0a5f39d7562f026925b5d852edd6382c7f8db4dac80eeed6540fc4.webp"
   },
   {
     "name": "Mohamed Salah",
     "id": "209331",
     "item": 50540979,
     "source": "https://game-assets.fut.gg/2027/player-item/27-50540979.6e9fff305fa78846fbf3c414bf6d7e5487fe98c072a6facf8398cb008c1f5485.webp"
+  },
+  {
+    "name": "Bradley Barcola",
+    "id": "264652",
+    "item": 67373516,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-67373516.e068c33732ef6fa29312bd441ee874f5ced9ec704f84ebee8811ce9cb1ff246f.webp"
   },
   {
     "name": "Marcus Thuram",
@@ -96,15 +96,9 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50575824.2a00d1edc354137c4ccdaf2abdecdffa6b239a334e2351b5aa75f784b458ad77.webp"
   },
   {
-    "name": "Robert Lewandowski",
-    "id": "188545",
-    "item": 50520193,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50520193.9cd9f08009f1a1b33b7291c30ff1bb5fcff7e50901bfbcb1dca72548092c7774.webp"
-  },
-  {
-    "name": "Lewis Hall",
-    "id": "266127",
-    "item": 50597775,
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50597775.a95e3b5d4092e3d2fa717be9f0e600fc83d4258b2a11597ce9090fb5085ac359.webp"
+    "name": "Antoine Griezmann",
+    "id": "194765",
+    "item": 50526413,
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50526413.1ee3a9d6b0cd1ecc551d06d04495de84305d1ee175ab8f24f01d654256aa2a3d.webp"
   }
 ]
