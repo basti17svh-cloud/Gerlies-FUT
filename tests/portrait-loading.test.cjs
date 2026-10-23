@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const html=require('./helpers/app-html.cjs')();
 const section=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b));
+const OWN='https://idxydyrihtyecvfjvtuk.supabase.co/storage/v1/object/public/player-faces/';
 function setup(saved={}){
  let now=Date.parse('2026-10-02T17:00:00Z'),sequence=0;const timers=new Map(),stored={...saved},contexts=[];
  const ctx={Date:class extends Date{static now(){return now}},localStorage:{getItem:k=>stored[k]||null,setItem:(k,v)=>{stored[k]=v}},
@@ -24,7 +25,7 @@ function image(candidates){
 
 test('a CSV portrait reaches the working FC27 CDN before blocked legacy hosts',()=>{
  const{ctx}=setup(),p={id:'237383',name:'Bastoni',face:'https://cdn.sofifa.net/players/237/383/27_120.png'};
- const arr=Array.from(ctx.portraitCandidates(p));assert.equal(arr[0],'https://cdn.futwiz.com/assets/img/fc27/faces/237383.png');
+ const arr=Array.from(ctx.portraitCandidates(p));assert.equal(arr[0],OWN+'faces/237383.webp');assert.equal(arr[1],'https://cdn.futwiz.com/assets/img/fc27/faces/237383.png');
  assert.ok(arr.indexOf(p.face)>arr.indexOf('https://cdn.futwiz.com/assets/img/fc25/faces/237383.png'));
  assert.ok(arr.every(u=>!u.includes('components/items')));
 });
@@ -32,7 +33,7 @@ test('a CSV portrait reaches the working FC27 CDN before blocked legacy hosts',(
 test('correct custom/local images and verified Icon identities retain priority',()=>{
  const{ctx}=setup();assert.equal(ctx.portraitCandidates({id:'7',face:'./assets/portraits/seven.webp'})[0],'./assets/portraits/seven.webp');
  const icon={id:'midicon-oliver-kahn',name:'Oliver Kahn',isIcon:true,face:'https://game-assets.fut.gg/27-488.hash.webp',futwizId:'488'};
- const arr=Array.from(ctx.portraitCandidates(icon));assert.equal(arr[0],icon.face);
+ const arr=Array.from(ctx.portraitCandidates(icon));assert.equal(arr[0],OWN+'icons/488.webp');assert.equal(arr[1],icon.face);
  assert.ok(arr.includes('https://cdn.futwiz.com/assets/img/fc27/faces/488.png'));assert.ok(!arr.some(u=>u.includes('midicon')||u.includes('/27/.png')));
 });
 
@@ -110,4 +111,21 @@ test('event action shots keep priority and failed shots fall back to the correct
  const markup=ctx.portraitHTML(p,false,item);assert.match(markup,/src="\.\/action.webp"/);
  const{el}=image(['./action.webp','normal']);el.closest=undefined;ctx.advanceImg(el);assert.equal(el.src,'normal');
  assert.match(ctx.portraitHTML(p,false,{variant:'special',eventName:'Team of the Week 3',dynamicFace:'./action.webp'}),/src="normal"/);
+});
+
+test('portraits load from Footera\'s own storage first, with the old sources as fallback',()=>{
+ const{ctx,read}=setup(),p={id:'231747',name:'Mbappé',face:'https://ratings-images-prod.pulse.ea.com/FC25/full/player-portraits/p231747.png?padding=0.7'};
+ const arr=Array.from(ctx.portraitCandidates(p));
+ assert.equal(arr[0],OWN+'faces/231747.webp');
+ assert.ok(arr.includes('https://cdn.futwiz.com/assets/img/fc27/faces/231747.png')&&arr.includes(p.face),'external sources stay as fallback');
+ assert.equal(ctx.portraitCandidates({id:'231747',face:'./assets/footera/founder-max-portrait.webp'})[0],'./assets/footera/founder-max-portrait.webp','game-made art wins');
+ assert.deepEqual(Array.from(ctx.portraitCandidates({id:'founder-max'})),[],'no copied photo for players without an EA id');
+ // A portrait remembered from the old host must not jump ahead of the own copy.
+ read(`IMAGE_SOURCE_CACHE.set('portrait:231747','https://cdn.futwiz.com/assets/img/fc27/faces/231747.png')`);
+ const ordered=Array.from(ctx.prioritizeCached(arr,'portrait:231747'));
+ assert.equal(ordered[0],OWN+'faces/231747.webp');assert.equal(ordered[1],'https://cdn.futwiz.com/assets/img/fc27/faces/231747.png');
+ assert.equal(new Set(ordered).size,ordered.length);
+ // When the own copy is missing, its failure lets the old source lead again.
+ read(`IMAGE_FAILURE_CACHE.set('${OWN}faces/231747.webp',Date.now())`);
+ assert.equal(ctx.prioritizeCached(arr,'portrait:231747')[0],'https://cdn.futwiz.com/assets/img/fc27/faces/231747.png');
 });

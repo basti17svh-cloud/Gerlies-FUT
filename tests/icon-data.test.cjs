@@ -40,7 +40,8 @@ test('FC 27 Icons have distinct real face stats and usable portrait candidates',
  for(const p of rows){
   assert.ok(stats(p).every(v=>Number.isInteger(v)&&v>=0&&v<=99),p.name);
   assert.match(p.face,new RegExp(`/27-${p.futwizId}\\.`),p.name);
-  assert.equal(api.portraitCandidates(p)[0],p.face,p.name);
+  assert.equal(api.portraitCandidates(p)[0],`https://idxydyrihtyecvfjvtuk.supabase.co/storage/v1/object/public/player-faces/icons/${p.futwizId}.webp`,p.name);
+  assert.equal(api.portraitCandidates(p)[1],p.face,p.name);
   assert.ok(api.portraitCandidates(p).length>=2,p.name);
  }
 });

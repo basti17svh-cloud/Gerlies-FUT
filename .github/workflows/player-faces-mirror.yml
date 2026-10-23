@@ -1,0 +1,49 @@
+name: Footera player portraits into own storage
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - '.github/workflows/player-faces-mirror.yml'
+      - 'scripts/mirror-player-faces.cjs'
+  workflow_run:
+    workflows: ['Footera player database from EA']
+    types: [completed]
+  schedule:
+    # Thursdays 08:00 UTC, after the weekly player database refresh.
+    - cron: '0 8 * * 4'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max portraits to upload in this run'
+        default: '25000'
+      force:
+        description: 'Re-upload every portrait (1 = yes)'
+        default: '0'
+permissions:
+  contents: read
+  # The upload function only accepts this repository's Actions identity token.
+  id-token: write
+concurrency:
+  group: player-faces-mirror
+  cancel-in-progress: false
+jobs:
+  mirror:
+    # A database check on a pull request also completes that workflow; only real refreshes need a mirror run.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.event != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SUPABASE_PROJECT_REF: idxydyrihtyecvfjvtuk
+      MIRROR_LIMIT: ${{ github.event.inputs.limit || '25000' }}
+      MIRROR_FORCE: ${{ github.event.inputs.force || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the image converter
+        run: npm install --no-save --no-package-lock sharp@0.33.5
+      - name: Copy missing portraits into Supabase storage
+        run: node scripts/mirror-player-faces.cjs
