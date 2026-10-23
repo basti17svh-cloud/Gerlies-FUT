@@ -3,8 +3,8 @@ const root=path.join(__dirname,'..');
 const importPlaybook=()=>import('../3d-playbook.mjs');
 test('V21.86: thirty distinct authored attacking sequences, not just different labels',async()=>{
  const {PLAYBOOK,getPlay,PLAYBOOK_IDS,playTouches}=await importPlaybook();
- assert.equal(PLAYBOOK.length,102);
- assert.equal(new Set(PLAYBOOK_IDS).size,102);
+ assert.equal(PLAYBOOK.length,117);
+ assert.equal(new Set(PLAYBOOK_IDS).size,117);
  assert.ok(PLAYBOOK.every(p=>p.order.length>=2&&p.order.at(-1)===0&&p.seconds>=9&&p.seconds<=20));
  assert.ok(new Set(PLAYBOOK.map(p=>p.order.join(','))).size>=18);
  assert.ok(PLAYBOOK.every(p=>playTouches(p).length===p.order.length-1));
