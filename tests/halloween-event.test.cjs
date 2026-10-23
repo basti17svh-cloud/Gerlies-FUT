@@ -24,6 +24,14 @@ test('HALLOWEEN is a complete 18-card release of real players from 18 clubs',()=
  }
 });
 
+test('HALLOWEEN ratings are spread like an EA promo instead of only top cards',()=>{
+ const ratings=setup().HALLOWEEN_EVENT.players.map(p=>p.ovr);
+ assert.equal(Math.max(...ratings),90);
+ assert.equal(ratings.filter(r=>r>=89).length,3);
+ assert.ok(ratings.filter(r=>r<=86).length>=7);
+ assert.equal(Math.min(...ratings),84);
+});
+
 test('HALLOWEEN runs from Friday 30.10. 19:00 to Friday 06.11. 19:00 Berlin',()=>{
  const c=setup(),ev=c.HALLOWEEN_EVENT;
  assert.equal(c.eventPackIsActive(ev,Date.parse('2026-10-30T18:59:59+01:00')),false);
