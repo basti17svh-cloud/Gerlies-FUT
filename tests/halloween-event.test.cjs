@@ -112,8 +112,8 @@ test('the event poster always lists cards from the highest to the lowest rating'
  for(const kind of ['totwEventEntries(team)','totwReviewEntries(preview)','promoEventEntries(event)'])assert.ok(html.includes(`entries:()=>byEventRating(${kind})`),kind);
 });
 
-test('the Halloween announcement keeps the SBC player secret until the Halloween night',()=>{
+test('the Halloween announcement keeps the SBC and objective players secret',()=>{
  const teaser=section('function openHalloweenPreview(','\n}\n')+section('function halloweenHeroSlide(','function homeHeroSlides(');
- assert.ok(!/Müller|Muller|Raumdeuter/.test(teaser),'no SBC spoiler in the hero teaser or the preview timeline');
+ assert.ok(!/Müller|Muller|Raumdeuter|Leão|Leao/.test(teaser),'no SBC or objective spoiler in the hero teaser or the preview timeline');
  assert.match(teaser,/geheime Spieler-SBC/);
 });
