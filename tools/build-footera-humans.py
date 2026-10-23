@@ -7,7 +7,8 @@ three.js JSON). Download and unpack it, then run:
 
   python3 tools/build-footera-humans.py <makehuman-data/package> [out.glb]
 
-The GLB holds one athletic male body with a 20-bone Unreal-style rig (bone
+The GLB holds one athletic male body (plus a female morph and haircuts for
+women's players, V21.258) with a 20-bone Unreal-style rig (bone
 names match Footera's Quaternius players, so the existing retarget and foot
 IK drive it unchanged), several CC0 haircuts, beards, eyebrows and eyes. Face
 and ethnicity variety are glTF morph targets shared by the body and every
@@ -44,20 +45,20 @@ def levels(x):
     return {'min': lo, 'average': 1 - lo - hi, 'max': hi}
 
 
-def macro(race=(1 / 3, 1 / 3, 1 / 3), muscle=.5, weight=.5, height=.5, proportions=.5):
+def macro(race=(1 / 3, 1 / 3, 1 / 3), muscle=.5, weight=.5, height=.5, proportions=.5, sex='male'):
     d = np.zeros_like(V0)
     for r, w in zip(RACES, race):
-        d += w * T.delta(f'macrodetails/{r}-male-young')
+        d += w * T.delta(f'macrodetails/{r}-{sex}-young')
     h = {'min': max(0., 1 - 2 * height), 'max': max(0., 2 * height - 1)}
     for mk, mv in levels(muscle).items():
         for wk, wv in levels(weight).items():
             if mv * wv == 0:
                 continue
-            d += mv * wv * T.delta(f'macrodetails/universal-male-young-{mk}muscle-{wk}weight')
+            d += mv * wv * T.delta(f'macrodetails/universal-{sex}-young-{mk}muscle-{wk}weight')
             for hk, hv in h.items():
                 if hv:
-                    d += mv * wv * hv * T.delta(f'macrodetails/height/male-young-{mk}muscle-{wk}weight-{hk}height')
-            name = f'macrodetails/proportions/male-young-{mk}muscle-{wk}weight-idealproportions'
+                    d += mv * wv * hv * T.delta(f'macrodetails/height/{sex}-young-{mk}muscle-{wk}weight-{hk}height')
+            name = f'macrodetails/proportions/{sex}-young-{mk}muscle-{wk}weight-idealproportions'
             if name in T.index:
                 d += mv * wv * proportions * T.delta(name)
     return d
@@ -65,6 +66,9 @@ def macro(race=(1 / 3, 1 / 3, 1 / 3), muscle=.5, weight=.5, height=.5, proportio
 
 # A lean, athletic young footballer; ethnicity is a morph on top of the mix.
 V = V0 + macro(muscle=.86, weight=.45, height=.55, proportions=.9)
+# The same footballer as an athletic young woman (V21.258): face, chest, waist
+# and hips. Stored as one 'female' morph on this skeleton, see below.
+VF = V0 + macro(muscle=.75, weight=.42, height=.6, proportions=.9, sex='female')
 
 
 def pair(more, less):
@@ -98,9 +102,9 @@ MORPHS += [
 mat_index = {n: i for i, n in enumerate(MATS)}
 
 
-def joint(name):
+def joint(name, verts=None):
     tri = TRIS[TMAT == mat_index['joint-' + name]]
-    return V[np.unique(tri)].mean(0)
+    return (V if verts is None else verts)[np.unique(tri)].mean(0)
 
 
 FINGERS = ('thumb', 'index', 'middle', 'ring', 'pinky')  # MakeHuman finger1..5
@@ -224,6 +228,12 @@ W /= np.maximum(W.sum(1, keepdims=True), 1e-8)
 # proxy) keeps one shape, so shirts fit every player.
 HEAD_MASK = np.clip(W[:, BONE_INDEX['Head']] + .5 * W[:, BONE_INDEX['neck_01']], 0, 1)[:, None]
 MORPHS = [(n, d * HEAD_MASK if n.startswith('race_') else d) for n, d in MORPHS]
+# Women share the men's skeleton, so the female shape is taken relative to
+# her own joints: every vertex keeps its offset from the bones it follows.
+# Mocap, retarget and foot IK stay exact; the runtime scales her a little
+# smaller as a whole.
+JOINTS_F = np.array([joint(b[2], VF) for b in BONES], np.float32)
+MORPHS.append(('female', (VF - V) - W @ (JOINTS_F - JOINTS)))
 
 
 def top4(w):
@@ -473,7 +483,9 @@ def add(name, m, material, morph=True):
 
 skins, skin_mean = {}, {}
 for tone, rel in (('light', 'skins/young_caucasian_male/textures/young_lightskinned_male_diffuse.png'),
-                  ('dark', 'skins/young_african_male/textures/young_darkskinned_male_diffuse.png')):
+                  ('dark', 'skins/young_african_male/textures/young_darkskinned_male_diffuse.png'),
+                  ('lightFemale', 'skins/young_caucasian_female/textures/young_lightskinned_female_diffuse.png'),
+                  ('darkFemale', 'skins/young_african_female/textures/young_darkskinned_female_diffuse.png')):
     path = os.path.join(DATA, rel)
     if not os.path.exists(path):
         path = next(os.path.join(os.path.dirname(path), f) for f in os.listdir(os.path.dirname(path)))
@@ -499,17 +511,19 @@ shoe_mat = g.material(name='FooteraBoots', pbrMetallicRoughness={
 add('FooteraBoots', shoe_mesh, shoe_mat, morph=False)
 
 HAIR = ['short02', 'short04', 'short01', 'afro01']  # short03 (side fringe), ponytail and the long styles read wrong on footballers
+HAIR_FEMALE = ['ponytail01', 'Braid01', 'bob02']  # tied back or short, as women play; buns and long styles cost too much download
 FACIAL = ['Full_beard', 'Moustache']
 BROWS = ['eyebrow001', 'eyebrow002', 'eyebrow004']
-parts = {'hair': [], 'facial': [], 'brows': []}
-for kind, names, folder in (('hair', HAIR, 'hair'), ('facial', FACIAL, 'hair'), ('brows', BROWS, 'eyebrows')):
+parts = {'hair': [], 'hairFemale': [], 'facial': [], 'brows': []}
+for kind, names, folder in (('hair', HAIR, 'hair'), ('hairFemale', HAIR_FEMALE, 'hair'), ('facial', FACIAL, 'hair'), ('brows', BROWS, 'eyebrows')):
     for n in names:
         m = proxy(os.path.join(DATA, 'proxies', folder, n, n + '.json'), lift=.012 if kind == 'brows' else 0)
         tex = os.path.join(m['dir'], m['material']['mapDiffuse'])
+        hair = kind.startswith('hair')
         mat = g.material(name='Footera-' + n, alphaMode='MASK', alphaCutoff=.18 if kind == 'brows' else .35, doubleSided=True,
-                         pbrMetallicRoughness={'baseColorTexture': {'index': g.image(*png(tex, 512 if kind == 'hair' else 256, mode='tint'))},
+                         pbrMetallicRoughness={'baseColorTexture': {'index': g.image(*png(tex, 512 if hair else 256, mode='tint'))},
                                                'metallicFactor': 0, 'roughnessFactor': .78})
-        add(f'Footera{kind.capitalize()}-{n}', m, mat)
+        add(f'Footera{"Hair" if hair else kind.capitalize()}-{n}', m, mat)
         parts[kind].append(n)
 eyes = proxy(os.path.join(DATA, 'proxies/eyes/Low-Poly/Low-Poly.json'))
 eye_tex = next(f for f in os.listdir(os.path.join(eyes['dir'], 'textures')) if 'brown' in f.lower()) \
@@ -521,7 +535,7 @@ add('FooteraEyes', eyes, eye_mat)
 
 size = g.save(OUT, extras={'footera': {
     'source': 'MakeHuman 1.x system assets, CC0 1.0 (npm makehuman-data 0.0.2)',
-    'morphs': morph_names, 'hair': parts['hair'], 'facial': parts['facial'], 'brows': parts['brows'],
+    'morphs': morph_names, 'hair': parts['hair'], 'hairFemale': parts['hairFemale'], 'facial': parts['facial'], 'brows': parts['brows'],
     'skins': {k: v for k, v in skins.items()}, 'skinMean': skin_mean, 'bones': [b[0] for b in BONES],
     'kitBands': {'shirt': SHIRT_V, 'shorts': SHORTS_V, 'socks': SOCKS_V},
     # Metres covered by each band: half-width across, then top and bottom height.

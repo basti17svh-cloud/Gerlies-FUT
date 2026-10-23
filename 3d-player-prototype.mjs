@@ -10,7 +10,7 @@ import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21215';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21258';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -218,7 +218,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone,undefined,look.custom),kit||{},
+ const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom):null;
+ if(human)dressed=dressFooteraHuman(THREE,model,humanLook,kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
@@ -238,7 +239,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const size=new THREE.Vector3();bounds.getSize(size);
  if(size.y<.05||size.y>100)return null;
  const center=bounds.getCenter(new THREE.Vector3());
- const scale=1.83/size.y,normalized=new THREE.Group();
+ // Women's players stand a little smaller (V21.258), on the same skeleton.
+ const scale=(humanLook?.female?1.72:1.83)/size.y,normalized=new THREE.Group();
  normalized.name='FooteraPlayerPrototypeMount';
  // Authored model faces +Z; Footera's boots, ball contact and routes face -Z.
  normalized.rotation.y=Math.PI;
@@ -647,6 +649,6 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
   boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,kitCanvas:dressed?.canvas||null,
   surfaceDetail:!!surfaceMaps,
-  dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry.dispose();material.dispose();texture?.dispose()}surfaceMaps?.dispose()}
+  dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry?.dispose();material?.dispose();texture?.dispose()}surfaceMaps?.dispose()}
  };
 }

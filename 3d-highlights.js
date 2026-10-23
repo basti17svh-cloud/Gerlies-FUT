@@ -51,7 +51,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21252').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21258').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -232,13 +232,14 @@
 
  const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
  // V21.215 Aussehen-Editor: only known haircut/beard ids and plain hex colours reach the scene.
- const LOOK_HAIR=/^(bald|short0[1-4]|afro01)$/,LOOK_BEARD=/^(none|Full_beard|Moustache)$/,LOOK_HEX=/^#[0-9a-f]{6}$/i;
+ const LOOK_HAIR=/^(bald|short0[1-4]|afro01|ponytail01|Braid01|bob02)$/,LOOK_BEARD=/^(none|Full_beard|Moustache)$/,LOOK_HEX=/^#[0-9a-f]{6}$/i;
  function cleanLook(v){
   if(!v||typeof v!=='object')return null;
   const out={};
   if(LOOK_HAIR.test(String(v.hair||'')))out.hair=String(v.hair);
   if(LOOK_BEARD.test(String(v.beard||'')))out.beard=String(v.beard);
   if(LOOK_HEX.test(String(v.hairColor||'')))out.hairColor=String(v.hairColor).toLowerCase();
+  if(v.female===true)out.female=true;
   return Object.keys(out).length?Object.freeze(out):null;
  }
  const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick']);
