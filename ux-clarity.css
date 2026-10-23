@@ -1,4 +1,4 @@
-/* V21.201–202 Übersicht: Mannschaft mit Spielfeld zuerst, Zentrale mit Belohnungen und Packs oben,
+/* V21.201–204 Übersicht: Mannschaft mit Spielfeld zuerst, Zentrale mit Belohnungen und Packs oben,
    Store mit unterscheidbaren Packs und "Meine Packs" oben. Loaded last, so it only
    overrides layout; card designs and pack art stay untouched. */
 
@@ -108,3 +108,19 @@
 /* A touch taller pitch and slightly smaller cards, so every formation fits without cards covering each other (spots: squadPitchSpots in footera-app.js). */
 #pitch{aspect-ratio:.68}
 #pitch .slot{width:18%}
+
+/* ---------- Karten: Rating-Spalte passt in die Leiste des Kartendesigns ---------- */
+/* The rating used to be wider than the dark rail of the card art and touched its edges.
+   A slightly smaller number and position keep it inside the rail on every design. */
+html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .ovr{font-size:15.5cqw!important;letter-spacing:-.03em!important}
+html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .pos{font-size:6.6cqw!important;margin-top:1.6cqw!important}
+html body :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .card-top{top:19%!important}
+
+/* Founder cards: same idea, tuned per artwork rail. */
+html body .bastian-static-founder-shell .founder-card-art:after{font-size:15.5cqw;letter-spacing:-.03em}
+html body .bastian-static-founder-shell .founder-card-art{--founder-position-left:17.6%}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .ovr{font-size:12.5cqw!important;letter-spacing:-.03em!important}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.rangers-founder .pos{font-size:5.6cqw!important}
+html body .card-shell .custom-card.founder.worms-founder{--card-info-left:15%;--card-info-width:17.5%}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .ovr{font-size:11cqw!important;letter-spacing:-.03em!important}
+html body :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .pos{font-size:5.2cqw!important}

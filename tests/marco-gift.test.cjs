@@ -21,6 +21,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
   return elements.get(id)
  };
  const players=Array.from({length:48},(_,i)=>({id:String(100000+i),name:`Spieler ${i}`,ovr:75+i%13,position:'ST',alt:'',nation:'Germany',team:'FC Test',league:'Bundesliga',pac:70,sho:70,pas:70,dri:70,def:70,phy:70}));
+ players.push({id:'231747',name:'Kylian Mbappé',ovr:91,position:'ST',alt:'LW,LM',nation:'France',team:'Real Madrid',league:'LALIGA EA SPORTS',pac:97,sho:90,pas:81,dri:92,def:37,phy:76});
  players.push({id:'247827',name:'M. Olise',ovr:90,position:'RM',alt:'RW,CAM',nation:'France',team:'Bayern München',league:'Bundesliga',pac:83,sho:82,pas:89,dri:91,def:47,phy:69});
  const state=saved?JSON.parse(saved):{profile:{saveId:owner},packs:{goldplayers:2},directClaims:{basti_86plus_20260925:{claimedAt:1}},club:[],rewardPackQueue:[],pendingPack:[],pendingResolved:[],stats:{packs:0},coins:500000,points:500};
  const ctx={Date:Clock,Math:randomMath,Map,Set,state,pendingPack:state.pendingPack,PLAYERS:players,P_BY_ID:new Map(players.map(p=>[p.id,p])),
@@ -134,4 +135,36 @@ test('the gift uses the existing double-walkout and ordinary distribution flow',
  const plan=a.run('packRevealPlan()');assert.equal(plan.mode,'double');
  assert.deepEqual(Array.from(plan.cards,item=>a.ctx.P_BY_ID.get(item.pid).name),['Thierry Henry','Lothar Matthäus']);
  assert.equal(a.get('bigPackName').textContent,'Premium Goldspieler-Pack');assert.equal(a.ctx.state.pendingPack.length,12)
+});
+
+const GIFT='jumbo-rare-20261020',GIFT_CLAIM='jumbo_rare_gift_20261020';
+const NIKLAS_USER='4af57ea2-9b89-44f7-b7ca-ffdbb7400317';
+function niklasApp(opts={}){const a=app({owner:'GF-NIKLAS',...opts});a.ctx.state.profile.founderOnlineUserId=NIKLAS_USER;return a}
+test('only the tester clubs Rangers and Worms get one Jumbo pack in the gift window, and only once',()=>{
+ for(const a of [app({at:'2026-10-21T10:00:00Z'}),niklasApp({at:'2026-10-21T10:00:00Z'})]){
+  assert.ok(a.run(`grantDirectRewards().some(reward=>reward.id==='${GIFT_CLAIM}')`));assert.equal(a.ctx.state.packs[GIFT],1);
+  assert.equal(a.run(`grantDirectRewards().filter(reward=>reward.id==='${GIFT_CLAIM}').length`),0);assert.equal(a.ctx.state.packs[GIFT],1)
+ }
+ for(const owner of ['GF-OTHER','GF-9AE6CDDEFE8A458D']){
+  const a=app({owner,at:'2026-10-21T10:00:00Z'});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[GIFT],undefined);
+  a.ctx.state.packs[GIFT]=1;assert.equal(a.run(`generatePack('${GIFT}').length`),0)
+ }
+ for(const at of ['2026-10-19T12:00:00Z','2026-11-04T12:00:00Z']){
+  const a=niklasApp({at});a.run('grantDirectRewards()');assert.equal(a.ctx.state.packs[GIFT],undefined)
+ }
+});
+
+test('the tester pack looks like the normal Jumbo pack and always holds Gullit and Mbappé, all tradeable',()=>{
+ const draws=new Set();
+ for(let seed=1;seed<=15;seed++){
+  const a=niklasApp({seed,at:'2026-10-21T10:00:00Z'});a.run('grantDirectRewards();renderStore()');
+  const owned=a.get('ownedPacks').innerHTML;assert.match(owned,/Jumbo-Seltene-Spieler-Pack/);assert.doesNotMatch(owned,/Gullit|Mbapp|Dankesch|Tester/i);
+  assert.equal(a.run(`packArtSrc('${GIFT}')`),a.run('packArtSrc("jumbo-rare")'));
+  const items=a.run(`generatePack('${GIFT}')`);assert.equal(items.length,24);assert.ok(items.every(item=>item.tradeable===true));
+  assert.equal(new Set(items.map(item=>item.pid)).size,24);
+  const names=Array.from(items,item=>a.ctx.P_BY_ID.get(item.pid)?.name);
+  assert.ok(names.includes('Ruud Gullit'));assert.ok(names.includes('Kylian Mbappé'));
+  draws.add(items.map(item=>item.pid).join(','))
+ }
+ assert.ok(draws.size>10,'the other cards must vary between draws')
 });
