@@ -94,7 +94,7 @@ test('Haraldsson remains outside every regular event team/pack/market catalogue 
 
 test('an owned historical objective card restores its correct base when the database is temporarily unavailable',()=>{
  const a=app(),item=a.c.makeEventObjectiveItem(a.definition);a.c.P_BY_ID.delete('262088');a.setTime('2026-10-09T19:00:00+02:00');
- Object.assign(a.c,{MID_ICON_BASES:[],ICON_LEGACY_ALIASES:{},RETIRED_ICON_BASE:{id:'retired'},FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',NIKLAS_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map()});
+ Object.assign(a.c,{MID_ICON_BASES:[],ICON_LEGACY_ALIASES:{},RETIRED_ICON_BASE:{id:'retired'},FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',MAX_FOUNDER_PLAYER_ID:'founder-d',MAX_FOUNDER_BASE:{},NIKLAS_FOUNDER_BASE:{},LIVE_TOTW_BASE_CACHE:new Map()});
  vm.runInContext(section(html,'function restoreSyntheticPlayerIds()','function bestEaTotwAsset('),a.c);a.c.restoreSyntheticPlayerIds();
  const base=a.c.P_BY_ID.get('262088'),shown=a.c.displayBase(item);
  assert.equal(base.ovr,78);assert.deepEqual(['pac','sho','pas','dri','def','phy'].map(k=>base[k]),[77,67,75,81,57,70]);

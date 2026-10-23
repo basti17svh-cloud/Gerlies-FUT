@@ -197,3 +197,16 @@ test('Niklas opens his pack through the real Store button without paying and can
  click();assert.equal(ctx.state.packs[NIKLAS_PACK],0);assert.equal(ctx.state.pendingPack.length,1);assert.equal(ctx.state.pendingPack[0].pid,NIKLAS_PID);assert.equal(ctx.state.coins,3572);assert.equal(ctx.state.stats.packs,13);
  click();assert.equal(ctx.state.stats.packs,13);assert.equal(ctx.state.pendingPack.length,1);
 });
+
+test('Max Wittenberg has the agreed ST/ZOM founder profile, FSV Hohenroth crest and stays closed until his account is linked',()=>{
+ const ctx=setup(),b=call(ctx,'MAX_FOUNDER_BASE'),item=call(ctx,'maxFounderItem')();
+ assert.deepEqual([b.name,b.fullName,b.ovr,b.position,b.alt,b.height,b.preferredFoot,b.team,b.league],['M. Wittenberg','Max Wittenberg',88,'ST','CAM',175,'Right','FSV Hohenroth','Footera']);
+ assert.deepEqual([b.pac,b.sho,b.pas,b.dri,b.def,b.phy],[91,89,82,88,45,84]);
+ for(const f of [b.face,b.clubLogo,b.leagueLogo])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);
+ assert.equal(item.tradeable,false);assert.equal(call(ctx,'isFounderItem')(item),true);assert.equal(call(ctx,'isExclusiveFounderBase')(b),true);
+ const linked=call(ctx,'MAX_FOUNDER_USER_ID');
+ for(const s of [saveState(),saveState('GF-OTHER'),{...saveState(),profile:{founderOnlineUserId:''}}]){
+  ctx.state=call(ctx,'reconcileFounderState')(s);assert.equal(ctx.state.packs['founder-max'],undefined);
+ }
+ if(linked){const s=saveState('GF-HOHENROTH');s.profile.founderOnlineUserId=linked;ctx.state=call(ctx,'reconcileFounderState')(s);assert.equal(ctx.state.packs['founder-max'],1)}
+});
