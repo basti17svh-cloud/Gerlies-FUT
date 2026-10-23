@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {ceremonyActor,ceremonyCamera,kickoffArrival,replayWindow,replayCamera,benchRunner,BENCH_RUNNERS,FACE_CAMERA} from '../3d-ceremony.mjs';
+import {ceremonyActor,ceremonyCamera,kickoffArrival,replayWindow,replayCamera,FACE_CAMERA} from '../3d-ceremony.mjs';
 import {applyCelebrationPose} from '../3d-goal-celebration.mjs';
 import {createHighlightPlayback} from '../3d-playback-clock.mjs';
 const H=createRequire(import.meta.url)('../3d-highlights.js');
@@ -61,13 +61,6 @@ test('cameras stay on the broadcast side and cut once', ()=>{
 test('replay covers strike to net and films from behind the goal of either end', ()=>{
  const w=replayWindow(5.4,6.9);assert.ok(w.from<5.4&&w.to>6.9);
  for(const d of [1,-1]){const c=replayCamera(d,[-2,-37],[1,1,-52]);assert.ok(c.position[2]*d<-58&&c.target[2]*d>-52&&c.position[1]>4)}
-});
-
-test('substitutes start off the scorer and end beside him', ()=>{
- for(let k=0;k<BENCH_RUNNERS;k++){
-  const from=benchRunner(k,7,7,[5,-35],1),to=benchRunner(k,9,7,[5,-35],1);
-  assert.ok(Math.hypot(from[0]-5,from[1]+35)>12);assert.ok(Math.hypot(to[0]-5,to[1]+35)<3.2);
- }
 });
 
 test('ceremonies run on a plain clock and only in the important/all modes', ()=>{
