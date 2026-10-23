@@ -1,4 +1,4 @@
--- V21.237: Icons in the standard pick catalogue were seeded with an empty variant,
+-- V21.241: Icons in the standard pick catalogue were seeded with an empty variant,
 -- so Player Picks offered and delivered them as gold rare cards. Give them the
 -- Icon identity packs use (variant icon-mid, eventName Icon). Idempotent; only
 -- adds those two keys, never removes a card or touches a claimed pick.
