@@ -32,6 +32,12 @@ function migrateLegacyEventItem(item){
  if(item&&item.variant==="special"&&isLegacyEventName(item.eventName)){item.eventName="Legacy Event";item.legacyEvent=true}
  // V21.20 replaced Courtois' FC27 ID 192119 by 192120 during a version bump; repair MOMENTUM cards saved since then.
  if(item&&String(item.pid)==="192120"&&isMomentumItem(item))item.pid="192119";
+ return repairIconItem(item)
+}
+// V21.237: Player Picks delivered Icons with an empty variant, so they rendered as gold rare.
+// Every midicon-* card is an Icon; give such cards the Icon identity packs always used.
+function repairIconItem(item){
+ if(item&&!item.variant&&/^midicon-/.test(String(item.pid||""))){item.variant="icon-mid";item.eventName="Icon"}
  return item
 }
 function migrateLegacyEventState(s){
@@ -7777,7 +7783,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.232";
+const GFUT_BUILD="V21.237";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7835,7 +7841,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21232",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21237",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
