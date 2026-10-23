@@ -23,13 +23,17 @@ for player in roster:
             prefix = 'https://www.fut.gg/players' if game == 27 else f'https://www.fut.gg/{game}/players'
             try:
                 page = get(f'{prefix}/{pid}/').decode('utf-8', 'ignore')
+                items = sorted(set(re.findall(rf'/{game}-(\d+)\.[0-9a-f]{{20,}}\.webp', page)) - {pid})
             except Exception as error:
-                print('PAGE', player['name'], game, error, flush=True); continue
-            for item in sorted(set(re.findall(rf'/{game}-(\d+)\.[0-9a-f]{{20,}}\.webp', page)) - {pid}):
+                # EA special item ids are the base id plus a multiple of 2^24, so they can be probed without the page
+                print('PAGE', player['name'], game, error, '- probing item ids', flush=True)
+                items = [str(int(pid) + k * 2 ** 24) for k in range(1, 40)]
+            for item in items:
                 try:
                     d = json.loads(get(f'https://www.fut.gg/api/fut/player-item-definitions/{game}/{item}/'))['data']
                 except Exception as error:
-                    print('ITEM', game, item, error, flush=True); continue
+                    if '404' not in str(error): print('ITEM', game, item, error, flush=True)
+                    continue
                 if d.get('hasDynamic') and d.get('basePlayerEaId') == int(pid):
                     candidates.append((game, d))
             if candidates and not player.get('all'):
@@ -41,9 +45,9 @@ for player in roster:
             image = Image.open(io.BytesIO(get('https://game-assets.fut.gg/' + best['imagePath']))).convert('RGBA')
             name = f'{pid}-{game}-{best["eaId"]}.png' if player.get('all') else f'{pid}.png'
             image.save(target / name)
-            print('DYNAMIC', player['name'], pid, game, best['eaId'], best.get('overall'), best.get('clubName') or best.get('club'), image.size, flush=True)
+            print('DYNAMIC', player['name'], pid, game, best['eaId'], best.get('overall'), (best.get('club') or {}).get('name') if isinstance(best.get('club'), dict) else best.get('club'), image.size, flush=True)
             found.append({**player, 'game': game, 'item': best['eaId'], 'file': name, 'overall': best.get('overall'),
-                          'club': best.get('clubName') or best.get('club'), 'source': 'https://game-assets.fut.gg/' + best['imagePath']})
+                          'club': (best.get('club') or {}).get('name') if isinstance(best.get('club'), dict) else best.get('club'), 'source': 'https://game-assets.fut.gg/' + best['imagePath']})
     except Exception as error:
         print('ERROR', player['name'], pid, error, flush=True)
 (target / 'sources.json').write_text(json.dumps(found, ensure_ascii=False, indent=2) + '\n')
