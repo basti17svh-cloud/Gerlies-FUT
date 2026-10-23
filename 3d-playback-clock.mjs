@@ -6,6 +6,12 @@ import {extendedTiming} from './3d-extended-match.mjs?v=21160';
 // browser tests on a software renderer lift it to keep wall-clock pace.
 export const SHOT_RATE=1.5;
 export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100}={}){
+ // V21.226 walk-out / final whistle: plain real time, no shot segments.
+ if(event.type==='ceremony'){
+  let elapsed=0,last;
+  return{totalSeconds:duration,buildupSeconds:duration,presented(now){last=now},
+   tick(now){if(last!==undefined)elapsed+=Math.max(0,Math.min(maxFrameMs,now-last))/1000;last=now;return{time:Math.min(duration,elapsed),done:elapsed>=duration}}};
+ }
  const extended=extendedTiming(event.sequence);
  const requested=Number(event.playSeconds);
  const seconds=Number.isFinite(requested)?Math.max(8,Math.min(20,requested)):duration;

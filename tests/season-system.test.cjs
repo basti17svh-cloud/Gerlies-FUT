@@ -49,7 +49,9 @@ test('30 reward tiers and rotating day/week/season schedules',()=>{
  const seasonBoundary=new Date('2026-10-30T18:00:00Z'),dailyBoundary=new Date('2026-09-23T17:00:00Z');
  assert.equal(api.seasonInfo(new Date(seasonBoundary.getTime()-1000)).number,1);
  assert.equal(api.seasonInfo(seasonBoundary).number,2);
- assert.equal(api.seasonInfo(seasonBoundary).name,'HALLOWEEN');
+ assert.equal(api.seasonInfo(seasonBoundary).name,'BLUTMOND');
+ assert.equal(api.seasonInfo(new Date('2026-12-11T17:59:59Z')).key,'s2');
+ assert.equal(api.seasonInfo(new Date('2026-12-11T18:00:00Z')).key,'s3');
  assert.equal(api.seasonInfo(new Date('2026-09-27T12:00:00Z')).name,'THE BEGINNING');
  assert.equal(api.objectiveWindow('daily',new Date(dailyBoundary.getTime()-1000)).end.getTime(),dailyBoundary.getTime());
  assert.equal(api.objectiveWindow('weekly',new Date('2026-09-23T20:00:00Z')).tasks.length,6);
@@ -67,6 +69,17 @@ test('Season 1 Story players occupy free and Premium levels 15 and 30 and free c
  app.click('seasonPass','[data-pass-claim]',{passClaim:'free',passLevel:'15'});
  assert.deepEqual(state.storyGrants,['s1-15','s1-30']);
  assert.equal(state.packs['82'],undefined);
+});
+
+test('Season 2 places season players on both tracks and swaps in the Halloween pack',()=>{
+ const app=setup();const{ctx}=app;
+ ctx.STORY_PASS_PLAYERS={...ctx.STORY_PASS_PLAYERS,'s2-5':{season:'s2',track:'free',level:5,name:'Endrick',rating:81},'s2-premium-3':{season:'s2',track:'premium',level:3,name:'Estêvão',rating:82}};
+ const r=vm.runInContext('({free5:seasonTierReward(SEASON_REWARDS[4],"free","s2"),free6:seasonTierReward(SEASON_REWARDS[5],"free","s2"),prem3:seasonTierReward(SEASON_REWARDS[2],"premium","s2"),free4:seasonTierReward(SEASON_REWARDS[3],"free","s2"),prem6:seasonTierReward(SEASON_REWARDS[5],"premium","s2"),s1free4:seasonTierReward(SEASON_REWARDS[3],"free","s1"),s3free5:seasonTierReward(SEASON_REWARDS[4],"free","s3")})',ctx);
+ assert.deepEqual({...r.free5},{story:'s2-5'});
+ assert.ok(!r.free6.story);
+ assert.equal(r.prem3.story,'s2-premium-3');
+ assert.equal(r.free4.pack,'halloween-pack');assert.equal(r.prem6.pack,'halloween-pack');
+ assert.equal(r.s1free4.pack,'gold');assert.ok(!r.s3free5.story);
 });
 
 test('progress counts only actions in the active window and resets on rotation',()=>{

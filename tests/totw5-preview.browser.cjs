@@ -5,7 +5,8 @@ const html=require('./helpers/app-html.cjs')(root),build=html.match(/const GFUT_
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
 const cache=fs.readFileSync(path.join(root,'service-worker.js'),'utf8').match(/const CACHE="([^"]+)"/)[1];
 // The seeded database must carry the current revision, or the app replaces it with the real download.
-const dbRevision=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8')).revision;
+const dbRevision=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8')).revision+
+ fs.readFileSync(path.join(root,'footera-app.js'),'utf8').match(/const PLAYER_DB_CLIENT_REVISION="([^"]*)"/)[1];
 const draftNames=[...html.slice(html.indexOf('const TOTW_WEEK_5='),html.indexOf('const TOTW_WEEKS=')).matchAll(/names:\[(.*?)\]/g)].map(m=>JSON.parse('['+m[1]+']')[0]);
 const mime={'.js':'text/javascript','.mjs':'text/javascript','.html':'text/html','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.webmanifest':'application/manifest+json','.mp4':'video/mp4'};
 const server=http.createServer((req,res)=>{
@@ -59,7 +60,7 @@ const server=http.createServer((req,res)=>{
   async function checkPortraits(){
    for(let index=0;index<18;index++){
     await page.locator('.event-player').nth(index).scrollIntoViewIfNeeded();
-    await page.waitForFunction(index=>{const image=document.querySelectorAll('.event-player .face img')[index];return image?.complete&&image.naturalWidth>=100&&image.currentSrc.includes('/assets/footera/totw/5/'+TOTW_WEEK_5.players[index].eaId+'.png')},index,{timeout:10000});
+    await page.waitForFunction(index=>{const image=document.querySelectorAll('.event-player .face img')[index];return image?.complete&&image.naturalWidth>=100&&image.currentSrc.includes('/assets/footera/totw/5/'+byEventRating(totwReviewEntries(TOTW_WEEK_5))[index].info.eaId+'.png')},index,{timeout:10000});
    }
    console.log('PASS eighteen correct locally loaded TOTW portraits');
   }

@@ -8,7 +8,7 @@ const {line,pricingCode}=require('./helpers/item-pricing.cjs');
 const html=require('./helpers/app-html.cjs')();
 const between=(start,end)=>html.slice(html.indexOf(start),html.indexOf(end));
 function setup(){
- const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',NIKLAS_FOUNDER_BASE:{},FLASHBACK_REUS_BASE:{id:'flashback-reus'},LIVE_TOTW_BASE_CACHE:new Map(),
+ const ctx={EVENT_OBJECTIVES:[],MOMENTUM_BY_ID:new Map(),P_BY_ID:new Map(),state:{},isFounderItem:()=>false,FOUNDER_PLAYER_ID:'founder-a',FOUNDER_BASE:{},MARCO_FOUNDER_PLAYER_ID:'founder-b',MARCO_FOUNDER_BASE:{},NIKLAS_FOUNDER_PLAYER_ID:'founder-c',MAX_FOUNDER_PLAYER_ID:'founder-d',MAX_FOUNDER_BASE:{},NIKLAS_FOUNDER_BASE:{},FLASHBACK_REUS_BASE:{id:'flashback-reus'},LIVE_TOTW_BASE_CACHE:new Map(),
   ICON_PORTRAIT_CACHE:{},isWholeCardAsset:()=>false,futwizFaceCandidates:id=>[`https://cdn.futwiz.com/assets/img/fc27/faces/${id}.png`],
   sofifaFaceCandidates:()=>[],fifaRostersFaceCandidates:()=>[],marketSnapshotHash:()=>100,promoWindowKey:()=>'',totwInfo:()=>null};
  vm.createContext(ctx);

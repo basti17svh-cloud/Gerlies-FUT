@@ -1,0 +1,29 @@
+name: Footera league logos
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - '.github/workflows/league-logos.yml'
+      - 'scripts/fetch-league-logos.cjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download the women's league logos
+        run: node scripts/fetch-league-logos.cjs
+      - name: Commit the logos to this branch
+        run: |
+          git add assets/leagues
+          if git diff --cached --quiet; then echo "League logos unchanged"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git commit -m "League logos: download women's league logos"
+          git push origin HEAD:${GITHUB_REF_NAME}

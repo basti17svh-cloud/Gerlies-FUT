@@ -1,0 +1,61 @@
+/* Transfermarkt: Suchleiste und Schnellfilter immer sichtbar, Angebote ohne Überlappung. */
+#marketSearchShell .market-detail-nav{margin-bottom:10px}
+.market-quick{display:grid;gap:6px;margin:0 0 10px;padding:11px;border:1px solid #5a3a43;border-radius:14px;background:linear-gradient(145deg,#1b1215,#100b0d)}
+.market-quick-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-bottom:4px}
+.market-quick-search .market-name-wrap{position:relative;min-width:0}
+.market-quick-search input{width:100%;min-height:46px;padding:0 13px;border:1px solid #5a3a43;border-radius:11px;background:#0d0a0b;color:#fff;font-size:16px}
+.market-quick-search input::placeholder{color:#8f7f84}
+.market-quick-search>button{min-height:46px;padding:0 16px;font-size:14px}
+.market-quick-label{color:#a19297;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}
+.market-quick-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -11px;padding:0 11px 2px;scroll-padding:0 11px}
+.market-quick-chips::-webkit-scrollbar{display:none}
+.market-quick-chips button{flex:0 0 auto;min-width:44px;min-height:36px;padding:0 12px;border:1px solid #3b2c31;border-radius:999px;background:#191215;color:#e8dde0;font-size:13px;font-weight:850}
+.market-quick-chips button.active{border-color:#ff5a74;background:#ff5a74;color:#14080b}
+#marketSearchShell .market-more-toggle{min-height:46px;margin:4px 0 0;border-color:#3b2c31;background:#130e10}
+#marketSearchShell .market-more-toggle strong{font-size:13px}
+.market-more-toggle em{display:inline-grid;place-items:center;min-width:19px;height:19px;margin-left:5px;padding:0 5px;border-radius:999px;background:#ff5a74;color:#14080b;font-size:11px;font-style:normal;vertical-align:1px}
+.market-more-toggle em[hidden]{display:none}
+.market-active-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.market-active-filters[hidden]{display:none}
+.market-active-filters button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 10px;border:1px solid #6b3b47;border-radius:999px;background:#2a161c;color:#ffd5dc;font-size:12px;font-weight:850}
+.market-active-filters button span{font-size:15px;line-height:1;color:#ff93a3}
+.market-active-filters .market-clear-all{border-color:transparent;background:transparent;color:#a19297;text-decoration:underline}
+#marketFilterPanel .market-actions button{min-height:44px}
+
+/* Angebotszeilen: Preise in der Mitte, Knöpfe nie über den Preisen. */
+.market-price-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.market-price-cell{min-width:0;overflow:hidden}
+.market-price-cell span{text-transform:none!important;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.market-price-cell b .currency-amount{display:inline-flex!important;justify-content:flex-start;flex-wrap:nowrap;white-space:nowrap}
+.market-price-cell b .currency-value{display:inline!important;color:inherit;font-size:inherit!important;text-transform:none}
+.market-price-time b{color:#ffd77a}
+.market-row-sub .currency-amount{display:inline-flex;vertical-align:-2px}
+
+@media(max-width:620px){
+ #marketSearchShell .market-more-toggle{display:flex}
+ .market-row,.my-bids-panel .market-row{grid-template-columns:72px minmax(0,1fr)!important;grid-template-areas:"card main" "actions actions";gap:8px 10px!important;min-height:0!important;padding:9px!important;align-items:start}
+ .market-row-card{grid-area:card}
+ .market-row-main{grid-area:main}
+ .market-row-card .mini,.market-row-card .mini .card-shell,.my-bids-panel .market-row-card .mini,.my-bids-panel .market-row-card .mini .card-shell{width:72px!important}
+ .market-row-name strong{font-size:14px}
+ .market-status-line{margin-top:3px;min-height:18px;font-size:12px}
+ .market-status-line .market-status-icon:empty{display:none}
+ .market-price-grid{gap:5px!important;margin-top:6px}
+ .market-price-cell{padding:5px 7px!important}
+ .market-price-cell span{font-size:10.5px!important}
+ .market-price-cell b{font-size:13px!important}
+ .market-row-sub{margin-top:5px;font-size:11.5px!important}
+ .market-row-actions{grid-area:actions;grid-template-columns:1fr 1fr!important;gap:7px!important}
+ .market-row-actions .auction-remove{grid-column:1/-1}
+ .market-row-actions button{min-height:44px!important;font-size:14px!important;padding:6px!important}
+ .market-row{contain-intrinsic-size:auto 200px}
+}
+@media(max-width:360px){
+ .market-quick-search>button{padding:0 12px}
+ .market-price-cell b{font-size:12px!important}
+}
+@media(max-width:620px){
+ #marketFilterPanel .market-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+ #marketFilterPanel .range-card{grid-column:1/-1!important}
+ #marketFilterPanel .market-field select,#marketFilterPanel .market-field input{min-width:0;font-size:14px}
+}

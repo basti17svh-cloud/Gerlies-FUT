@@ -846,6 +846,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .board-cue-label{font-size:10px;font-weight:1000;letter-spacing:.28em;color:#d8ff3e}
 .board-cue-art{width:72px;height:72px;margin:9px 0 5px;display:grid;place-items:center;border:1px solid #d8ff3e70;border-radius:11px;background:#0b170ecc;box-shadow:0 0 15px #d8ff3e60;font-size:39px;font-weight:1000;line-height:1}
 .board-cue-art .card-flag-img{width:63px;height:44px;object-fit:contain}.board-cue-art .badge-img{width:62px;height:62px;object-fit:contain}
+.board-cue-art.is-position{width:auto;min-width:72px;padding:0 12px;font-size:32px}
 .board-cue-art .asset-fallback{font-size:14px;font-weight:1000;line-height:1.1;overflow-wrap:anywhere}
 .board-cue-name{max-width:100%;font-size:clamp(13px,4vw,18px);font-weight:950;line-height:1.1;text-transform:uppercase;overflow-wrap:anywhere}
 
@@ -926,6 +927,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .walkout-clue-label{font-size:clamp(11px,3vw,15px);font-weight:1000;letter-spacing:.38em;color:var(--walkout-beam)}
 .walkout-clue-art{width:116px;height:116px;margin:18px 0 10px;display:grid;place-items:center;border:1px solid #ffffff70;border-radius:25px;background:radial-gradient(circle,#ffffff26,#071009cc 73%);box-shadow:0 0 40px var(--walkout-beam),inset 0 0 25px #ffffff16;font-size:64px;font-weight:1000;line-height:1}
 .walkout-clue-art .card-flag-img{width:90px;height:65px;object-fit:contain;border-radius:6px}.walkout-clue-art .badge-img{width:92px;height:92px;object-fit:contain}
+.walkout-clue-art.is-position{width:auto;min-width:116px;padding:0 20px;font-size:54px;letter-spacing:.01em}
 .walkout-clue-art .asset-fallback{font-size:24px;font-weight:1000;letter-spacing:.02em;line-height:1.1;padding:8px;overflow-wrap:anywhere}
 .walkout-clue-name{max-width:min(85vw,460px);font-size:clamp(19px,6vw,30px);font-weight:1000;line-height:1.13;text-transform:uppercase;overflow-wrap:anywhere}
 @keyframes walkTunnelGlow{to{filter:brightness(1.5);transform:scale(1.07)}}

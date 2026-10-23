@@ -32,6 +32,12 @@ function migrateLegacyEventItem(item){
  if(item&&item.variant==="special"&&isLegacyEventName(item.eventName)){item.eventName="Legacy Event";item.legacyEvent=true}
  // V21.20 replaced Courtois' FC27 ID 192119 by 192120 during a version bump; repair MOMENTUM cards saved since then.
  if(item&&String(item.pid)==="192120"&&isMomentumItem(item))item.pid="192119";
+ return repairIconItem(item)
+}
+// V21.241: Player Picks delivered Icons with an empty variant, so they rendered as gold rare.
+// Every midicon-* card is an Icon; give such cards the Icon identity packs always used.
+function repairIconItem(item){
+ if(item&&!item.variant&&/^midicon-/.test(String(item.pid||""))){item.variant="icon-mid";item.eventName="Icon"}
  return item
 }
 function migrateLegacyEventState(s){
@@ -66,6 +72,12 @@ const NIKLAS_FOUNDER_BASE=Object.freeze({id:NIKLAS_FOUNDER_PLAYER_ID,name:"N. Be
 function isNiklasFounderItem(item){return String(item?.pid||"")===NIKLAS_FOUNDER_PLAYER_ID}
 function isNiklasBase(p){return String(p?.id||"")===NIKLAS_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(niklas|n\.) bergstr(aesser|aßer)$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))}
 function niklasFounderItem(){return{uid:"footera-founder-niklas",pid:NIKLAS_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerUserId:NIKLAS_FOUNDER_USER_ID}}
+// Max Wittenberg (FSV Hohenroth) uses the ruby Founder design and is bound to his save ID.
+const MAX_FOUNDER_SAVE_ID="GF-35FADCCBA5AD4E15",MAX_FOUNDER_PLAYER_ID="footera-founder-max-wittenberg",MAX_FOUNDER_PACK_ID="founder-max";
+const MAX_FOUNDER_BASE=Object.freeze({id:MAX_FOUNDER_PLAYER_ID,name:"M. Wittenberg",fullName:"Max Wittenberg",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"FSV Hohenroth",league:"Footera",height:175,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,playstyles:"Finesse Shot, Technical, Incisive Pass",playstylesPlus:"Low Driven Shot",face:"./assets/footera/founder-max-portrait.webp",clubLogo:"./assets/footera/fsv-hohenroth.png",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
+function isMaxFounderItem(item){return String(item?.pid||"")===MAX_FOUNDER_PLAYER_ID}
+function isMaxBase(p){return String(p?.id||"")===MAX_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(max|m\.) wittenberg$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))}
+function maxFounderItem(){return{uid:"footera-founder-max",pid:MAX_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MAX_FOUNDER_SAVE_ID}}
 function ownsFounderRule(s,rule){return !!rule&&(rule.userId?!!s.profile?.founderOnlineUserId&&s.profile.founderOnlineUserId===rule.userId:!!rule.saveId&&s.profile?.saveId===rule.saveId)}
 // Bind this online-only entitlement after the existing authenticated session loads.
 // Keep the last verified identity in the save so an offline reload preserves the card.
@@ -75,14 +87,14 @@ function syncFounderOnlineOwner(userId){
  pendingPack=state.pendingPack;pendingResolved=new Set(state.pendingResolved||[]);
  save();renderStore();
 }
-function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
+function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID,MAX_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
 function isMarcoFounderItem(item){return String(item?.pid||"")===MARCO_FOUNDER_PLAYER_ID}
 function isBastianBase(p){return [p?.fullName,p?.name].some(v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()==="bastian gerlach")||String(p?.id||"")===FOUNDER_PLAYER_ID}
 function isMarcoBase(p){return [p?.fullName,p?.name].some(v=>/^(marco|m\.) gerlach$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))||String(p?.id||"")===MARCO_FOUNDER_PLAYER_ID}
-function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)||isNiklasBase(p)}
+function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)||isNiklasBase(p)||isMaxBase(p)}
 function founderItem(){return{uid:"footera-founder-bastian",pid:FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:FOUNDER_SAVE_ID}}
 function marcoFounderItem(){return{uid:"footera-founder-marco",pid:MARCO_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MARCO_FOUNDER_SAVE_ID}}
-const FOUNDER_RULES=[{saveId:FOUNDER_SAVE_ID,playerId:FOUNDER_PLAYER_ID,packId:FOUNDER_PACK_ID,base:FOUNDER_BASE,create:founderItem,uid:"footera-founder-bastian",claimed:"founderClaimed",opening:"founderOpening"},{saveId:MARCO_FOUNDER_SAVE_ID,playerId:MARCO_FOUNDER_PLAYER_ID,packId:MARCO_FOUNDER_PACK_ID,base:MARCO_FOUNDER_BASE,create:marcoFounderItem,uid:"footera-founder-marco",claimed:"marcoFounderClaimed",opening:"marcoFounderOpening"},{userId:NIKLAS_FOUNDER_USER_ID,playerId:NIKLAS_FOUNDER_PLAYER_ID,packId:NIKLAS_FOUNDER_PACK_ID,base:NIKLAS_FOUNDER_BASE,create:niklasFounderItem,uid:"footera-founder-niklas",claimed:"niklasFounderClaimed",opening:"niklasFounderOpening"}];
+const FOUNDER_RULES=[{saveId:FOUNDER_SAVE_ID,playerId:FOUNDER_PLAYER_ID,packId:FOUNDER_PACK_ID,base:FOUNDER_BASE,create:founderItem,uid:"footera-founder-bastian",claimed:"founderClaimed",opening:"founderOpening"},{saveId:MARCO_FOUNDER_SAVE_ID,playerId:MARCO_FOUNDER_PLAYER_ID,packId:MARCO_FOUNDER_PACK_ID,base:MARCO_FOUNDER_BASE,create:marcoFounderItem,uid:"footera-founder-marco",claimed:"marcoFounderClaimed",opening:"marcoFounderOpening"},{userId:NIKLAS_FOUNDER_USER_ID,playerId:NIKLAS_FOUNDER_PLAYER_ID,packId:NIKLAS_FOUNDER_PACK_ID,base:NIKLAS_FOUNDER_BASE,create:niklasFounderItem,uid:"footera-founder-niklas",claimed:"niklasFounderClaimed",opening:"niklasFounderOpening"},{saveId:MAX_FOUNDER_SAVE_ID,playerId:MAX_FOUNDER_PLAYER_ID,packId:MAX_FOUNDER_PACK_ID,base:MAX_FOUNDER_BASE,create:maxFounderItem,uid:"footera-founder-max",claimed:"maxFounderClaimed",opening:"maxFounderOpening"}];
 function founderRuleForItem(item){return FOUNDER_RULES.find(r=>r.playerId===String(item?.pid||""))}
 function founderRuleForPack(id){return FOUNDER_RULES.find(r=>r.packId===id)}
 function reconcileFounderState(s){
@@ -341,16 +353,31 @@ const SEASON_REWARDS=[
  {level:4,sp:1800,reward:{pack:"gold",qty:1}},{level:5,sp:2800,reward:{points:100}},{level:6,sp:4000,reward:{pack:"82",qty:1}},
  {level:7,sp:5500,reward:{coins:4000}},{level:8,sp:7500,reward:{pack:"goldplayers",qty:1}},{level:9,sp:10000,reward:{points:150}},{level:10,sp:13500,reward:{coins:12000,pack:"gold",qty:1}}
 ];
-// Season 1 Story players. Free and Premium tracks each get an exclusive player at levels 15 and 30.
+// Season Pass players. Season 1: Story players at levels 15 and 30; Season 2: a season player every five levels per track.
 const STORY_PASS_PLAYERS=Object.freeze({
  "s1-15":{season:"s1",track:"free",level:15,name:"Ermedin Demirović",chapter:"Aufbruch",rating:84,position:"ST",stats:[78,84,75,81,44,82]},
  "s1-premium-15":{season:"s1",track:"premium",level:15,name:"Antonio Nusa",aliases:["Antonio Eromonsele Nordby Nusa"],chapter:"Tempo",rating:85,position:"LW",stats:[91,82,82,89,44,72]},
  "s1-30":{season:"s1",track:"free",level:30,name:"Kobbie Mainoo",chapter:"Durchbruch",rating:85,position:"CM",stats:[75,72,82,86,78,78]},
- "s1-premium-30":{season:"s1",track:"premium",level:30,name:"Renato Veiga",aliases:["Renato Palma Veiga"],chapter:"Vollendung",rating:86,position:"CB",stats:[80,72,83,82,87,88]}
+ "s1-premium-30":{season:"s1",track:"premium",level:30,name:"Renato Veiga",aliases:["Renato Palma Veiga"],chapter:"Vollendung",rating:86,position:"CB",stats:[80,72,83,82,87,88]},
+ // Season 2 players: real cards with a season boost, rising from 81 to 87 so the pass mixes solid and top cards.
+ "s2-5":{season:"s2",track:"free",level:5,pid:"272505",face:"assets/footera/events/season2/faces/272505.webp",name:"Endrick",chapter:"Saison 2",rating:81,position:"ST",stats:[89,83,68,82,32,75]},
+ "s2-10":{season:"s2",track:"free",level:10,pid:"262659",face:"assets/footera/events/season2/faces/262659.webp",name:"Noah Atubolu",chapter:"Saison 2",rating:82,position:"GK",stats:[82,77,82,83,58,79]},
+ "s2-15":{season:"s2",track:"free",level:15,pid:"254117",face:"assets/footera/events/season2/faces/254117.webp",name:"Maximilian Beier",chapter:"Saison 2",rating:83,position:"ST",stats:[88,82,76,83,58,67]},
+ "s2-20":{season:"s2",track:"free",level:20,pid:"269701",face:"assets/footera/events/season2/dynamic/269701.webp",name:"Nathaniel Brown",chapter:"Saison 2",rating:84,position:"LB",stats:[93,63,79,86,76,62]},
+ "s2-25":{season:"s2",track:"free",level:25,pid:"275298",face:"assets/footera/events/season2/faces/275298.webp",name:"Aleksandar Pavlović",chapter:"Saison 2",rating:85,position:"CDM",stats:[68,70,84,84,81,81]},
+ "s2-30":{season:"s2",track:"free",level:30,pid:"251852",face:"assets/footera/events/season2/dynamic/251852.webp",name:"Karim Adeyemi",chapter:"Saison 2",rating:86,position:"RM",stats:[99,84,76,86,40,73]},
+ "s2-premium-3":{season:"s2",track:"premium",level:3,pid:"76687",face:"assets/footera/events/season2/faces/76687.webp",name:"Estêvão",chapter:"Saison 2",rating:82,position:"RW",stats:[91,78,77,86,35,59]},
+ "s2-premium-8":{season:"s2",track:"premium",level:8,pid:"254022",face:"assets/footera/events/season2/faces/254022.webp",name:"Nick Woltemade",chapter:"Saison 2",rating:83,position:"ST",stats:[70,83,75,84,44,80]},
+ "s2-premium-13":{season:"s2",track:"premium",level:13,pid:"278349",face:"assets/footera/events/season2/faces/278349.webp",name:"Dean Huijsen",chapter:"Saison 2",rating:84,position:"CB",stats:[75,58,75,75,85,80]},
+ "s2-premium-18":{season:"s2",track:"premium",level:18,pid:"264309",face:"assets/footera/events/season2/faces/264309.webp",name:"Arda Güler",chapter:"Saison 2",rating:85,position:"CAM",stats:[79,81,87,86,57,59]},
+ "s2-premium-23":{season:"s2",track:"premium",level:23,pid:"227796",face:"assets/footera/events/season2/faces/227796.webp",name:"Christian Pulisic",chapter:"Saison 2",rating:86,position:"RW",stats:[90,86,84,87,50,63]},
+ "s2-premium-30":{season:"s2",track:"premium",level:30,pid:"237692",face:"assets/footera/events/season2/faces/237692.webp",name:"Phil Foden",chapter:"Saison 2",rating:87,position:"CAM",stats:[80,85,85,91,60,56]}
 });
 const EVOLUTION_POOL=[{"id":"breakthrough","name":"Breakthrough","subtitle":"Basis-Karte entwickeln","group":"core","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":79,"statCaps":{"pac":83,"sho":80,"pas":80,"dri":83,"def":78,"phy":80},"req":{"maxOvr":74,"maxPac":88,"maxPlaystyles":6},"stages":[{"matches":3,"wins":0,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2,"phy":2},"playstyle":"Quick Step","label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 3"}]},{"id":"engine_room","name":"Engine Room","subtitle":"Kompletter Mittelfeldmotor","group":"core","signupDays":7,"completionDays":14,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":84,"sho":81,"pas":85,"dri":84,"def":82,"phy":83},"req":{"maxOvr":79,"positions":["CM","CDM","CAM","LM","RM"],"maxPac":88,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":0,"stats":{"pac":1,"pas":2,"def":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":1,"pas":2,"dri":2,"phy":1},"playstyle":"Tiki Taka","label":"Stufe 3"}]},{"id":"finisher","name":"Kaltschnäuziger Abschluss","subtitle":"Stürmer-Evolution","group":"attack","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":88,"sho":86,"pas":79,"dri":85,"def":55,"phy":82},"req":{"maxOvr":79,"positions":["ST","CF"],"maxPac":89,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"sho":2,"dri":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pac":1,"sho":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":2,"phy":2},"playstyle":"Finesse Shot","label":"Stufe 3"}]},{"id":"wide_threat","name":"Flügelgefahr","subtitle":"Schneller Flügelspieler","group":"attack","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":90,"sho":81,"pas":82,"dri":86,"def":65,"phy":76},"req":{"maxOvr":78,"positions":["LW","RW","LM","RM"],"maxPac":90,"maxPlaystyles":6},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"playstyle":"Rapid","label":"Stufe 3"}]},{"id":"aerial_nine","name":"Lufthoheit","subtitle":"Kopfballstarker Neuner","group":"attack","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":82,"sho":84,"pas":75,"dri":79,"def":58,"phy":86},"req":{"maxOvr":76,"positions":["ST"],"maxPac":84,"maxPlaystyles":6},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"phy":2,"sho":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"sho":2,"phy":2},"playstyle":"Power Header","label":"Stufe 2"}]},{"id":"box_to_box","name":"Box-to-Box Projekt","subtitle":"Allrounder im Zentrum","group":"mid","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":83,"sho":80,"pas":84,"dri":83,"def":83,"phy":85},"req":{"maxOvr":79,"positions":["CM","CDM"],"maxPac":86,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"pas":1,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"dri":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"sho":2,"pas":2,"dri":1,"def":1},"playstyle":"Relentless","label":"Stufe 3"}]},{"id":"creator","name":"Kreativzentrale","subtitle":"Spielmacher-Evolution","group":"mid","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":82,"sho":80,"pas":87,"dri":86,"def":70,"phy":77},"req":{"maxOvr":79,"positions":["CM","CAM"],"maxPac":86,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2,"sho":1},"playstyle":"Incisive Pass","label":"Stufe 2"}]},{"id":"holding_mid","name":"Anker im Mittelfeld","subtitle":"Defensiver Sechser","group":"mid","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":80,"sho":72,"pas":81,"dri":78,"def":85,"phy":85},"req":{"maxOvr":77,"positions":["CDM","CM"],"maxPac":84,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pac":1,"def":2,"phy":1},"playstyle":"Intercept","label":"Stufe 3"}]},{"id":"defensive_wall","name":"Defensive Wall","subtitle":"Innenverteidiger aufwerten","group":"def","signupDays":7,"completionDays":14,"cost":{"coins":25000,"points":200},"maxFinalOvr":82,"statCaps":{"pac":82,"sho":65,"pas":79,"dri":77,"def":87,"phy":87},"req":{"maxOvr":79,"positions":["CB"],"maxPac":84,"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pac":1,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pas":2,"def":2},"playstyle":"Anticipate","label":"Stufe 3"}]},{"id":"fullback_lab","name":"Schienenläufer","subtitle":"Außenverteidiger modernisieren","group":"def","signupDays":7,"completionDays":12,"cost":{"coins":15000,"points":150},"maxFinalOvr":81,"statCaps":{"pac":89,"sho":73,"pas":82,"dri":83,"def":83,"phy":81},"req":{"maxOvr":78,"positions":["LB","RB","LWB","RWB"],"maxPac":90,"maxPlaystyles":7},"stages":[{"matches":3,"wins":0,"ovr":1,"stats":{"pac":1,"pas":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"dri":2,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"pas":1,"def":1},"playstyle":"Whipped Pass","label":"Stufe 3"}]},{"id":"keeper_project","name":"Letzte Instanz","subtitle":"Torwart-Evolution","group":"def","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":80,"statCaps":{"pac":80,"sho":80,"pas":81,"dri":84,"def":80,"phy":84},"req":{"maxOvr":77,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"dri":2,"phy":1},"playstyle":"Footwork","label":"Stufe 3"}]}];
-EVOLUTION_POOL.push(...[{"id":"s1_low_vereinsprojekt","name":"Vereinsprojekt","subtitle":"Kostenloser Einstieg für 72–76 GES","group":"s1-low","lane":"low","band":"72–76","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":81,"statCaps":{"pac":88,"sho":86,"pas":86,"dri":88,"def":86,"phy":88},"req":{"minOvr":72,"maxOvr":76,"maxPac":89,"maxPlaystyles":8},"stages":[{"matches":2,"wins":0,"ovr":3,"stats":{"pac":2,"pas":1,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":2,"stats":{"sho":2,"pas":2,"def":1,"phy":1},"label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":1,"sho":2,"dri":2,"def":1},"playstyle":"Relentless","label":"Stufe 3"}]},{"id":"s1_low_athletik","name":"Athletik-Paket","subtitle":"Tempo und Physis für unterschätzte Karten","group":"s1-low","lane":"low","band":"72–76","signupDays":7,"completionDays":14,"cost":{"coins":20000,"points":150},"maxFinalOvr":82,"statCaps":{"pac":91,"sho":86,"pas":85,"dri":88,"def":87,"phy":91},"req":{"minOvr":72,"maxOvr":76,"maxPac":90,"maxPlaystyles":8},"stages":[{"matches":2,"wins":0,"ovr":3,"stats":{"pac":3,"phy":2,"dri":1},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":2,"stats":{"pac":2,"sho":1,"def":1,"phy":2},"label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pas":2,"dri":2,"def":1,"phy":1},"playstyle":"Quick Step","label":"Stufe 3"}]},{"id":"s1_mid_attack","name":"Offensiv-Werkstatt","subtitle":"Mehr Gefahr für Stürmer und Flügel","group":"s1-mid","lane":"mid","band":"77–79","signupDays":7,"completionDays":14,"cost":{"coins":30000,"points":250},"maxFinalOvr":84,"statCaps":{"pac":92,"sho":90,"pas":87,"dri":91,"def":72,"phy":87},"req":{"minOvr":77,"maxOvr":79,"positions":["ST","CF","LW","RW","LM","RM"],"maxPac":91,"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"sho":2,"pas":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstyle":"Finesse Shot","label":"Stufe 3"}]},{"id":"s1_mid_defense","name":"Defensiv-Werkstatt","subtitle":"Mehr Stabilität für Abwehr und Sechser","group":"s1-mid","lane":"mid","band":"77–79","signupDays":7,"completionDays":14,"cost":{"coins":30000,"points":250},"maxFinalOvr":84,"statCaps":{"pac":89,"sho":77,"pas":87,"dri":86,"def":91,"phy":92},"req":{"minOvr":77,"maxOvr":79,"positions":["CB","LB","RB","LWB","RWB","CDM"],"maxPac":90,"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"def":3,"phy":2,"pas":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":2,"dri":1,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pas":2,"def":2,"phy":2},"playstyle":"Anticipate","label":"Stufe 3"}]},{"id":"s1_high_creator","name":"Kreativer Feinschliff","subtitle":"Technik und Passspiel für 80–81er","group":"s1-high","lane":"high","band":"80–81","signupDays":7,"completionDays":14,"cost":{"coins":50000,"points":350},"maxFinalOvr":85,"statCaps":{"pac":90,"sho":89,"pas":93,"dri":93,"def":84,"phy":86},"req":{"minOvr":80,"maxOvr":81,"positions":["CM","CAM","LM","RM","LW","RW"],"maxPac":91,"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":3,"dri":2},"label":"Stufe 1"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"sho":1,"pas":2,"dri":2},"label":"Stufe 2"},{"matches":6,"wins":3,"ovr":2,"stats":{"pas":2,"dri":2,"phy":1},"playstyle":"Incisive Pass","label":"Stufe 3"}]},{"id":"s1_high_competitive","name":"Competitive Upgrade","subtitle":"Breiter Feinschliff für starke 80–81er","group":"s1-high","lane":"high","band":"80–81","signupDays":7,"completionDays":14,"cost":{"coins":60000,"points":400},"maxFinalOvr":85,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":92,"phy":93},"req":{"minOvr":80,"maxOvr":81,"maxPac":92,"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":1,"phy":1},"label":"Stufe 1"},{"matches":5,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2,"def":1},"label":"Stufe 2"},{"matches":6,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":1,"def":1,"phy":1},"playstyle":"Relentless","label":"Stufe 3"}]}]);
-EVOLUTION_POOL.push(...[{"id":"s1_elite_sturm","name":"Elite-Torjäger","subtitle":"Bis 85 GES · Abschluss auf Topniveau","group":"s1-elite","lane":"elite","band":"bis 85","signupDays":7,"completionDays":14,"cost":{"coins":55000,"points":400},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":93,"pas":86,"dri":93,"def":75,"phy":91},"req":{"maxOvr":85,"positions":["ST","CF","LW","RW"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"sho":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstyle":"Finesse Shot","label":"Stufe 3"}],"catchUpToCap":true,"statTargets":{"pac":91,"sho":93,"pas":80,"dri":90,"def":50,"phy":85}},{"id":"s1_elite_spielmacher","name":"Spielmacher 88","subtitle":"Bis 85 GES · Pässe und Übersicht","group":"s1-elite","lane":"elite","band":"bis 85","signupDays":7,"completionDays":14,"cost":{"coins":70000,"points":500},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":90,"pas":93,"dri":93,"def":87,"phy":89},"req":{"maxOvr":85,"positions":["CM","CAM","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1,"phy":1},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pas":2,"dri":2},"playstyle":"Incisive Pass","label":"Stufe 3"}],"catchUpToCap":true,"statTargets":{"pac":84,"sho":82,"pas":93,"dri":91,"def":79,"phy":84}},{"id":"s1_elite_abwehr","name":"Abwehrchef 88","subtitle":"Bis 85 GES · Abwehr und Physis","group":"s1-elite","lane":"elite","band":"bis 85","signupDays":7,"completionDays":14,"cost":{"coins":65000,"points":450},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":73,"pas":87,"dri":86,"def":93,"phy":93},"req":{"maxOvr":85,"positions":["CB","LB","RB","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pac":1,"def":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"def":2,"phy":2},"playstyle":"Anticipate","label":"Stufe 3"}],"catchUpToCap":true,"statTargets":{"pac":85,"sho":65,"pas":82,"dri":80,"def":93,"phy":93}},{"id":"s1_elite_fluegel","name":"Dynamischer Flügel","subtitle":"Bis 84 GES · Ziel 87 GES","group":"s1-elite","lane":"elite","band":"bis 84","signupDays":7,"completionDays":14,"cost":{"coins":45000,"points":350},"maxFinalOvr":87,"statCaps":{"pac":93,"sho":90,"pas":89,"dri":93,"def":74,"phy":85},"req":{"maxOvr":84,"positions":["LW","RW","LM","RM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2},"playstyle":"Rapid","label":"Stufe 3"}],"catchUpToCap":true,"statTargets":{"pac":93,"sho":86,"pas":85,"dri":93,"def":55,"phy":78}},{"id":"s1_elite_keeper","name":"Letzte Bastion","subtitle":"Bis 85 GES · Torwart bis 87","group":"s1-elite","lane":"elite","band":"bis 85","signupDays":7,"completionDays":14,"cost":{"coins":40000,"points":300},"maxFinalOvr":87,"statCaps":{"pac":88,"sho":88,"pas":88,"dri":93,"def":88,"phy":93},"req":{"maxOvr":85,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"dri":2,"phy":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":1,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"dri":2,"phy":2},"playstyle":"Footwork","label":"Stufe 3"}],"catchUpToCap":true,"statTargets":{"pac":83,"sho":82,"pas":82,"dri":93,"def":80,"phy":93}}]);
+EVOLUTION_POOL.push(...[{"id":"s1_low_vereinsprojekt","name":"Vereinsprojekt","subtitle":"Kostenloser Einstieg für 72–76 GES","group":"s1-low","lane":"low","band":"72–76","signupDays":7,"completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":81,"statCaps":{"pac":88,"sho":86,"pas":86,"dri":88,"def":86,"phy":88},"req":{"minOvr":72,"maxOvr":76,"maxPac":89,"maxPlaystyles":8},"stages":[{"matches":2,"wins":0,"ovr":3,"stats":{"pac":2,"pas":1,"dri":2,"phy":1},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":2,"stats":{"sho":2,"pas":2,"def":1,"phy":1},"label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":1,"sho":2,"dri":2,"def":1},"playstyle":"Relentless","label":"Stufe 3"}]},{"id":"s1_low_athletik","name":"Athletik-Paket","subtitle":"Tempo und Physis für unterschätzte Karten","group":"s1-low","lane":"low","band":"72–76","signupDays":7,"completionDays":14,"cost":{"coins":20000,"points":150},"maxFinalOvr":82,"statCaps":{"pac":91,"sho":86,"pas":85,"dri":88,"def":87,"phy":91},"req":{"minOvr":72,"maxOvr":76,"maxPac":90,"maxPlaystyles":8},"stages":[{"matches":2,"wins":0,"ovr":3,"stats":{"pac":3,"phy":2,"dri":1},"label":"Stufe 1"},{"matches":3,"wins":1,"ovr":2,"stats":{"pac":2,"sho":1,"def":1,"phy":2},"label":"Stufe 2"},{"matches":4,"wins":2,"ovr":2,"stats":{"pas":2,"dri":2,"def":1,"phy":1},"playstylePlus":"Quick Step","label":"Stufe 3"}]},{"id":"s1_mid_attack","name":"Offensiv-Werkstatt","subtitle":"Mehr Gefahr für Stürmer und Flügel","group":"s1-mid","lane":"mid","band":"77–79","signupDays":7,"completionDays":14,"cost":{"coins":30000,"points":250},"maxFinalOvr":84,"statCaps":{"pac":92,"sho":90,"pas":87,"dri":91,"def":72,"phy":87},"req":{"minOvr":77,"maxOvr":79,"positions":["ST","CF","LW","RW","LM","RM"],"maxPac":91,"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"pac":2,"sho":2,"dri":2},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"sho":2,"pas":2,"dri":2},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstylePlus":"Finesse Shot","label":"Stufe 3"}]},{"id":"s1_mid_defense","name":"Defensiv-Werkstatt","subtitle":"Mehr Stabilität für Abwehr und Sechser","group":"s1-mid","lane":"mid","band":"77–79","signupDays":7,"completionDays":14,"cost":{"coins":30000,"points":250},"maxFinalOvr":84,"statCaps":{"pac":89,"sho":77,"pas":87,"dri":86,"def":91,"phy":92},"req":{"minOvr":77,"maxOvr":79,"positions":["CB","LB","RB","LWB","RWB","CDM"],"maxPac":90,"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":2,"stats":{"def":3,"phy":2,"pas":1},"label":"Stufe 1"},{"matches":4,"wins":2,"ovr":2,"stats":{"pac":2,"dri":1,"def":2,"phy":1},"label":"Stufe 2"},{"matches":5,"wins":3,"ovr":1,"stats":{"pas":2,"def":2,"phy":2},"playstylePlus":"Anticipate","label":"Stufe 3"}]},{"id":"s1_high_creator","name":"Kreativer Feinschliff","subtitle":"Technik und Passspiel für 80–81er","group":"s1-high","lane":"high","band":"80–81","signupDays":7,"completionDays":14,"cost":{"coins":50000,"points":350},"maxFinalOvr":85,"statCaps":{"pac":90,"sho":89,"pas":93,"dri":93,"def":84,"phy":86},"req":{"minOvr":80,"maxOvr":81,"positions":["CM","CAM","LM","RM","LW","RW"],"maxPac":91,"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":3,"dri":2},"label":"Stufe 1"},{"matches":5,"wins":2,"ovr":1,"stats":{"pac":1,"sho":1,"pas":2,"dri":2},"label":"Stufe 2"},{"matches":6,"wins":3,"ovr":2,"stats":{"pas":2,"dri":2,"phy":1},"playstylePlus":"Incisive Pass","label":"Stufe 3"}]},{"id":"s1_high_competitive","name":"Competitive Upgrade","subtitle":"Breiter Feinschliff für starke 80–81er","group":"s1-high","lane":"high","band":"80–81","signupDays":7,"completionDays":14,"cost":{"coins":60000,"points":400},"maxFinalOvr":85,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":92,"phy":93},"req":{"minOvr":80,"maxOvr":81,"maxPac":92,"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":1,"phy":1},"label":"Stufe 1"},{"matches":5,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2,"def":1},"label":"Stufe 2"},{"matches":6,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":1,"def":1,"phy":1},"playstylePlus":"Relentless","label":"Stufe 3"}]}]);
+EVOLUTION_POOL.push(...[{"id":"s1_elite_sturm","name":"Elite-Torjäger","subtitle":"82–85 GES · Abschluss auf Topniveau","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":55000,"points":400},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":93,"pas":86,"dri":93,"def":75,"phy":91},"req":{"minOvr":82,"maxOvr":85,"positions":["ST","CF","LW","RW"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"sho":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstylePlus":"Finesse Shot","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_spielmacher","name":"Spielmacher 88","subtitle":"82–85 GES · Pässe und Übersicht","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":70000,"points":500},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":90,"pas":93,"dri":93,"def":87,"phy":89},"req":{"minOvr":82,"maxOvr":85,"positions":["CM","CAM","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1,"phy":1},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pas":2,"dri":2},"playstylePlus":"Incisive Pass","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_abwehr","name":"Abwehrchef 88","subtitle":"82–85 GES · Abwehr und Physis","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":65000,"points":450},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":73,"pas":87,"dri":86,"def":93,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["CB","LB","RB","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pac":1,"def":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"def":2,"phy":2},"playstylePlus":"Anticipate","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_fluegel","name":"Dynamischer Flügel","subtitle":"82–84 GES · Ziel 87 GES","group":"s1-elite","lane":"elite","band":"82–84","signupDays":7,"completionDays":14,"cost":{"coins":45000,"points":350},"maxFinalOvr":87,"statCaps":{"pac":93,"sho":90,"pas":89,"dri":93,"def":74,"phy":85},"req":{"minOvr":82,"maxOvr":84,"positions":["LW","RW","LM","RM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2},"playstylePlus":"Rapid","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_keeper","name":"Letzte Bastion","subtitle":"82–85 GES · Torwart bis 87","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":40000,"points":300},"maxFinalOvr":87,"statCaps":{"pac":88,"sho":88,"pas":88,"dri":93,"def":88,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"dri":2,"phy":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":1,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"dri":2,"phy":2},"playstylePlus":"Footwork","label":"Stufe 3"}],"catchUpToCap":true}]);
+// Event evolutions have their own fixed window and end in the event's card design (applyEvoStage sets cosmeticDesign).
+EVOLUTION_POOL.push({"id":"halloween_blutmond","name":"Blutmond-Evolution","subtitle":"Halloween · deine Karte im Blutmond-Design","group":"event","lane":"event","band":"HALLOWEEN","design":"halloween","activeFrom":"2026-10-30T19:00:00+01:00","activeUntilAt":"2026-11-06T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":90,"phy":92},"req":{"minOvr":78,"maxOvr":84,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2,"phy":1},"label":"Geisterstunde"},{"matches":4,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2},"label":"Kürbisnacht"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"First Touch","label":"Blutmond"}]});
 const EVOLUTION_SEASON_MAX_OVR=88,EVOLUTION_GLOBAL_STAT_CAP=93;
 const EVOLUTIONS=EVOLUTION_POOL;
 const CAMPAIGNS=[
@@ -387,10 +414,12 @@ const PACKS=[
  {id:"premium-electrum-reward",name:"Premium-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],rareCount:3,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 3 selten",iconChance:0.0007},
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
  {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
+ {id:"halloween-pack",name:"HALLOWEEN-Blutmond-Pack",coins:60000,points:null,type:"gold",count:6,composition:[{quality:"gold",count:5,min:75,max:99}],guarantee:83,rareCount:5,store:true,reward:false,promo:true,rotation:true,packKind:"players",eventSlot:"halloween-2026",desc:"6 Spieler · 1 HALLOWEEN-Karte garantiert · 5 seltene Goldspieler · mind. 1× 83+",tag:"HALLOWEEN",iconChance:0.002,dailyLimit:3,resetHour:19},
  {id:"event-sbc-player",name:"Event-SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer Event-SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
- {id:"founder-niklas",name:"FOOTERA FOUNDER Pack · N. Bergsträßer",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Deine exklusive N. Bergsträßer Founder-Karte · einmalig für Wurstwasser Worms FC",iconChance:0}
+ {id:"founder-niklas",name:"FOOTERA FOUNDER Pack · N. Bergsträßer",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Deine exklusive N. Bergsträßer Founder-Karte · einmalig für Wurstwasser Worms FC",iconChance:0},
+ {id:"founder-max",name:"FOOTERA FOUNDER Pack · M. Wittenberg",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Wittenberg Founder-Karte · einmalig für diese Vereins-ID",iconChance:0}
 ];
 // This account-only gift shares the ordinary pack's name, artwork and description.
 PACKS.push({...PACKS.find(p=>p.id==="goldplayers"),id:"marco-premium-goldplayers-20260930",coins:null,points:null,store:false,reward:false,promo:false,rotation:false,dailyLimit:0,recipientSaveId:"GF-7D87D08A06104571"});
@@ -779,6 +808,7 @@ function restoreSyntheticPlayerIds(){
  P_BY_ID.set(FOUNDER_PLAYER_ID,FOUNDER_BASE);
  P_BY_ID.set(MARCO_FOUNDER_PLAYER_ID,MARCO_FOUNDER_BASE);
  P_BY_ID.set(NIKLAS_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_BASE);
+ P_BY_ID.set(MAX_FOUNDER_PLAYER_ID,MAX_FOUNDER_BASE);
  P_BY_ID.set(FLASHBACK_REUS_BASE.id,{...FLASHBACK_REUS_BASE,face:P_BY_ID.get("188350")?.face||FLASHBACK_REUS_BASE.face});
  for(const base of LIVE_TOTW_BASE_CACHE.values())if(base?.id)P_BY_ID.set(String(base.id),base);
  for(const info of MOMENTUM_BY_ID.values())if(!P_BY_ID.has(info.pid)){const base=momentumFallbackBase(info);applyPlayerTraits([base]);P_BY_ID.set(info.pid,base)}
@@ -937,6 +967,11 @@ const EVENT_OBJECTIVES=[{
  eventName:"MOMENTUM",eventType:"momentum-objective",releaseId:"momentum-objective-haraldsson",activeFrom:"2026-10-02T19:00:00+02:00",activeUntilAt:"2026-10-09T19:00:00+02:00",
  mode:"squad",minDifficulty:"pro",target:8,reward:{eventObjective:"momentum-haraldsson"},
  player:{pid:"262088",name:"Hákon Haraldsson",ovr:84,baseOvr:78,position:"CAM",alt:"CM,LW",baseAlt:"LM,CM,LW",baseStats:[77,67,75,81,57,70],team:"LOSC Lille",nation:"Iceland",league:"Ligue 1",stats:[86,80,84,87,63,76],dynamicFace:"assets/footera/events/momentum/objectives/haraldsson.webp"}
+},{
+ id:"halloween-leao",key:"event:halloween-leao",group:"event",title:"HALLOWEEN: Rafael Leão",desc:"Gewinne 8 Squad-Battles-Partien auf mindestens Profi.",
+ eventName:"HALLOWEEN",eventType:"halloween-objective",releaseId:"halloween-objective-leao",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",
+ mode:"squad",minDifficulty:"pro",target:8,reward:{eventObjective:"halloween-leao"},
+ player:{pid:"241721",name:"Rafael Leão",ovr:88,baseOvr:83,position:"LW",alt:"LM,ST",baseAlt:"LM,ST,CAM",baseStats:[93,79,79,83,30,73],team:"AC Milan",nation:"Portugal",league:"Serie A Enilive",stats:[96,86,82,90,34,80],playstylePlusAdds:["rapid"],dynamicFace:"assets/footera/events/halloween/faces/241721.webp"}
 }];
 function activeEventObjectives(at=Date.now()){return EVENT_OBJECTIVES.filter(task=>eventPackIsActive(task,at))}
 function eventObjectiveProgress(task){return Math.min(task.target,Math.max(0,Number(state.eventObjectives?.[task.id]?.progress||0)))}
@@ -948,7 +983,7 @@ function eventObjectivePlayerBase(task){
 }
 function makeEventObjectiveItem(task){
  const base=eventObjectivePlayerBase(task),info=task?.player;if(!base||!info)return null;
- const item=makeItem(base,false,{variant:"special",eventType:task.eventType,eventName:task.eventName,eventReleaseId:task.releaseId,dynamicFace:info.dynamicFace,overridePosition:info.position,displayRating:info.ovr,eventStats:info.stats,rare:true,acquisitionSource:"Objective"});
+ const item=makeItem(base,false,{variant:"special",eventType:task.eventType,eventName:task.eventName,eventReleaseId:task.releaseId,dynamicFace:info.dynamicFace,overridePosition:info.position,displayRating:info.ovr,eventStats:info.stats,playstyleAdds:info.playstyleAdds||[],playstylePlusAdds:info.playstylePlusAdds||[],rare:true,acquisitionSource:"Objective"});
  item.objectiveRewardKey=task.id;return item
 }
 function recordEventObjectiveMatch(completed,result,at=Date.now()){
@@ -975,8 +1010,36 @@ function claimEventObjective(task,at=Date.now()){
 }
 const MOMENTUM_BY_ID=new Map(MOMENTUM_RELEASES.flatMap(event=>event.players.map(info=>[info.pid,info])));
 const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,teamSize:18,keepers:2,maxPlayersPerClub:1,allowExtraClubPlayer:true,avoidRecentSpecialRepeats:true,considerContent:["totw","events","sbc","objectives","season","evolutions"]};
-// The Halloween window is published here; its player team is released only when its roster is defined.
-const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"EVENT",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",players:[]};
+// HALLOWEEN · BLUTMOND: 18 real FC27 players from 18 clubs, own card artwork (halloween-card.css).
+// In the Halloween night (31.10. 19:00) every Halloween card gets the Blutmond upgrade, see halloweenUpgradeFor().
+const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"BLUTMOND",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",
+ upgrade:{at:"2026-10-31T19:00:00+01:00",ovr:1,stats:1,label:"Blutmond-Upgrade"},
+ sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:87,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[75,87,89,87,61,75],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Geisterstunde – 83er-Team",desc:"Teil 1/4 · Der Raumdeuter spukt wieder.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
+  {name:"Kürbisfeld – 84er-Team",desc:"Teil 2/4 · Oranje wie ein Kürbis.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus den Niederlanden",minAvg:84,requiredNation:"Holland",reward:{pack:"82",qty:1}},
+  {name:"Transsilvanien – 85er-Team",desc:"Teil 3/4 · Grüße aus Draculas Heimat.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Rumänien",minAvg:85,requiredNation:"Romania",reward:{pack:"goldplayers",qty:1}},
+  {name:"Blutmond – 86er-Team",desc:"Teil 4/4 · Deutschland trifft MLS.",req:"11 Spieler · Ø GES 86 · min. 1 deutscher Spieler · min. 1 MLS-Spieler",minAvg:86,requiredNation:"Germany",requiredLeague:"MLS",reward:{pack:"85",qty:1}}
+ ]},
+ players:[
+ {pid:"220901",dynamicFace:"assets/footera/events/halloween/dynamic/220901.webp",name:"David Raya",ovr:90,position:"GK",baseOvr:88,team:"Arsenal",nation:"Spain",alt:"",stats:[90,89,91,91,61,89],playstylePlusAdds:["far-reach"]},
+ {pid:"193080",dynamicFace:"assets/footera/events/halloween/dynamic/193080.webp",name:"De Gea",ovr:85,position:"GK",baseOvr:83,team:"Fiorentina",nation:"Spain",alt:"",stats:[84,83,79,88,49,87],playstylePlusAdds:["footwork"]},
+ {pid:"229558",dynamicFace:"assets/footera/events/halloween/dynamic/229558.webp",name:"Dayot Upamecano",ovr:88,position:"CB",baseOvr:87,team:"FC Bayern München",nation:"France",alt:"",stats:[82,47,67,77,88,85],playstylePlusAdds:["anticipate"]},
+ {pid:"232488",dynamicFace:"assets/footera/events/halloween/dynamic/232488.webp",name:"Cristian Romero",ovr:84,position:"CB",baseOvr:82,team:"Atlético de Madrid",nation:"Argentina",alt:"",stats:[77,51,65,67,88,84],playstylePlusAdds:["bruiser"]},
+ {pid:"265693",dynamicFace:"assets/footera/events/halloween/dynamic/265693.webp",name:"Jakub Kiwior",ovr:84,position:"CB",baseOvr:82,team:"FC Porto",nation:"Poland",alt:"LB",stats:[80,45,75,79,88,84],playstylePlusAdds:["block"]},
+ {pid:"239231",dynamicFace:"assets/footera/events/halloween/dynamic/239231.webp",name:"Cucurella",ovr:87,position:"LB",baseOvr:86,team:"Real Madrid",nation:"Spain",alt:"",stats:[85,66,81,80,86,80],playstylePlusAdds:["jockey"]},
+ {pid:"266127",dynamicFace:"assets/footera/events/halloween/dynamic/266127.webp",name:"Lewis Hall",ovr:85,position:"LB",baseOvr:83,team:"Newcastle Utd",nation:"England",alt:"",stats:[85,67,84,85,83,71],playstylePlusAdds:["pinged-pass"]},
+ {pid:"254243",dynamicFace:"assets/footera/events/halloween/dynamic/254243.webp",name:"Elliot Anderson",ovr:86,position:"CDM",baseOvr:84,team:"Manchester City",nation:"England",alt:"CM",stats:[76,74,86,85,85,82],playstylePlusAdds:["intercept"]},
+ {pid:"246863",dynamicFace:"assets/footera/events/halloween/dynamic/246863.webp",name:"Felix Nmecha",ovr:86,position:"CM",baseOvr:85,team:"Borussia Dortmund",nation:"Germany",alt:"CDM",stats:[85,80,84,86,84,90],playstylePlusAdds:["relentless"]},
+ {pid:"177003",dynamicFace:"assets/footera/events/halloween/dynamic/177003.webp",name:"Luka Modrić",ovr:87,position:"CM",baseOvr:85,team:"AC Milan",nation:"Croatia",alt:"CDM,CAM",stats:[78,78,90,89,76,72],playstylePlusAdds:["tiki-taka"]},
+ {pid:"243245",dynamicFace:"assets/footera/events/halloween/dynamic/243245.webp",name:"Orkun Kökçü",ovr:84,position:"CM",baseOvr:82,team:"Beşiktaş",nation:"Turkey",alt:"CDM,CAM",stats:[78,83,87,83,73,83],playstylePlusAdds:["long-ball-pass"]},
+ {pid:"260247",dynamicFace:"assets/footera/events/halloween/dynamic/260247.webp",name:"Morgan Rogers",ovr:86,position:"CAM",baseOvr:84,team:"Chelsea",nation:"England",alt:"LM,CM,LW",stats:[80,85,86,87,70,81],playstylePlusAdds:["press-proven"]},
+ {pid:"158023",dynamicFace:"assets/footera/events/halloween/dynamic/158023.webp",name:"Lionel Messi",ovr:91,position:"CAM",baseOvr:89,team:"Inter Miami CF",nation:"Argentina",alt:"RW,ST,RM",stats:[80,90,92,93,36,66],playstylePlusAdds:["finesse-shot"]},
+ {pid:"209331",dynamicFace:"assets/footera/events/halloween/dynamic/209331.webp",name:"Mohamed Salah",ovr:89,position:"RM",baseOvr:87,team:"Trabzonspor",nation:"Egypt",alt:"RW,CAM,ST",stats:[88,86,86,89,48,75],playstylePlusAdds:["low-driven-shot"]},
+ {pid:"264652",dynamicFace:"assets/footera/events/halloween/dynamic/264652.webp",name:"Bradley Barcola",ovr:87,position:"LW",baseOvr:85,team:"Paris SG",nation:"France",alt:"RW,LM,RM",stats:[95,80,81,87,42,70],playstylePlusAdds:["rapid"]},
+ {pid:"228093",dynamicFace:"assets/footera/events/halloween/dynamic/228093.webp",name:"Marcus Thuram",ovr:87,position:"ST",baseOvr:85,team:"Inter",nation:"France",alt:"",stats:[89,86,78,84,53,84],playstylePlusAdds:["power-shot"]},
+ {pid:"244176",dynamicFace:"assets/footera/events/halloween/dynamic/244176.webp",name:"Deniz Undav",ovr:86,position:"ST",baseOvr:85,team:"VfB Stuttgart",nation:"Germany",alt:"CAM",stats:[79,88,78,85,35,83],playstylePlusAdds:["acrobatic"]},
+ {pid:"194765",dynamicFace:"assets/footera/events/halloween/dynamic/194765.webp",name:"Antoine Griezmann",ovr:86,position:"ST",baseOvr:84,team:"Orlando City",nation:"France",alt:"CAM,CM",stats:[84,88,88,90,62,78],playstylePlusAdds:["incisive-pass"]}
+]};
 // SBC-only card; never inserted into the ordinary packs or market player pool.
 const FLASHBACK_REUS_BASE={id:"footera-flashback-reus-20261009",name:"Marco Reus",fullName:"Marco Reus",ovr:88,position:"CAM",alt:"LW,ST",nation:"Germany",team:"LA Galaxy",league:"Major League Soccer",clubLogo:"./assets/footera/events/flashback/Los_Angeles_Galaxy_logo.svg",leagueLogo:"./assets/footera/events/flashback/Major_League_Soccer_logo.svg",height:180,preferredFoot:"Right",skillMoves:4,weakFoot:4,pac:87,sho:86,pas:88,dri:90,def:52,phy:72,face:"https://cdn.futwiz.com/assets/img/fc27/faces/188350.png",playstyles:"Finesse Shot,Incisive Pass,First Touch,Trivela,Dead Ball",playstylesPlus:"Technical",dynamicFace:"./assets/footera/events/flashback/reus-dortmund.png",nationFlag:"./assets/footera/events/flashback/de.png",source:"footera-flashback"};
 const FLASHBACK_REUS_EVENT={id:"flashback-reus-20261009",name:"FLASHBACK",shortName:"FLASHBACK",theme:"flashback",activeFrom:"2026-10-09T19:00:00+02:00",activeUntilAt:"2026-10-29T19:00:00+01:00",activeUntil:"29.10.2026 · 18:59",players:[],sbcPlayer:{
@@ -1073,12 +1136,14 @@ function totwReviewEntries(team){
   return{index,info,base,item,player:displayBase(item)||base}
  })
 }
+// The event poster always lists the cards from the highest to the lowest rating.
+function byEventRating(entries){return [...entries].sort((a,b)=>Number(b.player?.ovr||0)-Number(a.player?.ovr||0))}
 function eventShowcases(){
  const activeId=String(activeTotwWeek()?.id||"");
- const totw=publishedTotwWeeks().map(team=>({id:`totw-${team.id}`,name:totwDisplayName(team.name),shortName:`TOTW ${team.id}`,subtitle:String(team.id)===activeId?"Aktuelles Team der Woche":"TOTW Archiv",activeUntil:team.activeUntil,releaseDate:team.releaseDate,theme:"totw",kind:"totw",team,entries:()=>totwEventEntries(team)}));
+ const totw=publishedTotwWeeks().map(team=>({id:`totw-${team.id}`,name:totwDisplayName(team.name),shortName:`TOTW ${team.id}`,subtitle:String(team.id)===activeId?"Aktuelles Team der Woche":"TOTW Archiv",activeUntil:team.activeUntil,releaseDate:team.releaseDate,theme:"totw",kind:"totw",team,entries:()=>byEventRating(totwEventEntries(team))}));
  const preview=requestedTotwPreview();
- if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:totwReleaseApproved(preview)?"Freigegeben · startet Mittwoch um 19:00":"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>totwReviewEntries(preview)});
- const promos=EVENT_PROMO_RELEASES.filter(event=>(event.players||[]).length>0&&Date.now()>=Date.parse(event.activeFrom)).map(event=>({...event,theme:event.theme||"event",kind:"promo",entries:()=>promoEventEntries(event)}));
+ if(preview&&!totw.some(ev=>ev.team.id===preview.id))totw.unshift({id:`totw-review-${preview.id}`,name:totwDisplayName(preview.name),shortName:`TOTW ${preview.id} · Vorschau`,subtitle:totwReleaseApproved(preview)?"Freigegeben · startet Mittwoch um 19:00":"Vorschlag zur Prüfung · nicht in Packs oder auf dem Markt",activeUntil:preview.activeUntil,releaseDate:preview.releaseDate,theme:"totw",kind:"totw",readOnly:true,team:preview,entries:()=>byEventRating(totwReviewEntries(preview))});
+ const promos=EVENT_PROMO_RELEASES.filter(event=>(event.players||[]).length>0&&Date.now()>=Date.parse(event.activeFrom)).map(event=>({...event,theme:event.theme||"event",kind:"promo",entries:()=>byEventRating(promoEventEntries(event))}));
  return [...promos.filter(e=>eventPackIsActive(e)),...totw,...promos.filter(e=>!eventPackIsActive(e))]
 }
 function renderEvents(){
@@ -1117,6 +1182,16 @@ function openPromoTeam(eventId=""){
  $("opponentTeamModalBody").innerHTML=`<div class="momentum-team-overview" data-promo-release="${event.id}"><div class="totw-team-head"><div><strong>${esc(event.name)} ${esc(event.subtitle||"")}</strong><span>stärkste positionsgerechte Elf · ${bench.length} auf der Bank</span></div><span>${esc(event.activeUntil)}</span></div><div class="friend-team-summary"><div class="kpi"><strong>${rating}</strong><span>Gesamtstärke</span></div><div class="kpi"><strong>${esc(formation)}</strong><span>Formation</span></div><div class="kpi"><strong>${entries.length}</strong><span>Spieler</span></div></div><div class="pitch friend-pitch">${slots.map((slot,i)=>`<div class="friend-slot momentum-slot ${xi[i]&&posFit(xi[i].player,slot.p)<=0?"out":""}" style="left:${slot.x}%;top:${slot.y}%">${xi[i]?promoTeamCard(xi[i],slot.p):`<div class="emptyslot">${positionLabel(slot.p)}</div>`}</div>`).join("")}</div><div class="totw-section-title">Auswechselspieler</div><div class="friend-bench momentum-team-bench">${bench.map(e=>`<div>${promoTeamCard(e)}</div>`).join("")}</div></div>`;
  showUiLayer("opponentTeamModal","opponent-team")
 }
+// Teaser overview before the HALLOWEEN start: what arrives when, with silhouettes instead of names.
+function openHalloweenPreview(){
+ const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
+ const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir 88 HALLOWEEN Rafael Leão."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
+ $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
+ $("opponentTeamModalSub").textContent="Vorschau · alle Spieler werden am 30.10. um 19:00 Uhr enthüllt";
+ delete $("opponentTeamModalBody").dataset.battleEventRelease;
+ $("opponentTeamModalBody").innerHTML=`<div class="halloween-preview"><div class="halloween-preview-cards home-momentum-roster teaser">${mystery.map(e=>`<div class="home-momentum-player">${cardHTML(e.player,e.item,true,e.player.position)}</div>`).join("")}</div><ol class="halloween-timeline">${rows.map(([when,title,text])=>`<li><span>${esc(when)}</span><strong>${esc(title)}</strong><p>${esc(text)}</p></li>`).join("")}</ol></div>`;
+ showUiLayer("opponentTeamModal","opponent-team")
+}
 function openMomentumTeam(eventId=""){return openPromoTeam(eventId||activeMomentumEvent()?.id||"")}
 $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.closest("[data-promo-team-bio]");if(!btn)return;const event=EVENT_PROMO_RELEASES.find(x=>x.id===btn.closest("[data-promo-release]")?.dataset.promoRelease);if(!event)return;const entry=promoEventEntries(event).find(x=>String(x.index)===String(btn.dataset.promoTeamBio));if(entry)openBiography(entry.item,null,entry.player)});
 function eventPackIsActive(event,at=Date.now()){
@@ -1138,7 +1213,7 @@ function activePromoPackEntry(base,at=Date.now()){
 function makePromoPackItem(base,entry,tradeable=true){
  const event=entry?.event,info=entry?.info;if(!event||!info)return null;
  if(event.theme==="momentum")return makeMomentumItem(base,tradeable,event);
- return makeItem(base,tradeable,{variant:"special",eventType:event.theme||event.id||"promo",eventName:event.name||"Event",eventReleaseId:event.id,dynamicFace:info.dynamicFace||info.eventFace||"",eventStats:info.stats,displayRating:info.ovr,boost:Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0)),overridePosition:info.position||base.position,rare:true})
+ return makeItem(base,tradeable,{variant:"special",eventType:event.theme||event.id||"promo",eventName:event.name||"Event",eventReleaseId:event.id,dynamicFace:info.dynamicFace||info.eventFace||"",eventStats:info.stats,displayRating:info.ovr,boost:Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0)),overridePosition:info.position||base.position,playstyleAdds:info.playstyleAdds||info.playstyles||[],playstylePlusAdds:info.playstylePlusAdds||info.playstylesPlus||[],rare:true})
 }
 function makeLivePackItem(base,tradeable=true){
  if(isActiveEventSbcBase(base))return makeItem(base,tradeable);
@@ -1317,6 +1392,9 @@ function sbcReleaseScheduleLabel(iso){
 function sbcGroupProgress(groupSet){
  const rows=allActiveSBCs().filter(x=>x.groupSet===groupSet),done=rows.filter(sbcIsCompleted).length;return{rows,done,total:rows.length}
 }
+// Event names for player SBC banners; MOMENTUM stays the fallback for older event rows.
+function eventSbcEventLabel(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId&&e.sbcPlayer)?.name||"MOMENTUM"}
+function eventSbcNamedTitle(sample){return [FLASHBACK_REUS_EVENT.id,HALLOWEEN_EVENT.id].includes(sample?.eventId)&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
 function eventSbcRewardDefinition(reward){
  const event=EVENT_PROMO_RELEASES.find(e=>e.id===reward?.playerReward?.eventId),def=event?.sbcPlayer;
  return event&&def&&def.id===reward?.playerReward?.playerId?{event,def}:null
@@ -1328,10 +1406,11 @@ function eventSbcRewardBase(event,def){
 function makeEventSbcRewardItem(reward){
  const found=eventSbcRewardDefinition(reward);if(!found)return null;
  const {event,def}=found,base=eventSbcRewardBase(event,def);
- return makeItem(base,false,{variant:"special",eventType:`${event.theme||event.id}-sbc`,eventName:event.name,overridePosition:def.position||base.position,displayRating:def.ovr,eventStats:def.stats,playstyleAdds:def.playstyleAdds||[],playstylePlusAdds:def.playstylePlusAdds||[],rare:true,acquisitionSource:"SBC"})
+ return makeItem(base,false,{variant:"special",eventType:`${event.theme||event.id}-sbc`,eventName:event.name,dynamicFace:def.dynamicFace||"",overridePosition:def.position||base.position,displayRating:def.ovr,eventStats:def.stats,playstyleAdds:def.playstyleAdds||[],playstylePlusAdds:def.playstylePlusAdds||[],rare:true,acquisitionSource:"SBC"})
 }
+function eventDisplayOvr(eventId,ovr){return Number(ovr||0)+(String(eventId||"").startsWith("halloween")?Number(halloweenUpgradeFor({eventType:"halloween"})?.ovr||0):0)}
 function eventSbcRewardLabel(reward){
- const found=eventSbcRewardDefinition(reward);return found?`${found.def.ovr} ${found.event.name} ${found.def.name}`:"Event-Spieler"
+ const found=eventSbcRewardDefinition(reward);return found?`${eventDisplayOvr(found.event.id,found.def.ovr)} ${found.event.name} ${found.def.name}`:"Event-Spieler"
 }
 function sbcGroupBannerHTML(group,rows){
  if(!rows.length)return"";
@@ -1339,8 +1418,8 @@ function sbcGroupBannerHTML(group,rows){
  if(group==="Grind")return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">SBC GRIND · 3–4 TAGE</span><h3>Neue SBCs. Bessere Packs.</h3><p>Neue 3- und 4-Tage-Challenges mit starken Belohnungen. Gold-Recycling ist wiederholbar; alle anderen Aufgaben sind pro Rotation einmalig.</p></div></div>`;
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  if(group==="Profis"&&sample.eventSbc){
-  const def=sample.eventPlayer,reward=`${def.ovr} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"FLASHBACK":"MOMENTUM"} ${def.name}`;
-  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · ${esc(sbcReleaseScheduleLabel(def.releaseAt))}</span><h3>${sample.eventId===FLASHBACK_REUS_EVENT.id?"FLASHBACK":"MOMENTUM"} · ${esc(def.name)}</h3><p>Schließe alle ${p.total} Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare Event-Spielerkarte.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
+  const def=sample.eventPlayer,reward=`${def.ovr} ${eventSbcEventLabel(sample.eventId)} ${def.name}`;
+  return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">EVENT-SBC · ${esc(sbcReleaseScheduleLabel(def.releaseAt))}</span><h3>${eventSbcEventLabel(sample.eventId)} · ${esc(def.name)}</h3><p>Schließe alle ${p.total} Teams ab. Jede Teil-SBC gibt ein Pack; danach erhältst du die untauschbare Event-Spielerkarte.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
  }
  if(group!=="Top-Partien")return"";
  const reward=sbcRewardText(sample.groupReward);
@@ -1746,10 +1825,12 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";if(item?.variant==="special")return"special";if(isEvolutionItem(item))return"evolution";return rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";if(item?.variant==="special")return"special";if(isEvolutionItem(item))return"evolution";return rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
-function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0))}
+// Blutmond upgrade: every HALLOWEEN card (team, SBC, objective) gains the event upgrade once the Halloween night starts.
+function itemRating(item){const b=itemBase(item);if(!b)return 0;const fixed=Number(item?.displayRating||0),momentum=isMomentumItem(item)?promoItemInfo(item):null;return Math.min(99,(fixed>0?fixed:(momentum?momentum.ovr:b.ovr+(item.boost||0)))+(item.evo||0)+Number(halloweenUpgradeFor(item)?.ovr||0))}
+function halloweenUpgradeFor(item,at=Date.now()){const up=typeof HALLOWEEN_EVENT!=="undefined"&&HALLOWEEN_EVENT.upgrade;return up&&String(item?.eventType||"").startsWith("halloween")&&at>=Date.parse(up.at)?up:null}
 function displayBase(item){
  const b=itemBase(item);if(!b)return null;
  const momentum=isMomentumItem(item)?promoItemInfo(item):null,eventStats=Array.isArray(item?.eventStats)?item.eventStats:null,extra=item?.evoStats||{};
@@ -1759,12 +1840,14 @@ function displayBase(item){
  if(momentum){if(momentum.name)out.name=momentum.name;if(momentum.team&&(item.eventReleaseId===MOMENTUM_TEAM_2.id||item.eventType==="momentum-objective")){out.team=momentum.team;out.league=momentum.league||leagueFromClub(momentum.team,"","","male","fc27-open-data");out.nation=momentum.nation}if(momentum.stats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=momentum.stats[index];if(momentum.position)out.alt=[...new Set([b.position,...String(b.alt||"").split(/[,/]/).map(s=>s.trim()),...String(momentum.alt||"").split(/[,/]/).map(s=>s.trim())].filter(s=>s&&s!==momentum.position))].join(",")}
  const promo=promoItemInfo(item);if(promo||item.dynamicFace||item.eventFace){out.dynamicFace=item.dynamicFace||item.eventFace||promo?.dynamicFace||promo?.eventFace||"";out.eventReleaseId=item.eventReleaseId||""}
  if(eventStats)for(const [index,k] of ["pac","sho","pas","dri","def","phy"].entries())out[k]=Number(eventStats[index]??out[k]??0);
+ const blutmond=halloweenUpgradeFor(item);if(blutmond)for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(out[k]||0)+Number(blutmond.stats||0));
  if(Object.keys(extra).length){const resolved=resolvedPlayer(out);for(const k of ["pac","sho","pas","dri","def","phy"])out[k]=Math.min(99,Number(resolved[k]||0)+Number(extra[k]||0))}
  return out
 }
 function makeItem(base,tradeable=false,opts={}){const rare=opts.rare===true||isBaseRare(base),rawPurchase=Number(opts.purchasePrice||0),purchasePrice=Number.isFinite(rawPurchase)&&rawPurchase>0?Math.round(rawPurchase):0,displayRating=Number(opts.displayRating||0),eventStats=Array.isArray(opts.eventStats)?opts.eventStats.map(Number):null;return{uid:uid(),pid:String(base.id),tradeable,acquired:Date.now(),evo:0,evoStats:{},variant:opts.variant||"",eventType:opts.eventType||"",boost:Number(opts.boost||0),eventName:opts.eventName||"",eventReleaseId:opts.eventReleaseId||"",dynamicFace:opts.dynamicFace||opts.eventFace||"",overridePosition:opts.overridePosition||"",displayRating:Number.isFinite(displayRating)&&displayRating>0?displayRating:0,eventStats,playstyleAdds:Array.isArray(opts.playstyleAdds)?opts.playstyleAdds.map(String):[],playstylePlusAdds:Array.isArray(opts.playstylePlusAdds)?opts.playstylePlusAdds.map(String):[],rare,purchasePrice,acquisitionSource:String(opts.acquisitionSource||""),clubGoals:Math.max(0,Number(opts.clubGoals||0)),clubAssists:Math.max(0,Number(opts.clubAssists||0))}}
 function storyBase(key){
  const spec=STORY_PASS_PLAYERS[key];if(!spec)return null;
+ if(spec.pid&&typeof P_BY_ID!=="undefined"&&P_BY_ID.get(String(spec.pid)))return P_BY_ID.get(String(spec.pid));
  const aliases=[spec.name,...(spec.aliases||[])].map(normalizeKey).filter(Boolean);
  const exact=PLAYERS.find(p=>{const keys=[p.fullName,p.name,[p.firstName,p.lastName].filter(Boolean).join(" ")].map(normalizeKey).filter(Boolean);return aliases.some(a=>keys.includes(a))});
  if(exact)return exact;
@@ -1772,10 +1855,11 @@ function storyBase(key){
  const matches=PLAYERS.filter(p=>[p.fullName,p.name].map(normalizeKey).some(k=>k===surname||k.endsWith(" "+surname)));
  return matches.length===1?matches[0]:null
 }
+function storyEventName(spec){return spec.season==="s1"?"STORY":`SAISON ${spec.season.slice(1)}`}
 function storyPreviewCard(key){
  const spec=STORY_PASS_PLAYERS[key],base=storyBase(key);if(!spec)return"";
  if(!base)return`<div class="pass-story-placeholder">${spec.rating} · ${esc(spec.name)}</div>`;
- const item={uid:`story-preview-${key}`,pid:String(base.id),variant:"story",eventType:"story",eventName:"STORY",storyRewardKey:key,displayRating:spec.rating,overridePosition:spec.position,eventStats:spec.stats};
+ const item={uid:`story-preview-${key}`,pid:String(base.id),variant:"story",eventType:"story",eventName:storyEventName(spec),dynamicFace:spec.face||"",storyRewardKey:key,displayRating:spec.rating,overridePosition:spec.position,eventStats:spec.stats};
  return cardHTML(displayBase(item),item)
 }
 function deliverStoryPassRewards(){
@@ -1786,7 +1870,7 @@ function deliverStoryPassRewards(){
  state.storyPassPending=pending.filter(key=>{
   if(state.storyPassGranted[key]||state.club.some(item=>item.storyRewardKey===key)){state.storyPassGranted[key]=true;return false}
   const spec=STORY_PASS_PLAYERS[key],base=storyBase(key);if(!spec||!base)return true;
-  const item=makeItem(base,false,{variant:"story",eventType:"story",eventName:"STORY",displayRating:spec.rating,overridePosition:spec.position,eventStats:spec.stats,rare:true,acquisitionSource:`Season Pass ${spec.season.toUpperCase()} · Stufe ${spec.level}`});
+  const item=makeItem(base,false,{variant:"story",eventType:"story",eventName:storyEventName(spec),dynamicFace:spec.face||"",displayRating:spec.rating,overridePosition:spec.position,eventStats:spec.stats,rare:true,acquisitionSource:`Season Pass ${spec.season.toUpperCase()} · Stufe ${spec.level}`});
   item.storyRewardKey=key;state.club.push(item);state.storyPassGranted[key]=true;delivered++;return false
  });
  save();return delivered
@@ -1837,6 +1921,7 @@ function resolvedAffiliation(p){
  let value;
  if(p.id===FOUNDER_PLAYER_ID)value={...p,team:"FC Gerlies",league:"Footera",clubLogo:FOUNDER_BASE.clubLogo,leagueLogo:FOUNDER_BASE.leagueLogo};
  else if(p.id===NIKLAS_FOUNDER_PLAYER_ID)value={...p,team:NIKLAS_FOUNDER_BASE.team,league:"Footera",clubLogo:NIKLAS_FOUNDER_BASE.clubLogo,leagueLogo:NIKLAS_FOUNDER_BASE.leagueLogo};
+ else if(p.id===MAX_FOUNDER_PLAYER_ID)value={...p,team:MAX_FOUNDER_BASE.team,league:"Footera",clubLogo:MAX_FOUNDER_BASE.clubLogo,leagueLogo:MAX_FOUNDER_BASE.leagueLogo};
  else if(p.id===MARCO_FOUNDER_PLAYER_ID)value={...p,team:MARCO_FOUNDER_BASE.team,league:"Footera",clubLogo:MARCO_FOUNDER_BASE.clubLogo,leagueLogo:MARCO_FOUNDER_BASE.leagueLogo};
  else{
   const team=String(p.team||"").trim(),linked=team?discoveredClubLeague(team):{name:"",url:""};
@@ -1844,7 +1929,7 @@ function resolvedAffiliation(p){
   const canonicalSourceLeague=leagueFromClub("",sourceLeague,p.leagueId,p.gender,p.source),canonicalLinkedLeague=leagueFromClub("",linkedLeague,"",p.gender,p.source);
   const sourceLogoMatches=!!canonicalSourceLeague&&normalizeKey(canonicalSourceLeague)===normalizeKey(league),linkedLogoMatches=!!canonicalLinkedLeague&&normalizeKey(canonicalLinkedLeague)===normalizeKey(league);
   const verified=verifiedClubBadge(team,p),women=isWomensAffiliation(team,p);
-  value={...p,league,clubLogo:verified?.url||(!women?(apiSportsTeamLogo(team)||String(p.clubLogo||"").trim()||discoveredBadge("club",team)):""),leagueLogo:apiSportsLeagueLogo(league)||(sourceLogoMatches?String(p.leagueLogo||"").trim():"")||(linkedLogoMatches?String(linked.url||"").trim():"")||discoveredBadge("league",league)}
+  value={...p,league,clubLogo:verified?.url||(!women?(apiSportsTeamLogo(team)||String(p.clubLogo||"").trim()||discoveredBadge("club",team)):womensClubLogo(p)),leagueLogo:localLeagueLogo(league)||apiSportsLeagueLogo(league)||(sourceLogoMatches?String(p.leagueLogo||"").trim():"")||(linkedLogoMatches?String(linked.url||"").trim():"")||discoveredBadge("league",league)}
  }
  RESOLVED_AFFILIATION_CACHE.set(p,{epoch:AFFILIATION_CACHE_EPOCH,sig,value});return value
 }
@@ -1870,7 +1955,7 @@ function playerLeagueLabel(p){
  if(league)return league;
  return String(a?.team||"").trim()?"Liga wird ermittelt":"Keine Liga"
 }
-function playerContextLine(p){const a=resolvedAffiliation(p);return `${playerClubLabel(a)} · ${playerLeagueLabel(a)} · ${[FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID].includes(String(p?.id||""))?"Deutschland":nationLabel(a?.nation)}`}
+function playerContextLine(p){const a=resolvedAffiliation(p);return `${playerClubLabel(a)} · ${playerLeagueLabel(a)} · ${[FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID,MAX_FOUNDER_PLAYER_ID].includes(String(p?.id||""))?"Deutschland":nationLabel(a?.nation)}`}
 function playerAffiliationHTML(p,compact=false){
  p=resolvedAffiliation(p);
  const hasClub=!!String(p?.team||"").trim(),hasLeague=!!String(p?.league||"").trim(),pid=String(p?.id||"");
@@ -1974,6 +2059,27 @@ const API_SPORTS_TEAM_IDS={
 };
 const CLUB_IDENTITY_STOP=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","the"]);
 function clubIdentityKey(v){return normalizeKey(v).split(" ").filter(x=>x&&!CLUB_IDENTITY_STOP.has(x)).join(" ")}
+// Logos the game ships itself (scripts/fetch-league-logos.cjs), keyed by EA's league name.
+const LOCAL_LEAGUE_LOGOS={
+ "arkema pl":"./assets/leagues/arkema-pl.png",
+ "barclays wsl":"./assets/leagues/barclays-wsl.png",
+ "calcio a femminile":"./assets/leagues/calcio-a-femminile.png",
+ "ceska liga zen":"./assets/leagues/ceska-liga-zen.jpg",
+ "gpfbl":"./assets/leagues/gpfbl.png",
+ "iceland league":"./assets/leagues/iceland-league.png",
+ "liga f moeve":"./assets/leagues/liga-f-moeve.png",
+ "liga portugal feminino":"./assets/leagues/liga-portugal-feminino.png",
+ "nwsl":"./assets/leagues/nwsl.png",
+ "nederland vrouwen liga":"./assets/leagues/nederland-vrouwen-liga.jpg",
+ "scottish women s league":"./assets/leagues/scottish-women-s-league.png",
+ "sverige liga":"./assets/leagues/sverige-liga.png"
+};
+// The game shows some leagues under their full name (LEAGUE_NAME_ALIASES); those find the logo too.
+function localLeagueLogo(league){
+ const key=normalizeKey(league);if(LOCAL_LEAGUE_LOGOS[key])return LOCAL_LEAGUE_LOGOS[key];
+ for(const [alias,name] of Object.entries(LEAGUE_NAME_ALIASES))if(LOCAL_LEAGUE_LOGOS[alias]&&normalizeKey(name)===key)return LOCAL_LEAGUE_LOGOS[alias];
+ return""
+}
 function apiSportsLeagueLogo(league){const id=API_SPORTS_LEAGUE_IDS[normalizeKey(league)];return id?`https://media.api-sports.io/football/leagues/${id}.png`:""}
 const API_SPORTS_TEAM_ID_CACHE=new Map();
 function apiSportsTeamId(team){
@@ -1994,6 +2100,8 @@ function isWomensAffiliation(team,p={}){
  return /(?:women|woman|ladies|vrouwen|feminin|femenin|frauen|damen|femminile|lyonnes)/.test(name+" "+gender)||
   /(?:women|woman|ladies|vrouwen|feminin|femenin|frauen|damen|femminile|liga f|arkema premiere ligue)/.test(league)
 }
+// EA ships the women's teams with their own team ids and crests, so only EA's crest is exact for them.
+function womensClubLogo(p){const url=String(p?.clubLogo||"").trim();return /^https:\/\/drop-assets\.ea\.com\//.test(url)?url:""}
 function verifiedClubBadge(team,p={}){
  return isWomensAffiliation(team,p)?null:VERIFIED_BADGES.clubs?.[normalizeKey(team)]||null
 }
@@ -2299,6 +2407,9 @@ function emblemCandidates(kind,p){
  if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="flag")return["./assets/footera/events/flashback/de.png"];
  if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="club")return[NIKLAS_FOUNDER_BASE.clubLogo];
  if(p?.id===NIKLAS_FOUNDER_PLAYER_ID&&kind==="league")return[NIKLAS_FOUNDER_BASE.leagueLogo];
+ if(p?.id===MAX_FOUNDER_PLAYER_ID&&kind==="flag")return["./assets/footera/events/flashback/de.png"];
+ if(p?.id===MAX_FOUNDER_PLAYER_ID&&kind==="club")return[MAX_FOUNDER_BASE.clubLogo];
+ if(p?.id===MAX_FOUNDER_PLAYER_ID&&kind==="league")return[MAX_FOUNDER_BASE.leagueLogo];
  if(p?.id===FOUNDER_PLAYER_ID&&kind==="club")return[FOUNDER_BASE.clubLogo];
  if(p?.id===FOUNDER_PLAYER_ID&&kind==="league")return[FOUNDER_BASE.leagueLogo];
  if(p?.id===MARCO_FOUNDER_PLAYER_ID&&kind==="club")return[MARCO_FOUNDER_BASE.clubLogo];
@@ -2306,7 +2417,7 @@ function emblemCandidates(kind,p){
  if(kind==="club"){
   const verified=verifiedClubBadge(p?.team,p);
   if(verified){add(verified.url);return arr}
-  if(isWomensAffiliation(p?.team,p))return arr;
+  if(isWomensAffiliation(p?.team,p)){add(womensClubLogo(p));return arr}
   add(apiSportsTeamLogo(p?.team));add(p?.clubLogo);
   if(/^\d+$/.test(String(p?.teamId||"")))add(`https://cdn.sofifa.net/meta/team/${p.teamId}/120.png`);
   add(discoveredBadge("club",p?.team));
@@ -2315,6 +2426,7 @@ function emblemCandidates(kind,p){
  if(kind==="league"){
   const linked=discoveredClubLeague(p?.team),leagueName=String(p?.league||linked.name||"").trim();
   const linkedMatches=!!linked.name&&normalizeKey(leagueFromClub("",linked.name))===normalizeKey(leagueFromClub("",leagueName));
+  add(localLeagueLogo(leagueName));
   add(apiSportsLeagueLogo(leagueName));
   add(p?.leagueLogo);
   if(linkedMatches)add(linked.url);
@@ -2333,6 +2445,7 @@ function emblemCandidates(kind,p){
 function imgCandidatesAttr(arr){return esc(JSON.stringify(arr))}
 function advanceImg(el){try{const arr=JSON.parse(el.dataset.candidates||'[]'),failed=String(el?.currentSrc||el?.src||'');if(failed){IMAGE_FAILURE_CACHE.set(failed,Date.now());const candidate=arr[Number(el.dataset.idx||0)];if(candidate)IMAGE_FAILURE_CACHE.set(candidate,Date.now());persistImageCaches()}let i=Number(el.dataset.idx||0)+1;while(i<arr.length&&(!arr[i]||imageFailedRecently(arr[i])))i++;if(i<arr.length){el.dataset.idx=String(i);el.src=arr[i];if(el.closest?.('.face'))watchVisiblePortrait(el);return}if(el.closest?.('.face'))stopPortraitWatch(el);if(el.dataset.iconName)queueIconPortrait({name:el.dataset.iconName,isIcon:true},true);el.style.display='none';const fb=el.parentElement?.querySelector('.asset-fallback,.face-fallback');if(fb)fb.style.display=fb.classList.contains('face-fallback')?'flex':'grid'}catch(e){el.style.display='none'}}
 function eventDynamicFace(p,item){
+ if(item?.variant==="story")return String(item.dynamicFace||"").trim();
  if(item?.variant!=="special")return"";
  if(String(item.eventName||"").startsWith("Team of the Week")||String(item.eventType||"").startsWith("totw")){
   const week=typeof TOTW_WEEKS!=="undefined"?TOTW_WEEKS.find(w=>`totw-${w.id}`===item.eventReleaseId||w.name===item.eventName):null;
@@ -2395,7 +2508,7 @@ function officialCardHTML(p,item){
  if(!arr.length)return"";
  return `<img class="official-card" src="${esc(arr[0])}" data-cache-key="${esc(imageCacheKey('official-card',p))}" data-candidates="${imgCandidatesAttr(arr)}" data-idx="0" alt="${esc(p.name||'Spieler')}" loading="lazy" decoding="async" onload="rememberLoadedImage(this)" onerror="advanceOfficialCard(this)">`
 }
-function playerGender(p){const g=normalizeKey(p?.gender||p?.sex||p?.playerGender||"");if(["female","women","woman","f","1"].includes(g))return"female";if(["male","men","man","m","0"].includes(g))return"male";return""}
+function playerGender(p){const g=normalizeKey(p?.gender||p?.sex||p?.playerGender||"");if(["female","women","woman","f","1"].includes(g)||/^wom[ae]n s football$/.test(g))return"female";if(["male","men","man","m","0","men s football"].includes(g))return"male";return""}
 function positionLabel(pos,p=null){const raw=String(pos||"").toUpperCase();if(raw==="GK")return playerGender(p)==="female"?"TH":"TW";const m={CB:"IV",RB:"RV",LB:"LV",RWB:"RAV",LWB:"LAV",CDM:"ZDM",CM:"ZM",CAM:"ZOM",RM:"RM",RW:"RF",LM:"LM",LW:"LF",CF:"MS",ST:"ST"};return m[raw]||raw}
 function cardStatPairs(p){if(String(p?.position||"").toUpperCase()==="GK")return[["HEC",p.pac],["BSI",p.sho],["ABS",p.pas],["REF",p.dri],["TMP",p.def],["POS",p.phy]];return[["TEM",p.pac],["SCH",p.sho],["PAS",p.pas],["DRI",p.dri],["DEF",p.def],["PHY",p.phy]]}
 function cardStatLongLabel(k){return({HEC:"Hechten",BSI:"Ballsicherheit",ABS:"Abschlag",REF:"Reflexe",TMP:"Tempo",POS:"Stellungsspiel",TEM:"Tempo",SCH:"Schießen",PAS:"Passen",DRI:"Dribbling",DEF:"Defensive",PHY:"Physis"})[k]||k}
@@ -2464,11 +2577,13 @@ function toggleTransferList(uid){
 function playerProfileTypeLabel(item,friend=false){
  if(friend)return"FREUNDESKARTE";
  if(isFounderItem(item))return"FOOTERA FOUNDER";
- if(isStoryItem(item))return"STORY";
+ if(isStoryItem(item))return STORY_PASS_PLAYERS[item.storyRewardKey].season==="s1"?"STORY":`${item.eventName||"SAISON"} · SEASON PASS`;
   if(item?.cosmeticDesign==="totw")return"TEAM OF THE WEEK · EVO";
   if(item?.cosmeticDesign==="momentum")return"MOMENTUM · EVO";
   if(item?.cosmeticDesign==="red")return"CHAMPIONS ROT";
   if(item?.cosmeticDesign==="red-pro")return"CHAMPIONS ELITE ROT";
+  if(item?.cosmeticDesign==="halloween")return isEvolutionItem(item)?"HALLOWEEN · BLUTMOND-EVO":"HALLOWEEN · EVO";
+  if(String(item?.eventType||"").startsWith("halloween"))return halloweenUpgradeFor(item)?"HALLOWEEN · BLUTMOND-UPGRADE +1":"HALLOWEEN · BLUTMOND";
   if(isMomentumItem(item))return"MOMENTUM";
  if(item?.variant==="icon-mid")return"ICON";
  if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"TEAM OF THE WEEK";
@@ -2548,7 +2663,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
     <path fill="#fac577" opacity=".32" d="M78 92 94 66 93 111Z"/><path fill="#c083ee" opacity=".3" d="M88 43 96 20 94 66 78 92Z"/>
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
-   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"?(p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":p.id==="footera-founder-niklas-bergstraesser"?" worms-founder":""):"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}" data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
+   </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"?(p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":p.id==="footera-founder-niklas-bergstraesser"?" worms-founder":p.id==="footera-founder-max-wittenberg"?" worms-founder hohenroth-founder":""):"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}"${cls==="story"&&item?.eventName&&item.eventName!=="STORY"?` data-story-label="${esc(item.eventName)}"`:""} data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
  // Special designs keep their own skin; a small badge shows the Evolution instead.
  const evoActive=!!(item&&activeEvolutionForUid(item.uid)),evoLabel=evoActive?"Aktive Evolution":"Evolution";
  const evoMarker=item&&(evoActive||(cls!=="evolution"&&isEvolutionItem(item)))?`<span class="evo-active-marker" title="${evoLabel}" aria-label="${evoLabel}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="flashback"?" flashback-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
@@ -2733,6 +2848,8 @@ function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
  const verified=verifiedClubBadge(team,{gender,league:rawLeague,source});
  if(verified?.league&&(source==="fc27-open-data"||source==="fc27-open-data-men"))return verified.league;
  if(LEAGUE_NAME_ALIASES[rk])return LEAGUE_NAME_ALIASES[rk];
+ // Juventus or Roma women play in their own league; the men's club list must not move them to Serie A.
+ if(rk&&/(?:women|woman|ladies|vrouwen|feminin|femenin|frau|damen|femminile)/.test(normalizeKey(gender)))return String(rawLeague);
  if(rk){
   if(rk==="bundesliga")return"Bundesliga";
   if(rk==="premier league")return"Premier League";
@@ -2805,9 +2922,11 @@ function applyPlayerTraits(players){
 }
 async function savePlayers(players){await idbClear();const chunk=1500;for(let i=0;i<players.length;i+=chunk)await idbPutMany(players.slice(i,i+chunk))}
 async function loadFallback(){try{const r=await fetch('./players-fallback.json',{cache:'no-store'});if(!r.ok)return[];return await r.json()}catch(e){return[]}}
+// Bumped when the game reads the same file differently, so offline copies are rebuilt once (w1: women's club crests).
+const PLAYER_DB_CLIENT_REVISION=":w1";
 async function remotePlayerDbRevision(){
  const c=new AbortController(),t=setTimeout(()=>c.abort(),6000);
- try{const r=await fetch(DB_VERSION_URL,{cache:"no-store",signal:c.signal});if(!r.ok)return"";return String((await r.json())?.revision||"")}catch(e){return""}finally{clearTimeout(t)}
+ try{const r=await fetch(DB_VERSION_URL,{cache:"no-store",signal:c.signal});if(!r.ok)return"";const rev=String((await r.json())?.revision||"");return rev?rev+PLAYER_DB_CLIENT_REVISION:""}catch(e){return""}finally{clearTimeout(t)}
 }
 // A player EA drops from its database must not vanish from a club that owns the card.
 async function keepOwnedPlayers(players){
@@ -3054,6 +3173,24 @@ function renderWallet(){const local=Number(state.points)||0,server=window.Footer
 function ensureSquadSlots(){if(!Array.isArray(state.squad))state.squad=[];while(state.squad.length<23)state.squad.push(null);if(state.squad.length>23)state.squad=state.squad.slice(0,23)}
 function squadItems(){ensureSquadSlots();return state.squad.map(id=>state.club.find(x=>x.uid===id)||null)}
 function currentFormation(){return FORMATIONS[state.formation]||FORMATIONS["4-3-3"]}
+// Display-only spots for the squad pitch: nudges the formation spots apart until no card (incl. its chemistry tag) covers another.
+// Geometry in % of the pitch, matching ux-clarity.css (#pitch aspect .68, slot width 18%, card aspect 1.42, tag ~1.1% below the card).
+const PITCH_SPOTS=new WeakMap();
+function squadPitchSpots(form){
+ if(PITCH_SPOTS.has(form))return PITCH_SPOTS.get(form);
+ const W=18,H=W*1.42*.68,TAG=1.1,GAP=.6,spots=form.map(s=>({x:s.x,y:s.y}));
+ for(let pass=0;pass<400;pass++){
+  let moved=false;
+  for(let i=0;i<spots.length;i++)for(let j=i+1;j<spots.length;j++){
+   const a=spots[i],b=spots[j],[up,lo]=a.y<=b.y?[a,b]:[b,a],ox=W+GAP-Math.abs(a.x-b.x),oy=H+TAG+GAP-(lo.y-up.y);
+   if(ox<=0||oy<=0)continue;moved=true;
+   if(ox<oy*.6){const[l,r]=a.x<=b.x?[a,b]:[b,a];l.x-=ox/2+.01;r.x+=ox/2+.01}else{up.y-=oy/2+.01;lo.y+=oy/2+.01}
+  }
+  for(const s of spots){s.x=Math.min(100-W/2-.5,Math.max(W/2+.5,s.x));s.y=Math.min(100-H/2-TAG-.4,Math.max(H/2+.4,s.y))}
+  if(!moved)break;
+ }
+ const out=spots.map(s=>({x:+s.x.toFixed(1),y:+s.y.toFixed(1)}));PITCH_SPOTS.set(form,out);return out;
+}
 function inPosition(base,slot){return posFit(base,slot)>0}
 function chemThreshold(n,a,b,c){return n>=c?3:n>=b?2:n>=a?1:0}
 function chemNationKey(nation){
@@ -3111,8 +3248,10 @@ function opponentChemistryTotal(squad,formation="4-3-3",items=[]){return opponen
 function playerChem(index,items){return index>=0&&index<11?squadChemistry(items)[index]||0:0}
 function squadMetrics(){const items=squadItems(),xi=items.slice(0,11).filter(Boolean),matchSquad=items.slice(0,18),rating=xi.length?Math.round(xi.reduce((s,i)=>s+itemRating(i),0)/xi.length):0,chemScores=squadChemistry(items),chem=chemScores.reduce((total,value)=>total+value,0);return{items,filled:matchSquad.filter(Boolean).length,reserveFilled:items.slice(18,23).filter(Boolean).length,rating,chem,chemScores}}
 function slotHTML(item,i,chem=0){
- const s=currentFormation()[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
- return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${s.x}%;top:${s.y}%">${base?cardHTML(base,item,true,shown):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${base?`<div class="chem-dots" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`:""}</button>`
+ const s=currentFormation()[i],spot=squadPitchSpots(currentFormation())[i],base=item?displayBase(item):null,out=base&&!inPosition(base,s.p),shown=base&&!out?s.p:(base?.position||s.p);
+ // Chem style sits with the chemistry diamonds in one tag on the card's bottom edge, outside the layout flow, so it never pushes or covers neighbouring cards.
+ const boost=base&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,true):"";
+ return`<button class="slot ${out?"out":""}" data-slot="${i}" style="left:${spot.x}%;top:${spot.y}%">${base?cardHTML(base,item,true,shown,false):`<div class="emptyslot">${positionLabel(s.p)}<br>+</div>`}${out?'<div class="poswarn">!</div>':''}${base?`<div class="chem-dots${boost?" has-boost":""}" title="Individuelle Chemie: ${chem}/3" aria-label="Individuelle Chemie ${chem} von 3">${boost}${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div>`:""}</button>`
 }
 function benchHTML(item,i){const b=item?displayBase(item):null;return`<div class="benchslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Bankplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">BANK<br>+</div>'}</button></div>`}
 function reserveHTML(item,i){const b=item?displayBase(item):null;return`<div class="reserveslot"><button data-slot="${i}" aria-label="${b?esc(b.name):"Reserveplatz"}">${b?cardHTML(b,item,true):'<div class="emptyslot">RES<br>+</div>'}</button></div>`}
@@ -3519,9 +3658,40 @@ function moveSquadPointer(e){
  }
  if(!dragState.active)return;
  e.preventDefault();
+ dragState.x=e.clientX;dragState.y=e.clientY;
  if(dragState.ghost){dragState.ghost.style.left=e.clientX+'px';dragState.ghost.style.top=e.clientY+'px'}
+ updateSquadDropTarget();
+ if(!dragState.scrollRaf)dragState.scrollRaf=requestAnimationFrame(squadDragAutoScroll);
+}
+function squadDragScroller(el){
+ for(let n=el?.parentElement;n&&n!==document.body;n=n.parentElement){const oy=getComputedStyle(n).overflowY;if((oy==='auto'||oy==='scroll')&&n.scrollHeight>n.clientHeight+1)return n}
+ return document.scrollingElement||document.documentElement;
+}
+// Finger near the top/bottom edge while dragging scrolls the page, so a bench card can reach the strikers.
+function squadDragScrollSpeed(y,top,bottom){
+ const zone=Math.min(110,Math.max(60,(bottom-top)*.14));
+ if(y<top+zone)return-Math.ceil(22*Math.min(1,(top+zone-y)/zone));
+ if(y>bottom-zone)return Math.ceil(22*Math.min(1,(y-(bottom-zone))/zone));
+ return 0;
+}
+function squadDragAutoScroll(){
+ if(!dragState?.active)return;
+ dragState.scrollRaf=0;
+ const scroller=dragState.scroller||(dragState.scroller=squadDragScroller(dragState.source));
+ const isPage=scroller===document.scrollingElement||scroller===document.documentElement;
+ const r=isPage?{top:0,bottom:window.visualViewport?.height||window.innerHeight}:scroller.getBoundingClientRect();
+ const speed=squadDragScrollSpeed(dragState.y,Math.max(0,r.top),Math.min(window.innerHeight,r.bottom));
+ if(!speed)return;
+ const pos=()=>isPage?window.scrollY:scroller.scrollTop,before=pos();
+ if(isPage)window.scrollBy(0,speed);else scroller.scrollTop+=speed;
+ if(pos()===before)return;
+ updateSquadDropTarget();
+ dragState.scrollRaf=requestAnimationFrame(squadDragAutoScroll);
+}
+function updateSquadDropTarget(){
+ if(!dragState)return;
  clearDropTargets();
- const el=document.elementFromPoint(e.clientX,e.clientY);
+ const el=document.elementFromPoint(dragState.x,dragState.y);
  const tab=el?.closest?.('[data-squad-drawer]');
  if(tab){
   const mode=tab.dataset.squadDrawer;
@@ -3541,6 +3711,7 @@ function endSquadPointer(e){
    if(Number.isInteger(to)&&to!==d.from){const tmp=state.squad[to];state.squad[to]=state.squad[d.from];state.squad[d.from]=tmp;save();renderAll();toast(to>=18?'In Reserve verschoben.':to>=11?'Auf die Bank verschoben.':'Spieler getauscht.')}
   }
  }
+ if(d.scrollRaf)cancelAnimationFrame(d.scrollRaf);
  d.source?.classList.remove('drag-source');d.ghost?.remove();clearDropTargets();dragState=null;
 }
 document.addEventListener('pointerdown',e=>{if(squadDragElement(e))startSquadPointer(e)},{passive:true});
@@ -3567,10 +3738,10 @@ const PROMO_PACK_RELEASES=Object.freeze({
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
 function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
-function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
+function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...(typeof HALLOWEEN_EVENT!=="undefined"&&eventPackIsActive(HALLOWEEN_EVENT,now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg"};
+const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -3579,6 +3750,7 @@ function storePackParts(p){
  return quality?[{quality,count:Number(p.count)||0}]:[]
 }
 function storePackTier(p){
+ if(p.eventSlot)return{id:"halloween",label:"HALLOWEEN"};
  const kinds=new Set(storePackParts(p).map(x=>x.quality));
  if(kinds.size>=3)return{id:"mixed",label:"MIX"};
  if(kinds.size===2&&kinds.has("gold")&&kinds.has("silver"))return{id:"electrum",label:"ELECTRUM"};
@@ -3588,7 +3760,7 @@ function storePackTier(p){
 function storePackMixHTML(p){
  const parts=storePackParts(p);if(!parts.length)return"";
  const name={gold:"Gold",silver:"Silber",bronze:"Bronze"};
- return `<div class="store-mix" aria-label="${esc(packCompositionText(p))}">${parts.map(x=>`<i class="${x.quality}" style="flex:${x.count}">${x.count} ${name[x.quality]||""}</i>`).join("")}</div>`
+ return `<div class="store-mix" aria-label="${esc(packCompositionText(p))}">${p.eventSlot?'<i class="halloween" style="flex:1.6">1 Halloween</i>':""}${parts.map(x=>`<i class="${x.quality}" style="flex:${x.count}">${x.count} ${name[x.quality]||""}</i>`).join("")}</div>`
 }
 let storeTab="promo";
 let storePromoKey="";
@@ -3609,6 +3781,7 @@ function generatePack(id,tradeable=true){
  // Shared audited distribution: draws and published percentage figures use one algorithm.
  // Do not silently fall back to a different random engine if the disclosure module is missing.
  if(typeof FooteraPackOdds==="undefined"||!FooteraPackOdds?.draw)return[];
+ if(p.eventSlot)return generateEventSlotPack(p,tradeable);
  const chosen=FooteraPackOdds.draw(p,PLAYERS,{icons:MID_ICON_BASES,random:Math.random});
  if(!chosen.available||chosen.items.length!==p.count)return[];
  const arr=chosen.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
@@ -3616,6 +3789,19 @@ function generatePack(id,tradeable=true){
  const candidates=arr.map((i,idx)=>({i,idx})).filter(x=>!x.i.variant&&!isCardRare(displayBase(x.i),x.i)).sort(()=>Math.random()-.5);
  for(const x of candidates.slice(0,rareNeed))x.i.rare=true;
  return arr;
+}
+// Event packs: one guaranteed event card (each roster card equally likely, shown in the odds) plus the normal weighted draw.
+function eventSlotDrawPack(p){return{...p,count:p.count-1,eventSlot:null}}
+function generateEventSlotPack(p,tradeable=true){
+ const event=EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
+ const info=event.players[Math.floor(Math.random()*event.players.length)],base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
+ const special=makePromoPackItem(base,{event,info},tradeable);if(!special)return[];
+ const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
+ if(!rest.available||rest.items.length!==p.count-1)return[];
+ const arr=rest.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
+ const rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);
+ for(const x of arr.filter(i=>!i.variant&&!isCardRare(displayBase(i),i)).sort(()=>Math.random()-.5).slice(0,rareNeed))x.rare=true;
+ return[special,...arr]
 }
 function generateMarcoSurprisePack(pack){
  if(state.profile?.saveId!==pack.recipientSaveId||Number(state.packs[pack.id]||0)!==1)return[];
@@ -3647,10 +3833,10 @@ function renderStore(){
    </span><strong>Gekaufte Points</strong></button>`:"";
   const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span class="store-price">${currencyAmountHTML(currency,p[currency],"store-currency")}</span><strong>Kaufen</strong></button>`;
   const tier=storePackTier(p);
-  return `<article class="store-pack ${sold?"soldout":""}" data-pack-kind="${esc(p.packKind||"standard")}" data-pack-tier="${tier.id}">
+  return `<article class="store-pack ${sold?"soldout":""} ${p.eventSlot?"event-pack halloween-pack":""}" data-pack-kind="${esc(p.packKind||"standard")}" data-pack-tier="${tier.id}">
    <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"><span class="store-pack-badge ${tier.id}">${tier.label}</span></div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   ${p.guarantee?`<span class="store-pack-promise">mind. 1× ${p.guarantee}+</span>`:""}
+   ${p.eventSlot?`<span class="store-pack-promise event">1× HALLOWEEN garantiert</span>`:""}${p.guarantee?`<span class="store-pack-promise">mind. 1× ${p.guarantee}+</span>`:""}
    <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    ${storePackMixHTML(p)}
    <p>${esc(p.desc||"")}</p>
@@ -3660,7 +3846,7 @@ function renderStore(){
    </div></article>`
  }).join("");
  updateStoreCountdown();
- const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>';
+ const owned=PACKS.filter(p=>(state.packs[p.id]||0)>0&&(!p.recipientSaveId||state.profile?.saveId===p.recipientSaveId)&&(!founderRuleForPack(p.id)||ownsFounderRule(state,founderRuleForPack(p.id))));$("ownedPacks").innerHTML=owned.length?owned.map(p=>`<div class="owned-pack-row ${founderRuleForPack(p.id)?`founder-pack-row${p.id===MARCO_FOUNDER_PACK_ID?" founder-pack-rangers":p.id===NIKLAS_FOUNDER_PACK_ID||p.id===MAX_FOUNDER_PACK_ID?" founder-pack-worms":""}`:""}"><img class="owned-pack-art" src="${packArtSrc(p.id)}" alt="" loading="lazy"><div><strong>${esc(p.name)}</strong><small>${state.packs[p.id]} vorhanden · ${esc(p.desc||'')}</small></div><button type="button" class="owned-odds-trigger" data-pack-odds="${esc(p.id)}" aria-label="Inhalt und Wahrscheinlichkeiten für ${esc(p.name)} ansehen">Chancen</button><button class="primary" data-owned="${p.id}">Öffnen</button></div>`).join(""):'<div class="online-note">Keine ungeöffneten Reward-Packs vorhanden.</div>';
  {const n=owned.reduce((sum,p)=>sum+(state.packs[p.id]||0),0),badge=$("storeMyPacksCount");if(badge){badge.textContent=String(n);if(badge.dataset)badge.dataset.count=String(n)}}
 }
 
@@ -3894,7 +4080,7 @@ function showBoardCue(kind,base){
  if(kind==="nation"){label="NATION";art=flagAsset(base);name=packRevealNationName(base.nation)}
  else if(kind==="position"){label="POSITION";art=esc(positionLabel(base.position,base));name=""}
  else{label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"}
- cue.classList.remove("active");cue.innerHTML=`<div class="board-cue-label">${label}</div><div class="board-cue-art">${art}</div>${name?`<div class="board-cue-name">${esc(name)}</div>`:""}`;
+ cue.classList.remove("active");cue.innerHTML=`<div class="board-cue-label">${label}</div><div class="board-cue-art${kind==="position"?" is-position":""}">${art}</div>${name?`<div class="board-cue-name">${esc(name)}</div>`:""}`;
  void cue.offsetWidth;cue.classList.add("active")
 }
 function resetWalkoutTunnel(){
@@ -3910,7 +4096,7 @@ function showWalkoutClue(kind,base){
  }else{
   label="VEREIN";art=badgeAsset("club",base,clubShort(base.team));name=base.team||"IKONE"
  }
- clue.classList.remove("active");clue.innerHTML=`<div class="walkout-clue-label">${label}</div><div class="walkout-clue-art">${art}</div>${name?`<div class="walkout-clue-name">${esc(name)}</div>`:""}`;
+ clue.classList.remove("active");clue.innerHTML=`<div class="walkout-clue-label">${label}</div><div class="walkout-clue-art${kind==="position"?" is-position":""}">${art}</div>${name?`<div class="walkout-clue-name">${esc(name)}</div>`:""}`;
  void clue.offsetWidth;clue.classList.add("active")
 }
 async function runPackReveal(plan){
@@ -3921,7 +4107,7 @@ async function runPackReveal(plan){
  try{await runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait)}finally{packRevealSkip=null}
 }
 async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
- opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
+ opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])||isMaxFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
  opening.querySelector(".pack-fx")?.remove();opening.querySelector(".pack-floor-lights")?.remove();
 
@@ -4143,7 +4329,7 @@ function updateClubRatingLabel(){
  if($("clubRatingLabel"))$("clubRatingLabel").textContent=`${min}–${max} GES`
 }
 const UX_COMPACT_MEDIA=window.matchMedia?.("(max-width:620px)");
-let clubFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches,marketFiltersCollapsed=false;
+let clubFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches,marketFiltersCollapsed=!!UX_COMPACT_MEDIA?.matches;
 function uxSelectedText(id,fallback=""){const el=$(id),opt=el?.selectedOptions?.[0];return String(opt?.textContent||fallback).trim()}
 function setUxFilterPanel(panelId,toggleId,collapsed){
  const panel=$(panelId),toggle=$(toggleId);if(!panel||!toggle)return;
@@ -4162,14 +4348,40 @@ function renderClubUx(){
  if($("clubFilterSummary"))$("clubFilterSummary").textContent=clubFilterSummaryText();
  setUxFilterPanel("clubFilterPanel","clubFilterToggle",clubFiltersCollapsed)
 }
-function marketFilterSummaryText(){
- const parts=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
- if(name)parts.push(name);if(type)parts.push(uxSelectedText("marketSpecialType"));else if(quality)parts.push(uxSelectedText("marketQuality"));if(pos)parts.push(uxSelectedText("marketPosition"));if(league)parts.push(league);if(club)parts.push(club);if(nation)parts.push(nation);if(min>65||max<99)parts.push(`${min}–${max} GES`);if(pmin||pmax)parts.push(`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`);
- return parts.length?parts.join(" · "):"Alle Spieler · 65–99 GES"
+function marketActiveFilterList(){
+ const list=[],name=String($("marketName")?.value||"").trim(),league=$("marketLeague")?.value,club=$("marketClub")?.value,nation=$("marketNation")?.value,pos=$("marketPosition")?.value,quality=$("marketQuality")?.value,type=$("marketSpecialType")?.value,min=Number($("marketRatingMin")?.value||65),max=Number($("marketRatingMax")?.value||99),pmin=Number($("marketPriceMin")?.value||0),pmax=Number($("marketPriceMax")?.value||0);
+ if(name)list.push({key:"name",label:`„${name}“`});if(pos)list.push({key:"position",label:uxSelectedText("marketPosition")});if(quality!=="bronze"&&(min>65||max<99))list.push({key:"rating",label:max<99?`${min}–${max} GES`:`${min}+ GES`,panel:true});
+ if(type)list.push({key:"type",label:uxSelectedText("marketSpecialType"),panel:true});if(quality)list.push({key:"quality",label:uxSelectedText("marketQuality")});if(league)list.push({key:"league",label:league,panel:true});if(club)list.push({key:"club",label:club,panel:true});if(nation)list.push({key:"nation",label:nation,panel:true});if(pmin||pmax)list.push({key:"price",label:`${pmin?fmt(pmin):"0"}–${pmax?fmt(pmax):"∞"} Coins`,panel:true});
+ return list
 }
-function renderMarketUx(){if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)}
+function marketFilterSummaryText(){
+ const parts=marketActiveFilterList().filter(f=>f.panel).map(f=>f.label);
+ return parts.length?parts.join(" · "):"Liga, Verein, Preis, Nation, GES"
+}
+function clearMarketFilter(key){
+ if(key==="name")$("marketName").value="";else if(key==="position")$("marketPosition").value="";else if(key==="rating"){$("marketRatingMin").value=65;$("marketRatingMax").value=99}
+ else if(key==="type")$("marketSpecialType").value="";else if(key==="quality"){$("marketQuality").value="";if($("marketSpecialType").value!=="base")$("marketSpecialType").value=""}
+ else if(key==="league"){$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value=""}else if(key==="club")$("marketClub").value="";else if(key==="nation")$("marketNation").value="";else if(key==="price"){$("marketPriceMin").value="";$("marketPriceMax").value=""}
+ updateRatingUI();refreshMarket()
+}
+function renderMarketUx(){
+ const list=marketActiveFilterList(),panelCount=list.filter(f=>f.panel).length;
+ if($("marketFilterSummary"))$("marketFilterSummary").textContent=marketFilterSummaryText();
+ const count=$("marketFilterCount");if(count){count.hidden=!panelCount;count.textContent=String(panelCount)}
+ const pos=$("marketPosition")?.value||"";
+ document.querySelectorAll("[data-market-quick-pos]").forEach(b=>{const on=b.dataset.marketQuickPos===pos;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
+ document.querySelectorAll("[data-market-quick-quality]").forEach(b=>{const on=b.dataset.marketQuickQuality===($("marketQuality")?.value||"");b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});
+ const box=$("marketActiveFilters");if(box){box.hidden=!list.length;box.innerHTML=list.length?list.map(f=>`<button type="button" data-market-clear="${f.key}" aria-label="${esc(f.label)} entfernen">${esc(f.label)}<span aria-hidden="true">×</span></button>`).join("")+(list.length>1?`<button type="button" class="market-clear-all" data-market-clear="all">Alle löschen</button>`:""):""}
+ setUxFilterPanel("marketFilterPanel","marketFilterToggle",marketFiltersCollapsed)
+}
 $("clubFilterToggle")?.addEventListener("click",()=>{clubFiltersCollapsed=!clubFiltersCollapsed;renderClubUx()});
 $("marketFilterToggle")?.addEventListener("click",()=>{marketFiltersCollapsed=!marketFiltersCollapsed;renderMarketUx()});
+$("marketQuick")?.addEventListener("click",e=>{
+ const pos=e.target.closest("[data-market-quick-pos]"),quality=e.target.closest("[data-market-quick-quality]"),clear=e.target.closest("[data-market-clear]");
+ if(pos){$("marketPosition").value=pos.dataset.marketQuickPos;refreshMarket();return}
+ if(quality){const q=quality.dataset.marketQuickQuality,t=$("marketSpecialType").value;$("marketQuality").value=q;if(q!=="special"&&t&&t!=="base")$("marketSpecialType").value="";if(q==="special"&&t==="base")$("marketSpecialType").value="";updateRatingUI();refreshMarket();return}
+ if(clear){if(clear.dataset.marketClear==="all")resetMarketFilters();else clearMarketFilter(clear.dataset.marketClear)}
+});
 const CLUB_RENDER_BATCH=window.matchMedia?.("(max-width:560px)")?.matches?36:72;let clubRenderLimit=CLUB_RENDER_BATCH,clubRenderSignature="",clubRenderFrame=0;
 function scheduleClubRender(){cancelAnimationFrame(clubRenderFrame);clubRenderFrame=requestAnimationFrame(()=>{clubRenderFrame=0;renderClub()})}
 function renderClub(){
@@ -4727,7 +4939,7 @@ function marketAuctionState(x){
 function marketRowHTML(x,i,tracked=false){
  const pi=marketPreviewItem(x),b=displayBase(pi)||x.base,st=marketAuctionState(x),tagClass=isMomentumItem(x)?"momentum":String(x.eventName).startsWith("Team of the Week")?"totw":isLegacyEventName(x.eventName)?"legacy":x.variant==="special"?"special":"",next=nextMarketBid(x),time=x.settled?"Abgelaufen":auctionTime(x)+"s",openAttr=tracked?`data-my-auction-open="${i}"`:`data-market-open="${i}"`,bidAttr=tracked?`data-my-auction-bid="${i}"`:`data-bid="${i}"`,buyAttr=tracked?`data-my-auction-buy="${i}"`:`data-mbuy="${i}"`;
  const removeAction=tracked&&x.settled?`<button class="secondary auction-remove" data-my-auction-remove="${i}">Aus Liste entfernen</button>`:"";
- return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(isMomentumItem(x)?b.name:(x.base?.name||"Spieler"))} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(isMomentumItem(x)?b.name:(x.base?.name||b.name||"Spieler"))}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Startpreis</span><b>${currencyAmountHTML("coins",x.startPrice||x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
+ return `<div class="market-row ${st.key}" ${tracked?'':`data-market-listing="${i}"`}><button class="market-row-card" ${openAttr} aria-label="${esc(isMomentumItem(x)?b.name:(x.base?.name||"Spieler"))} öffnen">${cardHTML(b,pi,true,x.overridePosition||b.position)}</button><div class="market-row-main"><div class="market-row-name"><strong>${esc(isMomentumItem(x)?b.name:(x.base?.name||b.name||"Spieler"))}</strong><span class="quality-tag ${tagClass}">${esc(qualityLabel(x))}</span></div><div class="market-status-line"><span class="market-status-icon">${st.icon}</span><span>${st.label}</span></div><div class="market-price-grid"><div class="market-price-cell"><span>Akt. Gebot</span><b>${currencyAmountHTML("coins",x.bid,"market-currency")}</b></div><div class="market-price-cell"><span>Sofortkauf</span><b>${currencyAmountHTML("coins",x.price,"market-currency")}</b></div><div class="market-price-cell market-price-time"><span>Zeit</span><b ${tracked?`data-my-auction-time="${i}"`:`data-auction-time="${i}"`}>${time}</b></div></div><div class="market-row-sub">${x.myBid?`Dein letztes Gebot: ${currencyAmountHTML("coins",x.myBid,"compact")} · `:""}${esc(x.base?.team||"")} · GES ${listingRating(x)} · Start ${currencyAmountHTML("coins",x.startPrice||x.bid,"compact")}</div></div><div class="market-row-actions"><button class="secondary bid-direct" ${bidAttr} ${(x.settled||st.key==="leading"||next==null)?"disabled":""}>${st.key==="leading"?"Höchstbietender":next==null?"Preislimit erreicht":`Bieten · ${currencyAmountHTML("coins",next,"button-currency")}`}</button><button class="primary buy-direct" ${buyAttr} ${x.settled?"disabled":""}>Kaufen · ${currencyAmountHTML("coins",x.price,"button-currency")}</button>${removeAction}</div></div>`
 }
 function processBotOutbids(){
  let changed=false;const now=Date.now();
@@ -4900,7 +5112,7 @@ function settleTransferSales(){
 }
 function resetMarketFilters(){$("marketName").value="";$("marketLeague").value="";updateMarketDependentFilters();$("marketClub").value="";$("marketNation").value="";$("marketPosition").value="";$("marketQuality").value="";$("marketSpecialType").value="";$("marketRatingMin").value=65;$("marketRatingMax").value=99;$("marketPriceMin").value="";$("marketPriceMax").value="";updateRatingUI();refreshMarket()}
 $("marketPagination").addEventListener("click",e=>{const b=e.target.closest("[data-market-page]");if(!b||b.disabled)return;if(b.dataset.marketPage==="prev")setMarketPage(marketPage-1);if(b.dataset.marketPage==="next")setMarketPage(marketPage+1)});
-$("refreshMarket").addEventListener("click",()=>{refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
+$("refreshMarket").addEventListener("click",()=>{refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}const grid=$("marketGrid");if(grid&&marketListings.length){setTimeout(()=>grid.scrollIntoView({behavior:"smooth",block:"start"}),80)}});$("resetMarketFilters").addEventListener("click",resetMarketFilters);$("applyMarketFilters")?.addEventListener("click",()=>$("refreshMarket").click());$("marketLeague").addEventListener("change",()=>{updateMarketDependentFilters();refreshMarket()});$("marketClub").addEventListener("change",refreshMarket);$("marketNation").addEventListener("change",refreshMarket);$("marketPosition").addEventListener("change",refreshMarket);$("marketQuality").addEventListener("change",()=>{updateRatingUI();refreshMarket()});$("marketSpecialType").addEventListener("change",()=>{const t=$("marketSpecialType").value;if(t==="totw"||t==="icon"||t==="legacy"||t==="momentum")$("marketQuality").value="special";else if(t==="base"&&$("marketQuality").value==="special")$("marketQuality").value="";updateRatingUI();refreshMarket()});$("marketRatingMin").addEventListener("input",updateRatingUI);$("marketRatingMax").addEventListener("input",updateRatingUI);$("marketRatingMin").addEventListener("change",refreshMarket);$("marketRatingMax").addEventListener("change",refreshMarket);$("marketName").addEventListener("input",renderMarketNameSuggestions);
 $("marketName").addEventListener("focus",renderMarketNameSuggestions);
 $("marketName").addEventListener("keydown",e=>{if(e.key==="Enter"){hideMarketNameSuggestions();refreshMarket();if(UX_COMPACT_MEDIA?.matches){marketFiltersCollapsed=true;renderMarketUx()}}else if(e.key==="Escape")hideMarketNameSuggestions()});
 $("marketNameSuggestions").addEventListener("click",e=>{const b=e.target.closest("[data-market-name-pid]");if(!b)return;const p=P_BY_ID.get(String(b.dataset.marketNamePid));if(!p)return;
@@ -4949,7 +5161,7 @@ function updateMarketCountdowns(){
 setInterval(updateMarketCountdowns,1000);
 initializePortraitLoading();
 
-function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${task.player.ovr} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`Story-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
+function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${task.player.ovr} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`${spec.season==="s1"?"Story":"Saison"}-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
 function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);claimSeasonRewards()}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
@@ -4958,15 +5170,16 @@ function parsePlayStyles(base,item){if(typeof FooteraPlayStyles!=="undefined")re
 function renderTasks(){const ordered=[...TASKS].sort((a,b)=>{const av=Math.min(a.target,state.stats[a.stat]||0),bv=Math.min(b.target,state.stats[b.stat]||0),ac=av>=a.target,bc=bv>=b.target,aa=!!state.claims[a.id],ba=!!state.claims[b.id],ap=ac&&!aa?0:ac?1:2,bp=bc&&!ba?0:bc?1:2;return ap-bp||(bc-ac)||(bv/b.target-av/a.target)});$("taskList").innerHTML=ordered.map(t=>{const v=Math.min(t.target,state.stats[t.stat]||0),complete=v>=t.target,done=!!state.claims[t.id],cls=complete&&!done?"claimable":complete?"completed":"",stateLabel=done?'<span class="task-state done">ABGEHOLT</span>':complete?'<span class="task-state ready">ABGESCHLOSSEN</span>':'<span class="task-state">IN ARBEIT</span>';return`<div class="task ${cls}"><div class="tasktop"><div><h4>${t.title}</h4><p>${t.desc}</p>${stateLabel}</div><div class="reward">${rewardText(t.reward)}</div></div><div class="progress" style="margin-top:7px"><div style="width:${v/t.target*100}%"></div></div><div class="taskfoot"><small>${v}/${t.target}</small>${done?'<span style="font-size:6px;color:#79f2a9">ERLEDIGT</span>':`<button class="primary" data-claim="${t.id}" ${v<t.target?"disabled":""}>Abholen</button>`}</div></div>`}).join("")}
 $("taskList").addEventListener("click",e=>{const b=e.target.closest("[data-claim]");if(!b)return;const t=TASKS.find(x=>x.id===b.dataset.claim);if(!t||state.claims[t.id])return;state.claims[t.id]=true;grant(t.reward);save();renderAll();toast("Belohnung abgeholt.")})
 
-let activeEvoTab="available",evoFocusPlayerUid=null,evoPickerContext=null;
+let activeEvoTab="available",evoFocusPlayerUid=null,evoPickerContext=null,evoPickerListStash=null;
 function evoWeekStart(date=new Date()){return berlinWeekStart(date,1,19)}
 function evoWeekIndex(date=new Date()){const p=berlinParts(evoWeekStart(date));return Math.round((Date.UTC(p.year,p.month-1,p.day)-Date.UTC(2026,8,21))/(7*86400000))}
-function activeEvolutionDefinitions(date=new Date()){return EVOLUTION_POOL.filter(x=>String(x.group||"").startsWith("s1-"))}
-function evolutionSchedule(evo,date=new Date(),weekShift=0){const start=berlinShiftDays(evoWeekStart(date),weekShift*7,19),signupEnd=berlinShiftDays(start,Number(evo.signupDays||7),19),completionEnd=berlinShiftDays(start,Number(evo.completionDays||14),19);return{start,signupEnd,completionEnd,key:`${evo.id}@${start.toISOString().slice(0,10)}`}}
+function evoEventWindowOpen(evo,date=new Date()){const t=new Date(date).getTime();return t>=Date.parse(evo.activeFrom)&&t<Date.parse(evo.activeUntilAt)}
+function activeEvolutionDefinitions(date=new Date()){return EVOLUTION_POOL.filter(x=>String(x.group||"").startsWith("s1-")||(x.group==="event"&&evoEventWindowOpen(x,date)))}
+function evolutionSchedule(evo,date=new Date(),weekShift=0){if(evo?.group==="event"){const start=new Date(evo.activeFrom),signupEnd=new Date(evo.activeUntilAt),completionEnd=berlinShiftDays(start,Number(evo.completionDays||14),19);return{start,signupEnd,completionEnd,key:`${evo.id}@${evo.activeFrom.slice(0,10)}`}}const start=berlinShiftDays(evoWeekStart(date),weekShift*7,19),signupEnd=berlinShiftDays(start,Number(evo.signupDays||7),19),completionEnd=berlinShiftDays(start,Number(evo.completionDays||14),19);return{start,signupEnd,completionEnd,key:`${evo.id}@${start.toISOString().slice(0,10)}`}}
 function evoDate(d){return d.toLocaleString("de-DE",{timeZone:FOOTERA_TIME_ZONE,day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
 function evoTimeLeft(d){const ms=d-Date.now();if(ms<=0)return"abgelaufen";const days=Math.floor(ms/86400000),hrs=Math.floor(ms%86400000/3600000);return days?`${days} T ${hrs} Std`:`${Math.max(1,hrs)} Std`}
-function evoRequirementText(evo){const r=evo.req||{},a=[];if(r.positions?.length)a.push(r.positions.map(positionLabel).join(" / "));if(r.minOvr!=null&&r.maxOvr!=null)a.push(`${r.minOvr}–${r.maxOvr} GES`);else{if(r.minOvr!=null)a.push(`mind. ${r.minOvr} GES`);if(r.maxOvr!=null)a.push(`max. ${r.maxOvr} GES`)}if(evo.maxFinalOvr)a.push(`Ziel max. ${Math.min(EVOLUTION_SEASON_MAX_OVR,Number(evo.maxFinalOvr))} GES`);if(r.maxPac!=null)a.push(`max. ${r.maxPac} TEM`);if(r.maxPlaystyles!=null)a.push(`max. ${r.maxPlaystyles} PlayStyles`);return a.join(" · ")||"Keine Zusatzbedingungen"}
-function evoLaneLabel(evo){return evo?.lane==="low"?`LOW · ${evo.band||"72–76"}`:evo?.lane==="mid"?`MID · ${evo.band||"77–79"}`:evo?.lane==="high"?`HIGH · ${evo.band||"80–81"}`:evo?.lane==="elite"?`ELITE · ${evo.band||"bis 85"}`:""}
+function evoRequirementText(evo){const r=evo.req||{},a=[];if(r.positions?.length)a.push(r.positions.length>=12?"Alle Feldspieler":r.positions.map(positionLabel).join(" / "));if(r.baseCardsOnly)a.push("nur normale Karten");if(r.minOvr!=null&&r.maxOvr!=null)a.push(`${r.minOvr}–${r.maxOvr} GES`);else{if(r.minOvr!=null)a.push(`mind. ${r.minOvr} GES`);if(r.maxOvr!=null)a.push(`max. ${r.maxOvr} GES`)}if(evo.maxFinalOvr)a.push(`Ziel max. ${Math.min(EVOLUTION_SEASON_MAX_OVR,Number(evo.maxFinalOvr))} GES`);if(r.maxPac!=null)a.push(`max. ${r.maxPac} TEM`);if(r.maxPlaystyles!=null)a.push(`max. ${r.maxPlaystyles} PlayStyles`);return a.join(" · ")||"Keine Zusatzbedingungen"}
+function evoLaneLabel(evo){return evo?.lane==="event"?`EVENT · ${evo.band||"LIMITIERT"}`:evo?.lane==="low"?`LOW · ${evo.band||"72–76"}`:evo?.lane==="mid"?`MID · ${evo.band||"77–79"}`:evo?.lane==="high"?`HIGH · ${evo.band||"80–81"}`:evo?.lane==="elite"?`ELITE · ${evo.band||"bis 85"}`:""}
 function evoFinalCap(evo){const local=Number(evo?.maxFinalOvr||EVOLUTION_SEASON_MAX_OVR);return Math.min(EVOLUTION_SEASON_MAX_OVR,Number.isFinite(local)?local:EVOLUTION_SEASON_MAX_OVR)}
 
 const MAX_ACTIVE_EVOLUTIONS=3;
@@ -4982,12 +5195,17 @@ function evoTotalOvrGain(evo){return (evo?.stages||[]).reduce((n,st)=>n+Number(s
 function evoProjectedFinalOvr(item,evo){return evo?.catchUpToCap?Math.max(itemRating(item),evoFinalCap(evo)):Math.min(evoFinalCap(evo),itemRating(item)+evoTotalOvrGain(evo))}
 function evoCostText(evo){const coins=Number(evo?.cost?.coins||0),points=Number(evo?.cost?.points||0);return !coins&&!points?"Kostenlos":[coins?`${fmt(coins)} Footera Coins`:"",points?`${fmt(points)} Footera Points`:""].filter(Boolean).join(" / ")}
 function evoCostHTML(evo){const coins=Number(evo?.cost?.coins||0),points=Number(evo?.cost?.points||0);if(!coins&&!points)return'<div class="evo-price"><span class="free">KOSTENLOS</span></div>';return`<div class="evo-price">${coins?currencyAmountHTML("coins",coins,"evo-currency"):""}${points?currencyAmountHTML("points",points,"evo-currency"):""}</div>`}
-function evoEligible(item,evo){const b=displayBase(item);if(!b||isFounderItem(item)||isStoryItem(item)||activeEvolutionForUid(item.uid))return false;const r=evo.req||{},positions=playerPositions(b),rating=itemRating(item),rp=resolvedPlayer(b);if(r.minOvr!=null&&rating<Number(r.minOvr))return false;if(r.maxOvr!=null&&rating>Number(r.maxOvr))return false;if(r.positions?.length&&!r.positions.some(p=>positions.includes(p)))return false;if(r.maxPac!=null&&Number(rp?.pac||0)>Number(r.maxPac))return false;if(r.maxPlaystyles!=null&&parsePlayStyles(b,item).length>r.maxPlaystyles)return false;return !(state.transferList||[]).includes(item.uid)}
+function evoEligible(item,evo){const b=displayBase(item);if(!b||isFounderItem(item)||isStoryItem(item)||activeEvolutionForUid(item.uid))return false;const r=evo.req||{},positions=playerPositions(b),rating=itemRating(item),rp=resolvedPlayer(b);if(r.baseCardsOnly&&(item.variant||item.cosmeticDesign||item.eventType))return false;if(r.minOvr!=null&&rating<Number(r.minOvr))return false;if(r.maxOvr!=null&&rating>Number(r.maxOvr))return false;if(r.positions?.length&&!r.positions.some(p=>positions.includes(p)))return false;if(r.maxPac!=null&&Number(rp?.pac||0)>Number(r.maxPac))return false;if(r.maxPlaystyles!=null&&parsePlayStyles(b,item).length>r.maxPlaystyles)return false;return !(state.transferList||[]).includes(item.uid)}
 
 function eligibleEvoPlayers(evo){return(state.club||[]).filter(i=>evoEligible(i,evo)).sort((a,b)=>itemRating(b)-itemRating(a))}
 function evoPreviewItem(item,evo,stageIndex,baseline=null){const clone={...item,evo:Number(baseline?.evo??item.evo??0),evoStats:{...(baseline?.evoStats||item.evoStats||{})},evoPlaystyles:[...(baseline?.evoPlaystyles||item.evoPlaystyles||[])],evoPlaystylesPlus:[...(baseline?.evoPlaystylesPlus||item.evoPlaystylesPlus||[])]};if(baseline&&Object.prototype.hasOwnProperty.call(baseline,"overridePosition"))clone.overridePosition=baseline.overridePosition||"";for(let i=0;i<=stageIndex;i++)applyEvoStage(clone,evo.stages[i],evo);return clone}
-function applyEvoStage(item,stage,evo){item.evoDesign=true;const beforeRating=itemRating(item),remaining=Math.max(0,evoFinalCap(evo)-beforeRating),stageIndex=Math.max(0,Array.isArray(evo?.stages)?evo.stages.indexOf(stage):0),stepsLeft=Math.max(1,(evo?.stages?.length||1)-stageIndex),ovrGain=evo.catchUpToCap?Math.ceil(remaining/stepsLeft):Math.min(Number(stage.ovr||0),remaining);item.evo=Number(item.evo||0)+Math.min(remaining,ovrGain);item.evoStats=item.evoStats||{};const caps=evo?.statCaps||{},current=resolvedPlayer(displayBase(item)),attributeUpgrades=evo.catchUpToCap?evo.statTargets||{}:stage.stats||{};for(const[k,v]of Object.entries(attributeUpgrades)){const now=Number(current[k]||0),rawCap=Number(caps[k]),cap=Math.min(EVOLUTION_GLOBAL_STAT_CAP,Number.isFinite(rawCap)?rawCap:EVOLUTION_GLOBAL_STAT_CAP),target=Math.min(cap,Number(evo?.statTargets?.[k]??cap)),boost=evo.catchUpToCap?Math.ceil(Math.max(0,target-now)/stepsLeft):Number(v||0),inc=Math.max(0,Math.min(boost,cap-now));item.evoStats[k]=Number(item.evoStats[k]||0)+inc}item.evoPlaystyles=item.evoPlaystyles||[];item.evoPlaystylesPlus=item.evoPlaystylesPlus||[];if(stage.playstyle&&!item.evoPlaystyles.includes(stage.playstyle)&&!item.evoPlaystylesPlus.includes(stage.playstyle))item.evoPlaystyles.push(stage.playstyle);if(stage.playstylePlus){item.evoPlaystyles=item.evoPlaystyles.filter(x=>x!==stage.playstylePlus);if(!item.evoPlaystylesPlus.includes(stage.playstylePlus))item.evoPlaystylesPlus.push(stage.playstylePlus)}if(stage.position)item.overridePosition=stage.position}
-function stageUpgradeText(st,evo=null,item=null){const base=item?displayBase(item):null,keeper=String(base?.position||"").toUpperCase()==="GK"||(evo?.req?.positions?.length===1&&evo.req.positions[0]==="GK"),map=keeper?{pac:"HEC",sho:"BSI",pas:"ABS",dri:"REF",def:"TMP",phy:"POS"}:{pac:"TEM",sho:"SCH",pas:"PAS",dri:"DRI",def:"DEF",phy:"PHY"},a=Object.entries(st.stats||{}).map(([k,v])=>`+${v} ${map[k]||k.toUpperCase()}`);if(evo?.catchUpToCap){a.length=0;a.push(`Dynamisches Rating bis ${evoFinalCap(evo)} GES`);for(const [k,target]of Object.entries(evo.statTargets||{}))a.push(`${map[k]||k.toUpperCase()} bis ${target}`)}else if(st.ovr)a.unshift(`+${st.ovr} GES`);if(st.playstyle)a.push(`PlayStyle: ${st.playstyle}`);if(st.playstylePlus)a.push(`PlayStyle+: ${st.playstylePlus}`);if(st.position)a.push(`Position: ${positionLabel(st.position)}`);return a.join(" · ")}
+// Evo-Werte nach Position: die Hauptwerte der Position wachsen mindestens so stark wie das GES (+1, wenn die Stufe den Wert betont),
+// Werte ohne Nutzen für die Position (z. B. Schuss beim Innenverteidiger) entfallen.
+const EVO_KEY_STATS={ST:["sho","dri","pac"],CF:["sho","dri","pas"],LW:["pac","dri","sho"],RW:["pac","dri","sho"],LM:["pac","dri","pas"],RM:["pac","dri","pas"],CAM:["pas","dri","sho"],CM:["pas","dri"],CDM:["def","phy","pas"],CB:["def","phy"],LB:["pac","def"],RB:["pac","def"],LWB:["pac","def","pas"],RWB:["pac","def","pas"],GK:["pac","sho","dri","phy"]};
+const EVO_SKIP_STATS={ST:["def"],CF:["def"],LW:["def"],RW:["def"],CAM:["def"],CDM:["sho"],CB:["sho"],GK:["def"]};
+function evoStageStatGains(item,stage,ovrGain){const pos=String(displayBase(item)?.position||"").toUpperCase(),listed=stage?.stats||{},skip=EVO_SKIP_STATS[pos]||[],out={};for(const[k,v]of Object.entries(listed))if(!skip.includes(k)&&Number(v)>0)out[k]=Number(v);for(const k of EVO_KEY_STATS[pos]||[])out[k]=Math.max(out[k]||0,ovrGain)+(Number(listed[k])>0?1:0);return out}
+function applyEvoStage(item,stage,evo){item.evoDesign=true;if(evo?.design)item.cosmeticDesign=evo.design;const beforeRating=itemRating(item),remaining=Math.max(0,evoFinalCap(evo)-beforeRating),stageIndex=Math.max(0,Array.isArray(evo?.stages)?evo.stages.indexOf(stage):0),stepsLeft=Math.max(1,(evo?.stages?.length||1)-stageIndex),ovrGain=evo.catchUpToCap?Math.ceil(remaining/stepsLeft):Math.min(Number(stage.ovr||0),remaining);const appliedOvr=Math.min(remaining,ovrGain);item.evo=Number(item.evo||0)+appliedOvr;item.evoStats=item.evoStats||{};const caps=evo?.statCaps||{},current=resolvedPlayer(displayBase(item));for(const[k,v]of Object.entries(evoStageStatGains(item,stage,appliedOvr))){const now=Number(current[k]||0),rawCap=Number(caps[k]),cap=Math.min(EVOLUTION_GLOBAL_STAT_CAP,Number.isFinite(rawCap)?rawCap:EVOLUTION_GLOBAL_STAT_CAP),inc=Math.max(0,Math.min(v,cap-now));item.evoStats[k]=Number(item.evoStats[k]||0)+inc}item.evoPlaystyles=item.evoPlaystyles||[];item.evoPlaystylesPlus=item.evoPlaystylesPlus||[];if(stage.playstyle&&!item.evoPlaystyles.includes(stage.playstyle)&&!item.evoPlaystylesPlus.includes(stage.playstyle))item.evoPlaystyles.push(stage.playstyle);if(stage.playstylePlus){item.evoPlaystyles=item.evoPlaystyles.filter(x=>x!==stage.playstylePlus);if(!item.evoPlaystylesPlus.includes(stage.playstylePlus))item.evoPlaystylesPlus.push(stage.playstylePlus)}if(stage.position)item.overridePosition=stage.position}
+function stageUpgradeText(st,evo=null,item=null,gains=null){const base=item?displayBase(item):null,keeper=String(base?.position||"").toUpperCase()==="GK"||(evo?.req?.positions?.length===1&&evo.req.positions[0]==="GK"),map=keeper?{pac:"HEC",sho:"BSI",pas:"ABS",dri:"REF",def:"TMP",phy:"POS"}:{pac:"TEM",sho:"SCH",pas:"PAS",dri:"DRI",def:"DEF",phy:"PHY"},a=Object.entries(gains?gains.stats:st.stats||{}).filter(([,v])=>v>0).map(([k,v])=>`+${v} ${map[k]||k.toUpperCase()}`);if(gains){if(gains.ovr)a.unshift(`+${gains.ovr} GES`)}else if(evo?.catchUpToCap)a.unshift(`Rating bis ${evoFinalCap(evo)} GES`);else if(st.ovr)a.unshift(`+${st.ovr} GES`);if(st.playstyle)a.push(`PlayStyle: ${st.playstyle}`);if(st.playstylePlus)a.push(`PlayStyle+: ${st.playstylePlus}`);if(st.position)a.push(`Position: ${positionLabel(st.position)}`);return a.join(" · ")}
 function stageGoalText(st){const a=[];if(st.matches)a.push(`${st.matches} Spiele`);if(st.wins)a.push(`${st.wins} Siege`);return a.join(" · ")}
 function evoProgressPct(st,prog){const parts=[];if(st.matches)parts.push(Math.min(1,Number(prog.matches||0)/st.matches));if(st.wins)parts.push(Math.min(1,Number(prog.wins||0)/st.wins));return parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length*100):100}
 function evoStageDone(st,prog){return(!st.matches||Number(prog.matches||0)>=st.matches)&&(!st.wins||Number(prog.wins||0)>=st.wins)}
@@ -5022,7 +5240,7 @@ function evoGoalRow(label,current,target,locked=false){
 }
 function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null,instanceKey=""){
  return`<div class="evo-stage-track">${evo.stages.map((st,idx)=>{
-  const pi=evoPreviewItem(item,evo,idx,baseline),pb=displayBase(pi),isCurrent=idx===progressStage,done=progressStage>idx,future=progressStage>=0&&idx>progressStage;
+  const pi=evoPreviewItem(item,evo,idx,baseline),pb=displayBase(pi),prevItem=evoPreviewItem(item,evo,idx-1,baseline),prevStats=resolvedPlayer(displayBase(prevItem)),nextStats=resolvedPlayer(pb),gains={ovr:itemRating(pi)-itemRating(prevItem),stats:Object.fromEntries(["pac","sho","pas","dri","def","phy"].map(k=>[k,Number(nextStats[k]||0)-Number(prevStats[k]||0)]))},isCurrent=idx===progressStage,done=progressStage>idx,future=progressStage>=0&&idx>progressStage;
   const stageProg=isCurrent?prog:(done?{matches:st.matches||0,wins:st.wins||0}:{matches:0,wins:0});
   const ready=isCurrent&&evoStageDone(st,stageProg);
   const goals=[st.matches?evoGoalRow("Spiele · Startelf",stageProg.matches,st.matches,future):"",st.wins?evoGoalRow("Siege · Startelf",stageProg.wins,st.wins,future):""].join("");
@@ -5030,12 +5248,17 @@ function evoStagesHTML(item,evo,progressStage=-1,prog={},baseline=null,instanceK
   return`<div class="evo-stage ${isCurrent?'current':''} ${done?'done':''} ${future?'future':''}">
    <div class="evo-stage-head"><div><span>${esc(st.label||`Stufe ${idx+1}`)}</span><strong>${stageGoalText(st)}</strong></div><b>${done?'✓':isCurrent?(ready?'BEREIT':`${evoProgressPct(st,stageProg)}%`):`${pb.ovr} GES`}</b></div>
    <div class="evo-stage-card">${cardHTML(pb,pi,false)}</div>
-   <div class="evo-stage-side"><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo,item))}</div>${starterNote}<div class="evo-goal-list">${goals}</div>
+   <div class="evo-stage-side"><div class="evo-stage-upgrades">${esc(stageUpgradeText(st,evo,item,gains))}</div>${starterNote}<div class="evo-goal-list">${goals}</div>
    ${ready?`<div class="evo-ready-note">Alle Ziele erreicht. Upgrade kann jetzt abgeholt werden.</div><button class="primary evo-stage-claim" data-evo-claim-stage="${idx}" data-evo-claim-instance="${esc(instanceKey)}">Evolution erhalten</button>`:""}</div>
   </div>`
  }).join("")}</div>`
 }
-function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div><div class="evo-candidate-grid">${eligible.length?eligible.map(i=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}</div>`;showUiLayer("evoPickerModal","evo-picker")}
+function openEvoPicker(evoId,preferredUid=null){const evo=EVOLUTION_POOL.find(x=>x.id===evoId);if(!evo)return;evoPickerListStash=null;const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo);evoPickerContext={evoId,instanceKey:sch.key};$("evoPickerTitle").textContent=evo.name;$("evoPickerSub").textContent=`${eligible.length} qualifizierte Spieler · Starten bis ${evoDate(sch.signupEnd)}`;const chosen=preferredUid&&eligible.find(i=>i.uid===preferredUid);if(chosen){renderEvoCandidatePreview(evo,chosen,sch);showUiLayer("evoPickerModal","evo-picker");return}const groups=[...new Set(eligible.map(i=>evoPickerPosGroup(displayBase(i).position)))];$("evoPickerBody").innerHTML=`<div class="evo-picker-intro"><strong>Nur qualifizierte Spieler</strong><span>${esc(evoRequirementText(evo))}</span></div>${eligible.length>1?evoPickerFilterHTML(groups,eligible.length):""}<div class="evo-candidate-grid">${eligible.length?eligible.map((i,n)=>{const b=displayBase(i);return`<button class="evo-candidate" data-evo-candidate="${i.uid}" data-evo-name="${esc(evoPickerKey(b.name))}" data-evo-group="${evoPickerPosGroup(b.position)}" data-evo-ovr="${Number(b.ovr)||0}" data-evo-order="${n}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${b.ovr} GES · ${esc(positionLabel(b.position,b))}</small></button>`}).join(""):'<div class="evo-empty">Aktuell befindet sich kein qualifizierter Spieler in deinem Verein.</div>'}<div class="evo-empty evo-filter-empty" hidden>Kein Spieler passt zu deiner Suche.</div></div>`;showUiLayer("evoPickerModal","evo-picker")}
+const EVO_PICKER_GROUPS=[["GK","TW"],["DEF","ABW"],["MID","MF"],["ATT","ST"]];
+function evoPickerPosGroup(pos){const p=String(pos||"").toUpperCase();if(p==="GK")return"GK";if(["CB","LB","RB","LWB","RWB"].includes(p))return"DEF";if(["CDM","CM","CAM","LM","RM"].includes(p))return"MID";return"ATT"}
+function evoPickerKey(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ")}
+function evoPickerFilterHTML(groups,total){const pos=groups.length>1?`<button type="button" class="active" aria-pressed="true" data-evo-filter-pos="">Alle</button>${EVO_PICKER_GROUPS.filter(([g])=>groups.includes(g)).map(([g,l])=>`<button type="button" aria-pressed="false" data-evo-filter-pos="${g}">${l}</button>`).join("")}`:"";return`<div class="evo-filter"><div class="evo-filter-search"><input id="evoPickerSearch" type="search" placeholder="Spieler suchen …" autocomplete="off" enterkeyhint="search" aria-label="Spieler suchen"><span class="evo-filter-count" aria-live="polite">${total} von ${total}</span></div><div class="evo-filter-chips" role="group" aria-label="Filter">${pos}<button type="button" class="evo-filter-sort" data-evo-filter-sort="" aria-label="Sortierung: empfohlen">⇅ GES</button></div></div>`}
+function applyEvoPickerFilter(){const body=$("evoPickerBody"),grid=body?.querySelector(".evo-candidate-grid");if(!grid)return;const q=evoPickerKey($("evoPickerSearch")?.value),pos=body.querySelector("[data-evo-filter-pos].active")?.dataset.evoFilterPos||"",sort=body.querySelector("[data-evo-filter-sort]")?.dataset.evoFilterSort||"",cards=[...grid.querySelectorAll("[data-evo-candidate]")];let shown=0;cards.forEach(c=>{const ok=(!q||c.dataset.evoName.includes(q))&&(!pos||c.dataset.evoGroup===pos);c.hidden=!ok;if(ok)shown++});const val=c=>Number(c.dataset[sort?"evoOvr":"evoOrder"]);cards.sort((a,b)=>sort==="high"?val(b)-val(a)||a.dataset.evoOrder-b.dataset.evoOrder:val(a)-val(b)||a.dataset.evoOrder-b.dataset.evoOrder).forEach(c=>grid.appendChild(c));const empty=grid.querySelector(".evo-filter-empty");if(empty){empty.hidden=shown>0;grid.appendChild(empty)}const count=body.querySelector(".evo-filter-count");if(count)count.textContent=`${shown} von ${cards.length}`}
 function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){
  const b=displayBase(item),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),playerBusy=!!activeEvolutionForUid(item.uid),blocked=full||running||playerBusy;
  const reason=playerBusy?"Spieler bereits in Evolution":running?"Diese Evolution läuft bereits":full?"3/3 Evolutionen aktiv":"";
@@ -5046,6 +5269,15 @@ function renderEvoCandidatePreview(evo,item,sch=evolutionSchedule(evo)){
  else buttons=`<div class="evo-payment-actions">${coins?`<button class="primary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="coins" ${state.coins<coins?"disabled":""}>${currencyAmountHTML("coins",coins,"button-currency")}</button>`:""}${points?`<button class="secondary" data-evo-start="${evo.id}" data-evo-uid="${item.uid}" data-evo-pay="points" ${state.points<points?'title="Zu wenig Points – Points-Übersicht öffnen"':""}>${currencyAmountHTML("points",points,"button-currency")}</button>`:""}</div>`;
  $("evoPickerBody").innerHTML=`<button class="secondary evo-picker-back" data-evo-picker-back="${evo.id}">← Andere Spieler</button><div class="evo-selected"><div><h3>${esc(b.name)}</h3><p>${esc(evoRequirementText(evo))}</p>${evoCostHTML(evo)}<div class="evo-result-cap">Aktuell ${itemRating(item)} GES → maximal ${evoProjectedFinalOvr(item,evo)} GES</div><div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div></div>${buttons}</div>${evoStagesHTML(item,evo,-1,{})}`;
  evoPickerContext={evoId:evo.id,uid:item.uid,instanceKey:sch.key}
+}
+// Handy-Zurück aus der Vorschau führt zur Spielerauswahl: Liste samt Suche, Filter und Scrollposition bleibt erhalten.
+function showEvoCandidateFromList(evo,item){
+ const body=$("evoPickerBody");evoPickerListStash={nodes:[...body.childNodes],scroll:body.scrollTop,context:evoPickerContext};
+ renderEvoCandidatePreview(evo,item);body.scrollTop=0;pushUiState("evo-picker-preview",{layer:"evoPickerModal"})
+}
+function restoreEvoPickerList(){
+ const stash=evoPickerListStash,body=$("evoPickerBody");if(!stash||!body)return false;
+ evoPickerListStash=null;body.replaceChildren(...stash.nodes);body.scrollTop=stash.scroll;evoPickerContext=stash.context;return true
 }
 function startEvolution(evoId,uid,payment="free"){
  expireActiveEvolutionIfNeeded();
@@ -5105,7 +5337,8 @@ function claimEvolutionStage(instanceKey=""){
 function renderAvailableEvolution(evo){
  const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo),focus=evoFocusPlayerUid&&eligible.some(x=>x.uid===evoFocusPlayerUid),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),disabled=!eligible.length||full||running;
  const label=running?"Evolution läuft":!eligible.length?"Keine geeigneten Spieler":full?"3/3 Evolutionen aktiv":"Spieler wählen & Vorschau";
- return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
+ const designPreview=evo.design?(()=>{const pick=eligible[0];if(!pick)return`<div class="evo-event-design"><span>Endet im HALLOWEEN-Design · nur normale Karten 78–84 GES</span></div>`;const done=evoPreviewItem(pick,evo,evo.stages.length-1);return`<div class="evo-event-design"><div class="evo-event-design-card">${cardHTML(displayBase(done),done,true)}</div><span>So endet ${esc(displayBase(pick).name)}: ${itemRating(done)} GES im HALLOWEEN-Design</span></div>`})():"";
+ return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}${evo.design?` event-evo ${esc(evo.design)}-evo`:""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div>${designPreview}<div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
 }
 function renderActiveEvolution(){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();
@@ -5119,11 +5352,12 @@ function renderActiveEvolution(){
 }
 function renderEvoHistory(status){const rows=(state.evoHistory||[]).filter(x=>status==="completed"?x.status==="completed":x.status!=="completed");if(!rows.length)return'<div class="evo-empty">Hier gibt es noch keine Einträge.</div>';return rows.slice(0,20).map(h=>{const evo=EVOLUTION_POOL.find(x=>x.id===h.evoId),item=state.club.find(x=>x.uid===h.uid),b=item?displayBase(item):null;return`<div class="evo-history"><div><strong>${esc(evo?.name||h.evoId)}</strong><span>${b?esc(b.name):'Spieler'} · ${h.status==='completed'?'Abgeschlossen':h.status==='expired'?'Abgelaufen':'Abgebrochen'}</span></div>${b?`<div class="evo-history-card">${cardHTML(b,item,true)}</div>`:''}</div>`}).join("")}
 function renderPastEvolutions(){const nowDefs=new Set(activeEvolutionDefinitions().map(x=>x.id)),previous=activeEvolutionDefinitions(new Date(Date.now()-7*86400000)).filter(x=>!nowDefs.has(x.id));const old=previous.map(evo=>{const sch=evolutionSchedule(evo,new Date(),-1);return`<div class="evo-offer expired"><div class="evo-offer-top"><div><span class="evo-live">ABGELAUFEN</span><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div></div><div class="evo-requirements">${esc(evoRequirementText(evo))}</div><div class="evo-deadlines"><span>Startphase beendet <b>${evoDate(sch.signupEnd)}</b></span></div></div>`}).join("");return old+renderEvoHistory("past")}
-function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.slice().sort((a,b)=>activeEvolutionDefinitionRunning(b.id)-activeEvolutionDefinitionRunning(a.id)).map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
+function renderEvos(){if(!$("evoGrid"))return;$("evoSummary").hidden=activeEvoTab==="cosmetic";expireActiveEvolutionIfNeeded();const tabs=[...document.querySelectorAll("[data-evo-tab]")];tabs.forEach(b=>b.classList.toggle("active",b.dataset.evoTab===activeEvoTab));const active=activeEvolutionDefinitions(),eligibleUnique=new Set(active.flatMap(e=>eligibleEvoPlayers(e).map(i=>String(i.uid)))).size;$("evoSummary").innerHTML=`<div><strong>${active.length} Evolutions live</strong><span>${eligibleUnique} verschiedene Karten in deinem Verein passend</span></div><div><strong>${activeEvolutionCount()}/${MAX_ACTIVE_EVOLUTIONS} aktiv</strong><span>Bis zu 3 Evolutionen gleichzeitig</span></div><div><strong>Season 1 · max. ${EVOLUTION_SEASON_MAX_OVR} GES</strong><span>Stat-Cap ${EVOLUTION_GLOBAL_STAT_CAP} · Evo-Ketten erlaubt</span></div>`;if(activeEvoTab==="available")$("evoGrid").innerHTML=active.slice().sort((a,b)=>(activeEvolutionDefinitionRunning(b.id)*2+(b.group==="event"))-(activeEvolutionDefinitionRunning(a.id)*2+(a.group==="event"))).map(renderAvailableEvolution).join("");else if(activeEvoTab==="active")$("evoGrid").innerHTML=renderActiveEvolution();else if(activeEvoTab==="cosmetic")globalThis.FooteraCosmetics.render();else if(activeEvoTab==="completed")$("evoGrid").innerHTML=renderEvoHistory("completed");else $("evoGrid").innerHTML=renderPastEvolutions();evoFocusPlayerUid=null}
 $("evoTabs").addEventListener("click",e=>{const b=e.target.closest("[data-evo-tab]");if(!b)return;activeEvoTab=b.dataset.evoTab;renderEvos()});
 $("evoGrid").addEventListener("click",e=>{const ch=e.target.closest("[data-evo-choose]"),claim=e.target.closest("[data-evo-claim-stage]"),cancel=e.target.closest("[data-cancel-evo-instance]");if(ch){openEvoPicker(ch.dataset.evoChoose);return}if(claim){claimEvolutionStage(claim.dataset.evoClaimInstance||"");return}if(cancel){const entry=activeEvolutionForInstance(cancel.dataset.cancelEvoInstance);if(!entry)return;if(!confirm("Evolution abbrechen? Bereits abgeschlossene Stufen bleiben erhalten."))return;removeActiveEvolutionInstance(entry.instanceKey,"cancelled");save();activeEvoTab=activeEvolutionCount()?"active":"available";renderAll();toast("Evolution abgebrochen.")}});
 $("evoPickerClose").addEventListener("click",()=>closeUiLayer("evoPickerModal","evo-picker"));
-$("evoPickerBody").addEventListener("click",e=>{const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)renderEvoCandidatePreview(evo,item);return}if(back){openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
+$("evoPickerBody").addEventListener("input",e=>{if(e.target.id==="evoPickerSearch")applyEvoPickerFilter()});
+$("evoPickerBody").addEventListener("click",e=>{const chip=e.target.closest("[data-evo-filter-pos]"),sortBtn=e.target.closest("[data-evo-filter-sort]");if(chip){chip.parentElement.querySelectorAll("[data-evo-filter-pos]").forEach(b=>{const on=b===chip;b.classList.toggle("active",on);b.setAttribute("aria-pressed",on?"true":"false")});applyEvoPickerFilter();return}if(sortBtn){const next={"":"high",high:"low",low:""}[sortBtn.dataset.evoFilterSort];sortBtn.dataset.evoFilterSort=next;sortBtn.classList.toggle("active",!!next);sortBtn.textContent=next==="high"?"GES ↓":next==="low"?"GES ↑":"⇅ GES";sortBtn.setAttribute("aria-label",`Sortierung: ${next==="high"?"höchste GES zuerst":next==="low"?"niedrigste GES zuerst":"empfohlen"}`);applyEvoPickerFilter();return}const cand=e.target.closest("[data-evo-candidate]"),back=e.target.closest("[data-evo-picker-back]"),start=e.target.closest("[data-evo-start]");if(cand&&evoPickerContext){const evo=EVOLUTION_POOL.find(x=>x.id===evoPickerContext.evoId),item=state.club.find(x=>x.uid===cand.dataset.evoCandidate);if(evo&&item)showEvoCandidateFromList(evo,item);return}if(back){if(evoPickerListStash){if(history.state?.kind==="evo-picker-preview")history.back();else restoreEvoPickerList()}else openEvoPicker(back.dataset.evoPickerBack);return}if(start){startEvolution(start.dataset.evoStart,start.dataset.evoUid,start.dataset.evoPay||"free")}});
 function progressEvolution(resultKey="loss"){
  expireActiveEvolutionIfNeeded();const rows=activeEvolutionEntries();if(!rows.length)return;
  const kickoffStarters=Array.isArray(match?.initialStarters)?match.initialStarters:match?.lineup?.slice(0,11)||[];let changed=false;
@@ -5142,6 +5376,7 @@ function progressEvolution(resultKey="loss"){
 
 
 
+ let halloweenSbcShown=false;
  let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null,sbcSlotDetailState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
@@ -5544,19 +5779,19 @@ function sbcFeatureGroupCard(rows,detail=false){
  if(!rows?.length)return"";
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
- const title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Spieler-SBC")):"Top-Partien";
- const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr||""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
+ const title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
+ const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventId===HALLOWEEN_EVENT.id?"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit Blutmond-Upgrade. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr?eventDisplayOvr(sample.eventId,sample.eventPlayer.ovr):""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward);
  let art="";
  if(isPlayer&&found){
   const base=eventSbcRewardBase(found.event,found.def),item=makeEventSbcRewardItem(sample.groupReward);
-  if(base&&item)art=`<div class="sbc-feature-player">${cardHTML(base,item)}</div>`;
+  if(base&&item)art=`<div class="sbc-feature-player">${cardHTML(displayBase(item)||base,item)}</div>`;
  }else if(sample.groupReward?.pack){
   art=`<div class="sbc-feature-pack"><img src="${packArtSrc(sample.groupReward.pack)}" alt="${esc(reward)}" loading="lazy"></div>`;
  }
  const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`;
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
- return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+ return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":sample.eventId===HALLOWEEN_EVENT.id?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
@@ -5564,7 +5799,7 @@ function sbcGroupedRows(rows){
 }
 function sbcSetDetailHTML(rows){
  if(!rows?.length)return"";
- const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(sample.eventId===FLASHBACK_REUS_EVENT.id?`FLASHBACK · ${sample.eventPlayer.name}`:(sample.eventPlayer?.name||"Profi-SBC")):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
+ const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
  const bonusState=claimed?"ERHALTEN":done>=total?"FREIGESCHALTET":`NOCH ${total-done} SBC${total-done===1?"":"s"}`;
  return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
@@ -5572,6 +5807,8 @@ function sbcSetDetailHTML(rows){
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
  const rows=allActiveSBCs(),preferred=["Täglich","POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
+ // The first SBC visit during the Halloween SBC opens the Profis tab with Müller once per session.
+ const halloweenSbcLive=rows.some(r=>r.eventId===HALLOWEEN_EVENT.id&&!state.sbcGroupClaims?.[r.groupSet]);if(halloweenSbcLive&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
  if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
@@ -5584,7 +5821,7 @@ function renderSBC(){
   if(detailRows.length){$("sbcTabs").innerHTML="";$("sbcGrid").innerHTML=sbcSetDetailHTML(detailRows);return}
   activeSbcSet=null
  }
- $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
+ $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
   const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>sbcFeatureGroupCard(x)).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
@@ -5855,7 +6092,9 @@ function startMatch(mode,opponent=null,kitSelection=null){
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
  recordMatchScene("idle","Anpfiff · Das Spiel läuft.");
- updateMatchUI();setMatchPill(false);startMatchTimer()
+ updateMatchUI();setMatchPill(false);startMatchTimer();
+ // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
+ if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff")
 }
 function addLog(t){
  if(!match)return;
@@ -6324,6 +6563,11 @@ function matchPlayerWindow(uid){
  return{start,end,minutes:start==null?0:Math.max(0,end-start)}
 }
 function matchPlayerMinutes(uid){return matchPlayerWindow(uid).minutes}
+function matchPlayerForm(side,uid,index){
+ let h=2166136261;for(const c of `${match?.resultId||""}|${side}|${uid||index}`)h=Math.imul(h^c.charCodeAt(0),16777619);
+ h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;
+ return((h>>>0)/4294967295)*2-1
+}
 function matchPlayerPerformance(side,uid,index,base){
  const home=side==="home",window=home?matchPlayerWindow(uid):{start:0,end:match.minute,minutes:match.minute},minutes=window.minutes;
  const belongs=(event,uidField,indexField)=>event.side===side&&(home?String(event[uidField]||"")===String(uid):Number(event[indexField]??-1)===index);
@@ -6337,19 +6581,28 @@ function matchPlayerPerformance(side,uid,index,base){
  const formation=home?(activeIndex>=0?match.formation:match.initialFormation||match.formation):match.opponentProfile?.formation;
  const form=FORMATIONS[formation]||FORMATIONS["4-3-3"],position=String((activeIndex>=0?form[activeIndex]?.p:priorSub?.position||form[startIndex]?.p)||base?.position||"").toUpperCase();
  const conceded=(match.goalEvents||[]).filter(e=>e.side!==side&&window.start!=null&&Number(e.at??e.minute)>window.start&&Number(e.at??e.minute)<=window.end).length;
- let rating=6.1+goals*1.15+assists*.7+Math.min(.22,shots.length*.05)+Math.max(-.4,Math.min(.5,(goals-xg)*.2))-yellows*.17-reds*1.35;
- rating+=Math.min(2.3,saves.length*.28+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.4);
- rating+=Math.min(1.6,tackles*.11+interceptions*.13+blocks*.2);
+ const played=Math.min(1,minutes/90),settled=Math.min(1,Math.max(0,(minutes-10)/50)),attacker=["ST","CF","LW","RW","LM","RM","CAM"].includes(position),midfielder=["CM","CDM","CAM"].includes(position),defender=["CB","LB","RB","LWB","RWB"].includes(position);
+ const onTarget=shots.filter(e=>e.onTarget||e.goal).length,quality=Number(base?.ovr||base?.rating||0);
+ // Base, card quality and a stable per-match form (the passes and duels the ticker does not show) spread ratings over the 6-8 range.
+ let rating=6.45+(quality?Math.max(-.4,Math.min(.35,(quality-82)*.03))*settled:0)+matchPlayerForm(side,uid,index)*.4*settled;
+ rating+=goals*.95-Math.max(0,goals-1)*.1+assists*.6;
+ rating+=Math.min(.75,shots.length*.09+onTarget*.13+xg*.35)-Math.min(.35,Math.max(0,xg-goals)*.2)-yellows*.25-reds*1.7;
+ rating+=Math.min(2.4,saves.length*.32+saves.reduce((n,e)=>n+Number(e.xg||0),0)*.45);
+ rating+=Math.min(1.6,tackles*.17+interceptions*.19+blocks*.24);
  if(minutes>=18){
-  const diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*(home?1:-1)));
-  rating+=diff*.035;
-  if(["ST","CF","LW","RW","LM","RM","CAM"].includes(position)&&!goals&&!assists&&!shots.length)rating-=Math.min(.3,(minutes-18)/72*.3);
-  if(["CM","CDM"].includes(position))rating+=(Number(match.poss||50)-50)*(home?1:-1)*.006;
-  if(["CB","LB","RB","LWB","RWB"].includes(position)){rating-=conceded*.12;if(!conceded&&minutes>=40)rating+=.22}
-  if(position==="GK"){rating-=conceded*.24;if(!conceded&&minutes>=40)rating+=.3}
+  const sign=home?1:-1,diff=Math.max(-3,Math.min(3,(Number(match.home||0)-Number(match.away||0))*sign)),share=Math.min(1,(minutes-10)/60);
+  rating+=((diff>0?.3:diff<0?-.25:0)+diff*.1)*share;
+  const xgDiff=Math.max(-2,Math.min(2,(Number(match.xgHome||0)-Number(match.xgAway||0))*sign));
+  if(attacker||midfielder)rating+=xgDiff*.1*share;
+  if(attacker&&!goals&&!assists&&!shots.length)rating-=Math.min(.4,(minutes-18)/72*.4);
+  if(midfielder)rating+=(Number(match.poss||50)-50)*sign*.014;
+  if(defender){rating-=conceded*.16;if(!conceded&&minutes>=40)rating+=.4}
+  if(position==="GK"){rating-=conceded*.3;if(!conceded&&minutes>=40)rating+=.5}
  }
  if(minutes<8&&!goals&&!assists&&!actions.length&&!shots.length&&!yellows&&!reds)rating=6;
- rating=Math.max(4,Math.min(10,rating));
+ // Soften the top end so a brace is a 9, a hat-trick a 9.5+, and only a perfect game reaches 10.
+ if(rating>7.8)rating=7.8+2.2*(1-Math.exp(-(rating-7.8)/2.2));
+ rating=Math.max(3.5,Math.min(10,rating));
  return{rating:Number(rating.toFixed(1)),fitness:matchPlayerFitness(uid,side,index),minutes:Math.round(minutes),position,goals,assists,shots:shots.length,xg:Number(xg.toFixed(2)),saves:saves.length,blocks,tackles,interceptions,defensiveActions:blocks+tackles+interceptions,conceded,yellows,reds}
 }
 function matchPlayerLivePerformance(uid){
@@ -6713,7 +6966,9 @@ function finishMatch(){
  $("matchReward").textContent=isFriendly?"Freundschaftsspiel · keine Rivals-/Squad-Battle-Belohnung":`+ ${fmt(reward+boostCoins)} Coins${boostCoins?` · davon +${fmt(boostCoins)} Boost · ${state.coinBoost.games} Boost-Spiele übrig`:""}`;
  renderCompetitionProgress(null);
  setMatchPill(true);
- renderAll();requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
+ renderAll();
+ // V21.226: the final-whistle scene first; the queue scrolls to the result after it.
+ if(!(typeof queueMatchCeremony3D==="function"&&queueMatchCeremony3D("fulltime")))requestAnimationFrame(()=>$("matchResult").scrollIntoView({behavior:"smooth",block:"start"}))
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
@@ -6741,7 +6996,17 @@ function updateObjectiveIndicators(){
  $("homeObjectiveHint").textContent=objectiveReady?`${objectiveReady} Belohnung${objectiveReady===1?"":"en"} abholbereit`:"Belohnungen freischalten";
  $("homePassHint").textContent=passReady?`${passReady} Passbelohnung${passReady===1?"":"en"} abholbereit`:"Kostenlos & Premium · 30 Stufen"
 }
-function homeHeroSlides(){const event=activeMomentumEvent();return[
+// HALLOWEEN gets its own hero: silhouettes as teaser until the event starts, then the live team.
+function halloweenHeroSlide(at=Date.now()){
+ const ev=HALLOWEEN_EVENT,start=Date.parse(ev.activeFrom),end=Date.parse(ev.activeUntilAt),teaserFrom=Date.parse("2026-10-22T19:00:00+02:00");
+ if(at<teaserFrom||at>=end||!eventRosterReady(ev))return null;
+ const fmtDay=d=>new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(d));
+ if(at<start){const days=Math.max(0,Math.round((start-at)/86400000));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, eine geheime Spieler-SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
+ const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(ev.upgrade.at);
+ return{kicker:upgrade?"BLUTMOND-UPGRADE AKTIV · +1 AUF ALLE HALLOWEEN-KARTEN":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:upgrade?`Der Blutmond ist aufgegangen: Jede Halloween-Karte hat jetzt +1 GES und +1 auf alle Werte. In Packs bis ${fmtDay(end)} Uhr.`:`18 Spezialkarten in Packs bis ${fmtDay(end)} Uhr. In der Halloween-Nacht (${fmtDay(upAt)} Uhr) bekommt jede Halloween-Karte das Blutmond-Upgrade.`,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:"JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:ev.activeUntil,theme:"halloween",event:ev}
+}
+function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null;return[
+ ...(halloween?[halloween]:[]),
  ...(event?[{kicker:`NEUES EVENT · ${event.subtitle}`,title:`MOMENTUM<br><span>${event.subtitle}</span>`,text:`${event.name} ${event.subtitle} ist jetzt live. Verfügbar in Packs bis ${new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(event.activeUntilAt))} Uhr.`,button:"Zum Team",action:"momentum-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"M",live:"JETZT IN PACKS",aside:`${event.players.length} SPEZIALKARTEN`,aside2:event.activeUntil,theme:"momentum",event}]:[]),
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division||"ELITE"} · ${state.rivals.weeklyPoints}/35`,theme:"gold"},
  totwIsActive()?{kicker:"AKTUELLE INHALTE",title:'TEAM DER<br><span>WOCHE</span>',text:`${totwDisplayName(LIVE_TOTW.name)} ist aktiv. Entdecke die aktuellen Spezialkarten im Store.`,button:"Zum Store →",go:"storeView",teamView:"totw",shield:"TOTW",live:"JETZT AKTIV",aside:"NEUE SPEZIALKARTEN",aside2:"NUR FÜR KURZE ZEIT",theme:"gold"}:{kicker:"SAISONPASS",title:'DEINE<br><span>SAISON</span>',text:"Spiele Matches und erfülle Ziele, um Spielbelohnungen freizuschalten.",button:"Saisonpass öffnen →",go:"seasonPassView",shield:"SP",live:"SAISON AKTIV",aside:"KOSTENLOS & PREMIUM",aside2:`${fmt(state.sp||0)} SP GESAMMELT`,theme:"gold"},
@@ -6754,7 +7019,7 @@ function renderHomeHero(){
  $("homeHeroShield").textContent=hero.shield;$("homeHeroLive").textContent=hero.live;$("homeHeroAside").innerHTML=hero.aside.replace(". ",".<br>");$("homeHeroAside2").textContent=hero.aside2;
  const action=$("homeHeroAction");action.textContent=hero.button;action.dataset.homeHeroAction=hero.action||"";if(hero.go)action.dataset.go=hero.go;else delete action.dataset.go;
  const teamBtn=$("homeHeroTeam");teamBtn.style.display=hero.teamView?"inline-flex":"none";teamBtn.textContent=hero.teamButton||"Team ansehen";teamBtn.dataset.homeTeamView=hero.teamView||"";
- const roster=$("homeMomentumRoster");roster.hidden=!hero.event;
+ const roster=$("homeMomentumRoster");roster.hidden=!hero.event;roster.classList.toggle("teaser",!!hero.teaser);
  const eventPlayers=hero.event?promoEventEntries(hero.event):[];
  roster.innerHTML=eventPlayers.slice(0,4).map((entry,index)=>`<button type="button" class="home-momentum-player" data-home-event-player="${index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`).join("")+(eventPlayers.length>4?`<span class="home-momentum-count">+${eventPlayers.length-4} weitere Karten im Team</span>`:"");
  $("homeSliderDots").innerHTML=slides.map((_,i)=>`<span class="home-slider-dot ${i===homeHeroSlide?"active":""}" data-home-slide="${i}" aria-hidden="true"></span>`).join("")
@@ -6811,7 +7076,7 @@ $("homeHeroCard")?.addEventListener("pointerdown",e=>{heroSwipeStart={x:e.client
 $("homeHeroCard")?.addEventListener("pointerup",e=>{if(!heroSwipeStart||heroSwipeStart.id!==e.pointerId)return;const dx=e.clientX-heroSwipeStart.x,dy=e.clientY-heroSwipeStart.y;heroSwipeStart=null;if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;const len=homeHeroSlides().length;homeHeroSlide=(homeHeroSlide+(dx<0?1:-1)+len)%len;renderHomeHero()});
 $("homeHeroCard")?.addEventListener("pointercancel",()=>{heroSwipeStart=null});
 $("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=promoEventEntries(event)[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
-$("homeHeroAction")?.addEventListener("click",e=>{if(e.currentTarget.dataset.homeHeroAction==="momentum-team"){e.stopPropagation();openMomentumTeam()}});
+$("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}});
 $("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();const view=e.currentTarget.dataset.homeTeamView;if(view==="totw")openTotwTeam();else if(view==="momentum-shop"){storeTab="promo";switchView("storeView")}});
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
 $("campaignModalBody")?.addEventListener("click",e=>{const go=e.target.closest("[data-campaign-go]");if(!go)return;$("campaignModal").classList.remove("active");replaceUiState("view",{view:go.dataset.campaignGo});switchView(go.dataset.campaignGo,{push:false})});
@@ -7161,7 +7426,16 @@ function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(esca
 function friendSnapshotItem(item){
  if(!item)return null;
  const b=displayBase(item);if(!b)return null;
- return{pid:String(item.pid||b.id||""),name:b.name,ovr:itemRating(item),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",dynamicFace:item.dynamicFace||b.dynamicFace||"",variant:item.variant||"",boost:Number(item.boost||0),eventName:item.eventName||"",eventType:item.eventType||"",eventReleaseId:item.eventReleaseId||"",eventStats:Array.isArray(item.eventStats)?item.eventStats.map(Number):null,overridePosition:item.overridePosition||"",displayRating:Number(item.displayRating||0),evo:Number(item.evo||0),evoStats:item.evoStats&&typeof item.evoStats==="object"?{...item.evoStats}:{},evoDesign:item.evoDesign===true,chemBoost:item.chemBoost?{...item.chemBoost}:null}
+ return{pid:String(item.pid||b.id||""),name:b.name,ovr:itemRating(item),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",dynamicFace:item.dynamicFace||b.dynamicFace||"",variant:item.variant||"",boost:Number(item.boost||0),eventName:item.eventName||"",eventType:item.eventType||"",eventReleaseId:item.eventReleaseId||"",eventStats:Array.isArray(item.eventStats)?item.eventStats.map(Number):null,overridePosition:item.overridePosition||"",displayRating:Number(item.displayRating||0),evo:Number(item.evo||0),evoStats:item.evoStats&&typeof item.evoStats==="object"?{...item.evoStats}:{},evoDesign:item.evoDesign===true,chemBoost:item.chemBoost?{...item.chemBoost}:null,...friendCardExtras(item)}
+}
+// V21.246: everything else cardHTML reads from an item (cosmetic designs, evo
+// PlayStyles, reward snapshots), so a friend sees exactly the owner's card.
+const FRIEND_CARD_EXTRA_FIELDS=["cosmeticDesign","evoPlaystyle","evoPlaystyles","evoPlaystylePlus","evoPlaystylesPlus","playstyleAdds","playstylePlusAdds","eventFace","rare","legacyEvent","storyRewardKey","objectiveRewardKey","acquisitionSource","baseSnapshot"];
+function friendCardExtras(item){
+ const out={};
+ for(const key of FRIEND_CARD_EXTRA_FIELDS){const v=item?.[key];if(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length))continue;out[key]=typeof v==="object"?JSON.parse(JSON.stringify(v)):v}
+ if(out.acquisitionSource!=="reward-pick")delete out.baseSnapshot;
+ return out
 }
 function friendTeamSnapshotForPreset(preset,indexSlot,isActive){
  const requestedFormation=isActive?state.formation:preset?.formation,formation=SQUAD_FORMATION_NAMES.includes(requestedFormation)?requestedFormation:"4-3-3";
@@ -7191,9 +7465,12 @@ function friendProfileTeams(friend){
 }
 function friendBase(fp){if(!fp)return null;const db=fp.pid?P_BY_ID.get(String(fp.pid)):null;return db?{...db,ovr:Number(fp.ovr||db.ovr),position:fp.position||db.position,alt:fp.alt||db.alt,team:fp.team||db.team,league:fp.league||db.league,nation:fp.nation||db.nation,face:fp.face||db.face,pac:fp.pac||db.pac,sho:fp.sho||db.sho,pas:fp.pas||db.pas,dri:fp.dri||db.dri,def:fp.def||db.def,phy:fp.phy||db.phy}:{id:fp.pid||fp.name,name:fp.name||"Spieler",ovr:Number(fp.ovr||0),position:fp.position||"CM",alt:fp.alt||"",team:fp.team||"",league:fp.league||"",nation:fp.nation||"",face:fp.face||"",pac:fp.pac||0,sho:fp.sho||0,pas:fp.pas||0,dri:fp.dri||0,def:fp.def||0,phy:fp.phy||0}}
 function friendFits(p,slot){if(!p)return false;const positions=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean)];return positions.includes(slot)}
+// fp.ovr is the finished card rating; itemRating adds evo and the Halloween
+// upgrade on top of displayRating again, so hand it the rating before those.
+function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
 function friendItem(fp,b=friendBase(fp)){
  if(!fp||!b)return null;
- return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:Number(fp.ovr||b.ovr)}
+ return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:friendDisplayRating(fp,b),...friendCardExtras(fp)}
 }
 function friendCard(fp,slot,mini=true){
  const b=friendBase(fp);if(!b)return'<div class="emptyslot">LEER</div>';
@@ -7380,6 +7657,7 @@ function removeUiLayer(id){
 function closeTopUiLayer(){
  const id=topUiLayer();if(!id)return false;
   if(id==="squadBattleModal"&&squadBattleStage==="preview"&&pendingMatchContext?.mode==="squad"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
+ if(id==="evoPickerModal"&&restoreEvoPickerList())return true;
  removeUiLayer(id);return true
 }
 function showUiLayer(id,kind=id,extra={},historyMode="push"){
@@ -7390,6 +7668,7 @@ function showUiLayer(id,kind=id,extra={},historyMode="push"){
 }
 function closeUiLayer(id,kind){
  const el=$(id);if(!el?.classList.contains("active"))return;
+ if(id==="evoPickerModal"&&evoPickerListStash){evoPickerListStash=null;if(topUiLayer()===id&&history.state?.gfut&&history.state.kind==="evo-picker-preview"){history.go(-2);return}}
  if(topUiLayer()===id&&history.state?.gfut&&history.state.kind===kind){history.back();return}
  removeUiLayer(id)
 }
@@ -7537,7 +7816,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.213";
+const GFUT_BUILD="V21.249";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7595,7 +7874,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21213",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21249",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

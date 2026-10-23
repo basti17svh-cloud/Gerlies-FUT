@@ -34,6 +34,9 @@ const RIVALS_REWARDS={
  1:{15:[30000,["85","primegold","primegold"]],35:[50000,["86","primegold","primegold","totw-reward"]]},
  0:{15:[40000,["86","primegold","primegold"]],35:[65000,["86","primegold","primegold","primegold","totw-reward"]]}
 };
+// One-time owner grants: this Rivals week pays the full 35-point reward for that save, whatever was played.
+const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000"]});
+function fullRivalsWeek(week){return(FULL_RIVALS_WEEKS[String(state.profile?.saveId||"").trim().toUpperCase()]||[]).includes(String(week))}
 function competitionWindow(mode,at=new Date()){
  const rule=COMPETITION_WEEK[mode],start=berlinWeekStart(at,rule.weekday,rule.hour);
  return{key:String(start.getTime()),start,end:berlinShiftDays(start,7,rule.hour)}
@@ -86,7 +89,7 @@ function syncCompetitionWeeks(at=new Date()){
  }
  const rv=state.rivals,rw=competitionWindow("rivals",at);
  if(rv.week!==rw.key){
-  const milestone=rv.weeklyPoints>=35?35:rv.weeklyPoints>=15?15:0;
+  const milestone=rv.weeklyPoints>=35||fullRivalsWeek(rv.week)?35:rv.weeklyPoints>=15?15:0;
   if(rv.week&&milestone&&!state.weeklyRewards.some(x=>x.mode==="rivals"&&x.week===rv.week)){
    state.weeklyRewards.push({mode:"rivals",week:rv.week,division:rv.division,milestone,points:rv.weeklyPoints,reward:rivalsReward(rv.division,milestone),claimed:false});
   }
@@ -234,10 +237,15 @@ function battleSpecialOpponent(kind,key){
   tier:kind==="event"?(eventPackIsActive(event)?"Event-Team":"Event-Team · Archiv"):"Team der Woche",strengthId:kind,battleId:`${key}:${kind}`,rewards:{win:850,loss:330},sp:100,power:rating+chem*.12}
 }
 
+// Player Picks are issued by the account backend, so the label says so.
+function playerPickLabels(picks){
+ const counts=new Map();for(const p of picks||[]){const key=`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices}, mit Konto)`;counts.set(key,(counts.get(key)||0)+1)}
+ return[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n)
+}
 function rewardLabel(row){
  // Same pack twice reads "2× Premium Gold Pack", not the name twice.
  const names=row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),counts=new Map();names.forEach(n=>counts.set(n,(counts.get(n)||0)+1));
- const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...(row.reward.playerPicks||[]).map(p=>`${p.minRating}+ ${p.type==="champions-red"?"Champions ":""}Player Pick (1 aus ${p.choices})`)].join(" · ");
+ const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...playerPickLabels(row.reward.playerPicks)].join(" · ");
  return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${packs}`
 }
 function competitionClaimButtons(mode){return competitionPending(mode).map(row=>`<button class="primary competition-claim" type="button" data-claim-competition="${row.mode}" data-competition-week="${row.week}">${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholen · ${esc(rewardLabel(row))}</button>`).join("")}

@@ -27,8 +27,8 @@ test("cosmetic category and shared card layouts are wired up",()=>{
  assert.match(css,/\.champions-red/);
  assert.match(css,/\.champions-pro/);
 });
-test("four cosmetic themes are selectable; red is unlocked from Weekend League wins",()=>{
- const c=setup();assert.equal(c.ctx.FooteraCosmetics.skins.length,4);
+test("five cosmetic themes (incl. time-limited Halloween) exist; red is unlocked from Weekend League wins",()=>{
+ const c=setup();assert.equal(c.ctx.FooteraCosmetics.skins.length,5);
  c.ctx.FooteraCosmetics.render();
  assert.match(c.nodes.evoGrid.innerHTML,/Champions Rot/);
  assert.match(c.nodes.evoGrid.innerHTML,/MOMENTUM/);

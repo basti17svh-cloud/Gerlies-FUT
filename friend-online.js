@@ -235,7 +235,11 @@
   const snapshot=decodeFriendProfile(encodeFriendProfile()),m=squadMetrics(),teams=typeof friendOnlineTeamsSnapshot==="function"?friendOnlineTeamsSnapshot():[];
   if(!snapshot||m.filled<18||snapshot.squad.some(x=>!x)){online.registered=false;return false}
   const sharedTeams=teams.filter(team=>team&&team.filled===18&&Array.isArray(team.squad)&&team.squad.length===18).slice(0,3).map(team=>({slot:Number(team.slot||0),name:String(team.name||"Team").slice(0,24),active:!!team.active,formation:team.formation,tactic:["balanced","attacking","defensive"].includes(team.tactic)?team.tactic:"balanced",roles:{...(team.roles||{})},focus:{...(team.focus||{})},rating:Number(team.rating||0),chem:Number(team.chem||0),squad:team.squad}));
-  const identity=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null;const stable={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),club_short_name:String(state.profile.clubShortName||"FTR").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4)||"FTR",club_identity:identity,rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:snapshot.squad,squads:sharedTeams,active_preset:Number(state.activeSquadPreset||0)};
+  // V21.246: the live lineup carries the full card data (event, evo, founder
+  // designs, dynamic faces) so friends see the real cards, not a generic one.
+  const activeTeam=teams.find(team=>team?.active&&Array.isArray(team.squad)&&team.squad.length===18&&team.squad.every(Boolean));
+  const liveSquad=activeTeam?activeTeam.squad:snapshot.squad;
+  const identity=typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null;const stable={user_id:online.userId,username:String(state.profile.username||"").slice(0,20),club_name:String(state.profile.clubName||"Footera Club").slice(0,30),club_short_name:String(state.profile.clubShortName||"FTR").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4)||"FTR",club_identity:identity,rating:Math.min(99,Math.max(0,m.rating||0)),chem:Math.min(33,Math.max(0,m.chem||0)),formation:state.formation,squad:liveSquad,squads:sharedTeams,active_preset:Number(state.activeSquadPreset||0)};
   const signature=JSON.stringify(stable);if(signature===lastProfileSignature&&online.registered)return true;
   let profile={...stable,updated_at:new Date().toISOString()},result=await client.from("footera_online_profiles").upsert(profile,{onConflict:"user_id"});
   if(result.error&&(result.error.code==="PGRST204"||/squads|active_preset/i.test(String(result.error.message||"")))){
@@ -310,22 +314,77 @@
   goalMomentUntil=0;
   if(goalMomentTimer){clearTimeout(goalMomentTimer);goalMomentTimer=null}
  }
+ // V21.246: 3D scenes like the Rivals matchday. Both clients play the same
+ // scenes while the database holds its clock (footera-online-matchday-v21.246.sql).
+ const scene3D={queue:null,duelId:"",shownUpTo:-1,kickoff:false,fulltime:false,history:[],scoreHold:null,busy:false};
+ const onlineStage=()=>$("onlineDuelModal")?.classList.contains("active")?$("onlineMatchLiveStage"):null;
+ window.FooteraHighlightsStage=onlineStage;
+ function cancelOnline3D(){
+  scene3D.queue?.cancel();scene3D.queue=null;scene3D.busy=false;scene3D.scoreHold=null;
+  $("onlineMatch")?.classList.remove("highlight3d-pending","highlight3d-active")
+ }
+ function online3DQueue(){
+  if(scene3D.queue)return scene3D.queue;
+  if(typeof FooteraHighlights==="undefined")return null;
+  scene3D.queue=new FooteraHighlights.Queue({
+   onBusy(){scene3D.busy=true;const root=$("onlineMatch");root?.classList.add("highlight3d-pending");$("onlineMatchLiveStage")?.scrollIntoView({block:"center",behavior:"auto"});renderMatch()},
+   onIdle(){scene3D.busy=false;scene3D.scoreHold=null;$("onlineMatch")?.classList.remove("highlight3d-pending","highlight3d-active");if(active)renderMatch()},
+   onFallback(event,error){if(error)console.warn("Online-3D-Szene:",error);if(event?.type==="goal"&&active)showGoalMoment(active)}
+  });
+  return scene3D.queue
+ }
+ function enqueueOnline3D(event){
+  const queue=online3DQueue();if(!queue||!event||!onlineStage())return false;
+  const queued=queue.enqueue(event);
+  if(queued&&event.type!=="ceremony")scene3D.history=scene3D.history.concat({sequence:event.sequence,family:event.family,shotSide:event.shotPlacement?.side}).slice(-9);
+  if(queued&&event.type==="goal")scene3D.scoreHold={id:event.id,home:event.scoreBeforeHome,away:event.scoreBeforeAway};
+  return queued
+ }
+ function showGoalMoment(row){
+  const goals=(row.events||[]).filter(e=>e.kind==="goal"),goal=goals.at(-1);if(!goal)return;
+  const mark=`${row.id}-${goal.minute}-${goals.length}`;if(mark===seenGoal)return;
+  seenGoal=mark;goalMomentUntil=Date.now()+3000;
+  clearTimeout(goalMomentTimer);
+  goalMomentTimer=setTimeout(()=>{goalMomentTimer=null;goalMomentUntil=0;if(active?.id===row.id)renderMatch()},3050)
+ }
+ function startOnline3D(row){
+  cancelOnline3D();
+  scene3D.duelId=row?.id||"";scene3D.shownUpTo=(row?.events||[]).length-1;scene3D.history=[];
+  scene3D.kickoff=row?.status!=="live"||Number(row?.minute||0)>0;scene3D.fulltime=row?.status==="finished"
+ }
+ function present3D(old,row){
+  const builder=window.FooteraOnline3D;if(!builder||scene3D.duelId!==row.id)return;
+  if(!scene3D.kickoff&&row.status==="live"&&Number(row.minute||0)===0){scene3D.kickoff=true;enqueueOnline3D(builder.buildCeremony(row,"kickoff"))}
+  const events=row.events||[];
+  for(let i=scene3D.shownUpTo+1;i<events.length;i++){
+   const kind=builder.sceneKind(events,i);if(!kind)continue;
+   const queued=enqueueOnline3D(builder.buildEvent(row,i,scene3D.history));
+   if(!queued&&kind==="goal")showGoalMoment(row)
+  }
+  scene3D.shownUpTo=Math.max(scene3D.shownUpTo,events.length-1);
+  if(!scene3D.fulltime&&row.status==="finished"&&old?.status!=="finished"){scene3D.fulltime=true;enqueueOnline3D(builder.buildCeremony(row,"fulltime"))}
+ }
+ function showOnlineMatchView(){
+  resetOnlineMatchUi();showUiLayer("onlineDuelModal","online-duel");renderMatch();if(active)present3D(null,active)
+ }
  function resetOnlineMatchUi(){
-  onlineManagerOpen=false;draftSubOut="";draftSubIn="";seenGoal="";clearOnlineGoalMoment()
+  onlineManagerOpen=false;draftSubOut="";draftSubIn="";seenGoal="";clearOnlineGoalMoment();startOnline3D(active)
+ }
+ // Realtime UPDATE payloads leave out unchanged large (TOASTed) columns such as
+ // the club profiles and lineups; keep them from the row we already have.
+ function mergeDuelRow(old,row){
+  if(!old||old.id!==row?.id)return row;
+  const merged={...old};
+  for(const [key,value] of Object.entries(row||{}))if(value!==undefined&&!(value===null&&/_(profile|lineup)$|^events$/.test(key)))merged[key]=value;
+  return merged
  }
  function applyMatch(row){
   if(!active||active.id!==row.id)return;
-  const old=active,oldGoalCount=(old.events||[]).filter(e=>e.kind==="goal").length;
+  const old=active;row=mergeDuelRow(old,row);
+  // An older response (poll vs. realtime) must not rewind the match.
+  if((row.events||[]).length<(old.events||[]).length&&row.status===old.status)return;
   active=row;
-  const goals=(row.events||[]).filter(e=>e.kind==="goal"),goal=goals.at(-1);
-  if(goals.length>oldGoalCount&&goal){
-   const mark=`${row.id}-${goal.minute}-${goals.length}`;
-   if(mark!==seenGoal){
-    seenGoal=mark;goalMomentUntil=Date.now()+3000;
-    clearTimeout(goalMomentTimer);
-    goalMomentTimer=setTimeout(()=>{goalMomentTimer=null;goalMomentUntil=0;if(active?.id===row.id)renderMatch()},3050)
-   }
-  }
+  present3D(old,row);
   if(old.status!=="halftime"&&row.status==="halftime")onlineManagerOpen=true;
   if(old.status==="halftime"&&row.status==="live")onlineManagerOpen=false;
   renderMatch()
@@ -335,18 +394,18 @@
   if(!validUid(friend?.onlineUid)){toast("Bitte den aktuellen Freundescode deines Freundes hinzufügen.");return}
   try{
    if(!await syncProfile())return toast("Für ein Live-Duell brauchst du 11 Starter und 7 Bankspieler.");const {data,error}=await client.rpc("footera_invite",{p_away:friend.onlineUid});if(error)throw error;
-   active=data;resetOnlineMatchUi();showUiLayer("onlineDuelModal","online-duel");renderMatch();await refresh()
+   active=data;showOnlineMatchView();await refresh()
   }catch(e){toast(`Einladung: ${errorText(e)}`)}
  }
  async function respond(id,accept){
   try{
    hideIncomingInvite();
    if(accept&&!await syncProfile())return toast("Für ein Live-Duell brauchst du 11 Starter und 7 Bankspieler.");const {data,error}=await client.rpc("footera_respond",{p_id:id,p_accept:accept});if(error)throw error;
-   if(accept){active=data;resetOnlineMatchUi();showUiLayer("onlineDuelModal","online-duel");renderMatch()}
+   if(accept){active=data;showOnlineMatchView()}
    await refresh()
   }catch(e){toast(`Duell: ${errorText(e)}`)}
  }
- function openMatch(id){const row=rows.find(r=>r.id===id);if(!row)return;active=row;resetOnlineMatchUi();showUiLayer("onlineDuelModal","online-duel");renderMatch()}
+ function openMatch(id){const row=rows.find(r=>r.id===id);if(!row)return;active=row;showOnlineMatchView()}
  async function command(kind,args={}){
   if(!active)return;
   try{const {data,error}=await client.rpc("footera_command",{p_id:active.id,p_command:kind,p_value:args.value??null,p_out:args.out??null,p_in:args.in??null});if(error)throw error;if(kind==="sub"){draftSubOut="";draftSubIn=""}applyMatch(data)}
@@ -457,25 +516,96 @@
   return `<div class="online-manager-bench">${(lineup||[]).slice(11,18).map((p,k)=>`<div class="${used.includes(k+11)?"used":""}">${p?friendCard(p,p.position||"CM",true):'<div class="emptyslot">FREI</div>'}${used.includes(k+11)?'<span>Eingesetzt</span>':""}</div>`).join("")}</div>`
  }
  function closeOnlineMatchView(){
-  stopTick();clearOnlineGoalMoment();onlineManagerOpen=false;active=null;closeUiLayer("onlineDuelModal","online-duel")
+  stopTick();clearOnlineGoalMoment();cancelOnline3D();onlineManagerOpen=false;active=null;closeUiLayer("onlineDuelModal","online-duel")
+ }
+ function teamLabelHTML(d,side){
+  const crest=window.FooteraOnline3D?.crest(d,side)||"";
+  return `${crest?`<span class="online-team-crest">${crest}</span>`:""}<span class="online-team-label">${escape(team(d,side))}</span>`
+ }
+ // Built once per opened duel; later renders only update its parts so a
+ // running 3D scene inside the live stage is never torn down.
+ function onlineMatchShell(){
+  return `<div id="onlineMatch" class="online-standard-match">
+   <header class="online-match-sticky-header">
+    <div class="match-broadcast-head"><span>FOOTERA <b>MATCHDAY</b></span><span>Online-Freundschaftsspiel</span></div>
+    <div class="scoreboard">
+     <div class="match-score-meta"><div id="onlineMatchStatePill" class="match-running-pill"><i></i><span></span></div><div class="minute" data-online="minute"></div></div>
+     <div class="match-score-line"><div class="match-team-name" data-online="home"></div><div class="score" data-online="score" aria-live="polite"></div><div class="match-team-name away" data-online="away"></div></div>
+    </div>
+    <div class="match-progress-track"><span data-online="progress"></span></div>
+   </header>
+   <section class="match-overview">
+    <div class="matchstats">
+     <div class="mstat"><strong data-online="poss"></strong><span>Ballbesitz</span></div>
+     <div class="mstat"><strong data-online="shots"></strong><span>Schüsse</span></div>
+     <div class="mstat"><strong data-online="xg"></strong><span>xG</span></div>
+    </div>
+    <div class="match-tactical-summary" data-online="summary"></div>
+   </section>
+   <div class="match-timeline-wrap"><div class="match-timeline" data-online="timeline"></div></div>
+   <section id="onlineMatchLiveStage" class="match-live-stage" data-scene="idle" aria-label="Live-Spielszenen">
+    <div class="match-stage-head"><span>LIVE-SPIELFELD</span><span class="scene-minute" data-online="sceneMinute"></span></div>
+    <div class="match-scene-pitch" aria-hidden="true"><div class="match-pitch-lines"><i class="match-pitch-center"></i><i class="match-pitch-box home"></i><i class="match-pitch-box away"></i><i class="match-pitch-goal home"></i><i class="match-pitch-goal away"></i><div class="match-players home"><i></i><i></i><i></i><i></i><i></i></div><div class="match-players away"><i></i><i></i><i></i><i></i><i></i></div><i class="match-lane"></i><i class="match-ball"></i></div></div>
+    <div class="match-scene-caption"><span class="scene-type" data-online="sceneType"></span><strong data-online="sceneText"></strong></div>
+    <div class="online-match-goal-moment" data-online="goal"></div>
+   </section>
+   <label class="highlight-mode">3D Highlights<select data-online="mode" aria-label="3D Highlights im Online-Spiel"></select></label>
+   <div data-online="manager"></div>
+   <div data-online="controls"></div>
+   <div data-online="result"></div>
+  </div>`
+ }
+ function setPart(root,key,html,text=false){
+  const node=root.querySelector(`[data-online="${key}"]`);if(!node)return null;
+  if(text){if(node.textContent!==html)node.textContent=html}else if(node.dataset.html!==html){node.innerHTML=html;node.dataset.html=html}
+  return node
  }
  function renderMatch(){
   const d=active,el=$("onlineDuelBody");if(!d||!el)return;maybeTick();
   if(["onlineSubOut","onlineSubIn","onlineTactic"].includes(document.activeElement?.id))return;
   $("onlineDuelModalTitle").textContent="Freundesduell · Matchday";
+  let root=$("onlineMatch");
+  if(!root||root.dataset.duel!==String(d.id)){
+   el.innerHTML=onlineMatchShell();root=$("onlineMatch");root.dataset.duel=String(d.id);
+   const select=root.querySelector('[data-online="mode"]');
+   if(select&&typeof FooteraHighlights!=="undefined"){for(const [value,label] of Object.entries(FooteraHighlights.MODES)){const option=document.createElement("option");option.value=value;option.textContent=label;select.append(option)}select.value=FooteraHighlights.getMode()}
+  }
 
   const side=sideOf(d),other=side==="home"?"away":"home",own=d[`${side}_lineup`]||[],subs=Number(d[`${side}_subs`]||0),used=d[`${side}_used_bench`]||[],ownReady=!!d[`${side}_ready`];
   const tactic=d[`${side}_tactic`]||"balanced",formation=d?.[`${side}_profile`]?.formation||"4-3-3";
-  const enabled=d.status==="live"||d.status==="halftime";
-  const phase=d.status==="invited"?"Einladung ausstehend":d.status==="halftime"?"Halbzeit":d.status==="finished"?"Abpfiff":d.status==="declined"?"Abgelehnt":d.status==="abandoned"?"Abgebrochen":"Simulation läuft";
+  const enabled=d.status==="live"||d.status==="halftime",playing=scene3D.busy;
+  const phase=playing?"Live-Chance":d.status==="invited"?"Einladung ausstehend":d.status==="halftime"?"Halbzeit":d.status==="finished"?"Abpfiff":d.status==="declined"?"Abgelehnt":d.status==="abandoned"?"Abgebrochen":"Simulation läuft";
   const scene=onlineScene(d),events=(d.events||[]);
   const timeline=events.filter(e=>["goal","sub","break"].includes(e.kind)).slice(-18);
   const homePoss=Math.max(0,Math.min(100,Math.round(Number(d.home_possession??50)))),awayPoss=100-homePoss;
   const homeShots=Number(d.home_shots||0),awayShots=Number(d.away_shots||0),homeXg=Number(d.home_xg||0),awayXg=Number(d.away_xg||0);
-  const goal=events.filter(e=>e.kind==="goal").at(-1),showGoal=Date.now()<goalMomentUntil&&goal?.player;
-  const goalCard=showGoal?friendCard(goal.player,goal.player.position||"ST",false):"";
+  const goal=events.filter(e=>e.kind==="goal").at(-1),showGoal=!playing&&Date.now()<goalMomentUntil&&goal?.player;
+  const hold=scene3D.scoreHold,score=hold?`${hold.home} : ${hold.away}`:`${d.home_score} : ${d.away_score}`;
   const result=d.status==="finished"?(Number(d[`${side}_score`])>Number(d[`${other}_score`])?"Sieg":Number(d[`${side}_score`])<Number(d[`${other}_score`])?"Niederlage":"Unentschieden"):"";
-  const manager=onlineManagerOpen&&enabled?`
+
+  root.dataset.state=d.status;
+  setPart(root,"minute",`${Number(d.minute||0)}'`,true);
+  setPart(root,"home",teamLabelHTML(d,"home"));
+  setPart(root,"away",teamLabelHTML(d,"away"));
+  setPart(root,"score",score,true);
+  const pill=$("onlineMatchStatePill")?.querySelector("span");if(pill&&pill.textContent!==phase)pill.textContent=phase;
+  const progress=root.querySelector('[data-online="progress"]');if(progress)progress.style.width=`${Math.min(100,Number(d.minute||0)/90*100)}%`;
+  setPart(root,"poss",`${homePoss} : ${awayPoss}`,true);
+  setPart(root,"shots",`${homeShots} : ${awayShots}`,true);
+  setPart(root,"xg",`${homeXg.toFixed(1)} : ${awayXg.toFixed(1)}`,true);
+  setPart(root,"summary",`${formation} · ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[tactic]||"Ausgeglichen"} · Live über Supabase`,true);
+  if(!playing){
+   const tl=setPart(root,"timeline",`<span class="match-timeline-start">Anpfiff</span>${timeline.map(e=>`<span class="match-timeline-event ${escape(e.kind)}">${onlineEventIcon(e.kind)} ${Number(e.minute||0)}' · ${escape(e.text||"")}</span>`).join("")}`);
+   if(tl)requestAnimationFrame(()=>{tl.scrollLeft=tl.scrollWidth});
+   const stage=$("onlineMatchLiveStage");if(stage&&stage.dataset.scene!==scene.scene)stage.dataset.scene=scene.scene;
+   setPart(root,"sceneMinute",`${Number(scene.minute||d.minute||0)}'`,true);
+   setPart(root,"sceneType",scene.type,true);
+   setPart(root,"sceneText",scene.text,true);
+  }
+  const goalNode=setPart(root,"goal",showGoal?`<div class="online-match-goal-card">${friendCard(goal.player,goal.player.position||"ST",false)}</div><div class="online-match-goal-copy"><span>TOR · ${goal.minute}'</span><strong>${escape(goal.text||"Torschütze")}</strong><small>${escape(team(d,goal.side||"home"))}</small><b>${d.home_score} : ${d.away_score}</b></div>`:"");
+  goalNode?.classList.toggle("active",!!showGoal);
+
+  setPart(root,"manager",onlineManagerOpen&&enabled?`
    <section class="online-standard-manager">
     <div class="online-manager-head"><div><span>TEAM-MANAGEMENT</span><h3>Aktuelle Aufstellung</h3></div><strong>${subs}/5 Wechsel</strong></div>
     ${onlineManagerPitchHTML(own,formation)}
@@ -492,51 +622,22 @@
      <button id="onlineBackToMatchBtn" class="secondary">Zurück zum Spiel</button>
      <button id="onlineAbandonBtn" class="secondary">Duell abbrechen</button>
     </div>
-   </section>`:"";
+   </section>`:"");
 
-  el.innerHTML=`<div class="online-standard-match" data-state="${escape(d.status)}">
-   <header class="online-match-sticky-header">
-    <div class="match-broadcast-head"><span>FOOTERA <b>MATCHDAY</b></span><span>Online-Freundschaftsspiel</span></div>
-    <div class="scoreboard">
-     <div class="match-score-meta"><div class="match-running-pill"><i></i><span>${escape(phase)}</span></div><div class="minute">${Number(d.minute||0)}'</div></div>
-     <div class="match-score-line"><div class="match-team-name">${escape(team(d,"home"))}</div><div class="score">${d.home_score} : ${d.away_score}</div><div class="match-team-name away">${escape(team(d,"away"))}</div></div>
-    </div>
-    <div class="match-progress-track"><span style="width:${Math.min(100,Number(d.minute||0)/90*100)}%"></span></div>
-   </header>
-
-   <section class="match-overview">
-    <div class="matchstats">
-     <div class="mstat"><strong>${homePoss} : ${awayPoss}</strong><span>Ballbesitz</span></div>
-     <div class="mstat"><strong>${homeShots} : ${awayShots}</strong><span>Schüsse</span></div>
-     <div class="mstat"><strong>${homeXg.toFixed(1)} : ${awayXg.toFixed(1)}</strong><span>xG</span></div>
-    </div>
-    <div class="match-tactical-summary">${escape(formation)} · ${escape({balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[tactic]||"Ausgeglichen")} · Live über Supabase</div>
-   </section>
-
-   <div class="match-timeline-wrap"><div class="match-timeline"><span class="match-timeline-start">Anpfiff</span>${timeline.map(e=>`<span class="match-timeline-event ${escape(e.kind)}">${onlineEventIcon(e.kind)} ${Number(e.minute||0)}' · ${escape(e.text||"")}</span>`).join("")}</div></div>
-
-   <section class="match-live-stage" data-scene="${escape(scene.scene)}">
-    <div class="match-stage-head"><span>LIVE-SPIELFELD</span><span class="scene-minute">${Number(scene.minute||d.minute||0)}'</span></div>
-    <div class="match-scene-pitch"><div class="match-pitch-lines"><i class="match-pitch-center"></i><i class="match-pitch-box home"></i><i class="match-pitch-box away"></i><i class="match-pitch-goal home"></i><i class="match-pitch-goal away"></i><div class="match-players home"><i></i><i></i><i></i><i></i><i></i></div><div class="match-players away"><i></i><i></i><i></i><i></i><i></i></div><i class="match-lane"></i><i class="match-ball"></i></div></div>
-    <div class="match-scene-caption"><span class="scene-type">${escape(scene.type)}</span><strong>${escape(scene.text)}</strong></div>
-    <div class="online-match-goal-moment ${showGoal?"active":""}">${showGoal?`<div class="online-match-goal-card">${goalCard}</div><div class="online-match-goal-copy"><span>TOR · ${goal.minute}'</span><strong>${escape(goal.text||"Torschütze")}</strong><small>${escape(team(d,goal.side||"home"))}</small><b>${d.home_score} : ${d.away_score}</b></div>`:""}</div>
-   </section>
-
-   ${manager}
-
-   ${!onlineManagerOpen?`<div class="online-standard-controls">${enabled?'<button id="onlineManageTeamBtn" class="secondary">Team-Management</button>':""}<button id="onlineMatchCloseBtn" class="secondary">${d.status==="finished"?"Weiter":"Schließen"}</button></div>`:""}
-
-   ${d.status==="finished"?`<div class="online-standard-result"><strong>${escape(result)}</strong><span>${escape(team(d,"home"))} ${d.home_score}:${d.away_score} ${escape(team(d,"away"))}</span><small>Das Ergebnis zählt für eure Online-Rangliste. Keine Coins oder Rivals-Punkte.</small></div>`:""}
-  </div>`;
-
-  requestAnimationFrame(()=>{const tl=el.querySelector(".match-timeline");if(tl)tl.scrollLeft=tl.scrollWidth})
+  setPart(root,"controls",!onlineManagerOpen?`<div class="online-standard-controls">${enabled?'<button id="onlineManageTeamBtn" class="secondary">Team-Management</button>':""}<button id="onlineMatchCloseBtn" class="secondary">${d.status==="finished"?"Weiter":"Schließen"}</button></div>`:"");
+  setPart(root,"result",d.status==="finished"&&!playing?`<div class="online-standard-result"><strong>${escape(result)}</strong><span>${escape(team(d,"home"))} ${d.home_score}:${d.away_score} ${escape(team(d,"away"))}</span><small>Das Ergebnis zählt für eure Online-Rangliste. Keine Coins oder Rivals-Punkte.</small></div>`:"")
  }
+ document.addEventListener("footera-highlight-impact",e=>{
+  const hold=scene3D.scoreHold;if(!hold||String(e.detail?.id||"")!==String(hold.id))return;
+  scene3D.scoreHold=null;if(active)renderMatch()
+ });
+ document.addEventListener("visibilitychange",()=>{if(document.hidden)scene3D.queue?.skip()});
  $("onlineDuelModalClose")?.addEventListener("click",closeOnlineMatchView);
  $("onlineDuelList")?.addEventListener("click",e=>{
   const accept=e.target.closest("[data-online-accept]"),decline=e.target.closest("[data-online-decline]"),open=e.target.closest("[data-online-open]");
   if(accept)respond(accept.dataset.onlineAccept,true);else if(decline)respond(decline.dataset.onlineDecline,false);else if(open)openMatch(open.dataset.onlineOpen)
  });
- $("onlineDuelBody")?.addEventListener("change",e=>{if(e.target.id==="onlineTactic")command("tactic",{value:e.target.value});if(e.target.id==="onlineSubOut")draftSubOut=e.target.value;if(e.target.id==="onlineSubIn")draftSubIn=e.target.value});
+ $("onlineDuelBody")?.addEventListener("change",e=>{if(e.target.dataset?.online==="mode"&&typeof FooteraHighlights!=="undefined"){const value=FooteraHighlights.setMode(e.target.value);document.querySelectorAll("[data-highlight-mode]").forEach(other=>other.value=value);if(value==="off")scene3D.queue?.skip();return}if(e.target.id==="onlineTactic")command("tactic",{value:e.target.value});if(e.target.id==="onlineSubOut")draftSubOut=e.target.value;if(e.target.id==="onlineSubIn")draftSubIn=e.target.value});
  $("onlineDuelBody")?.addEventListener("click",e=>{
   if(e.target.closest("#onlineManageTeamBtn")){onlineManagerOpen=true;renderMatch();return}
   if(e.target.closest("#onlineBackToMatchBtn")){onlineManagerOpen=false;renderMatch();return}

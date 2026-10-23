@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CELEBRATIONS,pickCelebration,celebrationDistance,applyCelebrationPose} from '../3d-goal-celebration.mjs';
+import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose} from '../3d-goal-celebration.mjs';
 
 const joint=()=>({rotation:{x:0,y:0,z:0},position:{x:0,y:0,z:0}});
 const driver=()=>({rig:joint(),upper:joint(),arms:[joint(),joint()],elbows:[joint(),joint()],legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()]});
@@ -16,14 +16,14 @@ test('each goal picks a stable celebration and every kind can occur', ()=>{
 });
 
 test('celebration runs never move backwards and stay inside the pitch', ()=>{
- for(const kind of CELEBRATIONS){
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS]){
   let last=0;
   for(let s=0;s<=3.5;s+=.05){const d=celebrationDistance(kind,s);assert.ok(d>=last-1e-9,kind);assert.ok(d<11,kind);last=d}
  }
 });
 
 test('poses are a pure function of time and the knee slide reaches the ground', ()=>{
- for(const kind of CELEBRATIONS){
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS]){
   // The scene re-poses the driver every frame before the celebration runs.
   const a=driver(),b=driver();
   applyCelebrationPose(a,kind,2.2);applyCelebrationPose(b,kind,2.2);
@@ -36,7 +36,7 @@ test('poses are a pure function of time and the knee slide reaches the ground', 
 });
 
 test('celebration arms move smoothly, never lock straight and lift the shoulders', ()=>{
- for(const kind of CELEBRATIONS){
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS]){
   let previous=null,shrug=0;
   for(let s=0;s<=3.6;s+=1/30){
    const p=driver(),out=applyCelebrationPose(p,kind,s);
@@ -50,4 +50,22 @@ test('celebration arms move smoothly, never lock straight and lift the shoulders
   }
   assert.ok(shrug>.1,kind+' shoulders move with the arms');
  }
+});
+
+test('stars celebrate their own way, namesakes and random goals never do', ()=>{
+ const expected={'Cristiano Ronaldo':'jump_spin','Lionel Messi':'badge','Kylian Mbappé':'arms_crossed','Jude Bellingham':'open_arms',
+  'Erling Haaland':'zen','Haaland':'zen','Cole Palmer':'cold','Vini Jr.':'samba','Viktor Gyökeres':'mask'};
+ for(const [name,kind] of Object.entries(expected))assert.equal(pickCelebration({id:'x',playerName:name,minute:12}),kind,name);
+ for(const name of ['Ethan Mbappé','Jobe Bellingham','Alex Palmer','Vinicius Souza','Fábio Ronaldo','Messiah Bright','Musiala'])
+  assert.ok(!STAR_CELEBRATIONS.includes(pickCelebration({id:'x',playerName:name,minute:12}))&&signatureCelebration(name)===null,name);
+ for(let i=0;i<300;i++)assert.ok(!STAR_CELEBRATIONS.includes(pickCelebration({id:'r'+i,playerName:'A',minute:i%90})));
+ assert.equal(pickCelebration({celebration:'samba'}),'samba');
+});
+
+test('Haaland sits down cross-legged and stays still', ()=>{
+ const sat=applyCelebrationPose(driver(),'zen',2.6),later=driver(),out=applyCelebrationPose(later,'zen',3.2);
+ assert.ok(sat.rootY<-.65,'hips near the grass');
+ assert.ok(Math.abs(sat.rootY-out.rootY)<.01,'no bobbing once seated');
+ assert.ok(later.knees[0].rotation.x<-2&&later.legs[0].rotation.x>1.2,'knees folded, thighs forward');
+ assert.ok(later.legs[0].rotation.z<-.6&&later.legs[1].rotation.z>.6,'knees out to the sides');
 });

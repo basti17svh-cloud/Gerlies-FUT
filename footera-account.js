@@ -4,9 +4,9 @@
 (function(root){
  "use strict";
  if(!root.FooteraOnline?.available||!root.document)return;
- const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1",TRANSFER="footera-local-account-transfer-v1";
+ const OWNER="footera-cloud-owner",KEY="gerliesFutV9",ROLLBACK="footera-before-restore",WELCOME="footera-account-welcome-v1",PENDING_EMAIL="footera-pending-email-v1",EMAIL_CHANGE="footera-account-email-change-v1",REGISTERED_HERE="footera-register-owner-v1",SYNC_POINT="footera-cloud-sync-point-v1",TRANSFER="footera-local-account-transfer-v1",GUEST_OFFER_SEEN="footera-guest-offer-seen-v1";
  const maxLength=12*1024*1024;
- let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoBusyDone=null,autoStatus="",autoTimer=null,deleteBusy=false;
+ let client=null,dialog=null,notice=null,profilePage=null,deleteDialog=null,busy=false,recovery=false,autoBusy=false,autoBusyDone=null,autoStatus="",autoTimer=null,deleteBusy=false,guestCloudOff=false,guestOffer=null,guestOfferChecked="";
  const $=id=>document.getElementById(id);
  const safeMessage=e=>{
    const messages={invalid_credentials:"E-Mail oder Passwort stimmt nicht.",email_not_confirmed:"Bitte zuerst deine E-Mail-Adresse bestätigen.",email_exists:"Diese E-Mail-Adresse ist bereits registriert. Bitte anmelden oder Passwort vergessen verwenden.",user_already_exists:"Diese E-Mail-Adresse ist bereits registriert. Bitte anmelden oder Passwort vergessen verwenden.",over_email_send_rate_limit:"Zu viele E-Mail-Anfragen. Bitte warte etwas und versuche es erneut.",otp_expired:"Der Bestätigungslink ist abgelaufen oder bereits verwendet. Bitte einen neuen Link anfordern."};
@@ -19,6 +19,11 @@
    target.textContent=text;target.dataset.error=isError?"1":"0";
  }
  function isPermanent(u){return !!u&&!u.is_anonymous;}
+ // In-app browsers keep their own storage; links from emails open elsewhere.
+ function inAppBrowser(){
+   const m=String(root.navigator?.userAgent||"").match(/Snapchat|Instagram|FBAN|FBAV|TikTok|musical_ly|BytedanceWebview|WhatsApp/);
+   return m?({FBAN:"Facebook",FBAV:"Facebook",musical_ly:"TikTok",BytedanceWebview:"TikTok"})[m[0]]||m[0]:"";
+ }
  function checkedEmail(value){
    const email=String(value||"").trim().toLowerCase();
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)throw Error("Bitte eine gültige E-Mail-Adresse eingeben.");
@@ -529,6 +534,95 @@
    }
    root.location.reload();
  }
+ // Guests back up their own club as well (V21.234). The email confirmation
+ // often opens in another browser (Snapchat, Instagram, TikTok in-app
+ // browsers keep separate storage); the upgraded account keeps this user id
+ // there and restores the club. A guest never overwrites a revision it did
+ // not write itself.
+ async function guestBackup(c,u){
+   if(guestCloudOff||!u?.is_anonymous||pendingLocalTransfer()||!hasLocalGame())return false;
+   const owner=root.localStorage.getItem(OWNER);
+   if(owner&&owner!==u.id)return false;
+   if(root.FooteraBackup?.blocked?.())return false;
+   const save=localData();
+   if(!save.onboarded||!save.profile?.saveId||!Array.isArray(save.club))return false;
+   let point=syncPoint(u);
+   if(point&&point.saveId!==save.profile.saveId)return false;
+   if(point&&point.hash===fingerprint(save))return true;
+   if(!point){
+     const {data:cloud,error}=await c.from("footera_cloud_saves").select("save_data,revision,saved_at").maybeSingle();
+     if(error){guestCloudOff=true;return false}
+     if(cloud){
+       if(cloud.save_data?.profile?.saveId!==save.profile.saveId||!structurallyEqual(cloud.save_data,save))return false;
+       savePoint(u,save,cloud.revision);return true;
+     }
+   }
+   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:point?.revision||0});
+   if(error){
+     // 42501: the V21.234 database update is not installed yet.
+     if(error.code==="42501")guestCloudOff=true;
+     return false;
+   }
+   savePoint(u,save,data);
+   return true;
+ }
+ // A guest that asked for this account's email in another browser left its
+ // club in the cloud. Offer it once; the player decides.
+ async function checkGuestOffer(c,u){
+   if(guestOfferChecked===u.id)return guestOffer;
+   guestOfferChecked=u.id;guestOffer=null;
+   if(!u.email_confirmed_at)return null;
+   const {data,error}=await c.rpc("footera_guest_save_offer");
+   if(error)return null;
+   const row=Array.isArray(data)?data[0]:data;
+   if(!row?.guest_id||row.guest_id===u.id)return null;
+   let local=null;
+   try{local=JSON.parse(root.localStorage.getItem(KEY)||"null")}catch(_){}
+   if(local?.profile?.saveId&&local.profile.saveId===row.save_id)return null;
+   guestOffer=row;
+   const seen=row.guest_id+":"+u.id;
+   if(root.localStorage.getItem(GUEST_OFFER_SEEN)!==seen){
+     root.localStorage.setItem(GUEST_OFFER_SEEN,seen);
+     root.setTimeout(()=>show(),0);
+   }
+   return row;
+ }
+ async function claimGuestSave(){
+   changeLocked();
+   const {c,u}=await requirePermanent();
+   const offer=guestOffer;
+   if(!offer)throw Error("Kein Gast-Verein für diese E-Mail-Adresse gefunden.");
+   const cloud=await cloudInfo();
+   let local=null;
+   if(hasLocalGame()){try{local=localData()}catch(_){}}
+   const current=local||cloud?.save_data||null;
+   const fmt=n=>Number(n||0).toLocaleString("de-DE");
+   if(!root.confirm("Gast-Verein übernehmen?\n\nVerein: "+String(offer.club_name||"Footera")+
+     "\nSpielerkarten: "+fmt(offer.cards)+" · Münzen: "+fmt(offer.coins)+
+     "\nZuletzt gesichert: "+new Date(offer.saved_at).toLocaleString("de-DE")+
+     (current?"\n\nDein jetziger Verein "+String(current.profile?.clubName||"Footera")+" wird ersetzt. Er wird vorher als JSON-Datei heruntergeladen und als Rückfallsicherung aufbewahrt.":"")+
+     "\n\nFreundescode und Freunde des Gastkontos werden nicht übertragen."))return false;
+   changeLocked();
+   if(current){
+     if(!root.FooteraBackup?.downloadSnapshot)throw Error("Sicherer Export fehlt. Footera neu laden.");
+     await root.FooteraBackup.downloadSnapshot(current,"Vor_Gast_Uebernahme");
+   }
+   const {data,error}=await c.rpc("footera_claim_guest_save",{p_guest:offer.guest_id,p_base_revision:cloud?.revision||0});
+   if(error)throw error;
+   const row=Array.isArray(data)?data[0]:data;
+   const saved=root.FooteraBackup?.validateState(row?.save_data);
+   if(!saved||!Number.isFinite(row?.revision))throw Error("Die Übernahme konnte nicht bestätigt werden. Bitte erneut versuchen.");
+   if(typeof flushSave==="function")flushSave();
+   const before=root.localStorage.getItem(KEY);
+   if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+   prepareSaveReplacement();
+   root.localStorage.setItem(KEY,JSON.stringify(saved));
+   root.localStorage.setItem(OWNER,u.id);
+   savePoint(u,saved,row.revision);
+   guestOffer=null;
+   root.location.reload();
+   return true;
+ }
  // Verified accounts receive an automatic owner link and first cloud backup.
  // Only missing local data may be restored automatically. Existing clubs are never replaced.
  async function autoAttachAndBackup(){
@@ -541,7 +635,9 @@
    autoBusyDone=done;
    try{
      const c=await getClient(),u=await user();
+     if(u?.is_anonymous){await guestBackup(c,u);return}
      if(!isPermanent(u))return;
+     await checkGuestOffer(c,u).catch(e=>console.warn("Footera Gast-Verein:",e));
      await reconcileCompletedTransfer(u);
      if(pendingLocalTransfer()){
        // Do not automatically claim a local club while its ownership transfer
@@ -687,6 +783,11 @@
      const owner=root.localStorage.getItem(OWNER);
      if(owner&&owner!==u.id&&!transfer)
        throw Error("Dieser lokale Verein gehört zu einem anderen Konto. Bitte zuerst das zugehörige Konto anmelden.");
+     // The link may open in another browser: put the club in the cloud first.
+     let inCloud=false;
+     if(!transfer){
+       try{inCloud=await guestBackup(c,u)}catch(e){console.warn("Footera Gast-Sicherung:",e)}
+     }
      // Upgrade this guest but defer all local/online club ownership to finishLocalTransfer.
      const r=await c.auth.updateUser({email:address},{emailRedirectTo:callbackURL()});
      if(r.error)throw r.error;
@@ -694,7 +795,9 @@
      rememberPending(address,u.id);
      msg(transfer
        ?"Bestätigungslink an "+address+" verschickt. Nach der Bestätigung die Vereinsübernahme ausdrücklich abschließen."
-       :"Bestätigungslink an "+address+" verschickt. Öffne ihn auf diesem Gerät und lege danach ein Passwort fest.");
+       :inCloud
+         ?"Bestätigungslink an "+address+" verschickt. Dein Verein ist in der Cloud gesichert: Öffnest du den Link in Safari oder Chrome, wird er dort automatisch geladen. Bitte NICHT ein zweites Mal registrieren. Danach ein Passwort festlegen."
+         :"Bestätigungslink an "+address+" verschickt. Öffne ihn auf diesem Gerät und lege danach ein Passwort fest. Bitte NICHT ein zweites Mal registrieren.");
    }else if(u){
      throw Error("Du bist bereits angemeldet. Nutze 'Passwort festlegen / ändern'.");
    }else{
@@ -974,6 +1077,16 @@
      if(!$("footeraAccountEmail").value)$("footeraAccountEmail").value=pending.email;
    }
    $("footeraAccountWelcome").hidden=!shouldWelcome();
+   const inApp=inAppBrowser(),inAppHint=$("footeraInAppHint");
+   if(inAppHint){
+     inAppHint.hidden=!inApp||logged;
+     inAppHint.textContent=inApp?"Du spielst im "+inApp+"-Browser. Er speichert getrennt von Safari und Chrome. Registriere dich deshalb hier in diesem Browser: Dein Verein wird vorher in der Cloud gesichert und nach der E-Mail-Bestätigung auch in Safari oder Chrome geladen. Bitte dort kein zweites Konto anlegen.":"";
+   }
+   const offerBox=$("footeraGuestOffer"),offer=logged?guestOffer:null;
+   if(offerBox){
+     offerBox.hidden=!offer;
+     if(offer)$("footeraGuestOfferInfo").textContent="Zu "+(u.email||"dieser E-Mail-Adresse")+" gehört ein Gast-Verein aus einem anderen Browser: "+String(offer.club_name||"Footera")+" · "+Number(offer.cards||0).toLocaleString("de-DE")+" Spielerkarten · gesichert "+new Date(offer.saved_at).toLocaleString("de-DE")+". Du kannst ihn in dieses Konto übernehmen.";
+   }
    $("footeraGuest").hidden=logged;
    $("footeraAccountContinue").hidden=!logged;
    const entry=$("footeraAccountEntry");if(entry)entry.textContent=logged?"Mein Profil":"Konto";
@@ -1029,6 +1142,8 @@
      '<p id="footeraAccountIdentity"></p>'+
      '<p id="footeraPendingEmail" class="footera-email-pending" hidden></p>'+
      '<button type="button" id="footeraResendEmail" class="footera-account-link" hidden>Bestätigungs-E-Mail erneut senden</button>'+
+     '<p id="footeraInAppHint" class="footera-email-pending" hidden></p>'+
+     '<section class="footera-transfer" id="footeraGuestOffer" hidden><strong>Dein Gast-Verein wurde gefunden</strong><p id="footeraGuestOfferInfo"></p><button type="button" id="footeraGuestOfferClaim">Gast-Verein übernehmen</button></section>'+
      '<div class="footera-account-welcome" id="footeraAccountWelcome"><strong>Dein Team. Deine Ära.</strong><p>Erstelle ein Konto oder probiere Footera als Gast. Deinen Verein kannst du später mit einem Konto sichern.</p></div>'+
      '<p class="footera-email-intro">Mit E-Mail-Adresse anmelden oder registrieren.</p>'+
      '<form id="footeraAccountForm"><label>E-Mail<input type="email" id="footeraAccountEmail" placeholder="name@beispiel.de" autocomplete="email" required></label>'+
@@ -1169,6 +1284,7 @@
    $("footeraAccountContinue").addEventListener("click",()=>run(async()=>{await autoAttachAndBackup();root.localStorage.setItem(WELCOME,"1");hide()}));
    $("footeraResendEmail").addEventListener("click",()=>run(resendEmail));
    $("footeraAccountTransferFinish").addEventListener("click",()=>run(finishLocalTransfer));
+   $("footeraGuestOfferClaim").addEventListener("click",()=>run(claimGuestSave));
    $("footeraEmailRegister").addEventListener("click",()=>run(()=>emailRegister($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
    $("footeraAccountForm").addEventListener("submit",e=>{e.preventDefault();run(()=>emailLogin($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value))});
    $("footeraSetPassword").addEventListener("click",()=>run(()=>password($("footeraAccountEmail").value.trim(),$("footeraAccountPassword").value)));
@@ -1204,6 +1320,6 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimGuestSave,getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);

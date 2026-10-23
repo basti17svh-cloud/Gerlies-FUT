@@ -16,7 +16,7 @@ function app(at){
  const byId=new Map(players.map(p=>[String(p.id),p])),elements=new Map(),tabs=[{dataset:{storeTab:'classic'}},{dataset:{storeTab:'promo'}}];
  for(const tab of tabs){tab.classList={toggle(){}};tab.setAttribute=()=>{}}
  const get=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',addEventListener(_event,fn){if(id==='storeView')ctx.click=fn}});return elements.get(id)};
- const ctx={Date:Clock,Intl,Math:math,FOUNDER_PACK_ID:'founder',MARCO_FOUNDER_PACK_ID:'marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',PLAYERS:players,
+ const ctx={Date:Clock,Intl,Math:math,FOUNDER_PACK_ID:'founder',MARCO_FOUNDER_PACK_ID:'marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',MAX_FOUNDER_PACK_ID:'founder-max',PLAYERS:players,
   state:{coins:3000000,points:100000,packs:{},club:[]},pendingPack:[],founderRuleForPack:()=>null,
   FooteraPackOdds:require('../pack-odds.js'),MID_ICON_BASES:[],
   makeLivePackItem:(b,tradeable)=>({uid:`test-${++sequence}`,pid:String(b.id),tradeable,rare:false}),

@@ -64,7 +64,8 @@ function match3DSkinTones(event){
  const rows=side=>typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
  const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||'')));
  const tone=row=>{
-  const candidates=[row?.entry?.skinTone,row?.base?.skinTone,row?.entry?.skinColor,row?.base?.skinColor];
+  const chosen=typeof FooteraPlayerLooks!=='undefined'?FooteraPlayerLooks.sceneSkin(row?.base):null;
+  const candidates=[chosen,row?.entry?.skinTone,row?.base?.skinTone,row?.entry?.skinColor,row?.base?.skinColor];
   return candidates.find(v=>typeof v==='string'&&(/^[1-6]$/.test(v.trim())||/^#[0-9a-f]{6}$/i.test(v.trim()))||Number.isInteger(v)&&v>=1&&v<=6)??null;
  };
  const attack=event.team==='away'?'away':'home',defend=attack==='home'?'away':'home';
@@ -75,12 +76,14 @@ function match3DSkinTones(event){
  const orderedDefense=opposition.filter(r=>r!==defender).slice(0,8);
  const defenderSlot=Number.isInteger(event.defenderIndex)?Math.max(0,Math.min(7,event.defenderIndex-8)):0;
  if(defender){orderedDefense.splice(defenderSlot,0,defender);orderedDefense.length=Math.min(8,orderedDefense.length);}
- const tones=Array(16).fill(null);
- orderedAttack.forEach((r,i)=>tones[i]=tone(r));
- orderedDefense.forEach((r,i)=>tones[8+i]=tone(r));
+ // V21.215: hair, haircut and beard from the player's Aussehen editor.
+ const look=row=>typeof FooteraPlayerLooks!=='undefined'&&row?.base?FooteraPlayerLooks.sceneLook(row.base):null;
+ const tones=Array(16).fill(null),looks=Array(16).fill(null);
+ orderedAttack.forEach((r,i)=>{tones[i]=tone(r);looks[i]=look(r)});
+ orderedDefense.forEach((r,i)=>{tones[8+i]=tone(r);looks[8+i]=look(r)});
  const keeper=rows(defend).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
  const buildKeeper=rows(attack).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- return {playerSkinTones:tones,keeperSkinTone:tone(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
+ return {playerSkinTones:tones,playerLooks:looks,keeperSkinTone:tone(keeper),keeperLook:look(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
 }
 function match3DPresentationMeta(event,current){
  // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.
@@ -145,11 +148,9 @@ function match3DActorStyles(side,{uid='',index=-1,name=''}={}){
  try{return FooteraPlayStyles.resolve({...row.base},item).styles.map(p=>({id:String(p.id),plus:!!p.plus})).filter(p=>!p.id.startsWith('custom-'))}catch(_){return[]}
 }
 function match3DSequence(event){if(!event.sceneKind&&['freekick','penalty'].includes(event.creationType))return 'central';return FooteraHighlights.choosePresentation(event,match3DQueue?.history||[]).sequence}
-function queueMatch3D(event){
- if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
- const current=match;
- if(!match3DQueue){
-  match3DQueue=new FooteraHighlights.Queue({
+function ensureMatch3DQueue(current){
+ if(match3DQueue)return match3DQueue;
+ match3DQueue=new FooteraHighlights.Queue({
    onBusy(){current.highlight3DPending=true;stopMatchTimer();document.getElementById('match')?.classList.add('highlight3d-pending');lockMatch3DViewport()},
    onIdle(){
     if(match!==current){unlockMatch3DViewport();return}
@@ -162,10 +163,17 @@ function queueMatch3D(event){
      if(goal){showMatchGoalMoment(goal,{uid:goal.scorerUid,index:goal.scorerIndex});return}
     }
     if(!current.paused&&!current.finished)startMatchTimer();
+    // V21.226: after the final-whistle scene, on to the result.
+    if(current.finished)requestAnimationFrame(()=>document.getElementById('matchResult')?.scrollIntoView({behavior:'smooth',block:'start'}));
    },
    onFallback(event){if(match===current)current.highlight3DFallback=event}
   });
- }
+ return match3DQueue;
+}
+function queueMatch3D(event){
+ if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
+ const current=match;
+ ensureMatch3DQueue(current);
  const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
  const home=current.kickoffKits?.home||identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
@@ -229,6 +237,35 @@ function queueMatch3D(event){
   const clock=document.getElementById('matchMinute');if(clock)clock.textContent=`${event.minute}'`
  }
  return queued;
+}
+// V21.226 (Basti): the walk-out before kick-off and the final whistle as 3D
+// scenes. Presentation only: copies of names, numbers, kits and the score.
+function queueMatchCeremony3D(kind){
+ if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts('ceremony')||!match)return false;
+ if(kind==='kickoff'?(match.paused||match.finished):!match.finished)return false;
+ const current=match;ensureMatch3DQueue(current);
+ const decided=current.home!==current.away||!!current.penaltyWinner;
+ const winner=current.home>current.away||current.penaltyWinner==='home'?'home':current.home<current.away||current.penaltyWinner==='away'?'away':'home';
+ const team=kind==='fulltime'?winner:'home',defending=team==='home'?'away':'home';
+ const rows=side=>typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
+ const field=side=>rows(side).filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||'')));
+ const attackRows=field(team).slice(0,8),defendRows=field(defending).slice(0,8),lead=attackRows[0]||null;
+ const goalie=rows(defending).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')))||null;
+ const base={type:'ceremony',team,playerId:team==='home'?lead?.uid:lead?.index,playerName:lead?.name||''};
+ const crest=side=>match3DPresentationMeta({type:'goal',team:side,playerName:''},current).teamCrestHTML;
+ const numbers=match3DShirtNumbers(base,current,null,goalie,8);
+ const names=Array(16).fill('');attackRows.forEach((r,i)=>names[i]=r.name||'');defendRows.forEach((r,i)=>names[8+i]=r.name||'');
+ const identity=typeof clubIdentitySnapshot==='function'?clubIdentitySnapshot():null;
+ const home=current.kickoffKits?.home||identity?.kits?.home;
+ const opponentIdentity=current.opponentProfile?.clubIdentity;
+ const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
+ return match3DQueue.enqueue({...base,id:'ceremony:'+kind,ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
+  result:kind==='fulltime'&&!decided?'draw':'win',homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
+  homeScore:current.home,awayScore:current.away,competition:document.getElementById('matchCompetition')?.textContent||'',bigMatch:current.mode==='champions',
+  teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,keeperName:goalie?.name||'',
+  shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,...match3DSkinTones(base),
+  homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
+  awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
 }
 // Simulation records tackles, interceptions, cards and stats unchanged.
 // Standalone turnover clips are retired; slide/block moves within shots remain.

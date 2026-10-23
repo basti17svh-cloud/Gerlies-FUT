@@ -147,6 +147,7 @@ grant execute on function public.footera_list_player_picks(text),public.footera_
 insert into public.footera_pick_catalog(id,kind,rating,starts_at,ends_at,item)
 select 'base:'||player_id,'standard',base_rating,'2000-01-01','2100-01-01',
  jsonb_build_object('pid',player_id,'baseSnapshot',card_snapshot||jsonb_build_object('id',player_id),
- 'variant','','displayRating',base_rating,'tradeable',false,'rare',true,'evo',0,'evoStats','{}'::jsonb)
+ 'variant',case when (card_snapshot->>'isIcon')::boolean then 'icon-mid' else '' end,'displayRating',base_rating,'tradeable',false,'rare',true,'evo',0,'evoStats','{}'::jsonb)
+ ||case when (card_snapshot->>'isIcon')::boolean then jsonb_build_object('eventName','Icon') else '{}'::jsonb end
 from public.footera_live_player_catalog where approved_for_paid and base_rating>=80
 on conflict(id) do nothing;
