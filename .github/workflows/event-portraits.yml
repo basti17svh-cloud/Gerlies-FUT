@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/event-portraits.yml'
       - 'scripts/import-event-portraits.py'
+      - 'scripts/import-event-dynamic-images.py'
       - 'scripts/event-portraits-*.json'
   workflow_dispatch:
 permissions:
@@ -21,6 +22,7 @@ jobs:
           for f in scripts/event-portraits-*.json; do
             e=$(basename "$f" .json); e=${e#event-portraits-}
             python scripts/import-event-portraits.py "$e"
+            python scripts/import-event-dynamic-images.py "$e"
           done
       - name: Commit portraits to this branch
         run: |
