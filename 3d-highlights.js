@@ -49,7 +49,9 @@
    defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
    replay:event.replay!==false});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21229').catch(e=>{loader=null;throw e}))}
+ // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
+ function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21246').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -62,7 +64,7 @@
   }
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
-  const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
+  const host=stage();if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
   const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
@@ -455,6 +457,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

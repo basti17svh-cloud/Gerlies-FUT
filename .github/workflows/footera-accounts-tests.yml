@@ -6,6 +6,7 @@ on:
       - 'footera-account.js'
       - 'footera-account.css'
       - 'friend-online.js'
+      - 'friend-online-3d.js'
       - 'online/footera-accounts-v21.109.sql'
       - 'online/footera-cloud-rewards-guard-v21.170.sql'
       - 'online/footera-guest-cloud-v21.234.sql'
@@ -28,6 +29,7 @@ on:
       - 'footera-account.js'
       - 'footera-account.css'
       - 'friend-online.js'
+      - 'friend-online-3d.js'
       - 'online/footera-accounts-v21.109.sql'
       - 'online/footera-cloud-rewards-guard-v21.170.sql'
       - 'online/footera-guest-cloud-v21.234.sql'
@@ -57,7 +59,7 @@ jobs:
         with:
           node-version: '22'
       - name: Check account and online friend regressions
-        run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs tests/service-worker-recovery.test.cjs
+        run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/friend-online-3d.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs tests/service-worker-recovery.test.cjs
       - name: Check guest cloud migration on a local Postgres
         run: |
           sudo systemctl start postgresql.service

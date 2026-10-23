@@ -51,20 +51,20 @@
 .fh3d-hud-big_chance_saved .fh3d-event{font-size:9px;color:#aebcb6}
 .fh3d-hud-shot_post,.fh3d-hud-big_chance_missed{grid-template-columns:54px minmax(0,1fr) auto}
 
-#match.highlight3d-pending .match-live-stage{height:clamp(430px,64svh,620px);min-height:430px;position:relative;border-color:#4c7558;background:#071018;box-shadow:0 20px 44px #000b,inset 0 1px #ffffff22}
-#match.highlight3d-active .match-live-stage> :not(.fh3d){visibility:hidden}
+#onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:clamp(430px,64svh,620px);min-height:430px;position:relative;border-color:#4c7558;background:#071018;box-shadow:0 20px 44px #000b,inset 0 1px #ffffff22}
+#onlineMatch.highlight3d-active .match-live-stage> :not(.fh3d),#match.highlight3d-active .match-live-stage> :not(.fh3d){visibility:hidden}
 /* Until the 3D scene is on screen the taller stage stays a calm, dark broadcast
    frame instead of the small 2D pitch with an empty area underneath. */
-#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage{animation:fh3d-stage-open .32s cubic-bezier(.2,.8,.2,1) both;background:radial-gradient(120% 70% at 50% 45%,#12352a 0,#071018 70%)}
-#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage>:not(.fh3d,.fh3d-warming){visibility:hidden}
-#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{content:'';position:absolute;z-index:1;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #d5ff4b;box-shadow:0 0 18px #d5ff4b66;pointer-events:none;animation:fh3d-stage-pulse .9s ease-in-out infinite alternate}
+#onlineMatch.highlight3d-pending:not(.highlight3d-active) .match-live-stage,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage{animation:fh3d-stage-open .32s cubic-bezier(.2,.8,.2,1) both;background:radial-gradient(120% 70% at 50% 45%,#12352a 0,#071018 70%)}
+#onlineMatch.highlight3d-pending:not(.highlight3d-active) .match-live-stage>:not(.fh3d,.fh3d-warming),#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage>:not(.fh3d,.fh3d-warming){visibility:hidden}
+#onlineMatch.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{content:'';position:absolute;z-index:1;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #d5ff4b;box-shadow:0 0 18px #d5ff4b66;pointer-events:none;animation:fh3d-stage-pulse .9s ease-in-out infinite alternate}
 @keyframes fh3d-stage-open{from{clip-path:inset(0 0 52% 0 round 18px);opacity:.6}to{clip-path:inset(0 round 18px);opacity:1}}
 @keyframes fh3d-stage-pulse{from{opacity:.3;transform:scale(.8)}to{opacity:.9;transform:scale(1.1)}}
-@media(prefers-reduced-motion:reduce){#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{animation:none}}
-#match.highlight3d-pending .match-timeline-wrap{visibility:hidden}
-#match.highlight3d-pending #matchStatePill span{font-size:0}
-#match.highlight3d-pending #matchStatePill span::after{content:'Live-Chance';font-size:10px}
-#match.highlight3d-pending .match-primary-controls{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+@media(prefers-reduced-motion:reduce){#onlineMatch.highlight3d-pending:not(.highlight3d-active) .match-live-stage,#onlineMatch.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage,#match.highlight3d-pending:not(.highlight3d-active) .match-live-stage::after{animation:none}}
+#onlineMatch.highlight3d-pending .match-timeline-wrap,#match.highlight3d-pending .match-timeline-wrap{visibility:hidden}
+#onlineMatch.highlight3d-pending #onlineMatchStatePill span,#match.highlight3d-pending #matchStatePill span{font-size:0}
+#onlineMatch.highlight3d-pending #onlineMatchStatePill span::after,#match.highlight3d-pending #matchStatePill span::after{content:'Live-Chance';font-size:10px}
+#onlineMatch.highlight3d-pending .match-primary-controls,#match.highlight3d-pending .match-primary-controls{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
 #match.highlight3d-pending #manageTeamBtn,#match.highlight3d-pending #matchSpeedBtn{pointer-events:none!important}
 @media(max-width:560px){
  .fh3d-top{height:64px;padding:9px 10px}
@@ -82,20 +82,20 @@
  .fh3d-hud-goal .fh3d-minute{min-width:36px;min-height:25px;padding:4px 7px;font-size:13px}
  .fh3d-hud-goal .fh3d-team-crest{width:40px;height:40px}
  .fh3d-hud-goal .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}
- #match.highlight3d-pending .match-live-stage{height:min(64svh,560px);min-height:440px;border-radius:18px}
+ #onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:min(64svh,560px);min-height:440px;border-radius:18px}
 }
-@media(max-height:720px){#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{bottom:9px}.fh3d-hud-goal{min-height:104px}.fh3d-player-card{width:74px}.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:74px!important;max-width:74px!important}}
+@media(max-height:720px){#onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:58svh;min-height:390px}.fh3d-hud{bottom:9px}.fh3d-hud-goal{min-height:104px}.fh3d-player-card{width:74px}.fh3d-player-card>.card-shell,.fh3d-player-card>div>.card-shell{width:74px!important;max-width:74px!important}}
 @media(prefers-reduced-motion:reduce){.fh3d-hud{transition:none}}
 /* V20.98: full live picture with overlay HUD; no reserved empty footer. */
 .fh3d canvas{top:64px;bottom:0;height:calc(100% - 64px)}
 .fh3d::before{background:linear-gradient(180deg,transparent 0 64px,transparent 72%,#07101870 100%)}
 .fh3d::after{box-shadow:inset 0 0 48px #00000032,inset 0 -24px 42px #00000024}
-#match.highlight3d-pending .match-live-stage{height:clamp(400px,calc(43vw + 64px),570px);min-height:400px}
+#onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:clamp(400px,calc(43vw + 64px),570px);min-height:400px}
 @media(max-width:560px){
- #match.highlight3d-pending .match-live-stage{height:clamp(370px,104vw,455px);min-height:370px;max-height:455px}
+ #onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:clamp(370px,104vw,455px);min-height:370px;max-height:455px}
  .fh3d-hud{bottom:12px}
 }
-@media(max-height:520px) and (orientation:landscape){#match.highlight3d-pending .match-live-stage{height:370px;min-height:370px}}
+@media(max-height:520px) and (orientation:landscape){#onlineMatch.highlight3d-pending .match-live-stage,#match.highlight3d-pending .match-live-stage{height:370px;min-height:370px}}
 
 /* V21.07: a live highlight owns the viewport until it ends or is skipped. */
 html.fh3d-scroll-lock,html.fh3d-scroll-lock body{overscroll-behavior:none!important;touch-action:none!important}
@@ -156,11 +156,11 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 /* Matchday identity card: every 3D action uses its actual actor's Footera card.
    Keep its intrinsic 7:10 ratio; card-shell uses inline-size containment and
    otherwise collapses when placed outside a squad mini-card. */
-#match .fh3d .fh3d-hud{
+#onlineMatch .fh3d .fh3d-hud,#match .fh3d .fh3d-hud{
  grid-template-columns:98px minmax(0,1fr) 60px;
  min-height:132px;
 }
-#match .fh3d .fh3d-hud .fh3d-player-card{
+#onlineMatch .fh3d .fh3d-hud .fh3d-player-card,#match .fh3d .fh3d-hud .fh3d-player-card{
  display:block!important;
  visibility:visible!important;
  width:94px;
@@ -170,8 +170,8 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
  align-self:center;
  overflow:visible;
 }
-#match .fh3d .fh3d-hud .fh3d-mark{display:none}
-#match .fh3d .fh3d-hud .fh3d-player-card .card-shell{
+#onlineMatch .fh3d .fh3d-hud .fh3d-mark,#match .fh3d .fh3d-hud .fh3d-mark{display:none}
+#onlineMatch .fh3d .fh3d-hud .fh3d-player-card .card-shell,#match .fh3d .fh3d-hud .fh3d-player-card .card-shell{
  display:block;
  position:relative;
  width:100%!important;
@@ -179,35 +179,35 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
  aspect-ratio:7 / 10;
  min-height:0;
 }
-#match .fh3d .fh3d-hud .fh3d-player-card .custom-card{
+#onlineMatch .fh3d .fh3d-hud .fh3d-player-card .custom-card,#match .fh3d .fh3d-hud .fh3d-player-card .custom-card{
  display:block;
  width:100%;
  height:100%;
 }
-#match .fh3d .fh3d-hud .fh3d-player-card .fh3d-identity-fallback{
+#onlineMatch .fh3d .fh3d-hud .fh3d-player-card .fh3d-identity-fallback,#match .fh3d .fh3d-hud .fh3d-player-card .fh3d-identity-fallback{
  min-height:0;
  height:100%;
  box-sizing:border-box;
 }
 @media(max-width:560px){
- #match .fh3d .fh3d-hud{
+ #onlineMatch .fh3d .fh3d-hud,#match .fh3d .fh3d-hud{
   grid-template-columns:82px minmax(0,1fr) 52px;
   column-gap:7px;
   min-height:124px;
  }
- #match .fh3d .fh3d-hud .fh3d-player-card{width:78px}
+ #onlineMatch .fh3d .fh3d-hud .fh3d-player-card,#match .fh3d .fh3d-hud .fh3d-player-card{width:78px}
 }
 @media(max-height:720px){
- #match .fh3d .fh3d-hud{min-height:114px}
- #match .fh3d .fh3d-hud .fh3d-player-card{width:min(74px,100%)}
+ #onlineMatch .fh3d .fh3d-hud,#match .fh3d .fh3d-hud{min-height:114px}
+ #onlineMatch .fh3d .fh3d-hud .fh3d-player-card,#match .fh3d .fh3d-hud .fh3d-player-card{width:min(74px,100%)}
 }
 /* In Extras the mode select gets the full card width so its labels fit. */
 #extrasView .highlight-mode{flex-direction:column;align-items:stretch;gap:6px}#extrasView .highlight-mode select{width:100%;max-width:none}
 /* V21.196 PlayStyle+ signature badge: gold, under the top bar, before the outcome. */
 @media(prefers-reduced-motion:reduce){.fh3d-signature{transition:none}}
 /* V21.226 walk-out / final whistle HUD and the goal replay wipe. */
-#match .fh3d .fh3d-hud.fh3d-hud-ceremony{grid-template-columns:minmax(0,1fr) auto;min-height:92px}
-#match .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,.fh3d-hud-ceremony .fh3d-mark{display:none!important}
+#onlineMatch .fh3d .fh3d-hud.fh3d-hud-ceremony,#match .fh3d .fh3d-hud.fh3d-hud-ceremony{grid-template-columns:minmax(0,1fr) auto;min-height:92px}
+#onlineMatch .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,#match .fh3d .fh3d-hud.fh3d-hud-ceremony .fh3d-player-card,.fh3d-hud-ceremony .fh3d-mark{display:none!important}
 .fh3d-hud-ceremony .fh3d-headline{font-size:clamp(20px,6vw,30px)}
 .fh3d-hud-ceremony .fh3d-name{font-size:clamp(13px,3.9vw,18px)}
 .fh3d-ceremony-crests{display:flex;align-items:center;gap:6px}

@@ -7410,7 +7410,16 @@ function decodeFriendProfile(code){try{return JSON.parse(decodeURIComponent(esca
 function friendSnapshotItem(item){
  if(!item)return null;
  const b=displayBase(item);if(!b)return null;
- return{pid:String(item.pid||b.id||""),name:b.name,ovr:itemRating(item),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",dynamicFace:item.dynamicFace||b.dynamicFace||"",variant:item.variant||"",boost:Number(item.boost||0),eventName:item.eventName||"",eventType:item.eventType||"",eventReleaseId:item.eventReleaseId||"",eventStats:Array.isArray(item.eventStats)?item.eventStats.map(Number):null,overridePosition:item.overridePosition||"",displayRating:Number(item.displayRating||0),evo:Number(item.evo||0),evoStats:item.evoStats&&typeof item.evoStats==="object"?{...item.evoStats}:{},evoDesign:item.evoDesign===true,chemBoost:item.chemBoost?{...item.chemBoost}:null}
+ return{pid:String(item.pid||b.id||""),name:b.name,ovr:itemRating(item),position:b.position,alt:b.alt||"",team:b.team,league:b.league,nation:b.nation,pac:b.pac,sho:b.sho,pas:b.pas,dri:b.dri,def:b.def,phy:b.phy,face:b.face||"",dynamicFace:item.dynamicFace||b.dynamicFace||"",variant:item.variant||"",boost:Number(item.boost||0),eventName:item.eventName||"",eventType:item.eventType||"",eventReleaseId:item.eventReleaseId||"",eventStats:Array.isArray(item.eventStats)?item.eventStats.map(Number):null,overridePosition:item.overridePosition||"",displayRating:Number(item.displayRating||0),evo:Number(item.evo||0),evoStats:item.evoStats&&typeof item.evoStats==="object"?{...item.evoStats}:{},evoDesign:item.evoDesign===true,chemBoost:item.chemBoost?{...item.chemBoost}:null,...friendCardExtras(item)}
+}
+// V21.246: everything else cardHTML reads from an item (cosmetic designs, evo
+// PlayStyles, reward snapshots), so a friend sees exactly the owner's card.
+const FRIEND_CARD_EXTRA_FIELDS=["cosmeticDesign","evoPlaystyle","evoPlaystyles","evoPlaystylePlus","evoPlaystylesPlus","playstyleAdds","playstylePlusAdds","eventFace","rare","legacyEvent","storyRewardKey","objectiveRewardKey","acquisitionSource","baseSnapshot"];
+function friendCardExtras(item){
+ const out={};
+ for(const key of FRIEND_CARD_EXTRA_FIELDS){const v=item?.[key];if(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length))continue;out[key]=typeof v==="object"?JSON.parse(JSON.stringify(v)):v}
+ if(out.acquisitionSource!=="reward-pick")delete out.baseSnapshot;
+ return out
 }
 function friendTeamSnapshotForPreset(preset,indexSlot,isActive){
  const requestedFormation=isActive?state.formation:preset?.formation,formation=SQUAD_FORMATION_NAMES.includes(requestedFormation)?requestedFormation:"4-3-3";
@@ -7440,9 +7449,12 @@ function friendProfileTeams(friend){
 }
 function friendBase(fp){if(!fp)return null;const db=fp.pid?P_BY_ID.get(String(fp.pid)):null;return db?{...db,ovr:Number(fp.ovr||db.ovr),position:fp.position||db.position,alt:fp.alt||db.alt,team:fp.team||db.team,league:fp.league||db.league,nation:fp.nation||db.nation,face:fp.face||db.face,pac:fp.pac||db.pac,sho:fp.sho||db.sho,pas:fp.pas||db.pas,dri:fp.dri||db.dri,def:fp.def||db.def,phy:fp.phy||db.phy}:{id:fp.pid||fp.name,name:fp.name||"Spieler",ovr:Number(fp.ovr||0),position:fp.position||"CM",alt:fp.alt||"",team:fp.team||"",league:fp.league||"",nation:fp.nation||"",face:fp.face||"",pac:fp.pac||0,sho:fp.sho||0,pas:fp.pas||0,dri:fp.dri||0,def:fp.def||0,phy:fp.phy||0}}
 function friendFits(p,slot){if(!p)return false;const positions=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean)];return positions.includes(slot)}
+// fp.ovr is the finished card rating; itemRating adds evo and the Halloween
+// upgrade on top of displayRating again, so hand it the rating before those.
+function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
 function friendItem(fp,b=friendBase(fp)){
  if(!fp||!b)return null;
- return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:Number(fp.ovr||b.ovr)}
+ return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:friendDisplayRating(fp,b),...friendCardExtras(fp)}
 }
 function friendCard(fp,slot,mini=true){
  const b=friendBase(fp);if(!b)return'<div class="emptyslot">LEER</div>';
@@ -7788,7 +7800,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.243";
+const GFUT_BUILD="V21.246";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7846,7 +7858,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21243",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21246",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
