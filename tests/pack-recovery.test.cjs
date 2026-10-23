@@ -24,7 +24,7 @@ function app(saved=new Map()){
   ensureObjectiveWindows:()=>{},updateObjectiveIndicators:()=>{},resetBoardIntro(){},resetWalkoutTunnel(){},PACKS:[{id:'gold',name:'Gold Pack'}],
   $:el,packDuplicateMap:()=>new Map([[0,false],[1,false]]),displayBase:item=>({name:`Spieler ${item.pid}`,ovr:75}),
   cardHTML:player=>`<div>${player.name}</div>`,quickSell:()=>100,itemRating:()=>75,fmt:String,esc:String,saveCalled:0,
-  FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',founderRuleForPack:()=>undefined,isFounderItem:()=>false,
+  FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',MAX_FOUNDER_PACK_ID:'founder-max',founderRuleForPack:()=>undefined,isFounderItem:()=>false,
  };
  vm.createContext(ctx);
  vm.runInContext(html.match(/^function isFooteraLiveCard\(.*$/m)[0],ctx);

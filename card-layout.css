@@ -469,6 +469,12 @@
 :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card.founder.worms-founder .face img{object-fit:cover!important;object-position:center top!important;filter:none}
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .pname{background:transparent!important;border:0!important;font-family:Arial,sans-serif!important;height:27%!important;font-size:6.8cqw!important}
 :is(.founder-shell,#bench .mini .founder-shell,#reserve .mini .founder-shell) .custom-card.founder.worms-founder .stats{top:39%!important;height:29%!important}
+/* The ruby frame's info column spans 14.9%-34.2%; keep rating, position and emblems on its centre line. */
+.founder-shell:has(>.worms-founder){--card-info-left:15.5%;--card-info-width:18%}
+/* Max: portrait stays inside the window between column, frame edge and name plate. */
+.founder-shell:has(>.hohenroth-founder){
+ --card-portrait-left:35%;--card-portrait-right:13.5%;--card-portrait-top:14%;--card-portrait-height:52%;
+}
 .founder-pack-worms{background:linear-gradient(115deg,#52080e,#170306)!important;border-color:#deaf60!important}
 .opening.mode-walkout.theme-founder-worms{background:radial-gradient(circle at 50% 42%,#a7193287 0,#460712 32%,#130306 75%)}
 .opening.theme-founder-worms .walkout-tunnel{--walkout-beam:#ffe0a0;background:radial-gradient(ellipse at 50% 46%,#ff3b5370,#5b0918 28%,#180307 76%)}

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 920">
+ <defs>
+  <clipPath id="s"><path id="shape" d="M128 30H668L676 176Q690 222 770 240L746 545Q738 640 650 705L396 884L146 708Q58 640 50 545L28 236Q108 220 116 176Z"/></clipPath>
+  <clipPath id="b"><circle cx="396" cy="432" r="76"/></clipPath>
+ </defs>
+ <g clip-path="url(#s)">
+  <rect width="800" height="920" fill="#e5121c"/>
+  <g transform="rotate(-42 396 432)">
+   <rect x="-400" y="324" width="1600" height="216" fill="#fff"/>
+   <rect x="-400" y="316" width="1600" height="14" fill="#111"/>
+   <rect x="-400" y="534" width="1600" height="14" fill="#111"/>
+   <text x="404" y="292" font-family="Inter" font-weight="300" font-size="205" letter-spacing="38" fill="#fff" text-anchor="middle" transform="rotate(0)">FSV</text>
+   <text x="430" y="636" font-family="Inter" font-weight="900" font-style="italic" font-size="80" letter-spacing="9" fill="#fff" text-anchor="middle">Hohenroth</text>
+   <text x="420" y="730" font-family="Inter" font-weight="900" font-size="94" letter-spacing="14" fill="#fff" text-anchor="middle">1951</text>
+  </g>
+  <circle cx="396" cy="432" r="84" fill="#111"/>
+  <circle cx="396" cy="432" r="72" fill="#e5121c"/>
+  <g clip-path="url(#b)" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round">
+   <path d="M330 392Q380 395 412 360"/><path d="M322 432Q382 430 430 372"/><path d="M372 503Q378 455 352 430"/>
+   <path d="M412 360Q440 412 430 470"/><path d="M430 470Q462 470 472 440"/><path d="M430 470Q415 500 422 512"/>
+   <path d="M352 430Q365 470 400 470"/>
+  </g>
+ </g>
+ <use href="#shape" fill="none" stroke="#111" stroke-width="18" stroke-linejoin="round"/>
+</svg>
