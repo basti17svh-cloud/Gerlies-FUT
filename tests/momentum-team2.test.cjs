@@ -89,7 +89,9 @@ test('dynamic imagery wins over cached heads only on event items, then fails saf
  vm.runInContext(section('function eventDynamicFace(','function badgeAsset(')+section('function advanceImg(','function eventDynamicFace('),c);
  const p={id:'256790',name:'Musiala',face:'normal.png'},item={pid:p.id,variant:'special',eventName:'MOMENTUM',dynamicFace:'action.webp'};
  cache.set('portrait:'+p.id,'normal.png');assert.match(c.portraitHTML(p,false,item),/src="action.webp"/);
- for(const ordinary of [null,{...item,variant:''},{...item,eventName:'Team of the Week 3'},{...item,variant:'story'}])assert.match(c.portraitHTML(p,false,ordinary),/src="normal.png"/);
+ for(const ordinary of [null,{...item,variant:''},{...item,eventName:'Team of the Week 3'},{...item,variant:'story',dynamicFace:''}])assert.match(c.portraitHTML(p,false,ordinary),/src="normal.png"/);
+ // Season-pass story cards (V21.231) show their own season picture when they carry one.
+ assert.match(c.portraitHTML(p,false,{...item,variant:'story'}),/src="action.webp"/);
  const img={src:'https://footera.test/action.webp',dataset:{idx:'0',candidates:JSON.stringify(['action.webp','normal.png'])},style:{}};c.advanceImg(img);assert.equal(img.src,'normal.png');assert.ok(failures.has('action.webp'));
  assert.match(c.portraitHTML(p,false,item),/src="normal.png"/);img.parentElement={querySelector:()=>({style:{},classList:{contains:()=>true}})};c.advanceImg(img);assert.equal(img.style.display,'none');
 });

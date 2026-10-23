@@ -60,7 +60,7 @@ const server=http.createServer((req,res)=>{
   async function checkPortraits(){
    for(let index=0;index<18;index++){
     await page.locator('.event-player').nth(index).scrollIntoViewIfNeeded();
-    await page.waitForFunction(index=>{const image=document.querySelectorAll('.event-player .face img')[index];return image?.complete&&image.naturalWidth>=100&&image.currentSrc.includes('/assets/footera/totw/5/'+TOTW_WEEK_5.players[index].eaId+'.png')},index,{timeout:10000});
+    await page.waitForFunction(index=>{const image=document.querySelectorAll('.event-player .face img')[index];return image?.complete&&image.naturalWidth>=100&&image.currentSrc.includes('/assets/footera/totw/5/'+byEventRating(totwReviewEntries(TOTW_WEEK_5))[index].info.eaId+'.png')},index,{timeout:10000});
    }
    console.log('PASS eighteen correct locally loaded TOTW portraits');
   }
