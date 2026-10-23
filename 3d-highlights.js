@@ -1,12 +1,13 @@
 /* Footera highlights: presentation-only queue. No access to the match or its RNG. */
 (function(root){
  'use strict';
- const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won']);
+ const TYPES=Object.freeze(['goal','big_chance_saved','big_chance_missed','shot_post','ball_won','ceremony']);
  const MODES=Object.freeze({off:'Aus',goals:'Nur Tore',important:'Wichtige Highlights',all:'Alle Highlights'});
  const KEY='footera-3d-highlights-v1';
  let mode='important',loader;
  try{const saved=root.localStorage?.getItem(KEY);if(saved in MODES)mode=saved}catch(_){}
- function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')&&(type!=='ball_won'||value==='important'||value==='all')}
+ // V21.226: walk-out and final whistle belong to Wichtige/Alle Highlights.
+ function accepts(type,value=mode){return TYPES.includes(type)&&value!=='off'&&(value!=='goals'||type==='goal')&&(!['ball_won','ceremony'].includes(type)||value==='important'||value==='all')}
  function setMode(value){mode=value in MODES?value:'important';try{root.localStorage?.setItem(KEY,mode)}catch(_){}if(mode!=='off')prewarm();return mode}
  // Period is captured at enqueue time from the simulator's existing lifecycle flags.
  // In particular 45+/90+/105+ belong to the current period until its break is logged.
@@ -15,14 +16,15 @@
  function snapshot(event){
   // Copy only display data. Never pass a live player, match or saved state to WebGL.
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
-   period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:getAttackDirection(event.team,event.period),
+   period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:event.type==='ceremony'?1:getAttackDirection(event.team,event.period),
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),actionKind:String(event.actionKind||''),sceneKind:String(event.sceneKind||''),restartSide:event.restartSide==='right'?'right':'left',buildKeeperName:String(event.buildKeeperName||''),buildKeeperSkinTone:typeof event.buildKeeperSkinTone==='string'||Number.isInteger(event.buildKeeperSkinTone)?event.buildKeeperSkinTone:null,sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    shotPlacement:event.shotPlacement?Object.freeze({
     side:event.shotPlacement.side===-1?-1:1,
     zone:['inside','channel','corner'].includes(event.shotPlacement.zone)?event.shotPlacement.zone:'channel',
-    height:['low','mid','high'].includes(event.shotPlacement.height)?event.shotPlacement.height:'mid'
+    height:['low','mid','high'].includes(event.shotPlacement.height)?event.shotPlacement.height:'mid',
+    ...(GOAL_STYLES.includes(event.shotPlacement.style)?{style:event.shotPlacement.style}:{})
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
@@ -37,9 +39,19 @@
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    playerSkinTones:Object.freeze((Array.isArray(event.playerSkinTones)?event.playerSkinTones:[]).slice(0,16).map(v=>typeof v==='string'&&(/^#[0-9a-f]{6}$/i.test(v)||/^[1-6]$/.test(v))?v:Number.isInteger(v)&&v>=1&&v<=6?v:null)),
    keeperSkinTone:event.keeperSkinTone??null,
-   keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1});
+   playerLooks:Object.freeze(Array.from({length:16},(_,i)=>cleanLook((Array.isArray(event.playerLooks)?event.playerLooks:[])[i]))),
+   keeperLook:cleanLook(event.keeperLook),
+   keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
+   // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
+   ceremony:['kickoff','fulltime'].includes(event.ceremony)?event.ceremony:'',result:['win','draw'].includes(event.result)?event.result:'',
+   homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
+   homeScore:Number.isFinite(Number(event.homeScore))?Number(event.homeScore):null,awayScore:Number.isFinite(Number(event.awayScore))?Number(event.awayScore):null,
+   defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
+   replay:event.replay!==false});
  }
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21199').catch(e=>{loader=null;throw e}))}
+ // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
+ function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21246').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -52,9 +64,9 @@
   }
  async function defaultPlay(event,signal){
   if(signal.aborted)return 'skipped';
-  const host=root.document?.getElementById('matchLiveStage');if(!host)return 'fallback';
+  const host=stage();if(!host)return 'fallback';
   const loading=document.createElement('div');loading.className='fh3d-warming';
-  const text=document.createElement('span');text.className='fh3d-loading';text.textContent='LIVE-CHANCE';
+  const text=document.createElement('span');text.className='fh3d-loading';text.textContent=event.ceremony==='kickoff'?'ANPFIFF':event.ceremony==='fulltime'?'ABPFIFF':'LIVE-CHANCE';
   const top=document.createElement('div');top.className='fh3d-top';
   const skip=document.createElement('button');skip.className='fh3d-skip';skip.textContent='Überspringen';skip.type='button';top.append(skip);loading.append(text,top);host.append(loading);
   let skipped=false,skipResolve;
@@ -76,7 +88,7 @@
     if(!disabled)module.prepareFooteraPlayerModel().catch(()=>{}); // Use available skinned fallback immediately
     if(!disabled&&module.footeraHumanPlayersWanted?.())module.prepareFooteraHumanModel?.().catch(()=>{});
     // The club crest for the shirts decodes in a few milliseconds; never wait long.
-    if(module.loadFooteraCrestImage)await Promise.race([module.loadFooteraCrestImage(event.teamCrestHTML),new Promise(r=>setTimeout(r,250))]);
+    if(module.loadFooteraCrestImage)await Promise.race([Promise.all([module.loadFooteraCrestImage(event.teamCrestHTML),event.defendCrestHTML?module.loadFooteraCrestImage(event.defendCrestHTML):null]),new Promise(r=>setTimeout(r,250))]);
    }
    remove();return signal.aborted||skipped?'skipped':module.play(event,signal);
   }),skippedPromise])}
@@ -130,7 +142,49 @@
   ["back_post_volley_left","lowcross",6,"volley","medium"],
   ["overlap_clipped_right","overlap",6,"header","long"],
   ["striker_wall_return","combination",8,"low_driven","medium"],
-  ["diagonal_lob_finish","through",6,"chip","medium"]
+  ["diagonal_lob_finish","through",6,"chip","medium"],
+  ["false_nine_drop_left", "combination", 6, "finesse", "medium"],
+  ["false_nine_drop_right", "combination", 6, "finesse", "medium"],
+  ["winger_one_two_left", "combination", 7, "normal", "short"],
+  ["winger_one_two_right", "combination", 7, "normal", "short"],
+  ["box_rondo", "combination", 6, "low_driven", "medium"],
+  ["fullback_link_left", "combination", 6, "normal", "medium"],
+  ["fullback_link_right", "combination", 6, "normal", "medium"],
+  ["channel_ball_left", "through", 7, "low_driven", "short"],
+  ["channel_ball_right", "through", 7, "low_driven", "short"],
+  ["playmaker_slide_left", "through", 7, "normal", "short"],
+  ["playmaker_slide_right", "through", 7, "normal", "short"],
+  ["dink_over_line", "through", 5, "chip", "short"],
+  ["long_ball_sprint", "through", 5, "normal", "medium"],
+  ["underlap_left", "overlap", 6, "normal", "medium"],
+  ["underlap_right", "overlap", 6, "normal", "medium"],
+  ["overlap_volley_left", "overlap", 4, "volley", "medium"],
+  ["overlap_volley_right", "overlap", 4, "volley", "medium"],
+  ["byline_drive_left", "lowcross", 6, "low_driven", "short"],
+  ["byline_drive_right", "lowcross", 6, "low_driven", "short"],
+  ["far_post_slide_right", "lowcross", 5, "normal", "medium"],
+  ["whipped_header_left", "nearpost", 6, "header", "medium"],
+  ["whipped_header_right", "nearpost", 6, "header", "medium"],
+  ["deep_cross_header_left", "overlap", 5, "header", "long"],
+  ["deep_cross_header_right", "overlap", 5, "header", "long"],
+  ["slalom_left", "dribble", 5, "finesse", "short"],
+  ["slalom_right", "dribble", 5, "power", "short"],
+  ["winger_takeon_left", "dribble", 6, "finesse", "medium"],
+  ["winger_takeon_right", "dribble", 6, "finesse", "medium"],
+  ["pullback_power_left", "cutback", 6, "power", "medium"],
+  ["pullback_power_right", "cutback", 6, "power", "medium"],
+  ["cutback_volley_left", "cutback", 4, "volley", "medium"],
+  ["edge_rocket", "distance", 5, "power", "short"],
+  ["recycle_rocket_left", "distance", 5, "power", "medium"],
+  ["recycle_curler_right", "distance", 5, "finesse", "medium"],
+  ["halfvolley_drive", "distance", 4, "volley", "short"],
+  ["switch_cut_left", "switch", 5, "finesse", "long"],
+  ["switch_cut_right", "switch", 5, "finesse", "long"],
+  ["near_post_flick_header_left", "nearpost", 5, "header", "medium"],
+  ["near_post_flick_header_right", "nearpost", 5, "header", "medium"],
+  ["counter_sprint_left", "through", 7, "normal", "short"],
+  ["counter_sprint_right", "through", 7, "normal", "short"],
+  ["rebound_drive", "combination", 5, "power", "short"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -178,6 +232,27 @@
  ].map(([id,family,weight,finish,tags])=>Object.freeze({id,family,weight,finish,tags:Object.freeze(tags)})));
  function visualHash(input){let n=2166136261;for(const ch of String(input)){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
 
+ const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
+ // V21.215 Aussehen-Editor: only known haircut/beard ids and plain hex colours reach the scene.
+ const LOOK_HAIR=/^(bald|short0[1-4]|afro01)$/,LOOK_BEARD=/^(none|Full_beard|Moustache)$/,LOOK_HEX=/^#[0-9a-f]{6}$/i;
+ function cleanLook(v){
+  if(!v||typeof v!=='object')return null;
+  const out={};
+  if(LOOK_HAIR.test(String(v.hair||'')))out.hair=String(v.hair);
+  if(LOOK_BEARD.test(String(v.beard||'')))out.beard=String(v.beard);
+  if(LOOK_HEX.test(String(v.hairColor||'')))out.hairColor=String(v.hairColor).toLowerCase();
+  return Object.keys(out).length?Object.freeze(out):null;
+ }
+ const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick']);
+ function goalStyle(event,key){
+  const finish=String(event.finish||'normal'),seq=String(event.sequence||'');
+  if(['header','chip','bicycle'].includes(finish)||/^extended_(?:penalty|corner|throw_in)/.test(seq))return null;
+  const n=visualHash(key+':goal-style')%100,far=LONG_RANGE.has(seq)||/(?:distance|rocket|curler|halfvolley)/.test(seq);
+  // Long shots often fly into the top corner; elsewhere these stay special.
+  if(far)return n<38?'top_corner':n<50?'crossbar_in':n<58?'post_in':null;
+  if(finish==='low_driven')return n<12?'post_in':null;
+  return n<8?'crossbar_in':n<16?'post_in':n<22?'top_corner':null;
+ }
  function chooseShotPlacement(event,history=[]){
   // A deterministic, presentation-only corner: no match RNG is consumed.
   const key=[event.id||'',event.minute||0,event.team||'',event.playerId||'',event.sequence||'',event.finish||'',event.type||''].join('|');
@@ -186,8 +261,14 @@
   if(prior.length>1&&prior[prior.length-1].shotSide===prior[prior.length-2].shotSide)
    side=-prior[prior.length-1].shotSide;
   const zones=['inside','channel','corner'],heights=['low','mid','high'];
-  return Object.freeze({side,zone:zones[visualHash(key+':zone')%3],
-   height:event.finish==='low_driven'?'low':event.finish==='chip'?'high':heights[visualHash(key+':height')%3]});
+  const placement={side,zone:zones[visualHash(key+':zone')%3],
+   height:event.finish==='low_driven'?'low':event.finish==='chip'?'high':heights[visualHash(key+':height')%3]};
+  // V21.204 goal variants (Basti): in off the bar, in off the post, top corner.
+  // Only the picture of a goal changes; the simulation already decided it.
+  const style=event.type==='goal'?goalStyle(event,key):null;
+  if(style==='top_corner'){placement.zone='corner';placement.height='high'}
+  if(style)placement.style=style;
+  return Object.freeze(placement);
  }
  function visualStyleMap(input){const map=new Map();for(const s of Array.isArray(input)?input:[]){const id=typeof s==='string'?s:s?.id;if(typeof id==='string'&&id)map.set(id,s?.plus?2:1)}return map}
  // Deterministic presentation-only choreography. Every action is an attempt;
@@ -280,7 +361,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right'];
+  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive'];
   const pool=simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='distance')return distanceIds.includes(v.id);
    if(event.actionKind==='cross')return v.finish===event.finish;
@@ -347,9 +428,9 @@
   return Object.freeze({sequence:chosen.id,family:chosen.family,finish,seconds:chosen.seconds||10.4,signature:signatureStyle(event,finish)});
  }
  class Queue{
-  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000}={}){
+  constructor({play,onBusy=()=>{},onIdle=()=>{},onFallback=()=>{},timeout=32000,replayTimeout=10000}={}){
    this.play=play||defaultPlay;
-   this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
+   this.onBusy=onBusy;this.onIdle=onIdle;this.onFallback=onFallback;this.timeout=timeout;this.replayTimeout=replayTimeout;this.items=[];this.seen=new Set();this.busy=false;this.epoch=0;this.disabled=false;
   }
   enqueue(event){
    if(this.disabled||!accepts(event.type)||this.seen.has(String(event.id)))return false;
@@ -363,7 +444,9 @@
     let timer,abort;
     try{
      const interrupted=new Promise(resolve=>{abort=()=>resolve(controller.signal.reason==='timeout'?'fallback':'skipped');controller.signal.addEventListener('abort',abort,{once:true})});
-     timer=setTimeout(()=>controller.abort('timeout'),String(event.sequence||'').startsWith('extended_')?Math.max(this.timeout,(Number(event.playSeconds)||0)*1000+15000):this.timeout);
+     // A goal also plays its replay (V21.226), roughly eight more seconds.
+     const replayMs=event.type==='goal'&&event.replay!==false?this.replayTimeout:0;
+     timer=setTimeout(()=>controller.abort('timeout'),(String(event.sequence||'').startsWith('extended_')?Math.max(this.timeout,(Number(event.playSeconds)||0)*1000+15000):this.timeout)+replayMs);
      const result=await Promise.race([Promise.resolve().then(()=>this.play(event,controller.signal)),interrupted]);
      if(result==='fallback'&&epoch===this.epoch){this.disabled=true;this.items=[];this.onFallback(event)}
     }catch(error){if(epoch===this.epoch){this.disabled=true;this.items=[];this.onFallback(event,error)}}
@@ -374,6 +457,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);

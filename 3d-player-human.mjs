@@ -53,7 +53,9 @@ const HAIR_SHADES=['#1b1512','#2a1d16','#3b2a1f','#14110f','#4f3826','#6e5038','
 
 // Everything that makes one player look like himself, from his name only:
 // no ancestry is inferred, the complexion comes from the player record.
-export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info){
+// custom (V21.215 Aussehen-Editor): {hair:'short02'|'bald'|..., hairColor:'#hex',
+// beard:'none'|'Full_beard'|'Moustache'}; anything missing stays name-picked.
+export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null){
  const h=hash(name),pick=(list,shift)=>list[(h>>>shift)%list.length];
  const hair=info?.hair||['short02'],facial=info?.facial||[],brows=info?.brows||['eyebrow001'];
  const tone=/^#[0-9a-f]{6}$/i.test(String(skinTone))?skinTone:'#c88f69',dark=luminance(tone)<.42;
@@ -65,9 +67,15 @@ export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info){
  morphs.face_age=r(23)*.25-.1;
  // Half the squad clean-shaven, most others a short full beard.
  const beard=(h>>>13)%10,facialHair=beard>=9?facial[1]:beard>=5?facial[0]:null;
- return{hair:pick(hair,3),facial:facialHair||null,brows:pick(brows,9),morphs,
+ const look={hair:pick(hair,3),facial:facialHair||null,brows:pick(brows,9),morphs,
   skin:tone,skinKey:dark?'dark':'light',
   hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17)};
+ if(custom){
+  if(custom.hair==='bald'||hair.includes(custom.hair))look.hair=custom.hair==='bald'?null:custom.hair;
+  if(custom.beard==='none')look.facial=null;else if(facial.includes(custom.beard))look.facial=custom.beard;
+  if(/^#[0-9a-f]{6}$/i.test(String(custom.hairColor||'')))look.hairColor=custom.hairColor;
+ }
+ return look;
 }
 
 export function footeraShirtName(name=''){
@@ -134,7 +142,12 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  }
  ctx.restore();
  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,'front');
- if(opts.crest)try{ctx.save();ctx.translate(.095,1.40);ctx.scale(1,-1);ctx.drawImage(opts.crest,-.036,-.04,.072,.08);ctx.restore()}catch(_){}
+ // V21.214 (Basti): the club crest is a real 10 cm badge, big enough to read
+ // in the celebration close-up, with a soft dark edge so it stands out on
+ // any shirt colour.
+ if(opts.crest)try{ctx.save();ctx.translate(.098,1.365);ctx.scale(1,-1);
+  ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=Math.max(1,size/340);
+  ctx.drawImage(opts.crest,-.05,-.055,.1,.11);ctx.restore()}catch(_){}
  else{ctx.fillStyle=second;ctx.beginPath();ctx.moveTo(.06,1.425);ctx.lineTo(.13,1.425);ctx.lineTo(.13,1.385);ctx.quadraticCurveTo(.095,1.35,.06,1.385);ctx.closePath();ctx.fill()}
  // Chest sponsor instead of a front number, like real club kits.
  if(opts.sponsor!==false){

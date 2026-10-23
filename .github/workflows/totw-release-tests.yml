@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/totw-release-tests.yml'
       - 'tests/totw5-release.test.cjs'
+      - 'tests/totw-rules.test.cjs'
       - 'tests/totw5-preview.browser.cjs'
       - 'tests/live-content.test.cjs'
       - 'index.html'
@@ -18,6 +19,7 @@ on:
     paths:
       - '.github/workflows/totw-release-tests.yml'
       - 'tests/totw5-release.test.cjs'
+      - 'tests/totw-rules.test.cjs'
       - 'tests/totw5-preview.browser.cjs'
       - 'tests/live-content.test.cjs'
       - 'index.html'
@@ -31,14 +33,14 @@ permissions:
 jobs:
   totw-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Validate TOTW 5 roster and scheduled availability
-        run: node --test tests/totw5-release.test.cjs tests/live-content.test.cjs
+        run: node --test tests/totw5-release.test.cjs tests/live-content.test.cjs tests/totw-rules.test.cjs
       - name: Install isolated mobile browser
         run: |
           npm install --prefix /tmp/footera-totw-browser playwright@1.51.1

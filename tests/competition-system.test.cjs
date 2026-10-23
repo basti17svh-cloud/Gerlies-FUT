@@ -149,3 +149,16 @@ test('reward-only rating packs retain tradeability and TOTW pack needs a live te
  const totw=packs.generatePack('totw-reward');
  assert.equal(totw.length,1);assert.equal(totw[0].variant,'special');assert.equal(totw[0].tradeable,true);
 });
+
+test('owner grant pays the full Rivals reward for the week ending 22.10. only',()=>{
+ const run=(saveId,week='2026-10-20T12:00:00Z')=>{
+  const app=setup({now:'2026-10-22T07:00:00Z',initial:{profile:{saveId}}}),{state,api}=app;
+  state.rivals.division=0;state.rivals.weeklyPoints=9;state.rivals.week=api.competitionWindow('rivals',new Date(week)).key;
+  api.syncCompetitionWeeks(new Date('2026-10-22T07:00:00Z'));
+  return api.competitionPending('rivals')
+ };
+ const [row]=run('GF-9AE6CDDEFE8A458D');
+ assert.equal(row.week,'1792047600000');assert.equal(row.milestone,35);assert.equal(row.division,0);assert.equal(row.reward.coins,65000);
+ assert.equal(run('GF-OTHER').length,0);
+ assert.equal(run('GF-9AE6CDDEFE8A458D','2026-10-10T12:00:00Z').length,0);
+});

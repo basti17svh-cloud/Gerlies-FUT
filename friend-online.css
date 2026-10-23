@@ -141,3 +141,11 @@
 .online-manager-pitch{position:relative;height:440px;border:2px solid #ffffff3c;border-radius:15px;background:repeating-linear-gradient(0deg,#0e5b3a 0 10%,#0b5034 10% 20%);overflow:hidden}.online-manager-slot{position:absolute;width:18%;transform:translate(-50%,-50%)}.online-manager-slot .card-shell{width:100%!important}.online-manager-bench-title{display:flex;justify-content:space-between;margin:12px 0 8px}.online-manager-bench{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 7px}.online-manager-bench .card-shell{width:100%!important}.online-manager-bench>div.used{opacity:.45}.online-manager-bench>div{position:relative}.online-manager-bench>div.used>span{position:absolute;bottom:2px;left:2px;right:2px;background:#111d18e8;text-align:center;font-size:7px}
 .online-manager-settings{display:grid;gap:8px;margin-top:12px}.online-manager-settings label{display:grid;gap:5px;color:#96a39e;font-size:9px;font-weight:900;text-transform:uppercase}.online-manager-settings select{min-height:44px;border:1px solid #34423d;border-radius:9px;background:#111915;color:#fff;padding:0 8px;font-size:14px}.online-manager-actions{display:grid;gap:8px;margin-top:10px}.online-manager-actions button{min-height:48px}
 .online-standard-result{display:grid;gap:5px;margin:13px 0;padding:15px;border:1px solid #688851;border-radius:13px;text-align:center}.online-standard-result strong{color:#d8ff3e;font-size:24px}.online-standard-result small{color:#a5b5ad;font-size:10px}
+/* V21.246: club crests next to the names and the Rivals 3D stage in online friendlies. */
+.online-standard-match .match-team-name{display:flex;align-items:center;gap:7px;min-width:0}
+.online-standard-match .match-team-name.away{flex-direction:row-reverse}
+.online-team-crest{flex:0 0 auto;width:26px;display:grid;place-items:center}
+.online-team-crest .club-crest{position:static!important;top:auto!important;left:auto!important;transform:none!important;width:26px!important;height:auto!important}
+.online-team-label{min-width:0;overflow-wrap:anywhere}
+#onlineMatch.highlight3d-pending .online-standard-controls,#onlineMatch.highlight3d-pending .highlight-mode{opacity:0;visibility:hidden;pointer-events:none}
+#onlineMatch .highlight-mode{margin:10px 0 0}

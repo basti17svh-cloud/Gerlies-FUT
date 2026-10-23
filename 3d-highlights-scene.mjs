@@ -1,18 +1,28 @@
-import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21195';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21196';
+import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21208';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21226';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21154';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21194';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21194';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21215';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21215';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21194';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE,benchRunner,BENCH_RUNNERS} from './3d-ceremony.mjs?v=21226';
+export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
 // V21.193: phones below the LOW line and players who chose the previous model
 // (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
+// HALLOWEEN 2026 (30.10. 19:00 to 06.11. 19:00 Berlin): night stadium, pumpkins and event boards.
+// window.__FOOTERA_HALLOWEEN=true/false overrides the date for previews and QA.
+export function halloweenNight(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_HALLOWEEN:undefined;
+ if(typeof location!=='undefined'&&/[?&]halloween=1\b/.test(location.search))return true;
+ if(typeof forced==='boolean')return forced;
+ return at>=Date.parse('2026-10-30T19:00:00+01:00')&&at<Date.parse('2026-11-06T19:00:00+01:00');
+}
 export function footeraHumanPlayersWanted(){
  try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
  const memory=globalThis.navigator?.deviceMemory||8,cores=globalThis.navigator?.hardwareConcurrency||8;
@@ -21,19 +31,19 @@ export function footeraHumanPlayersWanted(){
 import {buildSkinnedFootballer,createFootballKitAtlas,createSkeletonMotion} from './3d-rigged-footballer.mjs?v=2190';
 import {sampleMotionClip,blendLocomotionClips,motionClipBlend} from './3d-motion-clips.mjs?v=2136';
 import {animateAthleticRun,animateFootballFinish,animateGoalkeeperDive} from './3d-football-animation.mjs?v=2174';
-import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=2141';
+import {applyRunningMocap,applyKeeperMocap} from './3d-mocap-runtime.mjs?v=21208';
 import {applyGoalkeeperMotion,sampleGoalkeeperMotion,GOALKEEPER_MOTION_VERSION} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 import {applyVisibleInvertedCut,applyVisibleKeeperFlight,applyContextualAttackerMotion} from './3d-action-motion.mjs?v=2142';
 import {applySquadLocomotion} from './3d-squad-motion.mjs?v=2174';
 import {applyLabMotion,footballTouchSample,applyFootballControl,applyFootballStrike,applyFootballReception,applyFootballDefender} from './3d-motion-lab.mjs?v=2157';
 import {touchContinuity,applyTouchContinuity,applyDeliveryContinuity,applyFinishContinuity,applyDefenderContinuity,applyReceptionContinuity} from './3d-action-continuity.mjs?v=21159';
 import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefender2} from './3d-motion-2.mjs?v=2147';
-import {applyMotion23} from './3d-motion-transition.mjs?v=2148';
+import {applyMotion23} from './3d-motion-transition.mjs?v=21208';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21167';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21204';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -86,7 +96,8 @@ export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
 export const MIN_CAMERA_DISTANCE=34;
 // Identical physical range for all broadcast phases and event types.
-export const BROADCAST_CAMERA_DISTANCE=40;
+// V21.205 (Basti): 34 m instead of 40 m, so players read bigger on a phone.
+export const BROADCAST_CAMERA_DISTANCE=34;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -101,6 +112,27 @@ export function kickPose(time){
  if(t<=0)return{hip:mix(-.8,.75,(t+.22)/.22),knee:mix(-.8,-.05,(t+.22)/.22)};
  if(t<.18)return{hip:mix(.75,1.08,t/.18),knee:-.05};
  return{hip:mix(1.08,0,(t-.18)/.45),knee:mix(-.05,0,(t-.18)/.45)};
+}
+// V21.208 (Basti): a real overhead kick for the human squad. The striker turns
+// his back to goal, leans back, takes off and turns over his pelvis so the
+// kicking leg meets the ball above him at SHOT_TIME (scissor: the other leg
+// swings up first), lands on his back and is up again before the celebration.
+// pitch: backwards body turn (rad), lift: pelvis height change (m), back:
+// pelvis shift towards goal (m), legs: [thigh, knee] per leg (1 = kicking).
+export function bicycleKickPose(time){
+ const weight=smooth((time-4.9)/.12)*(1-smooth((time-6.72)/.2));
+ if(weight<=0)return null;
+ const over=smooth((time-5.04)/.4),land=smooth((time-5.48)/.3),sit=smooth((time-6.08)/.36),stand=smooth((time-6.4)/.42);
+ const pitch=mix(.32*smooth((time-4.92)/.14)+1.36*over-.2*land,.05,sit)*(1-stand);
+ const lift=mix(.14*Math.sin(Math.PI*clamp((time-5.02)/.52))-.8*land,-.45,sit)*(1-stand);
+ const back=mix(.5*over+.3*land,.5,sit)*(1-stand);
+ const swing=smooth((time-5.16)/.26),follow=smooth((time-SHOT_TIME)/.2),scissor=smooth((time-5.0)/.2),drop=smooth((time-5.2)/.2);
+ const kick=[mix(mix(-.3,.75,swing),1.05,follow),mix(mix(-1.1,-.12,swing),-.4,follow)];
+ const other=[mix(mix(0,1.25,scissor),-.1,drop),mix(-.9,-.3,drop)];
+ // Sit up into a crouch, then stand: never pivot upright from flat on the back.
+ const legs=[[mix(other[0],.65,land),mix(other[1],-1.05,land)],[mix(kick[0],.45,land),mix(kick[1],-.7,land)]]
+  .map(([thigh,knee])=>[mix(thigh,1.5,sit)*(1-stand),mix(knee,-2.1,sit)*(1-stand)]);
+ return{weight,pitch,lift,back,legs,arms:mix(mix(1.15,.6,land),.3,sit)*(1-stand)};
 }
 export function shotFootPosition(time=SHOT_TIME){
  const {hip,knee}=kickPose(time);
@@ -266,7 +298,24 @@ export function shotImpact(type,sequence='central',finish='normal',placement=nul
  else if(style==='header')y=type==='shot_post'?1.25:placement?.height==='high'?2.02:1.38;
  else if(style==='power')y=type==='shot_post'?1.25:placement?.height==='high'?1.92:.83;
  else if(style==='chip')y=type==='shot_post'?1.25:1.64;
+ if(type==='goal'&&placement?.style){
+  // V21.204 goal variants (Basti): in off the bar, in off the inside of the
+  // post, or a screamer into the top corner. Same goal, different picture.
+  if(placement.style==='crossbar_in')return[sign*1.85,2.3,-52.55];
+  if(placement.style==='post_in')return[sign*3.46,Math.min(y,1.5),-52.55];
+  if(placement.style==='top_corner')return[sign*3.22,2.2,-54.25];
+ }
  return[sign*x,y,type==='big_chance_saved'?-50.6:type==='shot_post'?-52.5:type==='big_chance_missed'?-53.4:-54.25];
+}
+export const GOAL_STYLES=Object.freeze(['crossbar_in','post_in','top_corner']);
+// After hitting the bar or the post the ball still needs a moment to reach the net.
+export function goalNetDelay(placement=null){return placement?.style==='crossbar_in'?.62:placement?.style==='post_in'?.3:0}
+// Where the ball meets the back of the net (for the net ripple).
+export function goalNetPoint(sequence='central',finish='normal',placement=null){
+ const impact=shotImpact('goal',sequence,finish,placement);
+ if(placement?.style==='crossbar_in')return[impact[0]*.9,.55,-54.05];
+ if(placement?.style==='post_in')return[impact[0]*.55,impact[1]*.7+.1,-54.15];
+ return impact;
 }
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
@@ -383,6 +432,19 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
  const {gate,delay,speed}=shotGate(contact,impact);
  if(t<1){const p=lerp(contact,gate,flight),arc=seq==='extended_free_kick'?2.8:style==='power'?.18:style==='low_driven'?.1:style==='header'?.28:style==='volley'?.32:style==='bicycle'?.42:style==='chip'?3.3:.65;p[1]+=arc*Math.sin(flight*Math.PI);if(style==='finesse')p[0]+=(placement?.side||(INVERTED_SEQUENCES.has(seq)?sequenceSide(seq):1))*.72*Math.sin(flight*Math.PI);return p}
  if(delay>0){if(time<IMPACT_TIME+delay)return lerp(gate,impact,(time-IMPACT_TIME)/delay);time-=delay}
+ if(type==='goal'&&placement?.style==='crossbar_in'){
+  // Off the underside of the bar: down behind the line, one bounce, into the net.
+  const s=time-IMPACT_TIME,[x]=impact,down=[x*1.02,.13,-53.02],net=goalNetPoint(seq,style,placement);
+  if(s<.16){const u=s/.16;return[mix(x,down[0],u),mix(impact[1],down[1],u*u),mix(impact[2],down[2],u)]}
+  if(s<.62){const u=(s-.16)/.46,p=lerp(down,net,u);p[1]=mix(down[1],net[1],u)+.7*Math.sin(Math.PI*u);return p}
+  const u=smooth((s-.62)/.5),p=lerp(net,[net[0],.12,-53.8],u);return p;
+ }
+ if(type==='goal'&&placement?.style==='post_in'){
+  // Off the inside of the post and across into the side netting.
+  const s=time-IMPACT_TIME,net=goalNetPoint(seq,style,placement);
+  if(s<.3)return lerp(impact,net,s/.3);
+  const u=smooth((s-.3)/.5);return lerp(net,[net[0],.12,-53.85],u);
+ }
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
  if(type==='big_chance_saved'){
   // Parries spring off the glove and slow down instead of drifting at a constant pace.
@@ -574,12 +636,38 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
    // rather than widening the lens and filling the top with more stands.
    const boxShift=(-51.25*direction-frame.target[2])*.27*smooth((time-delivery.release-.3)/1.25);
    frame.target[2]+=boxShift;frame.position[2]+=boxShift;
-   return keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence);
+   return keepInBroadcastFrame(keepCrosserInFrame(frame,delivery,time,direction,aspect,sequence),time,/^(wing|cutback)_/.test(sequence));
   }
   // The turnover counter composes its own pass-and-goal frame (counter test).
   if(extendedKind(sequence)&&extendedKind(sequence)!=='turnover_counter')return keepExtendedActionInFrame(frame,time,direction,aspect,worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction));
-  return frame;
+  return DEFENSIVE_SCENES.includes(sequence)?frame:keepInBroadcastFrame(frame,time);
  };
+ // V21.205: the closer 34 m camera glides (never zooms) to keep the ball, and
+ // from the shot on the whole goal, inside a phone picture. Judged at the
+ // final range and the narrowest lens, before the track smooths the pan.
+ function keepInBroadcastFrame(frame,time,holdGoal=false){
+  const gap=Math.hypot(...frame.position.map((v,i)=>v-frame.target[i]))||1,k=BROADCAST_CAMERA_DISTANCE/gap;
+  const real={...frame,position:frame.position.map((v,i)=>frame.target[i]+(v-frame.target[i])*k)},lens=aspect<1.12?32:30.5;
+  const ball=worldPosition(ballPosition(type,time,sequence,finish,keeperAction,placement),direction);
+  let fit=glideToFit(real,[ball],ball,aspect,lens,.78,1);
+  // A wide delivery also keeps the goal mouth in the picture (wide crosses).
+  if(holdGoal){const mouth=worldPosition([0,0,-52.5],direction);fit=glideToFit(fit,[ball,mouth],[(ball[0]+mouth[0])/2,0,(ball[2]+mouth[2])/2],aspect,lens,.9,1)}
+  const goal=smooth((time-SHOT_TIME+1.2)/1.0);
+  if(goal>0){
+   const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+   const net=worldPosition([0,0,-53.4],direction);
+   fit=glideToFit(fit,points,[(ball[0]+net[0])/2,0,(ball[2]+net[2])/2],aspect,lens,.9,goal);
+  }
+  const shift=fit.target.map((v,i)=>v-real.target[i]);
+  // Where gliding alone cannot hold the ball and the goal, ask for a slightly
+  // wider lens; the track keeps one lens for the whole highlight.
+  let lensNeeded=frame.fov;
+  if(goal>=1){
+   const points=[ball];for(const x of [-3.66,3.66])for(const z of [-52.5,-54.4])points.push(worldPosition([x,2.44,z],direction));
+   if(frameOverflow(fit,[0,0],aspect,points,lens,.86)>0){let lo=lens,hi=60;for(let i=0;i<12;i++){const m=(lo+hi)/2;frameOverflow(fit,[0,0],aspect,points,m,.86)>0?lo=m:hi=m}lensNeeded=Math.max(lensNeeded,hi)}
+  }
+  return{...frame,fov:lensNeeded,position:frame.position.map((v,i)=>v+shift[i]),target:frame.target.map((v,i)=>v+shift[i])};
+ }
  // A single fitted lens for each highlight. The camera follows the ball,
  // without changing range at a pass, shot or goalkeeper action.
  const portrait=aspect<1.12,isExtended=!!extendedKind(sequence),counter=sequence==='extended_turnover_counter';
@@ -587,7 +675,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
  const sample=createStableCameraTrack(cameraAt,{duration:DURATION,
   sigma:isExtended||defending?.16:.34,focusSpeed:isExtended||defending?24:12,railSpeed:isExtended||defending?24:14,
   fovFloor:counter?(portrait?32:30.5):isExtended?(portrait?28.5:27.8):(portrait?32:30.5),
-  fovCeiling:counter?(portrait?42:40):isExtended?(portrait?39:36):(portrait?42:40)});
+  fovCeiling:counter?(portrait?47:44):isExtended?(portrait?39:36):(portrait?42:40)});
  // Gaussian stabilization still controls the camera's entire travel. Restore
  // exact physical clearance after smoothing the camera and target separately.
  return time=>{
@@ -600,7 +688,7 @@ export function createBroadcastCameraTrack({direction=1,aspect=1.3,type='goal',s
   return framed;
  };
 }
-// The closer 40 m TV camera can drop a crosser on the near touchline below the
+// The closer 34 m TV camera can drop a crosser on the near touchline below the
 // bottom edge of a narrow phone (a long diagonal switch), and a fixed set-piece
 // composition can leave the ball or the net outside a portrait phone frame.
 // Glide camera and target together towards what must be seen, just enough to
@@ -654,6 +742,10 @@ export function kitColors(event){
 }
 export function crowdReactionState(type,attackTeam,supporterTeam,time){
  const supporter=supporterTeam==='home'||supporterTeam==='away'?supporterTeam:'neutral',attacking=supporter===attackTeam;
+ // V21.226 ceremonies: the whole ground is up for the walk-out; at the final
+ // whistle the winners' end celebrates and the losers' end goes quiet.
+ if(type==='ceremony_kickoff')return{suspense:0,mood:supporter==='neutral'?.45:.85};
+ if(type==='ceremony_fulltime'||type==='ceremony_draw')return{suspense:0,mood:supporter==='neutral'||type==='ceremony_draw'?.3:attacking?1:-.4};
  const suspense=smooth((time-(SHOT_TIME-.85))/.72)*(1-smooth((time-IMPACT_TIME)/.22));
  const after=smooth((time-IMPACT_TIME)/.38),fade=Math.max(.22,1-smooth((time-(DURATION-1.35))/1.1));
  let mood=0;
@@ -802,8 +894,10 @@ export function stanceHeight(hipA,kneeA,hipB,kneeB){
 // travels towards +Z relative to the pelvis, cancelling forward root travel.
 // Acceleration, lateral plant and counter-rotation are presentation-only.
 // No frame history, result, simulation RNG or extra mesh allocations.
+// V21.208: a walking pace already takes visible steps (was a glide below ~1 m/s).
+export const locomotionEffort=speed=>smooth(clamp(speed)/.09);
 export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl=false){
- const effort=smooth(clamp(speed)/.16),drive=clamp(acceleration,-1,1);
+ const effort=locomotionEffort(speed),drive=clamp(acceleration,-1,1);
  const bank=clamp(turn*1.7,-.28,.28)*effort;
  const plant=smooth(Math.abs(turn)/.10)*effort;
  return{
@@ -818,6 +912,14 @@ export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl
 // One complete left/right gait cycle follows travelled distance. Restrained reach
 // prevents the overextended sprint lunge without increasing step frequency wildly.
 export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/(.60-.32*clamp(speed));
+// Support-foot plant of a ground shot: the boot steps in (lift) beside the
+// ball before SHOT_TIME, holds through contact, then steps out again.
+export function plantFootSample(time){
+ const weight=smooth((time-4.98)/.14)*(1-smooth((time-5.6)/.16));
+ if(weight<=0)return null;
+ const lift=.09*Math.sin(Math.PI*clamp((time-4.98)/.16))+.09*Math.sin(Math.PI*clamp((time-5.6)/.16));
+ return{weight,lift};
+}
 export function runningLeg(phase,speed,out={}){
  speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.32*speed,reach=.15+.145*speed;
  const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
@@ -901,7 +1003,8 @@ export function playerPosition(index,time,type='goal',sequence='central',placeme
 }
 export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false,allowImported=true,modelVariant='quaternius'){
  const enhancedRigMotion=!baselineRig&&!(typeof window!=='undefined'&&window.__FOOTERA_V2137_BASELINE===true);
- const scene=new THREE.Scene();scene.background=new THREE.Color('#16262b');scene.fog=new THREE.Fog('#1b2d31',148,286);
+ const spooky=halloweenNight();
+ const scene=new THREE.Scene();scene.background=new THREE.Color(spooky?'#0b0714':'#16262b');scene.fog=spooky?new THREE.Fog('#160c20',120,262):new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
  const direction=event.attackDirection===-1?-1:1,sequence=normalizeSequence(event.sequence),base=baseSequence(sequence),finish=normalizeFinish(event.finish),keeperAction=String(event.keeperAction||'classic'),defenderAction=String(event.defenderAction||'jockey'),defenderIndex=Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<16?event.defenderIndex:8;
@@ -909,7 +1012,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const placement=event.shotPlacement||null;
  const eventBallPosition=(type,time,seq=sequence,style=finish,action=keeperAction)=>ballPosition(type,time,seq,style,action,placement);
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
- const netArrival=shotArrival('goal',sequence,finish,placement);
+ const netArrival=shotArrival('goal',sequence,finish,placement)+goalNetDelay(placement),netPoint=goalNetPoint(sequence,finish,placement);
  const signature=event.motionDuelPreview===true?null:signatureWindow(event,sequence);
  const eventKeeperPose=(type,time,style=finish,seq=sequence,action=keeperAction)=>keeperPose(type,time,style,seq,action,placement);
  const eventCameraState=(dir,time,aspect=1.3,type=event.type,seq=sequence,style=finish,action=keeperAction)=>cameraState(dir,time,aspect,type,seq,style,action,placement);
@@ -937,6 +1040,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // V21.195 drama: a late equaliser or winner (88th minute on) brings the
  // whole nearby team running to the scorer and its own headline.
  const lateDrama=lateGoalDrama(event);
+ // V21.226: walk-out and final whistle reuse this stadium and squad.
+ const ceremony=ceremonyKind(event),ceremonyDraw=event.result==='draw';
+ const crowdType=ceremony?(ceremony==='fulltime'&&ceremonyDraw?'ceremony_draw':'ceremony_'+ceremony):event.type;
  const celebrationActive=event.type==='goal'&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
  const celebrationKey=`${event.matchId??''}|${event.id??''}|${event.minute??''}|${event.playerName??''}`;
@@ -981,6 +1087,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // goal-line clearances stay in the normal TV picture; only the scorer
  // close-up after a goal and the set-piece TV angles remain.
  function stagedPlayerPosition(index,time,type=event.type,seq=sequence){
+  if(ceremony){const a=ceremonyActor(ceremony,index,time,{draw:ceremonyDraw});return[a.x,a.z]}
   const original=defensiveUnit?defensiveUnit.position(index,time):playerPosition(index,time,type,seq,placement,finish);
   if(lineClearer&&index===lineClearer.index){
    // The covering defender sprints back onto the line and blocks the shot there.
@@ -1036,10 +1143,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    });map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
    const material=track(new THREE.MeshStandardMaterial({map,roughness:.92,metalness:0}));shirtMaterials.set(key,material);return material;
   }
-  const hemi=new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
-  const sun=new THREE.DirectionalLight('#fff5df',2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
+  const hemi=spooky?new THREE.HemisphereLight('#a596d6','#241a12',1.0):new THREE.HemisphereLight('#dce9f7','#31422a',1.3);scene.add(hemi);
+  const sun=new THREE.DirectionalLight(spooky?'#ffe2c2':'#fff5df',spooky?2.7:2.75);sun.position.set(-35,65,10);sun.target.position.set(0,0,-28*direction);scene.add(sun,sun.target);sun.castShadow=!weak;
   sun.shadow.mapSize.set(high?2048:1024,high?2048:1024);Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:160});sun.shadow.bias=-.00018;sun.shadow.normalBias=.018;
-  const fill=new THREE.DirectionalLight('#c6ddff',weak?.24:.48);fill.position.set(40,18,-50);scene.add(fill);
+  const fill=new THREE.DirectionalLight(spooky?'#a070ff':'#c6ddff',(weak?.24:.48)*(spooky?1.6:1));fill.position.set(40,18,-50);scene.add(fill);
 
   // One 1024px map covers the playing surface: visible mowing, broad soil/grass
   // variation and fine blade noise survive mip filtering without extra planes.
@@ -1055,7 +1162,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     data[i]=63+n*.67;data[i+1]=120+n;data[i+2]=38+n*.45;data[i+3]=255;
    }ctx.putImageData(pixels,0,0);
   });grass.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
+  const pitch=mesh(track(new THREE.PlaneGeometry(78,119)),track(new THREE.MeshStandardMaterial({map:grass,roughness:1,color:spooky?'#dcd8e6':'#ffffff'})));pitch.rotation.x=-Math.PI/2;pitch.position.y=-.025;pitch.receiveShadow=true;
   const contactTexture=canvasTexture(64,64,(ctx,w,h)=>{const gradient=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);gradient.addColorStop(0,'rgba(5,12,4,.6)');gradient.addColorStop(.3,'rgba(5,12,4,.35)');gradient.addColorStop(1,'rgba(5,12,4,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h)});
   const contactMaterial=track(new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,opacity:weak?.80:.58,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));
   // Surface ribbons; LOW widens them slightly to survive its subpixel sampling.
@@ -1075,7 +1182,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(weak){const edges=track(new THREE.BufferGeometry());edges.setAttribute('position',new THREE.Float32BufferAttribute(markingCenters,3));field.add(new THREE.LineSegments(edges,track(new THREE.LineBasicMaterial({color:'#eff1db'}))))}
   function goal(z,sign){
    const g=new THREE.Group();field.add(g);g.position.z=z;g.rotation.y=sign===-1?0:Math.PI;
-   const posts=mat('#f7faf7');for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak}
+   const posts=mat('#f7faf7'),uprights=[];for(const x of [-3.66,3.66]){const p=mesh(geo('post',()=>new THREE.CylinderGeometry(.06,.06,2.5,12)),posts,g);p.position.set(x,1.22,0);p.castShadow=!weak;uprights.push(p)}
    const bar=mesh(geo('bar',()=>new THREE.CylinderGeometry(.06,.06,7.44,12)),posts,g);bar.position.y=2.44;bar.rotation.z=Math.PI/2;bar.castShadow=!weak;
    const net=[],seg=(a,b)=>net.push(...a,...b);
    for(let x=-3.66;x<=3.67;x+=.244){seg([x,0,-1.9],[x,2.44,-1.9]);seg([x,2.44,-1.9],[x,2.44,0])}
@@ -1087,7 +1194,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const fg=track(new THREE.BufferGeometry());fg.setAttribute('position',new THREE.Float32BufferAttribute(frame,3));g.add(new THREE.LineSegments(fg,track(new THREE.LineBasicMaterial({color:'#e2e5db'}))));
    const ng=track(new THREE.BufferGeometry());ng.setAttribute('position',new THREE.Float32BufferAttribute(net,3));const base=new Float32Array(net);
    const nm=track(new THREE.LineBasicMaterial({color:'#edf0e7',transparent:true,opacity:weak?.46:.56,depthWrite:false}));g.add(new THREE.LineSegments(ng,nm));
-   return{geometry:ng,base};
+   return{geometry:ng,base,bar,uprights};
   }
   const net=goal(-52.5,-1);goal(52.5,1);
 
@@ -1153,7 +1260,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   const crowdStatic=crowdGroup(crowdStaticSpecs,false),crowdDynamic=crowdGroup(crowdDynamicSpecs,true);
   function writeCrowdFan(spec,i,group,time=0,paint=false){
-   const reaction=group.dynamic?crowdReactionState(event.type,event.team,spec.team,time):{suspense:0,mood:0};
+   const reaction=group.dynamic?crowdReactionState(crowdType,event.team,spec.team,time):{suspense:0,mood:0};
    const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.35+spec.loop*.41)+spec.phase):0;
    const cheerBeat=group.dynamic?Math.abs(Math.sin(time*(4.25+spec.loop*.55)+spec.phase)):0;
    const jump=cheerBeat*positive*.34,bob=wave*.045+jump+reaction.suspense*.055;
@@ -1204,7 +1311,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   flagPole.frustumCulled=flagCloth.frustumCulled=false;flagCloth.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(flagPole,flagCloth);track(flagPole);track(flagCloth);
   function writeFlag(spec,i,time=0,paint=false){
    crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.75+spec.scale*.72,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
-   const reaction=crowdReactionState(event.type,event.team,spec.team,time),baseWave=time*(2.25+spec.scale*.42)+spec.phase,amp=.12+reaction.suspense*.13+Math.max(0,reaction.mood)*.34;
+   const reaction=crowdReactionState(crowdType,event.team,spec.team,time),baseWave=time*(2.25+spec.scale*.42)+spec.phase,amp=.12+reaction.suspense*.13+Math.max(0,reaction.mood)*.34;
    for(let segment=0;segment<flagSegments;segment++){
     const index=i*flagSegments+segment,wave=Math.sin(baseWave+segment*.72),previous=Math.sin(baseWave+(segment-1)*.72),bend=(wave-previous)*amp;
     crowdDummy.position.set(spec.x+(.38+segment*.62)*spec.scale+wave*amp*(.18+.12*segment),spec.y+.56+.36*spec.scale+Math.abs(wave)*amp*.09,spec.z-(spec.team==='home'?-1:1)*(.03+segment*.012));
@@ -1220,17 +1327,76 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const banner=mesh(track(new THREE.PlaneGeometry(12,.72)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})),scene);banner.position.set(0,.62,z);banner.rotation.y=z<0?0:Math.PI;return banner;
   }
   const supporterBanners=[supporterBanner(crowdKits.home,-58.15),supporterBanner(crowdKits.away,58.15)];
+  // V21.226 (Basti): flares and smoke in the scoring team's stands after a
+  // goal; on big nights (Champions) a tifo over the main stand at the walk-out.
+  // Scene space: the far stand is world -x, the attacked goal's end -z*direction.
+  const bigNight=ceremony==='kickoff'&&event.bigMatch===true;
+  const pyro=(()=>{
+   if(event.type!=='goal'&&!bigNight)return null;
+   const fanKit=event.team==='away'?crowdKits.away:crowdKits.home;
+   const glow=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,250,225,1)');g.addColorStop(.18,'rgba(255,170,90,.95)');g.addColorStop(.45,'rgba(255,60,25,.42)');g.addColorStop(1,'rgba(255,40,10,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const puff=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(.55,'rgba(255,255,255,.42)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const flareMaterial=track(new THREE.SpriteMaterial({map:glow,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+   const smokeColour=new THREE.Color(fanKit.shirt).lerp(new THREE.Color('#9aa1a3'),.55);
+   const smokeMaterial=track(new THREE.SpriteMaterial({map:puff,color:smokeColour,transparent:true,opacity:.34,depthWrite:false}));
+   const scorerAt=actorPosition(0,IMPACT_TIME+1.6),scorerWorld=event.type==='goal'?worldPosition([scorerAt[0],0,scorerAt[1]],direction):[0,0,0];
+   const spots=[];
+   // Goals: the far stand behind the scorer's close-up. Walk-out: the main
+   // stand the players walk towards, seen behind them in the opening shot.
+   const side=event.type==='goal'?-1:1;
+   for(let k=0;k<(weak?5:8);k++){
+    const row=2+Math.floor(hash(k*13+7)*6),z=clamp(scorerWorld[2]+(k/(weak?4:7)-.5)*26+(hash(k*17+3)-.5)*2.4,-54,54);
+    spots.push([side*(39.3+row*1.42),1.13+row*.72+1.55,z]);
+   }
+   if(event.type==='goal')for(let k=0;k<(weak?3:5);k++){
+    const row=2+Math.floor(hash(k*19+5)*5);
+    spots.push([-18+k*9+(hash(k*23+1)-.5)*3,1.13+row*.72+1.55,-direction*(59.4+row*1.42)]);
+   }
+   const items=spots.map((at,k)=>{
+    const flare=new THREE.Sprite(flareMaterial);flare.position.set(...at);flare.renderOrder=12;scene.add(flare);
+    const smoke=[0,1].map(n=>{const sprite=new THREE.Sprite(smokeMaterial);sprite.renderOrder=11;scene.add(sprite);return sprite});
+    return{at,flare,smoke,start:(event.type==='goal'?netArrival+.25:0)+hash(k*29+11)*.9,phase:hash(k*31+5)*6.3};
+   });
+   function update(time){
+    for(const item of items){
+     const on=time>=item.start,u=time-item.start;item.flare.visible=on;
+     for(const sprite of item.smoke)sprite.visible=on;
+     if(!on)continue;
+     const flicker=.82+.18*Math.sin(u*31+item.phase)*Math.sin(u*17.3+item.phase*2);
+     item.flare.scale.setScalar(1.8*smooth(u/.3)*flicker);
+     item.smoke.forEach((sprite,n)=>{const age=(u+n*1.6)%3.2,grow=age/3.2;
+      sprite.position.set(item.at[0]+Math.sign(item.at[0])*grow*1.2,item.at[1]+.4+grow*3.4,item.at[2]+Math.sin(item.phase+grow*2)*.5);
+      sprite.scale.setScalar(1.6+grow*4.4);sprite.material.opacity=.46;});
+    }
+   }
+   update(-1);return{update};
+  })();
+  const tifo=bigNight?(()=>{
+   const kit=crowdKits.home,club=String(event.homeName||'FOOTERA').toUpperCase();
+   const tex=canvasTexture(1024,320,(ctx,w,h)=>{
+    for(let i=0;i<12;i++){ctx.fillStyle=i%2?kit.shirtSecondary:kit.shirt;ctx.fillRect(i*w/12,0,w/12+1,h)}
+    ctx.fillStyle='#00000030';ctx.fillRect(0,h*.30,w,h*.38);
+    // The walk-out shot sees about the middle third of the stand: keep the text there.
+    ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
+    let size=92;ctx.font=`italic 900 ${size}px system-ui`;while(size>34&&ctx.measureText(club).width>w*.36){size-=4;ctx.font=`italic 900 ${size}px system-ui`}
+    ctx.fillText(club,w/2,h*.49);ctx.font='800 26px system-ui';ctx.globalAlpha=.92;ctx.fillText('BUILD YOUR ERA',w/2,h*.62);ctx.fillText('★ ★ ★',w/2,h*.22);
+   });
+   const slope=Math.atan(.72/1.42),plane=mesh(track(new THREE.PlaneGeometry(58,17.6)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false,color:'#d8d8d8'})),scene);
+   // Over the main stand, behind the tunnel: the backdrop of the walk-out shot.
+   plane.rotation.set(-slope,-Math.PI/2,0,'YXZ');plane.position.set(47.1,6.7,0);return plane;
+  })():null;
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
    if(crowdDetailReduced)return;
-   const cadence=weak?.18:mobileStandard?.11:.085;if(!force&&lastCrowdUpdate>=0&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
+   const cadence=weak?.18:mobileStandard?.11:.085;if(!force&&lastCrowdUpdate>=0&&time>=lastCrowdUpdate&&time-lastCrowdUpdate<cadence)return;lastCrowdUpdate=time;
    crowdDynamic.specs.forEach((spec,i)=>writeCrowdFan(spec,i,crowdDynamic,time,false));
    for(const mesh of [crowdDynamic.torso,crowdDynamic.head,crowdDynamic.arms,crowdDynamic.legs])mesh.instanceMatrix.needsUpdate=true;
    flagSpecs.forEach((spec,i)=>writeFlag(spec,i,time,false));flagCloth.instanceMatrix.needsUpdate=true;
   }
   // Two shared high-contrast textures; anisotropic mip filtering
   // keeps the touchline text stable at acute camera angles without shimmer.
-  const adMaterials=['footera','instagram'].map(kind=>{
+  const adKinds=spooky?['footera','halloween','instagram']:['footera','instagram'];
+  const adMaterials=adKinds.map(kind=>{
    const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
    tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
    tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;
@@ -1249,7 +1415,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const adgeo=geo('ad',()=>new THREE.PlaneGeometry(12.96,1.5));
   function advertisingPanel(x,z,rotation,index){
    const backing=box(13.04,1.58,.16,'#10191c',x,.84,z,scene);backing.rotation.y=rotation;
-   const ad=mesh(adgeo,adMaterials[index%2],scene);
+   const ad=mesh(adgeo,adMaterials[index%adMaterials.length],scene);
    ad.position.set(x+Math.sin(rotation)*.085,.84,z+Math.cos(rotation)*.085);
    ad.rotation.y=rotation;staticBoxes.push(ad);
   }
@@ -1257,6 +1423,35 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let z=-45.5,i=0;z<=45.5;z+=13,i++)advertisingPanel(side*37,z,-side*Math.PI/2,i);
    for(let x=-26,i=0;x<=26;x+=13,i++)advertisingPanel(x,side*57,side===-1?0:Math.PI,i+(side===-1?1:0));
    for(const z of [-61,61]){box(.35,20,.35,'#7d8b8c',side*47,10,z,scene);const lights=box(5,1.1,.25,'#f1f4de',side*47,19.3,z,scene);lights.rotation.y=-side*.5}
+  }
+  // Halloween night: carved jack-o'-lanterns in front of the boards, a blood moon over the far stand.
+  if(spooky){
+   const faceTex=canvasTexture(128,128,(ctx,w,h)=>{
+    const g=ctx.createRadialGradient(w/2,h/2,4,w/2,h/2,w/2);g.addColorStop(0,'#fff2a0');g.addColorStop(1,'#ffb020');ctx.fillStyle=g;
+    for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(w/2+s*10,h*.46);ctx.lineTo(w/2+s*24,h*.22);ctx.lineTo(w/2+s*38,h*.46);ctx.fill()}
+    ctx.beginPath();ctx.moveTo(w*.18,h*.58);ctx.lineTo(w*.32,h*.66);ctx.lineTo(w*.42,h*.58);ctx.lineTo(w*.5,h*.68);ctx.lineTo(w*.58,h*.58);ctx.lineTo(w*.68,h*.66);ctx.lineTo(w*.82,h*.58);ctx.lineTo(w*.66,h*.84);ctx.lineTo(w*.34,h*.84);ctx.fill();
+   });
+   const faceMat=track(new THREE.MeshBasicMaterial({map:faceTex,transparent:true,toneMapped:false,depthWrite:false}));
+   const bodyMat=track(new THREE.MeshStandardMaterial({color:'#f07015',roughness:.62,emissive:'#ff4a00',emissiveIntensity:.28}));
+   const stemMat=mat('#3d5a12');
+   const bodyGeo=geo('pumpkin',()=>{const g=new THREE.SphereGeometry(.5,weak?10:16,weak?8:12),p=g.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),a=Math.atan2(z,x),rib=1-.06*Math.abs(Math.cos(a*4));p.setXYZ(i,x*rib,p.getY(i)*.74,z*rib)}g.computeVertexNormals();return g});
+   const faceGeo=geo('pumpkin-face',()=>new THREE.PlaneGeometry(.62,.5));
+   const stemGeo=geo('pumpkin-stem',()=>new THREE.CylinderGeometry(.045,.07,.2,6));
+   const glowTex=canvasTexture(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,140,40,.55)');g.addColorStop(1,'rgba(255,90,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const glowMat=track(new THREE.SpriteMaterial({map:glowTex,transparent:true,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));
+   function pumpkin(x,z,face,scale=1){
+    const root=new THREE.Group();root.position.set(x,.36*scale,z);root.rotation.y=face;root.scale.setScalar(scale);scene.add(root);
+    root.add(new THREE.Mesh(bodyGeo,bodyMat));
+    const f=new THREE.Mesh(faceGeo,faceMat);f.position.set(0,.02,.38);root.add(f);
+    const st=new THREE.Mesh(stemGeo,stemMat);st.position.set(0,.43,0);st.rotation.z=.2;root.add(st);
+    const glow=new THREE.Sprite(glowMat);glow.scale.set(2.4,2.4,1);glow.position.set(0,.05,.5);root.add(glow);
+   }
+   for(const side of [-1,1]){
+    for(let z=-52,i=0;z<=52;z+=6.5,i++)if(i%2===0)pumpkin(side*35.9,z+(hash(i*7+side)-.5)*1.2,-side*Math.PI/2+(hash(i*11)-.5)*.5,.85+hash(i*5+3)*.4);
+    for(let x=-30,i=0;x<=30;x+=7.5,i++)pumpkin(x+(hash(i*13)-.5),side*55.8,side<0?0:Math.PI,.85+hash(i*3+side)*.35);
+   }
+   const moonTex=canvasTexture(256,256,(ctx,w,h)=>{const g=ctx.createRadialGradient(w*.5,h*.5,w*.18,w*.5,h*.5,w*.5);g.addColorStop(0,'rgba(255,214,150,1)');g.addColorStop(.36,'rgba(255,140,50,1)');g.addColorStop(.4,'rgba(255,110,30,.45)');g.addColorStop(1,'rgba(255,80,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.fillStyle='rgba(150,60,20,.22)';for(const [x,y,r] of [[.42,.44,.05],[.56,.55,.035],[.47,.6,.03],[.58,.4,.025]]){ctx.beginPath();ctx.arc(w*x,h*y,w*r,0,Math.PI*2);ctx.fill()}});
+   const moon=new THREE.Sprite(track(new THREE.SpriteMaterial({map:moonTex,transparent:true,depthWrite:false,fog:false,toneMapped:false})));moon.scale.set(70,70,1);moon.position.set(-150,62,-40);scene.add(moon);
   }
   // Player draw calls are batched below. Each bone retains its own articulation.
   const batches=new Map(),parts=[];
@@ -1340,20 +1535,28 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const defaultNumbers=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20];
   const squadNumbers=defaultNumbers.map((fb,i)=>{const n=Number(event.shirtNumbers?.[i]);return Number.isInteger(n)&&n>=1&&n<=99?n:fb});
   const keeperNumber=Number(event.keeperShirtNumber);
-  const squadNames=RUNS.map((r,i)=>i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i);
+  const squadNames=RUNS.map((r,i)=>ceremony&&event.squadNames?.[i]?event.squadNames[i]:i===0?event.playerName:i===defenderIndex&&event.defenderName?event.defenderName:'footballer '+i);
   const players=RUNS.map((r,i)=>player(r.team==='attack'?attackKit:defendKit,
    squadNames[i],false,detailedActors.has(i),squadNumbers[i],i===0,event.playerSkinTones?.[i]));
   const keeper=player({shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper},event.keeperName||'goalkeeper',true,true,Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,true,event.keeperSkinTone);
   const buildKeeper=extended==='keeper_buildout'?player({shirt:'#e8b545',shirtSecondary:'#e8b545',pattern:'solid',shorts:'#273a37',socks:'#e8b545'},event.buildKeeperName||'Aufbau-Torwart',true,true,1,false,event.buildKeeperSkinTone):null;
+  // V21.226 (Basti): a late winner sends the substitutes, in training bibs,
+  // sprinting onto the pitch to the scorer. Only in the close-up after the cut.
+  const benchStorm=lateDrama==='winner'&&celebrationActive;
+  const benchBib=(()=>{const c=new THREE.Color(attackKit.shirt);return c.g>.6&&c.r>.55&&c.b<.45?'#ff6a1f':'#d8ff3a'})();
+  const benchKit={shirt:benchBib,shirtSecondary:benchBib,pattern:'solid',shorts:attackKit.shorts,socks:attackKit.socks};
+  const benchNumbers=[12,14,19,22],benchSkins=['2','4','1','5'];
+  const bench=benchStorm?Array.from({length:BENCH_RUNNERS},(_,k)=>player(benchKit,'',false,!weak,benchNumbers[k],false,benchSkins[k])):[];
+  const benchImported=bench.map(()=>null),benchFrames=bench.map(()=>null),benchStates=bench.map(()=>({arms:0,rootY:0}));
   // Use a single CC0 source and one skeleton clone for EACH visible player.
   // Original animation drivers and pre-kickoff home/away kit selection remain authoritative.
   const humanSquad=allowImported&&!baselineRig&&modelVariant==='human'&&isFooteraHumanModelReady();
   const squadVariant=humanSquad?'human':'quaternius';
   const allQuaternius=humanSquad||allowImported&&!baselineRig&&modelVariant==='quaternius'&&isFooteraPlayerModelReady();
   // Real names only on real players; the club crest on the scoring team's chest.
-  const squadCrest=footeraCrestImageNow(event.teamCrestHTML);
-  const humanLook=(i,number,skinTone)=>({number,skinTone:resolvePlayerSkinTone(skinTone),
-   shirtName:/^footballer /.test(squadNames[i]||'')?'':undefined,crest:RUNS[i]?.team==='attack'?squadCrest:null});
+  const squadCrest=footeraCrestImageNow(event.teamCrestHTML),opponentCrest=ceremony?footeraCrestImageNow(event.defendCrestHTML):null;
+  const humanLook=(i,number,skinTone)=>({number,skinTone:resolvePlayerSkinTone(skinTone),custom:event.playerLooks?.[i]||null,
+   shirtName:/^footballer /.test(squadNames[i]||'')?'':undefined,crest:RUNS[i]?.team==='attack'?squadCrest:opponentCrest});
   const importedPlayers=new Array(players.length).fill(null);
   let importedPlayer=null,importedKeeper=null;
   const fallbackKitAtlases=new Map();
@@ -1391,11 +1594,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const keeperKit={shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper};
      importedKeeper=mountFooteraPlayerModel(keeper.root,keeper,keeperKit,event.keeperName||'Goalkeeper',
       !weak,squadVariant,null,{number:Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,
-       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417'});
+       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417',custom:event.keeperLook||null});
      if(!importedKeeper)throw new Error('GLB unavailable on goalkeeper');
      staged.push(importedKeeper);
      players.forEach(p=>hideOriginal(p));
      hideOriginal(keeper,true); // preserve existing glove contact meshes
+     // Substitutes are optional: a failed mount keeps their simple figure.
+     bench.forEach((actor,k)=>{try{
+      const glb=mountFooteraPlayerModel(actor.root,actor,benchKit,'',false,squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(benchKit,benchNumbers[k],benchSkins[k]),
+       {number:benchNumbers[k],skinTone:resolvePlayerSkinTone(benchSkins[k]),shirtName:''});
+      if(glb){benchImported[k]=glb;hideOriginal(actor)}
+     }catch(error){console.warn('Footera bench model fallback:',error)}});
     }else{
      const glb=mountFooteraPlayerModel(players[0].root,players[0],attackKit,event.playerName,!weak,modelVariant);
      if(!glb)throw new Error('Diagnostic GLB unavailable');
@@ -1413,6 +1622,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // V21.184: broadcast light and fabric only where the real GLB squad is shown.
   if(importedPlayer&&!weak)track(applyBroadcastLook(scene,renderer,{high}));
+  if(spooky)renderer.toneMappingExposure=1.06;
   // Motion 2.2 shapes first touch, mirrored cuts and finesse preparation.
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
   const motion2CutAnchor=motion2Active?runPosition(0,3.08,sequence):null;
@@ -1457,7 +1667,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let i=0;i<2;i++){
     const g=runningLeg(stride+i*Math.PI,speed,p.gait[i]),side=i?1:-1,brace=1-.74*g.swingWeight;
     // Keep the IK stride authoritative. Clip reach adds nuance, not a second lunge.
-    p.legs[i].rotation.x=g.hip*motion*d.strideReach*Math.min(1.045,c.reach);
+    // V21.208: compact reach only shapes the swing; a planted boot never slides.
+    p.legs[i].rotation.x=g.hip*motion*mix(1,d.strideReach*Math.min(1.045,c.reach),g.swingWeight);
     p.knees[i].rotation.x=g.knee*motion;
     p.ankles[i].rotation.x=g.ankle*motion;
     // A support leg braces during a cut while the free leg pushes through.
@@ -1485,7 +1696,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // the feint, cut and shot preparation for these finesse sequences.
     if(!(motion2Active&&p===players[0]))
      applyLabMotion(p,role,time,sequence,speed,turn,stride,acceleration,ballDistance);
-    if(controlWeight>.001){applyFootballControl(p,stride,controlWeight,sequence);applyTouchContinuity(p,stride,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
+    // V21.208: the swinging boot touches the ball; the planted one stays put.
+    if(controlWeight>.001){applyFootballControl(p,stride+Math.PI,controlWeight,sequence);applyTouchContinuity(p,stride+Math.PI,controlWeight,p===players[0]?event.playerStyles:event.creatorStyles)}
    }else if(enhancedRigMotion&&p.skinned&&p===players[0]&&!isolatedDefender){animateAthleticRun(p,speed,turn,stride,acceleration,controlWeight);applyRunningMocap(p,time,speed,stride);if(p===players[0])applyVisibleInvertedCut(p,time,sequence)}
    // Also pose the existing instanced winger: no extra skeleton/draw call.
    if(enhancedRigMotion&&(p===players[0]||p===players[1])&&!pilotMotion)
@@ -1493,7 +1705,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Arc-length gait avoids sliding or a phase jump when the runner accelerates.
   // Tables are built once; playback only reads two floats per actor.
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),speed=clamp(distance/dt/6.5),strideLength=runningStrideLength(speed);a[j]=a[j-1]+distance*Math.PI*2/strideLength;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
+  // V21.208: steps follow the path actually shown (actorPosition) and the
+  // effort-scaled reach of pose(), so planted boots stop sliding when slow.
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();
@@ -1594,8 +1808,67 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    {speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish}]));
   const sampleParticipantClip=capturedParticipantIndices.length?createGlbClipLayer():null;
   let capturedParticipantActive=0;
-  function update(time){
+  // V21.226 ceremonies: walk-out and final whistle. Locomotion, footwork and
+  // the GLB squad as in play; authored poses for line-up, joy and despair.
+  const ceremonyStates=ceremony?[...players,keeper].map(()=>({arms:0,rootY:0})):[];
+  const keeperCeremonyStride=ceremony?(()=>{const table=new Float32Array(105);let prev=ceremonyActor(ceremony,16,0,{draw:ceremonyDraw});
+   for(let j=1;j<=104;j++){const next=ceremonyActor(ceremony,16,j*DURATION/104,{draw:ceremonyDraw}),d=Math.hypot(next.x-prev.x,next.z-prev.z);table[j]=table[j-1]+d*Math.PI*2/runningStrideLength(clamp(d/(DURATION/104)/6.5));prev=next}
+   return t=>{const x=clamp(t/DURATION)*104,i=Math.min(103,Math.floor(x));return mix(table[i],table[i+1],x-i)}})():null;
+  function poseCeremonyActor(p,index,time,frame){
+   const a=ceremonyActor(ceremony,index,time,{draw:ceremonyDraw}),b=ceremonyActor(ceremony,index,Math.max(0,time-.05),{draw:ceremonyDraw}),c=ceremonyActor(ceremony,index,time+.05,{draw:ceremonyDraw});
+   const speed=clamp(Math.hypot(c.x-b.x,c.z-b.z)/(time<.05?.05:.1)/6.5),keeperActor=index===16;
+   const stride=keeperActor?keeperCeremonyStride(time):gaitPhase(index,time);
+   pose(p,a.x,a.z,time,speed,a.heading,0,stride,0,0,99);
+   if(enhancedRigMotion&&!keeperActor&&index)applySquadLocomotion(p,index,time,speed,0,stride,0,99);
+   if(enhancedRigMotion)applyFootwork(p,time,speed,0,0,stride,1);
+   const state=ceremonyStates[index];
+   frame.speed=speed;frame.turn=0;frame.acceleration=0;frame.control=0;frame.stride=stride;frame.grounded=true;
+   if(a.pose&&a.weight>.002){
+    applyCelebrationPose(p,a.pose,a.s,state,a.weight);
+    frame.celebrate=state.arms;frame.rootY=state.rootY;frame.celebration=state;
+   }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
+  }
+  function updateCeremony(time){
+   players.forEach((p,i)=>poseCeremonyActor(p,i,time,i===0?importedMotionFrame:squadMotionFrames[i]));
+   poseCeremonyActor(keeper,16,time,keeperMotionFrame);
+   ball.visible=ceremony==='kickoff';ballRing.visible=false;ballShadow.visible=ball.visible;
+   ball.position.set(0,.11,0);ballShadow.position.set(0,.019,0);ballShadow.scale.setScalar(1);
+   importedPlayer?.animate(time,importedMotionFrame);
+   for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
+   importedKeeper?.animate(time,keeperMotionFrame);
+   updateCrowd(time);pyro?.update(time);
+   const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
+   camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
+   lastCameraTime=time;
+   camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
+   scene.updateMatrixWorld(true);
+   for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
+   renderer.render(scene,camera);
+  }
+  // Substitutes on a late winner: sprint in from the halfway side once the
+  // picture has cut to the scorer, then jump on the pile.
+  const BENCH_START=CELEBRATION_CUT,BENCH_RUN=1.8;
+  const benchTarget=bench.length?actorPosition(0,BENCH_START+BENCH_RUN):null;
+  function updateBench(time){
+   bench.forEach((p,k)=>{
+    const frame=benchFrames[k]||(benchFrames[k]={...importedMotionFrame,celebrate:0,rootY:null,celebration:null});
+    if(time<BENCH_START){resetPose(p);p.root.position.set(0,-60,0);benchImported[k]?.animate(time,frame);return}
+    const at=t=>benchRunner(k,t,BENCH_START,benchTarget,direction),q=at(time),b=at(time-.04),c=at(time+.04);
+    const dx=c[0]-b[0],dz=c[1]-b[1],speed=clamp(Math.hypot(dx,dz)/.08/6.5);
+    const scorer=actorPosition(0,time),heading=Math.hypot(dx,dz)>.004?Math.atan2(-dx,-dz):Math.atan2(-(scorer[0]-q[0]),-(scorer[1]-q[1]));
+    const from=at(BENCH_START),stride=Math.hypot(q[0]-from[0],q[1]-from[1])*Math.PI*2/2.7;
+    pose(p,q[0],q[1],time,speed,heading,0,stride,0,0,99);
+    if(enhancedRigMotion)applyFootwork(p,time,speed,0,0,stride,1);
+    frame.speed=speed;frame.stride=stride;frame.grounded=true;
+    const s=time-(BENCH_START+BENCH_RUN-.25);
+    if(s>0){applyCelebrationPose(p,k%2?'cheer':k?'hug_right':'hug_left',s,benchStates[k]);frame.celebrate=benchStates[k].arms;frame.rootY=benchStates[k].rootY;frame.celebration=benchStates[k]}
+    else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
+    benchImported[k]?.animate(time,frame);
+   });
+  }
+  function update(time,{replay=false}={}){
    renderTime=time;
+   if(ceremony){updateCeremony(time);return}
    // Seek rather than increment mixer clocks: stable on skip, replay and
    // deterministic screenshots. No impact on match outcome/timeline.
    if(players[0].skeletonMotion)players[0].skeletonMotion.mixer.setTime(time);
@@ -1912,7 +2185,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
-   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=eventShotImpact('goal',sequence,finish)[1],netX=eventShotImpact('goal',sequence,finish)[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
+   // The woodwork rattles when a goal goes in off the bar or the post.
+   if(event.type==='goal'&&placement?.style&&placement.style!=='top_corner'){
+    const t=time-(netArrival-goalNetDelay(placement)),shake=t>0&&t<1.2?Math.sin(t*46)*Math.exp(-t*4.5):0;
+    if(placement.style==='crossbar_in')net.bar.position.y=2.44+.035*shake;
+    else{const post=net.uprights[(Math.sign(eventShotImpact('goal')[0])||1)>0?1:0];post.position.x=Math.sign(post.position.x)*3.66+.03*shake}
+   }
+   if(event.type==='goal'&&!labDuelPreview&&time>=netArrival&&time<netArrival+1.5){const t=time-netArrival;for(let i=0;i<positions.count;i++){const x=net.base[i*3],y=net.base[i*3+1],z=net.base[i*3+2],netY=netPoint[1],netX=netPoint[0],influence=Math.exp(-((x-netX)**2+(y-netY)**2)*.8)*(z<-1?1:0);positions.array[i*3+2]=z-Math.sin(t*16)*Math.exp(-t*3)*.28*influence}positions.needsUpdate=true}
    if(extended){
     // Keep the same grounded gait as ordinary play; never disable the GLB
     // locomotion while moving sixteen footballers across the pitch.
@@ -1951,6 +2230,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState);
     importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;importedMotionFrame.celebration=celebrationState;
    }
+   if(bench.length)updateBench(time);
    for(const h of huggers){
     const frame=squadMotionFrames[h.index],u=hugWeight(h.index,time);
     if(u>.8){
@@ -1958,10 +2238,29 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
    }
+   // V21.208: the overhead kick turns the scorer's back to goal until he is up.
+   const bike=finish==='bicycle'&&event.type!=='ball_won'&&!extended?bicycleKickPose(time):null;
+   importedMotionFrame.acrobatic=bike;
+   if(bike){
+    const [sx,sz]=runPosition(0,SHOT_TIME,sequence),aim=eventShotImpact(event.type,sequence,finish),away=Math.atan2(sx-aim[0],sz-aim[2])+Math.PI;
+    const from=players[0].root.rotation.y,turn=Math.atan2(Math.sin(away-from),Math.cos(away-from));
+    players[0].root.rotation.y=from+turn*bike.weight;
+   }
+   // V21.208 (Basti): the support boot is planted beside the ball and stays
+   // there while the body runs over it; it used to glide along with the hips.
+   const plant=event.type!=='ball_won'&&!['header','volley','bicycle'].includes(finish)?plantFootSample(time):null;
+   if(plant){const p=players[0],h=p.root.rotation.y,fx=-Math.sin(h),fz=-Math.cos(h),rx=Math.cos(h),rz=-Math.sin(h);
+    const [ax,az]=actorPosition(0,SHOT_TIME,event.type,sequence),spot=[ax-.108*rx+.05*fx,az-.108*rz+.05*fz];
+    const hx=p.root.position.x-.108*rx,hz=p.root.position.z-.108*rz,dx=spot[0]-hx,dz=spot[1]-hz;
+    const ahead=dx*fx+dz*fz,aside=dx*rx+dz*rz,down=.94+p.rig.position.y-(.055+plant.lift);
+    const reach=Math.min(.8599,Math.hypot(ahead,down)),bend=Math.acos(reach/.86),hip=Math.atan2(ahead,down)+bend,w=plant.weight;
+    p.legs[0].rotation.x=mix(p.legs[0].rotation.x,hip,w);p.knees[0].rotation.x=mix(p.knees[0].rotation.x,-2*bend,w);
+    p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
+   }
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
-   updateCrowd(time);
+   updateCrowd(time);pyro?.update(time);
    // Extended match scenes must use the exact same stable broadcast track.
    const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect,eventBallPosition(event.type,time)))||broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
@@ -1980,7 +2279,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }else{
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
    }
-   if(celebrationActive&&time>=CELEBRATION_CUT){
+   if(celebrationActive&&time>=CELEBRATION_CUT&&!replay){
     // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
     // drifting slowly as he runs towards it.
     const root=players[0].root.getWorldPosition(celebrationAnchor),k=direction;
@@ -1993,6 +2292,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // V21.195 (Basti): further back and aimed lower, so the whole celebration
     // stays in the upper part of the picture above the result card.
     camTarget.set(root.x,root.y+.6+lift,root.z);camera.fov=30;
+   }
+   if(replay){
+    // V21.226 replay: the same seconds again from high behind the goal.
+    const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp);
+    camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
    }
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
@@ -2016,6 +2320,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   function dispose(){
    boardLogo.onload=null;
    for(const glb of importedPlayers)glb?.dispose();
+   for(const glb of benchImported)glb?.dispose();
    importedKeeper?.dispose();
    for(const actor of [...players,keeper])if(actor.skeletonMotion){
     actor.skeletonMotion.mixer.stopAllAction();actor.skeletonMotion.mixer.uncacheRoot(actor.skeletonMotion.mixer.getRoot());
@@ -2091,14 +2396,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
 }
 export function play(event,signal){
  return new Promise(resolve=>{
-  const host=document.getElementById('matchLiveStage');
+  // V21.246: online friendlies bring their own stage (FooteraHighlights.stage).
+  const host=globalThis.FooteraHighlights?.stage?.()||document.getElementById('matchLiveStage');
+  const stageFrame=host?.closest('#match,#onlineMatch')||document.getElementById('match');
   if(!host||signal.aborted||document.hidden){resolve('skipped');return}
   let renderer,world,observer,raf,timer,done=false,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
   const previousFocus=document.activeElement;
   const layer=document.createElement('div');layer.className='fh3d';layer.setAttribute('data-defense-action',event.defenderAction||'jockey');layer.setAttribute('data-keeper-action',event.keeperAction||'classic');layer.setAttribute('role','region');layer.setAttribute('aria-label','Footera 3D-Highlight');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
   const top=document.createElement('div');top.className='fh3d-top';
-  const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const sub=document.createElement('small');sub.textContent=`LIVE · ${event.minute}'`;brand.append(sub);
+  const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);
+  const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':`LIVE · ${event.minute}'`;brand.append(sub);
   // Always visible while the imported prototype is under assessment.
   // Query parameters can disappear when Android opens an installed PWA, so
   // never gate the actual diagnostic on location.search.
@@ -2108,7 +2416,7 @@ export function play(event,signal){
   modelStatus.setAttribute('data-footera-model-diagnostic','');
   modelStatus.textContent='MODELL PRÜFEN';
   const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,modelStatus,skip);layer.append(top);
-  const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}`;hud.setAttribute('aria-live','polite');
+  const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}${ceremony?' fh3d-hud-'+ceremony:''}`;hud.setAttribute('aria-live','polite');
   const card=document.createElement('div');card.className='fh3d-player-card';
   if(event.playerCardHTML)card.innerHTML=event.playerCardHTML;
   else{
@@ -2124,13 +2432,25 @@ export function play(event,signal){
   const minute=document.createElement('b');minute.className='fh3d-minute';minute.textContent=`${event.minute}'`;
   const crest=document.createElement('div');crest.className='fh3d-team-crest';if(event.teamCrestHTML)crest.innerHTML=event.teamCrestHTML;
   const meta=document.createElement('div');meta.className='fh3d-goal-meta';meta.append(minute,crest);
+  if(ceremony){
+   // Both crests side by side; the final whistle shows the score between them.
+   meta.textContent='';const pair=document.createElement('div');pair.className='fh3d-ceremony-crests';
+   const homeCrest=document.createElement('div');homeCrest.className='fh3d-team-crest';homeCrest.innerHTML=event.teamCrestHTML||'';
+   const awayCrest=document.createElement('div');awayCrest.className='fh3d-team-crest';awayCrest.innerHTML=event.defendCrestHTML||'';
+   if(event.team==='away')pair.append(awayCrest,homeCrest);else pair.append(homeCrest,awayCrest);meta.append(pair);
+  }
   hud.append(card,mark,copy,meta);layer.append(hud);
-  const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null);
+  // V21.226 replay: a FOOTERA wipe in and out and a small WIEDERHOLUNG tag.
+  const replayEligible=event.type==='goal'&&event.replay!==false&&!ceremony;
+  const wipe=document.createElement('div');wipe.className='fh3d-wipe';wipe.setAttribute('aria-hidden','true');wipe.innerHTML='<b>F</b>';
+  const replayTag=document.createElement('span');replayTag.className='fh3d-replay-tag';replayTag.textContent='WIEDERHOLUNG';
+  if(replayEligible)layer.append(wipe,replayTag);
+  const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null)+goalNetDelay(event.shotPlacement||null);
   host.append(layer);
   function finish(result){
    if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
-   const focused=layer.contains(document.activeElement);document.getElementById('match')?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
+   const focused=layer.contains(document.activeElement);stageFrame?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
   function onAbort(){finish('skipped')}
   function onLost(e){e.preventDefault();finish('fallback')}
@@ -2140,7 +2460,10 @@ export function play(event,signal){
   // skip the very-slow 2D fallback; real phones keep both safety nets.
   const realtimeTest=!!globalThis.FOOTERA_TEST_REALTIME_3D;
   const playback=createHighlightPlayback(event,DURATION,realtimeTest?{maxFrameMs:2000}:undefined);
-  timer=setTimeout(()=>finish('fallback'),Math.max(30000,playback.totalSeconds*1000+12000));
+  const replayRange=replayEligible?replayWindow(SHOT_TIME,goalArrival):null,WIPE=.32;
+  const replaySeconds=replayRange?(replayRange.to-replayRange.from)/REPLAY_RATE+WIPE*2:0;
+  let replayState=null;
+  timer=setTimeout(()=>finish('fallback'),Math.max(30000,(playback.totalSeconds+replaySeconds)*1000+12000));
   try{
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,
     // V21.185: Chrome reports 6 GB phones as deviceMemory 4. Only 2-3 GB or
@@ -2174,9 +2497,23 @@ export function play(event,signal){
    // Optional extra device information; the main badge always shows.
    if(modelDiagnostic)modelStatus.title=`3D ${modelInfo.importedVertices||0} vertices · ${modelInfo.importedBones||0} bones · RAM ${memory} · CPU ${cores}`;
    const resize=()=>{const r=canvas.getBoundingClientRect();world.resize(Math.max(1,r.width),Math.max(1,r.height))};resize();observer=new ResizeObserver(resize);observer.observe(layer);
+   function replayFrame(now){
+    const r=replayState;
+    if(r.last!==undefined)r.elapsed+=Math.max(0,Math.min(realtimeTest?2000:100,now-r.last))/1000;r.last=now;
+    hud.classList.remove('visible');
+    if(r.elapsed>=WIPE){
+     if(!r.on){r.on=true;layer.classList.add('fh3d-replay-on')}
+     const time=Math.min(replayRange.to,replayRange.from+(r.elapsed-WIPE)*REPLAY_RATE);
+     if(!r.out||r.elapsed-r.out<WIPE){world.update(time,{replay:true});layer.dataset.playbackTime=time.toFixed(3)}
+     if(time>=replayRange.to&&!r.out){r.out=r.elapsed;layer.classList.remove('fh3d-wipe-in');void wipe.offsetWidth;layer.classList.add('fh3d-wipe-out')}
+     if(r.out&&r.elapsed-r.out>=WIPE){finish('played');return}
+    }
+    raf=requestAnimationFrame(frame);
+   }
    function frame(now){
     if(done)return;
     try{
+     if(replayState){replayFrame(now);return}
      const sample=playback.tick(now);
      if(last&&now-last>45)slowFrames++;if(last&&now-last>250)verySlowFrames++;last=now;frames++;
      if(frames>=24&&verySlowFrames/frames>.65&&!realtimeTest){finish('fallback');return}
@@ -2187,7 +2524,7 @@ export function play(event,signal){
       playback.presented(performance.now());
       last=0;
       layer.classList.add('fh3d-ready');
-      document.getElementById('match')?.classList.add('highlight3d-active');
+      stageFrame?.classList.add('highlight3d-active');
      }
      // Bounded diagnostics: reflect actual sampled poses, not GLB load state.
      // Once per ~20 frames avoids inspecting an entire football scene per RAF.
@@ -2204,9 +2541,11 @@ export function play(event,signal){
      layer.dataset.playbackTime=displayTime.toFixed(3);
      layer.dataset.period=String(event.period);layer.dataset.direction=String(event.attackDirection);layer.dataset.quality=quality;
      // The result card never comes before the ball is actually in the net.
-     const revealAt=event.type==='goal'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
+     const revealAt=ceremony==='kickoff'?CEREMONY_CUT.kickoff+.5:ceremony?.8:event.type==='goal'?Math.max(REVEAL_TIME,goalArrival+.05):REVEAL_TIME;
      if(displayTime>=revealAt&&!name.textContent){
-      if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
+      if(ceremony==='kickoff'){headline.textContent=event.competition||'ANPFIFF';name.textContent=`${event.homeName||'Heim'} – ${event.awayName||'Gast'}`;detail.textContent='Die Teams laufen ein'}
+      else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}
+      else if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
       else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
@@ -2214,7 +2553,11 @@ export function play(event,signal){
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
-     if(sample.done){finish('played');return}raf=requestAnimationFrame(frame);
+     if(sample.done){
+      if(!replayEligible){finish('played');return}
+      replayState={elapsed:0,last:now};layer.classList.add('fh3d-wipe-in');layer.dataset.replay='1';
+     }
+     raf=requestAnimationFrame(frame);
     }catch(_){finish('fallback')}
    }
    raf=requestAnimationFrame(frame);

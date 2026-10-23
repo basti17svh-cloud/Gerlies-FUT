@@ -49,7 +49,7 @@ test('the store provides an odds button for purchased and owned packs',()=>{
  assert.match(html,/id="packOddsModal"[^>]+aria-modal="true"/);
  assert.match(html,/data-pack-odds="\$\{esc\(p\.id\)\}"/);
  assert.match(html,/pack-odds\.js\?v=21121/);
- assert.match(html,/pack-odds-ui\.js\?v=21120/);
+ assert.match(html,/pack-odds-ui\.js\?v=21229/);
  assert.match(html,/pack-odds\.css\?v=21120/);
 });
 

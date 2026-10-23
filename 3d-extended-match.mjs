@@ -1,4 +1,4 @@
-import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21161';
+import {EXTENDED_HIGHLIGHT_TYPES,createExtendedHighlightPlan,sampleExtendedHighlight} from './3d-playbook.mjs?v=21204';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),smooth=v=>{v=clamp(v);return v*v*(3-2*v)},mix=(a,b,u)=>a+(b-a)*u;
 export const EXTENDED_SEQUENCES=[...EXTENDED_HIGHLIGHT_TYPES.map(k=>'extended_'+k),'extended_corner_right'];
 const shots={keeper_buildout:20,turnover_counter:20,corner:10.5,free_kick:8,penalty:9,throw_in:12};
@@ -45,7 +45,7 @@ const RESTART_FORMATIONS={
  },
  free_kick:{
   attack:[null,[-13.3,-36.1],[10.5,-37.1],[-22,-31.5],[20,-32.5],[-7.2,-28],[6.6,-27.4],[-2.8,-33.7]],
-  defend:[[-2.12,-39],[-.70,-39],[.73,-39],[2.16,-39],[-12,-42],[11,-43],[-21.2,-37.5],[18.3,-42]],
+  defend:[[-.84,-39],[-.28,-39],[.28,-39],[.84,-39],[-12,-42],[11,-43],[-21.2,-37.5],[18.3,-42]],
   targets:{attack:[null,[-9.7,-45.2],[7.2,-46.7],[-17.5,-36.9],[16.4,-38.5],[-5.1,-34.5],[6,-35],[-1.9,-41.7]],
    defend:[[-3.8,-42.1],[-.6,-40.7],[1.5,-42.4],[3.4,-41.5],[-10.2,-44.7],[9.6,-45.5],[-19,-39.7],[15.8,-43.5]]}
  },
@@ -150,13 +150,17 @@ export function extendedCamera(seq,time,direction,aspect,ball){
  if(kind==='corner'){target[0]=mix(seq.endsWith('_right')?16:-16,0,smooth(extendedSeconds(seq,time)/10.5));target[2]=-44}
  if(kind==='throw_in'){target[0]=mix(19,0,smooth(extendedSeconds(seq,time)/12));target[2]=mix(-25,-43,smooth(time/5.4))}
  target[0]*=direction;target[2]*=direction;
- // Open-play counters use the ordinary elevated touchline rail and range.
- const distance=40;
+ // Open-play counters use the ordinary elevated touchline rail and range
+ // (V21.205: 34 m, the same as BROADCAST_CAMERA_DISTANCE in the scene).
+ const distance=34;
  const rail=kind==='free_kick'?[39.3,29,50*direction]:[39.3,27,5.8*direction];
  const size=Math.hypot(...rail);
  const position=target.map((v,i)=>v+rail[i]*distance/size);
- const fov=kind==='turnover_counter'?(portrait?42:32):
-  kind==='free_kick'?(portrait?38:35.5):(portrait?29.4:28.6);
+ // V21.205: at 34 m a narrow phone needs a slightly wider, still fixed lens
+ // so the whole goal fits next to the ball (counter) or the taker (free kick).
+ const wide=width=>2*Math.atan(width/aspect)*180/Math.PI;
+ const fov=kind==='turnover_counter'?Math.max(portrait?42:32,wide(.384)):
+  kind==='free_kick'?Math.max(portrait?38:35.5,wide(.355)):(portrait?29.4:28.6);
  return{position,target,fov,distance,phase:extendedPhase(seq,time)?.action||'build'};
 }
 // V21.195 set-piece TV angles, cut in directly (not through the stabilized
@@ -166,11 +170,9 @@ export function extendedCamera(seq,time,direction,aspect,ball){
 export function extendedSetPieceCamera(seq,time,direction,aspect,ball=null){
  const kind=extendedKind(seq),portrait=aspect<1.12;
  const behind=kind==='penalty'&&time<7.7?{from:[1.3,2.45,-31.6],to:[0,1.0,-50.5],fov:portrait?28:25}:
-  kind==='free_kick'&&time<7.3?{from:[-2,3.3,-18],to:[.3,1.2,-46],fov:portrait?31:28}:
-  kind==='corner'&&time>=2.2&&time<7.3?{from:[-31,4.4,-55.4],to:[-3.5,.9,-50.8],fov:portrait?32:28,mirror:seq.endsWith('_right')}:null;
+  kind==='free_kick'&&time<7.3?{from:[-2,3.3,-18],to:[.3,1.2,-46],fov:portrait?31:28}:null;
+ // V21.203 (Basti): corners stay in the normal TV camera, no corner-flag angle.
  if(!behind)return null;
- // At a corner the lens pans with the delivery so the ball never leaves the frame.
- if(kind==='corner'&&ball)behind.to=[mix(behind.to[0],ball[0],.5),mix(behind.to[1],ball[1],.3),mix(behind.to[2],ball[2],.5)];
  const f=v=>[v[0]*(behind.mirror?-1:1)*direction,v[1],v[2]*direction],position=f(behind.from),target=f(behind.to);
  return{position,target,fov:behind.fov,distance:Math.hypot(...position.map((v,i)=>v-target[i])),phase:extendedPhase(seq,time)?.action||'build',shot:'behind-taker'};
 }

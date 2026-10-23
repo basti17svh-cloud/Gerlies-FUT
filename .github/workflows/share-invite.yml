@@ -1,0 +1,36 @@
+name: Footera Share & Invite
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'footera-share.*'
+      - 'footera-app.js'
+      - 'index.html'
+      - 'tests/share-invite.browser.cjs'
+      - '.github/workflows/share-invite.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  share-invite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Share picture, invite link and home-screen hint
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/share-invite.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: share-invite-mobile
+          path: test-artifacts/share-*.png

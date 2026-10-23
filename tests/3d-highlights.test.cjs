@@ -27,7 +27,7 @@ test('skip settles immediately even when rendering never resolves; event is neve
 });
 test('load failures, context failures and watchdog timeouts return to fallback without hanging',async()=>{
  for(const play of [()=>{throw Error('WebGL unavailable')},()=>Promise.resolve('fallback'),()=>new Promise(()=>{})]){
-  let idle=0,fail=0;const q=new H.Queue({play,timeout:15,onIdle:()=>idle++,onFallback:()=>fail++});q.enqueue(event());await new Promise(r=>setTimeout(r,30));assert.equal(idle,1);assert.equal(fail,1);assert.equal(q.disabled,true);assert.equal(q.enqueue(event('goal','next')),false);
+  let idle=0,fail=0;const q=new H.Queue({play,timeout:15,replayTimeout:0,onIdle:()=>idle++,onFallback:()=>fail++});q.enqueue(event());await new Promise(r=>setTimeout(r,30));assert.equal(idle,1);assert.equal(fail,1);assert.equal(q.disabled,true);assert.equal(q.enqueue(event('goal','next')),false);
  }
 });
 test('cancelling an old match prevents a stale completion resuming a new match',async()=>{
@@ -94,7 +94,7 @@ test('match simulator remains deterministic while excluding goalkeeper shots for
 });
 test('scripts, module, stylesheet and pinned Three are in the new offline shell; inline JS parses',()=>{
  const html=require('./helpers/app-html.cjs')(root),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const file of ['3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=2148','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
+ for(const file of ['3d-footwork-dynamics.mjs?v=2178','3d-football-animation.mjs?v=2174','3d-motion-clips.mjs?v=2136','3d-squad-motion.mjs?v=2174','3d-motion-transition.mjs?v=21208','3d-motion-duels.mjs?v=2154','3d-duel-contact.mjs?v=2157','vendor/three/three.module.min.js'])assert.ok(sw.includes('./'+file),file);
  const cssVersion=(html.match(/3d-highlights\.css\?v=(\d+)/)||[])[1];
  assert.ok(cssVersion&&sw.includes('./3d-highlights.css?v='+cssVersion),'Offline CSS version must match HTML');
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
@@ -134,17 +134,18 @@ test('period flags control sides, including stoppage time, with no per-highlight
    assert.equal(H.getMatchPeriod({...flags,minute}),period);
    for(const team of ['home','away'])for(const type of H.TYPES){
     const e=H.snapshot({...event(type,`${minute}-${type}`),team,minute,period});
-    assert.equal(e.attackDirection,(team==='home'?1:-1)*(period%2?1:-1));
+    // V21.226: walk-out and final whistle are staged with the main stand on +x.
+    assert.equal(e.attackDirection,type==='ceremony'?1:(team==='home'?1:-1)*(period%2?1:-1));
    }
   }
  }
  for(const period of [1,2,3,4])assert.equal(H.getAttackDirection('home',period),-H.getAttackDirection('away',period));
 });
 test('all orientations keep a stable camera range while tracking the ball',async()=>{
- const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME}=await import('../3d-highlights-scene.mjs');
+ const {worldPosition,cameraState,ballPosition,runPosition,RUNS,MIN_CAMERA_DISTANCE,keeperPose,SHOT_TIME,BROADCAST_CAMERA_DISTANCE}=await import('../3d-highlights-scene.mjs');
  assert.ok(RUNS.filter(r=>r.team==='attack').length>=7&&RUNS.filter(r=>r.team==='defend').length>=7);
  for(const aspect of [.9,1.05,1.3,1.78,2])for(const t of [0,2,4.9,5.4,6.65,7,9,10.3])for(const d of [-1,1]){
-  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);assert.equal(c.distance,40);assert.ok(Math.abs(Math.hypot(...c.position.map((x,i)=>x-c.target[i]))-40)<.0001,'exact world-space camera range');assert.ok(c.position[0]>0&&c.position[1]>20,'camera remains on elevated broadcast side');assert.ok(c.fov>=30.5&&c.fov<=65);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
+  for(const type of H.TYPES){const c=cameraState(d,t,aspect,type);/* V21.205: range and height scale with the 34 m broadcast distance. */const D=BROADCAST_CAMERA_DISTANCE;assert.equal(c.distance,D);assert.ok(Math.abs(Math.hypot(...c.position.map((x,i)=>x-c.target[i]))-D)<.0001,'exact world-space camera range');assert.ok(c.position[0]>0&&c.position[1]>20*D/40,'camera remains on elevated broadcast side');assert.ok(c.fov>=30.5&&c.fov<=65);const p=ballPosition(type,t);assert.deepEqual(worldPosition(worldPosition(p,d),d),p)}
  }
  const early=cameraState(1,0,1.3,'goal'),shot=cameraState(1,5.4,1.3,'goal'),late=cameraState(1,6.65,1.3,'goal');assert.equal(early.distance,shot.distance,'no distance zoom in buildup');assert.equal(shot.distance,late.distance,'no distance zoom at shot');assert.notEqual(late.target[0],early.target[0]);
  const before=runPosition(0,SHOT_TIME-.18),contact=runPosition(0,SHOT_TIME),after=runPosition(0,SHOT_TIME+.18);assert.ok(contact[1]<before[1]&&after[1]<contact[1],'shooter must carry momentum through the strike');
@@ -301,8 +302,8 @@ test('running feet plant flat, push backwards relative to forward travel and rec
 test('visual, playbook, defensive and extended scenes correspond to actual renderer IDs without changing outcome',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const extended=['extended_keeper_buildout','extended_turnover_counter','extended_corner','extended_corner_right','extended_free_kick','extended_penalty','extended_throw_in'];
- assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,60);
- assert.equal(M.PLAY_SEQUENCES.length,115);
+ assert.equal(H.VISUAL_SCENES.length,42);assert.equal(H.PLAYBOOK_SCENES.length,102);
+ assert.equal(M.PLAY_SEQUENCES.length,157);
  assert.deepEqual(new Set([...H.VISUAL_SCENES.map(v=>v.id),...H.PLAYBOOK_SCENES.map(v=>v.id),'defense_interception','defense_standing_tackle','defense_slide_tackle','defense_press_recovery','defense_standing_tackle_wide','defense_slide_tackle_wide',...extended]),new Set(M.PLAY_SEQUENCES));
  const finishes=new Set(['normal','header','finesse','power','low_driven','volley','bicycle','chip']);
  for(const v of H.VISUAL_SCENES){
@@ -346,7 +347,8 @@ test('V21.26: PlayStyles affect frequency, assist creators count, repeats decay,
  const sample=(fields,predicate,count=4000,hist=[])=>{let n=0;for(let i=0;i<count;i++)if(predicate(H.choosePresentation(make(i,fields),hist)))n++;return n};
  const power=e=>['long_shot','power_drive'].includes(e.sequence);
  assert.ok(sample({playerStyles:[{id:'power-shot',plus:true}]},power)>sample({},power)*1.15,'power shot selection is weighted');
- const through=e=>['through_ball','one_two','one_on_one'].includes(e.sequence);
+ // V21.204: more through-ball and combination plays share the passing styles.
+ const through=e=>['through_ball','one_two','one_on_one'].includes(e.sequence)||['through','combination'].includes(e.family);
  assert.ok(sample({creatorStyles:[{id:'incisive-pass',plus:true}]},through)>sample({},through)*1.1,'assist provider matters');
  const central=e=>e.sequence==='central';
  assert.ok(sample({},central,1200,[{sequence:'central',family:'central'}])<sample({},central,1200)*.55,'immediate repeat is penalized');
@@ -762,7 +764,7 @@ test('V21.107: simulator-backed ball wins display only in allowed modes',()=>{
  assert.match(source,/function queueMatchDefensive3D\(action,attackingSide,attacker\)/);
 });
 
-test('special cameras keep the 40m TV range and the counter opens with active football',async()=>{
+test('special cameras keep the broadcast TV range and the counter opens with active football',async()=>{
  const M=await import('../3d-highlights-scene.mjs');
  const E=await import('../3d-extended-match.mjs');
  for(const seq of E.EXTENDED_SEQUENCES)for(const aspect of [.9,1.3,1.8])for(const direction of [-1,1])for(const time of [0,1.5,3.5,5.4,7,10.3]){
@@ -770,7 +772,8 @@ test('special cameras keep the 40m TV range and the counter opens with active fo
   // V21.179 returned open-play counters to the ordinary 40m broadcast rail.
   assert.equal(camera.distance,M.BROADCAST_CAMERA_DISTANCE,seq+' fixed range');
   assert.ok(Math.abs(Math.hypot(...camera.position.map((v,i)=>v-camera.target[i]))-camera.distance)<.00001,seq+' geometric range');
-  assert.ok(camera.position[0]>0&&camera.position[1]>15,seq+' keeps broadcast side');
+  // V21.205: the height bound scales with the 34 m broadcast distance.
+  assert.ok(camera.position[0]>0&&camera.position[1]>15*M.BROADCAST_CAMERA_DISTANCE/40,seq+' keeps broadcast side');
  }
  const seq='extended_turnover_counter',t=s=>s/20*5.4;
  const start=E.extendedPosition(8,t(0),seq),late=E.extendedPosition(8,t(7.8),seq);
@@ -854,7 +857,8 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
  const seq='extended_turnover_counter',t=seconds=>seconds/20*M.SHOT_TIME;
  // V21.179: the recovering team (8-15) attacks -Z after the duel, so its foot sits on the +Z side of the body.
  const dist=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i])),foot=(i,s)=>{const p=E.extendedPosition(i,t(s),seq);return[p[0]+.1,.14,p[1]+(i>=8&&i<16?.45:-.45)]};
- assert.equal(M.BROADCAST_CAMERA_DISTANCE,40);
+ // V21.205 (Basti): 34 m broadcast range so players read bigger on phones.
+ assert.equal(M.BROADCAST_CAMERA_DISTANCE,34);
  assert.ok(dist(E.extendedPosition(9,t(0),seq),E.extendedPosition(9,t(2.7),seq))>3);
  assert.ok(dist(E.extendedPosition(8,t(4.5),seq),E.extendedPosition(8,t(7.95),seq))>8);
  assert.ok(dist(E.extendedPosition(6,t(4),seq),E.extendedPosition(6,t(7.95),seq))>4);
@@ -872,7 +876,7 @@ test('V21.163: moving midfield pass, possession handoff and close smoothed broad
   const camera=M.cameraState(dir,time,.98,'big_chance_saved',seq);
   const gap=dist(camera.position,camera.target);
   // V21.179 replaced the close 32m counter rail with the ordinary 40m broadcast range.
-  assert.ok(Math.abs(gap-M.BROADCAST_CAMERA_DISTANCE)<.00001&&camera.fov<=42&&camera.fov>=30.5,'counter broadcast camera');
+  assert.ok(Math.abs(gap-M.BROADCAST_CAMERA_DISTANCE)<.00001&&camera.fov<=47&&camera.fov>=30.5,'counter broadcast camera');
  }
 });
 

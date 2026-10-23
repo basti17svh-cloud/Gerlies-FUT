@@ -61,3 +61,48 @@ test('top leagues and real club names come through',()=>{
  assert.equal(players.filter(p=>['Lombardia FC','Milano FC'].includes(p.team)).length,0,'licence names are replaced by the real clubs');
  assert.ok(players.some(p=>/women/i.test(p.gender)),"women's players are included");
 });
+
+test('players carry the name fans use, not their legal name',()=>{
+ const{players}=load(),byId=new Map(players.map(p=>[p.id,p]));
+ for(const[id,name,legal]of[['233419','Raphinha','Raphael Dias Belloli'],['231866','Rodri','Rodrigo Hernández Cascante'],['243812','Rodrygo','Rodrygo Silva de Goes'],['238794','Vini Jr.','Vinícius José de Oliveira Júnior']]){
+  const p=byId.get(id);assert.ok(p,`${name} (${id}) is in the database`);
+  assert.equal(p.name,name);assert.equal(p.fullName,legal,'the legal name stays available for search');
+ }
+});
+
+test('the revision file matches the checked-in database, so installs refresh their offline copy',()=>{
+ const{text}=load(),version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ assert.equal(version.revision,require('node:crypto').createHash('sha256').update(text).digest('hex').slice(0,16),'run scripts/build-player-db.cjs or rewrite the revision after editing the CSV');
+ assert.equal(version.players,text.trim().split('\n').length-1);
+ assert.match(html,/const DB_VERSION_URL="\.\/assets\/players-db-version\.json"/);
+ const worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ assert.match(worker,/players-db\(\?:-version\\\.json\|\\\.csv\)/,'the service worker never answers the database from its own cache');
+});
+
+test("women's cards show their league logo and EA's crest of the women's team",()=>{
+ const{ctx,players}=load();
+ const women=players.filter(p=>/women/i.test(p.gender));
+ assert.ok(women.length>1000,'the database holds the women');
+ const perLeague={};for(const p of women)perLeague[p.league]=(perLeague[p.league]||0)+1;
+ for(const[league,count]of Object.entries(perLeague)){
+  if(count<30)continue;
+  const logo=ctx.localLeagueLogo(league);
+  assert.ok(logo,`${league} (${count} players) has a league logo`);
+  assert.ok(fs.existsSync(path.join(root,logo)),`${logo} is checked in`);
+ }
+ const putellas=women.find(p=>p.name==='Alexia Putellas');
+ assert.ok(putellas,'Alexia Putellas is in the database');
+ assert.equal(ctx.womensClubLogo(putellas),putellas.clubLogo,"Barcelona's women's crest comes from EA");
+ assert.match(putellas.clubLogo,/^https:\/\/drop-assets\.ea\.com\//);
+ assert.equal(ctx.verifiedClubBadge(putellas.team,putellas),null,"the men's crest is never used for a women's team");
+});
+
+test('the database holds the current game, not the previous one',()=>{
+ // drop-api.ea.com kept serving FC 26 after FC 27 came out: Lewandowski at Barcelona, Nkunku at Milan.
+ const version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ const game=fs.readFileSync(path.join(root,'scripts','build-player-db.cjs'),'utf8').match(/const GAME='([^']+)'/)[1];
+ assert.equal(version.game,game,'rebuild the database with scripts/build-player-db.cjs');
+ const lewandowski=load().players.find(p=>p.id==='188545');
+ assert.ok(lewandowski&&lewandowski.team!=='FC Barcelona','Lewandowski left Barcelona before FC 27 (he plays for Chicago Fire)');
+ assert.equal(load().players.find(p=>p.id==='232411')?.team,'RB Leipzig','Nkunku plays for RB Leipzig (CLUB_OVERRIDES in the build script)');
+});

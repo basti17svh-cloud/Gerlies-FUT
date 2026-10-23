@@ -10,11 +10,16 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.193-signature-celebrations';
+export const CELEBRATION_VERSION='21.226-ceremony-poses';
 export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms']);
-// Trademark celebrations of real stars (matched on the card name). The jump
-// spin with the wide landing is the famous Ronaldo jump.
-const SIGNATURES=[[/\bcristiano\b|^ronaldo$|\bc\. ?ronaldo\b/,'jump_spin'],[/\bmessi\b/,'badge'],[/\bmbappe\b/,'arms_crossed'],[/\bbellingham\b/,'open_arms'],[/\bhaaland\b/,'fist_pump']];
+// Celebrations only a star performs, never picked at random.
+export const STAR_CELEBRATIONS=Object.freeze(['zen','cold','samba','mask']);
+// Trademark celebrations of real stars, matched on the whole card name so a
+// namesake (Ethan Mbappé, Jobe Bellingham) keeps a normal celebration. The
+// jump spin with the wide landing is the famous Ronaldo jump.
+const SIGNATURES=[[/^(cristiano( ronaldo)?|ronaldo|c\. ?ronaldo)$/,'jump_spin'],[/^(lionel )?messi$/,'badge'],
+ [/^(kylian )?mbappe$/,'arms_crossed'],[/^(jude )?bellingham$/,'open_arms'],[/^(erling )?haaland$/,'zen'],
+ [/^(cole )?palmer$/,'cold'],[/^(vini jr\.?|vinicius junior|vinicius jr\.?)$/,'samba'],[/^(viktor )?gyokeres$/,'mask']];
 export function signatureCelebration(name=''){
  const key=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  return key?(SIGNATURES.find(([pattern])=>pattern.test(key))?.[1]||null):null;
@@ -34,7 +39,7 @@ const FOREARM_LAG=.11;
 // avoid: the previous goal's celebration, so two goals in a row never repeat
 // the same one (a star's trademark celebration always wins).
 export function pickCelebration(event={},avoid=null){
- if(CELEBRATIONS.includes(event.celebration))return event.celebration;
+ if(CELEBRATIONS.includes(event.celebration)||STAR_CELEBRATIONS.includes(event.celebration))return event.celebration;
  const signature=signatureCelebration(event.playerName);
  if(signature)return signature;
  const key=`${event.id??''}|${event.playerName??''}|${event.minute??''}`;
@@ -56,6 +61,11 @@ export function celebrationDistance(kind,s){
  if(kind==='badge')return ease(s,1.8,6.4);
  if(kind==='arms_crossed')return ease(s,1.4,5.2);
  if(kind==='open_arms')return ease(s,1.7,6);
+ if(kind==='zen')return ease(s,1.3,5.4);
+ if(kind==='cold')return ease(s,1.3,5.6);
+ // Dances on the spot after a short run, drifting a little with the steps.
+ if(kind==='samba')return ease(s,1.2,4.8)+.25*smooth((s-1.2)/2.4);
+ if(kind==='mask')return ease(s,1.4,5.8);
  return ease(s,1.5,5.6);
 }
 
@@ -153,6 +163,45 @@ function pose(t,kind,s){
   t.upper[0]+=.2*spread;t.upper[2]=sway*.5;t.head=[.3*spread,sway];
   t.shrug=[.2*spread,.2*spread];t.open=[spread,spread];
   looseStance(t,s,stop);
+ }else if(kind==='zen'){
+  // Haaland: stops, sits down cross-legged on the grass, hands resting on the
+  // knees with open palms, back straight and eyes on the stand. Completely still.
+  const sit=smooth((s-1.15)/.8),calm=spring(s,1.3,.9),still=1-.85*sit;
+  t.upper[0]*=still;t.shrug[0]*=still;t.shrug[1]*=still;
+  t.legs_w=sit;t.drop=.8*sit;
+  t.legs[0][0]=t.legs[1][0]=1.25*sit;t.legs[0][2]=-1.05*sit;t.legs[1][2]=1.05*sit;
+  t.legs[0][1]=.9*sit;t.legs[1][1]=-.9*sit;
+  t.knees[0]=t.knees[1]=-2.45*sit;t.ankles[0]=t.ankles[1]=.5*sit;
+  arms(t,[mix(.3,.5,calm),0,mix(.38,.62,calm)],[mix(.3,.5,calm),0,mix(.38,.62,calm)],mix(.5,.45,calm),mix(.5,.45,calm));
+  t.upper[0]+=-.02*sit;t.head=[mix(.05,.08,sit),0];t.open=[calm,calm];
+  // One deep breath in as he settles, shoulders rising and falling slowly.
+  t.shrug=[.12*calm+.03*Math.sin(s*1.1),.12*calm+.03*Math.sin(s*1.1)];
+ }else if(kind==='cold'){
+  // Palmer: shoulders up, arms wrapped round the body, hands rubbing the
+  // upper arms and the whole body shivering as if it were freezing.
+  const stop=spring(s,1.1,.5),wrap=spring(s,1.2,.6),shiver=Math.sin(s*26)*wrap,rub=Math.sin(s*9)*wrap;
+  arms(t,[mix(.3,.8,wrap)+.05*rub,0,mix(.38,-.62,wrap)],[mix(.3,.74,wrap)-.05*rub,0,mix(.38,-.56,wrap)],mix(.5,2.25,wrap)+.04*shiver,mix(.5,2.2,wrap)-.04*shiver);
+  t.upper[0]+=-.1*wrap;t.upper[2]=.025*shiver;t.rig[2]+=.012*shiver;
+  t.head=[-.12*wrap,.04*shiver];t.shrug=[.38*wrap+.03*shiver,.38*wrap-.03*shiver];t.open=[.3*wrap,.3*wrap];
+  looseStance(t,s,stop);t.legs[0][2]+=.05*stop;t.legs[1][2]-=.05*stop;
+ }else if(kind==='samba'){
+  // Vini Jr.: a quick samba on the spot, hips swaying, stepping from foot to
+  // foot with bent arms pumping in time.
+  const on=spring(s,1.1,.5),beat=s*6.8,sway=Math.sin(beat/2)*on;
+  const stepL=Math.max(0,Math.sin(beat))*on,stepR=Math.max(0,-Math.sin(beat))*on;
+  t.legs_w=Math.max(t.legs_w,on);
+  t.legs[0][0]=.12+.45*stepL;t.legs[1][0]=.12+.45*stepR;t.knees[0]=-.25-.75*stepL;t.knees[1]=-.25-.75*stepR;
+  t.ankles[0]=.1+.3*stepL;t.ankles[1]=.1+.3*stepR;t.legs[0][2]=-.1+.08*sway;t.legs[1][2]=.1+.08*sway;
+  t.rig[2]+=.13*sway;t.upper[2]=-.16*sway;t.upper[1]=.22*Math.sin(beat)*on;t.upper[0]+=-.05*on;t.drop=.06*on;
+  arms(t,[mix(.3,.55,on)+.45*Math.sin(beat)*on,0,mix(.38,.55,on)],[mix(.3,.55,on)-.45*Math.sin(beat)*on,0,mix(.38,.55,on)],mix(.5,1.45,on),mix(.5,1.45,on));
+  t.head=[.1*on+.05*Math.abs(Math.sin(beat))*on,-.15*sway];t.shrug=[.1*on+.08*stepL,.1*on+.08*stepR];t.open=[.6*on,.6*on];
+ }else if(kind==='mask'){
+  // Gyökeres: stops with the feet wide, raises both hands to the face and
+  // laces the fingers into a mask round the eyes, chin down, staring out.
+  const stop=spring(s,1.3,.55),mask=spring(s,1.45,.6);
+  arms(t,[mix(.3,1.45,mask),0,mix(.38,-.28,mask)],[mix(.3,1.45,mask),0,mix(.38,-.28,mask)],mix(.5,2.15,mask),mix(.5,2.15,mask));
+  t.upper[0]+=-.06*mask;t.head=[-.04*mask,0];t.shrug=[.26*mask,.26*mask];t.open=[.6*mask,.6*mask];
+  looseStance(t,s,stop);t.legs[0][2]-=.08*stop;t.legs[1][2]+=.08*stop;t.drop+=.04*stop;
  }else if(kind==='hug_left'||kind==='hug_right'){
   // A teammate arriving beside the scorer: the near arm goes round his
   // shoulders, the other fist pumps, both bouncing with him.
@@ -163,6 +212,54 @@ function pose(t,kind,s){
   t.upper[2]=(nearLeft?-.1:.1)*wrap;t.upper[0]+=.06*wrap;t.head=[.12*wrap,(nearLeft?-.25:.25)*wrap];
   t.shrug=nearLeft?[.3*wrap,.12*wrap]:[.12*wrap,.3*wrap];t.open=nearLeft?[.8*wrap,0]:[0,.8*wrap];
   looseStance(t,s,wrap);t.lift=.05*bounce;
+ }else if(kind==='lineup'){
+  // V21.226 walk-out: chest up, hands loosely behind the back for the line-up.
+  arms(t,[-.2,0,.1],[-.2,0,.1],.5,.5);t.upper[0]+=.05;t.head=[.04,0];t.shrug=[.06,.06];
+  looseStance(t,s,.6);
+ }else if(kind==='cheer'){
+  // Final whistle, winners: bouncing in the huddle with both fists up.
+  const up=spring(s,0,.6),bounce=Math.abs(Math.sin(s*5.4)),pump=Math.sin(s*5.4)*.18*up;
+  arms(t,[mix(.3,.42,up),0,mix(.38,2.25,up)+pump],[mix(.3,.42,up),0,mix(.38,2.25,up)-pump],mix(.5,.8,up),mix(.5,.8,up));
+  t.upper[0]+=.16*up;t.head=[.3*up,0];t.shrug=[.3*up,.3*up];t.open=[0,0];
+  looseStance(t,s,up);t.lift=.16*bounce*up;
+ }else if(kind==='kneel_down'){
+  // Losers: down on both knees, hands on the thighs, head hanging.
+  const kneel=smooth(s/.7),slump=spring(s,.4,.9);
+  t.legs_w=kneel;t.drop=.47*kneel;t.legs[0][0]=t.legs[1][0]=.12;
+  t.knees[0]=t.knees[1]=-1.55;t.ankles[0]=t.ankles[1]=.9;t.legs[0][2]=-.1;t.legs[1][2]=.1;
+  arms(t,[.42*slump,0,.12],[.42*slump,0,.12],.55,.55);
+  t.upper[0]+=-.32*slump;t.head=[-.42*slump,0];t.shrug=[.04,.04];
+ }else if(kind==='hands_on_knees'){
+  // Bent over, both hands propped on the knees, getting the breath back.
+  const bend=spring(s,0,.8),breath=Math.sin(s*3.1)*.03*bend;
+  t.legs_w=bend;t.drop=.1*bend;t.legs[0][0]=t.legs[1][0]=.42*bend;t.knees[0]=t.knees[1]=-.62*bend;
+  t.ankles[0]=t.ankles[1]=.24*bend;t.legs[0][2]=-.12*bend;t.legs[1][2]=.12*bend;
+  arms(t,[.78*bend,0,.14],[.78*bend,0,.14],.22,.22);
+  t.upper[0]+=-.72*bend+breath;t.head=[.32*bend,0];t.shrug=[.16*bend+breath,.16*bend+breath];
+ }else if(kind==='hands_on_head'){
+  // Both hands on top of the head, staring at the grass.
+  const up=spring(s,0,.7);
+  arms(t,[mix(.3,1.9,up),0,mix(.38,1.0,up)],[mix(.3,1.9,up),0,mix(.38,1.0,up)],mix(.5,2.35,up),mix(.5,2.35,up));
+  t.upper[0]+=-.06*up;t.head=[-.28*up,.1*Math.sin(s*.9)*up];t.shrug=[.22*up,.22*up];t.open=[.7*up,.7*up];
+  looseStance(t,s,up);
+ }else if(kind==='hands_on_hips'){
+  // Tired after a draw: hands on the hips, a slow shake of the head.
+  const on=spring(s,0,.7);
+  arms(t,[-.08,0,mix(.38,.62,on)],[-.08,0,mix(.38,.62,on)],mix(.5,1.9,on),mix(.5,1.9,on));
+  t.upper[0]+=-.04*on;t.head=[-.12*on,.16*Math.sin(s*1.4)*on];t.shrug=[.1*on,.1*on];
+  looseStance(t,s,on);
+ }else if(kind==='handshake'){
+  // Right hand out to the opponent, a short firm shake, a nod.
+  const reach=spring(s,0,.45),shake=Math.sin(s*13)*.07*pulse(s,.3,.45,1.1,1.3);
+  arms(t,[.05,0,.12],[mix(.2,.66,reach)+shake,0,mix(.2,.06,reach)],.35,mix(.4,.55,reach));
+  t.upper[0]+=-.07*reach;t.head=[-.08*reach+.05*Math.sin(s*4)*reach,0];t.shrug=[.05,.12*reach];t.open=[0,.9*reach];
+  looseStance(t,s,reach);
+ }else if(kind==='applause'){
+  // Clapping: hands meet in front of the chest.
+  const on=spring(s,0,.5),clap=Math.abs(Math.sin(s*7.2));
+  arms(t,[mix(.2,.9,on),0,mix(.2,.04+.3*clap,on)],[mix(.2,.9,on),0,mix(.2,.04+.3*clap,on)],mix(.4,1.25,on),mix(.4,1.25,on));
+  t.upper[0]+=.04*on;t.head=[.12*on,0];t.shrug=[.08*on,.08*on];t.open=[on,on];
+  looseStance(t,s,on);
  }else{
   // Fist pump: plant, crouch and pull the right fist down twice, roaring.
   const stop=spring(s,1.1,.5),pump=Math.max(pulse(s,1.45,1.6,1.75,1.95),pulse(s,2.15,2.3,2.45,2.7));
@@ -180,17 +277,18 @@ function pose(t,kind,s){
  * this amount), how far the imported model's root drops (kneel) or lifts
  * (jump) in metres, and the shoulder shrug, head aim and open-hand amount for
  * the imported model's extra joints. */
-export function applyCelebrationPose(p,kind,s,out={}){
+// weight (V21.226) fades a pose back out to the locomotion underneath.
+export function applyCelebrationPose(p,kind,s,out={},weight=1){
  pose(late,kind,s-FOREARM_LAG);
  pose(now,kind,s);
- const w=smooth(s/.55),legs=now.legs_w;
+ const w=smooth(s/.55)*clamp(weight),legs=now.legs_w*clamp(weight);
  for(let i=0;i<2;i++){
   const arm=p.arms[i].rotation;
   arm.x=mix(arm.x,now.arms[i][0],w);arm.y=mix(arm.y,now.arms[i][1],w);arm.z=mix(arm.z,now.arms[i][2],w);
   p.elbows[i].rotation.x=mix(p.elbows[i].rotation.x,late.elbows[i],w);
   if(legs>0){
    const leg=p.legs[i].rotation;
-   leg.x=mix(leg.x,now.legs[i][0],legs);leg.z=mix(leg.z,now.legs[i][2],legs);
+   leg.x=mix(leg.x,now.legs[i][0],legs);leg.y+=now.legs[i][1]*legs;leg.z=mix(leg.z,now.legs[i][2],legs);
    p.knees[i].rotation.x=mix(p.knees[i].rotation.x,now.knees[i],legs);
    p.ankles[i].rotation.x=mix(p.ankles[i].rotation.x,now.ankles[i],legs);
   }
@@ -200,8 +298,8 @@ export function applyCelebrationPose(p,kind,s,out={}){
  p.upper.rotation.y=mix(p.upper.rotation.y,now.upper[1],w);
  p.upper.rotation.z=mix(p.upper.rotation.z,now.upper[2],w);
  // Lower the hips onto the knees (or lift for the jump); feet follow via IK.
- const rootY=now.lift-now.drop;
- p.rig.position.y=rootY;
+ const rootY=(now.lift-now.drop)*clamp(weight);
+ p.rig.position.y=mix(p.rig.position.y,rootY,Math.max(w,legs));
  out.arms=w;out.rootY=rootY;out.kind=kind;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];

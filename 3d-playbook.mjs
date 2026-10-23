@@ -72,11 +72,55 @@ const catalog=[
  ["back_post_volley_left","lowcross",6,"volley","cross",[6,1,0],"medium"],
  ["overlap_clipped_right","overlap",6,"header","cross",[3,2,5,0],"long"],
  ["striker_wall_return","combination",8,"low_driven","through",[6,0,3,0],"medium"],
- ["diagonal_lob_finish","through",6,"chip","through",[7,3,0],"medium"]
+ ["diagonal_lob_finish","through",6,"chip","through",[7,3,0],"medium"],
+ // V21.204 (Basti: many more attacks): forty-two further plays, each with
+ // its own finishing spot so the shot never comes from the same place.
+ ["false_nine_drop_left", "combination", 6, "finesse", "short", [6, 0, 1, 0], "medium"],
+ ["false_nine_drop_right", "combination", 6, "finesse", "short", [7, 0, 2, 0], "medium"],
+ ["winger_one_two_left", "combination", 7, "normal", "short", [1, 3, 1, 0], "short"],
+ ["winger_one_two_right", "combination", 7, "normal", "short", [2, 3, 2, 0], "short"],
+ ["box_rondo", "combination", 6, "low_driven", "short", [3, 6, 3, 7, 0], "medium"],
+ ["fullback_link_left", "combination", 6, "normal", "short", [4, 6, 1, 3, 0], "medium"],
+ ["fullback_link_right", "combination", 6, "normal", "short", [5, 7, 2, 3, 0], "medium"],
+ ["channel_ball_left", "through", 7, "low_driven", "through", [3, 1, 0], "short"],
+ ["channel_ball_right", "through", 7, "low_driven", "through", [3, 2, 0], "short"],
+ ["playmaker_slide_left", "through", 7, "normal", "through", [6, 0], "short"],
+ ["playmaker_slide_right", "through", 7, "normal", "through", [7, 0], "short"],
+ ["dink_over_line", "through", 5, "chip", "loft", [3, 0], "short"],
+ ["long_ball_sprint", "through", 5, "normal", "loft", [4, 0], "medium"],
+ ["underlap_left", "overlap", 6, "normal", "driven", [1, 4, 0], "medium"],
+ ["underlap_right", "overlap", 6, "normal", "driven", [2, 5, 0], "medium"],
+ ["overlap_volley_left", "overlap", 4, "volley", "cross", [6, 4, 0], "medium"],
+ ["overlap_volley_right", "overlap", 4, "volley", "cross", [7, 5, 0], "medium"],
+ ["byline_drive_left", "lowcross", 6, "low_driven", "driven", [3, 1, 0], "short"],
+ ["byline_drive_right", "lowcross", 6, "low_driven", "driven", [3, 2, 0], "short"],
+ ["far_post_slide_right", "lowcross", 5, "normal", "driven", [7, 2, 0], "medium"],
+ ["whipped_header_left", "nearpost", 6, "header", "cross", [6, 1, 0], "medium"],
+ ["whipped_header_right", "nearpost", 6, "header", "cross", [3, 2, 0], "medium"],
+ ["deep_cross_header_left", "overlap", 5, "header", "cross", [6, 4, 0], "long"],
+ ["deep_cross_header_right", "overlap", 5, "header", "cross", [7, 5, 0], "long"],
+ ["slalom_left", "dribble", 5, "finesse", "short", [6, 0], "short"],
+ ["slalom_right", "dribble", 5, "power", "short", [7, 0], "short"],
+ ["winger_takeon_left", "dribble", 6, "finesse", "short", [3, 1, 0], "medium"],
+ ["winger_takeon_right", "dribble", 6, "finesse", "short", [3, 2, 0], "medium"],
+ ["pullback_power_left", "cutback", 6, "power", "driven", [6, 1, 0], "medium"],
+ ["pullback_power_right", "cutback", 6, "power", "driven", [7, 2, 0], "medium"],
+ ["cutback_volley_left", "cutback", 4, "volley", "driven", [3, 1, 0], "medium"],
+ ["edge_rocket", "distance", 5, "power", "short", [3, 0], "short"],
+ ["recycle_rocket_left", "distance", 5, "power", "short", [1, 6, 0], "medium"],
+ ["recycle_curler_right", "distance", 5, "finesse", "short", [2, 7, 0], "medium"],
+ ["halfvolley_drive", "distance", 4, "volley", "loft", [6, 3, 0], "short"],
+ ["switch_cut_left", "switch", 5, "finesse", "loft", [7, 1, 0], "long"],
+ ["switch_cut_right", "switch", 5, "finesse", "loft", [6, 2, 0], "long"],
+ ["near_post_flick_header_left", "nearpost", 5, "header", "cross", [4, 0], "medium"],
+ ["near_post_flick_header_right", "nearpost", 5, "header", "cross", [5, 0], "medium"],
+ ["counter_sprint_left", "through", 7, "normal", "through", [6, 1, 0], "short"],
+ ["counter_sprint_right", "through", 7, "normal", "through", [7, 2, 0], "short"],
+ ["rebound_drive", "combination", 5, "power", "short", [3, 7, 0], "short"]
 ];
 // Coordinates are lateral/forward metres; 5.4s is the shared shot instant.
 // Only these new plays override routes. Existing 48 plays retain their geometry.
-const STORIES={
+const V146_STORIES={
  "layoff_distance":{"routes":{"0":[[0,1,-24],[2.6,0,-25],[4.6,1,-27],[5.4,1,-28]],"3":[[0,-5,-29],[2,-3,-32],[5.4,-1,-34]]},"beats":[[0.45,1.15],[3.95,5.4]],"direct":true},
  "switch_distance_left":{"routes":{"0":[[0,-12,-23],[2.4,-11,-25],[4.5,-9,-29],[5.4,-8,-30]],"1":[[0,-21,-27],[2.4,-19,-31],[5.4,-18,-36]]},"beats":[[0.45,1.75],[3.7,4.75]],"direct":false},
  "near_post_driven_left":{"routes":{"0":[[0,0,-32],[2.5,-1,-36],[4.3,-2,-42],[5.4,-3,-47]],"1":[[0,-19,-33],[2,-17,-38],[3.9,-14,-45],[5.4,-13,-47]]},"beats":[[0.4,1.2],[3.95,5.4]],"direct":true},
@@ -90,7 +134,54 @@ const STORIES={
  "striker_wall_return":{"routes":{"0":[[0,-5,-29],[1.6,-4,-31],[2.7,-6,-33],[4.1,-6,-38],[5.4,-4,-42]],"3":[[0,3,-29],[2,2,-32],[3.5,1,-35],[5.4,2,-39]]},"beats":[[0.45,1.25],[2.0,2.6],[3.5,4.65]],"direct":false},
  "diagonal_lob_finish":{"routes":{"0":[[0,16,-28],[2.5,13,-32],[4.4,9,-38],[5.4,7,-41]],"3":[[0,2,-25],[2.4,3,-29],[5.4,4,-34]]},"beats":[[0.4,1.2],[3.1,4.5]],"direct":false}
 };
-export const NEW_ATTACK_IDS=Object.freeze(Object.keys(STORIES));
+// V21.204: only the finisher's run is authored; support runs stay generic.
+const V204_STORIES={
+ "false_nine_drop_left":{"routes":{"0":[[0,-2.7,-25],[2.7,-4.8,-32.5],[5.4,-6,-40]]}},
+ "false_nine_drop_right":{"routes":{"0":[[0,2.7,-25],[2.7,4.8,-32.5],[5.4,6,-40]]}},
+ "winger_one_two_left":{"routes":{"0":[[0,-1.35,-25],[2.7,-2.4,-34.0],[5.4,-3,-43]]}},
+ "winger_one_two_right":{"routes":{"0":[[0,1.35,-25],[2.7,2.4,-34.0],[5.4,3,-43]]}},
+ "box_rondo":{"routes":{"0":[[0,0.9,-25],[2.7,1.6,-33.5],[5.4,2,-42]]}},
+ "fullback_link_left":{"routes":{"0":[[0,-1.8,-25],[2.7,-3.2,-33.0],[5.4,-4,-41]]}},
+ "fullback_link_right":{"routes":{"0":[[0,1.8,-25],[2.7,3.2,-33.0],[5.4,4,-41]]}},
+ "channel_ball_left":{"routes":{"0":[[0,-3.6,-25],[2.7,-6.4,-34.5],[5.4,-8,-44]]}},
+ "channel_ball_right":{"routes":{"0":[[0,3.6,-25],[2.7,6.4,-34.5],[5.4,8,-44]]}},
+ "playmaker_slide_left":{"routes":{"0":[[0,-2.25,-25],[2.7,-4.0,-35.0],[5.4,-5,-45]]}},
+ "playmaker_slide_right":{"routes":{"0":[[0,2.25,-25],[2.7,4.0,-35.0],[5.4,5,-45]]}},
+ "dink_over_line":{"routes":{"0":[[0,0.45,-25],[2.7,0.8,-34.5],[5.4,1,-44]]}},
+ "long_ball_sprint":{"routes":{"0":[[0,-1.35,-25],[2.7,-2.4,-34.5],[5.4,-3,-44]]}},
+ "underlap_left":{"routes":{"0":[[0,-0.9,-25],[2.7,-1.6,-35.0],[5.4,-2,-45]]}},
+ "underlap_right":{"routes":{"0":[[0,0.9,-25],[2.7,1.6,-35.0],[5.4,2,-45]]}},
+ "overlap_volley_left":{"routes":{"0":[[0,0.45,-25],[2.7,0.8,-33.5],[5.4,1,-42]]}},
+ "overlap_volley_right":{"routes":{"0":[[0,-0.45,-25],[2.7,-0.8,-33.5],[5.4,-1,-42]]}},
+ "byline_drive_left":{"routes":{"0":[[0,0.45,-25],[2.7,0.8,-36.0],[5.4,1,-47]]}},
+ "byline_drive_right":{"routes":{"0":[[0,-0.45,-25],[2.7,-0.8,-36.0],[5.4,-1,-47]]}},
+ "far_post_slide_right":{"routes":{"0":[[0,-1.8,-25],[2.7,-3.2,-36.0],[5.4,-4,-47]]}},
+ "whipped_header_left":{"routes":{"0":[[0,-0.9,-25],[2.7,-1.6,-35.5],[5.4,-2,-46]]}},
+ "whipped_header_right":{"routes":{"0":[[0,0.9,-25],[2.7,1.6,-35.5],[5.4,2,-46]]}},
+ "deep_cross_header_left":{"routes":{"0":[[0,1.35,-25],[2.7,2.4,-35.0],[5.4,3,-45]]}},
+ "deep_cross_header_right":{"routes":{"0":[[0,-1.35,-25],[2.7,-2.4,-35.0],[5.4,-3,-45]]}},
+ "slalom_left":{"routes":{"0":[[0,-3.15,-25],[2.7,-5.6,-32.5],[5.4,-7,-40]]}},
+ "slalom_right":{"routes":{"0":[[0,3.15,-25],[2.7,5.6,-32.5],[5.4,7,-40]]}},
+ "winger_takeon_left":{"routes":{"0":[[0,-4.05,-25],[2.7,-7.2,-33.0],[5.4,-9,-41]]}},
+ "winger_takeon_right":{"routes":{"0":[[0,4.05,-25],[2.7,7.2,-33.0],[5.4,9,-41]]}},
+ "pullback_power_left":{"routes":{"0":[[0,-0.9,-25],[2.7,-1.6,-31.5],[5.4,-2,-38]]}},
+ "pullback_power_right":{"routes":{"0":[[0,0.9,-25],[2.7,1.6,-31.5],[5.4,2,-38]]}},
+ "cutback_volley_left":{"routes":{"0":[[0,0.0,-25],[2.7,0.0,-32.5],[5.4,0,-40]]}},
+ "edge_rocket":{"routes":{"0":[[0,0.0,-25],[2.7,0.0,-28.0],[5.4,0,-31]]}},
+ "recycle_rocket_left":{"routes":{"0":[[0,-2.7,-25],[2.7,-4.8,-28.5],[5.4,-6,-32]]}},
+ "recycle_curler_right":{"routes":{"0":[[0,3.6,-25],[2.7,6.4,-29.0],[5.4,8,-33]]}},
+ "halfvolley_drive":{"routes":{"0":[[0,1.35,-25],[2.7,2.4,-28.5],[5.4,3,-32]]}},
+ "switch_cut_left":{"routes":{"0":[[0,-4.5,-25],[2.7,-8.0,-31.5],[5.4,-10,-38]]}},
+ "switch_cut_right":{"routes":{"0":[[0,4.5,-25],[2.7,8.0,-31.5],[5.4,10,-38]]}},
+ "near_post_flick_header_left":{"routes":{"0":[[0,-0.9,-25],[2.7,-1.6,-36.0],[5.4,-2,-47]]}},
+ "near_post_flick_header_right":{"routes":{"0":[[0,0.9,-25],[2.7,1.6,-36.0],[5.4,2,-47]]}},
+ "counter_sprint_left":{"routes":{"0":[[0,-2.7,-25],[2.7,-4.8,-34.0],[5.4,-6,-43]]}},
+ "counter_sprint_right":{"routes":{"0":[[0,2.7,-25],[2.7,4.8,-34.0],[5.4,6,-43]]}},
+ "rebound_drive":{"routes":{"0":[[0,-0.9,-25],[2.7,-1.6,-30.0],[5.4,-2,-35]]}}
+};
+const STORIES={...V146_STORIES,...V204_STORIES};
+export const NEW_ATTACK_IDS=Object.freeze(Object.keys(V146_STORIES));
+export const MORE_ATTACK_IDS=Object.freeze(Object.keys(V204_STORIES));
 export const hasAuthoredFinish=id=>Object.hasOwn(STORIES,id);
 const tags=Object.freeze({
  combination:['tiki-taka','first-touch','incisive-pass'],

@@ -32,7 +32,13 @@
    html+='<p class="pack-odds-note">Für dieses einmalige Sondergeschenk liegt keine berechnete Gesamtquote der neun zusätzlichen Spieler vor.</p>';
   }else{
    const api=window.FooteraPackOdds;
-   const result=api?.calculate(pack,PLAYERS,{icons:MID_ICON_BASES,classify});
+   const event=pack.eventSlot?EVENT_PROMO_RELEASES.find(e=>e.id===pack.eventSlot):null;
+   if(event){
+    const share=100/Math.max(1,event.players.length);
+    html+='<div class="pack-odds-guarantees"><strong>100 % garantiert</strong><span>1 '+safe(event.name)+'-Karte. Jede der '+event.players.length+' Karten ist gleich wahrscheinlich ('+share.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+' % je Karte).</span></div><p class="pack-odds-note">Die folgenden Werte gelten für die übrigen '+(pack.count-1)+' Spieler des Packs.</p>';
+   }
+   const drawPack=event?eventSlotDrawPack(pack):pack,pool=event?PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))):PLAYERS;
+   const result=api?.calculate(drawPack,pool,{icons:MID_ICON_BASES,classify});
    if(!result?.available){
     html+='<p class="pack-odds-error">Wahrscheinlichkeiten momentan nicht verfügbar. '+safe(result?.reason||"Spielerdaten fehlen.")+'</p>';
    }else{

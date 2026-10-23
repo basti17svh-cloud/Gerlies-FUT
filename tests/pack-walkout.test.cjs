@@ -84,3 +84,11 @@ test('tap skips the tunnel to the card, a second tap skips the card hold',async(
  await done;
  assert.ok(ctx.$('results').classList.contains('active'));
 });
+
+test('position clue box grows to fit three-letter labels like ZOM',()=>{
+ const css=fs.readFileSync(path.join(__dirname,'..','footera-app.css'),'utf8');
+ assert.match(css,/\.walkout-clue-art\.is-position\{width:auto;min-width:116px/);
+ assert.match(css,/\.board-cue-art\.is-position\{width:auto;min-width:72px/);
+ assert.match(section('function showWalkoutClue','async function runPackReveal'),/walkout-clue-art\$\{kind==="position"\?" is-position":""\}/);
+ assert.match(section('function showBoardCue','function resetWalkoutTunnel'),/board-cue-art\$\{kind==="position"\?" is-position":""\}/);
+});

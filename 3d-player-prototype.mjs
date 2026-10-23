@@ -10,7 +10,7 @@ import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=2190';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21194';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21215';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -208,7 +208,7 @@ export function splitAtlasSeams(geometry,zones,normalized){
 // Convert one real imported skinned GLB to the exact Footera player footprint.
 // Preserve the authored 65-bone hierarchy and skin weights. Clothing gets a
 // modest surface adjustment; anatomical toes are covered by shaped boots.
-// look (V21.193 human players): {number, shirtName, skinTone, crest, boots}.
+// look (V21.193 human players): {number, shirtName, skinTone, crest, boots, custom}.
 export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null,look={}){
  const human=variant==='human';
  const asset=human?footeraHumanSource():variant==='makehuman'?sourceMakeHuman:source;
@@ -218,7 +218,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone),kit||{},
+ if(human)dressed=dressFooteraHuman(THREE,model,footeraHumanLook(name,look.skinTone,undefined,look.custom),kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
  model.traverse(node=>{
@@ -534,6 +534,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // The keeper's guide rotates about the feet, not the imported pelvis.
  // Preserve that entire transform before retargeting individual joints.
  const authoredFacing=normalized.quaternion.clone();
+ const acroTurn=new THREE.Quaternion(),acroAxis=new THREE.Vector3(1,0,0);
  const keeperArms=['l','r'].map(side=>{
   const shoulder=bones.get('upperarm_'+side),elbow=bones.get('lowerarm_'+side),hand=bones.get('hand_'+side);
   return{shoulder,elbow,hand,upper:shoulder.getWorldPosition(new THREE.Vector3()).distanceTo(elbow.getWorldPosition(new THREE.Vector3())),
@@ -608,7 +609,24 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands(celebration?.open);
   // Raised arms lift the shoulders with them instead of hinging at a fixed joint.
   if(celebration?.shrug){apply('clavicle_l',0,0,-celebration.shrug[0]);apply('clavicle_r',0,0,celebration.shrug[1])}
-  matchFeet();
+  // V21.208 overhead kick: the whole body turns backwards over the pelvis and
+  // the legs scissor in player space; the planted-boot IK stays off meanwhile.
+  const acro=!keeperRole&&info.acrobatic?.weight>0?info.acrobatic:null;
+  if(acro){
+   const w=acro.weight,pitch=acro.pitch*w,hipHeight=.95;
+   acroTurn.setFromAxisAngle(acroAxis,pitch);
+   normalized.quaternion.copy(acroTurn).multiply(authoredFacing);
+   normalized.position.set(0,hipHeight+acro.lift*w-hipHeight*Math.cos(pitch),acro.back*w-hipHeight*Math.sin(pitch));
+   apply('pelvis',0,driver.rig.rotation.y*(1-w),0);
+   for(let i=0;i<2;i++){
+    const side=i?'r':'l',[thigh,knee]=acro.legs[i];
+    apply('thigh_'+side,thigh*w+driver.legs[i].rotation.x*(1-w),0,0);
+    apply('calf_'+side,knee*w+driver.knees[i].rotation.x*(1-w),0,0);
+    apply('foot_'+side,.25*w,0,0);
+    apply('upperarm_'+side,0,0,(i?1:-1)*acro.arms*w);
+   }
+  }
+  if(!acro||acro.weight<.5)matchFeet();
   if(keeperRole)matchKeeperHands();
  }
  function inspectMotion(){

@@ -1,0 +1,23 @@
+/* Footera V21.209 — share bar after a walkout, invite button and home-screen hint. */
+.result-share{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 14px;border:1px solid #d8ff3e66;border-radius:14px;background:linear-gradient(115deg,#19300f,#0d1714 70%);box-shadow:0 0 22px #d8ff3e1f}
+.result-share[hidden]{display:none}
+.result-share-text{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.result-share-text strong{font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-share-text span{font-size:12px;color:#b9c8c2;line-height:1.35}
+.result-share .primary{flex:0 0 auto;min-width:104px;min-height:42px;font-size:15px}
+.footera-share-stage{position:fixed;left:-4000px;top:0;width:360px;pointer-events:none;contain:layout paint}
+.footera-share-stage .card-shell{width:360px}
+.friend-code-actions{flex-wrap:wrap}
+.install-hint{position:fixed;z-index:2147481000;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;display:flex;gap:12px;align-items:flex-start;padding:14px 15px;border:1px solid #d8ff3e66;border-radius:16px;background:#0d1714f2;color:#f4f8f6;box-shadow:0 10px 36px #000c;animation:installHintIn .35s ease-out}
+.install-hint img{flex:0 0 auto;border-radius:12px}
+.install-hint-body{flex:1;min-width:0}
+.install-hint-body strong{display:block;font-size:15px;margin-bottom:4px}
+.install-hint-body p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#c9d6d1}
+.install-hint-body b{color:#fff}
+.install-hint-icon{display:inline-block;padding:0 4px;border:1px solid #fff6;border-radius:5px;font-size:12px}
+.install-hint-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.install-hint-actions button{min-height:36px;font-size:13px}
+.install-hint-never{background:none;border:0;color:#8b9994;font-size:12px;text-decoration:underline;padding:4px}
+@keyframes installHintIn{from{transform:translateY(16px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.install-hint{animation:none}}
+.referral-info{margin:0 0 10px;padding:9px 11px;border:1px solid #d8ff3e55;border-radius:11px;background:#19300f99;color:#e6f5c8;font-size:13px;line-height:1.4}

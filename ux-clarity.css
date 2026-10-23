@@ -72,7 +72,11 @@
 .store-pack[data-pack-tier="gold"]{border-color:rgba(243,210,122,.45)}
 .store-pack[data-pack-tier="electrum"]{border-color:rgba(214,221,227,.45)}
 .store-pack[data-pack-tier="mixed"]{border-color:rgba(217,162,115,.45)}
-@media(max-width:370px){.topbar .brand h1{font-size:0;letter-spacing:0}.topbar .brand h1 .build-badge{font-size:10px}}
+@media(max-width:370px){.topbar .brand h1{font-size:0;letter-spacing:0}}
+/* Version sits as a small tag under the logo, so wide coin balances never cover it. */
+.topbar .brand{position:relative}
+.topbar .brand h1 .build-badge{position:absolute;left:24px;bottom:-7px;z-index:1;transform:translateX(-50%);margin:0;padding:1px 5px;font-size:9px;line-height:1.3;letter-spacing:.03em;white-space:nowrap}
+@media(max-width:400px){.topbar .brand h1 .build-badge{left:19px;bottom:-5px;padding:1px 4px;font-size:8px}}
 
 /* ---------- SBC: live checklist, one-tap fill, "machbar" in the list ---------- */
 .sbc-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;margin:0 0 8px;padding:9px 11px;list-style:none;border:1px solid #34444c;border-radius:12px;background:#0d1519}
@@ -94,6 +98,17 @@
 .sbc-hub-progress{color:#9fb0b7;font-size:11px;font-weight:800}
 .sbc-test-toggle strong{margin-right:6px}
 
+/* ---------- Mannschaft: chem style + chemistry diamonds as one tag on the card's bottom edge (V21.218) ----------
+   Out of the layout flow, so the slot is exactly the card: nothing is pushed up and nothing hangs onto the next row. */
+#pitch .slot>.chem-dots{position:absolute;z-index:6;left:50%;top:100%;transform:translate(-50%,-64%);display:flex;align-items:center;gap:3px;margin:0;padding:3px 5px;border:1px solid #ffffff30;border-radius:8px;background:#081014f0;box-shadow:0 2px 6px #000a;pointer-events:none;white-space:nowrap}
+#pitch .slot>.chem-dots.has-boost{padding:2px 5px 2px 3px}
+#pitch .slot>.chem-dots>.cb-player-badge,#pitch .slot>.chem-dots>.cb-player-badge.cb-symbol-only{display:grid;place-items:center;width:14px;height:14px;min-height:0;margin:0 1px 0 0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#pitch .slot>.chem-dots>.cb-player-badge svg{width:14px;height:14px;stroke-width:1.8}
+#pitch .slot.out>.chem-dots:after{margin:0 0 0 2px}
+/* A touch taller pitch and slightly smaller cards, so every formation fits without cards covering each other (spots: squadPitchSpots in footera-app.js). */
+#pitch{aspect-ratio:.68}
+#pitch .slot{width:18%}
+
 /* ---------- Karten: Rating-Spalte passt in die Leiste des Kartendesigns ---------- */
 /* The rating used to be wider than the dark rail of the card art and touched its edges.
    A slightly smaller number and position keep it inside the rail on every design. */
@@ -101,13 +116,6 @@ html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #
 html body :is(.card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .pos{font-size:6.6cqw!important;margin-top:1.6cqw!important}
 html body :is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card:not(.founder) .card-top{top:19%!important}
 
-/* ---------- Aufstellung: Chemie-Boost und Chemie-Punkte ohne Turm unter der Karte ---------- */
-/* The boost icon sits on the right edge of the card and the chemistry diamonds tuck under
-   the card tip, so nothing stacks into the card below. */
-#squadView .slot>.mini{position:relative}
-#squadView .slot>.mini>.cb-player-badge.cb-symbol-only{position:absolute;z-index:11;right:-8%;top:30%;width:19px;min-height:19px;margin:0;padding:2px;border-radius:50%}
-#squadView .slot>.mini>.cb-player-badge.cb-symbol-only svg{width:13px;height:13px}
-#squadView .slot>.chem-dots{position:absolute;left:0;right:0;top:100%;margin-top:1px}
 /* Founder cards: same idea, tuned per artwork rail. */
 html body .bastian-static-founder-shell .founder-card-art:after{font-size:15.5cqw;letter-spacing:-.03em}
 html body .bastian-static-founder-shell .founder-card-art{--founder-position-left:17.6%}

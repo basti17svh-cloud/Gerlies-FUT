@@ -47,10 +47,15 @@ export function applyMotion23(p,time,speed,turn,stride,acceleration,sequence,rol
  p.upper.rotation.z+=.12*m.bank+(support?1:-1)*.075*m.brake;
  p.rig.position.y-=.048*m.brake+.033*m.cushion;
  p.rig.rotation.y+=.09*m.bank;
- p.knees[support].rotation.x-=.18*m.brake+.16*m.cushion;
- p.legs[free].rotation.x+=.27*m.launch+.30*m.cushion;
- p.knees[free].rotation.x-=.22*m.launch+.12*m.cushion;
- p.ankles[free].rotation.x-=.11*m.launch;
+ // The support knee flexes with the hip so its planted boot stays in place.
+ const flex=.18*m.brake+.16*m.cushion;
+ p.knees[support].rotation.x-=flex;p.legs[support].rotation.x+=flex/2;p.ankles[support].rotation.x+=flex/2;
+ // V21.208: at jogging pace both boots can be down; only a swinging boot
+ // reaches forward, a planted one no longer slides along the turf.
+ const swing=p.gait?.[free]?.swingWeight??1;
+ p.legs[free].rotation.x+=(.27*m.launch+.30*m.cushion)*swing;
+ p.knees[free].rotation.x-=(.22*m.launch+.12*m.cushion)*swing;
+ p.ankles[free].rotation.x-=.11*m.launch*swing;
  p.arms[support].rotation.x-=.23*m.brake-.15*m.launch;
  p.arms[free].rotation.x+=.22*m.brake-.19*m.launch;
  p.arms[0].rotation.z-=.14*m.cushion;
