@@ -17,7 +17,7 @@ function store(){
   return elements.get(id)
  };
  const ctx={
-  FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',founderRuleForPack:()=>undefined,state:{coins:3000,points:100,packs:{}},document:{querySelectorAll:()=>tabElements},
+  FOUNDER_PACK_ID:'founder-bastian',MARCO_FOUNDER_PACK_ID:'founder-marco',NIKLAS_FOUNDER_PACK_ID:'founder-niklas',MAX_FOUNDER_PACK_ID:'founder-max',founderRuleForPack:()=>undefined,state:{coins:3000,points:100,packs:{}},document:{querySelectorAll:()=>tabElements},
   $:get,fmt:String,esc:String,currencyAmountHTML:(_currency,amount)=>String(amount),packCompositionText:p=>p.type,updateStoreCountdown:()=>{},
   sbcDateKey:()=>"",promoPackReleaseForKey:()=>null,PROMO_PACK_RELEASE:{key:"2026-10-05"},nextPromoReset:()=>new Date(Date.now()+3600000),promoWindowKey:()=>'',promoUsage:()=>({remaining:10}),
   generatePack:()=>Array.from({length:5},(_,i)=>({uid:`test-${i}`})),consumePromoPurchase:()=>true,
