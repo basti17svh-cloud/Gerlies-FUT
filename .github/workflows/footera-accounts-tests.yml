@@ -7,6 +7,31 @@ on:
       - 'footera-account.css'
       - 'friend-online.js'
       - 'online/footera-accounts-v21.109.sql'
+      - 'online/footera-cloud-rewards-guard-v21.170.sql'
+      - 'online/footera-guest-cloud-v21.234.sql'
+      - 'tests/sql/**'
+      - 'tests/footera-accounts.test.cjs'
+      - 'tests/startup-state.test.cjs'
+      - 'tests/boot-update.test.cjs'
+      - 'tests/service-worker-recovery.test.cjs'
+      - 'tests/footera-account-deletion-server.test.cjs'
+      - 'tests/fixtures/footera-delete-account.deployed.ts'
+      - 'index.html'
+      - 'footera-app.css'
+      - 'footera-app.js'
+      - 'tests/helpers/**'
+      - 'service-worker.js'
+      - 'manifest.webmanifest'
+      - '.github/workflows/footera-accounts-tests.yml'
+  pull_request:
+    paths:
+      - 'footera-account.js'
+      - 'footera-account.css'
+      - 'friend-online.js'
+      - 'online/footera-accounts-v21.109.sql'
+      - 'online/footera-cloud-rewards-guard-v21.170.sql'
+      - 'online/footera-guest-cloud-v21.234.sql'
+      - 'tests/sql/**'
       - 'tests/footera-accounts.test.cjs'
       - 'tests/startup-state.test.cjs'
       - 'tests/boot-update.test.cjs'
@@ -33,3 +58,14 @@ jobs:
           node-version: '22'
       - name: Check account and online friend regressions
         run: node --test tests/footera-account-deletion-server.test.cjs tests/footera-accounts.test.cjs tests/friend-online.test.cjs tests/friend-online-sync.test.cjs tests/footera-backup.test.cjs tests/startup-state.test.cjs tests/boot-update.test.cjs tests/service-worker-recovery.test.cjs
+      - name: Check guest cloud migration on a local Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createdb footera_test
+          sudo -u postgres psql -q -d footera_test -v ON_ERROR_STOP=1 \
+            -f tests/sql/auth-mock.sql \
+            -f online/footera-accounts-v21.109.sql \
+            -f online/footera-cloud-rewards-guard-v21.170.sql \
+            -f online/footera-guest-cloud-v21.234.sql \
+            -f tests/sql/guest-cloud-v21.234.test.sql | tee sql.log
+          grep -q "ALL OK" sql.log
