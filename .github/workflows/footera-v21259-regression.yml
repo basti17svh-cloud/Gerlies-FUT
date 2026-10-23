@@ -1,0 +1,29 @@
+name: V21.259 Full Node Regression
+on:
+  pull_request:
+    paths:
+      - '3d-playbook.mjs'
+      - '3d-highlights.js'
+      - '3d-highlights-scene.mjs'
+      - 'tests/fifteen-attacks-v21259.test.cjs'
+      - '.github/workflows/footera-v21259-regression.yml'
+permissions:
+  contents: read
+jobs:
+  all-node-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check 3d-playbook.mjs
+          node --check 3d-highlights.js
+          node --check 3d-highlights-scene.mjs
+          node --check footera-app.js
+          node --check service-worker.js
+      - name: Full standard Node test suite
+        run: node --test tests/*.test.cjs tests/*.test.mjs
