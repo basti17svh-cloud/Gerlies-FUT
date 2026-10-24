@@ -26,3 +26,13 @@ test('scene events name the real clubs, scorer, keeper and kits',()=>{
  assert.equal(c.team,'away');assert.equal(c.homeName,'FC Gerlies');assert.equal(c.awayName,'HSV FC');assert.equal(c.result,'win');
  delete global.FooteraHighlights;delete global.FORMATIONS;
 });
+test('scene history comes from the duel itself, so a late or reconnecting session picks the same scenes',()=>{
+ let calls=0;
+ global.FooteraHighlights={choosePresentation:(_e,h)=>({sequence:`s${h.length}`,family:'f',finish:'normal',seconds:10}),chooseShotPlacement:()=>({side:++calls%2?1:-1}),chooseReactions:()=>({})};
+ const duel={id:'d2',home_profile:{},away_profile:{},home_lineup:[],away_lineup:[],events:[{kind:'kickoff',minute:0},{kind:'goal',side:'home',minute:5},{kind:'chance',side:'away',minute:9,xg:.4},{kind:'chance',side:'away',minute:11,xg:.1},{kind:'goal',side:'away',minute:20}]};
+ const history=scenes.historyAt(duel,4);
+ assert.deepEqual(history.map(h=>h.sequence),['s0','s1']);
+ assert.equal(scenes.buildEvent(duel,4,history).sequence,'s2');
+ assert.deepEqual(scenes.pushHistory(history,{type:'ceremony'}),history);
+ delete global.FooteraHighlights;
+});

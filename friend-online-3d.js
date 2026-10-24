@@ -119,6 +119,15 @@
    teamCrestHTML:crest(duel,team),defendCrestHTML:crest(duel,defending),keeperName:goalie?.name||'',keeperSkinTone:tone(goalie),keeperLook:look(goalie),keeperShirtNumber:1,
    ...squadLayout(attack,defend,lead,null),...kitFields(duel)}
  }
- const api={BIG_CHANCE_XG,sceneKind,buildEvent,buildCeremony,rows,teamName,crest,scoreBefore};
+ function pushHistory(history,event){
+  return event&&event.type!=='ceremony'?history.concat({sequence:event.sequence,family:event.family,shotSide:event.shotPlacement?.side}).slice(-9):history
+ }
+ // Scene history before event `end`, the same in every session that sees the duel.
+ function historyAt(duel,end){
+  const events=Array.isArray(duel?.events)?duel.events:[];let history=[];
+  for(let i=0;i<Math.min(end,events.length);i++)if(sceneKind(events,i))history=pushHistory(history,buildEvent(duel,i,history));
+  return history
+ }
+ const api={BIG_CHANCE_XG,sceneKind,buildEvent,buildCeremony,rows,teamName,crest,scoreBefore,pushHistory,historyAt};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraOnline3D=api;
 })(globalThis);
