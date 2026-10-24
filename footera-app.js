@@ -402,11 +402,11 @@ const PACKS=[
  {id:"goldplayers",name:"Premium Goldspieler-Pack",coins:15000,points:350,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:3,store:true,reward:true,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 3 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0015,dailyLimit:10,resetHour:19},
  {id:"mixed6",name:"Gemischtes Spieler-Set",coins:7500,points:200,type:"mixed",count:6,composition:[{quality:"gold",count:3,min:75,max:99},{quality:"silver",count:2,min:65,max:74},{quality:"bronze",count:1,min:0,max:64}],guarantee:81,rareCount:3,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"6 Spieler · 3 Gold, 2 Silber, 1 Bronze · 3 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"primegold",name:"Prime Goldspieler-Pack",coins:21000,points:500,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"12 Goldspieler · 6 selten · mind. 1× 82+",tag:"PROMO",iconChance:0.0017,dailyLimit:10,resetHour:19},
- {id:"electrum",name:"Premium Electrum Spieler-Pack",coins:15000,points:350,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.0012,dailyLimit:10,resetHour:19},
+ {id:"electrum",name:"Premium Electrum Spieler-Pack",coins:10000,points:350,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.0012,dailyLimit:10,resetHour:19},
  {id:"raremixed",name:"Seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · Gold/Silber/Bronze gemischt · 6 selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"ultimate",name:"Ultimatives Pack",coins:75000,points:2500,type:"gold",count:30,composition:[{quality:"gold",count:30,min:75,max:99}],guarantee:84,rareCount:30,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"30 Goldspieler · alle selten · mind. 1× 84+",tag:"PROMO",iconChance:0.004,dailyLimit:10,resetHour:19},
  {id:"jumbo-rare",name:"Jumbo-Seltene-Spieler-Pack",coins:60000,points:2000,type:"gold",count:24,composition:[{quality:"gold",count:24,min:75,max:99}],guarantee:83,rareCount:24,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"24 Goldspieler · alle selten · mind. 1× 83+",tag:"PROMO",iconChance:0.003,dailyLimit:10,resetHour:19},
- {id:"rare-mixed",name:"Seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
+ {id:"rare-mixed",name:"Komplett seltenes Gemischtes Spieler-Pack",coins:12000,points:300,type:"mixed",count:12,composition:[{quality:"gold",count:4,min:75,max:99},{quality:"silver",count:4,min:65,max:74},{quality:"bronze",count:4,min:0,max:64}],guarantee:81,rareCount:12,store:true,reward:false,promo:true,rotation:true,packKind:"mixed",desc:"12 Spieler · 4 Gold, 4 Silber, 4 Bronze · alle selten · mind. 1× 81+",tag:"PROMO",iconChance:0.001,dailyLimit:10,resetHour:19},
  {id:"mega",name:"Mega Pack",coins:39000,points:1000,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],guarantee:82,rareCount:6,store:true,reward:false,promo:true,rotation:true,packKind:"mega",chemBoostSlots:{slots:2,chance:1},desc:"12 Goldspieler · 6 selten · mind. 1× 82+ · 2 Chemie-Boosts garantiert",tag:"PROMO",iconChance:0.002,dailyLimit:20,resetHour:19},
  {id:"83x15",name:"83+ ×15 Spieler-Pack",coins:90000,points:3000,type:"gold",count:15,min:83,max:99,composition:[{quality:"gold",count:15,min:83,max:99}],guarantee:83,rareCount:15,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"15 seltene Goldspieler · jeder Spieler garantiert 83+",tag:"PROMO",iconChance:0.0025,dailyLimit:7,resetHour:19},
  {id:"84x10",name:"84+ ×10 Spieler-Pack",coins:120000,points:4000,type:"gold",count:10,min:84,max:99,composition:[{quality:"gold",count:10,min:84,max:99}],guarantee:84,rareCount:10,store:true,reward:false,promo:true,rotation:true,packKind:"players",desc:"10 seltene Goldspieler · jeder Spieler garantiert 84+",tag:"PROMO",iconChance:0.003,dailyLimit:5,resetHour:19},
@@ -1223,10 +1223,14 @@ function makeLivePackItem(base,tradeable=true){
  const team=activeTotwWeek(),info=totwInfo(base);
  return team&&info?makeItem(base,tradeable,{variant:"special",eventName:team.name,boost:Math.max(0,info.ovr-base.ovr),overridePosition:info.position,rare:true,...(Number(team.id)>=5?{displayRating:info.ovr,eventStats:info.stats,eventType:"totw",eventReleaseId:`totw-${team.id}`}:{})}):makeItem(base,tradeable)
 }
-let promoEventClockId=null,promoObjectiveClockId="",promoEventClockTimer=0;
+let promoEventClockId=null,promoObjectiveClockId="",promoEventClockTimer=0,footeraRenderedClockPhase="";
+// Moments that change ratings or content inside a running event: Blutmond upgrade, event SBC releases, season handover.
+// An open app re-renders once when one passes, so nobody has to reload at 19:00.
+function footeraClockBoundaries(){return[typeof HALLOWEEN_EVENT!=="undefined"?HALLOWEEN_EVENT.upgrade?.at:"",...EVENT_PROMO_RELEASES.map(e=>e.sbcPlayer?.releaseAt),...(typeof SEASON_SCHEDULE!=="undefined"?SEASON_SCHEDULE.map(s=>s.start):[])].map(t=>Date.parse(t||""))}
+function footeraClockPhase(at=Date.now()){return[typeof halloweenUpgradeFor==="function"&&halloweenUpgradeFor({eventType:"halloween"},at)?"blutmond":"",typeof activeEventPlayerSBCs==="function"?[...new Set(activeEventPlayerSBCs(new Date(at)).map(s=>s.eventPlayerId))].join(","):"",typeof seasonInfo==="function"?seasonInfo(new Date(at)).key:""].join("|")}
 function schedulePromoEventClock(){
  clearTimeout(promoEventClockTimer);
- const now=Date.now(),boundaries=[...EVENT_PROMO_RELEASES,...EVENT_OBJECTIVES].flatMap(e=>[Date.parse(e.activeFrom),Date.parse(e.activeUntilAt)]).filter(t=>Number.isFinite(t)&&t>now),next=boundaries.length?Math.min(...boundaries):Infinity;
+ const now=Date.now(),boundaries=[...EVENT_PROMO_RELEASES,...EVENT_OBJECTIVES].flatMap(e=>[Date.parse(e.activeFrom),Date.parse(e.activeUntilAt)]).concat(footeraClockBoundaries()).filter(t=>Number.isFinite(t)&&t>now),next=boundaries.length?Math.min(...boundaries):Infinity;
  promoEventClockTimer=setTimeout(syncPromoEventClock,Math.max(1,Math.min(60000,next-now)))
 }
 function syncPromoEventClock(){
@@ -1254,14 +1258,17 @@ function syncPromoEventClock(){
   promoObjectiveClockId=objectiveKey;updateObjectiveIndicators();
   if(currentViewId()==="objectivesView")renderTasks()
  }
+ // Never re-render under a running match or pack opening; the next tick (max. 60 s) catches up afterwards.
+ const phase=footeraClockPhase();
+ if(phase!==footeraRenderedClockPhase&&!$("match")?.classList.contains("active")&&!(typeof packFlowInProgress==="function"&&packFlowInProgress())){footeraRenderedClockPhase=phase;renderAll()}
  schedulePromoEventClock()
 }
-function startPromoEventClock(){promoEventClockId=activePromoEvent()?.id||"";promoObjectiveClockId=activeEventObjectives().map(t=>t.id).join("|");schedulePromoEventClock()}
+function startPromoEventClock(){footeraRenderedClockPhase=footeraClockPhase();promoEventClockId=activePromoEvent()?.id||"";promoObjectiveClockId=activeEventObjectives().map(t=>t.id).join("|");schedulePromoEventClock()}
 
 const TASKS=[
  {id:"starter",title:"Club gegründet",desc:"Öffne dein Starterset.",stat:"starter",target:1,reward:{coins:750,sp:250}},
  {id:"full",title:"Kompletter Kader",desc:"Besetze Startelf und 7er-Bank.",stat:"full",target:1,reward:{pack:"gold",qty:1,sp:350}},
- {id:"match",title:"Münzen-Boost",desc:"Spiele dein erstes Match und erhalte für die nächsten 5 gewerteten Spiele jeweils +500 Coins.",stat:"matches",target:1,reward:{coinBoost:{games:5,amount:500},sp:250}},
+ {id:"match",title:"Coin-Boost",desc:"Spiele dein erstes Match und erhalte für die nächsten 5 gewerteten Spiele jeweils +500 Coins.",stat:"matches",target:1,reward:{coinBoost:{games:5,amount:500},sp:250}},
  {id:"win",title:"Erster Sieg",desc:"Gewinne dein erstes Match.",stat:"wins",target:1,reward:{pack:"silver",qty:1,sp:300}},
  {id:"packs",title:"Pack-Fieber",desc:"Öffne 5 Packs.",stat:"packs",target:5,reward:{pack:"82",qty:1,sp:350}},
  {id:"sbc",title:"Squad Building",desc:"Schließe eine SBC ab.",stat:"sbcs",target:1,reward:{pack:"gold",qty:1,sp:400}},
@@ -1827,7 +1834,7 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isEvolutionItem(item))return"evolution";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";return item?.variant==="special"?"special":rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";if(item?.variant==="special")return"special";if(isEvolutionItem(item))return"evolution";return rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
 // Blutmond upgrade: every HALLOWEEN card (team, SBC, objective) gains the event upgrade once the Halloween night starts.
@@ -2658,7 +2665,9 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
   const fullName=String(p.name||"Spieler").trim(),parts=fullName.split(/\s+/),shortName=fullName.length>19&&parts.length>1?`${parts[0][0]}. ${parts.slice(1).join(" ")}`:fullName;
   const nameScale=shortName.length>21?.68:shortName.length>17?.78:shortName.length>13?.9:1;const playstyleMarker=typeof FooteraPlayStyles!=="undefined"?FooteraPlayStyles.badgeHTML(item,p,mini):"";
   if(cls==="founder"&&String(p.id||"")===FOUNDER_PLAYER_ID&&FOUNDER_BASTIAN_STATIC_SRC){
-   const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";
+   // Special designs keep their own skin; a small badge shows the Evolution instead.
+ const evoActive=!!(item&&activeEvolutionForUid(item.uid)),evoLabel=evoActive?"Aktive Evolution":"Evolution";
+ const evoMarker=item&&(evoActive||(cls!=="evolution"&&isEvolutionItem(item)))?`<span class="evo-active-marker" title="${evoLabel}" aria-label="${evoLabel}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";
    return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
   }
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
@@ -2670,7 +2679,9 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
     <path fill="none" stroke="#fdd690" stroke-width=".33" opacity=".47" d="M9 17 32 50 7 62 35 95 10 109m28-102L63 57 93 36m-70 34 40-13 31 9-16 26 15 19m-58-16 14 28 29-31"/>
     <path fill="none" stroke="#fff3c9" stroke-width=".5" opacity=".7" d="M13 43 32 50 57 28M49 123 71 136M88 43 94 66"/>
    </svg><svg class="legacy-frame" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true"><path class="outer" d="M10 4 18 1 38 3 50 .5 62 3 82 1 90 4 98 14 95 128 88 136 70 140 50 142.5 30 140 12 136 5 128 2 14Z"/><path class="mid" d="M12 6 20 3.2 39 5 50 2.6 61 5 80 3.2 88 6 95 15 92.5 126 85 133.5 68 137 50 139.5 32 137 15 133.5 7.5 126 5 15Z"/><path class="inner" d="M14 8.5 22 5.7 40 7.3 50 5.2 60 7.3 78 5.7 86 8.5 92 16.5 89.5 123.5 82 130.5 66 134 50 136.5 34 134 18 130.5 10.5 123.5 8 16.5Z"/></svg><svg class="legacy-crown" viewBox="0 0 40 20" aria-hidden="true"><path d="M3 17 1 5l10 7L20 1l9 11 10-7-3 12H3Zm1 2h32v-3H4v3Z"/></svg><div class="legacy-shards" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="legacy-laurel" viewBox="0 0 28 72" aria-hidden="true"><path d="M15 67c-3-7-4-14-4-21 0-12 3-25 10-38l2 1c-6 12-9 25-9 37 0 7 1 13 4 20l-3 1Zm1-48c-5-1-8-4-10-8 5-1 9 1 12 5l-2 3Zm-4 12c-5 0-9-3-11-7 5-2 10 0 13 4l-2 3Zm-2 13c-5 1-9-1-12-5 5-3 10-2 14 2l-2 3Zm1 13c-5 2-9 1-13-2 4-4 9-5 14-2l-1 4Zm5-45c2-5 5-8 10-9 1 5-1 9-6 12l-4-3Zm-3 13c2-5 6-8 11-8 0 5-3 9-8 11l-3-3Zm-2 13c3-5 7-7 12-6-1 5-4 8-10 10l-2-4Zm0 13c4-4 8-6 13-4-2 5-6 8-11 8l-2-4Z"/></svg>`:"";const founderTheme=cls==="founder"?(p.id===MARCO_FOUNDER_PLAYER_ID?" rangers-founder":p.id==="footera-founder-niklas-bergstraesser"?" worms-founder":p.id==="footera-founder-max-wittenberg"?" worms-founder hohenroth-founder":""):"";const body=`<div class="custom-card ${cls}${founderTheme}${baseRare?" base-rare":""}"${cls==="story"&&item?.eventName&&item.eventName!=="STORY"?` data-story-label="${esc(item.eventName)}"`:""} data-player-id="${esc(p.id||"")}" data-event-release-id="${esc(item?.eventReleaseId||"")}" data-dynamic-face="${esc(eventDynamicFace(p,item))}">${legacyDecor}<div class="card-top"><div class="ovr">${r}</div><div class="pos">${esc(positionLabel(pos,p))}</div></div>${rareMark}${emblemsHTML(p)}<div class="face">${portraitHTML(p,false,item)}</div><div class="card-bottom"><div class="pname" title="${esc(fullName)}" style="--card-name-scale:${nameScale}">${esc(shortName)}</div><div class="stats">${cardStatPairs(p).map(x=>`<span><small>${x[0]}</small><b>${x[1]}</b></span>`).join("")}</div></div>${cardAltPositionsHTML(p,pos)}</div>`;
- const evoMarker=item&&activeEvolutionForUid(item.uid)?`<span class="evo-active-marker" title="Aktive Evolution" aria-label="Aktive Evolution"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="flashback"?" flashback-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
+ // Special designs keep their own skin; a small badge shows the Evolution instead.
+ const evoActive=!!(item&&activeEvolutionForUid(item.uid)),evoLabel=evoActive?"Aktive Evolution":"Evolution";
+ const evoMarker=item&&(evoActive||(cls!=="evolution"&&isEvolutionItem(item)))?`<span class="evo-active-marker" title="${evoLabel}" aria-label="${evoLabel}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";return`<div class="${mini?"mini":""}"><div class="card-shell${cls==="legacy"?" legacy-shell":cls==="flashback"?" flashback-shell":cls==="momentum"?" momentum-shell":cls==="evolution"?" evolution-shell":cls==="founder"?" founder-shell":""}">${body}${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
 }
 function cardAltPositionsHTML(p,shownPosition=p?.position){
  const shown=positionLabel(shownPosition,p),positions=[...new Set(playerPositions(p).map(x=>positionLabel(x,p)))].filter(x=>x&&x!==shown);
@@ -3482,7 +3493,7 @@ function openPackPlayerDetails(k){
  const tradeActions=item.tradeable?`<button class="menu-action" data-pack-transfer-profile="${k}"><span><span>Auf Transferliste</span><small>Item aus dem Pack auf die Transferliste verschieben.</small></span><b>›</b></button><button class="menu-action" data-pack-direct-sell="${k}"><span><span>Auf Transfermarkt anbieten</span><small>Startpreis, Sofortkauf und Dauer festlegen.</small></span><b>›</b></button>`:"";
  const storeAvailable=(state.sbcStorage||[]).length<100;
  const duplicateStorageActions=duplicate&&!isFounderItem(item)&&!isFooteraLiveCard(item)?`<button class="menu-action" data-pack-profile-sbcstore="${k}" ${storeAvailable?"":"disabled"}><span><span>${storeAvailable?"In SBC-Speicher":"SBC-Speicher voll (100/100)"}</span><small>Duplikat für spätere SBCs sichern${item.tradeable?" · bleibt tauschbar":""}.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
- const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Münzen auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
+ const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Coins auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateStorageActions}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player")
 }
@@ -5312,9 +5323,9 @@ function startEvolution(evoId,uid,payment="free"){
  const coins=Number(evo?.cost?.coins||0),points=Number(evo?.cost?.points||0),free=!coins&&!points;
  let paidWith="free",paidAmount=0;
  if(!free){
-  if(payment==="coins"&&coins){if(state.coins<coins)return toast("Nicht genügend Münzen.");state.coins-=coins;paidWith="coins";paidAmount=coins}
+  if(payment==="coins"&&coins){if(state.coins<coins)return toast("Nicht genügend Coins.");state.coins-=coins;paidWith="coins";paidAmount=coins}
   else if(payment==="points"&&points){if(state.points<points)return openFooteraPointsOverview(points,`Evolution ${evo.name}`,Number(state.points||0));state.points-=points;paidWith="points";paidAmount=points}
-  else return toast("Wähle Münzen oder Footera Points.")
+  else return toast("Wähle Coins oder Footera Points.")
  }
  item.tradeable=false;
  const entry={evoId:evo.id,uid:item.uid,instanceKey:sch.key,completionEnd:sch.completionEnd.getTime(),stage:0,paidWith,paidAmount,baseline:{evo:Number(item.evo||0),evoStats:{...(item.evoStats||{})},evoPlaystyles:[...(item.evoPlaystyles||[])],overridePosition:item.overridePosition||""}};
@@ -6116,11 +6127,13 @@ function startMatch(mode,opponent=null,kitSelection=null){
  // V21.226: the teams walk out in 3D first (Wichtige/Alle Highlights).
  if(typeof queueMatchCeremony3D==="function")queueMatchCeremony3D("kickoff")
 }
-function addLog(t){
+function addLog(t,side=""){
  if(!match)return;
  const d=document.createElement("div");
- d.className="logline";
+ d.className="logline"+(side?" logline-"+side:"");
  d.textContent=`${Math.min(120,Math.floor(match.minute))}' ${t}`;
+ // Goals and cards name the team up front, so the feed reads at a glance.
+ if(side){const tag=document.createElement("b");tag.className="logline-team";tag.textContent=side==="home"?matchHomeTeamName():matchAwayTeamName();d.prepend(tag)}
  $("matchLog").prepend(d)
 }
 function updateMatchUI(force=false){
@@ -6326,11 +6339,11 @@ function logGoal(side,scorer,assist,type,shot={}){
  recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
  recordMatchScene(`${side}-goal`,`${event.scorer} trifft für ${team}!`);
  if(typeof document!=="undefined"&&!in3D)showMatchGoalMoment(event,scorer);
- if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`);return}
- if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`);return}
- if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`);return}
- if(type==="penalty"){addLog(`TOR! ${event.scorer} verwandelt einen Elfmeter für ${team}.`);return}
- addLog(`TOR! ${event.scorer} trifft für ${team}.`)
+ if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`,side);return}
+ if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`,side);return}
+ if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`,side);return}
+ if(type==="penalty"){addLog(`TOR! ${event.scorer} verwandelt einen Elfmeter für ${team}.`,side);return}
+ addLog(`TOR! ${event.scorer} trifft für ${team}.`,side)
 }
 function simAttack(homeSide){
  const pending=match.nextRestart,restart=pending&&match.minute-pending.at<=5?pending:null;delete match.nextRestart;
@@ -6440,12 +6453,12 @@ function maybeBookPlayer(){
   const form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],candidates=match.lineup.slice(0,11).map((uid,i)=>({uid,i})).filter(x=>x.uid&&form[x.i]?.p!=="GK"&&!already.has(`home:${x.uid}`));
   if(!candidates.length)return false;
   const picked=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(picked.uid)?.name||"Spieler";
-  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`);return true
+  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`,"home");return true
  }
  const profile=match.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"],candidates=squad.slice(0,11).map((entry,i)=>({entry,i,base:opponentMatchBase(entry)})).filter(x=>x.base&&form[x.i]?.p!=="GK"&&!already.has(`away:${x.i}`));
  if(!candidates.length)return false;
  const picked=candidates[Math.floor(Math.random()*candidates.length)],name=picked.base.name||"Gegenspieler";
- match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name} (${matchAwayTeamName()}).`);return true
+ match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name}.`,"away");return true
 }
 function sendOffPlayer(){
  if(!match)return false;
@@ -6454,7 +6467,7 @@ function sendOffPlayer(){
  const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Spieler",minute=Math.floor(match.minute);
  match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute,at:match.minute});match.redCardSlot=i;
  recordMatchEvent("red","home",name);recordMatchScene("home-card",`Rote Karte für ${name}.`);
- addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`);
+ addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`,"home");
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
 }
@@ -6992,8 +7005,10 @@ function finishMatch(){
 }
 function closeFinishedMatch(){
  if(typeof hidePostMatchProgress==="function")hidePostMatchProgress();
- if(history.state?.gfut&&history.state.kind==="match")history.back();
- else{stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;switchView("playView")}
+ // After the result the Spielen page starts at the top, not where the match was opened.
+ const toTop=()=>requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"auto"}));
+ if(history.state?.gfut&&history.state.kind==="match"){window.addEventListener("popstate",toTop,{once:true});history.back()}
+ else{stopMatchTimer();$("match").classList.remove("active");match=null;matchManagerDraft=null;switchView("playView");toTop()}
 }
 $("matchClose").addEventListener("click",()=>{
  if(match?.competitionProgress&&!match.progressScreenShown&&typeof showPostMatchProgress==="function"){
@@ -7021,7 +7036,7 @@ function halloweenHeroSlide(at=Date.now()){
  const ev=HALLOWEEN_EVENT,start=Date.parse(ev.activeFrom),end=Date.parse(ev.activeUntilAt),teaserFrom=Date.parse("2026-10-22T19:00:00+02:00");
  if(at<teaserFrom||at>=end||!eventRosterReady(ev))return null;
  const fmtDay=d=>new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(d));
- if(at<start){const days=Math.max(0,Math.round((start-at)/86400000));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, eine geheime Spieler-SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
+ if(at<start){const berlinDay=t=>{const p=berlinParts(new Date(t));return Date.UTC(p.year,p.month-1,p.day)/86400000},days=Math.max(0,berlinDay(start)-berlinDay(at));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, eine geheime Spieler-SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
  const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(ev.upgrade.at);
  return{kicker:upgrade?"BLUTMOND-UPGRADE AKTIV · +1 AUF ALLE HALLOWEEN-KARTEN":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:upgrade?`Der Blutmond ist aufgegangen: Jede Halloween-Karte hat jetzt +1 GES und +1 auf alle Werte. In Packs bis ${fmtDay(end)} Uhr.`:`18 Spezialkarten in Packs bis ${fmtDay(end)} Uhr. In der Halloween-Nacht (${fmtDay(upAt)} Uhr) bekommt jede Halloween-Karte das Blutmond-Upgrade.`,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:"JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:ev.activeUntil,theme:"halloween",event:ev}
 }
@@ -7487,7 +7502,8 @@ function friendBase(fp){if(!fp)return null;const db=fp.pid?P_BY_ID.get(String(fp
 function friendFits(p,slot){if(!p)return false;const positions=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean)];return positions.includes(slot)}
 // fp.ovr is the finished card rating; itemRating adds evo and the Halloween
 // upgrade on top of displayRating again, so hand it the rating before those.
-function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
+// A player missing from this device's database gets no itemRating: keep fp.ovr.
+function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);if(!itemBase(fp))return shown;return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
 function friendItem(fp,b=friendBase(fp)){
  if(!fp||!b)return null;
  return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:friendDisplayRating(fp,b),...friendCardExtras(fp)}
@@ -7729,6 +7745,17 @@ function toggleMoreTray(){const t=moreTray();if(!t)return;const open=t.classList
 
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.toggle==="more"){toggleMoreTray();return}switchView(b.dataset.view)}));document.addEventListener("click",e=>{const moreBtn=e.target.closest("[data-toggle=more]");if(!moreBtn&&!e.target.closest("#moreTray"))hideMoreTray();const b=e.target.closest("[data-go]");if(b){hideMoreTray();switchView(b.dataset.go)}})
 $("campaignModal").addEventListener("click",e=>{if(e.target===$("campaignModal"))closeUiLayer("campaignModal","campaign")});
+// V21.254: Escape or a tap on the dark backdrop closes the top window, exactly like the back button.
+// Windows that guard a required step or a purchase/reward flow stay open.
+const BACKDROP_LOCKED_MODALS=new Set(["usernameRequiredModal","footeraPointsPurchaseModal","weeklyRewardModal","onlineDuelModal","squadBattleModal"]);
+function dismissTopModal(){
+ const id=topUiLayer(),el=id&&$(id);
+ if(!el?.classList.contains("modal")||BACKDROP_LOCKED_MODALS.has(id))return false;
+ if(history.state?.gfut)history.back();else closeTopUiLayer();
+ return true
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!e.defaultPrevented&&dismissTopModal())e.preventDefault()});
+document.addEventListener("click",e=>{const id=topUiLayer();if(id&&e.target===$(id)&&id!=="campaignModal")dismissTopModal()});
 
 
 let deferredInstallPrompt=null;
@@ -7842,7 +7869,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.259";
+const GFUT_BUILD="V21.264";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7900,7 +7927,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21259",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21264",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

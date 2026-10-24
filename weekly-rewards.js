@@ -70,7 +70,7 @@
    '<span>'+esc(details(row))+'</span></div>'+
    '<div class="weekly-reward-detail-head"><h4>DEINE BELOHNUNGEN</h4><small>'+packs.length+' '+(packs.length===1?"Pack":"Packs")+(coins?" + Coins":"")+'</small></div>'+
    '<div class="weekly-reward-prizes">'+coinHtml+groupedPacks.map(packPreview).join("")+pickHtml+'</div>'+
-   '<p class="weekly-reward-note">Beim Abholen werden Münzen direkt gutgeschrieben. Packs und Player Picks findest du im Store. Für Player Picks ist ein verknüpftes Konto erforderlich.</p>'+
+   '<p class="weekly-reward-note">Beim Abholen werden Coins direkt gutgeschrieben. Packs und Player Picks findest du im Store. Für Player Picks ist ein verknüpftes Konto erforderlich.</p>'+
    '<button type="button" class="weekly-reward-claim" data-weekly-reward-claim="'+esc(String(row.mode))+'" data-week="'+esc(String(row.week))+'">Belohnungen abholen <span aria-hidden="true">→</span></button>'+
    '</section>';
  }

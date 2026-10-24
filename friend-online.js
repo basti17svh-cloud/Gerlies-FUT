@@ -316,6 +316,7 @@
  }
  // V21.246: 3D scenes like the Rivals matchday. Both clients play the same
  // scenes while the database holds its clock (footera-online-matchday-v21.246.sql).
+ const STALE_SCENE_MINUTES=2;
  const scene3D={queue:null,duelId:"",shownUpTo:-1,kickoff:false,fulltime:false,history:[],scoreHold:null,busy:false};
  const onlineStage=()=>$("onlineDuelModal")?.classList.contains("active")?$("onlineMatchLiveStage"):null;
  window.FooteraHighlightsStage=onlineStage;
@@ -336,7 +337,6 @@
  function enqueueOnline3D(event){
   const queue=online3DQueue();if(!queue||!event||!onlineStage())return false;
   const queued=queue.enqueue(event);
-  if(queued&&event.type!=="ceremony")scene3D.history=scene3D.history.concat({sequence:event.sequence,family:event.family,shotSide:event.shotPlacement?.side}).slice(-9);
   if(queued&&event.type==="goal")scene3D.scoreHold={id:event.id,home:event.scoreBeforeHome,away:event.scoreBeforeAway};
   return queued
  }
@@ -349,8 +349,10 @@
  }
  function startOnline3D(row){
   cancelOnline3D();
-  scene3D.duelId=row?.id||"";scene3D.shownUpTo=(row?.events||[]).length-1;scene3D.history=[];
-  scene3D.kickoff=row?.status!=="live"||Number(row?.minute||0)>0;scene3D.fulltime=row?.status==="finished"
+  scene3D.duelId=row?.id||"";scene3D.shownUpTo=(row?.events||[]).length-1;
+  scene3D.history=row&&window.FooteraOnline3D?FooteraOnline3D.historyAt(row,scene3D.shownUpTo+1):[];
+  // The inviter opens the match while it is still invited: its kickoff comes later.
+  scene3D.kickoff=!(row?.status==="invited"||row?.status==="live"&&Number(row?.minute||0)===0);scene3D.fulltime=row?.status==="finished"
  }
  function present3D(old,row){
   const builder=window.FooteraOnline3D;if(!builder||scene3D.duelId!==row.id)return;
@@ -358,7 +360,12 @@
   const events=row.events||[];
   for(let i=scene3D.shownUpTo+1;i<events.length;i++){
    const kind=builder.sceneKind(events,i);if(!kind)continue;
-   const queued=enqueueOnline3D(builder.buildEvent(row,i,scene3D.history));
+   const event=builder.buildEvent(row,i,scene3D.history);if(!event)continue;
+   // Both sessions derive the same history from the duel, shown or not.
+   scene3D.history=builder.pushHistory(scene3D.history,event);
+   // After a reconnect, old moments are not replayed: both sides stay in step.
+   const stale=Number(row.minute||0)-Number(events[i].minute||0)>STALE_SCENE_MINUTES;
+   const queued=!stale&&enqueueOnline3D(event);
    if(!queued&&kind==="goal")showGoalMoment(row)
   }
   scene3D.shownUpTo=Math.max(scene3D.shownUpTo,events.length-1);
