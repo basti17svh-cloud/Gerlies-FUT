@@ -7,7 +7,7 @@
  * morphs during a highlight. Skeleton frames match the Quaternius rig, so the
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
-import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=2190';
+import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 
 const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21258',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
@@ -119,14 +119,14 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  for(const half of ['front','back']){
   // Club pattern over the torso; sleeves keep their own pattern rule.
   ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,half);
-  const sleeves=['sleeves','shoulders','cuffs'].includes(kit.pattern);
+  const sleeves=['sleeves','shoulders','cuffs'].includes(kit.pattern)||globalThis.FooteraKitArt.ids.includes(kit.pattern);
   if(sleeves){
    for(const side of [-1,1]){ctx.save();ctx.translate(side>0?.215:-.62,1.6);ctx.scale(.405,-.74);
     paintFooteraKitTile(ctx,kit,1,1,'sleeves');ctx.restore()}
   }
   // The back stays plain under name and number, like real kits, so no stripe
   // or sash ever runs through the squad number.
-  if(half==='front'||sleeves){ctx.save();ctx.translate(-.215,1.52);ctx.scale(.43,-.66);
+  if(half==='front'||['sleeves','shoulders','cuffs'].includes(kit.pattern)){ctx.save();ctx.translate(-.215,1.52);ctx.scale(.43,-.66);
   ctx.beginPath();ctx.rect(0,0,1,1);ctx.clip();paintFooteraKitTile(ctx,kit,1,1,'shirt');ctx.restore()}
   // Collar trim and a soft side seam.
   ctx.strokeStyle=second;ctx.lineWidth=.014;

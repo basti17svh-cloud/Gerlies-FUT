@@ -33,5 +33,18 @@ test('legacy saves migrate safely and independent options survive repeated JSON 
 test('full editor previews pass mini=false and matching cache-busted assets ship together',()=>{
  for(const side of ['home','away'])assert.ok(html.includes(`kitHTML(x.kits.${side},false,x.crest)`));
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const asset of ['club-crest-art.js','club-crest-premium.css','club-identity.css']){assert.ok(html.includes(asset+'?v=2130'));assert.ok(sw.includes(asset+'?v=2130'))}
+ for(const asset of ['club-crest-art.js','club-crest-premium.css','club-identity.css']){const ref=html.match(new RegExp(asset.replaceAll('.', '\\.')+'\\?v=\\d+'))?.[0];assert.ok(ref,asset);assert.ok(sw.includes(ref),asset+' offline reference matches')}
+});
+
+// Signature designs survive the same normalizer used for local and cloud clubs.
+test('all seven signature patterns survive club normalization and keep editable colours',()=>{
+ const art=require('../kit-pattern-art.js');
+ assert.equal(art.ids.length,7);
+ for(const pattern of art.ids){
+  const x=normalize({kits:{home:{pattern,shirtPrimary:'#123456',shirtSecondary:'#fedcba'},away:{pattern}}});
+  assert.equal(x.kits.home.pattern,pattern);assert.equal(x.kits.away.pattern,pattern);
+  assert.equal(x.kits.home.shirtPrimary,'#123456');assert.equal(x.kits.home.shirtSecondary,'#fedcba');
+  assert.match(art.svg(pattern),/kit-pattern-art/);
+ }
+ assert.equal(art.svg('<script>'),'');assert.equal(art.recipe('unknown'),null);
 });

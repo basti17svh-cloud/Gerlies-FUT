@@ -51,7 +51,7 @@ const server=http.createServer((req,res)=>{
    await page.locator('.identity-tabs').scrollIntoViewIfNeeded();
    await page.screenshot({path:path.join(output,'footera-crest-v2130-'+width+'.png')});
    await page.locator('[data-identity-tab="kits"]').click();
-   assert.equal(await page.locator('#identityHomePattern option').count(),20);
+   assert.equal(await page.locator('#identityHomePattern option').count(),27);
    for(const side of ['Home','Away']){
     const preview=page.locator('#identity'+side+'KitPreview .kit-shirt');
     const size=await preview.boundingBox();assert.ok(size.width>=180&&size.height>=195,JSON.stringify(size));

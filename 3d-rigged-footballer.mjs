@@ -1,3 +1,4 @@
+import './kit-pattern-art.js?v=21269';
 /* Footera: lightweight skinning pilot for the scorer and goalkeeper.
  * Original authored geometry, no external assets/licence dependencies.
  * Existing animated bone joints drive a continuous weighted football silhouette.
@@ -8,14 +9,15 @@ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 export const RIGGED_SURFACE_VERSION=3;
 export const MATERIAL_SLOTS=Object.freeze(['shirt','shorts','skin','socks','sleeves']);
-// The 20 patterns used in club-identity.css. No creative replacement at
+// The 27 patterns used in club-identity.css. No creative replacement at
 // kickoff: the same editor pattern and exact saved colors reach both teams.
 export const FOOTERA_KIT_PATTERNS=Object.freeze([
  'solid','stripes','hoops','diagonal','halves','sleeves','center','pinstripes',
  'quarters','chevron','chestband','shoulders','sidepanels','reverse',
- 'doubleband','checkers','diamonds','fade','splitstripe','cuffs'
+ 'doubleband','checkers','diamonds','fade','splitstripe','cuffs','volt','rift','prism','topo','velocity','deco','orbit'
 ]);
 export function paintFooteraKitTile(ctx,kit,width,height,part='shirt'){
+ if(globalThis.FooteraKitArt.paint(ctx,kit,width,height,part))return;
  const primary=kit?.shirt||'#ffffff',secondary=kit?.shirtSecondary||primary;
  const pattern=FOOTERA_KIT_PATTERNS.includes(kit?.pattern)?kit.pattern:'solid';
  ctx.fillStyle=(part==='sleeves'&&(pattern==='sleeves'||pattern==='shoulders'))?secondary:primary;

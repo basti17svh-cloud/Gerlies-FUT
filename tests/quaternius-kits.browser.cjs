@@ -61,7 +61,7 @@ const server=http.createServer((req,res)=>{
     return hash;
    };
    const unique=new Set(K.FOOTERA_KIT_PATTERNS.map(p=>sig(p,'shirt')+':'+sig(p,'sleeves')));
-   if(K.FOOTERA_KIT_PATTERNS.length!==20||unique.size<17)throw Error('Incomplete 20 pattern atlas: '+unique.size);
+   if(K.FOOTERA_KIT_PATTERNS.length!==27||unique.size<24)throw Error('Incomplete 27 pattern atlas: '+unique.size);
    const screenshots=[];
    for(const backView of [false,true]){
     world.resize(640,480);world.update(1.55);

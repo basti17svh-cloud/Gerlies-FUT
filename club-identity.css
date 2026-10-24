@@ -98,3 +98,19 @@
 .kit-meta .identity-field{min-width:0}
 .kit-meta select{font-size:12px}
 .kit-shirt{clip-path:polygon(25% 0,40% 5%,44% 9%,56% 9%,60% 5%,75% 0,100% 20%,87% 42%,79% 35%,82% 100%,18% 100%,21% 35%,13% 42%,0 20%)}
+
+/* Signature kits: resolution-independent art, same recipes as the match atlas. */
+.kit-pattern-art{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
+.kit-shirt::before{z-index:1;background:linear-gradient(95deg,#0002,transparent 30%,#ffffff16 46%,transparent 62%,#0002),repeating-linear-gradient(90deg,transparent 0 2px,#ffffff05 2px 3px)}
+.kit-shirt::after{z-index:3}
+.kit-shirt .kit-crest-stamp{z-index:4}
+.kit-signature-picker{margin:0 0 12px;border:1px solid #607d65;border-radius:12px;background:linear-gradient(140deg,#172d25,#101a17)}
+.kit-signature-picker>summary{padding:12px;color:#ddf3a1;font-size:12px;font-weight:900;cursor:pointer}
+.kit-signature-picker>p{padding:0 12px;color:#aebeb4;font-size:11px;line-height:1.4}
+.kit-design-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 9px 10px}
+.kit-design-option{min-width:0;display:grid;justify-items:center;gap:4px;padding:10px 3px 8px;border:1px solid #354d41;border-radius:10px;background:#0c1713;color:#dce8df;cursor:pointer}
+.kit-design-option[aria-pressed="true"]{border-color:#dcff64;background:#273923;box-shadow:inset 0 0 0 1px #dcff64}
+.kit-design-option .kit-shirt{width:68px;height:74px;margin-bottom:3px;filter:none}
+.kit-design-option b{font-size:10px;letter-spacing:.07em}
+.kit-design-option small{font-size:9px;line-height:1.25;text-align:center;color:#a3b6aa;overflow-wrap:anywhere}
+.kit-design-option[aria-pressed="true"] small{color:#e5f5b8}

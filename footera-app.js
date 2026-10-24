@@ -1445,7 +1445,7 @@ function defaultClubIdentity(){return{
  }
 }}
 function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
-function cleanClubKit(src,def){src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}}
+function cleanClubKit(src,def){src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs","volt","rift","prism","topo","velocity","deco","orbit"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}}
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
 
@@ -4441,7 +4441,7 @@ function crestHTML(identity,mini=false){
 function kitHTML(kit,mini=false,crest=null){
  const k=kit||defaultClubIdentity().kits.home;
  const badge=crest&&window.FooteraCrestArt?.render?`<span class="kit-crest-stamp">${window.FooteraCrestArt.render(crest,true)}</span>`:"";
- return `<div class="kit-shirt pattern-${esc(k.pattern)}${mini?" kit-mini":""}" style="--kit-a:${safeClubHex(k.shirtPrimary,"#d8ff3e")};--kit-b:${safeClubHex(k.shirtSecondary,"#173627")}">${badge}</div>`
+ return `<div class="kit-shirt pattern-${esc(k.pattern)}${mini?" kit-mini":""}" style="--kit-a:${safeClubHex(k.shirtPrimary,"#d8ff3e")};--kit-b:${safeClubHex(k.shirtSecondary,"#173627")}">${window.FooteraKitArt?.svg(k.pattern)||""}${badge}</div>`
 }
 function syncClubSectionUi(){
  const players=$("clubPlayersSection"),identity=$("clubIdentitySection");if(players)players.hidden=clubSection!=="players";if(identity)identity.hidden=clubSection!=="identity";const boosts=$("clubChemBoostSection");if(boosts)boosts.hidden=clubSection!=="boosts";
@@ -7869,7 +7869,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.268";
+const GFUT_BUILD="V21.269";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
