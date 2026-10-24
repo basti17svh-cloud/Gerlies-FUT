@@ -30,12 +30,18 @@
    --ps-size (diamond size) are set per card design below, so they never
    cover numbers or positions. */
 .card-shell>.playstyle-card-row{
- position:absolute;z-index:34;left:10.5%;right:10.5%;top:calc(var(--ps-y,87.6%) - 4.3cqw);
- display:flex;align-items:center;justify-content:center;gap:max(1px,1.3cqw);
+ /* Always anchor the entire icon group to the card's own horizontal centre.
+    Do not anchor to the icon count / the right edge of the preview. */
+ position:absolute;z-index:34;left:50%;right:auto;top:calc(var(--ps-y,87.6%) - 4.3cqw);
+ width:100%;max-width:100%;box-sizing:border-box;transform:translateX(-50%);
+ display:flex;align-items:center;justify-content:center;gap:var(--ps-gap,.9cqw);
  height:8.6cqw;margin:0;padding:0;pointer-events:none;opacity:.98;
 }
 .card-shell>.playstyle-card-row .playstyle-card-icon{
- position:relative;flex:0 0 var(--ps-size,7cqw);width:var(--ps-size,7cqw);height:var(--ps-size,7cqw);
+ /* Respect the card width even for players with many PlayStyles.
+    One count is supplied by badgeHTML; icons remain perfectly symmetric. */
+ --ps-fit-size:min(var(--ps-size,7cqw),calc(84cqw / var(--ps-count,6) - var(--ps-gap,.9cqw)));
+ position:relative;flex:0 0 var(--ps-fit-size);width:var(--ps-fit-size);height:var(--ps-fit-size);
  display:grid;place-items:center;box-sizing:border-box;
  border:1px solid rgba(255,255,255,.66);border-radius:1.2cqw;
  background:rgba(4,8,11,.84);color:#f7fbff;
@@ -67,8 +73,8 @@
 
 /* Full profile cards get a little more clarity; XI cards stay compact but legible. */
 .player-detail-card .card-shell>.playstyle-card-row,
-.bio-card .card-shell>.playstyle-card-row{opacity:1;gap:max(1px,1.45cqw)}
-.mini .card-shell>.playstyle-card-row{opacity:.96;gap:max(.5px,.9cqw)}
+.bio-card .card-shell>.playstyle-card-row{opacity:1;--ps-gap:1cqw}
+.mini .card-shell>.playstyle-card-row{opacity:.96;--ps-gap:.7cqw}
 .mini .card-shell>.playstyle-card-row .playstyle-card-icon{
  border-color:rgba(255,255,255,.72);background:rgba(3,7,10,.88);color:#fff;
  box-shadow:0 .4cqw 1cqw rgba(0,0,0,.34);
