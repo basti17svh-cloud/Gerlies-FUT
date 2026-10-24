@@ -362,11 +362,13 @@
  function describeCloudDifference(local,cloud){
   const localIds=cloudInventoryIds(local),cloudIds=cloudInventoryIds(cloud);
   const fmt=n=>Number(n||0).toLocaleString("de-DE");
+  const record=s=>fmt(s?.champions?.wins)+" Siege / "+fmt(s?.champions?.losses)+" Niederlagen ("+fmt(s?.champions?.games)+" Spiele)";
   return "Gerät: "+fmt(local.club?.length)+" Spielerkarten · "+fmt(local.coins)+" Coins · "+fmt(local.points)+" Points"+
    "\nCloud: "+fmt(cloud.club?.length)+" Spielerkarten · "+fmt(cloud.coins)+" Coins · "+fmt(cloud.points)+" Points"+
+   "\nChampions auf Gerät: "+record(local)+"\nChampions in Cloud: "+record(cloud)+
    "\nNur auf Gerät: "+[...localIds].filter(id=>!cloudIds.has(id)).length+" Karten; nur Cloud: "+[...cloudIds].filter(id=>!localIds.has(id)).length+" Karten.";
  }
- async function saveCloud(){
+ async function saveCloud(resolveConflict=false){
   changeLocked();
   if(autoBusy)throw Error("Ein Cloud-Abgleich läuft bereits. Bitte erneut versuchen.");
   autoBusy=true;
@@ -386,31 +388,39 @@
     if(!root.FooteraBackup?.downloadSnapshot)throw Error("Sicherer Cloud-Export fehlt. Footera neu laden.");
     await root.FooteraBackup.downloadSnapshot(cloud.save_data,"Cloud_V"+cloud.revision);
     const conflict=!point||point.saveId!==local.profile.saveId||point.revision!==cloud.revision;
-    if(conflict){
+    if(conflict&&resolveConflict!==true){
      // We cannot reconstruct wallet transactions or distinguish a legitimate
      // sale from a lost card from two independent snapshots. Never overwrite a
      // diverged revision, even if the user taps through the native warning.
      // The cloud version was exported immediately above for a later audit.
      const currentIds=cloudInventoryIds(local),remoteIds=cloudInventoryIds(cloud.save_data);
      const remoteOnly=[...remoteIds].filter(id=>!currentIds.has(id)).length;
-     autoStatus="Cloud-Konflikt: Gerät und Cloud haben getrennte Änderungen. Zusammenführung nötig, automatisches Ersetzen gesperrt.";
-     throw Error("Sicherheitsstopp: Cloud und Gerät haben getrennte Änderungen ("+remoteOnly+" Karten nur in Cloud). Kein Überschreiben. Die Cloud wurde als JSON gesichert. Beide Sicherungen für eine kontrollierte Zusammenführung aufbewahren.");
+     autoStatus="Cloud-Konflikt: Upload pausiert. Unter 'Konflikt lösen: diesen Gerätestand verwenden' beide Stände vergleichen und bewusst auswählen.";
+     throw Error("Sicherheitsstopp: Cloud und Gerät unterscheiden sich ("+remoteOnly+" Karten nur in Cloud). Cloud als JSON gesichert. Unter 'Konflikt lösen' kannst du den aktuellen Gerätestand nach Vergleich ausdrücklich übernehmen.");
     }
-    if(!root.confirm("Cloud-Sicherung aktualisieren?\n\n"+
+    if(conflict){
+     // Separate, explicit recovery action. Never merge balances or inventories.
+     // Keep both importable snapshots before the user selects this device.
+     await root.FooteraBackup.downloadSnapshot(local,"Geraet_vor_Cloudwechsel");
+    }
+    if(!root.confirm((conflict?"Cloud-Konflikt lösen: DIESEN GERÄTESTAND übernehmen?":"Cloud-Sicherung aktualisieren?")+"\n\n"+
      describeCloudDifference(local,cloud.save_data)+"\n\nCloud-Version "+cloud.revision+" wurde als Sicherungsdatei angeboten."+
-     "\nDeine lokale JSON-Sicherung ebenfalls aufbewahren."+
+     (conflict?"\nAuch der Gerätestand wurde als JSON-Sicherung angeboten. Beide Dateien aufbewahren. Abweichende Fortschritte, Guthaben und Karten der Cloud werden NICHT hinzugefügt.":"\nDeine lokale JSON-Sicherung ebenfalls aufbewahren.")+
      "\n\nSoll der AKTUELLE LOKALE Spielstand in die Cloud übernommen werden? Die vorige Cloud-Version wird ersetzt. Abbrechen ändert nichts."))return false;
    }
    changeLocked();
    if(!structurallyEqual(localData(),local))throw Error("Spielstand wurde während des Abgleichs verändert. Erneut vergleichen.");
+   if((await user())?.id!==u.id)throw Error("Das angemeldete Konto wurde während des Abgleichs geändert. Nichts überschrieben.");
+   ensureOwned(u);
    const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:local,p_base_revision:cloud?.revision||0});
    if(error)throw error; // Backend compare-and-swap prevents concurrent overwrite.
    savePoint(u,local,data);autoStatus="";
-   msg("Cloud-Synchronisierung erfolgreich, Version "+data+".");
+   msg("Cloud-Synchronisierung erfolgreich, Version "+data+". Auf dem anderen Gerät jetzt 'Aus Cloud laden' verwenden.");
    await render();
    return true;
   }finally{autoBusy=false}
  }
+ async function resolveCloudConflict(){return saveCloud(true);}
  // A pick and its inventory delivery share one server transaction. Keep a retry
  // marker until both the local save and its cloud revision have been recorded.
  async function pickDeadline(work,ms){
@@ -508,6 +518,9 @@
    }finally{autoBusy=false}
  }
  async function restoreCloud(){
+   if(autoBusy)throw Error("Ein Cloud-Abgleich läuft bereits. Bitte kurz warten und erneut laden.");
+   autoBusy=true;
+   try{
    changeLocked();
    const {u}=await requirePermanent(),existing=await cloudInfo();
    if(!existing)throw Error("Für dieses Konto gibt es noch keine Cloud-Sicherung.");
@@ -533,6 +546,7 @@
      throw e;
    }
    root.location.reload();
+   }finally{autoBusy=false}
  }
  // Guests back up their own club as well (V21.234). The email confirmation
  // often opens in another browser (Snapchat, Instagram, TikTok in-app
@@ -715,12 +729,35 @@
    if(structurallyEqual(latest.save_data,save)){
     savePoint(u,save,latest.revision);autoStatus="";return;
    }
+    if(point.hash===fingerprint(save)&&!pendingPlayerPick()){
+     // This device has no changes since its last sync. Fast-forward only;
+     // independently changed devices still need an explicit choice.
+     const saved=root.FooteraBackup?.validateState(latest.save_data);
+     changeLocked();
+     if(!saved||!structurallyEqual(localData(),save)||root.localStorage.getItem(OWNER)!==u.id)return;
+     if((await user())?.id!==u.id)return;
+     // Auth/validation are asynchronous: recheck before replacing anything.
+     changeLocked();
+     if(!structurallyEqual(localData(),save))return;
+     const before=root.localStorage.getItem(KEY);
+     if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+     prepareSaveReplacement();
+     try{
+      root.localStorage.setItem(KEY,JSON.stringify(saved));
+      savePoint(u,saved,latest.revision);
+     }catch(e){
+      root.FooteraAccountReplacingSave=false;
+      if(before!==null)root.localStorage.setItem(KEY,before);
+      throw e;
+     }
+     root.location.reload();return;
+    }
    if(point.hash&&point.hash===fingerprint(latest.save_data)){
     const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:latest.revision});
     if(error)throw error;
     savePoint(u,save,data);autoStatus="";return;
    }
-   autoStatus="Cloud und Gerät enthalten unterschiedliche Fortschritte. Automatischer Upload angehalten; beide Stände bleiben erhalten.";
+    autoStatus="Cloud und Gerät enthalten unterschiedliche Fortschritte. Upload pausiert. Unter 'Konflikt lösen' den aktuellen Stand auswählen; beide Stände bleiben bis dahin erhalten.";
    return;
   }
   if(point.hash===fingerprint(save)){autoStatus="";return;}
@@ -924,7 +961,7 @@
    }
    if(cloudNote){
      cloudNote.textContent=owner===u.id
-       ?"Für eine zusätzliche Datei-Sicherung verwende 'Sicherung herunterladen'."
+       ?"Für eine zusätzliche Datei-Sicherung verwende 'Sicherung herunterladen'. Bei einem Cloud-Konflikt: Kontoeinstellungen → Konflikt lösen. Wähle das Gerät mit deinem aktuellen Fortschritt."
        :"Dein lokaler Verein und das angemeldete Footera-Konto sind nicht zugeordnet. Eine Cloud-Sicherung ist deshalb gesperrt. Lade zuerst eine lokale Sicherungsdatei herunter. Der vorhandene Cloud-Spielstand wird nicht verändert.";
    }
    const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
@@ -1097,6 +1134,7 @@
    $("footeraEmailLogin").hidden=logged;
    $("footeraAccountSave").disabled=!logged||owner!==u?.id;
    $("footeraAccountLoad").disabled=!logged;
+   if($("footeraAccountResolve"))$("footeraAccountResolve").disabled=!logged||owner!==u?.id;
    $("footeraAccountAdopt").hidden=!logged||owner===u?.id||registrationOwner()===u?.id;
    $("footeraSignOut").hidden=!logged;
    $("footeraSetPassword").textContent=logged||recovery?"Passwort festlegen / ändern":"Passwort vergessen";
@@ -1152,7 +1190,7 @@
      '<button type="button" id="footeraGuest" class="footera-account-guest">Als Gast spielen · ohne Registrierung</button>'+
      '<button type="button" id="footeraAccountContinue" class="footera-account-guest" hidden>Weiter zu meinem Verein</button>'+
      '<section class="footera-email-change" id="footeraEmailChangeSection" hidden><strong>Anmelde-E-Mail ändern</strong><p>Aktuell: <span id="footeraExistingEmail">–</span></p><p>Dein Verein bleibt dem bisherigen Konto zugeordnet. Bestätige den Wechsel in deinen E-Mail-Postfächern.</p><form id="footeraEmailChangeForm"><label>Neue E-Mail-Adresse<input id="footeraNewEmail" type="email" inputmode="email" autocomplete="email" placeholder="neue-adresse@beispiel.de" maxlength="254" required></label><button type="submit" id="footeraEmailChangeButton">Änderung per E-Mail bestätigen</button></form><p id="footeraEmailChangeProgress" role="status" aria-live="polite"></p></section>'+
-     '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><p>Die JSON-Datei ist nur eine lokale Sicherung. „In Cloud sichern“ prüft beide Spielstände und sichert die bisherige Cloud-Version vor einem Überschreiben.</p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
+     '<div class="footera-account-cloud"><strong>Cloud-Spielstand</strong><p id="footeraAccountCloud"></p><p>Die JSON-Datei ist nur eine lokale Sicherung. „In Cloud sichern“ prüft beide Spielstände. Bei einem Konflikt: auf dem Gerät mit deinem aktuellen Fortschritt „Konflikt lösen“ wählen. Münzen, Karten und Champions werden vor der Übernahme verglichen; beide Stände werden als Sicherungsdateien angeboten.</p><div class="footera-account-actions"><button id="footeraAccountSave" type="button">In Cloud sichern</button><button id="footeraAccountLoad" type="button">Aus Cloud laden</button><button id="footeraAccountResolve" type="button">Konflikt lösen: diesen Gerätestand verwenden</button><button id="footeraAccountAdopt" type="button" hidden>Lokalen Verein zuordnen</button></div></div>'+
      '<p id="footeraAccountMessage" role="status" aria-live="polite"></p>'+
      '<button type="button" id="footeraSignOut" class="footera-account-link" hidden>Abmelden</button>'+
      '<p class="footera-account-note">Neue registrierte Vereine werden automatisch zugeordnet und gesichert. Gastkonten bleiben bis zur Registrierung nicht wiederherstellbar. Bei Cloud-Konflikten wird nichts überschrieben.</p>'+
@@ -1293,6 +1331,7 @@
      run(()=>requestAccountEmailChange($("footeraNewEmail").value));
    });
    $("footeraAccountSave").addEventListener("click",()=>run(saveCloud));
+   $("footeraAccountResolve").addEventListener("click",()=>run(resolveCloudConflict));
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
    $("footeraSignOut").addEventListener("click",()=>run(signOut));
@@ -1320,6 +1359,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimGuestSave,getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimGuestSave,getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
+
