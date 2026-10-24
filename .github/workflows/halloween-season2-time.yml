@@ -1,0 +1,40 @@
+name: Footera Halloween + Season 2 time boundaries
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'footera-app.js'
+      - 'footera-time.js'
+      - 'season-system.js'
+      - 'pack-odds.js'
+      - 'service-worker.js'
+      - 'assets/players-db.csv'
+      - 'tests/helpers/**'
+      - 'tests/halloween-event.test.cjs'
+      - 'tests/season-system.test.cjs'
+      - 'tests/story-pass.test.cjs'
+      - 'tests/halloween-season2-time.browser.cjs'
+      - '.github/workflows/halloween-season2-time.yml'
+permissions:
+  contents: read
+jobs:
+  time-boundaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Halloween, Season Pass and Story Pass rules
+        run: node --test tests/halloween-event.test.cjs tests/season-system.test.cjs tests/story-pass.test.cjs tests/totw-rules.test.cjs tests/promo-packs-release.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/footera-time-browser playwright@1.51.1
+          /tmp/footera-time-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Real app across 30.10. 19:00, 31.10. 19:00 and 06.11. 19:00 (Europe/Berlin)
+        env:
+          NODE_PATH: /tmp/footera-time-browser/node_modules
+        run: node tests/halloween-season2-time.browser.cjs
