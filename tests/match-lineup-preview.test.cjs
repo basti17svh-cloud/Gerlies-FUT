@@ -71,7 +71,7 @@ test('a secondary position uses the shared card and preserves its position label
 test('new club items show their real rating when displayRating has its default zero',()=>{
  const ctx={esc:String,resolvedPlayer:p=>p,cardClass:()=>"gold",isCardRare:()=>false,
   itemRating:()=>78,officialCardHTML:()=>'',emblemsHTML:()=>'',eventDynamicFace:()=>"",portraitHTML:()=>'',
-  positionLabel:p=>p,cardStatPairs:()=>[],activeEvolutionForUid:()=>null};
+  positionLabel:p=>p,cardStatPairs:()=>[],activeEvolutionForUid:()=>null,isEvolutionItem:()=>false};
  vm.createContext(ctx);vm.runInContext(positionsCode+cardCode,ctx);
  const player={id:'starter',name:'Starter',ovr:78,position:'ST',team:'Club'};
  const card=ctx.cardHTML(player,{pid:'starter',uid:'test',displayRating:0},true);
