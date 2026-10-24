@@ -51,7 +51,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21262').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21264').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -182,7 +182,22 @@
   ["near_post_flick_header_right", "nearpost", 5, "header", "medium"],
   ["counter_sprint_left", "through", 7, "normal", "short"],
   ["counter_sprint_right", "through", 7, "normal", "short"],
-  ["rebound_drive", "combination", 5, "power", "short"]
+  ["rebound_drive", "combination", 5, "power", "short"],
+  ["box_wall_triangle_left","combination",7,"finesse","medium"],
+  ["split_line_surge_right","through",7,"low_driven","medium"],
+  ["byline_high_header_left","overlap",6,"header","long"],
+  ["penalty_spot_pullback_right","cutback",7,"normal","medium"],
+  ["turnover_counter_diagonal","through",7,"low_driven","short"],
+  ["far_switch_volley_right","switch",5,"volley","long"],
+  ["double_marker_slalom_central","dribble",6,"finesse","short"],
+  ["heel_flick_release_left","combination",6,"finesse","medium"],
+  ["keeper_rush_dink_right","through",5,"chip","short"],
+  ["second_ball_recycle_left","combination",6,"power","medium"],
+  ["late_edge_cutback_left","cutback",7,"finesse","medium"],
+  ["first_touch_layoff_rocket","distance",5,"power","short"],
+  ["touchline_sprint_cut_right","dribble",7,"low_driven","medium"],
+  ["five_man_central_carve","combination",7,"normal","medium"],
+  ["blindside_chip_through_left","through",5,"chip","medium"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -242,7 +257,7 @@
   if(v.female===true)out.female=true;
   return Object.keys(out).length?Object.freeze(out):null;
  }
- const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick']);
+ const LONG_RANGE=new Set(['long_shot','power_drive','finesse_halfspace','layoff_distance','switch_distance_left','edge_pullback_right','first_time_power','edge_of_box_recycle','extended_free_kick','first_touch_layoff_rocket']);
  function goalStyle(event,key){
   const finish=String(event.finish||'normal'),seq=String(event.sequence||'');
   if(['header','chip','bicycle'].includes(finish)||/^extended_(?:penalty|corner|throw_in)/.test(seq))return null;
@@ -360,7 +375,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive'];
+  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket'];
   const pool=simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='distance')return distanceIds.includes(v.id);
    if(event.actionKind==='cross')return v.finish===event.finish;
