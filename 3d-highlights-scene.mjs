@@ -9,6 +9,7 @@ import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlaye
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21269';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
+import {footeraHDWanted} from './3d-player-hd.mjs?v=1';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21252';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
@@ -1047,7 +1048,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const celebrationActive=event.type==='goal'&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
  const celebrationKey=`${event.matchId??''}|${event.id??''}|${event.minute??''}|${event.playerName??''}`;
- const celebrationKind=celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind);
+ const celebrationKind=globalThis.__FOOTERA_QA_CELEBRATION||(celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind));
  if(celebrationActive&&celebrationKey!==celebrationMemory.key)celebrationMemory={key:celebrationKey,kind:celebrationKind};
  const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
@@ -1578,7 +1579,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      for(let i=0;i<players.length;i++){
       const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
       const name=humanSquad?squadNames[i]:i===0?event.playerName:'footballer '+i;
-      const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
+      const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex||humanSquad&&footeraHDWanted()&&huggers.some(h=>h.index===i)),
        squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]),
        humanLook(i,squadNumbers[i],event.playerSkinTones?.[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
@@ -2264,6 +2265,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp);
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
    }
+   // Preview QA only: a portrait camera on one player's head.
+   const qaCam=globalThis.__FOOTERA_QA_PORTRAIT;
+   if(qaCam&&players[qaCam.index??0]){const head=importedPlayers[qaCam.index??0]?.model?.getObjectByName('Head')||null,p=new THREE.Vector3();
+    if(head)head.getWorldPosition(p);else players[qaCam.index??0].root.getWorldPosition(p).add(new THREE.Vector3(0,1.65,0));
+    const yaw=players[qaCam.index??0].root.getWorldQuaternion(new THREE.Quaternion()),f=new THREE.Vector3(0,0,-1).applyQuaternion(yaw);
+    camera.position.set(p.x+f.x*qaCam.dist+(qaCam.side||0)*f.z,p.y+(qaCam.up||0),p.z+f.z*qaCam.dist-(qaCam.side||0)*f.x);camTarget.set(p.x,p.y+(qaCam.aim||0),p.z);camera.fov=qaCam.fov||24}
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);

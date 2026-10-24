@@ -8,6 +8,7 @@
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
+import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=1';
 
 const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21258',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
@@ -277,5 +278,7 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
   }
   mesh.material=material;owned.push({geometry,material});
  }
+ // HD preview: richer surfaces on the close-up heroes only.
+ if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
  return{owned,kitMap,canvas};
 }
