@@ -247,11 +247,30 @@
    return !root.localStorage.getItem(WELCOME)
      && !hasLocalGame();
  }
+ const OFFLINE_WAIT=6000;
+ function offline(){return root.navigator?.onLine===false}
+ // Without internet the Supabase SDK either fails to load or never answers.
+ // Give up after a few seconds so the account dialog cannot hang forever.
+ function clientOrOffline(){
+   if(client)return Promise.resolve(client);
+   let timer;
+   return Promise.race([
+     getClient(),
+     new Promise((_,reject)=>{timer=root.setTimeout(()=>reject(Error("Konto-Dienst antwortet nicht.")),OFFLINE_WAIT)})
+   ]).finally(()=>root.clearTimeout?.(timer));
+ }
+ function playLocally(){
+   // The club stays in localStorage; cloud backup resumes on the next online start.
+   root.localStorage.setItem(WELCOME,"1");
+   hide();
+ }
  async function continueAsGuest(){
-   const c=await getClient();
+   let c;
+   try{c=await clientOrOffline()}catch(e){console.warn("Footera-Konto offline:",e);return playLocally()}
    let u=await user();
    if(!u){
      const result=await c.auth.signInAnonymously();
+     if(result.error&&(offline()||result.error.name==="AuthRetryableFetchError"))return playLocally();
      if(result.error)throw result.error;
      u=result.data?.user||result.data?.session?.user;
      if(!u?.is_anonymous)throw Error("Gastkonto konnte nicht erstellt werden.");
@@ -343,8 +362,8 @@
  function describeCloudDifference(local,cloud){
   const localIds=cloudInventoryIds(local),cloudIds=cloudInventoryIds(cloud);
   const fmt=n=>Number(n||0).toLocaleString("de-DE");
-  return "Gerät: "+fmt(local.club?.length)+" Spielerkarten · "+fmt(local.coins)+" Münzen · "+fmt(local.points)+" Points"+
-   "\nCloud: "+fmt(cloud.club?.length)+" Spielerkarten · "+fmt(cloud.coins)+" Münzen · "+fmt(cloud.points)+" Points"+
+  return "Gerät: "+fmt(local.club?.length)+" Spielerkarten · "+fmt(local.coins)+" Coins · "+fmt(local.points)+" Points"+
+   "\nCloud: "+fmt(cloud.club?.length)+" Spielerkarten · "+fmt(cloud.coins)+" Coins · "+fmt(cloud.points)+" Points"+
    "\nNur auf Gerät: "+[...localIds].filter(id=>!cloudIds.has(id)).length+" Karten; nur Cloud: "+[...cloudIds].filter(id=>!localIds.has(id)).length+" Karten.";
  }
  async function saveCloud(){
@@ -579,7 +598,7 @@
    const current=local||cloud?.save_data||null;
    const fmt=n=>Number(n||0).toLocaleString("de-DE");
    if(!root.confirm("Gast-Verein übernehmen?\n\nVerein: "+String(offer.club_name||"Footera")+
-     "\nSpielerkarten: "+fmt(offer.cards)+" · Münzen: "+fmt(offer.coins)+
+     "\nSpielerkarten: "+fmt(offer.cards)+" · Coins: "+fmt(offer.coins)+
      "\nZuletzt gesichert: "+new Date(offer.saved_at).toLocaleString("de-DE")+
      (current?"\n\nDein jetziger Verein "+String(current.profile?.clubName||"Footera")+" wird ersetzt. Er wird vorher als JSON-Datei heruntergeladen und als Rückfallsicherung aufbewahrt.":"")+
      "\n\nFreundescode und Freunde des Gastkontos werden nicht übertragen."))return false;
@@ -1012,7 +1031,15 @@
  }
  async function render(){
    if(!dialog)return;
-   let u=null;try{u=await user()}catch(e){msg(safeMessage(e),true);return}
+   let u=null;
+   try{await clientOrOffline();u=await user()}
+   catch(e){
+     $("footeraAccountStatus").textContent="Offline · du kannst lokal als Gast weiterspielen";
+     $("footeraGuest").hidden=false;
+     console.warn("Footera-Konto:",e);
+     msg((offline()?"Keine Internetverbindung.":"Konto-Dienst gerade nicht erreichbar.")+" Dein Verein wird auf diesem Gerät gespeichert.");
+     return;
+   }
    const logged=isPermanent(u),guest=!!u?.is_anonymous,owner=root.localStorage.getItem(OWNER);
    const emailChanged=logged&&acknowledgeAccountEmailChange(u);
    const changeRequest=pendingAccountEmailChange();
@@ -1173,7 +1200,7 @@
    deleteDialog.setAttribute("role","dialog");deleteDialog.setAttribute("aria-modal","true");deleteDialog.setAttribute("aria-label","Footera-Konto löschen");
    deleteDialog.innerHTML='<section class="footera-delete-card">'+
      '<header><h2>Konto endgültig löschen?</h2><button id="footeraDeleteCancelTop" type="button" aria-label="Abbrechen">✕</button></header>'+
-     '<p>Dieses Konto <strong id="footeraDeleteAccountName"></strong> wird unwiderruflich gelöscht. Vereinsdaten, Karten, Münzen, FC Points, Freundescode, Chats und Duelle gehen verloren.</p>'+
+     '<p>Dieses Konto <strong id="footeraDeleteAccountName"></strong> wird unwiderruflich gelöscht. Vereinsdaten, Karten, Coins, Footera Points, Freundescode, Chats und Duelle gehen verloren.</p>'+
      '<p>Auch die Cloud-Sicherung wird entfernt. Lokale Kopien auf anderen Geräten können dort noch bestehen, sind aber keinem gültigen Konto mehr zugeordnet.</p>'+
      '<label class="footera-delete-label">Schreibe FOOTERA LÖSCHEN<input id="footeraDeletePhrase" autocomplete="off" spellcheck="false" placeholder="FOOTERA LÖSCHEN"></label>'+
      '<label class="footera-delete-label" id="footeraDeletePasswordLabel">Zur Bestätigung dein Kontopasswort<input id="footeraDeletePassword" type="password" autocomplete="current-password" placeholder="Passwort eingeben"></label>'+
@@ -1291,7 +1318,7 @@
      if(!autoTimer&&root.setInterval)autoTimer=root.setInterval(()=>{
        autoAttachAndBackup().catch(e=>{autoStatus=safeMessage(e);console.warn("Footera Cloud:",e)});
      },45000);
-   }).catch(e=>{console.warn("Footera-Konto:",e);msg("Konto-Dienst nicht erreichbar.",true)});
+   }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
  root.FooteraAccount={claimGuestSave,getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();

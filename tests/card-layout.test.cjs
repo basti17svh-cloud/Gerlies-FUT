@@ -36,15 +36,27 @@ test('active Evolutions have the shared skin before the first claim and keep liv
  assert.equal(ctx.cardClass(gerlach,{uid:'ordinary',evo:0,evoStats:{},evoPlaystyles:[]}), 'gold');
 });
 
-test('completed and legacy Evolutions replace their original event skin without requiring an OVR boost',()=>{
+test('completed Evolutions use the Evolution skin on ordinary cards without requiring an OVR boost',()=>{
  const ctx=context();
- for(const item of [{evo:2},{evo:0,evoStats:{pas:3}},{evo:0,evoPlaystyles:['Pass']},{evo:0,evoPlaystyle:'Pass'},{evo:0,evoDesign:true},{variant:'special',eventType:'momentum',evo:1},{variant:'special',eventName:'Legacy Event',evo:1},{variant:'special',eventName:'Team of the Week 3',evo:1}]){
+ for(const item of [{evo:2},{evo:0,evoStats:{pas:3}},{evo:0,evoPlaystyles:['Pass']},{evo:0,evoPlaystyle:'Pass'},{evo:0,evoDesign:true}]){
   const card=ctx.cardHTML({...gerlach,position:'GK'},item);
   assert.match(card,/class="custom-card evolution"/);assert.doesNotMatch(card,/evo-active-marker|legacy-facets|momentum-shell/);
   assert.match(card,/<small>HEC<\/small><b>80<\/b>/);
  }
  assert.equal(ctx.cardClass(gerlach,{pid:ctx.FOUNDER_PLAYER_ID,variant:'founder',evo:1}),'founder');
  assert.equal(ctx.cardClass(gerlach,{variant:'story',evo:1}),'story');
+});
+
+test('special designs keep their own skin during and after an Evolution and show the Evolution badge',()=>{
+ const ctx=context();ctx.activeEvolutionForUid=uid=>uid==='active-totw'?{uid}:null;
+ const cases=[[{variant:'special',eventType:'momentum',evo:1},'momentum'],[{variant:'special',eventName:'Legacy Event',evo:1},'legacy'],[{variant:'special',eventName:'Team of the Week 3',evo:1},'totw'],[{variant:'icon-mid',evoDesign:true},'icon'],[{variant:'special',eventName:'POTM',evoStats:{pas:2}},'special'],[{uid:'active-totw',variant:'special',eventName:'Team of the Week 6',evo:0},'totw']];
+ for(const [item,cls] of cases){
+  assert.equal(ctx.cardClass(gerlach,item),cls);
+  const card=ctx.cardHTML(gerlach,item);
+  assert.doesNotMatch(card,/class="custom-card evolution"/);assert.match(card,/class="evo-active-marker"/);
+ }
+ assert.match(ctx.cardHTML(gerlach,cases[5][0]),/title="Aktive Evolution"/);
+ assert.match(ctx.cardHTML(gerlach,cases[0][0]),/title="Evolution"/);
 });
 
 test('the reusable Evolution artwork and stylesheet are available in the offline shell',()=>{

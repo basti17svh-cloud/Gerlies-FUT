@@ -231,3 +231,21 @@ test('not enough premium-pass Points opens the Points overview instead of silent
  assert.equal(app.state.points,40);
  assert.equal(app.state.seasonPass.premium,false);
 });
+
+test('"Alle abholen" claims every ready reward plus the weekly bonus exactly once',()=>{
+ const app=setup();const{state,api}=app;
+ for(const key of Object.keys(state.stats))state.stats[key]+=1000;
+ api.renderTasks();
+ assert.match(app.elements.get('taskList').innerHTML,/data-objective-claim-all/);
+ const windows=['daily','weekly','season'].map(group=>api.objectiveWindow(group)),week=windows[1];
+ const ready=windows.flatMap(w=>w.tasks).filter(t=>api.objectiveProgress(t)>=t.target);
+ assert.ok(week.tasks.filter(t=>api.objectiveProgress(t)>=t.target).length>=5,'weekly bonus becomes reachable');
+ app.click('taskList','[data-objective-claim-all]',{});
+ assert.equal(state.claims.starter,true);
+ for(const task of ready)assert.equal(state.objectiveClaims[task.key],true,task.key);
+ assert.equal(state.objectiveBonuses[week.key],true);
+ const after={coins:state.coins,sp:state.sp,packs:JSON.stringify(state.packs)};
+ app.click('taskList','[data-objective-claim-all]',{});
+ assert.deepEqual({coins:state.coins,sp:state.sp,packs:JSON.stringify(state.packs)},after);
+ assert.equal(api.availableRotatingObjectiveRewardsCount(),0);
+});

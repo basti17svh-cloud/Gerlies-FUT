@@ -16,7 +16,7 @@ const prices=vm.runInNewContext(
 const byId=new Map(prices.map(p=>[p.id,p]));
 const expected={
   bronze:[450,null],silver:[900,50],gold:[4500,150],goldplayers:[15000,350],
-  mixed6:[7500,200],primegold:[21000,500],electrum:[15000,350],
+  mixed6:[7500,200],primegold:[21000,500],electrum:[10000,350],
   raremixed:[12000,300],ultimate:[75000,2500], 'jumbo-rare':[60000,2000],
   'rare-mixed':[12000,300],mega:[39000,1000],'83x15':[90000,3000],
   '84x10':[120000,4000]

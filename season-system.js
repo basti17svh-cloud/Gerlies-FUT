@@ -257,7 +257,7 @@ function passRewardItems(reward){
   const spec=STORY_PASS_PLAYERS[reward.story];
   if(spec)out.push({type:"story",label:`${spec.rating} ${spec.name}`,sub:`${spec.season==="s1"?"Story":"Saison"}-Spieler · einmalig · untauschbar`,visual:`<div class="pass-reward-player">${storyPreviewCard(reward.story)}</div>`})
  }
- if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Münzen`,sub:"Footera Münzen",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
+ if(reward?.coins)out.push({type:"coins",label:`${fmt(reward.coins)} Coins`,sub:"Footera Coins",visual:`<div class="pass-reward-currency">${currencyAmountHTML("coins",reward.coins,"pass-currency-hero")}</div>`});
  if(reward?.points)out.push({type:"points",label:`${fmt(reward.points)} Footera Points`,sub:"Footera Points",visual:`<div class="pass-reward-currency">${currencyAmountHTML("points",reward.points,"pass-currency-hero")}</div>`});
  if(reward?.sp)out.push({type:"sp",label:`${fmt(reward.sp)} Season Points`,sub:"Season Points",visual:`<div class="pass-reward-sp"><strong>SP</strong><b>${fmt(reward.sp)}</b></div>`});
  if(reward?.pack){
@@ -266,7 +266,7 @@ function passRewardItems(reward){
  }
  if(reward?.coinBoost){
   const games=Math.max(0,Number(reward.coinBoost.games||0)),amount=Math.max(0,Number(reward.coinBoost.amount||0));
-  out.push({type:"boost",label:`+${fmt(amount)} Münzen × ${games} Spiele`,sub:"Coin-Boost",visual:`<div class="pass-reward-currency boost">${currencyAmountHTML("coins",amount,"pass-currency-hero")}<small>× ${games} Spiele</small></div>`})
+  out.push({type:"boost",label:`+${fmt(amount)} Coins × ${games} Spiele`,sub:"Coin-Boost",visual:`<div class="pass-reward-currency boost">${currencyAmountHTML("coins",amount,"pass-currency-hero")}<small>× ${games} Spiele</small></div>`})
  }
  return out.length?out:[{type:"reward",label:"Belohnung",sub:"Season Pass",visual:'<div class="pass-reward-sp"><strong>★</strong></div>'}]
 }
@@ -334,7 +334,7 @@ function renderTasks(){
   const readyRotating=groups.flatMap(window=>window.tasks.filter(t=>!state.objectiveClaims[t.key]&&objectiveProgress(t)>=t.target));
   const week=groups.find(window=>window.tasks[0]?.group==="weekly"),readyBonus=week&&weeklyBonusReady(week)&&!state.objectiveBonuses[week.key];
   if(readyFoundations.length||readyRotating.length||readyBonus){
-   sections.push(`<div class="objective-ready-head"><strong>Jetzt abholen</strong><span>${pending} Belohnung${pending===1?"":"en"}</span></div>`+
+   sections.push(`<div class="objective-ready-head"><div><strong>Jetzt abholen</strong><span>${pending} Belohnung${pending===1?"":"en"}</span></div><button type="button" class="primary" data-objective-claim-all>Alle abholen</button></div>`+
     readyFoundations.map(t=>objectiveCard(t,"foundation",true)).join("")+
     readyRotating.map(t=>objectiveCard(t,t.group,true)).join("")+
     (readyBonus?weeklyBonusCard(week):""))
@@ -393,7 +393,7 @@ $("seasonPass").addEventListener("click",event=>{
   if(!price||!Number.isFinite(state[currency]))return toast("Guthaben nicht verfügbar.");
   if(state[currency]<price){
    if(currency==="points")return openFooteraPointsOverview(price,"Premium Season Pass",Number(state.points||0));
-   return toast("Nicht genügend Münzen.");
+   return toast("Nicht genügend Coins.");
   }
   if(!confirm(`Premium-Pass für Saison ${seasonInfo().number} für ${fmt(price)} ${currency==="coins"?"Coins":"Footera Points"} freischalten?`))return;
   state[currency]-=price;state.seasonPass.premium=true;save();renderAll();toast("Premium-Pass aktiviert.");return
@@ -412,9 +412,30 @@ $("seasonPass").addEventListener("scroll",event=>{
  dots.forEach((dot,i)=>dot.classList.toggle("active",i===index));
  const count=slider.querySelector(".pass-slide-count");if(count)count.textContent=`${index+1}/${dots.length}`
 },true);
+// Same rules as the single "Abholen" buttons, applied to every ready reward.
+// Weekly tasks are claimed first so a now-complete Wochenmeister bonus is included.
+function claimAllObjectives(){
+ ensureObjectiveWindows();
+ let count=0;
+ for(const task of TASKS){
+  if(state.claims[task.id]||Number(state.stats[task.stat]||0)<task.target)continue;
+  state.claims[task.id]=true;grant(task.reward);count++
+ }
+ for(const task of activeObjectiveGroups().flatMap(window=>window.tasks)){
+  if(state.objectiveClaims[task.key]||objectiveProgress(task)<task.target)continue;
+  if(task.group==="event"){if(claimEventObjective(task))count++;continue}
+  state.objectiveClaims[task.key]=true;grant(task.reward);count++
+ }
+ const week=objectiveWindow("weekly");
+ if(week&&!state.objectiveBonuses[week.key]&&weeklyBonusReady(week)){state.objectiveBonuses[week.key]=true;grant(WEEKLY_BONUS);count++}
+ if(!count)return 0;
+ save();renderAll();toast(`${count} Belohnung${count===1?"":"en"} abgeholt.`);
+ return count
+}
 $("taskList").addEventListener("click",event=>{
  const preview=event.target.closest("[data-event-objective-bio]");
  if(preview){const task=activeEventObjectives().find(t=>t.id===preview.dataset.eventObjectiveBio),item=task&&makeEventObjectiveItem(task);if(item)openBiography(item,null);return}
+ if(event.target.closest("[data-objective-claim-all]")){claimAllObjectives();return}
  const taskButton=event.target.closest("[data-objective-claim]"),bonus=event.target.closest("[data-objective-bonus]");
  if(!taskButton&&!bonus)return;
  ensureObjectiveWindows();
