@@ -1,3 +1,4 @@
+import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21208';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21226';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
@@ -1613,8 +1614,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const motion2Active=pilotMotion&&isMotion2Sequence(sequence,finish);
   const motion2CutAnchor=motion2Active?runPosition(0,3.08,sequence):null;
   const motion2ShotAnchor=motion2Active?runPosition(0,5.30,sequence):null;
-  const ballMap=canvasTexture(128,64,(ctx,w,h)=>{ctx.fillStyle='#fafbf5';ctx.fillRect(0,0,w,h);for(let row=0;row<3;row++)for(let col=0;col<6;col++){const x=col*w/6+(row%2)*w/12,y=row*h/2;ctx.beginPath();for(let n=0;n<5;n++){const a=n*Math.PI*2/5;ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5)}ctx.closePath();ctx.fillStyle='#25343b';ctx.fill();ctx.strokeStyle='#89918f';ctx.lineWidth=.5;ctx.stroke()}});
-  const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?10:high?20:16,weak?8:high?16:12)),track(new THREE.MeshStandardMaterial({map:ballMap,color:'#ffffff',roughness:.6,metalness:0,emissive:'#1b1b16',emissiveIntensity:.08})));ball.scale.setScalar(.14);ball.position.set(0,.13,0);ball.castShadow=!weak;
+  const ballSurface=createMatchBallSurface(THREE,{size:weak?512:high?2048:1024,anisotropy:Math.min(high?8:4,renderer.capabilities.getMaxAnisotropy()),track});
+  const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?16:high?32:24,weak?12:high?24:18)),ballSurface.material);
+  ball.name=MATCH_BALL_NAME;ball.scale.setScalar(MATCH_BALL_RADIUS);ball.position.set(0,.13,0);ball.castShadow=!weak;
   // A restrained ground cue keeps the real-size ball readable on a phone.
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
