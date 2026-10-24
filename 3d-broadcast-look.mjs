@@ -13,6 +13,7 @@ function stadiumEnvironment(renderer){
 }
 
 function upgradeMaterial(material,kind,envMap){
+ if(material?.userData.footeraHD&&!material.envMap){material.envMap=envMap;material.needsUpdate=true}
  if(!material||material.userData.footeraBroadcastLook)return material;
  const physical=new THREE.MeshPhysicalMaterial();
  THREE.MeshStandardMaterial.prototype.copy.call(physical,material);
