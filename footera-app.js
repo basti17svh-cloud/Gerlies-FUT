@@ -7502,7 +7502,8 @@ function friendBase(fp){if(!fp)return null;const db=fp.pid?P_BY_ID.get(String(fp
 function friendFits(p,slot){if(!p)return false;const positions=[p.position,...String(p.alt||"").split(/[,/]/).map(x=>x.trim()).filter(Boolean)];return positions.includes(slot)}
 // fp.ovr is the finished card rating; itemRating adds evo and the Halloween
 // upgrade on top of displayRating again, so hand it the rating before those.
-function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
+// A player missing from this device's database gets no itemRating: keep fp.ovr.
+function friendDisplayRating(fp,b){const shown=Number(fp?.ovr||b?.ovr||0);if(!itemBase(fp))return shown;return Math.max(1,shown-Number(fp?.evo||0)-Number(typeof halloweenUpgradeFor==="function"?halloweenUpgradeFor(fp)?.ovr||0:0))}
 function friendItem(fp,b=friendBase(fp)){
  if(!fp||!b)return null;
  return{uid:"friend-"+String(fp.pid||fp.name||b.id||b.name),pid:String(fp.pid||b.id||""),tradeable:false,evo:Number(fp.evo||0),evoStats:fp.evoStats&&typeof fp.evoStats==="object"?{...fp.evoStats}:{},evoDesign:fp.evoDesign===true,chemBoost:fp.chemBoost?{...fp.chemBoost}:null,variant:fp.variant||"",boost:Number(fp.boost||0),eventName:fp.eventName||"",eventType:fp.eventType||"",eventReleaseId:fp.eventReleaseId||"",dynamicFace:fp.dynamicFace||"",overridePosition:fp.overridePosition||"",eventStats:Array.isArray(fp.eventStats)?fp.eventStats.map(Number):null,displayRating:friendDisplayRating(fp,b),...friendCardExtras(fp)}
@@ -7868,7 +7869,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.262";
+const GFUT_BUILD="V21.263";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7926,7 +7927,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21262",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21263",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
