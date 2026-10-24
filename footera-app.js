@@ -1187,7 +1187,7 @@ function openPromoTeam(eventId=""){
 // Teaser overview before the HALLOWEEN start: what arrives when, with silhouettes instead of names.
 function openHalloweenPreview(){
  const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
- const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir 88 HALLOWEEN Rafael Leão."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
+ const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
  $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
  $("opponentTeamModalSub").textContent="Vorschau · alle Spieler werden am 30.10. um 19:00 Uhr enthüllt";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
@@ -2011,7 +2011,7 @@ let IMAGE_CACHE_SAVE_TIMER=0;
 function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_SAVE_TIMER=setTimeout(()=>{try{localStorage.setItem("gfutImageSourceCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_SOURCE_CACHE].slice(-1500))));localStorage.setItem("gfutImageFailureCacheV9",JSON.stringify(Object.fromEntries([...IMAGE_FAILURE_CACHE].slice(-3000))))}catch(e){}},600)}
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<120000}
-function prioritizeCached(arr,key){const available=arr.filter(u=>!imageFailedRecently(u));arr=available.length?available:arr.slice();const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;return [hit,...arr.filter(x=>x!==hit)]}
+function prioritizeCached(arr,key){const available=arr.filter(u=>!imageFailedRecently(u));arr=available.length?available:arr.slice();const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;const own=isOwnFaceUrl(arr[0])&&hit!==arr[0]?[arr[0]]:[];return [...own,hit,...arr.filter(x=>x!==hit&&!own.includes(x))]}
 function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){stopPortraitWatch(el);const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none'}}
 function sofifaFaceByVersion(id,version){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/${version}_120.png`}
 function sofifaFaceCandidates(id){return[27,26,25,24].map(v=>sofifaFaceByVersion(id,v)).filter(Boolean)}
@@ -2023,11 +2023,17 @@ function isWholeCardAsset(url){return /ratings-images-prod\.pulse\.ea\.com\/(?:F
 function portraitCandidates(p){
  const arr=[];const add=u=>{u=String(u||"").trim();if(u&&!isWholeCardAsset(u)&&!arr.includes(u))arr.push(u)};
  const canonical=P_BY_ID.get(String(p?.id||"")),faces=[...(canonical&&canonical!==p?[canonical.face,canonical.portrait,canonical.headshot]:[]),p?.face,p?.portrait,p?.headshot];
- if(p?.isIcon){faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
+ // Game-made art (./assets/...) always wins over any copied photo.
+ faces.filter(u=>u&&!/^https?:/i.test(String(u))).forEach(add);
+ if(p?.isIcon){if(p?.futwizId)add(ownFaceUrl("icons",p.futwizId));faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
  const legacy=u=>/https?:\/\/(?:cdn\.sofifa\.net|ratings-images-prod\.pulse\.ea\.com)\//i.test(String(u||""));
  const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v))||"";
- faces.filter(u=>!legacy(u)).forEach(add);if(portraitId)futwizFaceCandidates(portraitId).forEach(add);faces.filter(legacy).forEach(add);if(portraitId){sofifaFaceCandidates(portraitId).forEach(add);fifaRostersFaceCandidates(portraitId,27).forEach(add)}return arr
+ if(portraitId)add(ownFaceUrl("faces",portraitId));faces.filter(u=>!legacy(u)).forEach(add);if(portraitId)futwizFaceCandidates(portraitId).forEach(add);faces.filter(legacy).forEach(add);if(portraitId){sofifaFaceCandidates(portraitId).forEach(add);fifaRostersFaceCandidates(portraitId,27).forEach(add)}return arr
 }
+// Portraits copied once into Footera's own Supabase storage (scripts/mirror-player-faces.cjs); external sources stay as fallback.
+function ownFaceBase(){const url=String(globalThis.FOOTERA_ONLINE_CONFIG?.url||"https://idxydyrihtyecvfjvtuk.supabase.co").replace(/\/+$/,"");return `${url}/storage/v1/object/public/player-faces/`}
+function ownFaceUrl(kind,id){const raw=String(id||"").replace(/\D/g,"");return raw?`${ownFaceBase()}${kind}/${raw}.webp`:""}
+function isOwnFaceUrl(url){return String(url||"").includes("/storage/v1/object/public/player-faces/")}
 const API_SPORTS_LEAGUE_IDS={
  "bundesliga":78,"premier league":39,"laliga ea sports":140,"la liga":140,"serie a":135,"ligue 1":61,
  "1a pro league":144,"eredivisie":88,"liga portugal":94,"trendyol super lig":203,"osterreichische fu ball bundesliga":218,
@@ -7855,7 +7861,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.254";
+const GFUT_BUILD="V21.260";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7913,7 +7919,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21254",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21260",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

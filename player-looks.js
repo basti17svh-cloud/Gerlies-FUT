@@ -1,5 +1,6 @@
 /* Footera V21.219 player looks for the 3D highlights: skin tone, hair colour,
- * haircut and beard per real player. Two sources, both keyed by EA id:
+ * haircut and beard per real player (V21.258: women's players flagged female).
+ * Two sources, both keyed by EA id:
  * assets/player-looks.json, measured from EA's own player portraits by
  * scripts/build-player-looks.cjs, and hand-set looks for well-known players,
  * which win field by field. Players without data keep the look the 3D scene
@@ -89,16 +90,23 @@
   const look={...decode(measured[id]),...decode(HAND[id])};
   return Object.keys(look).length?look:null;
  }
+ // Women's players (EA gender "Women's Football", V21.258) get the female
+ // body, a women's haircut and no beard in 3D; a men's haircut code never applies.
+ function isFemale(player){
+  const g=String(player?.gender??player?.sex??'').trim().toLowerCase();
+  return g==='f'||/wom[ae]n|female|frau/.test(g);
+ }
  // What the 3D scene takes: skin as tone 1-6, the rest as a custom look.
  function sceneSkin(player){return get(player)?.skin||null}
  function sceneLook(player){
-  const look=get(player);if(!look)return null;
-  const out={};for(const k of ['hair','hairColor','beard'])if(look[k])out[k]=look[k];
+  const look=get(player)||{},female=isFemale(player);
+  const out={};for(const k of female?['hairColor']:['hair','hairColor','beard'])if(look[k])out[k]=look[k];
+  if(female)out.female=true;
   return Object.keys(out).length?out:null;
  }
  function load(data){measured=data&&typeof data==='object'&&data.looks&&typeof data.looks==='object'?data.looks:{};return Object.keys(measured).length}
  const ready=typeof root.fetch==='function'&&root.document
   ?root.fetch('./assets/player-looks.json').then(r=>r.ok?r.json():null).then(load).catch(()=>0)
   :Promise.resolve(0);
- root.FooteraPlayerLooks=Object.freeze({HAND,decode,get,sceneSkin,sceneLook,load,ready});
+ root.FooteraPlayerLooks=Object.freeze({HAND,decode,get,isFemale,sceneSkin,sceneLook,load,ready});
 })(typeof window!=='undefined'?window:globalThis);

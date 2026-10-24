@@ -36,7 +36,7 @@ const info=human.json.extras.footera;
 
 test('human GLB: CC0 source, mobile-sized, every garment and haircut present',()=>{
  assert.match(info.source,/MakeHuman.*CC0/);
- assert.ok(human.bytes<5.5e6,'GLB stays under 5.5 MB: '+human.bytes);
+ assert.ok(human.bytes<6.2e6,'GLB stays under 6.2 MB: '+human.bytes);
  const meshes=human.json.meshes.map(m=>m.name);
  for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots','FooteraEyes'])assert.ok(meshes.includes(name),name);
  for(const hair of info.hair)assert.ok(meshes.includes('FooteraHair-'+hair),hair);
@@ -99,6 +99,37 @@ test('looks: stable per player, varied across a squad, complexion from the recor
  assert.ok(footeraSkinTint('#ffffff',[.8,.6,.5]).every(c=>c<=1.12));
  assert.ok(footeraSkinTint('#805035',info.skinMean.dark).every(c=>c>1&&c<2.4));
  assert.equal(footeraHumanLook('X','#a96d4b',info).skinKey,'light');
+});
+
+test('women (V21.258): female morph, women\'s skin and haircuts, never a beard',()=>{
+ const meshes=human.json.meshes.map(m=>m.name);
+ assert.ok(info.morphs.includes('female'));
+ assert.ok(info.hairFemale.length>=3);
+ for(const hair of info.hairFemale)assert.ok(meshes.includes('FooteraHair-'+hair),hair);
+ for(const key of ['lightFemale','darkFemale'])assert.ok(Number.isInteger(info.skins[key]),key);
+ const names=['Alexia Putellas','Aitana Bonmatí','Lea Schüller','Giulia Gwinn','Klara Bühl','Jule Brand','Sydney Lohmann','Lena Oberdorf'];
+ for(const name of names){
+  const look=footeraHumanLook(name,'#c88f69',info,{female:true,beard:'Full_beard',hair:'short02'});
+  assert.equal(look.female,true);assert.equal(look.facial,null,name);assert.equal(look.morphs.female,1);
+  assert.ok(info.hairFemale.includes(look.hair),name+' '+look.hair);
+  assert.equal(look.skinKey,'lightFemale');
+ }
+ assert.equal(footeraHumanLook('Lea Schüller','#4a2c20',info,{female:true}).skinKey,'darkFemale');
+ assert.equal(footeraHumanLook('Lea Schüller','#c88f69',info,{female:true,hair:'bob02'}).hair,'bob02');
+ const man=footeraHumanLook('Harry Kane','#c88f69',info);
+ assert.ok(!man.female&&!man.morphs.female&&info.hair.includes(man.hair));
+});
+
+test('women: the EA gender reaches the 3D look, men keep beards and haircuts',()=>{
+ const ctx={};vm.runInNewContext(fs.readFileSync(path.join(root,'player-looks.js'),'utf8'),ctx);
+ const looks=ctx.FooteraPlayerLooks;
+ assert.equal(looks.isFemale({gender:"Women's Football"}),true);
+ assert.equal(looks.isFemale({gender:'female'}),true);
+ assert.equal(looks.isFemale({gender:'male'}),false);
+ assert.equal(looks.isFemale({gender:"Men's Football"}),false);
+ assert.deepEqual({...looks.sceneLook({id:'227203',gender:"Women's Football"})},{female:true});
+ const haaland=looks.sceneLook({id:'239085',gender:'male'});
+ assert.ok(haaland&&!haaland.female&&haaland.hair);
 });
 
 test('shirt name and crest: surname in capitals, crest colours resolved for an image',()=>{

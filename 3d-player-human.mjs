@@ -9,7 +9,7 @@
  */
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=2190';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21258',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
 let source=null,pending=null;
@@ -55,9 +55,12 @@ const HAIR_SHADES=['#1b1512','#2a1d16','#3b2a1f','#14110f','#4f3826','#6e5038','
 // no ancestry is inferred, the complexion comes from the player record.
 // custom (V21.215 Aussehen-Editor): {hair:'short02'|'bald'|..., hairColor:'#hex',
 // beard:'none'|'Full_beard'|'Moustache'}; anything missing stays name-picked.
+// custom.female (V21.258, women's players from the EA record): the female body
+// morph and skin, a women's haircut and never a beard.
 export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null){
  const h=hash(name),pick=(list,shift)=>list[(h>>>shift)%list.length];
- const hair=info?.hair||['short02'],facial=info?.facial||[],brows=info?.brows||['eyebrow001'];
+ const female=custom?.female===true&&!!info?.hairFemale?.length;
+ const hair=female?info.hairFemale:info?.hair||['short02'],facial=info?.facial||[],brows=info?.brows||['eyebrow001'];
  const tone=/^#[0-9a-f]{6}$/i.test(String(skinTone))?skinTone:'#c88f69',dark=luminance(tone)<.42;
  const r=k=>(((h>>>k)&255)/255)*2-1,morphs={};
  // Small mixes keep every face plausible; three race axes add variety only.
@@ -65,14 +68,21 @@ export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,cu
  for(const [i,key] of ['head_square','jaw_width','chin_prominent','nose_width','nose_length','nose_hump',
   'lips_volume','mouth_width','cheekbones','eyes_size','brow_ridge'].entries())morphs[key]=r((i*5+11)%27)*.5;
  morphs.face_age=r(23)*.25-.1;
+ if(female){
+  // Softer faces: no square heads, wide jaws or heavy brows on top of the morph.
+  morphs.female=1;
+  for(const key of ['head_square','jaw_width','brow_ridge','nose_hump'])morphs[key]=Math.min(morphs[key],0)*.6-.15;
+  morphs.face_age=Math.min(morphs.face_age,0);
+ }
  // Half the squad clean-shaven, most others a short full beard.
- const beard=(h>>>13)%10,facialHair=beard>=9?facial[1]:beard>=5?facial[0]:null;
- const look={hair:pick(hair,3),facial:facialHair||null,brows:pick(brows,9),morphs,
-  skin:tone,skinKey:dark?'dark':'light',
+ const beard=(h>>>13)%10,facialHair=female?null:beard>=9?facial[1]:beard>=5?facial[0]:null;
+ const look={hair:pick(hair,3),facial:facialHair||null,brows:female?brows[0]:pick(brows,9),morphs,
+  skin:tone,skinKey:(dark?'dark':'light')+(female?'Female':''),female,
   hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17)};
  if(custom){
-  if(custom.hair==='bald'||hair.includes(custom.hair))look.hair=custom.hair==='bald'?null:custom.hair;
-  if(custom.beard==='none')look.facial=null;else if(facial.includes(custom.beard))look.facial=custom.beard;
+  if(!female&&(custom.hair==='bald'||hair.includes(custom.hair)))look.hair=custom.hair==='bald'?null:custom.hair;
+  else if(female&&hair.includes(custom.hair))look.hair=custom.hair;
+  if(!female){if(custom.beard==='none')look.facial=null;else if(facial.includes(custom.beard))look.facial=custom.beard}
   if(/^#[0-9a-f]{6}$/i.test(String(custom.hairColor||'')))look.hairColor=custom.hairColor;
  }
  return look;
@@ -234,8 +244,10 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  if(ctx)paintFooteraHumanKit(ctx,size,kit,opts,info);
  const kitMap=new THREE.CanvasTexture(canvas);kitMap.colorSpace=THREE.SRGBColorSpace;kitMap.flipY=false;
  kitMap.anisotropy=opts.detail?8:4;kitMap.name='FooteraHumanKit';owned.push({texture:kitMap});
- const skinMap=source?.skins?.[look.skinKey];
- const tint=footeraSkinTint(look.skin,info?.skinMean?.[look.skinKey]||[.75,.55,.45]);
+ // A GLB without the women's skins keeps the men's texture of the same tone.
+ const skinKey=source?.skins?.[look.skinKey]?look.skinKey:String(look.skinKey).replace('Female','');
+ const skinMap=source?.skins?.[skinKey];
+ const tint=footeraSkinTint(look.skin,info?.skinMean?.[skinKey]||[.75,.55,.45]);
  for(const mesh of meshes){
   const geometry=mesh.geometry.clone(),morphs=geometry.morphAttributes.position,names=mesh.morphTargetDictionary||{};
   if(morphs?.length){
