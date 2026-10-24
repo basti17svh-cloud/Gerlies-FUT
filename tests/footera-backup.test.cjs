@@ -36,7 +36,7 @@ test('account profile has an independent local-export control and safeguards mis
  assert.match(account,/id="footeraProfileExport"/);
  assert.match(account,/footeraProfileExport"\)\.addEventListener\("click"/);
  assert.match(account,/root\.FooteraBackup\.exportBackup\(\)/);
- assert.match(account,/cloudButton\.disabled=owner!==u\.id/);
+ assert.match(account,/footeraSaveUseDevice"\)\.disabled=!owned\|\|!sameClub\|\|equal/);
  assert.match(account,/id="footeraProfileBackupHint"/);
 });
 

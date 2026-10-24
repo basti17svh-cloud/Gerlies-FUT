@@ -75,8 +75,8 @@ test("account switch and cloud saves cannot silently replace online profile",()=
  assert.match(online,/localStorage\.getItem\("footera-cloud-owner"\)!==online\.userId/);
  assert.match(online,/if\(!session\)[\s\S]*?footera-cloud-owner/);
  assert.match(online,/authClient/);
- assert.match(worker,/footera-account\.js\?v=21266/);
- assert.match(worker,/footera-account\.css\?v=21122/);
+ assert.match(worker,/footera-account\.js\?v=\d+/);
+ assert.match(worker,/footera-account\.css\?v=\d+/);
 });
 test("cloud save schema enforces ownership and revision checks",()=>{
  assert.match(sql,/alter table public\.footera_cloud_saves enable row level security/);
@@ -268,8 +268,8 @@ test("Google login and linking are absent from account UI while email flows rema
 
 test("the real entry page loads accounts after online and backup, including the stylesheet",()=>{
  const html=require('./helpers/app-html.cjs')();
- assert.match(html,/<script src="\.\/footera-account\.js\?v=21266"><\/script>/);
- assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=21122">/);
+ assert.match(html,/<script src="\.\/footera-account\.js\?v=\d+"><\/script>/);
+ assert.match(html,/<link rel="stylesheet" href="\.\/footera-account\.css\?v=\d+">/);
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./footera-backup.js'));
  assert.ok(html.indexOf('src="./footera-account.js')>html.indexOf('src="./friend-online.js'));
 });

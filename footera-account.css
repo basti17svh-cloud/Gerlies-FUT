@@ -90,3 +90,49 @@
 .footera-transfer button{display:block;width:100%;min-height:45px;padding:10px;border-radius:9px;border:1px solid #e2ff9d;background:#ddf883;color:#1b2816;font-weight:850;font-size:13px;margin:10px 0}
 .footera-transfer button:disabled{opacity:.45;cursor:not-allowed}
 #footeraProfileTransferFeedback{color:#ffe0a0;font-weight:750}
+
+/* V21.267: one save overview, optional account and file tools. */
+.footera-profile-page{width:min(100%,720px)}
+.footera-profile-section-title{margin-top:16px}
+.footera-save-overview{margin:18px 0 12px;padding:16px;border:1px solid #65714b;border-radius:16px;background:linear-gradient(140deg,#1d2c21,#111b17)}
+.footera-save-overview[data-state="saved"]{border-color:#5ca98a}
+.footera-save-overview[data-state="different"],.footera-save-overview[data-state="unlinked"]{border-color:#d5a258}
+.footera-save-kicker{font-size:10px;font-weight:850;letter-spacing:.13em;color:#b8d99c}
+.footera-save-overview h3{font-size:19px;line-height:1.25;margin:8px 0}
+.footera-save-overview p,.footera-profile-fold p,.footera-profile-fold li{font-size:12px;line-height:1.55;color:#c3d0c7}
+.footera-save-time{font-size:11px!important;color:#aebdb4!important}
+.footera-save-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.footera-save-actions button,.footera-profile-quiet{min-height:44px;padding:10px 12px;border-radius:10px;border:1px solid #526c5a;background:#21372b;color:#f4fff6;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.footera-save-actions button:first-child{background:#d8ff65;border-color:#d8ff65;color:#172113}
+.footera-save-actions button:disabled{opacity:.45;cursor:not-allowed}
+.footera-profile-fold,.footera-save-compare{margin-top:10px;border:1px solid #354d40;border-radius:12px;background:#101b15;padding:0 12px 10px}
+.footera-profile-fold:not([open]),.footera-save-compare:not([open]){padding-bottom:0}
+.footera-profile-fold>summary,.footera-save-compare>summary{min-height:46px;padding:13px 0;cursor:pointer;font-size:13px;font-weight:800;color:#e6f3e4}
+.footera-save-compare table{width:100%;border-collapse:collapse;table-layout:fixed;margin:12px 0}
+.footera-save-compare th,.footera-save-compare td{padding:9px 5px;border-bottom:1px solid #3a5042;text-align:left;font-size:11px;overflow-wrap:anywhere;vertical-align:top}
+.footera-save-compare thead th{color:#c8efad;font-size:10px}
+.footera-save-compare tbody th{color:#aebeb4;font-weight:500}
+.footera-save-compare td{font-weight:750;color:#f2fff4}
+.footera-profile-quiet{display:block;width:100%;text-align:left;margin-top:9px}
+.footera-profile-fold ol{padding-left:20px;margin:0 0 6px}
+.footera-profile-fold li+li{margin-top:8px}
+.footera-profile-backup-feedback:empty{display:none}
+.footera-profile-delete-fold{border-color:#6d424b}
+.footera-profile-delete-fold>summary{color:#e9b4b9}
+.footera-profile-delete-fold .footera-profile-danger{margin-top:0}
+.footera-profile-page .footera-profile-hero{padding:12px;gap:12px}
+.footera-profile-page .footera-profile-avatar{flex-basis:48px;height:48px;font-size:28px}
+.footera-profile-page .footera-profile-hero h3{font-size:20px}
+.footera-account-overlay[data-logged="true"] .footera-account-cloud,
+.footera-account-overlay[data-logged="true"] .footera-email-intro,
+.footera-account-overlay[data-logged="true"] #footeraAccountForm>label:first-child{display:none}
+@media(max-width:480px){
+ .footera-profile-page{padding:14px 12px 18px;border-radius:15px}
+ .footera-profile-header h2{font-size:23px}
+ .footera-save-overview{padding:12px;margin-top:14px}
+ .footera-save-actions{grid-template-columns:1fr}
+ .footera-save-overview h3{font-size:18px}
+ .footera-profile-stats{gap:6px}
+ .footera-profile-stats>div{padding:10px 5px}
+ .footera-profile-stats strong{font-size:16px}
+}
