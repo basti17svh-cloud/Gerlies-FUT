@@ -1,0 +1,36 @@
+/* V21.268: native desktop UI rendering. No match or mobile rules. */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  /* Avoid compositing the fixed navigation and its text through a transform. */
+  .nav { left: 0; right: 0; margin-inline: auto; transform: none; }
+  .topbar, .nav { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: #0c0a0b; }
+
+  /* A filter on the complete card rasterizes its live text together with the art.
+     Keep the original high-resolution artwork and portrait styling; remove only
+     the outer menu-card filter and the blurred name shadow. */
+  html body :is(#homeView, #squadView, #clubView, #marketView, #evolutionView,
+    #sbcView, #eventsView, #objectivesView, #seasonPassView, #bioModal, #playerModal,
+    .squad-picker-modal, .sbc-player-picker) .card-shell { filter: none !important; }
+  html body :is(#homeView, #squadView, #clubView, #marketView, #evolutionView,
+    #sbcView, #eventsView, #objectivesView, #seasonPassView, #bioModal, #playerModal,
+    .squad-picker-modal, .sbc-player-picker) .card-shell .pname { text-shadow: none !important; }
+
+  /* Preserve card geometry and improve the accompanying desktop labels. */
+  #clubView .club-item h4 { font-size: 13px; line-height: 1.3; }
+  #clubView .club-item p { font-size: 12px; line-height: 1.4; }
+  #clubView .club-item :is(.primary, .secondary), .price-compare-actions button { font-size: 12px; }
+
+  /* Use readable native text sizes instead of tiny phone-era helper labels. */
+  .headline p, .brand small, .walletbox span, .squad-plan-copy em,
+  .home-action-copy small, .home-reward-copy p, .store-pack-content p,
+  .store-buy-button small, .market-row-sub, .market-price-cell span,
+  .transfer-offer-player p, .transfer-offer-warning, .transfer-offer-form label,
+  .price-compare-hero > div:last-child > small, .price-compare-cell small {
+    font-size: 12px; line-height: 1.4;
+  }
+  .walletbox span { font-size: 10px; }
+  .ux-status-strip span, .club-rating-head strong, .club-rating-head span,
+  .sbc-picker-range-head span { font-size: 11px; line-height: 1.3; }
+  .nav button .nav-label, .squad-plan-copy strong, .market-row-name strong { font-size: 13px; }
+  #bioModal .bio-context { font-size: 12px !important; }
+  #bioModal :is(.bio-eyebrow, .bio-hero-kpis span, .bio-panel-head small) { font-size: 11px; }
+}
