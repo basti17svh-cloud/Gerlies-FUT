@@ -1,0 +1,54 @@
+/* V21.265: bounded desktop workspace. Mobile keeps its existing layout. */
+@media (min-width: 900px) {
+  .app { width: min(1140px, 100%); max-width: 1140px; padding-bottom: 90px; }
+  .nav { max-width: 1140px; padding: 7px 12px; gap: 8px; }
+  .nav button { min-height: 62px; padding: 7px 8px; border-radius: 13px; }
+  .nav button .nav-ico { width: 25px; height: 25px; }
+  .nav button .nav-ico svg { width: 23px; height: 23px; }
+  .more-tray { width: min(720px, calc(100% - 32px)); bottom: 84px; }
+  .headline { padding: 14px 20px 6px; }
+  .headline h2 { font-size: 23px; }
+  .section { padding: 10px 20px 20px; }
+
+  /* Keep the same DOM and drag targets; only their visual grid positions change. */
+  #squadView > .section {
+    --desktop-pitch-width: clamp(240px, calc((100dvh - 230px) * .68), 440px);
+    display: grid;
+    grid-template-columns: var(--desktop-pitch-width) minmax(0, 1fr);
+    grid-template-rows: repeat(7, auto) 1fr;
+    align-items: start;
+    align-content: start;
+    gap: 10px 22px;
+  }
+  #squadView .squad-stage { display: contents; }
+  #squadView #pitch { grid-column: 1; grid-row: 1 / 9; width: 100%; aspect-ratio: .68; }
+  #squadView .saved-squads { grid-column: 2; grid-row: 1; margin: 0; padding: 10px; }
+  #squadView .squadbar { grid-column: 2; grid-row: 2; margin: 0; }
+  #squadView .squadbar .kpi { padding: 9px 10px; border-radius: 12px; }
+  #squadView .squadbar .kpi strong { font-size: 20px; }
+  #squadView .toolbar { grid-column: 2; grid-row: 3; margin: 0; flex-wrap: wrap; }
+  #squadView .toolbar :is(select, button) { min-height: 40px; font-size: 12px; }
+  #squadView .squad-drawer-tabs { grid-column: 2; grid-row: 4; margin: 0; }
+  #squadView .squad-drawer-tab { min-height: 40px; border-radius: 10px 10px 0 0; }
+  #squadView .squad-drawer { grid-column: 2; grid-row: 5; margin-top: -10px; }
+  #squadView .squad-drawer.open { max-height: 260px; overflow-y: auto; }
+  #squadView .squad-drawer[data-mode="bench"] #bench,
+  #squadView .squad-drawer[data-mode="reserve"] #reserve {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+  #squadView .squad-drawer .emptyslot { min-height: 0; }
+  #squadView .squad-hint { grid-column: 2; grid-row: 6; margin: 0; font-size: 11px; }
+  #squadView .role-panel { grid-column: 2; grid-row: 7; margin: 0; }
+  #squadView .squad-plan-menu { grid-column: 2; grid-row: 7; margin: 0; gap: 7px; }
+  #squadView .squad-plan-btn { min-height: 62px; padding: 8px 10px; }
+  #squadView .squad-plan-copy em { -webkit-line-clamp: 1; }
+  #squadView .role-list { max-height: 260px; overflow-y: auto; }
+
+  /* More useful information per row without stretching cards or pack art. */
+  .itemgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .packgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-hero-card { min-height: 280px; }
+  .friend-pitch { max-width: 400px; margin-inline: auto; }
+  .sbc-editor-pitch { max-width: 400px; margin-inline: auto; }
+}
