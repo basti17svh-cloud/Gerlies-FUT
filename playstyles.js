@@ -331,7 +331,7 @@ function badgeHTML(item,base,mini){
  const data=resolve(base,item);
  if(!data.styles.length)return "";
  const label=data.styles.map(function(style){return style.name+(style.plus?"+":"")}).join(", ");
- return '<span class="playstyle-card-row '+(mini?'mini':'')+'" aria-label="PlayStyles: '+htmlEsc(label)+'">'+data.styles.map(function(style){
+ return '<span class="playstyle-card-row '+(mini?'mini':'')+'" style="--ps-count:'+data.styles.length+'" aria-label="PlayStyles: '+htmlEsc(label)+'">'+data.styles.map(function(style){
   return '<span class="playstyle-card-icon '+(style.plus?'plus':'')+'" title="'+htmlEsc(style.name)+(style.plus?'+':'')+'">'+iconSVG(style)+'</span>';
  }).join("")+'</span>';
 }
