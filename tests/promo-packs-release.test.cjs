@@ -33,6 +33,39 @@ function app(at){
  return{ctx,get,run:code=>vm.runInContext(code,ctx),clock:at=>now=Date.parse(at),buy:(id,currency='coins')=>ctx.click({target:{closest:s=>s==='[data-buy]'?{dataset:{buy:id,cur:currency}}:null}})};
 }
 
+
+test('25 October 19:00 Berlin drop publishes only Ultimate and Jumbo Rare, including DST switch',()=>{
+ const a=app('2026-10-25T17:59:59Z'),ids=()=>Array.from(a.ctx.activePromoPacks(),p=>p.id);
+ assert.ok(!ids().includes('ultimate')&&!ids().includes('jumbo-rare'));
+ a.ctx.renderStore();
+ assert.match(a.get('storeContext').textContent,/Heute ab 19:00 Uhr: Ultimatives Pack/);
+ assert.match(a.get('storeContext').textContent,/Jumbo-Seltene-Spieler-Pack/);
+ assert.doesNotMatch(a.get('packGrid').innerHTML,/data-buy="ultimate"/);
+ a.clock('2026-10-25T18:00:00Z');
+ assert.deepEqual(ids(),['ultimate','jumbo-rare']);
+ a.ctx.renderStore();
+ const markup=a.get('packGrid').innerHTML;
+ assert.match(markup,/30 selten/);
+ assert.match(markup,/24 selten/);
+ assert.match(markup,/10 von 10 Käufen übrig/);
+ assert.match(markup,/data-buy="ultimate" data-cur="coins"/);
+ assert.match(markup,/data-buy="jumbo-rare" data-cur="points"/);
+ a.clock('2026-10-26T17:59:59Z');assert.deepEqual(ids(),['ultimate','jumbo-rare']);
+ a.clock('2026-10-26T18:00:00Z');assert.ok(!ids().includes('ultimate')&&!ids().includes('jumbo-rare'));
+});
+test('25 October scheduled packs reject early purchases and keep the existing per-pack purchase cap',()=>{
+ const a=app('2026-10-25T17:59:59Z');
+ a.buy('ultimate');a.buy('jumbo-rare','points');
+ assert.equal(a.ctx.state.coins,3000000);
+ assert.equal(a.ctx.state.points,100000);
+ a.clock('2026-10-25T18:00:00Z');
+ a.buy('ultimate');a.buy('jumbo-rare','points');
+ assert.equal(a.ctx.state.coins,3000000-75000);
+ assert.equal(a.ctx.state.points,100000-2000);
+ assert.equal(a.ctx.promoUsage(a.run('PACKS.find(p=>p.id==="ultimate")')).remaining,9);
+ assert.equal(a.ctx.promoUsage(a.run('PACKS.find(p=>p.id==="jumbo-rare")')).remaining,9);
+});
+
 test('exact Berlin release and expiry replace only the scheduled daily rotation',()=>{
  const a=app('2026-10-05T16:59:59Z'),ids=()=>Array.from(a.ctx.activePromoPacks(),p=>p.id);
  assert.ok(ids().every(id=>!IDS.includes(id)));
