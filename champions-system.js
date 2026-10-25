@@ -22,7 +22,10 @@ function championsRank(wins=0){
  return CHAMPIONS_RANKS.find(row=>value>=row.min&&value<=row.max)||CHAMPIONS_RANKS[CHAMPIONS_RANKS.length-1]
 }
 function championsWeekEnd(start){
- return berlinShiftDays(new Date(new Date(start).getTime()),3,9)
+ const friday=new Date(start);
+ // One-time extension for the 23 Oct 2026 Finals only. Normal weekends still close Monday 09:00.
+ const extended=friday.getTime()===Date.parse("2026-10-23T19:00:00+02:00");
+ return berlinShiftDays(friday,extended?4:3,9)
 }
 function championsWindow(at=new Date()){
  const now=new Date(at),lastStart=berlinWeekStart(now,5,19),lastEnd=championsWeekEnd(lastStart),open=now>=lastStart&&now<lastEnd;
