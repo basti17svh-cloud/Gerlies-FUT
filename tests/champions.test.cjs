@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21212/);
+ assert.match(html,/champions-system\.js\?v=21276/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21212/);
+ assert.match(sw,/champions-system\.js\?v=21276/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -143,6 +143,7 @@ test("Only the 23 Oct 2026 Champions weekend stays open 24 hours longer, includi
  const next=box.getWindow(date("2026-10-30T19:00:00+01:00"));
  assert.equal(next.open,true);
  assert.equal(next.end.getTime(),date("2026-11-02T09:00:00+01:00").getTime(),"next Finals remain Monday 09:00");
+ assert.match(hub,/const endWeekday=new Intl.DateTimeFormat/,"schedule label derives the real final weekday");
  const prior=box.getWindow(date("2026-10-16T19:00:00+02:00"));
  assert.equal(prior.end.getTime(),date("2026-10-19T09:00:00+02:00").getTime(),"earlier Finals unchanged");
  assert.match(champions,/end=c.active\\?championsRunEnd\\(c\\.week\\):null/);
