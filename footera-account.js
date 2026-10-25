@@ -518,34 +518,60 @@
    }finally{autoBusy=false}
  }
  async function restoreCloud(){
-   if(autoBusy)throw Error("Ein Cloud-Abgleich läuft bereits. Bitte kurz warten und erneut laden.");
+   // The periodic background sync may be in flight when the player taps "Aus Cloud laden".
+   // Wait for it instead of discarding the user's restore request.
+   if(autoBusy&&autoBusyDone)await autoBusyDone;
+   if(autoBusy)throw Error("Ein anderer Cloud-Vorgang läuft. Bitte diesen zuerst abschließen.");
    autoBusy=true;
    try{
-   changeLocked();
-   const {u}=await requirePermanent(),existing=await cloudInfo();
-   if(!existing)throw Error("Für dieses Konto gibt es noch keine Cloud-Sicherung.");
-   const s=existing.save_data;
-   root.FooteraBackup?.validateState(s);
-   const name=String(s.profile?.clubName||"Footera");
-   const oldOwner=root.localStorage.getItem(OWNER);
-   const warning=oldOwner&&oldOwner!==u.id?"\n\nAchtung: Auf diesem Gerät gehört ein lokaler Spielstand zu einem anderen Konto.":"";
-   if(!root.confirm("Cloud-Spielstand laden?\n\nVerein: "+name+"\nSpielerkarten: "+s.club.length+"\nMünzen: "+integerValue(s.coins)+"\nFC Points: "+integerValue(s.points)+"\nChampions: "+integerValue(s.champions?.wins)+" S · "+integerValue(s.champions?.losses)+" N ("+integerValue(s.champions?.games)+" Spiele)\nSicherung: "+new Date(existing.saved_at).toLocaleString("de-DE")+"\n\nDein lokaler Spielstand wird ersetzt und vorher als Rückfallsicherung abgelegt."+warning))return false;
-   changeLocked();
-   if(typeof flushSave==="function")flushSave();
-   const before=root.localStorage.getItem(KEY);
-   if(before!==null)root.localStorage.setItem(ROLLBACK,before);
-   prepareSaveReplacement();
-   try{
-     root.localStorage.setItem(KEY,JSON.stringify(s));
-     root.localStorage.setItem(OWNER,u.id);
-     savePoint(u,s,existing.revision);
-   }catch(e){
-     root.FooteraAccountReplacingSave=false;
-     if(before!==null)root.localStorage.setItem(KEY,before);
-     if(oldOwner===null)root.localStorage.removeItem(OWNER);else root.localStorage.setItem(OWNER,oldOwner);
-     throw e;
-   }
-   root.location.reload();
+     changeLocked();
+     const {u}=await requirePermanent(),existing=await cloudInfo();
+     if(!existing?.save_data)throw Error("Für dieses Konto gibt es noch keine Cloud-Sicherung.");
+     if(!root.FooteraBackup?.validateState)throw Error("Die Spielstand-Prüfung ist nicht geladen.");
+     const s=root.FooteraBackup.validateState(existing.save_data);
+     const name=String(s.profile?.clubName||"Footera");
+     if(typeof flushSave==="function")flushSave();
+     const before=root.localStorage.getItem(KEY);
+     const oldOwner=root.localStorage.getItem(OWNER);
+     let local=null;
+     try{local=before?root.FooteraBackup.validateState(JSON.parse(before)):null}catch(_){}
+     const warning=oldOwner&&oldOwner!==u.id?"\n\nAchtung: Der lokale Spielstand gehört zu einem anderen Konto.":"";
+     const difference=local?"\n\n"+describeCloudDifference(local,s):"";
+     if(!root.confirm("Online-Spielstand von "+name+" auf diesem Gerät übernehmen?"+
+       "\n\nCloud-Version: "+existing.revision+
+       "\nSicherung: "+new Date(existing.saved_at).toLocaleString("de-DE")+
+       difference+
+       "\n\nDer Gerätestand wird ersetzt und vorher lokal als Rückfallsicherung abgelegt. Die Online-Sicherung bleibt unverändert."+warning))return false;
+     changeLocked();
+     if((await user())?.id!==u.id)throw Error("Konto während des Ladens gewechselt. Kein Spielstand ersetzt.");
+     // The PC can upload while the phone's confirmation is open. Never install
+     // an obsolete snapshot and mark it as the latest cloud revision.
+     const latest=await cloudInfo();
+     if(!latest?.save_data||latest.revision!==existing.revision||!structurallyEqual(latest.save_data,s))
+       throw Error("Die Cloud wurde auf einem anderen Gerät aktualisiert. Bitte noch einmal laden, damit der neueste Stand übernommen wird.");
+     if(typeof flushSave==="function")flushSave();
+     if(root.localStorage.getItem(KEY)!==before||root.localStorage.getItem(OWNER)!==oldOwner)
+       throw Error("Der Gerätestand wurde während des Ladens verändert. Bitte erneut vergleichen.");
+     changeLocked();
+     const payload=JSON.stringify(s);
+     if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+     prepareSaveReplacement();
+     try{
+       root.localStorage.setItem(KEY,payload);
+       root.localStorage.setItem(OWNER,u.id);
+       savePoint(u,s,latest.revision);
+       if(root.localStorage.getItem(KEY)!==payload||
+          root.localStorage.getItem(OWNER)!==u.id||
+          syncPoint(u)?.revision!==latest.revision)
+         throw Error("Die Übernahme wurde nicht vollständig gespeichert.");
+     }catch(e){
+       root.FooteraAccountReplacingSave=false;
+       if(before!==null)root.localStorage.setItem(KEY,before);else root.localStorage.removeItem(KEY);
+       if(oldOwner===null)root.localStorage.removeItem(OWNER);else root.localStorage.setItem(OWNER,oldOwner);
+       throw e;
+     }
+     root.location.reload();
+     return true;
    }finally{autoBusy=false}
  }
  // Guests back up their own club as well (V21.234). The email confirmation
