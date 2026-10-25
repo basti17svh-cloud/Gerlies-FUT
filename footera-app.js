@@ -7330,7 +7330,7 @@ function renderSquadBattleSelection(historyMode="push"){
   ?`<button id="sbReplayLineup" class="${replayArmed?"danger":"secondary"}">${replayArmed?"Bestätigen · 0 BP":"Erneut spielen · 0 BP"}</button>`
   :`<button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Zur Aufstellung</button>`;
  const warning=selectedPlayed?`<div class="sb-repeat-warning ${replayArmed?"confirm":""}"><strong>${replayArmed?"Wirklich erneut spielen?":"Dieser Gegner wurde bereits gewertet."}</strong><span>Das Spiel zählt für Coins und Ziele, aber bringt <b>0 Battle-Punkte</b> und erhöht nicht ${sb.played}/14.</span></div>`:"";
- $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · weiterhin Coins und Ziele"}`} · Montag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
+ $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · weiterhin Coins und Ziele"}`} · Sonntag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
  <label class="competition-difficulty">Schwierigkeit <select id="sbDifficulty">${options}</select></label>
  <div class="sb-refresh-row"><span>Gegner-Refresh <b>${refreshRemaining}/4 verfügbar</b></span><button id="sbRefreshOpponents" class="secondary" ${sb.played>=12||refreshRemaining<=0?"disabled":""}>4 neue Gegner</button></div>
  <div class="sb-opponent-grid">${cards}</div>
@@ -7869,7 +7869,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.270";
+const GFUT_BUILD="V21.272";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
