@@ -29,10 +29,12 @@ function setup({initial={},now='2026-09-27T12:00:00Z',eventPlayers=[]}={}){
  return{ctx,state,api}
 }
 
-test('Monday and Thursday reset at 09:00 Berlin on both sides of DST',()=>{
+test('Squad Battles reset Sunday 09:00 Berlin across October and March clock changes; Rivals stays Thursday',()=>{
  const {api}=setup();
- assert.equal(api.competitionWindow('squad',new Date('2026-10-26T07:59:59Z')).start.toISOString(),'2026-10-19T07:00:00.000Z');
- assert.equal(api.competitionWindow('squad',new Date('2026-10-26T08:00:00Z')).start.toISOString(),'2026-10-26T08:00:00.000Z');
+ assert.equal(api.competitionWindow('squad',new Date('2026-10-25T07:59:59Z')).start.toISOString(),'2026-10-18T07:00:00.000Z');
+ assert.equal(api.competitionWindow('squad',new Date('2026-10-25T08:00:00Z')).start.toISOString(),'2026-10-25T08:00:00.000Z');
+ assert.equal(api.competitionWindow('squad',new Date('2027-03-28T06:59:59Z')).start.toISOString(),'2027-03-21T08:00:00.000Z');
+ assert.equal(api.competitionWindow('squad',new Date('2027-03-28T07:00:00Z')).start.toISOString(),'2027-03-28T07:00:00.000Z');
  assert.equal(api.competitionWindow('rivals',new Date('2026-10-29T07:59:59Z')).start.toISOString(),'2026-10-22T07:00:00.000Z');
  assert.equal(api.competitionWindow('rivals',new Date('2026-10-29T08:00:00Z')).start.toISOString(),'2026-10-29T08:00:00.000Z');
 });
@@ -72,9 +74,9 @@ test('week change freezes rewards once, keeps division and survives a simulated 
  state.squadBattle.played=14;state.squadBattle.points=16000;
  state.rivals.division=7;state.rivals.step=3;state.rivals.weeklyPoints=35;
  state.rivals.week=api.competitionWindow('rivals',new Date('2026-10-01T12:00:00Z')).key;
- api.syncCompetitionWeeks(new Date('2026-10-05T06:59:59Z'));
+ api.syncCompetitionWeeks(new Date('2026-10-04T06:59:59Z'));
  assert.equal(state.squadBattle.played,14);
- api.syncCompetitionWeeks(new Date('2026-10-05T07:00:00Z'));
+ api.syncCompetitionWeeks(new Date('2026-10-04T07:00:00Z'));
  assert.equal(state.squadBattle.played,0);assert.equal(app.api.competitionPending('squad').length,1);
  api.syncCompetitionWeeks(new Date('2026-10-08T06:59:59Z'));assert.equal(state.rivals.weeklyPoints,35);
  api.syncCompetitionWeeks(new Date('2026-10-08T07:00:00Z'));
@@ -86,6 +88,24 @@ test('week change freezes rewards once, keeps division and survives a simulated 
  assert.equal(reload.state.coins,9000);
  assert.equal(reload.api.claimCompetitionReward('rivals',state.weeklyRewards.find(x=>x.mode==='rivals').week),false);
  assert.equal(reload.api.competitionPending().length,1);
+});
+
+test('a previous Monday-keyed Squad Battles save is rewarded once on Sunday and not again on Monday',()=>{
+ const {state,api}=setup({now:'2026-10-25T08:00:00Z'});
+ const legacyMonday=String(new Date('2026-10-19T07:00:00Z').getTime());
+ state.squadBattle.week=legacyMonday;
+ state.squadBattle.played=10;
+ state.squadBattle.points=13000;
+ api.syncCompetitionWeeks(new Date('2026-10-25T08:00:00Z'));
+ const pending=api.competitionPending('squad');
+ assert.equal(pending.length,1);
+ assert.equal(pending[0].week,legacyMonday);
+ assert.equal(pending[0].rank,'Gold 1');
+ assert.equal(state.squadBattle.played,0);
+ assert.equal(state.squadBattle.week,api.competitionWindow('squad',new Date('2026-10-25T08:00:00Z')).key);
+ api.syncCompetitionWeeks(new Date('2026-10-26T08:00:00Z'));
+ assert.equal(api.competitionPending('squad').length,1);
+ assert.equal(state.squadBattle.week,api.competitionWindow('squad',new Date('2026-10-25T08:00:00Z')).key);
 });
 
 test('event lineup optimizer starts the strongest valid XI and keeps TOTW 4 headliners on the pitch',()=>{
