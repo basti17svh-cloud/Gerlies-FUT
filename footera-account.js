@@ -554,7 +554,7 @@
        throw Error("Der Gerätestand wurde während des Ladens verändert. Bitte erneut vergleichen.");
      changeLocked();
      const payload=JSON.stringify(s);
-     if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+     if(before!==null)await root.FooteraBackup.preserveRollback(before);
      prepareSaveReplacement();
      try{
        root.localStorage.setItem(KEY,payload);
@@ -654,7 +654,7 @@
    if(!saved||!Number.isFinite(row?.revision))throw Error("Die Übernahme konnte nicht bestätigt werden. Bitte erneut versuchen.");
    if(typeof flushSave==="function")flushSave();
    const before=root.localStorage.getItem(KEY);
-   if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+   if(before!==null)await root.FooteraBackup.preserveRollback(before);
    prepareSaveReplacement();
    root.localStorage.setItem(KEY,JSON.stringify(saved));
    root.localStorage.setItem(OWNER,u.id);
@@ -766,7 +766,7 @@
      changeLocked();
      if(!structurallyEqual(localData(),save))return;
      const before=root.localStorage.getItem(KEY);
-     if(before!==null)root.localStorage.setItem(ROLLBACK,before);
+     if(before!==null)await root.FooteraBackup.preserveRollback(before);
      prepareSaveReplacement();
      try{
       root.localStorage.setItem(KEY,JSON.stringify(saved));
