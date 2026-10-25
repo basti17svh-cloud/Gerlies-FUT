@@ -120,23 +120,32 @@ test("84+ x10 pack keeps its 0.3% ICON chance; Champions Bonus supports rare 87+
 
 console.log("Footera Champions V21.23: Qualifikation, Finals, Rewards, KI-Skalierung und Shell-Integration OK");
 
-test("Champions weekend runs Friday 19:00 to Monday 09:00 Berlin (one-time extension removed)",()=>{
+test("Only the 23 Oct 2026 Champions weekend stays open 24 hours longer, including winter-time switch",()=>{
  const clock=fs.readFileSync(path.join(root,"footera-time.js"),"utf8");
- assert.doesNotMatch(champions,/CHAMPIONS_EXTRA_WINDOW/);assert.doesNotMatch(hub,/CHAMPIONS_EXTRA_WINDOW|championsSpecial/);
  const windowFunctions=champions.slice(champions.indexOf("function championsWeekEnd("),champions.indexOf("function championsDate("));
  const endFunction=champions.slice(champions.indexOf("function championsRunEnd("),champions.indexOf("function settleChampionsRun("));
  const box={};vm.createContext(box);
- vm.runInContext(clock+"\n"+windowFunctions+"\n"+endFunction+"\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
+ vm.runInContext(clock+"\\n"+windowFunctions+"\\n"+endFunction+"\\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
  const date=iso=>new Date(iso),start=date("2026-10-23T19:00:00+02:00").getTime();
- for(const iso of ["2026-10-23T19:00:00+02:00","2026-10-25T12:00:00+01:00","2026-10-26T08:59:59+01:00"]){
+ const normalEnd=date("2026-10-26T09:00:00+01:00").getTime(),extendedEnd=date("2026-10-27T09:00:00+01:00").getTime();
+ assert.equal(extendedEnd-normalEnd,24*60*60*1000,"extra day must be exactly 24 hours");
+ for(const iso of ["2026-10-23T19:00:00+02:00","2026-10-25T12:00:00+01:00","2026-10-26T08:59:59+01:00","2026-10-26T09:00:00+01:00","2026-10-27T08:59:59+01:00"]){
   const w=box.getWindow(date(iso));
   assert.equal(w.open,true,iso);assert.equal(w.start.getTime(),start);
-  assert.equal(w.end.getTime(),date("2026-10-26T09:00:00+01:00").getTime());
-  assert.equal(box.runEnd(String(start)).getTime(),w.end.getTime());
+  assert.equal(w.end.getTime(),extendedEnd);
+  assert.equal(box.runEnd(String(start)).getTime(),extendedEnd,"settlement uses the same deadline");
  }
- const closed=box.getWindow(date("2026-10-21T18:00:00+02:00"));
- assert.equal(closed.open,false);assert.equal(closed.start.getTime(),start);
- assert.match(champions,/end=c.active\?championsRunEnd\(c\.week\):null/);
+ for(const iso of ["2026-10-27T09:00:00+01:00","2026-10-28T09:00:00+01:00"]){
+  const w=box.getWindow(date(iso));
+  assert.equal(w.open,false,iso);
+  assert.equal(w.start.getTime(),date("2026-10-30T19:00:00+01:00").getTime());
+ }
+ const next=box.getWindow(date("2026-10-30T19:00:00+01:00"));
+ assert.equal(next.open,true);
+ assert.equal(next.end.getTime(),date("2026-11-02T09:00:00+01:00").getTime(),"next Finals remain Monday 09:00");
+ const prior=box.getWindow(date("2026-10-16T19:00:00+02:00"));
+ assert.equal(prior.end.getTime(),date("2026-10-19T09:00:00+02:00").getTime(),"earlier Finals unchanged");
+ assert.match(champions,/end=c.active\\?championsRunEnd\\(c\\.week\\):null/);
 });
 
 test("Champions run card tracks each game and shows the next rank above the start button",()=>{
