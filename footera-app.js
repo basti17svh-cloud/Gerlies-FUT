@@ -3749,7 +3749,8 @@ function packChanceLabel(v){if(!v)return"0 %";return `${(v*100).toLocaleString("
 const PROMO_PACK_RELEASES=Object.freeze({
  "2026-10-05":{startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]},
  "2026-10-07":{startsAt:"2026-10-07T19:00:00+02:00",ids:["ultimate","jumbo-rare"]},
- "2026-10-10":{startsAt:"2026-10-10T19:00:00+02:00",extraIds:["83x15","84x10"]}
+ "2026-10-10":{startsAt:"2026-10-10T19:00:00+02:00",extraIds:["83x15","84x10"]},
+ "2026-10-25":{startsAt:"2026-10-25T19:00:00+01:00",ids:["ultimate","jumbo-rare"]}
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
 function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
@@ -7869,7 +7870,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.272";
+const GFUT_BUILD="V21.273";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
