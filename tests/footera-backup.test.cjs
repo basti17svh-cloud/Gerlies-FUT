@@ -53,3 +53,42 @@ test('Footera current save schema and export validator stay in sync',()=>{
  assert.throws(()=>ctx.FooteraBackup.validateState({...base,version:saveVersion+1}),/Spielstand-Version nicht unterstützt/);
  assert.throws(()=>ctx.FooteraBackup.validateState({...base,version:-1}),/Spielstand-Version nicht unterstützt/);
 });
+
+test('large pre-restore save goes to IndexedDB even when localStorage rollback is quota-limited',async()=>{
+ const rows=new Map();
+ const fakeIDB={open(){
+  const db={createObjectStore(){},close(){},
+   transaction(){
+    const tx={objectStore(){return{
+     put(value,key){queueMicrotask(()=>{rows.set(key,value);tx.oncomplete?.()})},
+     get(key){const req={};queueMicrotask(()=>{req.result=rows.get(key);req.onsuccess?.()});return req}
+    }}};return tx;
+   }};
+  const request={result:db};
+  queueMicrotask(()=>{request.onupgradeneeded?.();request.onsuccess?.()});
+  return request;
+ }};
+ const raw=JSON.stringify({version:128,profile:{clubName:'FC Gerlies'},club:[{uid:'1',pid:'2'}],squad:[],coins:3736540,points:294300});
+ const items=new Map([['gerliesFutV9',raw],['footera-before-restore','older rollback']]);
+ const root={document:{readyState:'loading',addEventListener(){}},indexedDB:fakeIDB,
+  localStorage:{
+   getItem:key=>items.get(key)||null,
+   setItem:(key,value)=>{if(key==='footera-before-restore')throw Error('QuotaExceededError');items.set(key,value)},
+   removeItem:key=>items.delete(key)
+  }};
+ vm.createContext(root);vm.runInContext(file,root);
+ assert.equal(await root.FooteraBackup.preserveRollback(raw),'indexeddb');
+ assert.equal(rows.get('latest').data,raw);
+ assert.equal(items.get('gerliesFutV9'),raw);
+ assert.equal(items.has('footera-before-restore'),false,'legacy duplicate frees localStorage space');
+ assert.equal(await root.FooteraBackup.readRollback(),raw);
+});
+test('when both storage types reject rollback, original save stays unchanged',async()=>{
+ const raw=JSON.stringify({version:128,profile:{clubName:'FC Gerlies'},club:[],squad:[],coins:10,points:0});
+ const items=new Map([['gerliesFutV9',raw]]);
+ const root={document:{readyState:'loading',addEventListener(){}},
+  localStorage:{getItem:k=>items.get(k)||null,setItem(){throw Error('QuotaExceededError')},removeItem:k=>items.delete(k)}};
+ vm.createContext(root);vm.runInContext(file,root);
+ await assert.rejects(root.FooteraBackup.preserveRollback(raw),/Kein Spielstand wurde ersetzt/);
+ assert.equal(items.get('gerliesFutV9'),raw);
+});
