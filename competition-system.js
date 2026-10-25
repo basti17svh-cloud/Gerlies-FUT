@@ -2,7 +2,7 @@
 
 // All competitive windows use Berlin wall time; the timezone helper in footera-time.js
 // converts each boundary to an instant, including the March/October clock changes.
-const COMPETITION_WEEK={squad:{weekday:1,hour:9},rivals:{weekday:4,hour:9}};
+const COMPETITION_WEEK={squad:{weekday:0,hour:9},rivals:{weekday:4,hour:9}};
 const SB_DIFFICULTIES={amateur:{label:"Amateur",factor:.60},semi:{label:"Halbprofi",factor:.80},pro:{label:"Profi",factor:1},world:{label:"Weltklasse",factor:1.25},legend:{label:"Legende",factor:1.50},ultimate:{label:"Ultimativ",factor:1.70}};
 const SB_STRENGTH={easy:.90,medium:1,hard:1.10,elite:1.15,totw:1.15,event:1.15};
 // Primary multi-player packs are tradeable; extra guaranteed-rating packs are untradeable.
@@ -253,7 +253,7 @@ function competitionCountdown(mode){return seasonCountdown(competitionWindow(mod
 function rivalsStageLabel(r){return r.division===0?`ELITE · Skill-Rating ${r.skill}`:`DIVISION ${r.division} · STUFE ${r.step}/${RIVALS_LADDER[r.division][0]}`}
 function renderCompetitionModeStatus(){
  syncCompetitionWeeks();const sb=state.squadBattle,r=state.rivals;
- const sbText=`${sbRank(sb.points).name.toUpperCase()} · ${fmt(sb.points)} BP · ${sb.played}/14 gewertete Spiele · Reset Montag 09:00 · ${competitionCountdown("squad")}`;
+ const sbText=`${sbRank(sb.points).name.toUpperCase()} · ${fmt(sb.points)} BP · ${sb.played}/14 gewertete Spiele · Reset Sonntag 09:00 · ${competitionCountdown("squad")}`;
  const rvText=`${rivalsStageLabel(r)} · ${r.weeklyPoints}/35 Wochenpunkte · Reset Donnerstag 09:00 · ${competitionCountdown("rivals")}`;
  $("sbRecord").textContent=sbText;$("rvRecord").textContent=rvText;
  $("sbWeeklyCard").innerHTML=competitionClaimButtons("squad");$("rvWeeklyCard").innerHTML=competitionClaimButtons("rivals")
@@ -268,7 +268,7 @@ function renderCompetitionProgress(snapshot){
  if(!snapshot){host.innerHTML="";return}
  if(snapshot.mode==="squad"){
   const a=snapshot.after,b=snapshot.before,rank=sbRank(a.points),next=SB_RANKS.find(x=>x.min>a.points),pct=next?Math.max(0,Math.min(100,Math.round((a.points-rank.min)/(next.min-rank.min)*100))):100;
-  host.innerHTML=`<div class="competition-result ${a.rank!==b.rank?"promoted":""}"><small>SQUAD BATTLES · ${snapshot.result==="win"?"SIEG":"NIEDERLAGE"}</small><strong>+${fmt(snapshot.earned)} BATTLE-PUNKTE</strong><p>${fmt(b.points)} → ${fmt(a.points)} BP</p><b>${esc(b.rank)} ${b.rank!==a.rank?"→ "+esc(a.rank):""}</b><div class="competition-bar"><i style="width:${pct}%"></i></div><span>${a.played}/14 GEWERTETE SPIELE · RESET MONTAG 09:00</span>${!snapshot.eligible?"<em>Weiterhin Coins und Ziele · keine weiteren BP</em>":""}</div>`
+  host.innerHTML=`<div class="competition-result ${a.rank!==b.rank?"promoted":""}"><small>SQUAD BATTLES · ${snapshot.result==="win"?"SIEG":"NIEDERLAGE"}</small><strong>+${fmt(snapshot.earned)} BATTLE-PUNKTE</strong><p>${fmt(b.points)} → ${fmt(a.points)} BP</p><b>${esc(b.rank)} ${b.rank!==a.rank?"→ "+esc(a.rank):""}</b><div class="competition-bar"><i style="width:${pct}%"></i></div><span>${a.played}/14 GEWERTETE SPIELE · RESET SONNTAG 09:00</span>${!snapshot.eligible?"<em>Weiterhin Coins und Ziele · keine weiteren BP</em>":""}</div>`
  }else{
   const a=snapshot.after,b=snapshot.before,up=a.division<b.division,protectedStep=snapshot.result==="loss"&&b.step===a.step&&a.checkpoint>0,q=snapshot.championsQualification;
   const championsLine=q?`<em>CHAMPIONS · +${fmt(q.earned)} CP · ${fmt(q.before)} → ${fmt(q.after)} / ${fmt(q.target)}${q.qualifiedAfter&&!q.qualifiedBefore?" · QUALIFIZIERT":""}</em>`:"";
@@ -306,7 +306,7 @@ function squadPostMatchHtml(snapshot){
   '<div class="post-progress-status"><span>VORHER<b>'+esc(b.rank)+'</b></span><i>→</i><span>AKTUELL<b>'+esc(a.rank)+'</b></span></div>'+
   '<div class="post-progress-section-head"><span>RANGFORTSCHRITT</span><strong>'+fmt(a.points)+' BP</strong></div>'+
   progressAxisHtml(markers,pct(b.points),pct(a.points))+
-  '<div class="post-progress-foot">'+a.played+'/14 gewertete Spiele · Reset Montag 09:00</div>'+
+  '<div class="post-progress-foot">'+a.played+'/14 gewertete Spiele · Reset Sonntag 09:00</div>'+
   (!snapshot.eligible?'<div class="post-progress-note">Dieses Spiel gab keine weiteren Battle-Punkte.</div>':'')
 }
 function rivalsPostMatchHtml(snapshot){
