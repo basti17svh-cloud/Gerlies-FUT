@@ -125,7 +125,7 @@ test("Only the 23 Oct 2026 Champions weekend stays open 24 hours longer, includi
  const windowFunctions=champions.slice(champions.indexOf("function championsWeekEnd("),champions.indexOf("function championsDate("));
  const endFunction=champions.slice(champions.indexOf("function championsRunEnd("),champions.indexOf("function settleChampionsRun("));
  const box={};vm.createContext(box);
- vm.runInContext(clock+"\\n"+windowFunctions+"\\n"+endFunction+"\\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
+ vm.runInContext(clock+"\n"+windowFunctions+"\n"+endFunction+"\nthis.getWindow=championsWindow;this.runEnd=championsRunEnd;",box);
  const date=iso=>new Date(iso),start=date("2026-10-23T19:00:00+02:00").getTime();
  const normalEnd=date("2026-10-26T09:00:00+01:00").getTime(),extendedEnd=date("2026-10-27T09:00:00+01:00").getTime();
  assert.equal(extendedEnd-normalEnd,24*60*60*1000,"extra day must be exactly 24 hours");
@@ -146,7 +146,7 @@ test("Only the 23 Oct 2026 Champions weekend stays open 24 hours longer, includi
  assert.match(hub,/const endWeekday=new Intl.DateTimeFormat/,"schedule label derives the real final weekday");
  const prior=box.getWindow(date("2026-10-16T19:00:00+02:00"));
  assert.equal(prior.end.getTime(),date("2026-10-19T09:00:00+02:00").getTime(),"earlier Finals unchanged");
- assert.match(champions,/end=c.active\\?championsRunEnd\\(c\\.week\\):null/);
+ assert.match(champions,/end=c.active\?championsRunEnd\(c\.week\):null/);
 });
 
 test("Champions run card tracks each game and shows the next rank above the start button",()=>{
