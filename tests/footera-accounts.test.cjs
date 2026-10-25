@@ -29,7 +29,7 @@ function runtime(mode="guest"){
  };
  const document={readyState:"loading",addEventListener(){},getElementById(){return null}};
  const win={
-  document,FOOTERA_ONLINE_CONFIG:{url:"https://idxydyrihtyecvfjvtuk.supabase.co"},FooteraOnline:{available:true,authClient:async()=>client,ready:true},FooteraBackup:{validateState:s=>s,blocked:()=>""},
+  document,FOOTERA_ONLINE_CONFIG:{url:"https://idxydyrihtyecvfjvtuk.supabase.co"},FooteraOnline:{available:true,authClient:async()=>client,ready:true},FooteraBackup:{validateState:s=>s,blocked:()=>"",preserveRollback:async raw=>store.set("footera-before-restore",raw)},
   location:{href:"https://example.test/Gerlies-FUT/",reload:()=>{reloaded=true}},
   localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
   setTimeout(){},
@@ -1149,5 +1149,40 @@ test('independently changed second device never fast-forwards or uploads over th
  await t.win.FooteraAccount.autoAttachAndBackup();
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,local.coins+100);
+ assert.equal(t.wasReloaded(),false);
+});
+
+test('localStorage quota on rollback no longer blocks a confirmed cloud restore',async()=>{
+ const t=runtime('registered');
+ const old={...sampleGame(),coins:3736540,points:294300,champions:{games:4,wins:4,losses:0}};
+ const cloud={...old,coins:3749465,points:292300,champions:{games:8,wins:6,losses:2}};
+ t.store.set('gerliesFutV9',JSON.stringify(old));
+ t.store.set('footera-cloud-owner','existing-a');
+ t.setCloud({save_data:cloud,revision:99,saved_at:'2026-10-25T00:03:05Z'});
+ t.win.confirm=()=>true;
+ const writes=[],originalSet=t.win.localStorage.setItem;
+ t.win.localStorage.setItem=(key,value)=>{
+  if(key==='footera-before-restore')throw Error("Failed to execute 'setItem' on 'Storage': Setting the value exceeded the quota.");
+  return originalSet(key,value);
+ };
+ t.win.FooteraBackup.preserveRollback=async raw=>{writes.push(JSON.parse(raw));};
+ assert.equal(await t.win.FooteraAccount.restoreCloud(),true);
+ assert.equal(writes.length,1);
+ assert.equal(writes[0].coins,3736540);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,3749465);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).champions.wins,6);
+ assert.equal(t.wasReloaded(),true);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,99);
+});
+test('failed persistent rollback preserves device save and does not reload',async()=>{
+ const t=runtime('registered');
+ const old={...sampleGame(),coins:3736540};
+ t.store.set('gerliesFutV9',JSON.stringify(old));
+ t.store.set('footera-cloud-owner','existing-a');
+ t.setCloud({save_data:{...old,coins:3749465},revision:99,saved_at:'2026-10-25T00:03:05Z'});
+ t.win.confirm=()=>true;
+ t.win.FooteraBackup.preserveRollback=async()=>{throw Error('Nicht genug Platz für Rückfallsicherung');};
+ await assert.rejects(t.win.FooteraAccount.restoreCloud(),/Rückfallsicherung/);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,3736540);
  assert.equal(t.wasReloaded(),false);
 });
