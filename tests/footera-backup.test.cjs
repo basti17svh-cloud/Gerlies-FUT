@@ -92,3 +92,12 @@ test('when both storage types reject rollback, original save stays unchanged',as
  await assert.rejects(root.FooteraBackup.preserveRollback(raw),/Kein Spielstand wurde ersetzt/);
  assert.equal(items.get('gerliesFutV9'),raw);
 });
+
+test('automatic conflict backups preserve both named online snapshot and local rollback without downloads',async()=>{
+ const store=new Map(),ctx={document:{readyState:'loading',addEventListener(){},getElementById(){return null}},localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)}};
+ vm.createContext(ctx);vm.runInContext(file,ctx);
+ await ctx.FooteraBackup.preserveRollback('{"coins":100}','cloud-before-upload');
+ await ctx.FooteraBackup.preserveRollback('{"coins":200}');
+ assert.equal(await ctx.FooteraBackup.readRollback('cloud-before-upload'),'{"coins":100}');
+ assert.equal(await ctx.FooteraBackup.readRollback(),'{"coins":200}');
+});

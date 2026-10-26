@@ -34,14 +34,14 @@ const server=http.createServer((req,res)=>{const file=path.join(root,new URL(req
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    assert.equal(await page.locator('#footeraProfileSettings').getAttribute('open'),null);
    assert.equal(await page.locator('#footeraProfileDelete').isVisible(),false);
-   assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Erneut prüfen');
+   assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Spielstand synchronisieren');
    await page.screenshot({path:path.join(out,'profile-overview-'+width+'.png')});
   }
   await page.setViewportSize({width:390,height:844});
   // Equal timestamps do not imply equal content. The overview detects wallet and Champions differences.
   await page.evaluate(()=>{qaCloud.save_data.coins=3479390;qaCloud.save_data.champions={wins:1,losses:0,games:1};return FooteraAccount.showProfile()});
   assert.equal(await page.locator('#footeraSaveOverview').getAttribute('data-state'),'different');
-  assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Spielstände vergleichen');
+  assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Spielstand synchronisieren');
   await page.locator('#footeraProfileBackup').click();
   await page.waitForFunction(()=>document.querySelector('#footeraSaveCompare').open);
   const comparison=await page.locator('#footeraSaveComparisonRows').textContent();
@@ -73,7 +73,7 @@ const server=http.createServer((req,res)=>{const file=path.join(root,new URL(req
    return FooteraAccount.showProfile();
   });
   assert.equal(await page.locator('#footeraSaveOverview').getAttribute('data-state'),'pending');
-  assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Jetzt sichern');
+  assert.equal(await page.locator('#footeraProfileBackup').textContent(),'Spielstand synchronisieren');
   acceptDialogs=true;await page.locator('#footeraProfileBackup').click();
   await page.waitForFunction(()=>document.querySelector('#footeraSaveOverview').dataset.state==='saved');
   assert.equal(await page.evaluate(()=>qaWrites.length),1,'one deliberate upload');
