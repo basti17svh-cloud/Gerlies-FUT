@@ -35,8 +35,8 @@ function runtime(mode="guest"){
   setTimeout(){},
   console:{warn(){}}
  };
- vm.runInNewContext(js,{window:win,document,URL,TextEncoder,console});
- return {calls,store,win,client,setUser:u=>{who=u},setCloud:data=>{cloud=data;revision=data?.revision||0},setGuestOffer:o=>{guestOffer=o},wasReloaded:()=>reloaded};
+ const sandbox={window:win,document,URL,TextEncoder,console};vm.runInNewContext(js,sandbox);
+ return {calls,store,win,client,setLive:value=>{sandbox.state=value},setUser:u=>{who=u},setCloud:data=>{cloud=data;revision=data?.revision||0},setGuestOffer:o=>{guestOffer=o},wasReloaded:()=>reloaded};
 }
 
 test("existing guest links Google instead of creating another user",async()=>{
@@ -744,9 +744,8 @@ test('DIVERGED cloud revision refuses overwrite, preserving cloud-only cards and
  let backedUp=null,confirmed=false;
  t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>{backedUp={save:s,tag}};
  t.win.confirm=()=>{confirmed=true;return true};
- await assert.rejects(t.win.FooteraAccount.saveCloud(),/Sicherheitsstopp/);
- assert.equal(backedUp.save.points,335000);
- assert.match(backedUp.tag,/Cloud_V13/);
+ await assert.rejects(t.win.FooteraAccount.saveCloud(),/Zwei unterschiedliche Spielstände/);
+ assert.equal(backedUp,null,"no forced download for a conflict");
  assert.equal(confirmed,false,'never present an unsafe replace confirmation');
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
@@ -762,8 +761,8 @@ test('normal save with known current revision still writes via CAS',async()=>{
  t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>{backedUp={s,tag}};
  t.win.confirm=()=>{confirmed=true;return true};
  assert.equal(await t.win.FooteraAccount.saveCloud(),true);
- assert.equal(confirmed,true);
- assert.equal(backedUp.s.coins,5000);
+ assert.equal(confirmed,false,"normal saving needs no confirmation");
+ assert.equal(backedUp,null,"normal saving needs no file download");
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,1);
  assert.equal(t.calls.find(x=>x[0]==='cloud')[1].p_base_revision,13);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,14);
@@ -775,7 +774,7 @@ test('diverged revision with no sync point cannot be silently confirmed',async()
  t.setCloud({save_data:remote,revision:13,saved_at:'2026-10-13'});
  t.win.FooteraBackup.downloadSnapshot=async()=>{};
  t.win.confirm=()=>{throw Error('confirmation should not appear')};
- await assert.rejects(t.win.FooteraAccount.saveCloud(),/Sicherheitsstopp/);
+ await assert.rejects(t.win.FooteraAccount.saveCloud(),/Zwei unterschiedliche Spielstände/);
  assert.equal(t.calls.length,0);
  assert.equal(t.store.get('footera-cloud-sync-point-v1'),undefined);
 });
@@ -791,12 +790,12 @@ test('manual conflict cannot destroy a previously committed cloud Player Pick',a
  assert.equal(downloaded,0);
  assert.equal(t.calls.length,0);
 });
-test('missing cloud snapshot exporter never sends a destructive update',async()=>{
+test('an unresolved conflict never writes even without a file exporter',async()=>{
  const t=runtime('registered'),local={...sampleGame(),coins:8100};
  t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
  t.setCloud({save_data:sampleGame(),revision:13,saved_at:'2026-10-13'});
  t.win.confirm=()=>true;
- await assert.rejects(t.win.FooteraAccount.saveCloud(),/Cloud-Export fehlt/);
+ await assert.rejects(t.win.FooteraAccount.saveCloud(),/Zwei unterschiedliche Spielstände/);
  assert.equal(t.calls.length,0);
 });
 
@@ -1081,14 +1080,14 @@ function conflictRuntime(){
  t.store.set('footera-cloud-sync-point-v1',JSON.stringify({userId:'existing-a',saveId:local.profile.saveId,revision:97,hash:'old'}));
  t.setCloud({save_data:remote,revision:98,saved_at:'2026-10-24T20:44:03Z'});
  const snapshots=[],prompts=[];
- t.win.FooteraBackup.downloadSnapshot=async(s,tag)=>snapshots.push({s,tag});
+ t.win.FooteraBackup.preserveRollback=async(raw,slot="latest")=>{snapshots.push({s:JSON.parse(raw),tag:slot});t.store.set(slot==="latest"?"footera-before-restore":"footera-before-restore:"+slot,raw)};
  t.win.confirm=text=>{prompts.push(text);return true};
  return {t,remote,local,snapshots,prompts};
 }
 test('explicit recovery keeps the selected device wallet and Champions record without merging balances',async()=>{
  const {t,local,snapshots,prompts}=conflictRuntime();
  assert.equal(await t.win.FooteraAccount.resolveCloudConflict(),true);
- assert.deepEqual(snapshots.map(x=>x.tag),['Cloud_V98','Geraet_vor_Cloudwechsel']);
+ assert.deepEqual(snapshots.map(x=>x.tag),['cloud-before-upload','latest']);
  assert.match(prompts[0],/3.736.540/);assert.match(prompts[0],/4 Siege/);assert.match(prompts[0],/1 Siege/);
  const writes=t.calls.filter(x=>x[0]==='cloud');assert.equal(writes.length,1);
  assert.equal(writes[0][1].p_base_revision,98);
@@ -1100,7 +1099,7 @@ test('explicit recovery keeps the selected device wallet and Champions record wi
 test('cancelled recovery preserves both versions and the old sync point',async()=>{
  const {t,local,snapshots}=conflictRuntime();t.win.confirm=()=>false;
  assert.equal(await t.win.FooteraAccount.resolveCloudConflict(),false);
- assert.equal(snapshots.length,2);assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
+ assert.equal(snapshots.length,0);assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,local.coins);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,97);
 });
@@ -1112,11 +1111,11 @@ test('recovery still protects server-confirmed Player Picks',async()=>{
 test('failed backup or changed device data prevents recovery writes',async()=>{
  for(const kind of ['export','local-change']){
   const {t,local}=conflictRuntime();
-  t.win.FooteraBackup.downloadSnapshot=async()=>{
-   if(kind==='export')throw Error('download failed');
+  t.win.FooteraBackup.preserveRollback=async()=>{
+   if(kind==='export')throw Error('backup failed');
    t.store.set('gerliesFutV9',JSON.stringify({...local,coins:1}));
   };
-  await assert.rejects(t.win.FooteraAccount.resolveCloudConflict(),/download failed|während des Abgleichs/);
+  await assert.rejects(t.win.FooteraAccount.resolveCloudConflict(),/backup failed|während des Abgleichs/);
   assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  }
 });
@@ -1210,4 +1209,56 @@ test('unconfirmed Rank III receipt reports cloud conflict and never overwrites r
  await assert.rejects(t.win.FooteraAccount.syncPlayerPickRewards(),/noch nicht in der Cloud bestätigt/);
  assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
  assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,9000);
+});
+
+test('sync content fingerprint ignores JSONB key order and unchanged remote revision drift',async()=>{
+ const t=runtime('registered'),base=sampleGame();
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(base));
+ t.setCloud({save_data:base,revision:1});await t.win.FooteraAccount.saveCloud();
+ const local={...base,coins:7300};t.store.set('gerliesFutV9',JSON.stringify(local));
+ const reordered=Object.fromEntries(Object.entries(base).reverse());
+ reordered.profile=Object.fromEntries(Object.entries(base.profile).reverse());
+ t.setCloud({save_data:reordered,revision:2});
+ assert.equal(await t.win.FooteraAccount.synchronizeCloud(),'saved');
+ const writes=t.calls.filter(x=>x[0]==='cloud');assert.equal(writes.length,1);
+ assert.equal(writes[0][1].p_base_revision,2);assert.equal(writes[0][1].p_save.coins,7300);
+});
+test('online save uploads the running game when localStorage still contains an older snapshot',async()=>{
+ const t=runtime('registered'),base=sampleGame();
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(base));
+ t.setCloud({save_data:base,revision:1});await t.win.FooteraAccount.saveCloud();
+ t.setLive({...base,coins:8200,champions:{games:15,wins:11,losses:4}});
+ assert.equal(await t.win.FooteraAccount.saveCloud(),true);
+ const saved=t.calls.find(x=>x[0]==='cloud')[1].p_save;
+ assert.equal(saved.coins,8200);assert.equal(saved.champions.wins,11);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,5000,'disk simulation remains old');
+});
+test('acknowledged Pick consumed in an SBC does not permanently block a normal save',async()=>{
+ const t=runtime('registered'),remote={...sampleGame(),playerPickClaims:{'pick-consumed':'card-option'},club:[{uid:'pick-consumed',pid:'123',playerPickId:'pick-consumed',acquisitionSource:'reward-pick'}]};
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(remote));
+ t.setCloud({save_data:remote,revision:1});await t.win.FooteraAccount.saveCloud();
+ t.store.set('gerliesFutV9',JSON.stringify({...remote,club:[],sbcCompletions:{challenge:1}}));
+ assert.equal(await t.win.FooteraAccount.saveCloud(),true);
+ const saved=t.calls.find(x=>x[0]==='cloud')[1].p_save;
+ assert.equal(saved.club.length,0);assert.equal(saved.playerPickClaims['pick-consumed'],'card-option');
+});
+test('one sync click exposes a real conflict without uploading or downloading either save',async()=>{
+ const {t,local,remote,snapshots}=conflictRuntime();
+ assert.equal(await t.win.FooteraAccount.synchronizeCloud(),'conflict');
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);assert.equal(snapshots.length,0);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,local.coins);
+ assert.notEqual(local.coins,remote.coins);
+});
+test('manual save queues behind its background save instead of rejecting the click',async()=>{
+ const t=runtime('registered'),s=sampleGame();t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(s));
+ let release,started;const held=new Promise(r=>release=r),begun=new Promise(r=>started=r);
+ t.client.rpc=async(name,args)=>{
+  if(name==='footera_guest_save_offer')return{data:[]};
+  assert.equal(name,'footera_store_cloud_save');started();await held;
+  t.setCloud({save_data:args.p_save,revision:1});return{data:1};
+ };
+ const background=t.win.FooteraAccount.autoAttachAndBackup();await begun;
+ const manual=t.win.FooteraAccount.saveCloud();release();
+ await background;assert.equal(await manual,true);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
 });

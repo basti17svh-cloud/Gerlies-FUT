@@ -65,7 +65,7 @@ function openRollbackDatabase(){
   request.onblocked=()=>reject(Error("Rückfallsicherung ist durch einen anderen Tab gesperrt."));
  });
 }
-async function preserveRollback(raw){
+async function preserveRollback(raw,slot="latest"){
  if(raw===null)return "none";
  if(typeof raw!=="string")fail("Ungültiger vorheriger Spielstand.");
  try{
@@ -76,35 +76,35 @@ async function preserveRollback(raw){
     tx.oncomplete=()=>resolve();
     tx.onerror=()=>reject(tx.error||Error("Rückfallsicherung fehlgeschlagen."));
     tx.onabort=()=>reject(tx.error||Error("Rückfallsicherung abgebrochen."));
-    tx.objectStore("snapshots").put({data:raw,savedAt:Date.now()},"latest");
+    tx.objectStore("snapshots").put({data:raw,savedAt:Date.now()},slot);
    });
   }finally{db.close();}
   // A previous legacy rollback could itself consume several MB of localStorage.
-  root.localStorage.removeItem(ROLLBACK);
+  if(slot==="latest")root.localStorage.removeItem(ROLLBACK);
   return "indexeddb";
  }catch(_){
   // Older browsers may not support IndexedDB. Never discard the current club
   // if the fallback also runs out of space.
-  try{root.localStorage.setItem(ROLLBACK,raw);return "localStorage";}
+  try{root.localStorage.setItem(slot==="latest"?ROLLBACK:ROLLBACK+":"+slot,raw);return "localStorage";}
   catch(_){fail("Der Browserspeicher ist voll. Kein Spielstand wurde ersetzt. Bitte zuerst unter 'Zusätzliche Dateisicherung' eine Sicherung herunterladen.");}
  }
 }
-async function readRollback(){
+async function readRollback(slot="latest"){
  try{
   const db=await openRollbackDatabase();
   try{
    const raw=await new Promise((resolve,reject)=>{
-    const req=db.transaction("snapshots","readonly").objectStore("snapshots").get("latest");
+    const req=db.transaction("snapshots","readonly").objectStore("snapshots").get(slot);
     req.onsuccess=()=>resolve(req.result?.data||null);
     req.onerror=()=>reject(req.error||Error("Rückfallsicherung nicht lesbar."));
    });
-   return raw||root.localStorage.getItem(ROLLBACK);
+   return raw||root.localStorage.getItem(slot==="latest"?ROLLBACK:ROLLBACK+":"+slot);
   }finally{db.close();}
- }catch(_){return root.localStorage.getItem(ROLLBACK);}
+ }catch(_){return root.localStorage.getItem(slot==="latest"?ROLLBACK:ROLLBACK+":"+slot);}
 }
-async function exportRollback(){
+async function exportRollback(slot="latest"){
  try{
-  const raw=await readRollback();
+  const raw=await readRollback(slot);
   if(!raw)fail("Noch keine Rückfallsicherung vorhanden.");
   await downloadSnapshot(JSON.parse(raw),"Vorheriger_Stand");
   status("Vorheriger Stand als JSON-Datei heruntergeladen.");
