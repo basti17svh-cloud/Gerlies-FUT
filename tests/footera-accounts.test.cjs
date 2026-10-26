@@ -1186,3 +1186,28 @@ test('failed persistent rollback preserves device save and does not reload',asyn
  assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,3736540);
  assert.equal(t.wasReloaded(),false);
 });
+
+test('earned Rank III receipt reaches cloud before pick synchronization completes',async()=>{
+ const t=runtime('registered'),remote=sampleGame();remote.weeklyRewards=[];
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(remote));
+ t.setCloud({save_data:remote,revision:1});
+ await t.win.FooteraAccount.autoAttachAndBackup();
+ const local=JSON.parse(t.store.get('gerliesFutV9'));
+ local.weeklyRewards=[{mode:'champions',week:'1792774800000',wins:11,rank:'Rang III',claimed:true,reward:{playerPicks:[{},{}]}}];
+ t.store.set('gerliesFutV9',JSON.stringify(local));
+ await t.win.FooteraAccount.syncPlayerPickRewards();
+ const writes=t.calls.filter(x=>x[0]==='cloud');
+ assert.equal(writes.length,1);assert.equal(writes[0][1].p_save.weeklyRewards[0].wins,11);
+ assert.equal(writes[0][1].p_base_revision,1);
+ await t.win.FooteraAccount.syncPlayerPickRewards();
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,1,'read-only retry must not write again');
+});
+test('unconfirmed Rank III receipt reports cloud conflict and never overwrites remote progress',async()=>{
+ const t=runtime('registered'),remote=sampleGame();remote.weeklyRewards=[];
+ const local={...remote,coins:9000,weeklyRewards:[{mode:'champions',week:'1792774800000',wins:11,rank:'Rang III',claimed:true,reward:{playerPicks:[{},{}]}}]};
+ t.store.set('footera-cloud-owner','existing-a');t.store.set('gerliesFutV9',JSON.stringify(local));
+ t.setCloud({save_data:remote,revision:2});
+ await assert.rejects(t.win.FooteraAccount.syncPlayerPickRewards(),/noch nicht in der Cloud bestätigt/);
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
+ assert.equal(JSON.parse(t.store.get('gerliesFutV9')).coins,9000);
+});

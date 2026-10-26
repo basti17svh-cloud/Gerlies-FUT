@@ -1,0 +1,9 @@
+# V21.278 — reliable Player Pick issuance
+
+The deployed list_picks function used double-escaped digit patterns that did not match real wins or week keys. As a result, claimed Champions, Rivals and Squad Battles rewards could silently issue no picks. The server correction uses explicit [0-9] classes and retains account ownership checks and the existing unique account/source/week/slot constraint. Listing recovers only missing slots and preserves existing and consumed entitlements.
+
+The client now flushes claimed rewards locally, safely synchronizes their cloud receipts, and verifies those receipts before asking the server for picks. A conflicting device save is never forced over newer cloud progress. Failed synchronization remains retryable and appears on the home screen and in the Store. Normal listing after confirmation and opening existing picks do not repeatedly synchronize the full save. Entering the Store refreshes the pick list. Champions claims now identify themselves as Champions in the confirmation message.
+
+Validation: 143 targeted Node tests passed, including new synchronization-order, retry, conflict and receipt persistence regressions. The isolated real-database regression passed for 11/12-win Rank III, Rank I, other competition rewards, malformed records, duplicate requests, partial recovery and account isolation. All database fixtures rolled back. Live function digit patterns and execution privileges were checked. Browser regression could not run because Chromium was unavailable and its download failed.
+
+Deploy online/footera-player-picks-reliable-v21.278.sql in addition to the frontend. It was applied to the connected production project during this fix. Users receive missing entitlements on the next successful receipt synchronization/list request; this does not grant rewards for an unfinished or unclaimed participation.

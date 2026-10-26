@@ -441,6 +441,24 @@
    if(error)throw error;
    return data?.session?.user||null;
  }
+ // Synchronize earned reward receipts before the server derives pick entitlements.
+ // Never force a conflicting save over another device's progress.
+ async function syncPlayerPickRewards(){
+   if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
+   if(autoBusy)throw Error("Eine Einlösung läuft noch. Deine Picks werden danach erneut geprüft.");
+   await autoAttachAndBackup();
+   const {u}=await requirePermanent();ensureOwned(u);
+   const local=localData(),cloud=await cloudInfo();
+   if(cloud?.save_data?.profile?.saveId!==local.profile?.saveId)
+     throw Error("Die Pick-Belohnung wartet auf den Cloud-Abgleich deines Vereins.");
+   const wanted=(local.weeklyRewards||[]).filter(r=>r.claimed&&r.reward?.playerPicks?.length);
+   const receipts=cloud.save_data.weeklyRewards||[];
+   if(!wanted.every(r=>receipts.some(c=>c.claimed&&c.mode===r.mode&&String(c.week)===String(r.week)
+     &&String(c.wins??'')===String(r.wins??'')&&String(c.division??'')===String(r.division??'')
+     &&String(c.milestone??'')===String(r.milestone??'')&&String(c.rank??'')===String(r.rank??'')
+     &&c.reward?.playerPicks?.length)))
+     throw Error("Deine Pick-Belohnung ist lokal gesichert, aber noch nicht in der Cloud bestätigt. Bitte im Profil den Cloud-Konflikt lösen und hier erneut aktualisieren.");
+ }
  async function choosePlayerPick(pickId,optionId,applyDelivery){
    // A background save must never turn a valid Player Pick confirmation into
    // an error. Queue behind its existing transaction rather than rejecting.
@@ -1430,7 +1448,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimGuestSave,getClient,user,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimGuestSave,getClient,user,syncPlayerPickRewards,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
 
