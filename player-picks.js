@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0;
+ let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='';
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -44,9 +44,10 @@
  function renderHomeNotice(){
   const box=$('homePlayerPickNotice');if(!box)return;
   const count=rows.length;
-  box.hidden=!count;
-  const qty=$('homePlayerPickCount');if(qty)qty.textContent=String(count);
-  const copy=$('homePlayerPickCopy');if(copy)copy.textContent=count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
+  const waiting=!!message&&(state.weeklyRewards||[]).some(r=>r.claimed&&r.reward?.playerPicks?.length);
+  box.hidden=!count&&!waiting;
+  const qty=$('homePlayerPickCount');if(qty)qty.textContent=count?String(count):'!';
+  const copy=$('homePlayerPickCopy');if(copy)copy.textContent=waiting?message:count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
  }
  function render(){
   renderHomeNotice();
@@ -65,10 +66,18 @@
   try{
    const {c,u}=await deadline(account(),10000),id=saveId();
    if(owner!==u.id){rows=[];owner=u.id}
-   // Listing picks should never trigger full-cloud synchronization.
+   // A newly claimed reward must reach the cloud before list_picks can issue it.
+   // Ordinary list/open/retry requests remain light; failures leave the key unconfirmed.
+   const rewards=(state.weeklyRewards||[]).filter(r=>r.claimed&&r.reward?.playerPicks?.length);
+   const syncKey=JSON.stringify([u.id,id,rewards]);
+   if(rewards.length&&syncKey!==rewardSyncKey){
+    message='Deine Pick-Belohnungen werden mit dem Konto abgeglichen …';render();
+    await deadline(window.FooteraAccount.syncPlayerPickRewards(),30000);
+    if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
+   }
    const {data,error}=await deadline(c.rpc('footera_list_player_picks',{p_save_id:id}),15000);if(error)throw error;
    if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
-   rows=Array.isArray(data)?data:[];message='';lastRefresh=Date.now();
+   rows=Array.isArray(data)?data:[];rewardSyncKey=syncKey;message='';lastRefresh=Date.now();
   }catch(e){message=e.message||'Picks konnten nicht geladen werden.'}
   finally{loading=false;render()}
  }
@@ -173,7 +182,7 @@
  }
  function mount(){
   if(mounted)return;mounted=true;modal();render();
-  const original=renderStore;renderStore=function(){original();render()};
+  const original=renderStore;renderStore=function(){original();render();refresh()};
   document.addEventListener('click',e=>{
    if(e.target.closest('[data-picks-refresh]')){refresh(true);return}
    const retryOpen=e.target.closest('[data-pick-reopen]');if(retryOpen&&!busy){open(retryOpen.dataset.pickReopen);return}
