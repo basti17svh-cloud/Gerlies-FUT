@@ -1037,7 +1037,7 @@ const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN
  {pid:"260247",dynamicFace:"assets/footera/events/halloween/dynamic/260247.webp",name:"Morgan Rogers",ovr:86,position:"CAM",baseOvr:84,team:"Chelsea",nation:"England",alt:"LM,CM,LW",stats:[80,85,86,87,70,81],playstylePlusAdds:["press-proven"]},
  {pid:"158023",dynamicFace:"assets/footera/events/halloween/dynamic/158023.webp",name:"Lionel Messi",ovr:91,position:"CAM",baseOvr:89,team:"Inter Miami CF",nation:"Argentina",alt:"RW,ST,RM",stats:[80,90,92,93,36,66],playstylePlusAdds:["finesse-shot"]},
  {pid:"209331",dynamicFace:"assets/footera/events/halloween/dynamic/209331.webp",name:"Mohamed Salah",ovr:89,position:"RM",baseOvr:87,team:"Trabzonspor",nation:"Egypt",alt:"RW,CAM,ST",stats:[88,86,86,89,48,75],playstylePlusAdds:["low-driven-shot"]},
- {pid:"264652",dynamicFace:"assets/footera/events/halloween/dynamic/264652.webp",name:"Bradley Barcola",ovr:87,position:"LW",baseOvr:85,team:"Paris SG",nation:"France",alt:"RW,LM,RM",stats:[95,80,81,87,42,70],playstylePlusAdds:["rapid"]},
+ {pid:"264652",dynamicFace:"assets/footera/events/halloween/dynamic/264652.webp",name:"Bradley Barcola",ovr:87,position:"LW",baseOvr:85,team:"Liverpool",league:"Premier League",nation:"France",alt:"RW,LM,RM",stats:[95,80,81,87,42,70],playstylePlusAdds:["rapid"]},
  {pid:"228093",dynamicFace:"assets/footera/events/halloween/dynamic/228093.webp",name:"Marcus Thuram",ovr:87,position:"ST",baseOvr:85,team:"Inter",nation:"France",alt:"",stats:[89,86,78,84,53,84],playstylePlusAdds:["power-shot"]},
  {pid:"244176",dynamicFace:"assets/footera/events/halloween/dynamic/244176.webp",name:"Deniz Undav",ovr:86,position:"ST",baseOvr:85,team:"VfB Stuttgart",nation:"Germany",alt:"CAM",stats:[79,88,78,85,35,83],playstylePlusAdds:["acrobatic"]},
  {pid:"194765",dynamicFace:"assets/footera/events/halloween/dynamic/194765.webp",name:"Antoine Griezmann",ovr:86,position:"ST",baseOvr:84,team:"Orlando City",nation:"France",alt:"CAM,CM",stats:[84,88,88,90,62,78],playstylePlusAdds:["incisive-pass"]}
@@ -1925,6 +1925,8 @@ const RESOLVED_AFFILIATION_CACHE=new WeakMap(),RESOLVED_PLAYER_CACHE=new WeakMap
 function affiliationCacheSignature(p){return [p?.team,p?.league,p?.clubLogo,p?.leagueLogo,p?.leagueId,p?.teamId,p?.gender,p?.source,p?.nation,p?.nationFlag,p?.name,p?.fullName,p?.firstName,p?.lastName,p?.ovr,p?.position,p?.alt,p?.pac,p?.sho,p?.pas,p?.dri,p?.def,p?.phy,p?.preferredFoot,p?.skillMoves,p?.weakFoot,p?.playstyles,p?.playstylesPlus,p?.face,p?.card,p?.baseRare,p?.rarity,p?.role,p?.workRates,p?.workRate].join("|")}
 function resolvedAffiliation(p){
  if(!p||typeof p!=="object")return p;
+ // Keep Barcola on Liverpool even in saved card snapshots and older offline databases.
+ if(String(p.id)==="264652"||normalizeKey(p.name)==="bradley barcola"){p.team="Liverpool";p.league="Premier League";p.teamId="9";p.clubLogo="./assets/badges/09ddffcebbec.png";p.leagueLogo="./assets/footera/events/potm/logos/premier-league.png"}
  const sig=affiliationCacheSignature(p),cached=RESOLVED_AFFILIATION_CACHE.get(p);
  if(cached&&cached.epoch===AFFILIATION_CACHE_EPOCH&&cached.sig===sig)return cached.value;
  let value;
@@ -7870,7 +7872,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.276";
+const GFUT_BUILD="V21.277";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;

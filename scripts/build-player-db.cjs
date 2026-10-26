@@ -18,7 +18,7 @@ const MIN_MEN=10000,MIN_WOMEN=1000;
 // EA ships some clubs under licence names; the game shows the real clubs.
 const CLUB_ALIASES={'Lombardia FC':'Inter','Milano FC':'AC Milan','Bergamo Calcio':'Atalanta','Latium':'Lazio','Piemonte Calcio':'Juventus','OM':'Olympique de Marseille'};
 // Transfers EA's ratings site has not picked up yet: EA id -> club. Remove an entry once EA shows the club itself.
-const CLUB_OVERRIDES={232411:{club_name:'RB Leipzig',club_team_id:112172,club_logo_url:'https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png',league_name:'Bundesliga'}}; // Nkunku
+const CLUB_OVERRIDES={264652:{"club_name":"Liverpool","club_team_id":"9","club_logo_url":"https://drop-assets.ea.com/images/3mmzooNXBDCKuCy6kWcGQo/2e332a30fe2a7225a88fcb1898f48bbf/l9.png","league_name":"Premier League"},232411:{club_name:'RB Leipzig',club_team_id:112172,club_logo_url:'https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png',league_name:'Bundesliga'}}; // Nkunku
 const COLUMNS=['player_id','common_name','short_name','long_name','positions','overall','pace','shooting','passing','dribbling','defending','physic',
  'preferred_foot','weak_foot','skill_moves','nationality_name','nationality_id','nation_flag_url','club_name','club_team_id','club_logo_url',
  'league_name','player_face_url','playstyles','playstyles_plus','gender'];
