@@ -69,6 +69,19 @@ test('HALLOWEEN continues on 06.11. with Team 2 scheduled and roster-guarded',()
  assert.ok(fs.existsSync(path.join(root,ev.sbcPlayer.dynamicFace)));
 });
 
+test('Team 2 automatically replaces Team 1 if and only if its approved roster is complete',()=>{
+ const c=setup(),team1=c.HALLOWEEN_EVENT,team2=c.HALLOWEEN_TEAM2_EVENT;
+ const justBefore=Date.parse('2026-11-06T18:59:59+01:00'),handover=Date.parse('2026-11-06T19:00:00+01:00');
+ assert.equal(c.activeHalloweenEvent(justBefore).id,team1.id);
+ assert.equal(c.activeHalloweenEvent(handover).id,team1.id,'never expose an empty Team 2');
+ team2.players=team1.players.map(player=>({...player}));
+ assert.equal(c.eventRosterReady(team2),true);
+ assert.equal(c.activeHalloweenEvent(justBefore).id,team1.id,'do not publish early');
+ assert.equal(c.activeHalloweenEvent(handover).id,team2.id,'switch at the exact minute');
+ assert.equal(c.eventPackIsActive(team1,handover),false,'Team 1 leaves normal packs');
+ assert.equal(c.eventPackIsActive(team2,handover),true,'Team 2 is in packs');
+});
+
 test('the Blutmond upgrade adds +1 to every Halloween card from the Halloween night on',()=>{
  const c=setup(),up=c.HALLOWEEN_EVENT.upgrade;
  assert.equal(up.at,'2026-10-31T19:00:00+01:00');

@@ -1192,7 +1192,7 @@ function openHalloweenPreview(){
  const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
  const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Team 2 · Blutmond","Das zweite HALLOWEEN-Team übernimmt die Packs. Das Event läuft weiter; gezogene Team-1-Karten und ihr Upgrade bleiben dir."]];
  $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
- $("opponentTeamModalSub").textContent="Vorschau · alle Spieler werden am 30.10. um 19:00 Uhr enthüllt";
+ $("opponentTeamModalSub").textContent="Vorschau · Team 1 am 30.10., Team 2 am 06.11. · jeweils um 19:00 Uhr";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
  $("opponentTeamModalBody").innerHTML=`<div class="halloween-preview"><div class="halloween-preview-cards home-momentum-roster teaser">${mystery.map(e=>`<div class="home-momentum-player">${cardHTML(e.player,e.item,true,e.player.position)}</div>`).join("")}</div><ol class="halloween-timeline">${rows.map(([when,title,text])=>`<li><span>${esc(when)}</span><strong>${esc(title)}</strong><p>${esc(text)}</p></li>`).join("")}</ol></div>`;
  showUiLayer("opponentTeamModal","opponent-team")
