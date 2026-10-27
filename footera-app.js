@@ -555,7 +555,582 @@ const TOTW_WEEK_6={id:6,name:"Team of the Week 6",releaseDate:"2026-10-21",activ
   {names:["Erling Haaland","Erling Braut Haaland"],eaId:"239085",ovr:93,position:"ST",stats:[89,95,74,83,49,92],fallback:{face:"./assets/footera/totw/6/239085.png",gender:"male",name:"Erling Haaland",fullName:"Erling Braut Haaland",team:"Manchester City",league:"Premier League",nation:"Norway"}},
   {names:["Pedro Neto","Pedro Lomba Neto"],eaId:"238616",ovr:84,position:"RW",stats:[95,80,78,86,42,72],fallback:{face:"./assets/footera/totw/6/238616.png",gender:"male",name:"Pedro Neto",fullName:"Pedro Lomba Neto",team:"Chelsea",league:"Premier League",nation:"Portugal"}}
 ]};
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6];
+const TOTW_WEEK_7={
+  "id": 7,
+  "name": "Team of the Week 7",
+  "releaseDate": "2026-10-28",
+  "activeUntil": "04.11.2026 18:59",
+  "sourceStatus": "admin-approved",
+  "players": [
+    {
+      "names": [
+        "Gabriel",
+        "Gabriel dos S. Magalhães"
+      ],
+      "eaId": "232580",
+      "ovr": 90,
+      "position": "CB",
+      "stats": [
+        68,
+        51,
+        67,
+        69,
+        93,
+        87
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/232580.png",
+        "gender": "male",
+        "name": "Gabriel",
+        "fullName": "Gabriel dos S. Magalhães",
+        "ovr": 89,
+        "position": "CB",
+        "alt": "",
+        "team": "Arsenal",
+        "league": "Premier League",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zdNn1R9tRlfQ3lsbAOecD/a606f742789b6306363383a6e20dd003/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2ng99bvkwKaA228PJje39i/09d2df89a78377d3f8d3f78469cbadc9/l1.png",
+        "teamId": "1"
+      }
+    },
+    {
+      "names": [
+        "Gregor Kobel"
+      ],
+      "eaId": "235073",
+      "ovr": 89,
+      "position": "GK",
+      "stats": [
+        89,
+        87,
+        85,
+        91,
+        56,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/235073.png",
+        "gender": "male",
+        "name": "Gregor Kobel",
+        "fullName": "Gregor Kobel",
+        "ovr": 87,
+        "position": "GK",
+        "alt": "",
+        "team": "Borussia Dortmund",
+        "league": "Bundesliga",
+        "nation": "Switzerland",
+        "nationFlag": "https://drop-assets.ea.com/images/4CseD8PxDZqObA1huFIws0/f30914625e329de69ffdd60f3c334a88/f_47.png",
+        "clubLogo": "https://drop-assets.ea.com/images/TmqxUZk2FrbFXOK1kdE89/3dce225926ac7cfd9f283ecd731fa710/l22.png",
+        "teamId": "22"
+      }
+    },
+    {
+      "names": [
+        "Scott McTominay"
+      ],
+      "eaId": "237238",
+      "ovr": 88,
+      "position": "CM",
+      "stats": [
+        82,
+        89,
+        80,
+        85,
+        82,
+        90
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/237238.png",
+        "gender": "male",
+        "name": "Scott McTominay",
+        "fullName": "Scott McTominay",
+        "ovr": 86,
+        "position": "CM",
+        "alt": "",
+        "team": "SSC Napoli",
+        "league": "Serie A Enilive",
+        "nation": "Scotland",
+        "nationFlag": "https://drop-assets.ea.com/images/3LfmKqyBykOGZyfdSpENTr/ec3733dfa9526c8f6da96bf0f8c7448e/f_42.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2FIV26KpnSXl3Nv8Ar6jk3/d8461aa150da3d433fccc34bc80c978f/l48.png",
+        "teamId": "48"
+      }
+    },
+    {
+      "names": [
+        "Andrej Kramarić"
+      ],
+      "eaId": "216354",
+      "ovr": 85,
+      "position": "CAM",
+      "stats": [
+        70,
+        87,
+        85,
+        88,
+        35,
+        75
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/216354.png",
+        "gender": "male",
+        "name": "Andrej Kramarić",
+        "fullName": "Andrej Kramarić",
+        "ovr": 81,
+        "position": "CAM",
+        "alt": "",
+        "team": "TSG Hoffenheim",
+        "league": "Bundesliga",
+        "nation": "Croatia",
+        "nationFlag": "https://drop-assets.ea.com/images/4ZYNK06L8ZkJTrdtSby4NW/eb42cc852fc74ea3d3f5b8904fb5194f/f_10.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1ylwMQ1ia5SGcXYoIKhtdK/b24a8fed6fb30e01ea3fd15184b0046c/l10029.png",
+        "teamId": "10029"
+      }
+    },
+    {
+      "names": [
+        "Álex Berenguer",
+        "Berenguer",
+        "Alejandro Berenguer Remiro"
+      ],
+      "eaId": "225201",
+      "ovr": 85,
+      "position": "LM",
+      "stats": [
+        84,
+        84,
+        87,
+        86,
+        69,
+        72
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/225201.png",
+        "gender": "male",
+        "name": "Álex Berenguer",
+        "fullName": "Alejandro Berenguer Remiro",
+        "ovr": 79,
+        "position": "LM",
+        "alt": "",
+        "team": "Athletic Club",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/Kv8okAYMsDbB3ZKbxrAXw/9d30c88d16a4c85002f35c6af412c6f7/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5lGGXYvaOCdAYlo8xWPzQb/7092243785809519c68b482ad21b2c41/l448.png",
+        "teamId": "448"
+      }
+    },
+    {
+      "names": [
+        "Robin Roefs"
+      ],
+      "eaId": "263798",
+      "ovr": 84,
+      "position": "GK",
+      "stats": [
+        84,
+        82,
+        80,
+        87,
+        56,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/263798.png",
+        "gender": "male",
+        "name": "Robin Roefs",
+        "fullName": "Robin Roefs",
+        "ovr": 81,
+        "position": "GK",
+        "alt": "",
+        "team": "Sunderland",
+        "league": "Premier League",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/7LmdSUm2Ge4fzqcz0NElvq/d272142c80713dcf0e5ec0a47232aeee/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6ja62Iw2LyY8cVrud4aSHi/aa6c15e4a2ceed66f92099108bea9dfa/l106.png",
+        "teamId": "106"
+      }
+    },
+    {
+      "names": [
+        "Leonardo Balerdi"
+      ],
+      "eaId": "242835",
+      "ovr": 83,
+      "position": "CB",
+      "stats": [
+        77,
+        55,
+        69,
+        72,
+        85,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/242835.png",
+        "gender": "male",
+        "name": "Leonardo Balerdi",
+        "fullName": "Leonardo Balerdi",
+        "ovr": 79,
+        "position": "CB",
+        "alt": "",
+        "team": "Roma",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Argentina",
+        "nationFlag": "https://drop-assets.ea.com/images/4xMXjEt7CFJ6JENYeG45Sk/836d733dc1642c5e4ab3338d91481436/f_52.png",
+        "clubLogo": "https://cdn.futwiz.com/assets/img/fc27/badges/52.png",
+        "teamId": "52"
+      }
+    },
+    {
+      "names": [
+        "Douglas Luiz",
+        "Douglas Luiz Soares de Paulo"
+      ],
+      "eaId": "236499",
+      "ovr": 82,
+      "position": "CM",
+      "stats": [
+        66,
+        82,
+        87,
+        83,
+        79,
+        72
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/236499.png",
+        "gender": "male",
+        "name": "Douglas Luiz",
+        "fullName": "Douglas Luiz Soares de Paulo",
+        "ovr": 78,
+        "position": "CM",
+        "alt": "",
+        "team": "Juventus",
+        "league": "Serie A Enilive",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zdNn1R9tRlfQ3lsbAOecD/a606f742789b6306363383a6e20dd003/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6zWQmPATtK8lpsiXbKb3mY/6b2d1dab08ef14f63271a5cd70a0db0d/l45.png",
+        "teamId": "45"
+      }
+    },
+    {
+      "names": [
+        "Rômulo",
+        "Rômulo José Cardoso da Cruz"
+      ],
+      "eaId": "73398",
+      "ovr": 82,
+      "position": "ST",
+      "stats": [
+        76,
+        85,
+        72,
+        81,
+        39,
+        85
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/73398.png",
+        "gender": "male",
+        "name": "Rômulo",
+        "fullName": "Rômulo José Cardoso da Cruz",
+        "ovr": 78,
+        "position": "ST",
+        "alt": "",
+        "team": "RB Leipzig",
+        "league": "Bundesliga",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zdNn1R9tRlfQ3lsbAOecD/a606f742789b6306363383a6e20dd003/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png",
+        "teamId": "112172"
+      }
+    },
+    {
+      "names": [
+        "Evanilson",
+        "F. Evanilson de Lima Barbosa"
+      ],
+      "eaId": "256612",
+      "ovr": 82,
+      "position": "ST",
+      "stats": [
+        79,
+        84,
+        72,
+        81,
+        39,
+        79
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/256612.png",
+        "gender": "male",
+        "name": "Evanilson",
+        "fullName": "F. Evanilson de Lima Barbosa",
+        "ovr": 79,
+        "position": "ST",
+        "alt": "",
+        "team": "AFC Bournemouth",
+        "league": "Premier League",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zdNn1R9tRlfQ3lsbAOecD/a606f742789b6306363383a6e20dd003/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5Z6J6MhqjuJVwE7SVnfr5E/6075ff3239d67bdf8258a067ed93ccdb/l1943.png",
+        "teamId": "1943"
+      }
+    },
+    {
+      "names": [
+        "Sebastian Szymański"
+      ],
+      "eaId": "235973",
+      "ovr": 81,
+      "position": "CAM",
+      "stats": [
+        81,
+        82,
+        84,
+        81,
+        64,
+        69
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/235973.png",
+        "gender": "male",
+        "name": "Sebastian Szymański",
+        "fullName": "Sebastian Szymański",
+        "ovr": 77,
+        "position": "CAM",
+        "alt": "",
+        "team": "Stade Rennais FC",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Poland",
+        "nationFlag": "https://drop-assets.ea.com/images/2ldG0tWskgN4waD1fBmnk1/24cbe80f6af25d3ab745fd339b024988/f_37.png",
+        "clubLogo": "https://drop-assets.ea.com/images/7CHlTnryGZyOatI2WOFXiP/def56f5b08c456e671d09d3a47cc327b/l74.png",
+        "teamId": "74"
+      }
+    },
+    {
+      "names": [
+        "Niclas Füllkrug"
+      ],
+      "eaId": "205431",
+      "ovr": 81,
+      "position": "ST",
+      "stats": [
+        51,
+        86,
+        73,
+        75,
+        45,
+        79
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/205431.png",
+        "gender": "male",
+        "name": "Niclas Füllkrug",
+        "fullName": "Niclas Füllkrug",
+        "ovr": 76,
+        "position": "ST",
+        "alt": "",
+        "team": "SV Werder Bremen",
+        "league": "Bundesliga",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/6IIMMGk0Uj1rcZ6DSHTpLL/93f95b602dc62594104f418c8f80ebb3/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5UE88g3Vfeo6kFu8lh1s26/cfc99dce8f7c7dc22a8a39920383cf3d/l38.png",
+        "teamId": "38"
+      }
+    },
+    {
+      "names": [
+        "Joe Scally"
+      ],
+      "eaId": "243133",
+      "ovr": 80,
+      "position": "RB",
+      "stats": [
+        84,
+        65,
+        72,
+        75,
+        79,
+        81
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/243133.png",
+        "gender": "male",
+        "name": "Joe Scally",
+        "fullName": "Joe Scally",
+        "ovr": 74,
+        "position": "RB",
+        "alt": "",
+        "team": "M'gladbach",
+        "league": "Bundesliga",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/7ZVadlJQIutRH5P85wr76/c2456a2d76146d19f98c2c3071136dcf/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4eJmGBw11G3Rn334GUOKaV/7571515e89d9e3b02893855bbdb28dbb/l23.png",
+        "teamId": "23"
+      }
+    },
+    {
+      "names": [
+        "Óscar Aranda",
+        "Óscar Aranda Subiela"
+      ],
+      "eaId": "277594",
+      "ovr": 80,
+      "position": "LW",
+      "stats": [
+        84,
+        81,
+        74,
+        86,
+        31,
+        71
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/277594.png",
+        "gender": "male",
+        "name": "Óscar Aranda",
+        "fullName": "Óscar Aranda Subiela",
+        "ovr": 74,
+        "position": "LW",
+        "alt": "",
+        "team": "FC Famalicão",
+        "league": "Liga Portugal",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/Kv8okAYMsDbB3ZKbxrAXw/9d30c88d16a4c85002f35c6af412c6f7/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2BwueRB5sADahPpanYYRrO/9a99f9a6b9f3fe583af2da07c2ae262f/l112809.png",
+        "teamId": "112809"
+      }
+    },
+    {
+      "names": [
+        "Tiago Araújo",
+        "Tiago Filipe Alves Araújo"
+      ],
+      "eaId": "264280",
+      "ovr": 79,
+      "position": "LB",
+      "stats": [
+        89,
+        65,
+        81,
+        78,
+        70,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/264280.png",
+        "gender": "male",
+        "name": "Tiago Araújo",
+        "fullName": "Tiago Filipe Alves Araújo",
+        "ovr": 69,
+        "position": "LB",
+        "alt": "",
+        "team": "KAA Gent",
+        "league": "1A Pro League",
+        "nation": "Portugal",
+        "nationFlag": "https://drop-assets.ea.com/images/3CxRD7XqY2NSlZ3628fY4S/abf38470644ee334e6a425b9272f7767/f_38.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6yyNmrjeahHfB0uWJP0pD/1531a54f512af00033f9dbe78c78c0bb/l674.png",
+        "teamId": "674"
+      }
+    },
+    {
+      "names": [
+        "Rodrigo Guth"
+      ],
+      "eaId": "263556",
+      "ovr": 77,
+      "position": "CB",
+      "stats": [
+        73,
+        48,
+        58,
+        59,
+        80,
+        80
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/263556.png",
+        "gender": "male",
+        "name": "Rodrigo Guth",
+        "fullName": "Rodrigo Guth",
+        "ovr": 69,
+        "position": "CB",
+        "alt": "",
+        "team": "Fortuna Sittard",
+        "league": "Eredivisie",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zdNn1R9tRlfQ3lsbAOecD/a606f742789b6306363383a6e20dd003/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/7016gLjhLCxBC1nluU3u6r/24ca4f468f0e40989e0b93968c42d1c6/634.png",
+        "teamId": "634"
+      }
+    },
+    {
+      "names": [
+        "Brynjólfur Willumsson"
+      ],
+      "eaId": "261457",
+      "ovr": 76,
+      "position": "ST",
+      "stats": [
+        65,
+        79,
+        64,
+        72,
+        41,
+        80
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/261457.png",
+        "gender": "male",
+        "name": "Brynjólfur Willumsson",
+        "fullName": "Brynjólfur Willumsson",
+        "ovr": 67,
+        "position": "ST",
+        "alt": "",
+        "team": "FC Groningen",
+        "league": "Eredivisie",
+        "nation": "Iceland",
+        "nationFlag": "https://drop-assets.ea.com/images/eLvZ0QKgMJ2sjvVZgZTQF/8cf2255e4575e7139e001d7f9ef55dec/f_24.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2mjP4KkhbM1eNhu92MRXW6/970fe37979219e9bc199d06240a2dff1/l1915.png",
+        "teamId": "1915"
+      }
+    },
+    {
+      "names": [
+        "Abdellah Ouazane"
+      ],
+      "eaId": "82789",
+      "ovr": 75,
+      "position": "LM",
+      "stats": [
+        85,
+        72,
+        75,
+        80,
+        45,
+        69
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/7/82789.png",
+        "gender": "male",
+        "name": "Abdellah Ouazane",
+        "fullName": "Abdellah Ouazane",
+        "ovr": 66,
+        "position": "LM",
+        "alt": "",
+        "team": "Ajax",
+        "league": "Eredivisie",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/47SGeQ7STCrJZQSKOVJaHA/1aa24a57a60f85051e34a5ad8205771d/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4AoTT46sy8A27YhjTziCZD/9c59476e9caf1e15af602962b5f1baae/245.png",
+        "teamId": "245"
+      }
+    }
+  ]
+};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
