@@ -50,7 +50,7 @@ test('existing promo rewards remain unchanged',()=>{
 test('build, script and service worker versions are synchronized',()=>{
  const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- const build=source.match(/const GFUT_BUILD="V(\\d+)\\.(\\d+)";/);
+ const build=source.match(/const GFUT_BUILD="V(\d+)\.(\d+)";/);
  assert.ok(build);
  const asset=build[1]+build[2].padStart(3,'0');
  assert.ok(index.includes('footera-app.js?v='+asset));
