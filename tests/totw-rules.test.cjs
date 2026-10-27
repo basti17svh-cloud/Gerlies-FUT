@@ -62,3 +62,16 @@ test('TOTW 7 is approved but only becomes active at 19:00 Berlin on 28 October 2
  for(const prior of c.WEEKS.filter(w=>[5,6].includes(Number(w.id))))
   assert.ok(prior.players.every(p=>!chosen.has(String(p.eaId))),`TOTW 7 duplicates TOTW ${prior.id}`);
 });
+
+test('TOTW 7 portrait files are precached by the matching PWA release',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===7),worker=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ assert.ok(week&&week.players.length===18,'approved TOTW 7 is present');
+ for(const player of week.players){
+  const asset=`"./assets/footera/totw/7/${player.eaId}.png"`;
+  assert.ok(worker.includes(asset),`missing PWA image: ${asset}`);
+  assert.ok(fs.existsSync(path.join(root,`assets/footera/totw/7/${player.eaId}.png`)),`missing portrait file: ${player.eaId}`);
+ }
+ assert.ok(index.includes('src="./footera-app.js?v=21285-totw7"'),'app script revision missing');
+ assert.ok(worker.includes('"./footera-app.js?v=21285-totw7"'),'PWA cache and index must load the same script revision');
+});
