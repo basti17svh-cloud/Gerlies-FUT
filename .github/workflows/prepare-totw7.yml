@@ -1,0 +1,21 @@
+name: Prepare TOTW 7 poster
+on:
+  push:
+    branches: ['claude/totw7-2026-10-28']
+    paths: ['scripts/prepare-totw7.py', '.github/workflows/prepare-totw7.yml']
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/prepare-totw7.py
+      - name: Save preparation
+        run: |
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add scripts/totw7-base-rows.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'chore(totw7): resolved current base rows [skip ci]'
+          git push
