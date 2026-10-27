@@ -101,3 +101,28 @@ test('automatic conflict backups preserve both named online snapshot and local r
  assert.equal(await ctx.FooteraBackup.readRollback('cloud-before-upload'),'{"coins":100}');
  assert.equal(await ctx.FooteraBackup.readRollback(),'{"coins":200}');
 });
+test('file export captures live coins, Champions progress and Pick claims when disk saving fails',async()=>{
+ const old={version:128,profile:{clubName:'Test FC'},club:[],squad:[],coins:10,points:0};
+ const live={...old,coins:900,champions:{wins:11},playerPickClaims:{pick1:'option1'},club:[{uid:'pick1',pid:'p1'}]};
+ let blob;const status={textContent:'',dataset:{}};
+ const ctx={state:live,flushSave:()=>false,crypto:webcrypto,TextEncoder,Blob,setTimeout(){},
+  document:{readyState:'loading',addEventListener(){},querySelector(){return null},getElementById:()=>status,
+   createElement:()=>({click(){},remove(){}}),body:{append(){}}},
+  localStorage:{getItem:()=>JSON.stringify(old)},URL:{createObjectURL(value){blob=value;return'blob:test'},revokeObjectURL(){}}};
+ vm.createContext(ctx);vm.runInContext(file,ctx);await ctx.FooteraBackup.exportBackup();
+ const exported=await ctx.FooteraBackup.inspect(await blob.text());
+ assert.deepEqual(JSON.parse(JSON.stringify(exported.state)),live);assert.equal(status.dataset.error,'false');
+});
+test('file restore rollback preserves the running game when the disk snapshot is older',async()=>{
+ const old={version:128,profile:{clubName:'Test FC'},club:[],squad:[],coins:10,points:0},live={...old,coins:900},restored={...old,coins:30};
+ const data=JSON.stringify(restored),checksum=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(data))).toString('hex');
+ const payload=JSON.stringify({format:'footera-local-backup',schema:1,clubName:'Test FC',checksum,data});
+ const stored=new Map([['gerliesFutV9',JSON.stringify(old)]]);let reloads=0;
+ const ctx={state:live,flushSave:()=>false,crypto:webcrypto,TextEncoder,confirm:()=>true,
+  document:{readyState:'loading',addEventListener(){},querySelector(){return null},getElementById(){return null}},
+  localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v),removeItem:k=>stored.delete(k)},location:{reload(){reloads++}}};
+ vm.createContext(ctx);vm.runInContext(file,ctx);
+ await ctx.FooteraBackup.importBackup({size:payload.length,text:async()=>payload});
+ assert.equal(JSON.parse(await ctx.FooteraBackup.readRollback()).coins,900);
+ assert.equal(JSON.parse(stored.get('gerliesFutV9')).coins,30);assert.equal(reloads,1);
+});

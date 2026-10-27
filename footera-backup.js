@@ -110,11 +110,17 @@ async function exportRollback(slot="latest"){
   status("Vorheriger Stand als JSON-Datei heruntergeladen.");
  }catch(e){status(String(e.message||e),true);}
 }
+function currentSaveRaw(){
+ if(typeof flushSave==="function")flushSave();
+ // A quota failure may leave localStorage behind the actual running game.
+ // Export and rollback must preserve that live snapshot, just like cloud sync.
+ if(typeof state!=="undefined"&&state&&typeof state==="object")return JSON.stringify(validateState(state));
+ return root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+}
 async function exportBackup(){
  const why=blocked();if(why)return status("Nicht möglich "+why+".",true);
  try{
-  if(typeof flushSave==="function")flushSave();
-  const raw=root.localStorage.getItem(KEY)||root.localStorage.getItem("uc27v7");
+  const raw=currentSaveRaw();
   if(!raw)fail("Noch kein gespeicherter Spielstand.");
   await downloadSnapshot(JSON.parse(raw),"Local");
   status("Sicherung erstellt. Datei außerhalb des Browsers aufbewahren.");
@@ -129,9 +135,9 @@ async function importBackup(file){
   const ok=root.confirm("Spielstand wiederherstellen?\n\nVerein: "+s.profile.clubName+"\nKarten: "+s.club.length+"\nSicherung: "+backup.exportedAt+"\n\nDer aktuelle lokale Spielstand wird ersetzt. Dein Online-Konto wird NICHT übertragen.");
   if(!ok)return status("Abgebrochen.");
   if(blocked())fail("Spielaktion während der Prüfung gestartet.");
-  if(typeof flushSave==="function")flushSave();
+  const current=currentSaveRaw();
   const before=root.localStorage.getItem(KEY);
-  if(before!==null)await preserveRollback(before);
+  if(current!=null)await preserveRollback(current);
   try{root.localStorage.setItem(KEY,backup.data)}catch(e){if(before!==null)root.localStorage.setItem(KEY,before);throw e}
   status("Spielstand wiederhergestellt. Footera lädt neu.");
   root.location.reload();
