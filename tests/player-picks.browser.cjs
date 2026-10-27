@@ -38,11 +38,15 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
       if(window.dropNextCompactResponse){window.dropNextCompactResponse=false;throw Error('Simulated lost confirmation response')}
       return {data:{pick_id:args.p_id,option_id:args.p_option,save_id:args.p_save_id,item,destination:'club',revision:2,cloud_revision:2,replayed:wasClaimed},error:null};
      }
-     return {data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null};
+     return {data:name==='footera_list_player_picks'?(claimed||window.noAvailablePicks?[]:[testOffer]):testOffer,error:null};
     }
    };
    FooteraOnline.authClient=async()=>client;
    FooteraAccount.autoAttachAndBackup=async()=>{window.cloudAutoSyncCalls++};
+   state.weeklyRewards=[{mode:'champions',week:'old-week',claimed:true,reward:{playerPicks:[{}]}}];
+   window.noAvailablePicks=true;
+   window.originalPickRewardSync=FooteraAccount.syncPlayerPickRewards;
+   FooteraAccount.syncPlayerPickRewards=()=>new Promise(resolve=>{window.releasePickRewardSync=resolve});
    localStorage.setItem('footera-cloud-sync-point-v1',JSON.stringify({userId:'test-owner',saveId:'pick-test',revision:1}));
    renderAll();switchView('storeView',{push:false});
   });
@@ -72,7 +76,19 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   });
   assert.deepEqual(qualityCounts,{special:5,gold:1},'Verein Spezial includes icon, momentum, evolution, cosmetics and founder');
   assert.deepEqual(errors,[],'Immutable Founder cards render with PlayStyles without JavaScript errors');
-  await page.evaluate(()=>FooteraPlayerPicks.refresh());
+  await page.waitForFunction(()=>typeof window.releasePickRewardSync==='function');
+  assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),false,'Historical rewards plus a pending sync cannot announce an open Pick');
+  assert.equal(await page.locator('#homePlayerPickCount').textContent(),'0');
+  assert.match(await page.locator('#playerPicks .pick-status').textContent(),/werden mit dem Konto abgeglichen/);
+  await page.evaluate(()=>window.releasePickRewardSync());
+  await page.waitForFunction(()=>!document.querySelector('[data-picks-refresh]').disabled);
+  assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),false,'An empty server list keeps the banner hidden after sync');
+  await page.evaluate(()=>{
+   state.weeklyRewards=[];window.noAvailablePicks=false;
+   FooteraAccount.syncPlayerPickRewards=window.originalPickRewardSync;
+   return FooteraPlayerPicks.refresh(true);
+  });
+  assert.equal(await page.locator('#homePlayerPickCount').textContent(),'1','One real server Pick shows exactly one');
   assert.equal(await page.evaluate(()=>window.cloudAutoSyncCalls),0,'Listing Picks must not trigger full cloud synchronization');
   await page.evaluate(()=>switchView('homeView',{push:false,scroll:false}));
   assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),true,'Home banner for outstanding Picks');

@@ -1,13 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const src=fs.readFileSync(require('node:path').join(__dirname,'../player-picks.js'),'utf8');
 function setup(){
- const calls=[],box={hidden:true},copy={textContent:''},host={innerHTML:''};let fail=false;
+ const calls=[],box={hidden:true},copy={textContent:''},count={textContent:''},host={innerHTML:''};let fail=false,list=[],listFail=false,localOwner='owner';
  const user={id:'owner',email_confirmed_at:'2026-10-01'};
- const window={FooteraAccount:{getClient:async()=>({auth:{getSession:async()=>({data:{session:{user}}})},rpc:async()=>{calls.push('list');return{data:[],error:null}}}),pendingPlayerPick:()=>null,
+ const window={FooteraAccount:{getClient:async()=>({auth:{getSession:async()=>({data:{session:{user}}})},rpc:async()=>{calls.push('list');if(listFail)throw Error('list unavailable');return{data:list,error:null}}}),pendingPlayerPick:()=>null,
  syncPlayerPickRewards:async()=>{calls.push('sync');if(fail)throw Error('cloud conflict')}}};
  const state={onboarded:true,profile:{saveId:'club'},weeklyRewards:[{mode:'champions',week:'1792774800000',wins:11,claimed:true,reward:{playerPicks:[{},{}]}}]};
- const ctx={window,state,localStorage:{getItem:()=>user.id},document:{readyState:'loading',addEventListener(){},getElementById:id=>({playerPicks:host,homePlayerPickNotice:box,homePlayerPickCopy:copy}[id]||null)},setTimeout,clearTimeout,esc:String,renderAll(){},toast(){}};
- vm.runInNewContext(src,ctx);return{calls,state,window,host,box,copy,setFail:x=>{fail=x}};
+ const ctx={window,state,localStorage:{getItem:()=>localOwner},document:{readyState:'loading',addEventListener(){},getElementById:id=>({playerPicks:host,homePlayerPickNotice:box,homePlayerPickCopy:copy,homePlayerPickCount:count}[id]||null)},setTimeout,clearTimeout,esc:String,renderAll(){},toast(){}};
+ vm.runInNewContext(src,ctx);return{calls,state,window,host,box,copy,count,setFail:x=>{fail=x},setRows:x=>{list=x},setListFail:x=>{listFail=x},setOwner:x=>{localOwner=x}};
 }
 test('new claimed rewards sync before listing and confirmed retries only list',async()=>{
  const t=setup();await t.window.FooteraPlayerPicks.refresh(true);assert.deepEqual(t.calls,['sync','list']);
@@ -17,9 +17,58 @@ test('new claimed rewards sync before listing and confirmed retries only list',a
 });
 test('failed reward sync is visible, does not list stale cloud and retries successfully',async()=>{
  const t=setup();t.setFail(true);await t.window.FooteraPlayerPicks.refresh(true);
- assert.deepEqual(t.calls,['sync']);assert.equal(t.box.hidden,false);assert.equal(t.copy.textContent,'cloud conflict');
+ assert.deepEqual(t.calls,['sync']);assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');assert.match(t.host.innerHTML,/cloud conflict/);
  t.setFail(false);await t.window.FooteraPlayerPicks.refresh(true);
  assert.deepEqual(t.calls,['sync','sync','list']);assert.equal(t.box.hidden,true);
+});
+test('old reward receipts and an in-flight sync never announce an outstanding Pick',async()=>{
+ const t=setup();let release,started;
+ const begun=new Promise(resolve=>{started=resolve});
+ t.window.FooteraAccount.syncPlayerPickRewards=()=>{started();return new Promise(resolve=>{release=resolve})};
+ const refreshing=t.window.FooteraPlayerPicks.refresh(true);await begun;
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+ assert.match(t.host.innerHTML,/werden mit dem Konto abgeglichen/);
+ release();await refreshing;
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+});
+test('only actual available Picks count; locally delivered Picks and an empty server list disappear',async()=>{
+ const t=setup();t.setRows([{id:'pick-a'},{id:'pick-b'}]);
+ await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,false);assert.equal(t.count.textContent,'2');
+ assert.match(t.copy.textContent,/2 Player Picks/);
+ t.state.playerPickClaims={'pick-a':'option-a'};
+ await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.count.textContent,'1');assert.doesNotMatch(t.host.innerHTML,/data-pick-open="pick-a"/);
+ t.state.playerPickClaims['pick-b']='option-b';
+ await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+ t.setRows([]);await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+});
+test('a failed refresh clears the stale count while the Store keeps the connection error visible',async()=>{
+ const t=setup();t.setRows([{id:'pick-a'}]);await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.count.textContent,'1');assert.equal(t.box.hidden,false);
+ t.setListFail(true);await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');assert.match(t.host.innerHTML,/list unavailable/);
+ t.setListFail(false);t.setRows([]);await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.doesNotMatch(t.host.innerHTML,/list unavailable/);
+});
+test('a club switch hides the previous club count before the next server reply arrives',async()=>{
+ const t=setup();t.setRows([{id:'pick-a'}]);await t.window.FooteraPlayerPicks.refresh(true);
+ let release,started;const begun=new Promise(resolve=>{started=resolve});
+ const previous=t.window.FooteraAccount.getClient;
+ t.window.FooteraAccount.getClient=async()=>{started();await new Promise(resolve=>{release=resolve});return previous()};
+ t.state.profile.saveId='other-club';
+ const refreshing=t.window.FooteraPlayerPicks.refresh(true);await begun;
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+ t.setRows([]);release();await refreshing;assert.equal(t.box.hidden,true);
+});
+test('an account switch or malformed list cannot retain an old available count',async()=>{
+ const t=setup();t.setRows([{id:'pick-a'}]);await t.window.FooteraPlayerPicks.refresh(true);
+ t.setOwner('other-owner');await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');
+ t.setOwner('owner');t.setRows({});await t.window.FooteraPlayerPicks.refresh(true);
+ assert.equal(t.box.hidden,true);assert.equal(t.count.textContent,'0');assert.match(t.host.innerHTML,/nicht geprüft/);
 });
 test('refresh automatically resumes the saved accepted choice without requiring a full cloud sync',async()=>{
  const t=setup();let pending={userId:'owner',saveId:'club',pickId:'pick-a',optionId:'option-a',revision:1};

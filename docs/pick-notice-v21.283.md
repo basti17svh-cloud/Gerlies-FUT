@@ -1,0 +1,9 @@
+# V21.283 – falscher Hinweis auf offene Player Picks
+
+Der Screenshot aus V21.282 zeigte keine bestätigte Anzahl. Die Anzeige setzte stattdessen ein Ausrufezeichen in das Feld „OFFEN“, sobald eine alte abgeholte Wochenbelohnung Pick-Einträge enthielt und irgendeine Abgleich- oder Fehlermeldung vorlag. Überschrift und Öffnen-Schaltfläche behaupteten gleichzeitig verfügbare Picks. Diese fehlerhafte Kombination wurde bei der vorherigen Rundumprüfung übersehen und durch eine falsche Testerwartung sogar als zulässig behandelt.
+
+Der Hinweis verwendet jetzt ausschließlich eine erfolgreich geladene Serverliste für das aktuell zugeordnete Konto und denselben Verein. Bereits lokal zugestellte Picks werden zusätzlich ausgefiltert. Bei null verfügbaren Picks bleibt der Hinweis verborgen; Abgleich und Fehler bleiben im Store sichtbar und werden nicht als Pick-Anzahl ausgegeben. Ein fehlgeschlagener Listenabruf verwirft die alte Anzahl. Konto- und Vereinswechsel dürfen keine zuvor geladene Liste anzeigen. Eine unvollständige Serverantwort wird als Fehler behandelt.
+
+172 gezielte Node-Tests bestanden, einschließlich Konten, Rewards, Wiederherstellung, Navigation, Updates und Cache. Die neuen Fälle prüfen alte Belohnungen während eines angehaltenen Abgleichs, leere Listen, echte offene Picks, bereits zugestellte Picks, Netzwerkfehler, fehlerhafte Antworten und Konto-/Vereinswechsel. Die bisherige Testerwartung „Cloud-Fehler zeigt offene Picks“ wurde entfernt. Der mobile Chromium-Test enthält zusätzlich den Screenshot-Fall: alte Belohnung, laufender Abgleich, null verfügbare Picks; anschließend genau ein echter Pick und dessen vollständige Einlösung.
+
+Keine Änderungen an Guthaben, Spielständen, Pick-Berechtigungen oder Spielerauswahlen. Der mobile Browserlauf und das Deployment werden über GitHub Actions geprüft; lokal ist Chromium nicht installiert.

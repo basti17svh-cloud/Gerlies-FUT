@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
+ let rows=[],owner='',listedSaveId='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -41,31 +41,37 @@
    throw Error('Melde dich mit dem Konto deines Vereins an, um deine Picks zu laden.');
   return {c,u};
  }
+ function availablePicks(){
+  if(owner!==localStorage.getItem('footera-cloud-owner')||listedSaveId!==saveId())return [];
+  return rows.filter(p=>!Object.prototype.hasOwnProperty.call(state.playerPickClaims||{},p.id));
+ }
  function renderHomeNotice(){
   const box=$('homePlayerPickNotice');if(!box)return;
-  const count=rows.length;
-  const waiting=!!message&&(state.weeklyRewards||[]).some(r=>r.claimed&&r.reward?.playerPicks?.length);
-  box.hidden=!count&&!waiting;
-  const qty=$('homePlayerPickCount');if(qty)qty.textContent=count?String(count):'!';
-  const copy=$('homePlayerPickCopy');if(copy)copy.textContent=waiting?message:count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
+  // Historical reward receipts and sync messages are not outstanding Picks.
+  // Only a successful server listing for this account and club can show a count.
+  const count=availablePicks().length;
+  box.hidden=count===0;
+  const qty=$('homePlayerPickCount');if(qty)qty.textContent=String(count);
+  const copy=$('homePlayerPickCopy');if(copy)copy.textContent=count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
  }
  function render(){
   renderHomeNotice();
   const host=$('playerPicks');if(!host)return;
   const pending=window.FooteraAccount?.pendingPlayerPick?.();
   const retry=pending&&pending.userId===owner&&pending.saveId===saveId();
+  const available=availablePicks();
   host.innerHTML='<div class="pick-heading"><div><small>DEINE AUSWAHL</small><h3>Meine Player Picks</h3></div><button type="button" data-picks-refresh '+(loading||busy?'disabled':'')+'>Aktualisieren</button></div>'+
    (retry?'<p class="pick-notice">Eine Einlösung wartet auf Bestätigung. Deine Auswahl bleibt gespeichert.</p><button type="button" class="primary" data-pick-recover '+(busy?'disabled':'')+'>Einlösung abschließen</button>':'')+
-   '<p class="pick-status" role="status">'+esc(message||(loading?'Picks werden geladen …':rows.length?'Wähle pro Pick einen Spieler. Alle Picks sind untauschbar.':'Noch keine offenen Player Picks.'))+'</p>'+
-   rows.map(p=>'<article class="pick-ticket '+(p.type==='champions-red'?'pick-red':'')+'"><span class="pick-ticket-rating">'+p.min_rating+'+</span><div><strong>'+title(p)+'</strong><small>1 aus '+p.choices+' · '+(p.type==='champions-red'?'Aktive TOTW- und Eventkarten':'Goldspieler')+'</small></div><button type="button" class="primary" data-pick-open="'+esc(p.id)+'" '+(busy||retry?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('');
+   '<p class="pick-status" role="status">'+esc(message||(loading?'Picks werden geladen …':available.length?'Wähle pro Pick einen Spieler. Alle Picks sind untauschbar.':'Noch keine offenen Player Picks.'))+'</p>'+
+   available.map(p=>'<article class="pick-ticket '+(p.type==='champions-red'?'pick-red':'')+'"><span class="pick-ticket-rating">'+p.min_rating+'+</span><div><strong>'+title(p)+'</strong><small>1 aus '+p.choices+' · '+(p.type==='champions-red'?'Aktive TOTW- und Eventkarten':'Goldspieler')+'</small></div><button type="button" class="primary" data-pick-open="'+esc(p.id)+'" '+(busy||retry?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('');
  }
  async function refresh(force=false){
   if(loading||busy||offer||!state.onboarded)return;
-  if(!force&&rows.length&&Date.now()-lastRefresh<15000)return;
+  if(!force&&availablePicks().length&&Date.now()-lastRefresh<15000)return;
   loading=true;render();
   try{
    const {c,u}=await deadline(account(),10000),id=saveId();
-   if(owner!==u.id){rows=[];owner=u.id}
+   if(owner!==u.id){rows=[];listedSaveId='';owner=u.id}
    // A newly claimed reward must reach the cloud before list_picks can issue it.
    // Ordinary list/open/retry requests remain light; failures leave the key unconfirmed.
    const rewards=(state.weeklyRewards||[]).filter(r=>r.claimed&&r.reward?.playerPicks?.length);
@@ -77,8 +83,9 @@
    }
    const {data,error}=await deadline(c.rpc('footera_list_player_picks',{p_save_id:id}),15000);if(error)throw error;
    if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
-   rows=Array.isArray(data)?data:[];rewardSyncKey=syncKey;message='';lastRefresh=Date.now();
-  }catch(e){message=e.message||'Picks konnten nicht geladen werden.'}
+   if(!Array.isArray(data))throw Error('Picks konnten nicht geprüft werden. Bitte erneut aktualisieren.');
+   rows=data;listedSaveId=id;rewardSyncKey=syncKey;message='';lastRefresh=Date.now();
+  }catch(e){rows=[];listedSaveId='';message=e.message||'Picks konnten nicht geladen werden.'}
   finally{loading=false;render()}
   const pending=window.FooteraAccount?.pendingPlayerPick?.();
   if(pending&&pending.userId===owner&&pending.saveId===saveId()&&Date.now()-lastAutoRecovery>=30000){
