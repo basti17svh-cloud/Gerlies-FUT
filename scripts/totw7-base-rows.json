@@ -3017,7 +3017,36 @@
       "gender": "Men's Football"
     }
   ],
-  "Álex Berenguer": [],
+  "Álex Berenguer": [
+    {
+      "player_id": "225201",
+      "common_name": "Berenguer",
+      "short_name": "Berenguer",
+      "long_name": "Alejandro Berenguer Remiro",
+      "positions": "RW,LM,CAM,RM",
+      "overall": "79",
+      "pace": "81",
+      "shooting": "78",
+      "passing": "77",
+      "dribbling": "80",
+      "defending": "67",
+      "physic": "68",
+      "preferred_foot": "Right",
+      "weak_foot": "4",
+      "skill_moves": "3",
+      "nationality_name": "Spain",
+      "nationality_id": "45",
+      "nation_flag_url": "https://drop-assets.ea.com/images/Kv8okAYMsDbB3ZKbxrAXw/9d30c88d16a4c85002f35c6af412c6f7/f_45.png",
+      "club_name": "Athletic Club",
+      "club_team_id": "448",
+      "club_logo_url": "https://drop-assets.ea.com/images/5lGGXYvaOCdAYlo8xWPzQb/7092243785809519c68b482ad21b2c41/l448.png",
+      "league_name": "LALIGA EA SPORTS",
+      "player_face_url": "https://ratings-images-prod.pulse.ea.com/FC25/full/player-portraits/p225201.png?padding=0.7",
+      "playstyles": "Finesse Shot, Whipped Pass, Rapid",
+      "playstyles_plus": "",
+      "gender": "Men's Football"
+    }
+  ],
   "Abdellah Ouazane": [
     {
       "player_id": "82789",
