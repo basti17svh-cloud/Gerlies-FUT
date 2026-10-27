@@ -7,7 +7,7 @@ with open('assets/players-db.csv') as f:
 print('HEADERS',list(rows[0]),flush=True)
 out={}
 for name in names:
- terms=norm(name).split()
+ terms=['berenguer'] if 'Berenguer' in name else norm(name).split()
  hits=[r for r in rows if all(t in norm(' '.join(str(v) for k,v in r.items() if 'name' in k.lower())) for t in terms)]
  out[name]=hits
  print(name,json.dumps(hits,ensure_ascii=False),flush=True)
