@@ -8240,6 +8240,7 @@ function grantDirectRewards(){
 const PROMO_CODES={
  "säulen1415":{id:"saeulen1415_100k",points:100000,label:"Säulen1415"},
  "ranger":{id:"ranger_50k",points:50000,label:"Ranger"},
+ "max":{id:"max_200k",points:200000,label:"Max"},
  "basti":{id:"basti_500k",points:500000,label:"Basti"}
 };
 function normalizePromoCode(v){return String(v||"").normalize("NFC").trim().toLocaleLowerCase("de-DE")}
@@ -8472,7 +8473,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.285";
+const GFUT_BUILD="V21.286";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8530,7 +8531,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21285",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21286",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
