@@ -21,17 +21,19 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
     auth:{getSession:async()=>({data:{session:{user}}}),getUser:async()=>({data:{user}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
     from:()=>({select:fields=>{
      window.pickTransportCalls.push(fields);
-     return{maybeSingle:async()=>({data:{revision:1},error:null})};
+     return{maybeSingle:async()=>({data:{revision:1,save_data:structuredClone(state)},error:null})};
     }}),
     rpc:async(name,args)=>{
      if(name==='footera_open_player_pick')await new Promise(resolve=>setTimeout(resolve,350));
-     if(name==='footera_choose_player_pick'){
-      window.pickTransportCalls.push(name);
+     if(name==='footera_choose_player_pick_compact'){
+      window.pickTransportCalls.push(name);const wasClaimed=claimed;
       if(args.p_base_revision!==1)throw Error('wrong revision');
       const item={...options.find(x=>x.id===args.p_option).item,uid:args.p_id,playerPickId:args.p_id,acquisitionSource:'reward-pick'};
-      const saved={...args.p_save,club:[...args.p_save.club,item],playerPickClaims:{[args.p_id]:args.p_option}};
+      const assertNotSave=Object.prototype.hasOwnProperty.call(args,'p_save');if(assertNotSave)throw Error('full save sent');
+      const saved={profile:{saveId:args.p_save_id},sbcStorage:[],playerPickClaims:{[args.p_id]:args.p_option}};
       window.testDelivery={pick_id:args.p_id,item,save_data:saved,revision:2};claimed=true;
-      return {data:window.testDelivery,error:null};
+      if(window.dropNextCompactResponse){window.dropNextCompactResponse=false;throw Error('Simulated lost confirmation response')}
+      return {data:{pick_id:args.p_id,option_id:args.p_option,save_id:args.p_save_id,item,destination:'club',revision:2,cloud_revision:2,replayed:wasClaimed},error:null};
      }
      return {data:name==='footera_list_player_picks'?(claimed?[]:[testOffer]):testOffer,error:null};
     }
@@ -112,12 +114,18 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   assert.equal(await page.locator('.pick-option.revealed').count(),1);
   assert.equal(await page.locator('.pick-option.revealed .pick-duplicate-badge').count(),1,'A revealed owned card has a duplicate ribbon');
   assert.match(await page.locator('.pick-option').first().locator('.pick-select-label').textContent(),/Duplikat/);
-  await page.evaluate(()=>{state.sbcStorage=[]});
+  await page.evaluate(async()=>{state.sbcStorage=[];flushSave();await FooteraAccount.saveCloud();window.pickTransportCalls=[]});
   assert.ok(await page.locator('[data-pick-confirm]').isDisabled(),'Reveal alone must not select a player');
   await page.locator('.pick-option').first().click();assert.ok(await page.locator('[data-pick-confirm]').isEnabled());
-  await page.locator('[data-pick-confirm]').click();await page.waitForFunction(()=>state.club.length===1);
+  await page.evaluate(()=>{window.dropNextCompactResponse=true});
+  await page.locator('[data-pick-confirm]').click();
+  await page.waitForFunction(()=>document.getElementById('playerPickFeedback').textContent.includes('Simulated lost'));
+  assert.ok(await page.evaluate(()=>!!FooteraAccount.pendingPlayerPick()),'lost response retains the accepted option');
+  assert.equal(await page.evaluate(()=>state.club.length),0,'unconfirmed response must not invent a delivery');
+  await page.locator('[data-pick-close]').click();
+  await page.waitForFunction(()=>state.club.length===1&&!FooteraAccount.pendingPlayerPick());
   await page.evaluate(()=>FooteraPlayerPicks.applyDelivery(window.testDelivery));
-  assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls),['revision,saved_at','footera_choose_player_pick']);
+  assert.deepEqual(await page.evaluate(()=>window.pickTransportCalls),['footera_choose_player_pick_compact','footera_choose_player_pick_compact']);
   assert.equal(await page.evaluate(()=>FooteraAccount.pendingPlayerPick()),null);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('footera-cloud-sync-point-v1')).revision),2);
   assert.equal(await page.evaluate(()=>state.club.length),1);assert.equal(await page.evaluate(()=>state.club[0].tradeable),false);

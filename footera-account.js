@@ -490,6 +490,62 @@
      &&c.reward?.playerPicks?.length)))
      throw Error("Deine Pick-Belohnung ist lokal gesichert, aber noch nicht in der Cloud bestätigt. Bitte im Profil den Cloud-Konflikt lösen und hier erneut aktualisieren.");
  }
+ // Compact delivery sends only the chosen option and expected revision. The
+ // synchronized cloud is the server's base; a lost response replays one receipt.
+ async function choosePlayerPickCompact(pickId,optionId,applyDelivery){
+   if(autoBusyDone)await pickDeadline(autoBusyDone,15000);
+   if(autoBusy)throw Error("Eine Einlösung läuft noch. Bitte kurz warten.");
+   const c=await pickDeadline(getClient(),10000),u=await pickDeadline(pickUser(c),10000);
+   if(!isPermanent(u))throw Error("Bitte mit deinem Footera-Konto anmelden.");
+   ensureOwned(u);changeLocked();
+   let local=localData(),point=syncPoint(u),pending=pendingPlayerPick();
+   if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.pickId!==pickId||pending.optionId!==optionId))
+     throw Error("Bitte zuerst die gespeicherte Pick-Auswahl abschließen.");
+   if(!pending&&(!point||point.saveId!==local.profile.saveId||!pointMatches(point,local))){
+     await saveCloud();local=localData();point=syncPoint(u);
+     if(!point||point.saveId!==local.profile.saveId||!pointMatches(point,local))
+       throw Error("Bitte zuerst den aktuellen Spielstand synchronisieren. Dein Pick bleibt erhalten.");
+   }
+   if(autoBusy)throw Error("Eine Einlösung läuft noch. Bitte kurz warten.");
+   autoBusy=true;let finishClaim;const done=new Promise(resolve=>{finishClaim=resolve});autoBusyDone=done;
+   try{
+     ensureOwned(u);changeLocked();
+     const revision=pending?pending.revision:point.revision;
+     const expected=JSON.parse(JSON.stringify(local));
+     const cleanBase=point?.revision===revision&&pointMatches(point,local);
+     root.localStorage.setItem("footera-pending-player-pick-v1",JSON.stringify({userId:u.id,saveId:local.profile.saveId,pickId,optionId,revision}));
+     const controller=typeof AbortController!=="undefined"?new AbortController():null;
+     let request=c.rpc("footera_choose_player_pick_compact",{p_id:pickId,p_option:optionId,p_save_id:local.profile.saveId,p_base_revision:revision});
+     if(controller&&typeof request.abortSignal==="function")request=request.abortSignal(controller.signal);
+     let timer;
+     const timeout=new Promise((_,reject)=>{timer=root.setTimeout(()=>{controller?.abort();reject(Error("Die Verbindung wurde unterbrochen. Deine Auswahl bleibt gespeichert und wird beim nächsten Öffnen automatisch erneut bestätigt."))},15000)});
+     let response;try{response=await Promise.race([request,timeout])}finally{root.clearTimeout?.(timer)}
+     const {data,error}=response;
+     if(error){
+       if(["22023","42501","40001"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
+       throw error;
+     }
+     if(data?.pick_id!==pickId||data?.option_id!==optionId||data?.save_id!==local.profile.saveId||
+        data.item?.uid!==pickId||data.item?.playerPickId!==pickId||data.item?.tradeable!==false||!data.item?.baseSnapshot||
+        !["club","sbcStorage"].includes(data.destination)||!Number.isSafeInteger(data.revision)||!Number.isSafeInteger(data.cloud_revision)||
+        data.revision>data.cloud_revision||(!data.replayed&&data.revision!==revision+1))
+       throw Error("Die Pick-Bestätigung ist unvollständig. Deine gespeicherte Auswahl wird erneut geprüft.");
+     if((await pickDeadline(pickUser(c),10000))?.id!==u.id)throw Error("Das Konto wurde gewechselt. Bitte mit dem ursprünglichen Konto fortfahren.");
+     ensureOwned(u);
+     if(localData().profile.saveId!==local.profile.saveId)throw Error("Der Verein wurde gewechselt.");
+     // Existing UI delivery consumes only this receipt, never a replacement save.
+     const delivery={...data,save_data:{profile:{saveId:data.save_id},playerPickClaims:{[pickId]:optionId},sbcStorage:data.destination==="sbcStorage"?[data.item]:[]}};
+     applyDelivery(delivery);
+     if(cleanBase&&data.cloud_revision===data.revision&&data.revision===revision+1){
+       expected[data.destination]=expected[data.destination]||[];
+       if(!expected.playerPickClaims?.[pickId]&&!cloudInventoryIds(expected).has(pickId))expected[data.destination].push(data.item);
+       expected.playerPickClaims={...(expected.playerPickClaims||{}),[pickId]:optionId};
+       savePoint(u,expected,data.revision);
+     }
+     root.localStorage.removeItem("footera-pending-player-pick-v1");
+     return delivery;
+   }finally{autoBusy=false;finishClaim();if(autoBusyDone===done)autoBusyDone=null}
+ }
  async function choosePlayerPick(pickId,optionId,applyDelivery){
    // A background save must never turn a valid Player Pick confirmation into
    // an error. Queue behind its existing transaction rather than rejecting.
@@ -1488,7 +1544,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
 

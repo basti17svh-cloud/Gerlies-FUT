@@ -1262,3 +1262,42 @@ test('manual save queues behind its background save instead of rejecting the cli
  await background;assert.equal(await manual,true);
  assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
 });
+
+async function compactFixture(){
+ const t=runtime('registered'),s=sampleGame();t.store.set('gerliesFutV9',JSON.stringify(s));t.store.set('footera-cloud-owner','existing-a');
+ t.setCloud({save_data:s,revision:1});await t.win.FooteraAccount.saveCloud();
+ const item={uid:'pick-compact',pid:'123',playerPickId:'pick-compact',tradeable:false,baseSnapshot:{id:'123',name:'Test'}};
+ const receipt={pick_id:'pick-compact',option_id:'option-a',save_id:'club-a',item,destination:'club',revision:2,cloud_revision:2,replayed:false};
+ return{t,s,item,receipt};
+}
+test('compact Pick claim sends no full save and consumes a small server receipt',async()=>{
+ const {t,receipt}=await compactFixture();let applied=0;
+ t.client.from=()=>{throw Error('claim must not download the full cloud')};
+ t.client.rpc=async(name,args)=>{assert.equal(name,'footera_choose_player_pick_compact');assert.ok(JSON.stringify(args).length<300);assert.equal(args.p_save,undefined);return{data:receipt}};
+ await t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',r=>{applied++;assert.equal(r.save_data.playerPickClaims['pick-compact'],'option-a')});
+ assert.equal(applied,1);assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,2);
+});
+test('lost compact response resumes the same option without full-save traffic or a second delivery',async()=>{
+ const {t,receipt}=await compactFixture();let applied=0,attempts=0;
+ t.client.from=()=>{throw Error('recovery must not download the full cloud')};
+ t.client.rpc=async(name,args)=>{attempts++;assert.equal(args.p_option,'option-a');assert.equal(args.p_base_revision,1);if(attempts===1)throw Error('network response lost');return{data:{...receipt,replayed:true}}};
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>applied++),/network response lost/);
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick().optionId,'option-a');
+ await t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>applied++);
+ assert.equal(attempts,2);assert.equal(applied,1);assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+});
+test('replayed compact receipt cannot mark newer remote progress as synchronized on this device',async()=>{
+ const {t,receipt}=await compactFixture();let applied=0;
+ t.store.set('footera-pending-player-pick-v1',JSON.stringify({userId:'existing-a',saveId:'club-a',pickId:'pick-compact',optionId:'option-a',revision:1}));
+ t.client.rpc=async()=>({data:{...receipt,replayed:true,cloud_revision:5}});
+ await t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>applied++);
+ assert.equal(applied,1);assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
+ assert.equal(t.calls.filter(x=>x[0]==='cloud').length,0);
+});
+test('invalid or mismatched compact receipt cannot clear the pending choice or apply a player',async()=>{
+ const {t,receipt}=await compactFixture();let applied=0;
+ t.client.rpc=async()=>({data:{...receipt,option_id:'other'}});
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>applied++),/unvollständig/);
+ assert.equal(applied,0);assert.equal(t.win.FooteraAccount.pendingPlayerPick().optionId,'option-a');
+});
