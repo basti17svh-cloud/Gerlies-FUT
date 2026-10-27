@@ -1,5 +1,5 @@
 # Footera TOTW 7 – vorbereitet
-Release geplant: 28.10.2026, 19:00 Europe/Berlin. Status: Entwurf, Veröffentlichung noch nicht freigegeben.
+Release geplant: 28.10.2026, 19:00 Europe/Berlin. Status: Vom Projektinhaber am 27.10.2026 freigegeben; technischer Start geplant für 28.10.2026, 19:00 Europe/Berlin.
 18 Spieler, 18 Vereine, 8 Ligen; 2 TW / 5 DEF / 6 MID / 5 ANG.
 Keine Spieler aus TOTW 5, TOTW 6 oder Halloween (inklusive Ziel und SBC).
 Tiago Araújo ersetzt auf Bastis Wunsch Anthony Caci.

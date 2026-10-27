@@ -560,7 +560,7 @@ const TOTW_WEEK_7={
   "name": "Team of the Week 7",
   "releaseDate": "2026-10-28",
   "activeUntil": "04.11.2026 18:59",
-  "sourceStatus": "draft",
+  "sourceStatus": "admin-approved",
   "players": [
     {
       "names": [

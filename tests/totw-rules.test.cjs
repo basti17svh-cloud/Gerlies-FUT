@@ -45,3 +45,20 @@ test('from TOTW 6 on, every TOTW card beats the same player\'s earlier special c
   assert.equal(problems.join('; '),'',`TOTW ${team.id}`);
  }
 });
+
+test('TOTW 7 is approved but only becomes active at 19:00 Berlin on 28 October 2026',()=>{
+ const c=setup(),team=c.WEEKS.find(w=>Number(w.id)===7);
+ assert.ok(team,'TOTW 7 is present');
+ assert.equal(team.sourceStatus,'admin-approved');
+ assert.equal(team.releaseDate,'2026-10-28');
+ assert.equal(c.totwRosterErrors(team).length,0);
+ assert.equal(c.activeTotwWeek(new Date('2026-10-28T17:59:59Z'))?.id,6);
+ assert.equal(c.activeTotwWeek(new Date('2026-10-28T18:00:00Z'))?.id,7);
+ assert.equal(c.latestPublishedTotw(new Date('2026-10-28T17:59:59Z'))?.id,6);
+ assert.equal(c.latestPublishedTotw(new Date('2026-10-28T18:00:00Z'))?.id,7);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-04T17:59:59Z'))?.id,7);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-04T18:00:00Z')),null);
+ const chosen=new Set(team.players.map(p=>String(p.eaId)));
+ for(const prior of c.WEEKS.filter(w=>[5,6].includes(Number(w.id))))
+  assert.ok(prior.players.every(p=>!chosen.has(String(p.eaId))),`TOTW 7 duplicates TOTW ${prior.id}`);
+});
