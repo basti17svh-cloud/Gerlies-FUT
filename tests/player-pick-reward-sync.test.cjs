@@ -6,7 +6,7 @@ function setup(){
  const window={FooteraAccount:{getClient:async()=>({auth:{getSession:async()=>({data:{session:{user}}})},rpc:async()=>{calls.push('list');return{data:[],error:null}}}),pendingPlayerPick:()=>null,
  syncPlayerPickRewards:async()=>{calls.push('sync');if(fail)throw Error('cloud conflict')}}};
  const state={onboarded:true,profile:{saveId:'club'},weeklyRewards:[{mode:'champions',week:'1792774800000',wins:11,claimed:true,reward:{playerPicks:[{},{}]}}]};
- const ctx={window,state,localStorage:{getItem:()=>user.id},document:{readyState:'loading',addEventListener(){},getElementById:id=>({playerPicks:host,homePlayerPickNotice:box,homePlayerPickCopy:copy}[id]||null)},setTimeout,clearTimeout,esc:String};
+ const ctx={window,state,localStorage:{getItem:()=>user.id},document:{readyState:'loading',addEventListener(){},getElementById:id=>({playerPicks:host,homePlayerPickNotice:box,homePlayerPickCopy:copy}[id]||null)},setTimeout,clearTimeout,esc:String,renderAll(){},toast(){}};
  vm.runInNewContext(src,ctx);return{calls,state,window,host,box,copy,setFail:x=>{fail=x}};
 }
 test('new claimed rewards sync before listing and confirmed retries only list',async()=>{
@@ -20,4 +20,16 @@ test('failed reward sync is visible, does not list stale cloud and retries succe
  assert.deepEqual(t.calls,['sync']);assert.equal(t.box.hidden,false);assert.equal(t.copy.textContent,'cloud conflict');
  t.setFail(false);await t.window.FooteraPlayerPicks.refresh(true);
  assert.deepEqual(t.calls,['sync','sync','list']);assert.equal(t.box.hidden,true);
+});
+test('refresh automatically resumes the saved accepted choice without requiring a full cloud sync',async()=>{
+ const t=setup();let pending={userId:'owner',saveId:'club',pickId:'pick-a',optionId:'option-a',revision:1};
+ t.window.FooteraAccount.pendingPlayerPick=()=>pending;
+ t.window.FooteraAccount.choosePlayerPickCompact=async(id,option)=>{
+  t.calls.push('recover:'+id+':'+option);pending=null;
+  return{pick_id:id,item:{baseSnapshot:{name:'Test'}},save_data:{sbcStorage:[]}};
+ };
+ await t.window.FooteraPlayerPicks.refresh(true);
+ assert.deepEqual(t.calls,['list','recover:pick-a:option-a']);assert.equal(pending,null);
+ await t.window.FooteraPlayerPicks.refresh(true);
+ assert.deepEqual(t.calls,['list','recover:pick-a:option-a','list']);
 });

@@ -1,7 +1,7 @@
 /* Server-owned Player Picks: fixed offers, one choice, atomic cloud delivery. */
 (()=>{
  'use strict';
- let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='';
+ let rows=[],owner='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
  const $=id=>document.getElementById(id);
  const title=p=>p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
@@ -70,7 +70,7 @@
    // Ordinary list/open/retry requests remain light; failures leave the key unconfirmed.
    const rewards=(state.weeklyRewards||[]).filter(r=>r.claimed&&r.reward?.playerPicks?.length);
    const syncKey=JSON.stringify([u.id,id,rewards]);
-   if(rewards.length&&syncKey!==rewardSyncKey){
+   if(rewards.length&&syncKey!==rewardSyncKey&&!window.FooteraAccount.pendingPlayerPick()){
     message='Deine Pick-Belohnungen werden mit dem Konto abgeglichen …';render();
     await deadline(window.FooteraAccount.syncPlayerPickRewards(),30000);
     if(localStorage.getItem('footera-cloud-owner')!==u.id||id!==saveId())throw Error('Konto oder Verein wurde gewechselt.');
@@ -80,6 +80,10 @@
    rows=Array.isArray(data)?data:[];rewardSyncKey=syncKey;message='';lastRefresh=Date.now();
   }catch(e){message=e.message||'Picks konnten nicht geladen werden.'}
   finally{loading=false;render()}
+  const pending=window.FooteraAccount?.pendingPlayerPick?.();
+  if(pending&&pending.userId===owner&&pending.saveId===saveId()&&Date.now()-lastAutoRecovery>=30000){
+   lastAutoRecovery=Date.now();await choose(true);
+  }
  }
  function modal(){
   if($('playerPickModal'))return;
@@ -170,7 +174,7 @@
   if(!id||!option)return;
   busy=true;render();if(offer)renderOffer();
   try{
-   const data=await window.FooteraAccount.choosePlayerPick(id,option,applyDelivery);
+   const data=await (window.FooteraAccount.choosePlayerPickCompact||window.FooteraAccount.choosePlayerPick)(id,option,applyDelivery);
    rows=rows.filter(p=>p.id!==id);message='';needsCloudRestore=false;
    if($('playerPickModal'))closeUiLayer('playerPickModal','player-pick');offer=null;selected='';
    renderAll();toast((data.item.baseSnapshot?.name||'Spieler')+((data.save_data.sbcStorage||[]).some(i=>i.uid===id)?' wurde im SBC-Speicher abgelegt.':' ist jetzt in deinem Verein.'));
