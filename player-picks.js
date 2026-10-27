@@ -165,7 +165,8 @@
    }
    state.playerPickClaims[id]=data.save_data.playerPickClaims[id];
   }
-  save();flushSave();
+  save();
+  if(flushSave()===false)throw Error('Der Spieler ist auf dem Server gesichert, konnte aber noch nicht auf diesem Gerät gespeichert werden. Spiel geöffnet lassen und die Einlösung erneut abschließen.');
  }
  async function choose(recover=false){
   if(busy)return;
@@ -225,6 +226,8 @@
   setTimeout(refresh,3500);
   setInterval(()=>{if(!document.hidden&&['storeView','homeView'].includes(currentViewId()))refresh()},30000);
  }
- window.FooteraPlayerPicks={refresh,applyDelivery,isActive:()=>busy||!!offer||!!$('playerPickModal')?.classList.contains('active')};
+ window.FooteraPlayerPicks={refresh,applyDelivery,isBusy:()=>busy,onClose:()=>{
+  offer=null;selected='';revealed=new Set();needsCloudRestore=false;refresh(true);
+ },isActive:()=>busy||!!offer||!!$('playerPickModal')?.classList.contains('active')};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();

@@ -17,6 +17,7 @@ on:
       - 'footera-backup.js'
       - 'footera-opponent-styles.js'
       - 'tests/footera-backup.test.cjs'
+      - 'tests/save-durability.test.cjs'
       - 'tests/footera-opponent-styles.test.cjs'
       - 'tests/footera-opponent-balancing.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
@@ -44,6 +45,7 @@ on:
       - 'footera-backup.js'
       - 'footera-opponent-styles.js'
       - 'tests/footera-backup.test.cjs'
+      - 'tests/save-durability.test.cjs'
       - 'tests/footera-opponent-styles.test.cjs'
       - 'tests/footera-opponent-balancing.test.cjs'
       - '.github/workflows/weekly-rewards-tests.yml'
@@ -67,7 +69,7 @@ jobs:
         with:
           node-version: '22'
       - name: Reward UI, ranks, week resets, claims and update regression tests
-        run: node --test tests/weekly-rewards.test.cjs tests/competition-system.test.cjs tests/champions.test.cjs tests/boot-update.test.cjs tests/content-drop-20261007.test.cjs tests/promo-packs-release.test.cjs
+        run: node --test tests/save-durability.test.cjs tests/weekly-rewards.test.cjs tests/competition-system.test.cjs tests/champions.test.cjs tests/boot-update.test.cjs tests/content-drop-20261007.test.cjs tests/promo-packs-release.test.cjs
       - name: Pack chances, coin prices, and shop UI regressions
         run: |
           node --check pack-odds.js

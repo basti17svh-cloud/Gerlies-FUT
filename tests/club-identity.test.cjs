@@ -49,7 +49,7 @@ test("every selectable editor pattern survives the Matchday clone unchanged",()=
  vm.runInContext(html.slice(html.indexOf('function defaultClubIdentity()'),html.indexOf('function ensureClubIdentityState()')),context);
  vm.runInContext(html.slice(html.indexOf('function matchKitClone('),html.indexOf('function generatedOpponentKits(')),context);
  const select=html.match(/id="identityHomePattern">([\s\S]*?)<\/select>/)[1];
- const patterns=[...select.matchAll(/value="([^"]+)"/g)].map(x=>x[1]);assert.equal(patterns.length,20);
+ const patterns=[...select.matchAll(/value="([^"]+)"/g)].map(x=>x[1]);assert.equal(patterns.length,27);
  for(const pattern of patterns){
   const kit={pattern,shirtPrimary:'#173627',shirtSecondary:'#bb0011',shorts:'#172839',socks:'#aabbcc'};
   const saved=context.cleanClubIdentity({kits:{home:kit,away:kit}}).kits;

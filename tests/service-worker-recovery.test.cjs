@@ -1,5 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../service-worker.js'),'utf8');
+test('every script and stylesheet used by the main page is precached at its exact URL',()=>{
+ const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+ const shell=JSON.parse(source.match(/const SHELL=(\[[^;]+\]);/)[1]);
+ for(const [,url] of html.matchAll(/(?:src|href)="(\.\/[^"<>]+\.(?:js|mjs|css)(?:\?[^"<>]*)?)"/g))
+  assert.ok(shell.includes(url),'missing offline resource '+url);
+});
 function worker({status=200,offline=false,cached=true}={}){
  const handlers={},writes=[],deleted=[],work=[],page=cached?new Response('<title>Footera offline</title>'):null;
  const cacheName=source.match(/const CACHE="([^"]+)"/)[1];

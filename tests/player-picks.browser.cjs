@@ -24,7 +24,10 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
      return{maybeSingle:async()=>({data:{revision:1,save_data:structuredClone(state)},error:null})};
     }}),
     rpc:async(name,args)=>{
-     if(name==='footera_open_player_pick')await new Promise(resolve=>setTimeout(resolve,350));
+     if(name==='footera_open_player_pick'){
+      if(window.holdPickOpen)await new Promise(resolve=>{window.releasePickOpen=resolve});
+      await new Promise(resolve=>setTimeout(resolve,350));
+     }
      if(name==='footera_choose_player_pick_compact'){
       window.pickTransportCalls.push(name);const wasClaimed=claimed;
       if(args.p_base_revision!==1)throw Error('wrong revision');
@@ -76,8 +79,13 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
   assert.match(await page.locator('#homePlayerPickCopy').textContent(),/1 Player Pick/);
   await page.locator('[data-picks-jump]').click();
   assert.equal(await page.locator('#storeView.active').count(),1,'Home banner routes to Store');
+  await page.evaluate(()=>{window.holdPickOpen=true});
   await page.locator('[data-pick-open]').click();
   await page.locator('#playerPickModal.active').waitFor();
+  await page.waitForFunction(()=>typeof window.releasePickOpen==='function');
+  await page.goBack();
+  assert.equal(await page.locator('#playerPickModal.active').count(),1,'Back cannot hide an in-flight Pick');
+  await page.evaluate(()=>{window.holdPickOpen=false;window.releasePickOpen()});
   // Loading can resolve between individual Playwright reads; only the
   // fully available offer is a stable assertion across fast and slow devices.
   try{await page.locator('.pick-option').first().waitFor({timeout:8000})}
@@ -85,6 +93,11 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    const diagnostics=await page.evaluate(()=>({feedback:document.querySelector('#playerPickFeedback')?.textContent,description:document.querySelector('#playerPickDescription')?.textContent,visibleOptions:document.querySelectorAll('.pick-option').length,loading:document.querySelectorAll('.pick-loading-card').length}));
    throw Error('Player Pick opening failed: '+JSON.stringify(diagnostics)+'; '+e.message);
   }
+  await page.goBack();
+  await page.waitForFunction(()=>!FooteraPlayerPicks.isActive());
+  assert.equal(await page.locator('#playerPickModal.active').count(),0,'Back closes an idle Pick');
+  await page.locator('[data-pick-open]').click();
+  await page.locator('.pick-option').first().waitFor();
   for(const width of [360,390,412]){
    await page.setViewportSize({width,height:844});
    assert.equal(await page.locator('.pick-option').count(),4);assert.equal(await page.locator('.pick-option .champions-red').count(),4);

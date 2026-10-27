@@ -1499,13 +1499,25 @@ function activateSquadPreset(s,index){
  s.squadPresets[index]=next;s.activeSquadPreset=index;s.squad=[...next.squad];s.formation=next.formation;s.tactic=next.tactic;s.roles={...next.roles};s.focus={...next.focus};
  return{created,name:next.name}
 }
-let saveQueued=false,saveDirty=false,saveTimer=0;
+let saveQueued=false,saveDirty=false,saveTimer=0,saveFailed=false;
 function flushSave(){
- if(window.FooteraAccountReplacingSave)return;
- if(!saveDirty&&!saveQueued)return;
- clearTimeout(saveTimer);saveTimer=0;saveQueued=false;saveDirty=false;
+ if(window.FooteraAccountReplacingSave)return false;
+ if(!saveDirty&&!saveQueued)return !saveFailed;
+ clearTimeout(saveTimer);saveTimer=0;saveQueued=false;
  persistActiveSquadPreset(state);
- try{localStorage.setItem("gerliesFutV9",JSON.stringify(state));window.dispatchEvent?.(new Event("footera:save"))}catch(e){console.warn("Spielstand konnte nicht gespeichert werden",e)}
+ try{localStorage.setItem("gerliesFutV9",JSON.stringify(state))}
+ catch(e){
+  // Keep the current game dirty so focus/pagehide or the next action retries it.
+  // Also let cloud synchronization preserve the running game when disk quota is full.
+  if(!saveFailed){
+   saveFailed=true;
+   if(typeof document.getElementById==="function"&&$("toast"))toast("Gerätespeicher voll oder nicht verfügbar. Spiel geöffnet lassen und im Profil den aktuellen Stand synchronisieren oder als Datei sichern.");
+   window.dispatchEvent?.(new Event("footera:save"));
+  }
+  console.warn("Spielstand konnte nicht gespeichert werden",e);return false;
+ }
+ saveDirty=false;saveFailed=false;
+ window.dispatchEvent?.(new Event("footera:save"));return true;
 }
 function save(){
  if(window.FooteraAccountReplacingSave)return;
@@ -1515,6 +1527,7 @@ function save(){
  saveTimer=setTimeout(flushSave,140)
 }
 window.addEventListener("pagehide",flushSave);
+window.addEventListener("focus",()=>{if(saveFailed)flushSave()});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushSave()})
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),1800)}
 
@@ -7694,13 +7707,15 @@ function syncUiLayerStack(){
 }
 function topUiLayer(){syncUiLayerStack();return uiLayerStack[uiLayerStack.length-1]||""}
 function removeUiLayer(id){
- const el=$(id);if(el)el.classList.remove("active");
+ const el=$(id),wasActive=!!el?.classList.contains("active");if(el)el.classList.remove("active");
+ if(id==="playerPickModal"&&wasActive)window.FooteraPlayerPicks?.onClose?.();
  uiLayerStack=uiLayerStack.filter(x=>x!==id);
  if(id==="squadBattleModal")squadBattleStage="closed";
  syncUiLayerStack()
 }
 function closeTopUiLayer(){
  const id=topUiLayer();if(!id)return false;
+ if(id==="playerPickModal"&&window.FooteraPlayerPicks?.isBusy?.()){protectLockedBack("Die Pick-Anfrage läuft noch. Bitte kurz warten.","player-pick");return true}
   if(id==="squadBattleModal"&&squadBattleStage==="preview"&&pendingMatchContext?.mode==="squad"){renderSquadBattleSelection("none");syncUiLayerStack();return true}
  if(id==="evoPickerModal"&&restoreEvoPickerList())return true;
  removeUiLayer(id);return true
@@ -7872,7 +7887,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.280";
+const GFUT_BUILD="V21.281";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -7930,7 +7945,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21280",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21281",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

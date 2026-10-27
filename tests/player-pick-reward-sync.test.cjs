@@ -33,3 +33,15 @@ test('refresh automatically resumes the saved accepted choice without requiring 
  await t.window.FooteraPlayerPicks.refresh(true);
  assert.deepEqual(t.calls,['list','recover:pick-a:option-a','list']);
 });
+test('failed local Pick persistence is reported and a retry never duplicates the player',()=>{
+ const t=setup(),item={uid:'pick-a',pid:'p1',playerPickId:'pick-a',tradeable:false,baseSnapshot:{name:'Test'}};
+ const receipt={pick_id:'pick-a',item,save_data:{sbcStorage:[],playerPickClaims:{'pick-a':'option-a'}}};
+ t.state.club=[];
+ // Load the real delivery function in the same game state with controllable storage.
+ let saved=false;
+ const ctx={window:{},state:t.state,document:{readyState:'loading',addEventListener(){}},save(){},flushSave:()=>saved};
+ vm.runInNewContext(src,ctx);
+ assert.throws(()=>ctx.window.FooteraPlayerPicks.applyDelivery(receipt),/noch nicht auf diesem Gerät gespeichert/);
+ assert.equal(t.state.club.length,1);
+ saved=true;ctx.window.FooteraPlayerPicks.applyDelivery(receipt);assert.equal(t.state.club.length,1);
+});

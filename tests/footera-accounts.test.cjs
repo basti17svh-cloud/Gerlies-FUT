@@ -1301,3 +1301,12 @@ test('invalid or mismatched compact receipt cannot clear the pending choice or a
  await assert.rejects(t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>applied++),/unvollständig/);
  assert.equal(applied,0);assert.equal(t.win.FooteraAccount.pendingPlayerPick().optionId,'option-a');
 });
+test('local Pick write failure retains the accepted choice until durable retry succeeds',async()=>{
+ const {t,receipt}=await compactFixture();let calls=0;
+ t.client.rpc=async()=>({data:{...receipt,replayed:calls++>0}});
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>{throw Error('device storage full')}),/device storage full/);
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick().optionId,'option-a');
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
+ await t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>{});
+ assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);assert.equal(calls,2);
+});
