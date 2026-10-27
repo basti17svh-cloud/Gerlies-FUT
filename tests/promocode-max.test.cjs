@@ -57,3 +57,24 @@ test('build, script and service worker versions are synchronized',()=>{
  assert.ok(source.includes('service-worker.js?v='+asset));
  assert.ok(sw.includes('footera-app.js?v='+asset));
 });
+
+test('Footera promo grants exactly 75k points once per save even on repeated or mixed-case input',()=>{
+ const f=fixture();
+ f.get('promoCodeInput').value=' fOoTeRa ';
+ f.run('redeemPromo()');
+ assert.equal(f.context.state.points,75010);
+ assert.equal(f.context.state.promoClaims.footera_75k.reward.points,75000);
+ assert.equal(f.context.state.promoClaims.footera_75k.code,'Footera');
+ assert.equal(f.history.saves,1);
+ assert.equal(f.history.render,1);
+ assert.equal(f.get('promoCodeInput').value,'');
+ f.get('promoCodeInput').value='FOOTERA';
+ f.run('redeemPromo()');
+ assert.equal(f.context.state.points,75010);
+ assert.equal(f.history.saves,1,'repeated redemption must not save or credit again');
+ assert.match(f.get('promoStatus').textContent,/bereits eingelöst/);
+ const otherSave=fixture();
+ otherSave.get('promoCodeInput').value='Footera';
+ otherSave.run('redeemPromo()');
+ assert.equal(otherSave.context.state.points,75010,'a separate save can redeem independently');
+});
