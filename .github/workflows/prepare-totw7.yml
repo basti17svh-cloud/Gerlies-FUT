@@ -2,20 +2,48 @@ name: Prepare TOTW 7 poster
 on:
   push:
     branches: ['claude/totw7-2026-10-28']
-    paths: ['scripts/prepare-totw7.py', '.github/workflows/prepare-totw7.yml']
+    paths: ['.github/workflows/prepare-totw7.yml']
 permissions:
   contents: write
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python scripts/prepare-totw7.py
-      - name: Save preparation
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install Pillow
+      - run: python scripts/import-totw-portraits.py 7
+      - run: node --test tests/totw-rules.test.cjs tests/totw5-release.test.cjs
+      - run: npm install --prefix /tmp/footera-browser playwright@1.51.1
+      - run: /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: HD original-card poster
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: |
+          sed -i 's/deviceScaleFactor:2/deviceScaleFactor:4/g' scripts/render-totw-poster.cjs
+          node scripts/render-totw-poster.cjs 7 2026-10-28
+          git checkout -- scripts/render-totw-poster.cjs
+          cp assets/footera/social/totw7-2026-10-28.png Footera-TOTW7-HD.png
+          python - <<'PY'
+          from PIL import Image
+          im=Image.open('Footera-TOTW7-HD.png')
+          assert im.size==(4320,5400), im.size
+          im.resize((1080,1350),Image.Resampling.LANCZOS).save('Footera-TOTW7-Preview.jpg',quality=92)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Footera-TOTW7-HD
+          path: |
+            Footera-TOTW7-HD.png
+            Footera-TOTW7-Preview.jpg
+      - name: Save prepared artwork
         run: |
           git config user.name 'Footera Asset Bot'
           git config user.email 'footera-assets@users.noreply.github.com'
-          git add scripts/totw7-base-rows.json
+          git add assets/footera/totw/7 assets/footera/social/totw7-2026-10-28.png
           git diff --cached --quiet && exit 0
-          git commit -m 'chore(totw7): resolved current base rows [skip ci]'
+          git commit -m 'assets(totw7): original portraits and HD poster [skip ci]'
           git push
