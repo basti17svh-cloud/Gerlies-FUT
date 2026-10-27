@@ -72,6 +72,6 @@ test('TOTW 7 portrait files are precached by the matching PWA release',()=>{
   assert.ok(worker.includes(asset),`missing PWA image: ${asset}`);
   assert.ok(fs.existsSync(path.join(root,`assets/footera/totw/7/${player.eaId}.png`)),`missing portrait file: ${player.eaId}`);
  }
- assert.ok(index.includes('src="./footera-app.js?v=21285-totw7"'),'app script revision missing');
- assert.ok(worker.includes('"./footera-app.js?v=21285-totw7"'),'PWA cache and index must load the same script revision');
+ assert.ok(index.includes('src="./footera-app.js?v=21285"'),'app script revision missing');
+ assert.ok(worker.includes('"./footera-app.js?v=21285"'),'PWA cache and index must load the same script revision');
 });
