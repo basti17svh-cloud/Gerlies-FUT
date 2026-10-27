@@ -85,7 +85,7 @@ test('the Blutmond pack guarantees one Halloween card and is coins-only during t
  assert.match(pack,/coins:60000,points:null/);
  assert.match(pack,/eventSlot:"halloween-2026"/);
  assert.match(pack,/dailyLimit:3/);
- assert.match(html,/eventPackIsActive\(HALLOWEEN_EVENT,now\.getTime\(\)\)\?\["halloween-pack"\]:\[\]/);
+ assert.match(html,/activeHalloweenEvent\(now\.getTime\(\)\)\?\["halloween-pack"\]:\[\]/);
  assert.ok(fs.readFileSync(path.join(root,'pack-odds-ui.js'),'utf8').includes('gleich wahrscheinlich'),'odds disclose the guaranteed event slot');
  assert.ok(fs.existsSync(path.join(root,'assets/footera/events/halloween/pack-halloween.webp')));
 });
