@@ -1014,7 +1014,7 @@ const MOMENTUM_BY_ID=new Map(MOMENTUM_RELEASES.flatMap(event=>event.players.map(
 const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,teamSize:18,keepers:2,maxPlayersPerClub:1,allowExtraClubPlayer:true,avoidRecentSpecialRepeats:true,considerContent:["totw","events","sbc","objectives","season","evolutions"]};
 // HALLOWEEN · BLUTMOND: 18 real FC27 players from 18 clubs, own card artwork (halloween-card.css).
 // In the Halloween night (31.10. 19:00) every Halloween card gets the Blutmond upgrade, see halloweenUpgradeFor().
-const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"BLUTMOND",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",activeUntil:"06.11.2026 · 19:00",
+const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN 1",subtitle:"BLUTMOND · TEAM 1",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",activeUntil:"13.11.2026 · 19:00",
  upgrade:{at:"2026-10-31T19:00:00+01:00",ovr:1,stats:1,label:"Blutmond-Upgrade"},
  sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:87,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[75,87,89,87,61,75],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
   {name:"Geisterstunde – 83er-Team",desc:"Teil 1/4 · Der Raumdeuter spukt wieder.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
@@ -1050,7 +1050,10 @@ const FLASHBACK_REUS_EVENT={id:"flashback-reus-20261009",name:"FLASHBACK",shortN
  {name:"Flashback – 84er-Team",desc:"Teil 2/3 · Reus' Dortmunder Jahre.",req:"11 Spieler · Ø GES 84 · min. 1 BVB-Spieler",minAvg:84,requiredClub:"Borussia Dortmund",reward:{pack:"82",qty:1}},
  {name:"Flashback – 85er-Team",desc:"Teil 3/3 · Deutschland trifft MLS.",req:"11 Spieler · Ø GES 85 · min. 1 deutscher Spieler · min. 1 MLS-Spieler",minAvg:85,requiredNation:"Germany",requiredLeague:"MLS",reward:{pack:"goldplayers",qty:1}}
  ]}};
-const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
+// Team 2 requires an approved 18-player roster; never publish invented cards.
+// The 06.11. boundary is a team rotation, not the end of Halloween.
+const HALLOWEEN_TEAM2_EVENT={id:"halloween-2026-team2",name:"HALLOWEEN",shortName:"HALLOWEEN 2",subtitle:"BLUTMOND · TEAM 2",theme:"halloween",activeFrom:"2026-11-06T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",activeUntil:"13.11.2026 · 19:00",players:[]};
+const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,HALLOWEEN_TEAM2_EVENT,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
 function completeEventRoster(event){const players=event?.players||[];return players.length===FOOTERA_EVENT_RULES.teamSize&&players.filter(p=>p.position==="GK").length===FOOTERA_EVENT_RULES.keepers&&new Set(players.map(p=>String(p.pid||p.eaId||p.name))).size===players.length&&players.every(p=>!!String(p.team||"").trim())&&new Set(players.map(p=>normalizeKey(p.team))).size===players.length}
 function eventRosterReady(event){return event?.id===MOMENTUM_EVENT.id?event.players?.length===14:completeEventRoster(event)}
 function activePromoEvent(at=Date.now()){return EVENT_PROMO_RELEASES.find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
@@ -1187,7 +1190,7 @@ function openPromoTeam(eventId=""){
 // Teaser overview before the HALLOWEEN start: what arrives when, with silhouettes instead of names.
 function openHalloweenPreview(){
  const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
- const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Sonnenaufgang","Das Event endet. Gezogene Karten und ihr Upgrade bleiben dir."]];
+ const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Team 2 · Blutmond","Das zweite HALLOWEEN-Team übernimmt die Packs. Das Event läuft weiter; gezogene Team-1-Karten und ihr Upgrade bleiben dir."]];
  $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
  $("opponentTeamModalSub").textContent="Vorschau · alle Spieler werden am 30.10. um 19:00 Uhr enthüllt";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
@@ -1199,8 +1202,13 @@ $("opponentTeamModalBody")?.addEventListener("click",e=>{const btn=e.target.clos
 function eventPackIsActive(event,at=Date.now()){
  const start=event?.activeFrom?Date.parse(event.activeFrom):NaN,end=event?.activeUntilAt?Date.parse(event.activeUntilAt):NaN;
  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return false;
+ // Team 1 stops only after the approved Team 2 roster has been released.
+ if(event?.id===HALLOWEEN_EVENT.id&&at>=Date.parse(HALLOWEEN_TEAM2_EVENT.activeFrom)&&eventRosterReady(HALLOWEEN_TEAM2_EVENT))return false;
  const p=berlinParts(new Date(end)),day=new Date(Date.UTC(p.year,p.month-1,p.day)).getUTCDay();
  return day===FOOTERA_EVENT_RULES.endWeekday&&p.hour===FOOTERA_EVENT_RULES.endHour&&p.minute===0&&at>=start&&at<end
+}
+function activeHalloweenEvent(at=Date.now()){
+ return eventRosterReady(HALLOWEEN_TEAM2_EVENT)&&eventPackIsActive(HALLOWEEN_TEAM2_EVENT,at)?HALLOWEEN_TEAM2_EVENT:eventPackIsActive(HALLOWEEN_EVENT,at)?HALLOWEEN_EVENT:null
 }
 function activePromoPackEntry(base,at=Date.now()){
  if(!base)return null;const pid=String(base.id||"");
@@ -3769,7 +3777,7 @@ const PROMO_PACK_RELEASES=Object.freeze({
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
 function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
-function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...(typeof HALLOWEEN_EVENT!=="undefined"&&eventPackIsActive(HALLOWEEN_EVENT,now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
+function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...(typeof HALLOWEEN_EVENT!=="undefined"&&activeHalloweenEvent(now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
@@ -3840,7 +3848,7 @@ function generateSurpriseGiftPack(pack,tradeable=true){
 // Event packs: one guaranteed event card (each roster card equally likely, shown in the odds) plus the normal weighted draw.
 function eventSlotDrawPack(p){return{...p,count:p.count-1,eventSlot:null}}
 function generateEventSlotPack(p,tradeable=true){
- const event=EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
+ const event=p.eventSlot===HALLOWEEN_EVENT.id?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
  const info=event.players[Math.floor(Math.random()*event.players.length)],base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
  const special=makePromoPackItem(base,{event,info},tradeable);if(!special)return[];
  const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
@@ -7049,12 +7057,14 @@ function updateObjectiveIndicators(){
 }
 // HALLOWEEN gets its own hero: silhouettes as teaser until the event starts, then the live team.
 function halloweenHeroSlide(at=Date.now()){
- const ev=HALLOWEEN_EVENT,start=Date.parse(ev.activeFrom),end=Date.parse(ev.activeUntilAt),teaserFrom=Date.parse("2026-10-22T19:00:00+02:00");
+ const ev=activeHalloweenEvent(at)||HALLOWEEN_EVENT,start=Date.parse(HALLOWEEN_EVENT.activeFrom),end=Date.parse(HALLOWEEN_EVENT.activeUntilAt),teaserFrom=Date.parse("2026-10-22T19:00:00+02:00");
  if(at<teaserFrom||at>=end||!eventRosterReady(ev))return null;
  const fmtDay=d=>new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(d));
  if(at<start){const berlinDay=t=>{const p=berlinParts(new Date(t));return Date.UTC(p.year,p.month-1,p.day)/86400000},days=Math.max(0,berlinDay(start)-berlinDay(at));return{kicker:"DEMNÄCHST · FR 30.10. · 19:00",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:`Eigenes Kartendesign, 18 Spezialkarten, eine geheime Spieler-SBC und die Blutmond-Evolution. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} geht der Mond auf.`,button:"Was kommt?",action:"halloween-preview",shield:"🎃",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"30.10. · 19:00",theme:"halloween",teaser:true,event:ev}}
- const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(ev.upgrade.at);
- return{kicker:upgrade?"BLUTMOND-UPGRADE AKTIV · +1 AUF ALLE HALLOWEEN-KARTEN":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:upgrade?`Der Blutmond ist aufgegangen: Jede Halloween-Karte hat jetzt +1 GES und +1 auf alle Werte. In Packs bis ${fmtDay(end)} Uhr.`:`18 Spezialkarten in Packs bis ${fmtDay(end)} Uhr. In der Halloween-Nacht (${fmtDay(upAt)} Uhr) bekommt jede Halloween-Karte das Blutmond-Upgrade.`,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:"JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:ev.activeUntil,theme:"halloween",event:ev}
+ const upgrade=halloweenUpgradeFor({eventType:"halloween"},at),upAt=Date.parse(HALLOWEEN_EVENT.upgrade.at);
+ const team2Started=at>=Date.parse(HALLOWEEN_TEAM2_EVENT.activeFrom),team2Live=ev.id===HALLOWEEN_TEAM2_EVENT.id;
+ const liveText=team2Live?"HALLOWEEN Team 2 ist jetzt in Packs. Das Event läuft weiter.":team2Started?"Team 2 ist für den 06.11. geplant; die Spieler wurden noch nicht freigegeben. Team 1 bleibt vorerst in Packs.":upgrade?"Der Blutmond ist aufgegangen: Team 1 hat +1 GES und +1 auf alle Werte. Team 2 folgt am 06.11. um 19:00 Uhr.":`18 Team-1-Spezialkarten sind jetzt in Packs. Am ${fmtDay(upAt)} Uhr startet das Blutmond-Upgrade. Team 2 folgt am 06.11.`;
+ return{kicker:team2Live?"HALLOWEEN · TEAM 2":upgrade?"BLUTMOND-UPGRADE AKTIV · TEAM 1":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:liveText,button:team2Started&&!team2Live?"Team 1 ansehen":"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:team2Live?"TEAM 2 JETZT IN PACKS":team2Started?"TEAM 2 NOCH NICHT FREIGEGEBEN":"TEAM 1 JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:team2Started?(team2Live?"TEAM 2 · BLUTMOND":"TEAM 2 IN VORBEREITUNG"):"TEAM 2 AB 06.11. · 19:00",theme:"halloween",event:ev}
 }
 function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null;return[
  ...(halloween?[halloween]:[]),
@@ -7127,7 +7137,7 @@ $("homeHeroCard")?.addEventListener("pointerdown",e=>{heroSwipeStart={x:e.client
 $("homeHeroCard")?.addEventListener("pointerup",e=>{if(!heroSwipeStart||heroSwipeStart.id!==e.pointerId)return;const dx=e.clientX-heroSwipeStart.x,dy=e.clientY-heroSwipeStart.y;heroSwipeStart=null;if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;const len=homeHeroSlides().length;homeHeroSlide=(homeHeroSlide+(dx<0?1:-1)+len)%len;renderHomeHero()});
 $("homeHeroCard")?.addEventListener("pointercancel",()=>{heroSwipeStart=null});
 $("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=promoEventEntries(event)[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
-$("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}});
+$("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(activeHalloweenEvent()?.id||HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}});
 $("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();const view=e.currentTarget.dataset.homeTeamView;if(view==="totw")openTotwTeam();else if(view==="momentum-shop"){storeTab="promo";switchView("storeView")}});
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
 $("campaignModalBody")?.addEventListener("click",e=>{const go=e.target.closest("[data-campaign-go]");if(!go)return;$("campaignModal").classList.remove("active");replaceUiState("view",{view:go.dataset.campaignGo});switchView(go.dataset.campaignGo,{push:false})});

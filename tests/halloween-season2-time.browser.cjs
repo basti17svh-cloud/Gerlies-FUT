@@ -1,7 +1,7 @@
 /* HALLOWEEN · BLUTMOND + Season Pass S2 across the real time boundaries (Europe/Berlin).
    Loads the real app with a simulated clock, keeps the save in localStorage across reloads and checks:
    30.10. 18:59 locked -> 19:00 event + S2 live, S1 settled exactly once, Blutmond upgrade on 31.10. 19:00
-   exactly once (reload, offline, cloud save round trip, app left open), no spoilers, 06.11. end keeps cards. */
+   exactly once (reload, offline, cloud save round trip, app left open), no spoilers, 06.11. Team 2 handover keeps cards. */
 const {chromium}=require("playwright");
 const http=require("node:http"),fs=require("node:fs"),path=require("node:path"),assert=require("node:assert/strict");
 const root=path.join(__dirname,"..");
@@ -176,24 +176,27 @@ function fakeClock(){
   const claimed=await page.evaluate(()=>{const before=Number(state.packs["halloween-pack"]||0);renderSeasonPass();const btn=document.querySelector('[data-pass-claim="free"][data-pass-level="4"]');if(!btn)return -1;btn.click();btn.click();return Number(state.packs["halloween-pack"]||0)-before});
   assert.equal(claimed,1,"S2 level 4 gives one Blutmond pack");
 
-  // 06.11. 18:59 still running; 19:00 event over, cards and upgrade stay.
+  // 06.11. 18:59 Team 1; 19:00 Team 2 handover (Team 1 remains only if Team 2 unapproved).
   await boot(T.beforeEnd);
   snap=await snapshot();
   assert.equal(snap.promo,"halloween-2026");assert.ok(snap.storePacks.includes("halloween-pack"));assert.deepEqual(snap.objectives,["halloween-leao"]);
   await boot(T.end);
   snap=await snapshot();
-  assert.equal(snap.season,"s2","Season 2 keeps running after Halloween");
-  assert.equal(snap.promo,"");assert.ok(!snap.storePacks.includes("halloween-pack"),"Blutmond pack leaves the store");
+  assert.equal(snap.season,"s2","Season Pass S2 is unaffected by Halloween Team 2");
+  assert.equal(snap.promo,"halloween-2026","event continues until Team 2 roster is ready");
+  assert.ok(snap.storePacks.includes("halloween-pack"),"event pack remains available during handover");
   assert.equal(snap.evo,false,"no new Blutmond evo signups");
   assert.deepEqual(snap.objectives,[]);assert.deepEqual(snap.eventSbcs,[]);
-  assert.equal(snap.hero,null,"Halloween hero gone");
+  assert.ok(snap.hero,"Halloween hero is still present");
+  assert.match(snap.hero.text,/Team 2/,"hero announces Team 2 transition");
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"06.11. 19:00: card keeps its Blutmond upgrade");
   // A Blutmond pack still unopened from the pass keeps its promise after the event.
   const late=await page.evaluate(()=>{const pack=generatePack("halloween-pack",false),card=pack.find(i=>i.eventType==="halloween");return{size:pack.length,rating:card?itemRating(card):0,stored:card?.displayRating||0}});
-  assert.equal(late.size,6,"Blutmond pack still opens after the event");assert.equal(late.rating,late.stored+1,"its Halloween card carries the upgrade");
+  assert.equal(late.size,6,"Blutmond pack still opens after the handover");assert.equal(late.rating,late.stored+1,"its Halloween card carries the upgrade");
 
   await boot(T.later);
   snap=await snapshot();
+  assert.equal(snap.promo,"","the provisional second-week window has ended by 20.11.");
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"weeks later: still +1");
   assert.deepEqual(errors,[],"no JavaScript errors");
   console.log("halloween + season 2 time test ok");

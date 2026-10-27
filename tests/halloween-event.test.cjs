@@ -55,11 +55,15 @@ test('HALLOWEEN stats are playable in the card position without going over the t
  }
 });
 
-test('HALLOWEEN runs from Friday 30.10. 19:00 to Friday 06.11. 19:00 Berlin',()=>{
+test('HALLOWEEN continues on 06.11. with Team 2 scheduled and roster-guarded',()=>{
  const c=setup(),ev=c.HALLOWEEN_EVENT;
  assert.equal(c.eventPackIsActive(ev,Date.parse('2026-10-30T18:59:59+01:00')),false);
  assert.equal(c.eventPackIsActive(ev,Date.parse('2026-10-30T19:00:00+01:00')),true);
- assert.equal(c.eventPackIsActive(ev,Date.parse('2026-11-06T19:00:00+01:00')),false);
+ assert.equal(c.eventPackIsActive(ev,Date.parse('2026-11-06T19:00:00+01:00')),true,'06.11 is not the end of Halloween');
+ assert.equal(c.eventPackIsActive(ev,Date.parse('2026-11-13T19:00:00+01:00')),false,'provisional expiry after the second week');
+ assert.equal(c.HALLOWEEN_TEAM2_EVENT.activeFrom,'2026-11-06T19:00:00+01:00');
+ assert.equal(c.eventRosterReady(c.HALLOWEEN_TEAM2_EVENT),false,'Team 2 remains unpublished until the roster is complete');
+ assert.match(html,/Team 2 · Blutmond/);
  assert.equal(ev.sbcPlayer.releaseAt,'2026-10-31T19:00:00+01:00');
  assert.equal(ev.sbcPlayer.segments.length,4);
  assert.ok(fs.existsSync(path.join(root,ev.sbcPlayer.dynamicFace)));
