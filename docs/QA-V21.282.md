@@ -9,3 +9,9 @@ Zwei neue Tests prüfen den Export einschließlich aktueller Münzen, Champions-
 Für V21.281 haben die GitHub-Jobs Accounts, Player Picks (echtes Chromium, einschließlich Handy-Zurück), Weekly Rewards, Legacy (echter Browser), Crest, Share/Invite, Pack-Sicherheit und TOTW sowie Pages-Deployment erfolgreich abgeschlossen. Die unveränderte Pick-Navigation wird in V21.282 erneut durch denselben Browserjob geprüft. Der vollständige persönliche Zwei-Geräte-Abgleich und echte Mailzustellung bleiben weiterhin offen; die Tests ersetzen diese Abnahme nicht.
 
 Die 15 lokalen Matchday-Tests sind inzwischen vollständig abgeschlossen und bestanden. Die lokalen Langläufe zu Chemie-Balancing, gegnerischen Spielstilen und vollständiger Matchsimulation werden weiterhin nicht als abgeschlossen gewertet. Die früheren, mehrfach gestarteten Gesamtläufe werden nicht als zusätzliche erfolgreiche Tests gezählt.
+
+## CI-Stand nach Veröffentlichung von V21.282
+
+Erfolgreich: Accounts, Weekly Rewards, TOTW einschließlich Browserprüfung, Legacy einschließlich Browserprüfung, Share/Invite, Pack-Sicherheit, Match-Balancing, Halloween-/Saison-Zeitgrenzen, Motion Lab und Pages-Deployment.
+
+Noch laufend beim Abschluss: Player Picks und Crest befinden sich in der Installation ihrer Browserumgebung; 3D Highlights in der WebGL-/Matchflow-Prüfung. Diese drei aktuellen Jobs sind nicht als bestanden gewertet. Der Pick-Browserjob der unmittelbar vorhergehenden V21.281 mit unverändertem Pick-Code ist erfolgreich abgeschlossen. Aktueller Prüfstatus: https://github.com/basti17svh-cloud/Gerlies-FUT/actions?query=branch%3Amain
