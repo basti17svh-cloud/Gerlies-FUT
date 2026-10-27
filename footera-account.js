@@ -522,7 +522,7 @@
      let response;try{response=await Promise.race([request,timeout])}finally{root.clearTimeout?.(timer)}
      const {data,error}=response;
      if(error){
-       if(["22023","42501","40001"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
+       if(["22023","42501","40001","PT409"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
        throw error;
      }
      if(data?.pick_id!==pickId||data?.option_id!==optionId||data?.save_id!==local.profile.saveId||
@@ -606,7 +606,7 @@
      const {data,error}=response;
      if(error){
        // These server rejections are atomic and cannot have delivered a card.
-       if(["22023","42501","P0001","40001"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
+       if(["22023","42501","P0001","40001","PT409"].includes(error.code))root.localStorage.removeItem("footera-pending-player-pick-v1");
        throw error;
      }
      const saved=root.FooteraBackup.validateState(data?.save_data);

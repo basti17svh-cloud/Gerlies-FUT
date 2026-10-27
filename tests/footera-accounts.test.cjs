@@ -1310,3 +1310,10 @@ test('local Pick write failure retains the accepted choice until durable retry s
  await t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>{});
  assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);assert.equal(calls,2);
 });
+test('HTTP conflict clears only the pending attempt and cannot deliver a Pick or advance the sync point',async()=>{
+ const {t}=await compactFixture();let deliveries=0;
+ t.client.rpc=async()=>({error:{code:'PT409',message:'Online-Spielstand wurde geändert'}});
+ await assert.rejects(t.win.FooteraAccount.choosePlayerPickCompact('pick-compact','option-a',()=>deliveries++),e=>e.code==='PT409');
+ assert.equal(deliveries,0);assert.equal(t.win.FooteraAccount.pendingPlayerPick(),null);
+ assert.equal(JSON.parse(t.store.get('footera-cloud-sync-point-v1')).revision,1);
+});

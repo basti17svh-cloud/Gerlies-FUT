@@ -11,6 +11,7 @@ on:
       - 'online/footera-cloud-rewards-guard-v21.170.sql'
       - 'online/footera-guest-cloud-v21.234.sql'
       - 'tests/sql/**'
+      - 'online/footera-business-conflicts-v21.284.sql'
       - 'tests/footera-accounts.test.cjs'
       - 'tests/startup-state.test.cjs'
       - 'tests/save-durability.test.cjs'
@@ -35,6 +36,7 @@ on:
       - 'online/footera-cloud-rewards-guard-v21.170.sql'
       - 'online/footera-guest-cloud-v21.234.sql'
       - 'tests/sql/**'
+      - 'online/footera-business-conflicts-v21.284.sql'
       - 'tests/footera-accounts.test.cjs'
       - 'tests/startup-state.test.cjs'
       - 'tests/save-durability.test.cjs'
@@ -71,5 +73,7 @@ jobs:
             -f online/footera-accounts-v21.109.sql \
             -f online/footera-cloud-rewards-guard-v21.170.sql \
             -f online/footera-guest-cloud-v21.234.sql \
+            -f online/footera-business-conflicts-v21.284.sql \
+            -f tests/sql/cloud-business-conflicts.test.sql \
             -f tests/sql/guest-cloud-v21.234.test.sql | tee sql.log
           grep -q "ALL OK" sql.log

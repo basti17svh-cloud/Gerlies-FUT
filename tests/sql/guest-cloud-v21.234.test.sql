@@ -20,7 +20,7 @@ select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-00000000
 select public.footera_store_cloud_save('{"coins":5,"profile":{"saveId":"n1","clubName":"HSV FC neu"},"club":[1],"squad":[]}',0) as new_rev;
 select count(*) as reads_only_own from public.footera_cloud_saves;
 select * from public.footera_guest_save_offer();
-do $$ begin perform public.footera_claim_guest_save('00000000-0000-4000-8000-0000000000a1',0); raise exception 'stale base accepted'; exception when sqlstate '40001' then raise notice 'stale base refused ok'; end $$;
+do $$ begin perform public.footera_claim_guest_save('00000000-0000-4000-8000-0000000000a1',0); raise exception 'stale base accepted'; exception when sqlstate 'PT409' then raise notice 'stale base refused ok'; end $$;
 do $$ begin perform public.footera_claim_guest_save('00000000-0000-4000-8000-0000000000c1',1); raise exception 'wrong guest accepted'; exception when sqlstate '42501' then raise notice 'wrong guest refused ok'; end $$;
 select revision, save_data->'profile'->>'clubName' club from public.footera_claim_guest_save('00000000-0000-4000-8000-0000000000a1',1);
 select revision, save_data->'profile'->>'saveId' sid from public.footera_cloud_saves;
