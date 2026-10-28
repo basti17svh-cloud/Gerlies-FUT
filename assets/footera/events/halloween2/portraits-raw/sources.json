@@ -124,5 +124,35 @@
     "id": "200104",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/200104.png",
     "sha256": "c585ae68090e06d1dae2cc843f90fc4eb33d3918f30611ada2108e7a61116e9a"
+  },
+  {
+    "name": "Jonathan David",
+    "id": "243630",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/243630.png",
+    "sha256": "adf9f177a0c2435d48c031746c71c64d525353ddbd08e0e34f4bc37cabd3b953"
+  },
+  {
+    "name": "Jarrod Bowen",
+    "id": "224371",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/224371.png",
+    "sha256": "b3d99a2bd483803bd86d052ec6055bf104a05c79d6756b1c4824b3504ece7933"
+  },
+  {
+    "name": "Noah Sadiki",
+    "id": "269230",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/269230.png",
+    "sha256": "62a8aa15c463b51e4fe1c68ddbb02361e4cdc1d4222ae117db55439b5c5f071e"
+  },
+  {
+    "name": "Alex Scott",
+    "id": "261299",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/261299.png",
+    "sha256": "28d67616f1abcbb8524afae246c26a8811884ea38232bde52616af162c6595fe"
+  },
+  {
+    "name": "Weston McKennie",
+    "id": "238744",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/238744.png",
+    "sha256": "0f4b1b7bebfe656d888c71ef8c5d896c96591c993567aea305470e835d5e3d5d"
   }
 ]

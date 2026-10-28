@@ -208,5 +208,55 @@
     "overall": 83,
     "club": "LAFC",
     "source": "https://game-assets.fut.gg/2027/player-item/27-50531752.b19d8e139203ea63a2bbc398af126d87b1e427e4b34920a3e0ed3d6991c3d265.webp"
+  },
+  {
+    "name": "Jonathan David",
+    "id": "243630",
+    "game": 27,
+    "item": 67352494,
+    "file": "243630.png",
+    "overall": 82,
+    "club": "Atlético de Madrid",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-67352494.dd152c09eae1e02d6f09b63beede7a72c247c121a51b945b9ae3ecfd5636171f.webp"
+  },
+  {
+    "name": "Jarrod Bowen",
+    "id": "224371",
+    "game": 27,
+    "item": 50556019,
+    "file": "224371.png",
+    "overall": 84,
+    "club": "West Ham",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50556019.a8a8b0928893385e1e720383b9cb3699e036b449d8680fcc9a4c4527f5d14297.webp"
+  },
+  {
+    "name": "Noah Sadiki",
+    "id": "269230",
+    "game": 27,
+    "item": 50600878,
+    "file": "269230.png",
+    "overall": 85,
+    "club": "Sunderland",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50600878.fe8e324fd107e684028592ba0f5be1375b6e8fe5915ab035af87c6cb281a9284.webp"
+  },
+  {
+    "name": "Alex Scott",
+    "id": "261299",
+    "game": 27,
+    "item": 50592947,
+    "file": "261299.png",
+    "overall": 86,
+    "club": "AFC Bournemouth",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50592947.dd2c311c21ba9baf01031cc558a0a0ba293ec64215131fed09c52945fbede293.webp"
+  },
+  {
+    "name": "Weston McKennie",
+    "id": "238744",
+    "game": 27,
+    "item": 50570392,
+    "file": "238744.png",
+    "overall": 85,
+    "club": "Juventus FC",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50570392.39c054fb39ee42d3faf0133d9f4f9976b5450d51e350701d803b9f32c379d034.webp"
   }
 ]
