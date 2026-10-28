@@ -2617,7 +2617,45 @@ function persistImageCaches(){clearTimeout(IMAGE_CACHE_SAVE_TIMER);IMAGE_CACHE_S
 function imageCacheKey(kind,p){return `${kind}:${String(p?.id||p?.name||"")}`}
 function imageFailedRecently(url){const t=Number(IMAGE_FAILURE_CACHE.get(String(url||""))||0);return t>0&&(Date.now()-t)<120000}
 function prioritizeCached(arr,key){const available=arr.filter(u=>!imageFailedRecently(u));arr=available.length?available:arr.slice();const hit=IMAGE_SOURCE_CACHE.get(key);if(!hit||!arr.includes(hit))return arr;const own=isOwnFaceUrl(arr[0])&&hit!==arr[0]?[arr[0]]:[];return [...own,hit,...arr.filter(x=>x!==hit&&!own.includes(x))]}
-function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){stopPortraitWatch(el);const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none'}}
+function rememberLoadedImage(el){const key=el?.dataset?.cacheKey,url=String(el?.currentSrc||el?.src||'');if(key&&url){IMAGE_SOURCE_CACHE.set(key,url);IMAGE_FAILURE_CACHE.delete(url);persistImageCaches()}el?.classList?.add('loaded');if(el?.closest?.('.face')){stopPortraitWatch(el);const fb=el.parentElement?.querySelector('.face-fallback');if(fb)fb.style.display='none';fitCardPortrait(el)}}
+// Portrait sources pad their players very differently (EA head crops, wide action shots,
+// padded event art). Scale the visible player, not the file, so every card shows a
+// similarly large figure standing on the name plate. Cross-origin files that cannot be
+// read keep the plain layout.
+const PORTRAIT_BOUNDS=new Map();
+let portraitFitObserver=null;
+function portraitBounds(el){
+ const url=String(el.currentSrc||el.src||'');if(PORTRAIT_BOUNDS.has(url))return PORTRAIT_BOUNDS.get(url);
+ const w=el.naturalWidth,h=el.naturalHeight;let box=null;
+ if(w&&h){try{
+  const scale=Math.min(1,160/Math.max(w,h)),cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+  const canvas=document.createElement('canvas');canvas.width=cw;canvas.height=ch;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(el,0,0,cw,ch);
+  const data=ctx.getImageData(0,0,cw,ch).data;let x0=cw,y0=ch,x1=-1,y1=-1;
+  for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(data[(y*cw+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1>=0)box={x0:x0/cw,y0:y0/ch,x1:(x1+1)/cw,y1:(y1+1)/ch};
+ }catch(_){
+  // Unreadable cross-origin file: square files are EA head crops with the usual margins.
+  if(Math.abs(w-h)<=Math.max(w,h)*.02)box={x0:.14,y0:.09,x1:.86,y1:1};
+ }}
+ PORTRAIT_BOUNDS.set(url,box);return box;
+}
+function fitCardPortrait(el){
+ if(!el?.closest?.('.card-shell .face')||el.closest('.founder-shell'))return;
+ const face=el.parentElement,fw=face.clientWidth,fh=face.clientHeight;
+ if(!fw||!fh){if(typeof ResizeObserver==='function'){portraitFitObserver??=new ResizeObserver(rows=>rows.forEach(row=>{if(row.contentRect.width){portraitFitObserver.unobserve(row.target);fitCardPortrait(row.target)}}));portraitFitObserver.observe(el)}return}
+ const b=portraitBounds(el),nw=el.naturalWidth,nh=el.naturalHeight;
+ if(!b||!nw||!nh){el.style.removeProperty('transform');return}
+ // Rendered file inside the face box (object-fit:contain, anchored bottom centre).
+ const fit=Math.min(fw/nw,fh/nh),dw=nw*fit,dh=nh*fit,ox=(fw-dw)/2,oy=fh-dh;
+ const bx0=ox+b.x0*dw,bx1=ox+b.x1*dw,by0=oy+b.y0*dh,by1=oy+b.y1*dh,bw=bx1-bx0,bh=by1-by0;
+ // Fill the box height; wide shots may overflow the sides a little (clipped like a card window).
+ const k=Math.max(1,Math.min(1.6,fh*.9/bh,fw*1.12/bw));
+ // Scale about the box bottom centre, then put the figure's bottom on the box bottom, centred.
+ const tx=fw/2-(fw/2+k*((bx0+bx1)/2-fw/2)),ty=fh-(fh+k*(by1-fh));
+ if(k<1.015&&Math.abs(tx)<1&&Math.abs(ty)<1){el.style.removeProperty('transform');return}
+ el.style.setProperty('transform-origin','50% 100%','important');
+ el.style.setProperty('transform',`translate(${(tx/fw*100).toFixed(2)}%,${(ty/fh*100).toFixed(2)}%) scale(${k.toFixed(3)})`,'important');
+}
 function sofifaFaceByVersion(id,version){const n=String(id||"").replace(/\D/g,"").padStart(6,"0");if(n.length!==6)return"";return`https://cdn.sofifa.net/players/${n.slice(0,3)}/${n.slice(3)}/${version}_120.png`}
 function sofifaFaceCandidates(id){return[27,26,25,24].map(v=>sofifaFaceByVersion(id,v)).filter(Boolean)}
 function futwizFaceCandidates(id){const raw=String(id||"").replace(/\D/g,"");if(!raw)return[];return[27,26,25].map(v=>`https://cdn.futwiz.com/assets/img/fc${v}/faces/${raw}.png`)}
@@ -8474,7 +8512,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.290";
+const GFUT_BUILD="V21.291";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8532,7 +8570,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21290",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21291",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
