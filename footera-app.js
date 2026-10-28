@@ -378,6 +378,7 @@ EVOLUTION_POOL.push(...[{"id":"s1_low_vereinsprojekt","name":"Vereinsprojekt","s
 EVOLUTION_POOL.push(...[{"id":"s1_elite_sturm","name":"Elite-Torjäger","subtitle":"82–85 GES · Abschluss auf Topniveau","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":55000,"points":400},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":93,"pas":86,"dri":93,"def":75,"phy":91},"req":{"minOvr":82,"maxOvr":85,"positions":["ST","CF","LW","RW"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"sho":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstylePlus":"Finesse Shot","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_spielmacher","name":"Spielmacher 88","subtitle":"82–85 GES · Pässe und Übersicht","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":70000,"points":500},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":90,"pas":93,"dri":93,"def":87,"phy":89},"req":{"minOvr":82,"maxOvr":85,"positions":["CM","CAM","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1,"phy":1},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pas":2,"dri":2},"playstylePlus":"Incisive Pass","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_abwehr","name":"Abwehrchef 88","subtitle":"82–85 GES · Abwehr und Physis","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":65000,"points":450},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":73,"pas":87,"dri":86,"def":93,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["CB","LB","RB","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pac":1,"def":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"def":2,"phy":2},"playstylePlus":"Anticipate","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_fluegel","name":"Dynamischer Flügel","subtitle":"82–84 GES · Ziel 87 GES","group":"s1-elite","lane":"elite","band":"82–84","signupDays":7,"completionDays":14,"cost":{"coins":45000,"points":350},"maxFinalOvr":87,"statCaps":{"pac":93,"sho":90,"pas":89,"dri":93,"def":74,"phy":85},"req":{"minOvr":82,"maxOvr":84,"positions":["LW","RW","LM","RM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2},"playstylePlus":"Rapid","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_keeper","name":"Letzte Bastion","subtitle":"82–85 GES · Torwart bis 87","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":40000,"points":300},"maxFinalOvr":87,"statCaps":{"pac":88,"sho":88,"pas":88,"dri":93,"def":88,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"dri":2,"phy":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":1,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"dri":2,"phy":2},"playstylePlus":"Footwork","label":"Stufe 3"}],"catchUpToCap":true}]);
 // Event evolutions have their own fixed window and end in the event's card design (applyEvoStage sets cosmeticDesign).
 EVOLUTION_POOL.push({"id":"halloween_blutmond","name":"Blutmond-Evolution","subtitle":"Halloween · deine Karte im Blutmond-Design","group":"event","lane":"event","band":"HALLOWEEN","design":"halloween","activeFrom":"2026-10-30T19:00:00+01:00","activeUntilAt":"2026-11-06T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":90,"phy":92},"req":{"minOvr":78,"maxOvr":84,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2,"phy":1},"label":"Geisterstunde"},{"matches":4,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2},"label":"Kürbisnacht"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"First Touch","label":"Blutmond"}]});
+EVOLUTION_POOL.push({"id":"halloween_blutmond_2","name":"Blutmond-Evolution II","subtitle":"Halloween Team 2 · deine Karte im Blutmond-Design","group":"event","lane":"event","band":"HALLOWEEN","design":"halloween","activeFrom":"2026-11-06T19:00:00+01:00","activeUntilAt":"2026-11-13T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":89,"statCaps":{"pac":94,"sho":93,"pas":93,"dri":94,"def":91,"phy":93},"req":{"minOvr":80,"maxOvr":85,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"sho":1,"dri":1},"label":"Nebelnacht"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"def":1,"phy":1},"label":"Geisterzug"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"Technical","label":"Vollmond"}]});
 const EVOLUTION_SEASON_MAX_OVR=88,EVOLUTION_GLOBAL_STAT_CAP=93;
 const EVOLUTIONS=EVOLUTION_POOL;
 const CAMPAIGNS=[
@@ -1549,6 +1550,11 @@ const EVENT_OBJECTIVES=[{
  eventName:"HALLOWEEN",eventType:"halloween-objective",releaseId:"halloween-objective-leao",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",
  mode:"squad",minDifficulty:"pro",target:8,reward:{eventObjective:"halloween-leao"},
  player:{pid:"241721",name:"Rafael Leão",ovr:88,baseOvr:83,position:"LW",alt:"LM,ST",baseAlt:"LM,ST,CAM",baseStats:[93,79,79,83,30,73],team:"AC Milan",nation:"Portugal",league:"Serie A Enilive",stats:[96,86,82,90,34,80],playstylePlusAdds:["rapid"],dynamicFace:"assets/footera/events/halloween/faces/241721.webp"}
+},{
+ id:"halloween-son",key:"event:halloween-son",group:"event",title:"HALLOWEEN: Son Heung Min",desc:"Gewinne 6 Rivals-Partien.",
+ eventName:"HALLOWEEN",eventType:"halloween-objective",releaseId:"halloween-objective-son",activeFrom:"2026-11-06T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",
+ mode:"rivals",target:6,reward:{eventObjective:"halloween-son"},
+ player:{pid:"200104",name:"Son Heung Min",ovr:86,baseOvr:81,position:"ST",alt:"LW,CAM,LM",baseAlt:"LW,CAM,LM",baseStats:[81,81,79,80,41,74],team:"LAFC",nation:"Korea Republic",league:"MLS",stats:[88,88,85,86,47,80],playstylePlusAdds:["finesse-shot"],dynamicFace:"assets/footera/events/halloween/dynamic/200104.webp"}
 }];
 function activeEventObjectives(at=Date.now()){return EVENT_OBJECTIVES.filter(task=>eventPackIsActive(task,at))}
 function eventObjectiveProgress(task){return Math.min(task.target,Math.max(0,Number(state.eventObjectives?.[task.id]?.progress||0)))}
@@ -1567,8 +1573,9 @@ function recordEventObjectiveMatch(completed,result,at=Date.now()){
  if(!completed?.finished||!completed.resultId||result!=="win")return false;
  const difficulty=SB_DIFFICULTIES[completed.battleDifficulty];let changed=false;
  for(const task of activeEventObjectives(at)){
-  const minimum=SB_DIFFICULTIES[task.minDifficulty];
-  if(completed.mode!==task.mode||!difficulty||!minimum||difficulty.factor<minimum.factor)continue;
+  const minimum=task.minDifficulty?SB_DIFFICULTIES[task.minDifficulty]:null;
+  // Squad-Battles objectives need a minimum difficulty; Rivals objectives count every win.
+  if(completed.mode!==task.mode||(task.minDifficulty&&(!difficulty||!minimum||difficulty.factor<minimum.factor)))continue;
   state.eventObjectives=state.eventObjectives||{};
   const row=state.eventObjectives[task.id]||(state.eventObjectives[task.id]={progress:0,matchIds:[],claimed:false});
   if(row.claimed||row.progress>=task.target||row.matchIds.includes(completed.resultId))continue;
@@ -1591,7 +1598,7 @@ const FOOTERA_EVENT_RULES={timeZone:"Europe/Berlin",endWeekday:5,endHour:19,team
 // In the Halloween night (31.10. 19:00) every Halloween card gets the Blutmond upgrade, see halloweenUpgradeFor().
 const HALLOWEEN_EVENT={id:"halloween-2026",name:"HALLOWEEN",shortName:"HALLOWEEN 1",subtitle:"BLUTMOND · TEAM 1",theme:"halloween",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",activeUntil:"13.11.2026 · 19:00",
  upgrade:{at:"2026-10-31T19:00:00+01:00",ovr:1,stats:1,label:"Blutmond-Upgrade"},
- sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:87,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[75,87,89,87,61,75],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
+ sbcPlayer:{id:"halloween-mueller-88",pid:"189596",dynamicFace:"assets/footera/events/halloween/faces/189596.webp",name:"Thomas Müller",names:["Thomas Müller","Thomas Muller"],ovr:87,position:"CAM",team:"Whitecaps FC",league:"MLS",nation:"Germany",alt:"ST,RM,RW",stats:[75,87,89,87,61,75],playstyleAdds:["incisive-pass","power-header"],playstylePlusAdds:["first-touch"],blurb:"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit Blutmond-Upgrade. ",releaseAt:"2026-10-31T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00",packEligible:false,segments:[
   {name:"Geisterstunde – 83er-Team",desc:"Teil 1/4 · Der Raumdeuter spukt wieder.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
   {name:"Kürbisfeld – 84er-Team",desc:"Teil 2/4 · Oranje wie ein Kürbis.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus den Niederlanden",minAvg:84,requiredNation:"Holland",reward:{pack:"82",qty:1}},
   {name:"Transsilvanien – 85er-Team",desc:"Teil 3/4 · Grüße aus Draculas Heimat.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Rumänien",minAvg:85,requiredNation:"Romania",reward:{pack:"goldplayers",qty:1}},
@@ -1625,10 +1632,43 @@ const FLASHBACK_REUS_EVENT={id:"flashback-reus-20261009",name:"FLASHBACK",shortN
  {name:"Flashback – 84er-Team",desc:"Teil 2/3 · Reus' Dortmunder Jahre.",req:"11 Spieler · Ø GES 84 · min. 1 BVB-Spieler",minAvg:84,requiredClub:"Borussia Dortmund",reward:{pack:"82",qty:1}},
  {name:"Flashback – 85er-Team",desc:"Teil 3/3 · Deutschland trifft MLS.",req:"11 Spieler · Ø GES 85 · min. 1 deutscher Spieler · min. 1 MLS-Spieler",minAvg:85,requiredNation:"Germany",requiredLeague:"MLS",reward:{pack:"goldplayers",qty:1}}
  ]}};
-// Team 2 requires an approved 18-player roster; never publish invented cards.
+// Team 2 (approved by Basti 2026-10-28): 18 real FC27 players from 18 clubs; replaces Team 1 in packs on 06.11. 19:00.
 // The 06.11. boundary is a team rotation, not the end of Halloween.
-const HALLOWEEN_TEAM2_EVENT={id:"halloween-2026-team2",name:"HALLOWEEN",shortName:"HALLOWEEN 2",subtitle:"BLUTMOND · TEAM 2",theme:"halloween",activeFrom:"2026-11-06T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",activeUntil:"13.11.2026 · 19:00",players:[]};
-const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,HALLOWEEN_TEAM2_EVENT,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
+const HALLOWEEN_TEAM2_EVENT={id:"halloween-2026-team2",name:"HALLOWEEN",shortName:"HALLOWEEN 2",subtitle:"BLUTMOND · TEAM 2",theme:"halloween",activeFrom:"2026-11-06T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",activeUntil:"13.11.2026 · 19:00",
+ sbcPlayer:{id:"halloween-mbeumo-87",pid:"243014",dynamicFace:"assets/footera/events/halloween/dynamic/243014.webp",name:"Bryan Mbeumo",names:["Bryan Mbeumo"],ovr:87,position:"RM",team:"Man Utd",league:"Premier League",nation:"Cameroon",alt:"RW,ST",stats:[94,87,82,91,53,79],playstylePlusAdds:["quick-step"],blurb:"Man Utd · Premier League, Halloween-Karte aus Team 2 mit Blutmond-Upgrade. ",releaseAt:"2026-11-07T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Kürbisgeist – 84er-Team",desc:"Teil 1/3 · Ein Geist auf dem rechten Flügel.",req:"11 Spieler · Ø GES 84 · min. 1 TOTW",minAvg:84,minTotw:1,reward:{pack:"82",qty:1}},
+  {name:"Nacht in Kamerun – 85er-Team",desc:"Teil 2/3 · Grüße aus Kamerun.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Kamerun",minAvg:85,requiredNation:"Cameroon",reward:{pack:"goldplayers",qty:1}},
+  {name:"Theater der Albträume – 86er-Team",desc:"Teil 3/3 · Nebel über Old Trafford.",req:"11 Spieler · Ø GES 86 · min. 1 Spieler von Man Utd",minAvg:86,requiredClub:"Man Utd",reward:{pack:"85",qty:1}}
+ ]},
+ players:[
+ {pid:"240225",dynamicFace:"assets/footera/events/halloween/dynamic/240225.webp",name:"Matvey Safonov",ovr:84,position:"GK",baseOvr:83,team:"Paris SG",league:"Ligue 1 McDonald's",nation:"Russia",alt:"",stats:[85,79,82,89,52,85],playstylePlusAdds:["cross-claimer"]},
+ {pid:"271918",dynamicFace:"assets/footera/events/halloween/dynamic/271918.webp",name:"Robin Risser",ovr:83,position:"GK",baseOvr:81,team:"RC Lens",league:"Ligue 1 McDonald's",nation:"France",alt:"",stats:[86,80,87,88,42,81],playstylePlusAdds:["footwork"]},
+ {pid:"227678",dynamicFace:"assets/footera/events/halloween/dynamic/227678.webp",name:"Ezri Konsa",ovr:85,position:"CB",baseOvr:84,team:"Arsenal",league:"Premier League",nation:"England",alt:"",stats:[78,57,74,77,89,83],playstylePlusAdds:["anticipate"]},
+ {pid:"244067",dynamicFace:"assets/footera/events/halloween/dynamic/244067.webp",name:"Maxence Lacroix",ovr:83,position:"CB",baseOvr:82,team:"Chelsea",league:"Premier League",nation:"France",alt:"",stats:[88,47,63,69,86,85],playstylePlusAdds:["intercept"]},
+ {pid:"270531",dynamicFace:"assets/footera/events/halloween/dynamic/270531.webp",name:"Ousmane Diomande",ovr:83,position:"CB",baseOvr:81,team:"Nott'm Forest",league:"Premier League",nation:"Côte d'Ivoire",alt:"",stats:[83,29,55,73,84,92],playstylePlusAdds:["bruiser"]},
+ {pid:"243702",dynamicFace:"assets/footera/events/halloween/dynamic/243702.webp",name:"Djed Spence",ovr:82,position:"LB",baseOvr:80,team:"Inter",league:"Serie A Enilive",nation:"England",alt:"RB",stats:[93,57,74,82,80,78],playstylePlusAdds:["rapid"]},
+ {pid:"277869",dynamicFace:"assets/footera/events/halloween/dynamic/277869.webp",name:"Michael Kayode",ovr:83,position:"RB",baseOvr:81,team:"Brentford",league:"Premier League",nation:"Italy",alt:"RM",stats:[85,52,75,79,82,83],playstylePlusAdds:["relentless"]},
+ {pid:"269230",dynamicFace:"assets/footera/events/halloween/dynamic/269230.webp",name:"Noah Sadiki",ovr:82,position:"CDM",baseOvr:80,team:"Sunderland",league:"Premier League",nation:"Congo DR",alt:"CM,CAM",stats:[82,70,79,83,79,78],playstylePlusAdds:["press-proven"]},
+ {pid:"216393",dynamicFace:"assets/footera/events/halloween/dynamic/216393.webp",name:"Youri Tielemans",ovr:87,position:"CM",baseOvr:85,team:"Man Utd",league:"Premier League",nation:"Belgium",alt:"CDM,CAM",stats:[56,82,89,84,79,73],playstylePlusAdds:["tiki-taka"]},
+ {pid:"219683",dynamicFace:"assets/footera/events/halloween/dynamic/219683.webp",name:"Corentin Tolisso",ovr:83,position:"CM",baseOvr:82,team:"OL",league:"Ligue 1 McDonald's",nation:"France",alt:"CDM,CAM",stats:[70,81,83,79,81,84],playstylePlusAdds:["pinged-pass"]},
+ {pid:"242444",dynamicFace:"assets/footera/events/halloween/dynamic/242444.webp",name:"João Félix",ovr:85,position:"CAM",baseOvr:83,team:"Al Nassr",league:"ROSHN Saudi League",nation:"Portugal",alt:"ST,LW,LM",stats:[84,84,83,88,48,74],playstylePlusAdds:["first-touch"]},
+ {pid:"241236",dynamicFace:"assets/footera/events/halloween/dynamic/241236.webp",name:"Antoine Semenyo",ovr:88,position:"RW",baseOvr:85,team:"Manchester City",league:"Premier League",nation:"Ghana",alt:"LW,RM,LM",stats:[87,89,83,89,50,84],playstylePlusAdds:["low-driven-shot"]},
+ {pid:"78012",dynamicFace:"assets/footera/events/halloween/dynamic/78012.webp",name:"Yan Diomande",ovr:86,position:"RW",baseOvr:84,team:"Real Madrid",league:"LALIGA EA SPORTS",nation:"Côte d'Ivoire",alt:"LW,RM,LM",stats:[97,80,78,91,50,73],playstylePlusAdds:["rapid"]},
+ {pid:"238744",dynamicFace:"assets/footera/events/halloween/dynamic/238744.webp",name:"Weston McKennie",ovr:82,position:"CM",baseOvr:80,team:"Juventus",league:"Serie A Enilive",nation:"United States",alt:"CAM,RM,RW",stats:[81,77,83,83,82,84],playstylePlusAdds:["long-ball-pass"]},
+ {pid:"242964",dynamicFace:"assets/footera/events/halloween/dynamic/242964.webp",name:"Anthony Gordon",ovr:84,position:"LW",baseOvr:82,team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"England",alt:"ST,LM",stats:[95,81,80,86,53,74],playstylePlusAdds:["technical"]},
+ {pid:"231447",dynamicFace:"assets/footera/events/halloween/dynamic/231447.webp",name:"Donyell Malen",ovr:84,position:"ST",baseOvr:83,team:"AS Roma",league:"Serie A Enilive",nation:"Holland",alt:"",stats:[89,86,75,87,40,70],playstylePlusAdds:["finesse-shot"]},
+ {pid:"230899",dynamicFace:"assets/footera/events/halloween/dynamic/230899.webp",name:"Ademola Lookman",ovr:85,position:"ST",baseOvr:83,team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Nigeria",alt:"CAM,LM,LW",stats:[90,87,76,87,35,71],playstylePlusAdds:["gamechanger"]},
+ {pid:"224371",dynamicFace:"assets/footera/events/halloween/dynamic/224371.webp",name:"Jarrod Bowen",ovr:84,position:"RM",baseOvr:83,team:"West Ham",league:"EFL Championship",nation:"England",alt:"ST,RW",stats:[78,83,80,85,48,73],playstylePlusAdds:["chip-shot"]}
+]};
+// Mid-week Halloween SBC (Basti 2026-10-28: one full week, no 48 h flash SBC). Not a pack release: players stays empty.
+const HALLOWEEN_WEEK_SBC_EVENT={id:"halloween-2026-gyokeres",name:"HALLOWEEN",shortName:"HALLOWEEN",subtitle:"GEISTER-SBC",theme:"halloween",activeFrom:"2026-11-02T19:00:00+01:00",activeUntilAt:"2026-11-09T19:00:00+01:00",activeUntil:"09.11.2026 · 19:00",players:[],
+ sbcPlayer:{id:"halloween-gyokeres-88",pid:"241651",dynamicFace:"assets/footera/events/halloween/dynamic/241651.webp",name:"Viktor Gyökeres",names:["Viktor Gyökeres","Viktor Gyokeres"],ovr:88,position:"ST",team:"Arsenal",league:"Premier League",nation:"Sweden",alt:"",stats:[85,91,75,81,47,90],playstylePlusAdds:["power-shot"],blurb:"Arsenal · Premier League, die Maske sitzt: Halloween-Karte mit Blutmond-Upgrade. ",releaseAt:"2026-11-02T19:00:00+01:00",activeUntilAt:"2026-11-09T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Maskenball – 83er-Team",desc:"Teil 1/3 · Wer steckt hinter der Maske?",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
+  {name:"Nebel über Stockholm – 84er-Team",desc:"Teil 2/3 · Grüße aus Schweden.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus Schweden",minAvg:84,requiredNation:"Sweden",reward:{pack:"82",qty:1}},
+  {name:"Geisterstadion – 85er-Team",desc:"Teil 3/3 · Flutlicht in London.",req:"11 Spieler · Ø GES 85 · min. 1 Premier-League-Spieler",minAvg:85,requiredLeague:"Premier League",reward:{pack:"goldplayers",qty:1}}
+ ]}};
+const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,HALLOWEEN_TEAM2_EVENT,HALLOWEEN_WEEK_SBC_EVENT,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
+function eventThemeOf(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId)?.theme||""}
 function completeEventRoster(event){const players=event?.players||[];return players.length===FOOTERA_EVENT_RULES.teamSize&&players.filter(p=>p.position==="GK").length===FOOTERA_EVENT_RULES.keepers&&new Set(players.map(p=>String(p.pid||p.eaId||p.name))).size===players.length&&players.every(p=>!!String(p.team||"").trim())&&new Set(players.map(p=>normalizeKey(p.team))).size===players.length}
 function eventRosterReady(event){return event?.id===MOMENTUM_EVENT.id?event.players?.length===14:completeEventRoster(event)}
 function activePromoEvent(at=Date.now()){return EVENT_PROMO_RELEASES.find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
@@ -1765,7 +1805,7 @@ function openPromoTeam(eventId=""){
 // Teaser overview before the HALLOWEEN start: what arrives when, with silhouettes instead of names.
 function openHalloweenPreview(){
  const ev=HALLOWEEN_EVENT,entries=promoEventEntries(ev),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
- const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["FR 06.11. · 19:00","Team 2 · Blutmond","Das zweite HALLOWEEN-Team übernimmt die Packs. Das Event läuft weiter; gezogene Team-1-Karten und ihr Upgrade bleiben dir."]];
+ const rows=[["FR 30.10. · 19:00","Der Mond geht auf","18 HALLOWEEN-Spezialkarten in allen Packs, die Blutmond-Evolution (78–84 GES → bis zu +4) und das HALLOWEEN-Design im Design-Studio."],["FR 30.10. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen 88 HALLOWEEN-Spieler – sein Name bleibt bis zum Start ein Geheimnis."],["SA 31.10. · 19:00","Halloween-Nacht","Blutmond-Upgrade: jede HALLOWEEN-Karte bekommt +1 GES und +1 auf alle Werte. Dazu eine geheime Spieler-SBC – wer es ist, verrät der Blutmond erst in dieser Nacht."],["MO 02.11. · 19:00","Geister-Woche","Eine zweite geheime Spieler-SBC – diesmal eine ganze Woche lang, bis Mo 09.11. um 19:00 Uhr."],["FR 06.11. · 19:00","Team 2 · Blutmond","18 neue HALLOWEEN-Karten übernehmen die Packs, dazu eine neue geheime Spieler-SBC, ein neues Objective und die Blutmond-Evolution II (80–85 GES). Gezogene Team-1-Karten und ihr Upgrade bleiben dir."]];
  $("opponentTeamModalTitle").textContent="HALLOWEEN · BLUTMOND";
  $("opponentTeamModalSub").textContent="Vorschau · Team 1 am 30.10., Team 2 am 06.11. · jeweils um 19:00 Uhr";
  delete $("opponentTeamModalBody").dataset.battleEventRelease;
@@ -1986,7 +2026,7 @@ function sbcGroupProgress(groupSet){
 }
 // Event names for player SBC banners; MOMENTUM stays the fallback for older event rows.
 function eventSbcEventLabel(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId&&e.sbcPlayer)?.name||"MOMENTUM"}
-function eventSbcNamedTitle(sample){return [FLASHBACK_REUS_EVENT.id,HALLOWEEN_EVENT.id].includes(sample?.eventId)&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
+function eventSbcNamedTitle(sample){return ["flashback","halloween"].includes(eventThemeOf(sample?.eventId))&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
 function eventSbcRewardDefinition(reward){
  const event=EVENT_PROMO_RELEASES.find(e=>e.id===reward?.playerReward?.eventId),def=event?.sbcPlayer;
  return event&&def&&def.id===reward?.playerReward?.playerId?{event,def}:null
@@ -6410,7 +6450,7 @@ function sbcFeatureGroupCard(rows,detail=false){
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
  const title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
- const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventId===HALLOWEEN_EVENT.id?"Der Raumdeuter spukt wieder: Whitecaps FC · MLS, Halloween-Karte mit Blutmond-Upgrade. ":""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr?eventDisplayOvr(sample.eventId,sample.eventPlayer.ovr):""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
+ const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventPlayer?.blurb||""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr?eventDisplayOvr(sample.eventId,sample.eventPlayer.ovr):""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
  const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward);
  let art="";
  if(isPlayer&&found){
@@ -6421,7 +6461,7 @@ function sbcFeatureGroupCard(rows,detail=false){
  }
  const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`;
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
- return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":sample.eventId===HALLOWEEN_EVENT.id?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+ return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
@@ -6438,7 +6478,7 @@ function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
  const rows=allActiveSBCs(),preferred=["Täglich","POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
  // The first SBC visit during the Halloween SBC opens the Profis tab with Müller once per session.
- const halloweenSbcLive=rows.some(r=>r.eventId===HALLOWEEN_EVENT.id&&!state.sbcGroupClaims?.[r.groupSet]);if(halloweenSbcLive&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
+ const halloweenSbcLive=rows.some(r=>eventThemeOf(r.eventId)==="halloween"&&!state.sbcGroupClaims?.[r.groupSet]);if(halloweenSbcLive&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
  if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
@@ -8474,7 +8514,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.290";
+const GFUT_BUILD="V21.294";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8532,7 +8572,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21290",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21294",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

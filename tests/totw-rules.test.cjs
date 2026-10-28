@@ -4,7 +4,7 @@ function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert
 const key=v=>String(v||'').normalize('NFD').replace(/[̀-ͯ]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
 function setup(){
  const context={Intl,URL,Date};vm.createContext(context);
- vm.runInContext([fs.readFileSync(path.join(root,'footera-time.js'),'utf8'),section('const TOTW_WEEK_1=','let LIVE_TOTW='),section('const MOMENTUM_EVENT=','function completeEventRoster(').replace(/^const /gm,'var '),'var EVENTS=[...MOMENTUM_RELEASES,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];var WEEKS=TOTW_WEEKS;'].join('\n'),context);
+ vm.runInContext([fs.readFileSync(path.join(root,'footera-time.js'),'utf8'),section('const TOTW_WEEK_1=','let LIVE_TOTW='),section('const MOMENTUM_EVENT=','function completeEventRoster(').replace(/^const /gm,'var '),'var EVENTS=[...EVENT_PROMO_RELEASES,...EVENT_OBJECTIVES.map(t=>({id:t.id,activeFrom:t.activeFrom,activeUntilAt:t.activeUntilAt,players:[t.player]}))];var WEEKS=TOTW_WEEKS;'].join('\n'),context);
  return context;
 }
 const weekWindow=(c,team)=>[Date.parse(team.releaseDate+'T19:00:00+02:00')-36e5*2,Date.parse(c.totwAddCalendarDays(team.releaseDate,7)+'T19:00:00+02:00')];
