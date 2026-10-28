@@ -24,6 +24,8 @@ function blocked(){
  if(typeof pendingPack!=="undefined"&&pendingPack.length)return "solange Pack-Karten offen sind";
  if(typeof state!=="undefined"&&(state.pendingChemBoosts||[]).length)return "solange Boosts offen sind";
  if(typeof activeSbcId!=="undefined"&&activeSbcId)return "während einer SBC-Abgabe";
+ if(root.FooteraPlayerPicks?.isActive?.()||root.FooteraAccount?.pendingPlayerPick?.())return "solange eine Pick-Auswahl oder Einlösung offen ist";
+ if(root.FooteraPotm?.busy?.())return "während einer POTM-Abgabe";
  if(root.document.querySelector("#opening.active,#results.active"))return "solange Pack-Karten offen sind";
  return "";
 }

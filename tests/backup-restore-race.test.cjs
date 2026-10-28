@@ -40,3 +40,16 @@ test('a failed replacement releases the save guard and preserves the old local s
  assert.equal(f.reloads,0);assert.equal(f.stored.get('gerliesFutV9'),before);assert.ok(!f.ctx.FooteraAccountReplacingSave);
  f.allowWrites();f.ctx.state.coins=902;f.ctx.save();assert.equal(f.ctx.flushSave(),true);assert.equal(JSON.parse(f.stored.get('gerliesFutV9')).coins,902);
 });
+for(const mode of ['open-pick','pending-pick','potm'])test(`file restore waits for ${mode} without reading or replacing the save`,async()=>{
+ const f=await fixture(),before=f.stored.get('gerliesFutV9');let reads=0;
+ if(mode==='open-pick')f.ctx.FooteraPlayerPicks={isActive:()=>true};
+ if(mode==='pending-pick')f.ctx.FooteraAccount={pendingPlayerPick:()=>({id:'unconfirmed-pick'})};
+ if(mode==='potm')f.ctx.FooteraPotm={busy:()=>true};
+ await f.ctx.FooteraBackup.importBackup({...f.file,text:async()=>{reads++;return f.file.text()}});
+ assert.equal(reads,0);assert.equal(f.confirms,0);assert.equal(f.reloads,0);assert.equal(f.stored.get('gerliesFutV9'),before);assert.equal(f.notices.dataset.error,'true');
+});
+test('a Pick started while preserving rollback prevents restoration',async()=>{
+ const f=await fixture({duringRollback(ctx){ctx.FooteraPlayerPicks={isActive:()=>true}}}),before=f.stored.get('gerliesFutV9');
+ await f.ctx.FooteraBackup.importBackup(f.file);
+ assert.equal(f.reloads,0);assert.equal(f.stored.get('gerliesFutV9'),before);assert.equal(f.notices.dataset.error,'true');
+});
