@@ -100,6 +100,25 @@ const server=http.createServer((req,res)=>{
    });
    assert.deepEqual(transition,{before:6,after:7,count:18,team:'Roma',league:'Serie A',coins:before.coins});
    console.log('PASS actual TOTW7 runtime 18:59:59 -> 19:00 Berlin, 18 cards and Roma/Serie A');
+   // Exercise file restoration in the real offline app, including its actual
+   // reload/pagehide handlers and IndexedDB rollback, with fixture data only.
+   page.once('dialog',dialog=>dialog.accept());
+   await Promise.all([page.waitForEvent('domcontentloaded'),page.evaluate(async()=>{
+    state.coins=43211;save();flushSave();
+    const restored=structuredClone(state);restored.coins=32123;
+    const data=JSON.stringify(restored),digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));
+    const checksum=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
+    const payload=JSON.stringify({format:'footera-local-backup',schema:1,clubName:restored.profile.clubName,checksum,data});
+    // A late action cannot save the previous in-memory club over the file.
+    addEventListener('pagehide',()=>{state.coins=999;save();flushSave()},{once:true});
+    await FooteraBackup.importBackup(new File([payload],'fixture.json',{type:'application/json'}));
+   })]);
+   await page.locator('#bootIntroSkip').click();
+   await page.waitForFunction(()=>typeof gerliesStartupReady!=='undefined'&&gerliesStartupReady&&document.getElementById('dbGate')?.style.display==='none',{},{timeout:30000});
+   const restored=await page.evaluate(async()=>({coins:state.coins,points:state.points,club:JSON.stringify(state.club),packs:JSON.stringify(state.packs),clubName:state.profile.clubName,rollbackCoins:JSON.parse(await FooteraBackup.readRollback()).coins}));
+   assert.equal(restored.coins,32123);assert.equal(restored.rollbackCoins,43211);
+   for(const key of ['points','club','packs','clubName'])assert.equal(restored[key],before[key],key+' survives file restore');
+   console.log('PASS real offline file restore, IndexedDB rollback and late pagehide protection');
   }
   assert.deepEqual(errors,[]);
   console.log('PASS real online/offline '+build+' PWA startup, old cache eviction and save preservation');

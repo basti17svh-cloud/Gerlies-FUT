@@ -1,0 +1,22 @@
+name: Footera Standard Regression
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: standard-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  standard-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Complete standard suite including save, reward and update recovery
+        run: node scripts/run-standard-regression.cjs
