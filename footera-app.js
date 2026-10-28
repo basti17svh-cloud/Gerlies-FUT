@@ -8158,7 +8158,7 @@ function renderSocial(){
  if(!window.FooteraFriendsHub)$("friendList").innerHTML=state.friends.length?state.friends.map((f,i)=>`<div class="friend"><h4>${esc(f.clubName||"Freund")}</h4><p>Rating ${f.rating||0} · Chemie ${f.chem||0}/33 · ${esc(f.formation||"4-3-3")} · Division ${f.division||10} · ${f.record?.w||0} S / ${f.record?.d||0} U / ${f.record?.l||0} N</p><div class="friend-actions"><button class="secondary" data-friend-squad="${i}">Aufstellung</button><button class="primary" data-friend-friendly="${i}">Friendly</button>${window.FooteraOnline?.ready&&f.onlineUid?`<button class="secondary friend-message-btn" data-friend-chat="${i}">Nachricht${window.FooteraOnline?.unreadCount?.(f.onlineUid)?` <span class="friend-unread-badge">${window.FooteraOnline.unreadCount(f.onlineUid)}</span>`:""}</button><button class="primary" data-friend-live="${i}">Live-Duell</button><button class="secondary" data-friend-compare="${i}">Rangliste</button>`:""}<button class="secondary" data-friend-remove="${i}">Entfernen</button></div></div>`).join(""):'<div class="friend-empty">Noch keine Freunde gespeichert. Füge einen Profilcode hinzu; danach kannst du dessen Startelf und Bank ansehen und ein Freundschaftsspiel starten.</div>';
  window.FooteraOnline?.render();if(window.FooteraOnline?.available&&!window.FooteraOnline.ready)window.FooteraOnline.init();else if(window.FooteraOnline?.ready&&!window.FooteraOnline.registered)window.FooteraOnline.syncProfile().then(ok=>{if(ok)renderSocial()}).catch(console.warn)
 }
-$("saveProfileName").addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Benutzername gespeichert.")});
+$("saveProfileName")?.addEventListener("click",()=>{const username=$("profileUsername")?.value.trim()||state.profile.username||"";if(username.length<2)return toast("Bitte mindestens 2 Zeichen für den Benutzernamen eingeben.");state.profile.username=username;if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();save();renderSocial();renderHome();window.FooteraOnline?.syncProfile().catch(console.warn);toast("Benutzername gespeichert.")});
 $("copyProfileSaveId")?.addEventListener("click",async()=>{if(!state.profile.saveId)state.profile.saveId=newFooteraSaveId();try{await navigator.clipboard.writeText(state.profile.saveId);toast("Vereins-ID kopiert.")}catch(e){const el=$("profileSaveId");el?.focus();el?.select();toast(`Vereins-ID: ${state.profile.saveId}`)}});
 $("copyFriendCode")?.addEventListener("click",async()=>{
  const box=$("myFriendCode"),code=String(box?.value||"").trim();
@@ -8474,7 +8474,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.289";
+const GFUT_BUILD="V21.290";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8532,7 +8532,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21289",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21290",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
