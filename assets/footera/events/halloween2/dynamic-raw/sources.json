@@ -50,14 +50,14 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50602179.68c78af9876e7843bb52df00a908fd0eb6720a28f988e390c75ea21d9bdf72d4.webp"
   },
   {
-    "name": "João Cancelo",
-    "id": "210514",
+    "name": "Djed Spence",
+    "id": "243702",
     "game": 27,
-    "item": 50542162,
-    "file": "210514.png",
+    "item": 50575350,
+    "file": "243702.png",
     "overall": 84,
-    "club": "FC Barcelona",
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50542162.d6d1f4c9c31e3e76f0074538d19e45c150cd02b0e78c394a3c71d59336c026d4.webp"
+    "club": "Lombardia FC",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50575350.09f467ae75889efbb24b6f952bb41e9a1d661c5c712cb79d79e37a906d8d00bb.webp"
   },
   {
     "name": "Michael Kayode",
@@ -90,14 +90,14 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50548041.e0000c66ecfaca0674db5f1870c698ef30956467d180c1fc92e178926f9a4b56.webp"
   },
   {
-    "name": "Nico Paz",
-    "id": "277846",
+    "name": "Corentin Tolisso",
+    "id": "219683",
     "game": 27,
-    "item": 84163926,
-    "file": "277846.png",
-    "overall": 88,
-    "club": "Como 1907",
-    "source": "https://game-assets.fut.gg/2027/player-item/27-84163926.cc182c96dbc01a78610d1704fae2db876b8f3d84a59937e359661d78d2bd19e7.webp"
+    "item": 84105763,
+    "file": "219683.png",
+    "overall": 86,
+    "club": "OL",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-84105763.49be0d99f0c84608202a5d1c1c8257db99e6bd5c1f8a38912895e3f2c05d3b7e.webp"
   },
   {
     "name": "João Félix",
@@ -130,16 +130,6 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-100741308.b2f05d76501e15a40551943e47eff25a7f55625fa1ebc74170a472fd90c67877.webp"
   },
   {
-    "name": "Luis Díaz",
-    "id": "241084",
-    "game": 27,
-    "item": 100904380,
-    "file": "241084.png",
-    "overall": 89,
-    "club": "FC Bayern München",
-    "source": "https://game-assets.fut.gg/2027/player-item/27-100904380.b7bc43868bc39299d0a258716e9b9d09fe969875fb9f1376eb73c0fe55ffa233.webp"
-  },
-  {
     "name": "Pedro Gonçalves",
     "id": "240950",
     "game": 27,
@@ -150,14 +140,24 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50572598.9e1e3acb33362cb2128a023709edc1e20f6561004edc96427d0e3486ca608023.webp"
   },
   {
-    "name": "Robert Lewandowski",
-    "id": "188545",
+    "name": "Anthony Gordon",
+    "id": "242964",
     "game": 27,
-    "item": 50520193,
-    "file": "188545.png",
+    "item": 50574612,
+    "file": "242964.png",
+    "overall": 86,
+    "club": "FC Barcelona",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50574612.f3439ddc33e0344b11a4a7cbf376abe45ec9b4f4c3d941818db1a02efbabdccd.webp"
+  },
+  {
+    "name": "Donyell Malen",
+    "id": "231447",
+    "game": 27,
+    "item": 50563095,
+    "file": "231447.png",
     "overall": 85,
-    "club": "Chicago Fire FC",
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50520193.9cd9f08009f1a1b33b7291c30ff1bb5fcff7e50901bfbcb1dca72548092c7774.webp"
+    "club": "AS Roma",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50563095.44ca1ed070c0e7354f77567b7a44112883e94b04750ae8ee56dbe32856260522.webp"
   },
   {
     "name": "Ademola Lookman",
@@ -190,14 +190,14 @@
     "source": "https://game-assets.fut.gg/2027/player-item/27-50573299.33fa6b1556bee9b24ac95ddb4fcff33d81ac62b6709f8f3537fc213f48425fd9.webp"
   },
   {
-    "name": "Kevin De Bruyne",
-    "id": "192985",
+    "name": "Bryan Mbeumo",
+    "id": "243014",
     "game": 27,
-    "item": 50524633,
-    "file": "192985.png",
+    "item": 50574662,
+    "file": "243014.png",
     "overall": 86,
-    "club": "SSC Napoli",
-    "source": "https://game-assets.fut.gg/2027/player-item/27-50524633.bf58fd8dfa6195aede268f4e067f3c8bb9a7962452cbd575a2b06210592ee544.webp"
+    "club": "Man Utd",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50574662.5262d2d6293d49e3459904bdb1ee0acb84fe723944fdf5c0530ed1f590edc724.webp"
   },
   {
     "name": "Son Heung Min",

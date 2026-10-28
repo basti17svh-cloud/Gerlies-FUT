@@ -30,10 +30,10 @@
     "sha256": "129d67c39befd820f0193b2a44519b5b3196f94550ed4045f954620f53209601"
   },
   {
-    "name": "João Cancelo",
-    "id": "210514",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/210514.png",
-    "sha256": "f274d629b29ee926c4cbff6444b175560ad974d49ad4debac7e5962ad7c9ebce"
+    "name": "Djed Spence",
+    "id": "243702",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/243702.png",
+    "sha256": "7c97e7d1279a64b43418f57b11ff85a97703775c6a36d6e382f86ace67aab89f"
   },
   {
     "name": "Michael Kayode",
@@ -54,10 +54,10 @@
     "sha256": "fe4ec39bfb3b7180ef069cb578cb1ff14dca917a9ffe19f6a08e95b4c4752c8e"
   },
   {
-    "name": "Nico Paz",
-    "id": "277846",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/277846.png",
-    "sha256": "153bf917ffdfc3b3b02402a9159888628e0559679da3e31524803584d90f1c87"
+    "name": "Corentin Tolisso",
+    "id": "219683",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/219683.png",
+    "sha256": "fd29c69e7357d766cf31183b8b457b904560480e85b7a3d1fa377bf3c13ffb4d"
   },
   {
     "name": "João Félix",
@@ -78,22 +78,22 @@
     "sha256": "d861b81555852c70dba23fd32cba166c9ac6260e3bb7d389b4cc1ce8183e067e"
   },
   {
-    "name": "Luis Díaz",
-    "id": "241084",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/241084.png",
-    "sha256": "5715bfbeaae9ce02546bd958ac7b15aeb2de66df260a7b8d2b1b0aa46c72dc1d"
-  },
-  {
     "name": "Pedro Gonçalves",
     "id": "240950",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/240950.png",
     "sha256": "915375fbe744ed60ce0d8a015cc8495e99a64ca04308a19317fccb187e1d6eb3"
   },
   {
-    "name": "Robert Lewandowski",
-    "id": "188545",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/188545.png",
-    "sha256": "bfa55a9eb3073134271a92f5c14505d8ef37d3e8c81db7ef5ed6564bb5430d09"
+    "name": "Anthony Gordon",
+    "id": "242964",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/242964.png",
+    "sha256": "1315dcbcbe948681a35f95eefba82a2832b6471dad7e87d9a4f8d6a9a63e8fdf"
+  },
+  {
+    "name": "Donyell Malen",
+    "id": "231447",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/231447.png",
+    "sha256": "6a4351317ac123f0bdbf0ff3740063494506539105d844a0ea6c7bef733ba68b"
   },
   {
     "name": "Ademola Lookman",
@@ -114,10 +114,10 @@
     "sha256": "59b7a872fb7fb63a3255758f197ee0cf0c581452dc6988eed0d5d8f64db305e7"
   },
   {
-    "name": "Kevin De Bruyne",
-    "id": "192985",
-    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/192985.png",
-    "sha256": "18db9e827f6c2e839d8902fef74375d5ef8079554e6cb909b6b1125e280d9e3c"
+    "name": "Bryan Mbeumo",
+    "id": "243014",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/243014.png",
+    "sha256": "30031c12a302174b7d9afaf5bc1efb441b82f681b274e8e6d7dcda69367372f9"
   },
   {
     "name": "Son Heung Min",
