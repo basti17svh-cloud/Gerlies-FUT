@@ -363,7 +363,7 @@ const STORY_PASS_PLAYERS=Object.freeze({
  "s2-5":{season:"s2",track:"free",level:5,pid:"233216",face:"assets/footera/events/season2/faces/233216.webp",name:"Phillip Tietz",chapter:"Saison 2",rating:84,position:"ST",stats:[64,86,66,79,38,90]},
  "s2-10":{season:"s2",track:"free",level:10,pid:"262659",face:"assets/footera/events/season2/faces/262659.webp",name:"Noah Atubolu",chapter:"Saison 2",rating:85,position:"GK",stats:[86,81,86,87,59,83]},
  "s2-15":{season:"s2",track:"free",level:15,pid:"254117",face:"assets/footera/events/season2/faces/254117.webp",name:"Maximilian Beier",chapter:"Saison 2",rating:86,position:"ST",stats:[92,86,80,87,59,68]},
- "s2-20":{season:"s2",track:"free",level:20,pid:"260908",face:"assets/footera/events/season2/faces/260908.webp",name:"Milos Kerkez",chapter:"Saison 2",rating:87,position:"LB",stats:[89,63,81,84,82,84]},
+ "s2-20":{season:"s2",track:"free",level:20,pid:"260908",face:"assets/footera/events/season2/dynamic/260908.webp",name:"Milos Kerkez",chapter:"Saison 2",rating:87,position:"LB",stats:[89,63,81,84,82,84]},
  "s2-25":{season:"s2",track:"free",level:25,pid:"275298",face:"assets/footera/events/season2/faces/275298.webp",name:"Aleksandar Pavlović",chapter:"Saison 2",rating:88,position:"CDM",stats:[69,74,88,88,85,85]},
  "s2-30":{season:"s2",track:"free",level:30,pid:"251852",face:"assets/footera/events/season2/dynamic/251852.webp",name:"Karim Adeyemi",chapter:"Saison 2",rating:89,position:"RM",stats:[99,88,80,90,41,77]},
  "s2-premium-3":{season:"s2",track:"premium",level:3,pid:"76687",face:"assets/footera/events/season2/faces/76687.webp",name:"Estêvão",chapter:"Saison 2",rating:85,position:"RW",stats:[95,82,81,90,36,60]},
