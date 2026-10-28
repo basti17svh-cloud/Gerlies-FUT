@@ -155,7 +155,7 @@ test('all original portraits, five vector frames and five league logos exist in 
  const {potm}=app(),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  for(const r of potm.releases){const bytes=fs.readFileSync(path.join(root,r.face));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.length>50000);assert.ok(sw.includes('./'+r.face))}
  for(const theme of ['bundesliga','premier-league','laliga','serie-a','ligue-1']){for(const file of [`assets/footera/events/potm/frames/${theme}.svg`,`assets/footera/events/potm/logos/${theme}.png`]){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes('./'+file))}}
- for(const file of ['potm.js','potm.css'])assert.ok(sw.includes('./'+file));assert.ok(html.indexOf('src="./potm.js"')<html.indexOf('initFooteraBootIntro();'));
+ for(const file of ['potm.js','potm.css'])assert.ok(sw.includes('./'+file));assert.ok(html.indexOf('src="./potm.js?v=')<html.indexOf('initFooteraBootIntro();'));
 });
 
 test('rating filters find exact 84s from both sources and sort numerically in both directions',()=>{
@@ -185,4 +185,17 @@ test('saved filters normalize invalid bounds and unknown sort/quality values saf
 test('POTM overview contains only active releases and picker has no dropdown controls',()=>{
  assert.ok(!source.includes('Für September ist noch keine POTM-SBC'));assert.ok(!source.includes('potm-awaiting'));
  assert.ok(source.includes('<dialog id="potmPickerDialog"'));assert.ok(source.includes('data-potm-picker-open'));assert.ok(!source.includes('<select'));assert.ok(source.includes('id="potmRatingMin"'));assert.ok(source.includes('id="potmRatingMax"'));assert.ok(!source.includes('data-potm-rating'));assert.ok(!source.includes('potmRatingMinNumber'));
+});
+test('every POTM month is complete data with its own label, 28-day window and a listed portrait',()=>{
+ const {potm}=app(),portraits=JSON.parse(fs.readFileSync(path.join(root,'scripts/potm-portraits.json'),'utf8'));
+ const themes=['bundesliga','premier-league','laliga','serie-a','ligue-1'];
+ assert.equal(new Set(potm.releases.map(r=>r.id)).size,potm.releases.length);
+ for(const r of potm.releases){
+  assert.match(r.id,/^potm-\d{4}-\d{2}-[a-z0-9-]+$/);assert.match(r.month,/^[A-ZÄÖÜ]+$/);assert.ok(themes.includes(r.theme));
+  assert.match(r.pid,/^\d+$/);assert.equal(r.stats.length,6);assert.ok(r.stats.every(n=>Number.isInteger(n)&&n>=1&&n<=99));
+  assert.ok(Number.isInteger(r.ovr)&&r.ovr>=45&&r.ovr<=99);assert.equal(Date.parse(r.until)-Date.parse(r.from),28*86400000);
+  assert.equal(r.standardTarget,Math.round(r.eaTarget*7/10));assert.equal(r.target,r.earlyBird?Math.round(r.standardTarget*6/10):r.standardTarget);
+  const entry=portraits.find(p=>r.face===`assets/footera/events/potm/${p.folder}/${p.file}`);assert.ok(entry,r.id+' portrait in scripts/potm-portraits.json');assert.equal(entry.pid,r.pid);
+ }
+ assert.ok(source.includes('POTM · ${esc(r.month)}')&&!source.includes('POTM · SEPTEMBER'));
 });
