@@ -72,6 +72,36 @@ test('TOTW 7 portrait files are precached by the matching PWA release',()=>{
   assert.ok(worker.includes(asset),`missing PWA image: ${asset}`);
   assert.ok(fs.existsSync(path.join(root,`assets/footera/totw/7/${player.eaId}.png`)),`missing portrait file: ${player.eaId}`);
  }
- assert.ok(index.includes('src="./footera-app.js?v=21285"'),'app script revision missing');
- assert.ok(worker.includes('"./footera-app.js?v=21285"'),'PWA cache and index must load the same script revision');
+ const source=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
+ const build=source.match(/const GFUT_BUILD="V(\d+)\.(\d+)";/);
+ assert.ok(build,'runtime build is present');
+ const asset=build[1]+build[2].padStart(3,'0');
+ assert.ok(index.includes(`src="./footera-app.js?v=${asset}"`),'app script revision matches runtime');
+ assert.ok(worker.includes(`"./footera-app.js?v=${asset}"`),'PWA cache and index must load the same script revision');
+});
+
+test('TOTW 7 Balerdi keeps Roma and Serie A even with old or missing base data',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===7),index=week.players.findIndex(p=>p.eaId==='242835');
+ vm.runInContext(section('function mergeTotwWeekBase(','function mergeTotwBase('),c);
+ for(const base of [null,{id:'242835',team:'Marseille',league:"Ligue 1 McDonald's"}]){
+  const card=c.mergeTotwWeekBase(week,base,null,index);
+  assert.equal(card.team,'Roma');assert.equal(card.league,'Serie A');
+  assert.equal(card.teamId,'52');assert.match(card.clubLogo,/\/52\.png$/);
+ }
+});
+
+test('server Pick catalog includes every eligible approved TOTW 7 card with Berlin release times',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===7);
+ const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
+ const rows=sql.split('\n').filter(line=>line.startsWith("('totw:7:"));
+ const eligible=week.players.filter(p=>p.ovr>=85);
+ assert.equal(rows.length,eligible.length);
+ for(const p of eligible){
+  const row=rows.find(line=>line.startsWith(`('totw:7:${p.eaId}',`));
+  assert.ok(row,`missing server Pick card ${p.eaId}`);
+  assert.ok(row.includes("'2026-10-28 19:00'::timestamp at time zone 'Europe/Berlin'"));
+  assert.ok(row.includes("interval '7 days'"));
+  assert.ok(row.includes(`"displayRating":${p.ovr}`));
+  assert.ok(row.includes(`"eventStats":${JSON.stringify(p.stats)}`));
+ }
 });

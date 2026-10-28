@@ -39,12 +39,14 @@ test('Max grants 200000 points only once per save, ignoring case and whitespace'
 });
 test('existing promo rewards remain unchanged',()=>{
  const f=fixture();
+ let expected=10;
  for(const [code,points] of [['Ranger',50000],['Säulen1415',100000],['Basti',500000]]){
   f.get('promoCodeInput').value=code;
   f.run('redeemPromo()');
-  assert.equal(f.context.state.points,10+[50000,150000,650000][['Ranger','Säulen1415','Basti'].indexOf(code)]);
+  expected+=points;
+  assert.equal(f.context.state.points,expected);
  }
- assert.equal(f.context.state.points,660010);
+ assert.equal(f.context.state.points,650010);
  assert.equal(Object.keys(f.context.state.promoClaims).length,3);
 });
 test('build, script and service worker versions are synchronized',()=>{
