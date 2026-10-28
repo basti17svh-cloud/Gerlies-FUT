@@ -42,7 +42,7 @@ test('Season 2 pass players are real DB players, rise in rating and stay out of 
   assert.ok(!promoPids.has(spec.pid),`${key} is not part of another promo`);
   assert.equal(key,`s2-${spec.track==='premium'?'premium-':''}${spec.level}`);
   assert.equal(spec.stats.length,6);assert.ok(spec.stats.every(v=>v>=20&&v<=99));
-  assert.ok(spec.rating>=80&&spec.rating<=87);
+  assert.ok(spec.rating>=84&&spec.rating<=91);
  }
 });
 
