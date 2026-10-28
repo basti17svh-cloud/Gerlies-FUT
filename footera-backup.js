@@ -24,9 +24,15 @@ function blocked(){
  if(typeof pendingPack!=="undefined"&&pendingPack.length)return "solange Pack-Karten offen sind";
  if(typeof state!=="undefined"&&(state.pendingChemBoosts||[]).length)return "solange Boosts offen sind";
  if(typeof activeSbcId!=="undefined"&&activeSbcId)return "während einer SBC-Abgabe";
+ if(root.document.querySelector("#opening.active,#results.active"))return "solange Pack-Karten offen sind";
+ return "";
+}
+// Pick/account flows also call blocked() themselves. The extra restrictions
+// belong to file restoration only, or opening a Pick would block itself.
+function restoreBlocked(){
+ const action=blocked();if(action)return action;
  if(root.FooteraPlayerPicks?.isActive?.()||root.FooteraAccount?.pendingPlayerPick?.())return "solange eine Pick-Auswahl oder Einlösung offen ist";
  if(root.FooteraPotm?.busy?.())return "während einer POTM-Abgabe";
- if(root.document.querySelector("#opening.active,#results.active"))return "solange Pack-Karten offen sind";
  return "";
 }
 function status(t,err=false){const e=root.document.getElementById("footeraBackupStatus");if(e){e.textContent=t;e.dataset.error=err?"true":"false"}}
@@ -132,7 +138,7 @@ let importPending=false;
 async function importBackup(file){
  if(!file)return;
  if(importPending||root.FooteraAccountReplacingSave)return status("Eine Wiederherstellung läuft bereits.",true);
- const why=blocked();if(why)return status("Nicht möglich "+why+".",true);
+ const why=restoreBlocked();if(why)return status("Nicht möglich "+why+".",true);
  importPending=true;
  try{
   if(file.size>MAX)fail("Datei größer als 20 MB.");
@@ -140,14 +146,14 @@ async function importBackup(file){
   if(root.FooteraAccountReplacingSave)fail("Der Spielstand wird bereits ersetzt. Bitte nach dem Neuladen erneut versuchen.");
   const ok=root.confirm("Spielstand wiederherstellen?\n\nVerein: "+s.profile.clubName+"\nKarten: "+s.club.length+"\nSicherung: "+backup.exportedAt+"\n\nDer aktuelle lokale Spielstand wird ersetzt. Dein Online-Konto wird NICHT übertragen.");
   if(!ok)return status("Abgebrochen.");
-  if(blocked())fail("Spielaktion während der Prüfung gestartet.");
+  if(restoreBlocked())fail("Spielaktion während der Prüfung gestartet.");
   const current=currentSaveRaw();
   const before=root.localStorage.getItem(KEY);
   if(current!=null)await preserveRollback(current);
   // IndexedDB yields to gameplay and cloud callbacks. Do not replace a newer
   // game or a concurrent account restore with the file inspected earlier.
   if(root.FooteraAccountReplacingSave)fail("Der Spielstand wird bereits ersetzt. Bitte nach dem Neuladen erneut versuchen.");
-  if(blocked())fail("Spielaktion während der Sicherung gestartet. Kein Spielstand wurde ersetzt.");
+  if(restoreBlocked())fail("Spielaktion während der Sicherung gestartet. Kein Spielstand wurde ersetzt.");
   if(currentSaveRaw()!==current||root.localStorage.getItem(KEY)!==before)fail("Der Spielstand hat sich während der Sicherung geändert. Kein Spielstand wurde ersetzt. Bitte erneut versuchen.");
   // The real pagehide/delayed-save handlers must not overwrite the restored
   // file with the previous in-memory state while the browser reloads.
