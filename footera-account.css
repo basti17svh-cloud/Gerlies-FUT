@@ -136,3 +136,18 @@
  .footera-profile-stats>div{padding:10px 5px}
  .footera-profile-stats strong{font-size:16px}
 }
+/* V21.290: one profile place, automatic saving, one clear choice for two different saves */
+.footera-save-overview{padding:14px 16px}
+.footera-save-overview[data-state="saved"] h3{color:#9be3b8}
+.footera-save-overview h3{margin:2px 0 4px}
+.footera-save-overview p:empty{display:none}
+.footera-save-actions:not(:has(button:not([hidden]))){display:none}
+.footera-save-compare{padding:4px 12px 10px}
+.footera-save-choice{grid-template-columns:1fr 1fr}
+.footera-save-choice button:last-child{background:#d8ff65;border-color:#d8ff65;color:#172113}
+.footera-save-hint{margin:8px 0 0;font-size:11px!important;color:#9fb1a6!important}
+.footera-profile-advanced h4{margin:6px 0 4px;font-size:13px;color:#e6f3e4}
+.footera-profile-advanced .footera-profile-danger{margin-top:18px}
+.footera-account-extras{margin-top:10px}
+.footera-account-extras .footera-backup{margin:8px 0 0;padding:12px}
+@media(max-width:420px){.footera-save-choice{grid-template-columns:1fr}}

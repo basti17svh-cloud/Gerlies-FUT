@@ -166,10 +166,11 @@ async function importBackup(file){
  finally{importPending=false;}
 }
 function mount(){
- const host=root.document.getElementById("clubView");if(!host||root.document.getElementById("footeraBackupPanel"))return;
+ // The account dialog adopts this panel; it no longer appears in the club view.
+ const host=root.document.body;if(!host||root.document.getElementById("footeraBackupPanel"))return;
  const p=root.document.createElement("section");p.id="footeraBackupPanel";p.className="footera-backup";
- p.innerHTML='<details><summary>Zusätzliche Dateisicherung</summary><p>Optional: Eine Kopie als Datei aufbewahren oder öffnen. Für Handy und PC verwende die Online-Sicherung unter Profil &amp; Spielstand.</p><div class="footera-backup-actions"><button type="button" class="primary" id="footeraBackupExport">Sicherung herunterladen</button><button type="button" class="secondary" id="footeraBackupImport">Wiederherstellen</button><button type="button" class="secondary" id="footeraBackupRollbackExport">Vorherigen Stand herunterladen</button><input id="footeraBackupFile" type="file" accept=".json,application/json" hidden></div><p id="footeraBackupStatus" role="status" aria-live="polite">Datei außerhalb des Browsers aufbewahren.</p></details>';
- const title=host.querySelector(".headline");if(title)title.insertAdjacentElement("afterend",p);else host.prepend(p);
+ p.innerHTML='<details><summary>Zusätzliche Dateisicherung</summary><p>Optional: Eine Kopie als Datei aufbewahren oder öffnen. Footera speichert sonst automatisch.</p><div class="footera-backup-actions"><button type="button" class="primary" id="footeraBackupExport">Sicherung herunterladen</button><button type="button" class="secondary" id="footeraBackupImport">Wiederherstellen</button><button type="button" class="secondary" id="footeraBackupRollbackExport">Vorherigen Stand herunterladen</button><input id="footeraBackupFile" type="file" accept=".json,application/json" hidden></div><p id="footeraBackupStatus" role="status" aria-live="polite">Datei außerhalb des Browsers aufbewahren.</p></details>';
+ const dialog=root.document.querySelector("#footeraAccountDialog .footera-account-extras");p.hidden=!dialog;(dialog||host).append(p);
  p.querySelector("#footeraBackupExport").addEventListener("click",exportBackup);
  p.querySelector("#footeraBackupImport").addEventListener("click",()=>p.querySelector("#footeraBackupFile").click());
  p.querySelector("#footeraBackupRollbackExport").addEventListener("click",exportRollback);
