@@ -533,6 +533,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // The old MakeHuman lab model uses other bone axes; the V21.193 human rig
  // copies the Quaternius bone frames, so it shares the capture.
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
+ let captureLegs=false;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')==='1'}catch(_){}
+ playerRoot.updateMatrixWorld(true);
+ const groundRest=['foot_l','foot_r','ball_l','ball_r'].filter(n=>bones.get(n)).map(n=>[n,playerRoot.worldToLocal(bones.get(n).getWorldPosition(new THREE.Vector3())).y]);
  // The keeper's guide rotates about the feet, not the imported pelvis.
  // Preserve that entire transform before retargeting individual joints.
  const authoredFacing=normalized.quaternion.clone();
@@ -629,6 +632,16 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    }
   }
   if(!acro||acro.weight<.5)matchFeet();
+  // Motion preview: captured legs instead of the procedural stepping, and the
+  // whole body set down so the lower boot touches the grass.
+  if(!keeperRole&&!acro&&captureLegs){
+   const share=capturedBody.applyLegs(1.12*(1-clamp(info.celebrate||0))*(info.grounded===false?0:1));
+   if(share>0){
+    playerRoot.updateMatrixWorld(true);let low=Infinity;
+    for(const [name,rest] of groundRest){const y=playerRoot.worldToLocal(bones.get(name).getWorldPosition(target)).y-rest;if(y<low)low=y}
+    if(Number.isFinite(low)&&!Number.isFinite(info.rootY))normalized.position.y-=low*share;
+   }
+  }
   if(keeperRole)matchKeeperHands();
  }
  function inspectMotion(){
