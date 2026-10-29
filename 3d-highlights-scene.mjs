@@ -1903,13 +1903,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
-    // V21.297: face along the travel over +-0.13 s instead of the 40 ms
-    // velocity (no twitching on slow steps), ease into the standing facing
-    // and turn into the celebration line instead of snapping round.
+    // V21.297: ease from the (smoothed) standing facing into the running
+    // direction as the player gets going, instead of switching at a speed
+    // threshold, and turn into the celebration line instead of snapping round.
     const standing=facingAt(i,time);
-    const tx=ahead[0]-back[0],tz=ahead[1]-back[1],travel=Math.hypot(tx,tz);
     const celebrating=!celebrationActive?0:i===0?smooth((time-CELEBRATION_START)/.35):smooth((hugWeight(i,time)-.4)/.35);
-    const heading=angleMix(travel>.00001?angleMix(standing,Math.atan2(-tx,-tz),smooth((travel-.03)/.22)):standing,celebrationHeading,celebrating);
+    const heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationHeading,celebrating);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
