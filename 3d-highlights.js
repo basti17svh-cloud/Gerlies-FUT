@@ -413,7 +413,7 @@
   if(restart==='corner')add(creator,['dead-ball'],'creator','restart');
   else if(restart==='throw_in')add(creator,['long-throw'],'creator','restart');
   else if(hasCreator&&!setPiece){
-   const ids=kind==='through'?['incisive-pass','through-ball']:kind==='switch'||kind==='cross'?['long-ball-pass']:kind==='cutback'?['pinged-pass']:['tiki-taka','press-proven','flair'];
+   const ids=kind==='through'?['incisive-pass','through-ball']:kind==='switch'||kind==='cross'?['long-ball-pass']:kind==='cutback'?['pinged-pass']:kind==='combination'?['tiki-taka','press-proven','flair']:[];
    add(creator,ids,'creator','pass');
   }
   if(restart==='keeper_buildout'&&event.distributionType==='throw')add(plus(event.buildKeeperStyles),['far-throw'],'buildKeeper','distribution');

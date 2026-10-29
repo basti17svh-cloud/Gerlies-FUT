@@ -101,6 +101,7 @@
   if(type==='goal'){const before=scoreBefore(events,i);event.scoreBeforeHome=before.home;event.scoreBeforeAway=before.away}
   const selected=H.choosePresentation(event,history);
   event.sequence=selected.sequence;event.finish=selected.finish||'normal';event.playSeconds=selected.seconds||10.4;
+  const family=selected.family;event.actionKind=['combination','through','dribble','distance','switch','cutback'].includes(family)?family:['wing','cross','lowcross','overlap','nearpost','farpost','volley'].includes(family)?'cross':['inside','inverted','feint','cutfinish'].includes(family)?'dribble':family==='central'?'combination':'';
 
   event.shotPlacement=H.chooseShotPlacement(event,history);
   const reactions=H.chooseReactions(event);event.defenderAction=reactions.defenderAction;event.keeperAction=reactions.keeperAction;

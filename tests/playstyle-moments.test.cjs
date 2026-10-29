@@ -27,6 +27,7 @@ test('no false Dead Ball penalty, Pinged Pass cross, fatigue or throw icon on a 
  assert.ok(has(moments(event({sceneKind:'corner',creatorStyles:plus('dead-ball')})),'dead-ball','restart'));
  assert.ok(has(moments(event({sceneKind:'throw_in',creatorStyles:plus('long-throw')})),'long-throw','restart'));
  assert.equal(moments(event({playerStyles:plus('relentless')})).length,0);
+ assert.ok(!has(moments(event({actionKind:'',creatorStyles:plus('tiki-taka')})),'tiki-taka'),'unknown online pass type cannot invent a combination effect');
  assert.ok(!has(moments(event({sceneKind:'keeper_buildout',buildKeeperStyles:plus('far-throw')})),'far-throw'));
 });
 test('icon windows use authored pass schedules and skill windows, not guessed nearest players',async()=>{
