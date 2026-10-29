@@ -1922,7 +1922,7 @@ const MARQUEE_RELEASES={
  "2026-10-29":[
   {name:"LOSC Lille – RC Lens",league:"Ligue 1",nation:"France",kickoffAt:"2026-10-30T21:05:00+01:00",sourceUrl:"https://www.losc.fr/actualites/2026-10-28/arrete-prefectoral-avant-losc-rcl",clubs:[["LOSC Lille","LOSC","Lille","Lille OSC"],["RC Lens","Lens"]]},
   {name:"Chelsea – Manchester United",league:"Premier League",nation:"England",kickoffAt:"2026-10-31T13:30:00+01:00",sourceUrl:"https://www.chelseafc.com/en/news/article/chelsea-vs-manchester-united-preview-tv-channel-kick-off-time-26-27",clubs:[["Chelsea","Chelsea FC"],["Manchester United","Man United","Man Utd"]]},
-  {name:"Bayer Leverkusen – VfB Stuttgart",league:"Bundesliga",nation:"Germany",kickoffAt:"2026-10-31T15:30:00+01:00",sourceUrl:"https://www.bayer04.de/de-de/match/saison-202627/bundesliga/8-spieltag",clubs:[["Bayer 04 Leverkusen","Bayer Leverkusen","Leverkusen"],["VfB Stuttgart","Stuttgart"]]},
+  {key:"bayern-dortmund",name:"Bayern München – Borussia Dortmund",league:"Bundesliga",nation:"Germany",kickoffAt:"2026-10-31T18:30:00+01:00",sourceUrl:"https://fcbayern.com/de/news/spielinfos/fc-bayern-vs-borussia-dortmund",clubs:[["Bayern München","FC Bayern München","Bayern Munich","FC Bayern"],["Borussia Dortmund","Dortmund","BVB"]]},
   {name:"AC Milan – Inter",league:"Serie A",nation:"Italy",kickoffAt:"2026-10-31T20:45:00+01:00",sourceUrl:"https://www.inter.it/en/news/serie-a-2026-27-schedule-inter-matchdays-6-12",clubs:[["AC Milan","Milan"],["Inter","Inter Milan","Internazionale"]]}
  ]
 };
@@ -1982,7 +1982,7 @@ function marqueeLeagueMatch(league,target){const a=normalizeKey(league||""),b=no
 function activeMarqueeSBCs(now=new Date()){
  const key=sbcWeeklyWindowKey(now),end=nextSbcWeeklyReset(now),rotation=MARQUEE_RELEASES[key]||[],groupSet=`top_partien_${key}_fixtures`,groupReward={pack:"primegold",qty:1};
  return rotation.map((match,i)=>{
-  const common={group:"Top-Partien",id:`${groupSet}_${i+1}`,name:match.name,desc:`Top-Partien Aufgabe ${i+1}/4 · Donnerstag bis Donnerstag, 19:00 Uhr (deutsche Zeit).`,filter:b=>true,count:11,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i,matchLeague:match.league,matchNation:match.nation,matchClubs:match.clubs,kickoffAt:match.kickoffAt,sourceUrl:match.sourceUrl};
+  const common={group:"Top-Partien",id:`${groupSet}_${match.key||i+1}`,name:match.name,desc:`Top-Partien Aufgabe ${i+1}/4 · Donnerstag bis Donnerstag, 19:00 Uhr (deutsche Zeit).`,filter:b=>true,count:11,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i,matchLeague:match.league,matchNation:match.nation,matchClubs:match.clubs,kickoffAt:match.kickoffAt,sourceUrl:match.sourceUrl};
   if(i===0)return{...common,req:`11 Spieler · min. 1 ${nationLabel(match.nation)} · min. 3 Ligen · max. 4 gleicher Verein · Ø GES 74 · 14 Chemie`,requiredNation:match.nation,minLeagues:3,maxSameClub:4,minAvg:74,minChem:14,reward:{pack:"jumbo-gold",qty:1}};
   if(i===1)return{...common,req:`11 Spieler · min. 2 aus ${match.league} · min. 3 Nationen · min. 5 Vereine · Ø GES 76 · 18 Chemie`,minMatchLeaguePlayers:2,minNations:3,minClubs:5,minAvg:76,minChem:18,reward:{pack:"premium-electrum-reward",qty:1}};
   if(i===2)return{...common,req:`11 Spieler · min. 1 aus einem beteiligten Verein · max. 4 Nationen · min. 3 aus ${match.league} · min. 1 selten · Ø GES 78 · 22 Chemie`,minEitherMatchClub:1,maxNations:4,minMatchLeaguePlayers:3,minRare:1,minAvg:78,minChem:22,reward:{pack:"small-prime-gold",qty:1}};
@@ -8585,7 +8585,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.306";
+const GFUT_BUILD="V21.307";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8643,7 +8643,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21306",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21307",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -34,9 +34,9 @@ test('weekly scheduling stays at 19 Berlin across summer and winter time',()=>{
 });
 test('release uses four verified upcoming fixtures and fresh completion IDs',()=>{
  const c=setup(),r=rows(c,'2026-10-29T18:00:00Z');
- assert.deepEqual(Array.from(r,s=>s.name),['LOSC Lille – RC Lens','Chelsea – Manchester United','Bayer Leverkusen – VfB Stuttgart','AC Milan – Inter']);
+ assert.deepEqual(Array.from(r,s=>s.name),['LOSC Lille – RC Lens','Chelsea – Manchester United','Bayern München – Borussia Dortmund','AC Milan – Inter']);
  for(const s of r){
-  assert.match(s.id,/^top_partien_2026-10-29_fixtures_[1-4]$/);
+  assert.match(s.id,/^top_partien_2026-10-29_fixtures_([124]|bayern-dortmund)$/);
   assert.ok(Date.parse(s.kickoffAt)>Date.parse('2026-10-29T18:00:00Z')&&Date.parse(s.kickoffAt)<s.expiresAt);
   assert.match(s.sourceUrl,/^https:/);assert.equal(s.matchClubs.length,2);
  }
@@ -50,4 +50,16 @@ test('weekly boundary refreshes an open SBC view independently of daily and grin
  const key=at=>vm.runInContext(`sbcContentWindowKey(new Date(${JSON.stringify(at)}))`,c);
  assert.notEqual(key('2026-10-29T17:59:59Z'),key('2026-10-29T18:00:00Z'));
  assert.equal(key('2026-10-29T18:00:00Z'),key('2026-10-30T00:00:00Z'));
+});
+
+test('correcting Bundesliga fixture preserves other completions and group claim while retiring the old draft',()=>{
+ const c=setup(),r=rows(c,'2026-10-29T18:00:00Z');
+ const oldIds=[1,2,3,4].map(i=>'top_partien_2026-10-29_fixtures_'+i);
+ const state={sbcCompletions:Object.fromEntries(oldIds.map(id=>[id,true])),sbcGroupClaims:{top_partien_2026_ignored:false}};
+ const group=r[0].groupSet;state.sbcGroupClaims[group]=true;
+ assert.deepEqual(Array.from(r.filter(s=>state.sbcCompletions[s.id]),s=>s.order),[0,1,3]);
+ assert.equal(r[2].id,'top_partien_2026-10-29_fixtures_bayern-dortmund');
+ assert.ok(!r.some(s=>s.id===oldIds[2]),'old Leverkusen draft cannot be submitted as Bayern');
+ assert.equal(state.sbcGroupClaims[r[2].groupSet],true,'already claimed group bonus remains claimed');
+ assert.match(r[2].matchClubs[0].join('|'),/Bayern/);assert.match(r[2].matchClubs[1].join('|'),/Dortmund/);
 });
