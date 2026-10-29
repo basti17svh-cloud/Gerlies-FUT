@@ -42,7 +42,9 @@ test("Takefusa Kubo is the Team 2 MOMENTUM SBC player from Wednesday 19:00 to ev
 test("Ultimate and Jumbo Rare are the only special shop rotation for the 7 October window",()=>{
  const store=section("const PROMO_PACK_RELEASES=","function activeStorePacks");
  assert.match(store,/"2026-10-07":\{startsAt:"2026-10-07T19:00:00\+02:00",ids:\["ultimate","jumbo-rare"\]\}/);
- assert.match(store,/release=promoPackReleaseForKey\(key\),ids=release\?\.ids\|\|sets\[cycle\]/);
+ const ctx={Date,PACKS:[{id:"ultimate",dailyLimit:10},{id:"jumbo-rare",dailyLimit:10}],promoWindowKey:()=>"2026-10-07",hashNum:()=>0};
+ require("node:vm").runInNewContext(store+";this.ids=activePromoPacks().map(p=>p.id)",ctx);
+ assert.deepEqual(Array.from(ctx.ids),["ultimate","jumbo-rare"]);
  const packs=section("const PACKS=[","// This account-only gift");
  assert.match(packs,/id:"ultimate"[\s\S]*?dailyLimit:10,resetHour:19/);
  assert.match(packs,/id:"jumbo-rare"[\s\S]*?dailyLimit:10,resetHour:19/);

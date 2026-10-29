@@ -4434,7 +4434,37 @@ const PROMO_PACK_RELEASES=Object.freeze({
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
 function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
-function activePromoPacks(now=new Date()){const key=promoWindowKey(now,19),cycle=hashNum(key)%3,sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),ids=release?.ids||sets[cycle]||sets[0];return [...(typeof HALLOWEEN_EVENT!=="undefined"&&activeHalloweenEvent(now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)).filter(Boolean)}
+// A common Berlin day key gives every device the same offers and limits.
+// Premium packs are mixed with affordable options; no daily random re-rolls.
+const PROMO_ROTATION_START="2026-10-30";
+const PROMO_ROTATION_DAYS=Object.freeze([
+ [["jumbo-rare",12],["primegold",10],["rare-mixed",12]],
+ [["goldplayers",12],["electrum",10],["mega",8]],
+ [["ultimate",8],["mixed6",12],["primegold",10]],
+ [["raremixed",12],["goldplayers",10],["electrum",12]],
+ [["mega",10],["rare-mixed",12],["mixed6",12]],
+ [["primegold",12],["raremixed",10],["goldplayers",12]],
+ [["ultimate",12],["electrum",12],["rare-mixed",10]],
+ [["mixed6",12],["primegold",10],["mega",8]],
+ [["jumbo-rare",8],["goldplayers",12],["electrum",10]],
+ [["goldplayers",10],["rare-mixed",12],["primegold",10]],
+ [["ultimate",10],["mixed6",12],["mega",8]],
+ [["electrum",12],["primegold",10],["raremixed",12]],
+ [["jumbo-rare",12],["rare-mixed",10],["goldplayers",12]],
+ [["mega",10],["mixed6",12],["primegold",12]]
+]);
+function promoRotationForKey(key){
+ if(key<PROMO_ROTATION_START)return null;
+ const day=Math.round((Date.parse(key+"T12:00:00Z")-Date.parse(PROMO_ROTATION_START+"T12:00:00Z"))/86400000);
+ if(!Number.isFinite(day))return null;
+ return PROMO_ROTATION_DAYS[day%PROMO_ROTATION_DAYS.length];
+}
+function activePromoPacks(now=new Date()){
+ const key=promoWindowKey(now,19),sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),rotation=promoRotationForKey(key);
+ const ids=release?.ids||rotation?.map(([id])=>id)||sets[hashNum(key)%3],limits=new Map(release?.ids?[]:rotation||[]);
+ return [...new Set([...(typeof HALLOWEEN_EVENT!=="undefined"&&activeHalloweenEvent(now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])])]
+  .map(id=>{const pack=PACKS.find(p=>p.id===id);return pack?{...pack,dailyLimit:release?.limits?.[id]??limits.get(id)??pack.dailyLimit}:null}).filter(Boolean)
+}
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
 const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
@@ -4645,8 +4675,8 @@ $("storeView").addEventListener("click",async event=>{
 $("storeView").addEventListener("click",async e=>{const tab=e.target.closest("[data-store-tab]");if(tab){storeTab=tab.dataset.storeTab;renderStore();return}const b=e.target.closest("[data-buy]");
 if(b){
  if(footeraStorePurchaseBusy)return toast("Ein Points-Kauf wird bereits bearbeitet.");
- const p=PACKS.find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;
- if(!p||!activeStorePacks().some(x=>x.id===p.id)||!["coins","points"].includes(cur)||p[cur]==null)return;
+ const p=activeStorePacks().find(x=>x.id===b.dataset.buy),cur=b.dataset.cur;
+ if(!p||!["coins","points"].includes(cur)||p[cur]==null)return;
  const price=p[cur],lim=promoUsage(p);
  if(p.dailyLimit&&lim.remaining<=0)return toast("Promo-Limit erreicht. Reset täglich um "+(p.resetHour??19)+":00 Uhr.");
  const usingServer=cur==="points"&&Number(state.points||0)<price;
@@ -6758,6 +6788,8 @@ function setMatchPill(paused){
 function matchHomeTeamName(){return String(state.profile?.clubName||"Footera Club").trim()||"Footera Club"}
 function matchAwayTeamName(){return String(match?.opponentName||"Gegner").trim()||"Gegner"}
 function startMatch(mode,opponent=null,kitSelection=null){
+ const cupContext=mode==="halloween-cup"?window.FooteraHalloweenCup?.kickoff(opponent):null;
+ if(mode==="halloween-cup"&&(!cupContext||cupContext.error))return toast(cupContext?.error||"Halloween-Cup noch nicht bereit.");
  const m=squadMetrics();if(m.filled<18)return;
  const power=m.rating+m.chem*.12;
  let opp,name,opponentProfile=opponent||null;
@@ -6779,7 +6811,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
- mode,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
+ mode,halloweenCup:cupContext,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
  chemBoostChem:[...(m.chemScores||[])],
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
@@ -6799,7 +6831,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  $("eventBanner").classList.remove("active");
  resetMatchPresentation();
  $("matchHomeName").textContent=matchHomeTeamName();$("oppName").textContent=name;
- $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":"Freundschaftsspiel";
+ $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":mode==="halloween-cup"?"Halloween-Cup":"Freundschaftsspiel";
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
@@ -7660,6 +7692,7 @@ function finishMatch(){
   if(match.mode==="champions"){state.stats.championsMatches=(state.stats.championsMatches||0)+1;if(resultKey==="win")state.stats.championsWins=(state.stats.championsWins||0)+1}
   if(match.mode==="squad"){state.stats.squadMatches=(state.stats.squadMatches||0)+1;if(resultKey==="win")state.stats.squadWins=(state.stats.squadWins||0)+1}
  }
+ window.FooteraHalloweenCup?.record(match,resultKey);
  const competitionProgress=recordCompetitionMatch(match.mode,resultKey,match.home,match.away,match.opponentProfile,match.battleDifficulty);
  match.competitionProgress=competitionProgress;match.progressScreenShown=false;
  let boostCoins=0;
@@ -7987,7 +8020,7 @@ function previewRolesHTML(){
 }
 function refreshOpenMatchPreview(){
  if(squadBattleStage!=="preview"||!pendingMatchContext||!$("squadBattleModal").classList.contains("active"))return;
- const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
+ const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={"halloween-cup":"Halloween-Cup",rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
@@ -8021,7 +8054,7 @@ function renderSquadBattleSelection(historyMode="push"){
  <div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button>${playButton}</div>`;
  squadBattleStage="selection";showUiLayer("squadBattleModal","squad-selection",{},historyMode)
 }
-function openModeEntry(mode){const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="champions"){if(!championsCanStartMatch()){const started=startChampionsRun();if(!started.ok)return toast(started.reason)}if(!championsCanStartMatch())return toast("Champions ist aktuell nicht spielbar.");renderMatchPreview(mode,championsOpponent());return}if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
+function openModeEntry(mode){if(mode==="halloween-cup"){const cup=window.FooteraHalloweenCup,reason=cup?.canStart();if(!cup||reason)return toast(reason||"Cup wird geladen.");if(squadMetrics().filled<18)return toast("Bitte deinen Kader vervollständigen (18 Spieler).");renderMatchPreview(mode,cup.opponent());return}const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="champions"){if(!championsCanStartMatch()){const started=startChampionsRun();if(!started.ok)return toast(started.reason)}if(!championsCanStartMatch())return toast("Champions ist aktuell nicht spielbar.");renderMatchPreview(mode,championsOpponent());return}if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
 function openOpponentTeam(opponent){if(!opponent)return;$("opponentTeamModalBody").dataset.battleEventRelease=opponent.eventReleaseId||"";const formation=FORMATIONS[opponent.formation]?opponent.formation:"4-3-3",form=FORMATIONS[formation],sq=Array.isArray(opponent.squad)?opponent.squad:Array(18).fill(null);$("opponentTeamModalTitle").textContent=opponent.name||"Gegner";$("opponentTeamModalSub").textContent=`${formation} · Rating ${opponent.rating||0} · Chemie ${opponent.chem||0}/33`;const pitch=sq.slice(0,11).map((pl,i)=>{const slot=form[i];if(!pl)return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%"><div class="emptyslot">${slot.p}</div></div>`;const card=opponent.kind==="friend"?friendCard(pl,slot.p,true):cardHTML(pl,opponent.items?.[i]||null,true,opponent.eventReleaseId&&posFit(pl,slot.p)<=0?pl.position:slot.p);return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%">${card}</div>`}).join(""),bench=sq.slice(11,18).map((pl,k)=>`<div>${pl?(opponent.kind==="friend"?friendCard(pl,"BANK",true):cardHTML(pl,opponent.items?.[k+11]||null,true,pl.position)):'<div class="emptyslot">BANK</div>'}</div>`).join("");$("opponentTeamModalBody").innerHTML=`<div class="friend-team-summary"><div class="kpi"><strong>${opponent.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${opponent.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>${opponent.rewards?`<div class="opponent-note">Squad-Battles-Belohnung: Sieg ${fmt(opponent.rewards.win)} Coins · Remis ${fmt(opponent.rewards.draw)} · Niederlage ${fmt(opponent.rewards.loss)}.</div>`:""}`;showUiLayer("opponentTeamModal","opponent-team")}
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
@@ -8556,7 +8589,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.299";
+const GFUT_BUILD="V21.300";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8566,7 +8599,7 @@ function newerGerliesBuild(remote){
 }
 function gerliesUpdateBlocked(){
  const reg=gerliesUpdateRegistration;
- return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPlayerPicks?.isActive?.()||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
+ return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPlayerPicks?.isActive?.()||!!globalThis.FooteraHalloweenCup?.busy?.()||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
 }
 function applyGerliesUpdate(){
  clearTimeout(gerliesUpdateTimer);gerliesUpdateTimer=0;
@@ -8614,7 +8647,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21299",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21300",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

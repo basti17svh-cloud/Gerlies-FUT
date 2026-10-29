@@ -30,6 +30,7 @@ function blocked(){
 // Pick/account flows also call blocked() themselves. The extra restrictions
 // belong to file restoration only, or opening a Pick would block itself.
 function restoreBlocked(){
+ if(root.FooteraHalloweenCup?.busy?.()||root.FooteraAccount?.pendingChallengeReward?.())return "solange eine Cup-Belohnung auf Bestätigung wartet";
  const action=blocked();if(action)return action;
  if(root.FooteraPlayerPicks?.isActive?.()||root.FooteraAccount?.pendingPlayerPick?.())return "solange eine Pick-Auswahl oder Einlösung offen ist";
  if(root.FooteraPotm?.busy?.())return "während einer POTM-Abgabe";
