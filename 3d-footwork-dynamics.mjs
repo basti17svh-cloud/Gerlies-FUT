@@ -35,7 +35,7 @@ export function sampleFootwork(time,speed,turn,acceleration,stride,out){
  state.elbowDrive=.070*state.sprint;
  // Match the duty cycle and phase used by scene.runningLeg. Do not
  // modify the phase itself or invent a second, time-based stride.
- const duty=.60-.32*v;
+ const duty=.60-.32*v-.12*Math.sin(Math.PI*v);
  for(let i=0;i<2;i++){
   const foot=state.feet[i],p=cycle(phase+i*Math.PI),support=p<duty;
   const contact=support?wave(p/duty):0,swing=support?0:wave((p-duty)/(1-duty));

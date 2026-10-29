@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 test('support/recovery boundaries preserve foot velocity and smooth additive weights',async()=>{
  const {runningLeg}=await import('../3d-highlights-scene.mjs');
  const tau=2*Math.PI,h=1e-5;
- for(const speed of [.15,.4,.7,1])for(const boundary of [0,(.60-.32*speed)*tau]){
+ for(const speed of [.15,.4,.7,1])for(const boundary of [0,(.60-.32*speed-.12*Math.sin(Math.PI*speed))*tau]){
   const a=runningLeg(boundary-h,speed),b=runningLeg(boundary,speed),c=runningLeg(boundary+h,speed);
   for(const field of ['hip','knee','ankle','z','y','swingWeight']){
    assert.ok(Math.abs(c[field]-a[field])<.001,`${speed} ${field}: continuous position`);

@@ -71,7 +71,10 @@ export function applyTrackingPose(p,action,time,speed,heading,targetHeading){
  const difference=Math.atan2(Math.sin(targetHeading-heading),Math.cos(targetHeading-heading));
  const look=jockey?.43:mix(.08,.48,contain);
  // Running defenders follow travel direction; only a planted jockey turns far.
- const plant=1-smooth((speed-.10)/.52),face=clamp(difference*look*plant,-.42,.42);
+ // V21.297: fade out as the ball passes straight behind him, where the
+ // shortest turn flips sides and used to swing the body 50 deg in a frame.
+ const behind=1-smooth((Math.abs(difference)-2.3)/(Math.PI-2.3));
+ const plant=1-smooth((speed-.10)/.52),face=clamp(difference*look*plant*behind,-.42,.42);
  p.root.rotation.y=heading+face;
  const lean=jockey?-.055:-.10*(1-contain)-.045*contain;
  p.upper.rotation.x=mix(p.upper.rotation.x,lean,.75);

@@ -313,7 +313,7 @@ export function applyCelebrationPose(p,kind,s,out={},weight=1){
  // Lower the hips onto the knees (or lift for the jump); feet follow via IK.
  const rootY=(now.lift-now.drop)*clamp(weight);
  p.rig.position.y=mix(p.rig.position.y,rootY,Math.max(w,legs));
- out.arms=w;out.legs=legs;out.rootY=rootY;out.kind=kind;
+ out.arms=w;out.legs=legs;out.body=smooth(s/.55)*clamp(weight);out.rootY=rootY;out.kind=kind;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];
  // Hands open a beat after the arm moves, like the forearm.

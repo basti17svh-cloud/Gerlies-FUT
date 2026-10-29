@@ -68,7 +68,8 @@ export function ualPoseWeight(time=0,info={}){
  const cutting=/^(?:inside|cut_inside|double_feint|near_post_cut)_/.test(info.sequence||'')
   ?1-.80*pulse(t,2.73,2.96,3.23,3.64):1;
  const ballControl=1-.45*clamp(info.control||0);
- const airborne=info.grounded===false&&t>=4.9?0:1;
+ // V21.297: fade the capture out over the take-off instead of cutting it.
+ const airborne=info.grounded===false?1-ease(4.9,5.06,t):1;
  return action*cutting*ballControl*airborne;
 }
 
@@ -133,21 +134,39 @@ export function createUalPoseLayer(bones){
   }
   return state;
  }
- // V21.296 (off with footera-3d-motion-capture=0): the captured legs too, on
- // top of the procedural gait, by share w of the last apply's weight.
- const LEGS=['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r'];
- // The capture's thighs hang from the capture's pelvis: carry them over to
- // our (procedural) pelvis so the legs keep the captured stride in body space.
+ // V21.296 (off with footera-3d-motion-capture=0): the captured legs too.
+ // V21.297: proper rest-relative retarget. Each captured leg bone's rotation
+ // away from the capture's rest pose (in the capture's pelvis space, carried
+ // over by C) is applied to OUR rest pose, so the legs keep their real length
+ // and knee bend instead of inheriting the capture skeleton's rest offsets.
+ const CHAIN=[['thigh_l','pelvis'],['calf_l','thigh_l'],['foot_l','calf_l'],['thigh_r','pelvis'],['calf_r','thigh_r'],['foot_r','calf_r']];
  const pelvisBone=bones.get('pelvis');
- const pelvisFrame=pelvisBone?pelvisBone.quaternion.clone().multiply(new THREE.Quaternion().fromArray(FOOTERA_UAL_POSE.rest.pelvis).invert()):null;
- const legTarget=new THREE.Quaternion(),pelvisNow=new THREE.Quaternion();
- function applyLegs(w=1){
-  const share=clamp(state.weight*w);if(share<=.001||!pelvisFrame)return 0;
-  pelvisNow.copy(pelvisBone.quaternion).invert().multiply(pelvisFrame).multiply(targets.get('pelvis'));
-  for(const name of LEGS){
-   const bone=bones.get(name);if(!bone)continue;
-   legTarget.copy(targets.get(name));if(name.startsWith('thigh'))legTarget.premultiply(pelvisNow);
-   bone.quaternion.slerp(legTarget,share);
+ const restOf=name=>new THREE.Quaternion().fromArray(FOOTERA_UAL_POSE.rest[name]);
+ const legReady=!!pelvisBone&&CHAIN.every(([b])=>bones.get(b)&&FOOTERA_UAL_POSE.rest[b])&&!!FOOTERA_UAL_POSE.rest.pelvis;
+ const C=legReady?pelvisBone.quaternion.clone().multiply(restOf('pelvis').invert()):null,Cinv=C?.clone().invert();
+ const oursRestW=new Map(),clipRestInvW=new Map();
+ if(legReady){
+  oursRestW.set('pelvis',pelvisBone.quaternion.clone());const clipW=new Map([['pelvis',restOf('pelvis')]]);
+  for(const [b,parent] of CHAIN){
+   oursRestW.set(b,oursRestW.get(parent).clone().multiply(bones.get(b).quaternion));
+   clipW.set(b,clipW.get(parent).clone().multiply(restOf(b)));
+  }
+  for(const [b,q] of clipW)clipRestInvW.set(b,q.clone().invert());
+ }
+ const clipNowW=new Map(),legWorld=new Map(),legTarget=new THREE.Quaternion(),parentInv=new THREE.Quaternion();
+ for(const b of ['pelvis',...CHAIN.map(([b])=>b)]){clipNowW.set(b,new THREE.Quaternion());legWorld.set(b,new THREE.Quaternion())}
+ // perLeg (V21.297): how much of each leg [left,right] the capture may own.
+ function applyLegs(w=1,perLeg=null){
+  const share=clamp(state.weight*w);if(share<=.001||!legReady)return 0;
+  clipNowW.get('pelvis').copy(targets.get('pelvis'));
+  for(const [b,parent] of CHAIN)clipNowW.get(b).copy(clipNowW.get(parent)).multiply(targets.get(b));
+  // Our pelvis stays procedural; each thigh is measured from the captured
+  // pelvis (carried over by C), so the stride stays the capture's.
+  for(const [b,parent] of CHAIN){
+   const world=legWorld.get(b).copy(C).multiply(clipNowW.get(b)).multiply(clipRestInvW.get(b)).multiply(Cinv).multiply(oursRestW.get(b));
+   const leg=perLeg?clamp(perLeg[b.endsWith('_r')?1:0]):1;if(leg<=.001)continue;
+   parentInv.copy(parent==='pelvis'?pelvisBone.quaternion:legWorld.get(parent)).invert();
+   bones.get(b).quaternion.slerp(legTarget.copy(parentInv).multiply(world),share*leg);
   }
   return share;
  }
