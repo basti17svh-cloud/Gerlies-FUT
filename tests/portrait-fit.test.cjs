@@ -31,3 +31,8 @@ test('a portrait already filling the window and founder art keep the plain layou
 test('cards load the fit from the shared image hook',()=>{
  assert.match(html,/function rememberLoadedImage\(el\)\{[^\n]*fitCardPortrait\(el\)/);
 });
+test('POTM art is placed by the fit alone, not by hand-tuned CSS on top of it',()=>{
+ // Olise V21.307: 186% CSS width plus the 1.6x fit cropped the face off the card.
+ const css=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','potm.css'),'utf8');
+ assert.doesNotMatch(css,/--potm-face-|img\[src\*="events\/potm\/"\]/);
+});
