@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="./flashback-card.css?v=2173">
 <link rel="stylesheet" href="./story-card.css?v=21231">
 <link rel="stylesheet" href="./halloween-card.css?v=21294">
+<link rel="stylesheet" href="./halloween-cup.css?v=21297">
 <link rel="stylesheet" href="./evolution-card.css">
 <link rel="stylesheet" href="./friend-online.css?v=21246">
 <link rel="stylesheet" href="./matchday.css">
@@ -232,6 +233,7 @@
  <div class="section play-content">
   <div class="play-team-box"><div class="play-squad-selector"><strong>Dein Team für das nächste Spiel</strong><div id="playSquadPresets" class="squad-preset-tabs"></div></div><p id="playLock" class="play-lock" aria-live="polite"></p></div>
   <div id="playModeHub" class="play-hub" aria-label="Spielmodi">
+   <button type="button" class="play-hub-tile play-halloween" data-play-mode="halloween-cup"><span class="play-kicker">EVENT-CHALLENGE</span><strong>Halloween-Cup</strong><span class="play-tile-copy">Drei Siege · ein garantierter Team-1-Pick</span><span id="playHalloweenSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">☾</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-champions" data-play-mode="champions"><span class="play-kicker">FINALS</span><strong>Footera Champions</strong><span class="play-tile-copy">15 Spiele. Ein Wochenende. Dein Rang.</span><span id="playChampionsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">CH</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-rivals" data-play-mode="rivals"><span class="play-kicker">WETTBEWERB</span><strong>Division Rivals</strong><span class="play-tile-copy">Dein Weg durch die Divisionen</span><span id="playRivalsSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">DR</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
    <button type="button" class="play-hub-tile play-squad" data-play-mode="squad"><span class="play-kicker">WOCHENWETTBEWERB</span><strong>Squad Battles</strong><span class="play-tile-copy">Dein Team gegen die KI</span><span id="playSquadSummary" class="play-tile-summary"></span><span class="play-tile-mark" aria-hidden="true">SB</span><span class="play-tile-arrow" aria-hidden="true">›</span></button>
@@ -242,6 +244,7 @@
    <button type="button" class="play-back" data-play-back>← Alle Spielmodi</button>
    <div class="play-detail-heading"><span class="play-kicker">DEIN MODUS</span><h3 id="playDetailTitle" tabindex="-1"></h3></div>
    <div class="modegrid play-panels">
+    <article class="mode play-mode-panel" data-play-panel="halloween-cup" hidden><div id="halloweenCupBody"></div></article>
     <article class="mode play-mode-panel" data-play-panel="rivals" hidden>
      <section class="play-box play-standing"><span class="play-kicker">DEIN STAND</span><div id="rvRecord" class="record"></div></section>
      <section class="play-box"><h4>Wochenbelohnungen</h4><div id="rvWeeklyCard"></div></section>
@@ -711,17 +714,18 @@
 <script src="./3d-highlights-match.js?v=21226"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
-<script src="./play-hub.js?v=21276"></script>
+<script src="./halloween-cup.js?v=21297"></script>
+<script src="./play-hub.js?v=21297"></script>
 <script src="./weekly-rewards.js?v=21161"></script>
 <script src="./friends-hub.js"></script>
 <script src="./potm.js?v=21291"></script>
 <script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
-<script src="./footera-backup.js?v=21290"></script>
-<script src="./footera-account.js?v=21290"></script>
+<script src="./footera-backup.js?v=21297"></script>
+<script src="./footera-account.js?v=21297"></script>
 <script src="./footera-paid-wallet.js?v=21141"></script>
 <script src="./champions-player-picks.js?v=21174"></script>
-<script src="./player-picks.js?v=21283"></script>
+<script src="./player-picks.js?v=21297"></script>
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script src="./footera-share.js?v=21211"></script>

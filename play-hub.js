@@ -1,6 +1,6 @@
 /* Footera V20.97 — Spielmodi mit eindeutiger Champions-Navigation und Qualifikationsfortschritt. Existing match/reward handlers stay in place. */
 (()=>{
- const MODES={rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},champions:{title:"Footera Champions",summary:"playChampionsSummary",stats:"playChampionsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
+ const MODES={"halloween-cup":{title:"Halloween-Cup"},rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},champions:{title:"Footera Champions",summary:"playChampionsSummary",stats:"playChampionsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
  let area="hub";
  const num=value=>Math.max(0,Number(value)||0);
  const put=(id,html)=>{const el=$(id);if(el)el.innerHTML=html};
@@ -88,8 +88,8 @@
   if($("playFriendRankingNote"))$("playFriendRankingNote").textContent=available?`Siege, Punkte und Tore aus euren Live-Duellen gegen ${friend.clubName||"deinen Freund"}.`:friend?"Für die Online-Rangliste benötigst du einen Freund mit aktuellem Online-Code.":"Wähle einen Online-Freund, um eure Tabelle und direkte Bilanz anzusehen.";
  }
  function renderOverview(){
-  safe(renderRivals);safe(renderChampions);safe(renderSquad);safe(renderFriends);
-  for(const [mode,config]of Object.entries(MODES))safe(()=>put(config.stats,statsHTML(mode)));
+  safe(()=>window.FooteraHalloweenCup?.render());safe(renderRivals);safe(renderChampions);safe(renderSquad);safe(renderFriends);
+  for(const [mode,config]of Object.entries(MODES))safe(()=>{if(config.stats)put(config.stats,statsHTML(mode))});
  }
  function show(mode,{push=true,focus=true}={}){
   area=MODES[mode]?mode:"hub";
@@ -103,7 +103,7 @@
  const originalStatus=renderCompetitionModeStatus;
  renderCompetitionModeStatus=function(){originalStatus();renderOverview()};
  const originalPlay=renderPlay;
- renderPlay=function(){safe(originalPlay);safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
+ renderPlay=function(){safe(originalPlay);safe(()=>window.FooteraHalloweenCup?.render());safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
  window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView")show(target.playMode||"hub",{push:false})},handleBack:target=>{
   if(area==="hub")return false;
   if(target?.gfut&&target.view!=="playView"){area="hub";return false}

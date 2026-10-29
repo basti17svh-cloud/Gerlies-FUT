@@ -195,3 +195,46 @@ test('the seven and five new pack purchases share a per-pack limit across Coins 
  a.clock('2026-10-11T17:00:00Z');
  for(const id of EXTRA_PROMO_IDS)assert.equal(a.ctx.promoUsage(a.run(`PACKS.find(p=>p.id==='${id}')`)).remaining,a.run(`PACKS.find(p=>p.id==='${id}').dailyLimit`));
 });
+
+test('new flexible rotation starts on 30 October at exactly 19:00 Berlin',()=>{
+ const a=app('2026-10-30T17:59:59Z');assert.equal(a.run('promoRotationForKey(promoWindowKey(new Date()))'),null);
+ a.clock('2026-10-30T18:00:00Z');
+ assert.deepEqual(Array.from(a.ctx.activePromoPacks(),p=>[p.id,p.dailyLimit]),[['jumbo-rare',12],['primegold',10],['rare-mixed',12]]);
+ a.ctx.renderStore();assert.match(a.get('packGrid').innerHTML,/12 von 12 Käufen übrig/);
+ a.clock('2026-10-31T17:59:59Z');assert.ok(a.ctx.activePromoPacks().some(p=>p.id==='jumbo-rare'));
+ a.clock('2026-10-31T18:00:00Z');assert.ok(!a.ctx.activePromoPacks().some(p=>p.id==='jumbo-rare'));
+});
+test('rotation includes separate Jumbo and Ultimate days, regular-only days, varied companions and 12-pack limits',()=>{
+ const a=app('2026-10-30T18:00:00Z'),seen={jumbo:0,ultimate:0,regular:0},limits=new Set(),combinations=new Set();
+ const original=a.run('JSON.stringify(PACKS)');
+ for(let day=0;day<42;day++){
+  const at=new Date(Date.parse('2026-10-30T18:00:00Z')+day*86400000);a.clock(at.toISOString());
+  const packs=Array.from(a.ctx.activePromoPacks()),ids=packs.map(p=>p.id);
+  assert.equal(ids.length,new Set(ids).size);assert.equal(ids.length,3);
+  assert.ok(!(ids.includes('jumbo-rare')&&ids.includes('ultimate')));
+  if(ids.includes('jumbo-rare'))seen.jumbo++;else if(ids.includes('ultimate'))seen.ultimate++;else seen.regular++;
+  assert.ok(packs.every(p=>p.coins!=null&&p.points!=null));packs.forEach(p=>limits.add(p.dailyLimit));combinations.add(ids.join('|'));
+  assert.deepEqual(ids,Array.from(a.ctx.activePromoPacks(),p=>p.id),'reload does not reroll');
+ }
+ assert.ok(seen.jumbo>=3&&seen.ultimate>=3&&seen.regular>seen.jumbo+seen.ultimate);
+ assert.ok(limits.has(12)&&limits.has(10)&&limits.has(8));assert.ok(combinations.size>=10);
+ assert.equal(a.run('JSON.stringify(PACKS)'),original,'offer limits never mutate the pack definitions');
+});
+test('buying enforces the displayed 12 and 8 limits across both currencies and persists them',()=>{
+ for(const [at,id,limit]of [['2026-10-30T18:00:00Z','jumbo-rare',12],['2026-10-31T18:00:00Z','mega',8]]){
+  const a=app(at);for(let i=0;i<limit;i++)a.buy(id,i%2?'points':'coins');
+  assert.equal(a.ctx.state.packLimits[id].count,limit);
+  const coins=a.ctx.state.coins,points=a.ctx.state.points;a.ctx.opened=null;
+  a.buy(id,'coins');a.buy(id,'points');assert.equal(a.ctx.state.coins,coins);assert.equal(a.ctx.state.points,points);assert.equal(a.ctx.opened,null);
+  a.ctx.state.packLimits=JSON.parse(JSON.stringify(a.ctx.state.packLimits));
+  const offer=a.ctx.activePromoPacks().find(p=>p.id===id);assert.equal(a.ctx.promoUsage(offer).remaining,0);
+ }
+});
+test('stale buttons cannot buy an expired flexible offer and returning offers reset only at the next Berlin window',()=>{
+ const a=app('2026-10-30T18:00:00Z');a.buy('jumbo-rare');
+ const before=a.ctx.state.coins;
+ a.clock('2026-10-31T18:00:00Z');a.buy('jumbo-rare');assert.equal(a.ctx.state.coins,before);assert.equal(a.ctx.state.packLimits['jumbo-rare'].count,1);
+ a.clock('2026-11-07T18:00:00Z');const offer=a.ctx.activePromoPacks().find(p=>p.id==='jumbo-rare');
+ assert.equal(offer.dailyLimit,8);assert.equal(a.ctx.promoUsage(offer).remaining,8);
+ a.buy('jumbo-rare');assert.equal(a.ctx.state.packLimits['jumbo-rare'].count,1);
+});

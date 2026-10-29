@@ -353,7 +353,7 @@
   return ids;
  }
  function checkProtectedCloudRewards(local,cloud){
-  for(const field of ["playerPickClaims","paidPackClaims"]){
+  for(const field of ["playerPickClaims","paidPackClaims","challengeClaims"]){
    const claims=cloud?.[field]||{},current=local?.[field]||{};
    for(const [id,value] of Object.entries(claims)){
     if(!Object.prototype.hasOwnProperty.call(current,id)||!structurallyEqual(value,current[id]))
@@ -388,6 +388,7 @@
   let finishSync;const done=new Promise(resolve=>{finishSync=resolve});autoBusyDone=done;
   try{
    const {c,u}=await requirePermanent();ensureOwned(u);
+   if(pendingChallengeReward())throw Error("Zuerst die ausstehende Cup-Belohnung erneut abholen. Nichts überschrieben.");
    if(pendingPlayerPick())throw Error("Zuerst die ausstehende Pick-Einlösung abschließen. Nichts überschrieben.");
    const local=localData(),cloud=await cloudInfo(),point=syncPoint(u);
    if(cloud){
@@ -464,6 +465,52 @@
  function pendingPlayerPick(){
    try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
  }
+ function pendingChallengeReward(){
+   try{return JSON.parse(root.localStorage.getItem("footera-pending-challenge-v1")||"null")}catch(_){return null}
+ }
+ async function claimChallengeReward(stage,applyDelivery){
+   if(![1,2,3].includes(stage))throw Error("Ungültige Cup-Runde.");
+   if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
+   if(autoBusy)throw Error("Der Kontoabgleich läuft noch. Bitte erneut versuchen.");
+   changeLocked();
+   const {c,u}=await requirePermanent();ensureOwned(u);
+   if(!u.email_confirmed_at)throw Error("Bitte zuerst deine E-Mail-Adresse bestätigen.");
+   if(pendingPlayerPick())throw Error("Bitte zuerst die offene Pick-Einlösung abschließen.");
+   const pending=pendingChallengeReward();
+   let local=localData();
+   if(pending&&(pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.stage!==stage))
+     throw Error("Bitte zuerst die ausstehende Cup-Belohnung abholen.");
+   if(!pending){await saveCloud();local=localData()}
+   if(autoBusy)throw Error("Ein Kontoabgleich läuft noch.");
+   autoBusy=true;let finish;const done=new Promise(resolve=>{finish=resolve});autoBusyDone=done;
+   try{
+     ensureOwned(u);changeLocked();
+     const point=syncPoint(u),revision=pending?pending.revision:point?.revision;
+     if(!Number.isSafeInteger(revision)||(!pending&&!pointMatches(point,local)))throw Error("Bitte zuerst deinen Spielstand synchronisieren.");
+     const cleanBase=point?.revision===revision&&pointMatches(point,local),expected=JSON.parse(JSON.stringify(local));
+     root.localStorage.setItem("footera-pending-challenge-v1",JSON.stringify({userId:u.id,saveId:local.profile.saveId,stage,revision}));
+     const {data,error}=await pickDeadline(c.rpc("footera_claim_halloween_cup_reward",{p_save_id:local.profile.saveId,p_stage:stage,p_base_revision:revision}),15000);
+     if(error){
+       if(["22023","42501","PT409"].includes(error.code))root.localStorage.removeItem("footera-pending-challenge-v1");
+       throw error;
+     }
+     if(data?.save_id!==local.profile.saveId||data.stage!==stage||!Number.isSafeInteger(data.revision)||!Number.isSafeInteger(data.cloud_revision)||data.revision>data.cloud_revision||(!data.replayed&&data.revision!==revision+1))
+       throw Error("Die Cup-Bestätigung ist unvollständig. Bitte dieselbe Belohnung erneut abholen.");
+     if((await pickDeadline(pickUser(c),10000))?.id!==u.id)throw Error("Das Konto wurde gewechselt.");
+     ensureOwned(u);
+     if(localData().profile.saveId!==local.profile.saveId)throw Error("Der Verein wurde gewechselt.");
+     const key="halloween-team1:"+stage;expected.challengeClaims??={};
+     if(!Object.hasOwn(expected.challengeClaims,key)){
+       if(stage===1)expected.coins+=15000;
+       if(stage===2){expected.packs['reward-82-15']=(expected.packs['reward-82-15']||0)+1;expected.rewardPackQueue??=[];expected.rewardPackQueue.push({id:"reward-82-15",tradeable:false,challengeClaim:key})}
+       expected.challengeClaims[key]=true;
+     }
+     applyDelivery(data);
+     if(cleanBase&&data.cloud_revision===data.revision&&data.revision===revision+1)savePoint(u,expected,data.revision);
+     root.localStorage.removeItem("footera-pending-challenge-v1");
+     return data;
+   }finally{autoBusy=false;finish();if(autoBusyDone===done)autoBusyDone=null}
+ }
  // The RPC verifies the token and owner on the server. Use the local auth
  // session for UI identity checks instead of two extra /auth/user requests.
  async function pickUser(c){
@@ -493,6 +540,7 @@
  // Compact delivery sends only the chosen option and expected revision. The
  // synchronized cloud is the server's base; a lost response replays one receipt.
  async function choosePlayerPickCompact(pickId,optionId,applyDelivery){
+   if(pendingChallengeReward())throw Error("Bitte zuerst die ausstehende Cup-Belohnung abholen.");
    if(autoBusyDone)await pickDeadline(autoBusyDone,15000);
    if(autoBusy)throw Error("Eine Einlösung läuft noch. Bitte kurz warten.");
    const c=await pickDeadline(getClient(),10000),u=await pickDeadline(pickUser(c),10000);
@@ -547,6 +595,7 @@
    }finally{autoBusy=false;finishClaim();if(autoBusyDone===done)autoBusyDone=null}
  }
  async function choosePlayerPick(pickId,optionId,applyDelivery){
+   if(pendingChallengeReward())throw Error("Bitte zuerst die ausstehende Cup-Belohnung abholen.");
    // A background save must never turn a valid Player Pick confirmation into
    // an error. Queue behind its existing transaction rather than rejecting.
    if(autoBusy&&autoBusyDone){
@@ -773,7 +822,7 @@
  async function autoAttachAndBackup(){
    // No background cloud writes or heavy club validation while the Pick UI is
    // open. Claims own the server transaction and must have priority.
-   if(autoBusy||root.FooteraPlayerPicks?.isActive?.())return;
+   if(autoBusy||pendingChallengeReward()||root.FooteraPlayerPicks?.isActive?.())return;
    autoBusy=true;
    let finishAutoSync;
    const done=new Promise(resolve=>{finishAutoSync=resolve});
@@ -1587,7 +1636,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimChallengeReward,pendingChallengeReward,claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
 
