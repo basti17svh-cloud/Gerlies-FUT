@@ -1,0 +1,35 @@
+name: Halloween Cup
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths: ['halloween-cup.*', 'online/footera-halloween-cup*', 'tests/halloween-cup*', 'tests/sql/halloween-cup*', 'footera-account.js', '.github/workflows/halloween-cup.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/halloween-cup.test.cjs tests/halloween-cup-account.test.cjs
+      - name: Atomic rewards on isolated Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createdb footera_test
+          sudo -u postgres psql -q -d footera_test -v ON_ERROR_STOP=1 \
+            -f tests/sql/auth-mock.sql \
+            -f tests/sql/cup-catalog-mock.sql \
+            -f online/footera-accounts-v21.109.sql \
+            -f online/footera-cloud-rewards-guard-v21.170.sql \
+            -f online/footera-player-picks.sql \
+            -f online/footera-player-picks-compact-v21.280.sql \
+            -f online/footera-guest-cloud-v21.234.sql \
+            -f online/footera-business-conflicts-v21.284.sql \
+            -f online/footera-halloween-cup-v21.297.sql \
+            -f online/footera-halloween-cup-pool-v21.297.sql \
+            -f tests/sql/halloween-cup.test.sql
