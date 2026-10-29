@@ -4420,7 +4420,9 @@ const PROMO_PACK_RELEASES=Object.freeze({
  "2026-10-05":{startsAt:"2026-10-05T19:00:00+02:00",ids:["ultimate","jumbo-rare","rare-mixed","mega"]},
  "2026-10-07":{startsAt:"2026-10-07T19:00:00+02:00",ids:["ultimate","jumbo-rare"]},
  "2026-10-10":{startsAt:"2026-10-10T19:00:00+02:00",extraIds:["83x15","84x10"]},
- "2026-10-25":{startsAt:"2026-10-25T19:00:00+01:00",ids:["ultimate","jumbo-rare"]}
+ "2026-10-25":{startsAt:"2026-10-25T19:00:00+01:00",ids:["ultimate","jumbo-rare"]},
+ // One-day flash offer: available immediately on 29 Oct until Berlin reset 30 Oct 19:00.
+ "2026-10-29":{startsAt:"2026-10-29T21:00:00+01:00",ids:["ultimate","jumbo-rare"],limits:{"ultimate":10,"jumbo-rare":10}}
 });
 function promoPackReleaseForKey(key){return PROMO_PACK_RELEASES[String(key||"")]||null}
 function promoPackReleaseLabel(release){return [...(release?.ids||[]),...(release?.extraIds||[])].map(id=>PACKS.find(p=>p.id===id)?.name||id).join(" · ")}
@@ -5262,32 +5264,32 @@ const SPECIAL_PRICE_CURVE={75:10000,76:10000,77:10000,78:10000,79:10000,80:10500
 const TOTW_PRICE_CURVE={75:10500,76:10500,77:10500,78:10500,79:10500,80:10500,81:11000,82:12000,83:14000,84:18000,85:26000,86:40000,87:65000,88:105000,89:175000,90:300000,91:575000,92:900000,93:1300000,94:1800000,95:2400000,96:3200000,97:4200000,98:5500000,99:7000000};
 // Real-market anchors stop elite/meta golds from being priced like generic cards of the same rating.
 const BASE_GOLD_PRICE_ANCHORS_BY_ID={
- "231747":3740000, // Kylian Mbappé 91
+ "231747":3250000, // Kylian Mbappé 91
  "239085":117000,  // Erling Haaland 91
  "231443":1899000, // Ousmane Dembélé 90
- "277643":293000,  // Lamine Yamal 90
- "252371":256000,  // Jude Bellingham 90
- "247827":375000,  // Michael Olise 90
+ "277643":185000,  // Lamine Yamal 90
+ "252371":155000,  // Jude Bellingham 90
+ "247827":105000,  // Michael Olise 90
  "251854":197000,  // Pedri 90
  "241667":268000,  // Aitana Bonmatí 90
  "255253":140000,  // Vitinha 90
  "202126":36000,   // Harry Kane 90
  "231866":32500,   // Rodri 90
  "192119":87500,   // Thibaut Courtois 90
- "238794":1060000, // Vini Jr. 89
+ "238794":725000, // Vini Jr. 89
  "262531":1389000, // Claudia Pina 89
- "227102":580000,  // Caroline Graham Hansen 89
+ "227102":230000,  // Caroline Graham Hansen 89
  "158023":81500,   // Lionel Messi 89
  "212198":13500,   // Bruno Fernandes 89
- "235212":194000,  // Achraf Hakimi 88
- "243715":160000,  // William Saliba 88
+ "235212":100000,  // Achraf Hakimi 88
+ "243715":31000,  // William Saliba 88
  "203376":31000,   // Virgil van Dijk 88
  "234378":15500,   // Declan Rice 88
  "272834":23000,   // João Neves 88
  "236479":9200,    // Mapi León 88
  "212622":13750,   // Joshua Kimmich 88
  "209331":21500,   // Mohamed Salah 87
- "246420":70500,   // Jérémy Doku 84
+ "246420":9500,   // Jérémy Doku 84
  "257289":34000,   // Hugo Ekitiké 85
  "256630":12250,   // Florian Wirtz 86
  "231447":6500,    // Donyell Malen 83
@@ -5298,7 +5300,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_ID={
 };
 const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
  "nuno-mendes":346000,
- "khvicha-kvaratskhelia":289000,
+ "khvicha-kvaratskhelia":82000,
  "mariona":69500,
  "ewa-pajor":36000,
  "temwa-chawinga":34000,
@@ -5306,7 +5308,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
 };
 const TOTW_PRICE_ANCHORS={
  "277643|91":1641000, // Lamine Yamal
- "247827|91":1575000, // Michael Olise
+ "247827|91":1200000, // Michael Olise
  "220941|89":256000   // David Raya
 };
 let MARKET_META_PERCENTILE=new Map(),MARKET_META_BUCKETS=new Map(),MARKET_META_MODEL_SIZE=0;
@@ -5375,24 +5377,24 @@ const ICON_PRICE_CURVE={87:85000,88:145000,89:250000,90:420000,91:650000,92:9500
 const ICON_PRICE_ANCHORS={
  "ronaldo":13400000, // Ronaldo
  "mia-hamm":7450000, // Mia Hamm
- "pele":6350000, // Pelé
- "franz-beckenbauer":1980000, // Franz Beckenbauer
+ "pele":8500000, // Pelé
+ "franz-beckenbauer":2650000, // Franz Beckenbauer
  "eusebio":6500000, // Eusébio
  "lothar-matthaus":3990000, // Lothar Matthäus — base-icon-pc-fallback
  "zinedine-zidane":3600000, // Zinedine Zidane
- "ruud-gullit":6940000, // Ruud Gullit
+ "ruud-gullit":8300000, // Ruud Gullit
  "formiga":3450000, // Formiga — same-player-holo-fallback
  "thierry-henry":3880000, // Thierry Henry
  "ferenc-puskas":2690000, // Ferenc Puskás — base-icon-pc-fallback
  "alex-morgan":2800000, // Alex Morgan
  "bobby-charlton":2560000, // Bobby Charlton
  "johan-cruyff":5260000, // Johan Cruyff
- "paolo-maldini":3100000, // Paolo Maldini
+ "paolo-maldini":4750000, // Paolo Maldini
  "diego-armando-maradona":5450000, // Diego Armando Maradona
  "kenny-dalglish":1900000, // Kenny Dalglish
  "homare-sawa":1280000, // Homare Sawa
  "jairzinho":4000000, // Jairzinho
- "zico":11000000, // Zico
+ "zico":5800000, // Zico
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":7000000, // Ronaldinho
@@ -5447,7 +5449,7 @@ const ICON_PRICE_ANCHORS={
  "claude-makelele":905000, // Claude Makélélé
  "ian-wright":407000, // Ian Wright
  "xavi":708000, // Xavi
- "philipp-lahm":500000, // Philipp Lahm
+ "philipp-lahm":700000, // Philipp Lahm
  "paul-scholes":372000, // Paul Scholes
  "john-barnes":397000, // John Barnes
  "roy-keane":489000, // Roy Keane
