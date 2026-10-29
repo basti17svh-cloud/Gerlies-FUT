@@ -1990,9 +1990,9 @@ function activeDailySBCs(now=new Date()){
 function marqueeClubMatch(team,aliases){const key=normalizeKey(team||"");return (aliases||[]).some(a=>normalizeKey(a)===key)}
 function marqueeLeagueMatch(league,target){const a=normalizeKey(league||""),b=normalizeKey(target||"");return !!a&&!!b&&(a===b||a.startsWith(b+" ")||b.startsWith(a+" "))}
 function activeMarqueeSBCs(now=new Date()){
- const cycle=sbcRotationWindow(now,4),key=cycle.key,end=new Date(cycle.expiresAt),rotation=MARQUEE_ROTATIONS[hashNum(key)%MARQUEE_ROTATIONS.length],groupSet=`top_partien_${key}`,groupReward={pack:"primegold",qty:1};
+ const key=sbcWeeklyWindowKey(now),end=nextSbcWeeklyReset(now),rotation=MARQUEE_ROTATIONS[hashNum(key)%MARQUEE_ROTATIONS.length],groupSet=`top_partien_${key}`,groupReward={pack:"primegold",qty:1};
  return rotation.map((match,i)=>{
-  const common={group:"Top-Partien",id:`${groupSet}_${i+1}`,name:match.name,desc:`Top-Partien Aufgabe ${i+1}/4 · wöchentlich erneuert.`,filter:b=>true,count:11,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i,matchLeague:match.league,matchNation:match.nation,matchClubs:match.clubs};
+  const common={group:"Top-Partien",id:`${groupSet}_${i+1}`,name:match.name,desc:`Top-Partien Aufgabe ${i+1}/4 · Donnerstag bis Donnerstag, 19:00 Uhr (deutsche Zeit).`,filter:b=>true,count:11,once:true,live:true,groupSet,groupReward,expiresAt:end.getTime(),releaseKey:key,order:i,matchLeague:match.league,matchNation:match.nation,matchClubs:match.clubs};
   if(i===0)return{...common,req:`11 Spieler · min. 1 ${nationLabel(match.nation)} · min. 3 Ligen · max. 4 gleicher Verein · Ø GES 74 · 14 Chemie`,requiredNation:match.nation,minLeagues:3,maxSameClub:4,minAvg:74,minChem:14,reward:{pack:"jumbo-gold",qty:1}};
   if(i===1)return{...common,req:`11 Spieler · min. 2 aus ${match.league} · min. 3 Nationen · min. 5 Vereine · Ø GES 76 · 18 Chemie`,minMatchLeaguePlayers:2,minNations:3,minClubs:5,minAvg:76,minChem:18,reward:{pack:"premium-electrum-reward",qty:1}};
   if(i===2)return{...common,req:`11 Spieler · min. 1 aus einem beteiligten Verein · max. 4 Nationen · min. 3 aus ${match.league} · min. 1 selten · Ø GES 78 · 22 Chemie`,minEitherMatchClub:1,maxNations:4,minMatchLeaguePlayers:3,minRare:1,minAvg:78,minChem:22,reward:{pack:"small-prime-gold",qty:1}};
@@ -2059,7 +2059,7 @@ function sbcGroupBannerHTML(group,rows){
  }
  if(group!=="Top-Partien")return"";
  const reward=sbcRewardText(sample.groupReward);
- return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">ALLE 4 TAGE · NEUE AUFGABEN</span><h3>Top-Partien</h3><p>Schließe alle vier Aufgaben ab. Jede SBC gibt ein Pack, danach folgt die Gruppenbelohnung.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
+ return `<div class="sbc-live-banner"><div><span class="sbc-live-kicker">WÖCHENTLICH · DONNERSTAG 19:00</span><h3>Top-Partien</h3><p>Schließe alle vier Aufgaben ab. Jede SBC gibt ein Pack, danach folgt die Gruppenbelohnung.</p><div class="sbc-live-meta"><b>${p.done}/${p.total} abgeschlossen</b><span>Gruppenbelohnung: ${esc(reward)}</span><span>${claimed?"Belohnung abgeholt":`Noch ${sbcTimeLeft(sample.expiresAt)}`}</span></div></div></div>`
 }
 
 function newFooteraSaveId(){const raw=(globalThis.crypto?.randomUUID?.()||uid()+uid()).replace(/[^a-z0-9]/gi,"").toUpperCase();return "GF-"+raw.slice(0,16)}
@@ -6533,7 +6533,7 @@ function sbcFeatureGroupCard(rows,detail=false){
  }
  const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`;
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
- return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"WÖCHENTLICHE SBC-GRUPPE"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+ return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"DONNERSTAG BIS DONNERSTAG · 19:00 UHR"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
@@ -6609,8 +6609,9 @@ function submitSbcById(id){
  finalizeSbcSubmission(id)
 }
 $("sbcTabs").addEventListener("click",e=>{const b=e.target.closest("[data-sbc-group]");if(!b)return;activeSbcGroup=b.dataset.sbcGroup;activeSbcSet=null;activeSbcId=null;renderSBC()});
-let sbcContentRefreshKey=promoWindowKey(new Date(),19)+"|"+sbcRotationWindow(new Date(),3).key+"|"+sbcRotationWindow(new Date(),4).key;
-setInterval(()=>{const key=promoWindowKey(new Date(),19)+"|"+sbcRotationWindow(new Date(),3).key+"|"+sbcRotationWindow(new Date(),4).key;if(key===sbcContentRefreshKey)return;sbcContentRefreshKey=key;if(currentViewId()==="sbcView"){activeSbcId=null;activeSbcSet=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcGroup="Täglich";renderSBC();toast("Neue Tages-SBCs sind da.")}},60000);
+function sbcContentWindowKey(now=new Date()){return [promoWindowKey(now,19),sbcWeeklyWindowKey(now),sbcRotationWindow(now,3).key,sbcRotationWindow(now,4).key].join("|")}
+let sbcContentRefreshKey=sbcContentWindowKey();
+setInterval(()=>{const key=sbcContentWindowKey();if(key===sbcContentRefreshKey)return;sbcContentRefreshKey=key;if(currentViewId()==="sbcView"){activeSbcId=null;activeSbcSet=null;sbcAssistantState=null;sbcSlotDetailState=null;sbcPickerState=null;activeSbcGroup="Täglich";renderSBC();toast("SBC-Angebot aktualisiert.")}},60000);
 
 $("sbcView").addEventListener("click",e=>{
  const setOpen=e.target.closest("[data-sbc-set]"),setBack=e.target.closest("[data-sbc-set-back]"),open=e.target.closest("[data-sbc-open]"),back=e.target.closest("[data-sbc-back]"),toggle=e.target.closest("[data-sbc-test-toggle]"),remove=e.target.closest("[data-sbc-remove]"),slot=e.target.closest(".sbc-work-slot"),search=e.target.closest("[data-sbc-player-search]"),close=e.target.closest("[data-sbc-picker-close]"),pick=e.target.closest("[data-sbc-pick-uid]"),submit=e.target.closest("[data-submit]"),sourceQuick=e.target.closest("[data-sbc-source-quick]"),warnReplace=e.target.closest("[data-sbc-warning-replace]"),warnConfirm=e.target.closest("[data-sbc-warning-confirm]"),warnCancel=e.target.closest("[data-sbc-warning-cancel]"),assistantOpen=e.target.closest("[data-sbc-assistant-open]"),assistantClose=e.target.closest("[data-sbc-assistant-close]"),assistantBuild=e.target.closest("[data-sbc-assistant-build]"),slotDetailClose=e.target.closest("[data-sbc-slot-detail-close]"),slotPrev=e.target.closest("[data-sbc-slot-prev]"),slotNext=e.target.closest("[data-sbc-slot-next]"),slotAdd=e.target.closest("[data-sbc-slot-add]"),slotRemoveDetail=e.target.closest("[data-sbc-slot-remove-detail]");
@@ -8594,7 +8595,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.304";
+const GFUT_BUILD="V21.305";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8652,7 +8653,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21304",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21305",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
