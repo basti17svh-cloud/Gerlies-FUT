@@ -5,11 +5,12 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21269';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21269';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21296';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
+import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
+import {footeraHDWanted} from './3d-player-hd.mjs?v=21296';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21296';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21252';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
@@ -1047,7 +1048,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const celebrationActive=event.type==='goal'&&!labFocusedPreview&&!DEFENSIVE_SCENES.includes(sequence);
  const CELEBRATION_START=IMPACT_TIME+.35,CELEBRATION_CUT=IMPACT_TIME+.6;
  const celebrationKey=`${event.matchId??''}|${event.id??''}|${event.minute??''}|${event.playerName??''}`;
- const celebrationKind=celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind);
+ const celebrationKind=globalThis.__FOOTERA_QA_CELEBRATION||(celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind));
  if(celebrationActive&&celebrationKey!==celebrationMemory.key)celebrationMemory={key:celebrationKey,kind:celebrationKind};
  const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
@@ -1578,7 +1579,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      for(let i=0;i<players.length;i++){
       const actor=players[i],kit=RUNS[i].team==='attack'?attackKit:defendKit;
       const name=humanSquad?squadNames[i]:i===0?event.playerName:'footballer '+i;
-      const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex),
+      const glb=mountFooteraPlayerModel(actor.root,actor,kit,name,!weak&&(i===0||i===defenderIndex||humanSquad&&footeraHDWanted()&&huggers.some(h=>h.index===i)),
        squadVariant,actor.skinned||humanSquad?null:lowKitAtlas(kit,squadNumbers[i],event.playerSkinTones?.[i]),
        humanLook(i,squadNumbers[i],event.playerSkinTones?.[i]));
       if(!glb)throw new Error('GLB unavailable on field player '+i);
@@ -1832,6 +1833,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
+  }
+  // V21.296: the two side huggers lay an arm round the scorer, the
+  // hand on his far shoulder (the GLB solves the arm with two-bone IK).
+  const embraceFar=new THREE.Vector3(),embraceNeck=new THREE.Vector3(),embraceOther=new THREE.Vector3(),embraceHome=new THREE.Vector3();
+  function embraceScorer(){
+   const scorer=importedPlayer?.model;
+   for(const h of huggers){
+    const frame=squadMotionFrames[h.index];if(!frame)continue;
+    const on=frame.celebration&&h.slot<2&&scorer?smooth((frame.celebration.arms-.55)/.4):0;
+    if(on<=0){frame.embrace=null;continue}
+    const left=scorer.getObjectByName('upperarm_l'),right=scorer.getObjectByName('upperarm_r'),neck=scorer.getObjectByName('neck_01');
+    if(!left||!right||!neck){frame.embrace=null;continue}
+    players[h.index].root.getWorldPosition(embraceHome);
+    left.getWorldPosition(embraceFar);right.getWorldPosition(embraceOther);neck.getWorldPosition(embraceNeck);
+    if(embraceOther.distanceToSquared(embraceHome)>embraceFar.distanceToSquared(embraceHome))embraceFar.copy(embraceOther);
+    const embrace=frame.embrace||(frame.embrace={target:new THREE.Vector3(),weight:0});
+    embrace.target.copy(embraceFar).lerp(embraceNeck,.3);embrace.target.y+=.04;embrace.weight=on;
+   }
   }
   function update(time,{replay=false}={}){
    renderTime=time;
@@ -2224,6 +2243,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
    }
    importedPlayer?.animate(time,importedMotionFrame);
+   embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);pyro?.update(time);
@@ -2264,6 +2284,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp);
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
    }
+   // Preview QA only: a portrait camera on one player's head.
+   const qaCam=globalThis.__FOOTERA_QA_PORTRAIT;
+   if(qaCam&&players[qaCam.index??0]){const head=importedPlayers[qaCam.index??0]?.model?.getObjectByName('Head')||null,p=new THREE.Vector3();
+    if(head)head.getWorldPosition(p);else players[qaCam.index??0].root.getWorldPosition(p).add(new THREE.Vector3(0,1.65,0));
+    const yaw=players[qaCam.index??0].root.getWorldQuaternion(new THREE.Quaternion()),f=new THREE.Vector3(0,0,-1).applyQuaternion(yaw);
+    camera.position.set(p.x+f.x*qaCam.dist+(qaCam.side||0)*f.z,p.y+(qaCam.up||0),p.z+f.z*qaCam.dist-(qaCam.side||0)*f.x);camTarget.set(p.x,p.y+(qaCam.aim||0),p.z);camera.fov=qaCam.fov||24}
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);

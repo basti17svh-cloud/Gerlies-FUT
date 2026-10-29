@@ -44,11 +44,25 @@ test('celebration arms move smoothly, never lock straight and lift the shoulders
    // A fist pump or badge tap may be quick, but no joint may pop between frames.
    if(previous)angles.forEach((v,i)=>assert.ok(Math.abs(v-previous[i])<.4,`${kind} jumps at ${s.toFixed(2)}`));
    previous=angles;
-   if(s>.6)p.elbows.forEach(e=>assert.ok(e.rotation.x>.2,`${kind} locked elbow at ${s.toFixed(2)}`));
+   // V21.296: until the gesture starts the captured running arms own the
+   // elbows; once the pose owns the arms they must never lock straight.
+   if(s>.6&&out.arms>.8)p.elbows.forEach(e=>assert.ok(e.rotation.x>.2,`${kind} locked elbow at ${s.toFixed(2)}`));
    shrug=Math.max(shrug,...out.shrug);
    assert.equal(out.head.length,2);assert.equal(out.open.length,2);
   }
   assert.ok(shrug>.1,kind+' shoulders move with the arms');
+ }
+});
+
+test('the scorer runs off with his own arms and then holds the pose without flapping', ()=>{
+ // Badge: still sprinting at 0.5 s, so the run (not the pose) owns the arms.
+ assert.ok(applyCelebrationPose(driver(),'badge',.5).arms<.05);
+ assert.ok(applyCelebrationPose(driver(),'badge',2.4).arms>.95);
+ // A held pose may live a little but must not swing like a metronome.
+ for(const kind of ['open_arms','arms_crossed','airplane','hug_left','hug_right']){
+  let low=Infinity,high=-Infinity;
+  for(let s=2;s<=3.6;s+=1/30){const p=driver();applyCelebrationPose(p,kind,s);const z=p.arms[0].rotation.z+p.arms[0].rotation.x;low=Math.min(low,z);high=Math.max(high,z)}
+  assert.ok(high-low<.25,`${kind} arm swings ${(high-low).toFixed(2)} rad while held`);
  }
 });
 

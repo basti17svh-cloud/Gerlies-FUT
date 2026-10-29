@@ -133,5 +133,23 @@ export function createUalPoseLayer(bones){
   }
   return state;
  }
- return{apply,shapeHands,state};
+ // V21.296 (off with footera-3d-motion-capture=0): the captured legs too, on
+ // top of the procedural gait, by share w of the last apply's weight.
+ const LEGS=['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r'];
+ // The capture's thighs hang from the capture's pelvis: carry them over to
+ // our (procedural) pelvis so the legs keep the captured stride in body space.
+ const pelvisBone=bones.get('pelvis');
+ const pelvisFrame=pelvisBone?pelvisBone.quaternion.clone().multiply(new THREE.Quaternion().fromArray(FOOTERA_UAL_POSE.rest.pelvis).invert()):null;
+ const legTarget=new THREE.Quaternion(),pelvisNow=new THREE.Quaternion();
+ function applyLegs(w=1){
+  const share=clamp(state.weight*w);if(share<=.001||!pelvisFrame)return 0;
+  pelvisNow.copy(pelvisBone.quaternion).invert().multiply(pelvisFrame).multiply(targets.get('pelvis'));
+  for(const name of LEGS){
+   const bone=bones.get(name);if(!bone)continue;
+   legTarget.copy(targets.get(name));if(name.startsWith('thigh'))legTarget.premultiply(pelvisNow);
+   bone.quaternion.slerp(legTarget,share);
+  }
+  return share;
+ }
+ return{apply,applyLegs,shapeHands,state};
 }
