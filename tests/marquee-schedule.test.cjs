@@ -8,7 +8,7 @@ function setup(){
  const ctx={nationLabel:x=>x};vm.createContext(ctx);
  vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../footera-time.js'),'utf8'),ctx);
  vm.runInContext(app.match(/^function hashNum\(.*$/m)[0],ctx);
- vm.runInContext(section('const MARQUEE_ROTATIONS=','// Tägliche SBCs:'),ctx);
+ vm.runInContext(section('const MARQUEE_RELEASES=','// Tägliche SBCs:'),ctx);
  vm.runInContext(section('function activeMarqueeSBCs(','function activeEventPlayerSBCs('),ctx);
  vm.runInContext(app.match(/^function sbcContentWindowKey\(.*$/m)[0],ctx);
  return ctx;
@@ -20,7 +20,7 @@ test('current Top-Partien are immediately available until Thursday November 5 at
  for(const s of r){assert.equal(s.releaseKey,'2026-10-29');assert.equal(s.expiresAt,Date.parse('2026-11-05T18:00:00Z'));assert.equal(s.once,true);}
  assert.deepEqual(Array.from(rows(c,'2026-11-01T23:00:00Z'),s=>s.id),Array.from(r,s=>s.id),'no midnight or four-day rollover');
 });
-test('Thursday changes IDs and expiry exactly at 19 Berlin, also across DST',()=>{
+test('weekly scheduling stays at 19 Berlin across summer and winter time',()=>{
  const c=setup();
  for(const [before,after,expiry] of [
   ['2026-10-29T17:59:59Z','2026-10-29T18:00:00Z','2026-11-05T18:00:00Z'],
@@ -28,11 +28,22 @@ test('Thursday changes IDs and expiry exactly at 19 Berlin, also across DST',()=
   ['2026-03-26T17:59:59Z','2026-03-26T18:00:00Z','2026-04-02T17:00:00Z'],
   ['2026-10-22T16:59:59Z','2026-10-22T17:00:00Z','2026-10-29T18:00:00Z']
  ]){
-  const old=rows(c,before),fresh=rows(c,after);
-  assert.equal(old[0].expiresAt,Date.parse(after));assert.equal(fresh[0].expiresAt,Date.parse(expiry));
-  assert.ok(fresh.every(s=>!old.some(o=>o.id===s.id)));
-  assert.equal(new Set(fresh.map(s=>s.groupSet)).size,1);
+  assert.equal(vm.runInContext(`nextSbcWeeklyReset(new Date("${before}")).toISOString()`,c),new Date(after).toISOString());
+  assert.equal(vm.runInContext(`nextSbcWeeklyReset(new Date("${after}")).toISOString()`,c),new Date(expiry).toISOString());
  }
+});
+test('release uses four verified upcoming fixtures and fresh completion IDs',()=>{
+ const c=setup(),r=rows(c,'2026-10-29T18:00:00Z');
+ assert.deepEqual(Array.from(r,s=>s.name),['LOSC Lille – RC Lens','Chelsea – Manchester United','Bayer Leverkusen – VfB Stuttgart','AC Milan – Inter']);
+ for(const s of r){
+  assert.match(s.id,/^top_partien_2026-10-29_fixtures_[1-4]$/);
+  assert.ok(Date.parse(s.kickoffAt)>Date.parse('2026-10-29T18:00:00Z')&&Date.parse(s.kickoffAt)<s.expiresAt);
+  assert.match(s.sourceUrl,/^https:/);assert.equal(s.matchClubs.length,2);
+ }
+ assert.equal(r[2].minEitherMatchClub,1);assert.equal(r[3].requireBothMatchClubs,true);
+ assert.equal(new Set(r.map(s=>s.groupSet)).size,1);
+ assert.equal(rows(c,'2026-10-29T17:59:59Z').length,0,'never launch before Thursday 19');
+ assert.equal(rows(c,'2026-11-05T18:00:00Z').length,0,'never relabel old fixtures as a fresh week');
 });
 test('weekly boundary refreshes an open SBC view independently of daily and grind keys',()=>{
  const c=setup();c.promoWindowKey=()=> 'same-daily-key';c.sbcRotationWindow=()=>({key:'same-grind-key'});
