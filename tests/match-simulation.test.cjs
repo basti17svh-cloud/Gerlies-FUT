@@ -56,7 +56,8 @@ function simulator(){
 test('a 84/26 squad usually wins against 50/5 without frequent 0:0 games',()=>{
  const{sample}=simulator(),strong=sample({rating:84,chem:26,opponentRating:50,opponentChem:5});
  // Balance limits in this file widened on 19.10.2026 after the V21.160 action-aware engine (agreed with Basti).
- assert.ok(strong.win>.88&&strong.win<.997,`win rate ${strong.win}`);
+ // A 34-rating mismatch may yield a perfect finite sample; competitive underdogs are tested below.
+ assert.ok(strong.win>.98&&strong.win<=1,`win rate ${strong.win}`);
  assert.ok(strong.goalless<.05,`0:0 rate ${strong.goalless}`);
  assert.ok(strong.goals>2.5&&strong.goals<7.5,`goals ${strong.goals}`);
  assert.ok(strong.conceded>0,'the weaker side can still score');
@@ -80,11 +81,13 @@ test('rating advantages scale without making normal underdogs irrelevant',()=>{
  const two=sample({rating:84,chem:20,opponentRating:82,opponentChem:20,count:3000});
  const six=sample({rating:88,chem:20,opponentRating:82,opponentChem:20,count:3000});
  const ten=sample({rating:88,chem:20,opponentRating:78,opponentChem:20,count:3000});
- assert.ok(two.win>.42&&two.win<.57,`+2 GES win rate ${two.win}`);
- assert.ok(six.win>.55&&six.win<.75,`+6 GES win rate ${six.win}`);
- assert.ok(ten.win>.65&&ten.win<.88,`+10 GES win rate ${ten.win}`);
+ console.log('V21.302 RATING SCALE',JSON.stringify({two,six,ten}));
+ // Correct away-side power and stronger individual stats deliberately widen favorite margins.
+ assert.ok(two.win>.42&&two.win<.60,`+2 GES win rate ${two.win}`);
+ assert.ok(six.win>.55&&six.win<.82,`+6 GES win rate ${six.win}`);
+ assert.ok(ten.win>.65&&ten.win<.94,`+10 GES win rate ${ten.win}`);
  assert.ok(two.win<six.win&&six.win<ten.win,'larger rating gaps should increase the favorite win rate');
- assert.ok(1-ten.win-ten.draw>.06,`+10 GES upset rate ${1-ten.win-ten.draw}`);
+ assert.ok(1-ten.win-ten.draw>.03,`+10 GES upset rate ${1-ten.win-ten.draw}`);
 });
 
 test('90 OVR / 33 chemistry is consistently stronger than 84 / 20, without forced wins',()=>{
@@ -213,4 +216,37 @@ test('real saves, blocks, touchline losses and interceptions create the matching
  delete m.nextRestart;delete m.nextCounter;ctx.eventChance=()=>false;ctx.Math.random=()=>.5;ctx.simAttack(true);assert.equal(m.nextCounter.side,'away');
  ctx.eventChance=()=>true;ctx.simAttack(false);assert.equal(m.shotEvents.at(-1).sceneKind,'turnover_counter');assert.equal(m.shotEvents.at(-1).actionKind,'through');
  ctx.eventChance=chance;
+});
+
+test('V21.302: real attacks reward stats and relevant Plus on both sides',()=>{
+ function attempts({side='home',rating=75,style=null,plus=false,kind='through',count=800}){
+  const {ctx,sample}=simulator();sample({rating:75,chem:20,opponentRating:75,opponentChem:20,count:1});
+  const originalRows=ctx.matchActorRows,originalActions=ctx.FooteraMatchActions;
+  ctx.matchActorRows=s=>originalRows(s).map(row=>({...row,attrs:{...row.attrs,...(s===side?{pas:rating,dri:rating,pac:rating,sho:rating}:{})},styles:s===side&&style?[{id:style,plus}]:[]}));
+  ctx.FooteraMatchActions={...originalActions,pick:()=>kind};
+  let shots=0,goals=0;
+  for(let n=0;n<count;n++){
+   Object.assign(ctx.match,{minute:30,home:0,away:0,shotsHome:0,shotsAway:0,shotEvents:[],goalEvents:[],defensiveEvents:[],nextRestart:null,nextCounter:null,finished:false});
+   ctx.simAttack(side==='home');shots+=ctx.match.shotEvents.length;goals+=ctx.match.home+ctx.match.away;
+  }
+  return{shots,goals};
+ }
+ const weak=attempts({rating:45}),strong=attempts({rating:90});
+ assert.ok(strong.shots>weak.shots*1.7,JSON.stringify({weak,strong}));
+ assert.ok(strong.goals>weak.goals*3,JSON.stringify({weak,strong}));
+ for(const side of ['home','away']){
+  const plain=attempts({side}),normal=attempts({side,style:'incisive-pass'}),plus=attempts({side,style:'incisive-pass',plus:true});
+  console.log('V21.302 PASS SPECIALIST',side,JSON.stringify({plain,normal,plus}));
+  assert.ok(plus.shots>plain.shots*1.06,`${side}: Plus should create more attempts`);
+  assert.ok(plus.shots>normal.shots,`${side}: Plus must beat normal`);
+ }
+});
+
+test('V21.302: away attacks compare away power against home power',()=>{
+ const {ctx,sample}=simulator();sample({rating:88,chem:20,opponentRating:70,opponentChem:20,count:1});
+ const original=ctx.FooteraMatchActions,seen=[];
+ ctx.FooteraMatchActions={...original,matchupBalance:(...args)=>{seen.push(args);return original.matchupBalance(...args)}};
+ ctx.match.finished=false;ctx.match.minute=30;ctx.match.nextRestart=null;ctx.match.nextCounter=null;
+ ctx.simAttack(false);
+ assert.ok(seen.length);assert.ok(seen[0][0]<seen[0][1],JSON.stringify(seen[0]));
 });

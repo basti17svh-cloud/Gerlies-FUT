@@ -52,3 +52,44 @@ test('3D respects the simulated finish and attack type for goals, saves and miss
   assert.equal(H.snapshot({...event,...visual}).actionKind,kind);
  }
 });
+
+test('V21.302: specialist attacks and signature finishes separate normal and Plus',()=>{
+ const team=styles=>Array.from({length:10},()=>player({},styles));
+ const frequency=(kind,rows)=>{const weights=A.attackWeights({},null,rows);return weights[kind]/Object.values(weights).reduce((a,b)=>a+b,0)};
+ for(const [kind,id] of [['distance','power-shot'],['dribble','technical'],['cross','aerial'],['through','incisive-pass']]){
+  const plain=frequency(kind,team([])),normal=frequency(kind,team([{id}])),plus=frequency(kind,team([{id,plus:true}]));
+  assert.ok(plus>normal*1.15&&normal>plain*1.10,`${kind}: ${plain}, ${normal}, ${plus}`);
+ }
+ const weak=team([]).map(r=>({...r,attrs:{...r.attrs,sho:40}})),strong=team([]).map(r=>({...r,attrs:{...r.attrs,sho:90}}));
+ assert.ok(frequency('distance',strong)>frequency('distance',weak)*2,'shot selection follows shooting, independent of OVR');
+ for(const [kind,id,finish] of [['through','chip-shot','chip'],['cross','acrobatic','volley'],['combination','finesse-shot','finesse'],['combination','low-driven-shot','low_driven']]){
+  const count=plus=>Array.from({length:1000},(_,i)=>A.finishFor(player({},[{id,plus}]),kind,(i+.5)/1000)).filter(f=>f===finish).length;
+  assert.ok(count(true)>count(false)*1.35,id);
+ }
+});
+
+test('V21.302: relevant Plus has a material effect with bounded, non-stacking advantages',()=>{
+ const make=(id,plus)=>player({},[{id,plus}]);
+ const plain=A.goalChance(.10,player(),shot),normal=A.goalChance(.10,make('power-shot',false),shot),plus=A.goalChance(.10,make('power-shot',true),shot);
+ assert.ok(normal>plain*1.15&&plus>normal*1.20);
+ for(const [fn,kind,id,phase] of [['buildSkill','through','incisive-pass'],['duelSkill','dribble','technical'],['defendSkill','through','intercept','build'],['defendSkill','dribble','anticipate','duel']]){
+  assert.ok(A[fn](make(id,true),kind,phase)>A[fn](make(id,false),kind,phase)+5,fn);
+ }
+ const stacked=player({},[{id:'technical',plus:true},{id:'trickster',plus:true},{id:'press-proven',plus:true}]);
+ assert.equal(A.duelSkill(stacked,'dribble'),A.duelSkill(make('technical',true),'dribble'));
+ assert.ok(A.goalChance(.1,player(),shot,make('far-reach',true))<A.goalChance(.1,player(),shot,player())*.81);
+ assert.ok(A.goalChance(.1,player(),shot,null,make('block',true))<plain*.83);
+ assert.equal(A.goalChance(.1,make('power-header',true),shot),plain,'irrelevant traits confer no shooting bonus');
+ assert.ok(A.goalChance(.1,player({sho:40},[{id:'power-shot',plus:true}]),shot)<A.goalChance(.1,player({sho:90}),shot)*.2);
+});
+
+
+test('V21.302: situational creative Plus and endurance retain their own contexts',()=>{
+ const make=(id,plus)=>player({},[{id,plus}]);
+ const tight={actionKind:'through',finish:'chip',tightLateGame:true};
+ assert.ok(A.goalChance(.1,make('gamechanger',true),tight)>A.goalChance(.1,make('gamechanger',false),tight)*1.08);
+ assert.equal(A.goalChance(.1,make('gamechanger',true),{...tight,tightLateGame:false}),A.goalChance(.1,player(),{...tight,tightLateGame:false}));
+ const outside={actionKind:'dribble',finish:'normal'};
+ assert.ok(A.goalChance(.1,make('trivela',true),outside)>A.goalChance(.1,make('trivela',false),outside)*1.08);
+ assert.ok(A.staminaMultiplier({},make('relentless',true))<A.staminaMultiplier({},make('relentless',false))*.90);
+});
