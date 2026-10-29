@@ -49,6 +49,10 @@ test('opponents have three increasing targets and three established simulation s
 test('frozen server pool includes all 18 approved Team 1 cards and no SBC, objective or Team 2 cards',()=>{
  const sql=fs.readFileSync(path.join(root,'online/footera-halloween-cup-pool-v21.297.sql'),'utf8');
  const options=sql.split('\n').filter(l=>l.startsWith("('")).map(l=>JSON.parse(l.slice(l.indexOf(",'" )+2,l.lastIndexOf("'::jsonb")).replace(/''/g,"'")));
+ const playerSource=fs.readFileSync(path.join(root,'footera-app.js'),'utf8'),csvCtx={csv:fs.readFileSync(path.join(root,'assets/players-db.csv'),'utf8')};
+ vm.runInNewContext(playerSource.slice(playerSource.indexOf('function csvRow('),playerSource.indexOf('function sofifaFace('))+';this.rows=parseCSV(csv)',csvCtx);
+ const maleClubIds=new Set(csvCtx.rows.filter(r=>r.gender==="Men's Football").map(r=>r.club_team_id));
+ for(const o of options){assert.ok(maleClubIds.has(o.item.baseSnapshot.teamId),o.item.baseSnapshot.name+' uses the men club identity');assert.doesNotMatch(o.item.baseSnapshot.league,/WSL|Liga F Moeve/)}
  assert.equal(options.length,18);assert.equal(new Set(options.map(o=>o.item.pid)).size,18);
  for(const o of options){assert.equal(o.item.eventReleaseId,'halloween-2026');assert.equal(o.item.tradeable,false);assert.equal(o.item.cosmeticDesign,undefined);assert.equal(o.item.eventStats.length,6)}
  assert.equal(Math.min(...options.map(o=>o.item.displayRating)),84);assert.equal(Math.max(...options.map(o=>o.item.displayRating)),91);

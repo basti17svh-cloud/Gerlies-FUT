@@ -36,9 +36,13 @@ Kaufprüfung und Anzeige verwenden dasselbe aktuelle Angebotsobjekt. Die globale
 
 Produktionsschema ausschließlich lesend abgeglichen: Cloud-Speicherfunktion enthält die aktuelle Gastkonto-Unterstützung. Der additive Schutz für Cup-Quittungen prüft die tatsächlich benötigten Eigentümer-/Revisions-/Belohnungsabschnitte statt eines veralteten Kommentars. Isolierte SQL-Prüfung verwendet jetzt ebenfalls die aktuelle Gastkonto-Migration als Basis.
 
+## Abschließender Katalogabgleich
+
+Die Zuordnung des Vereins im eingefrorenen Pick-Pool berücksichtigt ausschließlich die Männerdatenbank. Zuvor konnten bei Arsenal, Atlético de Madrid, Manchester City, Chelsea und Liverpool gleichnamige Frauenteams die Vereins-ID bzw. Liga-/Wappendaten liefern. Die Spielerauswahl selbst blieb unverändert. Der Generator filtert jetzt ausdrücklich Men's Football; der Test gleicht alle 18 Vereins-IDs gegen die Männerdatenbank ab. Kein produktiver Pick wurde verändert.
+
 ## Vor Veröffentlichung offen
 
-- GitHub-Upload/PR/CI und echter Postgres-Workflow. Der Upload wurde durch automatische Freigabeprüfung wegen fehlender ausdrücklicher Veröffentlichungsfreigabe und als unverifiziert eingestuftem GitHub-Ziel abgelehnt. Kein Umweg wurde genutzt.
+- Upload nach ausdrücklicher Nutzerfreigabe über die verbundene GitHub-Anbindung erledigt: PR #90. Der dortige Halloween-Cup-Workflow einschließlich echter isolierter PostgreSQL-Prüfung wurde für den ersten Head bestanden. Aktuelle CI-Ergebnisse müssen vor Veröffentlichung weiterhin für den endgültigen Head grün sein.
 - Anwendung der beiden neuen Backend-Skripte auf dem verifizierten Footera-Projekt, anschließende Berechtigungs-/Funktionskontrolle.
 - Merge/Pages-Veröffentlichung und Abgleich der ausgelieferten Versions-/Cachedateien.
 - Echte Geräteabnahme und vollständiger realer Kontoablauf ab Eventstart. Keine produktiven Belohnungen oder Spielstände wurden verändert.
