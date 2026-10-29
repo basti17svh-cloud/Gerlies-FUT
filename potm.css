@@ -2,7 +2,7 @@
    SA3 Midnight Silver and L2 Lime Edge. Existing master size and live fields remain. */
 .card-shell:has(>.custom-card.potm){--card-emblems-gap:2.8cqw;--card-club-size:10.5cqw;--card-league-size:10.5cqw;filter:drop-shadow(0 0 7px #0008)}
 .card-shell .custom-card.potm{
- --potm-accent:#e2c7ce;--potm-face-width:162%;--potm-face-left:-35%;--potm-face-top:-42%;
+ --potm-accent:#e2c7ce;
  --card-column-fill:linear-gradient(180deg,#0009,#0003);--card-name-fill:linear-gradient(90deg,#10050a,#3b1020,#10050a);
  --card-name-border:var(--potm-accent);--card-stats-fill:transparent;
  --card-name-color:#f8f5f8;--card-stats-color:var(--potm-accent);--card-value-color:#f8f5f8;
@@ -19,15 +19,6 @@
 .card-shell .custom-card.potm.potm-laliga{--potm-accent:#e2c5ce;background-image:url("./assets/footera/events/potm/frames/laliga.svg");--card-name-fill:linear-gradient(90deg,#10060b,#35101c,#10060b)}
 .card-shell .custom-card.potm.potm-serie-a{--potm-accent:#c5d4e4;--card-name-fill:linear-gradient(90deg,#030910,#152538,#030910);background-image:url("./assets/footera/events/potm/frames/serie-a.svg");color:#eff7ff;--card-name-color:#eff7ff;--card-value-color:#eff7ff}
 .card-shell .custom-card.potm.potm-ligue-1{--potm-accent:#cfec63;--card-name-fill:linear-gradient(90deg,#040c14,#162333,#040c14);background-image:url("./assets/footera/events/potm/frames/ligue-1.svg")}
-.card-shell .custom-card.potm[data-player-id="247827"]{--potm-face-width:186%;--potm-face-left:-61%;--potm-face-top:-40%}
-.card-shell .custom-card.potm[data-player-id="190765"]{--potm-face-width:162%;--potm-face-left:-33%;--potm-face-top:-43%}
-.card-shell .custom-card.potm[data-player-id="233419"]{--potm-face-width:152%;--potm-face-left:-33%;--potm-face-top:-43%}
-.card-shell .custom-card.potm[data-player-id="231447"]{--potm-face-width:131%;--potm-face-left:-15%;--potm-face-top:-33%}
-/* Position transparent source canvases in CSS; keep the original cutouts intact.
-   Only these four local action images are affected. Normal portraits keep their fallback layout. */
-:is(.card-shell,.pitch .slot .mini .card-shell,.friend-pitch .friend-slot .mini .card-shell,.squad-drawer #bench .mini .card-shell,.squad-drawer #reserve .mini .card-shell) .custom-card.potm .face img[src*="events/potm/"]{
- position:absolute!important;width:var(--potm-face-width)!important;height:auto!important;max-width:none!important;max-height:none!important;left:var(--potm-face-left)!important;top:var(--potm-face-top)!important;right:auto!important;bottom:auto!important;
-}
 .card-shell .custom-card.potm .face img{filter:drop-shadow(0 .7cqw .9cqw #01020bd9)}
 .card-shell .custom-card.potm .card-alt-positions{font-size:max(3px,3.5cqw)}
 .quality-tag.potm{border-color:#b9a765!important;background:#171c2c!important;color:#ffe6a1!important}
