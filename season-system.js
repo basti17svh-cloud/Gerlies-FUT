@@ -39,7 +39,7 @@ const SEASON_SP_SCALE={s2:1.5};
 function seasonLevelSp(tier,seasonKey=seasonInfo().key){return Math.round(tier.baseSp*(SEASON_SP_SCALE[seasonKey]||1)/50)*50}
 for(const tier of SEASON_REWARDS){tier.baseSp=tier.sp;Object.defineProperty(tier,"sp",{enumerable:true,configurable:true,get(){return seasonLevelSp(this)}})}
 // Season-specific reward swaps on top of the shared 30-tier ladder.
-const SEASON_REWARD_OVERRIDES={s2:{free:{4:{pack:"halloween-pack"}},premium:{6:{pack:"halloween-pack"}}}};
+const SEASON_REWARD_OVERRIDES={s2:{free:{4:{pack:"halloween-pack"},16:{pack:"pass-83x10"},28:{pack:"pass-84x5"}},premium:{6:{pack:"halloween-pack"},16:{pack:"pass-84x10"},28:{pack:"pass-85x7"}}}};
 function seasonStoryKey(seasonKey,which,level){
  const key=`${seasonKey}-${which==="premium"?"premium-":""}${level}`;
  if(seasonKey==="s1")return level===15||level===30?key:"";
