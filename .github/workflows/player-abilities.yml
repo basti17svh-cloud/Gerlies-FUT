@@ -2,9 +2,9 @@ name: Footera Player Abilities
 on:
   push:
     branches: [main, 'codex/player-abilities-*']
-    paths: ['3d-skill-actions.mjs', '3d-playbook.mjs', '3d-highlights*', '3d-player-prototype.mjs', 'footera-match-actions.js', 'footera-app.js', 'tests/player-abilities*', '.github/workflows/player-abilities.yml']
+    paths: ['3d-playstyle-moments.mjs', 'tests/playstyle-moments*', '3d-skill-actions.mjs', '3d-playbook.mjs', '3d-highlights*', '3d-player-prototype.mjs', 'footera-match-actions.js', 'footera-app.js', 'tests/player-abilities*', '.github/workflows/player-abilities.yml']
   pull_request:
-    paths: ['3d-skill-actions.mjs', 'tests/player-abilities*', '.github/workflows/player-abilities.yml']
+    paths: ['3d-playstyle-moments.mjs', 'tests/playstyle-moments*', '3d-skill-actions.mjs', 'tests/player-abilities*', '.github/workflows/player-abilities.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,7 +19,7 @@ jobs:
           node-version: '22'
       - name: Foot, skill, choreography and projection regressions
         run: |
-          node --test tests/player-abilities.test.cjs tests/match-actions.test.cjs tests/playbook-variation.test.cjs tests/playstyle-signature.test.cjs
+          node --test tests/playstyle-moments.test.cjs tests/player-abilities.test.cjs tests/match-actions.test.cjs tests/playbook-variation.test.cjs tests/playstyle-signature.test.cjs
           node --test --test-name-pattern='V21.303' tests/match-simulation.test.cjs
       - name: Install isolated WebGL test runtime
         run: |
@@ -28,10 +28,14 @@ jobs:
       - name: Both production rigs and feet at 360, 390 and 412 pixels
         env:
           NODE_PATH: /tmp/footera-abilities/node_modules
-        run: node tests/player-abilities.browser.cjs
+        run: |
+          node tests/player-abilities.browser.cjs
+          node tests/playstyle-moments.browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: footera-player-abilities-v21303
-          path: test-artifacts/player-abilities-v21303/
+          path: |
+            test-artifacts/player-abilities-v21303/
+            test-artifacts/playstyle-moments-v21304/
           retention-days: 7

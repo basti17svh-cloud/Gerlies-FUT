@@ -7040,7 +7040,7 @@ function chooseOpponentAssist(excludeIndex){return chooseMatchCreator("away",exc
 function logGoal(side,scorer,assist,type,shot={}){
  const team=side==="home"?matchHomeTeamName():matchAwayTeamName(),minute=Math.min(120,Math.floor(match.minute));
  const event={
-  shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,skillMove:shot.skillMove,skillMoves:shot.skillMoves,weakFoot:shot.weakFoot,preferredFoot:shot.preferredFoot,sceneKind:shot.sceneKind,restartSide:shot.restartSide,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:matchEventPlayerName(scorer,"Spieler"),scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
+  tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,skillMove:shot.skillMove,skillMoves:shot.skillMoves,weakFoot:shot.weakFoot,preferredFoot:shot.preferredFoot,sceneKind:shot.sceneKind,restartSide:shot.restartSide,defenderIndex:shot.defenderIndex,actionKind:shot.actionKind,finish:shot.finish,shotId:shot.id,side,minute,at:match.minute,playerName:matchEventPlayerName(scorer,"Spieler"),scorer:scorer?.name||"Spieler",assist:assist?.name||"",type,
   scorerUid:side==="home"?String(scorer?.uid||""):"",
   assistUid:side==="home"?String(assist?.uid||""):"",
   scorerIndex:side==="away"?Number(scorer?.index??-1):-1,
@@ -7088,7 +7088,7 @@ function simAttack(homeSide){
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
  if(!setPiece&&!eventChance(buildChance-(actions.tactics(matchActionTactics(defendingSide)).pressing-50)*.0008)){
   if(!restart&&Math.random()<.14){match.nextRestart={side,kind:"throw_in",at:match.minute};recordMatchScene(`${side}-throw`,`${team} erhält einen Einwurf.`);return}
-  const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);
+  const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);if(action)action.phase="build";
   if(action)match.nextCounter={side:defendingSide,at:match.minute,uid:action.uid,index:action.index};
   if(action){recordMatchScene(`${defendingSide}-interception`,`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
   return
@@ -7097,7 +7097,7 @@ function simAttack(homeSide){
  const duelAttack=actions.duelSkill(attacker,kind,context),duelDefense=duelDefender?actions.defendSkill(duelDefender,kind,"duel"):defenseProfile.defense,duelMargin=matchClamp(duelAttack-duelDefense,-30,30),duelProfileGap=matchAttributeGap(attackProfile.transition-defenseProfile.defense);
  const duelChance=matchClamp(.60+duelMargin*.006+duelProfileGap*.001+(attackRoles.attack-defenseRoles.defense)*.85+(attackTactic.attack-defenseTactic.defense)*.28+edge*.016+aiTuning.duel+advantage.duel,.28,.86);
  if(!setPiece&&!eventChance(duelChance)){
-  const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);
+  const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);if(action)action.phase="duel";
   if(action)match.nextCounter={side:defendingSide,at:match.minute,uid:action.uid,index:action.index};
   if(action){recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
   return
@@ -8594,7 +8594,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.303";
+const GFUT_BUILD="V21.304";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8652,7 +8652,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21303",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21304",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -8,7 +8,7 @@ test('a plus PlayStyle that fits the finish becomes the signature, a normal one 
  assert.equal(sig({actionKind:'distance',finish:'finesse',playerStyles:plus('power-shot')}),null,'only the style he actually uses');
  assert.equal(sig({actionKind:'cross',finish:'header',playerStyles:plus('power-header')}).id,'power-header');
  assert.equal(sig({actionKind:'cross',finish:'volley',playerStyles:plus('acrobatic')}).id,'acrobatic');
- assert.equal(sig({actionKind:'dribble',finish:'normal',creatorName:'',playerStyles:plus('trickster')}).id,'trickster');
+ assert.equal(sig({actionKind:'dribble',finish:'normal',creatorName:'',skillMove:'roulette',skillMoves:3,playerStyles:plus('trickster')}).id,'trickster');
  assert.equal(sig({sceneKind:'free_kick',finish:'normal',playerStyles:plus('dead-ball')}).id,'dead-ball');
  const pass=sig({actionKind:'through',finish:'normal',creatorStyles:plus('incisive-pass')});
  assert.equal(pass.id,'incisive-pass');assert.equal(pass.who,'creator');
@@ -44,6 +44,6 @@ test('V21.200: PlayStyle+ is a small icon above the player, no banner and no zoo
  for(const style of ['power-shot','finesse-shot','trivela','low-driven-shot','chip-shot','power-header','aerial','acrobatic','dead-ball','trickster','technical','rapid','incisive-pass'])assert.ok(P.iconBody(style),style);
  const scene=fs.readFileSync(path.join(__dirname,'..','3d-highlights-scene.mjs'),'utf8');
  assert.ok(!scene.includes('fh3d-signature'),'no PlayStyle+ banner');
- assert.match(scene,/signatureIcon=signature\?/);
+ assert.match(scene,/const signatureIcons=signatures\.map/);
  assert.ok(!/starCamera|STAR_CAMERAS|kind:'line'/.test(scene),'no star or goal-line zoom cameras');
 });

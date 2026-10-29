@@ -22,7 +22,7 @@ export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100}={})
  // TV slow motion only once the ball is past the keeper and in the net.
  // A PlayStyle+ finisher gets a TV slow motion into the strike, for every
  // outcome alike; the flight itself stays at the common shot pace.
- const signature=event.type!=='ball_won'&&!extended&&event.signature?.who==='scorer';
+ const signature=event.type!=='ball_won'&&!extended&&(event.signatures?.length?event.signatures.some(m=>m.phase==='finish'&&m.who==='scorer'):event.signature?.who==='scorer'&&!['technical','trickster','rapid','quick-step','first-touch','press-proven'].includes(event.signature?.id));
  const segments=event.type==='ball_won'?[]:[...(signature?[{from:4.85,to:5.4,rate:.4}]:[]),{from:5.4,to:6.65,rate:SHOT_RATE}];
  // The build-up runs at its own pace until the first timed segment begins.
  const buildEnd=segments.length?Math.min(actionTime,segments[0].from):actionTime;

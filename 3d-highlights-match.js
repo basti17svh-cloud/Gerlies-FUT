@@ -31,6 +31,14 @@ function match3DActorSlot(side,{uid='',index=-1,name=''}={}){
  const byName=row||rows.find(r=>String(r.name||r.base?.name||'').toLowerCase()===String(name||'').toLowerCase());
  return String(byName?.slot||'').toUpperCase()
 }
+function match3DAttackOrder(event){
+ const side=event.team==='away'?'away':'home',rows=(typeof matchActorRows==='function'?matchActorRows(side):[]).filter(r=>!/^(GK|TW|TH)$/i.test(r.slot||''));
+ const pick=(id,name)=>rows.find(r=>side==='home'?id!==''&&id!=null&&String(r.uid)===String(id):Number(id)>=0&&String(r.index)===String(id))||rows.find(r=>name&&r.name===name);
+ const scorer=pick(event.playerId,event.playerName),creator=pick(side==='home'?event.creatorUid:event.creatorIndex,event.creatorName||event.assistName),slot=event.creatorActor||1,out=Array(8).fill(null);
+ if(scorer)out[0]=scorer;if(creator&&creator!==scorer)out[slot]=creator;
+ const rest=rows.filter(r=>r!==scorer&&r!==creator);for(let i=0;i<8;i++)if(!out[i])out[i]=rest.shift()||null;
+ return out;
+}
 function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  // Visual only; never affect the match simulation or its random stream.
  const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice();
@@ -55,7 +63,7 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
    out[offset+slot]=number(side,ordered[i],out[offset+slot]);slot++;
   }
  };
- fill(attackSide,0,attacker,0);
+ match3DAttackOrder(event).forEach((row,i)=>{if(row)out[i]=number(attackSide,row,out[i])});
  fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
  return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
 }
@@ -72,19 +80,19 @@ function match3DSkinTones(event){
  const source=field(attack),opposition=field(defend);
  const match=(list,id,name)=>list.find(r=>id!=null&&(String(r.uid)===String(id)||String(r.index)===String(id)))||list.find(r=>String(r.name||'').toLowerCase()===String(name||'').toLowerCase());
  const scorer=match(source,event.playerId,event.playerName),defender=match(opposition,event.defenderUid??event.defenderSourceIndex,event.defenderName);
- const orderedAttack=[scorer,...source.filter(r=>r!==scorer)].filter(Boolean).slice(0,8);
+ const orderedAttack=match3DAttackOrder(event);
  const orderedDefense=opposition.filter(r=>r!==defender).slice(0,8);
  const defenderSlot=Number.isInteger(event.defenderIndex)?Math.max(0,Math.min(7,event.defenderIndex-8)):0;
  if(defender){orderedDefense.splice(defenderSlot,0,defender);orderedDefense.length=Math.min(8,orderedDefense.length);}
  // V21.215: hair, haircut and beard from the player's Aussehen editor.
  const look=row=>typeof FooteraPlayerLooks!=='undefined'&&row?.base?FooteraPlayerLooks.sceneLook(row.base):null;
  const tones=Array(16).fill(null),looks=Array(16).fill(null);
- orderedAttack.forEach((r,i)=>{tones[i]=tone(r);looks[i]=look(r)});
+ orderedAttack.forEach((r,i)=>{if(r){tones[i]=tone(r);looks[i]=look(r)}});
  orderedDefense.forEach((r,i)=>{tones[8+i]=tone(r);looks[8+i]=look(r)});
  const keeper=rows(defend).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
  const buildKeeper=rows(attack).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- const playerFeet=Array(16).fill('');[...orderedAttack].forEach((r,i)=>{playerFeet[i]=r.base?.preferredFoot||''});orderedDefense.forEach((r,i)=>{playerFeet[8+i]=r.base?.preferredFoot||''});
- return {playerFeet,playerSkinTones:tones,playerLooks:looks,keeperSkinTone:tone(keeper),keeperLook:look(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
+ const playerFeet=Array(16).fill('');[...orderedAttack].forEach((r,i)=>{playerFeet[i]=r?.base?.preferredFoot||''});orderedDefense.forEach((r,i)=>{playerFeet[8+i]=r.base?.preferredFoot||''});
+ return {squadNames:[...orderedAttack,...orderedDefense].map(r=>r?.name||''),playerFeet,playerSkinTones:tones,playerLooks:looks,keeperSkinTone:tone(keeper),keeperLook:look(keeper),buildKeeperName:buildKeeper?.name||'',buildKeeperSkinTone:tone(buildKeeper)};
 }
 function match3DPresentationMeta(event,current){
  // Goals/misses/post shots: shooter card. Saves: SAVING keeper card. Ball wins: defender card.
@@ -203,15 +211,13 @@ function queueMatch3D(event){
  const picked=event.type==='ball_won'||Number.isInteger(event.defenderSourceIndex)?(opponents.find(row=>(event.defenderUid&&String(row.uid)===String(event.defenderUid))||(Number.isInteger(event.defenderSourceIndex)&&Number(row.index)===event.defenderSourceIndex))||closest[0]||null):(closest.length?closest[match3DStableNumber(event.id||event.minute||0)%Math.min(2,closest.length)]:null);
  const defender=picked;
  const styleFor=row=>row?match3DActorStyles(defending,{uid:row.uid,index:row.index,name:row.name}):[];
+ const buildKeeper=(typeof matchActorRows==='function'?matchActorRows(event.team):[]).find(r=>/^(GK|TW|TH)$/.test(r.slot||''));
+ presentation.buildKeeperStyles=buildKeeper?match3DActorStyles(event.team,{uid:buildKeeper.uid,index:buildKeeper.index,name:buildKeeper.name}):[];
  presentation.keeperName=event.keeperName||goalie?.name||'';
  presentation.keeperStyles=styleFor(goalie);
  presentation.defenderStyles=styleFor(defender);
  presentation.defenderName=defender?.name||'';
  presentation.defenderIndex=event.type==='ball_won'?8:wideLeft?9:wideRight?10:8;
-  const shirtInfo=match3DShirtNumbers(event,current,defender,goalie,presentation.defenderIndex);
-  Object.assign(presentation,match3DSkinTones({...event,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name,defenderIndex:presentation.defenderIndex}));
-  presentation.shirtNumbers=shirtInfo.shirtNumbers;
-  presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
  presentation.scorerSlot=event.scorerSlot||match3DActorSlot(event.team,{uid:event.playerId,index:event.playerId,name:event.playerName});
  presentation.creatorSlot=event.creatorSlot||match3DActorSlot(event.team,{uid:event.creatorUid,index:event.creatorIndex,name:event.creatorName||event.assistName});
  const selected=FooteraHighlights.choosePresentation(presentation,match3DQueue.history||[]);
@@ -223,10 +229,18 @@ function queueMatch3D(event){
  // V21.208: the bicycle scene is an overhead kick whatever finish the simulation named.
  presentation.finish=presentation.sequence==='bicycle'?'bicycle':event.finish||(presentation.sequence===selected.sequence?selected.finish:'normal');
  presentation.playSeconds=selected.seconds||10.4;
- presentation.signature=event.type==='ball_won'||typeof FooteraHighlights.signatureStyle!=='function'?null:FooteraHighlights.signatureStyle(presentation);
+ presentation.creatorActor=FooteraHighlights.creatorActor?.(presentation.sequence)||1;
+  const shirtInfo=match3DShirtNumbers(presentation,current,defender,goalie,presentation.defenderIndex);
+  Object.assign(presentation,match3DSkinTones({...presentation,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name,defenderIndex:presentation.defenderIndex}));
+  presentation.shirtNumbers=shirtInfo.shirtNumbers;
+  presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
+
+
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
  presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':String(event.sequence||'').startsWith('defense_slide_tackle')?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
+ presentation.signatures=FooteraHighlights.signatureMoments?.(presentation)||[];
+ presentation.signature=FooteraHighlights.signatureStyle?.(presentation)||null;
  const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
@@ -286,14 +300,14 @@ function queueMatchDefensive3D(action,attackingSide,attacker){
   sliding?(alternate?'defense_slide_tackle_wide':'defense_slide_tackle'):
   (alternate?'defense_standing_tackle_wide':'defense_standing_tackle');
  const queued=queueMatch3D({id:'defense:'+match.defensiveEvents.length,type:'ball_won',minute,team:attackingSide,playerId:attacker.uid??attacker.index,
-  playerName:attacker.name||'Angreifer',defenderUid:action.uid,defenderSourceIndex:action.index,defenseKind:action.kind,sequence,finish:'normal'});
+  playerName:attacker.name||'Angreifer',defenderUid:action.uid,defenderSourceIndex:action.index,defenseKind:action.kind,defensePhase:action.phase,sequence,finish:'normal'});
  if(queued){match.defenseHighlightsShown=shown+1;match.lastDefenseHighlightMinute=minute}
  return queued;
 }
 function queueMatchGoal3D(event){
  const scoreBeforeHome=Math.max(0,Number(event.scoreHome||0)-(event.side==='home'?1:0)),scoreBeforeAway=Math.max(0,Number(event.scoreAway||0)-(event.side==='away'?1:0));
  const queued=queueMatch3D({id:`goal:${match.goalEvents.length}`,type:'goal',minute:event.minute,team:event.side,playerId:event.scorerUid||event.scorerIndex,playerName:event.playerName||event.scorer,
-  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',shotFoot:event.shotFoot,creatorFoot:event.creatorFoot,preferredFoot:event.preferredFoot,weakFoot:event.weakFoot,skillMoves:event.skillMoves,skillMove:event.skillMove,actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
+  assistName:event.assist||'',creatorName:event.assist||'',creatorUid:event.assistUid||'',creatorIndex:event.assistIndex,creationType:event.type||'',tightLateGame:event.tightLateGame,shotFoot:event.shotFoot,creatorFoot:event.creatorFoot,preferredFoot:event.preferredFoot,weakFoot:event.weakFoot,skillMoves:event.skillMoves,skillMove:event.skillMove,actionKind:event.actionKind,sceneKind:event.sceneKind,restartSide:event.restartSide,finish:event.finish,defenderSourceIndex:event.defenderIndex,scoreBeforeHome,scoreBeforeAway});
  // Keep the original goal tick's early return (including its RNG consumption).
  if(queued)match.highlightActive=true;
  return queued;
@@ -304,7 +318,7 @@ function queueMatchChance3D(shot){
  const type=shot.highlightType||'';
  if(!type)return false;
  return queueMatch3D({id:`shot:${match.shotEvents.length}`,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
-  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
+  goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
 }
 (function(){
  document.addEventListener('footera-highlight-impact',e=>{

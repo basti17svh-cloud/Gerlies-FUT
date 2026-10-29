@@ -48,12 +48,12 @@
    awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away}
  }
  // Attack rows 0-7 (scorer first), defence rows 8-15 (chosen defender at 8).
- function squadLayout(attack,defend,scorer,defender){
+ function squadLayout(attack,defend,scorer,defender,creator=null,creatorActor=1){
   const field=list=>list.filter(r=>!KEEPER.test(r.slot));
-  const a=[scorer,...field(attack).filter(r=>r!==scorer)].filter(Boolean).slice(0,8);
+  const a=Array(8).fill(null);a[0]=scorer;if(creator&&creator!==scorer)a[creatorActor]=creator;const rest=field(attack).filter(r=>r!==scorer&&r!==creator);for(let i=0;i<8;i++)if(!a[i])a[i]=rest.shift()||null;
   const d=[defender,...field(defend).filter(r=>r!==defender)].filter(Boolean).slice(0,8);
   const tones=Array(16).fill(null),looks=Array(16).fill(null),names=Array(16).fill(''),numbers=SHIRT_FALLBACKS.slice();
-  a.forEach((r,i)=>{tones[i]=tone(r);looks[i]=look(r);names[i]=r.name});
+  a.forEach((r,i)=>{if(r){tones[i]=tone(r);looks[i]=look(r);names[i]=r.name}});
   d.forEach((r,i)=>{tones[8+i]=tone(r);looks[8+i]=look(r);names[8+i]=r.name});
   return{playerSkinTones:tones,playerLooks:looks,squadNames:names,shirtNumbers:numbers}
  }
@@ -101,9 +101,12 @@
   if(type==='goal'){const before=scoreBefore(events,i);event.scoreBeforeHome=before.home;event.scoreBeforeAway=before.away}
   const selected=H.choosePresentation(event,history);
   event.sequence=selected.sequence;event.finish=selected.finish||'normal';event.playSeconds=selected.seconds||10.4;
-  event.signature=typeof H.signatureStyle==='function'?H.signatureStyle(event):null;
+
   event.shotPlacement=H.chooseShotPlacement(event,history);
   const reactions=H.chooseReactions(event);event.defenderAction=reactions.defenderAction;event.keeperAction=reactions.keeperAction;
+  event.creatorActor=H.creatorActor?.(event.sequence)||1;
+  Object.assign(event,squadLayout(attack,defend,scorer,defender,creator,event.creatorActor));
+  event.signatures=H.signatureMoments?.(event)||[];event.signature=H.signatureStyle?.(event)||null;
   event.family=selected.family;
   return event
  }

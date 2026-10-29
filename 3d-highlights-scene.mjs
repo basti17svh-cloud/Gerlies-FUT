@@ -1,12 +1,13 @@
+import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-playstyle-moments.mjs?v=21304';
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21303';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21226';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21303';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21304';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
@@ -90,10 +91,10 @@ export function lastPassWindow(sequence){
  return run||last;
 }
 export function signatureWindow(event,sequence=event?.sequence){
- const sig=event?.signature;if(!sig||event.type==='ball_won')return null;
- if(sig.who==='creator'){const pass=lastPassWindow(sequence);return pass?{badge:[pass[0]-.8,pass[1]+.9],trail:[pass[0],pass[1]+.1]}:null}
- if(extendedKind(normalizeSequence(sequence)))return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,IMPACT_TIME+.1]};
- return{badge:[SHOT_TIME-1.4,SHOT_TIME+.9],trail:[SHOT_TIME,Math.min(IMPACT_TIME+.4,shotArrival(event.type,sequence,event.finish,event.shotPlacement||null)+.1)]};
+ const list=signatureTimeline(event,sequence,lastPassWindow(sequence));
+ const chosen=list.find(m=>m.id===event.signature?.id&&m.who===event.signature?.who)||list[0];
+ if(!chosen)return null;
+ return{badge:chosen.badge,trail:chosen.phase==='pass'?[chosen.badge[0]+.25,Math.min(5.35,chosen.badge[1])]:[SHOT_TIME,IMPACT_TIME+.1]};
 }
 export const REVEAL_TIME=6.8;
 export const PITCH=Object.freeze({width:68,length:105,goalWidth:7.32,goalHeight:2.44});
@@ -1038,6 +1039,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const eventShotImpact=(type,seq=sequence,style=finish)=>shotImpact(type,seq,style,placement);
  const netArrival=shotArrival('goal',sequence,finish,placement)+goalNetDelay(placement),netPoint=goalNetPoint(sequence,finish,placement);
  const signature=event.motionDuelPreview===true?null:signatureWindow(event,sequence);
+ const signatures=event.motionDuelPreview===true?[]:signatureTimeline(event,sequence,lastPassWindow(sequence));
  const eventKeeperPose=(type,time,style=finish,seq=sequence,action=keeperAction)=>keeperPose(type,time,style,seq,action,placement);
  const eventCameraState=(dir,time,aspect=1.3,type=event.type,seq=sequence,style=finish,action=keeperAction)=>cameraState(dir,time,aspect,type,seq,style,action,placement);
  // All match-space objects, pitch markings and both goals share one transform.
@@ -1650,25 +1652,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
   // PlayStyle+ signature: a gold trail of fading dots behind the ball.
-  const trail=signature?Array.from({length:22},(_,i)=>{const dot=mesh(geo('signature-trail',()=>new THREE.SphereGeometry(.085,10,8)),track(new THREE.MeshBasicMaterial({color:'#ffd35a',transparent:true,opacity:.3*(1-i/22),depthWrite:false,blending:THREE.AdditiveBlending})));dot.scale.setScalar((event.signature.who==='creator'?1.6:1)*(1-i/30));dot.visible=false;return dot}):[];
-  // V21.200 PlayStyle+ (Basti): instead of a banner a small glowing icon
-  // lights up above the player, like in EA FC.
-  const signatureIcon=signature?(()=>{
+  const trail=[];
+  // One small icon per real action phase; no banners and no nearest-ball guess.
+  const signatureIcons=signatures.map(moment=>{
    const tex=canvasTexture(128,128,(g,w,h)=>{
-    const glow=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);glow.addColorStop(0,'rgba(255,211,90,.75)');glow.addColorStop(.55,'rgba(255,190,60,.32)');glow.addColorStop(1,'rgba(255,190,60,0)');
-    g.fillStyle=glow;g.fillRect(0,0,w,h);
+    const glow=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);glow.addColorStop(0,'rgba(255,211,90,.75)');glow.addColorStop(.55,'rgba(255,190,60,.32)');glow.addColorStop(1,'rgba(255,190,60,0)');g.fillStyle=glow;g.fillRect(0,0,w,h);
     g.beginPath();g.arc(w/2,h/2,34,0,Math.PI*2);g.fillStyle='rgba(40,28,6,.88)';g.fill();g.lineWidth=4;g.strokeStyle='#ffd35a';g.stroke();
    });
-   const body=globalThis.FooteraPlayStyles?.iconBody?.(event.signature.id)||'<path d="m12 3 1.7 5.3H19l-4.3 3.1 1.7 5.3-4.4-3.2-4.4 3.2 1.7-5.3L5 8.3h5.3Z"/>';
+   const body=globalThis.FooteraPlayStyles?.iconBody?.(moment.id)||'<path d="m12 3 1.7 5.3H19l-4.3 3.1 1.7 5.3-4.4-3.2-4.4 3.2 1.7-5.3L5 8.3h5.3Z"/>';
    if(typeof Image!=='undefined'){
-    const img=new Image();
-    img.onload=()=>{const c=tex.image,g=c.getContext('2d');g.drawImage(img,40,40,48,48);tex.needsUpdate=true};
+    const img=new Image();img.onload=()=>{const g=tex.image.getContext('2d');g.drawImage(img,40,40,48,48);tex.needsUpdate=true};
     img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#ffe8a3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+body+'</svg>');
    }
    const sprite=new THREE.Sprite(track(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false})));
-   sprite.renderOrder=30;sprite.visible=false;sprite.userData.owner=event.signature.who==='creator'?-1:0;scene.add(sprite);
-   return sprite;
-  })():null;
+   sprite.renderOrder=30;sprite.visible=false;sprite.userData.owner=moment.actor;scene.add(sprite);
+   return{moment,sprite};
+  });
   for(const batch of batches.values()){batch.mesh=new THREE.InstancedMesh(batch.g,batch.m,batch.nodes.length);batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);batch.mesh.castShadow=!weak&&!batch.m.transparent;batch.mesh.receiveShadow=!weak&&!batch.m.transparent;batch.mesh.frustumCulled=false;scene.add(batch.mesh);track(batch.mesh)}
   // Merge stadium structures by material into static instance batches as well.
   scene.updateMatrixWorld(true);
@@ -1902,6 +1901,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const carrierState=carrierPoseState(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
+   importedMotionFrame.plusWeight=0;for(const frame of squadMotionFrames)frame.plusWeight=0;
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     // V21.297: ease from the (smoothed) standing facing into the running
@@ -2149,6 +2149,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     keeper.rig.rotation.z=0;
    }else{
     applyGoalkeeperMotion(keeper,time,kp,event.type,keeperAction,impact[0],impact[1]);
+    for(const m of activeSignatureMoments(signatures,time))if(m.actor===16)applyPlusMotion(keeper,m,time);
     // A loaded knee bend lowers the hips; it must not lift both boots off turf.
     // Release the support constraint for flight, restore it as the keeper rises.
     const support=Math.max(1-smooth((time-5.79)/.32),smooth((time-8.68)/.50));
@@ -2200,6 +2201,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
     }
    }
+   for(const m of activeSignatureMoments(signatures,time))if(m.actor<16&&!extended){
+    const w=applyPlusMotion(players[m.actor],m,time),frame=m.actor===0?importedMotionFrame:squadMotionFrames[m.actor];frame.plusWeight=Math.max(frame.plusWeight||0,w);
+   }
    const skillPose=event.type!=='ball_won'?applySkillPose(players[0],time,sequence):null;
    importedMotionFrame.skillWeight=skillPose?.weight||0;
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
@@ -2208,17 +2212,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
    ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.25:.18;
    if(trail.length){const [from,to]=signature.trail;trail.forEach((dot,i)=>{const t=time-i*.012;dot.visible=t>=from&&time<=to;if(dot.visible)dot.position.set(...(i?eventBallPosition(event.type,t):bp))})}
-   if(signatureIcon){
-    const [from,to]=signature.badge,on=time>=from&&time<to;signatureIcon.visible=on;
-    if(on){
-     // The creator is whoever has the ball when the icon lights up.
-     if(signatureIcon.userData.owner<0){const b=ball.getWorldPosition(new THREE.Vector3());let best=Infinity;players.forEach((p,i)=>{if(RUNS[i]?.team!=='attack')return;const d=p.root.getWorldPosition(new THREE.Vector3()).distanceTo(b);if(d<best){best=d;signatureIcon.userData.owner=i}});if(signatureIcon.userData.owner<0)signatureIcon.userData.owner=0}
-     const head=players[signatureIcon.userData.owner].root.getWorldPosition(new THREE.Vector3());
-     signatureIcon.position.set(head.x,head.y+2.45,head.z);
-     signatureIcon.material.opacity=smooth((time-from)/.25)*(1-smooth((time-to+.3)/.3));
-     signatureIcon.scale.setScalar(1.35*(1+.07*Math.sin(time*9)));
-    }
-   }
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
    if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME,up=smooth(t/.35);for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=mix(p.arms[0].rotation.z,-1.75,up);p.arms[1].rotation.z=mix(p.arms[1].rotation.z,1.75,up)}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
@@ -2286,6 +2279,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    // V21.208 (Basti): the support boot is planted beside the ball and stays
    // there while the body runs over it; it used to glide along with the hips.
+   if(extended)for(const m of activeSignatureMoments(signatures,time))if(m.actor<16)applyPlusMotion(players[m.actor],m,time);
    const plant=event.type!=='ball_won'&&!['header','volley','bicycle'].includes(finish)?plantFootSample(time):null;
    if(plant){const p=players[0],h=p.root.rotation.y,fx=-Math.sin(h),fz=-Math.cos(h),rx=Math.cos(h),rz=-Math.sin(h);
     const [ax,az]=actorPosition(0,SHOT_TIME,event.type,sequence),spot=[ax-.108*rx+.05*fx,az-.108*rz+.05*fz];
@@ -2305,6 +2299,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
+   const activeIcons=activeSignatureMoments(signatures,time);
+   for(const {moment,sprite} of signatureIcons){
+    const on=activeIcons.includes(moment),owner=moment.actor===16?keeper:moment.actor===17?buildKeeper:players[moment.actor];
+    sprite.visible=on&&!!owner;
+    if(sprite.visible){const head=owner.root.getWorldPosition(new THREE.Vector3());sprite.position.set(head.x,head.y+2.45,head.z);const [from,to]=moment.badge;sprite.material.opacity=smooth((time-from)/.18)*(1-smooth((time-to+.2)/.2));sprite.scale.setScalar(1.35)}
+   }
    updateCrowd(time);pyro?.update(time);
    // Extended match scenes must use the exact same stable broadcast track.
    const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect,eventBallPosition(event.type,time)))||broadcastFor(camera.aspect)(time);
@@ -2390,7 +2390,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const defenderRoute=labTrackingPreview?trackingTimeline.sample(renderTime):null;
    const runnerBefore=stagedPlayerPosition(0,Math.max(0,renderTime-.016),event.type,sequence),runnerAfter=stagedPlayerPosition(0,Math.min(DURATION,renderTime+.016),event.type,sequence);
    const runnerDt=Math.max(.001,Math.min(DURATION,renderTime+.016)-Math.max(0,renderTime-.016));
-   return{skillAction:sampleSkill(sequence,renderTime),shotFoot:event.shotFoot||'',strikeFeet:players[0].ankles.map(a=>field.worldToLocal(a.getWorldPosition(new THREE.Vector3())).toArray()),strikerRoot:players[0].root.position.toArray(),
+   return{plusMoments:signatureIcons.map(({moment,sprite})=>({id:moment.id,who:moment.who,phase:moment.phase,actor:moment.actor,badge:moment.badge,variant:moment.variant,visible:sprite.visible,position:sprite.position.toArray(),ownerPosition:(moment.actor===16?keeper:moment.actor===17?buildKeeper:players[moment.actor])?.root.getWorldPosition(new THREE.Vector3()).toArray()||null})),skillAction:sampleSkill(sequence,renderTime),shotFoot:event.shotFoot||'',strikeFeet:players[0].ankles.map(a=>field.worldToLocal(a.getWorldPosition(new THREE.Vector3())).toArray()),strikerRoot:players[0].root.position.toArray(),
     extendedPhase:extendedPhase(sequence,renderTime,event.team,event.type),buildKeeperPosition:buildKeeper?.root.position.toArray()||null,contactMotionVersion:CONTACT_MOTION_VERSION,attackFlowVersion:ATTACK_FLOW_VERSION,
     attackFlowSpeed:Math.hypot(runnerAfter[0]-runnerBefore[0],runnerAfter[1]-runnerBefore[1])/runnerDt,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
     trackingPreview:labTrackingPreview,trackingAction:labTrackingPreview?defenderAction:'none',

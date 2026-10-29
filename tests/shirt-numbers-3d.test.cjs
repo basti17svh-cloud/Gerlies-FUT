@@ -5,7 +5,7 @@ test('3D shirts carry the numbers chosen in the line-up, also for the scorer',()
  const home=[['gk','TW'],['a','RV'],['b','IV'],['c','IV'],['d','LV'],['e','ZM'],['f','ZM'],['g','ZOM'],['h','RF'],['i','ST'],['j','LF']];
  // Like the app, every call builds fresh row objects.
  const ctx={matchActorRows:side=>side==='home'?home.map(([uid,slot],index)=>({uid,index,slot,name:uid})):home.map(([uid,slot],index)=>({uid:'',index,slot,name:'away'+index,entry:{shirtNumber:index+30}}))};
- vm.runInNewContext(src.slice(start,end)+';this.fn=match3DShirtNumbers',ctx);
+ vm.runInNewContext(src.slice(src.indexOf('function match3DAttackOrder('),end)+';this.fn=match3DShirtNumbers',ctx);
  const current={shirtNumbers:{gk:1,a:2,b:4,c:5,d:3,e:6,f:8,g:10,h:11,i:7,j:9}};
  const goal=ctx.fn({team:'home',playerId:'i',playerName:'i'},current,{index:4},{index:0,entry:{shirtNumber:30}},10);
  assert.equal(goal.shirtNumbers[0],7,'scorer wears his own number');

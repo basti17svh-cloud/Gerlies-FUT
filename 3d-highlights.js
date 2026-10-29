@@ -29,7 +29,9 @@
    }):null,
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
-   signature:event.signature&&SIGNATURE_NAMES[event.signature.id]?Object.freeze({id:String(event.signature.id),name:SIGNATURE_NAMES[event.signature.id],who:event.signature.who==='creator'?'creator':'scorer'}):null,
+   signature:cleanSignature(event.signature),signatures:Object.freeze((Array.isArray(event.signatures)?event.signatures:event.signature?[event.signature]:[]).map(cleanSignature).filter(Boolean).slice(0,10)),
+   creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,
+   buildKeeperStyles:Object.freeze((Array.isArray(event.buildKeeperStyles)?event.buildKeeperStyles:[]).map(s=>Object.freeze({id:String(s.id||''),plus:!!s.plus}))),
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
    scoreBeforeAway:Number.isFinite(Number(event.scoreBeforeAway))?Number(event.scoreBeforeAway):null,
@@ -52,7 +54,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21303').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21304').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -370,30 +372,72 @@
  });
  const STAR_IDS=new Set(Object.values(STAR_SCENES).flatMap(x=>Object.values(x).flat()));
  function starScenes(event,scorer){
-  const ids=STAR_SCENES[event.actionKind]?.[event.finish]||[];
+  const carry=event.actionKind==='dribble'&&!event.skillMove&&['technical','rapid','quick-step','press-proven'].some(id=>scorer.get(id)===2);
+  const ids=carry?['dribble','inside_left','inside_right']:(STAR_SCENES[event.actionKind]?.[event.finish]||[]);
   return VISUAL_SCENES.filter(v=>ids.includes(v.id)&&(v.id!=='bicycle'||scorer.has('acrobatic'))).map(v=>v.id==='bicycle'?Object.freeze({...v,weight:scorer.get('acrobatic')===2?2.2:.9}):v);
  }
  // V21.196 PlayStyle+ signature moments. A plus PlayStyle that matches what
  // the player actually does in this chance gets its own scene: name badge,
  // slow motion into the strike and a gold ball trail, in the normal TV picture.
  // Presentation only; it shows for goals, saves and misses alike.
- const SIGNATURE_NAMES=Object.freeze({'power-shot':'Powerschuss','finesse-shot':'Angeschnittener Schuss','trivela':'Außenrist','low-driven-shot':'Flacher Vollspannschuss','chip-shot':'Lupfer','power-header':'Präziser Kopfball','aerial':'Kopfballmacht','acrobatic':'Akrobatik','dead-ball':'Ruhender Ball','trickster':'Tricks','technical':'Technik','rapid':'Raserei','quick-step':'Schneller Schritt','incisive-pass':'Entscheidender Pass','through-ball':'Schnittstellenpass','long-ball-pass':'Weiter Pass','pinged-pass':'Harter Pass','tiki-taka':'Tiki-Taka'});
+ const SIGNATURE_NAMES=Object.freeze({"power-shot":"Powerschuss","finesse-shot":"Angeschnittener Schuss","low-driven-shot":"Flacher Vollspannschuss","chip-shot":"Lupfer","power-header":"Präziser Kopfball","acrobatic":"Akrobatik","trivela":"Außenrist","dead-ball":"Ruhender Ball","gamechanger":"Gamechanger","incisive-pass":"Entscheidender Pass","through-ball":"Schnittstellenpass","long-ball-pass":"Weiter Pass","pinged-pass":"Harter Pass","tiki-taka":"Tiki-Taka","flair":"Einfallsreich","technical":"Technik","rapid":"Raserei","quick-step":"Schneller Schritt","first-touch":"First Touch","trickster":"Tricks","press-proven":"Ruhepol","anticipate":"Antizipation","intercept":"Abfangen","block":"Block","jockey":"Abdrängen","slide-tackle":"Grätsche","aerial":"Kopfballmacht","enforcer":"Kante","bruiser":"Durchsetzungskraft","relentless":"Unerbittlich","long-throw":"Langer Einwurf","rush-out":"Herauskommen","cross-claimer":"Flankenfang","deflector":"Deflector","far-reach":"Große Reichweite","far-throw":"Weiter Abwurf","footwork":"Beinarbeit"});
+ const PLAYBOOK_PASSERS=Object.freeze({"triangle_left":3,"triangle_right":3,"tiki_short":3,"tiki_quick":3,"wall_pass_left":3,"wall_pass_right":3,"central_recycle":3,"midfield_switch":2,"first_touch_triangle":6,"third_man_run":1,"split_defenders":3,"curved_striker_run":3,"left_halfspace_thread":3,"right_halfspace_thread":3,"deep_playmaker_lob":6,"overlap_left_low":4,"overlap_right_low":5,"overlap_left_high":4,"overlap_right_high":5,"early_low_delivery_left":1,"early_low_delivery_right":2,"switch_overlap_low":5,"switch_overlap_high":4,"quick_burst_left":1,"quick_burst_right":2,"inside_link_left":3,"inside_link_right":3,"edge_cutback_finesse":3,"first_time_power":3,"near_post_tap":1,"reverse_cutback_left":3,"reverse_cutback_right":3,"blindside_overlap_left":4,"blindside_overlap_right":5,"diagonal_counter_left":1,"diagonal_counter_right":2,"edge_of_box_recycle":1,"back_post_sweep":5,"late_midfield_runner":3,"short_corner_combo":6,"halfspace_overload_left":7,"halfspace_overload_right":6,"counter_reversal_left":1,"counter_reversal_right":2,"wing_isolation_left":1,"wing_isolation_right":2,"late_cutback_left":3,"late_cutback_right":3,"layoff_distance":3,"switch_distance_left":1,"near_post_driven_left":1,"near_post_header_right":2,"six_yard_square_left":1,"counter_square_right":2,"byline_pullback_left":4,"edge_pullback_right":2,"back_post_volley_left":1,"overlap_clipped_right":5,"striker_wall_return":3,"diagonal_lob_finish":3,"false_nine_drop_left":1,"false_nine_drop_right":2,"winger_one_two_left":1,"winger_one_two_right":2,"box_rondo":7,"fullback_link_left":3,"fullback_link_right":3,"channel_ball_left":1,"channel_ball_right":2,"playmaker_slide_left":6,"playmaker_slide_right":7,"dink_over_line":3,"long_ball_sprint":4,"underlap_left":4,"underlap_right":5,"overlap_volley_left":4,"overlap_volley_right":5,"byline_drive_left":1,"byline_drive_right":2,"far_post_slide_right":2,"whipped_header_left":1,"whipped_header_right":2,"deep_cross_header_left":4,"deep_cross_header_right":5,"slalom_left":6,"slalom_right":7,"winger_takeon_left":1,"winger_takeon_right":2,"pullback_power_left":1,"pullback_power_right":2,"cutback_volley_left":1,"edge_rocket":3,"recycle_rocket_left":6,"recycle_curler_right":7,"halfvolley_drive":3,"switch_cut_left":1,"switch_cut_right":2,"near_post_flick_header_left":4,"near_post_flick_header_right":5,"counter_sprint_left":1,"counter_sprint_right":2,"rebound_drive":7,"box_wall_triangle_left":3,"split_line_surge_right":2,"byline_high_header_left":4,"penalty_spot_pullback_right":3,"turnover_counter_diagonal":3,"far_switch_volley_right":2,"double_marker_slalom_central":6,"heel_flick_release_left":1,"keeper_rush_dink_right":3,"second_ball_recycle_left":6,"late_edge_cutback_left":6,"first_touch_layoff_rocket":7,"touchline_sprint_cut_right":2,"five_man_central_carve":6,"blindside_chip_through_left":1,"skill_body-feint_left":6,"skill_body-feint_right":7,"skill_stepover_left":6,"skill_stepover_right":7,"skill_ball-roll_left":6,"skill_ball-roll_right":7,"skill_drag-back_left":6,"skill_drag-back_right":7,"skill_roulette_left":6,"skill_roulette_right":7,"skill_heel-to-heel_left":6,"skill_heel-to-heel_right":7,"skill_croqueta_left":6,"skill_croqueta_right":7,"skill_berbatov_left":6,"skill_berbatov_right":7,"skill_elastico_left":6,"skill_elastico_right":7,"skill_reverse-elastico_left":6,"skill_reverse-elastico_right":7,"give_go_triangle_left":1,"give_go_triangle_right":2,"third_man_wall_left":1,"third_man_wall_right":2,"five_pass_carousel_left":3,"five_pass_carousel_right":3,"overload_release_left":3,"overload_release_right":3,"channel_overlap_thread_left":1,"channel_overlap_thread_right":2,"counter_wall_release_left":1,"counter_wall_release_right":2});
+ function creatorActor(sequence){return PLAYBOOK_PASSERS[sequence]??(sequence==='extended_throw_in'?1:sequence==='extended_keeper_buildout'?6:1)}
+ function signatureMoments(event){
+  if(event.type==='ceremony')return [];
+  const plus=list=>new Set((Array.isArray(list)?list:[]).filter(s=>s&&s.plus).map(s=>s.id));
+  const scorer=plus(event.playerStyles),creator=plus(event.creatorStyles),defender=plus(event.defenderStyles),keeper=plus(event.keeperStyles),out=[];
+  const kind=String(event.actionKind||''),finish=event.finish||'normal',scene=event.sceneKind||'',restart=scene||String(event.sequence||'').replace(/^extended_/,'');
+  const add=(set,ids,who,phase)=>{const id=ids.find(id=>set.has(id));if(id)out.push(Object.freeze({id,name:SIGNATURE_NAMES[id],who,phase}))};
+  if(event.type==='ball_won'){
+   const intercept=event.defenseKind==='interception'||/interception|press_recovery/.test(event.sequence||'');
+   // Build interceptions and duel interceptions use different actual simulation bonuses.
+   add(defender,intercept&&event.defensePhase!=='duel'?['intercept']:String(event.sequence||'').includes('slide')?['slide-tackle','anticipate','bruiser','enforcer']:['anticipate','jockey','bruiser','enforcer'],'defender','defense');
+   return Object.freeze(out);
+  }
+  const setPiece=restart==='free_kick'||restart==='penalty'||['freekick','penalty'].includes(event.creationType);
+  if(!setPiece){
+   if(!['cross','dribble'].includes(kind))add(scorer,['first-touch'],'scorer','receive');
+   if(kind==='dribble'){add(scorer,event.skillMove?['trickster','technical']:['technical','rapid','press-proven'],'scorer','carry');if(event.skillMove)add(scorer,['rapid'],'scorer','burst')}
+   else if(kind==='through')add(scorer,['rapid','quick-step'],'scorer','burst');
+   else if(kind!=='cross')add(scorer,['press-proven'],'scorer','shield');
+   if(finish==='header')add(scorer,['aerial'],'scorer','aerial');
+  }
+  if(restart==='free_kick'||event.creationType==='freekick')add(scorer,['dead-ball'],'scorer','finish');
+  else if(!setPiece){
+   const ids=finish==='power'?['power-shot']:finish==='finesse'?['finesse-shot','trivela']:finish==='low_driven'?['low-driven-shot']:finish==='chip'?['chip-shot']:finish==='header'?['power-header']:['volley','bicycle'].includes(finish)?['acrobatic']:['dribble','cutback'].includes(kind)?['trivela']:[];
+   const before=out.length;add(scorer,ids,'scorer','finish');
+   if(before===out.length&&event.tightLateGame&&['finesse','volley','bicycle','chip'].includes(finish))add(scorer,['gamechanger'],'scorer','finish');
+  }
+  const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&event.creationType!=='solo';
+  if(restart==='corner')add(creator,['dead-ball'],'creator','restart');
+  else if(restart==='throw_in')add(creator,['long-throw'],'creator','restart');
+  else if(hasCreator&&!setPiece){
+   const ids=kind==='through'?['incisive-pass','through-ball']:kind==='switch'||kind==='cross'?['long-ball-pass']:kind==='cutback'?['pinged-pass']:['tiki-taka','press-proven','flair'];
+   add(creator,ids,'creator','pass');
+  }
+  if(restart==='keeper_buildout'&&event.distributionType==='throw')add(plus(event.buildKeeperStyles),['far-throw'],'buildKeeper','distribution');
+  if(!setPiece){
+   const action=event.defenderAction||'';
+   add(defender,action==='block_attempt'?['block']:action==='lane_read'?['anticipate']:action==='slide_attempt'?['slide-tackle']:action==='aerial_challenge'?['aerial','bruiser']:action==='jockey'?['jockey','anticipate']:action==='close_down'?['anticipate','bruiser','enforcer']:[],'defender','defense');
+  }
+  if(event.type==='big_chance_saved'){
+   const action=event.keeperAction||'';
+   const ids=finish==='header'&&action==='high_reach'?['cross-claimer']:kind==='distance'&&['fingertip','high_reach'].includes(action)?['far-reach']:kind==='through'&&action==='rush_spread'?['rush-out']:action==='low_reflex'&&kind!=='distance'&&finish!=='header'?['footwork']:action==='parry'&&kind!=='distance'&&kind!=='through'&&finish!=='header'?['deflector']:[];
+   add(keeper,ids,'keeper','save');
+  }
+  return Object.freeze(out);
+ }
  function signatureStyle(event,finish=event.finish){
-  const plus=list=>new Set((Array.isArray(list)?list:[]).filter(s=>s&&s.plus).map(s=>typeof s==='string'?s:s.id));
-  const scorer=plus(event.playerStyles),creator=plus(event.creatorStyles),kind=String(event.actionKind||''),scene=String(event.sceneKind||'');
-  const first=(set,ids)=>ids.find(id=>set.has(id));
-  const shot=scene==='free_kick'||scene==='penalty'?first(scorer,['dead-ball']):
-   finish==='power'?first(scorer,['power-shot']):finish==='finesse'?first(scorer,['finesse-shot','trivela']):
-   finish==='low_driven'?first(scorer,['low-driven-shot']):finish==='chip'?first(scorer,['chip-shot']):
-   finish==='header'?first(scorer,['power-header','aerial']):finish==='volley'||finish==='bicycle'?first(scorer,['acrobatic']):
-   kind==='dribble'?first(scorer,['trickster','technical','rapid','quick-step']):null;
-  if(shot)return Object.freeze({id:shot,name:SIGNATURE_NAMES[shot],who:'scorer'});
-  const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&String(event.creationType||'')!=='solo';
-  const pass=scene==='corner'?first(creator,['dead-ball']):!hasCreator||scene?null:
-   kind==='through'?first(creator,['incisive-pass','through-ball']):kind==='switch'?first(creator,['long-ball-pass']):
-   kind==='cross'?first(creator,['long-ball-pass','pinged-pass']):kind==='cutback'?first(creator,['pinged-pass']):
-   kind==='combination'?first(creator,['tiki-taka']):null;
-  return pass?Object.freeze({id:pass,name:SIGNATURE_NAMES[pass],who:'creator'}):null;
+  const list=signatureMoments({...event,finish}),m=list.find(m=>m.phase==='finish')||list.find(m=>['carry','burst'].includes(m.phase))||list.find(m=>m.phase==='pass')||list[0];
+  return m?Object.freeze({id:m.id,name:m.name,who:m.who}):null;
+ }
+ function cleanSignature(m){
+  if(!m||!SIGNATURE_NAMES[m.id])return null;
+  const who=['scorer','creator','defender','keeper','buildKeeper'].includes(m.who)?m.who:'scorer';
+  const inferred=who==='creator'?'pass':who==='defender'?'defense':who==='keeper'?'save':who==='buildKeeper'?'distribution':['technical','trickster','rapid','quick-step'].includes(m.id)?'carry':m.id==='first-touch'?'receive':'finish';
+  const phase=['receive','carry','burst','shield','aerial','finish','pass','restart','distribution','defense','save'].includes(m.phase)?m.phase:inferred;
+  return Object.freeze({id:m.id,name:SIGNATURE_NAMES[m.id],who,phase});
  }
  function choosePresentation(event,history=[]){
   // Retired: extended_turnover_counter. Its scripted interception left
@@ -413,13 +457,14 @@
   const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket'];
   const eligible=v=>{const m=/^skill_(.+)_(left|right)$/.exec(v.id);return m?!!requestedSkill&&m[1]===requestedSkill&&skillStars>=SKILL_LEVELS[m[1]]:!requestedSkill&&(!v.id.startsWith('double_feint')||!skillStars||skillStars>=4)};
   const pool=(simulated?PLAYBOOK_SCENES.filter(v=>{
+   if(event.actionKind==='dribble'&&!requestedSkill&&signatureMoments(event).some(m=>m.phase==='carry'))return false;
    if(event.actionKind==='distance')return distanceIds.includes(v.id);
    if(event.actionKind==='cross')return v.finish===event.finish;
    if(['header','volley','bicycle'].includes(v.finish)||distanceIds.includes(v.id))return false;
    if(event.finish==='chip')return v.finish==='chip';
    return v.family===event.actionKind;
   }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES]).filter(eligible);
-  const starSignature=simulated&&signatureStyle(event)?.who==='scorer';
+  const starSignature=simulated&&signatureMoments(event).some(m=>m.who==='scorer'&&m.phase==='finish');
   const choices=pool.map(v=>{
    let w=v.weight;
    if(v.id.startsWith('skill_')&&event.preferredFoot)w*=v.id.endsWith(event.preferredFoot==='Left'?'_right':'_left')?1.5:1;
@@ -508,6 +553,6 @@
   skip(){this.controller?.abort('skip')}
   cancel(){this.epoch++;this.items=[];this.busy=false;this.controller?.abort('cancel');this.controller=null}
  }
- const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
+ const api={TYPES,MODES,VISUAL_SCENES,PLAYBOOK_SCENES,choosePresentation,signatureStyle,signatureMoments,creatorActor,chooseShotPlacement,chooseReactions,Queue,accepts,snapshot,setMode,prewarm,getMatchPeriod,getAttackDirection,stage,getMode:()=>mode};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FooteraHighlights=api;
 })(globalThis);
