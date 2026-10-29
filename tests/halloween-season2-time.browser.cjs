@@ -110,6 +110,11 @@ function fakeClock(){
   snap=await snapshot();
   assert.equal(snap.season,"s2");assert.equal(snap.passKey,"s2","pass moved to S2");assert.equal(snap.sp,0,"S2 starts at 0 SP");
   assert.equal(await page.evaluate(()=>SEASON_REWARDS.at(-1).sp),39750,"S2 level 30 costs 50 % more SP");
+  const passPacks=await page.evaluate(()=>["pass-83x10","pass-84x10","pass-84x5","pass-85x7"].map(id=>{const items=generatePack(id,false);return{id,count:items.length,min:Math.min(...items.map(i=>itemRating(i)))}}));
+  assert.deepEqual(passPacks.map(p=>[p.id,p.count]),[["pass-83x10",10],["pass-84x10",10],["pass-84x5",5],["pass-85x7",7]],"Season pass packs have the promised size");
+  for(const [p,floor] of passPacks.map((p,i)=>[p,[83,84,84,85][i]]))assert.ok(p.min>=floor,`${p.id} only holds ${floor}+ players`);
+  const passLevels=await page.evaluate(()=>[16,28].map(level=>{const tier=SEASON_REWARDS.find(t=>t.level===level);return[seasonTierReward(tier,"free","s2").pack,seasonTierReward(tier,"premium","s2").pack]}));
+  assert.deepEqual(passLevels,[["pass-83x10","pass-84x10"],["pass-84x5","pass-85x7"]],"S2 free/premium pack pairs on levels 16 and 28");
   assert.equal(snap.promo,"halloween-2026");
   assert.ok(snap.storePacks.includes("halloween-pack"),"Blutmond pack in store at 19:00");
   assert.equal(snap.evo,true,"Blutmond evo open at 19:00");
