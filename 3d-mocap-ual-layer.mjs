@@ -133,7 +133,7 @@ export function createUalPoseLayer(bones){
   }
   return state;
  }
- // Motion preview (footera-3d-motion-capture=1): the captured legs too, on
+ // V21.296 (off with footera-3d-motion-capture=0): the captured legs too, on
  // top of the procedural gait, by share w of the last apply's weight.
  const LEGS=['thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r'];
  // The capture's thighs hang from the capture's pelvis: carry them over to

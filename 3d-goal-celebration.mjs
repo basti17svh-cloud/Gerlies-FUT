@@ -35,10 +35,10 @@ const spring=(s,start,duration)=>{
 };
 // Forearms and hands follow the upper arm a moment later (follow-through).
 const FOREARM_LAG=.11;
-// Motion preview (localStorage footera-3d-motion-capture=1): the scorer keeps
-// his captured running arms until the gesture really starts, and the arms
-// hold their pose with small, irregular life instead of steady flapping.
-const NATURAL=(()=>{try{return globalThis.localStorage?.getItem('footera-3d-motion-capture')==='1'}catch(_){return false}})();
+// V21.296: the scorer keeps his captured running arms until the gesture
+// really starts, and the arms hold their pose with small, irregular life
+// instead of steady flapping (localStorage footera-3d-motion-capture=0 = old).
+const NATURAL=(()=>{try{return globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){return true}})();
 // [seconds into the celebration when the arms leave the run, blend seconds]
 const GESTURE={airplane:[0,.5],jump_spin:[.85,.35],knee_slide:[.4,.35],badge:[1.1,.45],arms_crossed:[1,.4],
  open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4]};

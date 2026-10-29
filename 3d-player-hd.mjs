@@ -1,14 +1,14 @@
-/* Footera HD heroes (preview, not live): the players the camera comes close
+/* Footera V21.296 HD heroes: the players the camera comes close
  * to (scorer, his marker and the keeper) get a second, richer surface pass on
  * the same CC0 MakeHuman mesh. Everything is generated here, no extra
  * download: skin pores and soft light bleeding through the skin, wet eyes,
  * hair with a strand highlight, and a kit with real folds and jersey knit in
  * its normal map. Field players far away keep the normal materials, so a
  * phone pays for three detailed players, not twenty-three.
- * Switch: localStorage footera-3d-player-hd = '1'.
+ * Off switch: localStorage footera-3d-player-hd = '0'. Weak devices never get it.
  */
 export function footeraHDWanted(){
- try{return globalThis.localStorage?.getItem('footera-3d-player-hd')==='1'}catch(_){return false}
+ try{return globalThis.localStorage?.getItem('footera-3d-player-hd')!=='0'}catch(_){return true}
 }
 
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));

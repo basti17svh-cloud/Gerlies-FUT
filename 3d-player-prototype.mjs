@@ -6,11 +6,11 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21187';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21296';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21269';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21296';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -533,7 +533,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // The old MakeHuman lab model uses other bone axes; the V21.193 human rig
  // copies the Quaternius bone frames, so it shares the capture.
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
- let captureLegs=false;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')==='1'}catch(_){}
+ let captureLegs=true;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){}
  playerRoot.updateMatrixWorld(true);
  const groundRest=['foot_l','foot_r','ball_l','ball_r'].filter(n=>bones.get(n)).map(n=>[n,playerRoot.worldToLocal(bones.get(n).getWorldPosition(new THREE.Vector3())).y]);
  // The keeper's guide rotates about the feet, not the imported pelvis.
@@ -598,7 +598,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // A celebrating scorer looks up to the stand or the sky (x>0 looks up).
   const celebration=!keeperRole&&info.celebrate>0?info.celebration:null;
   apply('Head',m.headPitch+(celebration?.head?.[0]||0),m.headYaw+(celebration?.head?.[1]||0),m.headRoll);
-  // Motion preview: the run's arm swing must not keep pumping a held pose.
+  // V21.296: the run's arm swing must not keep pumping a held pose.
   const runArms=captureLegs?1-clamp(info.celebrate||0):1;
   for(let i=0;i<2;i++){
    const side=i?'r':'l',sign=i?1:-1;
@@ -634,7 +634,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    }
   }
   if(!acro||acro.weight<.5)matchFeet();
-  // Motion preview: captured legs instead of the procedural stepping, and the
+  // V21.296: captured legs instead of the procedural stepping, and the
   // whole body set down so the lower boot touches the grass.
   if(!keeperRole&&!acro&&captureLegs){
    const authoredLegs=info.celebration?clamp(info.celebration.legs??info.celebrate):0;
@@ -648,7 +648,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(keeperRole)matchKeeperHands();
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
  }
- // Motion preview: a teammate's arm round the scorer, hand on his far
+ // V21.296: a teammate's arm round the scorer, hand on his far
  // shoulder, elbow hanging down; blended over the authored hug pose.
  const embraceFrom=[new THREE.Quaternion(),new THREE.Quaternion()];
  function embrace({target:goal,weight}){

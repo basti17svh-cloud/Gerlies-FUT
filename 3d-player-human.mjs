@@ -8,7 +8,7 @@
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
-import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=1';
+import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21296';
 
 const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21258',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',

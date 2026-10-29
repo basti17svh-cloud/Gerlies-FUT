@@ -56,8 +56,13 @@ const server=http.createServer((req,res)=>{
     const frame=await page.evaluate(t=>qaFrame(t,true),time);
     fs.writeFileSync(path.join(out,sequence+'-'+time+'.png'),Buffer.from(frame.png,'base64'));delete frame.png;
     if(frame.motion.footTargets){
-     frame.motion.feet.forEach((foot,i)=>assert.ok(Math.hypot(...foot.map((v,j)=>v-frame.motion.footTargets[i][j]))<.07,
+     // V21.296: while running, the captured legs stride on their own and the
+     // lower boot is set on the grass; on the ball (capture off) the imported
+     // boot still follows the authored contact target exactly.
+     if(frame.motion.bodyWeight<.01)frame.motion.feet.forEach((foot,i)=>assert.ok(Math.hypot(...foot.map((v,j)=>v-frame.motion.footTargets[i][j]))<.07,
       `${sequence} ${time}: imported boot follows the original contact target`));
+     else{const low=Math.min(...frame.motion.toes.map(t=>t[1]),...frame.motion.feet.map(f=>f[1]));
+      assert.ok(low>-.04&&low<.07,`${sequence} ${time}: captured stride keeps a boot on the grass (${low.toFixed(3)})`)}
      if(time===0){
       assert.ok(frame.motion.feet[0][0]<frame.motion.feet[1][0],'left/right driver mapping');
       frame.motion.toes.forEach((toe,i)=>assert.ok(toe[2]<frame.motion.feet[i][2]-.05,'imported toes face the same way as the run'));

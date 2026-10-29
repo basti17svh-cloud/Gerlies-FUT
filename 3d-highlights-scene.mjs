@@ -5,12 +5,12 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21269';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21269';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21296';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21184';
-import {footeraHDWanted} from './3d-player-hd.mjs?v=1';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21226';
+import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
+import {footeraHDWanted} from './3d-player-hd.mjs?v=21296';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21296';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21252';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
@@ -1834,7 +1834,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
   }
-  // Motion preview: the two side huggers lay an arm round the scorer, the
+  // V21.296: the two side huggers lay an arm round the scorer, the
   // hand on his far shoulder (the GLB solves the arm with two-bone IK).
   const embraceFar=new THREE.Vector3(),embraceNeck=new THREE.Vector3(),embraceOther=new THREE.Vector3(),embraceHome=new THREE.Vector3();
   function embraceScorer(){
