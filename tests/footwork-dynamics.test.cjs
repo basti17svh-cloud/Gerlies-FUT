@@ -10,7 +10,7 @@ const actor=()=>({rig:{position:{y:0},rotation:{x:0,y:0,z:0}},upper:part(),
 test('V21.78: stance to swing cycles stay continuous, and both boots alternate',async()=>{
  const {sampleFootwork,FOOTERA_FOOTWORK_VERSION}=await load();
  assert.match(FOOTERA_FOOTWORK_VERSION,/21\.78/);
- const v=.84,duty=.60-.32*v;
+ const v=.84,duty=.60-.32*v-.12*Math.sin(Math.PI*v);
  const around=t=>snapshot(sampleFootwork(1.8,v,0,-.6,t,{feet:[{},{}]}));
  const a=around((duty-.0001)*2*Math.PI),b=around((duty+.0001)*2*Math.PI);
  for(const key of ['anklePitch','kneePitch','hipPitch','hipRoll','ankleYaw']){

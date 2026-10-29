@@ -5,15 +5,15 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21296';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21301';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21296';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21296';
+import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21301';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21252';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
-import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=2178';
+import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
 // V21.193: phones below the LOW line and players who chose the previous model
 // (localStorage footera-3d-player-model=quaternius) keep the Quaternius squad.
@@ -43,7 +43,7 @@ import {isMotion2Sequence,sampleWinger2,applyWinger2,sampleDefender2,applyDefend
 import {applyMotion23} from './3d-motion-transition.mjs?v=21208';
 import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-motion-duels.mjs?v=2154';
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
-import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=2198';
+import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21264';
 
@@ -102,6 +102,8 @@ export const MIN_CAMERA_DISTANCE=34;
 export const BROADCAST_CAMERA_DISTANCE=34;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
+// Shortest way round from angle a to b.
+const angleMix=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*clamp(t);
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const lerp=(a,b,t)=>a.map((v,i)=>mix(v,b[i],t));
 // Private stateless visual noise, including textures/crowd. Never Math.random.
@@ -266,6 +268,17 @@ export function controlCarrier(time,sequence='central'){
  else if(base==='central'&&seq!=='second_ball'){index=0;start=3.1;end=SHOT_TIME-.24}
  if(index<0||time<start||time>=end)return{index:-1,weight:0};
  return{index,weight:smooth((time-start)/.16)*(1-smooth((time-end+.23)/.23))};
+}
+// V21.297: the same owner for the body (arms, dribble stance) but eased at
+// the entry pass, where the ball itself has to switch in one frame.
+export function carrierPoseState(time,sequence='central'){
+ const c=controlCarrier(time,sequence);
+ if(c.weight<=0||extendedKind(sequence))return c;
+ const seq=normalizeSequence(sequence),base=baseSequence(seq);
+ const entry=((base.startsWith('wing_')||base.startsWith('cutback_'))&&seq!=='diagonal_switch')||INVERTED_SEQUENCES.has(seq)||seq==='dribble';
+ if(!entry)return c;
+ const ease=time<ENTRY_RELEASE?1-smooth((time-ENTRY_RELEASE+.14)/.14):smooth((time-ENTRY_RECEIVE)/.2);
+ return{index:c.index,weight:c.weight*ease};
 }
 // V21.195: an equaliser or winner from the 88th minute on ('winner',
 // 'equaliser' or null), for the bigger celebration and its own headline.
@@ -853,7 +866,9 @@ export function runPosition(index,time,sequence='central'){
    pursuit=[winger[0]-side*2.55,winger[1]+mix(-2.35,1.65,behind)];
   return lerp([side*21.1,-27.4],pursuit,close);
  }
- const u=clamp(time/6.9),p=lerp(r.from,r.to,smooth(u)),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
+ // V21.297: the curves run on the eased clock too, so every runner comes
+ // to rest at 6.9 s instead of stopping dead mid-stride (arms and legs popped).
+ const u=smooth(clamp(time/6.9)),p=lerp(r.from,r.to,u),bend=(hash(index*73+11)-.5)*(r.team==='attack'?1.45:1.05)*Math.sin(u*Math.PI);
  if(seq.startsWith('wing_')||seq.startsWith('cutback_')){const side=sequenceSide(seq);if(r.team==='attack'&&[2,3,4,5].includes(index))p[0]+=side*(index%2?.8:1.6)*Math.sin(u*Math.PI)}
  p[0]+=bend;p[1]+=Math.sin(u*Math.PI*2+hash(index+91)*Math.PI)*.2*Math.sin(u*Math.PI);
  if(r.team==='defend'){const tracking=defenderTracking(index,time,seq);p[0]+=tracking.x;p[1]+=tracking.z;}
@@ -913,7 +928,11 @@ export function locomotionDynamics(speed,turn,stride,acceleration=0,closeControl
 }
 // One complete left/right gait cycle follows travelled distance. Restrained reach
 // prevents the overextended sprint lunge without increasing step frequency wildly.
-export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/(.60-.32*clamp(speed));
+// V21.297: jogging players got 3+ strides a second (tiny "Benny Hill"
+// steps). Real jogging has a longer flight phase, so the support share
+// drops most in mid speed; walking and the full sprint keep their values.
+export const runningDuty=speed=>{speed=clamp(speed);return .60-.32*speed-.12*Math.sin(Math.PI*speed)};
+export const runningStrideLength=speed=>2*(.15+.145*clamp(speed))/runningDuty(speed);
 // Support-foot plant of a ground shot: the boot steps in (lift) beside the
 // ball before SHOT_TIME, holds through contact, then steps out again.
 export function plantFootSample(time){
@@ -923,7 +942,7 @@ export function plantFootSample(time){
  return{weight,lift};
 }
 export function runningLeg(phase,speed,out={}){
- speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=.60-.32*speed,reach=.15+.145*speed;
+ speed=clamp(speed);const cycle=((phase/(Math.PI*2))%1+1)%1,duty=runningDuty(speed),reach=.15+.145*speed;
  const support=cycle<duty,u=support?cycle/duty:(cycle-duty)/(1-duty);
  // Match the support foot's velocity at BOTH ends of the recovery arc.
  // The old smoothstep stopped the foot abruptly at toe-off and landing.
@@ -935,7 +954,9 @@ export function runningLeg(phase,speed,out={}){
  const distance=Math.min(.8599,Math.hypot(down,z)),bend=Math.acos(distance/.86);
  out.hip=Math.atan2(-z,down)+bend;out.knee=-2*bend;out.ankle=-out.hip-out.knee;
  out.z=z;out.y=ankleHeight;out.hipHeight=hipHeight;out.support=support;
- out.swingWeight=support?0:smooth(u/.18)*(1-smooth((u-.82)/.18));return out;
+ out.swingWeight=support?0:smooth(u/.18)*(1-smooth((u-.82)/.18));
+ // V21.297: zero slope at lift-off and landing, full at mid-swing.
+ out.swingShape=support?0:Math.sin(Math.PI*u)**2;return out;
 }
 // Include the existing finish/chase offsets when orienting and grounding actors.
 // This changes no path or event; facing now follows the final displayed motion.
@@ -1053,7 +1074,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
-  return celebrationDistance(celebrationKind,time-CELEBRATION_START);
+  // V21.297: accelerate into the run-off over 0.4 s; the curves start at
+  // full speed, which jerked the scorer from a walk into a sprint.
+  const s=time-CELEBRATION_START,ramp=.4;
+  return celebrationDistance(celebrationKind,s<ramp?s*s/(2*ramp):s-ramp/2);
  }
  // Facing along the run-away line for the whole celebration, even while
  // the scorer stands still (no snap back to his tactical facing).
@@ -1068,10 +1092,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  // one on each side, a little behind so the close-up still sees his face.
  const HUG_START=CELEBRATION_START+.2;
  const huggers=celebrationActive?(()=>{
-  const s=actorPosition(0,HUG_START);
+  // Measured to where the scorer will be, since he keeps running away.
+  const s=actorPosition(0,HUG_START+2.6);
   return RUNS.map((r,i)=>{const p=stagedPlayerPosition(i,HUG_START);return{index:i,d:i&&r.team==='attack'?Math.hypot(p[0]-s[0],p[1]-s[1]):Infinity}})
-   .filter(h=>h.d<(lateDrama?42:24)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
-   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/6.2,1.3,lateDrama?3.4:2.4),state:{arms:0,rootY:0}}));
+   // V21.297: only teammates who can get there at a footballer's sprint;
+   // 24 m in 2.4 s peaked at 15 m/s, with legs cycling twice too fast.
+   .filter(h=>h.d<(lateDrama?21:18)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
+   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/5.3,1.3,3.1),state:{arms:0,rootY:0}}));
  })():[];
  function hugWeight(index,time){
   const h=time>HUG_START?huggers.find(x=>x.index===index):null;
@@ -1696,7 +1723,16 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // Tables are built once; playback only reads two floats per actor.
   // V21.208: steps follow the path actually shown (actorPosition) and the
   // effort-scaled reach of pose(), so planted boots stop sliding when slow.
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];previous=next}return a});
+  // V21.297: the standing facing is the summed travel over +-0.4 s (a small
+  // shuffle no longer spins the body round), read with interpolation.
+  const steps=new Float32Array(322);
+  function smoothFacing(table){
+   const raw=Float32Array.from(table);
+   for(let j=0;j<=160;j++){let x=0,z=0;for(let k=Math.max(1,j-6);k<=Math.min(160,j+6);k++){x+=steps[k*2];z+=steps[k*2+1]}
+    table[j]=Math.hypot(x,z)>.02?Math.atan2(-x,-z):j?table[j-1]:raw[0]}
+  }
+  const facingAt=(index,time)=>{const x=clamp(time/DURATION)*160,j=Math.min(159,Math.floor(x));return angleMix(facingTables[index][j],facingTables[index][j+1],x-j)};
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];steps[j*2]=next[0]-previous[0];steps[j*2+1]=next[1]-previous[1];previous=next}smoothFacing(facingTables[index]);return a});
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();
@@ -1862,12 +1898,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const authoredTouches=getPlay(sequence)?playTouches(getPlay(sequence)):null;
    // Every member of a combination can now absorb the incoming ball.
    // Previously only attacker 0/1 had a reception motion in these sequences.
-   const carrierState=controlCarrier(time,sequence),carrierIndex=carrierState.index;
+   const carrierState=carrierPoseState(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
-    const heading=i===0&&celebrationActive&&time>CELEBRATION_START?celebrationHeading:hugWeight(i,time)>.6?celebrationHeading:moving?Math.atan2(-vx,-vz):facingTables[i][Math.min(gaitSamples,Math.floor(clamp(time/DURATION)*gaitSamples))];
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
+    // V21.297: ease from the (smoothed) standing facing into the running
+    // direction as the player gets going, instead of switching at a speed
+    // threshold, and turn into the celebration line instead of snapping round.
+    const standing=facingAt(i,time);
+    const celebrating=!celebrationActive?0:i===0?smooth((time-CELEBRATION_START)/.35):smooth((hugWeight(i,time)-.4)/.35);
+    const heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationHeading,celebrating);
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
@@ -2013,34 +2054,36 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }else striker.root.rotation.y*=1-blend;
     striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,k.hip,blend);striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,k.knee,blend);striker.ankles[1].rotation.x*=1-blend;
     striker.legs[0].rotation.x*=1-blend;striker.knees[0].rotation.x*=1-blend;striker.ankles[0].rotation.x*=1-blend;striker.upper.rotation.x*=1-blend;striker.upper.rotation.y*=1-blend;striker.upper.rotation.z*=1-blend;striker.rig.position.y*=1-blend;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-.45,blend);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,.65,blend);
+     // V21.297: every finish cross-fades with the run (no = value*blend,
+     // which threw the running pose away on the first and last frame).
      if(finish==='header'){
       const jump=Math.sin(Math.PI*smooth((time-4.9)/.92))*blend;
-      striker.rig.position.y=.20*jump;striker.legs[0].rotation.x=-.38*blend;striker.legs[1].rotation.x=.36*blend;
-      striker.knees[0].rotation.x=-.55*blend;striker.knees[1].rotation.x=-.48*blend;
-      striker.upper.rotation.x=mix(-.26,.33,smooth((time-5.16)/.34))*blend;
+      striker.rig.position.y+=.20*jump;striker.legs[0].rotation.x+=-.38*blend;striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,.36,blend);
+      striker.knees[0].rotation.x+=-.55*blend;striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,-.48,blend);
+      striker.upper.rotation.x+=mix(-.26,.33,smooth((time-5.16)/.34))*blend;
      }else if(finish==='volley'){
       const lift=smooth((time-4.96)/.37),follow=smooth((time-SHOT_TIME)/.26);
-      striker.rig.position.y=.07*Math.sin(Math.PI*smooth((time-5.0)/.7))*blend;
-      striker.legs[1].rotation.x=mix(-.38,1.42,lift)*(1-.24*follow)*blend;
-      striker.knees[1].rotation.x=mix(-.82,-.24,lift)*blend;
-      striker.ankles[1].rotation.x=-.18*blend;striker.upper.rotation.x=-.29*blend;
+      striker.rig.position.y+=.07*Math.sin(Math.PI*smooth((time-5.0)/.7))*blend;
+      striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,mix(-.38,1.42,lift)*(1-.24*follow),blend);
+      striker.knees[1].rotation.x=mix(striker.knees[1].rotation.x,mix(-.82,-.24,lift),blend);
+      striker.ankles[1].rotation.x+=-.18*blend;striker.upper.rotation.x+=-.29*blend;
      }else if(finish==='bicycle'){
-      const flip=smooth((time-5.03)/.65);striker.rig.position.y=.32*Math.sin(Math.PI*flip)*blend;
-      striker.rig.rotation.x=-Math.PI*.84*flip*blend;striker.legs[1].rotation.x=1.50*blend;striker.legs[0].rotation.x=-.9*blend;
+      const flip=smooth((time-5.03)/.65);striker.rig.position.y+=.32*Math.sin(Math.PI*flip)*blend;
+      striker.rig.rotation.x=mix(striker.rig.rotation.x,-Math.PI*.84*flip,blend);striker.legs[1].rotation.x=mix(striker.legs[1].rotation.x,1.50,blend);striker.legs[0].rotation.x+=-.9*blend;
      }else if(finish==='power'){
-      striker.legs[1].rotation.x*=1.15;striker.upper.rotation.x=-.25*blend;
+      striker.legs[1].rotation.x*=1+.15*blend;striker.upper.rotation.x+=-.25*blend;
      }else if(finish==='low_driven'){
-      striker.legs[1].rotation.x*=.72;striker.upper.rotation.x=.17*blend;
+      striker.legs[1].rotation.x*=1-.28*blend;striker.upper.rotation.x+=.17*blend;
      }else if(finish==='finesse'){
       const side=INVERTED_SEQUENCES.has(sequence)?sequenceSide(sequence):1;
       // The planted leg, striking ankle and upper body rotate around the ball:
       // a visible curved-foot finish rather than a scaled-down power strike.
-      striker.legs[0].rotation.x=-.10*blend;
-      striker.legs[1].rotation.x*=.84;
+      striker.legs[0].rotation.x+=-.10*blend;
+      striker.legs[1].rotation.x*=1-.16*blend;
       striker.legs[1].rotation.z-=side*.18*blend;
       striker.ankles[1].rotation.z+=side*.29*blend;
       striker.upper.rotation.y+=side*.25*blend;
-      striker.upper.rotation.z=-side*.22*blend;
+      striker.upper.rotation.z+=-side*.22*blend;
       striker.arms[0].rotation.x+=.18*blend;
      }
     // Authored one-shot clips run over the common 5.4 s foot-contact.
@@ -2059,8 +2102,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     striker.ankles[1].rotation.z+=shotClip.ankle*shotWeight*.5;
     striker.rig.position.y+=shotClip.bounce*shotWeight;
     if(enhancedRigMotion)animateFootballFinish(striker,time,finish,sequence);
-     if(pilotMotion){applyFootballStrike(striker,time,finish,sequence);applyFinishContinuity(striker,time,finish,event.playerStyles)}
    }
+   // V21.297: the strike's load starts at 4.73 s and the follow-through runs
+   // to 6.07 s; inside the 4.9-6.05 s gate above both snapped on and off.
+   if(pilotMotion&&event.type!=='ball_won'&&time>=4.7&&time<=6.15){applyFootballStrike(striker,time,finish,sequence);applyFinishContinuity(striker,time,finish,event.playerStyles)}
    // Final rig pass preserves canonical striker boot impact and ball trajectory.
    if(motion2Active)applyWinger2(striker,time,sequence,finish,motion2CutAnchor,motion2ShotAnchor,event.playerStyles);
    // 2.6: rebalance after the kick; never change the canonical 5.4s contact.
@@ -2077,9 +2122,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const [from,to]=Array.isArray(window)?window:[window.start,window.end];
     if(time<from||time>to)continue;
     const passer=window.actor!==undefined?players[window.actor]:(sequence==='diagonal_switch'&&from<1?players[5]:players[1]),u=clamp((time-from)/(to-from)),kick=passStrikePose(u);
-    passer.legs[1].rotation.x=kick.hip;passer.knees[1].rotation.x=kick.knee;passer.ankles[1].rotation.x=kick.ankle;
-    passer.rig.rotation.x=-.085*(1-kick.follow);passer.rig.rotation.y=.10*Math.sin(u*Math.PI);
-    passer.arms[0].rotation.z=-.38;passer.arms[1].rotation.z=.55;
+    // V21.297: blend into and out of the pass instead of snapping the leg
+    // to the wind-up on the first frame and back to the run on the last.
+    const w=smooth(u/.2)*(1-smooth((u-.78)/.22));
+    passer.legs[1].rotation.x=mix(passer.legs[1].rotation.x,kick.hip,w);passer.knees[1].rotation.x=mix(passer.knees[1].rotation.x,kick.knee,w);passer.ankles[1].rotation.x=mix(passer.ankles[1].rotation.x,kick.ankle,w);
+    passer.rig.rotation.x=mix(passer.rig.rotation.x,-.085*(1-kick.follow),w);passer.rig.rotation.y=mix(passer.rig.rotation.y,.10*Math.sin(u*Math.PI),w);
+    passer.arms[0].rotation.z=mix(passer.arms[0].rotation.z,-.38,w);passer.arms[1].rotation.z=mix(passer.arms[1].rotation.z,.55,w);
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
@@ -2168,7 +2216,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    const shadowScale=clamp(1-bp[1]/3,.42,1);ballShadow.position.set(bp[0],.019,bp[2]);ballShadow.scale.setScalar(shadowScale);ballShadow.material.opacity=.12+.18*shadowScale;
    const reaction=smooth((time-IMPACT_TIME)/.72);
-   if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME;for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=-1.75;p.arms[1].rotation.z=1.75}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
+   if(event.type==='goal'&&!labDuelPreview&&time>REVEAL_TIME){const t=time-REVEAL_TIME,up=smooth(t/.35);for(const i of [0,2,3]){const p=players[i];p.arms[0].rotation.z=mix(p.arms[0].rotation.z,-1.75,up);p.arms[1].rotation.z=mix(p.arms[1].rotation.z,1.75,up)}for(const i of [8,9,10,11]){const p=players[i];p.rig.rotation.x=.045*reaction;p.arms[0].rotation.z=-.18*reaction;p.arms[1].rotation.z=.18*reaction}}
    else if(reaction>.05){const lift=event.type==='big_chance_saved'?1.05:event.type==='shot_post'?.82:.58;striker.arms[0].rotation.z=mix(striker.arms[0].rotation.z,-lift,reaction);striker.arms[1].rotation.z=mix(striker.arms[1].rotation.z,lift,reaction);striker.rig.rotation.x=-.03*reaction}
    const positions=net.geometry.attributes.position;
    // The woodwork rattles when a goal goes in off the bar or the post.

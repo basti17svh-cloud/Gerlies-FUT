@@ -6,7 +6,7 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
-import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21296';
+import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -535,7 +535,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
  let captureLegs=true;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){}
  playerRoot.updateMatrixWorld(true);
- const groundRest=['foot_l','foot_r','ball_l','ball_r'].filter(n=>bones.get(n)).map(n=>[n,playerRoot.worldToLocal(bones.get(n).getWorldPosition(new THREE.Vector3())).y]);
+ const legSwing=[0,0],shrugFrom=new THREE.Quaternion(),shrugTo=new THREE.Quaternion();
  // The keeper's guide rotates about the feet, not the imported pelvis.
  // Preserve that entire transform before retargeting individual joints.
  const authoredFacing=normalized.quaternion.clone();
@@ -587,7 +587,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     clamp(driver.rig.position.y*.45+m.bob*.18,-.06,.035):
     clamp(driver.rig.position.y*.68+m.bob,-.10,.22);
    // An authored goal celebration may kneel or jump: follow the driver hips.
-   if(Number.isFinite(info.rootY))normalized.position.y=info.rootY;
+   if(Number.isFinite(info.rootY))normalized.position.y=captureLegs?normalized.position.y+(info.rootY-normalized.position.y)*clamp(info.celebration?.body??1):info.rootY;
    normalized.quaternion.copy(authoredFacing);
    apply('pelvis',driver.rig.rotation.x*.45+m.pelvisPitch,
     driver.rig.rotation.y+m.pelvisYaw,driver.rig.rotation.z*.7+m.pelvisRoll);
@@ -615,7 +615,15 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   bodyState=capturedBody.apply(frameTime,info,keeperRole);
   if(!keeperRole&&Number.isFinite(info.speed))capturedBody.shapeHands(celebration?.open);
   // Raised arms lift the shoulders with them instead of hinging at a fixed joint.
-  if(celebration?.shrug){apply('clavicle_l',0,0,-celebration.shrug[0]);apply('clavicle_r',0,0,celebration.shrug[1])}
+  // V21.297: cross-fade from the captured shoulders with the arm weight; the
+  // hard set put both shoulders back to rest on the first celebration frame.
+  if(celebration?.shrug){
+   const w=clamp(info.celebrate);
+   for(const [name,lift] of [['clavicle_l',-celebration.shrug[0]],['clavicle_r',celebration.shrug[1]]]){
+    const bone=bones.get(name);if(!bone)continue;
+    shrugFrom.copy(bone.quaternion);apply(name,0,0,lift);shrugTo.copy(bone.quaternion);bone.quaternion.copy(shrugFrom).slerp(shrugTo,w);
+   }
+  }
   // V21.208 overhead kick: the whole body turns backwards over the pelvis and
   // the legs scissor in player space; the planted-boot IK stays off meanwhile.
   const acro=!keeperRole&&info.acrobatic?.weight>0?info.acrobatic:null;
@@ -634,16 +642,13 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    }
   }
   if(!acro||acro.weight<.5)matchFeet();
-  // V21.296: captured legs instead of the procedural stepping, and the
-  // whole body set down so the lower boot touches the grass.
+  // V21.297: the captured stride owns the swinging leg (knee drive, heel
+  // kick); the standing leg stays on its planted IK boot, so the hips never
+  // have to be dropped onto the grass and the body no longer bobs or pops.
   if(!keeperRole&&!acro&&captureLegs){
    const authoredLegs=info.celebration?clamp(info.celebration.legs??info.celebrate):0;
-   const share=capturedBody.applyLegs(1.12*(1-authoredLegs)*(info.grounded===false?0:1));
-   if(share>0){
-    playerRoot.updateMatrixWorld(true);let low=Infinity;
-    for(const [name,rest] of groundRest){const y=playerRoot.worldToLocal(bones.get(name).getWorldPosition(target)).y-rest;if(y<low)low=y}
-    if(Number.isFinite(low))normalized.position.y-=low*share;
-   }
+   for(let i=0;i<2;i++)legSwing[i]=driver.gait[i]?.swingShape??driver.gait[i]?.swingWeight??(driver.gait[i]?.support?0:1);
+   capturedBody.applyLegs(1.12*(1-authoredLegs)*(info.grounded===false?0:1),legSwing);
   }
   if(keeperRole)matchKeeperHands();
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
