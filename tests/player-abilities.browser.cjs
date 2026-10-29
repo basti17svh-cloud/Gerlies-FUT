@@ -26,6 +26,13 @@ const server=http.createServer((req,res)=>{const rel=new URL(req.url,'http://loc
     if(time===5.4&&distances[foot==='Left'?0:1]>.75)throw Error('striking boot misses contact '+id+' '+foot+' '+distances.join(','));
     rows.push({id,width,time,model,foot,direction,visible:x.visibleFieldPlayers,ballDistance:x.ballToCarrier,footDistances:x.strikeFeet.map(f=>Math.hypot(f[0]-x.ball[0]/direction,f[1]-x.ball[1],f[2]-x.ball[2]/direction)),skill:x.skillAction?.move||'',skillWeight:x.skillAction?.weight||0,drawCalls:x.drawCalls});
    }
+   if(S.skillScene(id))for(const boundary of [1.65,3.35]){
+    world.update(boundary-.0001);const a=world.inspect().ball;
+    world.update(boundary+.0001);const b=world.inspect().ball;
+    const delta=Math.hypot(...a.map((v,k)=>v-b[k]));
+    if(delta>.02)throw Error('skill handoff snaps '+id+' '+boundary+' '+delta);
+    rows.push({id,width,model,foot,boundary,delta});
+   }
    world.dispose();
   }
   return rows;
@@ -36,5 +43,5 @@ const server=http.createServer((req,res)=>{const rel=new URL(req.url,'http://loc
   await page.evaluate(({id,model,width,time})=>{const {M,renderer}=qaSkills;qaSkills.world?.dispose();const event={id:'image'+id,type:'big_chance_saved',team:'home',attackDirection:1,sequence:id,finish:'normal',shotFoot:'Left',playerFeet:Array(16).fill('Left'),playerName:'Testspieler',defenderIndex:8};qaSkills.world=M.makeScene(renderer,event,false,false,true,false,true,true,model);qaSkills.world.resize(width,340);qaSkills.world.update(time)}, {id,model,width,time});
   await page.locator('#proof').screenshot({path:path.join(out,id+'.png')});
  }
- console.log(JSON.stringify({frames:checks.length,widths:[360,390,412],rigs:['quaternius','human'],errors,out}));
+ console.log(JSON.stringify({checks:checks.length,widths:[360,390,412],rigs:['quaternius','human'],errors,out}));
  }finally{await browser?.close();server.close()}})().catch(e=>{console.error(e);process.exitCode=1});

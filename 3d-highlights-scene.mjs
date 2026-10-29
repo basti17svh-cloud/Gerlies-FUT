@@ -1787,7 +1787,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
   function bootGuidedBall(original,time){
-   if(extended||sampleSkill(sequence,time)?.weight>0)return original;
+   if(extended)return original;
    const state=controlCarrier(time,sequence);
    if(state.weight<=0)return original;
    const p=players[state.index];
@@ -1815,7 +1815,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     toeZ=mix(toes[1].z,toes[0].z,touchingWeight);
    const dx=toeX-current[0],dz=toeZ-current[1],
     forward=clamp(dx*fx+dz*fz,.33-.10*touch.contact,.65-.11*touch.contact),side=clamp(dx*(-fz)+dz*fx,-.22,.22),
-    drive=continuity?.lead||0,blend=state.weight*.94;
+    drive=continuity?.lead||0,blend=state.weight*.94*(1-(sampleSkill(sequence,time)?.weight||0));
    return[mix(original[0],current[0]+fx*(forward+drive)-fz*side,blend),.14,
     mix(original[2],current[1]+fz*(forward+drive)+fx*side,blend)];
   }
