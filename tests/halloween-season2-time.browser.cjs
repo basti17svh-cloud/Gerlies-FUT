@@ -94,6 +94,7 @@ function fakeClock(){
   // 30.10. 18:59: everything still locked, still Season 1.
   await boot(T.before);
   snap=await snapshot();
+  assert.equal(await page.evaluate(()=>SEASON_REWARDS.at(-1).sp),26500,"S1 keeps the old SP ladder");
   assert.equal(snap.season,"s1");assert.equal(snap.passKey,"s1");assert.equal(snap.sp,17000,"S1 SP untouched before the handover");
   assert.equal(snap.promo,"","no Halloween promo at 18:59");
   assert.ok(!snap.storePacks.includes("halloween-pack"),"Blutmond pack not in store at 18:59");
@@ -108,6 +109,7 @@ function fakeClock(){
   await boot(T.start);
   snap=await snapshot();
   assert.equal(snap.season,"s2");assert.equal(snap.passKey,"s2","pass moved to S2");assert.equal(snap.sp,0,"S2 starts at 0 SP");
+  assert.equal(await page.evaluate(()=>SEASON_REWARDS.at(-1).sp),39750,"S2 level 30 costs 50 % more SP");
   assert.equal(snap.promo,"halloween-2026");
   assert.ok(snap.storePacks.includes("halloween-pack"),"Blutmond pack in store at 19:00");
   assert.equal(snap.evo,true,"Blutmond evo open at 19:00");

@@ -33,6 +33,11 @@ function premiumTierReward(level){
 }
 for(const tier of SEASON_REWARDS)tier.premium=premiumTierReward(tier.level);
 for(let level=11;level<=30;level++)SEASON_REWARDS.push({level,sp:13500+(level-10)*650,reward:FREE_EXTRA[level-11],premium:premiumTierReward(level)});
+// Season-specific SP cost on top of the shared ladder. Season 2 levels cost 50 % more:
+// matches plus daily/weekly/season/catch-up objectives let active players finish 26,500 SP in about two weeks.
+const SEASON_SP_SCALE={s2:1.5};
+function seasonLevelSp(tier,seasonKey=seasonInfo().key){return Math.round(tier.baseSp*(SEASON_SP_SCALE[seasonKey]||1)/50)*50}
+for(const tier of SEASON_REWARDS){tier.baseSp=tier.sp;Object.defineProperty(tier,"sp",{enumerable:true,configurable:true,get(){return seasonLevelSp(this)}})}
 // Season-specific reward swaps on top of the shared 30-tier ladder.
 const SEASON_REWARD_OVERRIDES={s2:{free:{4:{pack:"halloween-pack"}},premium:{6:{pack:"halloween-pack"}}}};
 function seasonStoryKey(seasonKey,which,level){
@@ -173,7 +178,7 @@ function passClaims(which){return which==="premium"?state.seasonPass.premiumClai
 function settleExpiredPass(pass){
  const oldSp=Math.max(0,Number(state.sp||0));
  for(const tier of SEASON_REWARDS){
-  if(oldSp<tier.sp)continue;
+  if(oldSp<seasonLevelSp(tier,pass.key))continue;
   const free=seasonTierReward(tier,"free",pass.key),premium=seasonTierReward(tier,"premium",pass.key);
   if(!pass.freeClaims?.[tier.level]||free.story)grantSeasonOnly(free);
   if(pass.premium&&(!pass.premiumClaims?.[tier.level]||premium.story))grantSeasonOnly(premium)

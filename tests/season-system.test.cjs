@@ -33,7 +33,7 @@ function setup(initial={}){
  vm.createContext(ctx);
  vm.runInContext(timeSource,ctx,{filename:'footera-time.js'});
  vm.runInContext(source,ctx,{filename:'season-system.js'});
- const api=vm.runInContext('({seasonInfo,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
+ const api=vm.runInContext('({seasonInfo,seasonLevelSp,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
  return{ctx,state:ctx.state,elements,api,click(id,selector,dataset){
   const handler=element(id).listeners.click;
   assert.ok(handler,`${id} click handler`);
@@ -44,7 +44,10 @@ function setup(initial={}){
 test('30 reward tiers and rotating day/week/season schedules',()=>{
  const{ctx,api}=setup();
  assert.equal(ctx.SEASON_REWARDS.length,30);
- assert.equal(ctx.SEASON_REWARDS.at(-1).sp,26500);
+ assert.equal(ctx.SEASON_REWARDS.at(-1).baseSp,26500);
+ assert.equal(api.seasonLevelSp(ctx.SEASON_REWARDS.at(-1),'s1'),26500);
+ assert.equal(api.seasonLevelSp(ctx.SEASON_REWARDS.at(-1),'s2'),39750);
+ assert.equal(api.seasonLevelSp(ctx.SEASON_REWARDS[9],'s2'),20250);
  assert.ok(ctx.SEASON_REWARDS.every(t=>t.reward&&t.premium));
  const seasonBoundary=new Date('2026-10-30T18:00:00Z'),dailyBoundary=new Date('2026-09-23T17:00:00Z');
  assert.equal(api.seasonInfo(new Date(seasonBoundary.getTime()-1000)).number,1);
