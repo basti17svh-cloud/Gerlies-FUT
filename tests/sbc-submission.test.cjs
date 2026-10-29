@@ -18,7 +18,7 @@ function setup(){
   displayBase:i=>i,itemRating:i=>i.ovr,positionLabel:()=>'',cardHTML:()=>'',esc:s=>String(s)};
  vm.createContext(ctx);
  vm.runInContext(html.match(/^function isFooteraLiveCard\(.*$/m)[0],ctx);
- vm.runInContext(section('function removeActiveEvolutionForUid(','function removeActiveEvolutionInstance(')+section('function sbcTeamUsageForUid(','function sbcPickerFacetRows(')+section('function finalizeSbcSubmission(','$("sbcTabs").addEventListener('),ctx);
+ vm.runInContext(section('function removeActiveEvolutionForUid(','function removeActiveEvolutionInstance(')+section('function sbcTeamUsageForUid(','function sbcFillCost(')+section('function finalizeSbcSubmission(','$("sbcTabs").addEventListener('),ctx);
  return ctx
 }
 
