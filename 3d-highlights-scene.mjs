@@ -1834,6 +1834,24 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
    renderer.render(scene,camera);
   }
+  // Motion preview: the two side huggers lay an arm round the scorer, the
+  // hand on his far shoulder (the GLB solves the arm with two-bone IK).
+  const embraceFar=new THREE.Vector3(),embraceNeck=new THREE.Vector3(),embraceOther=new THREE.Vector3(),embraceHome=new THREE.Vector3();
+  function embraceScorer(){
+   const scorer=importedPlayer?.model;
+   for(const h of huggers){
+    const frame=squadMotionFrames[h.index];if(!frame)continue;
+    const on=frame.celebration&&h.slot<2&&scorer?smooth((frame.celebration.arms-.55)/.4):0;
+    if(on<=0){frame.embrace=null;continue}
+    const left=scorer.getObjectByName('upperarm_l'),right=scorer.getObjectByName('upperarm_r'),neck=scorer.getObjectByName('neck_01');
+    if(!left||!right||!neck){frame.embrace=null;continue}
+    players[h.index].root.getWorldPosition(embraceHome);
+    left.getWorldPosition(embraceFar);right.getWorldPosition(embraceOther);neck.getWorldPosition(embraceNeck);
+    if(embraceOther.distanceToSquared(embraceHome)>embraceFar.distanceToSquared(embraceHome))embraceFar.copy(embraceOther);
+    const embrace=frame.embrace||(frame.embrace={target:new THREE.Vector3(),weight:0});
+    embrace.target.copy(embraceFar).lerp(embraceNeck,.3);embrace.target.y+=.04;embrace.weight=on;
+   }
+  }
   function update(time,{replay=false}={}){
    renderTime=time;
    if(ceremony){updateCeremony(time);return}
@@ -2225,6 +2243,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
    }
    importedPlayer?.animate(time,importedMotionFrame);
+   embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
    updateCrowd(time);pyro?.update(time);

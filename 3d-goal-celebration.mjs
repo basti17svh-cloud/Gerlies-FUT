@@ -35,6 +35,15 @@ const spring=(s,start,duration)=>{
 };
 // Forearms and hands follow the upper arm a moment later (follow-through).
 const FOREARM_LAG=.11;
+// Motion preview (localStorage footera-3d-motion-capture=1): the scorer keeps
+// his captured running arms until the gesture really starts, and the arms
+// hold their pose with small, irregular life instead of steady flapping.
+const NATURAL=(()=>{try{return globalThis.localStorage?.getItem('footera-3d-motion-capture')==='1'}catch(_){return false}})();
+// [seconds into the celebration when the arms leave the run, blend seconds]
+const GESTURE={airplane:[0,.5],jump_spin:[.85,.35],knee_slide:[.4,.35],badge:[1.1,.45],arms_crossed:[1,.4],
+ open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4]};
+// Two incommensurate waves: alive, but never a metronome.
+const drift=(s,f,phase=0)=>.6*Math.sin(s*f+phase)+.4*Math.sin(s*f*1.618+phase*2.3);
 
 // avoid: the previous goal's celebration, so two goals in a row never repeat
 // the same one (a star's trademark celebration always wins).
@@ -70,7 +79,7 @@ export function celebrationDistance(kind,s){
 }
 
 function blankPose(){
- return{rig:[0,0,0],upper:[0,0,0],arms:[[0,0,0],[0,0,0]],elbows:[.35,.35],
+ return{armsOn:1,rig:[0,0,0],upper:[0,0,0],arms:[[0,0,0],[0,0,0]],elbows:[.35,.35],
   legs:[[0,0,0],[0,0,0]],knees:[0,0],ankles:[0,0],drop:0,lift:0,legs_w:0,
   head:[0,0],shrug:[0,0],open:[0,0]};
 }
@@ -78,7 +87,7 @@ const now=blankPose(),late=blankPose();
 function reset(t){
  t.rig.fill(0);t.upper.fill(0);t.head.fill(0);t.shrug.fill(0);t.open.fill(0);
  for(let i=0;i<2;i++){t.arms[i].fill(0);t.elbows[i]=.35;t.legs[i].fill(0);t.knees[i]=0;t.ankles[i]=0}
- t.drop=0;t.lift=0;t.legs_w=0;
+ t.drop=0;t.lift=0;t.legs_w=0;t.armsOn=1;
 }
 // Arm angles are player space: x>0 raises forwards, z<0 (left) / z>0 (right)
 // raises sideways. Elbow x>0 flexes the forearm. Upper body and head x>0 lean
@@ -104,9 +113,10 @@ function pose(t,kind,s){
  t.upper[0]+=.035*breathe;t.shrug[0]=t.shrug[1]=.04+.03*breathe;
  if(kind==='airplane'){
   // Wings out and gently flapping, banking left and right like a plane.
-  const out=spring(s,.05,.9),bank=Math.sin(s*2.4)*.26*out,flap=Math.sin(s*4.2);
-  const wingL=mix(.15,1.42,out)+.10*flap+bank*.45,wingR=mix(.15,1.42,out)+.10*Math.sin(s*4.2+.5)-bank*.45;
-  arms(t,[-.12,0,wingL],[-.12,0,wingR],.32+.06*flap,.32+.06*Math.sin(s*4.2+.5));
+  const out=spring(s,.05,.9),bank=Math.sin(s*2.4)*.26*out;
+  const flapL=NATURAL?.35*drift(s,2.1):Math.sin(s*4.2),flapR=NATURAL?.35*drift(s,2.1,.7):Math.sin(s*4.2+.5);
+  const wingL=mix(.15,1.42,out)+.10*flapL+bank*.45,wingR=mix(.15,1.42,out)+.10*flapR-bank*.45;
+  arms(t,[-.12,0,wingL],[-.12,0,wingR],.32+.06*flapL,.32+.06*flapR);
   t.rig[2]+=bank;t.upper[2]=bank*.65;t.upper[0]+=.06;t.upper[1]=Math.sin(s*1.3)*.08;
   t.head=[.12,-bank*.4];t.shrug=[.12+.08*out,.12+.08*out];t.open=[1,1];
   if(s>2.6)looseStance(t,s,smooth((s-2.6)/.6));
@@ -116,7 +126,7 @@ function pose(t,kind,s){
   // Run in with pumping arms, half turn in the air, then the trademark wide
   // landing: arms swing down and out and settle with a bounce.
   t.rig[1]=Math.PI*smooth(air);
-  const gather=spring(s,1.05,.5),land=spring(s,2.0,.7),pump=Math.sin(s*7)*(1-gather)*.35;
+  const gather=spring(s,1.05,.5),land=spring(s,2.0,.7),pump=NATURAL?0:Math.sin(s*7)*(1-gather)*.35;
   const armX=mix(mix(.35+pump,1.25,gather),-.42,land),armZ=mix(mix(.35,.85,gather),.78,land);
   arms(t,[armX,0,armZ],[mix(mix(.35-pump,1.25,gather),-.42,land),0,armZ],mix(1.1,.38,land),mix(1.1,.38,land));
   t.upper[0]+=mix(-.12*gather,.24,land);t.head=[mix(.05,.28,land),0];
@@ -134,7 +144,7 @@ function pose(t,kind,s){
   t.legs[0][2]=-.12;t.legs[1][2]=.12;
   // Lean back, fists shaking at the sky, screaming at the stand.
   t.upper[0]+=.30*kneel+.05*scream*kneel;t.upper[2]=.05*Math.sin(s*1.7);
-  const shake=.07*Math.sin(s*9)*raise;
+  const shake=NATURAL?.05*Math.sin(s*9)*pulse(s,1.0,1.15,1.55,1.85):.07*Math.sin(s*9)*raise;
   arms(t,[mix(.3,.45,raise),0,mix(.4,2.15,raise)+shake],[mix(.3,.45,raise),0,mix(.4,2.15,raise)-shake],mix(.8,.75,raise)+.15*scream,mix(.8,.75,raise)+.15*scream);
   t.head=[.38*kneel,.12*Math.sin(s*1.2)];t.shrug=[.3*raise,.3*raise];
  }else if(kind==='badge'){
@@ -193,7 +203,7 @@ function pose(t,kind,s){
   t.legs[0][0]=.12+.45*stepL;t.legs[1][0]=.12+.45*stepR;t.knees[0]=-.25-.75*stepL;t.knees[1]=-.25-.75*stepR;
   t.ankles[0]=.1+.3*stepL;t.ankles[1]=.1+.3*stepR;t.legs[0][2]=-.1+.08*sway;t.legs[1][2]=.1+.08*sway;
   t.rig[2]+=.13*sway;t.upper[2]=-.16*sway;t.upper[1]=.22*Math.sin(beat)*on;t.upper[0]+=-.05*on;t.drop=.06*on;
-  arms(t,[mix(.3,.55,on)+.45*Math.sin(beat)*on,0,mix(.38,.55,on)],[mix(.3,.55,on)-.45*Math.sin(beat)*on,0,mix(.38,.55,on)],mix(.5,1.45,on),mix(.5,1.45,on));
+  arms(t,[mix(.3,.55,on)+(NATURAL?.3:.45)*Math.sin(beat)*on,0,mix(.38,.55,on)],[mix(.3,.55,on)-(NATURAL?.3:.45)*Math.sin(beat)*on,0,mix(.38,.55,on)],mix(.5,1.45,on),mix(.5,1.45,on));
   t.head=[.1*on+.05*Math.abs(Math.sin(beat))*on,-.15*sway];t.shrug=[.1*on+.08*stepL,.1*on+.08*stepR];t.open=[.6*on,.6*on];
  }else if(kind==='mask'){
   // Gyökeres: stops with the feet wide, raises both hands to the face and
@@ -205,7 +215,8 @@ function pose(t,kind,s){
  }else if(kind==='hug_left'||kind==='hug_right'){
   // A teammate arriving beside the scorer: the near arm goes round his
   // shoulders, the other fist pumps, both bouncing with him.
-  const wrap=spring(s,0,.5),bounce=Math.abs(Math.sin(s*5.5))*wrap,pump=Math.sin(s*6.2)*.18*wrap;
+  const wrap=spring(s,0,.5),bounce=Math.abs(Math.sin(s*5.5))*wrap*(NATURAL?.6:1);
+  const pump=NATURAL?.22*(pulse(s,.15,.28,.36,.55)+pulse(s,.7,.83,.91,1.15))*wrap+.03*drift(s,3)*wrap:Math.sin(s*6.2)*.18*wrap;
   const around=[mix(.3,.36,wrap),0,mix(.38,1.22,wrap)],fist=[mix(.3,1.55,wrap)+pump,0,mix(.38,.35,wrap)];
   const nearLeft=kind==='hug_left';
   arms(t,nearLeft?around:fist,nearLeft?fist:around,nearLeft?mix(.5,1.0,wrap):mix(.5,1.6,wrap),nearLeft?mix(.5,1.6,wrap):mix(.5,1.0,wrap));
@@ -218,7 +229,7 @@ function pose(t,kind,s){
   looseStance(t,s,.6);
  }else if(kind==='cheer'){
   // Final whistle, winners: bouncing in the huddle with both fists up.
-  const up=spring(s,0,.6),bounce=Math.abs(Math.sin(s*5.4)),pump=Math.sin(s*5.4)*.18*up;
+  const up=spring(s,0,.6),bounce=Math.abs(Math.sin(s*5.4)),pump=(NATURAL?.07:.18)*Math.sin(s*5.4)*up;
   arms(t,[mix(.3,.42,up),0,mix(.38,2.25,up)+pump],[mix(.3,.42,up),0,mix(.38,2.25,up)-pump],mix(.5,.8,up),mix(.5,.8,up));
   t.upper[0]+=.16*up;t.head=[.3*up,0];t.shrug=[.3*up,.3*up];t.open=[0,0];
   looseStance(t,s,up);t.lift=.16*bounce*up;
@@ -270,6 +281,8 @@ function pose(t,kind,s){
   arms(t,[.35,0,mix(.35,.62,stop)],[mix(.4,1.5,stop*(1-pump*.85)),0,.3],mix(.7,1.25,stop),mix(1.0,2.15,pump));
   t.head=[.15*stop+.12*pump,.08*stop];t.shrug=[.12*stop,.12*stop+.18*pump];
  }
+ const gesture=NATURAL&&GESTURE[kind];
+ if(gesture)t.armsOn=smooth((s-gesture[0])/gesture[1]);
 }
 
 /* Writes the celebration on the scorer's driver joints after the normal gait
@@ -281,7 +294,7 @@ function pose(t,kind,s){
 export function applyCelebrationPose(p,kind,s,out={},weight=1){
  pose(late,kind,s-FOREARM_LAG);
  pose(now,kind,s);
- const w=smooth(s/.55)*clamp(weight),legs=now.legs_w*clamp(weight);
+ const w=smooth(s/.55)*clamp(weight)*now.armsOn,legs=now.legs_w*clamp(weight);
  for(let i=0;i<2;i++){
   const arm=p.arms[i].rotation;
   arm.x=mix(arm.x,now.arms[i][0],w);arm.y=mix(arm.y,now.arms[i][1],w);arm.z=mix(arm.z,now.arms[i][2],w);
@@ -300,7 +313,7 @@ export function applyCelebrationPose(p,kind,s,out={},weight=1){
  // Lower the hips onto the knees (or lift for the jump); feet follow via IK.
  const rootY=(now.lift-now.drop)*clamp(weight);
  p.rig.position.y=mix(p.rig.position.y,rootY,Math.max(w,legs));
- out.arms=w;out.rootY=rootY;out.kind=kind;
+ out.arms=w;out.legs=legs;out.rootY=rootY;out.kind=kind;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];
  // Hands open a beat after the arm moves, like the forearm.

@@ -598,6 +598,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // A celebrating scorer looks up to the stand or the sky (x>0 looks up).
   const celebration=!keeperRole&&info.celebrate>0?info.celebration:null;
   apply('Head',m.headPitch+(celebration?.head?.[0]||0),m.headYaw+(celebration?.head?.[1]||0),m.headRoll);
+  // Motion preview: the run's arm swing must not keep pumping a held pose.
+  const runArms=captureLegs?1-clamp(info.celebrate||0):1;
   for(let i=0;i<2;i++){
    const side=i?'r':'l',sign=i?1:-1;
    apply('thigh_'+side,driver.legs[i].rotation.x,driver.legs[i].rotation.y,driver.legs[i].rotation.z);
@@ -605,9 +607,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    apply('calf_'+side,driver.knees[i].rotation.x-m.kneeCushion*swing,0,driver.knees[i].rotation.z);
    apply('foot_'+side,driver.ankles[i].rotation.x+(i?m.rightToeLift:m.leftToeLift)*swing,
      driver.ankles[i].rotation.y,driver.ankles[i].rotation.z);
-   apply('upperarm_'+side,driver.arms[i].rotation.x*.94+sign*m.armSwing+(i?clipState.rightArmPitch:clipState.leftArmPitch),
-     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll));
-   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+.055*m.running+(i?clipState.rightElbow:clipState.leftElbow),0,driver.elbows[i].rotation.z);
+   apply('upperarm_'+side,driver.arms[i].rotation.x*.94+(sign*m.armSwing+(i?clipState.rightArmPitch:clipState.leftArmPitch))*runArms,
+     driver.arms[i].rotation.y,driver.arms[i].rotation.z*.92+(sign*m.armBrace+(i?clipState.rightArmRoll:clipState.leftArmRoll))*runArms);
+   apply('lowerarm_'+side,driver.elbows[i].rotation.x*.72+(.055*m.running+(i?clipState.rightElbow:clipState.leftElbow))*runArms,0,driver.elbows[i].rotation.z);
   }
   // V21.184: captured CC0 arms, shoulders, spine and hips on top; legs keep IK.
   bodyState=capturedBody.apply(frameTime,info,keeperRole);
@@ -635,14 +637,35 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // Motion preview: captured legs instead of the procedural stepping, and the
   // whole body set down so the lower boot touches the grass.
   if(!keeperRole&&!acro&&captureLegs){
-   const share=capturedBody.applyLegs(1.12*(1-clamp(info.celebrate||0))*(info.grounded===false?0:1));
+   const authoredLegs=info.celebration?clamp(info.celebration.legs??info.celebrate):0;
+   const share=capturedBody.applyLegs(1.12*(1-authoredLegs)*(info.grounded===false?0:1));
    if(share>0){
     playerRoot.updateMatrixWorld(true);let low=Infinity;
     for(const [name,rest] of groundRest){const y=playerRoot.worldToLocal(bones.get(name).getWorldPosition(target)).y-rest;if(y<low)low=y}
-    if(Number.isFinite(low)&&!Number.isFinite(info.rootY))normalized.position.y-=low*share;
+    if(Number.isFinite(low))normalized.position.y-=low*share;
    }
   }
   if(keeperRole)matchKeeperHands();
+  if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
+ }
+ // Motion preview: a teammate's arm round the scorer, hand on his far
+ // shoulder, elbow hanging down; blended over the authored hug pose.
+ const embraceFrom=[new THREE.Quaternion(),new THREE.Quaternion()];
+ function embrace({target:goal,weight}){
+  playerRoot.updateMatrixWorld(true);
+  const near=keeperArms[0].shoulder.getWorldPosition(hp).distanceToSquared(goal)<=keeperArms[1].shoulder.getWorldPosition(kp).distanceToSquared(goal)?0:1;
+  const limb=keeperArms[near];
+  embraceFrom[0].copy(limb.shoulder.quaternion);embraceFrom[1].copy(limb.elbow.quaternion);
+  limb.shoulder.getWorldPosition(hp);direction.copy(goal).sub(hp);
+  const distance=clamp(direction.length(),.001,limb.upper+limb.lower-.00001);direction.normalize();
+  pole.set(0,-1,0).addScaledVector(direction,-direction.y);
+  if(pole.lengthSq()<1e-8)pole.set(0,0,-1);pole.normalize();
+  const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
+  desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
+  target.copy(hp).addScaledVector(direction,distance);
+  pointBone(limb.shoulder,limb.elbow,desiredKnee);pointBone(limb.elbow,limb.hand,target);
+  limb.shoulder.quaternion.slerpQuaternions(embraceFrom[0],limb.shoulder.quaternion.clone(),weight);
+  limb.elbow.quaternion.slerpQuaternions(embraceFrom[1],limb.elbow.quaternion.clone(),weight);
  }
  function inspectMotion(){
   playerRoot.updateMatrixWorld(true);
