@@ -134,9 +134,13 @@ const out=path.join(__dirname,'../test-artifacts');
    assert.ok(row.riggedBones>=14&&row.riggedVertices>400,'weighted skeleton geometry: '+row.sequence);
    assert.match(row.skeletonClip,/Footera-striker-/,'authored striker AnimationMixer clip');
   }
+  // V21.303 skill moves turn the carrier's body on purpose (drag-back ~30°,
+  // Berbatov ~70°, roulette a full spin). Take exactly that authored yaw out
+  // of the measured facing, so the run underneath must still point forwards.
+  const runFacing=(row,actor)=>{const yaw=actor.index===0&&row.skillAction?row.skillAction.yaw:0,c=Math.cos(yaw),s=Math.sin(yaw),[x,z]=actor.forward;return[x*c-z*s,z*c+x*s]};
   for(const row of checks)for(const actor of row.facing){
    const speed=Math.hypot(...actor.velocity);
-   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forwardDot=(actor.forward[0]*actor.velocity[0]+actor.forward[1]*actor.velocity[1])/speed;
+   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forward=runFacing(row,actor),forwardDot=(forward[0]*actor.velocity[0]+forward[1]*actor.velocity[1])/speed;
     assert.ok(forwardDot>.85,`actor runs forwards: ${row.sequence} period ${row.period} time ${row.time} actor ${actor.index}: ${forwardDot}`);
    }
   }
