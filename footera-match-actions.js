@@ -1,4 +1,4 @@
-/* Footera V21.302: simulation-owned attacks. No rendering, timers or hidden RNG.
+/* Footera V21.303: simulation-owned attacks. No rendering, timers or hidden RNG.
  * Card values remain the fallback when genuine individual attributes are absent.
  * All chances are probabilities; PlayStyles improve a relevant action, not OVR.
  */
@@ -25,6 +25,31 @@
    return clamp(Math.pow(skill/75,2),.3,1.65)*affinity(r,...ids);
   }).sort((a,b)=>b-a).slice(0,3);
   return clamp(scores.reduce((a,b)=>a+b,0)/scores.length,.3,2.4);
+ }
+ const SKILL_LEVELS=Object.freeze({'body-feint':1,'stepover':2,'ball-roll':2,'drag-back':2,'roulette':3,'heel-to-heel':3,'croqueta':4,'berbatov':4,'elastico':5,'reverse-elastico':5});
+ function playerTraits(row){
+  const base=row?.base||row||{},stars=v=>Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=5?Number(v):0;
+  const raw=String(base.preferredFoot??'').trim().toLowerCase();
+  return {skillMoves:stars(base.skillMoves),weakFoot:stars(base.weakFoot),preferredFoot:/^(right|rechts|r|1)$/.test(raw)?'Right':/^(left|links|l|2)$/.test(raw)?'Left':''};
+ }
+ function footFactor(row,actualFoot){
+  const t=playerTraits(row);
+  if(!t.preferredFoot||!t.weakFoot||!['Left','Right'].includes(actualFoot)||actualFoot===t.preferredFoot)return 1;
+  return [1,.50,.64,.78,.90,1][t.weakFoot];
+ }
+ function actionFoot(row,kind,roll=.5){
+  const t=playerTraits(row);if(!t.preferredFoot)return '';
+  // Neither left nor right is universally better: the opportunity may demand either boot.
+  const weak=clamp(roll,0,1)<(kind==='through'?.34:kind==='cross'?.30:.26);
+  return weak?(t.preferredFoot==='Left'?'Right':'Left'):t.preferredFoot;
+ }
+ function skillFor(row,kind,roll=.5){
+  const stars=playerTraits(row).skillMoves;if(kind!=='dribble'||!stars)return '';
+  const specialist=style(row,'technical','trickster');
+  const rate=specialist>1?.90:specialist>0?.78:.62;
+  if(roll>=rate)return '';
+  const options=Object.entries(SKILL_LEVELS).filter(([,min])=>min<=stars);
+  return options[Math.min(options.length-1,Math.floor(clamp(roll/rate,0,.99999)*options.length))][0];
  }
  function tactics(raw={}){
   const t={};for(const k of ['width','depth','pressing','dribbling','crossing','longShots'])t[k]=clamp(raw[k]??50,0,100);
@@ -73,25 +98,27 @@
   if(style(row,'low-driven-shot')&&roll<(style(row,'low-driven-shot')>1?.85:.60))return'low_driven';
   return'normal';
  }
- function buildSkill(row,kind){
+ function buildSkill(row,kind,context={}){
   const passing=kind==='cross'?detail(row,['crossing'],stat(row,'pas')):kind==='switch'?detail(row,['longPassing','long_passing'],stat(row,'pas')):detail(row,['shortPassing','short_passing'],stat(row,'pas'));
   const ids=kind==='cross'?['long-ball-pass']:kind==='through'?['incisive-pass','through-ball']:kind==='switch'?['long-ball-pass']:kind==='cutback'?['pinged-pass']:['tiki-taka','press-proven','flair'];
-  return passing*.75+stat(row,'dri')*.25+bonus(row,...ids);
+  return (passing*.75+stat(row,'dri')*.25+bonus(row,...ids))*(.65+.35*footFactor(row,context.creatorFoot));
  }
- function restartBuildSkill(row,kind,scene,keeper){
-  const base=buildSkill(row,kind);
+ function restartBuildSkill(row,kind,scene,keeper,context={}){
+  const base=buildSkill(row,kind,context);
   if(scene==='keeper_buildout')return base*.8+stat(keeper,'pas')*.2+bonus(keeper,'far-throw');
   if(scene==='throw_in')return base+bonus(row,'long-throw');
   if(scene==='corner')return base+bonus(row,'dead-ball');
   return base;
  }
- function duelSkill(row,kind){
+ function duelSkill(row,kind,context={}){
   if(kind==='cross'){
    const height=clamp(row?.base?.height??180,155,210);
    return shotSkill(row,{finish:'header'})*.6+stat(row,'phy')*.4+(height-180)*.12+bonus(row,'aerial');
   }
   const value=kind==='distance'?stat(row,'dri')*.55+stat(row,'phy')*.45:kind==='through'?stat(row,'pac')*.65+stat(row,'dri')*.35:stat(row,'dri')*.55+stat(row,'pac')*.25+stat(row,'phy')*.2;
-  return value+bonus(row,...(kind==='through'?['rapid','quick-step','first-touch']:kind==='dribble'?['technical','trickster','press-proven']:['first-touch','press-proven']));
+  const stars=playerTraits(row).skillMoves,skillFactor=kind==='dribble'&&stars?[1,.90,.96,1.03,1.09,1.15][stars]:1;
+  const legal=!context.skillMove||!SKILL_LEVELS[context.skillMove]||stars>=SKILL_LEVELS[context.skillMove];
+  return (value+bonus(row,...(kind==='through'?['rapid','quick-step','first-touch']:kind==='dribble'?['technical','trickster','press-proven']:['first-touch','press-proven'])))*skillFactor*(legal?1:.65);
  }
  function defendSkill(row,kind,phase){
   if(kind==='cross'&&phase==='duel')return stat(row,'def')*.45+stat(row,'phy')*.55+(clamp(row?.base?.height??180,155,210)-180)*.12+bonus(row,'aerial','bruiser');
@@ -128,11 +155,11 @@
   const keeperFactor=clamp(1-(gk-78)*.009,.80,1.20)*(gkStyle>1?.80:gkStyle>0?.91:1);
   const block=shot.creationType==='penalty'||shot.creationType==='freekick'?1:style(defender,'block')>1?.82:style(defender,'block')>0?.92:1;
   // No flat minimum finishing multiplier: 40 SHO must remain weak even at high OVR.
-  return clamp(xg*Math.pow(skill/75,distance?3:2)*fresh*technique*keeperFactor*block,.001,shot.creationType==='penalty'?.94:.70);
+  return clamp(xg*Math.pow(skill/75,distance?3:2)*fresh*technique*keeperFactor*block*(shot.finish==='header'?1:footFactor(row,shot.shotFoot)),.001,shot.creationType==='penalty'?.94:.70);
  }
  function staminaMultiplier(raw={},row=null){
   const t=tactics(raw);return (1+(t.pressing-50)*.004+(t.depth-50)*.001+(t.buildUp==='fast'?.06:0))*(style(row,'relentless')>1?.82:style(row,'relentless')>0?.92:1);
  }
- const api={tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,matchupBalance,chanceQuality,goalChance,staminaMultiplier};
+ const api={SKILL_LEVELS,playerTraits,footFactor,actionFoot,skillFor,tactics,attackWeights,pick,shotSkill,attackerWeight,finishFor,buildSkill,restartBuildSkill,duelSkill,defendSkill,matchupBalance,chanceQuality,goalChance,staminaMultiplier};
  root.FooteraMatchActions=Object.freeze(api);if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -648,7 +648,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(!keeperRole&&!acro&&captureLegs){
    const authoredLegs=info.celebration?clamp(info.celebration.legs??info.celebrate):0;
    for(let i=0;i<2;i++)legSwing[i]=driver.gait[i]?.swingShape??driver.gait[i]?.swingWeight??(driver.gait[i]?.support?0:1);
-   capturedBody.applyLegs(1.12*(1-authoredLegs)*(info.grounded===false?0:1),legSwing);
+   capturedBody.applyLegs(1.12*(1-authoredLegs)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(info.grounded===false?0:1),legSwing);
   }
   if(keeperRole)matchKeeperHands();
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);

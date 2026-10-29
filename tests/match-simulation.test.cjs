@@ -250,3 +250,15 @@ test('V21.302: away attacks compare away power against home power',()=>{
  ctx.simAttack(false);
  assert.ok(seen.length);assert.ok(seen[0][0]<seen[0][1],JSON.stringify(seen[0]));
 });
+
+test('V21.303: simulation records actual foot and legal skill before the goal presentation',()=>{
+ const {ctx,sample}=simulator();sample({rating:80,chem:20,opponentRating:80,opponentChem:20,count:1});
+ ctx.match.finished=false;ctx.match.minute=30;ctx.match.nextRestart=null;ctx.match.nextCounter=null;
+ ctx.currentMatchBase=uid=>({name:uid,position:uid==='p0'?'GK':'ST',ovr:80,pac:80,sho:80,pas:80,dri:80,def:80,phy:80,preferredFoot:'Right',weakFoot:1,skillMoves:5});
+ ctx.FooteraMatchActions={...ctx.FooteraMatchActions,pick:()=> 'dribble',goalChance:()=>1};ctx.Math.random=()=>.04;
+ ctx.simAttack(true);
+ const shot=ctx.match.shotEvents.at(-1),goal=ctx.match.goalEvents.at(-1);
+ assert.equal(shot.shotFoot,'Left');assert.equal(shot.preferredFoot,'Right');assert.equal(shot.weakFoot,1);assert.equal(shot.skillMoves,5);assert.ok(ctx.FooteraMatchActions.SKILL_LEVELS[shot.skillMove]<=5);
+ for(const key of ['shotFoot','creatorFoot','preferredFoot','weakFoot','skillMoves','skillMove'])assert.equal(goal[key],shot[key]);
+ assert.equal(shot.goal,true);
+});

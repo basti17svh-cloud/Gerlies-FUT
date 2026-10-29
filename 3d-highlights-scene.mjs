@@ -1,3 +1,4 @@
+import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21208';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21226';
@@ -5,7 +6,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21301';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21303';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
@@ -45,7 +46,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21264';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21303';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -1786,7 +1787,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
   function bootGuidedBall(original,time){
-   if(extended)return original;
+   if(extended||sampleSkill(sequence,time)?.weight>0)return original;
    const state=controlCarrier(time,sequence);
    if(state.weight<=0)return original;
    const p=players[state.index];
@@ -2129,6 +2130,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     passer.rig.rotation.x=mix(passer.rig.rotation.x,-.085*(1-kick.follow),w);passer.rig.rotation.y=mix(passer.rig.rotation.y,.10*Math.sin(u*Math.PI),w);
     passer.arms[0].rotation.z=mix(passer.arms[0].rotation.z,-.38,w);passer.arms[1].rotation.z=mix(passer.arms[1].rotation.z,.55,w);
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
+    const passerIndex=players.indexOf(passer),finalPasser=getPlay(sequence)?playTouches(getPlay(sequence)).at(-1)?.passer:1,foot=passerIndex===finalPasser?(event.creatorFoot||event.playerFeet?.[passerIndex]):event.playerFeet?.[passerIndex];
+    applyFootedPose(passer,time,foot,from,to);
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
@@ -2197,6 +2200,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
     }
    }
+   const skillPose=event.type!=='ball_won'?applySkillPose(players[0],time,sequence):null;
+   importedMotionFrame.skillWeight=skillPose?.weight||0;
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
    const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
    const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
@@ -2290,6 +2295,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     p.legs[0].rotation.x=mix(p.legs[0].rotation.x,hip,w);p.knees[0].rotation.x=mix(p.knees[0].rotation.x,-2*bend,w);
     p.ankles[0].rotation.x=mix(p.ankles[0].rotation.x,2*bend-hip,w);p.legs[0].rotation.z=mix(p.legs[0].rotation.z,Math.atan2(aside,down),w);
    }
+   if(event.type!=='ball_won'&&!['header','bicycle'].includes(finish)){
+    const w=applyFootedPose(players[0],time,event.shotFoot);
+    // Keep the left striking boot on the SAME authoritative ball contact.
+    const h=players[0].root.rotation.y;players[0].root.position.x+=.21*Math.cos(h)*w;players[0].root.position.z-=.21*Math.sin(h)*w;
+    importedMotionFrame.footActionWeight=w;
+   }
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
@@ -2379,7 +2390,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const defenderRoute=labTrackingPreview?trackingTimeline.sample(renderTime):null;
    const runnerBefore=stagedPlayerPosition(0,Math.max(0,renderTime-.016),event.type,sequence),runnerAfter=stagedPlayerPosition(0,Math.min(DURATION,renderTime+.016),event.type,sequence);
    const runnerDt=Math.max(.001,Math.min(DURATION,renderTime+.016)-Math.max(0,renderTime-.016));
-   return{extendedPhase:extendedPhase(sequence,renderTime,event.team,event.type),buildKeeperPosition:buildKeeper?.root.position.toArray()||null,contactMotionVersion:CONTACT_MOTION_VERSION,attackFlowVersion:ATTACK_FLOW_VERSION,
+   return{skillAction:sampleSkill(sequence,renderTime),shotFoot:event.shotFoot||'',strikeFeet:players[0].ankles.map(a=>field.worldToLocal(a.getWorldPosition(new THREE.Vector3())).toArray()),strikerRoot:players[0].root.position.toArray(),
+    extendedPhase:extendedPhase(sequence,renderTime,event.team,event.type),buildKeeperPosition:buildKeeper?.root.position.toArray()||null,contactMotionVersion:CONTACT_MOTION_VERSION,attackFlowVersion:ATTACK_FLOW_VERSION,
     attackFlowSpeed:Math.hypot(runnerAfter[0]-runnerBefore[0],runnerAfter[1]-runnerBefore[1])/runnerDt,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
     trackingPreview:labTrackingPreview,trackingAction:labTrackingPreview?defenderAction:'none',
     trackingPhase:defenderRoute?.phase||trackingPose?.phase||'inactive',

@@ -3,9 +3,9 @@ const H=require('../3d-highlights.js');
 const outcomes=['goal','big_chance_saved','shot_post','big_chance_missed'];
 test('V21.259: exactly 15 new registered and non-duplicate movement/finish recipes',async()=>{
  const P=await import('../3d-playbook.mjs');
- assert.equal(P.PLAYBOOK.length,117);
+ assert.equal(P.PLAYBOOK.length,149);
  assert.equal(P.V259_ATTACK_IDS.length,15);
- assert.equal(new Set(P.PLAYBOOK_IDS).size,117);
+ assert.equal(new Set(P.PLAYBOOK_IDS).size,149);
  assert.equal(P.MORE_ATTACK_IDS.length,42);
  const old=new Set(P.PLAYBOOK.slice(0,102).map(p=>[p.family,p.finish,p.delivery,p.order.join(':')].join('|')));
  const novel=new Set();

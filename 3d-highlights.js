@@ -17,6 +17,7 @@
   // Copy only display data. Never pass a live player, match or saved state to WebGL.
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
    period:[1,2,3,4].includes(Number(event.period))?Number(event.period):1,attackDirection:event.type==='ceremony'?1:getAttackDirection(event.team,event.period),
+   shotFoot:['Left','Right'].includes(event.shotFoot)?event.shotFoot:'',creatorFoot:['Left','Right'].includes(event.creatorFoot)?event.creatorFoot:'',preferredFoot:['Left','Right'].includes(event.preferredFoot)?event.preferredFoot:'',skillMove:String(event.skillMove||''),skillMoves:Number.isInteger(Number(event.skillMoves))&&event.skillMoves>=1&&event.skillMoves<=5?Number(event.skillMoves):0,weakFoot:Number.isInteger(Number(event.weakFoot))&&event.weakFoot>=1&&event.weakFoot<=5?Number(event.weakFoot):0,playerFeet:Object.freeze((Array.isArray(event.playerFeet)?event.playerFeet:[]).slice(0,16).map(f=>['Left','Right'].includes(f)?f:'')),
    playerId:String(event.playerId||''),playerName:String(event.playerName||'Spieler'),keeperName:String(event.keeperName||''),assistName:String(event.assistName||''),creatorName:String(event.creatorName||''),creationType:String(event.creationType||''),actionKind:String(event.actionKind||''),sceneKind:String(event.sceneKind||''),restartSide:event.restartSide==='right'?'right':'left',buildKeeperName:String(event.buildKeeperName||''),buildKeeperSkinTone:typeof event.buildKeeperSkinTone==='string'||Number.isInteger(event.buildKeeperSkinTone)?event.buildKeeperSkinTone:null,sequence:String(event.sequence||'central'),finish:String(event.finish||'normal'),playerStyles:Object.freeze((Array.isArray(event.playerStyles)?event.playerStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),creatorStyles:Object.freeze((Array.isArray(event.creatorStyles)?event.creatorStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    keeperStyles:Object.freeze((Array.isArray(event.keeperStyles)?event.keeperStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
    defenderStyles:Object.freeze((Array.isArray(event.defenderStyles)?event.defenderStyles:[]).map(s=>Object.freeze({id:String(s?.id||''),plus:!!s?.plus}))),
@@ -51,7 +52,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21301').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21303').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -197,7 +198,39 @@
   ["first_touch_layoff_rocket","distance",5,"power","short"],
   ["touchline_sprint_cut_right","dribble",7,"low_driven","medium"],
   ["five_man_central_carve","combination",7,"normal","medium"],
-  ["blindside_chip_through_left","through",5,"chip","medium"]
+  ["blindside_chip_through_left","through",5,"chip","medium"],
+  ["skill_body-feint_left","dribble",9,"normal","medium"],
+  ["skill_body-feint_right","dribble",9,"normal","medium"],
+  ["skill_stepover_left","dribble",9,"normal","medium"],
+  ["skill_stepover_right","dribble",9,"normal","medium"],
+  ["skill_ball-roll_left","dribble",9,"normal","medium"],
+  ["skill_ball-roll_right","dribble",9,"normal","medium"],
+  ["skill_drag-back_left","dribble",9,"normal","medium"],
+  ["skill_drag-back_right","dribble",9,"normal","medium"],
+  ["skill_roulette_left","dribble",9,"normal","medium"],
+  ["skill_roulette_right","dribble",9,"normal","medium"],
+  ["skill_heel-to-heel_left","dribble",9,"normal","medium"],
+  ["skill_heel-to-heel_right","dribble",9,"normal","medium"],
+  ["skill_croqueta_left","dribble",9,"normal","medium"],
+  ["skill_croqueta_right","dribble",9,"normal","medium"],
+  ["skill_berbatov_left","dribble",9,"normal","medium"],
+  ["skill_berbatov_right","dribble",9,"normal","medium"],
+  ["skill_elastico_left","dribble",9,"normal","medium"],
+  ["skill_elastico_right","dribble",9,"normal","medium"],
+  ["skill_reverse-elastico_left","dribble",9,"normal","medium"],
+  ["skill_reverse-elastico_right","dribble",9,"normal","medium"],
+  ["give_go_triangle_left","combination",9,"normal","long"],
+  ["give_go_triangle_right","combination",9,"normal","long"],
+  ["third_man_wall_left","combination",9,"normal","long"],
+  ["third_man_wall_right","combination",9,"normal","long"],
+  ["five_pass_carousel_left","combination",9,"normal","long"],
+  ["five_pass_carousel_right","combination",9,"normal","long"],
+  ["overload_release_left","combination",9,"normal","long"],
+  ["overload_release_right","combination",9,"normal","long"],
+  ["channel_overlap_thread_left","through",8,"normal","medium"],
+  ["channel_overlap_thread_right","through",8,"normal","medium"],
+  ["counter_wall_release_left","through",8,"normal","medium"],
+  ["counter_wall_release_right","through",8,"normal","medium"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -329,6 +362,7 @@
  // V21.195 star moments: simulated chances may also show the matching big
  // visual finishes (screamer from distance, volley or bicycle kick, solo
  // feint). Presentation only; the simulated outcome and finish stay.
+ const SKILL_LEVELS={'body-feint':1,'stepover':2,'ball-roll':2,'drag-back':2,'roulette':3,'heel-to-heel':3,'croqueta':4,'berbatov':4,'elastico':5,'reverse-elastico':5};
  const STAR_SCENES=Object.freeze({
   distance:{power:['long_shot','power_drive'],finesse:['finesse_halfspace']},
   cross:{volley:['volley_left','volley_right','bicycle']},
@@ -368,6 +402,7 @@
   const extendedKinds=['keeper_buildout','corner','free_kick','penalty','throw_in'];
   if(extendedKinds.includes(event.sceneKind))return Object.freeze({sequence:'extended_'+event.sceneKind+(event.sceneKind==='corner'&&event.restartSide==='right'?'_right':''),family:event.actionKind||event.sceneKind,finish:event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish||'normal',seconds:({keeper_buildout:25,corner:18,free_kick:16,penalty:13,throw_in:16})[event.sceneKind],signature:signatureStyle(event,event.sceneKind==='corner'&&!['header','volley','bicycle'].includes(event.finish)?'header':event.finish)});
   const scorer=visualStyleMap(event.playerStyles),creator=visualStyleMap(event.creatorStyles);
+  const skillStars=Number(event.skillMoves)||0,requestedSkill=event.actionKind==='dribble'&&SKILL_LEVELS[event.skillMove]&&skillStars>=SKILL_LEVELS[event.skillMove]?event.skillMove:'';
   const striker=String(event.scorerSlot||'').toUpperCase(),provider=String(event.creatorSlot||'').toUpperCase();
   const wide=/^(LW|RW|LF|RF|LM|RM|LB|RB|LV|RV|LAV|RAV|LAS|RAS|LWB|RWB)$/.test(striker),mid=/^(CAM|CM|CDM|ZOM|ZM|ZDM)$/.test(striker),centreBack=/^(CB|IV)$/.test(striker);
   const hasCreator=!!String(event.creatorName||event.assistName||'').trim()&&String(event.creationType||'')!=='solo';
@@ -376,18 +411,20 @@
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
   const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket'];
-  const pool=simulated?PLAYBOOK_SCENES.filter(v=>{
+  const eligible=v=>{const m=/^skill_(.+)_(left|right)$/.exec(v.id);return m?!!requestedSkill&&m[1]===requestedSkill&&skillStars>=SKILL_LEVELS[m[1]]:!requestedSkill&&(!v.id.startsWith('double_feint')||!skillStars||skillStars>=4)};
+  const pool=(simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='distance')return distanceIds.includes(v.id);
    if(event.actionKind==='cross')return v.finish===event.finish;
    if(['header','volley','bicycle'].includes(v.finish)||distanceIds.includes(v.id))return false;
    if(event.finish==='chip')return v.finish==='chip';
    return v.family===event.actionKind;
-  }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES];
+  }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES]).filter(eligible);
   const starSignature=simulated&&signatureStyle(event)?.who==='scorer';
   const choices=pool.map(v=>{
    let w=v.weight;
+   if(v.id.startsWith('skill_')&&event.preferredFoot)w*=v.id.endsWith(event.preferredFoot==='Left'?'_right':'_left')?1.5:1;
    if(PLAYBOOK_SCENES.includes(v)){
-    if(!hasCreator)w*=.04;
+    if(!hasCreator&&v.family!=='dribble')w*=.04;
     if(['combination','through','switch'].includes(v.family)&&hasCreator)w*=1.45;
     if(['lowcross','overlap','nearpost','cutback'].includes(v.family)&&hasCreator)w*=1.6;
     if(v.family==='through'&&(creator.has('incisive-pass')||creator.has('through-ball')))w*=2.1;
