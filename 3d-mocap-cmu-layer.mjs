@@ -37,15 +37,20 @@ function clips(){
  return decoded;
 }
 export function cmuKickClip(finish='normal'){
- return finish==='power'?'power':finish==='low_driven'?'low_driven':finish==='finesse'?'finesse':'normal';
+ return finish==='power'?'power':finish==='low_driven'?'low_driven':finish==='finesse'||finish==='pass'?'finesse':'normal';
 }
 // Whole-body share of the capture around the contact; legs join later,
 // once the authored run-up is over, so the approach strides never skate.
-export function cmuKickWeight(time,finish='normal'){
+// A pass is the short version of the same kick around its own contact.
+export function cmuKickWeight(time,finish='normal',contact=CONTACT){
  if(['header','volley','bicycle'].includes(finish))return{body:0,legs:0};
- const t=clamp(time,0,10.4);
- const out=1-smooth((t-6.02)/.36);
- return{body:smooth((t-4.52)/.34)*out,legs:smooth((t-4.86)/.16)*out};
+ const t=clamp(time,0,10.4)-contact;
+ if(finish==='pass'){
+  const out=1-smooth((t-.22)/.26);
+  return{body:.85*smooth((t+.46)/.24)*out,legs:.85*smooth((t+.3)/.14)*out};
+ }
+ const out=1-smooth((t-.62)/.36);
+ return{body:smooth((t+.88)/.34)*out,legs:smooth((t+.54)/.16)*out};
 }
 
 export function createCmuKickLayer(bones,playerRoot){
@@ -79,16 +84,18 @@ export function createCmuKickLayer(bones,playerRoot){
  }
  const qa=new THREE.Quaternion(),qb=new THREE.Quaternion(),delta=new THREE.Quaternion(),
   target=new THREE.Quaternion(),rootQ=new THREE.Quaternion(),parentQ=new THREE.Quaternion();
+ let contact=CONTACT;
  function sample(clip,time,index,mirror,out){
-  const x=clamp((time-CONTACT)*clip.rate+clip.contact*clip.rate,0,clip.frames-1),f0=Math.floor(x),f1=Math.min(clip.frames-1,f0+1),u=x-f0,n=BONES.length*4;
+  const x=clamp((time-contact)*clip.rate+clip.contact*clip.rate,0,clip.frames-1),f0=Math.floor(x),f1=Math.min(clip.frames-1,f0+1),u=x-f0,n=BONES.length*4;
   qa.fromArray(clip.quats,f0*n+index*4);qb.fromArray(clip.quats,f1*n+index*4);
   out.slerpQuaternions(qa,qb,u);
   if(mirror){out.y=-out.y;out.z=-out.z}
   return out.premultiply(face).multiply(faceInv);
  }
- // info: {finish, foot:'Left'|'Right'}. Returns the applied weights.
+ // info: {finish ('pass' for a pass), foot:'Left'|'Right', contact s}. Returns the weights.
  function apply(time=0,info={}){
-  const w=cmuKickWeight(time,info.finish);
+  contact=Number.isFinite(info.contact)?info.contact:CONTACT;
+  const w=cmuKickWeight(time,info.finish,contact);
   state.weight=w.body;
   if(w.body<=.001){state.clip='none';return w}
   const name=cmuKickClip(info.finish),clip=data[name],mirror=info.foot==='Left'?1:0;

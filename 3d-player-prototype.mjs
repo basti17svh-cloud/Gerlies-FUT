@@ -670,8 +670,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(kickCapture&&!keeperRole&&!acro&&info.kick){
    const w=kickBody.apply(frameTime,info.kick),kicking=info.kick.foot==='Left'?0:1;
    if(w.legs>.001){
-    const support=clamp(((frameTime-4.88)/.12))*(1-clamp((frameTime-5.85)/.25));
-    const contact=1-clamp(Math.abs(frameTime-5.4)/.2);
+    const at=frameTime-(Number.isFinite(info.kick.contact)?info.kick.contact:5.4);
+    const support=clamp((at+.52)/.12)*(1-clamp((at-.45)/.25));
+    const contact=1-clamp(Math.abs(at)/.2);
     pinFoot(1-kicking,w.legs*(.25+.75*support));
     pinFoot(kicking,w.legs*contact*contact*(3-2*contact));
    }
