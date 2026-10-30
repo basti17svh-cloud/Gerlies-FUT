@@ -1,6 +1,6 @@
 /* Footera V20.97 — Spielmodi mit eindeutiger Champions-Navigation und Qualifikationsfortschritt. Existing match/reward handlers stay in place. */
 (()=>{
- const MODES={"halloween-cup":{title:"Halloween-Cup"},rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},champions:{title:"Footera Champions",summary:"playChampionsSummary",stats:"playChampionsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
+ const MODES={tournaments:{title:"Turniere"},"halloween-cup":{title:"Halloween-Cup"},rivals:{title:"Division Rivals",summary:"playRivalsSummary",stats:"playRivalsStats"},champions:{title:"Footera Champions",summary:"playChampionsSummary",stats:"playChampionsStats"},squad:{title:"Squad Battles",summary:"playSquadSummary",stats:"playSquadStats"},"friendly-random":{title:"Zufälliger Gegner",summary:"playRandomSummary",stats:"playRandomStats"},"friendly-friend":{title:"Gegen Freund",summary:"playFriendsSummary",stats:"playFriendsStats"}};
  let area="hub";
  const num=value=>Math.max(0,Number(value)||0);
  const put=(id,html)=>{const el=$(id);if(el)el.innerHTML=html};
@@ -88,7 +88,7 @@
   if($("playFriendRankingNote"))$("playFriendRankingNote").textContent=available?`Siege, Punkte und Tore aus euren Live-Duellen gegen ${friend.clubName||"deinen Freund"}.`:friend?"Für die Online-Rangliste benötigst du einen Freund mit aktuellem Online-Code.":"Wähle einen Online-Freund, um eure Tabelle und direkte Bilanz anzusehen.";
  }
  function renderOverview(){
-  safe(()=>window.FooteraHalloweenCup?.render());safe(renderRivals);safe(renderChampions);safe(renderSquad);safe(renderFriends);
+  safe(()=>window.FooteraTournaments?.render());safe(()=>window.FooteraHalloweenCup?.render());safe(renderRivals);safe(renderChampions);safe(renderSquad);safe(renderFriends);
   for(const [mode,config]of Object.entries(MODES))safe(()=>{if(config.stats)put(config.stats,statsHTML(mode))});
  }
  function show(mode,{push=true,focus=true}={}){
@@ -97,21 +97,24 @@
   if(hub)hub.hidden=area!=="hub";if(detail)detail.hidden=area==="hub";
   document.querySelectorAll("[data-play-panel]").forEach(panel=>panel.hidden=panel.dataset.playPanel!==area);
   if($("playDetailTitle"))$("playDetailTitle").textContent=MODES[area]?.title||"";
+  const back=document.querySelector("[data-play-back]");if(back)back.textContent=area==="halloween-cup"?"← Alle Turniere":"← Alle Spielmodi";
   if(push)pushUiState(area==="hub"?"view":"play-mode",{view:"playView",playMode:area});
   if(focus){window.scrollTo({top:0,behavior:"smooth"});if(area!=="hub")$("playDetailTitle")?.focus({preventScroll:true})}
  }
  const originalStatus=renderCompetitionModeStatus;
  renderCompetitionModeStatus=function(){originalStatus();renderOverview()};
  const originalPlay=renderPlay;
- renderPlay=function(){safe(originalPlay);safe(()=>window.FooteraHalloweenCup?.render());safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
- window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView")show(target.playMode||"hub",{push:false})},handleBack:target=>{
+ renderPlay=function(){safe(originalPlay);safe(()=>window.FooteraTournaments?.render());safe(()=>window.FooteraHalloweenCup?.render());safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
+ window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView"){if(target.playMode==="tournaments")window.FooteraTournaments?.select(target.tournamentId||"",false);show(target.playMode||"hub",{push:false})}},handleBack:target=>{
   if(area==="hub")return false;
   if(target?.gfut&&target.view!=="playView"){area="hub";return false}
+  if(target?.playMode==="tournaments")window.FooteraTournaments?.select(target.tournamentId||"",false);
   show(target?.playMode||"hub",{push:false});return true
  }};
  document.addEventListener("click",event=>{
   const tile=event.target.closest("[data-play-mode]");if(tile){renderPlay();show(tile.dataset.playMode);return}
   if(event.target.closest("[data-play-back]")){
+   if(area==="halloween-cup"){window.FooteraTournaments?.select("",false);show("tournaments");return}
    const old=area;if(history.state?.kind==="play-mode")history.back();else show("hub");
    document.querySelector(`[data-play-mode="${old}"]`)?.focus({preventScroll:true});return
   }

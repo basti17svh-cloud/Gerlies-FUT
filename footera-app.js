@@ -6763,6 +6763,8 @@ function setMatchPill(paused){
 function matchHomeTeamName(){return String(state.profile?.clubName||"Footera Club").trim()||"Footera Club"}
 function matchAwayTeamName(){return String(match?.opponentName||"Gegner").trim()||"Gegner"}
 function startMatch(mode,opponent=null,kitSelection=null){
+ const tournamentContext=mode==="tournament"?window.FooteraTournaments?.kickoff(opponent):null;
+ if(mode==="tournament"&&(!tournamentContext||tournamentContext.error))return toast(tournamentContext?.error||"Turnier noch nicht bereit.");
  const cupContext=mode==="halloween-cup"?window.FooteraHalloweenCup?.kickoff(opponent):null;
  if(mode==="halloween-cup"&&(!cupContext||cupContext.error))return toast(cupContext?.error||"Halloween-Cup noch nicht bereit.");
  const m=squadMetrics();if(m.filled<18)return;
@@ -6786,7 +6788,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
- mode,halloweenCup:cupContext,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
+ mode,tournament:tournamentContext,halloweenCup:cupContext,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
  chemBoostChem:[...(m.chemScores||[])],
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
@@ -6806,7 +6808,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  $("eventBanner").classList.remove("active");
  resetMatchPresentation();
  $("matchHomeName").textContent=matchHomeTeamName();$("oppName").textContent=name;
- $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":mode==="halloween-cup"?"Halloween-Cup":"Freundschaftsspiel";
+ $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":mode==="halloween-cup"?"Halloween-Cup":mode==="tournament"?(window.FooteraTournaments?.CUPS.find(c=>c.id===tournamentContext?.id)?.name||"Turnier"):"Freundschaftsspiel";
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
@@ -7437,6 +7439,7 @@ function renderMatchManager(){
 }
 function proposedManagerSwap(d,from,to){const arr=[...d.lineup],tmp=arr[to];arr[to]=arr[from];arr[from]=tmp;return arr}
 function managerDraftIsValid(arr,formation){
+ if(match?.mode==="tournament"&&window.FooteraTournaments?.rosterReason(match.tournament.id,arr.slice(0,18),true))return false;
  if(arr.slice(0,11).filter(Boolean).length!==11-Math.min(1,match?.redCards?.length||0))return false;
  const form=FORMATIONS[formation]||FORMATIONS["4-3-3"];
  const gkIndex=form.findIndex(x=>x.p==="GK");if(gkIndex>=0){const gk=currentMatchBase(arr[gkIndex]);if(!gk||posFit(gk,"GK")<=0)return false}
@@ -7673,6 +7676,7 @@ function finishMatch(){
   if(match.mode==="squad"){state.stats.squadMatches=(state.stats.squadMatches||0)+1;if(resultKey==="win")state.stats.squadWins=(state.stats.squadWins||0)+1}
  }
  window.FooteraHalloweenCup?.record(match,resultKey);
+ window.FooteraTournaments?.record(match,resultKey);
  const competitionProgress=recordCompetitionMatch(match.mode,resultKey,match.home,match.away,match.opponentProfile,match.battleDifficulty);
  match.competitionProgress=competitionProgress;match.progressScreenShown=false;
  let boostCoins=0;
@@ -8000,7 +8004,7 @@ function previewRolesHTML(){
 }
 function refreshOpenMatchPreview(){
  if(squadBattleStage!=="preview"||!pendingMatchContext||!$("squadBattleModal").classList.contains("active"))return;
- const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={"halloween-cup":"Halloween-Cup",rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
+ const {m,pitch,bench,reserve}=ownLineupHTML(),{mode,opponent}=pendingMatchContext,titles={tournament:globalThis.FooteraTournaments?.CUPS.find(c=>c.id===opponent?.tournamentId)?.name||"Turnier","halloween-cup":"Halloween-Cup",rivals:"Division Rivals",champions:"Footera Champions",squad:"Squad Battles","friendly-random":"Freundschaftsspiel","friendly-friend":"Gegen Freund"};
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
@@ -8034,7 +8038,7 @@ function renderSquadBattleSelection(historyMode="push"){
  <div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button>${playButton}</div>`;
  squadBattleStage="selection";showUiLayer("squadBattleModal","squad-selection",{},historyMode)
 }
-function openModeEntry(mode){if(mode==="halloween-cup"){const cup=window.FooteraHalloweenCup,reason=cup?.canStart();if(!cup||reason)return toast(reason||"Cup wird geladen.");if(squadMetrics().filled<18)return toast("Bitte deinen Kader vervollständigen (18 Spieler).");renderMatchPreview(mode,cup.opponent());return}const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="champions"){if(!championsCanStartMatch()){const started=startChampionsRun();if(!started.ok)return toast(started.reason)}if(!championsCanStartMatch())return toast("Champions ist aktuell nicht spielbar.");renderMatchPreview(mode,championsOpponent());return}if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
+function openModeEntry(mode){if(mode==="tournament"){const cup=window.FooteraTournaments,reason=cup?.canStart();if(!cup||reason)return toast(reason||"Turniere werden geladen.");const o=cup.opponent();if(!o)return toast("Für diesen Cup fehlen passende Gegnerkarten.");renderMatchPreview(mode,o);return}if(mode==="halloween-cup"){const cup=window.FooteraHalloweenCup,reason=cup?.canStart();if(!cup||reason)return toast(reason||"Cup wird geladen.");if(squadMetrics().filled<18)return toast("Bitte deinen Kader vervollständigen (18 Spieler).");renderMatchPreview(mode,cup.opponent());return}const m=squadMetrics();if(m.filled<18)return toast(`Kader unvollständig: ${m.filled}/18.`);if(mode==="champions"){if(!championsCanStartMatch()){const started=startChampionsRun();if(!started.ok)return toast(started.reason)}if(!championsCanStartMatch())return toast("Champions ist aktuell nicht spielbar.");renderMatchPreview(mode,championsOpponent());return}if(mode==="squad"){selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";renderSquadBattleSelection();return}if(mode==="friendly-friend"){const idx=Number($("friendlyFriendSelect").value),fr=state.friends[idx];if(!fr)return toast("Bitte zuerst einen Freund wählen.");renderMatchPreview(mode,friendAsOpponent(fr));return}renderMatchPreview(mode,oneOffOpponent(mode))}
 function openOpponentTeam(opponent){if(!opponent)return;$("opponentTeamModalBody").dataset.battleEventRelease=opponent.eventReleaseId||"";const formation=FORMATIONS[opponent.formation]?opponent.formation:"4-3-3",form=FORMATIONS[formation],sq=Array.isArray(opponent.squad)?opponent.squad:Array(18).fill(null);$("opponentTeamModalTitle").textContent=opponent.name||"Gegner";$("opponentTeamModalSub").textContent=`${formation} · Rating ${opponent.rating||0} · Chemie ${opponent.chem||0}/33`;const pitch=sq.slice(0,11).map((pl,i)=>{const slot=form[i];if(!pl)return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%"><div class="emptyslot">${slot.p}</div></div>`;const card=opponent.kind==="friend"?friendCard(pl,slot.p,true):cardHTML(pl,opponent.items?.[i]||null,true,opponent.eventReleaseId&&posFit(pl,slot.p)<=0?pl.position:slot.p);return`<div class="friend-slot" style="left:${slot.x}%;top:${slot.y}%">${card}</div>`}).join(""),bench=sq.slice(11,18).map((pl,k)=>`<div>${pl?(opponent.kind==="friend"?friendCard(pl,"BANK",true):cardHTML(pl,opponent.items?.[k+11]||null,true,pl.position)):'<div class="emptyslot">BANK</div>'}</div>`).join("");$("opponentTeamModalBody").innerHTML=`<div class="friend-team-summary"><div class="kpi"><strong>${opponent.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${opponent.chem||0}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${formation}</strong><span>Formation</span></div></div><div class="pitch friend-pitch">${pitch}</div><div class="friend-bench">${bench}</div>${opponent.rewards?`<div class="opponent-note">Squad-Battles-Belohnung: Sieg ${fmt(opponent.rewards.win)} Coins · Remis ${fmt(opponent.rewards.draw)} · Niederlage ${fmt(opponent.rewards.loss)}.</div>`:""}`;showUiLayer("opponentTeamModal","opponent-team")}
 $("squadBattleModalClose").addEventListener("click",()=>closeUiLayer("squadBattleModal",squadBattleStage==="preview"?"squad-preview":"squad-selection"));
 $("opponentTeamModalClose").addEventListener("click",()=>closeUiLayer("opponentTeamModal","opponent-team"));
@@ -8570,7 +8574,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.310";
+const GFUT_BUILD="V21.311";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8580,7 +8584,7 @@ function newerGerliesBuild(remote){
 }
 function gerliesUpdateBlocked(){
  const reg=gerliesUpdateRegistration;
- return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPlayerPicks?.isActive?.()||!!globalThis.FooteraHalloweenCup?.busy?.()||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
+ return !gerliesStartupReady||!!$("bootIntro")||$("dbGate")?.style.display!=="none"||packFlowInProgress()||$("match")?.classList.contains("active")||!!document.querySelector(".modal.active")||!!activeSbcId||!!globalThis.FooteraPlayerPicks?.isActive?.()||!!globalThis.FooteraHalloweenCup?.busy?.()||!!globalThis.FooteraTournaments?.busy?.()||!!globalThis.FooteraPotm?.busy()||!!document.activeElement?.matches("input,textarea,select,[contenteditable='true']")||!!reg?.installing||!!reg?.waiting||reg?.active?.state==="activating"
 }
 function applyGerliesUpdate(){
  clearTimeout(gerliesUpdateTimer);gerliesUpdateTimer=0;
@@ -8628,7 +8632,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21310",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21311",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

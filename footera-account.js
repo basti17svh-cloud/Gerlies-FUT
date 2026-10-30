@@ -465,6 +465,34 @@
  function pendingPlayerPick(){
    try{return JSON.parse(root.localStorage.getItem("footera-pending-player-pick-v1")||"null")}catch(_){return null}
  }
+ async function claimTournamentReward(cup,week,applyDelivery){
+   if(!["bronze","silver","open"].includes(cup)||!/^\d{4}-\d{2}-\d{2}$/.test(week))throw Error("Ungültige Turnierausgabe.");
+   if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
+   if(autoBusy)throw Error("Der Kontoabgleich läuft noch. Bitte erneut versuchen.");
+   changeLocked();const {c,u}=await requirePermanent();ensureOwned(u);
+   if(!u.email_confirmed_at)throw Error("Bitte zuerst deine E-Mail-Adresse bestätigen.");
+   if(pendingPlayerPick())throw Error("Bitte zuerst die offene Pick-Einlösung abschließen.");
+   const pending=pendingChallengeReward();let local=localData();
+   if(pending&&(pending.kind!=="tournament"||pending.userId!==u.id||pending.saveId!==local.profile.saveId||pending.cup!==cup||pending.week!==week))throw Error("Bitte zuerst die ausstehende Cup-Belohnung abholen.");
+   if(!pending){await saveCloud();local=localData()}
+   if(autoBusy)throw Error("Ein Kontoabgleich läuft noch.");
+   autoBusy=true;let finish;const done=new Promise(resolve=>{finish=resolve});autoBusyDone=done;
+   try{
+     ensureOwned(u);changeLocked();const point=syncPoint(u),revision=pending?pending.revision:point?.revision;
+     if(!Number.isSafeInteger(revision)||(!pending&&!pointMatches(point,local)))throw Error("Bitte zuerst deinen Spielstand synchronisieren.");
+     const cleanBase=point?.revision===revision&&pointMatches(point,local),expected=JSON.parse(JSON.stringify(local));
+     root.localStorage.setItem("footera-pending-challenge-v1",JSON.stringify({kind:"tournament",userId:u.id,saveId:local.profile.saveId,cup,week,revision}));
+     const {data,error}=await pickDeadline(c.rpc("footera_claim_tournament_reward",{p_save_id:local.profile.saveId,p_cup:cup,p_week:week,p_base_revision:revision}),15000);
+     if(error){if(["22023","42501","PT409"].includes(error.code))root.localStorage.removeItem("footera-pending-challenge-v1");throw error}
+     if(data?.save_id!==local.profile.saveId||data.cup_id!==cup||data.week!==week||data.claim_key!==`tournament:${cup}:${week}`||!Number.isSafeInteger(data.revision)||!Number.isSafeInteger(data.cloud_revision)||data.revision>data.cloud_revision||(!data.replayed&&data.revision!==revision+1))throw Error("Die Turnierbestätigung ist unvollständig. Bitte dieselbe Belohnung erneut abholen.");
+     if((await pickDeadline(pickUser(c),10000))?.id!==u.id)throw Error("Das Konto wurde gewechselt.");
+     ensureOwned(u);if(localData().profile.saveId!==local.profile.saveId)throw Error("Der Verein wurde gewechselt.");
+     root.FooteraTournaments.applyDeliveryToSave(expected,data);
+     applyDelivery(data);
+     if(cleanBase&&data.cloud_revision===data.revision&&data.revision===revision+1)savePoint(u,expected,data.revision);
+     root.localStorage.removeItem("footera-pending-challenge-v1");return data;
+   }finally{autoBusy=false;finish();if(autoBusyDone===done)autoBusyDone=null}
+ }
  function pendingChallengeReward(){
    try{return JSON.parse(root.localStorage.getItem("footera-pending-challenge-v1")||"null")}catch(_){return null}
  }
@@ -1636,7 +1664,7 @@
      },45000);
    }).catch(e=>{console.warn("Footera-Konto:",e);render().catch(console.warn)});
  }
- root.FooteraAccount={claimChallengeReward,pendingChallengeReward,claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
+ root.FooteraAccount={claimTournamentReward,claimChallengeReward,pendingChallengeReward,claimGuestSave,getClient,user,synchronizeCloud,syncPlayerPickRewards,choosePlayerPickCompact,choosePlayerPick,pendingPlayerPick,saveCloud,resolveCloudConflict,restoreCloud,adoptLocal,google,emailRegister,emailLogin,password,resendEmail,continueAsGuest,shouldWelcome,autoAttachAndBackup,deleteOwnAccount,showProfile,requestAccountEmailChange,beginLocalTransfer,finishLocalTransfer,reconcileCompletedTransfer,signOut};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
 })(window);
 

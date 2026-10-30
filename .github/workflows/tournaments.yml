@@ -1,0 +1,49 @@
+name: Footera Tournaments
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths: ['tournaments.*', 'footera-account.js', 'footera-app.js', 'play-hub.js', 'index.html', 'supabase/migrations/*weekly_tournaments.sql', 'tests/tournaments*', 'tests/sql/tournaments*', '.github/workflows/tournaments.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tournaments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/tournaments.test.cjs tests/tournaments-account.test.cjs tests/halloween-cup.test.cjs tests/halloween-cup-account.test.cjs tests/play-hub.test.cjs tests/match-lineup-preview.test.cjs
+      - name: Atomic weekly rewards on isolated Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createdb footera_test
+          sudo -u postgres psql -q -d footera_test -v ON_ERROR_STOP=1 \
+            -f tests/sql/auth-mock.sql \
+            -f tests/sql/cup-catalog-mock.sql \
+            -f online/footera-accounts-v21.109.sql \
+            -f online/footera-cloud-rewards-guard-v21.170.sql \
+            -f online/footera-player-picks.sql \
+            -f online/footera-player-picks-compact-v21.280.sql \
+            -f online/footera-guest-cloud-v21.234.sql \
+            -f online/footera-business-conflicts-v21.284.sql \
+            -f online/footera-halloween-cup-v21.297.sql \
+            -f supabase/migrations/20261030040323_weekly_tournaments.sql \
+            -f tests/sql/tournaments.test.sql
+      - name: Install browser
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Mobile cups and saved match progression
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/tournaments.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tournaments-mobile
+          path: test-artifacts/tournaments-*.png
+          retention-days: 7

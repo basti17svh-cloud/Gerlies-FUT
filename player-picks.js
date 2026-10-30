@@ -3,7 +3,7 @@
  'use strict';
  let rows=[],owner='',listedSaveId='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
  const $=id=>document.getElementById(id);
- const title=p=>p.source==='halloween-cup'?'Halloween Team 1 Player Pick':p.type==='champions-red'?'Champions Player Pick':'Player Pick';
+ const title=p=>p.source==='tournament'?'Turnier-Siegerpick':p.source==='halloween-cup'?'Halloween Team 1 Player Pick':p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
  // Matches the server's duplicate decision. Different card variants,
  // promo versions and cosmetic designs are not mistaken for duplicates.
