@@ -74,7 +74,8 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    state.club=preserved;renderClub();
    return {special,gold};
   });
-  assert.deepEqual(qualityCounts,{special:5,gold:1},'Verein Spezial includes icon, momentum, evolution, cosmetics and founder');
+  // Since V21.315 a plain Evolution also counts as the quality of its rating (here Gold).
+  assert.deepEqual(qualityCounts,{special:5,gold:2},'Verein Spezial includes icon, momentum, evolution, cosmetics and founder; Gold includes the gold-rated Evolution');
   assert.deepEqual(errors,[],'Immutable Founder cards render with PlayStyles without JavaScript errors');
   await page.waitForFunction(()=>typeof window.releasePickRewardSync==='function');
   assert.equal(await page.locator('#homePlayerPickNotice').isVisible(),false,'Historical rewards plus a pending sync cannot announce an open Pick');
