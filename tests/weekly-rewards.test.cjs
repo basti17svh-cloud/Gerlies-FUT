@@ -34,10 +34,10 @@ function setup(rows){
 test("reward banner sits between rotating hero and season countdown and is loaded in shell",()=>{
  const a=html.indexOf('id="homeHeroCard"'),b=html.indexOf('id="weeklyRewardHome"'),c=html.indexOf('id="competitionHome"');
  assert.ok(a>=0&&a<b&&b<c);
- assert.match(html,/weekly-rewards\.js\?v=21161/);
- assert.match(html,/weekly-rewards\.css\?v=2128/);
- assert.match(worker,/weekly-rewards\.js\?v=21161/);
- assert.match(worker,/weekly-rewards\.css\?v=2128/);
+ assert.match(html,/weekly-rewards\.js\?v=21316/);
+ assert.match(html,/weekly-rewards\.css\?v=21316/);
+ assert.match(worker,/weekly-rewards\.js\?v=21316/);
+ assert.match(worker,/weekly-rewards\.css\?v=21316/);
  assert.doesNotThrow(()=>new vm.Script(src));
  assert.match(css,/\.weekly-reward-claim/);
 });
@@ -142,4 +142,12 @@ test("tradeable and untradeable copies remain distinct rewards",()=>{
  assert.equal((html.match(/<small>Tauschbar<\/small>/g)||[]).length,1);
  assert.equal((html.match(/<small>Untauschbar<\/small>/g)||[]).length,1);
  assert.equal(row.reward.packs.length,3);
+});
+
+test('Champions reward center displays Footera Points separately from Coins and win points',()=>{
+ const r={mode:'champions',week:'1793383200000',rank:'Rang I',wins:15,losses:0,points:15,reward:{coins:50000,points:12000,packs:[]}};
+ const t=setup([r]);t.context.window.FooteraWeeklyRewards.open('champions',r.week);
+ const html=t.elements.weeklyRewardModalBody.innerHTML;
+ assert.match(html,/weekly-reward-points/);assert.match(html,/points\.webp/);assert.match(html,/12000/);assert.match(html,/Footera Points/);assert.match(html,/50000/);assert.match(html,/15 Siege/);
+ t.context.renderCompetitionHome();t.context.window.FooteraWeeklyRewards.open('champions',r.week);assert.match(t.elements.weeklyRewardModalBody.innerHTML,/12000/);
 });

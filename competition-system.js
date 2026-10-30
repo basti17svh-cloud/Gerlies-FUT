@@ -107,6 +107,7 @@ function competitionPending(mode){ensureCompetitionState();return state.weeklyRe
 function claimCompetitionReward(mode,week){
  const row=competitionPending(mode).find(x=>x.week===week);if(!row)return false;
  row.claimed=true;state.coins+=row.reward.coins||0;
+ if(row.mode==="champions")state.points=(Number(state.points)||0)+Math.max(0,Number(row.reward.points)||0);
  for(const pack of row.reward.packs){state.packs[pack.id]=(state.packs[pack.id]||0)+1;if(!pack.tradeable)state.rewardPackQueue.push({id:pack.id,tradeable:false})}
  save();if(typeof flushSave==="function")flushSave();renderAll();globalThis.FooteraPlayerPicks?.refresh(true);if(currentViewId()==="playView")renderPlay();toast(`${mode==="champions"?"Champions":mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abgeholt.`);return true
 }
@@ -252,7 +253,7 @@ function rewardLabel(row){
  // Same pack twice reads "2× Premium Gold Pack", not the name twice.
  const names=row.reward.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id),counts=new Map();names.forEach(n=>counts.set(n,(counts.get(n)||0)+1));
  const packs=[...[...counts].map(([n,c])=>c>1?`${c}× ${n}`:n),...playerPickLabels(row.reward.playerPicks)].join(" · ");
- return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${packs}`
+ return`${row.reward.coins?`${fmt(row.reward.coins)} Coins · `:""}${row.reward.points?`${fmt(row.reward.points)} Footera Points · `:""}${packs}`
 }
 function competitionClaimButtons(mode){return competitionPending(mode).map(row=>`<button class="primary competition-claim" type="button" data-claim-competition="${row.mode}" data-competition-week="${row.week}">${row.mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abholen · ${esc(rewardLabel(row))}</button>`).join("")}
 function competitionCountdown(mode){return seasonCountdown(competitionWindow(mode).end).replace("Endet", "Reset")}

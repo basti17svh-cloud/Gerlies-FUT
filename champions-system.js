@@ -6,14 +6,14 @@
 const CHAMPIONS_ENTRY_POINTS=1000;
 const CHAMPIONS_MAX_GAMES=15;
 const CHAMPIONS_RANKS=[
- {name:"Rang I",min:15,max:15,coins:50000,rated:[[84,10],[86,5]],totw:2,bonus:true},
- {name:"Rang II",min:13,max:14,coins:40000,rated:[[84,10],[86,3]],totw:1},
- {name:"Rang III",min:11,max:12,coins:25000,rated:[[83,8],[85,3]],totw:1},
- {name:"Rang IV",min:9,max:10,coins:18000,rated:[[83,5],[85,2]],totw:1},
- {name:"Rang V",min:7,max:8,coins:12000,rated:[[82,5],[84,1]],totw:0},
- {name:"Rang VI",min:5,max:6,coins:8000,rated:[[82,3]],totw:0},
- {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0},
- {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0}
+ {name:"Rang I",min:15,max:15,coins:50000,rated:[[84,10],[86,5]],totw:2,bonus:true,points:12000},
+ {name:"Rang II",min:13,max:14,coins:40000,rated:[[84,10],[86,3]],totw:1,points:10000},
+ {name:"Rang III",min:11,max:12,coins:25000,rated:[[83,8],[85,3]],totw:1,points:8000},
+ {name:"Rang IV",min:9,max:10,coins:18000,rated:[[83,5],[85,2]],totw:1,points:6000},
+ {name:"Rang V",min:7,max:8,coins:12000,rated:[[82,5],[84,1]],totw:0,points:4500},
+ {name:"Rang VI",min:5,max:6,coins:8000,rated:[[82,3]],totw:0,points:3000},
+ {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0,points:2000},
+ {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0,points:1000}
 ];
 // V21.212 halved the weekend rewards; rows settled before keep their stored reward.
 
@@ -55,7 +55,7 @@ function championsRewardForWins(wins){
  for(let i=0;i<(row.totw||0);i++)packs.push({id:"totw-reward",tradeable:false});
  if(row.bonus)packs.push({id:"champions-bonus",tradeable:false});
  const playerPicks=Array.from({length:({"Rang I":3,"Rang II":2,"Rang III":2,"Rang IV":1,"Rang V":1,"Rang VI":1}[row.name]||0)},()=>({type:"champions-red",choices:4,minRating:85,tradeable:false}));
- return{coins:row.coins||0,packs,playerPicks}
+ return{coins:row.coins||0,points:row.points||0,packs,playerPicks}
 }
 function ensureChampionsState(){
  state.champions=state.champions&&typeof state.champions==="object"?state.champions:{};

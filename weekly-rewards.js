@@ -58,19 +58,20 @@
    '<strong>'+esc(name)+'</strong><small>'+(pack.tradeable===false?"Untauschbar":"Tauschbar")+'</small></div>';
  }
  function renderRewardDetails(row){
-  const packs=row.reward.packs||[],groupedPacks=groupedRewardPacks(packs),coins=Math.max(0,Number(row.reward.coins||0));
+  const packs=row.reward.packs||[],groupedPacks=groupedRewardPacks(packs),coins=Math.max(0,Number(row.reward.coins||0)),points=Math.max(0,Number(row.reward.points||0));
   const picks=row.reward.playerPicks||[];
   const pickHtml=picks.map(p=>'<div class="weekly-reward-pack"><strong>'+p.minRating+'+ '+(p.type==='champions-red'?'Champions Player Pick':'Player Pick')+'</strong><small>1 aus '+p.choices+' · Untauschbar</small></div>').join("");
   const coinHtml=coins?'<div class="weekly-reward-coin"><img src="./assets/footera/coins.webp" alt="" loading="lazy">'+
    '<strong>'+fmt(coins)+'</strong><span>Footera Coins</span></div>':"";
+  const pointsHtml=points?'<div class="weekly-reward-coin weekly-reward-points"><img src="./assets/footera/points.webp" alt="" loading="lazy"><strong>'+fmt(points)+'</strong><span>Footera Points</span></div>':"";
   const week=Number(row.week),date=Number.isFinite(week)&&week>0?new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(week)):"";
   return '<section class="weekly-reward-detail">'+
    '<div class="weekly-reward-rank"><small>'+esc(MODE_NAMES[row.mode])+' · WOCHE '+esc(date)+'</small>'+
    '<span class="weekly-reward-rank-icon" aria-hidden="true">◆</span><strong>'+esc(rankTitle(row))+'</strong>'+
    '<span>'+esc(details(row))+'</span></div>'+
-   '<div class="weekly-reward-detail-head"><h4>DEINE BELOHNUNGEN</h4><small>'+packs.length+' '+(packs.length===1?"Pack":"Packs")+(coins?" + Coins":"")+'</small></div>'+
-   '<div class="weekly-reward-prizes">'+coinHtml+groupedPacks.map(packPreview).join("")+pickHtml+'</div>'+
-   '<p class="weekly-reward-note">Beim Abholen werden Coins direkt gutgeschrieben. Packs und Player Picks findest du im Store. Für Player Picks ist ein verknüpftes Konto erforderlich.</p>'+
+   '<div class="weekly-reward-detail-head"><h4>DEINE BELOHNUNGEN</h4><small>'+packs.length+' '+(packs.length===1?"Pack":"Packs")+(coins?" + Coins":"")+(points?" + Points":"")+'</small></div>'+
+   '<div class="weekly-reward-prizes">'+coinHtml+pointsHtml+groupedPacks.map(packPreview).join("")+pickHtml+'</div>'+
+   '<p class="weekly-reward-note">Beim Abholen werden Coins und enthaltene Footera Points direkt gutgeschrieben. Packs und Player Picks findest du im Store. Für Player Picks ist ein verknüpftes Konto erforderlich.</p>'+
    '<button type="button" class="weekly-reward-claim" data-weekly-reward-claim="'+esc(String(row.mode))+'" data-week="'+esc(String(row.week))+'">Belohnungen abholen <span aria-hidden="true">→</span></button>'+
    '</section>';
  }
