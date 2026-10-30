@@ -1822,6 +1822,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
+  const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
   // Two existing skinned actors can share the verified CC0 sampler without
@@ -2295,6 +2296,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const h=players[0].root.rotation.y;players[0].root.position.x+=.21*Math.cos(h)*w;players[0].root.position.z-=.21*Math.sin(h)*w;
     importedMotionFrame.footActionWeight=w;
    }
+   // Real captured kick on the scorer's body (CMU); the boots stay pinned.
+   importedMotionFrame.kick=event.type!=='ball_won'&&!extended?kickInfo:null;
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
