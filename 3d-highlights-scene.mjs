@@ -1822,6 +1822,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
+  // Preview: closer broadcast lens (footera-3d-tv-zoom, e.g. .62 = players ~1.6x larger).
+  let tvZoom=1;try{tvZoom=clamp(Number(globalThis.localStorage?.getItem('footera-3d-tv-zoom'))||1,.4,1)}catch(_){}
   const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
@@ -2328,7 +2330,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     camTarget.lerp(new THREE.Vector3(...target),follow);
     camera.fov=mix(camera.fov,desiredFov,follow);
    }else{
-    camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;
+    camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov*tvZoom;
    }
    if(celebrationActive&&time>=CELEBRATION_CUT&&!replay){
     // TV close-up: cut to a camera ahead of the scorer on the broadcast side,
