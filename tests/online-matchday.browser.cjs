@@ -67,7 +67,9 @@ const fakeSdk=`window.supabase={createClient(){
   await page.evaluate(()=>{switchView("socialView");document.querySelector('[data-online-open="duel-1"]').click()});
   await page.waitForSelector("#onlineMatch");
   check("kick-off walk-out starts the 3D stage",await page.waitForFunction(()=>document.getElementById("onlineMatch")?.classList.contains("highlight3d-pending"),null,{timeout:8000}).then(()=>true,()=>false));
-  await page.evaluate(()=>document.querySelector("#onlineMatchLiveStage .fh3d-skip")?.click());
+  // The skip button only appears once the 3D scene runs (V21.252); on slow
+  // runners a click right after "pending" missed it and the full walk-out ran.
+  await page.waitForSelector("#onlineMatchLiveStage .fh3d-skip",{timeout:20000}).then(b=>b.click(),()=>{});
   await page.waitForFunction(()=>!document.getElementById("onlineMatch").classList.contains("highlight3d-pending"),null,{timeout:20000});
   // Realtime UPDATE: unchanged TOASTed columns (profiles, lineups) are missing.
   await page.evaluate(({ME,FRIEND})=>{
