@@ -422,6 +422,7 @@ const PACKS=[
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
  {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
  {id:"halloween-pack",name:"HALLOWEEN-Blutmond-Pack",coins:60000,points:null,type:"gold",count:6,composition:[{quality:"gold",count:5,min:75,max:99}],guarantee:83,rareCount:5,store:true,reward:false,promo:true,rotation:true,packKind:"players",eventSlot:"halloween-2026",desc:"6 Spieler · 1 HALLOWEEN-Karte garantiert · 5 seltene Goldspieler · mind. 1× 83+",tag:"HALLOWEEN",iconChance:0.002,dailyLimit:3,resetHour:19},
+ {id:"halloween-team1-player",name:"HALLOWEEN Team-1-Spieler",coins:null,points:null,type:"special",count:1,store:false,reward:true,packKind:"players",eventSlot:"halloween-2026",eventSlotFixed:true,desc:"1 Spieler · 1 HALLOWEEN-Karte aus Team 1 garantiert",tag:"HALLOWEEN"},
  {id:"event-sbc-player",name:"Event-SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer Event-SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
@@ -1991,6 +1992,14 @@ function activeMarqueeSBCs(now=new Date()){
   return{...common,req:`11 Spieler · min. 1 aus beiden beteiligten Vereinen · min. 2 selten · Ø GES 80 · 26 Chemie`,requireBothMatchClubs:true,minRare:2,minAvg:80,minChem:26,reward:{pack:"prime-electrum-reward",qty:1}}
  })
 }
+// Sunday Halloween SBC (Basti 2026-10-31): one guaranteed Team-1 Halloween player instead of the shop pack.
+// One full week like every event SBC; the pack stays Team 1 even after Team 2 takes over on 06.11.
+const HALLOWEEN_TEAM1_SBC={id:"halloween_team1_pick_20261101",group:"Profis",name:"Kürbis-Pick – Team 1",desc:"Sonntags-SBC · Ein garantierter HALLOWEEN-Spieler aus Team 1.",req:"11 Spieler · Ø GES 84 · min. 2 selten",minAvg:84,minRare:2,reward:{pack:"halloween-team1-player",qty:1},releaseAt:"2026-11-01T19:00:00+01:00",activeUntilAt:"2026-11-08T19:00:00+01:00"};
+function activeHalloweenTeam1SBCs(now=new Date()){
+ const ts=now instanceof Date?now.getTime():Number(now),def=HALLOWEEN_TEAM1_SBC,start=Date.parse(def.releaseAt),end=Date.parse(def.activeUntilAt);
+ if(!(ts>=start&&ts<end))return[];
+ return[{...def,filter:b=>true,count:11,once:true,live:true,expiresAt:end,releaseKey:def.releaseAt,theme:"halloween"}]
+}
 function activeEventPlayerSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now),out=[];
  for(const event of EVENT_PROMO_RELEASES){
@@ -2006,7 +2015,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -4460,12 +4469,13 @@ function promoRotationForKey(key){
 function activePromoPacks(now=new Date()){
  const key=promoWindowKey(now,19),sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),rotation=promoRotationForKey(key);
  const ids=release?.ids||rotation?.map(([id])=>id)||sets[hashNum(key)%3],limits=new Map(release?.ids?[]:rotation||[]);
- return [...new Set([...(typeof HALLOWEEN_EVENT!=="undefined"&&activeHalloweenEvent(now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])])]
+ // Basti 2026-10-31: no guaranteed Halloween pack in the shop any more; the Blutmond pack stays a Season-Pass reward.
+ return [...new Set([...ids,...(release?.extraIds||[])])]
   .map(id=>{const pack=PACKS.find(p=>p.id===id);return pack?{...pack,dailyLimit:release?.limits?.[id]??limits.get(id)??pack.dailyLimit}:null}).filter(Boolean)
 }
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
+const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -4533,9 +4543,10 @@ function generateSurpriseGiftPack(pack,tradeable=true){
 // Event packs: one guaranteed event card (each roster card equally likely, shown in the odds) plus the normal weighted draw.
 function eventSlotDrawPack(p){return{...p,count:p.count-1,eventSlot:null}}
 function generateEventSlotPack(p,tradeable=true){
- const event=p.eventSlot===HALLOWEEN_EVENT.id?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
+ const event=p.eventSlot===HALLOWEEN_EVENT.id&&!p.eventSlotFixed?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
  const info=event.players[Math.floor(Math.random()*event.players.length)],base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
  const special=makePromoPackItem(base,{event,info},tradeable);if(!special)return[];
+ if(p.count<=1)return[special];
  const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
  if(!rest.available||rest.items.length!==p.count-1)return[];
  const arr=rest.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
@@ -6578,7 +6589,7 @@ function renderSBC(){
  $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
-  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>sbcFeatureGroupCard(x)).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
+  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
  }
  const banner=sbcGroupBannerHTML(activeSbcGroup,groupRows);
  // Ready SBCs first, then the open ones, finished ones at the bottom.
@@ -8594,7 +8605,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.321";
+const GFUT_BUILD="V21.323";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8652,7 +8663,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21321",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21323",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -108,12 +108,10 @@ test('the Blutmond upgrade adds +1 to every Halloween card from the Halloween ni
  assert.equal(c.halloweenUpgradeFor({cosmeticDesign:'halloween'},Date.parse('2026-11-01T12:00:00+01:00')),null,'design-only cards get no upgrade');
 });
 
-test('the Blutmond pack guarantees one Halloween card and is coins-only during the event',()=>{
+test('the Blutmond pack guarantees one Halloween card but is no longer sold in the shop',()=>{
  const pack=section('{id:"halloween-pack"','\n');
- assert.match(pack,/coins:60000,points:null/);
  assert.match(pack,/eventSlot:"halloween-2026"/);
- assert.match(pack,/dailyLimit:3/);
- assert.match(html,/activeHalloweenEvent\(now\.getTime\(\)\)\?\["halloween-pack"\]:\[\]/);
+ assert.doesNotMatch(html,/\?\["halloween-pack"\]:\[\]/,'Basti 2026-10-31: no guaranteed Halloween pack in the store rotation');
  assert.ok(fs.readFileSync(path.join(root,'pack-odds-ui.js'),'utf8').includes('gleich wahrscheinlich'),'odds disclose the guaranteed event slot');
  assert.ok(fs.existsSync(path.join(root,'assets/footera/events/halloween/pack-halloween.webp')));
 });
@@ -181,4 +179,14 @@ test('the Team 2 objective (Son) counts Rivals wins and the second Blutmond evol
  assert.equal(evo.req.minOvr,80);assert.equal(evo.req.maxOvr,85);assert.equal(evo.design,'halloween');
  assert.deepEqual(evo.cost,{coins:0,points:0});
  assert.equal(evo.stages.reduce((n,s)=>n+s.ovr,0),4);assert.ok(evo.maxFinalOvr>=evo.req.maxOvr+4);
+});
+
+test('the Sunday SBC gives one guaranteed Team-1 Halloween player for one week',()=>{
+ const pack=section('{id:"halloween-team1-player"','\n');
+ assert.match(pack,/count:1/);assert.match(pack,/store:false,reward:true/);
+ assert.match(pack,/eventSlot:"halloween-2026",eventSlotFixed:true/);
+ const sbc=section('const HALLOWEEN_TEAM1_SBC=','\n');
+ assert.match(sbc,/reward:\{pack:"halloween-team1-player",qty:1\}/);
+ assert.match(sbc,/releaseAt:"2026-11-01T19:00:00\+01:00",activeUntilAt:"2026-11-08T19:00:00\+01:00"/);
+ assert.match(html,/allActiveSBCs\(now=new Date\(\)\)\{return \[[^\n]*activeHalloweenTeam1SBCs\(now\)/);
 });
