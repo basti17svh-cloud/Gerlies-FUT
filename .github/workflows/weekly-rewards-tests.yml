@@ -8,6 +8,7 @@ on:
       - 'tests/weekly-rewards.test.cjs'
       - 'tests/competition-system.test.cjs'
       - 'tests/champions.test.cjs'
+      - 'tests/champions-points*'
       - 'tests/promo-packs-release.test.cjs'
       - 'pack-odds.js'
       - 'pack-odds-ui.js'
@@ -36,6 +37,7 @@ on:
       - 'tests/weekly-rewards.test.cjs'
       - 'tests/competition-system.test.cjs'
       - 'tests/champions.test.cjs'
+      - 'tests/champions-points*'
       - 'tests/promo-packs-release.test.cjs'
       - 'pack-odds.js'
       - 'pack-odds-ui.js'
@@ -80,3 +82,27 @@ jobs:
           node --check footera-backup.js
           node --check footera-opponent-styles.js
           node --test tests/footera-backup.test.cjs tests/footera-opponent-styles.test.cjs tests/footera-opponent-balancing.test.cjs
+
+  champions-points:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/champions-points.test.cjs tests/weekly-rewards.test.cjs
+      - name: Install mobile test browser
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Points preview, claim and reload at mobile widths
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/champions-points.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: champions-points-mobile
+          path: test-artifacts/champions-points-*.png
+          retention-days: 7

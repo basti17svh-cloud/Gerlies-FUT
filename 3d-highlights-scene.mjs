@@ -2492,8 +2492,10 @@ export function play(event,signal){
   }
   hud.append(card,mark,copy,meta);layer.append(hud);
   // V21.226 replay: a FOOTERA wipe in and out and a small WIEDERHOLUNG tag.
+  // V21.320: the stinger carries the Footera emblem on dark chrome-and-red bands.
   const replayEligible=event.type==='goal'&&event.replay!==false&&!ceremony;
-  const wipe=document.createElement('div');wipe.className='fh3d-wipe';wipe.setAttribute('aria-hidden','true');wipe.innerHTML='<b>F</b>';
+  const wipe=document.createElement('div');wipe.className='fh3d-wipe';wipe.setAttribute('aria-hidden','true');
+  wipe.innerHTML='<i class="fh3d-wipe-band fh3d-wipe-red"></i><i class="fh3d-wipe-band fh3d-wipe-chrome"></i><i class="fh3d-wipe-band fh3d-wipe-panel"></i><div class="fh3d-wipe-logo"><img src="./assets/footera/emblem.png" alt="" decoding="async"><strong>FOOTERA</strong><span>WIEDERHOLUNG</span></div>';
   const replayTag=document.createElement('span');replayTag.className='fh3d-replay-tag';replayTag.textContent='WIEDERHOLUNG';
   if(replayEligible)layer.append(wipe,replayTag);
   const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null)+goalNetDelay(event.shotPlacement||null);

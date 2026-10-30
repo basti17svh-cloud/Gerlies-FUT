@@ -46,7 +46,7 @@
   syncChampionsCompetition();const c=ensureChampionsState(),w=championsWindow(),rank=championsRank(c.wins),remaining=Math.max(0,CHAMPIONS_MAX_GAMES-c.games),pending=competitionPending("champions"),qualified=c.qualPoints>=CHAMPIONS_ENTRY_POINTS;
   const active=c.active&&c.week===w.key&&w.open,finished=c.week===w.key&&c.completed,ready=squadMetrics().filled===18,next=CHAMPIONS_RANKS.slice().reverse().find(row=>row.min>c.wins),qualValue=Math.max(0,Number(c.qualPoints||0)),qualPct=Math.max(0,Math.min(100,qualValue/CHAMPIONS_ENTRY_POINTS*100));
   const endWeekday=new Intl.DateTimeFormat("de-DE",{timeZone:FOOTERA_TIME_ZONE,weekday:"long"}).format(w.end);
-  put("championsWindowSchedule",`Freitag 19:00 – ${endWeekday} 09:00 · ${esc(championsWindowText())}`);
+  put("championsWindowSchedule",`Freitag ${String(championsStartHour(w.start)).padStart(2,"0")}:00 – ${endWeekday} 09:00 · ${esc(championsWindowText())}`);
   const tileHeadline=active?`${c.wins}-${c.losses} · ${esc(rank.name)}`:pending.length?"Belohnung abholbereit":qualified?"QUALIFIZIERT":"Champions-Qualifikation";
   const tileQual=active?"":`<span class="play-tile-qual" aria-label="Champions-Qualifikation ${fmt(qualValue)} von ${fmt(CHAMPIONS_ENTRY_POINTS)} CP"><span><i style="width:${qualPct}%"></i></span><small>${fmt(qualValue)} / ${fmt(CHAMPIONS_ENTRY_POINTS)} CP${qualified?" · QUALIFIZIERT":""}</small></span>`;
   put("playChampionsSummary",`<b>${tileHeadline}</b>${tileQual}<small>${active?`${remaining} Spiele übrig · ${esc(championsWindowText())}`:esc(championsWindowText())}</small>${pending.length?'<em>Champions-Rewards warten</em>':""}`);

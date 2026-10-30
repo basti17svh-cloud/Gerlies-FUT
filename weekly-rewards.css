@@ -56,3 +56,7 @@
 .weekly-reward-check{display:grid;place-items:center;margin:auto;background:#164d54;color:#9dffef;border:1px solid #6ff0d7;font-size:45px;width:92px;height:92px;border-radius:50%}
 @media(max-width:390px){.weekly-reward-banner{gap:10px;padding:13px 12px}.weekly-reward-gift{width:47px;height:47px}.weekly-reward-banner-copy small{font-size:9px}.weekly-reward-banner-copy>span{font-size:10px}.weekly-reward-prizes{gap:8px}.weekly-reward-coin,.weekly-reward-pack{flex-basis:calc(50% - 8px);min-width:0}.weekly-reward-pack-art{height:106px}.weekly-reward-pack-art img{height:106px}}
 @media(prefers-reduced-motion:reduce){.weekly-reward-banner{transition:none}}
+
+.weekly-reward-points{border-color:#684369;background:linear-gradient(145deg,#32213c,#17121e)}
+.weekly-reward-points img{filter:drop-shadow(0 8px 18px #ef67ff44)}
+.weekly-reward-points strong{color:#f5b5ff}.weekly-reward-points span{color:#e2c6e9}
