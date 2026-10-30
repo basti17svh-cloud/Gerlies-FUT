@@ -184,18 +184,25 @@ test('owner grant pays the full Rivals reward for the week ending 22.10. only',(
 });
 
 
-test('Basti receives the 35-point reward once on 5 November, never early or for another club/week',()=>{
- const owner='GF-9AE6CDDEFE8A458D',week='1793260800000';
- for(const division of [0,4,10]){
-  const {state,api}=setup({now:'2026-10-30T08:00:00Z',initial:{profile:{saveId:owner}}});
-  state.rivals.division=division;state.rivals.week=week;state.rivals.weeklyPoints=0;
-  api.syncCompetitionWeeks(new Date('2026-11-05T07:59:59Z'));assert.equal(api.competitionPending('rivals').length,0);
-  api.syncCompetitionWeeks(new Date('2026-11-05T08:00:00Z'));
-  const [row]=api.competitionPending('rivals');assert.equal(row.week,week);assert.equal(row.division,division);assert.equal(row.milestone,35);
-  assert.deepEqual(JSON.parse(JSON.stringify(row.reward)),JSON.parse(JSON.stringify(vm.runInContext(`rivalsReward(${division},35)`,setup({initial:{profile:{saveId:owner}}}).ctx))));
-  api.syncCompetitionWeeks(new Date('2026-11-05T08:00:01Z'));assert.equal(api.competitionPending('rivals').length,1);
-  assert.equal(api.claimCompetitionReward('rivals',week),true);const coins=state.coins;assert.equal(api.claimCompetitionReward('rivals',week),false);assert.equal(state.coins,coins);
-  api.syncCompetitionWeeks(new Date('2026-11-12T08:00:00Z'));assert.equal(api.competitionPending('rivals').length,0);
+test('Basti receives the missing 29 October Elite rewards now, with no 5 November compensation',()=>{
+ const owner='GF-9AE6CDDEFE8A458D',oldWeek='1792652400000',currentWeek='1793260800000';
+ const {state,api,ctx}=setup({now:'2026-10-30T08:00:00Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:9,week:currentWeek}}});
+ const [row]=api.competitionPending('rivals');assert.equal(row.week,oldWeek);assert.equal(row.division,0);assert.equal(row.milestone,35);assert.equal(row.reward.coins,65000);
+ assert.equal(row.reward.packs.length,5);assert.equal(row.reward.playerPicks[0].minRating,84);assert.equal(state.coins,0);
+ assert.equal(state.rivals.weeklyPoints,9);assert.equal(state.rivals.week,currentWeek);
+ assert.equal(vm.runInContext(`fullRivalsWeek("${currentWeek}")`,ctx),false);
+ api.syncCompetitionWeeks(new Date('2026-10-30T08:00:01Z'));assert.equal(api.competitionPending('rivals').length,1);
+ assert.equal(api.claimCompetitionReward('rivals',oldWeek),true);const coins=state.coins;assert.equal(api.claimCompetitionReward('rivals',oldWeek),false);assert.equal(state.coins,coins);
+ const reload=setup({now:'2026-10-30T08:00:00Z',initial:JSON.parse(JSON.stringify(state))});assert.equal(reload.api.competitionPending('rivals').length,0);
+ reload.api.syncCompetitionWeeks(new Date('2026-11-05T08:00:00Z'));assert.equal(reload.api.competitionPending('rivals').length,0);
+});
+test('catch-up stays owner-only, is never early and does not duplicate an existing earned/claimed row',()=>{
+ const owner='GF-9AE6CDDEFE8A458D',oldWeek='1792652400000';
+ assert.equal(setup({now:'2026-10-29T07:59:59Z',initial:{profile:{saveId:owner}}}).api.competitionPending('rivals').length,0);
+ assert.equal(setup({now:'2026-10-30T08:00:00Z',initial:{profile:{saveId:'GF-OTHER'}}}).api.competitionPending('rivals').length,0);
+ for(const claimed of [true,false]){
+  const row={mode:'rivals',week:oldWeek,division:0,milestone:35,reward:{coins:65000,packs:[]},claimed};
+  const t=setup({now:'2026-10-30T08:00:00Z',initial:{profile:{saveId:owner},weeklyRewards:[row]}});
+  assert.equal(t.state.weeklyRewards.filter(r=>r.mode==='rivals'&&r.week===oldWeek).length,1);assert.equal(t.state.weeklyRewards[0].claimed,claimed);
  }
- const other=setup({now:'2026-10-30T08:00:00Z',initial:{profile:{saveId:'GF-OTHER'}}});other.state.rivals.week=week;other.state.rivals.weeklyPoints=0;other.api.syncCompetitionWeeks(new Date('2026-11-05T08:00:00Z'));assert.equal(other.api.competitionPending('rivals').length,0);
 });

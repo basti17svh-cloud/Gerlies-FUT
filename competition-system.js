@@ -35,7 +35,7 @@ const RIVALS_REWARDS={
  0:{15:[40000,["86","primegold","primegold"]],35:[65000,["86","primegold","primegold","primegold","totw-reward"]]}
 };
 // One-time owner grants: this Rivals week pays the full 35-point reward for that save, whatever was played.
-const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000","1793260800000"]});
+const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000","1792652400000"]});
 function fullRivalsWeek(week){return(FULL_RIVALS_WEEKS[String(state.profile?.saveId||"").trim().toUpperCase()]||[]).includes(String(week))}
 function competitionWindow(mode,at=new Date()){
  const rule=COMPETITION_WEEK[mode],start=berlinWeekStart(at,rule.weekday,rule.hour);
@@ -94,6 +94,12 @@ function syncCompetitionWeeks(at=new Date()){
    state.weeklyRewards.push({mode:"rivals",week:rv.week,division:rv.division,milestone,points:rv.weeklyPoints,reward:rivalsReward(rv.division,milestone),claimed:false});
   }
   rv.week=rw.key;rv.weeklyPoints=0;changed=true
+ }
+ // Basti's requested catch-up for the week ending 29 October: his saved
+ // save had no reward row. Keep new-week points and all past claims.
+ const catchUpWeek="1792652400000";
+ if(fullRivalsWeek(catchUpWeek)&&Number(rw.key)>Number(catchUpWeek)&&!state.weeklyRewards.some(x=>x.mode==="rivals"&&x.week===catchUpWeek)){
+  state.weeklyRewards.push({mode:"rivals",week:catchUpWeek,division:0,milestone:35,points:0,reward:rivalsReward(0,35),claimed:false});changed=true;
  }
  if(changed)save();return changed
 }
