@@ -35,7 +35,7 @@ const RIVALS_REWARDS={
  0:{15:[40000,["86","primegold","primegold"]],35:[65000,["86","primegold","primegold","primegold","totw-reward"]]}
 };
 // One-time owner grants: this Rivals week pays the full 35-point reward for that save, whatever was played.
-const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000"]});
+const FULL_RIVALS_WEEKS=Object.freeze({"GF-9AE6CDDEFE8A458D":["1792047600000","1793260800000"]});
 function fullRivalsWeek(week){return(FULL_RIVALS_WEEKS[String(state.profile?.saveId||"").trim().toUpperCase()]||[]).includes(String(week))}
 function competitionWindow(mode,at=new Date()){
  const rule=COMPETITION_WEEK[mode],start=berlinWeekStart(at,rule.weekday,rule.hour);
