@@ -8,6 +8,7 @@ const source=fs.readFileSync(path.join(__dirname,'../season-system.js'),'utf8');
 const timeSource=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const firstTen=[0,500,1000,1800,2800,4000,5500,7500,10000,13500].map((sp,i)=>({level:i+1,sp,reward:i===0?{coins:500}:{pack:'gold'}}));
 
+const SEASON1_NOW=Date.parse('2026-10-20T12:00:00+02:00');
 function setup(initial={}){
  const elements=new Map();
  function element(id){
@@ -31,6 +32,8 @@ function setup(initial={}){
   claimSeasonRewards(){}
  };
  vm.createContext(ctx);
+ // Season 2 went live on 30.10.2026 19:00 Berlin: pin these Season-1 scenarios to a Season-1 clock.
+ vm.runInContext(`{const RealDate=Date,fixed=${SEASON1_NOW};class FixedDate extends RealDate{constructor(...a){if(a.length)super(...a);else super(fixed)}static now(){return fixed}}globalThis.Date=FixedDate}`,ctx);
  vm.runInContext(timeSource,ctx,{filename:'footera-time.js'});
  vm.runInContext(source,ctx,{filename:'season-system.js'});
  const api=vm.runInContext('({seasonInfo,seasonLevelSp,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
