@@ -12,8 +12,8 @@ const CHAMPIONS_RANKS=[
  {name:"Rang IV",min:9,max:10,coins:18000,rated:[[83,5],[85,2]],totw:1,points:6000},
  {name:"Rang V",min:7,max:8,coins:12000,rated:[[82,5],[84,1]],totw:0,points:4500},
  {name:"Rang VI",min:5,max:6,coins:8000,rated:[[82,3]],totw:0,points:3000},
- {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0,points:2000},
- {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0,points:1000}
+ {name:"Rang VII",min:3,max:4,coins:5000,rated:[[80,3]],totw:0,points:1000},
+ {name:"Rang VIII",min:0,max:2,coins:2500,rated:[[80,1]],totw:0,points:0}
 ];
 // V21.212 halved the weekend rewards; rows settled before keep their stored reward.
 

@@ -7,14 +7,14 @@ function setup(initial={}){
  vm.createContext(c);for(const f of ['footera-time.js','competition-system.js','champions-system.js'])vm.runInContext(read(f),c);
  return {c,state,saved:()=>saved,api:vm.runInContext('({championsRewardForWins,championsRank,settleChampionsRun,claimCompetitionReward,competitionClaimButtons,rewardLabel})',c)};
 }
-const points=w=>w===15?12000:w>=13?10000:w>=11?8000:w>=9?6000:w>=7?4500:w>=5?3000:w>=3?2000:1000;
+const points=w=>w===15?12000:w>=13?10000:w>=11?8000:w>=9?6000:w>=7?4500:w>=5?3000:w>=3?1000:0;
 test('each 0–15 win result has the promised Footera Points, credited once with the normal reward',()=>{
  for(let wins=0;wins<=15;wins++){
   const t=setup();t.state.champions={week:String(Date.parse('2026-10-30T19:00:00+01:00')),games:15,wins,losses:15-wins,active:true,qualPoints:321};
   assert.equal(t.api.settleChampionsRun(),true);assert.equal(t.api.settleChampionsRun(),false);assert.equal(t.state.weeklyRewards.length,1);
   const r=t.state.weeklyRewards[0];assert.equal(r.points,wins,'result points remain wins');assert.equal(r.reward.points,points(wins));assert.equal(t.state.points,250,'settlement cannot pay early');
   const oldCoins=t.state.coins;assert.equal(t.api.claimCompetitionReward('champions',r.week),true);assert.equal(t.state.points,250+points(wins));assert.equal(t.state.coins,oldCoins+r.reward.coins);assert.equal(t.state.champions.qualPoints,321,'Footera Points never alter qualification CP');
-  assert.match(t.api.rewardLabel(r),new RegExp(points(wins)+' Footera Points'));assert.equal(t.api.claimCompetitionReward('champions',r.week),false);assert.equal(t.state.points,250+points(wins));
+  if(wins>=3)assert.match(t.api.rewardLabel(r),new RegExp(points(wins)+' Footera Points'));else assert.doesNotMatch(t.api.rewardLabel(r),/Footera Points/);assert.equal(t.api.claimCompetitionReward('champions',r.week),false);assert.equal(t.state.points,250+points(wins));
   const reload=setup(t.saved());assert.equal(reload.state.points,250+points(wins));assert.equal(reload.api.claimCompetitionReward('champions',r.week),false);assert.equal(reload.state.points,t.state.points);
  }
 });
