@@ -68,7 +68,7 @@ for(const rank of SB_RANKS){if(rank.primary)ratingRewardPack(...rank.primary);if
 
 function ensureCompetitionState(){
  state.squadBattle=state.squadBattle||{week:"",points:0,played:0,playedIds:[],difficulty:"pro",refreshesUsed:0,setSeq:0,setPlayed:0};
- const sb=state.squadBattle;sb.refreshesUsed??=0;sb.setSeq??=Math.floor(Math.max(0,Number(sb.played||0))/4);sb.setPlayed??=0;
+ const sb=state.squadBattle;sb.refreshesUsed??=0;sb.setSeq??=Math.floor(Math.max(0,Number(sb.played||0))/4);sb.setPlayed??=0;sb.freeSetSeq??=0;
  state.rivals=state.rivals||{division:10,points:0};
  state.rivals.step??=Math.min((RIVALS_LADDER[state.rivals.division]||[1])[0],1+Math.floor(Math.max(0,Number(state.rivals.points||0))/3));
  state.rivals.checkpoint??=(RIVALS_LADDER[state.rivals.division]&&state.rivals.step>=RIVALS_LADDER[state.rivals.division][1]?RIVALS_LADDER[state.rivals.division][1]:0);
@@ -85,7 +85,7 @@ function syncCompetitionWeeks(at=new Date()){
   if(sb.week&&sb.played>0&&!state.weeklyRewards.some(x=>x.mode==="squad"&&x.week===sb.week)){
    const rank=sbRank(sb.points);state.weeklyRewards.push({mode:"squad",week:sb.week,rank:rank.name,points:sb.points,reward:sbRankReward(rank.name),claimed:false});
   }
-  sb.week=sw.key;sb.points=0;sb.played=0;sb.playedIds=[];sb.refreshesUsed=0;sb.setSeq=0;sb.setPlayed=0;changed=true
+  sb.week=sw.key;sb.points=0;sb.played=0;sb.playedIds=[];sb.refreshesUsed=0;sb.setSeq=0;sb.setPlayed=0;sb.freeSetSeq=0;changed=true
  }
  const rv=state.rivals,rw=competitionWindow("rivals",at);
  if(rv.week!==rw.key){
@@ -130,7 +130,7 @@ function recordRivalsResult(result){
  return{mode:"rivals",result,before,after:{division:r.division,step:r.step,skill:r.skill,weekly:r.weeklyPoints,streak:r.streak,checkpoint:r.checkpoint},earned:r.weeklyPoints-before.weekly}
 }
 function recordSquadBattleResult(result,home,away,opponent,difficulty=state.squadBattle.difficulty){
- const sb=state.squadBattle,before={points:sb.points,rank:sbRank(sb.points).name,played:sb.played},key=String(opponent?.battleId||""),eligible=sb.played<14&&key&&!sb.playedIds.includes(key);
+ const sb=state.squadBattle,before={points:sb.points,rank:sbRank(sb.points).name,played:sb.played},key=String(opponent?.battleId||""),eligible=sb.played<14&&!!key&&!sb.playedIds.includes(key)&&opponent?.battleFreePlay!==true;
  const earned=eligible?sbBattlePoints(result,home,away,difficulty,opponent?.strengthId):0;
  if(eligible){
   sb.played++;sb.points+=earned;sb.playedIds.push(key);
