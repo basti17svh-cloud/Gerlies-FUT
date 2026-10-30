@@ -142,3 +142,35 @@ test('paid season evolutions end with a PlayStyle+, free ones with a normal Play
  const item=c.item('ps','ST',74),end=c.evoPreviewItem(item,c.definition('s1_low_athletik'),2);
  assert.deepEqual([...end.evoPlaystylesPlus],['Quick Step']);
 });
+
+test('bronze and silver evolutions are live and lift cards into the next quality',()=>{
+ const c=setup(),live=c.activeEvolutionDefinitions(new Date('2026-10-30T12:00:00Z')).map(e=>e.id);
+ for(const id of ['s1_bronze_talent','s1_bronze_sprung','s1_silver_schliff','s1_silver_goldkurs_angriff','s1_silver_goldkurs_abwehr'])assert.ok(live.includes(id),id);
+ const bronzeEvos=vm.runInContext('EVOLUTION_POOL.filter(e=>e.lane==="bronze")',c),silverEvos=vm.runInContext('EVOLUTION_POOL.filter(e=>e.lane==="silver")',c);
+ for(const evo of bronzeEvos){assert.ok(evo.req.maxOvr<=64,evo.id);assert.equal(c.evoEligible(c.item('b65'+evo.id,'ST',65),evo),false,evo.id)}
+ for(const evo of silverEvos){assert.equal(evo.req.minOvr,65,evo.id);assert.equal(evo.req.maxOvr,74,evo.id);assert.equal(c.evoEligible(c.item('s75'+evo.id,'CM',75),evo),false,evo.id)}
+ const bronze=c.item('bronze','ST',64),bEnd=c.evoPreviewItem(bronze,c.definition('s1_bronze_talent'),2);
+ assert.ok(c.evoEligible(bronze,c.definition('s1_bronze_talent')));assert.equal(c.itemRating(bEnd),68);
+ const silver=c.item('silver','ST',74),sEnd=c.evoPreviewItem(silver,c.definition('s1_silver_goldkurs_angriff'),2);
+ assert.ok(c.evoEligible(silver,c.definition('s1_silver_goldkurs_angriff')));assert.equal(c.itemRating(sEnd),79);
+});
+
+test('evolved cards count as Bronze, Silver or Gold by their new rating and still as Evolution',()=>{
+ const fn=name=>html.match(new RegExp(`^(?:const ${name}=.*|function ${name}\\(.*)$`,'m'))[0];
+ const pick=src=>src.slice(src.indexOf('function pickerItemQuality('),src.indexOf('function pickerAffiliationOptions('));
+ const ctx={displayBase:i=>({ovr:i.ovr}),isFounderItem:()=>false,isMomentumItem:()=>false,isLegacyEventName:()=>false,activeEvolutionForUid:()=>null};
+ vm.createContext(ctx);vm.runInContext([fn('rarityOf'),fn('cardClass'),fn('isEvolutionItem'),pick(html)].join('\n'),ctx);
+ const evo=(ovr,extra={})=>({ovr,evo:3,evoDesign:true,...extra});
+ assert.equal(ctx.cardClass({ovr:66},evo(66)),'evolution');
+ assert.equal(ctx.pickerItemQuality(evo(64)),'bronze');
+ assert.equal(ctx.pickerItemQuality(evo(65)),'silver');
+ assert.equal(ctx.pickerItemQuality(evo(74)),'silver');
+ assert.equal(ctx.pickerItemQuality(evo(75)),'gold');
+ for(const q of ['silver','special'])assert.ok(ctx.itemMatchesQuality(evo(70),q),q);
+ for(const q of ['bronze','gold'])assert.equal(ctx.itemMatchesQuality(evo(70),q),false,q);
+ assert.ok(ctx.itemMatchesQuality(evo(70),''));
+ assert.equal(ctx.pickerItemQuality(evo(70,{variant:'special'})),'special','special designs stay special');
+ assert.equal(ctx.itemMatchesQuality({ovr:70,evo:0},'special'),false,'plain silver is not special');
+ assert.match(html,/const evoTier=cls==="evolution"\?rarityOf\(\{ovr:r\}\):""/);
+ assert.doesNotMatch(html,/goldCount=items\.filter\(i=>[^)]*!!i\.evo/,'SBC gold count uses the evolved rating');
+});

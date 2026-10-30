@@ -38,3 +38,15 @@
 .card-shell .custom-card.evolution .stats small{font-size:max(3px,3cqw)}
 .card-shell .custom-card.evolution .stats b{font-size:max(5px,6.5cqw)!important}
 .evolution-shell>.evo-active-marker{right:6%;bottom:3.5%}
+/* Evolutions count as the quality of their current rating: Bronze ≤64, Silber 65–74, Gold 75+. */
+.card-shell .custom-card.evolution .evo-tier{
+ position:absolute;z-index:4;top:7.2%;left:50%;transform:translateX(-50%);
+ padding:.5cqw 2.6cqw;border-radius:99px;font-size:max(3px,4.4cqw);font-weight:1000;line-height:1.15;letter-spacing:.12em;
+ color:#231a06;background:linear-gradient(180deg,#fff2bf,#e8b94a 55%,#b9821c);
+ box-shadow:0 .4cqw 1.2cqw #000a,inset 0 0 0 .35cqw #fff7;pointer-events:none;white-space:nowrap;
+}
+.card-shell .custom-card.evolution .evo-tier.silver{color:#1c242b;background:linear-gradient(180deg,#ffffff,#c9d3dc 55%,#8c99a6)}
+.card-shell .custom-card.evolution .evo-tier.bronze{color:#2a1407;background:linear-gradient(180deg,#ffd2a6,#c9844a 55%,#8b5124)}
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution[data-evo-tier=gold] .ovr{color:#ffe7a0}
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution[data-evo-tier=silver] .ovr{color:#eef4f8}
+:is(.evolution-shell,#bench .mini .evolution-shell,#reserve .mini .evolution-shell) .custom-card.evolution[data-evo-tier=bronze] .ovr{color:#ffc58f}

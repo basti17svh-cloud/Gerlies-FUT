@@ -63,8 +63,8 @@ test('the reusable Evolution artwork and stylesheet are available in the offline
  const skin=fs.readFileSync(path.join(__dirname,'../evolution-card.css'),'utf8');
  const art=fs.readFileSync(path.join(__dirname,'../assets/footera/card-evolution-v1.webp'));
  const sw=fs.readFileSync(path.join(__dirname,'../service-worker.js'),'utf8');
- assert.ok(html.includes('href="./evolution-card.css"'));
- assert.ok(sw.includes('"./evolution-card.css"'));assert.ok(sw.includes('"./assets/footera/card-evolution-v1.webp"'));
+ assert.ok(html.includes('href="./evolution-card.css?v=21315"'));
+ assert.ok(sw.includes('"./evolution-card.css?v=21315"'));assert.ok(sw.includes('"./assets/footera/card-evolution-v1.webp"'));
  assert.match(skin,/\.custom-card\.evolution\{[\s\S]*?card-evolution-v1\.webp/);
  assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');assert.ok(art.length<350000);
 });

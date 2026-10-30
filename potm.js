@@ -75,8 +75,8 @@
  function matchingRows(r,raw=filters()){
   const f=normalizeFilters(raw),query=f.query.trim().toLocaleLowerCase("de");
   const rows=eligibleRows(r).filter(x=>{
-   const risk=risksFor(x.item),b=displayBase(x.item),rating=itemRating(x.item),cls=cardClass(b,x.item),quality=["gold","silver","bronze"].includes(cls)?cls:"special";
-   return(!f.source||x.source===f.source)&&(!f.quality||quality===f.quality)&&rating>=f.min&&rating<=f.max&&(f.showProtected||(!risk.teams.length&&!risk.evolution))&&(!query||[b.name,b.fullName,b.team,b.league,String(rating)].some(v=>String(v||"").toLocaleLowerCase("de").includes(query)))
+   const risk=risksFor(x.item),b=displayBase(x.item),rating=itemRating(x.item);
+   return(!f.source||x.source===f.source)&&itemMatchesQuality(x.item,f.quality,b)&&rating>=f.min&&rating<=f.max&&(f.showProtected||(!risk.teams.length&&!risk.evolution))&&(!query||[b.name,b.fullName,b.team,b.league,String(rating)].some(v=>String(v||"").toLocaleLowerCase("de").includes(query)))
   });
   return rows.sort((a,b)=>(itemRating(a.item)-itemRating(b.item))*(f.sort==="high"?-1:1)||String(displayBase(a.item).name).localeCompare(displayBase(b.item).name,"de")||String(a.item.uid).localeCompare(String(b.item.uid)))
  }
