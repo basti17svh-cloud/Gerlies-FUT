@@ -1007,3 +1007,13 @@ test('V21.167: GLB feet stay planted except real wall jumps and aerial shot acti
  assert.match(script,/frame\.grounded=!\(wall&&physical>=7\.85&&physical<=8\.55\)/);
  assert.match(script,/importedMotionFrame\.grounded=time<4\.9\|\|!\['header','volley','bicycle'\]\.includes\(finish\)/);
 });
+
+test('V21.320 replay stinger shows the Footera emblem instead of a plain red F panel',()=>{
+ const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8'),scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ assert.doesNotMatch(scene,/wipe\.innerHTML='<b>F<\/b>'/);
+ assert.match(scene,/fh3d-wipe-logo"><img src="\.\/assets\/footera\/emblem\.png"/);
+ assert.ok(sw.includes('"./assets/footera/emblem.png"'),'emblem must be available offline');
+ // The dark panel fully covers the frame at the halfway point, where the replay camera cuts in.
+ assert.match(css,/@keyframes fh3dWipePanel\{[^\n]*48%,52%\{transform:translateX\(0\) skewX\(-16deg\)\}/);
+ assert.match(css,/\.fh3d-wipe-in \.fh3d-wipe-logo,\.fh3d-wipe-out \.fh3d-wipe-logo\{animation:fh3dWipeLogo \.64s/);
+});
