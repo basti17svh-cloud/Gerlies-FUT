@@ -7962,9 +7962,15 @@ function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier=""
 }
 function getSquadBattleOpponents(){
  syncCompetitionWeeks();
- const sb=state.squadBattle,specialPhase=sb.played>=12,setSeq=Math.max(0,Number(sb.setSeq||0)),key=specialPhase?`${sb.week}|special|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:`${sb.week}|set-${setSeq}`;
+ const sb=state.squadBattle,freePlay=sb.played>=14,specialPhase=sb.played>=12&&!freePlay,setSeq=Math.max(0,Number(sb.setSeq||0)),freeSeq=Math.max(0,Number(sb.freeSetSeq||0));
+ const key=freePlay?`${sb.week}|free-${freeSeq}|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:specialPhase?`${sb.week}|special|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:`${sb.week}|set-${setSeq}`;
  if(squadBattleOpponentCache.key===key&&squadBattleOpponentCache.list.length)return squadBattleOpponentCache.list;
- const list=specialPhase?
+ const list=freePlay?
+  [...SB_TIERS.map((t,i)=>{
+   const seed=`${sb.week}|free-${freeSeq}|${t.id}`,name=generatedOpponentName(seed+"|name");
+   return{...buildGeneratedOpponent({name,target:t.target,chem:t.chem,formation:i%2?"4-2-3-1":"4-3-3",seed,tier:t.label,rewards:{win:t.win,loss:t.loss},sp:t.sp}),battleId:`${seed}|free`,battleFreePlay:true,strengthId:t.id}
+  }),...[battleSpecialOpponent("totw",sb.week),battleSpecialOpponent("event",sb.week)].filter(Boolean).map(o=>({...o,battleFreePlay:true}))]:
+  specialPhase?
   [battleSpecialOpponent("totw",sb.week),battleSpecialOpponent("event",sb.week)].filter(Boolean):
   SB_TIERS.map((t,i)=>{
    const seed=`${sb.week}|set-${setSeq}|${t.id}`,name=generatedOpponentName(seed+"|name");
@@ -8015,31 +8021,34 @@ function refreshOpenMatchPreview(){
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
- const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${replay?" · BEREITS GEWERTET · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
+ const unranked=mode==="squad"&&(replay||!!opponent?.battleFreePlay||Number(state.squadBattle?.played||0)>=14);
+ const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${unranked?" · OHNE WERTUNG · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
  const formationOptions=Object.keys(FORMATIONS).map(key=>`<option value="${esc(key)}" ${key===state.formation?"selected":""}>${esc(key)}</option>`).join("");
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}${previewKitSelectorHTML(opponent)}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${unranked?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${unranked?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${unranked?'<div class="sb-repeat-preview-warning"><strong>Spiel ohne Wertung</strong><span>Coins und Ziele zählen. Kein Einfluss auf den Wochenrang, Battle-Punkte: <b>0 BP</b>.</span></div>':""}${previewKitSelectorHTML(opponent)}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
  pendingMatchContext={mode,opponent};pendingMatchKitSelection=createDefaultMatchKitSelection(opponent);previewSwapFrom=-1;squadBattleStage="preview";
  showUiLayer("squadBattleModal","squad-preview",{mode},historyMode);refreshOpenMatchPreview()
 }
 function renderSquadBattleSelection(historyMode="push"){
- const list=getSquadBattleOpponents(),sb=state.squadBattle,selected=list[selectedSquadBattleIndex]||null,refreshRemaining=typeof squadBattleRefreshRemaining==="function"?squadBattleRefreshRemaining():Math.max(0,4-Number(sb.refreshesUsed||0));
+ const list=getSquadBattleOpponents(),sb=state.squadBattle,freePlay=sb.played>=14,selected=list[selectedSquadBattleIndex]||null,refreshRemaining=typeof squadBattleRefreshRemaining==="function"?squadBattleRefreshRemaining():Math.max(0,4-Number(sb.refreshesUsed||0));
  const selectedPlayed=!!selected&&sb.playedIds.includes(selected.battleId),replayArmed=selectedPlayed&&selectedSquadBattleReplayConfirm===String(selected.battleId);
  if($("matchPreviewModalTitle"))$("matchPreviewModalTitle").textContent="Squad Battles · Gegner auswählen";
  $("squadBattleModalSub").textContent=`${sb.played}/14 gewertete Spiele · ${sbRank(sb.points).name}`;
  const options=Object.entries(SB_DIFFICULTIES).map(([key,d])=>`<option value="${key}" ${sb.difficulty===key?"selected":""}>${d.label} ×${d.factor.toFixed(2).replace(".",",")}</option>`).join("");
  const cards=list.map((o,i)=>{
   const played=sb.playedIds.includes(o.battleId);
-  return `<button class="sb-opponent ${i===selectedSquadBattleIndex?"selected":""} ${played?"played":""}" data-sb-select="${i}" aria-label="${esc(o.name)}${played?" · bereits gewertet · 0 Battle-Punkte":""}"><span class="tier">${esc(o.tier)}</span>${played?'<span class="sb-played-badge">✓ BEREITS GEWERTET · 0 BP</span>':""}<h4>${esc(o.name)}</h4><p>${esc(o.formation)} · KI-Gegner</p><div class="sb-opponent-stats"><div><strong>${o.rating}</strong><span>Rating</span></div><div><strong>${o.chem}/33</strong><span>Chemie</span></div><div><strong>${fmt(o.rewards?.win||0)}</strong><span>Sieg-Coins</span></div></div></button>`
+  return `<button class="sb-opponent ${i===selectedSquadBattleIndex?"selected":""} ${played?"played":""}" data-sb-select="${i}" aria-label="${esc(o.name)}${played?" · bereits gewertet · 0 Battle-Punkte":""}"><span class="tier">${esc(o.tier)}</span>${freePlay?'<span class="sb-played-badge">FREIES SPIEL · 0 BP</span>':played?'<span class="sb-played-badge">✓ BEREITS GEWERTET · 0 BP</span>':""}<h4>${esc(o.name)}</h4><p>${esc(o.formation)} · KI-Gegner</p><div class="sb-opponent-stats"><div><strong>${o.rating}</strong><span>Rating</span></div><div><strong>${o.chem}/33</strong><span>Chemie</span></div><div><strong>${fmt(o.rewards?.win||0)}</strong><span>Sieg-Coins</span></div></div></button>`
  }).join("");
- const playButton=selectedPlayed
+ const playButton=freePlay
+  ?`<button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Ohne Wertung spielen · 0 BP</button>`
+  :selectedPlayed
   ?`<button id="sbReplayLineup" class="${replayArmed?"danger":"secondary"}">${replayArmed?"Bestätigen · 0 BP":"Erneut spielen · 0 BP"}</button>`
   :`<button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Zur Aufstellung</button>`;
- const warning=selectedPlayed?`<div class="sb-repeat-warning ${replayArmed?"confirm":""}"><strong>${replayArmed?"Wirklich erneut spielen?":"Dieser Gegner wurde bereits gewertet."}</strong><span>Das Spiel zählt für Coins und Ziele, aber bringt <b>0 Battle-Punkte</b> und erhöht nicht ${sb.played}/14.</span></div>`:"";
- $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · weiterhin Coins und Ziele"}`} · Sonntag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
+ const warning=freePlay?'<div class="sb-repeat-warning"><strong>Freies Squad Battle</strong><span>Spiele unbegrenzt gegen die KI. Coins und Ziele zählen, aber keine zusätzlichen Battle-Punkte.</span></div>':selectedPlayed?`<div class="sb-repeat-warning ${replayArmed?"confirm":""}"><strong>${replayArmed?"Wirklich erneut spielen?":"Dieser Gegner wurde bereits gewertet."}</strong><span>Das Spiel zählt für Coins und Ziele, aber bringt <b>0 Battle-Punkte</b> und erhöht nicht ${sb.played}/14.</span></div>`:"";
+ $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · Freies Spiel ohne BP · Coins und Ziele zählen"}`} · Sonntag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
  <label class="competition-difficulty">Schwierigkeit <select id="sbDifficulty">${options}</select></label>
- <div class="sb-refresh-row"><span>Gegner-Refresh <b>${refreshRemaining}/4 verfügbar</b></span><button id="sbRefreshOpponents" class="secondary" ${sb.played>=12||refreshRemaining<=0?"disabled":""}>4 neue Gegner</button></div>
+ <div class="sb-refresh-row"><span>${freePlay?"Freies Spiel · Gegner unbegrenzt wechseln":`Gegner-Refresh <b>${refreshRemaining}/4 verfügbar</b>`}</span><button id="sbRefreshOpponents" class="secondary" ${!freePlay&&(sb.played>=12||refreshRemaining<=0)?"disabled":""}>${freePlay?"Neue Gegner":"4 neue Gegner"}</button></div>
  <div class="sb-opponent-grid">${cards}</div>
  ${warning}
  <div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button>${playButton}</div>`;
@@ -8116,6 +8125,10 @@ $("squadBattleModalBody").addEventListener("click",e=>{
  const sel=e.target.closest("[data-sb-select]");
  if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");return}
  if(e.target.closest("#sbRefreshOpponents")){
+  if(state.squadBattle?.played>=14){
+   state.squadBattle.freeSetSeq=Math.max(0,Number(state.squadBattle.freeSetSeq||0))+1;
+   selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";squadBattleOpponentCache={key:"",list:[]};save();renderSquadBattleSelection("none");toast("Neue Gegner für freie Squad Battles geladen.");return
+  }
   if(typeof refreshSquadBattleOpponents!=="function"||!refreshSquadBattleOpponents()){toast(state.squadBattle?.played>=12?"Ab 12/14 warten TOTW und Event-Team.":"Alle 4 Gegner-Refreshes dieser Woche sind verbraucht.");return}
   selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";squadBattleOpponentCache={key:"",list:[]};renderSquadBattleSelection("none");toast(`Neue Gegner geladen · ${squadBattleRefreshRemaining()}/4 Refreshes übrig.`);return
  }
@@ -8130,7 +8143,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
  }
  if(e.target.closest("#sbContinueLineup")){
   const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(!o)return;
-  if(state.squadBattle?.playedIds?.includes(o.battleId)){selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");toast("Dieser Gegner wurde bereits gewertet und bringt 0 BP.");return}
+  if(state.squadBattle?.played<14&&state.squadBattle?.playedIds?.includes(o.battleId)){selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");toast("Dieser Gegner wurde bereits gewertet und bringt 0 BP.");return}
   renderMatchPreview("squad",o);return
  }
  if(e.target.closest("[data-preview-kit-auto]")){if(pendingMatchContext){pendingMatchKitSelection=createDefaultMatchKitSelection(pendingMatchContext.opponent);refreshOpenMatchPreview()}return}
