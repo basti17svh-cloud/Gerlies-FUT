@@ -2112,6 +2112,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(motion2Active)applyWinger2(striker,time,sequence,finish,motion2CutAnchor,motion2ShotAnchor,event.playerStyles);
    // 2.6: rebalance after the kick; never change the canonical 5.4s contact.
    if(pilotMotion)balanceSample=applyFinishBalance(striker,time,finish);
+   for(const frame of squadMotionFrames)if(frame)frame.kick=null;
    const authoredPassWindows=getPlay(sequence)?playPassWindows(getPlay(sequence)):DEFENSIVE_SCENES.includes(sequence)?[
     {actor:1,start:.41,end:.90},
     ...(['defense_interception','defense_press_recovery'].includes(sequence)?[{actor:0,start:2.96,end:3.45}]:[])
@@ -2133,6 +2134,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
     const passerIndex=players.indexOf(passer),finalPasser=getPlay(sequence)?playTouches(getPlay(sequence)).at(-1)?.passer:1,foot=passerIndex===finalPasser?(event.creatorFoot||event.playerFeet?.[passerIndex]):event.playerFeet?.[passerIndex];
     applyFootedPose(passer,time,foot,from,to);
+    // Real captured pass (short CMU kick) on the passer's body.
+    if(passerIndex>0&&squadMotionFrames[passerIndex])squadMotionFrames[passerIndex].kick={finish:'pass',foot:foot==='Left'?'Left':'Right',contact:from+.24};
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
