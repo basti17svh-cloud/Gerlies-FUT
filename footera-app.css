@@ -785,6 +785,8 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 @keyframes evoBurst{0%{transform:translate(-50%,-50%) scale(.3) rotate(0);opacity:0}35%{opacity:.75}100%{transform:translate(-50%,-50%) scale(1.25) rotate(70deg);opacity:0}}
 .evo-claim-title{width:100%;margin-top:8px;font-size:18px;font-weight:1000;color:#fff;text-align:center}
 .evo-claim-sub{width:100%;margin-top:5px;color:#9eaca7;font-size:8px;text-align:center}
+.evo-claim-tier{margin:8px auto 0;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:1000;letter-spacing:.06em;color:#231a06;background:linear-gradient(180deg,#fff2bf,#e8b94a 55%,#b9821c);width:max-content;max-width:100%}.evo-claim-tier.silver{color:#1c242b;background:linear-gradient(180deg,#fff,#c9d3dc 55%,#8c99a6)}
+.evo-tier-note{margin-top:6px;padding:7px 9px;border-radius:10px;border:1px solid #3a4a44;background:#121b18;color:#cfe3dc;font-size:11px;line-height:1.4}
 .evo-claim-close{position:relative;z-index:5;width:min(390px,100%);min-width:190px;min-height:48px;margin:16px auto 0;pointer-events:auto;touch-action:manipulation;cursor:pointer}
 @media(max-width:560px){
  .evo-stage{grid-template-columns:112px minmax(0,1fr)!important;column-gap:12px!important;padding:10px!important}
@@ -1364,7 +1366,7 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .evo-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
 .evo-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .evo-lane{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:11px;font-weight:1000;letter-spacing:.07em;border:1px solid currentColor}
-.evo-lane.low{color:#8ff0b7;background:#10291e}.evo-lane.mid{color:#8ed8ff;background:#102334}.evo-lane.high{color:#ffd37a;background:#33250d}
+.evo-lane.bronze{color:#ffc590;background:#2e1a0c}.evo-lane.silver{color:#e3ebf2;background:#1f272e}.evo-lane.low{color:#8ff0b7;background:#10291e}.evo-lane.mid{color:#8ed8ff;background:#102334}.evo-lane.high{color:#ffd37a;background:#33250d}
 @media(max-width:650px){.evo-summary{grid-template-columns:1fr}}
 
 

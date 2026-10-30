@@ -20,7 +20,7 @@ function setup({club=[],storage=[],squad=[],presets=[],evos=[],sbc}){
   inPosition:(item,slot)=>[item.position,...(item.alt||[])].includes(slot),playerPositions:item=>[item.position,...(item.alt||[])],
   isCardRare:(b,item)=>!!item.rare,isFounderItem:()=>false,isStoryItem:()=>false,isFooteraLiveCard:()=>false,
   normalizeKey:v=>String(v||'').toLowerCase().trim(),marqueeClubMatch:(team,aliases)=>aliases.includes(team),marqueeLeagueMatch:(a,b)=>String(a).toLowerCase()===String(b).toLowerCase(),
-  playerSearchText:item=>String(item.name||'').toLowerCase(),pickerItemQuality:item=>item.quality,
+  playerSearchText:item=>String(item.name||'').toLowerCase(),pickerItemQuality:item=>item.quality,itemMatchesQuality:(item,q)=>!q||item.quality===q,
   positionLabel:p=>({GK:'TW',ST:'ST'})[p]||p,esc:String,cardHTML:(b,item,mini,shown)=>`<card pos="${shown}">`,
   toast:m=>toasts.push(m),renderSBC(){},fmt:String,PACKS:[],nationLabel:v=>v
  };

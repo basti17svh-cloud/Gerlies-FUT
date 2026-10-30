@@ -6,6 +6,8 @@ function app(saved){
  const c={state,Date:Clock,Intl,Map,Set,Number,Array,Math,P_BY_ID:new Map(),PACKS:[],pendingPack:[],pendingResolved:new Set(),messages:[],saves:[],packs:[],esc:String,fmt:n=>Number(n).toLocaleString('de-DE'),
   makeItem:(b,t,opts)=>({uid:'reward-'+(++seq),pid:String(b.id),tradeable:t,evo:0,evoStats:{},...opts}),
   isFounderItem:i=>i.variant==='founder',isStoryItem:i=>i.variant==='story',cardClass:(p,i)=>i.evo?'evolution':i.variant==='special'?'special':'gold',
+  // Mirrors footera-app.js: Evolutions count as their rating quality and as special.
+  itemMatchesQuality:(i,q,b)=>{if(!q)return true;const tier=b.ovr>=75?'gold':b.ovr>=65?'silver':'bronze',cls=c.cardClass(b,i),quality=i.variant||i.cosmeticDesign||i.eventType?'special':i.evo?tier:['gold','silver','bronze'].includes(cls)?cls:'special';return quality===q||(q==='special'&&!!i.evo)},
   itemBase:i=>c.P_BY_ID.get(String(i.pid)),itemRating:i=>i.displayRating||c.itemBase(i)?.ovr||0,
   displayBase:i=>{const b=c.itemBase(i);if(!b)return null;const out={...b,ovr:c.itemRating(i),position:i.overridePosition||b.position};if(i.eventStats)['pac','sho','pas','dri','def','phy'].forEach((k,n)=>out[k]=i.eventStats[n]);return out},
   emblemCandidates:(kind,p)=>['normal-'+kind],sbcSourceItems:()=>[...state.club.map(item=>({item,source:'club'})),...state.sbcStorage.map(item=>({item,source:'storage'}))],
@@ -171,7 +173,7 @@ test('rating filters find exact 84s from both sources and sort numerically in bo
 test('quality, team protection, source and query filters combine without hiding special types as gold',()=>{
  const {potm,c,state,add}=app(),r=potm.releases[1];c.cardClass=(b,i)=>i.variant||i.evo?'special':b.ovr<65?'bronze':b.ovr<75?'silver':'gold';
  add('bronze',64);add('silver',74);add('gold',84);add('totw',84,{variant:'special'});add('icon',84,{variant:'icon-mid'});add('evo',84,{evo:1});add('team',84);state.squadPresets[0].squad[0]='team';add('storage',84,{},'sbcStorage');add('listed',84);state.transferList=['listed'];
- assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'gold'}),x=>x.item.uid),['gold','storage']);
+ assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'gold'}),x=>x.item.uid),['evo','gold','storage']);
  assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'special'}),x=>x.item.uid),['evo','icon','totw']);
  assert.equal(potm.matchingRows(r,{quality:'silver'})[0].item.uid,'silver');assert.equal(potm.matchingRows(r,{quality:'bronze'})[0].item.uid,'bronze');
  assert.deepEqual(Array.from(potm.matchingRows(r,{quality:'gold',min:84,max:84,source:'club',query:'TEAM',showProtected:true}),x=>x.item.uid),['team']);
