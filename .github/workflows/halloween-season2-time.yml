@@ -16,6 +16,7 @@ on:
       - 'tests/season-system.test.cjs'
       - 'tests/story-pass.test.cjs'
       - 'tests/halloween-season2-time.browser.cjs'
+      - 'tests/market-event-cards.browser.cjs'
       - '.github/workflows/halloween-season2-time.yml'
 permissions:
   contents: read
@@ -38,3 +39,7 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-time-browser/node_modules
         run: node tests/halloween-season2-time.browser.cjs
+      - name: Released event cards (HALLOWEEN Team 1/2) on the transfer market
+        env:
+          NODE_PATH: /tmp/footera-time-browser/node_modules
+        run: node tests/market-event-cards.browser.cjs

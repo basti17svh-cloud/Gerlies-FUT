@@ -8,7 +8,9 @@ const source=fs.readFileSync(path.join(__dirname,'../season-system.js'),'utf8');
 const timeSource=fs.readFileSync(path.join(__dirname,'../footera-time.js'),'utf8');
 const firstTen=[0,500,1000,1800,2800,4000,5500,7500,10000,13500].map((sp,i)=>({level:i+1,sp,reward:i===0?{coins:500}:{pack:'gold'}}));
 
+// Season 1 is over since 30.10.2026 19:00; the default clock stays inside Season 1 so these rules keep testing it.
 const SEASON1_NOW=Date.parse('2026-10-20T12:00:00+02:00');
+class Season1Date extends Date{constructor(...args){if(args.length)super(...args);else super(SEASON1_NOW)}static now(){return SEASON1_NOW}}
 function setup(initial={}){
  const elements=new Map();
  function element(id){
@@ -29,11 +31,9 @@ function setup(initial={}){
   grant:r=>{state.coins+=r.coins||0;state.sp+=r.sp||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1)},
   grantSeasonOnly:r=>{state.coins+=r.coins||0;state.points+=r.points||0;if(r.pack)state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)state.storyGrants.push(r.story)},
   STORY_PASS_PLAYERS:{'s1-15':{name:'Ermedin Demirović',chapter:'Aufbruch',rating:84},'s1-30':{name:'Kobbie Mainoo',chapter:'Durchbruch',rating:85}},storyPreviewCard:()=>'<div class="card-shell story-shell"></div>',
-  claimSeasonRewards(){}
+  claimSeasonRewards(){},Date:Season1Date
  };
  vm.createContext(ctx);
- // Season 2 went live on 30.10.2026 19:00 Berlin: pin these Season-1 scenarios to a Season-1 clock.
- vm.runInContext(`{const RealDate=Date,fixed=${SEASON1_NOW};class FixedDate extends RealDate{constructor(...a){if(a.length)super(...a);else super(fixed)}static now(){return fixed}}globalThis.Date=FixedDate}`,ctx);
  vm.runInContext(timeSource,ctx,{filename:'footera-time.js'});
  vm.runInContext(source,ctx,{filename:'season-system.js'});
  const api=vm.runInContext('({seasonInfo,seasonLevelSp,objectiveWindow,ensureObjectiveWindows,objectiveProgress,availableObjectiveRewardsCount,availableRotatingObjectiveRewardsCount,availablePassRewardsCount,renderTasks})',ctx);
