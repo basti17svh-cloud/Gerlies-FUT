@@ -13,7 +13,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.doesNotThrow(()=>new vm.Script(hub));
  assert.match(html,/data-play-mode="champions"/);
  assert.match(html,/data-play-panel="champions"/);
- assert.match(html,/champions-system\.js\?v=21317/);
+ assert.match(html,/champions-system\.js\?v=21318/);
  const build=html.match(/const GFUT_BUILD="(V\d+\.\d+)"/)?.[1];
  assert.ok(build,"Footera build identifier exists");
  assert.ok(html.includes(`<title>Footera ${build}</title>`),"page title agrees with build");
@@ -21,7 +21,7 @@ test("Champions scripts parse and V21.23 shell wires the mode",()=>{
  assert.match(hub,/function renderChampions\(/);
  assert.match(css,/\.play-champions\{/);
  assert.match(sw,/const CACHE="footera-v\d+-\d+-[a-z-]+"/);
- assert.match(sw,/champions-system\.js\?v=21317/);
+ assert.match(sw,/champions-system\.js\?v=21318/);
  assert.equal(JSON.parse(manifest).start_url,`./index.html?v=${build.slice(1)}`);
 });
 
@@ -138,9 +138,9 @@ test("Only the 23 Oct 2026 Champions weekend stays open 24 hours longer, includi
  for(const iso of ["2026-10-27T09:00:00+01:00","2026-10-28T09:00:00+01:00"]){
   const w=box.getWindow(date(iso));
   assert.equal(w.open,false,iso);
-  assert.equal(w.start.getTime(),date("2026-10-30T19:00:00+01:00").getTime());
+  assert.equal(w.start.getTime(),date("2026-10-30T09:00:00+01:00").getTime());
  }
- const next=box.getWindow(date("2026-10-30T19:00:00+01:00"));
+ const next=box.getWindow(date("2026-10-30T09:00:00+01:00"));
  assert.equal(next.open,true);
  assert.equal(next.end.getTime(),date("2026-11-02T09:00:00+01:00").getTime(),"next Finals remain Monday 09:00");
  assert.match(hub,/const endWeekday=new Intl.DateTimeFormat/,"schedule label derives the real final weekday");
@@ -170,4 +170,22 @@ test("claimed rated Champions reward packs stay listed in Meine Packs after a re
  vm.runInContext(ranks+"\n"+rated+"\n"+ensure+"\nensureChampionsPacks();",box);
  for(const id of ["reward-84-20","reward-86-5","reward-86-10","reward-83-15","reward-79-7"])assert.ok(box.PACKS.some(p=>p.id===id),id+" registered");
  assert.equal(box.PACKS.find(p=>p.id==="reward-84-20").count,20);
+});
+
+test('from 30 October Finals open Friday 09:00 and close Monday 09:00, preserving weekly identities',()=>{
+ const box={};vm.createContext(box);
+ const clock=fs.readFileSync(path.join(root,'footera-time.js'),'utf8');
+ const functions=champions.slice(champions.indexOf('function championsWeekEnd('),champions.indexOf('function championsDate('));
+ vm.runInContext(clock+'\n'+functions+'\nthis.window=championsWindow;',box);
+ const cases=[
+  ['2026-10-30T08:59:59+01:00',false,'2026-10-30T09:00:00+01:00','2026-11-02T09:00:00+01:00'],
+  ['2026-10-30T09:00:00+01:00',true,'2026-10-30T09:00:00+01:00','2026-11-02T09:00:00+01:00'],
+  ['2026-11-02T08:59:59+01:00',true,'2026-10-30T09:00:00+01:00','2026-11-02T09:00:00+01:00'],
+  ['2026-11-02T09:00:00+01:00',false,'2026-11-06T09:00:00+01:00','2026-11-09T09:00:00+01:00'],
+  ['2027-03-26T09:00:00+01:00',true,'2027-03-26T09:00:00+01:00','2027-03-29T09:00:00+02:00'],
+  ['2027-10-29T09:00:00+02:00',true,'2027-10-29T09:00:00+02:00','2027-11-01T09:00:00+01:00']
+ ];
+ for(const [at,open,start,end] of cases){const w=box.window(new Date(at));assert.equal(w.open,open,at);assert.equal(w.start.getTime(),Date.parse(start));assert.equal(w.end.getTime(),Date.parse(end))}
+ const morning=box.window(new Date('2026-10-30T10:00:00+01:00')),evening=box.window(new Date('2026-10-30T20:00:00+01:00'));
+ assert.equal(morning.key,String(Date.parse('2026-10-30T19:00:00+01:00')));assert.equal(morning.key,evening.key);
 });

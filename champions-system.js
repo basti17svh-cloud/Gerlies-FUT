@@ -27,10 +27,18 @@ function championsWeekEnd(start){
  const extended=friday.getTime()===Date.parse("2026-10-23T19:00:00+02:00");
  return berlinShiftDays(friday,extended?4:3,9)
 }
+function championsStartHour(start){return new Date(start)>=new Date("2026-10-30T00:00:00+01:00")?9:19}
 function championsWindow(at=new Date()){
- const now=new Date(at),lastStart=berlinWeekStart(now,5,19),lastEnd=championsWeekEnd(lastStart),open=now>=lastStart&&now<lastEnd;
- const start=open?lastStart:berlinShiftDays(lastStart,7,19),end=open?lastEnd:championsWeekEnd(start);
- return{key:String(start.getTime()),start,end,open,lastStart,lastEnd,lastKey:String(lastStart.getTime())}
+ const now=new Date(at);let lastStart=berlinWeekStart(now,5,9);
+ if(championsStartHour(lastStart)===19)lastStart=berlinWeekStart(now,5,19);
+ const lastEnd=championsWeekEnd(lastStart),open=now>=lastStart&&now<lastEnd;
+ let start=open?lastStart:berlinShiftDays(lastStart,7,9);
+ if(!open)start=berlinShiftDays(start,0,championsStartHour(start));
+ const end=open?lastEnd:championsWeekEnd(start);
+ // Keep the historical Friday-19:00 identity for saves and reward receipts.
+ // Moving the opening time must never reset a run or allow a second entry.
+ const key=String(berlinShiftDays(start,0,19).getTime()),lastKey=String(berlinShiftDays(lastStart,0,19).getTime());
+ return{key,start,end,open,lastStart,lastEnd,lastKey}
 }
 function championsDate(date){
  return new Intl.DateTimeFormat("de-DE",{timeZone:FOOTERA_TIME_ZONE,weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}).format(date)

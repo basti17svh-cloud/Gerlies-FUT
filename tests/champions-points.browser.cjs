@@ -7,11 +7,12 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,"."+new UR
  await new Promise(r=>server.listen(0,"127.0.0.1",r));const url=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({headless:true});
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:"block",timezoneId:"Europe/Berlin"});
-  await context.addInitScript(()=>{const Real=Date,fixed=Real.parse('2026-10-30T20:00:00+01:00');window.Date=class extends Real{constructor(...a){super(...(a.length?a:[fixed]))}static now(){return fixed}}});
+  await context.addInitScript(()=>{const Real=Date,fixed=Real.parse('2026-10-30T10:00:00+01:00');window.Date=class extends Real{constructor(...a){super(...(a.length?a:[fixed]))}static now(){return fixed}}});
   await context.route("**/*",r=>r.request().url().startsWith(url)?r.continue():r.abort());
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url,{waitUntil:'load'});
   const hide=()=>page.addStyleTag({content:'#bootIntro,#dbGate,#onboard,#onboarding,#usernameRequiredModal,#footeraAccountDialog,#footeraAnalyticsConsent{display:none!important}'});await hide();
   const week=await page.evaluate(()=>{state.onboarded=true;state.profile.username='WL QA';state.profile.clubName='QA FC';state.points=500;state.coins=100;state.weeklyRewards=[];state.champions={week:String(Date.parse('2026-10-30T19:00:00+01:00')),games:15,wins:15,losses:0,active:true,qualPoints:0};settleChampionsRun();renderAll();switchView('playView',{push:false});FooteraPlayHub.open('champions');return state.champions.week});
+  assert.match(await page.locator('#championsWindowSchedule').textContent(),/Freitag 09:00 – Mo.*09:00/);
   assert.match(await page.locator('#championsRanks').textContent(),/12\.000 Footera Points/);assert.match(await page.locator('#championsRanks').textContent(),/1\.000 Footera Points/);
   await page.evaluate(week=>FooteraWeeklyRewards.open('champions',week),week);
   assert.match(await page.locator('.weekly-reward-points').innerText(),/12\.000[\s\S]*Footera Points/);

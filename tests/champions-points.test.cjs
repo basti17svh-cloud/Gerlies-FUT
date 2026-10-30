@@ -25,3 +25,17 @@ test('saved pre-change rewards keep their original contents and do not receive r
 test('not playing a Weekend League never generates participation Points',()=>{
  const t=setup();t.state.champions={week:String(Date.parse('2026-10-30T19:00:00+01:00')),games:0,wins:0,losses:0,active:true};t.api.settleChampionsRun();assert.equal(t.state.weeklyRewards.length,0);assert.equal(t.state.points,250);
 });
+
+test('Friday morning accepts one entry; existing active and completed runs retain progress and receipts',()=>{
+ const at=new Date('2026-10-30T09:00:00+01:00'),key=String(Date.parse('2026-10-30T19:00:00+01:00'));
+ const t=setup();t.state.champions={qualPoints:2000};
+ assert.equal(t.c.startChampionsRun(new Date('2026-10-30T08:59:59+01:00')).ok,false);
+ assert.equal(t.c.startChampionsRun(at).ok,true);assert.equal(t.state.champions.week,key);assert.equal(t.state.champions.qualPoints,1000);
+ Object.assign(t.state.champions,{games:5,wins:3,losses:2,results:'WWWLL'});
+ assert.equal(t.c.startChampionsRun(at).ok,true);assert.equal(t.state.champions.games,5);assert.equal(t.state.champions.qualPoints,1000);
+ assert.equal(t.c.championsCanStartMatch(at),true);
+ const reload=setup(JSON.parse(JSON.stringify(t.state)));assert.equal(reload.c.championsCanStartMatch(at),true);assert.equal(reload.state.champions.results,'WWWLL');
+ assert.equal(reload.c.championsCanStartMatch(new Date('2026-11-02T09:00:00+01:00')),false);assert.equal(reload.state.weeklyRewards.length,1);
+ assert.equal(reload.c.syncChampionsCompetition(new Date('2026-11-02T09:00:00+01:00')),false);assert.equal(reload.state.weeklyRewards.length,1);
+ Object.assign(t.state.champions,{active:false,completed:true});assert.equal(t.c.startChampionsRun(at).ok,false);assert.equal(t.state.champions.qualPoints,1000);
+});
