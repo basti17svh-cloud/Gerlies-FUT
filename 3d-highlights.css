@@ -213,9 +213,26 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 .fh3d-ceremony-crests{display:flex;align-items:center;gap:6px}
 .fh3d-ceremony-crests .fh3d-team-crest{width:40px;height:40px}
 .fh3d-ceremony-crests .fh3d-team-crest .club-crest{width:40px!important;height:40px!important;min-width:40px!important}
-.fh3d-wipe{position:absolute;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateX(-112%);background:linear-gradient(100deg,transparent 0 7%,#e3262f 7% 93%,transparent 93%)}
-.fh3d-wipe b{font:950 italic 66px/1 system-ui;color:#fff;text-shadow:0 4px 18px #0007}
-.fh3d-wipe-in .fh3d-wipe,.fh3d-wipe-out .fh3d-wipe{animation:fh3dWipe .64s cubic-bezier(.65,0,.35,1) both}
-@keyframes fh3dWipe{0%{transform:translateX(-112%)}50%{transform:translateX(0)}100%{transform:translateX(112%)}}
+.fh3d-wipe{position:absolute;z-index:8;inset:0;overflow:hidden;pointer-events:none;visibility:hidden}
+.fh3d-wipe-in .fh3d-wipe,.fh3d-wipe-out .fh3d-wipe{visibility:visible}
+/* V21.320 replay stinger: red lead stripe, chrome edge and a dark panel sweep
+   across with the Footera emblem. The screen is fully covered at 50% (.32 s),
+   exactly when the replay camera cuts in, then everything sweeps out. */
+.fh3d-wipe-band{position:absolute;top:-10%;bottom:-10%;left:-30%;right:-30%;transform:translateX(-135%) skewX(-16deg)}
+.fh3d-wipe-red{background:linear-gradient(90deg,#8d0d16,#e3262f 55%,#ff4a52)}
+.fh3d-wipe-chrome{background:linear-gradient(90deg,#5d6066,#f4f6f8 45%,#a9adb3 60%,#2a2d31)}
+.fh3d-wipe-panel{background:radial-gradient(120% 90% at 50% 50%,#2a0a0e 0,#120507 46%,#050607 100%);box-shadow:inset 0 0 0 1px #ffffff14}
+.fh3d-wipe-panel::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,#ffffff07 0 2px,transparent 2px 14px)}
+.fh3d-wipe-logo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.7)}
+.fh3d-wipe-logo img{width:clamp(92px,30%,150px);height:auto;display:block;filter:drop-shadow(0 10px 24px #000b) drop-shadow(0 0 18px #e3262f55)}
+.fh3d-wipe-logo strong{margin-top:6px;color:#fff;font:1000 italic clamp(22px,7vw,34px)/1 system-ui;letter-spacing:-.04em;text-shadow:0 3px 14px #000a}
+.fh3d-wipe-logo span{margin-top:7px;padding:4px 9px;border-radius:4px;background:#e3262f;color:#fff;font:900 10px/1 system-ui;letter-spacing:2.4px}
+.fh3d-wipe-in .fh3d-wipe-red,.fh3d-wipe-out .fh3d-wipe-red{animation:fh3dWipe .64s cubic-bezier(.65,0,.35,1) both}
+.fh3d-wipe-in .fh3d-wipe-chrome,.fh3d-wipe-out .fh3d-wipe-chrome{animation:fh3dWipe .64s .03s cubic-bezier(.65,0,.35,1) both}
+.fh3d-wipe-in .fh3d-wipe-panel,.fh3d-wipe-out .fh3d-wipe-panel{animation:fh3dWipePanel .64s cubic-bezier(.65,0,.35,1) both}
+.fh3d-wipe-in .fh3d-wipe-logo,.fh3d-wipe-out .fh3d-wipe-logo{animation:fh3dWipeLogo .64s cubic-bezier(.3,.7,.3,1) both}
+@keyframes fh3dWipe{0%{transform:translateX(-135%) skewX(-16deg)}50%{transform:translateX(0) skewX(-16deg)}100%{transform:translateX(135%) skewX(-16deg)}}
+@keyframes fh3dWipePanel{0%{transform:translateX(-140%) skewX(-16deg)}14%{transform:translateX(-140%) skewX(-16deg)}48%,52%{transform:translateX(0) skewX(-16deg)}100%{transform:translateX(140%) skewX(-16deg)}}
+@keyframes fh3dWipeLogo{0%,36%{opacity:0;transform:scale(.72) rotate(-6deg)}46%{opacity:1;transform:scale(1.06) rotate(0)}56%{opacity:1;transform:scale(1)}68%,100%{opacity:0;transform:scale(1.12)}}
 .fh3d-replay-tag{position:absolute;z-index:6;top:74px;left:12px;padding:5px 9px;border-radius:6px;background:#e3262fe8;color:#fff;font:900 11px/1 system-ui;letter-spacing:1.6px;opacity:0;transition:opacity .2s}
 .fh3d-replay-on .fh3d-replay-tag{opacity:1}
