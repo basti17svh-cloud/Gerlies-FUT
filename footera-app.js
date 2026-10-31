@@ -1374,8 +1374,18 @@ function totwIsActive(at=new Date()){return !!activeTotwWeek(at)}
 function totwDisplayName(name){return String(name||"").replace(/^Team of the Week\b/i,"Team der Woche")}
 function updateTotwMarketOption(){
  const option=$("marketSpecialType")?.querySelector('option[value="totw"]');if(!option)return;
- option.disabled=false;option.textContent="Team der Woche"
+ option.disabled=false;option.textContent="Team der Woche";updateEventMarketOptions()
 }
+// Released promo teams (Halloween, later events) feed the transfer market automatically: a new EVENT_PROMO_RELEASES entry needs no extra market code.
+function marketPromoReleases(at=Date.now()){return (typeof EVENT_PROMO_RELEASES!=="undefined"?EVENT_PROMO_RELEASES:[]).filter(e=>!MOMENTUM_RELEASES.includes(e)&&(e.players||[]).length>0&&at>=Date.parse(e.activeFrom))}
+function marketEventTypeKey(event){return"event:"+(event?.theme||event?.id||"")}
+function marketEventTypeOptions(at=Date.now()){const out=new Map();for(const e of marketPromoReleases(at)){const key=marketEventTypeKey(e);if(!out.has(key))out.set(key,String(e.name||e.shortName||"Event"))}return[...out].map(([value,label])=>({value,label}))}
+function updateEventMarketOptions(){
+ const select=$("marketSpecialType");if(!select)return;const want=marketEventTypeOptions();
+ for(const o of [...select.querySelectorAll("option[data-market-event]")])if(!want.some(w=>w.value===o.value))o.remove();
+ for(const w of want)if(![...select.options].some(o=>o.value===w.value)){const o=document.createElement("option");o.value=w.value;o.textContent=w.label;o.dataset.marketEvent="1";select.appendChild(o)}
+}
+function marketPromoEntry(eventId,base){const event=marketPromoReleases().find(e=>e.id===eventId),pid=String(base?.id||"");const info=event?(event.players||[]).find(x=>String(x?.pid||x?.eaId||"")===pid):null;return info?{event,info}:null}
 function totwInfo(base){
  if(!base||isActiveEventSbcBase(base))return null;const team=activeTotwWeek();if(!team)return null;
  const matches=team.players.filter(info=>!isEventSbcBlockedTotwInfo(team,info)&&totwAliasMatch(base,info)===100);
@@ -4282,7 +4292,7 @@ $("playerDetailBody").addEventListener("click",e=>{
  if(marketBio){const i=Number(marketBio.dataset.marketBio),x=marketListings[i];if(x)openBiography(marketPreviewItem(x),-1,x.base);return;}
  if(marketBid){const i=Number(marketBid.dataset.marketBidAction);if(bidMarketListing(i))openMarketPlayerDetails(i);return;}
  if(marketBuy){const i=Number(marketBuy.dataset.marketBuyAction);if(buyMarketListing(i))$("playerModal").classList.remove("active");return;}
- if(marketSimilar){const i=Number(marketSimilar.dataset.marketSimilar),x=marketListings[i];if(x){$("playerModal").classList.remove("active");$("marketName").value="";if(isMomentumItem(x)){$("marketSpecialType").value="momentum";$("marketQuality").value="special"}$("marketLeague").value=x.base.league||"";updateMarketDependentFilters();if([...$("marketClub").options].some(o=>o.value===x.base.team))$("marketClub").value=x.base.team||"";$("marketPosition").value=x.overridePosition||x.base.position||"";$("marketRatingMin").value=Math.max(65,Math.min(99,listingRating(x)-3));$("marketRatingMax").value=Math.min(99,listingRating(x)+3);updateRatingUI();refreshMarket();}return;}
+ if(marketSimilar){const i=Number(marketSimilar.dataset.marketSimilar),x=marketListings[i];if(x){$("playerModal").classList.remove("active");$("marketName").value="";if(isMomentumItem(x)){$("marketSpecialType").value="momentum";$("marketQuality").value="special"}else if(x.eventReleaseId&&x.variant==="special"&&[...$("marketSpecialType").options].some(o=>o.value==="event:"+x.eventType)){$("marketSpecialType").value="event:"+x.eventType;$("marketQuality").value="special"}$("marketLeague").value=x.base.league||"";updateMarketDependentFilters();if([...$("marketClub").options].some(o=>o.value===x.base.team))$("marketClub").value=x.base.team||"";$("marketPosition").value=x.overridePosition||x.base.position||"";$("marketRatingMin").value=Math.max(65,Math.min(99,listingRating(x)-3));$("marketRatingMax").value=Math.min(99,listingRating(x)+3);updateRatingUI();refreshMarket();}return;}
  if(bio){
    const item=state.club.find(x=>x.uid===bio.dataset.openBio);
    if(item)openBiography(item,Number(bio.dataset.openBioIndex));
@@ -5559,8 +5569,8 @@ function marketPriceForRating(r,special=false,base=null,kind=""){
  const specialDemand=.9+Math.max(0,pct-.4)*.9+upgrade*.1;
  return marketRoundPrice(Math.max(SPECIAL_MARKET_MIN,specialCurve*specialDemand,goldGuide*(1.15+upgrade*.12)))
 }
-function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",legacyEvent:isLegacyEventName(x.eventName)}}
-function listingRating(x){const info=isMomentumItem(x)?promoItemInfo({...x,pid:x.base?.id}):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
+function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",playstyleAdds:x.playstyleAdds||[],playstylePlusAdds:x.playstylePlusAdds||[],legacyEvent:isLegacyEventName(x.eventName)}}
+function listingRating(x){if(Number(x?.displayRating||0)>0)return Math.min(99,Number(x.displayRating)+Number(halloweenUpgradeFor(x)?.ovr||0));const info=isMomentumItem(x)?promoItemInfo({...x,pid:x.base?.id}):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"||x.variant==="icon-mid"?"special":rarityOf(x.base)}
 function auctionTime(x){return Math.max(0,Math.ceil((Number(x?.ends||0)-Date.now())/1000))}
 function qualityLabel(x){if(isMomentumItem(x))return"MOMENTUM";if(x.variant==="icon-mid")return"ICON";if(x.variant==="special"&&isLegacyEventName(x.eventName))return"LEGACY EVENT";if(x.variant==="special")return totwDisplayName(x.eventName)||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
@@ -5569,14 +5579,15 @@ function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Numb
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
-function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="";const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
+function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="",promoEntry=null,extra=null;const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="Icon"}
  else if(filters.specialType==="momentum"&&MOMENTUM_BY_ID.has(String(base.id))){variant="special";eventType="momentum";eventName="MOMENTUM";overridePosition=MOMENTUM_BY_ID.get(String(base.id)).position}
+ else if(filters.specialType==="event"&&(promoEntry=marketPromoEntry(filters.eventReleaseId,base))){const{event,info}=promoEntry;variant="special";eventType=event.theme||event.id;eventName=event.name||"Event";overridePosition=info.position||base.position;boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));extra={dynamicFace:info.dynamicFace||info.eventFace||"",displayRating:Number(info.ovr||0),eventStats:Array.isArray(info.stats)?info.stats:null,playstyleAdds:info.playstyleAdds||info.playstyles||[],playstylePlusAdds:info.playstylePlusAdds||info.playstylesPlus||[],rare:true}}
  else if(filters.specialType==="totw"&&(archived||live)){const info=archived||live;variant="special";eventName=archived?.name||(activeTotwWeek()?.name||"Team of the Week");boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));overridePosition=info.position||base.position}
  else if(filters.specialType==="legacy"){const sp=specialVariant("legacy");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
- const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
+ const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:extra?.displayRating?Math.min(99,extra.displayRating+Number(halloweenUpgradeFor({eventType})?.ovr||0)):Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
  const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind);
  const offerSeed=marketSnapshotHash(`${base?.id||base?.name||"player"}|${variant}|${eventType}|${eventName}|${boost}|${overridePosition}|${offerIndex}|${promoWindowKey(new Date(),19)}`);
  // EA-like market: same card clusters close to its guide price instead of jumping by ~25% between offers.
@@ -5584,7 +5595,7 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
  const start=special?Math.max(SPECIAL_START_MIN,marketRoundPrice(price*(.76+((offerSeed>>5)%10)/100))):Math.max(150,marketRoundPrice(price*(.76+((offerSeed>>5)%12)/100)));
  const initialBid=Math.max(start,marketRoundPrice(start*(1+((offerSeed>>9)%8)/100)));
  const promo=eventType==="momentum"?MOMENTUM_RELEASES.find(e=>e.id===filters.eventReleaseId)||MOMENTUM_RELEASES.find(e=>e.players.some(p=>p.pid===String(base.id))):null;
- return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,eventReleaseId:promo?.id||"",boost,overridePosition,price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
+ return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,eventReleaseId:promo?.id||promoEntry?.event.id||"",boost,overridePosition,...(extra||{}),price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
 }
 const PLAYER_SEARCH_TEXT_CACHE=new WeakMap();
 function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName,MOMENTUM_BY_ID.get(String(p?.id||""))?.name].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
@@ -5606,7 +5617,7 @@ function renderMarketNameSuggestions(){
 const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
-function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||""])}
+function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(",")])}
 function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
@@ -5624,15 +5635,16 @@ function buildMarketSnapshot(f){
  for(const base of allTotwMarketBases())for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"totw"},i));
  for(const base of MID_ICON_BASES)for(let i=0;i<4;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"icon"},i));
  for(const event of MOMENTUM_RELEASES.filter(e=>Date.now()>=Date.parse(e.activeFrom)))for(const info of event.players){const base=P_BY_ID.get(info.pid);if(base)for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"momentum",eventReleaseId:event.id},i))}
+ for(const event of marketPromoReleases())event.players.forEach((info,index)=>{const base=eventResolveBase(info,index,event.id);if(base?.source==="footera-event-preview")return;for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"event",eventReleaseId:event.id},i))});
  for(let i=offers.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[offers[i],offers[j]]=[offers[j],offers[i]]}
  marketInventory=offers;marketSnapshotKey=marketSnapshotCoreKey(f)
 }
-function ensureMarketSnapshot(f){const key=marketSnapshotCoreKey(f);if(!marketInventory.length||marketSnapshotKey!==key)buildMarketSnapshot(f)}
+function ensureMarketSnapshot(f){updateEventMarketOptions();const key=marketSnapshotCoreKey(f);if(!marketInventory.length||marketSnapshotKey!==key)buildMarketSnapshot(f)}
 function marketListingMatchesFilters(x,f){
  const p=x.base||{},rating=listingRating(x),league=String(p?.league||resolvedAffiliation(p)?.league||"");
  if(f.name&&!playerSearchText(p).includes(f.name))return false;if(f.league&&league!==f.league)return false;if(f.club&&p.team!==f.club)return false;if(f.nation&&p.nation!==f.nation)return false;if(!positionPlusMatch(p,f.position,x.overridePosition||""))return false;
  if(rating<f.ratingMin||rating>f.ratingMax)return false;if(f.quality&&listingQuality(x)!==f.quality)return false;
- if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;if(f.specialType==="momentum"&&!isMomentumItem(x))return false;
+ if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;if(f.specialType==="momentum"&&!isMomentumItem(x))return false;if(String(f.specialType).startsWith("event:")&&!(x.variant==="special"&&x.eventReleaseId&&"event:"+x.eventType===f.specialType))return false;
  if(f.priceMin&&Number(x.price||0)<f.priceMin)return false;if(f.priceMax&&Number(x.price||0)>f.priceMax)return false;return true
 }
 function marketPageCount(){return Math.max(1,Math.ceil(marketAllListings.length/MARKET_PAGE_SIZE))}
@@ -5657,7 +5669,7 @@ function normalizeMarketAuction(x){
  if(Number(x.myBid)>MARKET_MAX_PRICE){if(!x.refunded)state.coins+=Number(x.myBid);x.myBid=0;x.refunded=true;x.outbid=false;x.botOutbidAt=0;changed=true}
  return changed
 }
-function listingToClubItem(x,paidPrice=0){const paid=Math.max(0,Math.round(Number(paidPrice||0)));return makeItem(x.base,true,{variant:x.variant,eventType:x.eventType,boost:x.boost,eventName:x.eventName,eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",purchasePrice:paid,acquisitionSource:paid>0?"market":""})}
+function listingToClubItem(x,paidPrice=0){const paid=Math.max(0,Math.round(Number(paidPrice||0)));return makeItem(x.base,true,{variant:x.variant,eventType:x.eventType,boost:x.boost,eventName:x.eventName,eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",playstyleAdds:x.playstyleAdds||[],playstylePlusAdds:x.playstylePlusAdds||[],rare:x.rare===true,purchasePrice:paid,acquisitionSource:paid>0?"market":""})}
 function settleAuctions(){
  if(!PLAYERS.length)return false;
  let changed=false;
