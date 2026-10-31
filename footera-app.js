@@ -422,6 +422,7 @@ const PACKS=[
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
  {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
  {id:"halloween-pack",name:"HALLOWEEN-Blutmond-Pack",coins:60000,points:null,type:"gold",count:6,composition:[{quality:"gold",count:5,min:75,max:99}],guarantee:83,rareCount:5,store:true,reward:false,promo:true,rotation:true,packKind:"players",eventSlot:"halloween-2026",desc:"6 Spieler · 1 HALLOWEEN-Karte garantiert · 5 seltene Goldspieler · mind. 1× 83+",tag:"HALLOWEEN",iconChance:0.002,dailyLimit:3,resetHour:19},
+ {id:"halloween-team1-player",name:"HALLOWEEN Team-1-Spieler",coins:null,points:null,type:"special",count:1,store:false,reward:true,packKind:"players",eventSlot:"halloween-2026",eventSlotFixed:true,desc:"1 Spieler · 1 HALLOWEEN-Karte aus Team 1 garantiert",tag:"HALLOWEEN"},
  {id:"event-sbc-player",name:"Event-SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer Event-SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
@@ -1373,8 +1374,18 @@ function totwIsActive(at=new Date()){return !!activeTotwWeek(at)}
 function totwDisplayName(name){return String(name||"").replace(/^Team of the Week\b/i,"Team der Woche")}
 function updateTotwMarketOption(){
  const option=$("marketSpecialType")?.querySelector('option[value="totw"]');if(!option)return;
- option.disabled=false;option.textContent="Team der Woche"
+ option.disabled=false;option.textContent="Team der Woche";updateEventMarketOptions()
 }
+// Released promo teams (Halloween, later events) feed the transfer market automatically: a new EVENT_PROMO_RELEASES entry needs no extra market code.
+function marketPromoReleases(at=Date.now()){return (typeof EVENT_PROMO_RELEASES!=="undefined"?EVENT_PROMO_RELEASES:[]).filter(e=>!MOMENTUM_RELEASES.includes(e)&&(e.players||[]).length>0&&at>=Date.parse(e.activeFrom))}
+function marketEventTypeKey(event){return"event:"+(event?.theme||event?.id||"")}
+function marketEventTypeOptions(at=Date.now()){const out=new Map();for(const e of marketPromoReleases(at)){const key=marketEventTypeKey(e);if(!out.has(key))out.set(key,String(e.name||e.shortName||"Event"))}return[...out].map(([value,label])=>({value,label}))}
+function updateEventMarketOptions(){
+ const select=$("marketSpecialType");if(!select)return;const want=marketEventTypeOptions();
+ for(const o of [...select.querySelectorAll("option[data-market-event]")])if(!want.some(w=>w.value===o.value))o.remove();
+ for(const w of want)if(![...select.options].some(o=>o.value===w.value)){const o=document.createElement("option");o.value=w.value;o.textContent=w.label;o.dataset.marketEvent="1";select.appendChild(o)}
+}
+function marketPromoEntry(eventId,base){const event=marketPromoReleases().find(e=>e.id===eventId),pid=String(base?.id||"");const info=event?(event.players||[]).find(x=>String(x?.pid||x?.eaId||"")===pid):null;return info?{event,info}:null}
 function totwInfo(base){
  if(!base||isActiveEventSbcBase(base))return null;const team=activeTotwWeek();if(!team)return null;
  const matches=team.players.filter(info=>!isEventSbcBlockedTotwInfo(team,info)&&totwAliasMatch(base,info)===100);
@@ -1991,6 +2002,14 @@ function activeMarqueeSBCs(now=new Date()){
   return{...common,req:`11 Spieler · min. 1 aus beiden beteiligten Vereinen · min. 2 selten · Ø GES 80 · 26 Chemie`,requireBothMatchClubs:true,minRare:2,minAvg:80,minChem:26,reward:{pack:"prime-electrum-reward",qty:1}}
  })
 }
+// Sunday Halloween SBC (Basti 2026-10-31): one guaranteed Team-1 Halloween player instead of the shop pack.
+// One full week like every event SBC; the pack stays Team 1 even after Team 2 takes over on 06.11.
+const HALLOWEEN_TEAM1_SBC={id:"halloween_team1_pick_20261101",group:"Profis",name:"Kürbis-Pick – Team 1",desc:"Sonntags-SBC · Ein garantierter HALLOWEEN-Spieler aus Team 1.",req:"11 Spieler · Ø GES 84 · min. 2 selten",minAvg:84,minRare:2,reward:{pack:"halloween-team1-player",qty:1},releaseAt:"2026-11-01T19:00:00+01:00",activeUntilAt:"2026-11-08T19:00:00+01:00"};
+function activeHalloweenTeam1SBCs(now=new Date()){
+ const ts=now instanceof Date?now.getTime():Number(now),def=HALLOWEEN_TEAM1_SBC,start=Date.parse(def.releaseAt),end=Date.parse(def.activeUntilAt);
+ if(!(ts>=start&&ts<end))return[];
+ return[{...def,filter:b=>true,count:11,once:true,live:true,expiresAt:end,releaseKey:def.releaseAt,theme:"halloween"}]
+}
 function activeEventPlayerSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now),out=[];
  for(const event of EVENT_PROMO_RELEASES){
@@ -2006,7 +2025,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -4273,7 +4292,7 @@ $("playerDetailBody").addEventListener("click",e=>{
  if(marketBio){const i=Number(marketBio.dataset.marketBio),x=marketListings[i];if(x)openBiography(marketPreviewItem(x),-1,x.base);return;}
  if(marketBid){const i=Number(marketBid.dataset.marketBidAction);if(bidMarketListing(i))openMarketPlayerDetails(i);return;}
  if(marketBuy){const i=Number(marketBuy.dataset.marketBuyAction);if(buyMarketListing(i))$("playerModal").classList.remove("active");return;}
- if(marketSimilar){const i=Number(marketSimilar.dataset.marketSimilar),x=marketListings[i];if(x){$("playerModal").classList.remove("active");$("marketName").value="";if(isMomentumItem(x)){$("marketSpecialType").value="momentum";$("marketQuality").value="special"}$("marketLeague").value=x.base.league||"";updateMarketDependentFilters();if([...$("marketClub").options].some(o=>o.value===x.base.team))$("marketClub").value=x.base.team||"";$("marketPosition").value=x.overridePosition||x.base.position||"";$("marketRatingMin").value=Math.max(65,Math.min(99,listingRating(x)-3));$("marketRatingMax").value=Math.min(99,listingRating(x)+3);updateRatingUI();refreshMarket();}return;}
+ if(marketSimilar){const i=Number(marketSimilar.dataset.marketSimilar),x=marketListings[i];if(x){$("playerModal").classList.remove("active");$("marketName").value="";if(isMomentumItem(x)){$("marketSpecialType").value="momentum";$("marketQuality").value="special"}else if(x.eventReleaseId&&x.variant==="special"&&[...$("marketSpecialType").options].some(o=>o.value==="event:"+x.eventType)){$("marketSpecialType").value="event:"+x.eventType;$("marketQuality").value="special"}$("marketLeague").value=x.base.league||"";updateMarketDependentFilters();if([...$("marketClub").options].some(o=>o.value===x.base.team))$("marketClub").value=x.base.team||"";$("marketPosition").value=x.overridePosition||x.base.position||"";$("marketRatingMin").value=Math.max(65,Math.min(99,listingRating(x)-3));$("marketRatingMax").value=Math.min(99,listingRating(x)+3);updateRatingUI();refreshMarket();}return;}
  if(bio){
    const item=state.club.find(x=>x.uid===bio.dataset.openBio);
    if(item)openBiography(item,Number(bio.dataset.openBioIndex));
@@ -4460,12 +4479,13 @@ function promoRotationForKey(key){
 function activePromoPacks(now=new Date()){
  const key=promoWindowKey(now,19),sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),rotation=promoRotationForKey(key);
  const ids=release?.ids||rotation?.map(([id])=>id)||sets[hashNum(key)%3],limits=new Map(release?.ids?[]:rotation||[]);
- return [...new Set([...(typeof HALLOWEEN_EVENT!=="undefined"&&activeHalloweenEvent(now.getTime())?["halloween-pack"]:[]),...ids,...(release?.extraIds||[])])]
+ // Basti 2026-10-31: no guaranteed Halloween pack in the shop any more; the Blutmond pack stays a Season-Pass reward.
+ return [...new Set([...ids,...(release?.extraIds||[])])]
   .map(id=>{const pack=PACKS.find(p=>p.id===id);return pack?{...pack,dailyLimit:release?.limits?.[id]??limits.get(id)??pack.dailyLimit}:null}).filter(Boolean)
 }
 function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
+const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -4533,9 +4553,10 @@ function generateSurpriseGiftPack(pack,tradeable=true){
 // Event packs: one guaranteed event card (each roster card equally likely, shown in the odds) plus the normal weighted draw.
 function eventSlotDrawPack(p){return{...p,count:p.count-1,eventSlot:null}}
 function generateEventSlotPack(p,tradeable=true){
- const event=p.eventSlot===HALLOWEEN_EVENT.id?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
+ const event=p.eventSlot===HALLOWEEN_EVENT.id&&!p.eventSlotFixed?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
  const info=event.players[Math.floor(Math.random()*event.players.length)],base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
  const special=makePromoPackItem(base,{event,info},tradeable);if(!special)return[];
+ if(p.count<=1)return[special];
  const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
  if(!rest.available||rest.items.length!==p.count-1)return[];
  const arr=rest.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
@@ -5548,8 +5569,8 @@ function marketPriceForRating(r,special=false,base=null,kind=""){
  const specialDemand=.9+Math.max(0,pct-.4)*.9+upgrade*.1;
  return marketRoundPrice(Math.max(SPECIAL_MARKET_MIN,specialCurve*specialDemand,goldGuide*(1.15+upgrade*.12)))
 }
-function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",legacyEvent:isLegacyEventName(x.eventName)}}
-function listingRating(x){const info=isMomentumItem(x)?promoItemInfo({...x,pid:x.base?.id}):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
+function marketPreviewItem(x){if(x?.variant==="special"&&isLegacyEventName(x.eventName))x.eventName="Legacy Event";return{uid:"preview",pid:String(x.base.id),evo:0,variant:x.variant||"",eventType:x.eventType||"",boost:x.boost||0,eventName:x.eventName||"",eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",playstyleAdds:x.playstyleAdds||[],playstylePlusAdds:x.playstylePlusAdds||[],legacyEvent:isLegacyEventName(x.eventName)}}
+function listingRating(x){if(Number(x?.displayRating||0)>0)return Math.min(99,Number(x.displayRating)+Number(halloweenUpgradeFor(x)?.ovr||0));const info=isMomentumItem(x)?promoItemInfo({...x,pid:x.base?.id}):null;return info?info.ovr:Math.min(99,(x.base?.ovr||0)+(x.boost||0))}
 function listingQuality(x){return x.variant==="special"||x.variant==="icon-mid"?"special":rarityOf(x.base)}
 function auctionTime(x){return Math.max(0,Math.ceil((Number(x?.ends||0)-Date.now())/1000))}
 function qualityLabel(x){if(isMomentumItem(x))return"MOMENTUM";if(x.variant==="icon-mid")return"ICON";if(x.variant==="special"&&isLegacyEventName(x.eventName))return"LEGACY EVENT";if(x.variant==="special")return totwDisplayName(x.eventName)||"Spezial";const q=rarityOf(x.base);return q==="gold"?"Gold":q==="silver"?"Silber":"Bronze"}
@@ -5558,14 +5579,15 @@ function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Numb
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
 function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
-function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="";const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
+function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="",promoEntry=null,extra=null;const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="Icon"}
  else if(filters.specialType==="momentum"&&MOMENTUM_BY_ID.has(String(base.id))){variant="special";eventType="momentum";eventName="MOMENTUM";overridePosition=MOMENTUM_BY_ID.get(String(base.id)).position}
+ else if(filters.specialType==="event"&&(promoEntry=marketPromoEntry(filters.eventReleaseId,base))){const{event,info}=promoEntry;variant="special";eventType=event.theme||event.id;eventName=event.name||"Event";overridePosition=info.position||base.position;boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));extra={dynamicFace:info.dynamicFace||info.eventFace||"",displayRating:Number(info.ovr||0),eventStats:Array.isArray(info.stats)?info.stats:null,playstyleAdds:info.playstyleAdds||info.playstyles||[],playstylePlusAdds:info.playstylePlusAdds||info.playstylesPlus||[],rare:true}}
  else if(filters.specialType==="totw"&&(archived||live)){const info=archived||live;variant="special";eventName=archived?.name||(activeTotwWeek()?.name||"Team of the Week");boost=Math.max(0,Number(info.ovr||base.ovr)-Number(base.ovr||0));overridePosition=info.position||base.position}
  else if(filters.specialType==="legacy"){const sp=specialVariant("legacy");variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
- const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
+ const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:extra?.displayRating?Math.min(99,extra.displayRating+Number(halloweenUpgradeFor({eventType})?.ovr||0)):Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
  const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind);
  const offerSeed=marketSnapshotHash(`${base?.id||base?.name||"player"}|${variant}|${eventType}|${eventName}|${boost}|${overridePosition}|${offerIndex}|${promoWindowKey(new Date(),19)}`);
  // EA-like market: same card clusters close to its guide price instead of jumping by ~25% between offers.
@@ -5573,7 +5595,7 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
  const start=special?Math.max(SPECIAL_START_MIN,marketRoundPrice(price*(.76+((offerSeed>>5)%10)/100))):Math.max(150,marketRoundPrice(price*(.76+((offerSeed>>5)%12)/100)));
  const initialBid=Math.max(start,marketRoundPrice(start*(1+((offerSeed>>9)%8)/100)));
  const promo=eventType==="momentum"?MOMENTUM_RELEASES.find(e=>e.id===filters.eventReleaseId)||MOMENTUM_RELEASES.find(e=>e.players.some(p=>p.pid===String(base.id))):null;
- return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,eventReleaseId:promo?.id||"",boost,overridePosition,price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
+ return{listingId:`mk-${offerSeed.toString(36)}-${offerIndex}`,base,variant,eventType,eventName,eventReleaseId:promo?.id||promoEntry?.event.id||"",boost,overridePosition,...(extra||{}),price,startPrice:start,bid:initialBid,ends:Date.now()+90000+(offerSeed%210000),myBid:0}
 }
 const PLAYER_SEARCH_TEXT_CACHE=new WeakMap();
 function playerSearchText(p){if(!p||typeof p!=="object")return"";let text=PLAYER_SEARCH_TEXT_CACHE.get(p);if(text===undefined){text=normalizeKey([p?.name,p?.fullName,p?.firstName,p?.lastName,MOMENTUM_BY_ID.get(String(p?.id||""))?.name].filter(Boolean).join(" "));PLAYER_SEARCH_TEXT_CACHE.set(p,text)}return text}
@@ -5595,7 +5617,7 @@ function renderMarketNameSuggestions(){
 const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
-function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||""])}
+function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(",")])}
 function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
@@ -5613,15 +5635,16 @@ function buildMarketSnapshot(f){
  for(const base of allTotwMarketBases())for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"totw"},i));
  for(const base of MID_ICON_BASES)for(let i=0;i<4;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"icon"},i));
  for(const event of MOMENTUM_RELEASES.filter(e=>Date.now()>=Date.parse(e.activeFrom)))for(const info of event.players){const base=P_BY_ID.get(info.pid);if(base)for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"momentum",eventReleaseId:event.id},i))}
+ for(const event of marketPromoReleases())event.players.forEach((info,index)=>{const base=eventResolveBase(info,index,event.id);if(base?.source==="footera-event-preview")return;for(let i=0;i<3;i++)offers.push(createMarketListing(base,{...f,quality:"special",specialType:"event",eventReleaseId:event.id},i))});
  for(let i=offers.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[offers[i],offers[j]]=[offers[j],offers[i]]}
  marketInventory=offers;marketSnapshotKey=marketSnapshotCoreKey(f)
 }
-function ensureMarketSnapshot(f){const key=marketSnapshotCoreKey(f);if(!marketInventory.length||marketSnapshotKey!==key)buildMarketSnapshot(f)}
+function ensureMarketSnapshot(f){updateEventMarketOptions();const key=marketSnapshotCoreKey(f);if(!marketInventory.length||marketSnapshotKey!==key)buildMarketSnapshot(f)}
 function marketListingMatchesFilters(x,f){
  const p=x.base||{},rating=listingRating(x),league=String(p?.league||resolvedAffiliation(p)?.league||"");
  if(f.name&&!playerSearchText(p).includes(f.name))return false;if(f.league&&league!==f.league)return false;if(f.club&&p.team!==f.club)return false;if(f.nation&&p.nation!==f.nation)return false;if(!positionPlusMatch(p,f.position,x.overridePosition||""))return false;
  if(rating<f.ratingMin||rating>f.ratingMax)return false;if(f.quality&&listingQuality(x)!==f.quality)return false;
- if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;if(f.specialType==="momentum"&&!isMomentumItem(x))return false;
+ if(f.specialType==="base"&&x.variant)return false;if(f.specialType==="totw"&&!(x.variant==="special"&&String(x.eventName).startsWith("Team of the Week")))return false;if(f.specialType==="icon"&&x.variant!=="icon-mid")return false;if(f.specialType==="legacy"&&!(x.variant==="special"&&isLegacyEventName(x.eventName)))return false;if(f.specialType==="momentum"&&!isMomentumItem(x))return false;if(String(f.specialType).startsWith("event:")&&!(x.variant==="special"&&x.eventReleaseId&&"event:"+x.eventType===f.specialType))return false;
  if(f.priceMin&&Number(x.price||0)<f.priceMin)return false;if(f.priceMax&&Number(x.price||0)>f.priceMax)return false;return true
 }
 function marketPageCount(){return Math.max(1,Math.ceil(marketAllListings.length/MARKET_PAGE_SIZE))}
@@ -5646,7 +5669,7 @@ function normalizeMarketAuction(x){
  if(Number(x.myBid)>MARKET_MAX_PRICE){if(!x.refunded)state.coins+=Number(x.myBid);x.myBid=0;x.refunded=true;x.outbid=false;x.botOutbidAt=0;changed=true}
  return changed
 }
-function listingToClubItem(x,paidPrice=0){const paid=Math.max(0,Math.round(Number(paidPrice||0)));return makeItem(x.base,true,{variant:x.variant,eventType:x.eventType,boost:x.boost,eventName:x.eventName,eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",purchasePrice:paid,acquisitionSource:paid>0?"market":""})}
+function listingToClubItem(x,paidPrice=0){const paid=Math.max(0,Math.round(Number(paidPrice||0)));return makeItem(x.base,true,{variant:x.variant,eventType:x.eventType,boost:x.boost,eventName:x.eventName,eventReleaseId:x.eventReleaseId||"",dynamicFace:x.dynamicFace||"",displayRating:x.displayRating||0,eventStats:x.eventStats||null,overridePosition:x.overridePosition||"",playstyleAdds:x.playstyleAdds||[],playstylePlusAdds:x.playstylePlusAdds||[],rare:x.rare===true,purchasePrice:paid,acquisitionSource:paid>0?"market":""})}
 function settleAuctions(){
  if(!PLAYERS.length)return false;
  let changed=false;
@@ -6383,7 +6406,7 @@ function sbcPickerHTML(sbc){
   ${field("Liga",sel("sbcPickerLeague","Alle Ligen",opts.leagues,p.league))}
   ${field("Verein",sel("sbcPickerClub","Alle Vereine",opts.clubs,p.club))}
   ${field("Quelle",`<select id="sbcPickerSource"><option value="">Verein + SBC-Speicher</option><option value="club" ${p.source==="club"?"selected":""}>Nur Verein</option><option value="storage" ${p.source==="storage"?"selected":""}>Nur SBC-Speicher (${(state.sbcStorage||[]).length})</option></select>`)}
-  ${field("Sortieren",`<select id="sbcPickerSort"><option value="low" ${!["high","asc","new"].includes(p.sort)?"selected":""}>Günstigste zuerst</option><option value="high" ${p.sort==="high"?"selected":""}>GES absteigend (hoch → niedrig)</option><option value="asc" ${p.sort==="asc"?"selected":""}>GES aufsteigend (niedrig → hoch)</option><option value="new" ${p.sort==="new"?"selected":""}>Neueste zuerst</option></select>`)}
+  ${field("Sortieren",`<select id="sbcPickerSort"><option value="low" ${!["high","asc","new"].includes(p.sort)?"selected":""}>Günstigste zuerst</option><option value="high" ${p.sort==="high"?"selected":""}>GES absteigend</option><option value="asc" ${p.sort==="asc"?"selected":""}>GES aufsteigend</option><option value="new" ${p.sort==="new"?"selected":""}>Neueste zuerst</option></select>`)}
   ${field("GES von – bis",`<div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.min??0)}"><input id="sbcPickerMax" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.max??99)}"></div>`)}
  </div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler</span><button type="button" class="sbc-picker-reset" data-sbc-picker-reset>Filter zurücksetzen</button></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
 }
@@ -6621,7 +6644,7 @@ function renderSBC(){
  $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
-  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>sbcFeatureGroupCard(x)).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
+  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
  }
  const banner=sbcGroupBannerHTML(activeSbcGroup,groupRows);
  // Ready SBCs first, then the open ones, finished ones at the bottom.
@@ -8016,9 +8039,15 @@ function buildGeneratedOpponent({name,target,chem,formation="4-3-3",seed,tier=""
 }
 function getSquadBattleOpponents(){
  syncCompetitionWeeks();
- const sb=state.squadBattle,specialPhase=sb.played>=12,setSeq=Math.max(0,Number(sb.setSeq||0)),key=specialPhase?`${sb.week}|special|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:`${sb.week}|set-${setSeq}`;
+ const sb=state.squadBattle,freePlay=sb.played>=14,specialPhase=sb.played>=12&&!freePlay,setSeq=Math.max(0,Number(sb.setSeq||0)),freeSeq=Math.max(0,Number(sb.freeSetSeq||0));
+ const key=freePlay?`${sb.week}|free-${freeSeq}|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:specialPhase?`${sb.week}|special|${battleEventTeam()?.id||""}|${LIVE_TOTW?.id||""}`:`${sb.week}|set-${setSeq}`;
  if(squadBattleOpponentCache.key===key&&squadBattleOpponentCache.list.length)return squadBattleOpponentCache.list;
- const list=specialPhase?
+ const list=freePlay?
+  [...SB_TIERS.map((t,i)=>{
+   const seed=`${sb.week}|free-${freeSeq}|${t.id}`,name=generatedOpponentName(seed+"|name");
+   return{...buildGeneratedOpponent({name,target:t.target,chem:t.chem,formation:i%2?"4-2-3-1":"4-3-3",seed,tier:t.label,rewards:{win:t.win,loss:t.loss},sp:t.sp}),battleId:`${seed}|free`,battleFreePlay:true,strengthId:t.id}
+  }),...[battleSpecialOpponent("totw",sb.week),battleSpecialOpponent("event",sb.week)].filter(Boolean).map(o=>({...o,battleFreePlay:true}))]:
+  specialPhase?
   [battleSpecialOpponent("totw",sb.week),battleSpecialOpponent("event",sb.week)].filter(Boolean):
   SB_TIERS.map((t,i)=>{
    const seed=`${sb.week}|set-${setSeq}|${t.id}`,name=generatedOpponentName(seed+"|name");
@@ -8069,31 +8098,34 @@ function refreshOpenMatchPreview(){
  $("matchPreviewModalTitle").textContent=titles[mode]||"Spielvorschau";
  $("squadBattleModalSub").textContent=`Deine Aufstellung · ${state.formation} · Rating ${m.rating||0} · Chemie ${m.chem}/33`;
  const replay=mode==="squad"&&!!opponent&&state.squadBattle?.playedIds?.includes(opponent.battleId);
- const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${replay?" · BEREITS GEWERTET · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
+ const unranked=mode==="squad"&&(replay||!!opponent?.battleFreePlay||Number(state.squadBattle?.played||0)>=14);
+ const oppText=opponent?`${esc(opponent.name)} · ${opponent.rating||0} GES · ${opponent.chem||0}/33 Chemie${unranked?" · OHNE WERTUNG · 0 BP":""}`:"Gegner wird beim Anpfiff bestimmt";
  const formationOptions=Object.keys(FORMATIONS).map(key=>`<option value="${esc(key)}" ${key===state.formation?"selected":""}>${esc(key)}</option>`).join("");
- $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${replay?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${replay?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${replay?'<div class="sb-repeat-preview-warning"><strong>Wiederholungsspiel</strong><span>Coins und Ziele zählen. Battle-Punkte: <b>0 BP</b>.</span></div>':""}${previewKitSelectorHTML(opponent)}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
+ $("squadBattleModalBody").innerHTML=`<div class="friend-team-title"><div><h2>${esc(state.profile.clubName||"Dein Team")}</h2><p>${oppText}</p></div><div class="preview-actions">${opponent?'<button id="previewOpponentBtn" class="secondary">Gegner ansehen</button>':''}<button id="squadBattleKickoff" class="${unranked?"secondary":"primary"}" ${m.filled<18?'disabled':""}>${unranked?"Anpfiff · 0 BP":"Anpfiff"}</button></div></div>${unranked?'<div class="sb-repeat-preview-warning"><strong>Spiel ohne Wertung</strong><span>Coins und Ziele zählen. Kein Einfluss auf den Wochenrang, Battle-Punkte: <b>0 BP</b>.</span></div>':""}${previewKitSelectorHTML(opponent)}<div class="squad-preset-tabs" aria-label="Gespeicherte Mannschaften">${squadPresetTabsHTML()}</div><section class="preview-team-editor" aria-label="Taktik und Formation vor dem Spiel"><div class="preview-team-controls"><label for="previewFormationSelect"><span>Formation<small>Änderungen gelten für das aktive Team.</small></span><select id="previewFormationSelect" aria-label="Formation vor dem Spiel">${formationOptions}</select></label><label for="previewTacticSelect"><span>Taktik<small>Kann im Spiel weiterhin angepasst werden.</small></span><select id="previewTacticSelect" aria-label="Taktik vor dem Spiel"><option value="balanced" ${state.tactic==="balanced"?"selected":""}>Ausgeglichen</option><option value="attacking" ${state.tactic==="attacking"?"selected":""}>Offensiv</option><option value="defensive" ${state.tactic==="defensive"?"selected":""}>Defensiv</option></select></label></div><details class="preview-role-editor"><summary><span>Rollen & Fokus</span><small>Alle 11 Startelfspieler bearbeiten</small></summary><div class="preview-role-list">${previewRolesHTML()}</div></details></section><div class="friend-team-summary"><div class="kpi"><strong>${m.rating||0}</strong><span>Rating</span></div><div class="kpi"><strong>${m.chem}/33</strong><span>Chemie</span></div><div class="kpi"><strong>${state.formation}</strong><span>Formation</span></div></div><div class="preview-edit-hint">${previewSwapFrom>=0?'Wähle eine zweite Karte in Startelf, Bank oder Reserve.':`Ziehe eine Karte auf einen anderen Platz, um Spieler zu tauschen. Antippen öffnet das Spielermenü. ${m.filled<18?`Für den Anpfiff fehlen ${18-m.filled} Spieler.`:''}`}${previewSwapFrom>=0?'<button type="button" class="secondary" data-preview-swap-cancel>Tausch abbrechen</button>':''}</div><div class="pitch friend-pitch">${pitch}</div><h4 class="preview-lineup-heading">Ersatzbank</h4><div class="friend-bench preview-lineup-row">${bench}</div><h4 class="preview-lineup-heading">Reserve</h4><div class="friend-bench preview-lineup-row">${reserve}</div>`
 }
 function renderMatchPreview(mode,opponent,historyMode="push"){
  pendingMatchContext={mode,opponent};pendingMatchKitSelection=createDefaultMatchKitSelection(opponent);previewSwapFrom=-1;squadBattleStage="preview";
  showUiLayer("squadBattleModal","squad-preview",{mode},historyMode);refreshOpenMatchPreview()
 }
 function renderSquadBattleSelection(historyMode="push"){
- const list=getSquadBattleOpponents(),sb=state.squadBattle,selected=list[selectedSquadBattleIndex]||null,refreshRemaining=typeof squadBattleRefreshRemaining==="function"?squadBattleRefreshRemaining():Math.max(0,4-Number(sb.refreshesUsed||0));
+ const list=getSquadBattleOpponents(),sb=state.squadBattle,freePlay=sb.played>=14,selected=list[selectedSquadBattleIndex]||null,refreshRemaining=typeof squadBattleRefreshRemaining==="function"?squadBattleRefreshRemaining():Math.max(0,4-Number(sb.refreshesUsed||0));
  const selectedPlayed=!!selected&&sb.playedIds.includes(selected.battleId),replayArmed=selectedPlayed&&selectedSquadBattleReplayConfirm===String(selected.battleId);
  if($("matchPreviewModalTitle"))$("matchPreviewModalTitle").textContent="Squad Battles · Gegner auswählen";
  $("squadBattleModalSub").textContent=`${sb.played}/14 gewertete Spiele · ${sbRank(sb.points).name}`;
  const options=Object.entries(SB_DIFFICULTIES).map(([key,d])=>`<option value="${key}" ${sb.difficulty===key?"selected":""}>${d.label} ×${d.factor.toFixed(2).replace(".",",")}</option>`).join("");
  const cards=list.map((o,i)=>{
   const played=sb.playedIds.includes(o.battleId);
-  return `<button class="sb-opponent ${i===selectedSquadBattleIndex?"selected":""} ${played?"played":""}" data-sb-select="${i}" aria-label="${esc(o.name)}${played?" · bereits gewertet · 0 Battle-Punkte":""}"><span class="tier">${esc(o.tier)}</span>${played?'<span class="sb-played-badge">✓ BEREITS GEWERTET · 0 BP</span>':""}<h4>${esc(o.name)}</h4><p>${esc(o.formation)} · KI-Gegner</p><div class="sb-opponent-stats"><div><strong>${o.rating}</strong><span>Rating</span></div><div><strong>${o.chem}/33</strong><span>Chemie</span></div><div><strong>${fmt(o.rewards?.win||0)}</strong><span>Sieg-Coins</span></div></div></button>`
+  return `<button class="sb-opponent ${i===selectedSquadBattleIndex?"selected":""} ${played?"played":""}" data-sb-select="${i}" aria-label="${esc(o.name)}${played?" · bereits gewertet · 0 Battle-Punkte":""}"><span class="tier">${esc(o.tier)}</span>${freePlay?'<span class="sb-played-badge">FREIES SPIEL · 0 BP</span>':played?'<span class="sb-played-badge">✓ BEREITS GEWERTET · 0 BP</span>':""}<h4>${esc(o.name)}</h4><p>${esc(o.formation)} · KI-Gegner</p><div class="sb-opponent-stats"><div><strong>${o.rating}</strong><span>Rating</span></div><div><strong>${o.chem}/33</strong><span>Chemie</span></div><div><strong>${fmt(o.rewards?.win||0)}</strong><span>Sieg-Coins</span></div></div></button>`
  }).join("");
- const playButton=selectedPlayed
+ const playButton=freePlay
+  ?`<button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Ohne Wertung spielen · 0 BP</button>`
+  :selectedPlayed
   ?`<button id="sbReplayLineup" class="${replayArmed?"danger":"secondary"}">${replayArmed?"Bestätigen · 0 BP":"Erneut spielen · 0 BP"}</button>`
   :`<button id="sbContinueLineup" class="primary" ${selectedSquadBattleIndex<0?"disabled":""}>Zur Aufstellung</button>`;
- const warning=selectedPlayed?`<div class="sb-repeat-warning ${replayArmed?"confirm":""}"><strong>${replayArmed?"Wirklich erneut spielen?":"Dieser Gegner wurde bereits gewertet."}</strong><span>Das Spiel zählt für Coins und Ziele, aber bringt <b>0 Battle-Punkte</b> und erhöht nicht ${sb.played}/14.</span></div>`:"";
- $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · weiterhin Coins und Ziele"}`} · Sonntag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
+ const warning=freePlay?'<div class="sb-repeat-warning"><strong>Freies Squad Battle</strong><span>Spiele unbegrenzt gegen die KI. Coins und Ziele zählen, aber keine zusätzlichen Battle-Punkte.</span></div>':selectedPlayed?`<div class="sb-repeat-warning ${replayArmed?"confirm":""}"><strong>${replayArmed?"Wirklich erneut spielen?":"Dieser Gegner wurde bereits gewertet."}</strong><span>Das Spiel zählt für Coins und Ziele, aber bringt <b>0 Battle-Punkte</b> und erhöht nicht ${sb.played}/14.</span></div>`:"";
+ $("squadBattleModalBody").innerHTML=`<div class="online-note">${sb.played<12?`Block ${Math.min(3,Math.floor(sb.played/4)+1)}/3 · vier Gegner`:`${sb.played<14?"TOTW und Event-Team":"14/14 erreicht · Freies Spiel ohne BP · Coins und Ziele zählen"}`} · Sonntag 09:00 Reset. Bereits gewertete Gegner sind markiert und geben keine zusätzlichen BP.</div>
  <label class="competition-difficulty">Schwierigkeit <select id="sbDifficulty">${options}</select></label>
- <div class="sb-refresh-row"><span>Gegner-Refresh <b>${refreshRemaining}/4 verfügbar</b></span><button id="sbRefreshOpponents" class="secondary" ${sb.played>=12||refreshRemaining<=0?"disabled":""}>4 neue Gegner</button></div>
+ <div class="sb-refresh-row"><span>${freePlay?"Freies Spiel · Gegner unbegrenzt wechseln":`Gegner-Refresh <b>${refreshRemaining}/4 verfügbar</b>`}</span><button id="sbRefreshOpponents" class="secondary" ${!freePlay&&(sb.played>=12||refreshRemaining<=0)?"disabled":""}>${freePlay?"Neue Gegner":"4 neue Gegner"}</button></div>
  <div class="sb-opponent-grid">${cards}</div>
  ${warning}
  <div class="sb-selection-actions"><button id="sbViewOpponent" class="secondary" ${selectedSquadBattleIndex<0?"disabled":""}>Team ansehen</button>${playButton}</div>`;
@@ -8170,6 +8202,10 @@ $("squadBattleModalBody").addEventListener("click",e=>{
  const sel=e.target.closest("[data-sb-select]");
  if(sel){selectedSquadBattleIndex=Number(sel.dataset.sbSelect);selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");return}
  if(e.target.closest("#sbRefreshOpponents")){
+  if(state.squadBattle?.played>=14){
+   state.squadBattle.freeSetSeq=Math.max(0,Number(state.squadBattle.freeSetSeq||0))+1;
+   selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";squadBattleOpponentCache={key:"",list:[]};save();renderSquadBattleSelection("none");toast("Neue Gegner für freie Squad Battles geladen.");return
+  }
   if(typeof refreshSquadBattleOpponents!=="function"||!refreshSquadBattleOpponents()){toast(state.squadBattle?.played>=12?"Ab 12/14 warten TOTW und Event-Team.":"Alle 4 Gegner-Refreshes dieser Woche sind verbraucht.");return}
   selectedSquadBattleIndex=-1;selectedSquadBattleReplayConfirm="";squadBattleOpponentCache={key:"",list:[]};renderSquadBattleSelection("none");toast(`Neue Gegner geladen · ${squadBattleRefreshRemaining()}/4 Refreshes übrig.`);return
  }
@@ -8184,7 +8220,7 @@ $("squadBattleModalBody").addEventListener("click",e=>{
  }
  if(e.target.closest("#sbContinueLineup")){
   const o=getSquadBattleOpponents()[selectedSquadBattleIndex];if(!o)return;
-  if(state.squadBattle?.playedIds?.includes(o.battleId)){selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");toast("Dieser Gegner wurde bereits gewertet und bringt 0 BP.");return}
+  if(state.squadBattle?.played<14&&state.squadBattle?.playedIds?.includes(o.battleId)){selectedSquadBattleReplayConfirm="";renderSquadBattleSelection("none");toast("Dieser Gegner wurde bereits gewertet und bringt 0 BP.");return}
   renderMatchPreview("squad",o);return
  }
  if(e.target.closest("[data-preview-kit-auto]")){if(pendingMatchContext){pendingMatchKitSelection=createDefaultMatchKitSelection(pendingMatchContext.opponent);refreshOpenMatchPreview()}return}
@@ -8635,7 +8671,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.321";
+const GFUT_BUILD="V21.325";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8693,7 +8729,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21321",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21325",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

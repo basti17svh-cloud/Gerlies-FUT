@@ -17,7 +17,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
    PLAYERS=Array.from({length:26},(_,i)=>({id:'cosmetic-test-'+i,name:i?'Spieler '+i:'J. Musiala',fullName:i?'Spieler '+i:'Jamal Musiala',position:'CAM',alt:'CM,LM',ovr:90-i%12,pac:85,sho:88,pas:90,dri:94,def:58,phy:76,nation:'Germany',team:'FC Bayern München',league:'Bundesliga',face:'./assets/footera/events/momentum/team2/musiala.webp'}));P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
    state.club=PLAYERS.map(p=>makeItem(p,true));state.squad=state.club.slice(0,18).map(i=>i.uid);state.coins=50000;state.champions={...state.champions,totalWins:16};state.cosmeticClaims={};
-   activeEvoTab='cosmetic';renderAll();switchView('evolutionView',{push:false});renderEvos();
+   renderAll();switchView('evolutionView',{push:false});activeEvoTab='cosmetic';renderEvos();
   });
   check('four cosmetic offers',await page.locator('.cosmetic-offer').count()===4);
   check('unrelated upgrade summary hidden',await page.locator('#evoSummary').isHidden());
@@ -43,6 +43,10 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   check('permanent tradeability warning',await page.locator('.cosmetic-warning').isVisible());
   await page.locator('[data-cosmetic-apply]').click();
   check('one claim, unchanged rating, untradeable',await page.evaluate(()=>state.cosmeticClaims.red===1&&state.club[0].cosmeticDesign==='red'&&!state.club[0].tradeable&&itemRating(state.club[0])===90));
+  check('returns to Evolution overview',await page.locator('[data-evo-tab="available"]').evaluate(el=>el.classList.contains('active'))&&await page.locator('#evoSummary').isVisible()&&await page.locator('[data-cosmetic-apply]').count()===0);
+  await page.locator('[data-evo-tab="cosmetic"]').click();
+  check('decorative overview resets',await page.locator('.cosmetic-offer').count()===4);
+  await page.locator('[data-cosmetic-open="red"]').click();await page.locator('[data-cosmetic-player]').first().click();
   check('cannot double apply',await page.locator('[data-cosmetic-apply]').isDisabled());
   await page.locator('[data-cosmetic-clear]').click();
   check('reset does not refund or restore tradeability',await page.evaluate(()=>!state.club[0].cosmeticDesign&&!state.club[0].tradeable&&state.cosmeticClaims.red===1));
@@ -52,6 +56,18 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
   await page.locator('.cosmetic-studio').screenshot({path:path.join(output,'prestige.png')});
   await page.evaluate(()=>{activeEvoTab='available';renderEvos()});
   check('normal evolution summary restored',await page.locator('#evoSummary').isVisible());
+  await page.locator('[data-evo-tab="cosmetic"]').click();
+  await page.locator('[data-cosmetic-players]').click();await page.locator('[data-cosmetic-back]').click();
+  for(const [index,width] of [360,390,412].entries()){
+   await page.setViewportSize({width,height:844});
+   await page.locator('[data-evo-tab="cosmetic"]').click();
+   await page.locator('[data-cosmetic-open="momentum"]').click();
+   await page.locator('[data-cosmetic-player]').nth(index+1).click();
+   const coins=await page.evaluate(()=>state.coins);
+   await page.locator('[data-cosmetic-apply]').click();
+   check('no overflow after return at '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   check('successful coin design returns to overview at '+width,await page.evaluate(coins=>activeEvoTab==='available'&&state.coins===coins-12000,coins));
+  }
   assert.deepEqual(errors,[]);
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

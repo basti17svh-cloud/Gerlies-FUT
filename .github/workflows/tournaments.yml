@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths: ['tournaments.*', 'footera-account.js', 'footera-app.js', 'play-hub.js', 'index.html', 'supabase/migrations/*weekly_tournaments.sql', 'tests/tournaments*', 'tests/sql/tournaments*', '.github/workflows/tournaments.yml']
+    paths: ['tournaments.*', 'footera-account.js', 'footera-app.js', 'play-hub.js', 'index.html', 'supabase/migrations/*weekly_tournaments.sql', 'supabase/migrations/*tournament_pick_icon_odds.sql', 'tests/tournaments*', 'tests/sql/tournaments*', '.github/workflows/tournaments.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +32,9 @@ jobs:
             -f online/footera-business-conflicts-v21.284.sql \
             -f online/footera-halloween-cup-v21.297.sql \
             -f supabase/migrations/20261030040323_weekly_tournaments.sql \
-            -f tests/sql/tournaments.test.sql
+            -f supabase/migrations/20261030093729_tournament_pick_icon_odds.sql \
+            -f tests/sql/tournaments.test.sql \
+            -f tests/sql/tournaments-odds.test.sql
       - name: Install browser
         run: |
           npm install --prefix /tmp/footera-browser playwright@1.51.1

@@ -80,7 +80,7 @@ function apply(){
  i.cosmeticDesign=s.id;
  i.tradeable=false;
  if(Array.isArray(state.transferList))state.transferList=state.transferList.filter(uid=>String(uid)!==String(i.uid));
- save();renderAll();selectedUid=i.uid;render();toast(s.title+" erhalten – SBC-Typ angepasst, Werte unverändert.")
+ save();selectedSkin="";selectedUid="";search="";page=0;activeEvoTab="available";renderAll();globalThis.scrollTo?.({top:0,behavior:"smooth"});toast(s.title+" erhalten – SBC-Typ angepasst, Werte unverändert.")
 }
 document.addEventListener("click",e=>{
  if(!e.target.closest("#evoGrid")||!document.getElementById("evolutionView")?.classList.contains("active"))return;
