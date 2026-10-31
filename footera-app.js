@@ -6141,15 +6141,15 @@ function progressEvolution(resultKey="loss"){
 
 
  let halloweenSbcShown=false;
- let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null;
+ let activeSbcGroup="Täglich",activeSbcSet=null,activeSbcId=null,pendingSbcSubmissionId=null,sbcAssistantState=null;
 const SBC_WORKSPACE_KEY="gfutSbcWorkspaceV1882";
 let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE_KEY)||"{}")||{}}catch(e){return{}}})();
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
-function sbcDefaultPickerFilters(){return{query:"",position:null,quality:"",source:"",sort:"cheap",league:"",nation:"",club:""}}
+function sbcDefaultPickerFilters(){return{query:"",position:null,quality:"",source:"",sort:"low",league:"",nation:"",club:"",min:0,max:99}}
 function rememberSbcPickerFilters(){
- if(!activeSbcId||!sbcPickerState)return;
- const {query,quality,source,sort,league,nation,club}=sbcPickerState;
- SBC_PICKER_FILTERS[activeSbcId]={query,quality,source,sort,league,nation,club}
+ if(!activeSbcId||!sbcPickerState)return;sbcPickerState.limit=0;// any filter change starts the list at the first page again
+ const {query,quality,source,sort,league,nation,club,min,max}=sbcPickerState;
+ SBC_PICKER_FILTERS[activeSbcId]={query,quality,source,sort,league,nation,club,min,max}
 }
 
 function persistSbcWorkspace(){try{localStorage.setItem(SBC_WORKSPACE_KEY,JSON.stringify(SBC_WORKSPACE))}catch(e){}}
@@ -6164,23 +6164,26 @@ function sbcSourceMap(){
 }
 function sbcDraft(id){
  const map=sbcSourceMap(),raw=SBC_WORKSPACE[id]||{},seen=new Set();
- const squad=Array.from({length:11},(_,i)=>{const uid=String(Array.isArray(raw.squad)?raw.squad[i]||"":"");if(!uid||!map.has(uid)||seen.has(uid))return null;seen.add(uid);return uid});
- const draft={squad};SBC_WORKSPACE[id]=draft;return draft
+ const clean=(arr,len)=>Array.from({length:len},(_,i)=>{const uid=String(Array.isArray(arr)?arr[i]||"":"");if(!uid||!map.has(uid)||seen.has(uid))return null;seen.add(uid);return uid});
+ const draft={squad:clean(raw.squad,11),test:clean(raw.test,12),testOpen:!!raw.testOpen};SBC_WORKSPACE[id]=draft;return draft
 }
-function sbcSetDraft(id,draft){SBC_WORKSPACE[id]={squad:[...draft.squad]};persistSbcWorkspace()}
+function sbcSetDraft(id,draft){SBC_WORKSPACE[id]={squad:[...draft.squad],test:[...(draft.test||Array(12).fill(null))],testOpen:!!draft.testOpen};persistSbcWorkspace()}
 function sbcItemRecord(uid){return uid?sbcSourceMap().get(String(uid))||null:null}
-function sbcSwapSlots(id,fromIndex,toIndex){
- const draft=sbcDraft(id),from=draft.squad[fromIndex];if(!from||fromIndex===toIndex)return false;
- draft.squad[fromIndex]=draft.squad[toIndex]||null;draft.squad[toIndex]=from;sbcSetDraft(id,draft);return true
+// Slots live in two areas: the 11 SBC positions ("squad") and the 12 parking places of the Testareal ("test").
+function sbcArea(draft,area){return area==="test"?draft.test:draft.squad}
+function sbcFindUid(draft,uid){for(const area of ["squad","test"]){const i=sbcArea(draft,area).indexOf(uid);if(i>=0)return{area,index:i}}return null}
+function sbcSwapSlots(id,fromArea,fromIndex,toArea,toIndex){
+ const draft=sbcDraft(id),from=sbcArea(draft,fromArea)[fromIndex];if(!from||fromArea===toArea&&fromIndex===toIndex)return false;
+ sbcArea(draft,fromArea)[fromIndex]=sbcArea(draft,toArea)[toIndex]||null;sbcArea(draft,toArea)[toIndex]=from;sbcSetDraft(id,draft);return true
 }
-function sbcPlaceUid(id,uid,index){
+function sbcPlaceUid(id,uid,area,index){
  const draft=sbcDraft(id);uid=String(uid);if(!sbcSourceMap().has(uid))return false;
- const from=draft.squad.indexOf(uid);if(from===index)return false;
- if(from>=0)draft.squad[from]=draft.squad[index]||null;
- draft.squad[index]=uid;sbcSetDraft(id,draft);return true
+ const from=sbcFindUid(draft,uid);if(from&&from.area===area&&from.index===index)return false;
+ if(from)sbcArea(draft,from.area)[from.index]=sbcArea(draft,area)[index]||null;
+ sbcArea(draft,area)[index]=uid;if(area==="test")draft.testOpen=true;sbcSetDraft(id,draft);return true
 }
-function sbcRemoveUid(id,index){
- const draft=sbcDraft(id);if(!draft.squad[index])return false;draft.squad[index]=null;sbcSetDraft(id,draft);return true
+function sbcRemoveUid(id,area,index){
+ const draft=sbcDraft(id);if(!sbcArea(draft,area)[index])return false;sbcArea(draft,area)[index]=null;sbcSetDraft(id,draft);return true
 }
 // Same chemistry rules as the club squad: only players on their own position earn chemistry and help their links.
 function sbcChemScores(entries){
@@ -6328,12 +6331,17 @@ function sbcOverviewCard(s){
 // A player keeps his own position. On a foreign slot he shows his real position, a warning and no chemistry, like in the club squad.
 function sbcWorkSlotHTML(sbc,index,slot,draft,chemScores){
  const uid=draft.squad[index],item=sbcItemRecord(uid)?.item,b=item?displayBase(item):null,pos=slot?.p||"",style=`style="left:${slot.x}%;top:${slot.y}%"`;
- if(!b)return `<div class="sbc-work-slot" data-sbc-index="${index}" ${style} role="button" tabindex="0" aria-label="${esc(positionLabel(pos))} besetzen"><div class="sbc-empty-slot"><div><b>+</b><span>${esc(positionLabel(pos))}</span></div></div></div>`;
+ if(!b)return `<div class="sbc-work-slot" data-sbc-area="squad" data-sbc-index="${index}" ${style} role="button" tabindex="0" aria-label="${esc(positionLabel(pos))} besetzen"><div class="sbc-empty-slot"><div><b>+</b><span>${esc(positionLabel(pos))}</span></div></div></div>`;
  const out=!inPosition(b,pos),chem=chemScores[index]||0,shown=out?b.position:pos;
- return `<div class="sbc-work-slot filled ${out?"out":""}" data-sbc-index="${index}" ${style} role="button" tabindex="0" aria-label="${esc(b.name)} · ${out?`falsche Position (${esc(positionLabel(pos))})`:esc(positionLabel(pos))}"><div class="sbc-card-wrap">${cardHTML(b,item,true,shown)}</div>${out?`<div class="poswarn" title="Spielt nicht auf ${esc(positionLabel(pos))}">!</div>`:""}<div class="chem-dots" title="Chemie ${chem}/3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div><button class="sbc-slot-remove" type="button" data-sbc-remove="${index}" aria-label="Spieler entfernen">×</button></div>`
+ return `<div class="sbc-work-slot filled ${out?"out":""}" data-sbc-area="squad" data-sbc-index="${index}" ${style} role="button" tabindex="0" aria-label="${esc(b.name)} · ${out?`falsche Position (${esc(positionLabel(pos))})`:esc(positionLabel(pos))}"><div class="sbc-card-wrap">${cardHTML(b,item,true,shown)}</div>${out?`<div class="poswarn" title="Spielt nicht auf ${esc(positionLabel(pos))}">!</div>`:""}<div class="chem-dots" title="Chemie ${chem}/3">${[1,2,3].map(n=>`<i class="${chem>=n?"on":""}"></i>`).join("")}</div><button class="sbc-slot-remove" type="button" data-sbc-remove="squad:${index}" aria-label="Spieler entfernen">×</button></div>`
+}
+function sbcTestSlotHTML(index,draft){
+ const item=sbcItemRecord(draft.test[index])?.item,b=item?displayBase(item):null;
+ if(!b)return `<div class="sbc-work-slot sbc-test-slot" data-sbc-area="test" data-sbc-index="${index}" role="button" tabindex="0" aria-label="Testplatz ${index+1} besetzen"><div class="sbc-empty-slot"><div><b>+</b></div></div></div>`;
+ return `<div class="sbc-work-slot sbc-test-slot filled" data-sbc-area="test" data-sbc-index="${index}" role="button" tabindex="0" aria-label="${esc(b.name)} im Testareal"><div class="sbc-card-wrap">${cardHTML(b,item,true)}</div><button class="sbc-slot-remove" type="button" data-sbc-remove="test:${index}" aria-label="Spieler entfernen">×</button></div>`
 }
 function sbcPickerTargetLabel(){
- if(!sbcPickerState)return"";const slot=FORMATIONS["4-3-3"][sbcPickerState.index];return `Platz ${positionLabel(slot?.p||"")}`
+ if(!sbcPickerState)return"";if(sbcPickerState.area==="test")return `Testareal · Platz ${sbcPickerState.index+1}`;const slot=FORMATIONS["4-3-3"][sbcPickerState.index];return `Position ${positionLabel(slot?.p||"")}`
 }
 function sbcTeamUsageForUid(uid){
  const out=[];for(const preset of state.squadPresets||[]){if(preset?.squad?.includes(uid))out.push(preset.name||"Team")}
@@ -6361,17 +6369,19 @@ function sbcFillCost(item,source,base=displayBase(item)){
 function sbcPlayerKey(item){return String(item?.pid||item?.uid||"")}
 function sbcPickerCandidates(){
  if(!activeSbcId||!sbcPickerState)return[];const sbc=getActiveSbcById(activeSbcId);if(!sbc)return[];
- const draft=sbcDraft(activeSbcId),current=draft.squad[sbcPickerState.index],used=new Set(draft.squad.filter(Boolean)),players=new Set(draft.squad.filter(uid=>uid&&uid!==current).map(uid=>sbcPlayerKey(sbcItemRecord(uid)?.item)));
+ const draft=sbcDraft(activeSbcId),current=sbcArea(draft,sbcPickerState.area)[sbcPickerState.index],used=new Set([...draft.squad,...(sbcPickerState.area==="test"?draft.test:[])].filter(Boolean)),players=new Set(draft.squad.filter(uid=>uid&&uid!==current).map(uid=>sbcPlayerKey(sbcItemRecord(uid)?.item))),min=Number(sbcPickerState.min??0),max=Number(sbcPickerState.max??99);
  const q=normalizeKey(sbcPickerState.query||""),pos=String(sbcPickerState.position||""),quality=String(sbcPickerState.quality||""),source=String(sbcPickerState.source||""),league=String(sbcPickerState.league||""),nation=String(sbcPickerState.nation||""),club=String(sbcPickerState.club||"");
  const rows=[];
  for(const x of sbcSourceItems()){
   const uid=String(x.item.uid);if(used.has(uid)||players.has(sbcPlayerKey(x.item)))continue;const b=displayBase(x.item);if(!b||!sbc.filter(b))continue;
-  if(q&&!playerSearchText(b).includes(q))continue;if(pos&&!playerPositions(b).includes(pos))continue;if(source&&x.source!==source)continue;
+  if(q&&!playerSearchText(b).includes(q))continue;if(pos&&!playerPositions(b).includes(pos))continue;if(source&&x.source!==source)continue;const rating=itemRating(x.item);if(rating<min||rating>max)continue;
   if(!itemMatchesQuality(x.item,quality,b))continue;const aff=resolvedAffiliation(b);if(league&&String(aff?.league||"")!==league)continue;if(club&&String(aff?.team||"")!==club)continue;if(nation&&String(b.nation||"")!==nation)continue;
   rows.push({...x,base:b,cost:sbcFillCost(x.item,x.source,b)});used.add(uid)
  }
- rows.sort((a,b)=>sbcPickerState.sort==="high"?itemRating(b.item)-itemRating(a.item)||a.cost-b.cost:a.cost-b.cost||itemRating(a.item)-itemRating(b.item));
- return rows.slice(0,120)
+ const sort=sbcPickerState.sort;
+ rows.sort((a,b)=>sort==="high"?itemRating(b.item)-itemRating(a.item)||a.cost-b.cost:sort==="asc"?itemRating(a.item)-itemRating(b.item)||a.cost-b.cost:sort==="new"?Number(b.item.acquired||0)-Number(a.item.acquired||0):a.cost-b.cost||itemRating(a.item)-itemRating(b.item));
+ // All matching cards are returned; the result grid shows them in pages (SBC_PICKER_PAGE) so nothing is cut off.
+ return rows
 }
 // Choices for the nation, league and club filters: only values that occur among the cards fitting this SBC.
 function sbcPickerOptions(sbc){
@@ -6380,30 +6390,38 @@ function sbcPickerOptions(sbc){
  const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sort(leagues),clubs:sort(clubs)}
 }
 function sbcPickerHTML(sbc){
- if(!sbcPickerState)return"";rememberSbcPickerFilters();
- const p=sbcPickerState,slotPos=FORMATIONS["4-3-3"][p.index]?.p||"",current=sbcItemRecord(sbcDraft(sbc.id).squad[p.index])?.item,cb=current?displayBase(current):null,rows=sbcPickerCandidates();
- if(p.club&&!sbcPickerOptions(sbc).clubs.includes(p.club))p.club="";
- const opts=sbcPickerOptions(sbc),sel=(id,label,all,values,current,show=v=>v)=>`<select id="${id}" aria-label="${label}"><option value="">${all}</option>${values.map(v=>`<option value="${esc(v)}" ${current===v?"selected":""}>${esc(show(v))}</option>`).join("")}</select>`;
- const chip=(attr,value,label,active)=>`<button type="button" class="sbc-chip ${active?"active":""}" ${attr}="${esc(value)}">${esc(label)}</button>`;
- return `<div class="sbc-player-picker" id="sbcPlayerPicker" role="dialog" aria-modal="true" aria-label="Spieler für ${esc(positionLabel(slotPos))} wählen"><div class="sbc-player-picker-inner"><div class="sbc-picker-head"><div><h3>${esc(positionLabel(slotPos))} besetzen</h3><p>Nur Spieler, die zur SBC passen · günstigste zuerst</p></div><button type="button" class="secondary" data-sbc-picker-close aria-label="Schließen">×</button></div>
+ if(!sbcPickerState)return"";
+ const p=sbcPickerState,current=sbcItemRecord(sbcArea(sbcDraft(sbc.id),p.area)[p.index])?.item,cb=current?displayBase(current):null;
+ if(p.club&&!sbcPickerOptions(sbc).clubs.includes(p.club))p.club="";rememberSbcPickerFilters();
+ const rows=sbcPickerCandidates(),opts=sbcPickerOptions(sbc),field=(label,html,full)=>`<div class="sbc-picker-field${full?" full":""}"><label>${label}</label>${html}</div>`;
+ const sel=(id,all,values,current,show=v=>v)=>`<select id="${id}"><option value="">${all}</option>${values.map(v=>`<option value="${esc(v)}" ${current===v?"selected":""}>${esc(show(v))}</option>`).join("")}</select>`;
+ const positions=["GK","CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","ST"];
+ return `<div class="sbc-player-picker" id="sbcPlayerPicker" role="dialog" aria-modal="true" aria-label="Spieler auswählen"><div class="sbc-player-picker-inner"><div class="sbc-picker-head"><div><h3>Spieler suchen</h3><p>${esc(sbcPickerTargetLabel())} · nur Karten, die zur SBC passen</p></div><button type="button" class="secondary" data-sbc-picker-close aria-label="Schließen">×</button></div>
  ${cb?`<div class="sbc-picker-current"><span>Aktuell: <b>${esc(cb.name)}</b> · ${itemRating(current)} · ${esc(positionLabel(cb.position,cb))}</span><button type="button" class="danger" data-sbc-picker-remove>Entfernen</button></div>`:""}
- <input id="sbcPickerName" class="sbc-picker-search" type="search" value="${esc(p.query||"")}" placeholder="Spieler suchen" autocomplete="off">
- <div class="sbc-chip-row">${chip("data-sbc-pos",slotPos,positionLabel(slotPos),p.position===slotPos)}${chip("data-sbc-pos","","Alle Positionen",!p.position)}</div>
- <div class="sbc-chip-row">${chip("data-sbc-sort","cheap","Günstigste",p.sort!=="high")}${chip("data-sbc-sort","high","Höchste GES",p.sort==="high")}${chip("data-sbc-source","","Verein + Speicher",!p.source)}${chip("data-sbc-source","storage",`SBC-Speicher (${(state.sbcStorage||[]).length})`,p.source==="storage")}</div>
- <div class="sbc-picker-selects">${sel("sbcPickerNation","Nation","Alle Nationen",opts.nations,p.nation,v=>nationLabel(v))}${sel("sbcPickerLeague","Liga","Alle Ligen",opts.leagues,p.league)}${sel("sbcPickerClub","Verein","Alle Vereine",opts.clubs,p.club)}${sel("sbcPickerQuality","Qualität","Alle Qualitäten",["gold","silver","bronze","special"],p.quality,v=>({gold:"Gold",silver:"Silber",bronze:"Bronze",special:"Spezial"})[v])}</div>
- <div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler</span><span>Tippen = einsetzen</span></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
+ <div class="sbc-picker-filters">
+  ${field("Spielername",`<input id="sbcPickerName" type="search" value="${esc(p.query||"")}" placeholder="Name eingeben" autocomplete="off">`,true)}
+  ${field("Position",sel("sbcPickerPosition","Alle Positionen",positions,p.position||"",v=>positionLabel(v)))}
+  ${field("Qualität",sel("sbcPickerQuality","Alle Qualitäten",["gold","silver","bronze","special"],p.quality,v=>({gold:"Gold",silver:"Silber",bronze:"Bronze",special:"Spezial"})[v]))}
+  ${field("Nation",sel("sbcPickerNation","Alle Nationen",opts.nations,p.nation,v=>nationLabel(v)))}
+  ${field("Liga",sel("sbcPickerLeague","Alle Ligen",opts.leagues,p.league))}
+  ${field("Verein",sel("sbcPickerClub","Alle Vereine",opts.clubs,p.club))}
+  ${field("Quelle",`<select id="sbcPickerSource"><option value="">Verein + SBC-Speicher</option><option value="club" ${p.source==="club"?"selected":""}>Nur Verein</option><option value="storage" ${p.source==="storage"?"selected":""}>Nur SBC-Speicher (${(state.sbcStorage||[]).length})</option></select>`)}
+  ${field("Sortieren",`<select id="sbcPickerSort"><option value="low" ${!["high","asc","new"].includes(p.sort)?"selected":""}>Günstigste zuerst</option><option value="high" ${p.sort==="high"?"selected":""}>GES absteigend</option><option value="asc" ${p.sort==="asc"?"selected":""}>GES aufsteigend</option><option value="new" ${p.sort==="new"?"selected":""}>Neueste zuerst</option></select>`)}
+  ${field("GES von – bis",`<div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.min??0)}"><input id="sbcPickerMax" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.max??99)}"></div>`)}
+ </div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler</span><button type="button" class="sbc-picker-reset" data-sbc-picker-reset>Filter zurücksetzen</button></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
 }
+const SBC_PICKER_PAGE=60;
 function sbcPickerResultsHTML(rows=sbcPickerCandidates()){
- const slotPos=sbcPickerState?FORMATIONS["4-3-3"][sbcPickerState.index]?.p:"";
- return rows.length?rows.map(x=>{const i=x.item,b=displayBase(i),teams=sbcTeamUsageForUid(i.uid),out=slotPos&&!inPosition(b,slotPos);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))}${x.source==="storage"?" · Speicher":i.tradeable===false?" · untauschbar":""}</small>${out?`<span class="sbc-pick-out">Falsche Position</span>`:""}${teams.length?`<span class="sbc-pick-team-tag">In: ${esc(teams.join(" · "))}</span>`:""}</button>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine passenden Spieler gefunden.</div>'
+ const slotPos=sbcPickerState?.area==="squad"?FORMATIONS["4-3-3"][sbcPickerState.index]?.p:"",limit=Math.max(SBC_PICKER_PAGE,Number(sbcPickerState?.limit||0)),rest=rows.length-limit;
+ return rows.length?rows.slice(0,limit).map(x=>{const i=x.item,b=displayBase(i),teams=sbcTeamUsageForUid(i.uid),out=slotPos&&!inPosition(b,slotPos);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))}${x.source==="storage"?" · Speicher":i.tradeable===false?" · untauschbar":""}</small>${out?`<span class="sbc-pick-out">Falsche Position</span>`:""}${teams.length?`<span class="sbc-pick-team-tag">In: ${esc(teams.join(" · "))}</span>`:""}</button>`}).join("")+(rest>0?`<button type="button" class="secondary sbc-picker-more" data-sbc-picker-more>${Math.min(rest,SBC_PICKER_PAGE)} weitere anzeigen · noch ${rest}</button>`:""):'<div class="online-note" style="grid-column:1/-1">Keine passenden Spieler gefunden.</div>'
 }
 function renderSbcPickerResults(){
  const grid=$("sbcPickerResults"),count=$("sbcPickerResultCount");if(!grid||!sbcPickerState)return;const rows=sbcPickerCandidates();grid.innerHTML=sbcPickerResultsHTML(rows);if(count)count.textContent=`${rows.length} Spieler`
 }
-function openSbcPicker(index){
- if(!activeSbcId||!Number.isInteger(index)||index<0||index>10)return;
+function openSbcPicker(area,index){
+ if(!activeSbcId||!Number.isInteger(index)||index<0||index>(area==="test"?11:10))return;sbcAssistantState=null;
  const saved={...sbcDefaultPickerFilters(),...(SBC_PICKER_FILTERS[activeSbcId]||{})};
- sbcPickerState={...saved,position:FORMATIONS["4-3-3"][index]?.p||"",index};renderSBC()
+ sbcPickerState={...saved,position:area==="squad"?FORMATIONS["4-3-3"][index]?.p||"":"",area,index};renderSBC()
 }
 // Auto-fill: the cheapest squad from the club that meets every requirement. Players stand on their own positions where
 // possible, cards from the user's teams and active evolutions stay untouched, and nothing is filled when no valid squad exists.
@@ -6453,7 +6471,7 @@ function sbcFillScore(sbc,rows,outCost=sbcFillOutOfPositionCost(sbc)){
  return sbcFillShortfall(sbc,rows)*1e7+cost+out*outCost
 }
 // Local search from a cheap start: swap single players for unused cards, or two players between slots, while it gets better.
-function sbcFillSearch(sbc,fixed,pool,leaguePref){
+function sbcFillSearch(sbc,fixed,pool,leaguePref,strict=false){
  const slots=fixed.length,free=fixed.map((r,i)=>r?-1:i).filter(i=>i>=0),rows=[...fixed],used=new Set(fixed.filter(Boolean).map(r=>r.uid));
  const startCost=r=>r.cost*(leaguePref&&r.league!==leaguePref?3:1);
  const order=[...free].sort((a,b)=>pool.filter(r=>r.fits[a]).length-pool.filter(r=>r.fits[b]).length);
@@ -6461,24 +6479,25 @@ function sbcFillSearch(sbc,fixed,pool,leaguePref){
   let best=null;for(const r of pool){if(used.has(r.uid))continue;const score=startCost(r)+(r.fits[slot]?0:sbcFillOutOfPositionCost(sbc)*4);if(!best||score<best.score)best={r,score}}
   if(best){rows[slot]=best.r;used.add(best.r.uid)}
  }
- let score=sbcFillScore(sbc,rows);
+ const outCost=strict?1e6:sbcFillOutOfPositionCost(sbc),scoreOf=list=>sbcFillScore(sbc,list,outCost);
+ let score=scoreOf(rows);
  for(let round=0;round<40;round++){
   let improved=false;
   for(const slot of free){
    const current=rows[slot];
    for(const r of pool){
-    if(used.has(r.uid))continue;rows[slot]=r;const next=sbcFillScore(sbc,rows);
+    if(used.has(r.uid))continue;rows[slot]=r;const next=scoreOf(rows);
     if(next<score-1e-9){score=next;if(current)used.delete(current.uid);used.add(r.uid);improved=true;break}
     rows[slot]=current
    }
   }
   for(let a=0;a<free.length;a++)for(let b=a+1;b<free.length;b++){
-   const x=free[a],y=free[b];[rows[x],rows[y]]=[rows[y],rows[x]];const next=sbcFillScore(sbc,rows);
+   const x=free[a],y=free[b];[rows[x],rows[y]]=[rows[y],rows[x]];const next=scoreOf(rows);
    if(next<score-1e-9){score=next;improved=true}else [rows[x],rows[y]]=[rows[y],rows[x]]
   }
   if(!improved)break
  }
- return{rows,score,shortfall:sbcFillShortfall(sbc,rows)}
+ return{rows,score,shortfall:sbcFillShortfall(sbc,rows)+(strict?strictOut(rows):0)}
 }
 // Keep the candidate list small: the cheapest cards per position and per useful trait are enough to find the cheapest squad.
 function sbcFillShortlist(sbc,pool,form){
@@ -6492,14 +6511,19 @@ function sbcFillShortlist(sbc,pool,form){
  if(sbc.minLeagues||sbc.minNations||sbc.minClubs){take(firsts("league"),20);take(firsts("nation"),20);take(firsts("team"),20)}
  return [...pick]
 }
-function sbcAutoFillPlan(sbc,draft){
+function sbcAssistantDefaults(){return{protectTeams:true,strictPositions:false,quality:"",league:"",min:0,max:99}}
+function strictOut(rows,form){return rows.filter((r,i)=>r&&!r.fits[i]).length}
+function sbcAutoFillPlan(sbc,draft,opts=sbcAssistantDefaults()){
  const form=FORMATIONS["4-3-3"],map=sbcSourceMap(),count=sbc.count||11;
  const fixed=draft.squad.slice(0,count).map(uid=>{const x=uid?map.get(String(uid)):null;return x?sbcFillRow(sbc,x,form):null});
  if(!fixed.some(r=>!r))return{done:true};
- const used=new Set(draft.squad.filter(Boolean).map(String)),busy=new Set([...(state.squad||[]),...(state.squadPresets||[]).flatMap(p=>p?.squad||[])].filter(Boolean).map(String));
+ const used=new Set(draft.squad.filter(Boolean).map(String)),parked=new Set((draft.test||[]).filter(Boolean).map(String)),busy=new Set(opts.protectTeams===false?[]:[...(state.squad||[]),...(state.squadPresets||[]).flatMap(p=>p?.squad||[])].filter(Boolean).map(String));
  for(const e of typeof activeEvolutionEntries==="function"?activeEvolutionEntries():[])busy.add(String(e.uid));
  const fixedPlayers=new Set(fixed.filter(Boolean).map(r=>r.pid)),cheapest=new Map();
- for(const x of sbcSourceItems()){const uid=String(x.item.uid),b=displayBase(x.item);if(!b||used.has(uid)||busy.has(uid)||isFooteraLiveCard(x.item)||!sbc.filter(b))continue;const r=sbcFillRow(sbc,x,form);if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r)}
+ for(const x of sbcSourceItems()){const uid=String(x.item.uid),b=displayBase(x.item);if(!b||used.has(uid)||busy.has(uid)||isFooteraLiveCard(x.item)||!sbc.filter(b))continue;const rating=itemRating(x.item);
+  if(!parked.has(uid)&&(rating<Number(opts.min||0)||rating>Number(opts.max??99)||!itemMatchesQuality(x.item,opts.quality,b)||opts.league&&String(resolvedAffiliation(b)?.league||"")!==opts.league))continue;
+  // Cards parked in the Testareal were prepared on purpose, so they are used first.
+  const r=sbcFillRow(sbc,x,form);if(parked.has(uid))r.cost=.5;if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r)}
  const pool=[...cheapest.values()];
  const free=fixed.filter(r=>!r).length;
  if(pool.length<free)return{missing:free-pool.length};
@@ -6517,30 +6541,47 @@ function sbcAutoFillPlan(sbc,draft){
  for(const league of anchors){
   const rows=sbc.sameLeague?pool.filter(r=>r.league===league):pool,list=sbcFillShortlist(sbc,rows,form);
   const extra=league&&!sbc.sameLeague?rows.filter(r=>r.league===league).sort((a,b)=>a.cost-b.cost).slice(0,40):[];
-  const result=sbcFillSearch(sbc,fixed,[...new Set([...list,...extra])],league);
+  const result=sbcFillSearch(sbc,fixed,[...new Set([...list,...extra,...rows.filter(r=>parked.has(r.uid))])],league,opts.strictPositions);
   if(!best||result.score<best.score)best=result;
   if(best.shortfall===0&&!sbc.sameLeague)break
  }
- const next={squad:[...draft.squad]};best.rows.forEach((r,i)=>{next.squad[i]=r?r.uid:null});
- return{draft:next,valid:best.shortfall===0&&sbcDraftStats(sbc,next).ok}
+ const next={...draft,squad:[...draft.squad],test:[...(draft.test||Array(12).fill(null))]};best.rows.forEach((r,i)=>{next.squad[i]=r?r.uid:null});
+ next.test=next.test.map(uid=>uid&&next.squad.includes(uid)?null:uid);
+ const outOfPosition=strictOut(best.rows,form);
+ return{draft:next,valid:best.shortfall===0&&!(opts.strictPositions&&outOfPosition)&&sbcDraftStats(sbc,next).ok,outOfPosition}
 }
 function sbcClearDraft(){
- if(!activeSbcId)return;const draft=sbcDraft(activeSbcId);if(!draft.squad.some(Boolean))return toast("Die SBC ist bereits leer.");
- sbcSetDraft(activeSbcId,{squad:Array(11).fill(null)});sbcPickerState=null;renderSBC();toast("Alle Spieler entfernt.")
+ if(!activeSbcId)return;const draft=sbcDraft(activeSbcId);if(!draft.squad.some(Boolean))return toast("Die SBC-Aufstellung ist bereits leer.");
+ sbcSetDraft(activeSbcId,{...draft,squad:Array(11).fill(null)});sbcPickerState=null;renderSBC();toast("Aufstellung geleert. Das Testareal bleibt.")
 }
-function sbcQuickFill(){
+function sbcQuickFill(opts=sbcAssistantDefaults()){
  const sbc=getActiveSbcById(activeSbcId);if(!sbc)return;sbcPickerState=null;
+ if(Number(opts.min)>Number(opts.max))return toast("Min. GES darf nicht über Max. GES liegen.");
  const draft=sbcDraft(sbc.id),manual=draft.squad.map(uid=>sbcItemRecord(uid)?.item).filter(Boolean);
  if(manual.some(item=>!sbc.filter(displayBase(item))))return toast("Eine eingesetzte Karte erfüllt die SBC-Bedingung nicht. Bitte zuerst austauschen.");
- const plan=sbcAutoFillPlan(sbc,draft);
+ const plan=sbcAutoFillPlan(sbc,draft,opts);
  if(plan.done)return toast(sbcDraftStats(sbc,draft).ok?"Alle Plätze sind belegt. Du kannst abgeben.":"Alle Plätze sind belegt. Tausche Spieler, um die offenen Bedingungen zu erfüllen.");
- if(plan.missing)return toast(`Dir fehlen ${plan.missing===1?"1 passender Spieler":`${plan.missing} passende Spieler`} (Spieler aus deinen Teams und laufenden Evolutionen bleiben geschützt).`);
+ if(plan.missing)return toast(`Dir fehlen ${plan.missing===1?"1 passender Spieler":`${plan.missing} passende Spieler`}${opts.protectTeams===false?"":" (Spieler aus deinen Teams und laufenden Evolutionen bleiben geschützt)"}.`);
  if(!plan.valid){
-  const label=plan.blocked||sbcChecklist(sbc,sbcDraftStats(sbc,plan.draft||draft)).find(r=>!r.ok)?.label||"eine Bedingung";
-  return toast(`Mit deinen freien Spielern nicht lösbar: ${label}. Es wurde nichts eingesetzt.`)
+  const label=plan.blocked||(opts.strictPositions&&plan.outOfPosition?"passende Positionen":sbcChecklist(sbc,sbcDraftStats(sbc,plan.draft||draft)).find(r=>!r.ok)?.label)||"eine Bedingung";
+  return toast(`Nicht lösbar mit diesen Einstellungen: ${label}. Es wurde nichts eingesetzt.`)
  }
  const inserted=plan.draft.squad.filter(Boolean).length-manual.length;
- sbcSetDraft(sbc.id,plan.draft);renderSBC();toast(`${inserted} günstige Spieler eingesetzt. Bereit zum Abgeben.`)
+ sbcAssistantState=null;sbcSetDraft(sbc.id,plan.draft);renderSBC();toast(`${inserted} günstige Spieler eingesetzt. Bereit zum Abgeben.`)
+}
+function sbcAssistantLeagues(sbc){return [...new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))}
+function sbcAssistantHTML(sbc){
+ if(!sbcAssistantState)return"";const a=sbcAssistantState;
+ const toggle=(id,title,hint,on)=>`<label class="sbc-assistant-toggle"><div><strong>${title}</strong><small>${hint}</small></div><span class="sbc-switch"><input id="${id}" type="checkbox" ${on?"checked":""}><span></span></span></label>`;
+ return `<div class="sbc-assistant" role="dialog" aria-modal="true" aria-label="Assistent"><div class="sbc-assistant-inner"><div class="sbc-assistant-head"><button type="button" class="sbc-assistant-back" data-sbc-assistant-close aria-label="Zurück">‹</button><div><h3>Assistent</h3><p>Füllt die freien Plätze mit den günstigsten passenden Karten. Testareal-Spieler kommen zuerst.</p></div></div><div class="sbc-assistant-panel">
+ ${toggle("sbcAssistantProtect","Spieler aus meinen Teams schützen","Karten aus deinen Teams und laufenden Evolutionen bleiben unberührt.",a.protectTeams)}
+ ${toggle("sbcAssistantStrict","Nur echte Positionen","Kein Spieler auf einer fremden Position.",a.strictPositions)}
+ <div class="sbc-assistant-grid">
+  <div class="sbc-assistant-field"><label>Qualität</label><select id="sbcAssistantQuality"><option value="">Alle</option>${[["bronze","Bronze"],["silver","Silber"],["gold","Gold"],["special","Spezial"]].map(([v,l])=>`<option value="${v}" ${a.quality===v?"selected":""}>${l}</option>`).join("")}</select></div>
+  <div class="sbc-assistant-field"><label>Liga</label><select id="sbcAssistantLeague"><option value="">Automatisch</option>${sbcAssistantLeagues(sbc).map(l=>`<option value="${esc(l)}" ${a.league===l?"selected":""}>${esc(l)}</option>`).join("")}</select></div>
+  <div class="sbc-assistant-field full"><label>GES von – bis</label><div class="sbc-assistant-range"><input id="sbcAssistantMin" type="number" inputmode="numeric" min="0" max="99" value="${Number(a.min)}"><input id="sbcAssistantMax" type="number" inputmode="numeric" min="0" max="99" value="${Number(a.max)}"></div></div>
+ </div>
+ <div class="sbc-assistant-actions"><button type="button" class="secondary" data-sbc-assistant-close>Abbrechen</button><button type="button" class="primary" data-sbc-assistant-build>Aufbauen</button></div></div></div></div>`
 }
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),formation=FORMATIONS["4-3-3"],spots=squadPitchSpots(formation),filled=stats.count>0;
@@ -6549,8 +6590,10 @@ function renderSbcEditor(sbc){
  <ul class="sbc-checklist" aria-label="Bedingungen">${sbcChecklist(sbc,stats).map(r=>`<li class="${r.ok?"ok":""}"><i aria-hidden="true">${r.ok?"✓":"✗"}</i><span>${esc(r.label)}</span><b>${esc(r.value)}</b></li>`).join("")}</ul>
  <div class="sbc-squad-summary"><span>GES <b>${stats.count?stats.teamRating:"–"}</b></span><span>Chemie <b>${stats.chem}/33</b></span><span>Spieler <b>${stats.count}/${sbc.count}</b></span></div>
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,i,{...slot,...spots[i]},draft,stats.chemScores)).join("")}</div>
- <div class="sbc-builder-footer simple"><button type="button" class="secondary" data-sbc-clear ${filled?"":"disabled"}>Leeren</button><button type="button" class="sbc-quick-fill" data-sbc-quick-fill>⚡ Auto-Auffüllen</button><button type="button" class="primary sbc-submit" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>${stats.ok?"Abgeben":esc(sbcMissingButtonText(sbc,stats))}</button>${activeSelected||storageSelected?`<div class="sbc-submit-state">${[activeSelected?`${activeSelected} aus aktivem Kader`:"",storageSelected?`${storageSelected} aus SBC-Speicher`:""].filter(Boolean).join(" · ")}</div>`:""}</div>
- </div>${sbcPickerHTML(sbc)}${sbcWarningHTML(sbc)}`
+ <button class="sbc-test-toggle ${draft.testOpen?"open":""}" type="button" data-sbc-test-toggle aria-expanded="${draft.testOpen?"true":"false"}"><div><strong>⚒ Testareal</strong><span>Spieler parken und per Ziehen einsetzen</span></div><b>${draft.test.filter(Boolean).length}/12</b></button>
+ ${draft.testOpen?`<div class="sbc-test-grid">${Array.from({length:12},(_,i)=>sbcTestSlotHTML(i,draft)).join("")}</div>`:""}
+ <div class="sbc-builder-footer simple"><button type="button" class="sbc-quick-fill" data-sbc-quick-fill>⚡ Auto-Auffüllen</button><button type="button" class="secondary sbc-assistant-open" data-sbc-assistant-open>⚙ Assistent</button><button type="button" class="secondary" data-sbc-clear ${filled?"":"disabled"}>Leeren</button><button type="button" class="primary sbc-submit" data-submit="${esc(sbc.id)}" ${stats.ok?"":"disabled"}>${stats.ok?"Abgeben":esc(sbcMissingButtonText(sbc,stats))}</button>${activeSelected||storageSelected?`<div class="sbc-submit-state">${[activeSelected?`${activeSelected} aus aktivem Kader`:"",storageSelected?`${storageSelected} aus SBC-Speicher`:""].filter(Boolean).join(" · ")}</div>`:""}</div>
+ </div>${sbcPickerHTML(sbc)}${sbcAssistantHTML(sbc)}${sbcWarningHTML(sbc)}`
 }
 function sbcFeatureGroupCard(rows,detail=false){
  if(!rows?.length)return"";
@@ -6648,36 +6691,47 @@ function sbcContentWindowKey(now=new Date()){return [promoWindowKey(now,19),sbcW
 let sbcContentRefreshKey=sbcContentWindowKey();
 setInterval(()=>{const key=sbcContentWindowKey();if(key===sbcContentRefreshKey)return;sbcContentRefreshKey=key;if(currentViewId()==="sbcView"){activeSbcId=null;activeSbcSet=null;sbcPickerState=null;activeSbcGroup="Täglich";renderSBC();toast("SBC-Angebot aktualisiert.")}},60000);
 
-function closeSbcEditorState(){pendingSbcSubmissionId=null;sbcPickerState=null;activeSbcId=null}
+function closeSbcEditorState(){pendingSbcSubmissionId=null;sbcPickerState=null;sbcAssistantState=null;activeSbcId=null}
 $("sbcView").addEventListener("click",e=>{
  const t=e.target,hit=sel=>t.closest(sel);
  if(hit("[data-sbc-set-back]")){activeSbcSet=null;closeSbcEditorState();renderSBC();return}
  const setOpen=hit("[data-sbc-set]");if(setOpen){const setId=String(setOpen.dataset.sbcSet||"");if(!setId)return;activeSbcSet=setId;closeSbcEditorState();renderSBC();return}
  if(hit("[data-sbc-quick-fill]")){sbcQuickFill();return}
+ if(hit("[data-sbc-assistant-open]")){sbcPickerState=null;sbcAssistantState=sbcAssistantDefaults();renderSBC();return}
+ if(hit("[data-sbc-assistant-close]")||t.classList?.contains("sbc-assistant")){sbcAssistantState=null;renderSBC();return}
+ if(hit("[data-sbc-assistant-build]")&&sbcAssistantState){sbcQuickFill({...sbcAssistantState});return}
+ if(hit("[data-sbc-test-toggle]")&&activeSbcId){const d=sbcDraft(activeSbcId);d.testOpen=!d.testOpen;sbcSetDraft(activeSbcId,d);renderSBC();return}
+ if(hit("[data-sbc-picker-more]")&&sbcPickerState){const grid=$("sbcPickerResults"),top=grid?.scrollTop||0;sbcPickerState.limit=Math.max(SBC_PICKER_PAGE,Number(sbcPickerState.limit||0))+SBC_PICKER_PAGE;renderSbcPickerResults();if(grid)grid.scrollTop=top;return}
+ if(hit("[data-sbc-picker-reset]")&&sbcPickerState){const keep={area:sbcPickerState.area,index:sbcPickerState.index};sbcPickerState={...sbcDefaultPickerFilters(),...keep,position:keep.area==="squad"?FORMATIONS["4-3-3"][keep.index]?.p||"":""};rememberSbcPickerFilters();renderSBC();return}
  if(hit("[data-sbc-clear]")){sbcClearDraft();return}
  if(hit("[data-sbc-warning-cancel]")){pendingSbcSubmissionId=null;renderSBC();return}
  if(hit("[data-sbc-warning-confirm]")&&pendingSbcSubmissionId){const id=pendingSbcSubmissionId;pendingSbcSubmissionId=null;finalizeSbcSubmission(id);return}
- if(hit("[data-sbc-warning-replace]")&&pendingSbcSubmissionId){const sbc=getActiveSbcById(pendingSbcSubmissionId),draft=sbcDraft(pendingSbcSubmissionId),risks=sbc?new Set(sbcSubmissionRisks(sbc).map(r=>r.item.uid)):new Set(),idx=draft.squad.findIndex(uid=>risks.has(uid));pendingSbcSubmissionId=null;if(idx>=0)openSbcPicker(idx);else renderSBC();return}
+ if(hit("[data-sbc-warning-replace]")&&pendingSbcSubmissionId){const sbc=getActiveSbcById(pendingSbcSubmissionId),draft=sbcDraft(pendingSbcSubmissionId),risks=sbc?new Set(sbcSubmissionRisks(sbc).map(r=>r.item.uid)):new Set(),idx=draft.squad.findIndex(uid=>risks.has(uid));pendingSbcSubmissionId=null;if(idx>=0)openSbcPicker("squad",idx);else renderSBC();return}
  const open=hit("[data-sbc-open]");if(open){const target=getActiveSbcById(open.dataset.sbcOpen);if(!target)return;if(sbcIsCompleted(target))return toast("Diese SBC wurde bereits abgeschlossen.");closeSbcEditorState();activeSbcId=target.id;renderSBC();if(!uiHistoryApplying)pushUiState("sbc-editor",{view:"sbcView",sbcId:activeSbcId});return}
  if(hit("[data-sbc-back]")){if(history.state?.gfut&&history.state.kind==="sbc-editor"){history.back();return}closeSbcEditorState();renderSBC();return}
- const remove=hit("[data-sbc-remove]");if(remove&&activeSbcId){e.stopPropagation();sbcRemoveUid(activeSbcId,Number(remove.dataset.sbcRemove));renderSBC();return}
+ const remove=hit("[data-sbc-remove]");if(remove&&activeSbcId){e.stopPropagation();const [area,raw]=String(remove.dataset.sbcRemove||"").split(":");sbcRemoveUid(activeSbcId,area,Number(raw));renderSBC();return}
  if(hit("[data-sbc-picker-close]")||t.id==="sbcPlayerPicker"){rememberSbcPickerFilters();sbcPickerState=null;renderSBC();return}
- if(hit("[data-sbc-picker-remove]")&&activeSbcId&&sbcPickerState){sbcRemoveUid(activeSbcId,Number(sbcPickerState.index));sbcPickerState=null;renderSBC();toast("Spieler entfernt.");return}
- const chip=hit("[data-sbc-pos],[data-sbc-sort],[data-sbc-source]");
- if(chip&&sbcPickerState){if(chip.dataset.sbcPos!==undefined)sbcPickerState.position=chip.dataset.sbcPos;if(chip.dataset.sbcSort!==undefined)sbcPickerState.sort=chip.dataset.sbcSort;if(chip.dataset.sbcSource!==undefined)sbcPickerState.source=chip.dataset.sbcSource;rememberSbcPickerFilters();const q=$("sbcPickerName")?.value;renderSBC();if(q)$("sbcPickerName").value=q;return}
+ if(hit("[data-sbc-picker-remove]")&&activeSbcId&&sbcPickerState){sbcRemoveUid(activeSbcId,sbcPickerState.area,Number(sbcPickerState.index));sbcPickerState=null;renderSBC();toast("Spieler entfernt.");return}
  const pick=hit("[data-sbc-pick-uid]");
- if(pick&&activeSbcId&&sbcPickerState){const index=Number(sbcPickerState.index),before=sbcDraft(activeSbcId).squad[index];rememberSbcPickerFilters();if(sbcPlaceUid(activeSbcId,pick.dataset.sbcPickUid,index)){sbcPickerState=null;renderSBC();toast(before?"Getauscht.":"Spieler eingesetzt.")}return}
+ if(pick&&activeSbcId&&sbcPickerState){const area=sbcPickerState.area,index=Number(sbcPickerState.index),before=sbcArea(sbcDraft(activeSbcId),area)[index];rememberSbcPickerFilters();if(sbcPlaceUid(activeSbcId,pick.dataset.sbcPickUid,area,index)){sbcPickerState=null;renderSBC();toast(before?"Getauscht.":"Spieler eingesetzt.")}return}
  const submit=hit("[data-submit]");if(submit){submitSbcById(submit.dataset.submit);return}
  const slot=hit(".sbc-work-slot");
- if(slot&&activeSbcId&&!suppressSbcSlotClick&&!hit(".sbc-slot-remove")){openSbcPicker(Number(slot.dataset.sbcIndex));return}
+ if(slot&&activeSbcId&&!suppressSbcSlotClick&&!hit(".sbc-slot-remove")){openSbcPicker(slot.dataset.sbcArea==="test"?"test":"squad",Number(slot.dataset.sbcIndex));return}
  suppressSbcSlotClick=false
 });
 $("sbcView").addEventListener("input",e=>{
- if(sbcPickerState&&e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;rememberSbcPickerFilters();renderSbcPickerResults()}
+ if(sbcPickerState&&e.target.id==="sbcPickerName"){sbcPickerState.query=e.target.value;rememberSbcPickerFilters();renderSbcPickerResults();return}
+ const rating=id=>Math.max(0,Math.min(99,Number(e.target.value||(id.endsWith("Max")?99:0))));
+ if(sbcPickerState&&(e.target.id==="sbcPickerMin"||e.target.id==="sbcPickerMax")){sbcPickerState[e.target.id==="sbcPickerMin"?"min":"max"]=rating(e.target.id);rememberSbcPickerFilters();renderSbcPickerResults();return}
+ if(sbcAssistantState&&(e.target.id==="sbcAssistantMin"||e.target.id==="sbcAssistantMax"))sbcAssistantState[e.target.id==="sbcAssistantMin"?"min":"max"]=rating(e.target.id)
 });
 $("sbcView").addEventListener("change",e=>{
+ if(sbcAssistantState){
+  const key={sbcAssistantProtect:"protectTeams",sbcAssistantStrict:"strictPositions",sbcAssistantQuality:"quality",sbcAssistantLeague:"league"}[e.target.id];
+  if(key){sbcAssistantState[key]=e.target.type==="checkbox"?e.target.checked:e.target.value;return}
+ }
  if(!sbcPickerState)return;
- const key={sbcPickerNation:"nation",sbcPickerLeague:"league",sbcPickerClub:"club",sbcPickerQuality:"quality"}[e.target.id];if(!key)return;
+ const key={sbcPickerPosition:"position",sbcPickerNation:"nation",sbcPickerLeague:"league",sbcPickerClub:"club",sbcPickerQuality:"quality",sbcPickerSource:"source",sbcPickerSort:"sort"}[e.target.id];if(!key)return;
  sbcPickerState[key]=e.target.value;if(key==="league")sbcPickerState.club="";rememberSbcPickerFilters();
  if(key==="league"){renderSBC();return}
  renderSbcPickerResults()
@@ -6688,19 +6742,19 @@ function clearSbcDragVisuals(){
 }
 // Drag a card onto another slot to swap the two players.
 document.addEventListener("pointerdown",e=>{
- if(!activeSbcId||sbcPickerState||e.target.closest(".sbc-slot-remove"))return;const slot=e.target.closest("#sbcView .sbc-work-slot.filled");if(!slot)return;
- sbcDragState={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,fromIndex:Number(slot.dataset.sbcIndex),source:slot,active:false,target:null,ghost:null}
+ if(!activeSbcId||sbcPickerState||sbcAssistantState||e.target.closest(".sbc-slot-remove"))return;const slot=e.target.closest("#sbcView .sbc-work-slot.filled");if(!slot)return;
+ sbcDragState={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,fromArea:slot.dataset.sbcArea,fromIndex:Number(slot.dataset.sbcIndex),source:slot,active:false,target:null,ghost:null}
 },{passive:true});
 document.addEventListener("pointermove",e=>{
  const d=sbcDragState;if(!d||d.pointerId!==e.pointerId)return;const dist=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);if(!d.active&&dist<7)return;
  if(!d.active){d.active=true;d.source?.classList.add("drag-source");const g=document.createElement("div");g.className="sbc-dragghost";g.innerHTML=d.source?.querySelector(".sbc-card-wrap")?.innerHTML||"";document.body.appendChild(g);d.ghost=g}
  if(d.ghost){d.ghost.style.left=`${e.clientX}px`;d.ghost.style.top=`${e.clientY}px`}
  document.querySelectorAll("#sbcView .sbc-work-slot.drop-target").forEach(x=>x.classList.remove("drop-target"));
- const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#sbcView .sbc-work-slot");d.target=target&&Number(target.dataset.sbcIndex)!==d.fromIndex?target:null;if(d.target)d.target.classList.add("drop-target");e.preventDefault()
+ const target=document.elementFromPoint(e.clientX,e.clientY)?.closest?.("#sbcView .sbc-work-slot");d.target=target&&!(target.dataset.sbcArea===d.fromArea&&Number(target.dataset.sbcIndex)===d.fromIndex)?target:null;if(d.target)d.target.classList.add("drop-target");e.preventDefault()
 },{passive:false});
 document.addEventListener("pointerup",e=>{
  const d=sbcDragState;if(!d||d.pointerId!==e.pointerId)return;const active=d.active,target=d.target;clearSbcDragVisuals();sbcDragState=null;
- if(active){suppressSbcSlotClick=true;if(target&&activeSbcId&&sbcSwapSlots(activeSbcId,d.fromIndex,Number(target.dataset.sbcIndex))){renderSBC();toast("Spieler verschoben.")}setTimeout(()=>{suppressSbcSlotClick=false},80)}
+ if(active){suppressSbcSlotClick=true;if(target&&activeSbcId&&sbcSwapSlots(activeSbcId,d.fromArea,d.fromIndex,target.dataset.sbcArea,Number(target.dataset.sbcIndex))){renderSBC();toast("Spieler verschoben.")}setTimeout(()=>{suppressSbcSlotClick=false},80)}
 });
 document.addEventListener("pointercancel",()=>{clearSbcDragVisuals();sbcDragState=null});
 
@@ -8471,7 +8525,7 @@ function handleAppBack(targetState){
   if($("opening")?.classList.contains("active")){protectLockedBack("Packöffnung zuerst abschließen.","pack-opening");return true}
   if($("results")?.classList.contains("active")&&(pendingResolved.size!==pendingPack.length||(state.pendingChemBoosts||[]).length)){protectLockedBack("Pack-Inhalt zuerst vollständig zuweisen.","pack-results");return true}
  if(currentViewId()==="sbcView"&&activeSbcId){
-  if(sbcPickerState){rememberSbcPickerFilters();sbcPickerState=null;renderSBC();return true}
+  if(sbcPickerState||sbcAssistantState){rememberSbcPickerFilters();sbcPickerState=null;sbcAssistantState=null;renderSBC();return true}
   closeSbcEditorState();renderSBC();return true
  }
  if($("match")?.classList.contains("active")){
@@ -8617,7 +8671,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.324";
+const GFUT_BUILD="V21.325";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8675,7 +8729,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21324",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21325",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
