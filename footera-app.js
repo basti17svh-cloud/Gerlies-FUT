@@ -5539,6 +5539,23 @@ const ICON_PRICE_ANCHORS={
  "ruud-van-nistelrooy":219000, // Ruud van Nistelrooy
  "carles-puyol":265000, // Carles Puyol
 };
+// Basti-approved Footera balancing, 31.10.2026: Team 1 prices before Blutmond.
+// Own event valuations (stats, PlayStyle+ and headliner demand), not external live quotes.
+const HALLOWEEN_TEAM1_MARKET_ANCHORS={
+ "220901":[90,350000], "193080":[85,35000], "229558":[88,350000],
+ "232488":[84,25000], "265693":[84,28000], "239231":[87,80000],
+ "266127":[85,40000], "254243":[86,60000], "246863":[86,250000],
+ "177003":[87,75000], "243245":[84,35000], "260247":[86,55000],
+ "158023":[91,2500000], "209331":[89,650000], "264652":[87,450000],
+ "228093":[87,220000], "244176":[86,45000], "194765":[86,180000]
+};
+function halloweenMarketAnchor(r,base,item){
+ if(item?.variant!=="special"||item?.eventType!=="halloween"||item?.eventReleaseId!=="halloween-2026")return 0;
+ const anchor=HALLOWEEN_TEAM1_MARKET_ANCHORS[String(base?.id||item?.pid||"")];
+ if(!anchor)return 0;
+ // The global +1 upgrade adds 15%; use the actual rating so listing and sale guides agree.
+ return marketRoundPrice(anchor[1]*(1+Math.max(0,Number(r)-anchor[0])*.15))
+}
 function iconMarketPrice(base){
  const slug=iconSlug(base?.name),anchor=ICON_PRICE_ANCHORS[slug];if(anchor)return marketRoundPrice(anchor);
  const rating=Math.max(87,Math.min(95,Math.round(Number(base?.ovr||88)))),score=marketMetaScore(base);
@@ -5551,7 +5568,8 @@ function marketBaseGoldAnchor(base){
  for(const name of names)if(BASE_GOLD_PRICE_ANCHORS_BY_NAME[name])return BASE_GOLD_PRICE_ANCHORS_BY_NAME[name];
  return 0
 }
-function marketPriceForRating(r,special=false,base=null,kind=""){
+function marketPriceForRating(r,special=false,base=null,kind="",item=null){
+ const eventAnchor=special?halloweenMarketAnchor(r,base,item):0;if(eventAnchor)return eventAnchor;
  if(base?.isIcon)return iconMarketPrice(base);
  const rr=Math.max(0,Math.min(99,Math.round(Number(r||0)))),baseRating=Math.max(0,Math.min(99,Math.round(Number(base?.ovr||rr))));
  const pct=base?marketMetaPercentile(base):.5,meta=base?marketMetaFactor(base):1,anchor=base?marketBaseGoldAnchor(base):0;
@@ -5588,7 +5606,7 @@ function createMarketListing(base,filters,offerIndex=0){let variant="",eventName
  else if(filters.specialType!=="base"&&(filters.quality==="special"||(!filters.quality&&filters.specialType))){const sp=specialVariant(filters.specialType);variant=sp.variant;eventName=sp.eventName;boost=sp.boost}
  else if(filters.specialType!=="base"&&!filters.quality&&Math.random()<.08&&base.ovr>=75){if(live&&Math.random()<.5){variant="special";eventName=LIVE_TOTW.name;boost=Math.max(0,live.ovr-base.ovr);overridePosition=live.position}else{const sp=specialVariant();variant=sp.variant;eventName=sp.eventName;boost=sp.boost}}
  const r=eventType==="momentum"?MOMENTUM_BY_ID.get(String(base.id)).ovr:extra?.displayRating?Math.min(99,extra.displayRating+Number(halloweenUpgradeFor({eventType})?.ovr||0)):Math.min(99,base.ovr+boost),special=variant==="special"||variant==="icon-mid",isTotw=variant==="special"&&String(eventName||"").startsWith("Team of the Week");
- const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind);
+ const priceKind=isTotw?"totw":eventType==="momentum"?"momentum":special?"special":"base",guide=marketPriceForRating(r,special,base,priceKind,{variant,eventType,eventReleaseId:promoEntry?.event.id||""});
  const offerSeed=marketSnapshotHash(`${base?.id||base?.name||"player"}|${variant}|${eventType}|${eventName}|${boost}|${overridePosition}|${offerIndex}|${promoWindowKey(new Date(),19)}`);
  // EA-like market: same card clusters close to its guide price instead of jumping by ~25% between offers.
  const spread=.96+(offerSeed%81)/1000;let price=Math.max(special?SPECIAL_MARKET_MIN:200,marketRoundPrice(guide*spread));if(isTotw)price=Math.max(10500,price);
@@ -5617,7 +5635,7 @@ function renderMarketNameSuggestions(){
 const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
-function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(",")])}
+function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(","),!!halloweenUpgradeFor({eventType:"halloween"})])}
 function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
@@ -5724,7 +5742,7 @@ function renderMyAuctions(){
 function transferSuggestedPrices(item){
  const b=displayBase(item);if(!b)return{start:150,buy:200};
  const special=isSpecialPricedItem(item),isTotw=item.variant==="special"&&String(item.eventName||"").startsWith("Team of the Week"),kind=isTotw?"totw":item.eventType==="momentum"?"momentum":special?"special":"base";
- let buy=marketPriceForRating(itemRating(item),special,b,kind);
+ let buy=marketPriceForRating(itemRating(item),special,b,kind,item);
  if(isTotw)buy=Math.max(10500,buy);
  buy=Math.max(special?SPECIAL_MARKET_MIN:200,marketRoundPrice(buy));const start=Math.max(special?SPECIAL_START_MIN:150,marketRoundPrice(buy*.82));return{start,buy}
 }
@@ -8617,7 +8635,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.324";
+const GFUT_BUILD="V21.325";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8675,7 +8693,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21324",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21325",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
