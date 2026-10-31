@@ -116,7 +116,7 @@ function fakeClock(){
   const passLevels=await page.evaluate(()=>[16,28].map(level=>{const tier=SEASON_REWARDS.find(t=>t.level===level);return[seasonTierReward(tier,"free","s2").pack,seasonTierReward(tier,"premium","s2").pack]}));
   assert.deepEqual(passLevels,[["pass-83x10","pass-84x10"],["pass-84x5","pass-85x7"]],"S2 free/premium pack pairs on levels 16 and 28");
   assert.equal(snap.promo,"halloween-2026");
-  assert.ok(snap.storePacks.includes("halloween-pack"),"Blutmond pack in store at 19:00");
+  assert.ok(!snap.storePacks.includes("halloween-pack"),"Blutmond pack is no longer sold in the store");
   assert.equal(snap.evo,true,"Blutmond evo open at 19:00");
   assert.deepEqual(snap.objectives,["halloween-leao"],"Leão objective live at 19:00");
   assert.deepEqual(snap.eventSbcs,[],"Müller SBC not before 31.10.");
@@ -196,16 +196,17 @@ function fakeClock(){
   snap=await snapshot();
   assert.deepEqual(snap.eventSbcs.sort(),["halloween-gyokeres-88","halloween-mueller-88"],"02.11. 19:00: Gyökeres SBC live next to Müller");
   assert.match(snap.text,/Gy(ö|o)keres/,"Gyökeres SBC is shown");
+  assert.equal(await page.evaluate(()=>allActiveSBCs().some(s=>s.id==="halloween_team1_pick_20261101")),true,"Sunday Team-1 SBC is live during the week");
 
   // 06.11. 18:59 Team 1; 19:00 Team 2 takes over the packs.
   await boot(T.beforeEnd);
   snap=await snapshot();
-  assert.equal(snap.promo,"halloween-2026");assert.ok(snap.storePacks.includes("halloween-pack"));assert.deepEqual(snap.objectives,["halloween-leao"]);
+  assert.equal(snap.promo,"halloween-2026");assert.ok(!snap.storePacks.includes("halloween-pack"));assert.deepEqual(snap.objectives,["halloween-leao"]);
   await boot(T.end);
   snap=await snapshot();
   assert.equal(snap.season,"s2","Season Pass S2 is unaffected by Halloween Team 2");
   assert.equal(snap.promo,"halloween-2026-team2","Team 2 replaces Team 1 at 19:00");
-  assert.ok(snap.storePacks.includes("halloween-pack"),"event pack remains available with Team 2");
+  assert.ok(!snap.storePacks.includes("halloween-pack"),"no Blutmond pack in the store with Team 2 either");
   assert.equal(snap.evo,false,"no new Blutmond evo signups");
   assert.equal(await page.evaluate(()=>activeEvolutionDefinitions().some(e=>e.id==="halloween_blutmond_2")),true,"Blutmond evolution II opens");
   assert.deepEqual(snap.objectives,["halloween-son"],"Son objective replaces Leão");assert.deepEqual(snap.eventSbcs,["halloween-gyokeres-88"],"Müller ends, Gyökeres keeps running");
@@ -216,7 +217,9 @@ function fakeClock(){
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"06.11. 19:00: card keeps its Blutmond upgrade");
   // A Blutmond pack still unopened from the pass keeps its promise after the event.
   const late=await page.evaluate(()=>{const pack=generatePack("halloween-pack",false),card=pack.find(i=>i.eventType==="halloween");return{size:pack.length,rating:card?itemRating(card):0,stored:card?.displayRating||0}});
-  assert.equal(late.size,6,"Blutmond pack still opens after the handover");assert.equal(late.rating,late.stored+1,"its Halloween card carries the upgrade");
+  assert.equal(late.size,6,"Blutmond pack still opens after the handover");
+  const pick=await page.evaluate(()=>generatePack("halloween-team1-player",false).map(i=>({release:i.eventReleaseId,type:i.eventType})));
+  assert.deepEqual(pick,[{release:"halloween-2026",type:"halloween"}],"Team-1 SBC pack still gives a Team-1 card after Team 2 took over");assert.equal(late.rating,late.stored+1,"its Halloween card carries the upgrade");
 
   await boot(T.team2Sbc);
   snap=await snapshot();
@@ -224,6 +227,7 @@ function fakeClock(){
   await boot(T.weekSbcEnd);
   snap=await snapshot();
   assert.deepEqual(snap.eventSbcs,["halloween-mbeumo-87"],"09.11. 19:00: Gyökeres week is over");
+  assert.equal(await page.evaluate(()=>allActiveSBCs().some(s=>s.id==="halloween_team1_pick_20261101")),false,"Sunday Team-1 SBC ended on 08.11. 19:00");
 
   await boot(T.later);
   snap=await snapshot();
