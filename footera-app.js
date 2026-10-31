@@ -6124,7 +6124,7 @@ let SBC_WORKSPACE=(()=>{try{return JSON.parse(localStorage.getItem(SBC_WORKSPACE
 let sbcPickerState=null,sbcDragState=null,suppressSbcSlotClick=false,SBC_PICKER_FILTERS={};
 function sbcDefaultPickerFilters(){return{query:"",position:null,quality:"",source:"",sort:"low",league:"",nation:"",club:"",min:0,max:99}}
 function rememberSbcPickerFilters(){
- if(!activeSbcId||!sbcPickerState)return;
+ if(!activeSbcId||!sbcPickerState)return;sbcPickerState.limit=0;// any filter change starts the list at the first page again
  const {query,quality,source,sort,league,nation,club,min,max}=sbcPickerState;
  SBC_PICKER_FILTERS[activeSbcId]={query,quality,source,sort,league,nation,club,min,max}
 }
@@ -6356,8 +6356,9 @@ function sbcPickerCandidates(){
   rows.push({...x,base:b,cost:sbcFillCost(x.item,x.source,b)});used.add(uid)
  }
  const sort=sbcPickerState.sort;
- rows.sort((a,b)=>sort==="high"?itemRating(b.item)-itemRating(a.item)||a.cost-b.cost:sort==="new"?Number(b.item.acquired||0)-Number(a.item.acquired||0):a.cost-b.cost||itemRating(a.item)-itemRating(b.item));
- return rows.slice(0,120)
+ rows.sort((a,b)=>sort==="high"?itemRating(b.item)-itemRating(a.item)||a.cost-b.cost:sort==="asc"?itemRating(a.item)-itemRating(b.item)||a.cost-b.cost:sort==="new"?Number(b.item.acquired||0)-Number(a.item.acquired||0):a.cost-b.cost||itemRating(a.item)-itemRating(b.item));
+ // All matching cards are returned; the result grid shows them in pages (SBC_PICKER_PAGE) so nothing is cut off.
+ return rows
 }
 // Choices for the nation, league and club filters: only values that occur among the cards fitting this SBC.
 function sbcPickerOptions(sbc){
@@ -6382,13 +6383,14 @@ function sbcPickerHTML(sbc){
   ${field("Liga",sel("sbcPickerLeague","Alle Ligen",opts.leagues,p.league))}
   ${field("Verein",sel("sbcPickerClub","Alle Vereine",opts.clubs,p.club))}
   ${field("Quelle",`<select id="sbcPickerSource"><option value="">Verein + SBC-Speicher</option><option value="club" ${p.source==="club"?"selected":""}>Nur Verein</option><option value="storage" ${p.source==="storage"?"selected":""}>Nur SBC-Speicher (${(state.sbcStorage||[]).length})</option></select>`)}
-  ${field("Sortieren",`<select id="sbcPickerSort"><option value="low" ${p.sort!=="high"&&p.sort!=="new"?"selected":""}>Günstigste zuerst</option><option value="high" ${p.sort==="high"?"selected":""}>GES hoch → niedrig</option><option value="new" ${p.sort==="new"?"selected":""}>Neueste zuerst</option></select>`)}
+  ${field("Sortieren",`<select id="sbcPickerSort"><option value="low" ${!["high","asc","new"].includes(p.sort)?"selected":""}>Günstigste zuerst</option><option value="high" ${p.sort==="high"?"selected":""}>GES absteigend (hoch → niedrig)</option><option value="asc" ${p.sort==="asc"?"selected":""}>GES aufsteigend (niedrig → hoch)</option><option value="new" ${p.sort==="new"?"selected":""}>Neueste zuerst</option></select>`)}
   ${field("GES von – bis",`<div class="sbc-picker-rating"><input id="sbcPickerMin" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.min??0)}"><input id="sbcPickerMax" type="number" inputmode="numeric" min="0" max="99" value="${Number(p.max??99)}"></div>`)}
  </div><div class="sbc-picker-results-head"><span id="sbcPickerResultCount">${rows.length} Spieler</span><button type="button" class="sbc-picker-reset" data-sbc-picker-reset>Filter zurücksetzen</button></div><div class="sbc-picker-grid" id="sbcPickerResults">${sbcPickerResultsHTML(rows)}</div></div></div>`
 }
+const SBC_PICKER_PAGE=60;
 function sbcPickerResultsHTML(rows=sbcPickerCandidates()){
- const slotPos=sbcPickerState?.area==="squad"?FORMATIONS["4-3-3"][sbcPickerState.index]?.p:"";
- return rows.length?rows.map(x=>{const i=x.item,b=displayBase(i),teams=sbcTeamUsageForUid(i.uid),out=slotPos&&!inPosition(b,slotPos);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))}${x.source==="storage"?" · Speicher":i.tradeable===false?" · untauschbar":""}</small>${out?`<span class="sbc-pick-out">Falsche Position</span>`:""}${teams.length?`<span class="sbc-pick-team-tag">In: ${esc(teams.join(" · "))}</span>`:""}</button>`}).join(""):'<div class="online-note" style="grid-column:1/-1">Keine passenden Spieler gefunden.</div>'
+ const slotPos=sbcPickerState?.area==="squad"?FORMATIONS["4-3-3"][sbcPickerState.index]?.p:"",limit=Math.max(SBC_PICKER_PAGE,Number(sbcPickerState?.limit||0)),rest=rows.length-limit;
+ return rows.length?rows.slice(0,limit).map(x=>{const i=x.item,b=displayBase(i),teams=sbcTeamUsageForUid(i.uid),out=slotPos&&!inPosition(b,slotPos);return `<button type="button" class="sbc-pick-card" data-sbc-pick-uid="${esc(i.uid)}">${cardHTML(b,i,true)}<strong>${esc(b.name)}</strong><small>${itemRating(i)} · ${esc(positionLabel(b.position,b))}${x.source==="storage"?" · Speicher":i.tradeable===false?" · untauschbar":""}</small>${out?`<span class="sbc-pick-out">Falsche Position</span>`:""}${teams.length?`<span class="sbc-pick-team-tag">In: ${esc(teams.join(" · "))}</span>`:""}</button>`}).join("")+(rest>0?`<button type="button" class="secondary sbc-picker-more" data-sbc-picker-more>${Math.min(rest,SBC_PICKER_PAGE)} weitere anzeigen · noch ${rest}</button>`:""):'<div class="online-note" style="grid-column:1/-1">Keine passenden Spieler gefunden.</div>'
 }
 function renderSbcPickerResults(){
  const grid=$("sbcPickerResults"),count=$("sbcPickerResultCount");if(!grid||!sbcPickerState)return;const rows=sbcPickerCandidates();grid.innerHTML=sbcPickerResultsHTML(rows);if(count)count.textContent=`${rows.length} Spieler`
@@ -6676,6 +6678,7 @@ $("sbcView").addEventListener("click",e=>{
  if(hit("[data-sbc-assistant-close]")||t.classList?.contains("sbc-assistant")){sbcAssistantState=null;renderSBC();return}
  if(hit("[data-sbc-assistant-build]")&&sbcAssistantState){sbcQuickFill({...sbcAssistantState});return}
  if(hit("[data-sbc-test-toggle]")&&activeSbcId){const d=sbcDraft(activeSbcId);d.testOpen=!d.testOpen;sbcSetDraft(activeSbcId,d);renderSBC();return}
+ if(hit("[data-sbc-picker-more]")&&sbcPickerState){const grid=$("sbcPickerResults"),top=grid?.scrollTop||0;sbcPickerState.limit=Math.max(SBC_PICKER_PAGE,Number(sbcPickerState.limit||0))+SBC_PICKER_PAGE;renderSbcPickerResults();if(grid)grid.scrollTop=top;return}
  if(hit("[data-sbc-picker-reset]")&&sbcPickerState){const keep={area:sbcPickerState.area,index:sbcPickerState.index};sbcPickerState={...sbcDefaultPickerFilters(),...keep,position:keep.area==="squad"?FORMATIONS["4-3-3"][keep.index]?.p||"":""};rememberSbcPickerFilters();renderSBC();return}
  if(hit("[data-sbc-clear]")){sbcClearDraft();return}
  if(hit("[data-sbc-warning-cancel]")){pendingSbcSubmissionId=null;renderSBC();return}

@@ -104,6 +104,24 @@ test('player search filters by nation, league and club and only offers cards the
  assert.deepEqual(Array.from(opts.nations),['France','Germany']);
 });
 
+test('player search lists every fitting card, sorts by GES both ways and filters a GES range',()=>{
+ const club=Array.from({length:150},(_,i)=>card('GK',60+i%31,{uid:`gk${i}`,pid:`gk${i}`,name:`Keeper ${i}`}));
+ const t=setup({club,sbc:{id:'gk',count:11,req:'11 Spieler',filter:()=>true}});
+ t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'GK',area:'squad',index:0}`);
+ const all=Array.from(t.run('sbcPickerCandidates()'));
+ assert.equal(all.length,150);
+ t.run(`sbcPickerState.sort='high'`);assert.equal(t.run('sbcPickerCandidates()')[0].item.rating,90);
+ t.run(`sbcPickerState.sort='asc'`);const asc=Array.from(t.run('sbcPickerCandidates()'),r=>r.item.rating);
+ assert.equal(asc[0],60);assert.deepEqual(asc,[...asc].sort((a,b)=>a-b));
+ t.run(`sbcPickerState.min=82;sbcPickerState.max=84`);const range=Array.from(t.run('sbcPickerCandidates()'),r=>r.item.rating);
+ assert.ok(range.length>0&&range.every(r=>r>=82&&r<=84),JSON.stringify(range));
+ t.run(`sbcPickerState.min=0;sbcPickerState.max=99;sbcPickerState.limit=0`);
+ const page=t.run('sbcPickerResultsHTML()');
+ assert.equal((page.match(/data-sbc-pick-uid/g)||[]).length,60);assert.match(page,/60 weitere anzeigen · noch 90/);
+ t.run(`sbcPickerState.limit=180`);const full=t.run('sbcPickerResultsHTML()');
+ assert.equal((full.match(/data-sbc-pick-uid/g)||[]).length,150);assert.doesNotMatch(full,/weitere anzeigen/);
+});
+
 test('the same player never stands twice in one SBC, neither by auto-fill nor in the search',()=>{
  const club=[...fullClub(70).map((c,i)=>({...c,pid:`p${i}`})),card('CM',60,{uid:'dupe-cm',pid:'p5'})];
  const t=setup({club,storage:[card('CM',61,{uid:'store-cm',pid:'p6'})],sbc:{id:'dup',count:11,req:'11 Spieler',filter:()=>true}});

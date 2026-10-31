@@ -42,3 +42,4 @@
 .sbc-picker-reset{min-height:30px;padding:0 10px;border:1px solid #34463f;border-radius:999px;background:#0d1612;color:#dce8e1;font-size:11px;font-weight:800}
 .sbc-picker-results-head{align-items:center}
 #sbcView .sbc-assistant{background:#05090b}
+.sbc-picker-more{grid-column:1/-1;width:100%;min-height:44px;margin-top:4px;font-weight:800}
