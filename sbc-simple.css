@@ -19,8 +19,8 @@
 #sbcView .sbc-player-picker{background:#05090b}
 #sbcView .sbc-picker-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 #sbcView .sbc-pick-card{min-width:0;padding:5px 4px 7px}
-#sbcView .sbc-pick-card strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-#sbcView .sbc-pick-card small{font-size:10px}
+#sbcView .sbc-pick-card>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+#sbcView .sbc-pick-card>small{font-size:10px}
 @media(min-width:700px){#sbcView .sbc-picker-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* Same geometry as the club pitch so squadPitchSpots() keeps every card and chemistry tag apart. */
 #sbcView .sbc-editor-pitch{aspect-ratio:.68;min-height:0}
