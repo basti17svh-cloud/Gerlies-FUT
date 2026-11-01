@@ -1,0 +1,95 @@
+/* BLACK FRIDAY 2026 · Neon-Deal. Same field grid as the Halloween/STORY/TOTW cards; only artwork and light are local.
+   Artwork: assets/footera/events/blackfriday/card-blackfriday-v1.webp (scripts/generate-blackfriday-card.cjs lime). */
+.card-shell .custom-card.blackfriday{
+ background:transparent url("./assets/footera/events/blackfriday/card-blackfriday-v1.webp") center / 100% 100% no-repeat;
+ color:#f2ffd0;clip-path:none;box-shadow:none;
+ --card-info-left:9%;--card-info-width:21%;
+ --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
+ --card-portrait-left:29%;--card-portrait-right:5%;
+ --card-portrait-top:11%;--card-portrait-height:50%;
+ --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-stats-left:3%;--card-stats-right:3%;--card-alt-bottom:13%;
+ --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
+ --card-name-color:#f2ffd0;
+ --card-stats-color:#d4ff2a;
+ --card-value-color:#fbfff0;
+}
+.card-shell .custom-card.blackfriday:before,.card-shell .custom-card.blackfriday .card-top:before{content:none}
+.card-shell .custom-card.blackfriday .pname{clip-path:none;text-shadow:0 1px 2px #000,0 0 7px #b8f00099!important}
+.card-shell .custom-card.blackfriday .ovr{color:#fbfff0;text-shadow:0 1px 4px #000,0 0 12px #b8f000}
+.card-shell .custom-card.blackfriday .pos{color:#d4ff2a;text-shadow:0 1px 3px #000}
+.card-shell .custom-card.blackfriday .face img{filter:drop-shadow(0 .7cqw 1.1cqw #000c) drop-shadow(0 0 1.4cqw #b8f00033)}
+.card-shell .custom-card.blackfriday .stats{text-shadow:0 1px 3px #000}
+.card-shell .custom-card.blackfriday .stats span{border-color:transparent}
+.quality-tag.blackfriday{border-color:#d4ff2a!important;background:linear-gradient(125deg,#050506,#1c2408)!important;color:#efffbf!important;box-shadow:0 0 12px #b8f00055!important}
+.cosmetic-theme-blackfriday{background:radial-gradient(ellipse at 60% 25%,#d4ff2a26,transparent 60%),repeating-linear-gradient(45deg,#0c0c0f 0 8px,#121216 8px 16px)}
+
+.sbc-feature-card.blackfriday-sbc{border-color:#9bc21a;background:radial-gradient(circle at 92% 8%,#d4ff2a2e,transparent 42%),repeating-linear-gradient(45deg,#0b0b0e 0 8px,#111115 8px 16px)}
+.sbc-feature-card.blackfriday-sbc:before{background:linear-gradient(#efff9a,#8fbf00)}
+.sbc-feature-card.blackfriday-sbc .sbc-feature-kicker,.sbc-feature-card.blackfriday-sbc .sbc-feature-progressline b{color:#d4ff2a}
+.sbc-feature-card.blackfriday-sbc .sbc-feature-track i{background:linear-gradient(90deg,#7aa600,#e4ff6a)}
+.sbc-feature-card.blackfriday-sbc .sbc-feature-player .card-shell{width:158px;filter:drop-shadow(0 0 14px #b8f00055)}
+@media(max-width:560px){.sbc-feature-card.blackfriday-sbc .sbc-feature-player .card-shell{width:120px}}
+.sbc-tab.blackfriday-live{border-color:#d4ff2a;box-shadow:0 0 12px #b8f00055;color:#efffbf}
+
+/* Home hero: same structure as the Halloween hero, black carbon with neon price-tag light. */
+.home-hero-card[data-theme="blackfriday"]{
+ --hero-accent:#d4ff2a;--hero-accent-rgb:212,255,42;
+ display:flex;flex-direction:column;align-items:stretch;gap:9px;min-height:310px;height:auto;
+ padding:17px 16px 22px;border-color:#9bc21add;
+ background:radial-gradient(circle at 80% 10%,#d4ff2a2a,transparent 30%),radial-gradient(circle at 6% 100%,#5cffb01c,transparent 44%),linear-gradient(160deg,#111114,#08080a 55%,#030304);
+ box-shadow:0 18px 44px #0008,inset 0 0 32px #d4ff2a10,0 0 23px #b8f00026;
+}
+.home-hero-card[data-theme="blackfriday"]:before{inset:0;background:repeating-linear-gradient(118deg,transparent 0 71px,#d4ff2a0c 72px 73px),repeating-linear-gradient(45deg,transparent 0 8px,#ffffff05 8px 16px);transform:none}
+.home-hero-card[data-theme="blackfriday"]:after{content:"%";width:auto;height:auto;right:5%;top:15%;bottom:auto;border:0;border-radius:0;transform:none;clip-path:none;background:none;box-shadow:none;color:#d4ff2a;font:900 86px/1 Arial,sans-serif;text-shadow:0 0 30px #b8f000;opacity:.35}
+.home-hero-card[data-theme="blackfriday"] .home-hero-copy{align-self:stretch;text-align:center;position:relative;z-index:3}
+.home-hero-card[data-theme="blackfriday"] .home-hero-copy small{justify-content:center;color:#d4ff2a}
+.home-hero-card[data-theme="blackfriday"] .home-hero-copy h2{font-size:clamp(30px,4.4vw,38px);line-height:.93;margin:7px 0 6px;text-shadow:0 0 22px #b8f00077,0 4px 14px #000}
+.home-hero-card[data-theme="blackfriday"] .home-hero-copy h2 span{color:#d4ff2a}
+.home-hero-card[data-theme="blackfriday"] .home-hero-copy p{max-width:none;font-size:11px;color:#dfe6d0}
+.home-hero-card[data-theme="blackfriday"] .home-hero-actions{justify-content:center;margin-top:9px}
+.home-hero-card[data-theme="blackfriday"] .home-hero-cta{background:linear-gradient(130deg,#f4ffb0,#b8f000);color:#101400;box-shadow:0 0 22px #b8f0005c}
+.home-hero-card[data-theme="blackfriday"] .home-hero-team{border:1px solid #9bc21a;background:#14180a;color:#efffbf}
+.home-hero-card[data-theme="blackfriday"] .hero-metrics,.home-hero-card[data-theme="blackfriday"] .hero-burst,.home-hero-card[data-theme="blackfriday"] .hero-emblem,.home-hero-card[data-theme="blackfriday"] .hero-live-box,.home-hero-card[data-theme="blackfriday"] .home-hero-visual:before,.home-hero-card[data-theme="blackfriday"] .home-hero-visual:after{display:none}
+.home-hero-card[data-theme="blackfriday"] .home-hero-visual{display:block;min-height:0;width:100%}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-player .card-shell{filter:drop-shadow(0 0 6px #b8f00077)}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-count{color:#d4ff2a}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .face img{filter:brightness(0) drop-shadow(0 0 3px #b8f000)!important}
+.home-hero-card[data-theme="blackfriday"] .home-momentum-roster.teaser .card-shell:after{color:#d4ff2a;text-shadow:0 0 10px #b8f000}
+@media(max-width:640px){.home-hero-card[data-theme="blackfriday"]{min-height:360px}}
+@media(max-width:560px){
+ .home-hero-card[data-theme="blackfriday"]{padding:15px 10px 22px;gap:9px}
+ .home-hero-card[data-theme="blackfriday"] .home-hero-copy h2{font-size:30px}
+ .home-hero-card[data-theme="blackfriday"] .home-hero-copy p{font-size:10px;line-height:1.45}
+ .home-hero-card[data-theme="blackfriday"] .home-hero-actions{flex-wrap:nowrap}
+ .home-hero-card[data-theme="blackfriday"] .home-hero-actions button{flex:1;min-width:0;min-height:42px}
+ .home-hero-card[data-theme="blackfriday"]:after{font-size:54px;right:3%;top:16%}
+}
+.event-showcase[data-event-theme="blackfriday"]{border-color:#7a9a14;background:radial-gradient(circle at 80% 0%,#d4ff2a2a,transparent 30%),linear-gradient(160deg,#111114,#08080a 50%,#030304)}
+.event-showcase[data-event-theme="blackfriday"] .event-showcase-kicker{color:#d4ff2a}
+.event-showcase[data-event-theme="blackfriday"] .event-showcase-head h3{text-shadow:0 0 25px #b8f00077}
+.event-showcase[data-event-theme="blackfriday"] .event-showcase-head p{color:#d4ff2a;letter-spacing:.2em;font-weight:800}
+.event-showcase[data-event-theme="blackfriday"] .event-player .card-shell{filter:drop-shadow(0 0 10px #b8f00044)}
+.event-showcase[data-event-theme="blackfriday"] .event-meta{border-color:#3a4416;background:#10120a99}
+.blackfriday-preview{display:grid;gap:14px}
+.blackfriday-preview-cards{grid-template-columns:repeat(3,minmax(0,140px));justify-content:center;max-width:none}
+.blackfriday-preview-cards .card-shell{filter:drop-shadow(0 0 8px #b8f00066)}
+.blackfriday-preview-cards .face img{filter:brightness(0) drop-shadow(0 0 3px #b8f000)!important}
+.blackfriday-preview-cards .card-shell:after{color:#d4ff2a!important;text-shadow:0 0 10px #b8f000!important}
+.blackfriday-timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.blackfriday-timeline li{position:relative;padding:11px 12px 11px 16px;border:1px solid #2e3612;border-radius:12px;background:linear-gradient(140deg,#121410,#08080a)}
+.blackfriday-timeline li:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:3px;background:linear-gradient(#efff9a,#7aa600)}
+.blackfriday-timeline span{display:block;color:#d4ff2a;font-size:10px;font-weight:900;letter-spacing:.08em}
+.blackfriday-timeline strong{display:block;margin:3px 0;color:#f6ffe0;font-size:14px}
+.blackfriday-timeline p{margin:0;color:#c9d0bd;font-size:11px;line-height:1.45}
+/* Shop deals (Fr 27.11. 19:00 – Di 01.12. 19:00): crossed-out old coin price + deal badge. */
+.store-pack.blackfriday-deal .store-pack-art{position:relative}
+.store-pack.blackfriday-deal{border-color:#9bc21a;box-shadow:0 0 18px #b8f00022}
+.store-deal-old{display:inline-block;margin-right:4px;color:#8b9378;font-size:.82em;text-decoration:line-through;text-decoration-color:#d4ff2a}
+.store-deal-badge{position:absolute;left:8px;top:8px;z-index:3;padding:3px 7px;border-radius:7px;background:linear-gradient(120deg,#efff9a,#b8f000);color:#101400;font:900 11px/1.1 Arial,sans-serif;letter-spacing:.04em;box-shadow:0 0 12px #b8f00066}
+.store-deal-banner{margin:0 0 12px;padding:10px 12px;border:1px solid #9bc21a;border-radius:12px;background:radial-gradient(circle at 90% 0,#d4ff2a26,transparent 50%),#0b0c08;color:#efffbf;font-size:12px;font-weight:700}
+.store-deal-banner b{color:#d4ff2a}
+.store-pack-badge.blackfriday,.store-mix i.blackfriday{background:linear-gradient(120deg,#efff9a,#7aa600);color:#101400}
+.store-pack.blackfriday-pack{border-color:#9bc21a;background:radial-gradient(circle at 18% 10%,#d4ff2a22,transparent 45%),linear-gradient(150deg,#111114,#08080a)}

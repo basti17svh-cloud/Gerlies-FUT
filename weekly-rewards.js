@@ -2,8 +2,8 @@
 /* Footera weekly competition rewards – presentation only.
    The competition systems remain the sole source of ranks, rewards and claiming. */
 (function(){
- const MODE_NAMES={rivals:"Division Rivals",squad:"Squad Battles",champions:"Footera Champions"};
- const MODE_SHORT={rivals:"RIVALS",squad:"SQUAD BATTLES",champions:"CHAMPIONS"};
+ const MODE_NAMES={league:"Rivals-Freundesliga",rivals:"Division Rivals",squad:"Squad Battles",champions:"Footera Champions"};
+ const MODE_SHORT={league:"FREUNDESLIGA",rivals:"RIVALS",squad:"SQUAD BATTLES",champions:"CHAMPIONS"};
  let selectedKey="";
 
  function rewardKey(row){return String(row.mode)+"|"+String(row.week)}
@@ -13,10 +13,12 @@
    .slice().sort((a,b)=>Number(b.week)-Number(a.week));
  }
  function rankTitle(row){
+  if(row.mode==="league")return Number(row.place)>0?"Platz "+String(row.place)+" von "+String(row.players):"Teilnahme";
   if(row.mode==="rivals")return Number(row.division)===0?"Elite Division":"Division "+String(row.division);
   return String(row.rank||"Erreichter Rang");
  }
  function details(row){
+  if(row.mode==="league")return String(Number(row.points||0))+" Punkte · "+String(Number(row.wins||0))+"-"+String(Number(row.draws||0))+"-"+String(Number(row.losses||0))+" in der Freundesliga";
   if(row.mode==="rivals")return String(row.milestone||0)+" Wochenpunkte · "+(Number(row.milestone)>=35?"Upgrade-Belohnung":"Basisbelohnung");
   if(row.mode==="squad")return fmt(Number(row.points||0))+" Battle-Punkte";
   return String(Number(row.wins||0))+" Siege · "+String(Number(row.losses||0))+" Niederlagen";

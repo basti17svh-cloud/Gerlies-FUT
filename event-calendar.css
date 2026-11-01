@@ -1,0 +1,27 @@
+/* Event calendar in the Zentrale (V21.334): "Demnächst" list. */
+.home-calendar-panel[hidden]{display:none}
+.home-calendar-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.home-calendar-item{--cal:#d8ff5a;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:54px;padding:7px 10px 7px 7px;border:1px solid rgba(255,255,255,.07);border-left:3px solid var(--cal);border-radius:13px;background:rgba(255,255,255,.025);color:#fff;text-align:left;font:inherit;cursor:pointer}
+.home-calendar-item:active{transform:scale(.99)}
+.home-calendar-item.totw{--cal:#f2c94c}
+.home-calendar-item.event{--cal:#9fd0ff}
+.home-calendar-item.theme-halloween{--cal:#ff8a2a}
+.home-calendar-item.sbc{--cal:#4ef1b9}
+.home-calendar-item.sbc.theme-halloween{--cal:#ffb15c}
+.home-calendar-item.theme-blackfriday{--cal:#c6ff3d}
+.home-calendar-item.sbc.theme-blackfriday{--cal:#e4ff8a}
+.home-calendar-item.objective{--cal:#7ab8ff}
+.home-calendar-item.evo{--cal:#c29bff}
+.home-calendar-item.champions{--cal:#ff5d6c}
+.home-calendar-item.season{--cal:#d8ff5a}
+.home-calendar-date{display:grid;place-items:center;align-content:center;width:52px;height:42px;border-radius:10px;background:color-mix(in srgb,var(--cal) 14%,transparent);color:var(--cal);line-height:1.05}
+.home-calendar-date b{font-size:10.5px;font-weight:1000;letter-spacing:.04em}
+.home-calendar-date span{font-size:11px;font-weight:800;color:#e9efe9}
+.home-calendar-copy{min-width:0}
+.home-calendar-copy strong{display:-webkit-box;overflow:hidden;font-size:13px;line-height:1.25;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.home-calendar-copy small{display:-webkit-box;margin-top:2px;overflow:hidden;color:#9fada6;font-size:11px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.home-calendar-when{display:grid;justify-items:end;gap:1px;color:#e9efe9;white-space:nowrap;text-align:right}.home-calendar-when b{font-size:12px;font-weight:900}.home-calendar-when small{color:#8e9c95;font-size:10px;font-weight:700}
+
+.home-calendar-panel:not(.expanded) .home-calendar-extra{display:none}
+.home-calendar-more{display:block;margin:9px auto 0}
+.home-calendar-more[hidden]{display:none}
