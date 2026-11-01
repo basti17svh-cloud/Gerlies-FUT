@@ -7900,7 +7900,7 @@ function renderHomeMessages(){
  box.hidden=false;
  box.innerHTML=rows.map(row=>`<button type="button" class="home-unread-message" data-home-message-uid="${esc(row.uid)}"><span class="home-unread-message-icon">✉</span><span class="home-unread-message-copy"><strong>${row.count===1?"Neue Nachricht":"Neue Nachrichten"} von ${esc(row.name||"Freund")}</strong><small>${row.count===1?"1 ungelesene Nachricht":`${row.count} ungelesene Nachrichten`} · Tippen, um den Chat zu öffnen</small></span><span class="home-unread-message-action">ÖFFNEN ›</span></button>`).join("")
 }
-function renderHome(){const m=squadMetrics();renderHeaderClubName();renderHomeMessages();$("homeRating").textContent=m.rating||"–";$("homeChem").textContent=`${m.chem}/33`;$("homePlayers").textContent=state.club.length;renderHomeHero();renderCompetitionHome();renderHomeRewards();renderHomeProgress()}
+function renderHome(){const m=squadMetrics();renderHeaderClubName();renderHomeMessages();$("homeRating").textContent=m.rating||"–";$("homeChem").textContent=`${m.chem}/33`;$("homePlayers").textContent=state.club.length;renderHomeHero();renderCompetitionHome();renderHomeRewards();if(typeof renderHomeCalendar==="function")renderHomeCalendar();renderHomeProgress()}
 document.addEventListener("click",e=>{const btn=e.target.closest("[data-home-message-uid]");if(!btn)return;const friend=(state.friends||[]).find(f=>f?.onlineUid===btn.dataset.homeMessageUid);if(friend)window.FooteraOnline?.openChat?.(friend)})
 function renderSeason(){const sp=state.sp||0,next=SEASON_REWARDS.find(x=>sp<x.sp),max=SEASON_REWARDS[SEASON_REWARDS.length-1].sp,seasonSpEl=$("seasonSp"),seasonBarEl=$("seasonBar"),seasonTrackEl=$("seasonTrack");if(seasonSpEl)seasonSpEl.textContent=`${fmt(sp)} SP`;if(seasonBarEl)seasonBarEl.style.width=`${Math.min(100,sp/max*100)}%`;if(seasonTrackEl)seasonTrackEl.innerHTML=SEASON_REWARDS.map(x=>`<div class="season-level ${state.seasonClaims[x.level]?"done":next?.level===x.level?"current":""}"><strong>Level ${x.level} · ${fmt(x.sp)} SP</strong><span>${rewardText(seasonTierReward(x,"free"))}</span></div>`).join("")}
 function renderCampaigns(){const completedTasks=TASKS.filter(t=>(state.stats[t.stat]||0)>=t.target).length,grid=$("campaignGrid");if(grid)grid.innerHTML=CAMPAIGNS.map((c,i)=>`<div class="campaign-card" data-campaign="${i}"><h3>${c.title}</h3><p>${c.text}</p><b>${c.key==="season"?`Saison ${seasonInfo().number} · ${fmt(state.sp||0)} SP`:c.key==="evo"?(activeEvolutionCount()?`${activeEvolutionCount()}/3 Evolutionen aktiv`:"Keine Evolution aktiv"):`${completedTasks}/${TASKS.length} Objectives abgeschlossen`}</b></div>`).join("")}
@@ -8689,7 +8689,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.326";
+const GFUT_BUILD="V21.328";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8747,7 +8747,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21326",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21328",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
