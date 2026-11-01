@@ -30,7 +30,7 @@ jobs:
   mirror:
     # A database check on a pull request also completes that workflow; only real refreshes need a mirror run.
     if: github.event_name != 'workflow_run' || github.event.workflow_run.event != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
       SUPABASE_PROJECT_REF: idxydyrihtyecvfjvtuk
