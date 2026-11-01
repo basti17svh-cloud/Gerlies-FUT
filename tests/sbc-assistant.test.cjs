@@ -38,7 +38,7 @@ test('formation slots match the auto-fill positions',()=>{
 test('a striker in goal keeps his own position, shows a warning and earns no chemistry',()=>{
  const undav=card('ST',85,{uid:'undav',name:'Deniz Undav'});
  const t=setup({club:[undav],sbc:{id:'s',count:11,req:'11 Spieler',filter:()=>true}});
- assert.equal(t.run(`sbcPlaceUid('s','undav',0)`),true);
+ assert.equal(t.run(`sbcPlaceUid('s','undav','squad',0)`),true);
  const slot=t.run(`(()=>{const d=sbcDraft('s');return sbcWorkSlotHTML(getActiveSbcById('s'),0,{...FORMATIONS['4-3-3'][0],x:50,y:90},d,sbcDraftChemScores(d))})()`);
  assert.match(slot,/<card pos="ST">/);assert.doesNotMatch(slot,/pos="GK"/);
  assert.match(slot,/class="sbc-work-slot filled out"/);assert.match(slot,/poswarn/);
@@ -82,7 +82,7 @@ test('an unsolvable SBC leaves the squad untouched and names the missing require
  const t=setup({club,squad:[club[0].uid],sbc:{id:'hard',count:11,minAvg:85,req:'11 Spieler · Ø GES 85',filter:()=>true}});
  const before=t.squad();t.run('sbcQuickFill()');
  assert.deepEqual(t.squad(),before);assert.equal(t.writes(),0);
- assert.match(t.toasts.at(-1),/nicht lösbar: Ø GES 85\. Es wurde nichts eingesetzt/);
+ assert.match(t.toasts.at(-1),/Nicht lösbar mit diesen Einstellungen: Ø GES 85\. Es wurde nichts eingesetzt/);
 });
 
 test('too few fitting cards are reported instead of filled up',()=>{
@@ -95,7 +95,7 @@ test('too few fitting cards are reported instead of filled up',()=>{
 test('player search filters by nation, league and club and only offers cards the SBC accepts',()=>{
  const club=[card('ST',80,{uid:'de',nation:'Germany',name:'A'}),card('ST',81,{uid:'fr',nation:'France',league:'Ligue 1',team:'PSG',name:'B'}),card('ST',60,{uid:'bronze',quality:'bronze',nation:'France',name:'C'})];
  const t=setup({club,sbc:{id:'p',count:11,req:'11 Gold',filter:b=>b.quality==='gold'}});
- t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'ST',index:9}`);
+ t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'ST',area:'squad',index:9}`);
  assert.deepEqual(Array.from(t.run('sbcPickerCandidates()'),r=>r.item.uid),['de','fr']);
  t.run(`sbcPickerState.nation='France'`);assert.deepEqual(Array.from(t.run('sbcPickerCandidates()'),r=>r.item.uid),['fr']);
  t.run(`sbcPickerState.nation='';sbcPickerState.league='Bundesliga'`);assert.deepEqual(Array.from(t.run('sbcPickerCandidates()'),r=>r.item.uid),['de']);
@@ -104,13 +104,66 @@ test('player search filters by nation, league and club and only offers cards the
  assert.deepEqual(Array.from(opts.nations),['France','Germany']);
 });
 
+test('player search lists every fitting card, sorts by GES both ways and filters a GES range',()=>{
+ const club=Array.from({length:150},(_,i)=>card('GK',60+i%31,{uid:`gk${i}`,pid:`gk${i}`,name:`Keeper ${i}`}));
+ const t=setup({club,sbc:{id:'gk',count:11,req:'11 Spieler',filter:()=>true}});
+ t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'GK',area:'squad',index:0}`);
+ const all=Array.from(t.run('sbcPickerCandidates()'));
+ assert.equal(all.length,150);
+ t.run(`sbcPickerState.sort='high'`);assert.equal(t.run('sbcPickerCandidates()')[0].item.rating,90);
+ t.run(`sbcPickerState.sort='asc'`);const asc=Array.from(t.run('sbcPickerCandidates()'),r=>r.item.rating);
+ assert.equal(asc[0],60);assert.deepEqual(asc,[...asc].sort((a,b)=>a-b));
+ t.run(`sbcPickerState.min=82;sbcPickerState.max=84`);const range=Array.from(t.run('sbcPickerCandidates()'),r=>r.item.rating);
+ assert.ok(range.length>0&&range.every(r=>r>=82&&r<=84),JSON.stringify(range));
+ t.run(`sbcPickerState.min=0;sbcPickerState.max=99;sbcPickerState.limit=0`);
+ const page=t.run('sbcPickerResultsHTML()');
+ assert.equal((page.match(/data-sbc-pick-uid/g)||[]).length,60);assert.match(page,/60 weitere anzeigen · noch 90/);
+ t.run(`sbcPickerState.limit=180`);const full=t.run('sbcPickerResultsHTML()');
+ assert.equal((full.match(/data-sbc-pick-uid/g)||[]).length,150);assert.doesNotMatch(full,/weitere anzeigen/);
+});
+
 test('the same player never stands twice in one SBC, neither by auto-fill nor in the search',()=>{
  const club=[...fullClub(70).map((c,i)=>({...c,pid:`p${i}`})),card('CM',60,{uid:'dupe-cm',pid:'p5'})];
  const t=setup({club,storage:[card('CM',61,{uid:'store-cm',pid:'p6'})],sbc:{id:'dup',count:11,req:'11 Spieler',filter:()=>true}});
  t.run('sbcQuickFill()');
  const squad=t.squad(),pids=squad.map(uid=>[...club,{uid:'store-cm',pid:'p6'}].find(c=>c.uid===uid).pid);
  assert.equal(new Set(pids).size,11);
- t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'',index:0}`);
+ t.run(`sbcPickerState={...sbcDefaultPickerFilters(),position:'',area:'squad',index:0}`);
  const offered=Array.from(t.run('sbcPickerCandidates()'),r=>r.item.pid);
  assert.ok(offered.every(pid=>pid==='p0'||!pids.includes(pid)),JSON.stringify(offered));
+});
+
+test('players parked in the Testareal are used first and leave the Testareal when placed',()=>{
+ const club=[...fullClub(65),card('ST',88,{uid:'parked'})];
+ const t=setup({club,sbc:{id:'park',count:11,req:'11 Spieler',filter:()=>true}});
+ assert.equal(t.run(`sbcPlaceUid('park','parked','test',3)`),true);
+ assert.equal(t.run(`sbcDraft('park').testOpen`),true);
+ t.run('sbcQuickFill()');
+ assert.ok(t.squad().includes('parked'),'parked card is used despite its rating');
+ assert.equal(t.run(`sbcDraft('park').test[3]`),null);
+ assert.equal(t.squad().filter(Boolean).length,11);
+});
+
+test('a card can be dragged between the Testareal and a position and back',()=>{
+ const club=[card('ST',80,{uid:'a'}),card('GK',70,{uid:'b'})];
+ const t=setup({club,sbc:{id:'drag',count:11,req:'11 Spieler',filter:()=>true}});
+ t.run(`sbcPlaceUid('drag','a','test',0);sbcPlaceUid('drag','b','squad',9)`);
+ assert.equal(t.run(`sbcSwapSlots('drag','test',0,'squad',9)`),true);
+ assert.equal(t.squad()[9],'a');assert.equal(t.run(`sbcDraft('drag').test[0]`),'b');
+ assert.equal(t.run(`sbcRemoveUid('drag','test',0)`),true);assert.equal(t.run(`sbcDraft('drag').test[0]`),null);
+});
+
+test('assistant settings: quality, rating range and strict positions limit the auto-fill',()=>{
+ const gold=fullClub(80),silver=fullClub(70,{quality:'silver'});
+ const t=setup({club:[...gold,...silver],sbc:{id:'opt',count:11,req:'11 Spieler',filter:()=>true}});
+ t.run(`sbcQuickFill({...sbcAssistantDefaults(),quality:'gold'})`);
+ assert.ok(t.squad().every(uid=>gold.some(c=>c.uid===uid)),'only gold cards');
+ const t2=setup({club:[...gold,...silver],sbc:{id:'opt',count:11,req:'11 Spieler',filter:()=>true}});
+ t2.run(`sbcQuickFill({...sbcAssistantDefaults(),min:75,max:99})`);
+ assert.ok(t2.squad().every(uid=>gold.some(c=>c.uid===uid)),'rating range respected');
+ const noKeeper=FORM.slice(1).map(p=>card(p,70)).concat(card('ST',71));
+ const t3=setup({club:noKeeper,sbc:{id:'opt',count:11,req:'11 Spieler',filter:()=>true}});
+ t3.run(`sbcQuickFill({...sbcAssistantDefaults(),strictPositions:true})`);
+ assert.equal(t3.squad().filter(Boolean).length,0);assert.match(t3.toasts.at(-1),/passende Positionen/);
+ t3.run('sbcQuickFill()');assert.equal(t3.squad().filter(Boolean).length,11,'without the switch an outfield player may stand in goal');
 });
