@@ -1,4 +1,4 @@
-/* V21.331 BLACK FRIDAY: rosters, 5-week rule, timing, Deal des Tages SBCs, shop deals, no spoilers, assets. */
+/* V21.332 BLACK FRIDAY: rosters, 5-week rule, timing, Deal des Tages SBCs, shop deals, no spoilers, assets. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.join(__dirname,'..'),html=require('./helpers/app-html.cjs')(root);
 function section(from,to){const a=html.indexOf(from),b=html.indexOf(to,a);assert.ok(a>=0&&b>a,from);return html.slice(a,b)}
