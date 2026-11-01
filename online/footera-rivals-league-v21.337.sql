@@ -1,6 +1,6 @@
--- Footera V21.333: Wochen-Rivals Freundesliga.
+-- Footera V21.337: Wochen-Rivals Freundesliga.
 -- Each player reports their own Rivals results for the current league week
--- (Sunday 19:00 to Sunday 19:00, Europe/Berlin). Friends read each other's
+-- (Thursday 09:00 to Thursday 09:00, Europe/Berlin = the Division Rivals week). Friends read each other's
 -- weekly standing through a checked RPC; the table itself is never exposed.
 -- Rewards stay in the game's weekly reward rows (like Rivals/Squad Battles);
 -- the server only freezes the standings after the week plus a short grace.
@@ -25,12 +25,12 @@ create index if not exists footera_rivals_league_week_idx on public.footera_riva
 alter table public.footera_rivals_league enable row level security;
 revoke all on public.footera_rivals_league from public,anon,authenticated;
 
--- Start of the league week containing p_at: the latest Sunday 19:00 Berlin wall time.
+-- Start of the league week containing p_at: the latest Thursday 09:00 Berlin wall time.
 create or replace function public.footera_rivals_league_week(p_at timestamptz)
 returns timestamptz language plpgsql stable set search_path='' as $$
 declare l timestamp:=p_at at time zone 'Europe/Berlin'; s timestamp;
 begin
- s:=(l::date-extract(dow from l)::int)+time '19:00';
+ s:=(l::date-((extract(dow from l)::int-4+7)%7))+time '09:00';
  if s>l then s:=s-interval '7 days'; end if;
  return s at time zone 'Europe/Berlin';
 end $$;

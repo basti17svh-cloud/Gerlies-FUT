@@ -24,14 +24,28 @@ function setup({now='2026-11-04T12:00:00Z',friends=[],rpc=null,ready=true}={}){
  return{ctx,state,api,calls,setNow:iso=>{fixed=new Date(iso).getTime()},recordMatch:(result,home,away)=>vm.runInContext('recordCompetitionMatch',ctx)('rivals',result,home,away,{},'pro'),claim:(mode,week)=>vm.runInContext('claimCompetitionReward',ctx)(mode,week)};
 }
 
-test('league week runs Sunday 19:00 to Sunday 19:00 Berlin, including the clock changes',()=>{
- const {api}=setup();
- assert.equal(api.leagueWindow(new Date('2026-11-01T17:59:59Z')).start.toISOString(),'2026-10-25T18:00:00.000Z');
- assert.equal(api.leagueWindow(new Date('2026-11-01T18:00:00Z')).start.toISOString(),'2026-11-01T18:00:00.000Z');
- assert.equal(api.leagueWindow(new Date('2026-11-01T18:00:00Z')).end.toISOString(),'2026-11-08T18:00:00.000Z');
- // 25 Oct 2026 is the switch to winter time: 19:00 CEST before, 19:00 CET after.
- assert.equal(api.leagueWindow(new Date('2026-10-25T17:59:00Z')).start.toISOString(),'2026-10-18T17:00:00.000Z');
- assert.equal(api.leagueWindow(new Date('2027-03-28T17:00:00Z')).start.toISOString(),'2027-03-28T17:00:00.000Z');
+test('league week is the Rivals week: Thursday 09:00 to Thursday 09:00 Berlin, including the clock changes',()=>{
+ const {api,ctx}=setup();
+ assert.equal(api.leagueWindow(new Date('2026-11-05T07:59:59Z')).start.toISOString(),'2026-10-29T08:00:00.000Z');
+ assert.equal(api.leagueWindow(new Date('2026-11-05T08:00:00Z')).start.toISOString(),'2026-11-05T08:00:00.000Z');
+ assert.equal(api.leagueWindow(new Date('2026-11-05T08:00:00Z')).end.toISOString(),'2026-11-12T08:00:00.000Z');
+ // 25 Oct 2026 is the switch to winter time: the week from 22 Oct starts 09:00 CEST.
+ assert.equal(api.leagueWindow(new Date('2026-10-25T17:59:00Z')).start.toISOString(),'2026-10-22T07:00:00.000Z');
+ assert.equal(api.leagueWindow(new Date('2027-04-01T07:00:00Z')).start.toISOString(),'2027-04-01T07:00:00.000Z');
+ // Always identical to the Division Rivals reset.
+ for(const at of ['2026-11-01T12:00:00Z','2026-11-05T08:00:00Z','2027-03-28T12:00:00Z'])
+  assert.equal(api.leagueWindow(new Date(at)).key,vm.runInContext('competitionWindow',ctx)('rivals',new Date(at)).key);
+});
+
+test('games from the first Sunday-based weeks move into their Thursday week',()=>{
+ const {api,state}=setup({now:'2026-11-01T21:00:00Z'});
+ state.rivalsLeague={weeks:{'1793556000000':{wins:2,draws:1,losses:0,gf:5,ga:1,reported:3}}};
+ const key=api.leagueWindow().key;assert.equal(key,'1793260800000');
+ api.record('win',1,0);
+ const w=state.rivalsLeague.weeks[key];
+ assert.deepEqual({wins:w.wins,draws:w.draws,losses:w.losses,gf:w.gf,ga:w.ga},{wins:3,draws:1,losses:0,gf:6,ga:1});
+ assert.equal(state.rivalsLeague.weeks['1793556000000'],undefined);
+ assert.equal(state.rivalsLeague.schedule,'thu9');
 });
 
 test('every Rivals match counts with goals; other modes and the Rivals ladder stay unchanged',()=>{
@@ -58,15 +72,15 @@ test('standings sort by points, goal difference, goals, and need 3 games and 2 p
  assert.equal(api.finalPlace(key,rows),null);
 });
 
-test('Sunday evaluation waits for the grace period and a closed server board, then pays exactly once',async()=>{
+test('Thursday evaluation waits for the grace period and a closed server board, then pays exactly once',async()=>{
  let closed=false;
  const rows=()=>[{user_id:F1,club_name:'Rivale A',points:3,wins:1,draws:0,losses:2,goals_for:2,goals_against:4,closed},{user_id:ME,club_name:'FC Test',points:9,wins:3,draws:0,losses:0,goals_for:5,goals_against:1,closed}];
  const t=setup({now:'2026-11-04T12:00:00Z',friends:[F1],rpc:(name)=>name==='footera_rivals_league_board'?{data:rows(),error:null}:{data:{},error:null}});
  t.recordMatch('win',2,0);t.recordMatch('win',2,1);t.recordMatch('win',1,0);
  const key=t.api.leagueWindow().key;
- t.setNow('2026-11-08T18:05:00Z');
+ t.setNow('2026-11-05T08:05:00Z');
  assert.equal(await t.api.finalize(true),false,'still inside grace');
- t.setNow('2026-11-08T18:11:00Z');
+ t.setNow('2026-11-05T08:11:00Z');
  assert.equal(await t.api.finalize(true),false,'server board not closed yet');
  closed=true;
  assert.equal(await t.api.finalize(true),true);
@@ -85,15 +99,15 @@ test('Sunday evaluation waits for the grace period and a closed server board, th
 test('a failing server never invents a place; without friends the week is evaluated locally',async()=>{
  const failing=setup({friends:[F1],rpc:()=>({data:null,error:{message:'down'}})});
  failing.recordMatch('win',1,0);failing.recordMatch('win',1,0);failing.recordMatch('loss',0,1);
- failing.setNow('2026-11-08T19:00:00Z');
+ failing.setNow('2026-11-05T09:00:00Z');
  assert.equal(await failing.api.finalize(true),false);assert.equal(failing.state.weeklyRewards.length,0);
  const offline=setup({friends:[F1],ready:false});
  offline.recordMatch('win',1,0);offline.recordMatch('win',1,0);offline.recordMatch('loss',0,1);
- offline.setNow('2026-11-08T19:00:00Z');
+ offline.setNow('2026-11-05T09:00:00Z');
  assert.equal(await offline.api.finalize(true),false);
  const alone=setup({friends:[]});
  alone.recordMatch('draw',1,1);alone.recordMatch('draw',0,0);alone.recordMatch('loss',0,1);
- alone.setNow('2026-11-08T19:00:00Z');
+ alone.setNow('2026-11-05T09:00:00Z');
  assert.equal(await alone.api.finalize(true),true);
  const row=alone.state.weeklyRewards[0];assert.equal(row.place,0);assert.equal(row.reward.coins,2000);assert.equal(row.points,2);
  assert.equal(alone.calls.length,0,'no network needed without online friends');
@@ -110,11 +124,11 @@ test('reports send the full week and are not repeated once confirmed',async()=>{
 
 test('page wiring: script after friends hub, panels, reward centre and cache entries',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),rewards=read('weekly-rewards.js');
- assert.ok(html.indexOf('rivals-league.js?v=21333')>html.indexOf('friends-hub.js'));
+ assert.ok(html.indexOf('rivals-league.js?v=21337')>html.indexOf('friends-hub.js'));
  assert.match(html,/id="rvLeague"/);assert.match(html,/id="friendsLeague"/);
- assert.match(sw,/"\.\/rivals-league\.js\?v=21333"/);assert.match(sw,/"\.\/rivals-league\.css\?v=21333"/);
+ assert.match(sw,/"\.\/rivals-league\.js\?v=21337"/);assert.match(sw,/"\.\/rivals-league\.css\?v=21337"/);
  assert.match(sw,/"\.\/weekly-rewards\.js\?v=21333"/);assert.match(html,/weekly-rewards\.js\?v=21333/);
  assert.match(sw,/"\.\/competition-system\.js\?v=21333"/);assert.match(html,/competition-system\.js\?v=21333/);
  assert.match(rewards,/league:"Rivals-Freundesliga"/);
- assert.match(read('online/footera-rivals-league-v21.333.sql'),/footera_rivals_league_board/);
+ assert.match(read('online/footera-rivals-league-v21.337.sql'),/footera_rivals_league_board/);
 });
