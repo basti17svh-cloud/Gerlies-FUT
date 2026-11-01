@@ -1,4 +1,4 @@
--- Footera V21.329: Wochen-Rivals Freundesliga.
+-- Footera V21.333: Wochen-Rivals Freundesliga.
 -- Each player reports their own Rivals results for the current league week
 -- (Sunday 19:00 to Sunday 19:00, Europe/Berlin). Friends read each other's
 -- weekly standing through a checked RPC; the table itself is never exposed.

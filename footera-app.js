@@ -417,6 +417,7 @@ const PACKS=[
  {id:"pass-84x10",name:"10× 84+ Spieler-Pack",coins:null,points:null,type:"gold",count:10,min:84,max:99,composition:[{quality:"gold",count:10,min:84,max:99}],guarantee:84,rareCount:10,store:false,reward:true,desc:"10 Spieler · alle garantiert 84+",iconChance:0.003},
  {id:"pass-84x5",name:"5× 84+ Spieler-Pack",coins:null,points:null,type:"gold",count:5,min:84,max:99,composition:[{quality:"gold",count:5,min:84,max:99}],guarantee:84,rareCount:5,store:false,reward:true,desc:"5 Spieler · alle garantiert 84+",iconChance:0.002},
  {id:"pass-85x7",name:"7× 85+ Spieler-Pack",coins:null,points:null,type:"gold",count:7,min:85,max:99,composition:[{quality:"gold",count:7,min:85,max:99}],guarantee:85,rareCount:7,store:false,reward:true,desc:"7 Spieler · alle garantiert 85+",iconChance:0.004},
+ {id:"welcome",name:"Willkommens-Pack",coins:null,points:null,type:"gold",count:5,composition:[{quality:"gold",count:5,min:75,max:99}],guarantee:81,rareCount:2,store:false,reward:true,desc:"5 Goldspieler · 2 selten · mind. 1× 81+",iconChance:0},
  {id:"jumbo-gold",name:"Jumbo-Gold-Pack",coins:null,points:null,type:"gold",count:12,composition:[{quality:"gold",count:12,min:75,max:99}],rareCount:3,store:false,reward:true,desc:"12 Goldspieler · 3 selten",iconChance:0.0005},
  {id:"premium-electrum-reward",name:"Premium-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],rareCount:3,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 3 selten",iconChance:0.0007},
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
@@ -3867,7 +3868,7 @@ $("clearSquad").addEventListener("click",()=>{
 });
 $("leagueGrid").addEventListener("click",e=>{const b=e.target.closest("[data-league]");if(!b||b.disabled)return;state.starterLeague=b.dataset.league;const c=leagueChoice(state.starterLeague);$("leagueStep").style.display="none";$("starterStage").classList.add("active");$("starterTitle").textContent=`${c?.label||state.starterLeague} Starterset`;const st=buildStarter(state.starterLeague);$("starterOpen").disabled=!st;$("starterOpen").dataset.ready=st?"1":"0";$("starterInfo").textContent=st?"3 echte Goldkarten (75–80) · 4 echte Silberkarten · 11 echte Bronzekarten · Fehlende Bronze-Spieler kommen aus weiteren Ligen. Ratings werden nie verändert.":"Für diese Auswahl konnte kein valider 18er-Starterkader gebildet werden."})
 $("starterBack").addEventListener("click",prepareOnboarding);
-$("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=arrangeSquad(items,state.formation);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.")})
+$("starterOpen").addEventListener("click",async()=>{const bases=buildStarter(state.starterLeague);if(!bases)return;const btn=$("starterOpen");btn.disabled=true;$("starterPack").classList.add("pulse");await sleep(1600);const items=bases.map(b=>makeItem(b,false));state.club.push(...items);state.squad=arrangeSquad(items,state.formation);state.onboarded=true;state.stats.starter=1;state.stats.full=1;save();$("starterPack").classList.remove("pulse");$("onboard").classList.remove("active");renderAll();toast("Starterkader erhalten.");globalThis.FooteraTutorial?.begin()})
 
 function openFooteraPointsOverview(required,source,available=Number(state.points||0)){
  const pointsShop=window.FooteraPointsShop;
@@ -8690,7 +8691,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.329";
+const GFUT_BUILD="V21.333";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8748,7 +8749,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21329",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21333",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
