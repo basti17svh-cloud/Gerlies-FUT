@@ -10,7 +10,7 @@
       "tiktok": "video",
       "x": true
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-06-1230-halloween-teaser",
@@ -23,7 +23,7 @@
       "tiktok": "video",
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-06-1230-letzte-chance-rafael-leao",
@@ -36,7 +36,7 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-06-1230-letzte-chance-thomas-muller",
@@ -49,7 +49,7 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-06-1900-halloween-2026-team2",
@@ -62,7 +62,7 @@
       "tiktok": "video",
       "x": true
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-07-1900-halloween-mbeumo",
@@ -75,7 +75,7 @@
       "tiktok": "video",
       "x": true
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-08-1230-letzte-chance-kurbis-pick-team-1",
@@ -88,6 +88,6 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   }
 ]
