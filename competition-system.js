@@ -109,7 +109,7 @@ function claimCompetitionReward(mode,week){
  row.claimed=true;state.coins+=row.reward.coins||0;
  if(row.mode==="champions")state.points=(Number(state.points)||0)+Math.max(0,Number(row.reward.points)||0);
  for(const pack of row.reward.packs){state.packs[pack.id]=(state.packs[pack.id]||0)+1;if(!pack.tradeable)state.rewardPackQueue.push({id:pack.id,tradeable:false})}
- save();if(typeof flushSave==="function")flushSave();renderAll();globalThis.FooteraPlayerPicks?.refresh(true);if(currentViewId()==="playView")renderPlay();toast(`${mode==="champions"?"Champions":mode==="squad"?"Squad-Battles":"Rivals"}-Belohnung abgeholt.`);return true
+ save();if(typeof flushSave==="function")flushSave();renderAll();globalThis.FooteraPlayerPicks?.refresh(true);if(currentViewId()==="playView")renderPlay();toast(`${mode==="champions"?"Champions":mode==="squad"?"Squad-Battles":mode==="league"?"Freundesliga":"Rivals"}-Belohnung abgeholt.`);return true
 }
 function recordRivalsResult(result){
  const r=state.rivals,before={division:r.division,step:r.step,skill:r.skill,weekly:r.weeklyPoints,streak:r.streak};
