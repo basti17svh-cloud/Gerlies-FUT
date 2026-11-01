@@ -63,7 +63,7 @@ permissions:
   contents: read
 jobs:
   weekly-rewards:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
@@ -84,7 +84,7 @@ jobs:
           node --test tests/footera-backup.test.cjs tests/footera-opponent-styles.test.cjs tests/footera-opponent-balancing.test.cjs
 
   champions-points:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
