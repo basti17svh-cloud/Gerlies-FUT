@@ -69,6 +69,9 @@ function fakeClock(){
   snap=await snapshot();
   assert.equal(snap.hero?.teaser,true,"teaser from 20.11. 19:00");assert.equal(snap.heroShown,"blackfriday","teaser is the first home slide");
   assert.doesNotMatch(snap.text,SECRET,"20.11.: deal and objective players stay secret");
+  const calendar=await page.evaluate(()=>footeraEventCalendar(Date.now(),{limit:40}).map(r=>r.title+" "+r.sub).join("\n"));
+  assert.match(calendar,/BLACK FRIDAY/,"event calendar announces Black Friday");assert.match(calendar,/Coin-Packs −30 %/);assert.match(calendar,/Deal-Pick – Team 1/);
+  assert.doesNotMatch(calendar,SECRET,"20.11.: calendar keeps the deal players secret");
   const preview=await page.evaluate(()=>{openBlackFridayPreview();return{text:document.getElementById("opponentTeamModalBody").innerText,cards:document.querySelectorAll("#opponentTeamModalBody .custom-card.blackfriday").length}});
   assert.equal(preview.cards,3,"preview shows three silhouettes in the Black Friday design");assert.doesNotMatch(preview.text,SECRET);
   assert.match(preview.text,/Deal des Tages/);

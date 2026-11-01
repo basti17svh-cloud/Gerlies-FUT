@@ -19,6 +19,9 @@ on:
       - 'tests/story-pass.test.cjs'
       - 'tests/halloween-season2-time.browser.cjs'
       - 'tests/market-event-cards.browser.cjs'
+      - 'event-calendar.js'
+      - 'tests/event-calendar.test.cjs'
+      - 'tests/event-calendar.browser.cjs'
       - '.github/workflows/halloween-season2-time.yml'
 permissions:
   contents: read
@@ -32,7 +35,7 @@ jobs:
         with:
           node-version: '22'
       - name: Halloween, Season Pass and Story Pass rules
-        run: node --test tests/halloween-event.test.cjs tests/blackfriday-event.test.cjs tests/season-system.test.cjs tests/story-pass.test.cjs tests/totw-rules.test.cjs tests/promo-packs-release.test.cjs
+        run: node --test tests/halloween-event.test.cjs tests/blackfriday-event.test.cjs tests/season-system.test.cjs tests/story-pass.test.cjs tests/totw-rules.test.cjs tests/promo-packs-release.test.cjs tests/event-calendar.test.cjs
       - name: Install Chromium
         run: |
           npm install --prefix /tmp/footera-time-browser playwright@1.51.1
@@ -49,3 +52,7 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-time-browser/node_modules
         run: node tests/blackfriday-time.browser.cjs
+      - name: Event calendar in the Zentrale (no spoilers, 360/390/412 px)
+        env:
+          NODE_PATH: /tmp/footera-time-browser/node_modules
+        run: node tests/event-calendar.browser.cjs

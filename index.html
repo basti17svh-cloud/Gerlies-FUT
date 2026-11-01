@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.334</title>
+<title>Footera V21.335</title>
 <link rel="stylesheet" href="./footera-app.css?v=21315">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="./flashback-card.css?v=2173">
 <link rel="stylesheet" href="./story-card.css?v=21231">
 <link rel="stylesheet" href="./halloween-card.css?v=21294">
-<link rel="stylesheet" href="./blackfriday-card.css?v=21334">
+<link rel="stylesheet" href="./blackfriday-card.css?v=21335">
 <link rel="stylesheet" href="./halloween-cup.css?v=21300">
 <link rel="stylesheet" href="./tournaments.css?v=21311">
 <link rel="stylesheet" href="./evolution-card.css?v=21315">
@@ -63,6 +63,7 @@
 <link rel="stylesheet" href="./desktop-layout.css?v=21265">
 <link rel="stylesheet" href="./desktop-clarity.css?v=21268">
 <link rel="stylesheet" href="./sbc-simple.css?v=21326">
+<link rel="stylesheet" href="./event-calendar.css?v=21335">
 </head>
 <body>
 
@@ -133,7 +134,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.334</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.335</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -191,6 +192,14 @@
           <button class="home-link" data-go="storeView">Alle anzeigen →</button>
         </div>
         <div id="homeRewardGrid" class="home-reward-grid"></div>
+      </div>
+
+      <div id="homeCalendarPanel" class="home-panel home-calendar-panel" hidden>
+        <div class="home-section-head">
+          <div class="home-section-title"><span><svg viewBox="0 0 48 48"><path d="M8 11h32v30H8zM8 19h32M16 6v9M32 6v9"/><path d="M15 27h5M24 27h5M15 34h5"/></svg></span><div><h3>Demnächst</h3><p>Was in den nächsten 14 Tagen kommt.</p></div></div>
+        </div>
+        <ol id="homeCalendarList" class="home-calendar-list"></ol>
+        <button type="button" id="homeCalendarMore" class="home-link home-calendar-more" aria-controls="homeCalendarList" hidden></button>
       </div>
 
       <div class="home-panel">
@@ -708,10 +717,10 @@
 <script src="./playstyles.js?v=21271"></script>
 <script src="./footera-match-actions.js?v=21303"></script>
 <script src="./footera-time.js"></script>
-<script src="./footera-cosmetic-evolutions.js?v=21334"></script>
+<script src="./footera-cosmetic-evolutions.js?v=21335"></script>
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
-<script src="./footera-app.js?v=21334"></script>
+<script src="./footera-app.js?v=21335"></script>
 <script src="./season-system.js?v=21297"></script>
 <script src="./competition-system.js?v=21333"></script>
 <script src="./champions-system.js?v=21318"></script>
@@ -729,6 +738,7 @@
 <script src="./friends-hub.js"></script>
 <script src="./rivals-league.js?v=21333"></script>
 <script src="./potm.js?v=21315"></script>
+<script src="./event-calendar.js?v=21335"></script>
 <script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21300"></script>
