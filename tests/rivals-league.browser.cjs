@@ -1,4 +1,4 @@
-// Mobile check: real Rivals match finish feeds the Freundesliga; board, Sunday reward, claim and reload.
+// Mobile check: real Rivals match finish feeds the Freundesliga; board, Thursday reward, claim and reload.
 const {chromium}=require('playwright'),http=require('http'),fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
 const root=path.join(__dirname,'..');const mime={'.js':'text/javascript','.mjs':'text/javascript','.html':'text/html','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.csv':'text/csv','.png':'image/png','.webp':'image/webp'};
 const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(file===root)file=path.join(root,'index.html');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return}try{res.setHeader('Content-Type',mime[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file))}catch{res.writeHead(404).end()}});
@@ -28,7 +28,7 @@ const fakeOnline=([f1,f2,closed])=>{const o=window.FooteraOnline;o.ready=true;o.
   await p.evaluate(()=>{switchView('socialView',{push:false});FooteraFriendsHub.open('duels');FooteraRivalsLeague.render()});
   assert.equal(await p.evaluate(()=>document.querySelectorAll('#friendsLeague .rivals-league-table li').length),3);
   await p.setViewportSize({width:390,height:844});await p.locator('#friendsLeague').screenshot({path:path.join(root,'test-artifacts/rivals-league-friends.png')});
-  // Sunday 19:11: the week is closed on the server -> Platz 1 reward row, claim, reload keeps it claimed.
+  // Thursday 09:11: the week is closed on the server -> Platz 1 reward row, claim, reload keeps it claimed.
   await p.evaluate(fakeOnline,[F1,F2,true]);
   const row=await p.evaluate(async k=>{const realNow=Date.now;const end=FooteraRivalsLeague.leagueWindow().end.getTime()+11*60000;Date.now=()=>end;try{await FooteraRivalsLeague.finalize(true)}finally{Date.now=realNow}return state.weeklyRewards.find(r=>r.mode==='league'&&r.week===k)},key);
   assert.equal(row.place,1);assert.equal(row.players,3);assert.equal(row.reward.coins,12000);
@@ -42,5 +42,5 @@ const fakeOnline=([f1,f2,closed])=>{const o=window.FooteraOnline;o.ready=true;o.
   const after=await p.evaluate(k=>({claimed:state.weeklyRewards.filter(r=>r.mode==='league'&&r.week===k).map(r=>r.claimed),coins:state.coins,pack:state.packs['reward-84-1']}),key);
   assert.deepEqual(after,{claimed:[true],coins:before+12000,pack:1});
   const relevant=errors.filter(e=>/league|rivals|Freundesliga/i.test(e));
-  console.log('PASS: real Rivals finishes, board 360/390/412, friends area, Sunday reward, claim, reload',JSON.stringify(errors));
+  console.log('PASS: real Rivals finishes, board 360/390/412, friends area, Thursday reward, claim, reload',JSON.stringify(errors));
   if(relevant.length)throw Error(relevant.join('\n'));await ctx.close()}finally{await b.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exitCode=1});

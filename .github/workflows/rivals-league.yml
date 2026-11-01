@@ -24,7 +24,7 @@ jobs:
           sudo -u postgres createdb footera_test
           sudo -u postgres psql -q -d footera_test -v ON_ERROR_STOP=1 \
             -f tests/sql/auth-mock.sql \
-            -f online/footera-rivals-league-v21.333.sql \
+            -f online/footera-rivals-league-v21.337.sql \
             -f tests/sql/rivals-league.test.sql
       - name: Install browser
         run: |
