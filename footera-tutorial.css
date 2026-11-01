@@ -1,4 +1,4 @@
-/* Footera Einsteiger-Tutorial (V21.328) */
+/* Footera Einsteiger-Tutorial (V21.330) */
 .ft-coach{position:fixed;z-index:380;left:50%;transform:translateX(-50%);bottom:calc(var(--ft-nav,0px) + 10px);width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:12px 14px 13px;border-radius:14px;background:linear-gradient(160deg,#13201b,#0b1210);border:1px solid rgba(216,255,62,.55);box-shadow:0 14px 40px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.4);color:#eef5f1;font-size:13px;line-height:1.42;animation:ftIn .28s ease-out}
 .ft-coach[hidden]{display:none}
 .ft-coach.ft-top{bottom:auto;top:calc(76px + env(safe-area-inset-top))}

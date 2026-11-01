@@ -24,10 +24,10 @@ function setup(initial){
 }
 
 test("tutorial script and stylesheet ship with the build and the service worker",()=>{
- assert.match(html,/<script src="\.\/footera-tutorial\.js\?v=21328"><\/script>/);
- assert.match(html,/<link rel="stylesheet" href="\.\/footera-tutorial\.css\?v=21328">/);
- assert.match(worker,/"\.\/footera-tutorial\.js\?v=21328"/);
- assert.match(worker,/"\.\/footera-tutorial\.css\?v=21328"/);
+ assert.match(html,/<script src="\.\/footera-tutorial\.js\?v=21330"><\/script>/);
+ assert.match(html,/<link rel="stylesheet" href="\.\/footera-tutorial\.css\?v=21330">/);
+ assert.match(worker,/"\.\/footera-tutorial\.js\?v=21330"/);
+ assert.match(worker,/"\.\/footera-tutorial\.css\?v=21330"/);
  assert.ok(html.indexOf("footera-app.js")<html.indexOf("footera-tutorial.js"),"tutorial loads after the app");
 });
 

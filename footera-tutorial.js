@@ -1,5 +1,5 @@
 "use strict";
-/* Footera Einsteiger-Tutorial (V21.328)
+/* Footera Einsteiger-Tutorial (V21.330)
    Führt neue Clubs nach dem Starterset durch die ersten Minuten:
    Mannschaft, erstes Squad-Battles-Spiel, Willkommens-Pack, Transfermarkt, Ziele, SBC.
    Der Coach blockiert nichts: Er zeigt eine Sprechblase und markiert den nächsten Knopf.
