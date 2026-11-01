@@ -1,6 +1,7 @@
 "use strict";
-/* Footera V21.333 – Wochen-Rivals: Freundesliga.
-   Every Rivals match counts for the league week Sunday 19:00 → Sunday 19:00 (Berlin).
+/* Footera V21.337 – Wochen-Rivals: Freundesliga.
+   Every Rivals match counts for the league week Thursday 09:00 → Thursday 09:00 (Berlin),
+   i.e. exactly the Division Rivals week, so there is one weekly reset for both.
    Your own standing comes from this save; friends' standings come from the server.
    After the week (plus 10 minutes for late reports) the final place becomes a normal
    weekly reward row (mode "league"), claimed in the existing reward centre. */
@@ -15,11 +16,24 @@
  const PLACE_NAMES={1:"Platz 1",2:"Platz 2",3:"Platz 3"};
  const boards=new Map();let reportBusy=false,finalizeBusy=false,lastFinalize=0;
 
- function leagueWindow(at=new Date()){const start=berlinWeekStart(at,0,19);return{key:String(start.getTime()),start,end:berlinShiftDays(start,7,19)}}
- function weekEnd(key){return berlinShiftDays(new Date(Number(key)),7,19).getTime()}
+ const WEEKDAY=4,HOUR=9; // same as COMPETITION_WEEK.rivals
+ function leagueWindow(at=new Date()){const start=berlinWeekStart(at,WEEKDAY,HOUR);return{key:String(start.getTime()),start,end:berlinShiftDays(start,7,HOUR)}}
+ function weekEnd(key){return berlinShiftDays(new Date(Number(key)),7,HOUR).getTime()}
+ // V21.333 counted Sunday-19:00 weeks. Those few hours of games move into the
+ // Thursday week they belong to, so nobody loses a match after the switch.
+ function migrateWeeks(l){
+  for(const key of Object.keys(l.weeks)){
+   const start=new Date(Number(key));if(!Number.isFinite(start.getTime()))continue;
+   const target=leagueWindow(start).key;if(target===key)continue;
+   const from=l.weeks[key],into=l.weeks[target]={...blank(),...(l.weeks[target]||{})};
+   for(const f of["wins","draws","losses","gf","ga"])into[f]=(Number(into[f])||0)+(Number(from[f])||0);
+   into.reported=-1;delete l.weeks[key]
+  }
+ }
  function ensure(){
   const l=state.rivalsLeague&&typeof state.rivalsLeague==="object"?state.rivalsLeague:(state.rivalsLeague={});
   if(!l.weeks||typeof l.weeks!=="object"||Array.isArray(l.weeks))l.weeks={};
+  if(l.schedule!=="thu9"){migrateWeeks(l);l.schedule="thu9"}
   return l
  }
  function blank(){return{wins:0,draws:0,losses:0,gf:0,ga:0,reported:-1}}
@@ -131,8 +145,8 @@
    !board?'<p class="rivals-league-note">Rangliste wird geladen …</p>':"";
   const table=`<ol class="rivals-league-table">${rows.map(r=>`<li class="${r.me?"is-me":""}${matches(r)<QUALIFY?" is-open":""}"><b>${r.place}.</b><span class="rivals-league-club">${esc(r.club)}${r.me?" <em>Du</em>":""}</span><small>${matches(r)} Sp · ${r.wins}-${r.draws}-${r.losses} · ${r.gf}:${r.ga}</small><strong>${r.points}</strong></li>`).join("")}</ol>`;
   const need=Math.max(0,QUALIFY-matches(own||{}));
-  return `<div class="rivals-league"><div class="rivals-league-head"><small>WERTUNG SONNTAG 19:00 · ${esc(countdown(w.end.getTime()))}</small><strong>${own&&matches(own)>=QUALIFY&&rows.filter(r=>matches(r)>=QUALIFY).length>=2?`Du bist ${own.place}. von ${rows.filter(r=>matches(r)>=QUALIFY).length}`:need?`Noch ${need} Rivals-${need===1?"Spiel":"Spiele"} bis zur Wertung`:"Du bist in der Wertung"}</strong></div>${table}${status}
-   <details class="rivals-league-rewards"><summary>Belohnungen am Sonntag</summary><ul>${[1,2,3].map(p=>`<li><b>${PLACE_NAMES[p]}</b> ${esc(rewardSummary(p))}</li>`).join("")}<li><b>Dabei</b> ${esc(rewardSummary(0))}</li></ul><p>Sieg 3 Punkte, Remis 1 Punkt. Gewertet wird ab ${QUALIFY} Rivals-Spielen in der Woche. Platzierungen gibt es ab zwei Teilnehmern, sonst die Teilnahme-Belohnung.</p></details>
+  return `<div class="rivals-league"><div class="rivals-league-head"><small>WERTUNG DONNERSTAG 09:00 · ${esc(countdown(w.end.getTime()))}</small><strong>${own&&matches(own)>=QUALIFY&&rows.filter(r=>matches(r)>=QUALIFY).length>=2?`Du bist ${own.place}. von ${rows.filter(r=>matches(r)>=QUALIFY).length}`:need?`Noch ${need} Rivals-${need===1?"Spiel":"Spiele"} bis zur Wertung`:"Du bist in der Wertung"}</strong></div>${table}${status}
+   <details class="rivals-league-rewards"><summary>Belohnungen am Donnerstag</summary><ul>${[1,2,3].map(p=>`<li><b>${PLACE_NAMES[p]}</b> ${esc(rewardSummary(p))}</li>`).join("")}<li><b>Dabei</b> ${esc(rewardSummary(0))}</li></ul><p>Sieg 3 Punkte, Remis 1 Punkt. Gewertet wird ab ${QUALIFY} Rivals-Spielen in der Woche. Platzierungen gibt es ab zwei Teilnehmern, sonst die Teilnahme-Belohnung.</p></details>
    ${!friends?'<button type="button" class="secondary rivals-league-add" data-rivals-league-add>Freunde hinzufügen</button>':""}</div>`
  }
  function render(){
