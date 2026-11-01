@@ -408,5 +408,65 @@
     "overall": 82,
     "club": "Al Hilal",
     "source": "https://game-assets.fut.gg/2027/player-item/27-84137646.82afe753145b4aed0bf24c8ec9e84bb9bba435566fef1b8f4d91e79b21e8ebfc.webp"
+  },
+  {
+    "name": "Troy Parrott",
+    "id": "245902",
+    "game": 27,
+    "item": 50577550,
+    "file": "245902.png",
+    "overall": 82,
+    "club": "Real Betis",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50577550.c42fd3343983a400923b45df9e053e9e5f8971268f3278755dbf7773bc07ecea.webp"
+  },
+  {
+    "name": "Ayase Ueda",
+    "id": "252162",
+    "game": 27,
+    "item": 67361026,
+    "file": "252162.png",
+    "overall": 80,
+    "club": "LOSC",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-67361026.b4c5414ef5d2e994f2760213b376f61445fd7554c089df59fa8e400140286e0b.webp"
+  },
+  {
+    "name": "Savinho",
+    "id": "270409",
+    "game": 27,
+    "item": 50602057,
+    "file": "270409.png",
+    "overall": 83,
+    "club": "Spurs",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50602057.d722cf441a07d26d52151212b305521a33446772319fcc088148dde91150fc11.webp"
+  },
+  {
+    "name": "Crysencio Summerville",
+    "id": "251954",
+    "game": 27,
+    "item": 50583602,
+    "file": "251954.png",
+    "overall": 84,
+    "club": "Al Hilal",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50583602.1334f699ea655dca071414fa1c36372f0c08a148cb71d65148d2956bcd89cbae.webp"
+  },
+  {
+    "name": "Martin Ødegaard",
+    "id": "222665",
+    "game": 27,
+    "item": 50554313,
+    "file": "222665.png",
+    "overall": 87,
+    "club": "Arsenal",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50554313.7df61b1517476c10d8b4cfb32e9fdf231e6f096c93872636dca87eba94989620.webp"
+  },
+  {
+    "name": "Pedro Neto",
+    "id": "238616",
+    "game": 27,
+    "item": 50570264,
+    "file": "238616.png",
+    "overall": 83,
+    "club": "Chelsea",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-50570264.3ff2f43a0ce0b107c1f1b954d80b80ebce2a39c21f87356c63c3454ff4a1013a.webp"
   }
 ]

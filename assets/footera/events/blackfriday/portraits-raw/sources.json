@@ -244,5 +244,41 @@
     "id": "251566",
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/251566.png",
     "sha256": "00334a852d1eeab826d172fe77fe0a781b5cd5a4febbb41a6ae601bed07cd874"
+  },
+  {
+    "name": "Troy Parrott",
+    "id": "245902",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/245902.png",
+    "sha256": "23d73ad7f52793008926527fe278a53cec62d2ea9d1d44f34707ada3cde42766"
+  },
+  {
+    "name": "Ayase Ueda",
+    "id": "252162",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/252162.png",
+    "sha256": "8dc8ca1406bca2942a19b2f43810e06b928753e1c17f640d920bc6eb67c45f21"
+  },
+  {
+    "name": "Savinho",
+    "id": "270409",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/270409.png",
+    "sha256": "8b39035255f6f7a6c835443792b0aaf69752555cd4fe32726403f66097871c41"
+  },
+  {
+    "name": "Crysencio Summerville",
+    "id": "251954",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/251954.png",
+    "sha256": "3a177924298755add1b1015add8aedcef89b12e5011b175074f312b00a2a8c87"
+  },
+  {
+    "name": "Martin Ødegaard",
+    "id": "222665",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/222665.png",
+    "sha256": "3c54bdf9065a2e3d93f44f1a2abc727574ba8e4675b9493d14a7579983d57697"
+  },
+  {
+    "name": "Pedro Neto",
+    "id": "238616",
+    "source": "https://cdn.futwiz.com/assets/img/fc27/faces/238616.png",
+    "sha256": "1be854752ceebdc097855e7f36d401302fbb98baa175b15c347212a84f7e4d9f"
   }
 ]
