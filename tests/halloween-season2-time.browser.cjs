@@ -215,7 +215,10 @@ function fakeClock(){
   const heroCards=await page.evaluate(()=>{switchView("homeView",{push:false,scroll:false});renderAll();return[...document.querySelectorAll("#homeMomentumRoster [data-home-event-player]")].map(b=>b.getAttribute("aria-label"))});
   assert.match(heroCards[0]||"",/Semenyo/,"Team 2 hero opens with its top card, not the keepers ("+heroCards.join(" | ")+")");
   const team2Card=await page.evaluate(()=>{const pack=generatePack("halloween-pack",false),card=pack.find(i=>String(i.eventType||"").startsWith("halloween"));return card?{release:card.eventReleaseId,rating:itemRating(card),stored:card.displayRating}:null});
-  assert.equal(team2Card?.release,"halloween-2026-team2","new Blutmond packs contain a Team 2 card");assert.equal(team2Card.rating,team2Card.stored+1,"Team 2 cards carry the Blutmond upgrade");
+  assert.equal(team2Card?.release,"halloween-2026-team2","new Blutmond packs contain a Team 2 card");
+  const team2Price=await page.evaluate(()=>{const ev=HALLOWEEN_TEAM2_EVENT,info=ev.players.find(p=>p.pid==="241236"),base=eventResolveBase(info,0,ev.id),row=createMarketListing(base,{quality:"special",specialType:"event",eventReleaseId:ev.id},0);return{rating:listingRating(row),guide:transferSuggestedPrices({...row,pid:"241236"}).buy,price:row.price,round:marketRoundPrice(400000*1.15)}});
+  assert.equal(team2Price.rating,89,"Semenyo shows 88 +1");assert.equal(team2Price.guide,team2Price.round,"Team 2 Semenyo uses the approved anchor (+15 % Blutmond)");
+  assert.ok(team2Price.price>=team2Price.guide*.958&&team2Price.price<=team2Price.guide*1.042,"market offer close to the guide");assert.equal(team2Card.rating,team2Card.stored+1,"Team 2 cards carry the Blutmond upgrade");
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"06.11. 19:00: card keeps its Blutmond upgrade");
   // A Blutmond pack still unopened from the pass keeps its promise after the event.
   const late=await page.evaluate(()=>{const pack=generatePack("halloween-pack",false),card=pack.find(i=>i.eventType==="halloween");return{size:pack.length,rating:card?itemRating(card):0,stored:card?.displayRating||0}});
@@ -234,6 +237,10 @@ function fakeClock(){
   await boot(T.later);
   snap=await snapshot();
   assert.equal(snap.promo,"","the provisional second-week window has ended by 20.11.");
+  const afterEvent=await page.evaluate(()=>{const seen={};for(let i=0;i<120;i++){const card=generatePack("halloween-pack",false).find(c=>String(c.eventType||"").startsWith("halloween"));if(card)seen[card.eventReleaseId]=(seen[card.eventReleaseId]||0)+1}return{seen,slot:eventSlotEvents(PACKS.find(p=>p.id==="halloween-pack")).map(e=>e.id),fixed:eventSlotEvents(PACKS.find(p=>p.id==="halloween-team1-player")).map(e=>e.id)}});
+  assert.deepEqual(afterEvent.slot,["halloween-2026","halloween-2026-team2"],"after the event a Blutmond pack draws from both teams");
+  assert.ok(afterEvent.seen["halloween-2026"]>0&&afterEvent.seen["halloween-2026-team2"]>0,"both teams really come out of the pack "+JSON.stringify(afterEvent.seen));
+  assert.deepEqual(afterEvent.fixed,["halloween-2026"],"the Kürbis-Pick pack stays Team 1 only");
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"weeks later: still +1");
   assert.deepEqual(errors,[],"no JavaScript errors");
   console.log("halloween + season 2 time test ok");
