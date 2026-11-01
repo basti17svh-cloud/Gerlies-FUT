@@ -1,0 +1,80 @@
+name: Social-Autopilot (Event-Posts)
+# Builds Instagram/TikTok/X content for the upcoming in-game events and publishes the media on the
+# branch "social-media" (raw.githubusercontent URLs for Metricool/Typefully). Posting itself is done by
+# Claude after Basti's weekly OK; nothing here talks to a social network.
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+    inputs:
+      from:
+        description: 'Start (ISO, leer = jetzt)'
+        required: false
+        default: ''
+      days:
+        description: 'Tage voraus'
+        required: false
+        default: '8'
+      only:
+        description: 'Nur Posts, deren Schlüssel diesen Text enthält'
+        required: false
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: social-autopilot
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Chromium, Fonts, ffmpeg
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Posts erzeugen
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          CI: '1'
+        run: |
+          FROM="${{ github.event.inputs.from }}"; DAYS="${{ github.event.inputs.days }}"; ONLY="${{ github.event.inputs.only }}"
+          [ -n "$FROM" ] || FROM=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          [ -n "$DAYS" ] || DAYS=8
+          ARGS=(--out /tmp/social --from "$FROM" --days "$DAYS")
+          [ -n "$ONLY" ] && ARGS+=(--only "$ONLY")
+          node src/scripts/social/social-autopilot.cjs "${ARGS[@]}"
+      - name: Auf Branch social-media veröffentlichen
+        run: |
+          cd src
+          git config user.name 'Footera Social Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin social-media >/dev/null; then
+            git fetch --depth 1 origin social-media
+            git worktree add /tmp/pub FETCH_HEAD
+            cd /tmp/pub && git checkout -B social-media
+          else
+            git worktree add --detach /tmp/pub
+            cd /tmp/pub && git checkout --orphan social-media && git rm -rfq . && printf '# Footera Social-Autopilot\n\nAutomatisch erzeugte Event-Posts (posts/<id>/post.json + Bilder/Reel). Nicht mergen.\n' > README.md
+          fi
+          mkdir -p posts
+          for dir in /tmp/social/*/; do
+            id=$(basename "$dir")
+            # Already scheduled posts keep their media so the URLs in Metricool/Typefully stay valid.
+            if [ -f "posts/$id/scheduled.json" ]; then echo "behalten (eingeplant): $id"; continue; fi
+            rm -rf "posts/$id" && cp -r "$dir" "posts/$id"
+          done
+          node -e '
+            const fs=require("fs"),list=fs.readdirSync("posts").filter(d=>fs.existsSync(`posts/${d}/post.json`)).map(d=>{const p=JSON.parse(fs.readFileSync(`posts/${d}/post.json`,"utf8"));const s=fs.existsSync(`posts/${d}/scheduled.json`)?JSON.parse(fs.readFileSync(`posts/${d}/scheduled.json`,"utf8")):null;return{id:d,postAt:p.postAt,title:p.title,kind:p.kind,plan:p.plan,scheduled:!!s}}).sort((a,b)=>a.postAt.localeCompare(b.postAt));
+            fs.writeFileSync("index.json",JSON.stringify(list,null,2)+"\n")'
+          git add -A
+          git diff --cached --quiet && { echo "keine Änderungen"; exit 0; }
+          git commit -qm "social: Event-Posts $(date -u +%Y-%m-%d)"
+          git push origin social-media
