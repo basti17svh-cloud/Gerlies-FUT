@@ -9,7 +9,7 @@
  const VERSION=1;
  const PACK_ID="welcome";
  const FINISH_COINS=2500;
- const BLOCKERS=["#bootIntro","#dbGate","#onboard.active","#opening.active","#match.active","#footeraAccountDialog","#usernameRequiredModal.active","#footeraAnalyticsConsent"];
+ const BLOCKERS=["#bootIntro","#dbGate","#onboard.active","#opening.active","#match.active","#footeraAccountDialog","#usernameRequiredModal.active","#footeraAnalyticsConsent","#footeraInstallHint"];
  const STEPS=[
   {id:"welcome",title:"Willkommen bei Footera",
    text:()=>`Dein Club <b>${esc(clubName())}</b> ist gegründet. In ein paar Minuten zeige ich dir, wie alles funktioniert. Am Ende warten ein <b>Willkommens-Pack</b> und <b>${fmtNum(FINISH_COINS)} Coins</b>.`,
@@ -41,7 +41,7 @@
    button:`${fmtNum(FINISH_COINS)} Coins abholen`}
  ];
  const STEP_IDS=STEPS.map(s=>s.id);
- let root=null,ring=null,timer=0,confirmSkip=false,lastTarget=null,lastKey="";
+ let root=null,ring=null,timer=0,confirmSkip=false,lastTarget=null,lastKey="",offscreenTicks=0,scrolledFor=null;
 
  function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
  function fmtNum(n){return Number(n||0).toLocaleString("de-DE")}
@@ -176,11 +176,16 @@
  }
  function placeRing(el){
   if(!el){ring.hidden=true;lastTarget=null;return}
-  if(el!==lastTarget){
-   lastTarget=el;
-   const r=el.getBoundingClientRect(),inNav=!!el.closest(".nav");
-   if(!inNav&&(r.top<70||r.bottom>window.innerHeight-90))try{el.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}
+  if(el!==lastTarget){lastTarget=el;offscreenTicks=0;scrolledFor=null}
+  {
+   // Erst nach zwei Takten scrollen: Ein Ansichtswechsel scrollt selbst nach oben und darf nicht unterbrochen werden.
+   const r=el.getBoundingClientRect(),inNav=!!el.closest(".nav"),off=!inNav&&(r.top<70||r.bottom>window.innerHeight-90);
+   offscreenTicks=off?offscreenTicks+1:0;
+   if(off&&offscreenTicks>=2&&scrolledFor!==el){scrolledFor=el;try{el.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}}
   }
+  positionRing(el);
+ }
+ function positionRing(el){
   const r=el.getBoundingClientRect(),pad=4;
   ring.style.left=(r.left-pad)+"px";ring.style.top=(r.top-pad)+"px";ring.style.width=(r.width+pad*2)+"px";ring.style.height=(r.height+pad*2)+"px";
   ring.hidden=false;
@@ -194,7 +199,7 @@
  }
 
  function tick(){if(active())render(false);else hide()}
- function startLoop(){if(timer)return;timer=setInterval(tick,400);addEventListener("resize",()=>render(false));addEventListener("scroll",()=>{if(active()&&lastTarget&&ring&&!ring.hidden)placeRing(lastTarget)},{passive:true})}
+ function startLoop(){if(timer)return;timer=setInterval(tick,400);addEventListener("resize",()=>render(false));addEventListener("scroll",()=>{if(active()&&lastTarget&&ring&&!ring.hidden)positionRing(lastTarget)},{passive:true})}
 
  function begin(){
   const s=app();if(!s)return;
