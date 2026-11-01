@@ -169,7 +169,7 @@ test('Gyökeres runs one full week as a Halloween SBC and Mbeumo opens Team 2 a 
  assert.equal(ctx.eventSbcPlayerIsActive(week,Date.parse('2026-11-02T18:59:00+01:00')),false);
  assert.equal(ctx.eventSbcPlayerIsActive(week,Date.parse('2026-11-08T12:00:00+01:00')),true);
  assert.equal(ctx.eventSbcPlayerIsActive(week,Date.parse('2026-11-09T19:00:00+01:00')),false);
- assert.match(html,/eventSbcNamedTitle\(sample\)\{return \["flashback","halloween"\]\.includes\(eventThemeOf/);
+ assert.match(html,/eventSbcNamedTitle\(sample\)\{return \["flashback","halloween"(,"[a-z]+")*\]\.includes\(eventThemeOf/);
 });
 
 test('the Team 2 objective (Son) counts Rivals wins and the second Blutmond evolution covers 80-85 cards',()=>{

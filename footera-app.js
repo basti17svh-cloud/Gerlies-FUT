@@ -380,6 +380,8 @@ EVOLUTION_POOL.push(...[{"id":"s1_low_vereinsprojekt","name":"Vereinsprojekt","s
 EVOLUTION_POOL.push(...[{"id":"s1_elite_sturm","name":"Elite-Torjäger","subtitle":"82–85 GES · Abschluss auf Topniveau","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":55000,"points":400},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":93,"pas":86,"dri":93,"def":75,"phy":91},"req":{"minOvr":82,"maxOvr":85,"positions":["ST","CF","LW","RW"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"sho":2,"dri":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"sho":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2,"phy":2},"playstylePlus":"Finesse Shot","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_spielmacher","name":"Spielmacher 88","subtitle":"82–85 GES · Pässe und Übersicht","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":70000,"points":500},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":90,"pas":93,"dri":93,"def":87,"phy":89},"req":{"minOvr":82,"maxOvr":85,"positions":["CM","CAM","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":1,"phy":1},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pas":2,"dri":2},"playstylePlus":"Incisive Pass","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_abwehr","name":"Abwehrchef 88","subtitle":"82–85 GES · Abwehr und Physis","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":65000,"points":450},"maxFinalOvr":88,"statCaps":{"pac":90,"sho":73,"pas":87,"dri":86,"def":93,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["CB","LB","RB","CDM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"def":2,"phy":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pac":1,"def":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"def":2,"phy":2},"playstylePlus":"Anticipate","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_fluegel","name":"Dynamischer Flügel","subtitle":"82–84 GES · Ziel 87 GES","group":"s1-elite","lane":"elite","band":"82–84","signupDays":7,"completionDays":14,"cost":{"coins":45000,"points":350},"maxFinalOvr":87,"statCaps":{"pac":93,"sho":90,"pas":89,"dri":93,"def":74,"phy":85},"req":{"minOvr":82,"maxOvr":84,"positions":["LW","RW","LM","RM"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":2,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"pac":1,"sho":2},"playstylePlus":"Rapid","label":"Stufe 3"}],"catchUpToCap":true},{"id":"s1_elite_keeper","name":"Letzte Bastion","subtitle":"82–85 GES · Torwart bis 87","group":"s1-elite","lane":"elite","band":"82–85","signupDays":7,"completionDays":14,"cost":{"coins":40000,"points":300},"maxFinalOvr":87,"statCaps":{"pac":88,"sho":88,"pas":88,"dri":93,"def":88,"phy":93},"req":{"minOvr":82,"maxOvr":85,"positions":["GK"],"maxPlaystyles":7},"stages":[{"matches":4,"wins":1,"ovr":1,"stats":{"dri":2,"phy":1},"label":"Stufe 1"},{"matches":6,"wins":2,"ovr":1,"stats":{"pas":1,"dri":2},"label":"Stufe 2"},{"matches":8,"wins":3,"ovr":1,"stats":{"dri":2,"phy":2},"playstylePlus":"Footwork","label":"Stufe 3"}],"catchUpToCap":true}]);
 // Event evolutions have their own fixed window and end in the event's card design (applyEvoStage sets cosmeticDesign).
 EVOLUTION_POOL.push({"id":"halloween_blutmond","name":"Blutmond-Evolution","subtitle":"Halloween · deine Karte im Blutmond-Design","group":"event","lane":"event","band":"HALLOWEEN","design":"halloween","activeFrom":"2026-10-30T19:00:00+01:00","activeUntilAt":"2026-11-06T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":90,"phy":92},"req":{"minOvr":78,"maxOvr":84,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"dri":2,"phy":1},"label":"Geisterstunde"},{"matches":4,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2},"label":"Kürbisnacht"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"First Touch","label":"Blutmond"}]});
+EVOLUTION_POOL.push({"id":"blackfriday_neon","name":"Neon-Deal-Evolution","subtitle":"Black Friday · deine Karte im Neon-Deal-Design","group":"event","lane":"event","band":"BLACK FRIDAY","design":"blackfriday","activeFrom":"2026-11-27T19:00:00+01:00","activeUntilAt":"2026-12-04T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":88,"statCaps":{"pac":93,"sho":92,"pas":92,"dri":93,"def":90,"phy":92},"req":{"minOvr":78,"maxOvr":84,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":2,"dri":1,"phy":1},"label":"Doorbuster"},{"matches":4,"wins":2,"ovr":1,"stats":{"sho":2,"pas":2},"label":"Warenkorb"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"Quick Step","label":"Ausverkauft"}]});
+EVOLUTION_POOL.push({"id":"blackfriday_cyber","name":"Cyber-Evolution","subtitle":"Black Friday Team 2 · deine Karte im Neon-Deal-Design","group":"event","lane":"event","band":"BLACK FRIDAY","design":"blackfriday","activeFrom":"2026-12-04T19:00:00+01:00","activeUntilAt":"2026-12-11T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":89,"statCaps":{"pac":94,"sho":93,"pas":93,"dri":94,"def":91,"phy":93},"req":{"minOvr":80,"maxOvr":85,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"sho":1,"dri":1},"label":"Cyber Monday"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"def":1,"phy":1},"label":"Blitzangebot"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"Technical","label":"Neonnacht"}]});
 EVOLUTION_POOL.push({"id":"halloween_blutmond_2","name":"Blutmond-Evolution II","subtitle":"Halloween Team 2 · deine Karte im Blutmond-Design","group":"event","lane":"event","band":"HALLOWEEN","design":"halloween","activeFrom":"2026-11-06T19:00:00+01:00","activeUntilAt":"2026-11-13T19:00:00+01:00","completionDays":14,"cost":{"coins":0,"points":0},"maxFinalOvr":89,"statCaps":{"pac":94,"sho":93,"pas":93,"dri":94,"def":91,"phy":93},"req":{"minOvr":80,"maxOvr":85,"baseCardsOnly":true,"positions":["CB","LB","RB","LWB","RWB","CDM","CM","CAM","LM","RM","LW","RW","CF","ST"],"maxPlaystyles":8},"stages":[{"matches":3,"wins":1,"ovr":1,"stats":{"pac":1,"sho":1,"dri":1},"label":"Nebelnacht"},{"matches":4,"wins":2,"ovr":1,"stats":{"pas":2,"def":1,"phy":1},"label":"Geisterzug"},{"matches":5,"wins":3,"ovr":2,"stats":{"pac":1,"sho":1,"pas":1,"dri":2,"def":1,"phy":1},"playstyle":"Technical","label":"Vollmond"}]});
 const EVOLUTION_SEASON_MAX_OVR=88,EVOLUTION_GLOBAL_STAT_CAP=93;
 const EVOLUTIONS=EVOLUTION_POOL;
@@ -423,7 +425,8 @@ const PACKS=[
  {id:"small-prime-gold",name:"Small-Prime-Goldspieler-Pack",coins:null,points:null,type:"gold",count:6,composition:[{quality:"gold",count:6,min:75,max:99}],guarantee:80,rareCount:3,store:false,reward:true,desc:"6 Goldspieler · 3 selten · mind. 1× 80+",iconChance:0.001},
  {id:"prime-electrum-reward",name:"Prime-Electrum-Spieler-Pack",coins:null,points:null,type:"mixed",count:12,composition:[{quality:"gold",count:6,min:75,max:99},{quality:"silver",count:6,min:65,max:74}],guarantee:80,rareCount:6,store:false,reward:true,desc:"12 Spieler · 6 Gold, 6 Silber · 6 selten · mind. 1× 80+",iconChance:0.001},
  {id:"halloween-pack",name:"HALLOWEEN-Blutmond-Pack",coins:60000,points:null,type:"gold",count:6,composition:[{quality:"gold",count:5,min:75,max:99}],guarantee:83,rareCount:5,store:true,reward:false,promo:true,rotation:true,packKind:"players",eventSlot:"halloween-2026",desc:"6 Spieler · 1 HALLOWEEN-Karte garantiert · 5 seltene Goldspieler · mind. 1× 83+",tag:"HALLOWEEN",iconChance:0.002,dailyLimit:3,resetHour:19},
- {id:"halloween-team1-player",name:"HALLOWEEN Team-1-Spieler",coins:null,points:null,type:"special",count:1,store:false,reward:true,packKind:"players",eventSlot:"halloween-2026",eventSlotFixed:true,desc:"1 Spieler · 1 HALLOWEEN-Karte aus Team 1 garantiert",tag:"HALLOWEEN"},
+ {id:"blackfriday-team1-player",name:"BLACK FRIDAY Team-1-Spieler",coins:null,points:null,type:"special",count:1,store:false,reward:true,packKind:"players",eventSlot:"blackfriday-2026",eventSlotFixed:true,desc:"1 Spieler · 1 BLACK-FRIDAY-Karte aus Team 1 garantiert",tag:"BLACK FRIDAY"},
+{id:"halloween-team1-player",name:"HALLOWEEN Team-1-Spieler",coins:null,points:null,type:"special",count:1,store:false,reward:true,packKind:"players",eventSlot:"halloween-2026",eventSlotFixed:true,desc:"1 Spieler · 1 HALLOWEEN-Karte aus Team 1 garantiert",tag:"HALLOWEEN"},
  {id:"event-sbc-player",name:"Event-SBC-Spieler-Pack",coins:null,points:null,type:"special",count:1,min:0,max:99,store:false,reward:false,desc:"1 untauschbarer Event-SBC-Spieler",iconChance:0},
  {id:FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive B. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
  {id:MARCO_FOUNDER_PACK_ID,name:"FOOTERA FOUNDER Pack · M. Gerlach",coins:null,points:null,type:"founder",count:1,min:88,max:88,store:false,reward:false,desc:"Exklusive M. Gerlach Founder-Karte · einmalig für diese Vereins-ID",iconChance:0},
@@ -1573,6 +1576,16 @@ const EVENT_OBJECTIVES=[{
  eventName:"HALLOWEEN",eventType:"halloween-objective",releaseId:"halloween-objective-son",activeFrom:"2026-11-06T19:00:00+01:00",activeUntilAt:"2026-11-13T19:00:00+01:00",
  mode:"rivals",target:6,reward:{eventObjective:"halloween-son"},
  player:{pid:"200104",name:"Son Heung Min",ovr:86,baseOvr:81,position:"ST",alt:"LW,CAM,LM",baseAlt:"LW,CAM,LM",baseStats:[81,81,79,80,41,74],team:"LAFC",nation:"Korea Republic",league:"MLS",stats:[88,88,85,86,47,80],playstylePlusAdds:["finesse-shot"],dynamicFace:"assets/footera/events/halloween/dynamic/200104.webp"}
+},{
+ id:"blackfriday-lewandowski",key:"event:blackfriday-lewandowski",group:"event",title:"BLACK FRIDAY: Robert Lewandowski",desc:"Gewinne 8 Squad-Battles-Partien auf mindestens Profi.",
+ eventName:"BLACK FRIDAY",eventType:"blackfriday-objective",releaseId:"blackfriday-objective-lewandowski",activeFrom:"2026-11-27T19:00:00+01:00",activeUntilAt:"2026-12-04T19:00:00+01:00",
+ mode:"squad",minDifficulty:"pro",target:8,reward:{eventObjective:"blackfriday-lewandowski"},
+ player:{pid:"188545",dynamicFace:"assets/footera/events/blackfriday/dynamic/188545.webp",name:"Robert Lewandowski",ovr:88,position:"ST",baseOvr:84,team:"Chicago Fire FC",league:"MLS",nation:"Poland",alt:"",baseStats:[67,85,79,80,44,80],baseAlt:"",stats:[81, 92, 84, 85, 49, 85],playstylePlusAdds:["low-driven-shot"]}
+},{
+ id:"blackfriday-odegaard",key:"event:blackfriday-odegaard",group:"event",title:"BLACK FRIDAY: Martin Ødegaard",desc:"Gewinne 6 Rivals-Partien.",
+ eventName:"BLACK FRIDAY",eventType:"blackfriday-objective",releaseId:"blackfriday-objective-odegaard",activeFrom:"2026-12-04T19:00:00+01:00",activeUntilAt:"2026-12-11T19:00:00+01:00",
+ mode:"rivals",target:6,reward:{eventObjective:"blackfriday-odegaard"},
+ player:{pid:"222665",dynamicFace:"assets/footera/events/blackfriday/dynamic/222665.webp",name:"Martin Ødegaard",ovr:89,position:"CAM",baseOvr:86,team:"Arsenal",league:"Premier League",nation:"Norway",alt:"CM",baseStats:[65,78,88,87,66,63],baseAlt:"CAM",stats:[77, 82, 92, 91, 70, 67],playstylePlusAdds:["tiki-taka"]}
 }];
 function activeEventObjectives(at=Date.now()){return EVENT_OBJECTIVES.filter(task=>eventPackIsActive(task,at))}
 function eventObjectiveProgress(task){return Math.min(task.target,Math.max(0,Number(state.eventObjectives?.[task.id]?.progress||0)))}
@@ -1685,7 +1698,71 @@ const HALLOWEEN_WEEK_SBC_EVENT={id:"halloween-2026-gyokeres",name:"HALLOWEEN",sh
   {name:"Nebel über Stockholm – 84er-Team",desc:"Teil 2/3 · Grüße aus Schweden.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus Schweden",minAvg:84,requiredNation:"Sweden",reward:{pack:"82",qty:1}},
   {name:"Geisterstadion – 85er-Team",desc:"Teil 3/3 · Flutlicht in London.",req:"11 Spieler · Ø GES 85 · min. 1 Premier-League-Spieler",minAvg:85,requiredLeague:"Premier League",reward:{pack:"goldplayers",qty:1}}
  ]}};
-const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,HALLOWEEN_TEAM2_EVENT,HALLOWEEN_WEEK_SBC_EVENT,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
+// BLACK FRIDAY 2026 (Basti 2026-11-01): own neon card design (blackfriday-card.css), two teams of 18 real FC27 players
+// (5-week rule, one player per club, EA dynamic pictures), a surprise "Deal des Tages" SBC every evening Fr 27.11.–Mo 30.11.
+// (each one runs a full week, Basti 2026-10-28) and 30 % off every coin pack in the shop until Di 01.12. 19:00.
+const BLACKFRIDAY_EVENT={id:"blackfriday-2026",name:"BLACK FRIDAY",shortName:"BLACK FRIDAY 1",subtitle:"NEON-DEALS · TEAM 1",theme:"blackfriday",activeFrom:"2026-11-27T19:00:00+01:00",activeUntilAt:"2026-12-04T19:00:00+01:00",activeUntil:"04.12.2026 · 19:00",
+ sbcPlayer:{id:"blackfriday-kvaratskhelia-91",pid:"247635",dynamicFace:"assets/footera/events/blackfriday/dynamic/247635.webp",name:"Khvicha Kvaratskhelia",ovr:91,position:"LW",team:"Paris SG",league:"Ligue 1 McDonald's",nation:"Georgia",alt:"RW,LM,RM",stats:[89, 88, 87, 93, 62, 84],playstylePlusAdds:["technical"],names:["Khvicha Kvaratskhelia","Kvaratskhelia"],blurb:"Paris SG · Ligue 1, der Doorbuster zum Black-Friday-Start. ",releaseAt:"2026-11-27T19:00:00+01:00",activeUntilAt:"2026-12-04T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Doorbuster – 83er-Team",desc:"Teil 1/4 · Der erste Deal des Wochenendes.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
+  {name:"Georgien-Deal – 84er-Team",desc:"Teil 2/4 · Grüße aus Tiflis.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus Georgien",minAvg:84,requiredNation:"Georgia",reward:{pack:"82",qty:1}},
+  {name:"Paris bei Nacht – 85er-Team",desc:"Teil 3/4 · Neonlicht über dem Prinzenpark.",req:"11 Spieler · Ø GES 85 · min. 1 Ligue-1-Spieler",minAvg:85,requiredLeague:"Ligue 1",reward:{pack:"goldplayers",qty:1}},
+  {name:"Ausverkauft – 86er-Team",desc:"Teil 4/4 · Nur solange der Vorrat reicht.",req:"11 Spieler · Ø GES 86 · min. 2 selten",minAvg:86,minRare:2,reward:{pack:"85",qty:1}}
+ ]},
+ players:[
+ {pid:"230621",dynamicFace:"assets/footera/events/blackfriday/dynamic/230621.webp",name:"Gianluigi Donnarumma",ovr:91,position:"GK",baseOvr:89,team:"Manchester City",league:"Premier League",nation:"Italy",alt:"",stats:[93, 87, 81, 93, 53, 91],playstylePlusAdds:["far-reach"]},
+ {pid:"242879",dynamicFace:"assets/footera/events/blackfriday/dynamic/242879.webp",name:"Maarten Vandevoordt",ovr:82,position:"GK",baseOvr:78,team:"RB Leipzig",league:"Bundesliga",nation:"Belgium",alt:"",stats:[85, 82, 87, 83, 60, 81],playstylePlusAdds:["footwork"]},
+ {pid:"252145",dynamicFace:"assets/footera/events/blackfriday/dynamic/252145.webp",name:"Nuno Mendes",ovr:90,position:"LB",baseOvr:89,team:"Paris SG",league:"Ligue 1 McDonald's",nation:"Portugal",alt:"LM",stats:[96, 79, 82, 88, 86, 82],playstylePlusAdds:["rapid"]},
+ {pid:"210514",dynamicFace:"assets/footera/events/blackfriday/dynamic/210514.webp",name:"João Cancelo",ovr:87,position:"LB",baseOvr:83,team:"FC Barcelona",league:"LALIGA EA SPORTS",nation:"Portugal",alt:"RB,RM,LM",stats:[89, 79, 89, 90, 82, 77],playstylePlusAdds:["pinged-pass"]},
+ {pid:"229891",dynamicFace:"assets/footera/events/blackfriday/dynamic/229891.webp",name:"Julian Ryerson",ovr:84,position:"RB",baseOvr:82,team:"Borussia Dortmund",league:"Bundesliga",nation:"Norway",alt:"LB,RM,LM",stats:[82, 66, 79, 80, 81, 85],playstylePlusAdds:["relentless"]},
+ {pid:"266039",dynamicFace:"assets/footera/events/blackfriday/dynamic/266039.webp",name:"Pubill",ovr:84,position:"CB",baseOvr:81,team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Spain",alt:"RB",stats:[83, 60, 75, 78, 85, 86],playstylePlusAdds:["anticipate"]},
+ {pid:"220821",dynamicFace:"assets/footera/events/blackfriday/dynamic/220821.webp",name:"Carl Starfelt",ovr:82,position:"CB",baseOvr:78,team:"Celta",league:"LALIGA EA SPORTS",nation:"Sweden",alt:"",stats:[78, 36, 63, 74, 83, 85],playstylePlusAdds:["block"]},
+ {pid:"242000",dynamicFace:"assets/footera/events/blackfriday/dynamic/242000.webp",name:"Konstantinos Mavropanos",ovr:82,position:"CB",baseOvr:78,team:"West Ham",league:"EFL Championship",nation:"Greece",alt:"",stats:[77, 61, 59, 63, 83, 84],playstylePlusAdds:["bruiser"]},
+ {pid:"208128",dynamicFace:"assets/footera/events/blackfriday/dynamic/208128.webp",name:"Hakan Çalhanoğlu",ovr:87,position:"CDM",baseOvr:85,team:"Inter",league:"Serie A Enilive",nation:"Turkey",alt:"CM",stats:[71, 84, 88, 85, 84, 71],playstylePlusAdds:["long-ball-pass"]},
+ {pid:"239053",dynamicFace:"assets/footera/events/blackfriday/dynamic/239053.webp",name:"Federico Valverde",ovr:89,position:"CM",baseOvr:87,team:"Real Madrid",league:"LALIGA EA SPORTS",nation:"Uruguay",alt:"RB,RM,CDM",stats:[93, 87, 88, 84, 84, 88],playstylePlusAdds:["press-proven"]},
+ {pid:"240638",dynamicFace:"assets/footera/events/blackfriday/dynamic/240638.webp",name:"Tijjani Reijnders",ovr:86,position:"CM",baseOvr:84,team:"Al Qadsiah",league:"ROSHN Saudi League",nation:"Holland",alt:"CDM,CAM",stats:[78, 81, 85, 86, 74, 79],playstylePlusAdds:["tiki-taka"]},
+ {pid:"223848",dynamicFace:"assets/footera/events/blackfriday/dynamic/223848.webp",name:"Sergej Milinković-Savić",ovr:86,position:"CM",baseOvr:84,team:"Al Hilal",league:"ROSHN Saudi League",nation:"Serbia",alt:"CDM,CAM,ST",stats:[64, 82, 85, 83, 80, 92],playstylePlusAdds:["power-header"]},
+ {pid:"236772",dynamicFace:"assets/footera/events/blackfriday/dynamic/236772.webp",name:"Dominik Szoboszlai",ovr:88,position:"CAM",baseOvr:86,team:"Liverpool",league:"Premier League",nation:"Hungary",alt:"RB,CDM,CM",stats:[85, 86, 89, 89, 77, 80],playstylePlusAdds:["power-shot"]},
+ {pid:"257534",dynamicFace:"assets/footera/events/blackfriday/dynamic/257534.webp",name:"Cole Palmer",ovr:87,position:"CAM",baseOvr:85,team:"Chelsea",league:"Premier League",nation:"England",alt:"RM,CM,RW",stats:[78, 86, 88, 88, 53, 67],playstylePlusAdds:["finesse-shot"]},
+ {pid:"240243",dynamicFace:"assets/footera/events/blackfriday/dynamic/240243.webp",name:"Matheus Cunha",ovr:86,position:"LM",baseOvr:84,team:"Man Utd",league:"Premier League",nation:"Brazil",alt:"CAM,ST,LW",stats:[82, 89, 82, 87, 47, 76],playstylePlusAdds:["technical"]},
+ {pid:"256948",dynamicFace:"assets/footera/events/blackfriday/dynamic/256948.webp",name:"Christos Tzolis",ovr:85,position:"LW",baseOvr:82,team:"Arsenal",league:"Premier League",nation:"Greece",alt:"LM",stats:[86, 84, 83, 87, 42, 75],playstylePlusAdds:["quick-step"]},
+ {pid:"83494",dynamicFace:"assets/footera/events/blackfriday/dynamic/83494.webp",name:"Rayan",ovr:83,position:"RM",baseOvr:79,team:"AFC Bournemouth",league:"Premier League",nation:"Brazil",alt:"RW",stats:[90, 83, 79, 85, 40, 79],playstylePlusAdds:["first-touch"]},
+ {pid:"232293",dynamicFace:"assets/footera/events/blackfriday/dynamic/232293.webp",name:"Victor Osimhen",ovr:87,position:"ST",baseOvr:85,team:"Galatasaray",league:"Trendyol Süper Lig",nation:"Nigeria",alt:"",stats:[92, 87, 68, 81, 54, 89],playstylePlusAdds:["acrobatic"]}
+]};
+// Team 2 ("Cyber-Team") replaces Team 1 in packs on Fr 04.12. 19:00 and runs until the end of Season 2.
+const BLACKFRIDAY_TEAM2_EVENT={id:"blackfriday-2026-team2",name:"BLACK FRIDAY",shortName:"BLACK FRIDAY 2",subtitle:"CYBER-TEAM · TEAM 2",theme:"blackfriday",activeFrom:"2026-12-04T19:00:00+01:00",activeUntilAt:"2026-12-11T19:00:00+01:00",activeUntil:"11.12.2026 · 19:00",
+ sbcPlayer:{id:"blackfriday-debruyne-89",pid:"192985",dynamicFace:"assets/footera/events/blackfriday/dynamic/192985.webp",name:"Kevin De Bruyne",ovr:89,position:"CAM",team:"SSC Napoli",league:"Serie A Enilive",nation:"Belgium",alt:"CM",stats:[78, 89, 94, 90, 71, 73],playstylePlusAdds:["incisive-pass"],names:["Kevin De Bruyne"],blurb:"SSC Napoli · Serie A, der Cyber-Deal für Team 2. ",releaseAt:"2026-12-04T19:00:00+01:00",activeUntilAt:"2026-12-11T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Cyber-Deal – 84er-Team",desc:"Teil 1/3 · Der Warenkorb ist voll.",req:"11 Spieler · Ø GES 84 · min. 1 TOTW",minAvg:84,minTotw:1,reward:{pack:"82",qty:1}},
+  {name:"Belgische Pralinen – 85er-Team",desc:"Teil 2/3 · Grüße aus Belgien.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus Belgien",minAvg:85,requiredNation:"Belgium",reward:{pack:"goldplayers",qty:1}},
+  {name:"Neapel bei Nacht – 86er-Team",desc:"Teil 3/3 · Neon über dem Golf.",req:"11 Spieler · Ø GES 86 · min. 1 Serie-A-Spieler",minAvg:86,requiredLeague:"Serie A",reward:{pack:"85",qty:1}}
+ ]},
+ players:[
+ {pid:"182494",dynamicFace:"assets/footera/events/blackfriday/dynamic/182494.webp",name:"Fernando Muslera",ovr:82,position:"GK",baseOvr:78,team:"Estudiantes",league:"LPF",nation:"Uruguay",alt:"",stats:[84, 79, 76, 84, 48, 85],playstylePlusAdds:["footwork"]},
+ {pid:"252552",dynamicFace:"assets/footera/events/blackfriday/dynamic/252552.webp",name:"Konstantinos Tzolakis",ovr:83,position:"GK",baseOvr:79,team:"Hull City",league:"Premier League",nation:"Greece",alt:"",stats:[85, 81, 81, 88, 59, 84],playstylePlusAdds:["far-reach"]},
+ {pid:"272978",dynamicFace:"assets/footera/events/blackfriday/dynamic/272978.webp",name:"Jorrel Hato",ovr:82,position:"LB",baseOvr:78,team:"Chelsea",league:"Premier League",nation:"Holland",alt:"CB,CDM",stats:[90, 47, 75, 79, 81, 79],playstylePlusAdds:["jockey"]},
+ {pid:"248165",dynamicFace:"assets/footera/events/blackfriday/dynamic/248165.webp",name:"Andrei Rațiu",ovr:83,position:"RB",baseOvr:80,team:"Rayo Vallecano",league:"LALIGA EA SPORTS",nation:"Romania",alt:"RM,RW",stats:[98, 71, 78, 85, 78, 75],playstylePlusAdds:["rapid"]},
+ {pid:"207865",dynamicFace:"assets/footera/events/blackfriday/dynamic/207865.webp",name:"Marquinhos",ovr:89,position:"CB",baseOvr:87,team:"Paris SG",league:"Ligue 1 McDonald's",nation:"Brazil",alt:"",stats:[78, 59, 79, 77, 92, 85],playstylePlusAdds:["anticipate"]},
+ {pid:"262138",dynamicFace:"assets/footera/events/blackfriday/dynamic/262138.webp",name:"Castello Lukeba",ovr:84,position:"CB",baseOvr:81,team:"RB Leipzig",league:"Bundesliga",nation:"France",alt:"LB",stats:[83, 47, 74, 78, 86, 80],playstylePlusAdds:["intercept"]},
+ {pid:"241736",dynamicFace:"assets/footera/events/blackfriday/dynamic/241736.webp",name:"Yann Aurel Bisseck",ovr:82,position:"CB",baseOvr:78,team:"Inter",league:"Serie A Enilive",nation:"Germany",alt:"",stats:[83, 62, 69, 77, 82, 85],playstylePlusAdds:["bruiser"]},
+ {pid:"209499",dynamicFace:"assets/footera/events/blackfriday/dynamic/209499.webp",name:"Fabinho",ovr:84,position:"CDM",baseOvr:82,team:"Trabzonspor",league:"Trendyol Süper Lig",nation:"Brazil",alt:"CM,CB",stats:[54, 72, 80, 78, 84, 87],playstylePlusAdds:["intercept"]},
+ {pid:"239837",dynamicFace:"assets/footera/events/blackfriday/dynamic/239837.webp",name:"Alexis Mac Allister",ovr:86,position:"CM",baseOvr:84,team:"Liverpool",league:"Premier League",nation:"Argentina",alt:"CDM",stats:[64, 84, 86, 85, 80, 77],playstylePlusAdds:["tiki-taka"]},
+ {pid:"239807",dynamicFace:"assets/footera/events/blackfriday/dynamic/239807.webp",name:"Davide Frattesi",ovr:83,position:"CM",baseOvr:80,team:"SS Lazio",league:"Serie A Enilive",nation:"Italy",alt:"CAM",stats:[84, 81, 82, 84, 77, 78],playstylePlusAdds:["relentless"]},
+ {pid:"253109",dynamicFace:"assets/footera/events/blackfriday/dynamic/253109.webp",name:"Joey Veerman",ovr:84,position:"CM",baseOvr:82,team:"Borussia Dortmund",league:"Bundesliga",nation:"Holland",alt:"CDM,CAM",stats:[51, 77, 87, 80, 69, 74],playstylePlusAdds:["incisive-pass"]},
+ {pid:"251954",dynamicFace:"assets/footera/events/blackfriday/dynamic/251954.webp",name:"Crysencio Summerville",ovr:82,position:"LW",baseOvr:78,team:"Al Hilal",league:"ROSHN Saudi League",nation:"Holland",alt:"LM,RW,RM",stats:[94, 79, 75, 87, 41, 59],playstylePlusAdds:["quick-step"]},
+ {pid:"181458",dynamicFace:"assets/footera/events/blackfriday/dynamic/181458.webp",name:"Ivan Perišić",ovr:84,position:"LW",baseOvr:81,team:"PSV",league:"Eredivisie",nation:"Croatia",alt:"RW,LM,RM",stats:[82, 84, 85, 85, 72, 81],playstylePlusAdds:["dead-ball"]},
+ {pid:"243780",dynamicFace:"assets/footera/events/blackfriday/dynamic/243780.webp",name:"Lee Kang In",ovr:83,position:"RW",baseOvr:80,team:"Atlético de Madrid",league:"LALIGA EA SPORTS",nation:"Korea Republic",alt:"CAM,RM,CM",stats:[82, 80, 85, 87, 56, 67],playstylePlusAdds:["technical"]},
+ {pid:"268421",dynamicFace:"assets/footera/events/blackfriday/dynamic/268421.webp",name:"Mathys Tel",ovr:82,position:"LM",baseOvr:78,team:"Spurs",league:"Premier League",nation:"France",alt:"LW,ST,CAM",stats:[91, 85, 75, 84, 34, 69],playstylePlusAdds:["rapid"]},
+ {pid:"255434",dynamicFace:"assets/footera/events/blackfriday/dynamic/255434.webp",name:"Julio César Enciso",ovr:82,position:"CAM",baseOvr:78,team:"Ipswich",league:"Premier League",nation:"Paraguay",alt:"ST",stats:[83, 79, 81, 88, 38, 58],playstylePlusAdds:["first-touch"]},
+ {pid:"188567",dynamicFace:"assets/footera/events/blackfriday/dynamic/188567.webp",name:"Pierre-Emerick Aubameyang",ovr:83,position:"ST",baseOvr:79,team:"RC Deportivo",league:"LALIGA EA SPORTS",nation:"Gabon",alt:"",stats:[87, 86, 76, 83, 41, 68],playstylePlusAdds:["quick-step"]},
+ {pid:"245902",dynamicFace:"assets/footera/events/blackfriday/dynamic/245902.webp",name:"Troy Parrott",ovr:82,position:"ST",baseOvr:78,team:"Real Betis",league:"LALIGA EA SPORTS",nation:"Republic of Ireland",alt:"CAM",stats:[82, 83, 71, 82, 50, 79],playstylePlusAdds:["power-shot"]}
+]};
+// Deal des Tages #3 (So 29.11.): a second player SBC for one full week. Not a pack release: players stays empty.
+const BLACKFRIDAY_SUNDAY_SBC_EVENT={id:"blackfriday-2026-ronaldo",name:"BLACK FRIDAY",shortName:"BLACK FRIDAY",subtitle:"DEAL DES TAGES",theme:"blackfriday",activeFrom:"2026-11-29T19:00:00+01:00",activeUntilAt:"2026-12-06T19:00:00+01:00",activeUntil:"06.12.2026 · 19:00",players:[],
+ sbcPlayer:{id:"blackfriday-ronaldo-87",pid:"20801",dynamicFace:"assets/footera/events/blackfriday/dynamic/20801.webp",name:"Cristiano Ronaldo",ovr:87,position:"ST",team:"Al Nassr",league:"ROSHN Saudi League",nation:"Portugal",alt:"",stats:[80, 92, 79, 82, 37, 79],playstylePlusAdds:["power-shot"],names:["Cristiano Ronaldo"],blurb:"Al Nassr · ROSHN Saudi League, der Sonntags-Deal. ",releaseAt:"2026-11-29T19:00:00+01:00",activeUntilAt:"2026-12-06T19:00:00+01:00",packEligible:false,segments:[
+  {name:"Sonntags-Deal – 83er-Team",desc:"Teil 1/3 · Der Deal, auf den alle gewartet haben.",req:"11 Spieler · Ø GES 83 · min. 1 TOTW",minAvg:83,minTotw:1,reward:{pack:"gold",qty:1}},
+  {name:"Portugal-Paket – 84er-Team",desc:"Teil 2/3 · Grüße aus Madeira.",req:"11 Spieler · Ø GES 84 · min. 1 Spieler aus Portugal",minAvg:84,requiredNation:"Portugal",reward:{pack:"82",qty:1}},
+  {name:"Wüstennacht – 85er-Team",desc:"Teil 3/3 · Neonlicht in Riad.",req:"11 Spieler · Ø GES 85 · min. 1 Spieler aus der ROSHN Saudi League",minAvg:85,requiredLeague:"ROSHN Saudi League",reward:{pack:"goldplayers",qty:1}}
+ ]}};
+const EVENT_PROMO_RELEASES=[...MOMENTUM_RELEASES,BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_SUNDAY_SBC_EVENT,BLACKFRIDAY_EVENT,HALLOWEEN_TEAM2_EVENT,HALLOWEEN_WEEK_SBC_EVENT,HALLOWEEN_EVENT,FLASHBACK_REUS_EVENT];
 function eventThemeOf(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId)?.theme||""}
 function completeEventRoster(event){const players=event?.players||[];return players.length===FOOTERA_EVENT_RULES.teamSize&&players.filter(p=>p.position==="GK").length===FOOTERA_EVENT_RULES.keepers&&new Set(players.map(p=>String(p.pid||p.eaId||p.name))).size===players.length&&players.every(p=>!!String(p.team||"").trim())&&new Set(players.map(p=>normalizeKey(p.team))).size===players.length}
 function eventRosterReady(event){return event?.id===MOMENTUM_EVENT.id?event.players?.length===14:completeEventRoster(event)}
@@ -1867,8 +1944,8 @@ function makeLivePackItem(base,tradeable=true){
 let promoEventClockId=null,promoObjectiveClockId="",promoEventClockTimer=0,footeraRenderedClockPhase="";
 // Moments that change ratings or content inside a running event: Blutmond upgrade, event SBC releases, season handover.
 // An open app re-renders once when one passes, so nobody has to reload at 19:00.
-function footeraClockBoundaries(){return[typeof HALLOWEEN_EVENT!=="undefined"?HALLOWEEN_EVENT.upgrade?.at:"",...EVENT_PROMO_RELEASES.map(e=>e.sbcPlayer?.releaseAt),...(typeof SEASON_SCHEDULE!=="undefined"?SEASON_SCHEDULE.map(s=>s.start):[])].map(t=>Date.parse(t||""))}
-function footeraClockPhase(at=Date.now()){return[typeof halloweenUpgradeFor==="function"&&halloweenUpgradeFor({eventType:"halloween"},at)?"blutmond":"",typeof activeEventPlayerSBCs==="function"?[...new Set(activeEventPlayerSBCs(new Date(at)).map(s=>s.eventPlayerId))].join(","):"",typeof seasonInfo==="function"?seasonInfo(new Date(at)).key:""].join("|")}
+function footeraClockBoundaries(){return[typeof HALLOWEEN_EVENT!=="undefined"?HALLOWEEN_EVENT.upgrade?.at:"",...(typeof BLACKFRIDAY_DEAL_SBCS!=="undefined"?BLACKFRIDAY_DEAL_SBCS.flatMap(d=>[d.releaseAt,d.activeUntilAt]):[]),...(typeof BLACKFRIDAY_STORE_DEAL!=="undefined"?[BLACKFRIDAY_STORE_DEAL.from,BLACKFRIDAY_STORE_DEAL.until,BLACKFRIDAY_TEASER_FROM]:[]),...EVENT_PROMO_RELEASES.map(e=>e.sbcPlayer?.releaseAt),...(typeof SEASON_SCHEDULE!=="undefined"?SEASON_SCHEDULE.map(s=>s.start):[])].map(t=>Date.parse(t||""))}
+function footeraClockPhase(at=Date.now()){return[typeof halloweenUpgradeFor==="function"&&halloweenUpgradeFor({eventType:"halloween"},at)?"blutmond":"",typeof activeEventPlayerSBCs==="function"?[...new Set(activeEventPlayerSBCs(new Date(at)).map(s=>s.eventPlayerId))].join(","):"",typeof seasonInfo==="function"?seasonInfo(new Date(at)).key:"",typeof activeBlackFridayDealSBCs==="function"?activeBlackFridayDealSBCs(new Date(at)).map(s=>s.id).join(","):"",typeof blackFridayStoreDealActive==="function"&&blackFridayStoreDealActive(at)?"bf-deal":"",typeof BLACKFRIDAY_TEASER_FROM!=="undefined"&&at>=Date.parse(BLACKFRIDAY_TEASER_FROM)?"bf-teaser":""].join("|")}
 function schedulePromoEventClock(){
  clearTimeout(promoEventClockTimer);
  const now=Date.now(),boundaries=[...EVENT_PROMO_RELEASES,...EVENT_OBJECTIVES].flatMap(e=>[Date.parse(e.activeFrom),Date.parse(e.activeUntilAt)]).concat(footeraClockBoundaries()).filter(t=>Number.isFinite(t)&&t>now),next=boundaries.length?Math.min(...boundaries):Infinity;
@@ -2011,6 +2088,15 @@ function activeHalloweenTeam1SBCs(now=new Date()){
  if(!(ts>=start&&ts<end))return[];
  return[{...def,filter:b=>true,count:11,once:true,live:true,expiresAt:end,releaseKey:def.releaseAt,theme:"halloween"}]
 }
+// Deal des Tages #2 (Sa 28.11.) and #4 (Cyber Monday 30.11.): pack SBCs, each one full week like every event SBC.
+const BLACKFRIDAY_DEAL_SBCS=[
+ {id:"blackfriday_pick_20261128",group:"Profis",name:"Deal-Pick – Team 1",desc:"Deal des Tages · Ein garantierter BLACK-FRIDAY-Spieler aus Team 1.",req:"11 Spieler · Ø GES 84 · min. 2 selten",minAvg:84,minRare:2,reward:{pack:"blackfriday-team1-player",qty:1},releaseAt:"2026-11-28T19:00:00+01:00",activeUntilAt:"2026-12-05T19:00:00+01:00"},
+ {id:"blackfriday_cyber_20261130",group:"Profis",name:"Cyber-Monday-Megadeal",desc:"Deal des Tages · Zehn Spieler, alle 84+.",req:"11 Spieler · Ø GES 84 · min. 3 Ligen · min. 3 selten",minAvg:84,minLeagues:3,minRare:3,reward:{pack:"pass-84x10",qty:1},releaseAt:"2026-11-30T19:00:00+01:00",activeUntilAt:"2026-12-07T19:00:00+01:00"}
+];
+function activeBlackFridayDealSBCs(now=new Date()){
+ const ts=now instanceof Date?now.getTime():Number(now);
+ return BLACKFRIDAY_DEAL_SBCS.filter(def=>ts>=Date.parse(def.releaseAt)&&ts<Date.parse(def.activeUntilAt)).map((def,order)=>({...def,filter:b=>true,count:11,once:true,live:true,expiresAt:Date.parse(def.activeUntilAt),releaseKey:def.releaseAt,theme:"blackfriday",order}))
+}
 function activeEventPlayerSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now),out=[];
  for(const event of EVENT_PROMO_RELEASES){
@@ -2026,7 +2112,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeBlackFridayDealSBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -2042,7 +2128,7 @@ function sbcGroupProgress(groupSet){
 }
 // Event names for player SBC banners; MOMENTUM stays the fallback for older event rows.
 function eventSbcEventLabel(eventId){return EVENT_PROMO_RELEASES.find(e=>e.id===eventId&&e.sbcPlayer)?.name||"MOMENTUM"}
-function eventSbcNamedTitle(sample){return ["flashback","halloween"].includes(eventThemeOf(sample?.eventId))&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
+function eventSbcNamedTitle(sample){return ["flashback","halloween","blackfriday"].includes(eventThemeOf(sample?.eventId))&&sample.eventPlayer?`${eventSbcEventLabel(sample.eventId)} · ${sample.eventPlayer.name}`:""}
 function eventSbcRewardDefinition(reward){
  const event=EVENT_PROMO_RELEASES.find(e=>e.id===reward?.playerReward?.eventId),def=event?.sbcPlayer;
  return event&&def&&def.id===reward?.playerReward?.playerId?{event,def}:null
@@ -2486,7 +2572,7 @@ function isBaseRare(p){
 }
 function isCardRare(p,item=null){return !!item?.rare||isBaseRare(p)}
 function isStoryItem(item){return item?.variant==="story"&&!!STORY_PASS_PLAYERS[item.storyRewardKey]}
-function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";if(item?.variant==="special")return"special";if(isEvolutionItem(item))return"evolution";return rarityOf(p)}
+function cardClass(p,item){if(isFounderItem(item))return"founder";if(item?.cosmeticDesign==="momentum")return"momentum";if(item?.cosmeticDesign==="totw")return"totw";if(item?.cosmeticDesign==="red")return"champions-red";if(item?.cosmeticDesign==="red-pro")return"champions-pro";if(item?.cosmeticDesign==="halloween"||String(item?.eventType||"").startsWith("halloween"))return"halloween";if(item?.cosmeticDesign==="blackfriday"||String(item?.eventType||"").startsWith("blackfriday"))return"blackfriday";if(item?.eventType==="flashback-sbc")return"flashback";if(item?.variant==="story")return"story";if(isMomentumItem(item))return"momentum";if(item?.variant==="icon-mid")return"icon";if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"totw";if(item?.variant==="special"&&isLegacyEventName(item?.eventName))return"legacy";if(item?.variant==="special")return"special";if(isEvolutionItem(item))return"evolution";return rarityOf(p)}
 function isEvolutionItem(item){return !!item&&(item.evoDesign===true||Number(item.evo||0)>0||Object.values(item.evoStats||{}).some(v=>Number(v)>0)||!!item.evoPlaystyle||(item.evoPlaystyles||[]).length>0||!!item.evoPlaystylePlus||(item.evoPlaystylesPlus||[]).length>0||!!activeEvolutionForUid(item.uid))}
 function itemBase(item){const founder=founderRuleForItem(item);if(founder)return founder.base;return item?.acquisitionSource==="reward-pick"&&item.baseSnapshot?{...P_BY_ID.get(String(item.pid)),...item.baseSnapshot,id:String(item.pid)}:P_BY_ID.get(String(item.pid))}
 // Blutmond upgrade: every HALLOWEEN card (team, SBC, objective) gains the event upgrade once the Halloween night starts.
@@ -3291,6 +3377,8 @@ function playerProfileTypeLabel(item,friend=false){
   if(item?.cosmeticDesign==="red-pro")return"CHAMPIONS ELITE ROT";
   if(item?.cosmeticDesign==="halloween")return isEvolutionItem(item)?"HALLOWEEN · BLUTMOND-EVO":"HALLOWEEN · EVO";
   if(String(item?.eventType||"").startsWith("halloween"))return halloweenUpgradeFor(item)?"HALLOWEEN · BLUTMOND-UPGRADE +1":"HALLOWEEN · BLUTMOND";
+  if(item?.cosmeticDesign==="blackfriday")return isEvolutionItem(item)?"BLACK FRIDAY · NEON-EVO":"BLACK FRIDAY · EVO";
+  if(String(item?.eventType||"").startsWith("blackfriday"))return"BLACK FRIDAY · NEON-DEAL";
   if(isMomentumItem(item))return"MOMENTUM";
  if(item?.variant==="icon-mid")return"ICON";
  if(item?.variant==="special"&&String(item?.eventName||"").startsWith("Team of the Week"))return"TEAM OF THE WEEK";
@@ -4477,16 +4565,24 @@ function promoRotationForKey(key){
  if(!Number.isFinite(day))return null;
  return PROMO_ROTATION_DAYS[day%PROMO_ROTATION_DAYS.length];
 }
+// BLACK FRIDAY shop deals (Basti 2026-11-01): Fr 27.11. 19:00 – Di 01.12. 19:00 every coin pack costs 30 % less.
+// Points prices stay unchanged (Points purchases are priced on the server). Display and purchase use the same price.
+const BLACKFRIDAY_STORE_DEAL={from:"2026-11-27T19:00:00+01:00",until:"2026-12-01T19:00:00+01:00",coinDiscount:0.3};
+function blackFridayStoreDealActive(at=Date.now()){return at>=Date.parse(BLACKFRIDAY_STORE_DEAL.from)&&at<Date.parse(BLACKFRIDAY_STORE_DEAL.until)}
+function storeDealPack(p,at=Date.now()){
+ if(!p||p.coins==null||!(Number(p.coins)>0)||!blackFridayStoreDealActive(at))return p;
+ return{...p,coins:Math.max(50,Math.round(Number(p.coins)*(1-BLACKFRIDAY_STORE_DEAL.coinDiscount)/50)*50),coinsBefore:Number(p.coins),storeDeal:true}
+}
 function activePromoPacks(now=new Date()){
  const key=promoWindowKey(now,19),sets=[["goldplayers","electrum","raremixed"],["mixed6","primegold","electrum"],["goldplayers","mixed6","primegold"]],release=promoPackReleaseForKey(key),rotation=promoRotationForKey(key);
  const ids=release?.ids||rotation?.map(([id])=>id)||sets[hashNum(key)%3],limits=new Map(release?.ids?[]:rotation||[]);
  // Basti 2026-10-31: no guaranteed Halloween pack in the shop any more; the Blutmond pack stays a Season-Pass reward.
  return [...new Set([...ids,...(release?.extraIds||[])])]
-  .map(id=>{const pack=PACKS.find(p=>p.id===id);return pack?{...pack,dailyLimit:release?.limits?.[id]??limits.get(id)??pack.dailyLimit}:null}).filter(Boolean)
+  .map(id=>{const pack=PACKS.find(p=>p.id===id);return pack?storeDealPack({...pack,dailyLimit:release?.limits?.[id]??limits.get(id)??pack.dailyLimit},now.getTime()):null}).filter(Boolean)
 }
-function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation),...activePromoPacks()]}
+function activeStorePacks(){return [...PACKS.filter(p=>p.store&&!p.rotation).map(p=>storeDealPack(p)),...activePromoPacks()]}
 function packCompositionText(p){if(!Array.isArray(p.composition))return p.type==="gold"?"Gold-Spieler":`${p.count} Spieler`;return p.composition.map(x=>`${x.count} ${x.quality==="gold"?"Gold":x.quality==="silver"?"Silber":"Bronze"}`).join(" · ")}
-const STORE_PACK_ART={"halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
+const STORE_PACK_ART={"blackfriday-team1-player":"./assets/footera/events/blackfriday/pack-blackfriday.webp","halloween-pack":"./assets/footera/events/halloween/pack-halloween.webp","halloween-team1-player":"./assets/footera/events/halloween/pack-halloween.webp",bronze:"./assets/footera/bronze.webp",silver:"./assets/footera/silber.webp",gold:"./assets/footera/gold.webp",[FOUNDER_PACK_ID]:"./assets/footera/founder-pack.svg",[MARCO_FOUNDER_PACK_ID]:"./assets/footera/founder-marco-pack.svg",[NIKLAS_FOUNDER_PACK_ID]:"./assets/footera/founder-niklas-pack.svg",[MAX_FOUNDER_PACK_ID]:"./assets/footera/founder-max-pack.svg"};
 function packArtSrc(id){return STORE_PACK_ART[id]||"./assets/footera/promo.webp"}
 // Packs share one artwork, so a tier badge and a Gold/Silber/Bronze bar tell them apart at a glance.
 function storePackParts(p){
@@ -4495,7 +4591,7 @@ function storePackParts(p){
  return quality?[{quality,count:Number(p.count)||0}]:[]
 }
 function storePackTier(p){
- if(p.eventSlot)return{id:"halloween",label:"HALLOWEEN"};
+ if(p.eventSlot)return eventThemeOf(p.eventSlot)==="blackfriday"?{id:"blackfriday",label:"BLACK FRIDAY"}:{id:"halloween",label:"HALLOWEEN"};
  const kinds=new Set(storePackParts(p).map(x=>x.quality));
  if(kinds.size>=3)return{id:"mixed",label:"MIX"};
  if(kinds.size===2&&kinds.has("gold")&&kinds.has("silver"))return{id:"electrum",label:"ELECTRUM"};
@@ -4505,7 +4601,7 @@ function storePackTier(p){
 function storePackMixHTML(p){
  const parts=storePackParts(p);if(!parts.length)return"";
  const name={gold:"Gold",silver:"Silber",bronze:"Bronze"};
- return `<div class="store-mix" aria-label="${esc(packCompositionText(p))}">${p.eventSlot?'<i class="halloween" style="flex:1.6">1 Halloween</i>':""}${parts.map(x=>`<i class="${x.quality}" style="flex:${x.count}">${x.count} ${name[x.quality]||""}</i>`).join("")}</div>`
+ return `<div class="store-mix" aria-label="${esc(packCompositionText(p))}">${p.eventSlot?(eventThemeOf(p.eventSlot)==="blackfriday"?'<i class="blackfriday" style="flex:1.6">1 Black Friday</i>':'<i class="halloween" style="flex:1.6">1 Halloween</i>'):""}${parts.map(x=>`<i class="${x.quality}" style="flex:${x.count}">${x.count} ${name[x.quality]||""}</i>`).join("")}</div>`
 }
 let storeTab="promo";
 let storePromoKey="";
@@ -4581,8 +4677,9 @@ function renderStore(){
  storePromoKey=promoWindowKey(new Date(),19);
  for(const tab of document.querySelectorAll("#storeView [data-store-tab]")){const active=tab.dataset.storeTab===storeTab;tab.classList.toggle("active",active);tab.setAttribute("aria-selected",String(active))}
  const todayRelease=promoPackReleaseForKey(sbcDateKey(new Date()));
- $("storeContext").textContent=promo?(todayRelease&&Date.now()<Date.parse(todayRelease.startsAt)?`Heute ab 19:00 Uhr: ${promoPackReleaseLabel(todayRelease)}.`:"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.";
- const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation);
+ const bfDeal=typeof blackFridayStoreDealActive==="function"&&blackFridayStoreDealActive(),dealPack=p=>typeof storeDealPack==="function"?storeDealPack(p):p;
+ $("storeContext").textContent=(bfDeal?"BLACK FRIDAY: alle Coin-Packs −30 % bis Di 01.12. · 19:00 Uhr. ":"")+(promo?(todayRelease&&Date.now()<Date.parse(todayRelease.startsAt)?`Heute ab 19:00 Uhr: ${promoPackReleaseLabel(todayRelease)}.`:"Limitierte Packs · Wechsel täglich um 19:00 Uhr."): "Bronze, Silber und Gold · dauerhaft erhältlich.");
+ const purch=promo?activePromoPacks():PACKS.filter(p=>p.store&&!p.promo&&!p.rotation).map(dealPack);
  $("packGrid").innerHTML=purch.map(p=>{
   const lim=promoUsage(p),sold=lim.remaining<=0,packArt=packArtSrc(p.id);
   const verifiedLive=typeof window!=="undefined"?window.FooteraPaidWallet?.liveState?.():null;
@@ -4593,12 +4690,12 @@ function renderStore(){
   const liveBuy=livePackReady?`<button type="button" class="store-buy-button points"
    data-buy-live="${esc(p.id)}"><span class="store-price">${currencyAmountHTML("points",p.points)}
    </span><strong>Gekaufte Points</strong></button>`:"";
-  const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span class="store-price">${currencyAmountHTML(currency,p[currency],"store-currency")}</span><strong>Kaufen</strong></button>`;
+  const button=(currency,label)=>p[currency]==null?"":`<button type="button" class="store-buy-button ${currency}" data-buy="${esc(p.id)}" data-cur="${currency}" aria-label="${esc(p.name)} für ${fmt(p[currency])} ${label} kaufen" ${sold?"disabled":""}><span class="store-price">${currency==="coins"&&p.coinsBefore?`<s class="store-deal-old" aria-label="statt ${fmt(p.coinsBefore)}">${fmt(p.coinsBefore)}</s>`:""}${currencyAmountHTML(currency,p[currency],"store-currency")}</span><strong>Kaufen</strong></button>`;
   const tier=storePackTier(p);
-  return `<article class="store-pack ${sold?"soldout":""} ${p.eventSlot?"event-pack halloween-pack":""}" data-pack-kind="${esc(p.packKind||"standard")}" data-pack-tier="${tier.id}">
-   <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"><span class="store-pack-badge ${tier.id}">${tier.label}</span></div>
+  return `<article class="store-pack ${sold?"soldout":""} ${p.eventSlot?`event-pack ${eventThemeOf(p.eventSlot)||"halloween"}-pack`:""} ${p.storeDeal?"blackfriday-deal":""}" data-pack-kind="${esc(p.packKind||"standard")}" data-pack-tier="${tier.id}">
+   <div class="store-pack-art"><img src="${packArt}" alt="${esc(p.name)}: Footera-Pack ohne Krone" loading="lazy"><span class="store-pack-badge ${tier.id}">${tier.label}</span>${p.storeDeal?`<span class="store-deal-badge">−30 %</span>`:""}</div>
    <div class="store-pack-content"><div class="store-pack-heading"><h3>${esc(p.name)}</h3>${promo?`<span class="store-time" data-store-ends="${reset.getTime()}"></span>`:""}</div>
-   ${p.eventSlot?`<span class="store-pack-promise event">1× HALLOWEEN garantiert</span>`:""}${p.guarantee?`<span class="store-pack-promise">mind. 1× ${p.guarantee}+</span>`:""}
+   ${p.eventSlot?`<span class="store-pack-promise event">1× ${eventThemeOf(p.eventSlot)==="blackfriday"?"BLACK FRIDAY":"HALLOWEEN"} garantiert</span>`:""}${p.guarantee?`<span class="store-pack-promise">mind. 1× ${p.guarantee}+</span>`:""}
    <div class="store-pack-features"><span><b>${p.count}</b> Spieler</span>${p.rareCount?`<span>${p.rareCount} selten</span>`:""}${p.chemBoostSlots?.slots&&Number(p.chemBoostSlots.chance)===1?`<span>${p.chemBoostSlots.slots} Chemie-Boosts garantiert</span>`:""}</div>
    ${storePackMixHTML(p)}
    <p>${esc(p.desc||"")}</p>
@@ -6120,7 +6217,7 @@ function claimEvolutionStage(instanceKey=""){
 function renderAvailableEvolution(evo){
  const sch=evolutionSchedule(evo),eligible=eligibleEvoPlayers(evo),focus=evoFocusPlayerUid&&eligible.some(x=>x.uid===evoFocusPlayerUid),full=activeEvolutionCount()>=MAX_ACTIVE_EVOLUTIONS,running=activeEvolutionDefinitionRunning(evo.id),disabled=!eligible.length||full||running;
  const label=running?"Evolution läuft":!eligible.length?"Keine geeigneten Spieler":full?"3/3 Evolutionen aktiv":"Spieler wählen & Vorschau";
- const designPreview=evo.design?(()=>{const pick=eligible[0];if(!pick)return`<div class="evo-event-design"><span>Endet im HALLOWEEN-Design · nur normale Karten 78–84 GES</span></div>`;const done=evoPreviewItem(pick,evo,evo.stages.length-1);return`<div class="evo-event-design"><div class="evo-event-design-card">${cardHTML(displayBase(done),done,true)}</div><span>So endet ${esc(displayBase(pick).name)}: ${itemRating(done)} GES im HALLOWEEN-Design</span></div>`})():"";
+ const designPreview=evo.design?(()=>{const pick=eligible[0];if(!pick)return`<div class="evo-event-design"><span>Endet im ${esc(evo.band||"EVENT")}-Design · nur normale Karten ${evo.req?.minOvr||78}–${evo.req?.maxOvr||84} GES</span></div>`;const done=evoPreviewItem(pick,evo,evo.stages.length-1);return`<div class="evo-event-design"><div class="evo-event-design-card">${cardHTML(displayBase(done),done,true)}</div><span>So endet ${esc(displayBase(pick).name)}: ${itemRating(done)} GES im ${esc(evo.band||"EVENT")}-Design</span></div>`})():"";
  return`<div class="evo-offer ${focus?"focus":""}${running?" running":""}${evo.design?` event-evo ${esc(evo.design)}-evo`:""}"><div class="evo-offer-top"><div><div class="evo-tags">${running?`<span class="evo-running">LÄUFT</span>`:""}<span class="evo-live">${Date.now()-sch.start<48*3600000?"NEU":"LIVE"}</span>${evo.lane?`<span class="evo-lane ${evo.lane}">${esc(evoLaneLabel(evo))}</span>`:""}</div><h3>${esc(evo.name)}</h3><p>${esc(evo.subtitle)}</p></div><div class="evo-count"><b>${eligible.length}</b><span>geeignet</span></div></div>${designPreview}<div class="evo-requirements">${esc(evoRequirementText(evo))}${evo.catchUpToCap?` · Dynamische Aufwertung auch für Bronze und Silber · Attribut-Caps`:``}</div>${evo.lane==="bronze"||evo.lane==="silver"?`<div class="evo-tier-note">Bleibt eine Evolution, zählt aber nach dem neuen GES: ab 65 als Silber, ab 75 als Gold.</div>`:""}${evoCostHTML(evo)}<div class="evo-deadlines"><span>Starten bis <b>${evoDate(sch.signupEnd)}</b><small>${evoTimeLeft(sch.signupEnd)}</small></span><span>Abschließen bis <b>${evoDate(sch.completionEnd)}</b></span></div><div class="evo-level-pills">${evo.stages.map((st,i)=>`<span>Stufe ${i+1}: ${evo.catchUpToCap?`dynamisch · bis ${evoFinalCap(evo)} GES`:st.ovr?`+${st.ovr} GES`:"Stats"}</span>`).join("")}</div><button class="primary" data-evo-choose="${evo.id}" ${disabled?"disabled":""}>${label}</button></div>`
 }
 function renderActiveEvolution(){
@@ -6630,7 +6727,7 @@ function sbcFeatureGroupCard(rows,detail=false){
  }
  const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`;
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
- return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"DONNERSTAG BIS DONNERSTAG · 19:00 UHR"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+ return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":eventThemeOf(sample.eventId)==="blackfriday"?"blackfriday-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"DONNERSTAG BIS DONNERSTAG · 19:00 UHR"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
@@ -6647,7 +6744,7 @@ function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
  const rows=allActiveSBCs(),preferred=["Täglich","POTM","Profis","Grind","Top-Partien","Grundlagen","Verbesserungen","Ligen"],groups=preferred.filter(g=>g==="POTM"||rows.some(s=>s.group===g));if(!groups.includes(activeSbcGroup))activeSbcGroup=groups[0];
  // The first SBC visit during the Halloween SBC opens the Profis tab with Müller once per session.
- const halloweenSbcLive=rows.some(r=>eventThemeOf(r.eventId)==="halloween"&&!state.sbcGroupClaims?.[r.groupSet]);if(halloweenSbcLive&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
+ const halloweenSbcLive=rows.some(r=>eventThemeOf(r.eventId)==="halloween"&&!state.sbcGroupClaims?.[r.groupSet]),blackFridaySbcLive=rows.some(r=>(eventThemeOf(r.eventId)==="blackfriday"||r.theme==="blackfriday")&&!(r.groupSet?state.sbcGroupClaims?.[r.groupSet]:sbcIsCompleted(r)));if((halloweenSbcLive||blackFridaySbcLive)&&!halloweenSbcShown){halloweenSbcShown=true;activeSbcGroup="Profis";activeSbcSet=null}
  if($("sbcStorageCount"))$("sbcStorageCount").textContent=`${(state.sbcStorage||[]).length}/100`;
  if(activeSbcGroup==="POTM"&&globalThis.FooteraPotm?.render())return;
  const active=getActiveSbcById(activeSbcId);
@@ -6660,7 +6757,7 @@ function renderSBC(){
   if(detailRows.length){$("sbcTabs").innerHTML="";$("sbcGrid").innerHTML=sbcSetDetailHTML(detailRows);return}
   activeSbcSet=null
  }
- $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
+ $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&blackFridaySbcLive?"blackfriday-live":g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
   const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
@@ -7843,7 +7940,28 @@ function halloweenHeroSlide(at=Date.now()){
  const liveText=team2Live?"HALLOWEEN Team 2 ist jetzt in Packs. Das Event läuft weiter.":team2Started?"Team 2 ist für den 06.11. geplant; die Spieler wurden noch nicht freigegeben. Team 1 bleibt vorerst in Packs.":upgrade?"Der Blutmond ist aufgegangen: Team 1 hat +1 GES und +1 auf alle Werte. Team 2 folgt am 06.11. um 19:00 Uhr.":`18 Team-1-Spezialkarten sind jetzt in Packs. Am ${fmtDay(upAt)} Uhr startet das Blutmond-Upgrade. Team 2 folgt am 06.11.`;
  return{kicker:team2Live?"HALLOWEEN · TEAM 2":upgrade?"BLUTMOND-UPGRADE AKTIV · TEAM 1":"NEUES EVENT · HALLOWEEN",title:'HALLOWEEN<br><span>BLUTMOND</span>',text:liveText,button:team2Started&&!team2Live?"Team 1 ansehen":"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"🎃",live:team2Live?"TEAM 2 JETZT IN PACKS":team2Started?"TEAM 2 NOCH NICHT FREIGEGEBEN":"TEAM 1 JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:team2Started?(team2Live?"TEAM 2 · BLUTMOND":"TEAM 2 IN VORBEREITUNG"):"TEAM 2 AB 06.11. · 19:00",theme:"halloween",event:ev}
 }
-function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null;return[
+// BLACK FRIDAY hero: silhouettes as teaser from 20.11., then the live team. Never names SBC or objective players early.
+const BLACKFRIDAY_TEASER_FROM="2026-11-20T19:00:00+01:00";
+function blackFridayLiveEvent(at=Date.now()){return [BLACKFRIDAY_TEAM2_EVENT,BLACKFRIDAY_EVENT].find(e=>eventRosterReady(e)&&eventPackIsActive(e,at))||null}
+function blackFridayHeroSlide(at=Date.now()){
+ const start=Date.parse(BLACKFRIDAY_EVENT.activeFrom),end=Date.parse(BLACKFRIDAY_TEAM2_EVENT.activeUntilAt),teaserFrom=Date.parse(BLACKFRIDAY_TEASER_FROM);
+ if(at<teaserFrom||at>=end||!eventRosterReady(BLACKFRIDAY_EVENT))return null;
+ if(at<start){const berlinDay=t=>{const p=berlinParts(new Date(t));return Date.UTC(p.year,p.month-1,p.day)/86400000},days=Math.max(0,berlinDay(start)-berlinDay(at));return{kicker:"DEMNÄCHST · FR 27.11. · 19:00",title:'BLACK<br><span>FRIDAY</span>',text:`Neues Kartendesign, 18 Spezialkarten, jeden Abend ein geheimer Deal des Tages und −30 % auf alle Coin-Packs. ${days<1?"Heute Abend":days===1?"Morgen":`In ${days} Tagen`} gehen die Deals los.`,button:"Was kommt?",action:"blackfriday-preview",shield:"%",live:"BALD",aside:"18 SPEZIALKARTEN",aside2:"27.11. · 19:00",theme:"blackfriday",teaser:true,event:BLACKFRIDAY_EVENT}}
+ const ev=blackFridayLiveEvent(at)||BLACKFRIDAY_EVENT,team2=ev.id===BLACKFRIDAY_TEAM2_EVENT.id,deal=blackFridayStoreDealActive(at);
+ const text=team2?"Das Cyber-Team ist jetzt in Packs. Black Friday läuft bis Fr 11.12. um 19:00 Uhr.":deal?"18 Team-1-Spezialkarten sind in Packs, jeden Abend um 19:00 kommt ein neuer Deal des Tages und alle Coin-Packs kosten 30 % weniger.":"18 Team-1-Spezialkarten sind in Packs. Team 2 folgt am Fr 04.12. um 19:00 Uhr.";
+ return{kicker:team2?"BLACK FRIDAY · TEAM 2":deal?"BLACK FRIDAY · DEALS LAUFEN":"BLACK FRIDAY · TEAM 1",title:'BLACK<br><span>FRIDAY</span>',text,button:"Zum Team",action:"promo-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"%",live:team2?"TEAM 2 JETZT IN PACKS":"TEAM 1 JETZT IN PACKS",aside:`${ev.players.length} SPEZIALKARTEN`,aside2:team2?"CYBER-TEAM · BIS 11.12.":"TEAM 2 AB 04.12. · 19:00",theme:"blackfriday",event:ev}
+}
+function openBlackFridayPreview(){
+ const entries=promoEventEntries(BLACKFRIDAY_EVENT),mystery=entries.slice().sort((a,b)=>b.player.ovr-a.player.ovr).slice(0,3);
+ const rows=[["FR 27.11. · 19:00","Black Friday startet","18 BLACK-FRIDAY-Spezialkarten in allen Packs, die Neon-Deal-Evolution (78–84 GES) und das Neon-Deal-Design im Design-Studio."],["FR 27.11. · 19:00","Shop-Deals","Bis Di 01.12. um 19:00 Uhr kosten alle Coin-Packs im Shop 30 % weniger. Die Points-Preise bleiben gleich."],["FR 27.11. – MO 30.11.","Deal des Tages","Jeden Abend um 19:00 Uhr kommt eine neue geheime SBC dazu. Jede läuft eine ganze Woche. Was drin ist, siehst du erst beim Start."],["FR 27.11. · 19:00","Objective-Spieler","Gewinne 8 Squad Battles auf Profi und hol dir einen geheimen BLACK-FRIDAY-Spieler."],["FR 04.12. · 19:00","Cyber-Team","Team 2 löst Team 1 in den Packs ab, dazu eine neue geheime SBC, ein neues Objective und die Cyber-Evolution."],["FR 11.12. · 19:00","Ende","Black Friday endet zusammen mit Season 2."]];
+ $("opponentTeamModalTitle").textContent="BLACK FRIDAY · NEON-DEALS";
+ $("opponentTeamModalSub").textContent="Vorschau · Team 1 am 27.11., Team 2 am 04.12. · jeweils um 19:00 Uhr";
+ delete $("opponentTeamModalBody").dataset.battleEventRelease;
+ $("opponentTeamModalBody").innerHTML=`<div class="blackfriday-preview"><div class="blackfriday-preview-cards home-momentum-roster teaser">${mystery.map(e=>`<div class="home-momentum-player">${cardHTML(e.player,e.item,true,e.player.position)}</div>`).join("")}</div><ol class="blackfriday-timeline">${rows.map(([when,title,text])=>`<li><span>${esc(when)}</span><strong>${esc(title)}</strong><p>${esc(text)}</p></li>`).join("")}</ol></div>`;
+ showUiLayer("opponentTeamModal","opponent-team")
+}
+function homeHeroSlides(){const event=activeMomentumEvent(),halloween=typeof halloweenHeroSlide==="function"?halloweenHeroSlide():null,blackFriday=typeof blackFridayHeroSlide==="function"?blackFridayHeroSlide():null;return[
+ ...(blackFriday?[blackFriday]:[]),
  ...(halloween?[halloween]:[]),
  ...(event?[{kicker:`NEUES EVENT · ${event.subtitle}`,title:`MOMENTUM<br><span>${event.subtitle}</span>`,text:`${event.name} ${event.subtitle} ist jetzt live. Verfügbar in Packs bis ${new Intl.DateTimeFormat("de-DE",{timeZone:"Europe/Berlin",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(event.activeUntilAt))} Uhr.`,button:"Zum Team",action:"momentum-team",teamView:"momentum-shop",teamButton:"Zum Shop",shield:"M",live:"JETZT IN PACKS",aside:`${event.players.length} SPEZIALKARTEN`,aside2:event.activeUntil,theme:"momentum",event}]:[]),
  {kicker:"LIVE HUB",title:'DIVISION<br><span>RIVALS</span>',text:"Steige durch die Divisionen auf und sichere dir bessere Rewards.",button:"Rivals öffnen →",go:"playView",shield:"DR",live:"LIVE NOW",aside:"DIVISIONEN. PUNKTE. REWARDS.",aside2:`DIVISION ${state.rivals.division||"ELITE"} · ${state.rivals.weeklyPoints}/35`,theme:"gold"},
@@ -7915,7 +8033,7 @@ $("homeHeroCard")?.addEventListener("pointerdown",e=>{heroSwipeStart={x:e.client
 $("homeHeroCard")?.addEventListener("pointerup",e=>{if(!heroSwipeStart||heroSwipeStart.id!==e.pointerId)return;const dx=e.clientX-heroSwipeStart.x,dy=e.clientY-heroSwipeStart.y;heroSwipeStart=null;if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;const len=homeHeroSlides().length;homeHeroSlide=(homeHeroSlide+(dx<0?1:-1)+len)%len;renderHomeHero()});
 $("homeHeroCard")?.addEventListener("pointercancel",()=>{heroSwipeStart=null});
 $("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=byEventRating(promoEventEntries(event))[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
-$("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(activeHalloweenEvent()?.id||HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}});
+$("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(homeHeroSlides()[homeHeroSlide]?.event?.id||activeHalloweenEvent()?.id||HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}else if(action==="blackfriday-preview"){e.stopPropagation();openBlackFridayPreview()}});
 $("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();const view=e.currentTarget.dataset.homeTeamView;if(view==="totw")openTotwTeam();else if(view==="momentum-shop"){storeTab="promo";switchView("storeView")}});
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
 $("campaignModalBody")?.addEventListener("click",e=>{const go=e.target.closest("[data-campaign-go]");if(!go)return;$("campaignModal").classList.remove("active");replaceUiState("view",{view:go.dataset.campaignGo});switchView(go.dataset.campaignGo,{push:false})});
@@ -8691,7 +8809,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.334";
+const GFUT_BUILD="V21.335";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8749,7 +8867,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21334",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21335",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

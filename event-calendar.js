@@ -45,6 +45,17 @@ function footeraEventCalendar(at=Date.now(),{days=EVENT_CALENDAR_DAYS,limit=EVEN
   add({at:start,kind:"sbc",theme:"halloween",rank:1,title:def.name,sub:"Sonntags-SBC · garantierter HALLOWEEN-Spieler",short:def.name,go:"sbcView",key:"sbc-start:"+def.id});
   if(now>=start)add({at:end,kind:"sbc",theme:"halloween",rank:6,title:`${def.name} endet`,sub:"Sonntags-SBC",short:`${def.name} endet`,go:"sbcView",key:"sbc-end:"+def.id});
  }
+ // BLACK FRIDAY: pack deals of the day (no player names in them) and the coin-shop discount.
+ for(const def of typeof BLACKFRIDAY_DEAL_SBCS!=="undefined"?BLACKFRIDAY_DEAL_SBCS:[]){
+  const start=eventCalendarMs(def.releaseAt),end=eventCalendarMs(def.activeUntilAt);
+  add({at:start,kind:"sbc",theme:"blackfriday",rank:1,title:def.name,sub:"Deal des Tages · BLACK FRIDAY",short:def.name,go:"sbcView",key:"sbc-start:"+def.id});
+  if(now>=start)add({at:end,kind:"sbc",theme:"blackfriday",rank:6,title:`${def.name} endet`,sub:"Deal des Tages",short:`${def.name} endet`,go:"sbcView",key:"sbc-end:"+def.id});
+ }
+ if(typeof BLACKFRIDAY_STORE_DEAL!=="undefined"){
+  const deal=BLACKFRIDAY_STORE_DEAL,start=eventCalendarMs(deal.from),end=eventCalendarMs(deal.until),pct=Math.round(Number(deal.coinDiscount||0)*100);
+  add({at:start,kind:"event",theme:"blackfriday",rank:2,title:`Shop-Deal: Coin-Packs −${pct} %`,sub:"BLACK FRIDAY im Shop",short:`Coin-Packs −${pct} %`,go:"storeView",key:"store-deal-start:"+deal.from});
+  if(now>=start)add({at:end,kind:"event",theme:"blackfriday",rank:6,title:"Shop-Deal endet",sub:`Coin-Packs −${pct} %`,short:"Shop-Deal endet",go:"storeView",key:"store-deal-end:"+deal.until});
+ }
  for(const task of typeof EVENT_OBJECTIVES!=="undefined"?EVENT_OBJECTIVES:[]){
   const start=eventCalendarMs(task.activeFrom),end=eventCalendarMs(task.activeUntilAt),ovr=Number(task.player?.ovr||0),theme=themeOf(task.eventName);
   add({at:start,kind:"objective",theme,rank:2,title:"Neues Event-Objective",sub:`${task.eventName||"Event"} · geheimer ${ovr?ovr+"er-":""}Spieler`,short:`Objective mit geheimem ${ovr?ovr+"er":"Spieler"}`,go:"objectivesView",key:"obj-start:"+task.id});

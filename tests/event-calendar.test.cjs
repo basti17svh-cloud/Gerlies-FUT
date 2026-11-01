@@ -64,3 +64,14 @@ test('Zentrale has the calendar panel and loads the script after footera-app.js'
  const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.ok(sw.includes(`./event-calendar.js?v=${v}`)&&sw.includes(`./event-calendar.css?v=${html.match(/event-calendar\.css\?v=(\d+)/)[1]}`),'SW caches the versioned calendar files');
 });
+
+test('BLACK FRIDAY deals of the day and the shop deal show up without player names',()=>{
+ const ctx=load();
+ vm.runInContext(`var BLACKFRIDAY_DEAL_SBCS=[{id:"bfpick",name:"Deal-Pick – Team 1",releaseAt:"2026-11-28T19:00:00+01:00",activeUntilAt:"2026-12-05T19:00:00+01:00"}];
+  var BLACKFRIDAY_STORE_DEAL={from:"2026-11-27T19:00:00+01:00",until:"2026-12-01T19:00:00+01:00",coinDiscount:0.3};`,ctx);
+ const before=ctx.footeraEventCalendar(at('2026-11-25T12:00:00+01:00')).map(r=>r.title).join('\n');
+ assert.match(before,/Deal-Pick – Team 1/);assert.match(before,/Coin-Packs −30 %/);assert.doesNotMatch(before,/Deal-Pick – Team 1 endet|Shop-Deal endet/);
+ const during=ctx.footeraEventCalendar(at('2026-11-29T12:00:00+01:00'));
+ assert.ok(during.some(r=>r.title==='Shop-Deal endet'&&r.theme==='blackfriday'));
+ assert.ok(during.some(r=>r.title==='Deal-Pick – Team 1 endet'));
+});

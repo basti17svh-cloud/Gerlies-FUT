@@ -1,12 +1,153 @@
 [
  {
+  "id": "227203",
+  "name": "Alexia Putellas",
+  "ovr": 91,
+  "club": "London City",
+  "league": "Barclays WSL",
+  "position": "CM",
+  "item": 50558851,
+  "female": false
+ },
+ {
+  "id": "231747",
+  "name": "Kylian Mbappé",
+  "ovr": 91,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "ST",
+  "item": 50563395,
+  "female": false
+ },
+ {
+  "id": "239085",
+  "name": "Erling Haaland",
+  "ovr": 91,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 50570733,
+  "female": false
+ },
+ {
+  "id": "247827",
+  "name": "Michael Olise",
+  "ovr": 90,
+  "club": "FC Bayern München",
+  "league": "Bundesliga",
+  "position": "RM",
+  "item": 100911123,
+  "female": false
+ },
+ {
+  "id": "252371",
+  "name": "Jude Bellingham",
+  "ovr": 90,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "CAM",
+  "item": 50584019,
+  "female": false
+ },
+ {
+  "id": "277643",
+  "name": "Lamine Yamal",
+  "ovr": 90,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "RW",
+  "item": 67386507,
+  "female": false
+ },
+ {
+  "id": "158023",
+  "name": "Lionel Messi",
+  "ovr": 89,
+  "club": "Inter Miami CF",
+  "league": "MLS",
+  "position": "CAM",
+  "item": 50489671,
+  "female": false
+ },
+ {
+  "id": "230621",
+  "name": "Gianluigi Donnarumma",
+  "ovr": 89,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "GK",
+  "item": 50562269,
+  "female": false
+ },
+ {
+  "id": "232580",
+  "name": "Gabriel",
+  "ovr": 89,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50564228,
+  "female": false
+ },
+ {
+  "id": "241846",
+  "name": "Ewa Pajor",
+  "ovr": 89,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "ST",
+  "item": 50573494,
+  "female": false
+ },
+ {
+  "id": "247635",
+  "name": "Khvicha Kvaratskhelia",
+  "ovr": 89,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "LW",
+  "item": 50579283,
+  "female": false
+ },
+ {
+  "id": "252145",
+  "name": "Nuno Mendes",
+  "ovr": 89,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "LB",
+  "item": 50583793,
+  "female": false
+ },
+ {
+  "id": "262531",
+  "name": "Claudia Pina",
+  "ovr": 89,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "LW",
+  "item": 50594179,
+  "female": false
+ },
+ {
+  "id": "279799",
+  "name": "Temwa Chawinga",
+  "ovr": 89,
+  "club": "KC Current",
+  "league": "NWSL",
+  "position": "LM",
+  "item": 50611447,
+  "female": false
+ },
+ {
   "id": "220901",
   "name": "David Raya",
   "ovr": 88,
   "club": "Arsenal",
   "league": "Premier League",
   "position": "GK",
-  "item": 67329765
+  "item": 67329765,
+  "female": false
  },
  {
   "id": "233419",
@@ -15,7 +156,8 @@
   "club": "FC Barcelona",
   "league": "LALIGA EA SPORTS",
   "position": "LW",
-  "item": 50565067
+  "item": 100896715,
+  "female": false
  },
  {
   "id": "237289",
@@ -24,7 +166,8 @@
   "club": "FC Barcelona",
   "league": "Liga F Moeve",
   "position": "CDM",
-  "item": 50568937
+  "item": 50568937,
+  "female": false
  },
  {
   "id": "241084",
@@ -33,7 +176,18 @@
   "club": "FC Bayern München",
   "league": "Bundesliga",
   "position": "LM",
-  "item": 67349948
+  "item": 100904380,
+  "female": false
+ },
+ {
+  "id": "248822",
+  "name": "Klara Bühl",
+  "ovr": 88,
+  "club": "FC Bayern München",
+  "league": "GPFBL",
+  "position": "LM",
+  "item": 50580470,
+  "female": false
  },
  {
   "id": "258980",
@@ -42,7 +196,8 @@
   "club": "Arsenal",
   "league": "Barclays WSL",
   "position": "ST",
-  "item": 50590628
+  "item": 50590628,
+  "female": false
  },
  {
   "id": "264012",
@@ -51,7 +206,8 @@
   "club": "Portland Thorns",
   "league": "NWSL",
   "position": "ST",
-  "item": 50595660
+  "item": 50595660,
+  "female": false
  },
  {
   "id": "265898",
@@ -60,7 +216,8 @@
   "club": "OL Lyonnes",
   "league": "Arkema PL",
   "position": "ST",
-  "item": 67374762
+  "item": 67374762,
+  "female": false
  },
  {
   "id": "207865",
@@ -69,7 +226,8 @@
   "club": "Paris SG",
   "league": "Ligue 1 McDonald's",
   "position": "CB",
-  "item": 50539513
+  "item": 50539513,
+  "female": false
  },
  {
   "id": "209331",
@@ -78,7 +236,8 @@
   "club": "Trabzonspor",
   "league": "Trendyol Süper Lig",
   "position": "RM",
-  "item": 50540979
+  "item": 50540979,
+  "female": false
  },
  {
   "id": "226893",
@@ -87,7 +246,8 @@
   "club": "KC Current",
   "league": "NWSL",
   "position": "CAM",
-  "item": 50558541
+  "item": 50558541,
+  "female": false
  },
  {
   "id": "227361",
@@ -96,7 +256,8 @@
   "club": "London City",
   "league": "Barclays WSL",
   "position": "RM",
-  "item": 50559009
+  "item": 50559009,
+  "female": false
  },
  {
   "id": "229558",
@@ -105,7 +266,18 @@
   "club": "FC Bayern München",
   "league": "Bundesliga",
   "position": "CB",
-  "item": 50561206
+  "item": 50561206,
+  "female": false
+ },
+ {
+  "id": "239053",
+  "name": "Federico Valverde",
+  "ovr": 87,
+  "club": "Real Madrid",
+  "league": "LALIGA EA SPORTS",
+  "position": "CM",
+  "item": 50570701,
+  "female": false
  },
  {
   "id": "257008",
@@ -114,7 +286,8 @@
   "club": "Manchester City",
   "league": "Barclays WSL",
   "position": "LM",
-  "item": 50588656
+  "item": 50588656,
+  "female": false
  },
  {
   "id": "259287",
@@ -123,7 +296,18 @@
   "club": "FC Bayern München",
   "league": "GPFBL",
   "position": "CAM",
-  "item": 50590935
+  "item": 50590935,
+  "female": false
+ },
+ {
+  "id": "269404",
+  "name": "Salma Paralluelo",
+  "ovr": 87,
+  "club": "OL Lyonnes",
+  "league": "Arkema PL",
+  "position": "LW",
+  "item": 50601052,
+  "female": false
  },
  {
   "id": "222665",
@@ -132,7 +316,8 @@
   "club": "Arsenal",
   "league": "Premier League",
   "position": "CM",
-  "item": 50554313
+  "item": 50554313,
+  "female": false
  },
  {
   "id": "233731",
@@ -141,7 +326,28 @@
   "club": "Liverpool",
   "league": "Premier League",
   "position": "ST",
-  "item": 50565379
+  "item": 50565379,
+  "female": false
+ },
+ {
+  "id": "236772",
+  "name": "Dominik Szoboszlai",
+  "ovr": 86,
+  "club": "Liverpool",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50568420,
+  "female": false
+ },
+ {
+  "id": "237238",
+  "name": "Scott McTominay",
+  "ovr": 86,
+  "club": "SSC Napoli",
+  "league": "Serie A Enilive",
+  "position": "CM",
+  "item": 50568886,
+  "female": false
  },
  {
   "id": "239231",
@@ -150,7 +356,8 @@
   "club": "Real Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "LB",
-  "item": 50570879
+  "item": 50570879,
+  "female": false
  },
  {
   "id": "241651",
@@ -159,7 +366,18 @@
   "club": "Arsenal",
   "league": "Premier League",
   "position": "ST",
-  "item": 50573299
+  "item": 50573299,
+  "female": false
+ },
+ {
+  "id": "243404",
+  "name": "Georgia Stanway",
+  "ovr": 86,
+  "club": "Arsenal",
+  "league": "Barclays WSL",
+  "position": "CDM",
+  "item": 50575052,
+  "female": false
  },
  {
   "id": "271421",
@@ -168,7 +386,8 @@
   "club": "Paris SG",
   "league": "Ligue 1 McDonald's",
   "position": "RW",
-  "item": 50603069
+  "item": 50603069,
+  "female": false
  },
  {
   "id": "177003",
@@ -177,7 +396,8 @@
   "club": "AC Milan",
   "league": "Serie A Enilive",
   "position": "CM",
-  "item": 50508651
+  "item": 50508651,
+  "female": false
  },
  {
   "id": "192985",
@@ -186,7 +406,28 @@
   "club": "SSC Napoli",
   "league": "Serie A Enilive",
   "position": "CAM",
-  "item": 50524633
+  "item": 50524633,
+  "female": false
+ },
+ {
+  "id": "208128",
+  "name": "Hakan Çalhanoğlu",
+  "ovr": 85,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "CDM",
+  "item": 67316992,
+  "female": false
+ },
+ {
+  "id": "215441",
+  "name": "Serhou Guirassy",
+  "ovr": 85,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "ST",
+  "item": 67324305,
+  "female": false
  },
  {
   "id": "216393",
@@ -195,7 +436,8 @@
   "club": "Man Utd",
   "league": "Premier League",
   "position": "CM",
-  "item": 50548041
+  "item": 50548041,
+  "female": false
  },
  {
   "id": "227246",
@@ -204,7 +446,8 @@
   "club": "Chelsea",
   "league": "Barclays WSL",
   "position": "RB",
-  "item": 67336110
+  "item": 67336110,
+  "female": false
  },
  {
   "id": "228093",
@@ -213,7 +456,8 @@
   "club": "Inter",
   "league": "Serie A Enilive",
   "position": "ST",
-  "item": 67336957
+  "item": 67336957,
+  "female": false
  },
  {
   "id": "232073",
@@ -222,7 +466,18 @@
   "club": "Chicago Stars FC",
   "league": "NWSL",
   "position": "LM",
-  "item": 50563721
+  "item": 50563721,
+  "female": false
+ },
+ {
+  "id": "232293",
+  "name": "Victor Osimhen",
+  "ovr": 85,
+  "club": "Galatasaray",
+  "league": "Trendyol Süper Lig",
+  "position": "ST",
+  "item": 50563941,
+  "female": false
  },
  {
   "id": "240030",
@@ -231,7 +486,8 @@
   "club": "Chelsea",
   "league": "Barclays WSL",
   "position": "RB",
-  "item": 50571678
+  "item": 50571678,
+  "female": false
  },
  {
   "id": "241236",
@@ -240,7 +496,8 @@
   "club": "Manchester City",
   "league": "Premier League",
   "position": "RW",
-  "item": 50572884
+  "item": 50572884,
+  "female": false
  },
  {
   "id": "244176",
@@ -249,7 +506,8 @@
   "club": "VfB Stuttgart",
   "league": "Bundesliga",
   "position": "ST",
-  "item": 50575824
+  "item": 50575824,
+  "female": false
  },
  {
   "id": "246863",
@@ -258,16 +516,28 @@
   "club": "Borussia Dortmund",
   "league": "Bundesliga",
   "position": "CM",
-  "item": 67355727
+  "item": 67355727,
+  "female": false
+ },
+ {
+  "id": "257534",
+  "name": "Cole Palmer",
+  "ovr": 85,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50589182,
+  "female": false
  },
  {
   "id": "264652",
   "name": "Bradley Barcola",
   "ovr": 85,
-  "club": "Paris SG",
-  "league": "Ligue 1 McDonald's",
+  "club": "Liverpool",
+  "league": "Premier League",
   "position": "LW",
-  "item": 67373516
+  "item": 67373516,
+  "female": false
  },
  {
   "id": "265249",
@@ -276,7 +546,8 @@
   "club": "Chelsea",
   "league": "Barclays WSL",
   "position": "LM",
-  "item": 50596897
+  "item": 50596897,
+  "female": false
  },
  {
   "id": "273153",
@@ -285,7 +556,18 @@
   "club": "Real Madrid",
   "league": "Liga F Moeve",
   "position": "LW",
-  "item": 50604801
+  "item": 50604801,
+  "female": false
+ },
+ {
+  "id": "20801",
+  "name": "Cristiano Ronaldo",
+  "ovr": 84,
+  "club": "Al Nassr",
+  "league": "ROSHN Saudi League",
+  "position": "ST",
+  "item": 67129665,
+  "female": false
  },
  {
   "id": "78012",
@@ -294,7 +576,8 @@
   "club": "Real Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "RW",
-  "item": 50409660
+  "item": 100741308,
+  "female": false
  },
  {
   "id": "188545",
@@ -303,7 +586,8 @@
   "club": "Chicago Fire FC",
   "league": "MLS",
   "position": "ST",
-  "item": 50520193
+  "item": 50520193,
+  "female": false
  },
  {
   "id": "194765",
@@ -312,7 +596,18 @@
   "club": "Orlando City",
   "league": "MLS",
   "position": "ST",
-  "item": 50526413
+  "item": 50526413,
+  "female": false
+ },
+ {
+  "id": "223848",
+  "name": "Sergej Milinković-Savić",
+  "ovr": 84,
+  "club": "Al Hilal",
+  "league": "ROSHN Saudi League",
+  "position": "CM",
+  "item": 50555496,
+  "female": false
  },
  {
   "id": "227013",
@@ -321,7 +616,8 @@
   "club": "Manchester Utd",
   "league": "Barclays WSL",
   "position": "LM",
-  "item": 50558661
+  "item": 50558661,
+  "female": false
  },
  {
   "id": "227678",
@@ -330,7 +626,8 @@
   "club": "Arsenal",
   "league": "Premier League",
   "position": "CB",
-  "item": 50559326
+  "item": 50559326,
+  "female": false
  },
  {
   "id": "230142",
@@ -339,7 +636,48 @@
   "club": "Real Sociedad",
   "league": "LALIGA EA SPORTS",
   "position": "ST",
-  "item": 50561790
+  "item": 50561790,
+  "female": false
+ },
+ {
+  "id": "237692",
+  "name": "Phil Foden",
+  "ovr": 84,
+  "club": "Manchester City",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50569340,
+  "female": false
+ },
+ {
+  "id": "239837",
+  "name": "Alexis Mac Allister",
+  "ovr": 84,
+  "club": "Liverpool",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50571485,
+  "female": false
+ },
+ {
+  "id": "240243",
+  "name": "Matheus Cunha",
+  "ovr": 84,
+  "club": "Man Utd",
+  "league": "Premier League",
+  "position": "LM",
+  "item": 50571891,
+  "female": false
+ },
+ {
+  "id": "240638",
+  "name": "Tijjani Reijnders",
+  "ovr": 84,
+  "club": "Al Qadsiah",
+  "league": "ROSHN Saudi League",
+  "position": "CM",
+  "item": 50572286,
+  "female": false
  },
  {
   "id": "241461",
@@ -348,7 +686,8 @@
   "club": "Paris SG",
   "league": "Ligue 1 McDonald's",
   "position": "ST",
-  "item": 50573109
+  "item": 50573109,
+  "female": false
  },
  {
   "id": "243014",
@@ -357,7 +696,8 @@
   "club": "Man Utd",
   "league": "Premier League",
   "position": "RM",
-  "item": 50574662
+  "item": 50574662,
+  "female": false
  },
  {
   "id": "254243",
@@ -366,7 +706,8 @@
   "club": "Manchester City",
   "league": "Premier League",
   "position": "CDM",
-  "item": 100917539
+  "item": 100917539,
+  "female": false
  },
  {
   "id": "259372",
@@ -375,7 +716,8 @@
   "club": "Real Madrid",
   "league": "Liga F Moeve",
   "position": "RW",
-  "item": 50591020
+  "item": 50591020,
+  "female": false
  },
  {
   "id": "260247",
@@ -384,7 +726,8 @@
   "club": "Chelsea",
   "league": "Premier League",
   "position": "CAM",
-  "item": 50591895
+  "item": 50591895,
+  "female": false
  },
  {
   "id": "261740",
@@ -393,7 +736,8 @@
   "club": "OL Lyonnes",
   "league": "Arkema PL",
   "position": "LW",
-  "item": 50593388
+  "item": 50593388,
+  "female": false
  },
  {
   "id": "264947",
@@ -402,7 +746,8 @@
   "club": "London City",
   "league": "Barclays WSL",
   "position": "ST",
-  "item": 50596595
+  "item": 50596595,
+  "female": false
  },
  {
   "id": "265025",
@@ -411,7 +756,18 @@
   "club": "Arsenal",
   "league": "Barclays WSL",
   "position": "ST",
-  "item": 50596673
+  "item": 50596673,
+  "female": false
+ },
+ {
+  "id": "267384",
+  "name": "Taylor Flint",
+  "ovr": 84,
+  "club": "Rac. Louisville",
+  "league": "NWSL",
+  "position": "CDM",
+  "item": 50599032,
+  "female": false
  },
  {
   "id": "267530",
@@ -420,7 +776,8 @@
   "club": "FC Barcelona",
   "league": "Liga F Moeve",
   "position": "LB",
-  "item": 67376394
+  "item": 67376394,
+  "female": false
  },
  {
   "id": "271446",
@@ -429,7 +786,8 @@
   "club": "FC Barcelona",
   "league": "Liga F Moeve",
   "position": "RW",
-  "item": 50603094
+  "item": 50603094,
+  "female": false
  },
  {
   "id": "277846",
@@ -438,7 +796,8 @@
   "club": "Como",
   "league": "Serie A Enilive",
   "position": "CAM",
-  "item": 50609494
+  "item": 50609494,
+  "female": false
  },
  {
   "id": "193080",
@@ -447,7 +806,8 @@
   "club": "Fiorentina",
   "league": "Serie A Enilive",
   "position": "GK",
-  "item": 50524728
+  "item": 50524728,
+  "female": false
  },
  {
   "id": "197781",
@@ -456,7 +816,8 @@
   "club": "Real Betis",
   "league": "LALIGA EA SPORTS",
   "position": "CAM",
-  "item": 50529429
+  "item": 50529429,
+  "female": false
  },
  {
   "id": "210514",
@@ -465,7 +826,8 @@
   "club": "FC Barcelona",
   "league": "LALIGA EA SPORTS",
   "position": "LB",
-  "item": 50542162
+  "item": 50542162,
+  "female": false
  },
  {
   "id": "221697",
@@ -474,7 +836,8 @@
   "club": "Aston Villa",
   "league": "Premier League",
   "position": "ST",
-  "item": 100884993
+  "item": 100884993,
+  "female": false
  },
  {
   "id": "224371",
@@ -483,7 +846,8 @@
   "club": "West Ham",
   "league": "EFL Championship",
   "position": "RM",
-  "item": 50556019
+  "item": 50556019,
+  "female": false
  },
  {
   "id": "230899",
@@ -492,7 +856,8 @@
   "club": "Atlético de Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "ST",
-  "item": 50562547
+  "item": 50562547,
+  "female": false
  },
  {
   "id": "231447",
@@ -501,7 +866,8 @@
   "club": "AS Roma",
   "league": "Serie A Enilive",
   "position": "ST",
-  "item": 50563095
+  "item": 50563095,
+  "female": false
  },
  {
   "id": "240225",
@@ -510,7 +876,8 @@
   "club": "Paris SG",
   "league": "Ligue 1 McDonald's",
   "position": "GK",
-  "item": 67349089
+  "item": 67349089,
+  "female": false
  },
  {
   "id": "240717",
@@ -519,7 +886,8 @@
   "club": "Real Madrid",
   "league": "Liga F Moeve",
   "position": "ST",
-  "item": 50572365
+  "item": 50572365,
+  "female": false
  },
  {
   "id": "242444",
@@ -528,7 +896,8 @@
   "club": "Al Nassr",
   "league": "ROSHN Saudi League",
   "position": "CAM",
-  "item": 50574092
+  "item": 50574092,
+  "female": false
  },
  {
   "id": "257279",
@@ -537,7 +906,8 @@
   "club": "Atlético de Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "LM",
-  "item": 50588927
+  "item": 50588927,
+  "female": false
  },
  {
   "id": "261855",
@@ -546,7 +916,8 @@
   "club": "FC Barcelona",
   "league": "Liga F Moeve",
   "position": "CM",
-  "item": 50593503
+  "item": 50593503,
+  "female": false
  },
  {
   "id": "262457",
@@ -555,7 +926,8 @@
   "club": "Paris SG",
   "league": "Arkema PL",
   "position": "LB",
-  "item": 50594105
+  "item": 50594105,
+  "female": false
  },
  {
   "id": "265035",
@@ -564,7 +936,8 @@
   "club": "Real Madrid",
   "league": "Liga F Moeve",
   "position": "CM",
-  "item": 50596683
+  "item": 50596683,
+  "female": false
  },
  {
   "id": "266127",
@@ -573,7 +946,18 @@
   "club": "Newcastle Utd",
   "league": "Premier League",
   "position": "LB",
-  "item": 50597775
+  "item": 50597775,
+  "female": false
+ },
+ {
+  "id": "266384",
+  "name": "Sveindís Jane Jónsdóttir",
+  "ovr": 83,
+  "club": "Angel City FC",
+  "league": "NWSL",
+  "position": "ST",
+  "item": 50598032,
+  "female": false
  },
  {
   "id": "204970",
@@ -582,7 +966,18 @@
   "club": "RC Lens",
   "league": "Ligue 1 McDonald's",
   "position": "RW",
-  "item": 50536618
+  "item": 50536618,
+  "female": false
+ },
+ {
+  "id": "209499",
+  "name": "Fabinho",
+  "ovr": 82,
+  "club": "Trabzonspor",
+  "league": "Trendyol Süper Lig",
+  "position": "CDM",
+  "item": 50541147,
+  "female": false
  },
  {
   "id": "219683",
@@ -591,7 +986,18 @@
   "club": "OL",
   "league": "Ligue 1 McDonald's",
   "position": "CM",
-  "item": 50551331
+  "item": 50551331,
+  "female": false
+ },
+ {
+  "id": "229891",
+  "name": "Julian Ryerson",
+  "ovr": 82,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "RB",
+  "item": 50561539,
+  "female": false
  },
  {
   "id": "231677",
@@ -600,7 +1006,8 @@
   "club": "Man Utd",
   "league": "Premier League",
   "position": "LW",
-  "item": 50563325
+  "item": 50563325,
+  "female": false
  },
  {
   "id": "232488",
@@ -609,7 +1016,8 @@
   "club": "Atlético de Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "CB",
-  "item": 50564136
+  "item": 50564136,
+  "female": false
  },
  {
   "id": "240950",
@@ -618,7 +1026,8 @@
   "club": "Sporting CP",
   "league": "Liga Portugal",
   "position": "LM",
-  "item": 50572598
+  "item": 50572598,
+  "female": false
  },
  {
   "id": "242964",
@@ -627,7 +1036,8 @@
   "club": "FC Barcelona",
   "league": "LALIGA EA SPORTS",
   "position": "LW",
-  "item": 50574612
+  "item": 50574612,
+  "female": false
  },
  {
   "id": "243245",
@@ -636,7 +1046,18 @@
   "club": "Beşiktaş",
   "league": "Trendyol Süper Lig",
   "position": "CM",
-  "item": 50574893
+  "item": 50574893,
+  "female": false
+ },
+ {
+  "id": "243657",
+  "name": "James Garner",
+  "ovr": 82,
+  "club": "Everton",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50575305,
+  "female": false
  },
  {
   "id": "244067",
@@ -645,7 +1066,8 @@
   "club": "Chelsea",
   "league": "Premier League",
   "position": "CB",
-  "item": 50575715
+  "item": 50575715,
+  "female": false
  },
  {
   "id": "251377",
@@ -654,7 +1076,8 @@
   "club": "Sporting CP",
   "league": "Liga Portugal",
   "position": "CAM",
-  "item": 50583025
+  "item": 50583025,
+  "female": false
  },
  {
   "id": "251852",
@@ -663,7 +1086,8 @@
   "club": "FC Barcelona",
   "league": "LALIGA EA SPORTS",
   "position": "RM",
-  "item": 50583500
+  "item": 50583500,
+  "female": false
  },
  {
   "id": "253109",
@@ -672,7 +1096,8 @@
   "club": "Borussia Dortmund",
   "league": "Bundesliga",
   "position": "CM",
-  "item": 50584757
+  "item": 50584757,
+  "female": false
  },
  {
   "id": "256675",
@@ -681,7 +1106,8 @@
   "club": "Manchester City",
   "league": "Premier League",
   "position": "LW",
-  "item": 100919971
+  "item": 100919971,
+  "female": false
  },
  {
   "id": "256948",
@@ -690,7 +1116,8 @@
   "club": "Arsenal",
   "league": "Premier League",
   "position": "LW",
-  "item": 50588596
+  "item": 50588596,
+  "female": false
  },
  {
   "id": "264388",
@@ -699,7 +1126,8 @@
   "club": "Villarreal CF",
   "league": "LALIGA EA SPORTS",
   "position": "LM",
-  "item": 50596036
+  "item": 50596036,
+  "female": false
  },
  {
   "id": "265058",
@@ -708,7 +1136,8 @@
   "club": "Frankfurt",
   "league": "GPFBL",
   "position": "RM",
-  "item": 67373922
+  "item": 67373922,
+  "female": false
  },
  {
   "id": "265693",
@@ -717,7 +1146,18 @@
   "club": "FC Porto",
   "league": "Liga Portugal",
   "position": "CB",
-  "item": 50597341
+  "item": 50597341,
+  "female": false
+ },
+ {
+  "id": "181458",
+  "name": "Ivan Perišić",
+  "ovr": 81,
+  "club": "PSV",
+  "league": "Eredivisie",
+  "position": "LW",
+  "item": 50513106,
+  "female": false
  },
  {
   "id": "200104",
@@ -726,7 +1166,18 @@
   "club": "LAFC",
   "league": "MLS",
   "position": "ST",
-  "item": 50531752
+  "item": 50531752,
+  "female": false
+ },
+ {
+  "id": "216354",
+  "name": "Andrej Kramarić",
+  "ovr": 81,
+  "club": "TSG Hoffenheim",
+  "league": "Bundesliga",
+  "position": "CAM",
+  "item": 50548002,
+  "female": false
  },
  {
   "id": "223710",
@@ -735,7 +1186,8 @@
   "club": "Fenerbahçe",
   "league": "Trendyol Süper Lig",
   "position": "ST",
-  "item": 50555358
+  "item": 50555358,
+  "female": false
  },
  {
   "id": "238616",
@@ -744,7 +1196,8 @@
   "club": "Chelsea",
   "league": "Premier League",
   "position": "RM",
-  "item": 50570264
+  "item": 50570264,
+  "female": false
  },
  {
   "id": "260908",
@@ -753,7 +1206,8 @@
   "club": "Liverpool",
   "league": "Premier League",
   "position": "LB",
-  "item": 50592556
+  "item": 50592556,
+  "female": false
  },
  {
   "id": "261299",
@@ -762,7 +1216,18 @@
   "club": "AFC Bournemouth",
   "league": "Premier League",
   "position": "CM",
-  "item": 50592947
+  "item": 50592947,
+  "female": false
+ },
+ {
+  "id": "262138",
+  "name": "Castello Lukeba",
+  "ovr": 81,
+  "club": "RB Leipzig",
+  "league": "Bundesliga",
+  "position": "CB",
+  "item": 50593786,
+  "female": false
  },
  {
   "id": "264862",
@@ -771,7 +1236,18 @@
   "club": "Paris SG",
   "league": "Ligue 1 McDonald's",
   "position": "CAM",
-  "item": 50596510
+  "item": 50596510,
+  "female": false
+ },
+ {
+  "id": "264884",
+  "name": "Paulina Dudek",
+  "ovr": 81,
+  "club": "Paris SG",
+  "league": "Arkema PL",
+  "position": "CB",
+  "item": 50596532,
+  "female": false
  },
  {
   "id": "266039",
@@ -780,7 +1256,8 @@
   "club": "Atlético de Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "CB",
-  "item": 50597687
+  "item": 50597687,
+  "female": false
  },
  {
   "id": "268889",
@@ -789,7 +1266,8 @@
   "club": "Real Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "LB",
-  "item": 67377753
+  "item": 67377753,
+  "female": false
  },
  {
   "id": "269136",
@@ -798,7 +1276,8 @@
   "club": "Man Utd",
   "league": "Premier League",
   "position": "CDM",
-  "item": 50600784
+  "item": 50600784,
+  "female": false
  },
  {
   "id": "269701",
@@ -807,7 +1286,8 @@
   "club": "FC Bayern München",
   "league": "Bundesliga",
   "position": "LB",
-  "item": 50601349
+  "item": 50601349,
+  "female": false
  },
  {
   "id": "270531",
@@ -816,7 +1296,8 @@
   "club": "Nott'm Forest",
   "league": "Premier League",
   "position": "CB",
-  "item": 50602179
+  "item": 50602179,
+  "female": false
  },
  {
   "id": "271918",
@@ -825,7 +1306,8 @@
   "club": "RC Lens",
   "league": "Ligue 1 McDonald's",
   "position": "GK",
-  "item": 50603566
+  "item": 50603566,
+  "female": false
  },
  {
   "id": "275192",
@@ -834,7 +1316,8 @@
   "club": "Brighton",
   "league": "Premier League",
   "position": "CB",
-  "item": 50606840
+  "item": 50606840,
+  "female": false
  },
  {
   "id": "277869",
@@ -843,7 +1326,8 @@
   "club": "Brentford",
   "league": "Premier League",
   "position": "RB",
-  "item": 50609517
+  "item": 50609517,
+  "female": false
  },
  {
   "id": "279699",
@@ -852,7 +1336,8 @@
   "club": "Bay FC",
   "league": "NWSL",
   "position": "CDM",
-  "item": 50611347
+  "item": 50611347,
+  "female": false
  },
  {
   "id": "77050",
@@ -861,7 +1346,8 @@
   "club": "Paris SG",
   "league": "Arkema PL",
   "position": "ST",
-  "item": 50408698
+  "item": 50408698,
+  "female": false
  },
  {
   "id": "228618",
@@ -870,7 +1356,8 @@
   "club": "Real Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "LB",
-  "item": 50560266
+  "item": 50560266,
+  "female": false
  },
  {
   "id": "232411",
@@ -879,7 +1366,8 @@
   "club": "RB Leipzig",
   "league": "Bundesliga",
   "position": "ST",
-  "item": 100895707
+  "item": 100895707,
+  "female": false
  },
  {
   "id": "238744",
@@ -888,7 +1376,8 @@
   "club": "Juventus",
   "league": "Serie A Enilive",
   "position": "CM",
-  "item": 50570392
+  "item": 50570392,
+  "female": false
  },
  {
   "id": "239807",
@@ -897,7 +1386,8 @@
   "club": "SS Lazio",
   "league": "Serie A Enilive",
   "position": "CM",
-  "item": 50571455
+  "item": 50571455,
+  "female": false
  },
  {
   "id": "243630",
@@ -906,7 +1396,8 @@
   "club": "Juventus",
   "league": "Serie A Enilive",
   "position": "ST",
-  "item": 67352494
+  "item": 67352494,
+  "female": false
  },
  {
   "id": "243702",
@@ -915,7 +1406,8 @@
   "club": "Inter",
   "league": "Serie A Enilive",
   "position": "LB",
-  "item": 50575350
+  "item": 50575350,
+  "female": false
  },
  {
   "id": "243780",
@@ -924,7 +1416,18 @@
   "club": "Atlético de Madrid",
   "league": "LALIGA EA SPORTS",
   "position": "RW",
-  "item": 50575428
+  "item": 50575428,
+  "female": false
+ },
+ {
+  "id": "246350",
+  "name": "Enzo Le Fée",
+  "ovr": 80,
+  "club": "Sunderland",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50577998,
+  "female": false
  },
  {
   "id": "248165",
@@ -933,7 +1436,8 @@
   "club": "Rayo Vallecano",
   "league": "LALIGA EA SPORTS",
   "position": "RB",
-  "item": 50579813
+  "item": 50579813,
+  "female": false
  },
  {
   "id": "251566",
@@ -942,7 +1446,18 @@
   "club": "Arsenal",
   "league": "Premier League",
   "position": "LW",
-  "item": 84137646
+  "item": 84137646,
+  "female": false
+ },
+ {
+  "id": "254022",
+  "name": "Nick Woltemade",
+  "ovr": 80,
+  "club": "Newcastle Utd",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 67362886,
+  "female": false
  },
  {
   "id": "256903",
@@ -951,7 +1466,18 @@
   "club": "AC Milan",
   "league": "Serie A Enilive",
   "position": "ST",
-  "item": 50588551
+  "item": 50588551,
+  "female": false
+ },
+ {
+  "id": "258648",
+  "name": "Carlos Augusto",
+  "ovr": 80,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "LB",
+  "item": 50590296,
+  "female": false
  },
  {
   "id": "261865",
@@ -960,7 +1486,8 @@
   "club": "Leverkusen",
   "league": "Bundesliga",
   "position": "LB",
-  "item": 50593513
+  "item": 50593513,
+  "female": false
  },
  {
   "id": "265317",
@@ -969,7 +1496,8 @@
   "club": "Manchester City",
   "league": "Barclays WSL",
   "position": "CDM",
-  "item": 50596965
+  "item": 50596965,
+  "female": false
  },
  {
   "id": "269230",
@@ -978,7 +1506,8 @@
   "club": "Sunderland",
   "league": "Premier League",
   "position": "CDM",
-  "item": 50600878
+  "item": 50600878,
+  "female": false
  },
  {
   "id": "270409",
@@ -987,7 +1516,8 @@
   "club": "Manchester City",
   "league": "Premier League",
   "position": "RW",
-  "item": 50602057
+  "item": 50602057,
+  "female": false
  },
  {
   "id": "270857",
@@ -996,7 +1526,8 @@
   "club": "Spurs",
   "league": "Premier League",
   "position": "CM",
-  "item": 50602505
+  "item": 50602505,
+  "female": false
  },
  {
   "id": "271040",
@@ -1005,7 +1536,8 @@
   "club": "Gotham FC",
   "league": "NWSL",
   "position": "LM",
-  "item": 67379904
+  "item": 67379904,
+  "female": false
  },
  {
   "id": "275029",
@@ -1014,7 +1546,8 @@
   "club": "Leverkusen",
   "league": "Bundesliga",
   "position": "CAM",
-  "item": 50606677
+  "item": 117715541,
+  "female": false
  },
  {
   "id": "276694",
@@ -1023,7 +1556,8 @@
   "club": "Aston Villa",
   "league": "Premier League",
   "position": "CM",
-  "item": 50608342
+  "item": 50608342,
+  "female": false
  },
  {
   "id": "277951",
@@ -1032,7 +1566,8 @@
   "club": "OL Lyonnes",
   "league": "Arkema PL",
   "position": "CM",
-  "item": 50609599
+  "item": 50609599,
+  "female": false
  },
  {
   "id": "278901",
@@ -1041,6 +1576,537 @@
   "club": "LOSC Lille",
   "league": "Ligue 1 McDonald's",
   "position": "CDM",
-  "item": 50610549
+  "item": 50610549,
+  "female": false
+ },
+ {
+  "id": "83494",
+  "name": "Rayan",
+  "ovr": 79,
+  "club": "AFC Bournemouth",
+  "league": "Premier League",
+  "position": "RM",
+  "item": 50415142,
+  "female": false
+ },
+ {
+  "id": "188567",
+  "name": "Pierre-Emerick Aubameyang",
+  "ovr": 79,
+  "club": "RC Deportivo",
+  "league": "LALIGA EA SPORTS",
+  "position": "ST",
+  "item": 50520215,
+  "female": false
+ },
+ {
+  "id": "190765",
+  "name": "Pascal Groß",
+  "ovr": 79,
+  "club": "Brighton",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50522413,
+  "female": false
+ },
+ {
+  "id": "213666",
+  "name": "Ruben Loftus-Cheek",
+  "ovr": 79,
+  "club": "AC Milan",
+  "league": "Serie A Enilive",
+  "position": "CAM",
+  "item": 50545314,
+  "female": false
+ },
+ {
+  "id": "216594",
+  "name": "Nabil Fekir",
+  "ovr": 79,
+  "club": "Abha Club",
+  "league": "ROSHN Saudi League",
+  "position": "CAM",
+  "item": 50548242,
+  "female": false
+ },
+ {
+  "id": "225201",
+  "name": "Berenguer",
+  "ovr": 79,
+  "club": "Athletic Club",
+  "league": "LALIGA EA SPORTS",
+  "position": "RW",
+  "item": 50556849,
+  "female": false
+ },
+ {
+  "id": "236532",
+  "name": "Robin Koch",
+  "ovr": 79,
+  "club": "Frankfurt",
+  "league": "Bundesliga",
+  "position": "CB",
+  "item": 50568180,
+  "female": false
+ },
+ {
+  "id": "242835",
+  "name": "Leonardo Balerdi",
+  "ovr": 79,
+  "club": "Olympique de Marseille",
+  "league": "Ligue 1 McDonald's",
+  "position": "CB",
+  "item": 67351699,
+  "female": false
+ },
+ {
+  "id": "252552",
+  "name": "Konstantinos Tzolakis",
+  "ovr": 79,
+  "club": "Hull City",
+  "league": "Premier League",
+  "position": "GK",
+  "item": 50584200,
+  "female": false
+ },
+ {
+  "id": "259197",
+  "name": "Nicolas Jackson",
+  "ovr": 79,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "ST",
+  "item": 67368061,
+  "female": false
+ },
+ {
+  "id": "259716",
+  "name": "Daniel Svensson",
+  "ovr": 79,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "LB",
+  "item": 50591364,
+  "female": false
+ },
+ {
+  "id": "263765",
+  "name": "Tom Bischof",
+  "ovr": 79,
+  "club": "FC Bayern München",
+  "league": "Bundesliga",
+  "position": "CM",
+  "item": 50595413,
+  "female": false
+ },
+ {
+  "id": "264697",
+  "name": "Mohamed Amoura",
+  "ovr": 79,
+  "club": "VfL Wolfsburg",
+  "league": "Bundesliga 2",
+  "position": "ST",
+  "item": 67373561,
+  "female": false
+ },
+ {
+  "id": "265020",
+  "name": "Melissa Kössler",
+  "ovr": 79,
+  "club": "Denver Summit FC",
+  "league": "NWSL",
+  "position": "ST",
+  "item": 50596668,
+  "female": false
+ },
+ {
+  "id": "267674",
+  "name": "Amanda Gutierres",
+  "ovr": 79,
+  "club": "Boston Legacy FC",
+  "league": "NWSL",
+  "position": "ST",
+  "item": 67376538,
+  "female": false
+ },
+ {
+  "id": "273177",
+  "name": "Olivia Holdt",
+  "ovr": 79,
+  "club": "Spurs",
+  "league": "Barclays WSL",
+  "position": "CAM",
+  "item": 50604825,
+  "female": false
+ },
+ {
+  "id": "275787",
+  "name": "Laura Pérez",
+  "ovr": 79,
+  "club": "Sevilla FC",
+  "league": "Liga F Moeve",
+  "position": "RM",
+  "item": 50607435,
+  "female": false
+ },
+ {
+  "id": "276285",
+  "name": "Wieke Kaptein",
+  "ovr": 79,
+  "club": "Chelsea",
+  "league": "Barclays WSL",
+  "position": "CAM",
+  "item": 50607933,
+  "female": false
+ },
+ {
+  "id": "279604",
+  "name": "Jauregizar",
+  "ovr": 79,
+  "club": "Athletic Club",
+  "league": "LALIGA EA SPORTS",
+  "position": "CM",
+  "item": 50611252,
+  "female": false
+ },
+ {
+  "id": "71178",
+  "name": "Saïd El Mala",
+  "ovr": 78,
+  "club": "1. FC Köln",
+  "league": "Bundesliga",
+  "position": "LM",
+  "item": 67180042,
+  "female": false
+ },
+ {
+  "id": "73014",
+  "name": "Cornelia Kramer",
+  "ovr": 78,
+  "club": "Leverkusen",
+  "league": "GPFBL",
+  "position": "ST",
+  "item": 50404662,
+  "female": false
+ },
+ {
+  "id": "76334",
+  "name": "Pietra Tordin",
+  "ovr": 78,
+  "club": "Portland Thorns",
+  "league": "NWSL",
+  "position": "ST",
+  "item": 50407982,
+  "female": false
+ },
+ {
+  "id": "182494",
+  "name": "Fernando Muslera",
+  "ovr": 78,
+  "club": "Estudiantes",
+  "league": "LPF",
+  "position": "GK",
+  "item": 50514142,
+  "female": false
+ },
+ {
+  "id": "183711",
+  "name": "Jordan Henderson",
+  "ovr": 78,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50515359,
+  "female": false
+ },
+ {
+  "id": "188350",
+  "name": "Marco Reus",
+  "ovr": 78,
+  "club": "LA Galaxy",
+  "league": "MLS",
+  "position": "CAM",
+  "item": 50519998,
+  "female": false
+ },
+ {
+  "id": "211256",
+  "name": "Nicolás Tagliafico",
+  "ovr": 78,
+  "club": "OL",
+  "league": "Ligue 1 McDonald's",
+  "position": "LB",
+  "item": 50542904,
+  "female": false
+ },
+ {
+  "id": "220821",
+  "name": "Carl Starfelt",
+  "ovr": 78,
+  "club": "Celta",
+  "league": "LALIGA EA SPORTS",
+  "position": "CB",
+  "item": 50552469,
+  "female": false
+ },
+ {
+  "id": "221491",
+  "name": "Nico Elvedi",
+  "ovr": 78,
+  "club": "Leeds United",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50553139,
+  "female": false
+ },
+ {
+  "id": "223697",
+  "name": "Robin Gosens",
+  "ovr": 78,
+  "club": "FC Schalke 04",
+  "league": "Bundesliga",
+  "position": "LB",
+  "item": 50555345,
+  "female": false
+ },
+ {
+  "id": "227381",
+  "name": "Janine Sonis",
+  "ovr": 78,
+  "club": "Denver Summit FC",
+  "league": "NWSL",
+  "position": "LB",
+  "item": 50559029,
+  "female": false
+ },
+ {
+  "id": "235134",
+  "name": "Pablo Rosario",
+  "ovr": 78,
+  "club": "FC Porto",
+  "league": "Liga Portugal",
+  "position": "CDM",
+  "item": 50566782,
+  "female": false
+ },
+ {
+  "id": "241736",
+  "name": "Yann Aurel Bisseck",
+  "ovr": 78,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "CB",
+  "item": 50573384,
+  "female": false
+ },
+ {
+  "id": "242000",
+  "name": "Konstantinos Mavropanos",
+  "ovr": 78,
+  "club": "West Ham",
+  "league": "EFL Championship",
+  "position": "CB",
+  "item": 50573648,
+  "female": false
+ },
+ {
+  "id": "242879",
+  "name": "Maarten Vandevoordt",
+  "ovr": 78,
+  "club": "RB Leipzig",
+  "league": "Bundesliga",
+  "position": "GK",
+  "item": 50574527,
+  "female": false
+ },
+ {
+  "id": "245902",
+  "name": "Troy Parrott",
+  "ovr": 78,
+  "club": "Real Betis",
+  "league": "LALIGA EA SPORTS",
+  "position": "ST",
+  "item": 50577550,
+  "female": false
+ },
+ {
+  "id": "248492",
+  "name": "James Hill",
+  "ovr": 78,
+  "club": "AFC Bournemouth",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50580140,
+  "female": false
+ },
+ {
+  "id": "251954",
+  "name": "Crysencio Summerville",
+  "ovr": 78,
+  "club": "Al Hilal",
+  "league": "ROSHN Saudi League",
+  "position": "LM",
+  "item": 50583602,
+  "female": false
+ },
+ {
+  "id": "252162",
+  "name": "Ayase Ueda",
+  "ovr": 78,
+  "club": "Feyenoord",
+  "league": "Eredivisie",
+  "position": "ST",
+  "item": 67361026,
+  "female": false
+ },
+ {
+  "id": "254121",
+  "name": "Charlie Cresswell",
+  "ovr": 78,
+  "club": "Stade Rennais FC",
+  "league": "Ligue 1 McDonald's",
+  "position": "CB",
+  "item": 50585769,
+  "female": false
+ },
+ {
+  "id": "255434",
+  "name": "Julio César Enciso",
+  "ovr": 78,
+  "club": "Ipswich",
+  "league": "Premier League",
+  "position": "CAM",
+  "item": 50587082,
+  "female": false
+ },
+ {
+  "id": "258378",
+  "name": "Mika Godts",
+  "ovr": 78,
+  "club": "Paris SG",
+  "league": "Ligue 1 McDonald's",
+  "position": "LW",
+  "item": 50590026,
+  "female": false
+ },
+ {
+  "id": "259565",
+  "name": "Yoan Bonny",
+  "ovr": 78,
+  "club": "Inter",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 50591213,
+  "female": false
+ },
+ {
+  "id": "261478",
+  "name": "Tasos Douvikas",
+  "ovr": 78,
+  "club": "Como",
+  "league": "Serie A Enilive",
+  "position": "ST",
+  "item": 50593126,
+  "female": false
+ },
+ {
+  "id": "262863",
+  "name": "Antonio Nusa",
+  "ovr": 78,
+  "club": "RB Leipzig",
+  "league": "Bundesliga",
+  "position": "LW",
+  "item": 50594511,
+  "female": false
+ },
+ {
+  "id": "265057",
+  "name": "Cora Zicai",
+  "ovr": 78,
+  "club": "VfL Wolfsburg",
+  "league": "GPFBL",
+  "position": "LW",
+  "item": 50596705,
+  "female": false
+ },
+ {
+  "id": "268421",
+  "name": "Mathys Tel",
+  "ovr": 78,
+  "club": "Spurs",
+  "league": "Premier League",
+  "position": "LM",
+  "item": 50600069,
+  "female": false
+ },
+ {
+  "id": "268940",
+  "name": "Ana-Maria Crnogorčević",
+  "ovr": 78,
+  "club": "Strasbourg",
+  "league": "Arkema PL",
+  "position": "RW",
+  "item": 50600588,
+  "female": false
+ },
+ {
+  "id": "269278",
+  "name": "Diego Gómez",
+  "ovr": 78,
+  "club": "Brighton",
+  "league": "Premier League",
+  "position": "CM",
+  "item": 50600926,
+  "female": false
+ },
+ {
+  "id": "272978",
+  "name": "Jorrel Hato",
+  "ovr": 78,
+  "club": "Chelsea",
+  "league": "Premier League",
+  "position": "LB",
+  "item": 50604626,
+  "female": false
+ },
+ {
+  "id": "273906",
+  "name": "Renato Veiga",
+  "ovr": 78,
+  "club": "Villarreal CF",
+  "league": "LALIGA EA SPORTS",
+  "position": "CB",
+  "item": 50605554,
+  "female": false
+ },
+ {
+  "id": "274753",
+  "name": "Tarciane",
+  "ovr": 78,
+  "club": "OL Lyonnes",
+  "league": "Arkema PL",
+  "position": "CB",
+  "item": 50606401,
+  "female": false
+ },
+ {
+  "id": "277225",
+  "name": "Jon Martín",
+  "ovr": 78,
+  "club": "Real Sociedad",
+  "league": "LALIGA EA SPORTS",
+  "position": "CB",
+  "item": 50608873,
+  "female": false
+ },
+ {
+  "id": "278773",
+  "name": "Myles Lewis-Skelly",
+  "ovr": 78,
+  "club": "Arsenal",
+  "league": "Premier League",
+  "position": "LB",
+  "item": 50610421,
+  "female": false
  }
 ]
