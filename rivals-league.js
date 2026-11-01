@@ -1,5 +1,5 @@
 "use strict";
-/* Footera V21.328 – Wochen-Rivals: Freundesliga.
+/* Footera V21.329 – Wochen-Rivals: Freundesliga.
    Every Rivals match counts for the league week Sunday 19:00 → Sunday 19:00 (Berlin).
    Your own standing comes from this save; friends' standings come from the server.
    After the week (plus 10 minutes for late reports) the final place becomes a normal
