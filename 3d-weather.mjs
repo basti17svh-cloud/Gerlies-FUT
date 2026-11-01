@@ -118,7 +118,7 @@ export function weatherLook(kind,spooky=false){
 export function createStadiumWeather(THREE,{scene,field,renderer,camera,weather,weak=false,high=false,track=o=>o,spooky=false,pitch=null,hemi=null,sun=null,fill=null,ballMaterial=null,ballAt=null,actors=()=>[]}){
  const w=normalizeSceneWeather(weather);
  const info={kind:w.kind,intensity:w.intensity,temperature:w.temperature,particles:0,splashes:0,breath:false,ballTint:'',snowCover:false};
- if(w.kind==='clear')return {info,update(){}};
+ if(w.kind==='clear')return {info,update(){},reduce(){}};
  const snow=w.kind==='snow',look=weatherLook(w.kind,spooky);
  scene.background=new THREE.Color(look.background);
  scene.fog=new THREE.Fog(look.fog,look.near,look.far);
@@ -257,5 +257,7 @@ export function createStadiumWeather(THREE,{scene,field,renderer,camera,weather,
   for(const g of [sprayGeo,breathGeo]){g.attributes.position.needsUpdate=true;g.attributes.aAlpha.needsUpdate=true;g.attributes.aSize.needsUpdate=true}
  }
  info.inspect=()=>({kind:w.kind,time:lastTime,center:uniforms.uCenter.value.toArray(),sprayVisible:Array.from(sprayAlpha).filter(a=>a>.01).length,breathVisible:Array.from(breathAlpha).filter(a=>a>.01).length});
- return {info,update,group};
+ // Slow device: keep half of the particles (the scene calls this once).
+ function reduce(){geo.setDrawRange(0,Math.floor(count*.5));splash?.geometry.setDrawRange(0,Math.floor(info.splashes*.5));info.reduced=true}
+ return {info,update,reduce,group};
 }

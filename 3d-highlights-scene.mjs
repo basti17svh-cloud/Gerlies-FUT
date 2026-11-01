@@ -2382,6 +2382,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // Spend the performance budget on the match and readable pitch-side boards.
    // Reduce only spectator geometry and stop all crowd/flag animation work.
    crowdDetailReduced=true;
+   weather.reduce();
    for(const group of [crowdStatic,crowdDynamic]){
     const count=Math.floor(group.specs.length*.35);
     group.torso.count=group.head.count=count;

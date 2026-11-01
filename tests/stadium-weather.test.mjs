@@ -100,6 +100,7 @@ test('rain: wet darker turf, splashes, spray behind the rolling ball, all determ
   weather.update(7);weather.update(3);assert.deepEqual(weather.info.inspect(),first,'seeking back shows the same frame');
   weather.update(.5);assert.equal(weather.info.inspect().sprayVisible,0,'no spray while the ball is still');
   assert.equal(weather.info.breath,true,'4 °C: breath clouds');
+  weather.reduce();assert.equal(weather.info.reduced,true);
   assert.equal(calls,0,'no Math.random');
  }finally{Math.random=random}
 });
