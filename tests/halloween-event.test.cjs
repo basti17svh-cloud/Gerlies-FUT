@@ -142,6 +142,10 @@ test('the event poster always lists cards from the highest to the lowest rating'
  for(const kind of ['totwEventEntries(team)','totwReviewEntries(preview)','promoEventEntries(event)'])assert.ok(html.includes(`entries:()=>byEventRating(${kind})`),kind);
 });
 
+test('the home hero shows the strongest event cards first and opens the matching biography',()=>{
+ assert.ok(html.includes('const eventPlayers=hero.event?byEventRating(promoEventEntries(hero.event)):[];'),'hero roster sorted by rating');
+ assert.ok(html.includes('const entry=byEventRating(promoEventEntries(event))[Number(b.dataset.homeEventPlayer)];'),'tap opens the same card as shown');
+});
 test('the Halloween announcement keeps the SBC and objective players secret',()=>{
  const teaser=section('function openHalloweenPreview(','\n}\n')+section('function halloweenHeroSlide(','function homeHeroSlides(');
  assert.ok(!/Müller|Muller|Raumdeuter|Leão|Leao|Gyökeres|Gyokeres|Mbeumo|Son Heung|Semenyo/.test(teaser),'no SBC or objective spoiler in the hero teaser or the preview timeline');
