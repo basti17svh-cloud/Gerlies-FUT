@@ -4648,13 +4648,21 @@ function generateSurpriseGiftPack(pack,tradeable=true){
  return all
 }
 // Event packs: one guaranteed event card (each roster card equally likely, shown in the odds) plus the normal weighted draw.
+// Which teams the guaranteed event slot draws from. While a Halloween team is in packs it is that team;
+// after the event (e.g. a Blutmond pack still in the Season Pass) every released Halloween team (Basti 2026-11-01).
+function eventSlotEvents(p,at=Date.now()){
+ if(!p?.eventSlot)return[];
+ if(p.eventSlot!==HALLOWEEN_EVENT.id||p.eventSlotFixed){const event=EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);return event&&eventRosterReady(event)?[event]:[]}
+ const live=activeHalloweenEvent(at);if(live)return[live];
+ return [HALLOWEEN_EVENT,HALLOWEEN_TEAM2_EVENT].filter(e=>eventRosterReady(e)&&at>=Date.parse(e.activeFrom))
+}
 function eventSlotDrawPack(p){return{...p,count:p.count-1,eventSlot:null}}
 function generateEventSlotPack(p,tradeable=true){
- const event=p.eventSlot===HALLOWEEN_EVENT.id&&!p.eventSlotFixed?(activeHalloweenEvent()||HALLOWEEN_EVENT):EVENT_PROMO_RELEASES.find(e=>e.id===p.eventSlot);if(!event||!eventRosterReady(event))return[];
- const info=event.players[Math.floor(Math.random()*event.players.length)],base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
+ const events=eventSlotEvents(p);if(!events.length)return[];
+ const cards=events.flatMap(event=>event.players.map(info=>({event,info}))),pick=cards[Math.floor(Math.random()*cards.length)],{event,info}=pick,base=eventResolveBase(info,0,event.id);P_BY_ID.set(String(base.id),base);
  const special=makePromoPackItem(base,{event,info},tradeable);if(!special)return[];
  if(p.count<=1)return[special];
- const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!event.players.some(i=>String(i.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
+ const rest=FooteraPackOdds.draw(eventSlotDrawPack(p),PLAYERS.filter(x=>!cards.some(c=>String(c.info.pid)===String(x.id))),{icons:MID_ICON_BASES,random:Math.random});
  if(!rest.available||rest.items.length!==p.count-1)return[];
  const arr=rest.items.map(entry=>entry.icon?makeMidIconItem(entry.base,tradeable):makeLivePackItem(entry.base,tradeable));
  const rareNeed=Math.max(0,Number(p.rareCount||0)-arr.filter(i=>!!i.variant||isCardRare(displayBase(i),i)).length);
@@ -5647,9 +5655,20 @@ const HALLOWEEN_TEAM1_MARKET_ANCHORS={
  "158023":[91,2500000], "209331":[89,650000], "264652":[87,450000],
  "228093":[87,220000], "244176":[86,45000], "194765":[86,180000]
 };
+// Team 2 prices, Basti 2026-11-01: proposal +50 % (printed rating before Blutmond +1).
+const HALLOWEEN_TEAM2_MARKET_ANCHORS={
+ "241236":[88,600000], "216393":[87,105000], "78012":[86,450000],
+ "227678":[85,67500], "230899":[85,180000], "242444":[85,75000],
+ "242964":[84,135000], "231447":[84,90000], "240225":[84,45000],
+ "224371":[84,37500], "271918":[83,22500], "244067":[83,52500],
+ "270531":[83,33000], "277869":[83,27000], "219683":[83,21000],
+ "243702":[82,37500], "238744":[82,22500], "269230":[82,18000]
+};
+const HALLOWEEN_MARKET_ANCHORS_BY_RELEASE={"halloween-2026":HALLOWEEN_TEAM1_MARKET_ANCHORS,"halloween-2026-team2":HALLOWEEN_TEAM2_MARKET_ANCHORS};
 function halloweenMarketAnchor(r,base,item){
- if(item?.variant!=="special"||item?.eventType!=="halloween"||item?.eventReleaseId!=="halloween-2026")return 0;
- const anchor=HALLOWEEN_TEAM1_MARKET_ANCHORS[String(base?.id||item?.pid||"")];
+ const anchors=HALLOWEEN_MARKET_ANCHORS_BY_RELEASE[item?.eventReleaseId];
+ if(item?.variant!=="special"||item?.eventType!=="halloween"||!anchors)return 0;
+ const anchor=anchors[String(base?.id||item?.pid||"")];
  if(!anchor)return 0;
  // The global +1 upgrade adds 15%; use the actual rating so listing and sale guides agree.
  return marketRoundPrice(anchor[1]*(1+Math.max(0,Number(r)-anchor[0])*.15))
