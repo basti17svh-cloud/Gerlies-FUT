@@ -212,6 +212,8 @@ function fakeClock(){
   assert.deepEqual(snap.objectives,["halloween-son"],"Son objective replaces Leão");assert.deepEqual(snap.eventSbcs,["halloween-gyokeres-88"],"Müller ends, Gyökeres keeps running");
   assert.ok(snap.hero,"Halloween hero is still present");
   assert.match(snap.hero.text,/Team 2/,"hero announces Team 2");
+  const heroCards=await page.evaluate(()=>{switchView("homeView",{push:false,scroll:false});renderAll();return[...document.querySelectorAll("#homeMomentumRoster [data-home-event-player]")].map(b=>b.getAttribute("aria-label"))});
+  assert.match(heroCards[0]||"",/Semenyo/,"Team 2 hero opens with its top card, not the keepers ("+heroCards.join(" | ")+")");
   const team2Card=await page.evaluate(()=>{const pack=generatePack("halloween-pack",false),card=pack.find(i=>String(i.eventType||"").startsWith("halloween"));return card?{release:card.eventReleaseId,rating:itemRating(card),stored:card.displayRating}:null});
   assert.equal(team2Card?.release,"halloween-2026-team2","new Blutmond packs contain a Team 2 card");assert.equal(team2Card.rating,team2Card.stored+1,"Team 2 cards carry the Blutmond upgrade");
   for(const c of snap.cards)assert.equal(c.rating,pre[c.uid].rating+1,"06.11. 19:00: card keeps its Blutmond upgrade");

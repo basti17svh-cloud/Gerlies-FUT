@@ -7857,7 +7857,8 @@ function renderHomeHero(){
  const action=$("homeHeroAction");action.textContent=hero.button;action.dataset.homeHeroAction=hero.action||"";if(hero.go)action.dataset.go=hero.go;else delete action.dataset.go;
  const teamBtn=$("homeHeroTeam");teamBtn.style.display=hero.teamView?"inline-flex":"none";teamBtn.textContent=hero.teamButton||"Team ansehen";teamBtn.dataset.homeTeamView=hero.teamView||"";
  const roster=$("homeMomentumRoster");roster.hidden=!hero.event;roster.classList.toggle("teaser",!!hero.teaser);
- const eventPlayers=hero.event?promoEventEntries(hero.event):[];
+ // Show the strongest cards first (Team 2 would otherwise open with its two keepers).
+ const eventPlayers=hero.event?byEventRating(promoEventEntries(hero.event)):[];
  roster.innerHTML=eventPlayers.slice(0,4).map((entry,index)=>`<button type="button" class="home-momentum-player" data-home-event-player="${index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`).join("")+(eventPlayers.length>4?`<span class="home-momentum-count">+${eventPlayers.length-4} weitere Karten im Team</span>`:"");
  $("homeSliderDots").innerHTML=slides.map((_,i)=>`<span class="home-slider-dot ${i===homeHeroSlide?"active":""}" data-home-slide="${i}" aria-hidden="true"></span>`).join("")
 }
@@ -7912,7 +7913,7 @@ let heroSwipeStart=null;
 $("homeHeroCard")?.addEventListener("pointerdown",e=>{heroSwipeStart={x:e.clientX,y:e.clientY,id:e.pointerId}});
 $("homeHeroCard")?.addEventListener("pointerup",e=>{if(!heroSwipeStart||heroSwipeStart.id!==e.pointerId)return;const dx=e.clientX-heroSwipeStart.x,dy=e.clientY-heroSwipeStart.y;heroSwipeStart=null;if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;const len=homeHeroSlides().length;homeHeroSlide=(homeHeroSlide+(dx<0?1:-1)+len)%len;renderHomeHero()});
 $("homeHeroCard")?.addEventListener("pointercancel",()=>{heroSwipeStart=null});
-$("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=promoEventEntries(event)[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
+$("homeHeroCard")?.addEventListener("click",e=>{const b=e.target.closest("[data-home-event-player]");if(!b)return;const event=homeHeroSlides()[homeHeroSlide]?.event;if(!event)return;const entry=byEventRating(promoEventEntries(event))[Number(b.dataset.homeEventPlayer)];if(entry)openBiography(entry.item,null,entry.player)});
 $("homeHeroAction")?.addEventListener("click",e=>{const action=e.currentTarget.dataset.homeHeroAction;if(action==="momentum-team"){e.stopPropagation();openMomentumTeam()}else if(action==="promo-team"){e.stopPropagation();openPromoTeam(activeHalloweenEvent()?.id||HALLOWEEN_EVENT.id)}else if(action==="halloween-preview"){e.stopPropagation();openHalloweenPreview()}});
 $("homeHeroTeam")?.addEventListener("click",e=>{e.stopPropagation();const view=e.currentTarget.dataset.homeTeamView;if(view==="totw")openTotwTeam();else if(view==="momentum-shop"){storeTab="promo";switchView("storeView")}});
 $("campaignModalClose")?.addEventListener("click",()=>closeUiLayer("campaignModal","campaign"));
@@ -8689,7 +8690,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.326";
+const GFUT_BUILD="V21.327";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8747,7 +8748,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21326",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21327",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
