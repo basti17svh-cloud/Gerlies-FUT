@@ -19,10 +19,11 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.331</title>
+<title>Footera V21.334</title>
 <link rel="stylesheet" href="./footera-app.css?v=21315">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
+<link rel="stylesheet" href="./rivals-league.css?v=21333">
 <link rel="stylesheet" href="./player-picks.css?v=21176">
 <link rel="stylesheet" href="./legacy-card.css?v=21158">
 <link rel="stylesheet" href="./momentum-card.css">
@@ -46,6 +47,7 @@
 <link rel="stylesheet" href="./chem-boosts.css?v=2114">
 <link rel="stylesheet" href="./playstyles.css?v=21271">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
+<link rel="stylesheet" href="./footera-tutorial.css?v=21330">
 <script src="./club-crest-art.js?v=2130"></script>
 <script src="./pack-odds.js?v=21121"></script>
 <script src="./pack-odds-ui.js?v=21229"></script>
@@ -60,7 +62,7 @@
 <link rel="stylesheet" href="./desktop-layout.css?v=21265">
 <link rel="stylesheet" href="./desktop-clarity.css?v=21268">
 <link rel="stylesheet" href="./sbc-simple.css?v=21326">
-<link rel="stylesheet" href="./event-calendar.css?v=21331">
+<link rel="stylesheet" href="./event-calendar.css?v=21334">
 </head>
 <body>
 
@@ -131,7 +133,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.331</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.334</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -260,6 +262,7 @@
     <article class="mode play-mode-panel" data-play-panel="rivals" hidden>
      <section class="play-box play-standing"><span class="play-kicker">DEIN STAND</span><div id="rvRecord" class="record"></div></section>
      <section class="play-box"><h4>Wochenbelohnungen</h4><div id="rvWeeklyCard"></div></section>
+     <section class="play-box play-league"><h4>Freundesliga der Woche</h4><div id="rvLeague"></div></section>
      <section class="play-box"><h4>Deine Statistik</h4><div id="playRivalsStats"></div></section>
      <section class="play-box"><details><summary>Divisionen &amp; Aufstieg</summary><div id="playRivalsRanks" class="play-rank-list"></div></details></section>
      <section class="play-box play-start-box"><span class="play-kicker">NÄCHSTES SPIEL</span><h4>Bereit für deinen Rivalen?</h4><p>Prüfe deine Aufstellung und Taktik vor dem Anpfiff.</p><button class="primary startmode" data-mode="rivals">Aufstellung ansehen</button></section>
@@ -529,6 +532,7 @@
  <div id="friendsDetail" class="friends-content" hidden>
   <div class="friends-detail-heading"><button type="button" class="secondary friends-back" data-friends-back>← Zurück zu Freunden</button><h2 id="friendsDetailTitle" tabindex="-1"></h2></div>
   <section id="friendsPanelDuels" class="friends-panel" data-friends-panel="duels" hidden>
+   <div class="friends-box"><h3>Freundesliga der Woche</h3><div id="friendsLeague"></div></div>
    <div class="friends-box"><h3>Deine letzten Live-Duelle</h3><div id="friendsLiveStats" class="friends-metrics"></div><p id="friendsStatsNote"></p></div>
    <div class="friends-box"><h3>Direkter Vergleich</h3><label for="friendsRankingSelect">Gegen welchen Freund?</label><select id="friendsRankingSelect"></select><button type="button" id="friendsRankingOpen" class="primary">Rangliste ansehen</button><p>Punkte, Tore, Form und Ergebnis-Historie aus euren gemeinsamen Live-Duellen.</p><div id="onlineComparison"></div></div>
    <div id="onlinePanel" class="profile-card friends-box" hidden><h3>Live-Duelle &amp; Einladungen</h3><p id="onlineStatus">Online-Verbindung wird aufgebaut …</p><div id="onlineDuelList" class="friend-list"></div></div>
@@ -715,9 +719,9 @@
 <script src="./footera-cosmetic-evolutions.js?v=21321"></script>
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
-<script src="./footera-app.js?v=21331"></script>
+<script src="./footera-app.js?v=21334"></script>
 <script src="./season-system.js?v=21297"></script>
-<script src="./competition-system.js?v=21322"></script>
+<script src="./competition-system.js?v=21333"></script>
 <script src="./champions-system.js?v=21318"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online-3d.js?v=21304"></script>
@@ -729,10 +733,11 @@
 <script src="./halloween-cup.js?v=21300"></script>
 <script src="./tournaments.js?v=21311"></script>
 <script src="./play-hub.js?v=21322"></script>
-<script src="./weekly-rewards.js?v=21318"></script>
+<script src="./weekly-rewards.js?v=21333"></script>
 <script src="./friends-hub.js"></script>
+<script src="./rivals-league.js?v=21333"></script>
 <script src="./potm.js?v=21315"></script>
-<script src="./event-calendar.js?v=21331"></script>
+<script src="./event-calendar.js?v=21334"></script>
 <script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21300"></script>
@@ -743,6 +748,7 @@
 <script src="./footera-points-shop.js?v=21141"></script>
 <script src="./footera-opponent-styles.js?v=21111"></script>
 <script src="./footera-share.js?v=21211"></script>
+<script src="./footera-tutorial.js?v=21330"></script>
 <script>
 window.addEventListener("focus",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
 window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEventClock()});
