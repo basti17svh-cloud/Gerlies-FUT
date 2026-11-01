@@ -93,7 +93,8 @@ function footeraEventCalendar(at=Date.now(),{days=EVENT_CALENDAR_DAYS,limit=EVEN
   if(typeof seasonInfo==="function"){
    const season=seasonInfo(new Date(now)),end=season.end?season.end.getTime():NaN;
    if(Number.isFinite(end)&&end>now){
-    const daysLeft=Math.max(1,Math.floor((end-now)/86400000)),final=daysLeft<=EVENT_CALENDAR_DAYS;
+    // Count calendar days like the "in N Tagen" badge on the same row, so both numbers always match.
+    const daysLeft=Math.max(1,eventCalendarWhen(end,now).days),final=daysLeft<=EVENT_CALENDAR_DAYS;
     out.push({at:end,kind:"season",title:final?"Season-Pass-Endspurt":"Season Pass endet",sub:final?`Saison ${season.number} ${season.name} · jetzt die letzten Stufen holen`:`Saison ${season.number} ${season.name} · noch ${daysLeft} Tage für deine Stufen`,go:"seasonPassView",key:"season-end:"+season.key,pinned:!final});
    }
   }
