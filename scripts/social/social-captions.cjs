@@ -100,8 +100,10 @@ function buildPosts(entry,content){
   slides.push({theme,kicker:"Shop-Deal",title:`−${f.storeDeal.pct} %`,sub:`auf Coin-Packs · bis ${when(f.storeDeal.until)}`,layout:"text"});
  }
  if(!headline)return [];
+ if(extras.length===1&&f.sbc)extras[0]=`Die ${f.sbc.event}-Karte gibt es jetzt als Spieler-SBC: ${f.sbc.parts} Teile, nur bis ${when(f.sbc.until)}.`;
+ if(extras.length===1&&f.objective&&!f.sbc)extras[0]=`${f.objective.desc.replace(/\.$/,"")} und hol dir die Karte gratis. Nur bis ${when(f.objective.until)}.`;
  const numbered=extras.length>1?extras.map((x,i)=>`${["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣"][i]} ${x}`).join("\n"):extras[0];
- const question=team.length?"Wer ist dein Favorit? 👇":f.sbc?"Machst du ihn? 👇":"Holst du ihn dir? 👇";
+ const question=team.length?"Wer ist dein Favorit? 👇":f.sbc?"Wer schafft ihn als Erstes? 👇":"Holst du ihn dir? 👇";
  const caption=`${headline}\n\n${extras.length>1?"👉 Wisch dich durch:\n\n":""}${numbered}\n\n${question}\nFOOTERA – BUILD YOUR ERA\n${tags(theme)}`;
  const xText=`${headline}\n\n${extras.slice(0,2).map(x=>"• "+x).join("\n")}\n\n👉 ${LINK}`;
  const reelCards=team.length?team.slice(0,6):sbc.length?sbc:obj;
