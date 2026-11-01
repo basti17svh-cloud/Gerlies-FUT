@@ -1,0 +1,42 @@
+name: Footera Rivals-Freundesliga
+on:
+  pull_request:
+    paths: ['rivals-league.*', 'competition-system.js', 'weekly-rewards.js', 'online/footera-rivals-league*', 'tests/rivals-league*', 'tests/sql/rivals-league*', 'index.html', 'service-worker.js', '.github/workflows/rivals-league.yml']
+  push:
+    branches: [main]
+    paths: ['rivals-league.*', 'competition-system.js', 'weekly-rewards.js', 'online/footera-rivals-league*', 'tests/rivals-league*', 'tests/sql/rivals-league*', 'index.html', 'service-worker.js', '.github/workflows/rivals-league.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  league:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/rivals-league.test.cjs tests/competition-system.test.cjs tests/weekly-rewards.test.cjs
+      - name: League week, reports and friends board on isolated Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createdb footera_test
+          sudo -u postgres psql -q -d footera_test -v ON_ERROR_STOP=1 \
+            -f tests/sql/auth-mock.sql \
+            -f online/footera-rivals-league-v21.328.sql \
+            -f tests/sql/rivals-league.test.sql
+      - name: Install browser
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Real Rivals finishes, board at 360/390/412, Sunday reward, claim and reload
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+        run: node tests/rivals-league.browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rivals-league-mobile
+          path: test-artifacts/rivals-league-*.png
+          retention-days: 7
