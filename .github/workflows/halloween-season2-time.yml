@@ -13,6 +13,8 @@ on:
       - 'assets/players-db.csv'
       - 'tests/helpers/**'
       - 'tests/halloween-event.test.cjs'
+      - 'tests/blackfriday-event.test.cjs'
+      - 'tests/blackfriday-time.browser.cjs'
       - 'tests/season-system.test.cjs'
       - 'tests/story-pass.test.cjs'
       - 'tests/halloween-season2-time.browser.cjs'
@@ -30,7 +32,7 @@ jobs:
         with:
           node-version: '22'
       - name: Halloween, Season Pass and Story Pass rules
-        run: node --test tests/halloween-event.test.cjs tests/season-system.test.cjs tests/story-pass.test.cjs tests/totw-rules.test.cjs tests/promo-packs-release.test.cjs
+        run: node --test tests/halloween-event.test.cjs tests/blackfriday-event.test.cjs tests/season-system.test.cjs tests/story-pass.test.cjs tests/totw-rules.test.cjs tests/promo-packs-release.test.cjs
       - name: Install Chromium
         run: |
           npm install --prefix /tmp/footera-time-browser playwright@1.51.1
@@ -43,3 +45,7 @@ jobs:
         env:
           NODE_PATH: /tmp/footera-time-browser/node_modules
         run: node tests/market-event-cards.browser.cjs
+      - name: Real app across BLACK FRIDAY (20.11. teaser to 11.12. end, Europe/Berlin)
+        env:
+          NODE_PATH: /tmp/footera-time-browser/node_modules
+        run: node tests/blackfriday-time.browser.cjs

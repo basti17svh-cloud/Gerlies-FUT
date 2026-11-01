@@ -4,6 +4,7 @@
 const SKINS=[
  {id:"momentum",title:"MOMENTUM-Evolution",text:"Blaues MOMENTUM-Design · zählt auch als MOMENTUM in SBCs.",coins:12000,theme:"MOMENTUM"},
  {id:"totw",title:"TOTW-Evolution",text:"Schwarze TOTW-Karte · zählt als TOTW in SBCs. Kein offizielles Team-der-Woche-Release.",coins:20000,theme:"TOTW"},
+ {id:"blackfriday",title:"BLACK-FRIDAY-Evolution",text:"Neon-Deal-Design · nur während des Black-Friday-Events.",coins:15000,theme:"BLACK FRIDAY",activeFrom:"2026-11-27T19:00:00+01:00",activeUntilAt:"2026-12-11T19:00:00+01:00"},
  {id:"halloween",title:"HALLOWEEN-Evolution",text:"Blutmond-Design · nur während des Halloween-Events.",coins:15000,theme:"HALLOWEEN",activeFrom:"2026-10-30T19:00:00+01:00",activeUntilAt:"2026-11-06T19:00:00+01:00"},
  {id:"red",title:"Champions Rot",text:"Klassisches rot-goldenes Weekend-League-Design.",minWins:5,everyWins:10,theme:"WEEKEND LEAGUE"},
  {id:"red-pro",title:"Champions Prestige Rot",text:"Exklusiver rot-goldener Elite-Rahmen für langjährige Champions.",minWins:25,everyWins:25,theme:"ELITE CHAMPIONS"}
@@ -18,7 +19,7 @@ const wins=()=>Math.max(0,Number(state.champions?.totalWins||0));
 const earned=s=>s.minWins?(wins()<s.minWins?0:1+Math.floor((wins()-s.minWins)/s.everyWins)):Infinity;
 const spent=s=>Math.max(0,Number(state.cosmeticClaims?.[s.id]||0));
 const remaining=s=>s.minWins?Math.max(0,earned(s)-spent(s)):Infinity;
-const isEligible=(item,skinId="")=>!!item&&!!displayBase(item)&&!isFounderItem(item)&&!isStoryItem(item)&&!isFooteraLiveCard(item)&&!(typeof activeTransferSaleForUid==="function"&&activeTransferSaleForUid(item.uid))&&(!["totw","momentum","halloween"].includes(skinId)||(itemRating(item)>=75&&!item.variant));
+const isEligible=(item,skinId="")=>!!item&&!!displayBase(item)&&!isFounderItem(item)&&!isStoryItem(item)&&!isFooteraLiveCard(item)&&!(typeof activeTransferSaleForUid==="function"&&activeTransferSaleForUid(item.uid))&&(!["totw","momentum","halloween","blackfriday"].includes(skinId)||(itemRating(item)>=75&&!item.variant));
 const candidates=(skinId="")=>state.club.filter(i=>isEligible(i,skinId)).sort((a,b)=>itemRating(b)-itemRating(a));
 const selected=()=>state.club.find(i=>String(i.uid)===String(selectedUid))||null;
 const mock=(i,skin)=>({...i,cosmeticDesign:skin});
