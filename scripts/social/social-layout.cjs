@@ -73,6 +73,8 @@ function reelHTML(reel){
  #p{padding-top:150px;gap:30px}
  .cards{width:1000px;gap:22px 16px;perspective:1600px}
  .cards img{transform-origin:50% 60%}
+ .cards{animation:drift 7.3s linear 0s both}
+ #p>.moon{animation:moonDrift 9s linear 0s both}
  .brand{animation:pop .8s cubic-bezier(.2,.9,.3,1.3) .1s both}
  .kicker{animation:fadeUp .5s ease-out .6s both}
  h1{animation:slam .55s cubic-bezier(.2,.9,.3,1) .85s both}
@@ -93,6 +95,8 @@ function reelHTML(reel){
  @keyframes heroIn{from{opacity:0;transform:rotateY(-160deg) scale(.4)}to{opacity:1;transform:rotateY(0) scale(1)}}
  @keyframes heroFloat{from{transform:scale(1)}to{transform:scale(1.07)}}
  @keyframes cardIn{from{opacity:0;transform:translateY(120px) rotateX(50deg) scale(.7)}to{opacity:1;transform:none}}
+ @keyframes drift{from{transform:scale(.97)}to{transform:scale(1.05)}}
+ @keyframes moonDrift{from{transform:translateY(0) scale(1)}to{transform:translateY(40px) scale(1.12)}}
  @keyframes endIn{from{opacity:0}to{opacity:1}}
  </style></head><body><div id="p">${t.moon?'<div class="moon"></div>':""}<div class="frame"></div>
  <div class="brand"><img src="assets/footera/emblem.png" alt="">FOOTERA</div>
