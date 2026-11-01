@@ -1,0 +1,40 @@
+{
+  "kind": "sbc",
+  "theme": "halloween",
+  "postAt": "2026-11-02T19:00:00+01:00",
+  "title": "SBC Viktor Gyökeres 89",
+  "keys": [
+    "sbc-start:halloween-gyokeres-88"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🔓 NEUE SPIELER-SBC: VIKTOR GYÖKERES 89 🩸\n\nSpieler-SBC Viktor Gyökeres 89: 3 Teile, bis Mo 09.11. 19 Uhr\n\nMachst du ihn? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "post"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "🔓 NEUE SPIELER-SBC: VIKTOR GYÖKERES 89 🩸",
+    "caption": "🔓 NEUE SPIELER-SBC: VIKTOR GYÖKERES 89 🩸\n\nSpieler-SBC Viktor Gyökeres 89: 3 Teile, bis Mo 09.11. 19 Uhr\n\nMachst du ihn? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🔓 NEUE SPIELER-SBC: VIKTOR GYÖKERES 89 🩸\n\n• Spieler-SBC Viktor Gyökeres 89: 3 Teile, bis Mo 09.11. 19 Uhr\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "post",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-02-1900-halloween-gyokeres",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}

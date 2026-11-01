@@ -1,0 +1,40 @@
+{
+  "kind": "teaser",
+  "theme": "halloween",
+  "postAt": "2026-11-06T12:30:00+01:00",
+  "title": "Teaser: HALLOWEEN TEAM 2",
+  "keys": [
+    "event-start:halloween-2026-team2"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "⏳ HEUTE 19 UHR 🩸\n\nHALLOWEEN Team 2 kommt nach Footera: 18 neue Event-Karten.\nErkennst du schon jemanden? Tipp in die Kommentare 👇\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🎃\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "carousel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "HALLOWEEN: heute 19 Uhr 🩸",
+    "caption": "⏳ HEUTE 19 UHR 🩸\n\nHALLOWEEN Team 2 kommt nach Footera: 18 neue Event-Karten.\nErkennst du schon jemanden? Tipp in die Kommentare 👇\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🎃\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 3,
+    "text": "⏳ HEUTE 19 UHR 🩸\n\nHALLOWEEN Team 2 kommt nach Footera: 18 neue Event-Karten.\n\n👉 tinyurl.com/footera-play\n#footera"
+  },
+  "plan": {
+    "instagram": "carousel",
+    "story": true,
+    "tiktok": "video",
+    "x": false
+  },
+  "id": "2026-11-06-1230-halloween-teaser",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}

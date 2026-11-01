@@ -1,0 +1,46 @@
+{
+  "kind": "event",
+  "theme": "halloween",
+  "postAt": "2026-11-06T19:00:00+01:00",
+  "title": "HALLOWEEN TEAM 2 Launch",
+  "keys": [
+    "event-start:halloween-2026-team2",
+    "obj-start:halloween-son",
+    "evo-start:halloween_blutmond_2"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🎃 HALLOWEEN TEAM 2 IST LIVE 🩸\n\n👉 Wisch dich durch:\n\n1️⃣ 18 neue Event-Karten, angeführt von Semenyo 89, Tielemans 88 und Yan Diomande 87\n2️⃣ Son Heung Min 87 gratis: Gewinne 6 Rivals-Partien\n3️⃣ Neue Evolution „Blutmond-Evolution II“ (HALLOWEEN)\n\nWer ist dein Favorit? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "carousel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "🎃 HALLOWEEN TEAM 2 IST LIVE 🩸",
+    "caption": "🎃 HALLOWEEN TEAM 2 IST LIVE 🩸\n\n👉 Wisch dich durch:\n\n1️⃣ 18 neue Event-Karten, angeführt von Semenyo 89, Tielemans 88 und Yan Diomande 87\n2️⃣ Son Heung Min 87 gratis: Gewinne 6 Rivals-Partien\n3️⃣ Neue Evolution „Blutmond-Evolution II“ (HALLOWEEN)\n\nWer ist dein Favorit? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🎃 HALLOWEEN TEAM 2 IST LIVE 🩸\n\n• 18 neue Event-Karten, angeführt von Semenyo 89, Tielemans 88 und Yan Diomande 87\n• Son Heung Min 87 gratis: Gewinne 6 Rivals-Partien\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "carousel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-06-1900-halloween-2026-team2",
+  "media": {
+    "feed": [
+      "feed-1.jpg",
+      "feed-2.jpg",
+      "feed-3.jpg"
+    ],
+    "story": [
+      "story-1.jpg",
+      "story-2.jpg",
+      "story-3.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}

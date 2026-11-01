@@ -1,0 +1,40 @@
+{
+  "kind": "sbc",
+  "theme": "halloween",
+  "postAt": "2026-11-07T19:00:00+01:00",
+  "title": "SBC Bryan Mbeumo 88",
+  "keys": [
+    "sbc-start:halloween-mbeumo-87"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🔓 NEUE SPIELER-SBC: BRYAN MBEUMO 88 🩸\n\nSpieler-SBC Bryan Mbeumo 88: 3 Teile, bis Fr 13.11. 19 Uhr\n\nMachst du ihn? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "post"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "🔓 NEUE SPIELER-SBC: BRYAN MBEUMO 88 🩸",
+    "caption": "🔓 NEUE SPIELER-SBC: BRYAN MBEUMO 88 🩸\n\nSpieler-SBC Bryan Mbeumo 88: 3 Teile, bis Fr 13.11. 19 Uhr\n\nMachst du ihn? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🔓 NEUE SPIELER-SBC: BRYAN MBEUMO 88 🩸\n\n• Spieler-SBC Bryan Mbeumo 88: 3 Teile, bis Fr 13.11. 19 Uhr\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "post",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-07-1900-halloween-mbeumo",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}

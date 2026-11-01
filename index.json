@@ -1,0 +1,93 @@
+[
+  {
+    "id": "2026-11-02-1900-halloween-gyokeres",
+    "postAt": "2026-11-02T19:00:00+01:00",
+    "title": "SBC Viktor Gyökeres 89",
+    "kind": "sbc",
+    "plan": {
+      "instagram": "post",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-06-1230-halloween-teaser",
+    "postAt": "2026-11-06T12:30:00+01:00",
+    "title": "Teaser: HALLOWEEN TEAM 2",
+    "kind": "teaser",
+    "plan": {
+      "instagram": "carousel",
+      "story": true,
+      "tiktok": "video",
+      "x": false
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-06-1230-letzte-chance-rafael-leao",
+    "postAt": "2026-11-06T12:30:00+01:00",
+    "title": "Letzte Chance: das Objective Rafael Leão 88",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-06-1230-letzte-chance-thomas-muller",
+    "postAt": "2026-11-06T12:30:00+01:00",
+    "title": "Letzte Chance: die SBC Thomas Müller 88",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-06-1900-halloween-2026-team2",
+    "postAt": "2026-11-06T19:00:00+01:00",
+    "title": "HALLOWEEN TEAM 2 Launch",
+    "kind": "event",
+    "plan": {
+      "instagram": "carousel",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-07-1900-halloween-mbeumo",
+    "postAt": "2026-11-07T19:00:00+01:00",
+    "title": "SBC Bryan Mbeumo 88",
+    "kind": "sbc",
+    "plan": {
+      "instagram": "post",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-08-1230-letzte-chance-kurbis-pick-team-1",
+    "postAt": "2026-11-08T12:30:00+01:00",
+    "title": "Letzte Chance: „Kürbis-Pick – Team 1“",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
+  }
+]
