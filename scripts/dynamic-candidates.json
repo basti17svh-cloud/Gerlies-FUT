@@ -510,6 +510,16 @@
   "female": false
  },
  {
+  "id": "244302",
+  "name": "Lea Schüller",
+  "ovr": 85,
+  "club": "Manchester Utd",
+  "league": "Barclays WSL",
+  "position": "ST",
+  "item": 50575950,
+  "female": false
+ },
+ {
   "id": "246863",
   "name": "Felix Nmecha",
   "ovr": 85,
