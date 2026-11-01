@@ -1,4 +1,4 @@
-/* Event calendar in the Zentrale (V21.328): "Demnächst" list. */
+/* Event calendar in the Zentrale (V21.331): "Demnächst" list. */
 .home-calendar-panel[hidden]{display:none}
 .home-calendar-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
 .home-calendar-item{--cal:#d8ff5a;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:54px;padding:7px 10px 7px 7px;border:1px solid rgba(255,255,255,.07);border-left:3px solid var(--cal);border-radius:13px;background:rgba(255,255,255,.025);color:#fff;text-align:left;font:inherit;cursor:pointer}

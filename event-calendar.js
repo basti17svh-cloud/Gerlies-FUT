@@ -1,5 +1,5 @@
 "use strict";
-/* Footera event calendar for the Zentrale (V21.328, Basti 2026-11-01).
+/* Footera event calendar for the Zentrale (V21.331, Basti 2026-11-01).
    Shows what comes next: TOTW, event teams, event SBCs, objectives, evolutions, Champions and the Season Pass end.
    Built only from the data the game already has, so a new EVENT_PROMO_RELEASES / EVENT_OBJECTIVES / EVOLUTION_POOL
    entry appears here automatically.
