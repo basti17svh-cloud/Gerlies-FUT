@@ -7009,6 +7009,10 @@ function startMatch(mode,opponent=null,kitSelection=null){
  resetMatchPresentation();
  $("matchHomeName").textContent=matchHomeTeamName();$("oppName").textContent=name;
  $("matchCompetition").textContent=mode==="rivals"?"Division Rivals":mode==="champions"?"Footera Champions":mode==="squad"?"Squad Battles":mode==="halloween-cup"?"Halloween-Cup":mode==="tournament"?(window.FooteraTournaments?.CUPS.find(c=>c.id===tournamentContext?.id)?.name||"Turnier"):"Freundschaftsspiel";
+ // V21.340: one weather per match for the 3D scenes (display only).
+ match.weather=window.FooteraWeather?.forMatch(match.resultId)||null;
+ {const w=$("matchWeather"),info=match.weather;
+  if(w){const t=info?.temperature;w.hidden=!info;w.textContent=info?`${info.icon} ${t<0?"−"+Math.abs(t):t}°`:"";w.title=info?`Wetter: ${info.label}, ${t} °C`:""}}
  $("matchFormationSelect").value=match.formation;
  $("matchTacticSelect").value=match.tactic;
  addLog(`${mode.startsWith("friendly")?`Freundschaftsspiel gegen ${name} angepfiffen.`:`Anpfiff gegen ${name}. Die Partie läuft automatisch.`} Taktik: ${{balanced:"Ausgeglichen",attacking:"Offensiv",defensive:"Defensiv"}[match.tactic]||"Ausgeglichen"}.`);
@@ -8809,7 +8813,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.337";
+const GFUT_BUILD="V21.340";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8867,7 +8871,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21337",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21340",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

@@ -13,6 +13,7 @@
 .fh3d-brand{font:900 11px/1.25 system-ui;letter-spacing:2.2px;color:#fff;text-shadow:0 2px 8px #000}
 .fh3d-brand::first-letter{color:#69ff7f}
 .fh3d-brand small{display:block;font-size:8px;letter-spacing:1.2px;opacity:.78;margin-top:4px}
+.fh3d-weather{display:block;margin-top:3px;font-size:9px;letter-spacing:.6px;color:#d9ecff;opacity:.95;white-space:nowrap}
 .fh3d-model-status{display:inline-flex;align-items:center;justify-content:center;flex:0 1 auto;min-width:0;max-width:125px;border:1px solid #ffffff65;border-radius:7px;padding:6px 7px;font:800 10px/1.1 system-ui,sans-serif;letter-spacing:.15px;text-align:center;color:#ffe9bf;background:#5b3527;white-space:nowrap}
 .fh3d-model-status[data-model-status="glb"]{color:#d4ffe3;background:#164b36;border-color:#60c799}
 .fh3d-model-status[data-model-status="legacy"]{color:#ffe0c6;background:#643926;border-color:#e2a177}

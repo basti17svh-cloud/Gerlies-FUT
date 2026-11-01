@@ -1432,3 +1432,4 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .logline-away{border-left-color:#ff8a8a}
 .logline-team{display:inline-block;max-width:9em;margin-right:6px;padding:1px 6px;border-radius:6px;vertical-align:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:900;letter-spacing:.02em;text-transform:uppercase;background:rgba(121,242,169,.16);color:#a8ffd0}
 .logline-away .logline-team{background:rgba(255,138,138,.16);color:#ffc2c2}
+#match .match-weather{color:#d9ecff;letter-spacing:.04em;white-space:nowrap}

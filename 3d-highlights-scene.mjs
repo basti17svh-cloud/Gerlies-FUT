@@ -27,6 +27,13 @@ export function halloweenNight(at=Date.now()){
  if(typeof forced==='boolean')return forced;
  return at>=Date.parse('2026-10-30T19:00:00+01:00')&&at<Date.parse('2026-11-06T19:00:00+01:00');
 }
+// V21.340: the match's weather; a preview/QA override (?wetter=, __FOOTERA_WEATHER,
+// footera-3d-weather=0) wins over the weather picked at kick-off.
+export function sceneWeatherFor(event){
+ const forced=globalThis.FooteraWeather?.override?.()||'';
+ if(forced&&forced!==event?.weather?.kind)return {kind:forced,intensity:.8,temperature:forced==='snow'?-2:forced==='rain'?6:10};
+ return event?.weather||null;
+}
 export function footeraHumanPlayersWanted(){
  try{if(['quaternius','legacy'].includes(globalThis.localStorage?.getItem('footera-3d-player-model')))return false}catch(_){}
  const memory=globalThis.navigator?.deviceMemory||8,cores=globalThis.navigator?.hardwareConcurrency||8;
@@ -47,6 +54,7 @@ import {sampleDefensiveDuels,applyDefensiveDuels,applyFinishBalance} from './3d-
 import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStage,SLIDE_CONTACT,BLOCK_CONTACT,CONTACT_MOTION_VERSION} from './3d-duel-contact.mjs?v=2157';
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
+import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21303';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
@@ -1648,6 +1656,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const ballSurface=createMatchBallSurface(THREE,{size:weak?512:high?2048:1024,anisotropy:Math.min(high?8:4,renderer.capabilities.getMaxAnisotropy()),track});
   const ball=mesh(geo('ball',()=>new THREE.SphereGeometry(1,weak?16:high?32:24,weak?12:high?24:18)),ballSurface.material);
   ball.name=MATCH_BALL_NAME;ball.scale.setScalar(MATCH_BALL_RADIUS);ball.position.set(0,.13,0);ball.castShadow=!weak;
+  // V21.340: weather per match (snow, rain or clear), presentation only.
+  const weather=createStadiumWeather(THREE,{scene,field,renderer,camera,weather:sceneWeatherFor(event),weak,high,track,spooky,pitch,hemi,sun,fill,ballMaterial:ballSurface.material,
+   ballAt:ceremony?null:t=>eventBallPosition(event.type,t),actors:()=>weatherActors()});
+  // Breath clouds start at the real head bone when the GLB squad is shown.
+  let weatherActorCache=null;
+  function weatherActors(){
+   if(weatherActorCache)return weatherActorCache;
+   weatherActorCache=[...players,keeper].filter(Boolean).map((p,i)=>{
+    const glb=i<players.length?importedPlayers[i]:importedKeeper,head=glb?.model?.getObjectByName?.('Head')||glb?.model?.getObjectByName?.('head')||null;
+    return {root:p.root,upper:p.upper,head,face:head?glb.model:null};
+   });
+   return weatherActorCache;
+  }
   // A restrained ground cue keeps the real-size ball readable on a phone.
   const ballRing=mesh(geo('ball-ring',()=>new THREE.RingGeometry(.27,.38,24)),track(new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false})));ballRing.rotation.x=-Math.PI/2;
   const ballShadow=mesh(geo('ball-shadow',()=>new THREE.CircleGeometry(.22,high?24:16)),track(new THREE.MeshBasicMaterial({color:'#071107',transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide})));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.019;
@@ -1868,6 +1889,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
+   weather.update(time);
    renderer.render(scene,camera);
   }
   // V21.296: the two side huggers lay an arm round the scorer, the
@@ -2353,6 +2375,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
+   weather.update(time);
    renderer.render(scene,camera);
   }
   function reduceQuality(){
@@ -2418,6 +2441,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23:pilotMotion,motion23Phase:motion23Sample?.phase||'inactive',
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
+     weather:weather.info.inspect?.()||{kind:'clear'},
      playerModelTier:allQuaternius&&importedKeeper?(humanSquad?'human-entire-squad':'quaternius-entire-squad'):weak?'low-hybrid':'full-squad',
      importedSquadCount:importedPlayers.filter(Boolean).length,
       importedHairStyles:importedPlayers.filter(Boolean).map(p=>p.hairStyle),
@@ -2458,6 +2482,9 @@ export function play(event,signal){
   const top=document.createElement('div');top.className='fh3d-top';
   const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);
   const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':`LIVE · ${event.minute}'`;brand.append(sub);
+  const weatherNow=sceneWeatherFor(event);
+  if(weatherNow&&weatherNow.kind!=='clear'){const chip=document.createElement('span');chip.className='fh3d-weather';chip.textContent=globalThis.FooteraWeather?.chipText?.(weatherNow)||(weatherNow.kind==='snow'?'❄ Schneefall':'☂ Regen');sub.append(chip)}
+  layer.dataset.weather=weatherNow?.kind||'clear';
   // Always visible while the imported prototype is under assessment.
   // Query parameters can disappear when Android opens an installed PWA, so
   // never gate the actual diagnostic on location.search.

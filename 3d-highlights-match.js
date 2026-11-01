@@ -179,6 +179,13 @@ function ensureMatch3DQueue(current){
   });
  return match3DQueue;
 }
+// V21.340: one weather per match, picked at kick-off from the match id
+// (display only; the simulation never reads it).
+function match3DWeather(current){
+ if(!current)return null;
+ if(!current.weather&&typeof FooteraWeather!=='undefined')current.weather=FooteraWeather.forMatch(current.resultId||current.mode||'match');
+ return current.weather||null;
+}
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -241,7 +248,7 @@ function queueMatch3D(event){
  presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':String(event.sequence||'').startsWith('defense_slide_tackle')?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
  presentation.signatures=FooteraHighlights.signatureMoments?.(presentation)||[];
  presentation.signature=FooteraHighlights.signatureStyle?.(presentation)||null;
- const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),
+ const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),weather:match3DWeather(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  // The simulation stays authoritative. Only the visible scoreboard is held at
@@ -276,7 +283,7 @@ function queueMatchCeremony3D(kind){
  const home=current.kickoffKits?.home||identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
- return match3DQueue.enqueue({...base,id:'ceremony:'+kind,ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
+ return match3DQueue.enqueue({...base,id:'ceremony:'+kind,weather:match3DWeather(current),ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
   result:kind==='fulltime'&&!decided?'draw':'win',homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
   homeScore:current.home,awayScore:current.away,competition:document.getElementById('matchCompetition')?.textContent||'',bigMatch:current.mode==='champions',
   teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,keeperName:goalie?.name||'',
