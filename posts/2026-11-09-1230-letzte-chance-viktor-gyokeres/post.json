@@ -1,0 +1,35 @@
+{
+  "kind": "last-chance",
+  "theme": "halloween",
+  "postAt": "2026-11-09T12:30:00+01:00",
+  "title": "Letzte Chance: die SBC Viktor Gyökeres 89",
+  "keys": [
+    "sbc-end:halloween-gyokeres-88"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "⏰ LETZTE CHANCE 🩸\n\nHeute um 19 Uhr endet die SBC Viktor Gyökeres 89 in Footera.\nSchon erledigt? 👇\n\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "story-only"
+  },
+  "story": true,
+  "tiktok": null,
+  "x": {
+    "priority": 3,
+    "text": "⏰ LETZTE CHANCE 🩸\n\nHeute 19 Uhr endet die SBC Viktor Gyökeres 89 in Footera.\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "story",
+    "story": true,
+    "tiktok": null,
+    "x": false
+  },
+  "id": "2026-11-09-1230-letzte-chance-viktor-gyokeres",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ]
+  }
+}

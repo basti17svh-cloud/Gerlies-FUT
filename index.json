@@ -89,5 +89,18 @@
       "x": false
     },
     "scheduled": true
+  },
+  {
+    "id": "2026-11-09-1230-letzte-chance-viktor-gyokeres",
+    "postAt": "2026-11-09T12:30:00+01:00",
+    "title": "Letzte Chance: die SBC Viktor Gyökeres 89",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
   }
 ]
