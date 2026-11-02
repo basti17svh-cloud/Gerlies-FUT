@@ -13,6 +13,12 @@
  // In particular 45+/90+/105+ belong to the current period until its break is logged.
  function getMatchPeriod(state){return state.extraTimeStarted?(state.extraTimeBreakLogged?4:3):(state.halftimeLogged?2:1)}
  function getAttackDirection(team,period){return (team==='away'?-1:1)*([2,4].includes(Number(period))?-1:1)}
+ // V21.340: weather is display data only (kind, intensity 0..1, °C).
+ function cleanWeather(w){
+  if(!w||typeof w!=='object'||!['rain','snow','clear'].includes(w.kind))return null;
+  const intensity=Math.max(0,Math.min(1,Number(w.intensity)||0)),temperature=Number.isFinite(Number(w.temperature))?Math.max(-30,Math.min(45,Math.round(Number(w.temperature)))):null;
+  return Object.freeze({kind:w.kind,intensity,temperature});
+ }
  function snapshot(event){
   // Copy only display data. Never pass a live player, match or saved state to WebGL.
   return Object.freeze({id:String(event.id),type:String(event.type),minute:Number(event.minute),team:String(event.team),
@@ -30,7 +36,7 @@
    defenderName:String(event.defenderName||''),defenseKind:String(event.defenseKind||''),playSeconds:Number.isFinite(Number(event.playSeconds))?Math.max(8,Math.min(30,Number(event.playSeconds))):10.4,defenderIndex:Number.isInteger(event.defenderIndex)&&event.defenderIndex>=8&&event.defenderIndex<=15?event.defenderIndex:8,
    defenderAction:String(event.defenderAction||'jockey'),keeperAction:String(event.keeperAction||'classic'),
    signature:cleanSignature(event.signature),signatures:Object.freeze((Array.isArray(event.signatures)?event.signatures:event.signature?[event.signature]:[]).map(cleanSignature).filter(Boolean).slice(0,10)),
-   creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,
+   creatorActor:Number.isInteger(event.creatorActor)&&event.creatorActor>=1&&event.creatorActor<=7?event.creatorActor:creatorActor(event.sequence),defensePhase:String(event.defensePhase||''),tightLateGame:event.tightLateGame===true,weather:cleanWeather(event.weather),
    buildKeeperStyles:Object.freeze((Array.isArray(event.buildKeeperStyles)?event.buildKeeperStyles:[]).map(s=>Object.freeze({id:String(s.id||''),plus:!!s.plus}))),
    playerCardHTML:String(event.playerCardHTML||''),teamName:String(event.teamName||''),teamCrestHTML:String(event.teamCrestHTML||''),
    scoreBeforeHome:Number.isFinite(Number(event.scoreBeforeHome))?Number(event.scoreBeforeHome):null,
@@ -54,7 +60,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21320').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21340').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
