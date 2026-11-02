@@ -2484,7 +2484,7 @@ export function play(event,signal){
   const brand=document.createElement('span');brand.className='fh3d-brand';brand.textContent='FOOTERA';const ceremony=ceremonyKind(event);
   const sub=document.createElement('small');sub.textContent=ceremony==='kickoff'?'LIVE · ANPFIFF':ceremony==='fulltime'?'LIVE · ABPFIFF':`LIVE · ${event.minute}'`;brand.append(sub);
   const weatherNow=sceneWeatherFor(event);
-  if(weatherNow&&weatherNow.kind!=='clear'){const chip=document.createElement('span');chip.className='fh3d-weather';chip.textContent=globalThis.FooteraWeather?.chipText?.(weatherNow)||(weatherNow.kind==='snow'?'❄ Schneefall':'☂ Regen');sub.append(chip)}
+  if(weatherNow&&weatherNow.kind!=='clear'){const chip=document.createElement('span');chip.className='fh3d-weather';chip.textContent=globalThis.FooteraWeather?.chipText?.(weatherNow)||(weatherNow.kind==='snow'?'❄ Schneefall':'☂ Regen');brand.append(chip)}
   layer.dataset.weather=weatherNow?.kind||'clear';
   // Always visible while the imported prototype is under assessment.
   // Query parameters can disappear when Android opens an installed PWA, so
