@@ -555,6 +555,8 @@
    }
    // A PlayStyle+ finisher strongly favours the big star version of his finish.
    if(starSignature&&STAR_IDS.has(v.id))w*=v.id==='bicycle'?1.6:4;
+   // Power Shot+ remains visibly identifiable despite the wider scene catalog.
+   if(scorer.get('power-shot')===2&&['long_shot','power_drive'].includes(v.id))w*=2.8;
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
   });
