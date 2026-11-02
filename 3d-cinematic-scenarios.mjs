@@ -51,6 +51,8 @@ const definitions=[
 export const CINEMATIC_SCENE_IDS=Object.freeze(definitions.map(d=>d[0]));
 export const SCENARIO_CATALOG=Object.freeze(definitions.map(d=>Object.freeze([d[0],d[1],d[2],d[3],d[4],Object.freeze([...d[5]]),d[6]])));
 export const SCENARIO_CREATORS=Object.freeze(Object.fromEntries(definitions.map(d=>[d[0],d[5].at(-2)])));
+const SCENARIO_BY_ID=new Map(definitions.map(d=>[d[0],d]));
+export const scenarioMotionActor=id=>{const d=SCENARIO_BY_ID.get(id);return d?(d[1]==='dribble'?0:d[5].at(-2)):-1};
 const STARTS=[[-1,-22],[-21,-21],[21,-21],[-3,-20],[-28,-18],[28,-18],[-11,-17],[11,-17]];
 const FINALS=[[0,-40],[-17,-39],[17,-39],[-1,-35],[-23,-45],[23,-45],[-7,-32],[7,-32]];
 const round=x=>Math.round(x*1000)/1000;
@@ -110,7 +112,7 @@ const clamp=x=>Math.max(0,Math.min(1,x));
 /* Tiny additive joints — never repositions the ball, boots or player root. */
 export function applyScenarioPose(actor,sequence,index,time){
  const story=SCENARIO_STORIES[sequence];if(!actor||!story)return 0;
- const plan=definitions.find(d=>d[0]===sequence);
+ const plan=SCENARIO_BY_ID.get(sequence);
  const carrier=plan[1]==='dribble'?0:plan[5].at(-2);
  if(index!==carrier)return 0;
  const begin=plan[1]==='dribble'?2.40:1.55,end=plan[1]==='dribble'?3.55:2.75;
