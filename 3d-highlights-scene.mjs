@@ -55,7 +55,8 @@ import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStag
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
-import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21303';
+import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21341';
+import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
 
 // Frozen presentation data only. No live match, result callbacks or simulation RNG.
 export const DURATION=10.4;
@@ -2228,6 +2229,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    const skillPose=event.type!=='ball_won'?applySkillPose(players[0],time,sequence):null;
    importedMotionFrame.skillWeight=skillPose?.weight||0;
+   // V21.341: extra poses only at authored possession moments, never results.
+   const motionActor=event.type==='ball_won'?-1:scenarioMotionActor(sequence);
+   if(motionActor>=0){
+    const accent=applyScenarioPose(players[motionActor],sequence,motionActor,time);
+    if(motionActor===0)importedMotionFrame.skillWeight=Math.max(importedMotionFrame.skillWeight,accent);
+    else squadMotionFrames[motionActor].skillWeight=Math.max(squadMotionFrames[motionActor].skillWeight||0,accent);
+   }
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
    const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
    const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
