@@ -80,11 +80,11 @@ function makeStory(d){
   if(actor===0){
    const startX=round(sx+side*(family==='dribble'?6.5:4.1)+(seed%3-1)*1.35);
    const startZ=family==='distance'?sz+11.5:sz+17.5;
-   const feint=family==='dribble'?side*4.2:side*1.35;
+   const feint=family==='dribble'?side*(id==='nutmeg_exit_channel'?1.0:4.2):side*1.35;
    routes[actor]=[[0,round(startX),round(startZ)],
     [1.28,round(startX-side*.9),round(startZ-3.3)],
     [2.60,round(sx+feint),round(sz+(family==='dribble'?11.4:10.2))],
-    [3.64,round(sx-side*(family==='dribble'?2.1:1.2)),round(sz+5.9)],
+    [3.64,round(sx+(id==='nutmeg_exit_channel'?side*.35:-side*(family==='dribble'?2.1:1.2))),round(sz+5.9)],
     [4.65,round(sx+side*.65),round(sz+1.95)],
     [5.4,sx,sz]];
   }else{
