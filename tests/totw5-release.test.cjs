@@ -55,7 +55,7 @@ test('approval cannot bypass club limits, missing players, positions, gender, du
  const mutations=[
   t=>{t.players[1].fallback.team=t.players[0].fallback.team},
   t=>{t.players[1].fallback.team='  WÉRDER   BREMEN  '},
-  t=>t.players.pop(),t=>t.players[7].position='ST',t=>t.players[0].fallback.gender='female',
+  t=>t.players.pop(),t=>t.players[7].position='ST',t=>t.players[0].fallback.gender='',
   t=>t.players[1].names=t.players[0].names,t=>t.players[0].stats[0]=100,
   t=>t.players[0].fallback.team='',t=>t.players[0].ovr=NaN
  ];

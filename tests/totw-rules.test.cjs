@@ -105,3 +105,15 @@ test('server Pick catalog includes every eligible approved TOTW 7 card with Berl
   assert.ok(row.includes(`"eventStats":${JSON.stringify(p.stats)}`));
  }
 });
+
+test('TOTW 8 is a mixed team: women count as special cards and share club names only across genders',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===8),approved={...week,sourceStatus:'admin-approved'};
+ assert.ok(week,'TOTW 8 is present');
+ assert.equal(c.totwRosterErrors(approved).join(', '),'');
+ assert.ok(week.players.some(p=>p.fallback.gender==='female')&&week.players.some(p=>p.fallback.gender==='male'));
+ const woman=week.players.find(p=>p.fallback.gender==='female'),man=week.players.find(p=>p.fallback.gender==='male'&&p.position===woman.position);
+ const sameClub={...approved,players:approved.players.map(p=>p===man?{...p,fallback:{...p.fallback,team:woman.fallback.team}}:p)};
+ assert.equal(c.totwRosterErrors(sameClub).join(', '),'','a men\'s and a women\'s side may share a club name');
+ const twoWomen={...approved,players:approved.players.map(p=>p.fallback.gender==='female'&&p!==woman?{...p,fallback:{...p.fallback,team:woman.fallback.team}}:p)};
+ assert.ok(c.totwRosterErrors(twoWomen).includes('Maximal ein Spieler pro Verein'));
+});

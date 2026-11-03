@@ -1183,33 +1183,33 @@ const TOTW_WEEK_8={
     },
     {
       "names": [
-        "Bart Verbruggen"
+        "Phallon Tullis-Joyce"
       ],
-      "eaId": "258498",
-      "ovr": 84,
+      "eaId": "267212",
+      "ovr": 86,
       "position": "GK",
       "stats": [
+        84,
         83,
-        80,
-        83,
+        81,
         87,
-        52,
-        84
+        46,
+        87
       ],
       "fallback": {
-        "face": "./assets/footera/totw/8/258498.png",
-        "gender": "male",
-        "name": "Bart Verbruggen",
-        "fullName": "Bart Verbruggen",
-        "ovr": 81,
+        "face": "./assets/footera/totw/8/267212.png",
+        "gender": "female",
+        "name": "Phallon Tullis-Joyce",
+        "fullName": "Phallon Tullis-Joyce",
+        "ovr": 83,
         "position": "GK",
         "alt": "",
-        "team": "Brighton",
-        "league": "Premier League",
-        "nation": "Holland",
-        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
-        "clubLogo": "https://drop-assets.ea.com/images/156fFsXPWzCIZV6lqTNCpi/9eee8080ef686ccecb45c63f7e774cf7/l1808.png",
-        "teamId": "1808"
+        "team": "Manchester Utd",
+        "league": "Barclays WSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4jiZaFaZ8mTJtRTC3IIZxZ/d99383533e4e505d2894d2f80c1c429f/l116012.png",
+        "teamId": "116012"
       }
     },
     {
@@ -1241,6 +1241,37 @@ const TOTW_WEEK_8={
         "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
         "clubLogo": "https://drop-assets.ea.com/images/5khNvXbdBeFYsYuxeoNi5d/a5684fa8f1d60295481216448abaa6f1/l73.png",
         "teamId": "73"
+      }
+    },
+    {
+      "names": [
+        "Ellie Carpenter"
+      ],
+      "eaId": "240030",
+      "ovr": 87,
+      "position": "RB",
+      "stats": [
+        88,
+        62,
+        82,
+        80,
+        84,
+        85
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/240030.png",
+        "gender": "female",
+        "name": "Ellie Carpenter",
+        "fullName": "Ellie Carpenter",
+        "ovr": 85,
+        "position": "RB",
+        "alt": "",
+        "team": "Chelsea",
+        "league": "Barclays WSL",
+        "nation": "Australia",
+        "nationFlag": "https://drop-assets.ea.com/images/7ut4RiJMANPGetPTIa138J/c67ba149e73818ac92fff8b0a2921564/f_195.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6I13EmNTiAN7xdciB3lFZA/c53140979fd9ef1040e9225ca2f1da99/l116010.png",
+        "teamId": "116010"
       }
     },
     {
@@ -1339,37 +1370,6 @@ const TOTW_WEEK_8={
     },
     {
       "names": [
-        "Leandro Cabrera"
-      ],
-      "eaId": "192816",
-      "ovr": 80,
-      "position": "CB",
-      "stats": [
-        52,
-        55,
-        63,
-        58,
-        81,
-        84
-      ],
-      "fallback": {
-        "face": "./assets/footera/totw/8/192816.png",
-        "gender": "male",
-        "name": "Leandro Cabrera",
-        "fullName": "Leandro Cabrera",
-        "ovr": 76,
-        "position": "CB",
-        "alt": "",
-        "team": "RCD Espanyol",
-        "league": "LALIGA EA SPORTS",
-        "nation": "Uruguay",
-        "nationFlag": "https://drop-assets.ea.com/images/25yfK6iqrvltgyMD8hdslB/09e4a8e74ddaadafa0942945e4e27929/f_60.png",
-        "clubLogo": "https://drop-assets.ea.com/images/47EbKlx2HTQ0j8vg5Mmzid/66d07805e46b576682427a3268490cd5/l452.png",
-        "teamId": "452"
-      }
-    },
-    {
-      "names": [
         "Declan Rice"
       ],
       "eaId": "234378",
@@ -1401,65 +1401,64 @@ const TOTW_WEEK_8={
     },
     {
       "names": [
-        "Álex Baena",
-        "Alejandro Baena Rodríguez"
+        "Manuela Giugliano"
       ],
-      "eaId": "257279",
+      "eaId": "227095",
       "ovr": 89,
-      "position": "LM",
+      "position": "CM",
       "stats": [
         83,
-        85,
-        91,
-        90,
-        67,
-        73
+        87,
+        86,
+        89,
+        74,
+        76
       ],
       "fallback": {
-        "face": "./assets/footera/totw/8/257279.png",
-        "gender": "male",
-        "name": "Álex Baena",
-        "fullName": "Alejandro Baena Rodríguez",
-        "ovr": 83,
-        "position": "LM",
+        "face": "./assets/footera/totw/8/227095.png",
+        "gender": "female",
+        "name": "Manuela Giugliano",
+        "fullName": "Manuela Giugliano",
+        "ovr": 85,
+        "position": "CM",
         "alt": "",
-        "team": "Atlético de Madrid",
-        "league": "LALIGA EA SPORTS",
-        "nation": "Spain",
-        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
-        "clubLogo": "https://drop-assets.ea.com/images/5uY2FeTtMC6lBPGwyYu2Xt/6862fd9c16665720a21be1e843cec6d1/l240.png",
-        "teamId": "240"
+        "team": "Roma",
+        "league": "Calcio A Femminile",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "https://drop-assets.ea.com/images/19IhOwiXzGPZFYWwufcIbb/2b0e24b4d84a485f01144ca2e2991d74/l116282.png",
+        "teamId": "116282"
       }
     },
     {
       "names": [
-        "Adrien Rabiot"
+        "Melchie Dumornay"
       ],
-      "eaId": "210008",
-      "ovr": 87,
-      "position": "CM",
+      "eaId": "265898",
+      "ovr": 90,
+      "position": "CAM",
       "stats": [
-        84,
+        94,
+        87,
         83,
-        85,
-        84,
-        80,
-        87
+        92,
+        62,
+        76
       ],
       "fallback": {
-        "face": "./assets/footera/totw/8/210008.png",
-        "gender": "male",
-        "name": "Adrien Rabiot",
-        "fullName": "Adrien Rabiot",
-        "ovr": 85,
-        "position": "CM",
+        "face": "./assets/footera/totw/8/265898.png",
+        "gender": "female",
+        "name": "Melchie Dumornay",
+        "fullName": "Melchie Dumornay",
+        "ovr": 88,
+        "position": "ST",
         "alt": "",
-        "team": "AC Milan",
-        "league": "Serie A Enilive",
-        "nation": "France",
-        "nationFlag": "https://drop-assets.ea.com/images/6O6L3Tw8ha7CokoEp9xppS/bd62283fa0e10eeb4a55c728fd69b0cb/f_18.png",
-        "clubLogo": "",
-        "teamId": "131681"
+        "team": "OL Lyonnes",
+        "league": "Arkema PL",
+        "nation": "Haiti",
+        "nationFlag": "https://drop-assets.ea.com/images/2SPS1jdi0r8Yu16gxmQWaa/dbb14e1ff1f620d344a371ce575d18ed/f_80.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6wWzOnLJxX9H4yjsyZrPZY/4697eaf2f5c0922badf61028cb82c00b/l116033.png",
+        "teamId": "116033"
       }
     },
     {
@@ -1683,33 +1682,33 @@ const TOTW_WEEK_8={
     },
     {
       "names": [
-        "Serhou Guirassy"
+        "Sophia Wilson"
       ],
-      "eaId": "215441",
-      "ovr": 88,
+      "eaId": "264012",
+      "ovr": 90,
       "position": "ST",
       "stats": [
-        76,
+        92,
+        91,
+        81,
         89,
-        78,
-        84,
-        46,
-        87
+        45,
+        80
       ],
       "fallback": {
-        "face": "./assets/footera/totw/8/215441.png",
-        "gender": "male",
-        "name": "Serhou Guirassy",
-        "fullName": "Serhou Guirassy",
-        "ovr": 85,
+        "face": "./assets/footera/totw/8/264012.png",
+        "gender": "female",
+        "name": "Sophia Wilson",
+        "fullName": "Sophia Wilson",
+        "ovr": 88,
         "position": "ST",
         "alt": "",
-        "team": "Borussia Dortmund",
-        "league": "Bundesliga",
-        "nation": "Guinea",
-        "nationFlag": "https://drop-assets.ea.com/images/11sId6svmFKGAWyr1s1Qzm/bb3238921a50c3e62190607cf90ebef3/f_118.png",
-        "clubLogo": "https://drop-assets.ea.com/images/d7CmUJ9ZoYPG5RSUBTJYQ/14a4c56aba96321f8901ec9726bfa7a5/l22.png",
-        "teamId": "22"
+        "team": "Portland Thorns",
+        "league": "NWSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2TD0ygkKoBSbz4FrAxefsu/444f31cd75c4f07eed5eae5208fad846/l116302.png",
+        "teamId": "116302"
       }
     }
   ]
@@ -1732,10 +1731,11 @@ function totwRosterErrors(team){
  const key=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ");
  if(rows.length!==18)errors.push("Genau 18 Spieler erforderlich");
  for(const player of rows){
-  const name=key(player.names?.[0]),club=key(player.fallback?.team),position=String(player.position||"").toUpperCase();
+  const name=key(player.names?.[0]),club=player.fallback?.team?key(player.fallback.team)+"|"+(player.fallback?.gender||""):"",position=String(player.position||"").toUpperCase();
   if(!name||names.has(name))errors.push("Spielername fehlt oder ist doppelt");names.add(name);
   if(!club)errors.push("Vereinszuordnung fehlt");else clubs.set(club,(clubs.get(club)||0)+1);
-  if(player.fallback?.gender!=="male")errors.push("Männer-Kader erforderlich");
+  // Mixed TOTW from week 8 on (Basti 2026-11-03): women join as special cards.
+  if(!["male","female"].includes(player.fallback?.gender))errors.push("Geschlecht fehlt");
   const group=position==="GK"?"GK":["CB","LB","RB","LWB","RWB"].includes(position)?"DEF":["CDM","CM","CAM","LM","RM"].includes(position)?"MID":["ST","CF","LW","RW"].includes(position)?"ATT":null;
   if(group)counts[group]++;else errors.push("Ungültige Position");
   if(!Number.isFinite(player.ovr)||player.ovr<75||player.ovr>95||!Array.isArray(player.stats)||player.stats.length!==6||player.stats.some(v=>!Number.isFinite(v)||v<0||v>99))errors.push("Ungültiges Rating oder Attribute");
