@@ -1142,7 +1142,579 @@ const TOTW_WEEK_7={
     }
   ]
 };
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7];
+const TOTW_WEEK_8={
+  "id": 8,
+  "name": "Team of the Week 8",
+  "releaseDate": "2026-11-04",
+  "activeUntil": "11.11.2026 18:59",
+  "sourceStatus": "pending-approval",
+  "players": [
+    {
+      "names": [
+        "Unai Simón",
+        "Unai Simón Mendibil"
+      ],
+      "eaId": "230869",
+      "ovr": 87,
+      "position": "GK",
+      "stats": [
+        86,
+        83,
+        78,
+        88,
+        51,
+        85
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/230869.png",
+        "gender": "male",
+        "name": "Unai Simón",
+        "fullName": "Unai Simón Mendibil",
+        "ovr": 85,
+        "position": "GK",
+        "alt": "",
+        "team": "Athletic Club",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3i1k9oGVeIZB1UXKiFmyTc/1647bc1efa540d8a57d74101009143cc/l448.png",
+        "teamId": "448"
+      }
+    },
+    {
+      "names": [
+        "Bart Verbruggen"
+      ],
+      "eaId": "258498",
+      "ovr": 84,
+      "position": "GK",
+      "stats": [
+        83,
+        80,
+        83,
+        87,
+        52,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/258498.png",
+        "gender": "male",
+        "name": "Bart Verbruggen",
+        "fullName": "Bart Verbruggen",
+        "ovr": 81,
+        "position": "GK",
+        "alt": "",
+        "team": "Brighton",
+        "league": "Premier League",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/156fFsXPWzCIZV6lqTNCpi/9eee8080ef686ccecb45c63f7e774cf7/l1808.png",
+        "teamId": "1808"
+      }
+    },
+    {
+      "names": [
+        "Achraf Hakimi"
+      ],
+      "eaId": "235212",
+      "ovr": 91,
+      "position": "RB",
+      "stats": [
+        94,
+        86,
+        84,
+        85,
+        84,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/235212.png",
+        "gender": "male",
+        "name": "Achraf Hakimi",
+        "fullName": "Achraf Hakimi",
+        "ovr": 88,
+        "position": "RB",
+        "alt": "",
+        "team": "Paris SG",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5khNvXbdBeFYsYuxeoNi5d/a5684fa8f1d60295481216448abaa6f1/l73.png",
+        "teamId": "73"
+      }
+    },
+    {
+      "names": [
+        "Jan Paul van Hecke"
+      ],
+      "eaId": "258908",
+      "ovr": 84,
+      "position": "CB",
+      "stats": [
+        60,
+        58,
+        77,
+        72,
+        86,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/258908.png",
+        "gender": "male",
+        "name": "Jan Paul van Hecke",
+        "fullName": "Jan Paul van Hecke",
+        "ovr": 81,
+        "position": "CB",
+        "alt": "",
+        "team": "Spurs",
+        "league": "Premier League",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/roTkPjqEOoGpBBRuPgGcx/72f20a01fdc5312444a42cbdaf400c1e/l18.png",
+        "teamId": "18"
+      }
+    },
+    {
+      "names": [
+        "Evan Ndicka"
+      ],
+      "eaId": "236403",
+      "ovr": 85,
+      "position": "CB",
+      "stats": [
+        76,
+        60,
+        71,
+        72,
+        86,
+        86
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/236403.png",
+        "gender": "male",
+        "name": "Evan Ndicka",
+        "fullName": "Evan Ndicka",
+        "ovr": 83,
+        "position": "CB",
+        "alt": "",
+        "team": "AS Roma",
+        "league": "Serie A Enilive",
+        "nation": "Côte d'Ivoire",
+        "nationFlag": "https://drop-assets.ea.com/images/dmHZiK7RGbMASyNbuZ5OQ/e4edabe47c623d0d7a7fb167838670e4/f_108.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3UPlOrM7jRBYX4mRuIkcEJ/b9afcb2601f347236c6045727129f026/l52.png",
+        "teamId": "52"
+      }
+    },
+    {
+      "names": [
+        "Bartra",
+        "Marc Bartra Aregall"
+      ],
+      "eaId": "198141",
+      "ovr": 82,
+      "position": "CB",
+      "stats": [
+        70,
+        66,
+        72,
+        73,
+        83,
+        79
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/198141.png",
+        "gender": "male",
+        "name": "Bartra",
+        "fullName": "Marc Bartra Aregall",
+        "ovr": 79,
+        "position": "CB",
+        "alt": "",
+        "team": "Real Betis",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4BSaT2HheHTmEwikmWLxUz/2b65180a1e044fcea0be2d05c27975cf/l449.png",
+        "teamId": "449"
+      }
+    },
+    {
+      "names": [
+        "Leandro Cabrera"
+      ],
+      "eaId": "192816",
+      "ovr": 80,
+      "position": "CB",
+      "stats": [
+        52,
+        55,
+        63,
+        58,
+        81,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/192816.png",
+        "gender": "male",
+        "name": "Leandro Cabrera",
+        "fullName": "Leandro Cabrera",
+        "ovr": 76,
+        "position": "CB",
+        "alt": "",
+        "team": "RCD Espanyol",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Uruguay",
+        "nationFlag": "https://drop-assets.ea.com/images/25yfK6iqrvltgyMD8hdslB/09e4a8e74ddaadafa0942945e4e27929/f_60.png",
+        "clubLogo": "https://drop-assets.ea.com/images/47EbKlx2HTQ0j8vg5Mmzid/66d07805e46b576682427a3268490cd5/l452.png",
+        "teamId": "452"
+      }
+    },
+    {
+      "names": [
+        "Declan Rice"
+      ],
+      "eaId": "234378",
+      "ovr": 90,
+      "position": "CDM",
+      "stats": [
+        75,
+        80,
+        88,
+        84,
+        87,
+        86
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/234378.png",
+        "gender": "male",
+        "name": "Declan Rice",
+        "fullName": "Declan Rice",
+        "ovr": 88,
+        "position": "CDM",
+        "alt": "",
+        "team": "Arsenal",
+        "league": "Premier League",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5bkEBXjBM35OGYplhZJak8/e73ded69d93416a9f1ecccca15243c1f/l1.png",
+        "teamId": "1"
+      }
+    },
+    {
+      "names": [
+        "Álex Baena",
+        "Alejandro Baena Rodríguez"
+      ],
+      "eaId": "257279",
+      "ovr": 89,
+      "position": "LM",
+      "stats": [
+        83,
+        85,
+        91,
+        90,
+        67,
+        73
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/257279.png",
+        "gender": "male",
+        "name": "Álex Baena",
+        "fullName": "Alejandro Baena Rodríguez",
+        "ovr": 83,
+        "position": "LM",
+        "alt": "",
+        "team": "Atlético de Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5uY2FeTtMC6lBPGwyYu2Xt/6862fd9c16665720a21be1e843cec6d1/l240.png",
+        "teamId": "240"
+      }
+    },
+    {
+      "names": [
+        "Adrien Rabiot"
+      ],
+      "eaId": "210008",
+      "ovr": 87,
+      "position": "CM",
+      "stats": [
+        84,
+        83,
+        85,
+        84,
+        80,
+        87
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/210008.png",
+        "gender": "male",
+        "name": "Adrien Rabiot",
+        "fullName": "Adrien Rabiot",
+        "ovr": 85,
+        "position": "CM",
+        "alt": "",
+        "team": "AC Milan",
+        "league": "Serie A Enilive",
+        "nation": "France",
+        "nationFlag": "https://drop-assets.ea.com/images/6O6L3Tw8ha7CokoEp9xppS/bd62283fa0e10eeb4a55c728fd69b0cb/f_18.png",
+        "clubLogo": "",
+        "teamId": "131681"
+      }
+    },
+    {
+      "names": [
+        "Bilal El Khannouss"
+      ],
+      "eaId": "257504",
+      "ovr": 82,
+      "position": "CAM",
+      "stats": [
+        83,
+        76,
+        79,
+        85,
+        42,
+        60
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/257504.png",
+        "gender": "male",
+        "name": "Bilal El Khannouss",
+        "fullName": "Bilal El Khannouss",
+        "ovr": 78,
+        "position": "CAM",
+        "alt": "",
+        "team": "VfB Stuttgart",
+        "league": "Bundesliga",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5kZF2A2w4ftyuOJr1OdLPv/178f8801a977eb958fc1db30fe90ac73/l36.png",
+        "teamId": "36"
+      }
+    },
+    {
+      "names": [
+        "Roméo Lavia"
+      ],
+      "eaId": "263620",
+      "ovr": 82,
+      "position": "CDM",
+      "stats": [
+        70,
+        58,
+        78,
+        81,
+        81,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/263620.png",
+        "gender": "male",
+        "name": "Roméo Lavia",
+        "fullName": "Roméo Lavia",
+        "ovr": 78,
+        "position": "CDM",
+        "alt": "",
+        "team": "Chelsea",
+        "league": "Premier League",
+        "nation": "Belgium",
+        "nationFlag": "https://drop-assets.ea.com/images/37612Kl5aoi0Rm5MpzXcAt/2579be3f2784cd63b18f92f6c97163f6/f_7.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2Txr6jIrflav4x2iRmqyoK/0f18a061e164dcffb44b25623d8ad527/l5.png",
+        "teamId": "5"
+      }
+    },
+    {
+      "names": [
+        "Tommaso Pobega"
+      ],
+      "eaId": "252060",
+      "ovr": 78,
+      "position": "CM",
+      "stats": [
+        72,
+        79,
+        72,
+        78,
+        76,
+        77
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/252060.png",
+        "gender": "male",
+        "name": "Tommaso Pobega",
+        "fullName": "Tommaso Pobega",
+        "ovr": 74,
+        "position": "CDM",
+        "alt": "",
+        "team": "Bologna",
+        "league": "Serie A Enilive",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "https://drop-assets.ea.com/images/59DJVvirFZ0jFpJOzZhmoP/721cc692cb240f283b5b4951fe728d18/l189.png",
+        "teamId": "189"
+      }
+    },
+    {
+      "names": [
+        "Lamine Yamal",
+        "Lamine Yamal Nasraoui Ebana"
+      ],
+      "eaId": "277643",
+      "ovr": 93,
+      "position": "RW",
+      "stats": [
+        91,
+        90,
+        91,
+        96,
+        41,
+        66
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/277643.png",
+        "gender": "male",
+        "name": "Lamine Yamal",
+        "fullName": "Lamine Yamal Nasraoui Ebana",
+        "ovr": 90,
+        "position": "RW",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1mqjNAj4Z0u1vnDMZSwntN/a5ad57005eea6cacd12d70bbb632a295/l241.png",
+        "teamId": "241"
+      }
+    },
+    {
+      "names": [
+        "Elye Wahi"
+      ],
+      "eaId": "260407",
+      "ovr": 83,
+      "position": "ST",
+      "stats": [
+        90,
+        84,
+        68,
+        80,
+        33,
+        70
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/260407.png",
+        "gender": "male",
+        "name": "Elye Wahi",
+        "fullName": "Elye Wahi",
+        "ovr": 76,
+        "position": "ST",
+        "alt": "",
+        "team": "OGC Nice",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Côte d'Ivoire",
+        "nationFlag": "https://drop-assets.ea.com/images/dmHZiK7RGbMASyNbuZ5OQ/e4edabe47c623d0d7a7fb167838670e4/f_108.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2UFdm8RS0v0831FAU3ONYr/e26b6bca34ca0a8149ef70bde638eaa8/l72.png",
+        "teamId": "72"
+      }
+    },
+    {
+      "names": [
+        "Gessime Yassine"
+      ],
+      "eaId": "70017",
+      "ovr": 80,
+      "position": "LW",
+      "stats": [
+        80,
+        78,
+        75,
+        84,
+        40,
+        55
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/70017.png",
+        "gender": "male",
+        "name": "Gessime Yassine",
+        "fullName": "Gessime Yassine",
+        "ovr": 73,
+        "position": "RM",
+        "alt": "",
+        "team": "Strasbourg",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/LDRahLOjtMNqPqx4JwFX0/2eb4115730e8b2e3d10bfc73c1873f6c/l76.png",
+        "teamId": "76"
+      }
+    },
+    {
+      "names": [
+        "De Frutos",
+        "Jorge de Frutos Sebastián"
+      ],
+      "eaId": "243559",
+      "ovr": 84,
+      "position": "RW",
+      "stats": [
+        85,
+        85,
+        78,
+        84,
+        48,
+        74
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/243559.png",
+        "gender": "male",
+        "name": "De Frutos",
+        "fullName": "Jorge de Frutos Sebastián",
+        "ovr": 81,
+        "position": "RW",
+        "alt": "",
+        "team": "Rayo Vallecano",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2yQzwCXSPgf3YMg2ZlfuGq/d9a87b4df57fcb760d3b0a9fff9dc4a7/l480.png",
+        "teamId": "480"
+      }
+    },
+    {
+      "names": [
+        "Serhou Guirassy"
+      ],
+      "eaId": "215441",
+      "ovr": 88,
+      "position": "ST",
+      "stats": [
+        76,
+        89,
+        78,
+        84,
+        46,
+        87
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/8/215441.png",
+        "gender": "male",
+        "name": "Serhou Guirassy",
+        "fullName": "Serhou Guirassy",
+        "ovr": 85,
+        "position": "ST",
+        "alt": "",
+        "team": "Borussia Dortmund",
+        "league": "Bundesliga",
+        "nation": "Guinea",
+        "nationFlag": "https://drop-assets.ea.com/images/11sId6svmFKGAWyr1s1Qzm/bb3238921a50c3e62190607cf90ebef3/f_118.png",
+        "clubLogo": "https://drop-assets.ea.com/images/d7CmUJ9ZoYPG5RSUBTJYQ/14a4c56aba96321f8901ec9726bfa7a5/l22.png",
+        "teamId": "22"
+      }
+    }
+  ]
+};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -8832,7 +9404,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.341";
+const GFUT_BUILD="V21.342";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -8890,7 +9462,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21341",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21342",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
