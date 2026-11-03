@@ -57,7 +57,7 @@ test('TOTW 7 is approved but only becomes active at 19:00 Berlin on 28 October 2
  assert.equal(c.latestPublishedTotw(new Date('2026-10-28T17:59:59Z'))?.id,6);
  assert.equal(c.latestPublishedTotw(new Date('2026-10-28T18:00:00Z'))?.id,7);
  assert.equal(c.activeTotwWeek(new Date('2026-11-04T17:59:59Z'))?.id,7);
- assert.equal(c.activeTotwWeek(new Date('2026-11-04T18:00:00Z')),null);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-04T18:00:00Z'))?.id,8,'approved TOTW 8 follows at 19:00 Berlin');
  const chosen=new Set(team.players.map(p=>String(p.eaId)));
  for(const prior of c.WEEKS.filter(w=>[5,6].includes(Number(w.id))))
   assert.ok(prior.players.every(p=>!chosen.has(String(p.eaId))),`TOTW 7 duplicates TOTW ${prior.id}`);
@@ -104,4 +104,27 @@ test('server Pick catalog includes every eligible approved TOTW 7 card with Berl
   assert.ok(row.includes(`"displayRating":${p.ovr}`));
   assert.ok(row.includes(`"eventStats":${JSON.stringify(p.stats)}`));
  }
+});
+
+test('TOTW 8 is a mixed team: women count as special cards and share club names only across genders',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===8),approved={...week,sourceStatus:'admin-approved'};
+ assert.ok(week,'TOTW 8 is present');
+ assert.equal(c.totwRosterErrors(approved).join(', '),'');
+ assert.ok(week.players.some(p=>p.fallback.gender==='female')&&week.players.some(p=>p.fallback.gender==='male'));
+ const woman=week.players.find(p=>p.fallback.gender==='female'),man=week.players.find(p=>p.fallback.gender==='male'&&p.position===woman.position);
+ const sameClub={...approved,players:approved.players.map(p=>p===man?{...p,fallback:{...p.fallback,team:woman.fallback.team}}:p)};
+ assert.equal(c.totwRosterErrors(sameClub).join(', '),'','a men\'s and a women\'s side may share a club name');
+ const twoWomen={...approved,players:approved.players.map(p=>p.fallback.gender==='female'&&p!==woman?{...p,fallback:{...p.fallback,team:woman.fallback.team}}:p)};
+ assert.ok(c.totwRosterErrors(twoWomen).includes('Maximal ein Spieler pro Verein'));
+});
+
+test('TOTW 8 is approved, starts at 19:00 Berlin on 4 November 2026 and its 85+ cards are in the server Pick catalog',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===8);
+ assert.equal(week.sourceStatus,'admin-approved');
+ assert.equal(c.activeTotwWeek(new Date('2026-11-04T17:59:59Z'))?.id,7);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-04T18:00:00Z'))?.id,8);
+ const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
+ const rows=sql.split('\n').filter(line=>line.startsWith("('totw:8:"));
+ assert.equal(rows.length,week.players.filter(p=>p.ovr>=85).length);
+ assert.ok(rows.every(row=>row.includes("'2026-11-04 19:00'::timestamp at time zone 'Europe/Berlin'")));
 });

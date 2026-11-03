@@ -22,9 +22,10 @@ const [ry,rm,rd]=release.split('-').map(Number),releaseLabel=`${rd}. ${MONTHS[rm
    document.querySelectorAll('.event-player .face img').forEach(img=>{img.loading='eager'});
   },week);
   await page.waitForFunction(week=>[...document.querySelectorAll('.event-player .face img')].length===18&&[...document.querySelectorAll('.event-player .face img')].every(img=>img.complete&&img.naturalWidth>=100&&img.currentSrc.includes('/assets/footera/totw/'+week+'/')),week,{timeout:45000});
-  const source=await page.evaluate(week=>{const team=TOTW_WEEKS.find(t=>String(t.id)===week);return{styles:[...document.querySelectorAll('style,link[rel="stylesheet"]')].map(el=>el.outerHTML).join('\n'),cards:[...document.querySelectorAll('.event-player .card-shell')].map((el,index)=>({html:el.outerHTML,rating:team.players[index].ovr})).sort((a,b)=>b.rating-a.rating),names:team.players.map(p=>p.names[0]),ids:team.players.map(p=>p.eaId)}},week);
+  const source=await page.evaluate(week=>{const team=TOTW_WEEKS.find(t=>String(t.id)===week);return{styles:[...document.querySelectorAll('style,link[rel="stylesheet"]')].map(el=>el.outerHTML).join('\n'),cards:[...document.querySelectorAll('.event-player .card-shell')].map(el=>({html:el.outerHTML,rating:Number(el.querySelector('.ovr')?.textContent.match(/\d+/)?.[0]||0)})).sort((a,b)=>b.rating-a.rating),names:team.players.map(p=>p.names[0]),ids:team.players.map(p=>p.eaId),ratings:team.players.map(p=>p.ovr).sort((a,b)=>b-a)}},week);
   assert.equal(source.cards.length,18);assert.equal(new Set(source.ids).size,18);
   assert.ok(source.cards.every((card,index)=>!index||source.cards[index-1].rating>=card.rating),'poster ratings are descending');
+  assert.equal(source.cards.map(c=>c.rating).join(','),source.ratings.join(','),'poster reads every card rating');
   const poster=await context.newPage();
   await poster.setContent(`<!doctype html><html><head><meta charset="utf-8"><base href="${base}/">${source.styles}<style>
    html,body{margin:0!important;padding:0!important;min-width:1080px!important;width:1080px!important;height:1350px!important;overflow:hidden!important;background:#080b09!important;color:#f9eabe;font-family:Arial,sans-serif}
