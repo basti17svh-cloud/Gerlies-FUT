@@ -140,7 +140,11 @@ const out=path.join(__dirname,'../test-artifacts');
   const runFacing=(row,actor)=>{const yaw=actor.index===0&&row.skillAction?row.skillAction.yaw:0,c=Math.cos(yaw),s=Math.sin(yaw),[x,z]=actor.forward;return[x*c-z*s,z*c+x*s]};
   for(const row of checks)for(const actor of row.facing){
    const speed=Math.hypot(...actor.velocity);
-   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forward=runFacing(row,actor),forwardDot=(forward[0]*actor.velocity[0]+forward[1]*actor.velocity[1])/speed;
+   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forward=runFacing(row,actor),forwardNorm=Math.hypot(...forward);
+     // Compare *direction*, not projected vector length: a footballer's leaning
+     // torso shortens XZ forward without implying sideways or backward running.
+     assert.ok(forwardNorm>.01,'nondegenerate horizontal facing '+row.sequence);
+     const forwardDot=(forward[0]*actor.velocity[0]+forward[1]*actor.velocity[1])/(speed*forwardNorm);
     assert.ok(forwardDot>.85,`actor runs forwards: ${row.sequence} period ${row.period} time ${row.time} actor ${actor.index}: ${forwardDot}`);
    }
   }

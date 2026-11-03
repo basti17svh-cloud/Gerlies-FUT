@@ -60,7 +60,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21340').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21341').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -238,7 +238,43 @@
   ["channel_overlap_thread_left","through",8,"normal","medium"],
   ["channel_overlap_thread_right","through",8,"normal","medium"],
   ["counter_wall_release_left","through",8,"normal","medium"],
-  ["counter_wall_release_right","through",8,"normal","medium"]
+  ["counter_wall_release_right","through",8,"normal","medium"],
+  ["pivot_diamond_escape_left","combination",9,"normal","long"],
+  ["double_wall_fivepass_right","combination",9,"low_driven","long"],
+  ["false_nine_scoop_link","combination",8,"finesse","long"],
+  ["six_touch_rondo_finish","combination",10,"normal","long"],
+  ["vertical_ladder_left","combination",9,"power","medium"],
+  ["tempo_break_right","combination",9,"normal","medium"],
+  ["blindside_seam_left","through",10,"low_driven","medium"],
+  ["backheel_split_right","through",9,"normal","medium"],
+  ["crossfield_channel_ball","through",8,"chip","long"],
+  ["centerback_draw_then_slip","through",9,"normal","medium"],
+  ["press_break_diagonal","through",9,"low_driven","medium"],
+  ["last_man_reverse_run","through",9,"chip","medium"],
+  ["underlap_scissor_left","overlap",9,"normal","long"],
+  ["touchline_flyby_right","overlap",9,"low_driven","medium"],
+  ["wide_third_man_cross","overlap",9,"header","long"],
+  ["backpost_late_arrival","lowcross",9,"volley","medium"],
+  ["overlap_double_exchange","overlap",10,"normal","long"],
+  ["wing_decoy_switch","switch",8,"header","long"],
+  ["stutter_then_burst_left","dribble",10,"normal","medium"],
+  ["inside_out_lane_cut_right","dribble",10,"finesse","medium"],
+  ["shield_spin_release","dribble",9,"power","medium"],
+  ["nutmeg_exit_channel","dribble",9,"low_driven","medium"],
+  ["double_body_fake_left","dribble",10,"finesse","medium"],
+  ["heel_hook_escape_right","dribble",9,"normal","medium"],
+  ["byline_stop_and_pull","cutback",9,"normal","medium"],
+  ["box_edge_late_trailer","cutback",9,"power","long"],
+  ["low_square_dummy","cutback",9,"low_driven","medium"],
+  ["corner_drag_curl","cutback",9,"finesse","medium"],
+  ["first_time_setback","cutback",9,"volley","long"],
+  ["two_wave_pullback","cutback",10,"normal","long"],
+  ["halfspace_set_and_drive","distance",10,"power","medium"],
+  ["long_switch_to_rocket","distance",9,"power","long"],
+  ["sprint_stop_screamer","distance",9,"power","medium"],
+  ["edge_halfvolley_left","distance",9,"volley","medium"],
+  ["trailing_midfielder_hit","distance",9,"power","medium"],
+  ["reverse_layoff_curler","distance",9,"finesse","long"]
  ].map(([id,family,weight,finish,length],index)=>Object.freeze({
   id,family,weight,finish,
   seconds:length==='long'?17+(index%3):length==='medium'?13+(index%3):9+(index%3),
@@ -388,7 +424,8 @@
  // Presentation only; it shows for goals, saves and misses alike.
  const SIGNATURE_NAMES=Object.freeze({"power-shot":"Powerschuss","finesse-shot":"Angeschnittener Schuss","low-driven-shot":"Flacher Vollspannschuss","chip-shot":"Lupfer","power-header":"Präziser Kopfball","acrobatic":"Akrobatik","trivela":"Außenrist","dead-ball":"Ruhender Ball","gamechanger":"Gamechanger","incisive-pass":"Entscheidender Pass","through-ball":"Schnittstellenpass","long-ball-pass":"Weiter Pass","pinged-pass":"Harter Pass","tiki-taka":"Tiki-Taka","flair":"Einfallsreich","technical":"Technik","rapid":"Raserei","quick-step":"Schneller Schritt","first-touch":"First Touch","trickster":"Tricks","press-proven":"Ruhepol","anticipate":"Antizipation","intercept":"Abfangen","block":"Block","jockey":"Abdrängen","slide-tackle":"Grätsche","aerial":"Kopfballmacht","enforcer":"Kante","bruiser":"Durchsetzungskraft","relentless":"Unerbittlich","long-throw":"Langer Einwurf","rush-out":"Herauskommen","cross-claimer":"Flankenfang","deflector":"Deflector","far-reach":"Große Reichweite","far-throw":"Weiter Abwurf","footwork":"Beinarbeit"});
  const PLAYBOOK_PASSERS=Object.freeze({"triangle_left":3,"triangle_right":3,"tiki_short":3,"tiki_quick":3,"wall_pass_left":3,"wall_pass_right":3,"central_recycle":3,"midfield_switch":2,"first_touch_triangle":6,"third_man_run":1,"split_defenders":3,"curved_striker_run":3,"left_halfspace_thread":3,"right_halfspace_thread":3,"deep_playmaker_lob":6,"overlap_left_low":4,"overlap_right_low":5,"overlap_left_high":4,"overlap_right_high":5,"early_low_delivery_left":1,"early_low_delivery_right":2,"switch_overlap_low":5,"switch_overlap_high":4,"quick_burst_left":1,"quick_burst_right":2,"inside_link_left":3,"inside_link_right":3,"edge_cutback_finesse":3,"first_time_power":3,"near_post_tap":1,"reverse_cutback_left":3,"reverse_cutback_right":3,"blindside_overlap_left":4,"blindside_overlap_right":5,"diagonal_counter_left":1,"diagonal_counter_right":2,"edge_of_box_recycle":1,"back_post_sweep":5,"late_midfield_runner":3,"short_corner_combo":6,"halfspace_overload_left":7,"halfspace_overload_right":6,"counter_reversal_left":1,"counter_reversal_right":2,"wing_isolation_left":1,"wing_isolation_right":2,"late_cutback_left":3,"late_cutback_right":3,"layoff_distance":3,"switch_distance_left":1,"near_post_driven_left":1,"near_post_header_right":2,"six_yard_square_left":1,"counter_square_right":2,"byline_pullback_left":4,"edge_pullback_right":2,"back_post_volley_left":1,"overlap_clipped_right":5,"striker_wall_return":3,"diagonal_lob_finish":3,"false_nine_drop_left":1,"false_nine_drop_right":2,"winger_one_two_left":1,"winger_one_two_right":2,"box_rondo":7,"fullback_link_left":3,"fullback_link_right":3,"channel_ball_left":1,"channel_ball_right":2,"playmaker_slide_left":6,"playmaker_slide_right":7,"dink_over_line":3,"long_ball_sprint":4,"underlap_left":4,"underlap_right":5,"overlap_volley_left":4,"overlap_volley_right":5,"byline_drive_left":1,"byline_drive_right":2,"far_post_slide_right":2,"whipped_header_left":1,"whipped_header_right":2,"deep_cross_header_left":4,"deep_cross_header_right":5,"slalom_left":6,"slalom_right":7,"winger_takeon_left":1,"winger_takeon_right":2,"pullback_power_left":1,"pullback_power_right":2,"cutback_volley_left":1,"edge_rocket":3,"recycle_rocket_left":6,"recycle_curler_right":7,"halfvolley_drive":3,"switch_cut_left":1,"switch_cut_right":2,"near_post_flick_header_left":4,"near_post_flick_header_right":5,"counter_sprint_left":1,"counter_sprint_right":2,"rebound_drive":7,"box_wall_triangle_left":3,"split_line_surge_right":2,"byline_high_header_left":4,"penalty_spot_pullback_right":3,"turnover_counter_diagonal":3,"far_switch_volley_right":2,"double_marker_slalom_central":6,"heel_flick_release_left":1,"keeper_rush_dink_right":3,"second_ball_recycle_left":6,"late_edge_cutback_left":6,"first_touch_layoff_rocket":7,"touchline_sprint_cut_right":2,"five_man_central_carve":6,"blindside_chip_through_left":1,"skill_body-feint_left":6,"skill_body-feint_right":7,"skill_stepover_left":6,"skill_stepover_right":7,"skill_ball-roll_left":6,"skill_ball-roll_right":7,"skill_drag-back_left":6,"skill_drag-back_right":7,"skill_roulette_left":6,"skill_roulette_right":7,"skill_heel-to-heel_left":6,"skill_heel-to-heel_right":7,"skill_croqueta_left":6,"skill_croqueta_right":7,"skill_berbatov_left":6,"skill_berbatov_right":7,"skill_elastico_left":6,"skill_elastico_right":7,"skill_reverse-elastico_left":6,"skill_reverse-elastico_right":7,"give_go_triangle_left":1,"give_go_triangle_right":2,"third_man_wall_left":1,"third_man_wall_right":2,"five_pass_carousel_left":3,"five_pass_carousel_right":3,"overload_release_left":3,"overload_release_right":3,"channel_overlap_thread_left":1,"channel_overlap_thread_right":2,"counter_wall_release_left":1,"counter_wall_release_right":2});
- function creatorActor(sequence){return PLAYBOOK_PASSERS[sequence]??(sequence==='extended_throw_in'?1:sequence==='extended_keeper_buildout'?6:1)}
+ const CINEMATIC_PASSERS=Object.freeze({'pivot_diamond_escape_left':3,'double_wall_fivepass_right':7,'false_nine_scoop_link':3,'six_touch_rondo_finish':7,'vertical_ladder_left':3,'tempo_break_right':3,'blindside_seam_left':3,'backheel_split_right':7,'crossfield_channel_ball':2,'centerback_draw_then_slip':7,'press_break_diagonal':6,'last_man_reverse_run':3,'underlap_scissor_left':3,'touchline_flyby_right':5,'wide_third_man_cross':5,'backpost_late_arrival':3,'overlap_double_exchange':1,'wing_decoy_switch':4,'stutter_then_burst_left':1,'inside_out_lane_cut_right':2,'shield_spin_release':3,'nutmeg_exit_channel':3,'double_body_fake_left':3,'heel_hook_escape_right':3,'byline_stop_and_pull':4,'box_edge_late_trailer':6,'low_square_dummy':1,'corner_drag_curl':5,'first_time_setback':7,'two_wave_pullback':5,'halfspace_set_and_drive':6,'long_switch_to_rocket':6,'sprint_stop_screamer':1,'edge_halfvolley_left':6,'trailing_midfielder_hit':3,'reverse_layoff_curler':6});
+ function creatorActor(sequence){return CINEMATIC_PASSERS[sequence]??PLAYBOOK_PASSERS[sequence]??(sequence==='extended_throw_in'?1:sequence==='extended_keeper_buildout'?6:1)}
  function signatureMoments(event){
   if(event.type==='ceremony')return [];
   const plus=list=>new Set((Array.isArray(list)?list:[]).filter(s=>s&&s.plus).map(s=>s.id));
@@ -460,7 +497,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket'];
+  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'];
   const eligible=v=>{const m=/^skill_(.+)_(left|right)$/.exec(v.id);return m?!!requestedSkill&&m[1]===requestedSkill&&skillStars>=SKILL_LEVELS[m[1]]:!requestedSkill&&(!v.id.startsWith('double_feint')||!skillStars||skillStars>=4)};
   const pool=(simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='dribble'&&!requestedSkill&&signatureMoments(event).some(m=>m.phase==='carry'))return false;
@@ -518,6 +555,8 @@
    }
    // A PlayStyle+ finisher strongly favours the big star version of his finish.
    if(starSignature&&STAR_IDS.has(v.id))w*=v.id==='bicycle'?1.6:4;
+   // Power Shot+ remains visibly identifiable despite the wider scene catalog.
+   if(scorer.get('power-shot')===2&&['long_shot','power_drive'].includes(v.id))w*=2.8;
    for(let i=recent.length-1;i>=0;i--){const item=recent[i];if(item?.sequence===v.id)w*=i===recent.length-1?.07:.19;else if(item?.family===v.family)w*=.56}
    return [v,Math.max(.0001,w)];
   });

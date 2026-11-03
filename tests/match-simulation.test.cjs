@@ -139,7 +139,7 @@ test('pregame defensive tactic reaches the match simulation',()=>{
  const kickoff=extract('function startMatch(', 'function addLog('),logs=[],elements=new Map();
  const node=id=>{if(!elements.has(id))elements.set(id,{classList:{add(){},remove(){}},value:'',textContent:''});return elements.get(id)};
  const state={squad:Array.from({length:18},(_,i)=>`p${i}`),club:[],formation:'4-4-2',tactic:'defensive'};
- const ctx={state,match:null,squadMetrics:()=>({filled:18,rating:83,chem:26}),$:node,
+ const ctx={state,match:null,window:{},squadMetrics:()=>({filled:18,rating:83,chem:26}),$:node,
   matchKitOptions:()=>({home:{home:{primary:'#fff'},away:{primary:'#000'}},away:{home:{primary:'#f00'},away:{primary:'#00f'}}}),
   createDefaultMatchKitSelection:()=>({home:'home',away:'away'}),
   uid:()=>"match-result-test",pushUiState:()=>{},addLog:message=>logs.push(message),updateMatchUI:()=>{},setMatchPill:()=>{},startMatchTimer:()=>{},resetMatchPresentation:()=>{},recordMatchScene:()=>{},matchHomeTeamName:()=>"Footera Club",matchAwayTeamName:()=>"Gegner"};
