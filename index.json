@@ -13,6 +13,19 @@
     "scheduled": true
   },
   {
+    "id": "2026-11-04-1900-totw-8",
+    "postAt": "2026-11-04T19:00:00+01:00",
+    "title": "TOTW 8",
+    "kind": "totw",
+    "plan": {
+      "instagram": "carousel",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
     "id": "2026-11-06-1230-halloween-teaser",
     "postAt": "2026-11-06T12:30:00+01:00",
     "title": "Teaser: HALLOWEEN TEAM 2",

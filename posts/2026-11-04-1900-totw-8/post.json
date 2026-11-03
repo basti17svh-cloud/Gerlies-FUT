@@ -1,0 +1,42 @@
+{
+  "kind": "totw",
+  "theme": "totw",
+  "postAt": "2026-11-04T19:00:00+01:00",
+  "title": "TOTW 8",
+  "keys": [
+    "totw:1793815200000"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🚨 TOTW 8 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇪🇸 93 Lamine Yamal\n🇲🇦 91 Achraf Hakimi\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 90 Declan Rice\n⚽ 90 Melchie Dumornay\n🇺🇸 90 Sophia Wilson\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "type": "carousel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "TOTW 8 ist da 🚨",
+    "caption": "🚨 TOTW 8 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇪🇸 93 Lamine Yamal\n🇲🇦 91 Achraf Hakimi\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 90 Declan Rice\n⚽ 90 Melchie Dumornay\n🇺🇸 90 Sophia Wilson\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🚨 TOTW 8 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇪🇸 93 Lamine Yamal\n🇲🇦 91 Achraf Hakimi\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 90 Declan Rice\n⚽ 90 Melchie Dumornay\n🇺🇸 90 Sophia Wilson\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "carousel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-04-1900-totw-8",
+  "media": {
+    "feed": [
+      "feed-1.jpg",
+      "feed-2.jpg"
+    ],
+    "story": [
+      "story-1.jpg",
+      "story-2.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}
