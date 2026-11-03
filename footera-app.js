@@ -1147,7 +1147,7 @@ const TOTW_WEEK_8={
   "name": "Team of the Week 8",
   "releaseDate": "2026-11-04",
   "activeUntil": "11.11.2026 18:59",
-  "sourceStatus": "pending-approval",
+  "sourceStatus": "admin-approved",
   "players": [
     {
       "names": [

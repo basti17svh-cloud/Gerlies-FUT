@@ -1,6 +1,6 @@
 # Footera – TOTW 8 Vorschlag
 
-Status: **Vorschlag, wartet auf Bastis Freigabe** (`pending-approval`). Geplanter Start: **04.11.2026, 19:00 Europe/Berlin**, Ende 11.11.2026, 18:59.
+Status: **Von Basti am 03.11.2026 freigegeben** (`admin-approved`). Geplanter Start: **04.11.2026, 19:00 Europe/Berlin**, Ende 11.11.2026, 18:59.
 
 Spieltag 30.10.–02.11.2026. **Erstes gemischtes TOTW** (Basti 03.11.2026): 13 Männer und 5 Frauen als Spezialkarten, · 2 TW / 5 DEF / 6 MID / 5 ANG · 18 Vereine · niemand aus TOTW 7 · niemand aus Halloween Team 1/Team 2, Halloween-SBCs (Gyökeres, Leão, Son), Halloween-Zielen oder dem Season Pass S2.
 
