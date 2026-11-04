@@ -131,7 +131,7 @@ async function renderReel(ctx,base,reel,file,seed){
  }
  await p.close();
  const wav=path.join(tmp,"sound.wav");fs.writeFileSync(wav,soundtrackWav({seconds:tm.seconds,theme:reel.theme,seed,hits:{flash:1.6,wall:tm.wall?tm.wallAt:null,end:tm.endAt}}));
- execFileSync("ffmpeg",["-y","-loglevel","error","-framerate",String(FPS),"-i",path.join(tmp,"f%04d.jpg"),"-i",wav,"-shortest","-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-crf","20","-preset","medium","-c:a","aac","-b:a","96k","-movflags","+faststart",file]);
+ execFileSync("ffmpeg",["-y","-loglevel","error","-framerate",String(FPS),"-i",path.join(tmp,"f%04d.jpg"),"-i",wav,"-shortest","-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-crf","20","-preset","medium","-c:a","aac","-b:a","160k","-movflags","+faststart",file]);
  fs.rmSync(tmp,{recursive:true,force:true})
 }
 
