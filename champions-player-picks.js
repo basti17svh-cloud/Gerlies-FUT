@@ -5,12 +5,14 @@
  */
 (function(root){
  const RANK_PICKS=Object.freeze({"Rang I":3,"Rang II":2,"Rang III":2,"Rang IV":1,"Rang V":1,"Rang VI":1});
+ // 84+ since 2026-11-04 (Basti): exciting picks, the best card is not quasi guaranteed.
+ const MIN_RATING=84;
  const EXCLUDED=/founder|icon|sbc|objective|evolution/i;
- function rankEntitlements(rank){return Array.from({length:RANK_PICKS[String(rank)]||0},()=>({type:"champions-red",choices:4,minRating:85,tradeable:false}))}
+ function rankEntitlements(rank){return Array.from({length:RANK_PICKS[String(rank)]||0},()=>({type:"champions-red",choices:4,minRating:MIN_RATING,tradeable:false}))}
  function eligible(card,activeTotwId,activeEvents=[]){
   if(!card||typeof card!=="object")return false;
   const rating=Number(card.rating??card.ovr??card.ges);
-  if(!Number.isFinite(rating)||rating<85)return false;
+  if(!Number.isFinite(rating)||rating<MIN_RATING)return false;
   const type=String(card.cardType??card.type??card.series??"");
   if(EXCLUDED.test(type)||card.exclusive===true)return false;
   const promo=String(card.promoId??card.eventId??"");
@@ -27,7 +29,7 @@
  }
  function validateOptions(cards,activeTotwId,activeEvents=[]){
   const allowed=pool(cards,activeTotwId,activeEvents);
-  return {eligible:allowed,canOfferFour:allowed.length>=4,reason:allowed.length>=4?"":"Zu wenige berechtigte 85+-Karten; keine falschen Spieler oder Ratings als Ersatz erzeugen."}
+  return {eligible:allowed,canOfferFour:allowed.length>=4,reason:allowed.length>=4?"":"Zu wenige berechtigte 84+-Karten; keine falschen Spieler oder Ratings als Ersatz erzeugen."}
  }
  function validateSelection(offer,selectedId){
   if(!offer||!Array.isArray(offer.options)||offer.options.length!==Number(offer.choices||4))return false;

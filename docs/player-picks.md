@@ -1,6 +1,6 @@
 # Player Picks — V21.168
 
-Im Store unter „Meine Player Picks“ können angemeldete, bestätigte Konten ihre Belohnungen öffnen. Champions liefert rote, untauschbare 85+-Karten (1 aus 4); Rivals und Squad Battles liefern normale Gold-Picks gemäß ihren Belohnungsstufen.
+Im Store unter „Meine Player Picks“ können angemeldete, bestätigte Konten ihre Belohnungen öffnen. Champions liefert rote, untauschbare 84+-Karten (1 aus 4); Rivals und Squad Battles liefern normale Gold-Picks gemäß ihren Belohnungsstufen.
 
 Der Server speichert Angebote beim ersten Öffnen. Schließen oder erneutes Laden würfelt keine neuen Spieler. Die Bestätigung schreibt genau eine angebotene Karte und die verbrauchte Berechtigung in derselben Datenbanktransaktion. Bereits vorhandene identische Karten landen im SBC-Speicher. Netzwerkfehler können mit „Einlösung abschließen“ wiederholt werden; abweichende Cloud-Versionen erfordern zunächst die Wiederherstellung des aktuellen Cloud-Spielstands.
 

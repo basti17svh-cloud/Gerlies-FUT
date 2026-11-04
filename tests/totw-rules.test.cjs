@@ -94,7 +94,7 @@ test('server Pick catalog includes every eligible approved TOTW 7 card with Berl
  const c=setup(),week=c.WEEKS.find(w=>w.id===7);
  const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
  const rows=sql.split('\n').filter(line=>line.startsWith("('totw:7:"));
- const eligible=week.players.filter(p=>p.ovr>=85);
+ const eligible=week.players.filter(p=>p.ovr>=84);
  assert.equal(rows.length,eligible.length);
  for(const p of eligible){
   const row=rows.find(line=>line.startsWith(`('totw:7:${p.eaId}',`));
@@ -118,13 +118,13 @@ test('TOTW 8 is a mixed team: women count as special cards and share club names 
  assert.ok(c.totwRosterErrors(twoWomen).includes('Maximal ein Spieler pro Verein'));
 });
 
-test('TOTW 8 is approved, starts at 19:00 Berlin on 4 November 2026 and its 85+ cards are in the server Pick catalog',()=>{
+test('TOTW 8 is approved, starts at 19:00 Berlin on 4 November 2026 and its 84+ cards are in the server Pick catalog',()=>{
  const c=setup(),week=c.WEEKS.find(w=>w.id===8);
  assert.equal(week.sourceStatus,'admin-approved');
  assert.equal(c.activeTotwWeek(new Date('2026-11-04T17:59:59Z'))?.id,7);
  assert.equal(c.activeTotwWeek(new Date('2026-11-04T18:00:00Z'))?.id,8);
  const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
  const rows=sql.split('\n').filter(line=>line.startsWith("('totw:8:"));
- assert.equal(rows.length,week.players.filter(p=>p.ovr>=85).length);
+ assert.equal(rows.length,week.players.filter(p=>p.ovr>=84).length);
  assert.ok(rows.every(row=>row.includes("'2026-11-04 19:00'::timestamp at time zone 'Europe/Berlin'")));
 });

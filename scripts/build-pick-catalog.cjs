@@ -1,4 +1,5 @@
 // Run on each approved TOTW/event release; publish the resulting SQL to Supabase.
+// Champions Player Picks take 84+ cards (Basti 2026-11-04: "84 Plus", so the best card is not quasi guaranteed).
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
 const ctx={};vm.createContext(ctx);
@@ -7,7 +8,7 @@ const quote=v=>"'"+String(v).replace(/'/g,"''")+"'",rows=[];
 for(const team of ctx.weeks){
  if(team.sourceStatus&&team.sourceStatus!=='admin-approved')continue;
  for(const [idx,p]of team.players.entries()){
-  if(p.ovr<85||!Array.isArray(p.stats)||p.stats.length!==6)continue;
+  if(p.ovr<84||!Array.isArray(p.stats)||p.stats.length!==6)continue;
   const id=String(p.eaId||p.fallback?.id||'');if(!id)continue;
   const base={...p.fallback,id,name:p.fallback?.name||p.names[0],fullName:p.fallback?.fullName||p.names[0],position:p.position,ovr:p.ovr,gender:p.fallback?.gender||'male',source:'fc27-totw'};
   ['pac','sho','pas','dri','def','phy'].forEach((k,i)=>base[k]=p.stats[i]);

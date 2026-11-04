@@ -1,5 +1,5 @@
 """Add the Halloween teams to the Champions Player Pick catalogue (red Champions design).
-Each card is pickable only while its team is in packs; 84s join once the Blutmond upgrade makes them 85."""
+Each card is pickable only while its team is in packs; 83s join once the Blutmond upgrade makes them 84 (Champions picks are 84+)."""
 import csv, json, subprocess
 from datetime import datetime
 from pathlib import Path
@@ -11,6 +11,7 @@ upgrade=team1['upgrade']
 with (root/'assets/players-db.csv').open() as f: rows=list(csv.DictReader(f))
 byid={r['player_id']:r for r in rows}; teams={r['club_name']:r for r in rows if r['gender']=="Men's Football"}
 t=datetime.fromisoformat
+MIN=84 # Champions Player Picks are 84+ (Basti 2026-11-04)
 # Team 1 leaves the packs when Team 2 starts; Team 2 runs to its own end.
 windows=[(team1,1,team1['activeFrom'],team2['activeFrom']),(team2,2,team2['activeFrom'],team2['activeUntilAt'])]
 q=lambda x:"'"+str(x).replace("'","''")+"'"
@@ -20,8 +21,8 @@ for ev,n,start,end in windows:
   r=byid[p['pid']]; club=teams.get(p['team'],{})
   starts=start; rating=p['ovr']
   if t(start)>=t(upgrade['at']): rating+=upgrade['ovr']
-  if rating<85:
-   if t(start)>=t(upgrade['at']) or rating+upgrade['ovr']<85: continue
+  if rating<MIN:
+   if t(start)>=t(upgrade['at']) or rating+upgrade['ovr']<MIN: continue
    starts=upgrade['at']; rating+=upgrade['ovr']
   b={'id':p['pid'],'name':p['name'],'fullName':r['long_name'],'ovr':int(r['overall']),'position':p['position'],'alt':p.get('alt',''),'nation':p['nation'],'nationCode':r['nationality_id'],'nationFlag':r['nation_flag_url'],'team':p['team'],'teamId':club.get('club_team_id',''),'clubLogo':club.get('club_logo_url',''),'league':p.get('league',club.get('league_name','')),'face':r['player_face_url'],'gender':'male','source':'fc27-open-data','playstyles':r['playstyles'],'playstylesPlus':r['playstyles_plus'],'skillMoves':int(r['skill_moves']),'weakFoot':int(r['weak_foot'])}
   for k,col in zip(['pac','sho','pas','dri','def','phy'],['pace','shooting','passing','dribbling','defending','physic']): b[k]=int(r[col])
