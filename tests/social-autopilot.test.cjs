@@ -52,3 +52,18 @@ test('layout html renders the slide text and the red logo',()=>{
  assert.match(html,/Gyökeres/);
  assert.match(html,/BUILD YOUR ERA/);
 });
+test('reel shows the whole team at the end and carries its own soundtrack',()=>{
+ const {reelTiming}=require('../scripts/social/social-layout.cjs'),{soundtrackWav}=require('../scripts/social/social-sound.cjs');
+ const totw=posts.find(p=>p.kind==='totw');
+ assert.equal(totw.reel.cardIdx.length,18,'reel gets all 18 TOTW cards');
+ const urls=[...Array(18)].map((_,i)=>`c${i}.png`),html=reelHTML({theme:'totw',title:'TOTW 8',cards:urls}),tm=reelTiming({cards:urls});
+ assert.ok(tm.wall&&tm.seconds>9&&tm.endAt>tm.wallAt);
+ for(const u of urls)assert.ok(html.includes(`src="${u}"`),u);
+ assert.match(html,/Das ganze Team · 18 Karten/);
+ assert.equal(reelTiming({cards:['a']}).wall,false);
+ for(const theme of ['totw','halloween','blackfriday','season','footera']){
+  const wav=soundtrackWav({seconds:3,theme,seed:'x',hits:{flash:1,wall:2,end:2.5}});
+  assert.equal(wav.toString('ascii',0,4),'RIFF');assert.equal(wav.length,44+3*44100*4);
+  let sum=0;for(let i=44;i<wav.length;i+=4)sum+=Math.abs(wav.readInt16LE(i));assert.ok(sum/(wav.length/4)>500,`${theme} is not silent`);
+ }
+});
