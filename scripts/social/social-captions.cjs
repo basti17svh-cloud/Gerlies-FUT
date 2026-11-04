@@ -33,7 +33,7 @@ function buildPosts(entry,content){
   const body=bf?`Ab ${rel} gibt es in Footera ${f.count||18} neue Neon-Karten, jeden Tag einen neuen Deal und −30 % auf Coin-Packs im Shop.\nErkennst du schon jemanden? 👀`:`${eventName}${teamName?" "+teamName.replace(/TEAM/i,"Team"):""} kommt nach Footera: ${f.count||cards.length} neue Event-Karten.\nErkennst du schon jemanden? Tipp in die Kommentare 👇`;
   const caption=`${head}\n\n${body}\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio ${e1}\n${tags(theme)}`;
   slides.push({theme,kicker:bf?"Ab "+rel:"Heute · "+berlin(entry.releaseAt).hour+":00 Uhr",title:eventName,sub:teamName||`${f.count||cards.length} neue Karten`,cardIdx:team.slice(0,bf?9:9),silhouette:true,layout:"grid"});
-  return finish({slug:(bf?"black-friday":eventName)+"-teaser",title:`Teaser: ${eventName}${teamName?" "+teamName:""}`,slides,reel:{theme,kicker:slides[0].kicker,title:eventName,sub:slides[0].sub,cardIdx:team.slice(0,6),silhouette:true},
+  return finish({slug:(bf?"black-friday":eventName)+"-teaser",title:`Teaser: ${eventName}${teamName?" "+teamName:""}`,slides,reel:{theme,kicker:slides[0].kicker,title:eventName,sub:slides[0].sub,cardIdx:team,silhouette:true},
    instagram:{caption,type:"carousel"},story:true,tiktok:{title:`${eventName}: ${bf?"ab "+rel:"heute "+berlin(entry.releaseAt).hour+" Uhr"} ${e2}`,caption,format:"video"},
    x:{priority:bf?1:3,text:`${head}\n\n${body.split("\n")[0]}\n\n👉 ${LINK}\n#footera`},plan:{instagram:"carousel",story:true,tiktok:"video",x:bf}});
  }
@@ -43,7 +43,7 @@ function buildPosts(entry,content){
   const caption=`🚨 TOTW ${f.totw} IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n${list}\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n${tags("totw")}`;
   slides.push({theme:"totw",kicker:"Team of the Week",title:`TOTW ${f.totw}`,sub:`${when(entry.at)} · ${f.count} Spieler`,cardIdx:team,layout:"grid"});
   slides.push({theme:"totw",kicker:"Die Top-Karten",title:`TOTW ${f.totw}`,cardIdx:team.slice(0,3),layout:"grid"});
-  return finish({slug:`totw-${f.totw}`,title:`TOTW ${f.totw}`,slides,reel:{theme:"totw",kicker:"Team of the Week",title:`TOTW ${f.totw}`,sub:"Ab 19 Uhr in den Packs",cardIdx:team.slice(0,6)},
+  return finish({slug:`totw-${f.totw}`,title:`TOTW ${f.totw}`,slides,reel:{theme:"totw",kicker:"Team of the Week",title:`TOTW ${f.totw}`,sub:"Ab 19 Uhr in den Packs",cardIdx:team},
    instagram:{caption,type:"carousel"},story:true,tiktok:{title:`TOTW ${f.totw} ist da 🚨`,caption,format:"video"},
    x:{priority:1,text:`🚨 TOTW ${f.totw} IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n${(f.top||[]).slice(0,5).map(p=>`${flag(p.nation)} ${p.ovr} ${p.name}`).join("\n")}\n\n👉 ${LINK}`},plan:{instagram:"carousel",story:true,tiktok:"video",x:true}});
  }
@@ -106,7 +106,7 @@ function buildPosts(entry,content){
  const question=team.length?"Wer ist dein Favorit? 👇":f.sbc?"Wer schafft ihn als Erstes? 👇":"Holst du ihn dir? 👇";
  const caption=`${headline}\n\n${extras.length>1?"👉 Wisch dich durch:\n\n":""}${numbered}\n\n${question}\nFOOTERA – BUILD YOUR ERA\n${tags(theme)}`;
  const xText=`${headline}\n\n${extras.slice(0,2).map(x=>"• "+x).join("\n")}\n\n👉 ${LINK}`;
- const reelCards=team.length?team.slice(0,6):sbc.length?sbc:obj;
+ const reelCards=team.length?team:sbc.length?sbc:obj;
  const reelBase=team.length?slides[0]:slides[0]||{};
  return finish({slug:(entry.keys[0]||"").split(":").slice(1).join("-").replace(/-\d+$/,"").slice(0,48)||title,title,slides,reel:reelCards.length?{theme,kicker:reelBase.kicker,title:reelBase.title,titleAccent:reelBase.titleAccent,sub:reelBase.sub,pill:reelBase.pill,cardIdx:reelCards,lines:team.length?[]:(reelBase.lines||[])}:null,
   instagram:{caption,type:slides.length>1?"carousel":"post"},story:true,tiktok:{title:headline.replace(/\s+/g," ").slice(0,90),caption,format:reelCards.length?"video":"photo"},

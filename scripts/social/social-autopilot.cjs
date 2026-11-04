@@ -6,12 +6,12 @@
  * EVENT_OBJECTIVES, TOTW_WEEKS, BLACKFRIDAY_*, seasonInfo), loads the game with a fake clock at each
  * post moment and renders the real production cards. Per post it writes <out>/<id>/:
  *   feed-N.jpg (1080x1350, Instagram carousel / X), story-N.jpg (1080x1920, TikTok photo / Story),
- *   reel.mp4 (1080x1920, ~9 s, silent) and post.json (time, captions per network).
+ *   reel.mp4 (1080x1920, 9-12 s, own soundtrack from social-sound.cjs) and post.json (time, captions per network).
  * Spoiler rule: a post only shows what is live in the game at its post time (teasers show silhouettes).
  * Needs NODE_PATH with playwright, ffmpeg on PATH and fonts-inter (else names overflow).
  */
 const {chromium}=require("playwright"),http=require("node:http"),fs=require("node:fs"),path=require("node:path"),{execFileSync}=require("node:child_process");
-const {buildPosts}=require("./social-captions.cjs"),{posterHTML,reelHTML,REEL_SECONDS}=require("./social-layout.cjs");
+const {buildPosts}=require("./social-captions.cjs"),{posterHTML,reelHTML,reelTiming}=require("./social-layout.cjs"),{soundtrackWav}=require("./social-sound.cjs");
 const root=path.join(__dirname,"..","..");
 const args=Object.fromEntries(process.argv.slice(2).reduce((acc,a,i,all)=>{if(a.startsWith("--"))acc.push([a.slice(2),all[i+1]&&!all[i+1].startsWith("--")?all[i+1]:true]);return acc},[]));
 const OUT=path.resolve(args.out||"social-out"),FROM=args.from?Date.parse(args.from):Date.now(),DAYS=Number(args.days||3),ONLY=args.only&&args.only!==true?String(args.only):"",REEL=!args["no-reel"];
@@ -118,18 +118,20 @@ async function shoot(ctx,base,html,size,file){
  await p.screenshot({path:file,type:"jpeg",quality:90});await p.close()
 }
 
-async function renderReel(ctx,base,html,file){
+async function renderReel(ctx,base,reel,file,seed){
+ const html=reelHTML(reel),tm=reelTiming(reel);
  const tmp=file+".frames";fs.rmSync(tmp,{recursive:true,force:true});fs.mkdirSync(tmp,{recursive:true});
  const p=await ctx.newPage();await p.setViewportSize({width:1080,height:1920});
  await p.setContent(html.replace("<head>",`<head><base href="${base}/">`),{waitUntil:"load"});
  await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(300);
- const total=Math.round(REEL_SECONDS*FPS);
+ const total=Math.round(tm.seconds*FPS);
  for(let f=0;f<total;f++){
   await p.evaluate(t=>{for(const a of document.getAnimations()){a.pause();a.currentTime=t}},f*1000/FPS);
   await p.screenshot({path:path.join(tmp,`f${String(f).padStart(4,"0")}.jpg`),type:"jpeg",quality:88});
  }
  await p.close();
- execFileSync("ffmpeg",["-y","-loglevel","error","-framerate",String(FPS),"-i",path.join(tmp,"f%04d.jpg"),"-f","lavfi","-i","anullsrc=r=44100:cl=stereo","-shortest","-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-crf","20","-preset","medium","-c:a","aac","-b:a","96k","-movflags","+faststart",file]);
+ const wav=path.join(tmp,"sound.wav");fs.writeFileSync(wav,soundtrackWav({seconds:tm.seconds,theme:reel.theme,seed,hits:{flash:1.6,wall:tm.wall?tm.wallAt:null,end:tm.endAt}}));
+ execFileSync("ffmpeg",["-y","-loglevel","error","-framerate",String(FPS),"-i",path.join(tmp,"f%04d.jpg"),"-i",wav,"-shortest","-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-crf","20","-preset","medium","-c:a","aac","-b:a","96k","-movflags","+faststart",file]);
  fs.rmSync(tmp,{recursive:true,force:true})
 }
 
@@ -164,7 +166,7 @@ async function renderReel(ctx,base,html,file){
      await shoot(plain,base,posterHTML(slide,"feed"),{width:1080,height:1350},path.join(dir,`feed-${s+1}.jpg`));post.media.feed.push(`feed-${s+1}.jpg`);
      await shoot(plain,base,posterHTML(slide,"story"),{width:1080,height:1920},path.join(dir,`story-${s+1}.jpg`));post.media.story.push(`story-${s+1}.jpg`);
     }
-    if(REEL&&post.reel){await renderReel(plain,base,reelHTML({...post.reel,cards:(post.reel.cardIdx||[]).map(i=>cardUrls[i]).filter(Boolean)}),path.join(dir,"reel.mp4"));post.media.reel="reel.mp4"}
+    if(REEL&&post.reel){await renderReel(plain,base,{...post.reel,cards:(post.reel.cardIdx||[]).map(i=>cardUrls[i]).filter(Boolean)},path.join(dir,"reel.mp4"),post.id);post.media.reel="reel.mp4"}
     fs.rmSync(cardDir,{recursive:true,force:true});
     delete post.slides;delete post.reel;delete post.cardRoles;
     fs.writeFileSync(path.join(dir,"post.json"),JSON.stringify(post,null,2)+"\n");
