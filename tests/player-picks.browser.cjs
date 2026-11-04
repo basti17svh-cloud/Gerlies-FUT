@@ -11,7 +11,7 @@ const server=http.createServer((req,res)=>{let file=path.resolve(root,'.'+new UR
    for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
    const names=['Isco','Jérémy Doku','Jules Koundé','Bruno Guimarães'],ids=['197781','246420','241486','247851'];
    const options=names.map((name,i)=>({id:'totw:5:'+ids[i],item:{pid:ids[i],variant:'special',cosmeticDesign:'red',displayRating:87,eventName:'Team of the Week 5',tradeable:false,baseSnapshot:{id:ids[i],name,fullName:name,position:'CM',ovr:87,pac:84,sho:87,pas:89,dri:88,def:68,phy:76,nation:'Germany',league:'Bundesliga',team:'FC Bayern München',face:'./assets/footera/totw/5/'+ids[i]+'.png'}}}));
-   window.testOffer={id:'00000000-0000-4000-8000-000000001161',type:'champions-red',min_rating:85,choices:4,options};
+   window.testOffer={id:'00000000-0000-4000-8000-000000001161',type:'champions-red',min_rating:84,choices:4,options};
    state.onboarded=true;state.club=[];state.squad=Array(23).fill(null);state.profile.saveId='pick-test';state.profile.username='Tester';state.profile.clubName='Testclub';
    PLAYERS=options.map(o=>o.item.baseSnapshot);P_BY_ID=new Map(PLAYERS.map(p=>[p.id,p]));
    localStorage.setItem('footera-cloud-owner','test-owner');let claimed=false;window.cloudAutoSyncCalls=0;
