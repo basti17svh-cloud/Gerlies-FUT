@@ -5970,7 +5970,7 @@ const TOTW_PRICE_CURVE={75:10500,76:10500,77:10500,78:10500,79:10500,80:10500,81
 // Real-market anchors stop elite/meta golds from being priced like generic cards of the same rating.
 const BASE_GOLD_PRICE_ANCHORS_BY_ID={
  "231747":3250000, // Kylian Mbappé 91
- "239085":117000,  // Erling Haaland 91
+ "239085":51000,  // Erling Haaland 91
  "231443":1899000, // Ousmane Dembélé 90
  "277643":185000,  // Lamine Yamal 90
  "252371":155000,  // Jude Bellingham 90
@@ -5982,7 +5982,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_ID={
  "231866":32500,   // Rodri 90
  "192119":87500,   // Thibaut Courtois 90
  "238794":725000, // Vini Jr. 89
- "262531":1389000, // Claudia Pina 89
+ "262531":875000, // Claudia Pina 89
  "227102":230000,  // Caroline Graham Hansen 89
  "158023":81500,   // Lionel Messi 89
  "212198":13500,   // Bruno Fernandes 89
@@ -6013,7 +6013,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
 };
 const TOTW_PRICE_ANCHORS={
  "277643|91":1641000, // Lamine Yamal
- "247827|91":1200000, // Michael Olise
+ "247827|91":1050000, // Michael Olise
  "220941|89":256000   // David Raya
 };
 let MARKET_META_PERCENTILE=new Map(),MARKET_META_BUCKETS=new Map(),MARKET_META_MODEL_SIZE=0;
@@ -6081,11 +6081,11 @@ function marketRoundPrice(v){v=Number(v);if(Number.isNaN(v))v=150;v=Math.max(150
 const ICON_PRICE_CURVE={87:85000,88:145000,89:250000,90:420000,91:650000,92:950000,93:1400000,94:2100000,95:3000000};
 const ICON_PRICE_ANCHORS={
  "ronaldo":13400000, // Ronaldo
- "mia-hamm":7450000, // Mia Hamm
+ "mia-hamm":10000000, // Mia Hamm
  "pele":8500000, // Pelé
  "franz-beckenbauer":2650000, // Franz Beckenbauer
- "eusebio":6500000, // Eusébio
- "lothar-matthaus":3990000, // Lothar Matthäus — base-icon-pc-fallback
+ "eusebio":8800000, // Eusébio
+ "lothar-matthaus":5400000, // Lothar Matthäus — base-icon-pc-fallback
  "zinedine-zidane":3600000, // Zinedine Zidane
  "ruud-gullit":8300000, // Ruud Gullit
  "formiga":3450000, // Formiga — same-player-holo-fallback
@@ -6093,17 +6093,17 @@ const ICON_PRICE_ANCHORS={
  "ferenc-puskas":2690000, // Ferenc Puskás — base-icon-pc-fallback
  "alex-morgan":2800000, // Alex Morgan
  "bobby-charlton":2560000, // Bobby Charlton
- "johan-cruyff":5260000, // Johan Cruyff
+ "johan-cruyff":6200000, // Johan Cruyff
  "paolo-maldini":4750000, // Paolo Maldini
- "diego-armando-maradona":5450000, // Diego Armando Maradona
+ "diego-armando-maradona":6700000, // Diego Armando Maradona
  "kenny-dalglish":1900000, // Kenny Dalglish
- "homare-sawa":1280000, // Homare Sawa
+ "homare-sawa":1850000, // Homare Sawa
  "jairzinho":4000000, // Jairzinho
  "zico":5800000, // Zico
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
- "ronaldinho":7000000, // Ronaldinho
- "carlos-alberto":1400000, // Carlos Alberto
+ "ronaldinho":6800000, // Ronaldinho
+ "carlos-alberto":3200000, // Carlos Alberto
  "gianluigi-buffon":835000, // Gianluigi Buffon
  "lilian-thuram":3200000, // Lilian Thuram
  "yaya-toure":1990000, // Yaya Touré
@@ -6121,7 +6121,7 @@ const ICON_PRICE_ANCHORS={
  "rio-ferdinand":1850000, // Rio Ferdinand
  "alessandro-del-piero":945000, // Alessandro Del Piero
  "patrick-vieira":2040000, // Patrick Vieira
- "emilio-butragueno":2040000, // Emilio Butragueño
+ "emilio-butragueno":2450000, // Emilio Butragueño
  "raul":929000, // Raúl
  "oliver-kahn":598000, // Oliver Kahn
  "christine-sinclair":910000, // Christine Sinclair
