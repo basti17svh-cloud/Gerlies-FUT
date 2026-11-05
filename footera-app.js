@@ -2587,6 +2587,12 @@ const MARQUEE_RELEASES={
   {name:"Chelsea – Manchester United",league:"Premier League",nation:"England",kickoffAt:"2026-10-31T13:30:00+01:00",sourceUrl:"https://www.chelseafc.com/en/news/article/chelsea-vs-manchester-united-preview-tv-channel-kick-off-time-26-27",clubs:[["Chelsea","Chelsea FC"],["Manchester United","Man United","Man Utd"]]},
   {key:"bayern-dortmund",name:"Bayern München – Borussia Dortmund",league:"Bundesliga",nation:"Germany",kickoffAt:"2026-10-31T18:30:00+01:00",sourceUrl:"https://fcbayern.com/de/news/spielinfos/fc-bayern-vs-borussia-dortmund",clubs:[["Bayern München","FC Bayern München","Bayern Munich","FC Bayern"],["Borussia Dortmund","Dortmund","BVB"]]},
   {name:"AC Milan – Inter",league:"Serie A",nation:"Italy",kickoffAt:"2026-10-31T20:45:00+01:00",sourceUrl:"https://www.inter.it/en/news/serie-a-2026-27-schedule-inter-matchdays-6-12",clubs:[["AC Milan","Milan"],["Inter","Inter Milan","Internazionale"]]}
+ ],
+ "2026-11-05":[
+  {key:"koeln-leverkusen",name:"1. FC Köln – Bayer Leverkusen",league:"Bundesliga",nation:"Germany",kickoffAt:"2026-11-08T15:30:00+01:00",sourceUrl:"https://products.bundesliga.com/fixtures",clubs:[["1. FC Köln","FC Köln","Köln","Cologne"],["Leverkusen","Bayer Leverkusen","Bayer 04 Leverkusen"]]},
+  {key:"forest-man-city",name:"Nottingham Forest – Manchester City",league:"Premier League",nation:"England",kickoffAt:"2026-11-07T18:30:00+01:00",sourceUrl:"https://www.premierleague.com/en/news/4725574/fixture-amendments-for-premier-league-matches-in-november",clubs:[["Nott'm Forest","Nottingham Forest","Nottm Forest"],["Manchester City","Man City"]]},
+  {key:"fiorentina-juventus",name:"Fiorentina – Juventus",league:"Serie A",nation:"Italy",kickoffAt:"2026-11-08T20:45:00+01:00",sourceUrl:"https://www.legaseriea.it/serie-a/news/quando-si-gioca-anticipi-e-posticipi-fino-alla-12a-giornata",clubs:[["Fiorentina","ACF Fiorentina"],["Juventus","Juventus FC"]]},
+  {key:"atletico-barcelona",name:"Atlético de Madrid – FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",kickoffAt:"2026-11-08T21:00:00+01:00",sourceUrl:"https://www.laliga.com/es-DE/noticias/horarios-de-la-duodecima-jornada-de-laliga-ea-sports-2026-27",clubs:[["Atlético de Madrid","Atletico Madrid","Atlético Madrid","Atletico de Madrid"],["FC Barcelona","Barcelona"]]}
  ]
 };
 
@@ -9404,7 +9410,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.343";
+const GFUT_BUILD="V21.345";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
