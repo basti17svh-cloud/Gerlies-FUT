@@ -115,5 +115,44 @@
       "x": false
     },
     "scheduled": false
+  },
+  {
+    "id": "2026-11-13-1230-letzte-chance-bryan-mbeumo",
+    "postAt": "2026-11-13T12:30:00+01:00",
+    "title": "Letzte Chance: die SBC Bryan Mbeumo 88",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-13-1230-letzte-chance-halloween",
+    "postAt": "2026-11-13T12:30:00+01:00",
+    "title": "Letzte Chance: das HALLOWEEN-Event",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
+  },
+  {
+    "id": "2026-11-13-1230-letzte-chance-son-heung-min",
+    "postAt": "2026-11-13T12:30:00+01:00",
+    "title": "Letzte Chance: das Objective Son Heung Min 87",
+    "kind": "last-chance",
+    "plan": {
+      "instagram": "story",
+      "story": true,
+      "tiktok": null,
+      "x": false
+    },
+    "scheduled": false
   }
 ]
