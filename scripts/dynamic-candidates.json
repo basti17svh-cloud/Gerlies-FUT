@@ -300,6 +300,16 @@
   "female": false
  },
  {
+  "id": "266928",
+  "name": "Trinity Rodman",
+  "ovr": 87,
+  "club": "Washington Spirit",
+  "league": "NWSL",
+  "position": "LM",
+  "item": 50598576,
+  "female": false
+ },
+ {
   "id": "269404",
   "name": "Salma Paralluelo",
   "ovr": 87,
@@ -460,6 +470,16 @@
   "female": false
  },
  {
+  "id": "230869",
+  "name": "Unai Simón",
+  "ovr": 85,
+  "club": "Athletic Club",
+  "league": "LALIGA EA SPORTS",
+  "position": "GK",
+  "item": 50562517,
+  "female": false
+ },
+ {
   "id": "232073",
   "name": "Mallory Swanson",
   "ovr": 85,
@@ -510,6 +530,16 @@
   "female": false
  },
  {
+  "id": "244302",
+  "name": "Lea Schüller",
+  "ovr": 85,
+  "club": "Manchester Utd",
+  "league": "Barclays WSL",
+  "position": "ST",
+  "item": 50575950,
+  "female": false
+ },
+ {
   "id": "246863",
   "name": "Felix Nmecha",
   "ovr": 85,
@@ -550,6 +580,16 @@
   "female": false
  },
  {
+  "id": "267234",
+  "name": "Kerolin Nicoli",
+  "ovr": 85,
+  "club": "FC Barcelona",
+  "league": "Liga F Moeve",
+  "position": "RM",
+  "item": 50598882,
+  "female": false
+ },
+ {
   "id": "273153",
   "name": "Linda Caicedo",
   "ovr": 85,
@@ -557,6 +597,16 @@
   "league": "Liga F Moeve",
   "position": "LW",
   "item": 50604801,
+  "female": false
+ },
+ {
+  "id": "277179",
+  "name": "Fermín",
+  "ovr": 85,
+  "club": "FC Barcelona",
+  "league": "LALIGA EA SPORTS",
+  "position": "CAM",
+  "item": 50608827,
   "female": false
  },
  {
@@ -970,6 +1020,16 @@
   "female": false
  },
  {
+  "id": "208418",
+  "name": "Yannick Carrasco",
+  "ovr": 82,
+  "club": "Al Shabab",
+  "league": "ROSHN Saudi League",
+  "position": "LW",
+  "item": 50540066,
+  "female": false
+ },
+ {
   "id": "209499",
   "name": "Fabinho",
   "ovr": 82,
@@ -1170,6 +1230,16 @@
   "female": false
  },
  {
+  "id": "204923",
+  "name": "Marcel Sabitzer",
+  "ovr": 81,
+  "club": "Borussia Dortmund",
+  "league": "Bundesliga",
+  "position": "CM",
+  "item": 50536571,
+  "female": false
+ },
+ {
   "id": "216354",
   "name": "Andrej Kramarić",
   "ovr": 81,
@@ -1197,6 +1267,16 @@
   "league": "Premier League",
   "position": "RM",
   "item": 50570264,
+  "female": false
+ },
+ {
+  "id": "258908",
+  "name": "Jan Paul van Hecke",
+  "ovr": 81,
+  "club": "Spurs",
+  "league": "Premier League",
+  "position": "CB",
+  "item": 50590556,
   "female": false
  },
  {
@@ -1370,6 +1450,16 @@
   "female": false
  },
  {
+  "id": "235735",
+  "name": "Ethan Ampadu",
+  "ovr": 80,
+  "club": "Leeds United",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 67344599,
+  "female": false
+ },
+ {
   "id": "238744",
   "name": "Weston McKennie",
   "ovr": 80,
@@ -1377,6 +1467,16 @@
   "league": "Serie A Enilive",
   "position": "CM",
   "item": 50570392,
+  "female": false
+ },
+ {
+  "id": "238900",
+  "name": "Ermedin Demirović",
+  "ovr": 80,
+  "club": "VfB Stuttgart",
+  "league": "Bundesliga",
+  "position": "ST",
+  "item": 50570548,
   "female": false
  },
  {
@@ -1670,6 +1770,16 @@
   "female": false
  },
  {
+  "id": "257400",
+  "name": "Yasin Ayari",
+  "ovr": 79,
+  "club": "Brighton",
+  "league": "Premier League",
+  "position": "CDM",
+  "item": 50589048,
+  "female": false
+ },
+ {
   "id": "259197",
   "name": "Nicolas Jackson",
   "ovr": 79,
@@ -1727,6 +1837,16 @@
   "league": "NWSL",
   "position": "ST",
   "item": 67376538,
+  "female": false
+ },
+ {
+  "id": "270039",
+  "name": "Diego Moreira",
+  "ovr": 79,
+  "club": "AC Milan",
+  "league": "Serie A Enilive",
+  "position": "RM",
+  "item": 50601687,
   "female": false
  },
  {
