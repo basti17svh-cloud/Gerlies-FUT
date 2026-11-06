@@ -1,0 +1,318 @@
+{
+ "bl": [
+  {
+   "slot": "GK",
+   "id": "235073",
+   "name": "Gregor Kobel",
+   "ovr": 87,
+   "club": "Borussia Dortmund"
+  },
+  {
+   "slot": "LB",
+   "id": "227647",
+   "name": "Maximilian Mittelstädt",
+   "ovr": 83,
+   "club": "VfB Stuttgart"
+  },
+  {
+   "slot": "CB",
+   "id": "213331",
+   "name": "Jonathan Tah",
+   "ovr": 87,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "CB",
+   "id": "229558",
+   "name": "Dayot Upamecano",
+   "ovr": 87,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "RB",
+   "id": "225375",
+   "name": "Konrad Laimer",
+   "ovr": 85,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "CM",
+   "id": "212622",
+   "name": "Joshua Kimmich",
+   "ovr": 88,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "CM",
+   "id": "256790",
+   "name": "Jamal Musiala",
+   "ovr": 87,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "CM",
+   "id": "246863",
+   "name": "Felix Nmecha",
+   "ovr": 85,
+   "club": "Borussia Dortmund"
+  },
+  {
+   "slot": "LW",
+   "id": "241084",
+   "name": "Luis Díaz",
+   "ovr": 88,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "ST",
+   "id": "202126",
+   "name": "Harry Kane",
+   "ovr": 90,
+   "club": "FC Bayern München"
+  },
+  {
+   "slot": "RW",
+   "id": "247827",
+   "name": "Michael Olise",
+   "ovr": 90,
+   "club": "FC Bayern München"
+  }
+ ],
+ "pl": [
+  {
+   "slot": "GK",
+   "id": "230621",
+   "name": "Gianluigi Donnarumma",
+   "ovr": 89,
+   "club": "Manchester City"
+  },
+  {
+   "slot": "LB",
+   "id": "256197",
+   "name": "Piero Hincapié",
+   "ovr": 84,
+   "club": "Arsenal"
+  },
+  {
+   "slot": "CB",
+   "id": "232580",
+   "name": "Gabriel",
+   "ovr": 89,
+   "club": "Arsenal"
+  },
+  {
+   "slot": "CB",
+   "id": "203376",
+   "name": "Virgil van Dijk",
+   "ovr": 88,
+   "club": "Liverpool"
+  },
+  {
+   "slot": "RB",
+   "id": "238074",
+   "name": "Reece James",
+   "ovr": 84,
+   "club": "Chelsea"
+  },
+  {
+   "slot": "CM",
+   "id": "212198",
+   "name": "Bruno Fernandes",
+   "ovr": 89,
+   "club": "Man Utd"
+  },
+  {
+   "slot": "CM",
+   "id": "234378",
+   "name": "Declan Rice",
+   "ovr": 88,
+   "club": "Arsenal"
+  },
+  {
+   "slot": "CM",
+   "id": "222665",
+   "name": "Martin Ødegaard",
+   "ovr": 86,
+   "club": "Arsenal"
+  },
+  {
+   "slot": "LW",
+   "id": "264652",
+   "name": "Bradley Barcola",
+   "ovr": 85,
+   "club": "Liverpool"
+  },
+  {
+   "slot": "ST",
+   "id": "239085",
+   "name": "Erling Haaland",
+   "ovr": 91,
+   "club": "Manchester City"
+  },
+  {
+   "slot": "RW",
+   "id": "246669",
+   "name": "Bukayo Saka",
+   "ovr": 87,
+   "club": "Arsenal"
+  }
+ ],
+ "ll": [
+  {
+   "slot": "GK",
+   "id": "192119",
+   "name": "Thibaut Courtois",
+   "ovr": 90,
+   "club": "Real Madrid"
+  },
+  {
+   "slot": "LB",
+   "id": "239231",
+   "name": "Cucurella",
+   "ovr": 86,
+   "club": "Real Madrid"
+  },
+  {
+   "slot": "CB",
+   "id": "278046",
+   "name": "Pau Cubarsí",
+   "ovr": 86,
+   "club": "FC Barcelona"
+  },
+  {
+   "slot": "CB",
+   "id": "245037",
+   "name": "Eric García",
+   "ovr": 85,
+   "club": "FC Barcelona"
+  },
+  {
+   "slot": "RB",
+   "id": "226161",
+   "name": "Marcos Llorente",
+   "ovr": 85,
+   "club": "Atlético de Madrid"
+  },
+  {
+   "slot": "CM",
+   "id": "231866",
+   "name": "Rodri",
+   "ovr": 90,
+   "club": "FC Barcelona"
+  },
+  {
+   "slot": "CM",
+   "id": "251854",
+   "name": "Pedri",
+   "ovr": 90,
+   "club": "FC Barcelona"
+  },
+  {
+   "slot": "CM",
+   "id": "252371",
+   "name": "Jude Bellingham",
+   "ovr": 90,
+   "club": "Real Madrid"
+  },
+  {
+   "slot": "LW",
+   "id": "238794",
+   "name": "Vini Jr.",
+   "ovr": 89,
+   "club": "Real Madrid"
+  },
+  {
+   "slot": "ST",
+   "id": "231747",
+   "name": "Kylian Mbappé",
+   "ovr": 91,
+   "club": "Real Madrid"
+  },
+  {
+   "slot": "RW",
+   "id": "277643",
+   "name": "Lamine Yamal",
+   "ovr": 90,
+   "club": "FC Barcelona"
+  }
+ ],
+ "sa": [
+  {
+   "slot": "GK",
+   "id": "215698",
+   "name": "Mike Maignan",
+   "ovr": 87,
+   "club": "AC Milan"
+  },
+  {
+   "slot": "LB",
+   "id": "226268",
+   "name": "Federico Dimarco",
+   "ovr": 86,
+   "club": "Inter"
+  },
+  {
+   "slot": "CB",
+   "id": "237383",
+   "name": "Alessandro Bastoni",
+   "ovr": 86,
+   "club": "Inter"
+  },
+  {
+   "slot": "CB",
+   "id": "239580",
+   "name": "Bremer",
+   "ovr": 86,
+   "club": "Juventus"
+  },
+  {
+   "slot": "RB",
+   "id": "217870",
+   "name": "Giovanni Di Lorenzo",
+   "ovr": 82,
+   "club": "SSC Napoli"
+  },
+  {
+   "slot": "CM",
+   "id": "224232",
+   "name": "Nicolò Barella",
+   "ovr": 87,
+   "club": "Inter"
+  },
+  {
+   "slot": "CM",
+   "id": "237238",
+   "name": "Scott McTominay",
+   "ovr": 86,
+   "club": "SSC Napoli"
+  },
+  {
+   "slot": "CM",
+   "id": "177003",
+   "name": "Luka Modrić",
+   "ovr": 85,
+   "club": "AC Milan"
+  },
+  {
+   "slot": "LW",
+   "id": "241721",
+   "name": "Rafael Leão",
+   "ovr": 83,
+   "club": "AC Milan"
+  },
+  {
+   "slot": "ST",
+   "id": "231478",
+   "name": "Lautaro Martínez",
+   "ovr": 87,
+   "club": "Inter"
+  },
+  {
+   "slot": "RW",
+   "id": "210935",
+   "name": "Domenico Berardi",
+   "ovr": 82,
+   "club": "Sassuolo"
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+name: Social series card renders (temporary)
+on:
+  push:
+    branches: ['claude/project-thread-hrz0aj']
+    paths:
+      - 'marketing-render-series/request.txt'
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter
+      - name: Render cards
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+        run: node marketing-render-series/cards.cjs && ls marketing-render-series/cards | wc -l
+      - name: Commit renders
+        run: |
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add marketing-render-series/cards
+          git diff --cached --quiet && exit 0
+          git commit -m 'marketing: series card renders [skip ci]'
+          git push origin HEAD:"${GITHUB_REF_NAME}"
