@@ -6018,7 +6018,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
  "gianluigi-donnarumma":61000
 };
 const TOTW_PRICE_ANCHORS={
- "277643|91":1641000, // Lamine Yamal
+ "277643|91":1850000, // Lamine Yamal
  "247827|91":1050000, // Michael Olise
  "220941|89":256000   // David Raya
 };
@@ -6109,7 +6109,7 @@ const ICON_PRICE_ANCHORS={
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":6800000, // Ronaldinho
- "carlos-alberto":3200000, // Carlos Alberto
+ "carlos-alberto":2250000, // Carlos Alberto
  "gianluigi-buffon":835000, // Gianluigi Buffon
  "lilian-thuram":3200000, // Lilian Thuram
  "yaya-toure":1990000, // Yaya Touré
