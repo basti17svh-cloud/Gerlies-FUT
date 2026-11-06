@@ -1,0 +1,35 @@
+{
+  "kind": "last-chance",
+  "theme": "halloween",
+  "postAt": "2026-11-13T13:00:00+01:00",
+  "title": "Letzte Chance: das HALLOWEEN-Event",
+  "keys": [
+    "event-end:halloween:1794592800000"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "⏰ LETZTE CHANCE 🩸\n\nHeute um 19 Uhr endet das HALLOWEEN-Event in Footera.\nSchon erledigt? 👇\n\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #halloween #fußball #mobilegame",
+    "type": "story-only"
+  },
+  "story": true,
+  "tiktok": null,
+  "x": {
+    "priority": 3,
+    "text": "⏰ LETZTE CHANCE 🩸\n\nHeute 19 Uhr endet das HALLOWEEN-Event in Footera.\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "story",
+    "story": true,
+    "tiktok": null,
+    "x": false
+  },
+  "id": "2026-11-13-1300-letzte-chance-halloween",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ]
+  }
+}
