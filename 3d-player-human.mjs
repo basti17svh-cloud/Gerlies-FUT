@@ -10,7 +10,7 @@
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21296';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21258',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21346',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
 let source=null,pending=null;
@@ -58,7 +58,8 @@ const HAIR_SHADES=['#1b1512','#2a1d16','#3b2a1f','#14110f','#4f3826','#6e5038','
 // beard:'none'|'Full_beard'|'Moustache'}; anything missing stays name-picked.
 // custom.female (V21.258, women's players from the EA record): the female body
 // morph and skin, a women's haircut and never a beard.
-export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null){
+// role (V21.346): {keeper:true} for goalkeepers, who stand a little taller.
+export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null,role=null){
  const h=hash(name),pick=(list,shift)=>list[(h>>>shift)%list.length];
  const female=custom?.female===true&&!!info?.hairFemale?.length;
  const hair=female?info.hairFemale:info?.hair||['short02'],facial=info?.facial||[],brows=info?.brows||['eyebrow001'];
@@ -75,10 +76,18 @@ export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,cu
   for(const key of ['head_square','jaw_width','brow_ridge','nose_hump'])morphs[key]=Math.min(morphs[key],0)*.6-.15;
   morphs.face_age=Math.min(morphs.face_age,0);
  }
+ // Body variety (V21.346): every player his own height and build, from his
+ // name only, so the squad no longer looks like one cloned body. The build
+ // morph is relative to the joints, so mocap and foot IK stay exact.
+ // A second hash keeps build and height independent of the face picks.
+ const b=hash(name+'|build'),tall=(b%1000)/999,keeper=role?.keeper===true;
+ const heavy=(((b>>>12)&255)/255)*2-1;
+ morphs.build=Math.round((female?heavy*.35:heavy*.75+(keeper?.15:0))*1000)/1000;
+ const height=female?1.66+.1*tall:Math.min(1.94,1.78+.12*tall+(keeper?.05:0));
  // Half the squad clean-shaven, most others a short full beard.
  const beard=(h>>>13)%10,facialHair=female?null:beard>=9?facial[1]:beard>=5?facial[0]:null;
  const look={hair:pick(hair,3),facial:facialHair||null,brows:female?brows[0]:pick(brows,9),morphs,
-  skin:tone,skinKey:(dark?'dark':'light')+(female?'Female':''),female,
+  skin:tone,skinKey:(dark?'dark':'light')+(female?'Female':''),female,height:Math.round(height*1000)/1000,
   hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17)};
  if(custom){
   if(!female&&(custom.hair==='bald'||hair.includes(custom.hair)))look.hair=custom.hair==='bald'?null:custom.hair;

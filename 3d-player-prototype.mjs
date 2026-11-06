@@ -11,7 +11,7 @@ import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21346';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21296';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21346';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -219,7 +219,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom):null;
+ const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom,{keeper:look.keeper===true}):null;
  if(human)dressed=dressFooteraHuman(THREE,model,humanLook,kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
@@ -240,8 +240,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const size=new THREE.Vector3();bounds.getSize(size);
  if(size.y<.05||size.y>100)return null;
  const center=bounds.getCenter(new THREE.Vector3());
- // Women's players stand a little smaller (V21.258), on the same skeleton.
- const scale=(humanLook?.female?1.72:1.83)/size.y,normalized=new THREE.Group();
+ // Women's players stand a little smaller (V21.258), on the same skeleton;
+ // since V21.346 every human player has his own height (1.78-1.94 m).
+ const scale=(Number.isFinite(humanLook?.height)?humanLook.height:humanLook?.female?1.72:1.83)/size.y,normalized=new THREE.Group();
  normalized.name='FooteraPlayerPrototypeMount';
  // Authored model faces +Z; Footera's boots, ball contact and routes face -Z.
  normalized.rotation.y=Math.PI;
@@ -549,6 +550,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  let captureLegs=true;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){}
  let kickCapture=!makehuman;try{kickCapture=kickCapture&&globalThis.localStorage?.getItem('footera-3d-kick-capture')!=='0'}catch(_){}
  const kickBody=createCmuKickLayer(makehuman?new Map():bones,playerRoot);
+ let kickState=null;
  playerRoot.updateMatrixWorld(true);
  const legSwing=[0,0],shrugFrom=new THREE.Quaternion(),shrugTo=new THREE.Quaternion();
  // The keeper's guide rotates about the feet, not the imported pelvis.
@@ -667,14 +669,17 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
   // Real captured kick (CMU) over the strike; boots pinned back on the
   // authored plant and the authoritative ball contact.
+  kickState=null;
   if(kickCapture&&!keeperRole&&!acro&&info.kick){
    const w=kickBody.apply(frameTime,info.kick),kicking=info.kick.foot==='Left'?0:1;
+   kickState={legs:w.legs,kicking,pin:1};
    if(w.legs>.001){
     const at=frameTime-(Number.isFinite(info.kick.contact)?info.kick.contact:5.4);
     const support=clamp((at+.52)/.12)*(1-clamp((at-.45)/.25));
     const contact=1-clamp(Math.abs(at)/.2);
     pinFoot(1-kicking,w.legs*(.25+.75*support));
-    pinFoot(kicking,w.legs*contact*contact*(3-2*contact));
+    const pin=w.legs*contact*contact*(3-2*contact);
+    pinFoot(kicking,pin);kickState.pin=1-w.legs+pin;
    }
   }
   if(keeperRole)matchKeeperHands();
@@ -708,6 +713,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    capturedClip:clipState?.clip||'none',capturedWeight:clipState?.weight||0,
    capturedPhase:clipState?.phase||0,capturedSource:clipState?.source||'none',
    bodyClip:bodyState.weight>0?bodyState.clip:'none',bodyWeight:bodyState.weight,
+   // V21.346: captured kick share; kickPin 1 = kicking boot on its authored target.
+   kickLegs:kickState?.legs||0,kickFoot:kickState?kickState.kicking:-1,kickPin:kickState?kickState.pin:1,
    hipLeft:bones.get('thigh_l').quaternion.toArray(),hipRight:bones.get('thigh_r').quaternion.toArray(),
    feet:[local('foot_l'),local('foot_r')],toes:[local('ball_l'),local('ball_r')],
    footTargets:existingDriver.ankles.map(ankle=>playerRoot.worldToLocal(ankle.getWorldPosition(new THREE.Vector3())).toArray()),

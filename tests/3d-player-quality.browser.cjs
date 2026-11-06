@@ -60,7 +60,12 @@ const server=http.createServer((req,res)=>{
      // standing boot stays on its planted contact target and nothing sinks
      // into the grass. On the ball (capture off) both boots follow exactly.
      const onTarget=frame.motion.feet.map((foot,i)=>Math.hypot(...foot.map((v,j)=>v-frame.motion.footTargets[i][j]))<.07);
-     if(frame.motion.bodyWeight<.01)onTarget.forEach(ok=>assert.ok(ok,`${sequence} ${time}: imported boot follows the original contact target`));
+     // V21.346: around the strike the kicking leg follows the captured kick
+     // (CMU) and is only pinned back on its target at the ball contact; the
+     // standing boot always stays planted.
+     const free=i=>i===frame.motion.kickFoot&&frame.motion.kickPin<.98;
+     if(frame.motion.kickLegs>.01)frame.motion.feet.forEach((foot,i)=>{if(free(i))assert.ok(foot[1]>-.06,`${sequence} ${time}: captured kicking boot stays above the grass`)});
+     if(frame.motion.bodyWeight<.01)onTarget.forEach((ok,i)=>assert.ok(ok||free(i),`${sequence} ${time}: imported boot follows the original contact target`));
      else{assert.ok(onTarget.some(Boolean),`${sequence} ${time}: the standing boot stays on its contact target`);
       const low=Math.min(...frame.motion.toes.map(t=>t[1]),...frame.motion.feet.map(f=>f[1]));
       assert.ok(low>-.06&&low<.07,`${sequence} ${time}: captured stride keeps a boot on the grass (${low.toFixed(3)})`)}

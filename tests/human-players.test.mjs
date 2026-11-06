@@ -91,7 +91,13 @@ test('looks: stable per player, varied across a squad, complexion from the recor
  assert.ok(new Set(looks.map(l=>l.facial)).size>=2);
  assert.ok(new Set(looks.map(l=>l.hairColor)).size>=4);
  assert.ok(new Set(looks.map(l=>JSON.stringify(l.morphs))).size===names.length);
- for(const l of looks)for(const [k,w] of Object.entries(l.morphs)){assert.ok(info.morphs.includes(k),k);assert.ok(Math.abs(w)<=.5)}
+ for(const l of looks)for(const [k,w] of Object.entries(l.morphs)){assert.ok(info.morphs.includes(k),k);assert.ok(Math.abs(w)<=(k==='build'?.9:.5),k)}
+ // V21.346: own height and build per player, keepers a little taller.
+ assert.ok(looks.every(l=>l.height>=1.78&&l.height<=1.94),looks.map(l=>l.height).join());
+ assert.ok(new Set(looks.map(l=>l.height)).size>=10&&new Set(looks.map(l=>l.morphs.build)).size>=10);
+ assert.ok(Math.min(...looks.map(l=>l.morphs.build))<-.3&&Math.max(...looks.map(l=>l.morphs.build))>.3);
+ const gk=footeraHumanLook('Manuel Neuer','#c88f69',info,null,{keeper:true}),field=footeraHumanLook('Manuel Neuer','#c88f69',info);
+ assert.ok(gk.height>field.height&&gk.morphs.build>field.morphs.build);
  assert.equal(footeraHumanLook('X','#503326',info).skinKey,'dark');
  assert.equal(footeraHumanLook('X','#f1d2b3',info).skinKey,'light');
  assert.equal(footeraHumanLook('X','#503326',info).skin,'#503326');
