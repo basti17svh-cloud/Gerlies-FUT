@@ -6,7 +6,7 @@
  * Deterministic: a pure function of time, finish and shooting foot.
  */
 import * as THREE from './vendor/three/three.module.min.js';
-import {FOOTERA_CMU_KICKS} from './3d-mocap-cmu-data.mjs?v=21322';
+import {FOOTERA_CMU_KICKS} from './3d-mocap-cmu-data.mjs?v=21346';
 export const CMU_KICK_LAYER_VERSION='21.322-cmu-kick';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
