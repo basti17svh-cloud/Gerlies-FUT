@@ -41,7 +41,7 @@ function collectSchedule({from,days}){
  const until=from+days*86400000,ms=v=>Date.parse(v||""),list=[];
  const rows=footeraEventCalendar(from-1,{days:days+1,limit:500});
  const releases=typeof EVENT_PROMO_RELEASES!=="undefined"?EVENT_PROMO_RELEASES:[];
- const noon=(t,minus=0)=>{const d=new Date(t-minus*86400000);const p=berlinParts(d);return Date.parse(`${p.year}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}T12:30:00${berlinOffset(d)}`)};
+ const noon=(t,minus=0)=>{const d=new Date(t-minus*86400000);const p=berlinParts(d);return Date.parse(`${p.year}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}T13:00:00${berlinOffset(d)}`)};
  function berlinOffset(d){const s=new Intl.DateTimeFormat("en",{timeZone:"Europe/Berlin",timeZoneName:"longOffset"}).formatToParts(d).find(x=>x.type==="timeZoneName").value;return s==="GMT"?"+00:00":s.replace("GMT","")}
  for(const row of rows){
   const keys=String(row.key).split("+");

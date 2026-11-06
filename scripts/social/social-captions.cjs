@@ -24,7 +24,10 @@ function buildPosts(entry,content){
  const team=idx("team"),sbc=idx("sbc"),obj=idx("objective"),pass=idx("pass");
  const post={kind:entry.kind,theme,postAt:isoBerlin(entry.at),title:entry.title,keys:entry.keys,status:"entwurf"};
  const extras=[],slides=[];
- const finish=(o)=>{const p={...post,...o};p.id=idFor(entry,o.slug||entry.title);delete p.slug;return [p]};
+ // Instagram goes out as a Reel whenever there is a reel (Basti 2026-11-06: images reach almost nobody); else post/carousel.
+ const finish=(o)=>{const p={...post,...o};p.id=idFor(entry,o.slug||entry.title);delete p.slug;
+  if(p.reel&&p.plan&&p.plan.instagram&&p.plan.instagram!=="story"){p.plan={...p.plan,instagram:"reel"};if(p.instagram)p.instagram={...p.instagram,type:"reel"}}
+  return [p]};
  const topLine=list=>list.map(x=>`${x.name.split(" ").length>1?short(x.name):x.name} ${x.ovr}`).join(", ").replace(/, ([^,]*)$/," und $1");
 
  if(entry.kind==="teaser"){
