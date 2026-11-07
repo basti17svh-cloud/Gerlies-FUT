@@ -1,50 +1,50 @@
 {
- "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png": {
-  "f": "b99cd360e957c68c4119",
-  "type": "image/png"
- },
- "https://drop-assets.ea.com/images/5VCMY8QXbH1XE2A4kWwTES/3dd91cfabfd0a6242aa309a6951559a8/f_117.png": {
-  "f": "c6ec11ca380399e9281b",
-  "type": "image/avif"
- },
- "https://drop-assets.ea.com/images/37612Kl5aoi0Rm5MpzXcAt/2579be3f2784cd63b18f92f6c97163f6/f_7.png": {
-  "f": "5cadd07988585b6dafae",
-  "type": "image/png"
- },
- "https://drop-assets.ea.com/images/dmHZiK7RGbMASyNbuZ5OQ/e4edabe47c623d0d7a7fb167838670e4/f_108.png": {
-  "f": "461dc6be439165ac4055",
+ "https://media.api-sports.io/football/teams/33.png": {
+  "f": "05524683705743375cd8",
   "type": "image/png"
  },
  "https://media.api-sports.io/football/teams/42.png": {
   "f": "05b31abe25622e91f889",
   "type": "image/png"
  },
+ "https://media.api-sports.io/football/leagues/39.png": {
+  "f": "9d6adecb0dbc73ac6aee",
+  "type": "image/png"
+ },
  "https://media.api-sports.io/football/leagues/140.png": {
   "f": "746c43ce601810089396",
   "type": "image/png"
  },
- "https://media.api-sports.io/football/teams/33.png": {
-  "f": "05524683705743375cd8",
+ "https://drop-assets.ea.com/images/dmHZiK7RGbMASyNbuZ5OQ/e4edabe47c623d0d7a7fb167838670e4/f_108.png": {
+  "f": "461dc6be439165ac4055",
+  "type": "image/png"
+ },
+ "https://drop-assets.ea.com/images/5VCMY8QXbH1XE2A4kWwTES/3dd91cfabfd0a6242aa309a6951559a8/f_117.png": {
+  "f": "c6ec11ca380399e9281b",
+  "type": "image/avif"
+ },
+ "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png": {
+  "f": "b99cd360e957c68c4119",
+  "type": "image/png"
+ },
+ "https://drop-assets.ea.com/images/37612Kl5aoi0Rm5MpzXcAt/2579be3f2784cd63b18f92f6c97163f6/f_7.png": {
+  "f": "5cadd07988585b6dafae",
   "type": "image/png"
  },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Man%20Utd&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
   "f": "f338c35116518b6e8375",
   "type": "application/json; charset=utf-8"
  },
- "https://media.api-sports.io/football/leagues/39.png": {
-  "f": "9d6adecb0dbc73ac6aee",
-  "type": "image/png"
- },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Premier%20League&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
   "f": "54afcb38c3d5aad5c60c",
   "type": "application/json; charset=utf-8"
  },
- "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Man%20Utd%20association%20football&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
-  "f": "5461836594b115133a9f",
-  "type": "application/json; charset=utf-8"
- },
  "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q9448&props=claims%7Clabels&languages=en%7Cde&format=json&origin=*": {
   "f": "21155762273689d25988",
+  "type": "application/json; charset=utf-8"
+ },
+ "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Man%20Utd%20association%20football&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
+  "f": "5461836594b115133a9f",
   "type": "application/json; charset=utf-8"
  },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Man%20Utd%20football%20club&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
@@ -63,40 +63,40 @@
   "f": "e5112fa4564754f0f3c8",
   "type": "application/json; charset=utf-8"
  },
- "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
-  "f": "6c84ad8b1a2cfa15e3cb",
-  "type": "application/json; charset=utf-8"
- },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Arsenal%20football%20club&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
   "f": "e6b444b23fe589603ccc",
-  "type": "application/json; charset=utf-8"
- },
- "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS%20football%20league&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
-  "f": "afa25b9786a36423a74a",
   "type": "application/json; charset=utf-8"
  },
  "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q2471114&props=claims%7Clabels&languages=en%7Cde&format=json&origin=*": {
   "f": "dbd93dcc09f08af59274",
   "type": "application/json; charset=utf-8"
  },
- "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS%20association%20football%20league&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
-  "f": "74519eb5e718ca59de8a",
+ "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
+  "f": "6c84ad8b1a2cfa15e3cb",
   "type": "application/json; charset=utf-8"
  },
  "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q667065&props=claims%7Clabels&languages=en%7Cde&format=json&origin=*": {
   "f": "481cf21b6bcf0eca6eb9",
   "type": "application/json; charset=utf-8"
  },
+ "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS%20football%20league&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
+  "f": "afa25b9786a36423a74a",
+  "type": "application/json; charset=utf-8"
+ },
+ "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=LALIGA%20EA%20SPORTS%20association%20football%20league&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
+  "f": "74519eb5e718ca59de8a",
+  "type": "application/json; charset=utf-8"
+ },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Lesotho%20Premier%20League&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
   "f": "eac8cb1fa3b25d919ff5",
   "type": "application/json; charset=utf-8"
  },
- "https://media.api-sports.io/football/leagues/78.png": {
-  "f": "ec2425608e33f911c151",
-  "type": "image/png"
- },
  "https://drop-assets.ea.com/images/4Hbb0jUSB8bQeIOLkBPfp8/729dd94f435d0d75683bbf978e442b6d/f_47.png": {
   "f": "52d57f578f098ab13f2c",
+  "type": "image/png"
+ },
+ "https://media.api-sports.io/football/leagues/78.png": {
+  "f": "ec2425608e33f911c151",
   "type": "image/png"
  },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Bundesliga&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
@@ -227,13 +227,13 @@
   "f": "4e721c80b20dc53490c8",
   "type": "image/webp"
  },
- "https://media.api-sports.io/football/teams/168.png": {
-  "f": "7d95faabba91871c5576",
-  "type": "image/png"
- },
  "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png": {
   "f": "7fc6a748746ffd28ba8c",
   "type": "image/avif"
+ },
+ "https://media.api-sports.io/football/teams/168.png": {
+  "f": "7d95faabba91871c5576",
+  "type": "image/png"
  },
  "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=Leverkusen&language=en&uselang=en&type=item&limit=10&format=json&origin=*": {
   "f": "b4c2de72779d561b72ed",
@@ -402,5 +402,1245 @@
  "https://idxydyrihtyecvfjvtuk.supabase.co/storage/v1/object/public/player-faces/faces/241651.webp": {
   "f": "9a6beb7030a2441edc97",
   "type": "image/webp"
+ },
+ "https://media.api-sports.io/football/teams/165.png": {
+  "f": "8bc9819cd69f0f95db10",
+  "type": "image/png"
+ },
+ "https://media.api-sports.io/football/teams/172.png": {
+  "f": "2c9e1b10fd155e4b5fe8",
+  "type": "image/png"
+ },
+ "https://media.api-sports.io/football/teams/173.png": {
+  "f": "d6cdec4c87118a249fa7",
+  "type": "image/png"
+ },
+ "https://media.api-sports.io/football/teams/50.png": {
+  "f": "7ec6e5f01f573ad4a44f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ad.png": {
+  "f": "bc0082918c5b2c4b227f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ae.png": {
+  "f": "cfffe42bbf89337ab5a0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/af.png": {
+  "f": "b6baa03927e73396efe6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ag.png": {
+  "f": "53156a72447d843ce6e8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ai.png": {
+  "f": "a748e9bf58f30f8a0851",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/al.png": {
+  "f": "1123eecf6b90c30f382e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/am.png": {
+  "f": "78f28e709e806600efef",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ao.png": {
+  "f": "6de0b00b151fb5f7a028",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/aq.png": {
+  "f": "3999c0669e478ec038ff",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ar.png": {
+  "f": "2664efa0d6d2e792222a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/as.png": {
+  "f": "d00dadd75482b2672172",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/at.png": {
+  "f": "5977d6a276288e6520fc",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/au.png": {
+  "f": "31fd675824149da03750",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/aw.png": {
+  "f": "a4c2cae6f2bc55889f50",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ax.png": {
+  "f": "720d006e0b3bce9c8aeb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/az.png": {
+  "f": "9d6468bac227b07bd296",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ba.png": {
+  "f": "b7038d5e907520d231b6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bb.png": {
+  "f": "a717d4ea6912b0455159",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bd.png": {
+  "f": "194a3c95422e93e20b70",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/be.png": {
+  "f": "e16c58eed7bf217c1c99",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bf.png": {
+  "f": "cb2eab478f04acb4206a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bg.png": {
+  "f": "53e589f11e502da9939c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bh.png": {
+  "f": "537c1925d8e722d754a1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bi.png": {
+  "f": "874ff6e986d5f9e33594",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bj.png": {
+  "f": "22f9294aa941f24bdcce",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bl.png": {
+  "f": "86cb227fd84b5fffda09",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bm.png": {
+  "f": "dac813ae8274fadc4bba",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bn.png": {
+  "f": "6108f10b9231778db177",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bo.png": {
+  "f": "ca39115c5c4e9bfb0fa9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bq.png": {
+  "f": "caf443015ef8df85ec02",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/br.png": {
+  "f": "8231718daf4d9df3c75d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bs.png": {
+  "f": "63fc5771c1ddd0de4676",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bt.png": {
+  "f": "49321933a8f831187aff",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bv.png": {
+  "f": "f3e40acf5a13b027eca8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bw.png": {
+  "f": "7e33b5c4157873006e44",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/by.png": {
+  "f": "5c0f29c16665f48769a8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/bz.png": {
+  "f": "c2807783de544a6e2b1e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ca.png": {
+  "f": "30e54b607f1a4093313a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cc.png": {
+  "f": "ce6113382f1b3e90f170",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cd.png": {
+  "f": "ac65024777caecd8beb3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cf.png": {
+  "f": "15face063fda00365040",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cg.png": {
+  "f": "b503633b73a06b85daa3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ch.png": {
+  "f": "6104aedcf3f8b869543d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ci.png": {
+  "f": "b66f12c0e854ec4e846e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ck.png": {
+  "f": "2f85988ac53fe15c0567",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cl.png": {
+  "f": "ced650babf3f01dfc8a2",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cm.png": {
+  "f": "31dbb49e436429399954",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cn.png": {
+  "f": "4d4f4f07d9644417a801",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/co.png": {
+  "f": "fe4be98a86a164d5a5ec",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cr.png": {
+  "f": "8f64fd3bf976e7b9a6de",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cu.png": {
+  "f": "e4d2ad2812f21ea4b88a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cv.png": {
+  "f": "9b150ccc91f9f8335f96",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cw.png": {
+  "f": "5687a9bb02028267d611",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cx.png": {
+  "f": "d963759826442bcdd2dd",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cy.png": {
+  "f": "3a0df00b70a54c906428",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/cz.png": {
+  "f": "002354d912f6b4ccfab2",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/de.png": {
+  "f": "6b8fb1edbc7192fcb51a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/dj.png": {
+  "f": "caa88a0597a8466bbfc1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/dk.png": {
+  "f": "4e2327f30609be128888",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/dm.png": {
+  "f": "b38475b31eab2393c0c6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/do.png": {
+  "f": "339c88486cd467178c6c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/dz.png": {
+  "f": "57661eae6fd82a3e1f3d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ec.png": {
+  "f": "e311b637147330577afd",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ee.png": {
+  "f": "f13e3f84196de7fd9206",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/eg.png": {
+  "f": "b8ab5f773f0db3342867",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/eh.png": {
+  "f": "d2067021f978de1c069b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/er.png": {
+  "f": "0009ce869a19699fabd6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/es.png": {
+  "f": "e46024808c1162f01ade",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/et.png": {
+  "f": "677283800a8a87f9053f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/eu.png": {
+  "f": "20c5ef641fef3a08fcbb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fi.png": {
+  "f": "7b1a48e7836fff2aa69a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fj.png": {
+  "f": "9209ee5caed20864e10f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fk.png": {
+  "f": "0a316a00c0546b75c572",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fm.png": {
+  "f": "e98c91b96669e22b27f7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fo.png": {
+  "f": "f752db5742ab24a07184",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/fr.png": {
+  "f": "112a262731538f3c72d0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ga.png": {
+  "f": "4559e96f67bc5442da0b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gb.png": {
+  "f": "4f4fb3dbf56911e682de",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gb-eng.png": {
+  "f": "fa8751b00cd22b8033b6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gb-nir.png": {
+  "f": "fc5d5317f5bb4b0c05c9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gb-sct.png": {
+  "f": "2e0e2fa1617abd46b79d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gb-wls.png": {
+  "f": "a661f0f6cccd7d2b7638",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gd.png": {
+  "f": "d1e82f908b732688802e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ge.png": {
+  "f": "a13c3e4bde9743880b6e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gf.png": {
+  "f": "2719264928812ee534c1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gg.png": {
+  "f": "8fb194cf8a4832e197c5",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gh.png": {
+  "f": "513cd87965a50537f6f6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gi.png": {
+  "f": "f1fd3f0e44d238e77877",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gl.png": {
+  "f": "e5accede5327c35aacf6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gm.png": {
+  "f": "edc002d5e4d20397f588",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gn.png": {
+  "f": "4877675c695053162b80",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gp.png": {
+  "f": "c18ebe34bff166fb796e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gq.png": {
+  "f": "29be73a6ff415af58694",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gr.png": {
+  "f": "b7a75cd161dc22ba7cd8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gs.png": {
+  "f": "f2fca540174c0e08ccc0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gt.png": {
+  "f": "0ac0f2bc29ec65f446b9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gu.png": {
+  "f": "23083fb6fa4c2933d9a8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gw.png": {
+  "f": "61aea8a2157f3ada5795",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/gy.png": {
+  "f": "59131078d2323ba6af59",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/hk.png": {
+  "f": "c7999ae655fe6551aa9f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/hm.png": {
+  "f": "1b20ed4e9a9ff4f824e3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/hn.png": {
+  "f": "9343e6a55807bc8cf35c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/hr.png": {
+  "f": "6bfdef78a8eb3ec918c4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ht.png": {
+  "f": "004172601b390984792d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/hu.png": {
+  "f": "817dd4b8917eec493e8f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/id.png": {
+  "f": "08d8f836c978f3c24d03",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ie.png": {
+  "f": "a27da3a25795c731cb02",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/il.png": {
+  "f": "69913e303b598f7b5e69",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/im.png": {
+  "f": "90789120ba4930c0a6df",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/in.png": {
+  "f": "e1388ff8ec1a59787f33",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/io.png": {
+  "f": "f68b8d07e9ce71f7a7c4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/iq.png": {
+  "f": "b72d09527ef7b4f1fdec",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ir.png": {
+  "f": "24b40103b7b994118077",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/is.png": {
+  "f": "b08bdac1a44d59694dc1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/it.png": {
+  "f": "36313933a808e048a9bb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/je.png": {
+  "f": "440f281fcfbeb0e6a376",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/jm.png": {
+  "f": "4360e9addaee73c64dc5",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/jo.png": {
+  "f": "d018fe2bb1afb8c61d8c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/jp.png": {
+  "f": "d43fd64a701ac561290f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ke.png": {
+  "f": "bb7e5c2f286d5762afa5",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kg.png": {
+  "f": "0ebbf7600e3ad5d59550",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kh.png": {
+  "f": "c1d240000ea01cebc2ea",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ki.png": {
+  "f": "d785d5d9fb5b62e24795",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/km.png": {
+  "f": "dd7c81d5bea47f5580db",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kn.png": {
+  "f": "f5a60600a86b9f4b1f7b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kp.png": {
+  "f": "b70bdaef5d0e42d74436",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kr.png": {
+  "f": "c45a8c2c11534b4b92aa",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kw.png": {
+  "f": "00294cf106eeb61b13cd",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ky.png": {
+  "f": "6ec8338f19edd4c2bf8b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/kz.png": {
+  "f": "14ef0e0015c3d9dda2bb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/la.png": {
+  "f": "fdd91ae6d34eee9303e8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lb.png": {
+  "f": "b283a5b71a25ff4d74c0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lc.png": {
+  "f": "5e5044f71a059ed4703c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/li.png": {
+  "f": "98cd57b144769a598187",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lk.png": {
+  "f": "dae29c9a945c3520f980",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lr.png": {
+  "f": "af2c6b09085519310c81",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ls.png": {
+  "f": "796d4a966dd105c83870",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lt.png": {
+  "f": "101261b43fe7e2e56ff9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lu.png": {
+  "f": "9fe5b71b0b5ee4667bc7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/lv.png": {
+  "f": "c62f07e79b562a703b7c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ly.png": {
+  "f": "c1a0137c1d7cef3f00d7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ma.png": {
+  "f": "1347b01872f5d749e930",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mc.png": {
+  "f": "229ff5a3d3efde36e9b1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/md.png": {
+  "f": "2c652dfaacbff2b5c318",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/me.png": {
+  "f": "2012f2c2c16e3d7de27b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mf.png": {
+  "f": "a8241a1813f507d9d17e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mg.png": {
+  "f": "c7188748bd8b606599d6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mh.png": {
+  "f": "f97652c662dc7ecb94a7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mk.png": {
+  "f": "4b12eab756d77a5d5ccb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ml.png": {
+  "f": "c5aefc24629e18575802",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mm.png": {
+  "f": "fea1d08a4886402e309c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mn.png": {
+  "f": "df2e6396aaebd092daf0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mo.png": {
+  "f": "f6339e441207250dcdbe",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mp.png": {
+  "f": "db0c78dff3f54d5c3e41",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mq.png": {
+  "f": "ad559f8f6f190718442d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mr.png": {
+  "f": "2ba0878109096c113df9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ms.png": {
+  "f": "2b3f91a80f07694ca5cb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mt.png": {
+  "f": "9dfcb5e22efc3e772c86",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mu.png": {
+  "f": "2750a8dd45ad86f4d73e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mv.png": {
+  "f": "f20da1abeda56289cfd0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mw.png": {
+  "f": "9190f88c322354845b19",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mx.png": {
+  "f": "3bdd4074641a3475651b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/my.png": {
+  "f": "d9461e823839a18b9440",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/mz.png": {
+  "f": "3c50265d78ae53d6e730",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/na.png": {
+  "f": "0139ee1664cdf07d25be",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nc.png": {
+  "f": "96e81d2c9ee43159e1d5",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ne.png": {
+  "f": "7d784bcc3a5a0a3e5fbd",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nf.png": {
+  "f": "575d066ea163d1e9953a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ng.png": {
+  "f": "630caaf94429783ec411",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ni.png": {
+  "f": "8ceea4033b55e1210952",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nl.png": {
+  "f": "6e3d4a39d8f7315a3208",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/no.png": {
+  "f": "bfeb9225eeece8bdcc90",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/np.png": {
+  "f": "bfc4485df600941306a0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nr.png": {
+  "f": "258577764a66bbcbe715",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nu.png": {
+  "f": "f6c8f125d2d35ceff2f7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/nz.png": {
+  "f": "04dfaffd0e7b30f5ea18",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/om.png": {
+  "f": "5b8fe710c1ee87eb24fa",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pa.png": {
+  "f": "86e840f927cf9ab9cd76",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pe.png": {
+  "f": "e5912b03bb8365f0f815",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pf.png": {
+  "f": "6ba332862b8e5a76d149",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pg.png": {
+  "f": "34c1f7e64f49c81f840e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ph.png": {
+  "f": "b31a9d39d06f600a53a4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pk.png": {
+  "f": "bf8e6c16427eeeecccd3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pl.png": {
+  "f": "a99dcf8975190b389588",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pm.png": {
+  "f": "44b98a7bb0118a01e534",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pn.png": {
+  "f": "14bf60198aeed657467e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pr.png": {
+  "f": "8f6281f8897e02fedc97",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ps.png": {
+  "f": "1dcc2fcc770b3f33c635",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pt.png": {
+  "f": "5747f9a79d823a807160",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/pw.png": {
+  "f": "96ea195ca78f14b060b3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/py.png": {
+  "f": "2227d26c5f321b680001",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/qa.png": {
+  "f": "94d0751cc01595887be2",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/re.png": {
+  "f": "6e7464108a24db389e62",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ro.png": {
+  "f": "ad71b4e270c88b931f93",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/rs.png": {
+  "f": "34f6c0daeef3771c53af",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ru.png": {
+  "f": "df98be44fa66974612ad",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/rw.png": {
+  "f": "be8d454093f6a0d59a6e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sa.png": {
+  "f": "53ae5e71e598684c967a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sb.png": {
+  "f": "e3070311b508ae79a88f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sc.png": {
+  "f": "7407a9a9f9a6841d384d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sd.png": {
+  "f": "e4614437fdba67700a87",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/se.png": {
+  "f": "c04731a5db052e76e43f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sg.png": {
+  "f": "4779a8c498be955ce0ce",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sh.png": {
+  "f": "62c57e98e16f658c47f8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/si.png": {
+  "f": "effc3af1916e69c45808",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sj.png": {
+  "f": "5f12dca4c06f8c7d2263",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sk.png": {
+  "f": "23325727bdae6ece7889",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sl.png": {
+  "f": "6304e518bbd9d34bb47e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sm.png": {
+  "f": "6f01dfd4c46e922ede5e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sn.png": {
+  "f": "3454a9c5a549fbe35108",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/so.png": {
+  "f": "5f070865a7b62c66cc19",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sr.png": {
+  "f": "1f053d9153443b1cd473",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ss.png": {
+  "f": "43b62e744f4a6123c7f1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/st.png": {
+  "f": "89319ad5600b3737f5ca",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sv.png": {
+  "f": "b6a3425a45e06363930c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sx.png": {
+  "f": "0d39b8625d3dc2ac8684",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sy.png": {
+  "f": "8d997de6fdb4b47c56f3",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/sz.png": {
+  "f": "eca57369ec7d4de904c2",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tc.png": {
+  "f": "780106adbe4e0d0c67f4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/td.png": {
+  "f": "f5c40d167240c6aeda66",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tf.png": {
+  "f": "93363695d72427fb171a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tg.png": {
+  "f": "a2c936dee364e2c14c45",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/th.png": {
+  "f": "e29d998550b7e2f5e596",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tj.png": {
+  "f": "f7ed2cf6ce929e4519de",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tk.png": {
+  "f": "3c78a0178bd7a6ae555d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tl.png": {
+  "f": "38e7f3a5d1c7ae7ad14d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tm.png": {
+  "f": "b01706b85220103f9e02",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tn.png": {
+  "f": "12803941346f1c3ed360",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/to.png": {
+  "f": "76b0a458d47f61a170a9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tr.png": {
+  "f": "b747586e4ae0b867b1a6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tt.png": {
+  "f": "fa415b668ca76d1a41df",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tv.png": {
+  "f": "9241dedc230978e5ab2f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tw.png": {
+  "f": "5e268c11d8d43641f851",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/tz.png": {
+  "f": "fb529fd87cf48a4ef4b9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ua.png": {
+  "f": "80f9682acbc930c8fa1a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ug.png": {
+  "f": "b453cfe6a2f42c720923",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/um.png": {
+  "f": "f9e41b3557a8bead9281",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/un.png": {
+  "f": "8d66d7e52211c2f68ef4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us.png": {
+  "f": "7021150edda830a67479",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ak.png": {
+  "f": "d97a4cb8126e64ffc467",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-al.png": {
+  "f": "5370bcb8db050dc68619",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ar.png": {
+  "f": "5dda1a91ec3d16b25b5d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-az.png": {
+  "f": "f0a0efa42e6aa0893fe6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ca.png": {
+  "f": "581ab6787a46bac70948",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-co.png": {
+  "f": "c5c32b25acb742131ae1",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ct.png": {
+  "f": "85e62bb2e97e6caf4539",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-de.png": {
+  "f": "887aba74200f7a80177d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-fl.png": {
+  "f": "2ca3a10bf17b10c112ee",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ga.png": {
+  "f": "5baa7afabbc623a740d8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-hi.png": {
+  "f": "5b4248bf488261e1d584",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ia.png": {
+  "f": "76712d8c153d0fd039c6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-id.png": {
+  "f": "2c653d23d70b0aafe2aa",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-il.png": {
+  "f": "2aa3a9dcc150a1660757",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-in.png": {
+  "f": "72503509aade0f2e5412",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ks.png": {
+  "f": "3c05c22a5ef2e31f2e1b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ky.png": {
+  "f": "3039b143002e67509194",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-la.png": {
+  "f": "b099cbe014fa4271ea9b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ma.png": {
+  "f": "74da2e5e8f97b3e69308",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-md.png": {
+  "f": "5598c7105dd64c076b60",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-me.png": {
+  "f": "f67351f5add8d7b7159c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-mi.png": {
+  "f": "39113915ce40b1adf63f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-mn.png": {
+  "f": "4b042f56439d99473336",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-mo.png": {
+  "f": "aa40a9b614d172cf57a9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ms.png": {
+  "f": "9fd661775da1b5036582",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-mt.png": {
+  "f": "5cbee09d83db0f290a5c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nc.png": {
+  "f": "2b255732b1351abed0aa",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nd.png": {
+  "f": "d91fd6ce97b4149eb7ec",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ne.png": {
+  "f": "138f4d73bf60da49439c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nh.png": {
+  "f": "66badfbb6502e7b647da",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nj.png": {
+  "f": "78aa93c0c01495b2f83a",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nm.png": {
+  "f": "26ef1b9f989fb417fbfe",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-nv.png": {
+  "f": "0987e126248806d72b0f",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ny.png": {
+  "f": "9c2ce0b26483a1d19104",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-oh.png": {
+  "f": "133bd359d706949bd0e6",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ok.png": {
+  "f": "2278724587bc3cd5ac9d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-or.png": {
+  "f": "eed3f726e4fd0a31a8c9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-pa.png": {
+  "f": "414e2d76dafa99ab0467",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ri.png": {
+  "f": "45f6519b9ac6063ae2ef",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-sc.png": {
+  "f": "793e36832c0fffa333e2",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-sd.png": {
+  "f": "8443369dc51861d00cca",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-tn.png": {
+  "f": "4aa0087412c3ab46f9eb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-tx.png": {
+  "f": "ba6652c2f998eea319a4",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-ut.png": {
+  "f": "e19da80d3f1321e005ab",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-va.png": {
+  "f": "8e68a7f22f2d594ecdf7",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-vt.png": {
+  "f": "974e687c028fbfe49062",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-wa.png": {
+  "f": "db9609ab0f379e5d83e9",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-wi.png": {
+  "f": "3e3c1fca901908b4faf8",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-wv.png": {
+  "f": "561fadf669d518715c02",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/us-wy.png": {
+  "f": "a3767cc41f8716015381",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/uy.png": {
+  "f": "f6bf866ce1e8049bdba0",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/uz.png": {
+  "f": "98fdf2b94bff7b3780cb",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/va.png": {
+  "f": "ed5be92415be89ef6364",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/vc.png": {
+  "f": "a7d3aeca47c6fd738c7c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ve.png": {
+  "f": "b3ed05a330e115995d59",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/vg.png": {
+  "f": "10c9d1f90b1e6855979e",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/vi.png": {
+  "f": "a24aaefac46faa41f45c",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/vn.png": {
+  "f": "503618026bb9d1a2ccad",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/vu.png": {
+  "f": "b3c866a685d87cdb6a49",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/wf.png": {
+  "f": "17fcc9cd91bd38e4fd5b",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ws.png": {
+  "f": "82e89cdb90742c57b1de",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/xk.png": {
+  "f": "3ddb4e45971e0e7a7079",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/ye.png": {
+  "f": "56a12ebebb7e14f3909d",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/yt.png": {
+  "f": "1848d592beda44cd0216",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/za.png": {
+  "f": "340f547f504d59275513",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/zm.png": {
+  "f": "4e9db7543925856872ca",
+  "type": "image/png"
+ },
+ "https://flagcdn.com/w40/zw.png": {
+  "f": "3a7d5bc154a93564839f",
+  "type": "image/png"
  }
 }
