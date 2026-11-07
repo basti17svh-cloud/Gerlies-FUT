@@ -234,6 +234,12 @@ MORPHS = [(n, d * HEAD_MASK if n.startswith('race_') else d) for n, d in MORPHS]
 # smaller as a whole.
 JOINTS_F = np.array([joint(b[2], VF) for b in BONES], np.float32)
 MORPHS.append(('female', (VF - V) - W @ (JOINTS_F - JOINTS)))
+# Body build (V21.346): one signed morph, +1 a heavier, stronger player
+# (centre-back, striker), -1 a slight, lean one (winger, playmaker). Also
+# taken relative to its own joints, so the skeleton never moves.
+VB = V0 + macro(muscle=1., weight=.62, height=.55, proportions=.9)
+JOINTS_B = np.array([joint(b[2], VB) for b in BONES], np.float32)
+MORPHS.append(('build', (VB - V) - W @ (JOINTS_B - JOINTS)))
 
 
 def top4(w):
