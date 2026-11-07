@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21359';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21360';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1929,7 +1929,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const carrierState=carrierPoseState(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
-   importedMotionFrame.plusWeight=0;for(const frame of squadMotionFrames)frame.plusWeight=0;
+   importedMotionFrame.plusWeight=0;importedMotionFrame.tackle=null;for(const frame of squadMotionFrames){frame.plusWeight=0;frame.tackle=null}
+   // V21.360: the sliding defender's imported body follows a captured slide tackle.
+   const markTackle=(i,contact,weight)=>{const f=i===0?importedMotionFrame:squadMotionFrames[i];if(f&&weight>.001)f.tackle={contact,weight}};
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
     // V21.297: ease from the (smoothed) standing facing into the running
@@ -2020,6 +2022,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      if(isContactDemo(defenderAction))contactPose=applyContactStage(p,defenderAction,
       labDuelPreview?time:defenderAction==='slide_attempt'?time-.8:time,labDuelPreview,
       Math.max(0,1-dist/8));
+     if(defenderAction==='slide_attempt')markTackle(i,SLIDE_CONTACT+(labDuelPreview?0:.8),labDuelPreview?1:Math.max(0,1-dist/8));
     }
     // V21.77 final grounded stance pass. On the already-authored joint rig,
     // not on player roots or the ball. A tackle wins over locomotion footwork.
@@ -2030,7 +2033,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }
     // One contact pose at the actual possession change, then a complete recovery.
     if(winningDefender){
-     if(sequence.startsWith('defense_slide_tackle'))contactPose=applyContactStage(p,'slide_attempt',time-(4.4-SLIDE_CONTACT),true,1);
+     if(sequence.startsWith('defense_slide_tackle')){contactPose=applyContactStage(p,'slide_attempt',time-(4.4-SLIDE_CONTACT),true,1);markTackle(i,4.4,1)}
      else{
       const touch=smooth((time-4.12)/.25)*(1-smooth((time-4.48)/.34));
       p.legs[1].rotation.x=mix(p.legs[1].rotation.x,-.62,touch);

@@ -84,3 +84,17 @@ test('striker capture: header around the shot time, overhead kick lands and gets
  layer.apply(5.95,'bicycle');scene.updateMatrixWorld(true);
  assert.ok(Math.abs(at('Head').y-at('pelvis').y)<.4,'on the back after landing');
 });
+
+test('tackle capture: boot leads at contact, lies on the turf, up again, off without a tackle',async()=>{
+ const {tackleCaptureWeights,tackleCaptureTime,createTackleCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+ const clip=FOOTERA_MIXAMO.clips.slide_tackle;assert.ok(clip);
+ assert.ok(Math.abs(tackleCaptureTime(4.4,4.4,clip.keys)-clip.keys.contact)<1e-9);
+ assert.equal(tackleCaptureWeights(3.5,4.4).body,0);assert.equal(tackleCaptureWeights(6,4.4).body,0,'up again');
+ assert.equal(tackleCaptureWeights(4.4,4.4).body,1);
+ const {bones,player,scene,at}=rig(0),layer=createTackleCaptureLayer(bones,player);
+ assert.equal(layer.apply(4.4,null).clip,'none');
+ layer.apply(4.4,{contact:4.4,weight:1});scene.updateMatrixWorld(true);
+ assert.ok(at('foot_r').z-at('pelvis').z>.4,'leading boot ahead of the hips');
+ assert.ok(at('Head').y-at('pelvis').y<.5,'leaning back into the slide');
+ assert.equal(layer.apply(4.4,{contact:4.4,weight:0}).clip,'none','far from the ball: no slide');
+});

@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights} from './3d-mocap-mixamo-layer.mjs?v=21359';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21360';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -558,6 +558,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const keeperBody=createKeeperCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.359: captured header and overhead kick (Mixamo) for the scorer.
  const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.360: captured slide tackle (Mixamo) for the sliding defender.
+ const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
  const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  playerRoot.updateMatrixWorld(true);
@@ -712,6 +714,11 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     const pin=w.legs*contact*contact*(3-2*contact);
     pinFoot(kicking,pin);kickState.pin=1-w.legs+pin;
    }
+  }
+  // The whole body slides like the capture, laid on the turf while down.
+  if(kickCapture&&!keeperRole&&!acro&&info.tackle){
+   const k=tackleBody.apply(frameTime,info.tackle);
+   if(k.ground>.001)groundKeeper(k.ground);
   }
   let keeperHands=1;
   if(keeperRole&&keeperCapture&&info.keeperDive){

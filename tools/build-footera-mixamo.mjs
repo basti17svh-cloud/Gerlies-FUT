@@ -33,6 +33,7 @@ const CLIPS={
  keeper_ready:{file:'goalkeeper idle.fbx',side:0,loop:true,keys:{}},
  header:{file:'header soccerball.fbx',side:0,keys:{load:.5,contact:.95,settle:1.8}},
  bicycle:{file:'scissor kick.fbx',side:0,keys:{takeoff:.3,contact:.8,land:1.2,rise:1.9,up:2.6}},
+ slide_tackle:{file:'soccer tackle (2).fbx',side:0,keys:{takeoff:.2,contact:.55,rise:1.0,up:1.7}},
 };
 const RATE=30;
 const dir=process.argv[2];
