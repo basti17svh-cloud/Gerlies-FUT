@@ -7,8 +7,8 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21304';
-import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21296';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21348';
+import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21348';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21296';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21296';
@@ -1627,7 +1627,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const keeperKit={shirt:kits.keeper,shirtSecondary:kits.keeper,pattern:'solid',shorts:kits.keeper,socks:kits.keeper};
      importedKeeper=mountFooteraPlayerModel(keeper.root,keeper,keeperKit,event.keeperName||'Goalkeeper',
       !weak,squadVariant,null,{number:Number.isInteger(keeperNumber)&&keeperNumber>=1&&keeperNumber<=99?keeperNumber:1,
-       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417',custom:event.keeperLook||null});
+       skinTone:resolvePlayerSkinTone(event.keeperSkinTone),shirtName:event.keeperName?undefined:'',boots:'#111417',custom:event.keeperLook||null,keeper:true});
      if(!importedKeeper)throw new Error('GLB unavailable on goalkeeper');
      staged.push(importedKeeper);
      players.forEach(p=>hideOriginal(p));
@@ -1844,6 +1844,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let clipEnabled=true;
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
+  const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
   // Two existing skinned actors can share the verified CC0 sampler without
@@ -2134,6 +2135,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    if(motion2Active)applyWinger2(striker,time,sequence,finish,motion2CutAnchor,motion2ShotAnchor,event.playerStyles);
    // 2.6: rebalance after the kick; never change the canonical 5.4s contact.
    if(pilotMotion)balanceSample=applyFinishBalance(striker,time,finish);
+   for(const frame of squadMotionFrames)if(frame)frame.kick=null;
    const authoredPassWindows=getPlay(sequence)?playPassWindows(getPlay(sequence)):DEFENSIVE_SCENES.includes(sequence)?[
     {actor:1,start:.41,end:.90},
     ...(['defense_interception','defense_press_recovery'].includes(sequence)?[{actor:0,start:2.96,end:3.45}]:[])
@@ -2155,6 +2157,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     if(pilotMotion)applyDeliveryContinuity(passer,u,sequence,event.creatorStyles);
     const passerIndex=players.indexOf(passer),finalPasser=getPlay(sequence)?playTouches(getPlay(sequence)).at(-1)?.passer:1,foot=passerIndex===finalPasser?(event.creatorFoot||event.playerFeet?.[passerIndex]):event.playerFeet?.[passerIndex];
     applyFootedPose(passer,time,foot,from,to);
+    // Real captured pass (short CMU kick) on the passer's body.
+    if(passerIndex>0&&squadMotionFrames[passerIndex])squadMotionFrames[passerIndex].kick={finish:'pass',foot:foot==='Left'?'Left':'Right',contact:from+.24};
    }
    // The saved result in a sandbox contact demo is NOT a goalkeeper save or goal.
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
@@ -2325,6 +2329,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const h=players[0].root.rotation.y;players[0].root.position.x+=.21*Math.cos(h)*w;players[0].root.position.z-=.21*Math.sin(h)*w;
     importedMotionFrame.footActionWeight=w;
    }
+   // Real captured kick on the scorer's body (CMU); the boots stay pinned.
+   importedMotionFrame.kick=event.type!=='ball_won'&&!extended?kickInfo:null;
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
