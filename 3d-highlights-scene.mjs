@@ -1292,10 +1292,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
+   // V21.351: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
    const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),mat('#ffffff'),specs.length);
    const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),mat('#ffffff',{vertexColors:true}),specs.length);
-   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6)),mat('#ffffff'),specs.length*2);
-   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6)),mat('#ffffff'),specs.length*2);
+   const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),mat('#ffffff'),specs.length*2);
+   const legs=new THREE.InstancedMesh(geo('crowd-leg-human',()=>new THREE.CylinderGeometry(.064,.052,.50,6,1,true)),mat('#ffffff'),specs.length*2);
    for(const mesh of [torso,head,arms,legs]){mesh.instanceMatrix.setUsage(dynamic?THREE.DynamicDrawUsage:THREE.StaticDrawUsage);mesh.frustumCulled=false;scene.add(mesh);track(mesh)}
    return{torso,head,arms,legs,specs,dynamic};
   }
@@ -2485,6 +2486,7 @@ export function play(event,signal){
   const stageFrame=host?.closest('#match,#onlineMatch')||document.getElementById('match');
   if(!host||signal.aborted||document.hidden){resolve('skipped');return}
   let renderer,world,observer,raf,timer,done=false,last=0,slowFrames=0,frames=0,verySlowFrames=0,impactSent=false;
+  let lastPresented=0,capHighRefresh=true;try{capHighRefresh=globalThis.localStorage?.getItem('footera-3d-fps')!=='max'}catch(_){}
   const previousFocus=document.activeElement;
   const layer=document.createElement('div');layer.className='fh3d';layer.setAttribute('data-defense-action',event.defenderAction||'jockey');layer.setAttribute('data-keeper-action',event.keeperAction||'classic');layer.setAttribute('role','region');layer.setAttribute('aria-label','Footera 3D-Highlight');
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','3D-Fußballszene');layer.append(canvas);
@@ -2601,6 +2603,12 @@ export function play(event,signal){
    }
    function frame(now){
     if(done)return;
+    // V21.351: 90/120/144 Hz screens called this up to 144 times a second. The
+    // playback is time based, so 60 pictures per second look the same and halve
+    // CPU/GPU work and battery use there. 60/90 Hz screens draw every frame.
+    // Opt-out for QA: localStorage footera-3d-fps=max.
+    if(capHighRefresh&&lastPresented&&now-lastPresented<9.6){raf=requestAnimationFrame(frame);return}
+    lastPresented=now;
     try{
      if(replayState){replayFrame(now);return}
      const sample=playback.tick(now);

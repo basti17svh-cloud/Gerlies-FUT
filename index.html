@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.347</title>
+<title>Footera V21.351</title>
 <link rel="stylesheet" href="./footera-app.css?v=21340">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
@@ -134,7 +134,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.347</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.351</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -713,7 +713,7 @@
 
 
 <script src="./footera-weather.js?v=21340"></script>
-<script src="./3d-highlights.js?v=21341"></script>
+<script src="./3d-highlights.js?v=21351"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=21271"></script>
 <script src="./footera-match-actions.js?v=21303"></script>
@@ -721,7 +721,7 @@
 <script src="./footera-cosmetic-evolutions.js?v=21335"></script>
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
-<script src="./footera-app.js?v=21347"></script>
+<script src="./footera-app.js?v=21351"></script>
 <script src="./season-system.js?v=21297"></script>
 <script src="./competition-system.js?v=21333"></script>
 <script src="./champions-system.js?v=21318"></script>
@@ -757,6 +757,7 @@ window.addEventListener("pageshow",()=>{if(promoEventClockId!==null)syncPromoEve
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&promoEventClockId!==null)syncPromoEventClock()});
 window.FooteraPaidWallet?.start({render:renderWallet,grant:recoverFooteraPaidPackOrders});
 initFooteraBootIntro();
+startFooteraBootDuringIntro();
 FOOTERA_INTRO_DONE.then(()=>boot()).then(()=>{completeGerliesStartup();window.FooteraShare?.start();recoverFooteraLiveCards().catch(console.warn);if(state.friends.some(f=>f.onlineUid))window.FooteraOnline?.init()}).catch(e=>{console.error("Footera Start fehlgeschlagen",e);const gate=$("dbGate");if(gate)gate.style.display="grid";if($("dbTitle"))$("dbTitle").textContent="Start gerade nicht möglich";if($("dbText"))$("dbText").textContent="Der Start wurde unterbrochen. Bitte erneut versuchen.";if($("dbRetry"))$("dbRetry").style.display="block";if($("dbOffline"))$("dbOffline").style.display="block"});
 </script>
 </body>
