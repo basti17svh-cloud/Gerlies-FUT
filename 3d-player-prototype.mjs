@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21353';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights} from './3d-mocap-mixamo-layer.mjs?v=21357';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -556,6 +556,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // V21.353: captured goalkeeping (Mixamo) on the human keeper; '0' switches it off.
  let keeperCapture=!makehuman;try{keeperCapture=keeperCapture&&globalThis.localStorage?.getItem('footera-3d-keeper-capture')!=='0'}catch(_){}
  const keeperBody=createKeeperCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.357: captured header and overhead kick (Mixamo) for the scorer.
+ const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
  const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  playerRoot.updateMatrixWorld(true);
@@ -666,8 +668,11 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // V21.208 overhead kick: the whole body turns backwards over the pelvis and
   // the legs scissor in player space; the planted-boot IK stays off meanwhile.
   const acro=!keeperRole&&info.acrobatic?.weight>0?info.acrobatic:null;
+  const strikerFinish=kickCapture&&!keeperRole&&['header','bicycle'].includes(info.kick?.finish)?info.kick.finish:'';
+  // The captured overhead kick brings its own turn over the back.
+  const capturedTurn=strikerFinish==='bicycle'?strikerCaptureWeights('bicycle',frameTime).body:0;
   if(acro){
-   const w=acro.weight,pitch=acro.pitch*w,hipHeight=.95;
+   const w=acro.weight,pitch=acro.pitch*w*(1-capturedTurn),hipHeight=.95;
    acroTurn.setFromAxisAngle(acroAxis,pitch);
    normalized.quaternion.copy(acroTurn).multiply(authoredFacing);
    normalized.position.set(0,hipHeight+acro.lift*w-hipHeight*Math.cos(pitch),acro.back*w-hipHeight*Math.sin(pitch));
@@ -679,6 +684,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     apply('foot_'+side,.25*w,0,0);
     apply('upperarm_'+side,0,0,(i?1:-1)*acro.arms*w);
    }
+  }
+  if(strikerFinish){
+   const k=strikerBody.apply(frameTime,strikerFinish);
+   if(k.ground>.001)groundKeeper(k.ground);
   }
   if(!acro||acro.weight<.5)matchFeet();
   // V21.297: the captured stride owns the swinging leg (knee drive, heel

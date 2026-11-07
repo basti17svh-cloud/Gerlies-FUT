@@ -66,3 +66,21 @@ test('keeper capture is deterministic and off without a dive',()=>{
  assert.ok(a.at('hand_l').distanceTo(b.at('hand_l'))<1e-9);
  assert.equal(la.apply(6.5,null).clip,'none');
 });
+
+test('striker capture: header around the shot time, overhead kick lands and gets up',async()=>{
+ const {strikerCaptureWeights,strikerCaptureTime,createStrikerCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+ for(const name of ['header','bicycle'])assert.equal(atob(FOOTERA_MIXAMO.clips[name].bytes).length,FOOTERA_MIXAMO.clips[name].frames*20*3*2,name);
+ assert.equal(strikerCaptureWeights('header',5.4).legs,0,'the header keeps the authored jump');
+ assert.ok(strikerCaptureWeights('header',5.4).body>.85);
+ assert.equal(strikerCaptureWeights('normal',5.4).body,0);
+ assert.equal(strikerCaptureWeights('bicycle',7.2).body,0,'up again before the celebration');
+ const hk=FOOTERA_MIXAMO.clips.header.keys,bk=FOOTERA_MIXAMO.clips.bicycle.keys;
+ assert.ok(Math.abs(strikerCaptureTime('header',5.4,hk)-hk.contact)<1e-9);
+ assert.ok(Math.abs(strikerCaptureTime('bicycle',5.4,bk)-bk.contact)<1e-9);
+ // At the overhead contact the kicking boot is above the head; lying after the landing.
+ const {bones,player,scene,at}=rig(0),layer=createStrikerCaptureLayer(bones,player);
+ layer.apply(5.4,'bicycle');scene.updateMatrixWorld(true);
+ assert.ok(at('foot_r').y>at('Head').y,'boot over the head at contact');
+ layer.apply(5.95,'bicycle');scene.updateMatrixWorld(true);
+ assert.ok(Math.abs(at('Head').y-at('pelvis').y)<.4,'on the back after landing');
+});
