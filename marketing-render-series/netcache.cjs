@@ -15,4 +15,9 @@ for(const id of ids){
  await p.waitForFunction(()=>[...document.querySelectorAll("#scb img")].every(i=>i.complete),null,{timeout:30000}).catch(()=>{});await p.waitForTimeout(2500);
  await (await p.$('#scb .card-shell')||await p.$('#scb > *')).screenshot({path:`${OUT}/${id}.png`,omitBackground:true});
 }
+
+const extra=await p.evaluate(ids=>{const out=new Set();for(const id of ids){const pl=P_BY_ID.get(String(id));if(!pl)continue;try{const u=apiSportsTeamLogo(pl.team);if(u)out.add(u)}catch(_){}}return [...out]},ids);
+let codes={};try{codes=await (await fetch('https://flagcdn.com/en/codes.json')).json()}catch(e){console.log('codes',e.message)}
+for(const u of [...extra,...Object.keys(codes).map(c=>`https://flagcdn.com/w40/${c}.png`)]){try{const r=await fetch(u);if(!r.ok)continue;const b=Buffer.from(await r.arrayBuffer());const f=crypto.createHash('sha1').update(u).digest('hex').slice(0,20);fs.writeFileSync(NET+'/'+f,b);netIndex[u]={f,type:r.headers.get('content-type')||'image/png'}}catch(e){}}
+fs.writeFileSync(NET+'/index.json',JSON.stringify(netIndex,null,1));console.log('extra',extra.length,Object.keys(codes).length);
 console.log('done',ids.length);await b.close();srv.close()});
