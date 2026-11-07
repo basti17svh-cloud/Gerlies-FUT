@@ -69,14 +69,16 @@ const MARCO_FOUNDER_SAVE_ID="GF-7D87D08A06104571",MARCO_FOUNDER_PLAYER_ID="foote
 const MARCO_FOUNDER_BASE=Object.freeze({id:MARCO_FOUNDER_PLAYER_ID,name:"M. Gerlach",fullName:"Marco Gerlach",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"Schweinfurt Rangers 09",league:"Footera",height:178,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,face:"./assets/footera/founder-marco-portrait.webp",clubLogo:"./assets/footera/schweinfurt-rangers-09.webp",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
 const NIKLAS_FOUNDER_USER_ID="4af57ea2-9b89-44f7-b7ca-ffdbb7400317",NIKLAS_FOUNDER_PLAYER_ID="footera-founder-niklas-bergstraesser",NIKLAS_FOUNDER_PACK_ID="founder-niklas";
 const NIKLAS_FOUNDER_BASE=Object.freeze({id:NIKLAS_FOUNDER_PLAYER_ID,name:"N. Bergsträßer",fullName:"Niklas Bergsträßer",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"Wormatia Worms",league:"Footera",height:185,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,playstyles:"Power Header, First Touch, Power Shot",playstylesPlus:"Aerial",face:"./assets/footera/founder-niklas-portrait.webp",clubLogo:"./assets/footera/wormatia-worms.png",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
+// Founder checks run for every player on each start; cache the accent-free lowercase name.
+function founderNameKey(v){const raw=String(v||""),cache=founderNameKey.cache||(founderNameKey.cache=new Map());let key=cache.get(raw);if(key===undefined){key=raw.normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();if(cache.size>=60000)cache.clear();cache.set(raw,key)}return key}
 function isNiklasFounderItem(item){return String(item?.pid||"")===NIKLAS_FOUNDER_PLAYER_ID}
-function isNiklasBase(p){return String(p?.id||"")===NIKLAS_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(niklas|n\.) bergstr(aesser|aßer)$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))}
+function isNiklasBase(p){return String(p?.id||"")===NIKLAS_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(niklas|n\.) bergstr(aesser|aßer)$/.test(founderNameKey(v)))}
 function niklasFounderItem(){return{uid:"footera-founder-niklas",pid:NIKLAS_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerUserId:NIKLAS_FOUNDER_USER_ID}}
 // Max Wittenberg (FSV Hohenroth) uses the ruby Founder design and is bound to his save ID.
 const MAX_FOUNDER_SAVE_ID="GF-35FADCCBA5AD4E15",MAX_FOUNDER_PLAYER_ID="footera-founder-max-wittenberg",MAX_FOUNDER_PACK_ID="founder-max";
 const MAX_FOUNDER_BASE=Object.freeze({id:MAX_FOUNDER_PLAYER_ID,name:"M. Wittenberg",fullName:"Max Wittenberg",ovr:88,position:"ST",alt:"CAM",nation:"Germany",team:"FSV Hohenroth",league:"Footera",height:175,preferredFoot:"Right",skillMoves:5,weakFoot:5,pac:91,sho:89,pas:82,dri:88,def:45,phy:84,playstyles:"Finesse Shot, Technical, Incisive Pass",playstylesPlus:"Low Driven Shot",face:"./assets/footera/founder-max-portrait.webp",clubLogo:"./assets/footera/fsv-hohenroth.png",leagueLogo:"./assets/footera/emblem.png",source:"footera-founder"});
 function isMaxFounderItem(item){return String(item?.pid||"")===MAX_FOUNDER_PLAYER_ID}
-function isMaxBase(p){return String(p?.id||"")===MAX_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(max|m\.) wittenberg$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))}
+function isMaxBase(p){return String(p?.id||"")===MAX_FOUNDER_PLAYER_ID||[p?.name,p?.fullName].some(v=>/^(max|m\.) wittenberg$/.test(founderNameKey(v)))}
 function maxFounderItem(){return{uid:"footera-founder-max",pid:MAX_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MAX_FOUNDER_SAVE_ID}}
 function ownsFounderRule(s,rule){return !!rule&&(rule.userId?!!s.profile?.founderOnlineUserId&&s.profile.founderOnlineUserId===rule.userId:!!rule.saveId&&s.profile?.saveId===rule.saveId)}
 // Bind this online-only entitlement after the existing authenticated session loads.
@@ -89,8 +91,8 @@ function syncFounderOnlineOwner(userId){
 }
 function isFounderItem(item){return [FOUNDER_PLAYER_ID,MARCO_FOUNDER_PLAYER_ID,NIKLAS_FOUNDER_PLAYER_ID,MAX_FOUNDER_PLAYER_ID].includes(String(item?.pid||""))}
 function isMarcoFounderItem(item){return String(item?.pid||"")===MARCO_FOUNDER_PLAYER_ID}
-function isBastianBase(p){return [p?.fullName,p?.name].some(v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()==="bastian gerlach")||String(p?.id||"")===FOUNDER_PLAYER_ID}
-function isMarcoBase(p){return [p?.fullName,p?.name].some(v=>/^(marco|m\.) gerlach$/.test(String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase()))||String(p?.id||"")===MARCO_FOUNDER_PLAYER_ID}
+function isBastianBase(p){return [p?.fullName,p?.name].some(v=>founderNameKey(v)==="bastian gerlach")||String(p?.id||"")===FOUNDER_PLAYER_ID}
+function isMarcoBase(p){return [p?.fullName,p?.name].some(v=>/^(marco|m\.) gerlach$/.test(founderNameKey(v)))||String(p?.id||"")===MARCO_FOUNDER_PLAYER_ID}
 function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)||isNiklasBase(p)||isMaxBase(p)}
 function founderItem(){return{uid:"footera-founder-bastian",pid:FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:FOUNDER_SAVE_ID}}
 function marcoFounderItem(){return{uid:"footera-founder-marco",pid:MARCO_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MARCO_FOUNDER_SAVE_ID}}
@@ -3429,7 +3431,7 @@ const API_SPORTS_TEAM_IDS={
  "rc strasbourg alsace":95,"strasbourg":95,"toulouse fc":96,"toulouse":96,"fc lorient":97,"lorient":97,"le havre ac":111,"le havre":111
 };
 const CLUB_IDENTITY_STOP=new Set(["fc","cf","afc","ac","sc","ssc","as","sv","vfb","vfl","tsg","rc","fk","sk","bk","club","football","futbol","calcio","the"]);
-function clubIdentityKey(v){return normalizeKey(v).split(" ").filter(x=>x&&!CLUB_IDENTITY_STOP.has(x)).join(" ")}
+function clubIdentityKey(v){const raw=String(v||""),cache=clubIdentityKey.cache||(clubIdentityKey.cache=new Map());let key=cache.get(raw);if(key===undefined){key=normalizeKey(raw).split(" ").filter(x=>x&&!CLUB_IDENTITY_STOP.has(x)).join(" ");if(cache.size>=20000)cache.clear();cache.set(raw,key)}return key}
 // Logos the game ships itself (scripts/fetch-league-logos.cjs), keyed by EA's league name.
 const LOCAL_LEAGUE_LOGOS={
  "arkema pl":"./assets/leagues/arkema-pl.png",
@@ -3446,10 +3448,13 @@ const LOCAL_LEAGUE_LOGOS={
  "sverige liga":"./assets/leagues/sverige-liga.png"
 };
 // The game shows some leagues under their full name (LEAGUE_NAME_ALIASES); those find the logo too.
+const LOCAL_LEAGUE_LOGO_CACHE=new Map();
 function localLeagueLogo(league){
  const key=normalizeKey(league);if(LOCAL_LEAGUE_LOGOS[key])return LOCAL_LEAGUE_LOGOS[key];
- for(const [alias,name] of Object.entries(LEAGUE_NAME_ALIASES))if(LOCAL_LEAGUE_LOGOS[alias]&&normalizeKey(name)===key)return LOCAL_LEAGUE_LOGOS[alias];
- return""
+ if(LOCAL_LEAGUE_LOGO_CACHE.has(key))return LOCAL_LEAGUE_LOGO_CACHE.get(key);
+ let found="";
+ for(const [alias,name] of Object.entries(LEAGUE_NAME_ALIASES))if(LOCAL_LEAGUE_LOGOS[alias]&&normalizeKey(name)===key){found=LOCAL_LEAGUE_LOGOS[alias];break}
+ LOCAL_LEAGUE_LOGO_CACHE.set(key,found);return found
 }
 function apiSportsLeagueLogo(league){const id=API_SPORTS_LEAGUE_IDS[normalizeKey(league)];return id?`https://media.api-sports.io/football/leagues/${id}.png`:""}
 const API_SPORTS_TEAM_ID_CACHE=new Map();
@@ -4047,7 +4052,9 @@ function cardAltPositionsHTML(p,shownPosition=p?.position){
  const text=positions.join(" · "),label=`Weitere spielbare Positionen: ${text}`;
  return`<div class="card-alt-positions" aria-label="${esc(label)}" title="${esc(label)}">${esc(text)}</div>`
 }
-function normalizeKey(v){return String(v||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+// Startup normalises ~20.000 players with the same few thousand club, league and name strings.
+// Remember results (pure string function) so a phone does not repeat the Unicode work millions of times.
+function normalizeKey(v){const raw=String(v||""),cache=normalizeKey.cache||(normalizeKey.cache=new Map());let key=cache.get(raw);if(key===undefined){key=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(cache.size>=60000)cache.clear();cache.set(raw,key)}return key}
 
 const TOP5_CLUB_LEAGUES={
  "Bundesliga":[
@@ -4413,10 +4420,16 @@ function finishDbLoad(full=true){
  applyPreferredPlayerNames(PLAYERS);
  applyPlayerTraits(PLAYERS);if(typeof FooteraPlayStyles!=="undefined")FooteraPlayStyles.enrichPlayers(PLAYERS);normalizePlayerAffiliations(PLAYERS);rebuildPlayerRuntimeIndexes();applyBadgeCacheToPlayers();rebuildMarketFilterIndex();
  P_BY_ID=new Map(PLAYERS.map(p=>[String(p.id),p]));MARKET_META_MODEL_SIZE=0;restoreSyntheticPlayerIds();reconcileStoryPassPlayers();startPromoEventClock();$("dbBar").style.width="100%";$("dbPercent").textContent="100%";
- if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length||(state.pendingChemBoosts||[]).length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();scheduleIdleTask(enrichVisibleSquadAssets,2200);setTimeout(startIconPortraitPrewarm,1200);scheduleIdleTask(prewarmLiveTotw,4500)},250)}
+ if(full){$("dbTitle").textContent="Bereit für den Anpfiff";$("dbText").textContent="Dein Club wartet auf dich.";$("dbWarn").textContent="";renderHeaderClubName();$('homeDb').textContent="Deine Spieldaten sind bereit. Du kannst sie hier jederzeit aktualisieren.";fillLeagueFilter();updateTotwMarketOption();FOOTERA_INTRO_DONE.then(()=>setTimeout(()=>{$("dbGate").style.display="none";if(!state.onboarded){prepareOnboarding()}const directRewards=grantDirectRewards();renderAll();if(state.onboarded)maybePromptForUsername();if(pendingPack.length||(state.pendingChemBoosts||[]).length)finishPack();if(directRewards.length)setTimeout(()=>toast(`${directRewards.map(r=>r.label).join(" · ")} wurde deinem Store gutgeschrieben.`),450);prioritizeVisibleSquadBadges();scheduleIdleTask(enrichVisibleSquadAssets,2200);setTimeout(startIconPortraitPrewarm,1200);scheduleIdleTask(prewarmLiveTotw,4500)},250))}
  else{$("dbGate").classList.add("has-error");$("dbTitle").textContent="Start gerade nicht möglich";$("dbText").textContent="Deine Spieldaten konnten nicht vollständig geladen werden.";$("dbWarn").textContent="Bitte versuche es erneut. Dein Club und dein Fortschritt bleiben erhalten.";$("dbRetry").style.display="block";$("dbReset").style.display="block";$("dbOffline").style.display="block";renderHeaderClubName();$('homeDb').textContent="Spieldaten derzeit nicht verfügbar. Bitte erneut versuchen."}
 }
+// The data work starts while the intro video plays (startFooteraBootDuringIntro); every caller shares one run.
 async function boot(){
+ if(!FOOTERA_BOOT_RUN)FOOTERA_BOOT_RUN=runFooteraBoot();
+ return FOOTERA_BOOT_RUN
+}
+var FOOTERA_BOOT_RUN=null;
+async function runFooteraBoot(){
  await Promise.all([loadVerifiedBadges(),loadPlayerTraits()]);
  try{await syncDatabase(false)}catch(e){console.error(e);await syncDatabase(true)}
 }
@@ -9430,6 +9443,16 @@ function takeGerliesUpdateResume(){
  }catch(e){return null}
 }
 const GERLIES_UPDATE_RESUME=takeGerliesUpdateResume();
+// Load and prepare the player data while the intro plays, so the club is ready when the video ends.
+// Start once the video runs (play() must not wait for this CPU work); without intro start at once.
+function startFooteraBootDuringIntro(){
+ const intro=$("bootIntro"),video=$("bootIntroVideo");
+ let started=false;const go=()=>{if(started)return;started=true;boot().catch(()=>{})};
+ if(!intro||!video){go();return}
+ video.addEventListener("playing",()=>setTimeout(go,120),{once:true});
+ video.addEventListener("error",go,{once:true});
+ setTimeout(go,1400)
+}
 function initFooteraBootIntro(){
  const intro=$("bootIntro"),video=$("bootIntroVideo"),skip=$("bootIntroSkip");
  if(!intro||!video){completeFooteraIntroGate();return}
@@ -9482,7 +9505,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.356";
+const GFUT_BUILD="V21.358";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9540,7 +9563,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21356",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21358",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
