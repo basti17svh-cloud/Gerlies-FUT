@@ -1433,3 +1433,30 @@ body,.app,main,.view,.section,.headline{min-width:0;max-width:100%}
 .logline-team{display:inline-block;max-width:9em;margin-right:6px;padding:1px 6px;border-radius:6px;vertical-align:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:900;letter-spacing:.02em;text-transform:uppercase;background:rgba(121,242,169,.16);color:#a8ffd0}
 .logline-away .logline-team{background:rgba(255,138,138,.16);color:#ffc2c2}
 #match .match-weather{color:#d9ecff;letter-spacing:.04em;white-space:nowrap}
+/* V21.350 live commentary ticker, halftime tactic check, moves in the match report */
+#match .match-ticker{margin:8px 0 10px;padding:8px 12px;border:1px solid #ffffff1c;border-radius:12px;background:#07130e;display:grid;gap:5px}
+#match .match-ticker[hidden]{display:none}
+#match .match-ticker-line{margin:0;display:flex;gap:8px;align-items:baseline;font-size:12px;line-height:1.4;color:#e8f2ec}
+#match .match-ticker-line time{flex:0 0 auto;min-width:26px;color:#d8ff3e;font-weight:900;font-size:11px}
+#match .match-ticker-line.old{opacity:.58;font-size:11px}
+#match .match-ticker-line.goal span{color:#ffe27a;font-weight:800}
+#match .match-ticker-line.note span,#match .match-ticker-line.analysis span{color:#a9e6ff}
+#match .match-ticker-line.analysis time{color:#a9e6ff}
+#match .match-ticker-line.red span{color:#ff9a9a}
+#match .match-tactic-check{margin-top:9px;padding-top:8px;border-top:1px solid #ffffff1f}
+#match .match-tactic-check b{display:block;color:#d8ff3e;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+#match .match-tactic-check span{display:block;margin-top:4px;color:#cbd6c5;font-size:11px;line-height:1.45}
+#match .match-tactic-check span.tip{color:#edffb1}
+.match-report-moves{margin:12px 0;padding:12px;border:1px solid #ffffff17;border-radius:14px;background:#0b1712}
+.match-moves-head{display:flex;justify-content:space-between;font-size:11px;color:#9fb0a8;margin-bottom:6px;gap:8px}
+.match-moves-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45%}
+.match-move-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:5px 0}
+.match-move-row>span{font-size:11px;color:#e8f2ec;text-align:center;min-width:92px}
+.match-move-row .bar{position:relative;height:18px;border-radius:6px;background:#ffffff0d;overflow:hidden}
+.match-move-row .bar i{position:absolute;top:0;bottom:0;background:#2fbf71}
+.match-move-row .bar.home i{right:0}
+.match-move-row .bar.away i{left:0;background:#d2525c}
+.match-move-row .bar b{position:relative;display:block;padding:0 6px;font-size:11px;line-height:18px;color:#fff}
+.match-move-row .bar.home b{text-align:right}
+.match-move-row .bar b em{font-style:normal;color:#ffe27a;font-weight:700}
+.match-move-row.press .bar{background:transparent}

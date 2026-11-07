@@ -1,4 +1,4 @@
-// V21.355: faster start, smaller updates, less 3D work on high-refresh screens.
+// V21.358: faster start, smaller updates, less 3D work on high-refresh screens.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.join(__dirname,'..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
