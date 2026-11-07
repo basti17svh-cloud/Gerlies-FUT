@@ -134,7 +134,7 @@
 
  function countdown(end){
   const ms=Math.max(0,end-Date.now()),d=Math.floor(ms/86400000),h=Math.floor(ms%86400000/3600000),m=Math.floor(ms%3600000/60000);
-  return d?`noch ${d} T ${h} Std`:h?`noch ${h} Std ${m} Min`:`noch ${m} Min`
+  return d?`noch ${d} ${d===1?"Tag":"Tage"} ${h} Std`:h?`noch ${h} Std ${m} Min`:`noch ${m} Min`
  }
  function rewardSummary(place){const r=rewardFor(place);return`${fmt(r.coins)} Coins · ${r.packs.map(p=>PACKS.find(x=>x.id===p.id)?.name||p.id).join(" · ")}`}
  function html(){
