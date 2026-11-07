@@ -31,6 +31,8 @@ const CLIPS={
  keeper_dive:{file:'goalkeeper diving save.fbx',side:1,keys:{launch:.7,land:1.35,rise:2.3,up:3.1}},
  keeper_dive_high:{file:'goalkeeper diving save (2).fbx',side:-1,keys:{launch:.6,land:1.35,rise:2.15,up:3.0}},
  keeper_ready:{file:'goalkeeper idle.fbx',side:0,loop:true,keys:{}},
+ header:{file:'header soccerball.fbx',side:0,keys:{load:.5,contact:.95,settle:1.8}},
+ bicycle:{file:'scissor kick.fbx',side:0,keys:{takeoff:.3,contact:.8,land:1.2,rise:1.9,up:2.6}},
 };
 const RATE=30;
 const dir=process.argv[2];
