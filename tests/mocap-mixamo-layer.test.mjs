@@ -98,3 +98,18 @@ test('tackle capture: boot leads at contact, lies on the turf, up again, off wit
  assert.ok(at('Head').y-at('pelvis').y<.5,'leaning back into the slide');
  assert.equal(layer.apply(4.4,{contact:4.4,weight:0}).clip,'none','far from the ball: no slide');
 });
+
+test('run capture: backwards and sideways jogs by travel direction, forward left alone',async()=>{
+ const {backpedalBlend,createRunCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+ for(const k of ['jog_back','jog_back_diag','strafe_left','strafe_right'])assert.ok(FOOTERA_MIXAMO.clips[k]?.loop,k);
+ assert.equal(backpedalBlend(0).share,0,'forward travel keeps the normal run');
+ const back=backpedalBlend(Math.PI);assert.equal(back.share,1);assert.equal(back.b.clip,'jog_back');assert.ok(back.u>.999);
+ assert.equal(backpedalBlend(Math.PI/2).a.clip,'strafe_left');assert.equal(backpedalBlend(-Math.PI/2).a.clip,'strafe_right');
+ assert.equal(backpedalBlend(Math.PI*.7).b.mirror,1);assert.equal(backpedalBlend(-Math.PI*.7).b.mirror,0);
+ const {bones,player,layer=createRunCaptureLayer(bones,player)}=(()=>{const r=rig(0);return{...r,layer:createRunCaptureLayer(r.bones,r.player)}})();
+ assert.ok(layer.ready);
+ assert.equal(layer.apply(null,0).clip,'none');
+ // The model faces +Z in player space: travelling -Z is backwards.
+ assert.equal(layer.apply([0,-1,1],1.3).clip,'jog_back');
+ assert.equal(layer.apply([0,1,1],1.3).clip,'none','forward');
+});
