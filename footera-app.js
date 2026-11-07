@@ -7653,7 +7653,8 @@ function resetMatchPresentation(){
  $("matchSceneType").textContent="ANPFIFF";
  $("matchSceneText").textContent="Das Spiel läuft.";
  $("matchSceneMinute").textContent="0'";
- $("matchChronicle")?.removeAttribute("open")
+ $("matchChronicle")?.removeAttribute("open");
+ {const tk=$("matchTicker");if(tk){tk.innerHTML="";tk.hidden=true}}
 }
 function renderMatchTimeline(){
  if(!match||match.highlight3DPending)return;
@@ -7767,9 +7768,9 @@ function resolveMissedMatchShot(shot,team){
  if(typeof queueMatchChance3D==="function")queueMatchChance3D(shot);
  if(action){
   const text=kind==="save"?`${action.name} pariert den Abschluss von ${shot.shooter}!`:`${action.name} blockt den Schuss von ${shot.shooter}.`;
-  recordMatchScene(`${action.side}-${kind}`,text);addLog(text)
- }else if(shot.highlightType==="shot_post")recordMatchScene(`${shot.side}-post`,`${shot.shooter} trifft den Pfosten · ${team}.`);
- else recordMatchScene(`${shot.side}-chance`,`${shot.shooter} schießt vorbei · ${team}.`)
+  recordMatchScene(`${action.side}-${kind}`,matchShotCommentary(kind,shot,{keeper:kind==="save"?shot.goalkeeperName||action.name:"",defender:kind==="block"?action.name:""})||text);addLog(text)
+ }else if(shot.highlightType==="shot_post")recordMatchScene(`${shot.side}-post`,matchShotCommentary("post",shot)||`${shot.shooter} trifft den Pfosten · ${team}.`);
+ else recordMatchScene(`${shot.side}-chance`,matchShotCommentary("wide",shot)||`${shot.shooter} schießt vorbei · ${team}.`)
 }
 function recordMatchEvent(kind,side,text){
  if(!match)return;
@@ -7828,13 +7829,72 @@ function logGoal(side,scorer,assist,type,shot={}){
  match.goalEvents=match.goalEvents||[];match.goalEvents.push(event);
  const in3D=typeof queueMatchGoal3D==="function"&&queueMatchGoal3D(event);
  recordMatchEvent("goal",side,`${event.scorer} · ${team}`);
- recordMatchScene(`${side}-goal`,`${event.scorer} trifft für ${team}!`);
+ if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordAttack(match,side,shot,"goal");
+ const scorerGoals=match.goalEvents.filter(e=>e.side===side&&e.scorer===event.scorer).length,deficit=match.maxDeficit||(match.maxDeficit={home:0,away:0});
+ recordMatchScene(`${side}-goal`,matchShotCommentary("goal",{...shot,side,shooter:event.scorer,creator:event.assist,creationType:type},{scorerGoals,maxDeficit:deficit[side]})||`${event.scorer} trifft für ${team}!`);
+ deficit.home=Math.max(deficit.home,match.away-match.home);deficit.away=Math.max(deficit.away,match.home-match.away);
  if(typeof document!=="undefined"&&!in3D)showMatchGoalMoment(event,scorer);
  if(type==="assist"&&assist){addLog(`TOR! ${event.scorer} trifft für ${team}. Vorlage: ${event.assist}.`,side);return}
  if(type==="solo"){addLog(`TOR! ${event.scorer} trifft für ${team} nach einer Einzelaktion.`,side);return}
  if(type==="freekick"){addLog(`TOR! ${event.scorer} verwandelt einen direkten Freistoß für ${team}.`,side);return}
  if(type==="penalty"){addLog(`TOR! ${event.scorer} verwandelt einen Elfmeter für ${team}.`,side);return}
  addLog(`TOR! ${event.scorer} trifft für ${team}.`,side)
+}
+// V21.350: varied live commentary. Presentation only; FooteraCommentary
+// never draws random numbers, so simulated results stay exactly the same.
+function matchCommentaryTicker(text,tone=""){
+ if(!match||!text)return;
+ const list=match.commentary||(match.commentary=[]);
+ list.push({minute:Math.min(120,Math.floor(match.minute)),text:String(text),tone});if(list.length>40)list.shift();
+ if(typeof document==="undefined")return;
+ const box=$("matchTicker");if(!box)return;
+ box.hidden=false;
+ box.innerHTML=list.slice(-3).reverse().map((row,i)=>`<p class="match-ticker-line${row.tone?" "+row.tone:""}${i?" old":""}"><time>${row.minute}'</time><span>${esc(row.text)}</span></p>`).join("")
+}
+function matchCommentaryLine(kind,ctx,ticker=true){
+ if(typeof FooteraCommentary==="undefined"||!match)return"";
+ try{
+  const side=ctx.side,defending=ctx.defendingSide||(side==="home"?"away":"home");
+  const out=FooteraCommentary.describe(match,kind,{minute:Math.floor(match.minute),attackTactics:matchActionTactics(side),defenseTactics:matchActionTactics(defending),attackStyle:side==="home"?match.tactic:match.opponentProfile?.tactic,...ctx,defendingSide:defending});
+  if(ticker&&out.ticker)matchCommentaryTicker(out.text,kind==="goal"?"goal":out.note?"note":"");
+  return out.text
+ }catch(e){return""}
+}
+function matchShotCommentary(kind,shot,extra={}){
+ if(!match||!shot)return"";
+ const side=shot.side,defending=side==="home"?"away":"home",rows=matchActorRows(defending);
+ const keeper=extra.keeper||shot.goalkeeperName||matchEventPlayerName(rows.find(r=>r.slot==="GK"),"");
+ const defender=extra.defender||matchEventPlayerName(rows.find(r=>r.index===Number(shot.defenderIndex)),"");
+ return matchCommentaryLine(kind,{actionKind:shot.actionKind,sceneKind:shot.sceneKind,creationType:shot.creationType,finish:shot.finish,skillMove:shot.skillMove,xg:shot.xg,side,defendingSide:defending,team:side==="home"?matchHomeTeamName():matchAwayTeamName(),opponent:side==="home"?matchAwayTeamName():matchHomeTeamName(),shooter:shot.shooter,creator:shot.creator,keeper,defender,outcome:kind,scoreFor:side==="home"?match.home:match.away,scoreAgainst:side==="home"?match.away:match.home,...extra})
+}
+function matchCardCommentary(color,name,team){
+ if(typeof FooteraCommentary==="undefined"||!match)return;
+ try{matchCommentaryTicker(FooteraCommentary.card(match,color,name,team),color==="red"?"red":"yellow")}catch(e){}
+}
+function matchTacticAnalysisTick(){
+ if(typeof FooteraCommentary==="undefined"||!match)return;
+ const done=match.analysisMinutes||(match.analysisMinutes=[]),min=Math.floor(match.minute);
+ const due=[22,38,62,78].find(m=>min>=m&&!done.includes(m));if(due===undefined)return;
+ done.push(due);
+ try{const text=FooteraCommentary.analysis(match,{home:matchHomeTeamName(),away:matchAwayTeamName()});if(text)matchCommentaryTicker(text,"analysis")}catch(e){}
+}
+function matchTacticTipsHTML(){
+ if(typeof FooteraCommentary==="undefined"||!match)return"";
+ try{
+  const fitness=(match.lineup||[]).slice(0,11).filter(Boolean).map(uid=>matchPlayerFitness(uid)),avg=fitness.length?fitness.reduce((n,v)=>n+v,0)/fitness.length:100;
+  const t=FooteraCommentary.tips(match,{home:match.home,away:match.away,poss:match.poss,tactic:match.tactic,ownTactics:match.customTactics,opponentTactics:match.opponentProfile?.customTactics,awayName:matchAwayTeamName(),fitness:avg});
+  if(!t.head&&!t.tips.length)return"";
+  return `<div class="match-tactic-check"><b>Taktik-Check</b>${t.head?`<span>${esc(t.head)}</span>`:""}${t.tips.map(x=>`<span class="tip">💡 ${esc(x)}</span>`).join("")}</div>`
+ }catch(e){return""}
+}
+function matchTacticReportHTML(){
+ if(typeof FooteraCommentary==="undefined"||!match)return"";
+ try{
+  const r=FooteraCommentary.report(match);if(!r.rows.length)return"";
+  const max=Math.max(1,...r.rows.flatMap(x=>[x.home,x.away]));
+  const goals=n=>n?` <em>${n} ${n===1?"Tor":"Tore"}</em>`:"";
+  return `<section class="match-report-moves"><div class="match-report-section-title"><strong>Spielzüge</strong><span>So hat eure Taktik gespielt</span></div><div class="match-moves-head"><span>${esc(matchHomeTeamName())}</span><span>${esc(matchAwayTeamName())}</span></div>${r.rows.map(x=>`<div class="match-move-row"><div class="bar home"><i style="width:${Math.round(x.home/max*100)}%"></i><b>${x.home}${goals(x.homeGoals)}</b></div><span>${esc(x.label)}</span><div class="bar away"><i style="width:${Math.round(x.away/max*100)}%"></i><b>${x.away}${goals(x.awayGoals)}</b></div></div>`).join("")}<div class="match-move-row press"><div class="bar home"><b>${r.homePress}</b></div><span>Ballgewinne im Aufbau</span><div class="bar away"><b>${r.awayPress}</b></div></div></section>`
+ }catch(e){return""}
 }
 function simAttack(homeSide){
  const pending=match.nextRestart,restart=pending&&match.minute-pending.at<=5?pending:null;delete match.nextRestart;
@@ -7864,11 +7924,12 @@ function simAttack(homeSide){
  const buildAttack=actions.restartBuildSkill(creator,kind,sceneKind,matchActorRows(side).find(r=>r.slot==="GK"),context),buildDefense=buildDefender?actions.defendSkill(buildDefender,kind,"build"):defenseProfile.defense,buildMargin=matchClamp(buildAttack-buildDefense,-30,30),buildProfileGap=matchAttributeGap(attackProfile.build-defenseProfile.defense);
  const buildChance=matchClamp(.72+buildMargin*.0055+buildProfileGap*.001+(attackRoles.poss-defenseRoles.poss)*.010+(attackTactic.poss-defenseTactic.poss)*.006+edge*.014+aiTuning.build+advantage.build,.42,.90);
  recordMatchScene(`${side}-build`,`${creator.name} treibt den Spielaufbau von ${team} an.`);
+ if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordAttack(match,side,context,"attack");
  if(!setPiece&&!eventChance(buildChance-(actions.tactics(matchActionTactics(defendingSide)).pressing-50)*.0008)){
-  if(!restart&&Math.random()<.14){match.nextRestart={side,kind:"throw_in",at:match.minute};recordMatchScene(`${side}-throw`,`${team} erhält einen Einwurf.`);return}
+  if(!restart&&Math.random()<.14){match.nextRestart={side,kind:"throw_in",at:match.minute};recordMatchScene(`${side}-throw`,matchCommentaryLine("throw_in",{team},false)||`${team} erhält einen Einwurf.`);return}
   const action=recordMatchDefense(side,"interception",0,buildDefender?.index??-1);if(action)action.phase="build";
   if(action)match.nextCounter={side:defendingSide,at:match.minute,uid:action.uid,index:action.index};
-  if(action){recordMatchScene(`${defendingSide}-interception`,`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
+  if(action){if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordWin(match,defendingSide,"build");recordMatchScene(`${defendingSide}-interception`,matchCommentaryLine("interception",{...context,phase:"build",side,defendingSide,team,opponent:defendingSide==="home"?matchHomeTeamName():matchAwayTeamName(),creator:creator.name,shooter:attacker.name,defender:action.name})||`${action.name} fängt den Pass von ${creator.name} ab.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,creator)}
   return
  }
  const duelDefender=weightedMatchPick(matchDefendingPlayers(defendingSide).filter(p=>p.position!=="GK"));
@@ -7877,7 +7938,7 @@ function simAttack(homeSide){
  if(!setPiece&&!eventChance(duelChance)){
   const action=recordMatchDefense(side,Math.random()<.72?"tackle":"interception",0,duelDefender?.index??-1);if(action)action.phase="duel";
   if(action)match.nextCounter={side:defendingSide,at:match.minute,uid:action.uid,index:action.index};
-  if(action){recordMatchScene(`${defendingSide}-defense`,`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
+  if(action){if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordWin(match,defendingSide,"duel");recordMatchScene(`${defendingSide}-defense`,matchCommentaryLine(action.kind==="interception"?"interception":"tackle",{...context,phase:"duel",side,defendingSide,team,opponent:defendingSide==="home"?matchHomeTeamName():matchAwayTeamName(),creator:creator.name,shooter:attacker.name,defender:action.name})||`${action.name} stoppt ${attacker.name} im Zweikampf.`);if(typeof queueMatchDefensive3D==='function')queueMatchDefensive3D(action,side,attacker)}
   return
  }
  const baseXg=matchClamp(.09+Math.random()*.16+matchAttributeGap(buildMargin)*.0009+matchAttributeGap(duelMargin)*.0014+(creator.attrs.pas-70)*.0009+(attacker.attrs.dri-70)*.0007+edge*.014+aiTuning.xg+advantage.xg,.05,.52);
@@ -7887,6 +7948,7 @@ function simAttack(homeSide){
  const shot={...context,id:"attempt:"+(match.shotEvents?.length||0),side,minute:Math.min(120,Math.floor(match.minute)),at:match.minute,xg,playerName:matchEventPlayerName(attacker,attacker.name),shooter:attacker.name,shooterUid:homeSide?String(attacker.uid||""):"",shooterIndex:homeSide?-1:Number(attacker.index??-1),shooting:actions.shotSkill(attacker,context),creator:assist?.name||"",creatorUid:assist?.uid||"",creatorIndex:assist?.index??-1,defenderIndex:duelDefender?.index??-1,goal:false,...(!homeSide&&match.opponentProfile?.kind==='generated'&&match.opponentProfile?.styleProfile?.id?{opponentStyle:String(match.opponentProfile.styleProfile.id)}:{})};
  if(homeSide){match.shotsHome++;match.xgHome+=xg}else{match.shotsAway++;match.xgAway+=xg}
  match.shotEvents=match.shotEvents||[];match.shotEvents.push(shot);
+ if(typeof FooteraCommentary!=="undefined")FooteraCommentary.recordAttack(match,side,shot,"chance");
  const goalChance=matchFinishingChance(xg,attacker,defendingSide,shot,duelDefender);
  if(eventChance(goalChance)){
 
@@ -7919,6 +7981,7 @@ function simTick(){
  if(!match.highlightActive&&opportunities>1&&Math.random()<opportunities-1)simAttack(Math.random()<match.poss/100);
 
  if(match.highlightActive){updateMatchUI();return}
+ matchTacticAnalysisTick();
 
  const min=Math.floor(match.minute);
  if(min>=8&&(match.yellowCards||[]).length<6&&Math.random()<.028)maybeBookPlayer();
@@ -7949,12 +8012,12 @@ function maybeBookPlayer(){
   const form=FORMATIONS[match.formation]||FORMATIONS["4-3-3"],candidates=match.lineup.slice(0,11).map((uid,i)=>({uid,i})).filter(x=>x.uid&&form[x.i]?.p!=="GK"&&!already.has(`home:${x.uid}`));
   if(!candidates.length)return false;
   const picked=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(picked.uid)?.name||"Spieler";
-  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`,"home");return true
+  match.yellowCards.push({side:"home",uid:picked.uid,index:picked.i,name,minute});recordMatchEvent("yellow","home",name);addLog(`Gelbe Karte für ${name}.`,"home");matchCardCommentary("yellow",name,matchHomeTeamName());return true
  }
  const profile=match.opponentProfile,squad=Array.isArray(profile?.squad)?profile.squad:[],form=FORMATIONS[profile?.formation]||FORMATIONS["4-3-3"],candidates=squad.slice(0,11).map((entry,i)=>({entry,i,base:opponentMatchBase(entry)})).filter(x=>x.base&&form[x.i]?.p!=="GK"&&!already.has(`away:${x.i}`));
  if(!candidates.length)return false;
  const picked=candidates[Math.floor(Math.random()*candidates.length)],name=picked.base.name||"Gegenspieler";
- match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name}.`,"away");return true
+ match.yellowCards.push({side:"away",uid:"",index:picked.i,name,minute});recordMatchEvent("yellow","away",name);addLog(`Gelbe Karte für ${name}.`,"away");matchCardCommentary("yellow",name,matchAwayTeamName());return true
 }
 function sendOffPlayer(){
  if(!match)return false;
@@ -7962,7 +8025,7 @@ function sendOffPlayer(){
  if(!candidates.length)return false;
  const {uid,i}=candidates[Math.floor(Math.random()*candidates.length)],name=currentMatchBase(uid)?.name||"Spieler",minute=Math.floor(match.minute);
  match.lineup[i]=null;match.redCards=match.redCards||[];match.redCards.push({uid,name,minute,at:match.minute});match.redCardSlot=i;
- recordMatchEvent("red","home",name);recordMatchScene("home-card",`Rote Karte für ${name}.`);
+ recordMatchEvent("red","home",name);recordMatchScene("home-card",`Rote Karte für ${name}.`);matchCardCommentary("red",name,matchHomeTeamName());
  addLog(`Rote Karte für ${name}! ${matchHomeTeamName()} spielt mit zehn Spielern weiter.`,"home");
  updateMatchUI();pauseForManagement(`Rote Karte für ${name}: Passe bei Bedarf Formation oder Taktik an.`);
  return true
@@ -8327,7 +8390,7 @@ function pauseForManagement(reason="Team-Management geöffnet."){
  const halftime=!!match.halftimeActive,extraTime=!!match.extraTimeManagementActive;
  $("managerPanel").querySelector("h3").textContent=halftime?"Halbzeit · Team-Management":extraTime?"Vor der Verlängerung":"Team-Management";
  const summary=$("matchBreakSummary");summary.hidden=!halftime&&!extraTime;
- if(!summary.hidden)summary.innerHTML=`<strong>${esc(matchHomeTeamName())} ${match.home}:${match.away} ${esc(matchAwayTeamName())}</strong><span>${halftime?"Halbzeit":"90 Minuten"} · Schüsse ${match.shotsHome}:${match.shotsAway} · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)} · Ballbesitz ${Math.round(match.poss)}:${100-Math.round(match.poss)}${esc(matchBreakPerformanceText())}. Passe jetzt Aufstellung oder Taktik an.</span>`;
+ if(!summary.hidden)summary.innerHTML=`<strong>${esc(matchHomeTeamName())} ${match.home}:${match.away} ${esc(matchAwayTeamName())}</strong><span>${halftime?"Halbzeit":"90 Minuten"} · Schüsse ${match.shotsHome}:${match.shotsAway} · xG ${match.xgHome.toFixed(1)}:${match.xgAway.toFixed(1)} · Ballbesitz ${Math.round(match.poss)}:${100-Math.round(match.poss)}${esc(matchBreakPerformanceText())}. Passe jetzt Aufstellung oder Taktik an.</span>${matchTacticTipsHTML()}`;
  $("confirmSubBtn").textContent=halftime?"Übernehmen & 2. Halbzeit":extraTime?"Übernehmen & Verlängerung":"Übernehmen & weiterspielen";
  $("resumeMatchBtn").textContent=halftime||extraTime?"Ohne Änderungen weiter":"Änderungen verwerfen";
  setMatchPill(true);requestAnimationFrame(()=>$("managerPanel").scrollIntoView({behavior:"smooth",block:"start"}))
@@ -8426,6 +8489,7 @@ function renderMatchReport(){
  </div>
  ${potm?`<section class="match-potm"><div class="match-potm-card">${potmCard}</div><div class="match-potm-copy"><span>SPIELER DES SPIELS</span><strong>${esc(potm.name)}</strong><small>${esc(potmTeam)}</small><div><b>${potm.rating.toFixed(1)}</b><em>Matchrating</em></div><p>${esc(matchPerformanceDetail(potm))}</p></div></section>`:""}
  <section class="match-report-events"><div class="match-report-section-title"><strong>Timeline</strong><span>Tore, Karten, Wechsel</span></div><div class="match-report-event-list">${timeline.length?timeline.map(e=>`<div class="match-report-event ${e.side} ${e.kind}"><time>${e.minute}'</time><i>${e.icon}</i><div><strong>${esc(e.title)}</strong><span>${esc(e.detail)}</span></div></div>`).join(""):'<div class="match-report-empty">Keine besonderen Ereignisse.</div>'}</div></section>
+ ${matchTacticReportHTML()}
  <details class="match-report-performance-details"><summary><div><strong>Spielerleistungen</strong><span>${esc(matchHomeTeamName())} · Bewertungen & Statistiken</span></div><i aria-hidden="true">⌄</i></summary>${performanceSummary}<div class="match-report-teams">${matchReportPerformanceHTML(matchHomeTeamName(),homeRows)}${matchReportPerformanceHTML(matchAwayTeamName(),awayRows)}</div></details>`
 }
 function applyClubGoalStats(){
@@ -9418,7 +9482,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.352";
+const GFUT_BUILD="V21.354";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9476,7 +9540,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21352",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21354",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
