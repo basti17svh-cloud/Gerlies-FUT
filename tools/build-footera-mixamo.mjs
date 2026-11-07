@@ -38,6 +38,8 @@ const CLIPS={
  jog_back_diag:{file:'jog backward diagonal.fbx',side:0,loop:true,keys:{}},
  strafe_left:{file:'jog strafe left.fbx',side:0,loop:true,keys:{}},
  strafe_right:{file:'jog strafe right.fbx',side:0,loop:true,keys:{}},
+ strike_jog:{file:'strike foward jog.fbx',side:0,keys:{contact:.41}},
+ penalty:{file:'soccer penalty kick.fbx',side:0,keys:{contact:.74}},
  receive:{file:'receive soccerball.fbx',side:0,end:2.2,keys:{load:.85,contact:1.15,settle:1.55,up:1.8}},
 };
 const RATE=30;
