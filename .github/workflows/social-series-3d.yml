@@ -1,0 +1,70 @@
+name: Social series 3D captures (temporary)
+on:
+  push:
+    branches: ['claude/project-thread-hrz0aj']
+    paths:
+      - 'marketing-render-series/cap-request.txt'
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: G1, type: goal, score: '0:0', from: '4.6', frames: '220', team: away, minute: '3', who: 'Erling Haaland'}
+          - {name: G2, type: goal, score: '0:1', from: '4.6', frames: '220', team: home, minute: '22', who: 'Harry Kane'}
+          - {name: G3, type: goal, score: '1:1', from: '4.6', frames: '220', team: home, minute: '23', who: 'Michael Olise'}
+          - {name: G4, type: goal, score: '2:1', from: '1.2', frames: '330', team: home, minute: '28', who: 'Jamal Musiala'}
+          - {name: G5, type: goal, score: '3:1', from: '4.6', frames: '220', team: home, minute: '33', who: 'Harry Kane'}
+          - {name: S1, type: save, score: '0:1', from: '4.8', frames: '160', team: away, minute: '12', who: 'Bukayo Saka'}
+          - {name: P1, type: post, score: '4:1', from: '4.8', frames: '150', team: away, minute: '61', who: 'Erling Haaland'}
+          - {name: K, type: kickoff, score: '0:0', from: '0.2', frames: '150', team: home, minute: '0', who: ''}
+          - {name: F, type: fulltime, score: '4:1', from: '0.2', frames: '150', team: home, minute: '90', who: ''}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Capture
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          NET_LIVE: '1'
+          TYPE: ${{ matrix.type }}
+          SCORE: ${{ matrix.score }}
+        run: |
+          node marketing-render-series/cap3d3.cjs /tmp/cap/${{ matrix.name }} ${{ matrix.from }} ${{ matrix.frames }} 30 432 ${{ matrix.team }} ${{ matrix.minute }} '' '${{ matrix.who }}'
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -c:v libx264 -crf 12 -preset slow -pix_fmt yuv444p out/${{ matrix.name }}.mp4
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cap-${{ matrix.name }}
+          path: out/${{ matrix.name }}.mp4
+  commit:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/arts
+      - name: Commit
+        run: |
+          mkdir -p marketing-render-series/cap
+          find /tmp/arts -name '*.mp4' -exec cp {} marketing-render-series/cap/ \;
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add marketing-render-series/cap
+          git diff --cached --quiet && exit 0
+          git commit -m 'marketing: series 3D captures [skip ci]'
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
