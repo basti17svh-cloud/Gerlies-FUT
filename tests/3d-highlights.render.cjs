@@ -138,9 +138,12 @@ const out=path.join(__dirname,'../test-artifacts');
   // Berbatov ~70°, roulette a full spin). Take exactly that authored yaw out
   // of the measured facing, so the run underneath must still point forwards.
   const runFacing=(row,actor)=>{const yaw=actor.index===0&&row.skillAction?row.skillAction.yaw:0,c=Math.cos(yaw),s=Math.sin(yaw),[x,z]=actor.forward;return[x*c-z*s,z*c+x*s]};
+  // V21.361 defenders near the play keep facing the ball and jog backwards or
+  // sideways on purpose (captured Mixamo runs, frame.travel weight). Only the
+  // rest of the squad must still run forwards.
   for(const row of checks)for(const actor of row.facing){
    const speed=Math.hypot(...actor.velocity);
-   if(speed>.001&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forward=runFacing(row,actor),forwardNorm=Math.hypot(...forward);
+   if(speed>.001&&!(actor.backpedal>.02)&&!(actor.index===0&&row.time>4.9&&row.time<6.2)){const forward=runFacing(row,actor),forwardNorm=Math.hypot(...forward);
      // Compare *direction*, not projected vector length: a footballer's leaning
      // torso shortens XZ forward without implying sideways or backward running.
      assert.ok(forwardNorm>.01,'nondegenerate horizontal facing '+row.sequence);
