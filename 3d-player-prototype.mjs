@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights} from './3d-mocap-mixamo-layer.mjs?v=21357';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights} from './3d-mocap-mixamo-layer.mjs?v=21359';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -556,7 +556,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // V21.353: captured goalkeeping (Mixamo) on the human keeper; '0' switches it off.
  let keeperCapture=!makehuman;try{keeperCapture=keeperCapture&&globalThis.localStorage?.getItem('footera-3d-keeper-capture')!=='0'}catch(_){}
  const keeperBody=createKeeperCaptureLayer(makehuman?new Map():bones,playerRoot);
- // V21.357: captured header and overhead kick (Mixamo) for the scorer.
+ // V21.359: captured header and overhead kick (Mixamo) for the scorer.
  const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
  const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];

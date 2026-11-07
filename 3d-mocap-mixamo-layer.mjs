@@ -8,9 +8,9 @@
  * Deterministic: a pure function of time and the dive.
  */
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21357';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21359';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.357-mixamo-keeper-striker';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.359-mixamo-keeper-striker';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -78,7 +78,7 @@ export function createKeeperCaptureLayer(bones,playerRoot){
  return{apply,state};
 }
 
-// V21.357: captured header and overhead (scissor) kick for the scorer.
+// V21.359: captured header and overhead (scissor) kick for the scorer.
 // Game time of the capture keys: the header meets the ball at the shot
 // time (5.4 s); the overhead kick takes off, strikes at 5.4 s, lands on the
 // back and is up again as bicycleKickPose (3d-highlights-scene.mjs) plans it.
