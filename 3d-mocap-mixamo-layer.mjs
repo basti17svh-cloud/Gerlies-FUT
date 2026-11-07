@@ -8,9 +8,9 @@
  * Deterministic: a pure function of time and the dive.
  */
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21359';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21360';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.359-mixamo-keeper-striker';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.360-mixamo-keeper-striker-tackle';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -114,6 +114,37 @@ export function createStrikerCaptureLayer(bones,playerRoot){
   const clip=rig.clips[finish];if(!clip)return state;
   rig.pose(finish,strikerCaptureTime(finish,time,clip.keys)*clip.rate,{body:w.body,legs:w.legs},0);
   state.clip=finish;
+  return state;
+ }
+ return{apply,state};
+}
+
+// V21.360: captured slide tackle for the sliding defender. `contact` is the
+// game time the leading boot reaches the ball; weight fades the capture with
+// the defender's distance to the ball (live duels) or is 1 (staged tackles).
+export function tackleCaptureTime(time,contact,keys){
+ const g=[contact-.45,contact,contact+.55,contact+1.3],c=[keys.takeoff,keys.contact,keys.rise,keys.up];
+ if(time<=g[0])return Math.max(0,c[0]+(time-g[0]));
+ for(let i=1;i<g.length;i++)if(time<=g[i])return c[i-1]+(c[i]-c[i-1])*(time-g[i-1])/(g[i]-g[i-1]);
+ return c[c.length-1]+(time-g[g.length-1]);
+}
+export function tackleCaptureWeights(time,contact){
+ const w=smooth(time,contact-.75,contact-.45)*(1-smooth(time,contact+1.15,contact+1.5));
+ return{body:w,legs:w,ground:w*smooth(time,contact-.2,contact)*(1-smooth(time,contact+.75,contact+1.2))};
+}
+export function createTackleCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,ground:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ if(!rig)return{apply:()=>state,state};
+ // tackle: {contact, weight}. Returns the state (ground = how much to lay on the turf).
+ function apply(time=0,tackle=null){
+  state.clip='none';state.weight=0;state.ground=0;
+  if(!tackle||!Number.isFinite(tackle.contact))return state;
+  const scale=clamp(tackle.weight??1),w=tackleCaptureWeights(time,tackle.contact);
+  const body=w.body*scale;if(body<=.001)return state;
+  const clip=rig.clips.slide_tackle;
+  rig.pose('slide_tackle',tackleCaptureTime(time,tackle.contact,clip.keys)*clip.rate,{body,legs:body},0);
+  state.clip='slide_tackle';state.weight=body;state.ground=w.ground*scale;
   return state;
  }
  return{apply,state};
