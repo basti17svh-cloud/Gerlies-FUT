@@ -7,7 +7,8 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
-import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21348';
+import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
+import {createKeeperCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21353';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -19,6 +20,7 @@ const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
  'lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r'];
 let source=null,pending=null,sourceMakeHuman=null,pendingMakeHuman=null;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smoothstep=(a,b,x)=>{const u=clamp((x-a)/(b-a));return u*u*(3-2*u)};
 
 // Driver rotations are expressed in player space, NOT in the imported bones'
 // local axes (which differ even between the two arms). Conjugate each delta
@@ -551,6 +553,11 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  let kickCapture=!makehuman;try{kickCapture=kickCapture&&globalThis.localStorage?.getItem('footera-3d-kick-capture')!=='0'}catch(_){}
  const kickBody=createCmuKickLayer(makehuman?new Map():bones,playerRoot);
  let kickState=null;
+ // V21.353: captured goalkeeping (Mixamo) on the human keeper; '0' switches it off.
+ let keeperCapture=!makehuman;try{keeperCapture=keeperCapture&&globalThis.localStorage?.getItem('footera-3d-keeper-capture')!=='0'}catch(_){}
+ const keeperBody=createKeeperCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
+ const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  playerRoot.updateMatrixWorld(true);
  const legSwing=[0,0],shrugFrom=new THREE.Quaternion(),shrugTo=new THREE.Quaternion();
  // The keeper's guide rotates about the feet, not the imported pelvis.
@@ -562,10 +569,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   return{shoulder,elbow,hand,upper:shoulder.getWorldPosition(new THREE.Vector3()).distanceTo(elbow.getWorldPosition(new THREE.Vector3())),
    lower:elbow.getWorldPosition(new THREE.Vector3()).distanceTo(hand.getWorldPosition(new THREE.Vector3()))};
  });
- function matchKeeperHands(){
+ function matchKeeperHands(weight=1){
   playerRoot.updateMatrixWorld(true);
   for(let i=0;i<2;i++){
-   const limb=keeperArms[i];limb.shoulder.getWorldPosition(hp);
+   const limb=keeperArms[i];
+   if(weight<.999){handFrom[i*2].copy(limb.shoulder.quaternion);handFrom[i*2+1].copy(limb.elbow.quaternion)}
+   limb.shoulder.getWorldPosition(hp);
    existingDriver.gloves[i].getWorldPosition(target);
    existingDriver.elbows[i].getWorldPosition(kp);
    direction.copy(target).sub(hp);
@@ -576,7 +585,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
    desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
    pointBone(limb.shoulder,limb.elbow,desiredKnee);pointBone(limb.elbow,limb.hand,target);
+   // V21.353: away from the ball contact the captured arms show through.
+   if(weight<.999){limb.shoulder.quaternion.slerpQuaternions(handFrom[i*2],limb.shoulder.quaternion.clone(),weight);
+    limb.elbow.quaternion.slerpQuaternions(handFrom[i*2+1],limb.elbow.quaternion.clone(),weight);limb.shoulder.updateMatrixWorld(true)}
   }
+ }
+ // Lying captured keeper: the lowest body point rests on the turf.
+ function groundKeeper(weight){
+  if(weight<=.001)return;
+  playerRoot.updateMatrixWorld(true);
+  let low=Infinity;for(const b of groundProbe){b.getWorldPosition(hp);low=Math.min(low,hp.y)}
+  if(!Number.isFinite(low))return;
+  const parentY=playerRoot.parent?playerRoot.parent.getWorldPosition(kp).y:0;
+  normalized.position.y+=clamp(.045-(low-parentY),-.35,.35)*weight;
+  normalized.updateMatrixWorld(true);
  }
  // Keepers must NOT inherit striker running clips on top of their save pose.
  const keeperIdle=Object.freeze({bob:0,pelvisPitch:0,pelvisYaw:0,pelvisRoll:0,
@@ -682,7 +704,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     pinFoot(kicking,pin);kickState.pin=1-w.legs+pin;
    }
   }
-  if(keeperRole)matchKeeperHands();
+  let keeperHands=1;
+  if(keeperRole&&keeperCapture&&info.keeperDive){
+   const k=keeperBody.apply(frameTime,info.keeperDive);keeperHands=k.hands;
+   if(k.clip.startsWith('keeper_dive'))groundKeeper(k.weight*smoothstep(6.7,7.0,frameTime)*(1-smoothstep(8.7,9.2,frameTime)));
+  }
+  if(keeperRole)matchKeeperHands(keeperHands);
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
  }
  // V21.296: a teammate's arm round the scorer, hand on his far
