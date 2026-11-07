@@ -105,7 +105,7 @@
  renderCompetitionModeStatus=function(){originalStatus();renderOverview()};
  const originalPlay=renderPlay;
  renderPlay=function(){safe(originalPlay);safe(()=>window.FooteraTournaments?.render());safe(()=>window.FooteraHalloweenCup?.render());safe(renderChampions);safe(renderFriends);show(area,{push:false,focus:false})};
- window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},restore:target=>{if(target?.view==="playView"){if(target.playMode==="tournaments")window.FooteraTournaments?.select(target.tournamentId||"",false);show(target.playMode||"hub",{push:false})}},handleBack:target=>{
+ window.FooteraPlayHub={open:mode=>{renderPlay();show(mode)},home:()=>{if(area==='hub')return false;if(history.state?.kind==='play-mode')replaceUiState('view',{view:'playView'});show('hub',{push:false});return true},restore:target=>{if(target?.view==="playView"){if(target.playMode==="tournaments")window.FooteraTournaments?.select(target.tournamentId||"",false);show(target.playMode||"hub",{push:false})}},handleBack:target=>{
   if(area==="hub")return false;
   if(target?.gfut&&target.view!=="playView"){area="hub";return false}
   if(target?.playMode==="tournaments")window.FooteraTournaments?.select(target.tournamentId||"",false);

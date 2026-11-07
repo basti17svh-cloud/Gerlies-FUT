@@ -45,13 +45,15 @@ test('3D respects the simulated finish and attack type for goals, saves and miss
   const visual=H.choosePresentation(event);
   assert.equal(visual.finish,finish);
   // V21.195 star moments: a screamer, a volley or a solo feint may show instead.
-  if(kind==='distance')assert.ok(['layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(visual.sequence),visual.sequence);
+  if(kind==='distance')assert.ok(['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(visual.sequence),visual.sequence);
   else if(kind==='cross'){
     const authored=H.PLAYBOOK_SCENES.find(s=>s.id===visual.sequence);
     if(authored)assert.equal(authored.finish,finish,'authored cross plays require matching finish');
     else assert.match(visual.sequence,finish==='header'?/header|high|clipped/:/volley/);
    }
   else if(kind==='dribble')assert.ok(visual.family===kind||/^double_feint_(left|right)$/.test(visual.sequence),visual.sequence);
+  // V21.350: a flat ball from the wing may show any authored low-delivery play.
+  else if(kind==='cutback')assert.ok(['cutback','lowcross','nearpost','overlap'].includes(visual.family),visual.sequence);
   else assert.equal(visual.family,kind);
   assert.equal(H.snapshot({...event,...visual}).actionKind,kind);
  }

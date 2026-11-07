@@ -124,9 +124,9 @@ test('reports send the full week and are not repeated once confirmed',async()=>{
 
 test('page wiring: script after friends hub, panels, reward centre and cache entries',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),rewards=read('weekly-rewards.js');
- assert.ok(html.indexOf('rivals-league.js?v=21337')>html.indexOf('friends-hub.js'));
+ assert.ok(html.indexOf('rivals-league.js?v=21352')>html.indexOf('friends-hub.js'));
  assert.match(html,/id="rvLeague"/);assert.match(html,/id="friendsLeague"/);
- assert.match(sw,/"\.\/rivals-league\.js\?v=21337"/);assert.match(sw,/"\.\/rivals-league\.css\?v=21337"/);
+ assert.match(sw,/"\.\/rivals-league\.js\?v=21352"/);assert.match(sw,/"\.\/rivals-league\.css\?v=21337"/);
  assert.match(sw,/"\.\/weekly-rewards\.js\?v=21333"/);assert.match(html,/weekly-rewards\.js\?v=21333/);
  assert.match(sw,/"\.\/competition-system\.js\?v=21333"/);assert.match(html,/competition-system\.js\?v=21333/);
  assert.match(rewards,/league:"Rivals-Freundesliga"/);
