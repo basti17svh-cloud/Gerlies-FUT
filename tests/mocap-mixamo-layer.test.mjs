@@ -113,3 +113,19 @@ test('run capture: backwards and sideways jogs by travel direction, forward left
  assert.equal(layer.apply([0,-1,1],1.3).clip,'jog_back');
  assert.equal(layer.apply([0,1,1],1.3).clip,'none','forward');
 });
+
+test('receive capture: first touch around the pass arrival, boot by side, off without a pass',async()=>{
+ const {receiveCaptureWeights,receiveCaptureTime,createReceiveCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+ const clip=FOOTERA_MIXAMO.clips.receive;assert.ok(clip&&!clip.loop);
+ assert.ok(clip.frames<=Math.round(2.2*clip.rate)+1,'only the trap is stored, not the turn after it');
+ assert.ok(Math.abs(receiveCaptureTime(3,3,clip.keys)-clip.keys.contact)<1e-9);
+ assert.equal(receiveCaptureWeights(2.4,3,3.42).legs,0);assert.equal(receiveCaptureWeights(3.7,3,3.42).legs,0,'next action takes over');
+ assert.equal(receiveCaptureWeights(3,3,3.42).legs,1);
+ const {bones,player,scene,at}=rig(0),layer=createReceiveCaptureLayer(bones,player);
+ assert.equal(layer.apply(3,null).clip,'none');
+ layer.apply(3,{arrival:3,end:3.42,mirror:0});scene.updateMatrixWorld(true);
+ assert.ok(at('foot_l').y-at('foot_r').y>.1,'left boot lifted to cushion the pass');
+ layer.apply(3,{arrival:3,end:3.42,mirror:1});scene.updateMatrixWorld(true);
+ assert.ok(at('foot_r').y-at('foot_l').y>.1,'mirrored: right boot');
+ assert.equal(layer.apply(3,{arrival:3,end:3.42,weight:0}).clip,'none');
+});

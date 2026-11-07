@@ -38,6 +38,7 @@ const CLIPS={
  jog_back_diag:{file:'jog backward diagonal.fbx',side:0,loop:true,keys:{}},
  strafe_left:{file:'jog strafe left.fbx',side:0,loop:true,keys:{}},
  strafe_right:{file:'jog strafe right.fbx',side:0,loop:true,keys:{}},
+ receive:{file:'receive soccerball.fbx',side:0,end:2.2,keys:{load:.85,contact:1.15,settle:1.55,up:1.8}},
 };
 const RATE=30;
 const dir=process.argv[2];
@@ -63,7 +64,8 @@ let restDirs=null;const clips={};
 for(const [name,spec] of Object.entries(CLIPS)){
  const c=load(path.join(dir,spec.file));
  if(!restDirs)restDirs=MAP.map(([,j,child])=>c.rest.get(child).p.clone().sub(c.rest.get(j).p).normalize().toArray().map(v=>Math.round(v*1e4)/1e4));
- const frames=Math.floor(c.duration*RATE+1e-6)+1,rows=[],hips=[];
+ // end: keep only the first seconds of a long capture (e.g. the trap, not the turn after it).
+ const frames=Math.floor(Math.min(c.duration,spec.end??c.duration)*RATE+1e-6)+1,rows=[],hips=[];
  const inv=new Map(MAP.map(([,j])=>[j,c.rest.get(j).q.clone().invert()]));
  for(let f=0;f<frames;f++){
   c.set(Math.min(c.duration,f/RATE));

@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21361';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21362';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1929,7 +1929,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const carrierState=carrierPoseState(time,sequence),carrierIndex=carrierState.index;
    const defensiveBall=eventBallPosition(event.type,Math.min(time,SHOT_TIME),sequence,finish,keeperAction);
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
-   importedMotionFrame.plusWeight=0;importedMotionFrame.tackle=null;for(const frame of squadMotionFrames){frame.plusWeight=0;frame.tackle=null}
+   importedMotionFrame.plusWeight=0;importedMotionFrame.tackle=null;importedMotionFrame.receive=null;for(const frame of squadMotionFrames){frame.plusWeight=0;frame.tackle=null;frame.receive=null}
    // V21.360: the sliding defender's imported body follows a captured slide tackle.
    const backpedalRaw=(i,t)=>{
     const a=actorPosition(i,Math.max(0,t-.2),event.type,sequence),b=actorPosition(i,t+.2,event.type,sequence);
@@ -1939,6 +1939,22 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const off=Math.abs(Math.atan2(Math.sin(toBall-travel),Math.cos(toBall-travel)));
     const near=1-smooth((Math.hypot(ball[0]-x,ball[2]-z)-18)/10);
     return smooth((off-1.45)/.75)*smooth((speed-.03)/.06)*(1-smooth((speed-.36)/.14))*near;
+   };
+   // V21.362: the pass receiver's imported body plays a captured first touch
+   // around the pass arrival (same window as playReception, a little wider
+   // so the capture eases in and out). One-touch finishes keep their shot.
+   const receivePlan=extended?null:getPlay(sequence);
+   const receiveFor=(i,t)=>{
+    if(!receivePlan||i>7)return null;
+    const touches=playTouches(receivePlan);
+    for(let n=0;n<touches.length;n++){
+     const touch=touches[n];if(touch.receiver!==i)continue;
+     const next=touches.slice(n+1).find(p=>p.passer===i);
+     const end=Math.min(touch.arrival+.42,next?next.release-.21:i===0?4.9:5.14);
+     if(end-touch.arrival<.08||t<touch.arrival-.5||t>end+.2)continue;
+     return{touch,end};
+    }
+    return null;
    };
    const markTackle=(i,contact,weight)=>{const f=i===0?importedMotionFrame:squadMotionFrames[i];if(f&&weight>.001)f.tackle={contact,weight}};
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
@@ -1971,6 +1987,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const frame=squadMotionFrames[i];
     frame.speed=speed;frame.turn=turn;frame.acceleration=acceleration;
     frame.control=controlWeight;frame.stride=stride;frame.travel=backpedal>.001?[vx,vz,backpedal]:null;
+    const receiving=importedPlayers[i]?.runCapture&&!celebrating?receiveFor(i,time):null;
+    if(receiving){
+     // Cushion with the boot on the side the pass comes from (inside of the far boot).
+     const from=playPosition(receiving.touch.passer,receiving.touch.release,receivePlan);
+     const fx=-Math.sin(heading),fz=-Math.cos(heading),side=fx*(from[1]-z)-fz*(from[0]-x);
+     frame.receive={arrival:receiving.touch.arrival,end:receiving.end,mirror:side<0?1:0,weight:1,legs:1-.6*smooth((speed-.18)/.3)};
+     if(i===0)importedMotionFrame.receive=frame.receive;
+    }
     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
      importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
      importedMotionFrame.stride=stride}

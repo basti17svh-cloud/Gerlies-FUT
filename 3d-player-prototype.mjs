@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21361';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21362';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -560,6 +560,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.360: captured slide tackle (Mixamo) for the sliding defender.
  const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.362: captured first touch (Mixamo) for the pass receiver.
+ const receiveBody=createReceiveCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.361: captured backwards/sideways jogs for defenders facing the ball.
  const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
@@ -704,6 +706,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
   // A defender running backwards or sideways follows the captured jog instead.
   if(kickCapture&&!keeperRole&&!acro&&info.travel)runBody.apply(info.travel,info.stride);
+  // A pass receiver cushions the ball with a captured first touch.
+  if(kickCapture&&!keeperRole&&!acro&&info.receive)receiveBody.apply(frameTime,info.receive);
   // Real captured kick (CMU) over the strike; boots pinned back on the
   // authored plant and the authoritative ball contact.
   kickState=null;

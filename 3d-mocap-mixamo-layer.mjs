@@ -9,9 +9,9 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21361';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21362';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.361-mixamo-keeper-striker-tackle-run';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.362-mixamo-keeper-striker-tackle-run-receive';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -191,4 +191,40 @@ export function createRunCaptureLayer(bones,playerRoot){
   return state;
  }
  return{apply,state,ready:true};
+}
+
+// V21.362: captured first touch. The receiver slows, looks down, lifts the
+// inside of the boot to cushion the pass and sets the ball. `arrival` is the
+// game time the pass reaches the boot; `end` is when the next action takes
+// over. Unmirrored the capture cushions with the left boot (ball from the
+// player's right); mirror 1 uses the right boot.
+export function receiveCaptureTime(time,arrival,keys){
+ const g=[arrival-.32,arrival,arrival+.4,arrival+.62],c=[keys.load,keys.contact,keys.settle,keys.up];
+ if(time<=g[0])return Math.max(0,c[0]+(time-g[0]));
+ for(let i=1;i<g.length;i++)if(time<=g[i])return c[i-1]+(c[i]-c[i-1])*(time-g[i-1])/(g[i]-g[i-1]);
+ return c[c.length-1]+(time-g[g.length-1]);
+}
+export function receiveCaptureWeights(time,arrival,end=arrival+.42){
+ const out=Math.max(arrival+.12,end);
+ const w=smooth(time,arrival-.48,arrival-.22)*(1-smooth(time,out-.1,out+.16));
+ return{body:.85*w,legs:w};
+}
+export function createReceiveCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,legs:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ if(!rig||!rig.clips.receive)return{apply:()=>state,state};
+ // receive: {arrival, end, mirror, weight, legs}. legs scales the boot lift
+ // down for a receiver still running at speed (no sliding feet).
+ function apply(time=0,receive=null){
+  state.clip='none';state.weight=0;state.legs=0;
+  if(!receive||!Number.isFinite(receive.arrival))return state;
+  const scale=clamp(receive.weight??1),w=receiveCaptureWeights(time,receive.arrival,receive.end);
+  const body=w.body*scale,legs=w.legs*scale*clamp(receive.legs??1);
+  if(body<=.001)return state;
+  const clip=rig.clips.receive;
+  rig.pose('receive',Math.min(clip.frames-1,receiveCaptureTime(time,receive.arrival,clip.keys)*clip.rate),{body,legs},receive.mirror?1:0);
+  state.clip='receive';state.weight=body;state.legs=legs;
+  return state;
+ }
+ return{apply,state};
 }
