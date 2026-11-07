@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21349';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21353';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1847,6 +1847,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
+  // V21.353: the captured dive follows the same authored save as the rig.
+  const keeperDiveInfo=(()=>{const impact=eventShotImpact(event.type,sequence,finish);
+   return Object.freeze({type:event.type,action:keeperAction,impactX:impact[0],impactY:impact[1]})})();
   // Two existing skinned actors can share the verified CC0 sampler without
   // cloning heavy GLB geometry. LOW permits just one additional participant.
   // These parts are purely cosmetic: no root translation, gait/IK or ball touch.
@@ -2171,11 +2174,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    keeper.root.rotation.y=Math.PI;
    const impact=eventShotImpact(event.type,sequence,finish);
    if(labDuelPreview||event.type==='ball_won'){
+    keeperMotionFrame.keeperDive=null;
     keeper.root.position.y=0;
     keeper.shadow.position.y=.022;
     keeper.rig.rotation.z=0;
    }else{
     applyGoalkeeperMotion(keeper,time,kp,event.type,keeperAction,impact[0],impact[1]);
+    keeperMotionFrame.keeperDive=keeperDiveInfo;
     for(const m of activeSignatureMoments(signatures,time))if(m.actor===16)applyPlusMotion(keeper,m,time);
     // A loaded knee bend lowers the hips; it must not lift both boots off turf.
     // Release the support constraint for flight, restore it as the keeper rises.
