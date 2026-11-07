@@ -8,9 +8,9 @@
  * existing retarget, mocap layers and foot IK drive it unchanged.
  */
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
-import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21296';
+import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21349';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21348',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21349',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
 let source=null,pending=null;
@@ -196,6 +196,31 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
  ctx.fillStyle='rgba(0,0,0,.16)';ctx.fillRect(0,s0,size,sh*.07);
  if(second!==socks){ctx.fillStyle=second;ctx.fillRect(0,s0+sh*.13,size,sh*.07)}
  ctx.fillStyle='rgba(255,255,255,.06)';for(let y=s0+sh*.25;y<s0+sh;y+=Math.max(2,size/256))ctx.fillRect(0,y,size,1);
+ // V21.349 soft occlusion painted into the cloth: armpits, the side seams
+ // where the shirt turns away, under the collar and the waistband, so the
+ // kit has depth even under flat stadium light.
+ if(opts.shade!==false&&typeof ctx.createRadialGradient==='function'&&typeof ctx.createLinearGradient==='function'){
+  const blob=(x,y,rx,ry,a)=>{ctx.save();ctx.translate(x,y);ctx.scale(rx,ry);const g=ctx.createRadialGradient(0,0,0,0,0,1);
+   g.addColorStop(0,`rgba(0,0,0,${a})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);ctx.restore()};
+  for(const half of ['front','back']){
+   ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,half);
+   for(const side of [-1,1]){
+    blob(side*.2,1.33,.07,.1,.34);            // armpit
+    blob(side*.215,1.08,.05,.26,.2);          // side seam turning away
+   }
+   blob(0,1.47,.13,.04,.22);                  // under the collar
+   const hem=ctx.createLinearGradient(0,.86,0,.97);hem.addColorStop(0,'rgba(0,0,0,.22)');hem.addColorStop(1,'rgba(0,0,0,0)');
+   ctx.fillStyle=hem;ctx.fillRect(-.4,.86,.8,.11);
+   ctx.restore();
+  }
+  if(metres.shorts)for(const half of ['front','back']){
+   ctx.save();garmentSpace(ctx,size,bands.shorts,metres.shorts,half);
+   const top=metres.shorts[1],g=ctx.createLinearGradient(0,top,0,top-.09);g.addColorStop(0,'rgba(0,0,0,.25)');g.addColorStop(1,'rgba(0,0,0,0)');
+   ctx.fillStyle=g;ctx.fillRect(-.4,top-.09,.8,.09);
+   blob(0,metres.shorts[2]+.06,.07,.12,.3);   // crotch
+   ctx.restore();
+  }
+ }
  // Fine jersey knit over shirt and shorts.
  if(opts.knit!==false){
   let s=hash(kit.shirt+kit.pattern)||1;
@@ -280,9 +305,15 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    if(material.normalMap)material.normalScale.set(.8,.8);
   }else if(name==='FooteraBoots'){
    material.color.set(opts.boots||'#20262b');material.roughness=.42;
+  }else if(name==='FooteraLashes'){
+   // V21.349: lashes a shade darker than the hair, never shadow casters.
+   material.color.set('#120c09');material.roughness=.85;mesh.castShadow=false;
   }else if(/^Footera(Hair|Facial|Brows)-/.test(name)){
    material.color.set(look.hairColor);
-   material.color.multiplyScalar(name.startsWith('FooteraHair')?1:.85);material.roughness=.7;
+   // V21.349: brows sit in the skin, a touch lighter and softer than the hair.
+   if(name.startsWith('FooteraBrows'))material.color.lerp(new THREE.Color(look.skin),.22);
+   else material.color.multiplyScalar(name.startsWith('FooteraHair')?1:.85);
+   material.roughness=.7;
    mesh.castShadow=name.startsWith('FooteraHair');
   }
   mesh.material=material;owned.push({geometry,material});

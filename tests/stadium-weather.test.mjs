@@ -113,11 +113,11 @@ test('clear evenings change nothing',()=>{
 
 test('release wiring: scripts, scene import, cache and versions',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),hl=read('3d-highlights.js'),match=read('3d-highlights-match.js'),app=read('footera-app.js');
- assert.ok(html.indexOf('footera-weather.js?v=21340')>0&&html.indexOf('footera-weather.js?v=21340')<html.indexOf('3d-highlights.js?v=21348'));
+ assert.ok(html.indexOf('footera-weather.js?v=21340')>0&&html.indexOf('footera-weather.js?v=21340')<html.indexOf('3d-highlights.js?v=21349'));
  assert.match(html,/id="matchWeather"/);
  assert.match(scene,/from '\.\/3d-weather\.mjs\?v=21340'/);
- assert.match(hl,/3d-highlights-scene\.mjs\?v=21348/);
- for(const f of ['./3d-weather.mjs?v=21340','./footera-weather.js?v=21340','./3d-highlights-scene.mjs?v=21348','./3d-highlights.js?v=21348'])assert.ok(sw.includes(`"${f}"`),f);
+ assert.match(hl,/3d-highlights-scene\.mjs\?v=21349/);
+ for(const f of ['./3d-weather.mjs?v=21340','./footera-weather.js?v=21340','./3d-highlights-scene.mjs?v=21349','./3d-highlights.js?v=21349'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(match,/weather:match3DWeather\(current\)/);
  assert.match(app,/match\.weather=window\.FooteraWeather\?\.forMatch\(match\.resultId\)/);
 });

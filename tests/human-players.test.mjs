@@ -36,9 +36,10 @@ const info=human.json.extras.footera;
 
 test('human GLB: CC0 source, mobile-sized, every garment and haircut present',()=>{
  assert.match(info.source,/MakeHuman.*CC0/);
- assert.ok(human.bytes<6.2e6,'GLB stays under 6.2 MB: '+human.bytes);
+ // V21.349: +80 KB for build morph and eyelashes.
+ assert.ok(human.bytes<6.3e6,'GLB stays under 6.3 MB: '+human.bytes);
  const meshes=human.json.meshes.map(m=>m.name);
- for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots','FooteraEyes'])assert.ok(meshes.includes(name),name);
+ for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots','FooteraEyes','FooteraLashes'])assert.ok(meshes.includes(name),name);
  for(const hair of info.hair)assert.ok(meshes.includes('FooteraHair-'+hair),hair);
  assert.ok(info.hair.length>=4&&!info.hair.includes('short03'));
  assert.ok(!info.hair.some(h=>/ponytail|long|bob|curly|braid/i.test(h)),'footballers keep short haircuts');
