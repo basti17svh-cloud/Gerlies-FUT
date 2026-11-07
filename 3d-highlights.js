@@ -497,7 +497,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'];
+  const distanceIds=['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'];
   const eligible=v=>{const m=/^skill_(.+)_(left|right)$/.exec(v.id);return m?!!requestedSkill&&m[1]===requestedSkill&&skillStars>=SKILL_LEVELS[m[1]]:!requestedSkill&&(!v.id.startsWith('double_feint')||!skillStars||skillStars>=4)};
   const pool=(simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='dribble'&&!requestedSkill&&signatureMoments(event).some(m=>m.phase==='carry'))return false;
@@ -505,6 +505,9 @@
    if(event.actionKind==='cross')return v.finish===event.finish;
    if(['header','volley','bicycle'].includes(v.finish)||distanceIds.includes(v.id))return false;
    if(event.finish==='chip')return v.finish==='chip';
+   // V21.350: a simulated cut-back is any flat ball in from the wing, so the
+   // authored overlap, low-cross and near-post plays are shown for it too.
+   if(event.actionKind==='cutback')return['cutback','lowcross','nearpost','overlap'].includes(v.family);
    return v.family===event.actionKind;
   }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES]).filter(eligible);
   const starSignature=simulated&&signatureMoments(event).some(m=>m.who==='scorer'&&m.phase==='finish');
