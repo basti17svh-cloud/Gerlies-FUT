@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21360';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21361';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1931,6 +1931,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    motion23Sample=null;duelSample=null;balanceSample=null;contactPose=null;trackingPose=null;
    importedMotionFrame.plusWeight=0;importedMotionFrame.tackle=null;for(const frame of squadMotionFrames){frame.plusWeight=0;frame.tackle=null}
    // V21.360: the sliding defender's imported body follows a captured slide tackle.
+   const backpedalRaw=(i,t)=>{
+    const a=actorPosition(i,Math.max(0,t-.2),event.type,sequence),b=actorPosition(i,t+.2,event.type,sequence);
+    const vx=b[0]-a[0],vz=b[1]-a[1],speed=Math.hypot(vx,vz)/.4/6.5;if(speed<.02)return 0;
+    const ball=eventBallPosition(event.type,Math.min(t,SHOT_TIME),sequence,finish,keeperAction),x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;
+    const toBall=Math.atan2(-(ball[0]-x),-(ball[2]-z)),travel=Math.atan2(-vx,-vz);
+    const off=Math.abs(Math.atan2(Math.sin(toBall-travel),Math.cos(toBall-travel)));
+    const near=1-smooth((Math.hypot(ball[0]-x,ball[2]-z)-18)/10);
+    return smooth((off-1.45)/.75)*smooth((speed-.03)/.06)*(1-smooth((speed-.36)/.14))*near;
+   };
    const markTackle=(i,contact,weight)=>{const f=i===0?importedMotionFrame:squadMotionFrames[i];if(f&&weight>.001)f.tackle={contact,weight}};
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
     const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
@@ -1939,7 +1948,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // threshold, and turn into the celebration line instead of snapping round.
     const standing=facingAt(i,time);
     const celebrating=!celebrationActive?0:i===0?smooth((time-CELEBRATION_START)/.35):smooth((hugWeight(i,time)-.4)/.35);
-    const heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationHeading,celebrating);
+    let heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationHeading,celebrating);
+    // V21.361: a jogging defender with the ball behind his running line keeps
+    // facing the ball and runs backwards or sideways (captured Mixamo jogs).
+    let backpedal=0;
+    if(i>=8&&importedPlayers[i]?.runCapture&&!celebrating&&event.type!=='ball_won'){
+     // Averaged over +-0.6 s so the defender turns round calmly, never in a frame.
+     let sum=0;for(let k=-10;k<=10;k++)sum+=backpedalRaw(i,clamp(time+k*.06,0,DURATION));
+     backpedal=sum/21*(1-smooth((time-(SHOT_TIME-1))/1));
+     const toBall=Math.atan2(-(defensiveBall[0]-x),-(defensiveBall[2]-z));
+     if(backpedal>.001)heading=angleMix(heading,toBall,backpedal);
+    }
     const ax=x-back[0],az=z-back[1],bx=ahead[0]-x,bz=ahead[1]-z;
     const turn=Math.hypot(ax,az)*Math.hypot(bx,bz)>.0001?clamp(Math.atan2(ax*bz-az*bx,ax*bx+az*bz)*.45,-.14,.14):0;
     const beforeSpeed=Math.hypot(ax,az)/.13,afterSpeed=Math.hypot(bx,bz)/.13;
@@ -1951,7 +1970,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const stride=hugWeight(i,time)?hugStride(i,time):gaitPhase(i,time);
     const frame=squadMotionFrames[i];
     frame.speed=speed;frame.turn=turn;frame.acceleration=acceleration;
-    frame.control=controlWeight;frame.stride=stride;
+    frame.control=controlWeight;frame.stride=stride;frame.travel=backpedal>.001?[vx,vz,backpedal]:null;
     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
      importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
      importedMotionFrame.stride=stride}

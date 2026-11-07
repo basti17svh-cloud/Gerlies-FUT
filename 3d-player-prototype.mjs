@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21360';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21361';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -560,6 +560,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.360: captured slide tackle (Mixamo) for the sliding defender.
  const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.361: captured backwards/sideways jogs for defenders facing the ball.
+ const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
  const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  playerRoot.updateMatrixWorld(true);
@@ -700,6 +702,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    for(let i=0;i<2;i++)legSwing[i]=driver.gait[i]?.swingShape??driver.gait[i]?.swingWeight??(driver.gait[i]?.support?0:1);
    capturedBody.applyLegs(1.12*(1-authoredLegs)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(info.grounded===false?0:1),legSwing);
   }
+  // A defender running backwards or sideways follows the captured jog instead.
+  if(kickCapture&&!keeperRole&&!acro&&info.travel)runBody.apply(info.travel,info.stride);
   // Real captured kick (CMU) over the strike; boots pinned back on the
   // authored plant and the authoritative ball contact.
   kickState=null;
@@ -764,7 +768,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    elbows:[local('lowerarm_l'),local('lowerarm_r')],hands:[local('hand_l'),local('hand_r')]};
  }
  animate();
- return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
+ return{model,modelRoot:normalized,runCapture:kickCapture&&runBody.ready,meshCount:meshes.length,vertexCount:asset.vertexCount,
   boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,kitCanvas:dressed?.canvas||null,
   surfaceDetail:!!surfaceMaps,
   dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry?.dispose();material?.dispose();texture?.dispose()}surfaceMaps?.dispose()}

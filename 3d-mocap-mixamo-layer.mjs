@@ -7,10 +7,11 @@
  * pulled onto the ball by the caller's hand IK around the contact.
  * Deterministic: a pure function of time and the dive.
  */
+import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21360';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21361';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.360-mixamo-keeper-striker-tackle';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.361-mixamo-keeper-striker-tackle-run';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -148,4 +149,46 @@ export function createTackleCaptureLayer(bones,playerRoot){
   return state;
  }
  return{apply,state};
+}
+
+// V21.361: captured backwards and sideways jogs for defenders who keep facing
+// the ball. angle: travel direction in the model's frame (0 forward, +PI/2
+// its left, +-PI backwards); phase 0..1 along the gait cycle.
+const RUN_DIRS=[
+ {at:Math.PI/2,clip:'strafe_left',mirror:0},{at:Math.PI*.75,clip:'jog_back_diag',mirror:1},
+ {at:Math.PI,clip:'jog_back',mirror:0},{at:-Math.PI,clip:'jog_back',mirror:0},
+ {at:-Math.PI*.75,clip:'jog_back_diag',mirror:0},{at:-Math.PI/2,clip:'strafe_right',mirror:0}
+];
+export function backpedalBlend(angle){
+ const a=Math.atan2(Math.sin(angle),Math.cos(angle)),side=a>=0?1:-1,abs=Math.abs(a);
+ // Forward-ish travel keeps the normal captured run.
+ const share=smooth(abs,Math.PI*.3,Math.PI*.5);
+ const dirs=side>0?RUN_DIRS.slice(0,3):RUN_DIRS.slice(3).reverse();
+ // dirs ordered by |at| ascending: PI/2, 3PI/4, PI.
+ const x=clamp(abs,Math.PI/2,Math.PI);
+ const k=x<Math.PI*.75?0:1,u=(x-Math.abs(dirs[k].at))/(Math.PI/4);
+ return{share,a:dirs[k],b:dirs[k+1],u:clamp(u)};
+}
+export function createRunCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ if(!rig)return{apply:()=>state,state,ready:false};
+ const local=new THREE.Vector3(),inv=new THREE.Quaternion(),fwd=new THREE.Vector3(0,0,1).applyQuaternion(rig.face);
+ // travel: [vx, vz, weight] in world space; stride: gait phase in radians.
+ function apply(travel=null,stride=0){
+  state.clip='none';state.weight=0;
+  if(!travel||!(travel[2]>.001))return state;
+  playerRoot.updateMatrixWorld(true);playerRoot.getWorldQuaternion(inv).invert();
+  local.set(travel[0],0,travel[1]).applyQuaternion(inv);local.y=0;
+  if(local.lengthSq()<1e-10)return state;
+  const angle=Math.atan2(local.dot(rig.left),local.dot(fwd)),blend=backpedalBlend(angle);
+  const w=clamp(travel[2])*blend.share;if(w<=.001)return state;
+  const phase=((stride/(Math.PI*2))%1+1)%1;
+  const frameOf=name=>phase*(rig.clips[name].frames-1);
+  rig.pose(blend.a.clip,frameOf(blend.a.clip),{body:w,legs:w},blend.a.mirror);
+  if(blend.u>.001)rig.pose(blend.b.clip,frameOf(blend.b.clip),{body:w*blend.u,legs:w*blend.u},blend.b.mirror);
+  state.clip=blend.u>.5?blend.b.clip:blend.a.clip;state.weight=w;
+  return state;
+ }
+ return{apply,state,ready:true};
 }
