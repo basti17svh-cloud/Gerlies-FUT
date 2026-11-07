@@ -40,6 +40,8 @@ test('keeper capture timing: ready before the shot, dive around the save, hands 
  assert.equal(keeperCaptureWeights(6.6).hands,1,'gloves on the authored contact');
  assert.ok(keeperCaptureWeights(7.8).hands<.5,'captured arms after the landing');
  assert.equal(keeperCaptureWeights(10).dive,0);
+ assert.equal(keeperCaptureWeights(6.5,'rush_spread').dive,0,'spread block keeps the authored smother');
+ assert.equal(keeperCaptureWeights(6.65,'rush_spread').hands,1);
  const keys=FOOTERA_MIXAMO.clips.keeper_dive.keys;
  assert.ok(Math.abs(keeperCaptureTime(5.95,keys)-keys.launch)<1e-9);
  assert.ok(Math.abs(keeperCaptureTime(6.95,keys)-keys.land)<1e-9);

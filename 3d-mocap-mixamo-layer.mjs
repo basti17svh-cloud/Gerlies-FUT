@@ -30,11 +30,16 @@ export function keeperCaptureClip(action='classic'){
 }
 // Weights of the ready sway and the dive over the play.
 export function keeperCaptureWeights(time,action='classic'){
- const early=action==='rush_spread'?.23:0;
- const dive=smooth(time,5.05-early,5.45-early)*(1-smooth(time,9.05,9.6));
- const ready=.8*smooth(time,3.2,3.8)*(1-smooth(time,5.05-early,5.45-early));
+ // The low spread block (rush_spread) has no matching capture: it keeps the
+ // authored smother and only borrows the captured ready stance.
+ if(action==='rush_spread'){
+  const ready=.8*smooth(time,3.2,3.8)*(1-smooth(time,4.82,5.22));
+  return{dive:0,ready,legs:0,hands:1};
+ }
+ const dive=smooth(time,5.05,5.45)*(1-smooth(time,9.05,9.6));
+ const ready=.8*smooth(time,3.2,3.8)*(1-smooth(time,5.05,5.45));
  // Legs join for the push-off and leave again as the authored get-up plants them.
- const legs=smooth(time,5.6-early,5.92-early)*(1-smooth(time,8.1,8.7));
+ const legs=smooth(time,5.6,5.92)*(1-smooth(time,8.1,8.7));
  // Hand IK onto the authored gloves: full around the ball contact only.
  const hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
  return{dive,ready,legs,hands:clamp(hands)};
@@ -64,7 +69,7 @@ export function createKeeperCaptureLayer(bones,playerRoot){
    const leftX=left.clone().applyQuaternion(playerRoot.quaternion).x;
    const towardsLeft=Math.sign(leftX)*m.side>0;
    const mirror=(clip.side>0)===towardsLeft?0:1;
-   const t=keeperCaptureTime(time,clip.keys,action==='rush_spread'?.23:0);
+   const t=keeperCaptureTime(time,clip.keys);
    rig.pose(name,t*clip.rate,{body:w.dive,legs:w.legs},mirror);
    state.clip=name;state.weight=w.dive;state.mirror=mirror;
   }
