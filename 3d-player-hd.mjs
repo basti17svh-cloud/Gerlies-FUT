@@ -127,9 +127,9 @@ export function footeraFabricNormal(THREE,layout,size=1024,seed=1){
  // Jersey knit: a fine diamond mesh, smaller than a pixel row of the colour.
  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
   const v=y/size;if(v>bands.shorts[1])continue;
-  sm[y*size+x]+=.004*Math.sin(x*1.9)*Math.sin(y*1.9);
+  sm[y*size+x]+=.0025*Math.sin(x*1.9)*Math.sin(y*1.9);
  }
- const data=heightToNormal(sm,size,24,false);
+ const data=heightToNormal(sm,size,40,false);
  const t=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);t.name='FooteraKitFolds';t.flipY=false;
  t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=8;
  t.colorSpace=THREE.NoColorSpace;t.needsUpdate=true;
@@ -206,15 +206,17 @@ export function upgradeFooteraHero(THREE,meshes,look,kitMap,layout,seed=1){
    m.aoMap=old.aoMap;m.aoMapIntensity=1;
   }else if(name==='FooteraSocks'){
    m.sheen=.4;m.sheenRoughness=.6;m.sheenColor=new THREE.Color('#ffffff');m.envMapIntensity=.25;
+  }else if(name==='FooteraLashes'){
+   m.alphaToCoverage=true;m.alphaTest=.5;m.envMapIntensity=.1;
   }else if(name==='FooteraBoots'){
    m.clearcoat=.8;m.clearcoatRoughness=.18;m.roughness=.35;m.envMapIntensity=1;
   }else if(/^Footera(Hair|Facial|Brows)-/.test(name)){
    // Strand highlight along the hair cards, softer cut-out edges.
-   m.anisotropy=.7;m.anisotropyRotation=Math.PI/2;m.roughness=.42;m.specularIntensity=.7;
+   m.anisotropy=.6;m.anisotropyRotation=Math.PI/2;m.roughness=.58;m.specularIntensity=.38;
    m.sheen=.5;m.sheenRoughness=.4;m.sheenColor=new THREE.Color(look.hairColor).lerp(new THREE.Color('#ffffff'),.15);m.sheen=.3;
    const strands=hairStrandNormal(THREE,old.map);if(strands){m.normalMap=strands;m.normalScale.set(1.2,1.2)}
    if(name.startsWith('FooteraHair'))m.color.multiplyScalar(1.15);
-   m.alphaToCoverage=true;m.alphaTest=name.startsWith('FooteraBrows')?.12:.22;m.envMapIntensity=.3;
+   m.alphaToCoverage=true;m.alphaTest=name.startsWith('FooteraBrows')?.2:.22;m.envMapIntensity=.2;
   }
   m.needsUpdate=true;mesh.material=m;owned.push({material:m});old.dispose();
  }
