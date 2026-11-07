@@ -699,6 +699,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const k=strikerBody.apply(frameTime,strikerFinish);
    if(k.ground>.001)groundKeeper(k.ground);
   }
+  // Everyday football jog and ready stance (hips, spine, arms), wherever the
+  // library gait owns the body (not in shots, tricks, celebrations or the
+  // air); posed before the foot IK so the planted boots stay put.
+  const gaitShare=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
+   clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
+  if(gaitShare>.001)gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);
   if(!acro||acro.weight<.5)matchFeet();
   // V21.297: the captured stride owns the swinging leg (knee drive, heel
   // kick); the standing leg stays on its planted IK boot, so the hips never
@@ -708,12 +714,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    for(let i=0;i<2;i++)legSwing[i]=driver.gait[i]?.swingShape??driver.gait[i]?.swingWeight??(driver.gait[i]?.support?0:1);
    capturedBody.applyLegs(1.12*(1-authoredLegs)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(info.grounded===false?0:1),legSwing);
   }
-  // Everyday football jog and ready stance over the upper body, wherever the
-  // library gait owns it (not in shots, tricks, celebrations or the air).
-  if(kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)){
-   const share=clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0));
-   gaitBody.apply(frameTime,info.speed,info.stride||0,share);
-  }
+  // The football jog also owns each swinging leg (after the library capture).
+  if(gaitShare>.001)gaitBody.applyLegs(info.speed,info.stride||0,gaitShare*(info.grounded===false?0:1),legSwing);
   // A defender running backwards or sideways follows the captured jog instead.
   if(kickCapture&&!keeperRole&&!acro&&info.travel)runBody.apply(info.travel,info.stride);
   // A pass receiver cushions the ball with a captured first touch.

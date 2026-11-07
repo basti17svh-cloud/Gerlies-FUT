@@ -269,9 +269,11 @@ export function createMixamoKickLayer(bones,playerRoot){
 // V21.364: everyday football movement. A footballer's forward jog (Mixamo
 // "jog forward") and the bent-knee ready stance ("offensive idle") replace the
 // generic library gait in their speed bands; sprints keep the library sprint.
-// Head and neck stay on the procedural look at the ball; pelvis and legs stay on the
-// planted-boot gait (captured swing + foot IK), so no boot ever slides.
-const GAIT_SKIP=new Set(['pelvis','neck_01','Head']);
+// Head and neck stay on the procedural look at the ball. The body (with the
+// hips) is posed before the foot IK, so the planted boots never slide; the
+// captured legs then own each leg only while it swings (applyLegs).
+const GAIT_SKIP=new Set(['neck_01','Head']);
+const LEG_SKIP=[new Set(['neck_01','Head','thigh_r','calf_r','foot_r']),new Set(['neck_01','Head','thigh_l','calf_l','foot_l'])];
 export function gaitCaptureWeights(speed=0){
  const s=clamp(speed);
  const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
@@ -305,5 +307,16 @@ export function createGaitCaptureLayer(bones,playerRoot){
   }
   return state;
  }
- return{apply,state};
+ // swing: [left, right] 0..1, how much each leg is in the air right now.
+ function applyLegs(speed=0,stride=0,share=1,swing=[0,0]){
+  const w=gaitCaptureWeights(speed).jog*clamp(share);if(w<=.001)return 0;
+  const clip=rig.clips.jog_fwd,loop=clip.frames-1;
+  const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
+  for(let i=0;i<2;i++){
+   const legs=w*clamp(swing[i]);if(legs<=.001)continue;
+   rig.pose('jog_fwd',phase*loop,{body:0,legs},0,LEG_SKIP[i]);
+  }
+  return w;
+ }
+ return{apply,applyLegs,state};
 }

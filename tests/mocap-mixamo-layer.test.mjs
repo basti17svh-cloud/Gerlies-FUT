@@ -156,7 +156,13 @@ test('gait capture: football jog and ready stance by speed, sprint and actions l
  assert.equal(layer.apply(1,.35,0,0).clip,'none','no share: shots, tricks, celebrations');
  const before=bones.get('pelvis').quaternion.clone(),head=bones.get('Head').quaternion.clone();
  assert.equal(layer.apply(1,.35,1.2,1).clip,'jog_fwd');
- assert.ok(bones.get('pelvis').quaternion.equals(before),'pelvis (and the planted boots) untouched');
+ assert.ok(!bones.get('pelvis').quaternion.equals(before),'the hips move like the jog (posed before the foot IK)');
+ // Legs: only the swinging leg follows the capture; the planted one keeps its IK pose.
+ const l=bones.get('thigh_l').quaternion.clone(),r=bones.get('thigh_r').quaternion.clone();
+ assert.ok(layer.applyLegs(.35,1.2,1,[1,0])>0);
+ assert.ok(!bones.get('thigh_l').quaternion.equals(l),'swinging left leg');
+ assert.ok(bones.get('thigh_r').quaternion.equals(r),'planted right leg untouched');
+ assert.equal(layer.applyLegs(.9,1.2,1,[1,1]),0,'sprint legs stay the library sprint');
  assert.ok(bones.get('Head').quaternion.equals(head),'head keeps looking at the ball');
  assert.equal(layer.apply(1,0,0,1).clip,'ready_idle');
  // Deterministic: the same time gives the same stance (the game rebuilds the
