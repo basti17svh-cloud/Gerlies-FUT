@@ -20,7 +20,7 @@
    button:"Verstanden"},
   {id:"match",title:"Dein erstes Spiel",
    text:()=>matchText(),
-   targets:()=>["#squadBattleKickoff","#sbContinueLineup:not([disabled])","#squadBattleModal [data-sb-select]:not(.played)",'.startmode[data-mode="squad"]','[data-play-mode="squad"]','.nav [data-view="playView"]']},
+   targets:()=>["#squadBattleKickoff","#sbContinueLineup:not([disabled])","#squadBattleModal [data-sb-select]:not(.played)",'.startmode[data-mode="squad"]','[data-play-mode="squad"]','[data-play-back]','.nav [data-view="playView"]']},
   {id:"pack",title:"Dein Willkommens-Pack",
    text:()=>packText(),
    targets:()=>["#resultAllClub",`[data-owned="${PACK_ID}"]`,"#storeMyPacks",'.nav [data-view="storeView"]']},
@@ -71,6 +71,8 @@
    if(cont&&!cont.disabled)return "Gute Wahl! Tippe jetzt auf <b>Zur Aufstellung</b>.";
    return "Such dir einen Gegner aus. Für dein erstes Spiel ist ein schwacher Gegner ideal.";
   }
+  const back=document.querySelector("[data-play-back]");
+  if(view==="playView"&&back&&visible(back)&&!document.querySelector('.startmode[data-mode="squad"]')?.offsetParent)return "Das ist ein anderer Spielmodus. Tippe auf <b>Alle Spielmodi</b> und starte dann mit <b>Squad Battles</b>.";
   if(view==="playView")return "Hier findest du alle Spielmodi. Starte mit <b>Squad Battles</b>: Dort spielst du gegen die KI und sammelst Coins und Wochenpunkte.";
   return "Zeit für dein erstes Spiel! Tippe unten auf <b>Spielen</b>.";
  }
