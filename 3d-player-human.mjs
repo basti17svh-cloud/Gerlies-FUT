@@ -10,7 +10,7 @@
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21296';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21346',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21348',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
 let source=null,pending=null;

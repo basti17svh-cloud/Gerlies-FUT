@@ -41,7 +41,7 @@ function collectSchedule({from,days}){
  const until=from+days*86400000,ms=v=>Date.parse(v||""),list=[];
  const rows=footeraEventCalendar(from-1,{days:days+1,limit:500});
  const releases=typeof EVENT_PROMO_RELEASES!=="undefined"?EVENT_PROMO_RELEASES:[];
- const noon=(t,minus=0)=>{const d=new Date(t-minus*86400000);const p=berlinParts(d);return Date.parse(`${p.year}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}T12:30:00${berlinOffset(d)}`)};
+ const noon=(t,minus=0)=>{const d=new Date(t-minus*86400000);const p=berlinParts(d);return Date.parse(`${p.year}-${String(p.month).padStart(2,"0")}-${String(p.day).padStart(2,"0")}T13:00:00${berlinOffset(d)}`)};
  function berlinOffset(d){const s=new Intl.DateTimeFormat("en",{timeZone:"Europe/Berlin",timeZoneName:"longOffset"}).formatToParts(d).find(x=>x.type==="timeZoneName").value;return s==="GMT"?"+00:00":s.replace("GMT","")}
  for(const row of rows){
   const keys=String(row.key).split("+");
@@ -94,7 +94,25 @@ function collectContent(entry){
  return out
 }
 
-async function renderCards(page,cards,dir){
+/* Teaser silhouettes (Basti 2026-11-06: fully black cards showed nobody, "Erkennst du jemanden? NE WIE DENN"):
+ * keep the real card design, turn only the player portrait into a black silhouette with a glowing rim,
+ * and hide everything that gives the player away (name, rating, stats, flag, club, position). */
+async function silhouetteCard(page){
+ await page.evaluate(()=>{
+  const shell=document.querySelector("#socialCardBox .card-shell")||document.querySelector("#socialCardBox .social-card > *");if(!shell)return;
+  const r0=shell.getBoundingClientRect(),imgs=[...shell.querySelectorAll("img")].filter(i=>i.complete&&i.naturalWidth);
+  const area=i=>{const r=i.getBoundingClientRect();return r.width*r.height};
+  const portrait=imgs.sort((a,b)=>area(b)-area(a)).find(i=>area(i)<r0.width*r0.height*.9)||null;
+  for(const i of shell.querySelectorAll("img")){if(i===portrait)continue;if(area(i)<r0.width*r0.height*.5)i.style.visibility="hidden"}
+  if(portrait)portrait.style.filter="brightness(0) drop-shadow(0 0 3px rgba(255,255,255,.55)) drop-shadow(0 0 14px rgba(255,60,40,.7))";
+  const walker=document.createTreeWalker(shell,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode())){if(n.nodeValue.trim())n.parentElement.style.setProperty("color","transparent","important"),n.parentElement.style.setProperty("text-shadow","none","important"),n.parentElement.style.setProperty("-webkit-text-stroke","0","important")}
+  for(const el of shell.querySelectorAll("svg,canvas"))if(el.getBoundingClientRect().width<r0.width*.5)el.style.visibility="hidden";
+  shell.dataset.silhouette=portrait?"ok":"none";
+ });
+ return page.evaluate(()=>document.querySelector("#socialCardBox [data-silhouette]")?.dataset.silhouette||"none")
+}
+
+async function renderCards(page,cards,dir,silhouette=false){
  await page.evaluate(()=>{
   let box=document.getElementById("socialCardBox");if(!box){box=document.createElement("div");box.id="socialCardBox";box.style.cssText="position:fixed;left:0;top:0;z-index:2147483647;background:transparent;padding:40px";document.body.appendChild(box)}
   document.documentElement.style.background="transparent";document.body.style.background="transparent";
@@ -105,6 +123,7 @@ async function renderCards(page,cards,dir){
   await page.evaluate(html=>{const box=document.getElementById("socialCardBox");box.innerHTML='<div class="social-card">'+html+"</div>";box.querySelectorAll("img").forEach(im=>{im.loading="eager"});if(typeof fitCardPortrait==="function")box.querySelectorAll("img").forEach(im=>{try{fitCardPortrait(im)}catch(_){}})},cards[i].html);
   await page.waitForFunction(()=>[...document.querySelectorAll("#socialCardBox img")].every(i=>i.complete),null,{timeout:30000}).catch(()=>{});
   await page.waitForTimeout(process.env.CI?1500:500);
+  if(silhouette){const st=await silhouetteCard(page);if(st!=="ok")throw new Error("Silhouette: kein Spielerbild gefunden in Karte "+i)}
   const file=path.join(dir,`card-${String(i).padStart(2,"0")}.png`);
   await (await page.$("#socialCardBox .card-shell")||await page.$("#socialCardBox .social-card > *")).screenshot({path:file,omitBackground:true});files.push(file);
  }
@@ -157,7 +176,7 @@ async function renderReel(ctx,base,reel,file,seed){
    for(const post of posts){
     const dir=path.join(OUT,post.id);fs.rmSync(dir,{recursive:true,force:true});fs.mkdirSync(dir,{recursive:true});
     const cardDir=path.join(dir,"_cards");fs.mkdirSync(cardDir);
-    const files=await renderCards(page,content.cards.filter(c=>!post.cardRoles||post.cardRoles.includes(c.role)),cardDir);
+    const files=await renderCards(page,content.cards.filter(c=>!post.cardRoles||post.cardRoles.includes(c.role)),cardDir,!!content.silhouette);
     files.forEach((f,i)=>extraFiles.set(`${post.id}/${i}`,f));
     const cardUrls=files.map((_,i)=>`/__social/${encodeURIComponent(post.id+"/"+i)}`);
     post.media={feed:[],story:[]};

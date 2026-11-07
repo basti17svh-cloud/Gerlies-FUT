@@ -1,11 +1,13 @@
 /* Footera V21.209 — share walkouts, invite friends by link and suggest the home-screen app.
    V21.211 — invite reward: both players get an 82+ pack once the new player has played 3 matches.
+   V21.347 — invite hint right after a win (the moment players are happiest), social handles on share pictures.
    Invite links look like ./?invite=AB7K-3P9Q&utm_source=share&utm_medium=invite. The code is
    kept on this device until the online service can resolve it, then the inviter becomes a friend. */
 (()=>{
  "use strict";
  if(window.FooteraShare)return;
- const INVITE_KEY="footera-pending-invite-v1",HINT_KEY="footera-install-hint-v1",
+ const INVITE_KEY="footera-pending-invite-v1",HINT_KEY="footera-install-hint-v1",WIN_HINT_KEY="footera-win-invite-hint-v1",
+       WIN_HINT_MAX=2,WIN_HINT_PAUSE_DAYS=3,SOCIAL_LINE="Insta @official_footera · TikTok @footera_official",
        INVITE_DAYS=14,HINT_PAUSE_DAYS=3,HINT_MAX=3,CODE=/^[A-HJ-NP-Z2-9]{8}$/;
  const read=k=>{try{return localStorage.getItem(k)}catch{return null}};
  const write=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
@@ -154,6 +156,8 @@
    ctx.fillText("Kostenlos spielen · BUILD YOUR ERA",W/2,1735,W-120);
    ctx.fillStyle=accent;ctx.font="700 32px Inter,system-ui,sans-serif";
    ctx.fillText(gameUrl().host+gameUrl().pathname.replace(/\/$/,""),W/2,1800,W-120);
+   ctx.fillStyle="#ffffff8c";ctx.font="600 28px Inter,system-ui,sans-serif";
+   ctx.fillText(SOCIAL_LINE,W/2,1858,W-120);
    const blob=await new Promise(r=>{try{canvas.toBlob(r,"image/png")}catch(e){r(null)}});
    if(!blob)return null;
    const slug=String(base.name||"karte").normalize("NFD").replace(/[^\w]+/g,"-").replace(/^-|-$/g,"").toLowerCase()||"karte";
@@ -302,6 +306,29 @@
   });
   document.body.append(el);return true
  }
+ /* ---------- invite hint after a win ---------- */
+ function winHintState(){try{return JSON.parse(read(WIN_HINT_KEY)||"{}")||{}}catch(e){return{}}}
+ function closeWinHint(never){
+  document.getElementById("footeraWinInvite")?.remove();
+  const s=winHintState();write(WIN_HINT_KEY,JSON.stringify({count:(s.count||0)+1,at:Date.now(),never:!!never||!!s.never}))
+ }
+ function showWinInvite(force=false){
+  if(document.getElementById("footeraWinInvite")||document.getElementById("footeraInstallHint"))return false;
+  if(!force){
+   if(!window.FooteraOnline?.available||typeof state==="undefined"||state.referral?.sharedInvite)return false;
+   const s=winHintState();if(s.never||(s.count||0)>=WIN_HINT_MAX||Date.now()-(s.at||0)<WIN_HINT_PAUSE_DAYS*864e5)return false;
+  }
+  const el=document.createElement("section");
+  el.id="footeraWinInvite";el.className="install-hint win-invite";el.setAttribute("role","dialog");el.setAttribute("aria-label","Freund einladen");
+  el.innerHTML=`<img src="./icon-192.png" alt="" width="48" height="48"><div class="install-hint-body"><strong>Starker Sieg! Wer spielt mit?</strong><p>Lad einen Freund ein: Sobald er ${REFERRAL_MATCHES} Spiele gespielt hat, bekommt ihr <b>beide ein ${escText(REFERRAL_PACK_NAME)}</b>.</p><div class="install-hint-actions"><button type="button" class="primary" data-win-invite="share">Freund einladen</button><button type="button" class="secondary" data-win-invite="later">Später</button><button type="button" class="install-hint-never" data-win-invite="never">Nicht mehr zeigen</button></div></div>`;
+  el.addEventListener("click",e=>{
+   const b=e.target.closest("[data-win-invite]");if(!b)return;
+   const kind=b.dataset.winInvite;closeWinHint(kind!=="later");
+   if(kind==="share")shareInvite()
+  });
+  document.body.append(el);return true
+ }
+ function afterWin(){setTimeout(()=>{try{showWinInvite()}catch(e){console.warn("Footera Einladung nach Sieg:",e)}},2600)}
  function afterPack(){
   const packs=typeof state!=="undefined"?Number(state.stats?.packs||0):0;
   if(packs>=1)setTimeout(()=>showInstallHint(),900)
@@ -317,5 +344,5 @@
   if(e.target.closest("#resultShareBtn")){sharePack();return}
   if(e.target.closest("#shareInviteLink")){shareInvite()}
  });
- window.FooteraShare={inviteUrl,share,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,afterPack,afterMatch,claimReferralRewards,start};
+ window.FooteraShare={inviteUrl,share,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,showWinInvite,afterWin,afterPack,afterMatch,claimReferralRewards,start};
 })();

@@ -6018,7 +6018,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
  "gianluigi-donnarumma":61000
 };
 const TOTW_PRICE_ANCHORS={
- "277643|91":1641000, // Lamine Yamal
+ "277643|91":1850000, // Lamine Yamal
  "247827|91":1050000, // Michael Olise
  "220941|89":256000   // David Raya
 };
@@ -6109,7 +6109,7 @@ const ICON_PRICE_ANCHORS={
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":6800000, // Ronaldinho
- "carlos-alberto":3200000, // Carlos Alberto
+ "carlos-alberto":2250000, // Carlos Alberto
  "gianluigi-buffon":835000, // Gianluigi Buffon
  "lilian-thuram":3200000, // Lilian Thuram
  "yaya-toure":1990000, // Yaya Touré
@@ -8461,7 +8461,7 @@ function finishMatch(){
  if(isFriendly)state.stats.friendlies=(state.stats.friendlies||0)+1;
  let reward=0,resultKey="loss";
  if(homeWon){
-  resultKey="win";state.stats.wins++;if(isFriendly)state.stats.friendlyWins=(state.stats.friendlyWins||0)+1;
+  resultKey="win";state.stats.wins++;globalThis.FooteraShare?.afterWin?.();if(isFriendly)state.stats.friendlyWins=(state.stats.friendlyWins||0)+1;
   reward=isFriendly?0:(match.mode==="rivals"?750:match.mode==="champions"?championsMatchCoins("win"):(match.mode==="squad"&&match.opponentProfile?.rewards?match.opponentProfile.rewards.win:700));
   // Division progression and weekly points are recorded once below.
  }else if(!awayWon){
@@ -9177,23 +9177,31 @@ const PROMO_CODES={
  "ranger":{id:"ranger_50k",points:50000,label:"Ranger"},
  "max":{id:"max_200k",points:200000,label:"Max"},
  "footera":{id:"footera_75k",points:75000,label:"Footera"},
- "basti":{id:"basti_500k",points:500000,label:"Basti"}
+ "basti":{id:"basti_500k",points:500000,label:"Basti"},
+ // Wochen-Codes stehen nur in den Footera-Videos (TikTok/Instagram) und gelten 7 Tage (Berliner Zeit).
+ "anpfiff":{id:"social_kw46_anpfiff",coins:5000,label:"ANPFIFF",from:"2026-11-09T00:00:00+01:00",until:"2026-11-16T00:00:00+01:00"}
 };
+function promoRewardText(r){return r?.coins?`${fmt(Number(r.coins))} Coins`:`${fmt(Number(r?.points||0))} Footera Points`}
 function normalizePromoCode(v){return String(v||"").normalize("NFC").trim().toLocaleLowerCase("de-DE")}
 function renderPromo(){
  const status=$("promoStatus"),title=$("promoRewardTitle"),sub=$("promoRewardSub");
  if(!status)return;
  const claims=Object.values(state.promoClaims||{}).filter(Boolean).sort((a,b)=>Number(b.claimedAt||0)-Number(a.claimedAt||0));
- if(claims.length){const last=claims[0],pts=Number(last.reward?.points||0);status.className="promo-status success";status.textContent=`Zuletzt eingelöst: ${last.code} · ${fmt(pts)} Footera Points. Jeder Code kann pro Spielstand nur einmal verwendet werden.`;if(title)title.textContent=`${fmt(pts)} Footera Points`;if(sub)sub.textContent=`Belohnung aus „${last.code}“`;}
+ if(claims.length){const last=claims[0],what=promoRewardText(last.reward);status.className="promo-status success";status.textContent=`Zuletzt eingelöst: ${last.code} · ${what}. Jeder Code kann pro Spielstand nur einmal verwendet werden.`;if(title)title.textContent=what;if(sub)sub.textContent=`Belohnung aus „${last.code}“`;}
  else{status.className="promo-status";status.textContent="Gib deinen Promocode ein und tippe auf „Einlösen“.";if(title)title.textContent="Promocode-Belohnung";if(sub)sub.textContent="Jeder gültige Code hat seine eigene Belohnung."}
 }
 function redeemPromo(){
  const input=$("promoCodeInput"),status=$("promoStatus"),key=normalizePromoCode(input?.value),promo=PROMO_CODES[key];
  if(!promo){if(status){status.className="promo-status error";status.textContent="Promocode ungültig. Prüfe die Schreibweise und versuche es erneut."}return}
+ const now=Date.now();
+ if(promo.from&&now<Date.parse(promo.from)){if(status){status.className="promo-status error";status.textContent=`„${promo.label}“ gilt noch nicht. Schau ab dem Start der Woche nochmal rein.`}return}
+ if(promo.until&&now>=Date.parse(promo.until)){if(status){status.className="promo-status error";status.textContent=`„${promo.label}“ ist abgelaufen. Den neuen Wochen-Code gibt es in den Footera-Videos.`}return}
  state.promoClaims=state.promoClaims||{};
  if(state.promoClaims[promo.id]){if(status){status.className="promo-status success";status.textContent=`„${promo.label}“ wurde in diesem Spielstand bereits eingelöst.`}return}
- state.points+=promo.points;state.promoClaims[promo.id]={claimedAt:Date.now(),code:promo.label,reward:{points:promo.points}};
- save();renderWallet();renderPromo();if(input)input.value="";toast(`${fmt(promo.points)} Footera Points gutgeschrieben.`)
+ const reward=promo.coins?{coins:Number(promo.coins)}:{points:Number(promo.points)};
+ if(reward.coins)state.coins=(Number(state.coins)||0)+reward.coins;else state.points+=reward.points;
+ state.promoClaims[promo.id]={claimedAt:now,code:promo.label,reward};
+ save();renderWallet();renderPromo();if(input)input.value="";toast(`${promoRewardText(reward)} gutgeschrieben.`)
 }
 $("redeemPromoCode")?.addEventListener("click",redeemPromo);
 $("promoCodeInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")redeemPromo()});
@@ -9410,7 +9418,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.346";
+const GFUT_BUILD="V21.348";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9468,7 +9476,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21346",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21348",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

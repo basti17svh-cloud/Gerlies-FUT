@@ -24,7 +24,7 @@ h1 em{font-style:normal;color:${t.accent}}
 .rule{position:relative;width:820px;height:1px;background:linear-gradient(90deg,transparent,${t.line.replace(/[\d.]+\)$/,".9)")},transparent)}
 .cards{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:14px 8px}
 .cards img{display:block;filter:drop-shadow(0 10px 18px rgba(0,0,0,.6))}
-.sil img{filter:brightness(0) drop-shadow(0 0 22px ${t.glow}) drop-shadow(0 0 2px ${t.accent})}
+.sil img{filter:drop-shadow(0 0 22px ${t.glow}) drop-shadow(0 10px 18px rgba(0,0,0,.6))}
 .hero img{filter:drop-shadow(0 0 60px ${t.glow}) drop-shadow(0 24px 30px rgba(0,0,0,.7))}
 .lines{position:relative;display:flex;flex-direction:column;gap:12px;align-items:center;padding:0 70px}
 .lines div{border:2px solid ${t.line};border-radius:16px;background:rgba(0,0,0,.45);padding:14px 26px;font:700 28px/1.3 Inter;text-align:center}
@@ -91,10 +91,10 @@ function reelHTML(reel){
  ${tm.wall?`.lines{animation:out .35s ease-in ${tm.wallAt}s forwards}`:""}
  #p>.moon{animation:moonDrift ${tm.seconds}s linear 0s both}
  .brand{animation:pop .8s cubic-bezier(.2,.9,.3,1.3) .1s both}
- .kicker{animation:fadeUp .5s ease-out .6s both}
+ .kicker{animation:fadeUp .5s ease-out .6s both${tm.wall?`, out .35s ease-in ${tm.wallAt}s forwards`:""}}
  h1{animation:slam .55s cubic-bezier(.2,.9,.3,1) .85s both${tm.wall?`, out .35s ease-in ${tm.wallAt}s forwards`:""}}
  .sub,.pill{animation:fadeUp .5s ease-out 1.3s both${tm.wall?`, out .35s ease-in ${tm.wallAt}s forwards`:""}}
- .rule{animation:grow .6s ease-out 1.2s both}
+ .rule{animation:grow .6s ease-out 1.2s both${tm.wall?`, out .35s ease-in ${tm.wallAt}s forwards`:""}}
  .flash{position:absolute;inset:0;background:${t.accent};mix-blend-mode:screen;opacity:0;animation:flash .5s ease-out 1.6s both}
  .flash2{position:absolute;inset:0;background:${t.accent};mix-blend-mode:screen;opacity:0;animation:flash .5s ease-out ${tm.wallAt||0}s both}
  .wall{position:absolute;left:0;right:0;top:120px;bottom:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;opacity:0;animation:endIn .35s ease-out ${tm.wallAt||0}s both}
@@ -102,7 +102,7 @@ function reelHTML(reel){
  .wall h2{font:900 64px/1 "Inter Display",Inter;text-transform:uppercase;text-shadow:0 0 40px ${t.glow};margin-bottom:8px}
  .wg{display:grid;gap:14px;justify-content:center;animation:drift ${(E-(tm.wallAt||0)).toFixed(2)}s linear ${tm.wallAt||0}s both}
  .wg img{display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.6))}
- .wg.sil img{filter:brightness(0) drop-shadow(0 0 16px ${t.glow}) drop-shadow(0 0 2px ${t.accent})}
+ .wg.sil img{filter:drop-shadow(0 0 16px ${t.glow}) drop-shadow(0 8px 14px rgba(0,0,0,.6))}
  .end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:radial-gradient(circle at 50% 45%,rgba(0,0,0,.55),rgba(0,0,0,.94));animation:endIn .6s ease-out ${E}s both}
  .end img{width:300px;animation:pop .7s cubic-bezier(.2,.9,.3,1.3) ${(E+.2).toFixed(2)}s both}
  .end .word{font:900 92px Inter;letter-spacing:.24em;padding-left:.24em;animation:fadeUp .5s ease-out ${(E+.5).toFixed(2)}s both}

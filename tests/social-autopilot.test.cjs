@@ -46,6 +46,10 @@ test('TOTW caption keeps Basti style',()=>{
  assert.match(t.instagram.caption,/^🚨 TOTW 8 IST DA!/);
  assert.match(t.instagram.caption,/🏴󠁧󠁢󠁥󠁮󠁧󠁿 93 Harry Kane/);
 });
+test('Instagram goes out as Reel when there is a reel',()=>{
+ for(const p of posts){if(p.reel&&p.plan.instagram!=='story')assert.equal(p.plan.instagram,'reel',p.id);if(!p.reel)assert.notEqual(p.plan.instagram,'reel',p.id)}
+ assert.equal(posts.find(p=>p.kind==='totw').plan.instagram,'reel');
+});
 test('layout html renders the slide text and the red logo',()=>{
  const html=posterHTML({theme:'halloween',title:'Gyökeres',titleAccent:'89',cards:['a.png']},'story')+reelHTML({theme:'blackfriday',title:'X',cards:['a.png','b.png']});
  assert.match(html,/assets\/footera\/emblem\.png/);
