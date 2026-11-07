@@ -9,9 +9,9 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21362';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21363';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.362-mixamo-keeper-striker-tackle-run-receive';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.363-mixamo-keeper-striker-tackle-run-receive-kick';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -227,4 +227,41 @@ export function createReceiveCaptureLayer(bones,playerRoot){
   return state;
  }
  return{apply,state};
+}
+
+// V21.363: captured strikes. 'penalty' is the angled run-up and side-foot
+// strike from the spot; 'normal' open-play shots use the strike out of a jog.
+// Same contract as the CMU kick layer: {finish, foot, contact}; the caller
+// pins the boots back on the authored plant and ball contact.
+export const MIXAMO_KICK_CLIPS=Object.freeze({penalty:'penalty',normal:'strike_jog'});
+// lead: physical seconds per game second before the contact (slow set-piece
+// run-ups play in stretched game time); 1 in open play.
+export function mixamoKickWeight(time,finish='normal',contact=5.4,lead=1){
+ const t=time<contact?(time-contact)*lead:time-contact;
+ if(finish==='penalty'){
+  const out=1-smooth(t,.55,.9);
+  return{body:smooth(t,-.95,-.6)*out,legs:smooth(t,-.6,-.42)*out};
+ }
+ if(finish==='normal'){
+  const out=1-smooth(t,.5,.85);
+  return{body:smooth(t,-.62,-.36)*out,legs:smooth(t,-.44,-.3)*out};
+ }
+ return{body:0,legs:0};
+}
+export function createMixamoKickLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ const handles=info=>!!(rig&&info&&MIXAMO_KICK_CLIPS[info.finish]&&rig.clips[MIXAMO_KICK_CLIPS[info.finish]]);
+ function apply(time=0,info={}){
+  state.clip='none';state.weight=0;
+  if(!handles(info))return{body:0,legs:0};
+  const contact=Number.isFinite(info.contact)?info.contact:5.4,lead=Number.isFinite(info.lead)?info.lead:1,w=mixamoKickWeight(time,info.finish,contact,lead);
+  if(w.body<=.001)return w;
+  const name=MIXAMO_KICK_CLIPS[info.finish],clip=rig.clips[name];
+  const t=time<contact?(time-contact)*lead:time-contact,frame=Math.max(0,Math.min(clip.frames-1,(t+clip.keys.contact)*clip.rate));
+  rig.pose(name,frame,w,info.foot==='Left'?1:0);
+  state.clip=name;state.weight=w.body;
+  return w;
+ }
+ return{apply,handles,state};
 }

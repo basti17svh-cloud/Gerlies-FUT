@@ -129,3 +129,19 @@ test('receive capture: first touch around the pass arrival, boot by side, off wi
  assert.ok(at('foot_r').y-at('foot_l').y>.1,'mirrored: right boot');
  assert.equal(layer.apply(3,{arrival:3,end:3.42,weight:0}).clip,'none');
 });
+
+test('mixamo kicks: penalty and open-play strike, contact lined up, stretched penalty run-up',async()=>{
+ const {mixamoKickWeight,createMixamoKickLayer,MIXAMO_KICK_CLIPS}=await import('../3d-mocap-mixamo-layer.mjs');
+ for(const name of Object.values(MIXAMO_KICK_CLIPS))assert.ok(FOOTERA_MIXAMO.clips[name]?.keys.contact>0,name);
+ assert.equal(mixamoKickWeight(5.4,'penalty').legs,1);assert.equal(mixamoKickWeight(5.4,'normal').legs,1);
+ assert.equal(mixamoKickWeight(4,'normal').body,0);assert.equal(mixamoKickWeight(6.5,'penalty').body,0);
+ // A set-piece run-up in stretched game time starts later in game seconds.
+ assert.ok(mixamoKickWeight(4.9,'penalty',5.4,1).body>mixamoKickWeight(4.9,'penalty',5.4,1.67).body);
+ const {bones,player,scene,at}=rig(0),layer=createMixamoKickLayer(bones,player);
+ assert.ok(layer.handles({finish:'penalty'}));assert.ok(!layer.handles({finish:'power'}),'other finishes keep the CMU kicks');
+ assert.equal(layer.apply(5.4,{finish:'header'}).body,0);
+ layer.apply(5.42,{finish:'penalty',foot:'Right',contact:5.4});scene.updateMatrixWorld(true);
+ assert.ok(at('foot_r').z>at('foot_l').z,'right boot through the ball');
+ layer.apply(5.42,{finish:'penalty',foot:'Left',contact:5.4});scene.updateMatrixWorld(true);
+ assert.ok(at('foot_l').z>at('foot_r').z,'left-footed: mirrored');
+});

@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21362';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer} from './3d-mocap-mixamo-layer.mjs?v=21363';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -562,6 +562,8 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.362: captured first touch (Mixamo) for the pass receiver.
  const receiveBody=createReceiveCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.363: penalty and open-play strike captured from the Mixamo pack (CMU for the rest).
+ const mixamoKick=createMixamoKickLayer(makehuman?new Map():bones,playerRoot);
  // V21.361: captured backwards/sideways jogs for defenders facing the ball.
  const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
@@ -712,10 +714,10 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // authored plant and the authoritative ball contact.
   kickState=null;
   if(kickCapture&&!keeperRole&&!acro&&info.kick){
-   const w=kickBody.apply(frameTime,info.kick),kicking=info.kick.foot==='Left'?0:1;
+   const w=(mixamoKick.handles(info.kick)?mixamoKick:kickBody).apply(frameTime,info.kick),kicking=info.kick.foot==='Left'?0:1;
    kickState={legs:w.legs,kicking,pin:1};
    if(w.legs>.001){
-    const at=frameTime-(Number.isFinite(info.kick.contact)?info.kick.contact:5.4);
+    let at=frameTime-(Number.isFinite(info.kick.contact)?info.kick.contact:5.4);if(at<0&&info.kick.lead>0)at*=info.kick.lead;
     const support=clamp((at+.52)/.12)*(1-clamp((at-.45)/.25));
     const contact=1-clamp(Math.abs(at)/.2);
     pinFoot(1-kicking,w.legs*(.25+.75*support));

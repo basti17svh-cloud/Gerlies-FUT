@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21362';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21363';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1846,6 +1846,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   try{clipEnabled=window.localStorage?.getItem('footera-3d-motion-source')!=='procedural'}catch(_){}
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
   const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
+  const penaltyKickInfo=extended==='penalty'?Object.freeze({finish:'penalty',foot:kickInfo.foot,contact:SHOT_TIME,lead:extendedTiming(sequence).shot/SHOT_TIME}):null;
   const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
   // V21.353: the captured dive follows the same authored save as the rig.
@@ -2382,7 +2383,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     importedMotionFrame.footActionWeight=w;
    }
    // Real captured kick on the scorer's body (CMU); the boots stay pinned.
-   importedMotionFrame.kick=event.type!=='ball_won'&&!extended?kickInfo:null;
+   // V21.363: the penalty taker strikes with a captured penalty (Mixamo); its
+   // run-up plays in the set piece's stretched game time.
+   importedMotionFrame.kick=event.type==='ball_won'?null:!extended?kickInfo:
+    extended==='penalty'?penaltyKickInfo:null;
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
