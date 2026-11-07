@@ -1292,7 +1292,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   function crowdGroup(specs,dynamic){
    // Human TV silhouettes: broader torso, separate head, arms and legs. All parts remain instanced.
-   // V21.351: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
+   // V21.355: limbs without end caps (hidden in torso/seat, a few pixels at most): ~240.000 fewer triangles per frame.
    const torso=new THREE.InstancedMesh(geo('crowd-torso-human',()=>athleticGeometry([[-.295,.19,.12],[.10,.24,.14],[.255,.22,.12],[.295,.075,.07]],6)),mat('#ffffff'),specs.length);
    const head=new THREE.InstancedMesh(geo('crowd-head-human',()=>{const g=new THREE.SphereGeometry(.123,7,6),p=g.attributes.position,c=[];for(let i=0;i<p.count;i++){const shade=p.getY(i)>.056?.18:1;c.push(shade,shade,shade)}g.setAttribute('color',new THREE.Float32BufferAttribute(c,3));return g}),mat('#ffffff',{vertexColors:true}),specs.length);
    const arms=new THREE.InstancedMesh(geo('crowd-arm-human',()=>new THREE.CylinderGeometry(.055,.047,.48,6,1,true)),mat('#ffffff'),specs.length*2);
@@ -2609,7 +2609,7 @@ export function play(event,signal){
    }
    function frame(now){
     if(done)return;
-    // V21.351: 90/120/144 Hz screens called this up to 144 times a second. The
+    // V21.355: 90/120/144 Hz screens called this up to 144 times a second. The
     // playback is time based, so 60 pictures per second look the same and halve
     // CPU/GPU work and battery use there. 60/90 Hz screens draw every frame.
     // Opt-out for QA: localStorage footera-3d-fps=max.
