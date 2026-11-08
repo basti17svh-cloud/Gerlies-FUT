@@ -63,8 +63,8 @@ test('V21.350: attack counts, analysis, halftime tips and the report use the sam
 
 test('V21.350: the match uses the commentary and shows it in a live ticker',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8'),app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
- assert.ok(html.indexOf('footera-commentary.js?v=21350')>0&&html.indexOf('footera-commentary.js?v=21350')<html.indexOf('footera-app.js?v='));
- assert.ok(sw.includes('"./footera-commentary.js?v=21350"'));
+ assert.ok(html.indexOf('footera-commentary.js?v=21365')>0&&html.indexOf('footera-commentary.js?v=21365')<html.indexOf('footera-app.js?v='));
+ assert.ok(sw.includes('"./footera-commentary.js?v=21365"'));
  assert.match(html,/id="matchTicker"/);
  const sim=app.slice(app.indexOf('function simAttack('),app.indexOf('function simTick('));
  assert.match(sim,/recordAttack\(match,side,context,"attack"\)/);
@@ -85,4 +85,26 @@ test('V21.350: flat balls from the wing also show the overlap, low-cross and nea
  for(const f of families)assert.ok(!['header','volley','bicycle'].includes(f));
  let power=false;for(let i=0;i<3000&&!power;i++)power=H.choosePresentation({type:'goal',id:'d'+i,actionKind:'distance',finish:'power',creationType:'assist',creatorName:'Wirtz',scorerSlot:'CM',creatorSlot:'CAM'},[]).sequence==='first_time_power';
  assert.ok(power,'first_time_power is reachable for long shots');
+});
+
+test('V21.365: caption and ticker wait for the 3D scene instead of spoiling it',()=>{
+ const app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
+ const record=app.slice(app.indexOf('function recordMatchScene('),app.indexOf('function matchRenderAfterStep('));
+ assert.match(record,/matchRenderAfterStep\(\)/);assert.doesNotMatch(record,/\)renderMatchScene\(\)/);
+ const ticker=app.slice(app.indexOf('function renderMatchTicker('),app.indexOf('function matchCommentaryLine('));
+ assert.match(ticker,/highlight3DPending/);
+ const push=app.slice(app.indexOf('function matchCommentaryTicker('),app.indexOf('function renderMatchTicker('));
+ assert.doesNotMatch(push,/innerHTML/,'adding a line must not render it directly');
+ assert.match(app.slice(app.indexOf('function renderMatchScene('),app.indexOf('function dismissMatchGoalMoment(')),/renderMatchTicker\(\)/,'the 3D queue renders the ticker when idle via renderMatchScene');
+});
+
+test('V21.365: a goal-line clearance names the defending team and the 3D card names the defender',()=>{
+ const t=C.describe({resultId:'line'},'lineclear',shot({team:'FC Footera',opponent:'Rivals XI',shooter:'Kane'})).text;
+ assert.match(t,/Rivals XI|Rettung auf der Linie/);assert.doesNotMatch(t,/Kane klärt|Kane rettet/);
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8'),line=scene.split('\n').find(l=>l.includes("keeperAction==='line_clear'){headline.textContent='GEKLÄRT'"));
+ assert.ok(line&&!/name\.textContent=event\.playerName/.test(line),'clearance card must not show the shooter as the clearer');
+ assert.match(line,/defendNames/);
+ const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
+ assert.match(bridge,/defendNames:names\.slice\(8\)/);
+ assert.ok(H.snapshot({type:'big_chance_missed',id:'x',defendNames:['A','B']}).defendNames[1]==='B','snapshot keeps the defending names');
 });
