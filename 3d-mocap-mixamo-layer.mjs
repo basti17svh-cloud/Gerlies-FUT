@@ -9,9 +9,9 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21363';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21364';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.363-mixamo-keeper-striker-tackle-run-receive-kick';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.364-mixamo-keeper-striker-tackle-run-receive-kick-gait';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -264,4 +264,59 @@ export function createMixamoKickLayer(bones,playerRoot){
   return w;
  }
  return{apply,handles,state};
+}
+
+// V21.364: everyday football movement. A footballer's forward jog (Mixamo
+// "jog forward") and the bent-knee ready stance ("offensive idle") replace the
+// generic library gait in their speed bands; sprints keep the library sprint.
+// Head and neck stay on the procedural look at the ball. The body (with the
+// hips) is posed before the foot IK, so the planted boots never slide; the
+// captured legs then own each leg only while it swings (applyLegs).
+const GAIT_SKIP=new Set(['neck_01','Head']);
+const LEG_SKIP=[new Set(['neck_01','Head','thigh_r','calf_r','foot_r']),new Set(['neck_01','Head','thigh_l','calf_l','foot_l'])];
+export function gaitCaptureWeights(speed=0){
+ const s=clamp(speed);
+ const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
+ const idle=1-smooth(s,.025,.09);
+ return{jog,idle};
+}
+export function createGaitCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ if(!rig||!rig.clips.jog_fwd||!rig.clips.ready_idle)return{apply:()=>state,state};
+ // share: how much of the body the everyday gait may own right now (0 during
+ // shots, celebrations, tricks, airborne moments; see the prototype).
+ function apply(time=0,speed=0,stride=0,share=1){
+  state.clip='none';state.weight=0;
+  const k=clamp(share);if(k<=.001)return state;
+  const w=gaitCaptureWeights(speed);
+  if(w.jog*k>.001){
+   const clip=rig.clips.jog_fwd,loop=clip.frames-1;
+   const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
+   rig.pose('jog_fwd',phase*loop,{body:w.jog*k,legs:0},0,GAIT_SKIP);
+   state.clip='jog_fwd';state.weight=w.jog*k;
+  }
+  if(w.idle*k>.001){
+   // Ping-pong through the stored stance so the loop never jumps.
+   // Players do not sway in step: the distance each has run (stride) offsets
+   // the stance, deterministically.
+   const clip=rig.clips.ready_idle,span=(clip.frames-1)/clip.rate,at=time+.6*stride,u=(at%(2*span)+2*span)%(2*span);
+   const t=u<span?u:2*span-u;
+   rig.pose('ready_idle',t*clip.rate,{body:.8*w.idle*k,legs:0},0,GAIT_SKIP);
+   if(w.idle>w.jog){state.clip='ready_idle';state.weight=w.idle*k}
+  }
+  return state;
+ }
+ // swing: [left, right] 0..1, how much each leg is in the air right now.
+ function applyLegs(speed=0,stride=0,share=1,swing=[0,0]){
+  const w=gaitCaptureWeights(speed).jog*clamp(share);if(w<=.001)return 0;
+  const clip=rig.clips.jog_fwd,loop=clip.frames-1;
+  const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
+  for(let i=0;i<2;i++){
+   const legs=w*clamp(swing[i]);if(legs<=.001)continue;
+   rig.pose('jog_fwd',phase*loop,{body:0,legs},0,LEG_SKIP[i]);
+  }
+  return w;
+ }
+ return{apply,applyLegs,state};
 }

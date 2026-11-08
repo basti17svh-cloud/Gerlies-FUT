@@ -145,3 +145,29 @@ test('mixamo kicks: penalty and open-play strike, contact lined up, stretched pe
  layer.apply(5.42,{finish:'penalty',foot:'Left',contact:5.4});scene.updateMatrixWorld(true);
  assert.ok(at('foot_l').z>at('foot_r').z,'left-footed: mirrored');
 });
+
+test('gait capture: football jog and ready stance by speed, sprint and actions left alone',async()=>{
+ const {gaitCaptureWeights,createGaitCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+ assert.ok(FOOTERA_MIXAMO.clips.jog_fwd?.loop);assert.ok(FOOTERA_MIXAMO.clips.ready_idle);
+ assert.equal(gaitCaptureWeights(0).idle,1);assert.equal(gaitCaptureWeights(0).jog,0);
+ assert.equal(gaitCaptureWeights(.35).jog,1);assert.equal(gaitCaptureWeights(.35).idle,0);
+ assert.equal(gaitCaptureWeights(.9).jog,0,'sprints keep the library sprint');
+ const {bones,player,scene,at}=rig(0),layer=createGaitCaptureLayer(bones,player);
+ assert.equal(layer.apply(1,.35,0,0).clip,'none','no share: shots, tricks, celebrations');
+ const before=bones.get('pelvis').quaternion.clone(),head=bones.get('Head').quaternion.clone();
+ assert.equal(layer.apply(1,.35,1.2,1).clip,'jog_fwd');
+ assert.ok(!bones.get('pelvis').quaternion.equals(before),'the hips move like the jog (posed before the foot IK)');
+ // Legs: only the swinging leg follows the capture; the planted one keeps its IK pose.
+ const l=bones.get('thigh_l').quaternion.clone(),r=bones.get('thigh_r').quaternion.clone();
+ assert.ok(layer.applyLegs(.35,1.2,1,[1,0])>0);
+ assert.ok(!bones.get('thigh_l').quaternion.equals(l),'swinging left leg');
+ assert.ok(bones.get('thigh_r').quaternion.equals(r),'planted right leg untouched');
+ assert.equal(layer.applyLegs(.9,1.2,1,[1,1]),0,'sprint legs stay the library sprint');
+ assert.ok(bones.get('Head').quaternion.equals(head),'head keeps looking at the ball');
+ assert.equal(layer.apply(1,0,0,1).clip,'ready_idle');
+ // Deterministic: the same time gives the same stance (the game rebuilds the
+ // procedural pose every frame, so start each sample from the same pose).
+ const rest=[...bones].map(([,b])=>[b,b.quaternion.clone()]),reset=()=>{for(const [b,q] of rest)b.quaternion.copy(q)};
+ reset();layer.apply(2.5,0,0,1);scene.updateMatrixWorld(true);const a=at('hand_l').clone();
+ reset();layer.apply(2.5,0,0,1);scene.updateMatrixWorld(true);assert.ok(at('hand_l').distanceTo(a)<1e-6);
+});
