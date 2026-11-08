@@ -44,6 +44,7 @@ const CLIPS={
  penalty:{file:'soccer penalty kick.fbx',side:0,keys:{contact:.74}},
  receive:{file:'receive soccerball.fbx',side:0,end:2.2,keys:{load:.85,contact:1.15,settle:1.55,up:1.8}},
  keeper_throw:{file:'goalkeeper overhand throw.fbx',side:0,end:2.3,keys:{hold:.3,release:1.45}},
+ throw_in:{file:'throw in.fbx',side:0,end:2.4,keys:{raise:.7,back:1.2,release:1.45}},
 };
 const RATE=30;
 const dir=process.argv[2];

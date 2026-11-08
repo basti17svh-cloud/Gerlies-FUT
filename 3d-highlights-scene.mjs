@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21367';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21368';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -343,11 +343,11 @@ export function goalNetPoint(sequence='central',finish='normal',placement=null){
  if(placement?.style==='post_in')return[impact[0]*.55,impact[1]*.7+.1,-54.15];
  return impact;
 }
-// V21.367: a classic save is CAUGHT. The ball stays in the keeper's arms (the
+// V21.368: a classic save is CAUGHT. The ball stays in the keeper's arms (the
 // scene pins it between the gloves), he gets up with it and throws it out.
 // This path is the camera's and the fallback's approximation of that hold.
 export const KEEPER_RELEASE=9.85;
-const KEEPER_THROW_START=9.1;
+const KEEPER_THROW_START=9.1,THROW_IN_RELEASE=3.2;
 export function caughtBallPosition(time,impact,sequence='central',finish='normal',placement=null){
  const k=keeperPose('big_chance_saved',Math.min(time,KEEPER_RELEASE),finish,sequence,'classic',placement);
  const held=[k.x,mix(.38,1.12,smooth((time-7.95)/1.25)),k.z+.27];
@@ -2297,7 +2297,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      guide(lead,[keeper.root.position.x+side*1.24,.10,keeper.root.position.z+.28],brace);
      guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
     }
-    // V21.367: the caught ball is clutched to the chest with both gloves
+    // V21.368: the caught ball is clutched to the chest with both gloves
     // while the keeper lands and gets up; the throw-out takes it from there.
     keeperHeldWeight=caught&&time<KEEPER_RELEASE?smooth((time-6.7)/.35):0;
     if(keeperHeldWeight>.001){
@@ -2363,6 +2363,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const frame=squadMotionFrames[i];frame.speed=speed;frame.control=control;
      frame.stride=stride;frame.clipEnabled=clipEnabled;
      frame.grounded=!(wall&&physical>=7.85&&physical<=8.55);
+     // V21.368: the taker throws with a captured two-handed throw-in.
+     frame.throwIn=extended==='throw_in'&&i===1&&physical<5?{seconds:physical,weight:1}:null;
      if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.control=control;importedMotionFrame.stride=stride}
     });
     if(buildKeeper){resetPose(buildKeeper);const pos=extendedPosition(16,time,sequence);buildKeeper.root.position.set(pos[0],0,pos[1]);poseExtendedActor(buildKeeper,16,time,sequence);}
@@ -2418,6 +2420,12 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
+   // V21.368: the thrown-in ball sits between the taker's captured hands until release.
+   const throwIn=squadMotionFrames[1]?.throwIn;
+   if(throwIn&&throwIn.seconds<THROW_IN_RELEASE&&importedPlayers[1]?.handWorld&&importedPlayers[1].handWorld(0,keeperHandWorld)&&importedPlayers[1].handWorld(1,keeperContactWorld)){
+    keeperHandWorld.add(keeperContactWorld).multiplyScalar(.5);keeperHandWorld.y+=.07;ball.parent.worldToLocal(keeperHandWorld);
+    ball.position.lerp(keeperHandWorld,smooth((throwIn.seconds-.6)/.7));
+   }
    importedKeeper?.animate(time,keeperMotionFrame);
    // The captured throw-out moves the imported keeper's arms away from the
    // authored rig, so its glove meshes travel with the real hands.
