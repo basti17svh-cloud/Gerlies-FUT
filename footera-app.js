@@ -6101,24 +6101,24 @@ const ICON_PRICE_CURVE={87:85000,88:145000,89:250000,90:420000,91:650000,92:9500
 const ICON_PRICE_ANCHORS={
  "ronaldo":13400000, // Ronaldo
  "mia-hamm":10000000, // Mia Hamm
- "pele":8500000, // Pelé
+ "pele":8000000, // Pelé
  "franz-beckenbauer":2650000, // Franz Beckenbauer
  "eusebio":8800000, // Eusébio
- "lothar-matthaus":5400000, // Lothar Matthäus — base-icon-pc-fallback
- "zinedine-zidane":3600000, // Zinedine Zidane
- "ruud-gullit":8300000, // Ruud Gullit
+ "lothar-matthaus":4200000, // Lothar Matthäus — base-icon-pc-fallback
+ "zinedine-zidane":4650000, // Zinedine Zidane
+ "ruud-gullit":7500000, // Ruud Gullit
  "formiga":3450000, // Formiga — same-player-holo-fallback
  "thierry-henry":3880000, // Thierry Henry
  "ferenc-puskas":2690000, // Ferenc Puskás — base-icon-pc-fallback
  "alex-morgan":2800000, // Alex Morgan
  "bobby-charlton":2560000, // Bobby Charlton
  "johan-cruyff":6200000, // Johan Cruyff
- "paolo-maldini":4750000, // Paolo Maldini
+ "paolo-maldini":4200000, // Paolo Maldini
  "diego-armando-maradona":6700000, // Diego Armando Maradona
  "kenny-dalglish":1900000, // Kenny Dalglish
  "homare-sawa":1850000, // Homare Sawa
  "jairzinho":4000000, // Jairzinho
- "zico":5800000, // Zico
+ "zico":5200000, // Zico
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":6800000, // Ronaldinho
