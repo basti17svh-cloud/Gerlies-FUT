@@ -2629,9 +2629,10 @@ export function play(event,signal){
   modelStatus.textContent='MODELL PRÜFEN';
   const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';
   // V21.371 Stadion-Sound: one tap turns the stadium on or off, for every scene.
+  // It floats under the top bar so the bar keeps its room on 360 px phones.
   const soundApi=globalThis.FooteraSound,soundBtn=soundApi?document.createElement('button'):null;
   if(soundBtn){soundBtn.type='button';soundBtn.className='fh3d-sound';}
-  top.append(brand,modelStatus,...(soundBtn?[soundBtn]:[]),skip);layer.append(top);
+  top.append(brand,modelStatus,skip);layer.append(top);if(soundBtn)layer.append(soundBtn);
   const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}${ceremony?' fh3d-hud-'+ceremony:''}`;hud.setAttribute('aria-live','polite');
   const card=document.createElement('div');card.className='fh3d-player-card';
   if(event.playerCardHTML)card.innerHTML=event.playerCardHTML;

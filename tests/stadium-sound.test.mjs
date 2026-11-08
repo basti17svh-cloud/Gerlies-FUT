@@ -129,7 +129,7 @@ test('release wiring: script order, scene import, cache, settings and pack hooks
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
- assert.match(css,/\.fh3d-sound\{[^}]*min-height:44px/);
+ assert.match(css,/\.fh3d-sound\{[^}]*width:44px;height:44px/);
  for(const step of ['tunnel','clue','flash','board','plain','card'])assert.ok(app.includes(`packSound("${step}")`),step);
  assert.match(app,/tunnelSound\?\.stop\?\.\(\)/);
 });
