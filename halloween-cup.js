@@ -4,7 +4,7 @@
  const ID='halloween-team1',MODE='halloween-cup',START=Date.parse('2026-10-30T19:00:00+01:00'),END=Date.parse('2026-11-06T19:00:00+01:00');
  ratingRewardPack(82,15);
  const rounds=[
-  {label:'Viertelfinale',name:'Nebelwald FC',rating:76,chem:16,style:'block',reward:'15.000 Münzen'},
+  {label:'Viertelfinale',name:'Nebelwald FC',rating:76,chem:16,style:'block',reward:'15.000 Coins'},
   {label:'Halbfinale',name:'Geisterstunde XI',rating:81,chem:23,style:'wing',reward:'15× 82+-Spieler-Pack · untauschbar'},
   {label:'Finale',name:'Blutmond United',rating:85,chem:28,style:'press',reward:'Halloween Team 1 · 1 aus 3 Spielerpick'}
  ];

@@ -45,6 +45,7 @@
    homeSecondary:String(event.homeSecondary||event.homeColor||'#961e43'),awaySecondary:String(event.awaySecondary||event.awayColor||'#e9ecf3'),
    homePattern:String(event.homePattern||'solid'),awayPattern:String(event.awayPattern||'solid'),homeKitConfigured:event.homeKitConfigured===true,awayKitConfigured:event.awayKitConfigured===true,
    homeShorts:String(event.homeShorts||'#f3f4ee'),awayShorts:String(event.awayShorts||'#172b49'),homeSocks:String(event.homeSocks||event.homeColor||'#961e43'),awaySocks:String(event.awaySocks||event.awayColor||'#e9ecf3'),
+   defendNames:Object.freeze((Array.isArray(event.defendNames)?event.defendNames:[]).slice(0,8).map(n=>String(n||'').slice(0,40))),
    shirtNumbers:Object.freeze((Array.isArray(event.shirtNumbers)?event.shirtNumbers:[]).slice(0,16).map(n=>Number.isInteger(Number(n))&&Number(n)>=1&&Number(n)<=99?Number(n):0)),
    playerSkinTones:Object.freeze((Array.isArray(event.playerSkinTones)?event.playerSkinTones:[]).slice(0,16).map(v=>typeof v==='string'&&(/^#[0-9a-f]{6}$/i.test(v)||/^[1-6]$/.test(v))?v:Number.isInteger(v)&&v>=1&&v<=6?v:null)),
    keeperSkinTone:event.keeperSkinTone??null,
@@ -60,7 +61,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21341').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21369').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});
@@ -497,7 +498,7 @@
   const strikerSide=/^(LW|LF|LM|LB|LV|LAS|LAV|LWB)$/.test(striker)?'left':/^(RW|RF|RM|RB|RV|RAS|RAV|RWB)$/.test(striker)?'right':'';
   const recent=(Array.isArray(history)?history:[]).slice(-9);
   const simulated=['combination','through','dribble','cross','cutback','distance','switch'].includes(event.actionKind);
-  const distanceIds=['layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'];
+  const distanceIds=['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'];
   const eligible=v=>{const m=/^skill_(.+)_(left|right)$/.exec(v.id);return m?!!requestedSkill&&m[1]===requestedSkill&&skillStars>=SKILL_LEVELS[m[1]]:!requestedSkill&&(!v.id.startsWith('double_feint')||!skillStars||skillStars>=4)};
   const pool=(simulated?PLAYBOOK_SCENES.filter(v=>{
    if(event.actionKind==='dribble'&&!requestedSkill&&signatureMoments(event).some(m=>m.phase==='carry'))return false;
@@ -505,6 +506,9 @@
    if(event.actionKind==='cross')return v.finish===event.finish;
    if(['header','volley','bicycle'].includes(v.finish)||distanceIds.includes(v.id))return false;
    if(event.finish==='chip')return v.finish==='chip';
+   // V21.350: a simulated cut-back is any flat ball in from the wing, so the
+   // authored overlap, low-cross and near-post plays are shown for it too.
+   if(event.actionKind==='cutback')return['cutback','lowcross','nearpost','overlap'].includes(v.family);
    return v.family===event.actionKind;
   }).concat(simulated?starScenes(event,scorer):[]):[...VISUAL_SCENES,...PLAYBOOK_SCENES]).filter(eligible);
   const starSignature=simulated&&signatureMoments(event).some(m=>m.who==='scorer'&&m.phase==='finish');

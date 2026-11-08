@@ -41,7 +41,7 @@ function match3DAttackOrder(event){
 }
 function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  // Visual only; never affect the match simulation or its random stream.
- const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice();
+ const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice(),names=Array(16).fill('');
  const valid=(v,fb)=>{const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=99?n:fb};
  const rows=side=>typeof matchActorRows==="function"?(matchActorRows(side)||[]):[];
  const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||"")));
@@ -57,15 +57,16 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
   const list=field(side),anchor=list.find(row=>same(row,lead))||null,ordered=anchor?[anchor,...list.filter(row=>row!==anchor)]:list;
   let slot=0;
   for(let i=0;i<ordered.length&&i<8;i++){
-   if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);continue}
+   if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);names[offset+target]=String(ordered[i]?.name||'');continue}
    while(anchor&&slot===target)slot++;
    if(slot>7)break;
-   out[offset+slot]=number(side,ordered[i],out[offset+slot]);slot++;
+   out[offset+slot]=number(side,ordered[i],out[offset+slot]);names[offset+slot]=String(ordered[i]?.name||'');slot++;
   }
  };
  match3DAttackOrder(event).forEach((row,i)=>{if(row)out[i]=number(attackSide,row,out[i])});
  fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
- return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1)};
+ // V21.365: names of the defending actors (index 8-15), e.g. for a goal-line clearance.
+ return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1),defendNames:names.slice(8)};
 }
 // Cosmetic-only complexion metadata from explicit player records; no ancestry inference.
 function match3DSkinTones(event){
@@ -241,6 +242,7 @@ function queueMatch3D(event){
   Object.assign(presentation,match3DSkinTones({...presentation,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name,defenderIndex:presentation.defenderIndex}));
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
+  presentation.defendNames=shirtInfo.defendNames;
 
 
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
@@ -254,6 +256,8 @@ function queueMatch3D(event){
  // The simulation stays authoritative. Only the visible scoreboard is held at
  // the pre-goal value until the 3D ball actually reaches the goal.
  if(queued){
+  // V21.365: tell the live commentary that this miss is shown as a goal-line clearance.
+  if(presentation.keeperAction==='line_clear')current.line3DClearId=String(event.id);
    match3DQueue.history=(match3DQueue.history||[]).concat({sequence:presentation.sequence,family:selected.family,shotSide:presentation.shotPlacement.side}).slice(-9);
   if(event.type==='goal'&&Number.isFinite(Number(event.scoreBeforeHome))&&Number.isFinite(Number(event.scoreBeforeAway)))current.highlight3DScoreHold={id:String(event.id||''),home:Number(event.scoreBeforeHome),away:Number(event.scoreBeforeAway)};
   if(typeof updateMatchUI==='function')updateMatchUI(true);
@@ -324,8 +328,11 @@ function queueMatchChance3D(shot){
  // Existing simulator-highlight eligibility, saves and misses remain unchanged.
  const type=shot.highlightType||'';
  if(!type)return false;
- return queueMatch3D({id:`shot:${match.shotEvents.length}`,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
+ const id=`shot:${match.shotEvents.length}`,current=match;
+ const queued=queueMatch3D({id,type,minute:shot.minute,team:shot.side,playerId:shot.shooterUid||shot.shooterIndex,playerName:shot.playerName||shot.shooter,keeperName:shot.goalkeeperName||"",
   goalkeeperUid:shot.goalkeeperUid||'',goalkeeperIndex:Number(shot.goalkeeperIndex??-1),creatorName:shot.creator||'',creatorUid:shot.creatorUid||'',creatorIndex:shot.creatorIndex,creationType:shot.creationType||'chance',tightLateGame:shot.tightLateGame,shotFoot:shot.shotFoot,creatorFoot:shot.creatorFoot,preferredFoot:shot.preferredFoot,weakFoot:shot.weakFoot,skillMoves:shot.skillMoves,skillMove:shot.skillMove,actionKind:shot.actionKind,sceneKind:shot.sceneKind,restartSide:shot.restartSide,finish:shot.finish,defenderSourceIndex:shot.defenderIndex});
+ if(queued&&current.line3DClearId===id)shot.lineClear3D=true;
+ return queued;
 }
 (function(){
  document.addEventListener('footera-highlight-impact',e=>{

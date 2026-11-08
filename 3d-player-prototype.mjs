@@ -7,10 +7,12 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
+import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21369';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21296';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21349';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -18,6 +20,7 @@ const REQUIRED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r',
  'lowerarm_l','lowerarm_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r'];
 let source=null,pending=null,sourceMakeHuman=null,pendingMakeHuman=null;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smoothstep=(a,b,x)=>{const u=clamp((x-a)/(b-a));return u*u*(3-2*u)};
 
 // Driver rotations are expressed in player space, NOT in the imported bones'
 // local axes (which differ even between the two arms). Conjugate each delta
@@ -31,12 +34,20 @@ export function createPlayerSpaceRetarget(bones,playerRoot){
   rest.set(name,{neutral:bone.quaternion.clone(),basis,inverse:basis.clone().invert()});
  }
  const delta=new THREE.Quaternion(),local=new THREE.Quaternion(),rot=new THREE.Euler();
- return function apply(name,x=0,y=0,z=0){
+ function apply(name,x=0,y=0,z=0){
   const bone=bones.get(name),frame=rest.get(name);if(!bone||!frame)return;
   delta.setFromEuler(rot.set(x,y,z,'XYZ'));
   local.copy(frame.inverse).multiply(delta).multiply(frame.basis);
   bone.quaternion.copy(frame.neutral).multiply(local);
+ }
+ // V21.369: adds a player-space turn on top of the current (captured) pose.
+ apply.add=function(name,x=0,y=0,z=0){
+  const bone=bones.get(name),frame=rest.get(name);if(!bone||!frame)return;
+  delta.setFromEuler(rot.set(x,y,z,'XYZ'));
+  local.copy(frame.inverse).multiply(delta).multiply(frame.basis);
+  bone.quaternion.multiply(local);
  };
+ return apply;
 }
 
 export async function prepareFooteraPlayerModel(){
@@ -218,7 +229,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom):null;
+ const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom,{keeper:look.keeper===true}):null;
  if(human)dressed=dressFooteraHuman(THREE,model,humanLook,kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots});
  const bones=new Map(),meshes=[];
@@ -239,8 +250,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const size=new THREE.Vector3();bounds.getSize(size);
  if(size.y<.05||size.y>100)return null;
  const center=bounds.getCenter(new THREE.Vector3());
- // Women's players stand a little smaller (V21.258), on the same skeleton.
- const scale=(humanLook?.female?1.72:1.83)/size.y,normalized=new THREE.Group();
+ // Women's players stand a little smaller (V21.258), on the same skeleton;
+ // since V21.346 every human player has his own height (1.78-1.94 m).
+ const scale=(Number.isFinite(humanLook?.height)?humanLook.height:humanLook?.female?1.72:1.83)/size.y,normalized=new THREE.Group();
  normalized.name='FooteraPlayerPrototypeMount';
  // Authored model faces +Z; Footera's boots, ball contact and routes face -Z.
  normalized.rotation.y=Math.PI;
@@ -507,33 +519,67 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   bone.parent.getWorldQuaternion(parentQ).invert();
   bone.quaternion.copy(parentQ).multiply(worldQ);bone.updateMatrixWorld(true);
  }
+ function solveLeg(i){
+  const limb=limbs[i];limb.hip.getWorldPosition(hp);
+  existingDriver.ankles[i].getWorldPosition(target);
+  existingDriver.knees[i].getWorldPosition(kp);
+  direction.copy(target).sub(hp);
+  const distance=clamp(direction.length(),.001,limb.upper+limb.lower-.00001);
+  direction.normalize();pole.copy(kp).sub(hp);pole.addScaledVector(direction,-pole.dot(direction));
+  if(pole.lengthSq()<1e-8){
+   pole.set(0,0,-1).applyQuaternion(playerRoot.getWorldQuaternion(worldQ));
+   pole.addScaledVector(direction,-pole.dot(direction));
+  }
+  pole.normalize();
+  const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
+  desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
+  pointBone(limb.hip,limb.knee,desiredKnee);pointBone(limb.knee,limb.foot,target);
+  existingDriver.ankles[i].getWorldQuaternion(worldQ).multiply(limb.footRest);
+  limb.foot.parent.getWorldQuaternion(parentQ).invert();
+  limb.foot.quaternion.copy(parentQ).multiply(worldQ);limb.foot.updateMatrixWorld(true);
+ }
  function matchFeet(){
   playerRoot.updateMatrixWorld(true);
-  for(let i=0;i<2;i++){
-   const limb=limbs[i];limb.hip.getWorldPosition(hp);
-   existingDriver.ankles[i].getWorldPosition(target);
-   existingDriver.knees[i].getWorldPosition(kp);
-   direction.copy(target).sub(hp);
-   const distance=clamp(direction.length(),.001,limb.upper+limb.lower-.00001);
-   direction.normalize();pole.copy(kp).sub(hp);pole.addScaledVector(direction,-pole.dot(direction));
-   if(pole.lengthSq()<1e-8){
-    pole.set(0,0,-1).applyQuaternion(playerRoot.getWorldQuaternion(worldQ));
-    pole.addScaledVector(direction,-pole.dot(direction));
-   }
-   pole.normalize();
-   const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
-   desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
-   pointBone(limb.hip,limb.knee,desiredKnee);pointBone(limb.knee,limb.foot,target);
-   existingDriver.ankles[i].getWorldQuaternion(worldQ).multiply(limb.footRest);
-   limb.foot.parent.getWorldQuaternion(parentQ).invert();
-   limb.foot.quaternion.copy(parentQ).multiply(worldQ);limb.foot.updateMatrixWorld(true);
-  }
+  for(let i=0;i<2;i++)solveLeg(i);
+ }
+ // Pull one captured leg part-way back onto the authored boot target.
+ const pinFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
+ function pinFoot(i,w){
+  if(w<=.001)return;
+  const limb=limbs[i],chain=[limb.hip,limb.knee,limb.foot];
+  playerRoot.updateMatrixWorld(true);
+  chain.forEach((b,k)=>pinFrom[k].copy(b.quaternion));
+  solveLeg(i);
+  chain.forEach((b,k)=>b.quaternion.slerpQuaternions(pinFrom[k],b.quaternion.clone(),clamp(w)));
+  limb.hip.updateMatrixWorld(true);
  }
  const motion={},sampleCapturedLocomotion=createGlbClipLayer();let clipState=null,frameTime=0;
  // The old MakeHuman lab model uses other bone axes; the V21.193 human rig
  // copies the Quaternius bone frames, so it shares the capture.
  const capturedBody=createUalPoseLayer(makehuman?new Map():bones);let bodyState=capturedBody.state;
  let captureLegs=true;try{captureLegs=globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){}
+ let kickCapture=!makehuman;try{kickCapture=kickCapture&&globalThis.localStorage?.getItem('footera-3d-kick-capture')!=='0'}catch(_){}
+ const kickBody=createCmuKickLayer(makehuman?new Map():bones,playerRoot);
+ let kickState=null;
+ // V21.353: captured goalkeeping (Mixamo) on the human keeper; '0' switches it off.
+ let keeperCapture=!makehuman;try{keeperCapture=keeperCapture&&globalThis.localStorage?.getItem('footera-3d-keeper-capture')!=='0'}catch(_){}
+ const keeperBody=createKeeperCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.359: captured header and overhead kick (Mixamo) for the scorer.
+ const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.360: captured slide tackle (Mixamo) for the sliding defender.
+ const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const fallBody=createFallCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.362: captured first touch (Mixamo) for the pass receiver.
+ const receiveBody=createReceiveCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const throwInBody=createThrowInCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.363: penalty and open-play strike captured from the Mixamo pack (CMU for the rest).
+ const mixamoKick=createMixamoKickLayer(makehuman?new Map():bones,playerRoot);
+ // V21.364: football jog and ready stance (Mixamo) for everyday running and standing.
+ const gaitBody=createGaitCaptureLayer(makehuman?new Map():bones,playerRoot);
+ // V21.361: captured backwards/sideways jogs for defenders facing the ball.
+ const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
+ const handFrom=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  playerRoot.updateMatrixWorld(true);
  const legSwing=[0,0],shrugFrom=new THREE.Quaternion(),shrugTo=new THREE.Quaternion();
  // The keeper's guide rotates about the feet, not the imported pelvis.
@@ -545,10 +591,12 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   return{shoulder,elbow,hand,upper:shoulder.getWorldPosition(new THREE.Vector3()).distanceTo(elbow.getWorldPosition(new THREE.Vector3())),
    lower:elbow.getWorldPosition(new THREE.Vector3()).distanceTo(hand.getWorldPosition(new THREE.Vector3()))};
  });
- function matchKeeperHands(){
+ function matchKeeperHands(weight=1){
   playerRoot.updateMatrixWorld(true);
   for(let i=0;i<2;i++){
-   const limb=keeperArms[i];limb.shoulder.getWorldPosition(hp);
+   const limb=keeperArms[i];
+   if(weight<.999){handFrom[i*2].copy(limb.shoulder.quaternion);handFrom[i*2+1].copy(limb.elbow.quaternion)}
+   limb.shoulder.getWorldPosition(hp);
    existingDriver.gloves[i].getWorldPosition(target);
    existingDriver.elbows[i].getWorldPosition(kp);
    direction.copy(target).sub(hp);
@@ -559,7 +607,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const cosine=clamp((limb.upper**2+distance**2-limb.lower**2)/(2*limb.upper*distance),-1,1);
    desiredKnee.copy(hp).addScaledVector(direction,limb.upper*cosine).addScaledVector(pole,limb.upper*Math.sqrt(Math.max(0,1-cosine*cosine)));
    pointBone(limb.shoulder,limb.elbow,desiredKnee);pointBone(limb.elbow,limb.hand,target);
+   // V21.353: away from the ball contact the captured arms show through.
+   if(weight<.999){limb.shoulder.quaternion.slerpQuaternions(handFrom[i*2],limb.shoulder.quaternion.clone(),weight);
+    limb.elbow.quaternion.slerpQuaternions(handFrom[i*2+1],limb.elbow.quaternion.clone(),weight);limb.shoulder.updateMatrixWorld(true)}
   }
+ }
+ // Lying captured keeper: the lowest body point rests on the turf.
+ function groundKeeper(weight){
+  if(weight<=.001)return;
+  playerRoot.updateMatrixWorld(true);
+  let low=Infinity;for(const b of groundProbe){b.getWorldPosition(hp);low=Math.min(low,hp.y)}
+  if(!Number.isFinite(low))return;
+  const parentY=playerRoot.parent?playerRoot.parent.getWorldPosition(kp).y:0;
+  normalized.position.y+=clamp(.045-(low-parentY),-.35,.35)*weight;
+  normalized.updateMatrixWorld(true);
  }
  // Keepers must NOT inherit striker running clips on top of their save pose.
  const keeperIdle=Object.freeze({bob:0,pelvisPitch:0,pelvisYaw:0,pelvisRoll:0,
@@ -568,6 +629,19 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const keeperClipIdle=Object.freeze({torsoPitch:0,torsoRoll:0,leftArmPitch:0,rightArmPitch:0,
   leftArmRoll:0,rightArmRoll:0,leftElbow:0,rightElbow:0,clip:'KeeperBiomechanics',
   weight:0,phase:0,source:'procedural'});
+ // V21.369: the captured jog/sprint is a straight-line run. A cut leans the
+ // hips and chest into the curve, the shoulders turn ahead of it, braking
+ // sits back and pushing off again drives forward (the Stemmschritt).
+ function leanIntoTurn(info,share){
+  const speed=clamp(info.speed||0),effort=smoothstep(.04,.2,speed);
+  const turn=clamp(info.turn||0,-.14,.14),bank=clamp(turn*2.1,-.3,.3)*effort*(.55+.45*speed)*share;
+  const drive=clamp(info.acceleration||0,-1,1)*effort*share;
+  const yaw=clamp(turn*.9,-.13,.13)*effort*share,pitch=-.10*drive;
+  apply.add('pelvis',0,yaw*.35,bank*.32);
+  apply.add('spine_01',pitch*.4,yaw*.25,bank*.30);
+  apply.add('spine_02',pitch*.35,yaw*.22,bank*.24);
+  apply.add('spine_03',pitch*.25,yaw*.18,bank*.16);
+ }
  function animate(time=0,info={}){
   const driver=existingDriver,keeperRole=info.role==='keeper';
   frameTime=Number.isFinite(time)?time:0;
@@ -627,8 +701,11 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // V21.208 overhead kick: the whole body turns backwards over the pelvis and
   // the legs scissor in player space; the planted-boot IK stays off meanwhile.
   const acro=!keeperRole&&info.acrobatic?.weight>0?info.acrobatic:null;
+  const strikerFinish=kickCapture&&!keeperRole&&['header','bicycle'].includes(info.kick?.finish)?info.kick.finish:'';
+  // The captured overhead kick brings its own turn over the back.
+  const capturedTurn=strikerFinish==='bicycle'?strikerCaptureWeights('bicycle',frameTime).body:0;
   if(acro){
-   const w=acro.weight,pitch=acro.pitch*w,hipHeight=.95;
+   const w=acro.weight,pitch=acro.pitch*w*(1-capturedTurn),hipHeight=.95;
    acroTurn.setFromAxisAngle(acroAxis,pitch);
    normalized.quaternion.copy(acroTurn).multiply(authoredFacing);
    normalized.position.set(0,hipHeight+acro.lift*w-hipHeight*Math.cos(pitch),acro.back*w-hipHeight*Math.sin(pitch));
@@ -641,6 +718,16 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
     apply('upperarm_'+side,0,0,(i?1:-1)*acro.arms*w);
    }
   }
+  if(strikerFinish){
+   const k=strikerBody.apply(frameTime,strikerFinish);
+   if(k.ground>.001)groundKeeper(k.ground);
+  }
+  // Everyday football jog and ready stance (hips, spine, arms), wherever the
+  // library gait owns the body (not in shots, tricks, celebrations or the
+  // air); posed before the foot IK so the planted boots stay put.
+  const gaitShare=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
+   clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
+  if(gaitShare>.001){gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);leanIntoTurn(info,gaitShare)}
   if(!acro||acro.weight<.5)matchFeet();
   // V21.297: the captured stride owns the swinging leg (knee drive, heel
   // kick); the standing leg stays on its planted IK boot, so the hips never
@@ -650,7 +737,45 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    for(let i=0;i<2;i++)legSwing[i]=driver.gait[i]?.swingShape??driver.gait[i]?.swingWeight??(driver.gait[i]?.support?0:1);
    capturedBody.applyLegs(1.12*(1-authoredLegs)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(info.grounded===false?0:1),legSwing);
   }
-  if(keeperRole)matchKeeperHands();
+  // The football jog also owns each swinging leg (after the library capture).
+  if(gaitShare>.001)gaitBody.applyLegs(info.speed,info.stride||0,gaitShare*(info.grounded===false?0:1),legSwing);
+  // A defender running backwards or sideways follows the captured jog instead.
+  if(kickCapture&&!keeperRole&&!acro&&info.travel)runBody.apply(info.travel,info.stride);
+  // A pass receiver cushions the ball with a captured first touch.
+  if(kickCapture&&!keeperRole&&!acro&&info.receive)receiveBody.apply(frameTime,info.receive);
+  // The throw-in taker: captured two-handed throw over the head.
+  if(kickCapture&&!keeperRole&&!acro&&info.throwIn)throwInBody.apply(info.throwIn.seconds,info.throwIn.weight);
+  // Real captured kick (CMU) over the strike; boots pinned back on the
+  // authored plant and the authoritative ball contact.
+  kickState=null;
+  if(kickCapture&&!keeperRole&&!acro&&info.kick){
+   const w=(mixamoKick.handles(info.kick)?mixamoKick:kickBody).apply(frameTime,info.kick),kicking=info.kick.foot==='Left'?0:1;
+   kickState={legs:w.legs,kicking,pin:1};
+   if(w.legs>.001){
+    let at=frameTime-(Number.isFinite(info.kick.contact)?info.kick.contact:5.4);if(at<0&&info.kick.lead>0)at*=info.kick.lead;
+    const support=clamp((at+.52)/.12)*(1-clamp((at-.45)/.25));
+    const contact=1-clamp(Math.abs(at)/.2);
+    pinFoot(1-kicking,w.legs*(.25+.75*support));
+    const pin=w.legs*contact*contact*(3-2*contact);
+    pinFoot(kicking,pin);kickState.pin=1-w.legs+pin;
+   }
+  }
+  // The whole body slides like the capture, laid on the turf while down.
+  if(kickCapture&&!keeperRole&&!acro&&info.tackle){
+   const k=tackleBody.apply(frameTime,info.tackle);
+   if(k.ground>.001)groundKeeper(k.ground);
+  }
+  // A tackled attacker trips, lies on the turf and gets up again.
+  if(kickCapture&&!keeperRole&&!acro&&info.fall){
+   const f=fallBody.apply(frameTime,info.fall);
+   if(f.ground>.001)groundKeeper(f.ground);
+  }
+  let keeperHands=1;
+  if(keeperRole&&keeperCapture&&info.keeperDive){
+   const k=keeperBody.apply(frameTime,info.keeperDive);keeperHands=k.hands;
+   if(k.clip.startsWith('keeper_dive'))groundKeeper(k.weight*smoothstep(6.7,7.0,frameTime)*(1-smoothstep(8.7,9.2,frameTime)));
+  }
+  if(keeperRole)matchKeeperHands(keeperHands);
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
  }
  // V21.296: a teammate's arm round the scorer, hand on his far
@@ -681,13 +806,17 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    capturedClip:clipState?.clip||'none',capturedWeight:clipState?.weight||0,
    capturedPhase:clipState?.phase||0,capturedSource:clipState?.source||'none',
    bodyClip:bodyState.weight>0?bodyState.clip:'none',bodyWeight:bodyState.weight,
+   // V21.346: captured kick share; kickPin 1 = kicking boot on its authored target.
+   kickLegs:kickState?.legs||0,kickFoot:kickState?kickState.kicking:-1,kickPin:kickState?kickState.pin:1,
    hipLeft:bones.get('thigh_l').quaternion.toArray(),hipRight:bones.get('thigh_r').quaternion.toArray(),
    feet:[local('foot_l'),local('foot_r')],toes:[local('ball_l'),local('ball_r')],
    footTargets:existingDriver.ankles.map(ankle=>playerRoot.worldToLocal(ankle.getWorldPosition(new THREE.Vector3())).toArray()),
    elbows:[local('lowerarm_l'),local('lowerarm_r')],hands:[local('hand_l'),local('hand_r')]};
  }
  animate();
- return{model,modelRoot:normalized,meshCount:meshes.length,vertexCount:asset.vertexCount,
+ // V21.369: world position of a hand (0 left, 1 right), e.g. to carry a ball.
+ function handWorld(i,out){const h=keeperArms[i]?.hand;if(!h)return null;h.updateWorldMatrix(true,false);return h.getWorldPosition(out)}
+ return{model,modelRoot:normalized,handWorld,runCapture:kickCapture&&runBody.ready,meshCount:meshes.length,vertexCount:asset.vertexCount,
   boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,kitCanvas:dressed?.canvas||null,
   surfaceDetail:!!surfaceMaps,
   dispose(){normalized.removeFromParent();for(const {geometry,material,texture} of colorsByMesh){geometry?.dispose();material?.dispose();texture?.dispose()}surfaceMaps?.dispose()}

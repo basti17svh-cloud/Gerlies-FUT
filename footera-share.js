@@ -287,8 +287,11 @@
   document.getElementById("footeraInstallHint")?.remove();
   const s=hintState();write(HINT_KEY,JSON.stringify({count:(s.count||0)+1,at:Date.now(),never:!!never||!!s.never}))
  }
+ // New players first finish the tutorial; its coach steps must not be covered by hints.
+ function tutorialRunning(){try{return typeof state!=="undefined"&&!!state.tutorial&&!state.tutorial.done}catch(e){return false}}
  function showInstallHint(force=false){
   if(standalone()||hintShown&&!force||document.getElementById("footeraInstallHint"))return false;
+  if(!force&&tutorialRunning())return false;
   const s=hintState();
   if(!force&&(s.never||(s.count||0)>=HINT_MAX||Date.now()-(s.at||0)<HINT_PAUSE_DAYS*864e5))return false;
   hintShown=true;
@@ -316,6 +319,7 @@
   if(document.getElementById("footeraWinInvite")||document.getElementById("footeraInstallHint"))return false;
   if(!force){
    if(!window.FooteraOnline?.available||typeof state==="undefined"||state.referral?.sharedInvite)return false;
+   if(tutorialRunning())return false;
    const s=winHintState();if(s.never||(s.count||0)>=WIN_HINT_MAX||Date.now()-(s.at||0)<WIN_HINT_PAUSE_DAYS*864e5)return false;
   }
   const el=document.createElement("section");
