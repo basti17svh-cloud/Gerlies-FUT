@@ -45,6 +45,9 @@ const CLIPS={
  receive:{file:'receive soccerball.fbx',side:0,end:2.2,keys:{load:.85,contact:1.15,settle:1.55,up:1.8}},
  keeper_throw:{file:'goalkeeper overhand throw.fbx',side:0,end:2.3,keys:{hold:.3,release:1.45}},
  throw_in:{file:'throw in.fbx',side:0,end:2.4,keys:{raise:.7,back:1.2,release:1.45}},
+ trip:{file:'soccer trip.fbx',side:0,keys:{hit:.12,down:.7,lying:1.2}},
+ // Turned (yaw, degrees) so it starts in the lying pose the trip ends in.
+ stand_up:{file:'standing up.fbx',side:0,yaw:-80,keys:{lying:.2,up:1.6}},
 };
 const RATE=30;
 const dir=process.argv[2];
@@ -73,9 +76,10 @@ for(const [name,spec] of Object.entries(CLIPS)){
  // end: keep only the first seconds of a long capture (e.g. the trap, not the turn after it).
  const frames=Math.floor(Math.min(c.duration,spec.end??c.duration)*RATE+1e-6)+1,rows=[],hips=[];
  const inv=new Map(MAP.map(([,j])=>[j,c.rest.get(j).q.clone().invert()]));
+ const turn=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),(spec.yaw||0)*Math.PI/180);
  for(let f=0;f<frames;f++){
   c.set(Math.min(c.duration,f/RATE));
-  for(const [,j] of MAP)rows.push(c.B.get(j).getWorldQuaternion(new THREE.Quaternion()).multiply(inv.get(j)).normalize());
+  for(const [,j] of MAP)rows.push(turn.clone().multiply(c.B.get(j).getWorldQuaternion(new THREE.Quaternion()).multiply(inv.get(j))).normalize());
   hips.push(Math.round(c.B.get('Hips').getWorldPosition(new THREE.Vector3()).y)/100);
  }
  clips[name]={frames,rate:RATE,side:spec.side,loop:!!spec.loop,keys:spec.keys,source:'Mixamo '+spec.file.replace(/\.fbx$/,''),hipY:hips.map(v=>Math.round(v*100)/100),bytes:pack(rows)};

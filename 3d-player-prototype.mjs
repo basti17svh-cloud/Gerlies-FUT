@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21368';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21369';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -40,7 +40,7 @@ export function createPlayerSpaceRetarget(bones,playerRoot){
   local.copy(frame.inverse).multiply(delta).multiply(frame.basis);
   bone.quaternion.copy(frame.neutral).multiply(local);
  }
- // V21.368: adds a player-space turn on top of the current (captured) pose.
+ // V21.369: adds a player-space turn on top of the current (captured) pose.
  apply.add=function(name,x=0,y=0,z=0){
   const bone=bones.get(name),frame=rest.get(name);if(!bone||!frame)return;
   delta.setFromEuler(rot.set(x,y,z,'XYZ'));
@@ -568,6 +568,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const strikerBody=createStrikerCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.360: captured slide tackle (Mixamo) for the sliding defender.
  const tackleBody=createTackleCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const fallBody=createFallCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.362: captured first touch (Mixamo) for the pass receiver.
  const receiveBody=createReceiveCaptureLayer(makehuman?new Map():bones,playerRoot);
  const throwInBody=createThrowInCaptureLayer(makehuman?new Map():bones,playerRoot);
@@ -628,7 +629,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const keeperClipIdle=Object.freeze({torsoPitch:0,torsoRoll:0,leftArmPitch:0,rightArmPitch:0,
   leftArmRoll:0,rightArmRoll:0,leftElbow:0,rightElbow:0,clip:'KeeperBiomechanics',
   weight:0,phase:0,source:'procedural'});
- // V21.368: the captured jog/sprint is a straight-line run. A cut leans the
+ // V21.369: the captured jog/sprint is a straight-line run. A cut leans the
  // hips and chest into the curve, the shoulders turn ahead of it, braking
  // sits back and pushing off again drives forward (the Stemmschritt).
  function leanIntoTurn(info,share){
@@ -764,6 +765,11 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    const k=tackleBody.apply(frameTime,info.tackle);
    if(k.ground>.001)groundKeeper(k.ground);
   }
+  // A tackled attacker trips, lies on the turf and gets up again.
+  if(kickCapture&&!keeperRole&&!acro&&info.fall){
+   const f=fallBody.apply(frameTime,info.fall);
+   if(f.ground>.001)groundKeeper(f.ground);
+  }
   let keeperHands=1;
   if(keeperRole&&keeperCapture&&info.keeperDive){
    const k=keeperBody.apply(frameTime,info.keeperDive);keeperHands=k.hands;
@@ -808,7 +814,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    elbows:[local('lowerarm_l'),local('lowerarm_r')],hands:[local('hand_l'),local('hand_r')]};
  }
  animate();
- // V21.368: world position of a hand (0 left, 1 right), e.g. to carry a ball.
+ // V21.369: world position of a hand (0 left, 1 right), e.g. to carry a ball.
  function handWorld(i,out){const h=keeperArms[i]?.hand;if(!h)return null;h.updateWorldMatrix(true,false);return h.getWorldPosition(out)}
  return{model,modelRoot:normalized,handWorld,runCapture:kickCapture&&runBody.ready,meshCount:meshes.length,vertexCount:asset.vertexCount,
   boneCount:asset.boneCount,variant,hairStyle,animate,inspectMotion,kitCanvas:dressed?.canvas||null,

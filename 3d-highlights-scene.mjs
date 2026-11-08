@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21368';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21369';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -343,7 +343,7 @@ export function goalNetPoint(sequence='central',finish='normal',placement=null){
  if(placement?.style==='post_in')return[impact[0]*.55,impact[1]*.7+.1,-54.15];
  return impact;
 }
-// V21.368: a classic save is CAUGHT. The ball stays in the keeper's arms (the
+// V21.369: a classic save is CAUGHT. The ball stays in the keeper's arms (the
 // scene pins it between the gloves), he gets up with it and throws it out.
 // This path is the camera's and the fallback's approximation of that hold.
 export const KEEPER_RELEASE=9.85;
@@ -841,7 +841,14 @@ export function runPosition(index,time,sequence='central'){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq];
  const plan=getPlay(seq);
  if(plan){const point=playPosition(index,time,plan);if(point)return point}
- if(DEFENSIVE_SCENES.includes(seq)){const point=defensePosition(index,time,seq);if(point)return point}
+ if(DEFENSIVE_SCENES.includes(seq)){
+  // V21.369: taken out by a slide, the attacker tumbles on along his run and
+  // gets up there (instead of turning back after losing the ball).
+  if(index===0&&time>4.4&&seq.startsWith('defense_slide_tackle')){
+   const at=defensePosition(0,4.4,seq),prev=defensePosition(0,4.3,seq),dx=at[0]-prev[0],dz=at[1]-prev[1],n=Math.hypot(dx,dz)||1,u=smooth(clamp((time-4.4)/1.1));
+   return[at[0]+dx/n*2.4*u,at[1]+dz/n*2.4*u];
+  }
+  const point=defensePosition(index,time,seq);if(point)return point}
  if(INVERTED_SEQUENCES.has(seq)){
   if(index===0)return invertedRunPosition(seq,time);
   if(index===1){const side=sequenceSide(seq);return lerp([side*27,-25],[side*20,-41],smooth(time/6.8))}
@@ -2297,7 +2304,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      guide(lead,[keeper.root.position.x+side*1.24,.10,keeper.root.position.z+.28],brace);
      guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
     }
-    // V21.368: the caught ball is clutched to the chest with both gloves
+    // V21.369: the caught ball is clutched to the chest with both gloves
     // while the keeper lands and gets up; the throw-out takes it from there.
     keeperHeldWeight=caught&&time<KEEPER_RELEASE?smooth((time-6.7)/.35):0;
     if(keeperHeldWeight>.001){
@@ -2363,12 +2370,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      const frame=squadMotionFrames[i];frame.speed=speed;frame.control=control;
      frame.stride=stride;frame.clipEnabled=clipEnabled;
      frame.grounded=!(wall&&physical>=7.85&&physical<=8.55);
-     // V21.368: the taker throws with a captured two-handed throw-in.
+     // V21.369: the taker throws with a captured two-handed throw-in.
      frame.throwIn=extended==='throw_in'&&i===1&&physical<5?{seconds:physical,weight:1}:null;
      if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.control=control;importedMotionFrame.stride=stride}
     });
     if(buildKeeper){resetPose(buildKeeper);const pos=extendedPosition(16,time,sequence);buildKeeper.root.position.set(pos[0],0,pos[1]);poseExtendedActor(buildKeeper,16,time,sequence);}
    }
+   // V21.369: the attacker taken out by a slide tackle trips and gets up again.
+   importedMotionFrame.fall=event.type==='ball_won'&&sequence.startsWith('defense_slide_tackle')?{contact:4.4,weight:1,mirror:0}:null;
    if(event.type==='ball_won'){
     importedMotionFrame.grounded=true;
     for(const frame of squadMotionFrames)frame.grounded=true;
@@ -2420,7 +2429,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
-   // V21.368: the thrown-in ball sits between the taker's captured hands until release.
+   // V21.369: the thrown-in ball sits between the taker's captured hands until release.
    const throwIn=squadMotionFrames[1]?.throwIn;
    if(throwIn&&throwIn.seconds<THROW_IN_RELEASE&&importedPlayers[1]?.handWorld&&importedPlayers[1].handWorld(0,keeperHandWorld)&&importedPlayers[1].handWorld(1,keeperContactWorld)){
     keeperHandWorld.add(keeperContactWorld).multiplyScalar(.5);keeperHandWorld.y+=.07;ball.parent.worldToLocal(keeperHandWorld);

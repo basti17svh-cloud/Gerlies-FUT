@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as THREE from '../vendor/three/three.module.min.js';
-import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip,keeperThrowCaptureTime,KEEPER_THROW,throwInCaptureTime,throwInCaptureWeight,THROW_IN} from '../3d-mocap-mixamo-layer.mjs';
+import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip,keeperThrowCaptureTime,KEEPER_THROW,throwInCaptureTime,throwInCaptureWeight,THROW_IN,fallCaptureWeights,createFallCaptureLayer,FALL} from '../3d-mocap-mixamo-layer.mjs';
 import {FOOTERA_MIXAMO} from '../3d-mocap-mixamo-data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -39,7 +39,7 @@ test('keeper capture timing: ready before the shot, dive around the save, hands 
  assert.equal(keeperCaptureWeights(6.5).dive,1);assert.equal(keeperCaptureWeights(6.5).legs,1);
  assert.equal(keeperCaptureWeights(6.6).hands,1,'gloves on the authored contact');
  assert.ok(keeperCaptureWeights(7.8,'parry').hands<.5,'captured arms after a parry landing');
- // V21.368: a caught ball (classic) stays in both gloves, then the throw-out owns the arms.
+ // V21.369: a caught ball (classic) stays in both gloves, then the throw-out owns the arms.
  assert.equal(keeperCaptureWeights(7.8,'classic').hands,1,'caught ball clutched after the landing');
  assert.equal(keeperCaptureWeights(8.5,'classic').throwOut,0);
  assert.equal(keeperCaptureWeights(9.6,'classic').throwOut,1);assert.equal(keeperCaptureWeights(9.6,'classic').hands,0);
@@ -187,4 +187,11 @@ test('throw-in capture: ball behind the head, then released on the set-piece key
  assert.ok(Math.abs(throwInCaptureTime(THROW_IN.release,k)-k.release)<1e-9);
  assert.equal(THROW_IN.release,3.2,'matches RESTART_RELEASE.throw_in');
  assert.equal(throwInCaptureWeight(0),0);assert.equal(throwInCaptureWeight(3.2),1);assert.equal(throwInCaptureWeight(5),0);
+});
+
+test('fall capture: trip on the tackle, lie on the turf, stand up again',()=>{
+ assert.equal(fallCaptureWeights(-1).body,0);assert.equal(fallCaptureWeights(.5).body,1);
+ assert.equal(fallCaptureWeights(1).ground,1,'lying on the turf');assert.equal(fallCaptureWeights(1).stand,0);
+ assert.equal(fallCaptureWeights(2.5).stand,1);assert.equal(fallCaptureWeights(FALL.end+.1).body,0,'back to the normal gait');
+ assert.ok(FOOTERA_MIXAMO.clips.trip&&FOOTERA_MIXAMO.clips.stand_up);
 });
