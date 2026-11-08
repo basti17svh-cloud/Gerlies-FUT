@@ -3,6 +3,7 @@ import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
+import {createSceneSound} from './3d-stadium-sound.mjs?v=21371';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
@@ -2595,7 +2596,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
     defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect,eventBallPosition(event.type,renderTime))?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
-  return{update,resize,dispose,inspect,reduceQuality,lineClearIndex:lineClearer?lineClearer.index:-1};
+  // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
+  const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
+  function soundProbe(){ball.getWorldPosition(soundBall);return{ball:[soundBall.x,soundBall.y,soundBall.z],goal:soundGoal}}
+  return{update,resize,dispose,inspect,reduceQuality,soundProbe,lineClearIndex:lineClearer?lineClearer.index:-1};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
 }
 export function play(event,signal){
@@ -2623,7 +2627,12 @@ export function play(event,signal){
   modelStatus.className='fh3d-model-status';
   modelStatus.setAttribute('data-footera-model-diagnostic','');
   modelStatus.textContent='MODELL PRÜFEN';
-  const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';top.append(brand,modelStatus,skip);layer.append(top);
+  const skip=document.createElement('button');skip.type='button';skip.className='fh3d-skip';skip.textContent='Überspringen';
+  // V21.371 Stadion-Sound: one tap turns the stadium on or off, for every scene.
+  // It floats under the top bar so the bar keeps its room on 360 px phones.
+  const soundApi=globalThis.FooteraSound,soundBtn=soundApi?document.createElement('button'):null;
+  if(soundBtn){soundBtn.type='button';soundBtn.className='fh3d-sound';}
+  top.append(brand,modelStatus,skip);layer.append(top);if(soundBtn)layer.append(soundBtn);
   const hud=document.createElement('div');hud.className=`fh3d-hud fh3d-hud-${event.type}${ceremony?' fh3d-hud-'+ceremony:''}`;hud.setAttribute('aria-live','polite');
   const card=document.createElement('div');card.className='fh3d-player-card';
   if(event.playerCardHTML)card.innerHTML=event.playerCardHTML;
@@ -2657,8 +2666,14 @@ export function play(event,signal){
   if(replayEligible)layer.append(wipe,replayTag);
   const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null)+goalNetDelay(event.shotPlacement||null);
   host.append(layer);
+  let soundTime=0;
+  const makeSceneSound=startAt=>createSceneSound(event,{startAt,goalArrival,impactTime:event.type==='goal'||event.type==='ball_won'||ceremony?undefined:shotArrival(event.type,event.sequence,event.finish,event.shotPlacement||null),
+   ceremonyCut:ceremony?CEREMONY_CUT[ceremony]:null,weather:weatherNow,log:Array.isArray(globalThis.__FOOTERA_SOUND_LOG)?globalThis.__FOOTERA_SOUND_LOG:null});
+  let stadiumSound=makeSceneSound(0);
+  const paintSound=()=>{if(!soundBtn)return;const on=soundApi.enabled();soundBtn.textContent=on?'🔊':'🔇';soundBtn.setAttribute('aria-label',on?'Stadion-Sound ausschalten':'Stadion-Sound einschalten');soundBtn.setAttribute('aria-pressed',String(on))};paintSound();
+  soundBtn?.addEventListener('click',e=>{e.stopPropagation();const on=soundApi.setEnabled(!soundApi.enabled());stadiumSound.dispose();stadiumSound=on?makeSceneSound(soundTime):createSceneSound(event,{sound:null});if(on&&replayState?.on)stadiumSound.replay(true);paintSound()});
   function finish(result){
-   if(done)return;done=true;cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
+   if(done)return;done=true;try{stadiumSound.dispose()}catch(_){}cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
    const focused=layer.contains(document.activeElement);stageFrame?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
@@ -2712,9 +2727,9 @@ export function play(event,signal){
     if(r.last!==undefined)r.elapsed+=Math.max(0,Math.min(realtimeTest?2000:100,now-r.last))/1000;r.last=now;
     hud.classList.remove('visible');
     if(r.elapsed>=WIPE){
-     if(!r.on){r.on=true;layer.classList.add('fh3d-replay-on')}
+     if(!r.on){r.on=true;layer.classList.add('fh3d-replay-on');stadiumSound.replay(true)}
      const time=Math.min(replayRange.to,replayRange.from+(r.elapsed-WIPE)*REPLAY_RATE);
-     if(!r.out||r.elapsed-r.out<WIPE){world.update(time,{replay:true});layer.dataset.playbackTime=time.toFixed(3)}
+     if(!r.out||r.elapsed-r.out<WIPE){world.update(time,{replay:true});layer.dataset.playbackTime=time.toFixed(3);stadiumSound.update(time,world.soundProbe?.())}
      if(time>=replayRange.to&&!r.out){r.out=r.elapsed;layer.classList.remove('fh3d-wipe-in');void wipe.offsetWidth;layer.classList.add('fh3d-wipe-out')}
      if(r.out&&r.elapsed-r.out>=WIPE){finish('played');return}
     }
@@ -2736,6 +2751,7 @@ export function play(event,signal){
      if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality()}
      const displayTime=sample.time;
      world.update(displayTime);
+     soundTime=displayTime;stadiumSound.update(displayTime,world.soundProbe?.());
      if(!layer.classList.contains('fh3d-ready')){
       playback.presented(performance.now());
       last=0;
