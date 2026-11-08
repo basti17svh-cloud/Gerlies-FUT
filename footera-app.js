@@ -7676,6 +7676,7 @@ function renderMatchTimeline(){
  timeline.scrollLeft=timeline.scrollWidth
 }
 function renderMatchScene(){
+ if(match&&!match.highlight3DPending)renderMatchTicker();
  if(!match?.lastScene||match.highlight3DPending)return;
  const scene=match.lastScene,kind=scene.kind;
  $("matchLiveStage").dataset.scene=kind;
@@ -7783,6 +7784,7 @@ function resolveMissedMatchShot(shot,team){
   const text=kind==="save"?`${action.name} pariert den Abschluss von ${shot.shooter}!`:`${action.name} blockt den Schuss von ${shot.shooter}.`;
   recordMatchScene(`${action.side}-${kind}`,matchShotCommentary(kind,shot,{keeper:kind==="save"?shot.goalkeeperName||action.name:"",defender:kind==="block"?action.name:""})||text);addLog(text)
  }else if(shot.highlightType==="shot_post")recordMatchScene(`${shot.side}-post`,matchShotCommentary("post",shot)||`${shot.shooter} trifft den Pfosten · ${team}.`);
+ else if(shot.lineClear3D)recordMatchScene(`${shot.side==="home"?"away":"home"}-block`,matchShotCommentary("lineclear",shot)||`Auf der Linie geklärt gegen ${shot.shooter}.`);
  else recordMatchScene(`${shot.side}-chance`,matchShotCommentary("wide",shot)||`${shot.shooter} schießt vorbei · ${team}.`)
 }
 function recordMatchEvent(kind,side,text){
@@ -7794,7 +7796,16 @@ function recordMatchEvent(kind,side,text){
 function recordMatchScene(kind,text){
  if(!match)return;
  match.lastScene={kind,text,minute:Math.min(120,Math.floor(match.minute))};
- if(typeof document!=="undefined")renderMatchScene()
+ // V21.365: render after the current simulation step. A 3D scene for this
+ // moment is queued later in the same step; while it plays the caption and
+ // the ticker must not tell the outcome. The 3D queue renders them when idle.
+ if(typeof document!=="undefined")matchRenderAfterStep()
+}
+let matchRenderScheduled=false;
+function matchRenderAfterStep(){
+ if(matchRenderScheduled)return;matchRenderScheduled=true;
+ const run=()=>{matchRenderScheduled=false;renderMatchScene();if(!match?.lastScene)renderMatchTicker()};
+ if(typeof queueMicrotask==="function")queueMicrotask(run);else Promise.resolve().then(run)
 }
 function matchTeamPower(){
  // Chemistry is fixed at kickoff; substitutions still change the on-field rating and positional fit.
@@ -7859,8 +7870,11 @@ function matchCommentaryTicker(text,tone=""){
  if(!match||!text)return;
  const list=match.commentary||(match.commentary=[]);
  list.push({minute:Math.min(120,Math.floor(match.minute)),text:String(text),tone});if(list.length>40)list.shift();
- if(typeof document==="undefined")return;
- const box=$("matchTicker");if(!box)return;
+ if(typeof document!=="undefined")matchRenderAfterStep()
+}
+function renderMatchTicker(){
+ if(!match||match.highlight3DPending||typeof document==="undefined")return;
+ const list=match.commentary||[],box=$("matchTicker");if(!box||!list.length)return;
  box.hidden=false;
  box.innerHTML=list.slice(-3).reverse().map((row,i)=>`<p class="match-ticker-line${row.tone?" "+row.tone:""}${i?" old":""}"><time>${row.minute}'</time><span>${esc(row.text)}</span></p>`).join("")
 }

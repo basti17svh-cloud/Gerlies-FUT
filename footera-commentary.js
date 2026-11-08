@@ -74,6 +74,9 @@
   distance:['Der Fernschuss von {s} rauscht über das Tor.','{s} versucht es aus der Distanz, deutlich drüber.'],
   big:['Die muss er machen! {s} vergibt aus kurzer Distanz.','Riesenchance vertan, {s} schießt frei vor dem Tor vorbei!','Unfassbar, {s} trifft das leere Tor nicht!']
  });
+ // V21.365: a miss the 3D scene shows as a goal-line clearance. The clearer is
+ // a defender of the defending team, never the shooter.
+ const LINE_CLEARS=['Auf der Linie geklärt! {opp} rettet in höchster Not gegen {s}.','Der Ball war fast drin, doch ein Verteidiger von {opp} kratzt ihn von der Linie!','Rettung auf der Linie! {s} hatte den Torschrei schon auf den Lippen.','{s} schießt, aber {opp} klärt auf der Linie!'];
  const POSTS=['Pfosten! {s} hat Pech.','Aluminium! Der Ball klatscht an den Pfosten.','Nur der Pfosten rettet für {opp}!','Latte! {s} war so nah dran.'];
  const INTERCEPTIONS=['{d} liest den Pass von {c} und fängt ihn ab.','{d} geht dazwischen, Ballgewinn.','{d} antizipiert und schnappt sich den Ball.','Der Pass von {c} kommt nicht an, {d} ist zur Stelle.','{d} unterbindet den Spielaufbau von {team}.'];
  const TACKLES=Object.freeze({
@@ -181,6 +184,7 @@
    result=choose(state,'save-'+(big?'big':finish),list,v);
   }else if(kind==='block')result=choose(state,'block',BLOCKS,v);
   else if(kind==='post')result=choose(state,'post',POSTS,v);
+  else if(kind==='lineclear')result=choose(state,'lineclear',LINE_CLEARS,v);
   else{
    const list=big?WIDES.big:finish==='header'?WIDES.header:ctx.kind==='distance'?WIDES.distance:WIDES.normal;
    result=choose(state,'wide-'+(big?'big':finish),list,v);
