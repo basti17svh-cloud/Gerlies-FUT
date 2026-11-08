@@ -242,18 +242,19 @@
  function pack(step,at,dest){
   const x=ready(at,dest);if(!x)return;const{c}=x;let d=x.dest;at=x.at;
   if(step==='tunnel'){
-   // Walkout: the tunnel hum and a slow riser until the flash. Returns stop()
-   // so a skipped tunnel does not keep humming under the card.
-   const own=c.createGain();own.connect(d);d=own;
-   const n=noise(c,{at,dur:4.6,type:'pink',offset:.3}),bp=filter(c,'bandpass',260,1.4),g=c.createGain();
-   bp.frequency.setValueAtTime(220,at);bp.frequency.exponentialRampToValueAtTime(2400,at+4.3);
-   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.28,at+3.9);g.gain.exponentialRampToValueAtTime(.0001,at+4.5);chain(n,bp,g,d);
-   for(const[f,detune]of[[55,0],[82.4,6],[110,-5]]){const o=c.createOscillator(),og=c.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,at);o.frequency.exponentialRampToValueAtTime(f*2,at+4.3);o.detune.value=detune;
-    const lp=filter(c,'lowpass',400);lp.frequency.setValueAtTime(300,at);lp.frequency.exponentialRampToValueAtTime(2200,at+4.3);
-    og.gain.setValueAtTime(.0001,at);og.gain.exponentialRampToValueAtTime(.05,at+3.8);og.gain.exponentialRampToValueAtTime(.0001,at+4.5);chain(o,lp,og,d);o.start(at);o.stop(at+4.6)}
-   const n2=noise(c,{at:at+.4,dur:5,type:'applause',loop:true,offset:.8}),hp2=filter(c,'highpass',420),g2=c.createGain();env(g2,at+.4,.35,.22,3.2,1.1);chain(n2,hp2,g2,own);
-   hold(4.8);
-   return{stop(){try{const t=now(c);own.gain.cancelScheduledValues(t);own.gain.setTargetAtTime(.0001,t,.06)}catch(_){}}};
+   // Walkout: the tunnel hum and a riser that peaks after ~4.3 s (the normal
+   // tunnel length) and then holds until the flash calls stop(). A slow phone
+   // or a skip never leaves a gap or a hum under the card.
+   const own=c.createGain();own.connect(d);d=own;const RISE=4.3,END=9.5;
+   const n=noise(c,{at,dur:END,type:'pink',loop:true,offset:.3}),bp=filter(c,'bandpass',260,1.4),g=c.createGain();
+   bp.frequency.setValueAtTime(220,at);bp.frequency.exponentialRampToValueAtTime(2400,at+RISE);
+   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.24,at+RISE);g.gain.setValueAtTime(.24,at+END-.6);g.gain.exponentialRampToValueAtTime(.0001,at+END);chain(n,bp,g,d);
+   for(const[f,detune]of[[55,0],[82.4,6],[110,-5]]){const o=c.createOscillator(),og=c.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,at);o.frequency.exponentialRampToValueAtTime(f*2,at+RISE);o.detune.value=detune;
+    const lp=filter(c,'lowpass',400);lp.frequency.setValueAtTime(300,at);lp.frequency.exponentialRampToValueAtTime(2200,at+RISE);
+    og.gain.setValueAtTime(.0001,at);og.gain.exponentialRampToValueAtTime(.05,at+RISE);og.gain.setValueAtTime(.05,at+END-.6);og.gain.exponentialRampToValueAtTime(.0001,at+END);chain(o,lp,og,d);o.start(at);o.stop(at+END+.05)}
+   const n2=noise(c,{at:at+.4,dur:END,type:'applause',loop:true,offset:.8}),hp2=filter(c,'highpass',420),g2=c.createGain();env(g2,at+.4,.35,.22,END-1.6,.8);chain(n2,hp2,g2,own);
+   hold(END);
+   return{stop(when){try{const t=when??now(c);own.gain.cancelScheduledValues(t);own.gain.setTargetAtTime(.0001,t,.06)}catch(_){}}};
   }
   if(step==='clue'||step==='board'){
    // Heavy drum hit for each clue (nation, position, club).
