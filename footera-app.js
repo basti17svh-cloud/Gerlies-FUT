@@ -5564,6 +5564,9 @@ async function runPackReveal(plan){
  const tunnelWait=ms=>packRevealWait(Math.round(ms*pace),"tunnel"),cardWait=ms=>packRevealWait(Math.round(ms*pace),"card");
  try{await runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait)}finally{packRevealSkip=null}
 }
+// V21.371 Stadion-Sound for pack openings (drum hits, riser, boom). Sound only.
+// A skipped tunnel stays quiet: no burst of three drum hits at once.
+function packSound(step){if((step==="clue"||step==="board")&&packRevealSkip?.tunnel)return null;try{return window.FooteraSound?.pack(step)||null}catch(_){return null}}
 async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
  opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])||isMaxFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
@@ -5572,6 +5575,7 @@ async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
  if(plan.mode==="plain"){
   $("openStage").style.display="none";
   if(!showPackRevealCard(plan)){finishPack();return}
+  packSound("plain");
   await cardWait(plan.duration);finishPack();return
  }
 
@@ -5582,12 +5586,12 @@ async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
   await tunnelWait(250);
   $("openStage").style.display="none";
   $("boardIntro").classList.add("active");
-  showBoardCue("nation",firstBase);await tunnelWait(850);
-  showBoardCue("position",firstBase);await tunnelWait(800);
-  showBoardCue("club",firstBase);await tunnelWait(1000);
+  showBoardCue("nation",firstBase);packSound("board");await tunnelWait(850);
+  showBoardCue("position",firstBase);packSound("board");await tunnelWait(800);
+  showBoardCue("club",firstBase);packSound("board");await tunnelWait(1000);
   resetBoardIntro();
   $("bigPack").classList.remove("pulse");
-  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
+  flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");packSound("flash");
   await sleep(350);
   if(!showPackRevealCard(plan)){finishPack();return}
   spawnPackSparks(22);
@@ -5598,13 +5602,15 @@ async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
  addPackFloorLights();
  $("openStage").style.display="none";
  $("walkoutTunnel").classList.add("active");
+ const tunnelSound=packSound("tunnel");
  await tunnelWait(1200);
- showWalkoutClue("nation",firstBase);await tunnelWait(1000);
- showWalkoutClue("position",firstBase);await tunnelWait(900);
- showWalkoutClue("club",firstBase);await tunnelWait(1150);
+ showWalkoutClue("nation",firstBase);packSound("clue");await tunnelWait(1000);
+ showWalkoutClue("position",firstBase);packSound("clue");await tunnelWait(900);
+ showWalkoutClue("club",firstBase);packSound("clue");await tunnelWait(1150);
  resetWalkoutTunnel();
  $("bigPack").classList.remove("pulse");
- flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");
+ tunnelSound?.stop?.();
+ flash.classList.remove("go");void flash.offsetWidth;flash.classList.add("go");packSound("flash");
  spawnPackSparks(plan.mode==="double"?60:46);
  spawnPackConfetti(plan.mode==="double"?125:plan.mode==="special"?100:90,theme);
  await sleep(380);
@@ -5613,7 +5619,7 @@ async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
  if(plan.mode==="double"&&plan.cards[1]){
   await cardWait(700);
   const second=plan.cards[1],secondBase=displayBase(second);
-  if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,theme)}
+  if(secondBase){$("revealSecondCard").innerHTML=cardHTML(secondBase,second);spawnPackConfetti(60,theme);packSound("card")}
  }
  if(plan.mode==="walkout"){await cardWait(700);spawnPackConfetti(55,theme)}
  if(plan.mode==="special"){await cardWait(650);spawnPackConfetti(50,theme)}
@@ -9519,7 +9525,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.370";
+const GFUT_BUILD="V21.371";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9577,7 +9583,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21370",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21371",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

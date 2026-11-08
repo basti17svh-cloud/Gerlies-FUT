@@ -697,7 +697,8 @@ test('V21.70: player model status visible in all live matches even when PWA drop
  const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8');
  const css=fs.readFileSync(path.join(root,'3d-highlights.css'),'utf8');
  assert.match(scene,/const modelStatus=document.createElement\('span'\)/);
- assert.match(scene,/top\.append\(brand,modelStatus,skip\)/);
+ // V21.371: the Stadion-Sound button sits between the status badge and Überspringen.
+ assert.match(scene,/top\.append\(brand,modelStatus,\.\.\.\(soundBtn\?\[soundBtn\]:\[\]\),skip\)/);
  assert.match(scene,/modelStatus\.textContent=imported\?/);
  assert.match(scene,/layer\.dataset\.playerModel=imported\?'glb':'legacy'/);
  assert.match(css,/\.fh3d-model-status\[data-model-status="glb"\]/);
