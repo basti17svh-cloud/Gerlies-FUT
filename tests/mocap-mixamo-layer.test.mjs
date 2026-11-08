@@ -146,12 +146,12 @@ test('mixamo kicks: penalty and open-play strike, contact lined up, stretched pe
  assert.ok(at('foot_l').z>at('foot_r').z,'left-footed: mirrored');
 });
 
-test('gait capture: football jog and ready stance by speed, sprint and actions left alone',async()=>{
+test('gait capture: football jog, captured run/sprint and ready stance by speed, actions left alone',async()=>{
  const {gaitCaptureWeights,createGaitCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
  assert.ok(FOOTERA_MIXAMO.clips.jog_fwd?.loop);assert.ok(FOOTERA_MIXAMO.clips.ready_idle);
  assert.equal(gaitCaptureWeights(0).idle,1);assert.equal(gaitCaptureWeights(0).jog,0);
  assert.equal(gaitCaptureWeights(.35).jog,1);assert.equal(gaitCaptureWeights(.35).idle,0);
- assert.equal(gaitCaptureWeights(.9).jog,0,'sprints keep the library sprint');
+ assert.equal(gaitCaptureWeights(.9).jog,0);assert.equal(gaitCaptureWeights(.9).run,1,'sprints follow the captured CMU run');assert.equal(gaitCaptureWeights(.3).run,0);
  const {bones,player,scene,at}=rig(0),layer=createGaitCaptureLayer(bones,player);
  assert.equal(layer.apply(1,.35,0,0).clip,'none','no share: shots, tricks, celebrations');
  const before=bones.get('pelvis').quaternion.clone(),head=bones.get('Head').quaternion.clone();
@@ -162,7 +162,8 @@ test('gait capture: football jog and ready stance by speed, sprint and actions l
  assert.ok(layer.applyLegs(.35,1.2,1,[1,0])>0);
  assert.ok(!bones.get('thigh_l').quaternion.equals(l),'swinging left leg');
  assert.ok(bones.get('thigh_r').quaternion.equals(r),'planted right leg untouched');
- assert.equal(layer.applyLegs(.9,1.2,1,[1,1]),0,'sprint legs stay the library sprint');
+ assert.ok(layer.applyLegs(.9,1.2,1,[1,1])>0,'sprint legs follow the captured run');
+ assert.equal(layer.apply(1,.9,1.2,1).clip,'run');
  assert.ok(bones.get('Head').quaternion.equals(head),'head keeps looking at the ball');
  assert.equal(layer.apply(1,0,0,1).clip,'ready_idle');
  // Deterministic: the same time gives the same stance (the game rebuilds the

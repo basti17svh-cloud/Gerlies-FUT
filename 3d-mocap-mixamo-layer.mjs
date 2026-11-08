@@ -9,7 +9,8 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21364';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21366';
+import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 export const MIXAMO_KEEPER_LAYER_VERSION='21.364-mixamo-keeper-striker-tackle-run-receive-kick-gait';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
@@ -278,12 +279,16 @@ export function gaitCaptureWeights(speed=0){
  const s=clamp(speed);
  const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
  const idle=1-smooth(s,.025,.09);
- return{jog,idle};
+ // V21.366: faster runs and sprints follow a real captured running stride (CMU).
+ const run=smooth(s,.5,.68);
+ return{jog,idle,run};
 }
 export function createGaitCaptureLayer(bones,playerRoot){
  const state={clip:'none',weight:0,source:'Mixamo'};
  const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
- if(!rig||!rig.clips.jog_fwd||!rig.clips.ready_idle)return{apply:()=>state,state};
+ if(!rig||!rig.clips.jog_fwd||!rig.clips.ready_idle)return{apply:()=>state,applyLegs:()=>0,state};
+ const runRig=createCaptureRetarget(bones,playerRoot,FOOTERA_CMU_RUN);
+ const cyclePhase=(clip,stride)=>((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
  // share: how much of the body the everyday gait may own right now (0 during
  // shots, celebrations, tricks, airborne moments; see the prototype).
  function apply(time=0,speed=0,stride=0,share=1){
@@ -295,6 +300,11 @@ export function createGaitCaptureLayer(bones,playerRoot){
    const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
    rig.pose('jog_fwd',phase*loop,{body:w.jog*k,legs:0},0,GAIT_SKIP);
    state.clip='jog_fwd';state.weight=w.jog*k;
+  }
+  if(runRig&&w.run*k>.001){
+   const clip=runRig.clips.run;
+   runRig.pose('run',cyclePhase(clip,stride)*(clip.frames-1),{body:w.run*k,legs:0},0,GAIT_SKIP);
+   if(w.run>w.jog){state.clip='run';state.weight=w.run*k}
   }
   if(w.idle*k>.001){
    // Ping-pong through the stored stance so the loop never jumps.
@@ -309,14 +319,18 @@ export function createGaitCaptureLayer(bones,playerRoot){
  }
  // swing: [left, right] 0..1, how much each leg is in the air right now.
  function applyLegs(speed=0,stride=0,share=1,swing=[0,0]){
-  const w=gaitCaptureWeights(speed).jog*clamp(share);if(w<=.001)return 0;
-  const clip=rig.clips.jog_fwd,loop=clip.frames-1;
-  const phase=((stride/(Math.PI*2)+clip.keys.leftForward)%1+1)%1;
-  for(let i=0;i<2;i++){
-   const legs=w*clamp(swing[i]);if(legs<=.001)continue;
-   rig.pose('jog_fwd',phase*loop,{body:0,legs},0,LEG_SKIP[i]);
+  const g=gaitCaptureWeights(speed),k=clamp(share);
+  const layers=[[rig,'jog_fwd',g.jog*k],[runRig,'run',g.run*k]];
+  let total=0;
+  for(const [r,name,w] of layers){
+   if(!r||w<=.001)continue;total+=w;
+   const clip=r.clips[name],frame=cyclePhase(clip,stride)*(clip.frames-1);
+   for(let i=0;i<2;i++){
+    const legs=w*clamp(swing[i]);if(legs<=.001)continue;
+    r.pose(name,frame,{body:0,legs},0,LEG_SKIP[i]);
+   }
   }
-  return w;
+  return total;
  }
  return{apply,applyLegs,state};
 }

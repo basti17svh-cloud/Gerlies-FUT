@@ -8,7 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21364';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21366';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -34,12 +34,20 @@ export function createPlayerSpaceRetarget(bones,playerRoot){
   rest.set(name,{neutral:bone.quaternion.clone(),basis,inverse:basis.clone().invert()});
  }
  const delta=new THREE.Quaternion(),local=new THREE.Quaternion(),rot=new THREE.Euler();
- return function apply(name,x=0,y=0,z=0){
+ function apply(name,x=0,y=0,z=0){
   const bone=bones.get(name),frame=rest.get(name);if(!bone||!frame)return;
   delta.setFromEuler(rot.set(x,y,z,'XYZ'));
   local.copy(frame.inverse).multiply(delta).multiply(frame.basis);
   bone.quaternion.copy(frame.neutral).multiply(local);
+ }
+ // V21.366: adds a player-space turn on top of the current (captured) pose.
+ apply.add=function(name,x=0,y=0,z=0){
+  const bone=bones.get(name),frame=rest.get(name);if(!bone||!frame)return;
+  delta.setFromEuler(rot.set(x,y,z,'XYZ'));
+  local.copy(frame.inverse).multiply(delta).multiply(frame.basis);
+  bone.quaternion.multiply(local);
  };
+ return apply;
 }
 
 export async function prepareFooteraPlayerModel(){
@@ -619,6 +627,19 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const keeperClipIdle=Object.freeze({torsoPitch:0,torsoRoll:0,leftArmPitch:0,rightArmPitch:0,
   leftArmRoll:0,rightArmRoll:0,leftElbow:0,rightElbow:0,clip:'KeeperBiomechanics',
   weight:0,phase:0,source:'procedural'});
+ // V21.366: the captured jog/sprint is a straight-line run. A cut leans the
+ // hips and chest into the curve, the shoulders turn ahead of it, braking
+ // sits back and pushing off again drives forward (the Stemmschritt).
+ function leanIntoTurn(info,share){
+  const speed=clamp(info.speed||0),effort=smoothstep(.04,.2,speed);
+  const turn=clamp(info.turn||0,-.14,.14),bank=clamp(turn*2.1,-.3,.3)*effort*(.55+.45*speed)*share;
+  const drive=clamp(info.acceleration||0,-1,1)*effort*share;
+  const yaw=clamp(turn*.9,-.13,.13)*effort*share,pitch=-.10*drive;
+  apply.add('pelvis',0,yaw*.35,bank*.32);
+  apply.add('spine_01',pitch*.4,yaw*.25,bank*.30);
+  apply.add('spine_02',pitch*.35,yaw*.22,bank*.24);
+  apply.add('spine_03',pitch*.25,yaw*.18,bank*.16);
+ }
  function animate(time=0,info={}){
   const driver=existingDriver,keeperRole=info.role==='keeper';
   frameTime=Number.isFinite(time)?time:0;
@@ -704,7 +725,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // air); posed before the foot IK so the planted boots stay put.
   const gaitShare=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
    clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
-  if(gaitShare>.001)gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);
+  if(gaitShare>.001){gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);leanIntoTurn(info,gaitShare)}
   if(!acro||acro.weight<.5)matchFeet();
   // V21.297: the captured stride owns the swinging leg (knee drive, heel
   // kick); the standing leg stays on its planted IK boot, so the hips never
