@@ -12,6 +12,7 @@ import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
+import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21370';
 import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21349';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
@@ -238,6 +239,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   if(node.isSkinnedMesh){node.frustumCulled=false;node.castShadow=true;node.receiveShadow=true;meshes.push(node)}
  });
  if(makehuman&&bones.has('head'))bones.set('Head',bones.get('head'));
+ // V21.370: hair and the loose shirt swing a moment behind the body.
+ let swayOn=true;try{swayOn=globalThis.localStorage?.getItem('footera-3d-sway')!=='0'}catch(_){}
+ const secondary=human&&swayOn?createSecondaryMotion(THREE,meshes,bones.get('Head')):null;
  if(REQUIRED.some(key=>!bones.has(key))||!meshes.length){
   for(const {geometry,material,texture} of dressed?.owned||[]){geometry?.dispose();material?.dispose();texture?.dispose()}
   return null;
@@ -777,6 +781,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
   if(keeperRole)matchKeeperHands(keeperHands);
   if(captureLegs&&!keeperRole&&info.embrace?.weight>0)embrace(info.embrace);
+  secondary?.update(frameTime,info.speed||0);
  }
  // V21.296: a teammate's arm round the scorer, hand on his far
  // shoulder, elbow hanging down; blended over the authored hug pose.
