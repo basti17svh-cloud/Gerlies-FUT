@@ -127,7 +127,7 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-13-1300-letzte-chance-bryan-mbeumo",
@@ -140,7 +140,7 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-13-1300-letzte-chance-halloween",
@@ -153,7 +153,7 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   },
   {
     "id": "2026-11-13-1300-letzte-chance-son-heung-min",
@@ -166,6 +166,6 @@
       "tiktok": null,
       "x": false
     },
-    "scheduled": false
+    "scheduled": true
   }
 ]
