@@ -1880,7 +1880,7 @@ const MID_ICON_DATA=[
  ["Emmanuel Petit",88,"CDM","LB,CM","France",1620,[77,77,79,77,85,87],[],3,3,"Left","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-1620.0c5ac286931721e39fd97b390f35ba4c1c05fd37f3b474c75d64a25836384534.webp"],
  ["Xabi Alonso",88,"CDM","CM","Spain",45197,[74,77,86,81,83,80],[],3,4,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-45197.820edf5805fe00607c3f9b93e6075320ca95b2830731d2a15701cc201ddd5e5c.webp"],
  ["Rivaldo",90,"LW","LM,CAM","Brazil",4231,[87,88,87,91,42,75],[],4,3,"Left","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-4231.908fcf91947b5d1b98052bd517121fe46ba16ea426db544f865d6a155a3831b0.webp"],
- ["Birgit Prinz",92,"ST","","Germany",275276,[84,92,80,85,52,88],[],3,4,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-275276.c628eee1d00a01e50acc12b99a23d7e196cd704e95d3264e21367f0913ee85d1.webp"],
+ ["Birgit Prinz",92,"ST","","Germany",275276,[84,92,80,85,52,88],[],3,4,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-275276.c628eee1d00a01e50acc12b99a23d7e196cd704e95d3264e21368f0913ee85d1.webp"],
  ["Andrea Pirlo",90,"CM","CDM","Italy",7763,[75,79,93,89,69,68],[],5,4,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-7763.960d7f42b4b7f5ae5d0b84297213aa136e05346f7de630620b54abcaa7cb1891.webp"],
  ["Alessandro Nesta",89,"CB","","Italy",1088,[76,44,63,70,92,85],[],2,3,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-1088.4b0f0cb0b5185e137ae329c593dad4b054351c2e55d0c9fbb9ee829bd485c296.webp"],
  ["Hernán Crespo",88,"ST","","Argentina",7512,[88,88,71,87,36,71],[],4,4,"Right","https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=300/2027/player-item/27-7512.6cdb6d8d92db6a9c3b82c7aefe494371e05d576053aa0bb83c26f4312f908956.webp"],
@@ -9519,7 +9519,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.367";
+const GFUT_BUILD="V21.368";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9577,7 +9577,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21367",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21368",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

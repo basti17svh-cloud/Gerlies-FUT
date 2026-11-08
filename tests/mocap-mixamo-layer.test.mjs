@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as THREE from '../vendor/three/three.module.min.js';
-import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip,keeperThrowCaptureTime,KEEPER_THROW} from '../3d-mocap-mixamo-layer.mjs';
+import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip,keeperThrowCaptureTime,KEEPER_THROW,throwInCaptureTime,throwInCaptureWeight,THROW_IN} from '../3d-mocap-mixamo-layer.mjs';
 import {FOOTERA_MIXAMO} from '../3d-mocap-mixamo-data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -39,7 +39,7 @@ test('keeper capture timing: ready before the shot, dive around the save, hands 
  assert.equal(keeperCaptureWeights(6.5).dive,1);assert.equal(keeperCaptureWeights(6.5).legs,1);
  assert.equal(keeperCaptureWeights(6.6).hands,1,'gloves on the authored contact');
  assert.ok(keeperCaptureWeights(7.8,'parry').hands<.5,'captured arms after a parry landing');
- // V21.367: a caught ball (classic) stays in both gloves, then the throw-out owns the arms.
+ // V21.368: a caught ball (classic) stays in both gloves, then the throw-out owns the arms.
  assert.equal(keeperCaptureWeights(7.8,'classic').hands,1,'caught ball clutched after the landing');
  assert.equal(keeperCaptureWeights(8.5,'classic').throwOut,0);
  assert.equal(keeperCaptureWeights(9.6,'classic').throwOut,1);assert.equal(keeperCaptureWeights(9.6,'classic').hands,0);
@@ -179,4 +179,12 @@ test('gait capture: football jog, captured run/sprint and ready stance by speed,
  const rest=[...bones].map(([,b])=>[b,b.quaternion.clone()]),reset=()=>{for(const [b,q] of rest)b.quaternion.copy(q)};
  reset();layer.apply(2.5,0,0,1);scene.updateMatrixWorld(true);const a=at('hand_l').clone();
  reset();layer.apply(2.5,0,0,1);scene.updateMatrixWorld(true);assert.ok(at('hand_l').distanceTo(a)<1e-6);
+});
+
+test('throw-in capture: ball behind the head, then released on the set-piece key',()=>{
+ const k=FOOTERA_MIXAMO.clips.throw_in.keys;
+ assert.equal(throwInCaptureTime(1.5,k),k.back);
+ assert.ok(Math.abs(throwInCaptureTime(THROW_IN.release,k)-k.release)<1e-9);
+ assert.equal(THROW_IN.release,3.2,'matches RESTART_RELEASE.throw_in');
+ assert.equal(throwInCaptureWeight(0),0);assert.equal(throwInCaptureWeight(3.2),1);assert.equal(throwInCaptureWeight(5),0);
 });
