@@ -14,15 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: G1, type: goal, score: '0:0', from: '4.6', frames: '220', team: away, minute: '3', who: 'Erling Haaland'}
-          - {name: G2, type: goal, score: '0:1', from: '4.6', frames: '220', team: home, minute: '22', who: 'Harry Kane'}
-          - {name: G3, type: goal, score: '1:1', from: '4.6', frames: '220', team: home, minute: '23', who: 'Michael Olise'}
-          - {name: G4, type: goal, score: '2:1', from: '1.2', frames: '330', team: home, minute: '28', who: 'Jamal Musiala'}
-          - {name: G5, type: goal, score: '3:1', from: '4.6', frames: '220', team: home, minute: '33', who: 'Harry Kane'}
-          - {name: S1, type: save, score: '0:1', from: '4.8', frames: '160', team: away, minute: '12', who: 'Bukayo Saka'}
-          - {name: P1, type: post, score: '4:1', from: '4.8', frames: '150', team: away, minute: '61', who: 'Erling Haaland'}
+          - {name: G1, type: goal, score: '0:0', from: '4.6', frames: '220', team: away, minute: '7', who: 'Erling Haaland'}
+          - {name: G2, type: goal, score: '0:1', from: '4.6', frames: '220', team: home, minute: '12', who: 'Harry Kane'}
+          - {name: S1, type: save, score: '1:1', from: '4.8', frames: '160', team: away, minute: '24', who: 'Bukayo Saka'}
+          - {name: G4, type: goal, score: '1:1', from: '1.2', frames: '330', team: home, minute: '58', who: 'Jamal Musiala'}
+          - {name: P1, type: post, score: '2:1', from: '4.8', frames: '150', team: away, minute: '75', who: 'Erling Haaland'}
+          - {name: G5, type: goal, score: '2:1', from: '4.6', frames: '220', team: away, minute: '87', who: 'Bukayo Saka'}
+          - {name: G3, type: goal, score: '2:2', from: '4.6', frames: '240', team: home, minute: '90', who: 'Michael Olise'}
           - {name: K, type: kickoff, score: '0:0', from: '0.2', frames: '150', team: home, minute: '0', who: ''}
-          - {name: F, type: fulltime, score: '4:1', from: '0.2', frames: '150', team: home, minute: '90', who: ''}
+          - {name: F, type: fulltime, score: '3:2', from: '0.2', frames: '150', team: home, minute: '90', who: ''}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
