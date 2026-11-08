@@ -28,7 +28,8 @@ const [out,from,to,fps='30',width='432',team='home',minute='22',seq='',scorer=''
   match.kickoffKits={home:{pattern:'solid',shirtPrimary:'#f4f4f6',shirtSecondary:'#e3202b',shorts:'#141418',socks:'#f4f4f6'},away:{pattern:'solid',shirtPrimary:'#3d0f73',shirtSecondary:'#c6ff3d',shorts:'#f4f4f6',socks:'#3d0f73'}};
   match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;match.minute=Number(minute);updateMatchUI();document.getElementById('match').scrollTop=0;
  },{xi,minute});
- console.log('models',await page.evaluate(async()=>{const m=await import('./3d-highlights-scene.mjs?v=21341');await m.prepareFooteraPlayerModel().catch(e=>String(e));await (m.prepareFooteraHumanModel?.()||Promise.resolve()).catch(e=>String(e));return [m.isFooteraPlayerModelReady(),m.isFooteraHumanModelReady()]}));
+ const SCENEV=(require('fs').readFileSync(require('path').join(__dirname,'..','3d-highlights.js'),'utf8').match(/3d-highlights-scene\.mjs\?v=(\d+)/)||[])[1];console.log('scene v',SCENEV);
+ console.log('models',await page.evaluate(async(SCENEV)=>{const m=await import('./3d-highlights-scene.mjs?v='+SCENEV);await m.prepareFooteraPlayerModel().catch(e=>String(e));await (m.prepareFooteraHumanModel?.()||Promise.resolve()).catch(e=>String(e));return [m.isFooteraPlayerModelReady(),m.isFooteraHumanModelReady()]},SCENEV));
  if(scorer)await page.evaluate(want=>{const o=chooseMatchAttacker;chooseMatchAttacker=function(side,kind,ex){const rows=matchActorRows(side);const r=rows.find(r=>(r.base?.name||r.name||'')===want);return r||o.apply(this,arguments)}},scorer);
  if(seq)await page.evaluate(seq=>{window.__s=match3DSequence;match3DSequence=()=>seq},seq);
  await page.evaluate(()=>{qaFrames.clear();qaHold=true});
