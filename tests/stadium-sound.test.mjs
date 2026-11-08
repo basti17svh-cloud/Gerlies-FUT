@@ -122,14 +122,26 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
 
 test('release wiring: script order, scene import, cache, settings and pack hooks',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),app=read('footera-app.js'),css=read('3d-highlights.css');
- assert.ok(html.indexOf('footera-sound.js?v=21371')>0&&html.indexOf('footera-sound.js?v=21371')<html.indexOf('3d-highlights.js?v='));
+ assert.ok(html.indexOf('footera-sound.js?v=21372')>0&&html.indexOf('footera-sound.js?v=21372')<html.indexOf('3d-highlights.js?v='));
  assert.match(html,/<select data-sound-mode[^>]*><option value="on">An<\/option><option value="off">Aus<\/option>/);
  assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21371'/);
- for(const f of ['./3d-stadium-sound.mjs?v=21371','./footera-sound.js?v=21371'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-stadium-sound.mjs?v=21371','./footera-sound.js?v=21372'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
  assert.match(css,/\.fh3d-sound\{[^}]*width:44px;height:44px/);
  for(const step of ['tunnel','clue','flash','board','plain','card'])assert.ok(app.includes(`packSound("${step}")`),step);
  assert.match(app,/tunnelSound\?\.stop\?\.\(\)/);
+});
+
+test('V21.372 clear sound: no hiss layers (no clap/applause noise, no rain hiss, crowd noise only as low rumble)',()=>{
+ const src=read('footera-sound.js');
+ assert.doesNotMatch(src,/applauseBuffer|type:'applause'/,'no clapping noise buffer');
+ const crowd=src.slice(src.indexOf(' function crowd('),src.indexOf(' // ---------------------------------------------------------------- packs'));
+ assert.doesNotMatch(crowd,/'white'|highpass',3800/,'no hiss in the stadium bed');
+ assert.match(crowd,/filter\(c,'lowpass',300\)/,'only a low rumble from noise');
+ const packs=src.slice(src.indexOf(' function pack('),src.indexOf(' function setEnabled('));
+ assert.doesNotMatch(packs,/noise\(/,'walkout is tonal: no noise riser');
+ const whistle=src.slice(src.indexOf(' function whistle('),src.indexOf(' function roar('));
+ assert.doesNotMatch(whistle,/noise\(/,'clean whistle tone');
 });
