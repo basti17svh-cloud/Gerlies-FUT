@@ -88,7 +88,10 @@ test('scene director: cues fire once at their time, kicks follow the ball, repla
  s.replay(true);
  const before=calls.length;
  for(let t=5;t<=7;t+=1/60)s.update(t,{ball:ballPosition('goal',t,'triangle_left'),goal:[0,0,-52.5]});
- assert.ok(calls.slice(before).every(c=>c[0]==='kick'),'replay repeats only touches, no second roar');
+ const replayCalls=calls.slice(before);
+ assert.ok(replayCalls.every(c=>c[0]==='kick'),'replay repeats only touches, no second roar');
+ // The replay runs the same seconds again: its shot is heard too (earlier touches must not block it).
+ assert.ok(replayCalls.length>=1,'shot touch in the replay');
  assert.deepEqual(bed.muffled,[true]);
  s.dispose();s.dispose();assert.equal(bed.stopped,1);
 });

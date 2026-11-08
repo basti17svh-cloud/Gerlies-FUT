@@ -19,7 +19,7 @@ export const LAUNCH_ARM=5,LAUNCH_SPEED=6,LAUNCH_ACCEL=20;
 export function createKickDetector({minChange=KICK_MIN_CHANGE,gap=KICK_GAP}={}){
  let last=null,lastVel=null,lastKick=-Infinity,armed=true,fast=false;
  return{
-  reset(){last=null;lastVel=null;armed=true;fast=false},
+  reset(){last=null;lastVel=null;armed=true;fast=false;lastKick=-Infinity},
   // time in scene seconds, ball [x,y,z] in metres. Returns null or {strength,kind}.
   sample(time,ball){
    if(!ball||!Number.isFinite(time))return null;
