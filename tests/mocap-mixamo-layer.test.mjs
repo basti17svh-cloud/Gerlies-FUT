@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as THREE from '../vendor/three/three.module.min.js';
-import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip} from '../3d-mocap-mixamo-layer.mjs';
+import {createKeeperCaptureLayer,keeperCaptureWeights,keeperCaptureTime,keeperCaptureClip,keeperThrowCaptureTime,KEEPER_THROW} from '../3d-mocap-mixamo-layer.mjs';
 import {FOOTERA_MIXAMO} from '../3d-mocap-mixamo-data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -38,7 +38,15 @@ test('keeper capture timing: ready before the shot, dive around the save, hands 
  assert.ok(keeperCaptureWeights(4.5).ready>.7);
  assert.equal(keeperCaptureWeights(6.5).dive,1);assert.equal(keeperCaptureWeights(6.5).legs,1);
  assert.equal(keeperCaptureWeights(6.6).hands,1,'gloves on the authored contact');
- assert.ok(keeperCaptureWeights(7.8).hands<.5,'captured arms after the landing');
+ assert.ok(keeperCaptureWeights(7.8,'parry').hands<.5,'captured arms after a parry landing');
+ // V21.367: a caught ball (classic) stays in both gloves, then the throw-out owns the arms.
+ assert.equal(keeperCaptureWeights(7.8,'classic').hands,1,'caught ball clutched after the landing');
+ assert.equal(keeperCaptureWeights(8.5,'classic').throwOut,0);
+ assert.equal(keeperCaptureWeights(9.6,'classic').throwOut,1);assert.equal(keeperCaptureWeights(9.6,'classic').hands,0);
+ assert.equal(keeperCaptureWeights(9.6,'parry').throwOut,0,'a parried ball is not thrown');
+ const tk=FOOTERA_MIXAMO.clips.keeper_throw.keys;
+ assert.equal(keeperThrowCaptureTime(8,tk),tk.hold);
+ assert.ok(Math.abs(keeperThrowCaptureTime(KEEPER_THROW.release,tk)-tk.release)<1e-9,'release on the game key');
  assert.equal(keeperCaptureWeights(10).dive,0);
  assert.equal(keeperCaptureWeights(6.5,'rush_spread').dive,0,'spread block keeps the authored smother');
  assert.equal(keeperCaptureWeights(6.65,'rush_spread').hands,1);

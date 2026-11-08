@@ -9,10 +9,10 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21366';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21367';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.364-mixamo-keeper-striker-tackle-run-receive-kick-gait';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.367-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -31,6 +31,16 @@ export function keeperCaptureClip(action='classic'){
  return action==='high_reach'||action==='fingertip'?'keeper_dive_high':'keeper_dive';
 }
 // Weights of the ready sway and the dive over the play.
+// V21.367: game time of the caught ball's throw-out. The capture's hold
+// (ball at the chest) starts it, the release lands at KEEPER_THROW.release.
+export const KEEPER_THROW=Object.freeze({start:9.1,release:9.85});
+export function keeperThrowCaptureTime(time,keys){
+ const {hold,release}=keys;
+ if(time<=KEEPER_THROW.start)return hold;
+ // The wind-up is quicker than the capture (the scene ends at 10.4 s).
+ if(time<=KEEPER_THROW.release)return hold+(time-KEEPER_THROW.start)*(release-hold)/(KEEPER_THROW.release-KEEPER_THROW.start);
+ return release+(time-KEEPER_THROW.release);
+}
 export function keeperCaptureWeights(time,action='classic'){
  // The low spread block (rush_spread) has no matching capture: it keeps the
  // authored smother and only borrows the captured ready stance.
@@ -43,8 +53,12 @@ export function keeperCaptureWeights(time,action='classic'){
  // Legs join for the push-off and leave again as the authored get-up plants them.
  const legs=smooth(time,5.6,5.92)*(1-smooth(time,8.1,8.7));
  // Hand IK onto the authored gloves: full around the ball contact only.
- const hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
- return{dive,ready,legs,hands:clamp(hands)};
+ let hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
+ // V21.367: a caught ball (classic save) stays in both gloves until the
+ // keeper is up again; then the captured overhand throw owns the arms.
+ const throwOut=action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
+ if(action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
+ return{dive,ready,legs,hands:clamp(hands),throwOut};
 }
 
 export function createKeeperCaptureLayer(bones,playerRoot){
@@ -74,6 +88,11 @@ export function createKeeperCaptureLayer(bones,playerRoot){
    const t=keeperCaptureTime(time,clip.keys);
    rig.pose(name,t*clip.rate,{body:w.dive,legs:w.legs},mirror);
    state.clip=name;state.weight=w.dive;state.mirror=mirror;
+  }
+  if(w.throwOut>.001&&rig.clips.keeper_throw){
+   const clip=rig.clips.keeper_throw;
+   rig.pose('keeper_throw',keeperThrowCaptureTime(time,clip.keys)*clip.rate,{body:w.throwOut,legs:0},0);
+   state.clip='keeper_throw';state.weight=w.throwOut;
   }
   return state;
  }
@@ -279,7 +298,7 @@ export function gaitCaptureWeights(speed=0){
  const s=clamp(speed);
  const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
  const idle=1-smooth(s,.025,.09);
- // V21.366: faster runs and sprints follow a real captured running stride (CMU).
+ // V21.367: faster runs and sprints follow a real captured running stride (CMU).
  const run=smooth(s,.5,.68);
  return{jog,idle,run};
 }

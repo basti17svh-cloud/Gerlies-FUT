@@ -7,7 +7,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21366';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21367';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21349';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -343,6 +343,19 @@ export function goalNetPoint(sequence='central',finish='normal',placement=null){
  if(placement?.style==='post_in')return[impact[0]*.55,impact[1]*.7+.1,-54.15];
  return impact;
 }
+// V21.367: a classic save is CAUGHT. The ball stays in the keeper's arms (the
+// scene pins it between the gloves), he gets up with it and throws it out.
+// This path is the camera's and the fallback's approximation of that hold.
+export const KEEPER_RELEASE=9.85;
+const KEEPER_THROW_START=9.1;
+export function caughtBallPosition(time,impact,sequence='central',finish='normal',placement=null){
+ const k=keeperPose('big_chance_saved',Math.min(time,KEEPER_RELEASE),finish,sequence,'classic',placement);
+ const held=[k.x,mix(.38,1.12,smooth((time-7.95)/1.25)),k.z+.27];
+ if(time<KEEPER_RELEASE)return lerp(impact,held,smooth((time-IMPACT_TIME)/.45));
+ // Overhand throw towards the near flank: out of the hand above the head.
+ const sign=Math.sign(impact[0])||1,u=time-KEEPER_RELEASE;
+ return[held[0]+sign*3.6*u,Math.max(.12,1.95+4.6*u-4.9*u*u),held[2]+.35+13.8*u];
+}
 export function ballPosition(type,time,sequence='central',finish='normal',keeperAction='classic',placement=null){
  const seq=normalizeSequence(sequence),variant=VARIANTS[seq],style=normalizeFinish(finish);
  if(extendedKind(seq)&&time<SHOT_TIME)return extendedBall(time,seq,shotContact(seq,style,placement));
@@ -472,6 +485,7 @@ export function ballPosition(type,time,sequence='central',finish='normal',keeper
   const u=smooth((s-.3)/.5);return lerp(net,[net[0],.12,-53.85],u);
  }
  if(type==='goal'){const p=lerp(impact,[impact[0]*.94,.12,-53.75],(time-IMPACT_TIME)/.85);p[1]+=.12*Math.abs(Math.sin((time-IMPACT_TIME)*7));return p}
+ if(type==='big_chance_saved'&&keeperAction==='classic')return caughtBallPosition(time,impact,seq,finish,placement);
  if(type==='big_chance_saved'){
   // Parries spring off the glove and slow down instead of drifting at a constant pace.
   const u=1-Math.pow(1-clamp((time-IMPACT_TIME)/1.35),2.2),sign=Math.sign(impact[0])||1;
@@ -1806,6 +1820,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   const keeperGuidePoint=new THREE.Vector3();
   const keeperContactWorld=new THREE.Vector3();
+  const keeperHeld=[0,0,0],keeperHandWorld=new THREE.Vector3();let keeperHeldWeight=0;
   // For close-control, guide the rendered ball between the actual ANIMATED
   // boot toes. Flight paths remain independent when the foot releases it.
   function bootGuidedBall(original,time){
@@ -2215,6 +2230,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const kp=labDuelPreview||event.type==='ball_won'?{x:0,y:0,z:-50.6,tilt:0,anticipation:0,dive:0,land:0,recover:0}:
     eventKeeperPose(event.type,time,finish,sequence,keeperAction);
    pose(keeper,kp.x,kp.z,time,.12,Math.PI);
+   for(const glove of keeper.gloves)if(glove?.userData.rest)glove.position.copy(glove.userData.rest);
    // The keeper has ONE biomechanical pose owner. Legacy additive dive,
    // random-looking captured jumps and whole-body tilting must not fight it.
    // All sample times are absolute and deterministic; the match score and
@@ -2275,10 +2291,21 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
      guide(other,[impact[0]-side*.33,Math.max(.22,impact[1]-.24),-50.49],toContact*.92);
     // Brace against the turf during landing and the first part of getting up.
     // Targets stay in field space, so neither hand passes through the grass.
-    const brace=smooth((time-6.82)/.35)*(1-smooth((time-8.48)/.55));
+    const caught=saved&&keeperAction==='classic';
+    const brace=caught?0:smooth((time-6.82)/.35)*(1-smooth((time-8.48)/.55));
     if(brace>.001){
      guide(lead,[keeper.root.position.x+side*1.24,.10,keeper.root.position.z+.28],brace);
      guide(other,[keeper.root.position.x+side*1.57,.16,keeper.root.position.z-.16],brace);
+    }
+    // V21.367: the caught ball is clutched to the chest with both gloves
+    // while the keeper lands and gets up; the throw-out takes it from there.
+    keeperHeldWeight=caught&&time<KEEPER_RELEASE?smooth((time-6.7)/.35):0;
+    if(keeperHeldWeight>.001){
+     keeper.root.updateWorldMatrix(true,true);
+     const hold=(x,y,z)=>{keeper.upper.localToWorld(keeperGuidePoint.set(x,y,z));field.worldToLocal(keeperGuidePoint);return[keeperGuidePoint.x,Math.max(.1,keeperGuidePoint.y),keeperGuidePoint.z]};
+     guide(lead,hold(side*.12,.18,-.22),keeperHeldWeight);
+     guide(other,hold(-side*.12,.18,-.22),keeperHeldWeight);
+     const c=hold(0,.18,-.30);keeperHeld[0]=c[0];keeperHeld[1]=Math.max(.13,c[1]);keeperHeld[2]=c[2];
     }
    }
    for(const m of activeSignatureMoments(signatures,time))if(m.actor<16&&!extended){
@@ -2296,6 +2323,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const guidedBall=bootGuidedBall(eventBallPosition(event.type,time,sequence,finish,keeperAction),time);
    const labContact=labDuelPreview?(defenderAction==='slide_attempt'?SLIDE_CONTACT:BLOCK_CONTACT):Infinity;
    const bp=labDuelPreview&&time>=labContact?stagedBallPosition(defenderAction,time,sequence,labBallAt):guidedBall;
+   if(keeperHeldWeight>.001)for(let j=0;j<3;j++)bp[j]=mix(bp[j],keeperHeld[j],keeperHeldWeight);
    ball.position.set(...bp);ball.rotation.x=ballRollAt(time);ball.rotation.z=.075*Math.sin(time*5);
    ballRing.position.set(bp[0],.025,bp[2]);ballRing.visible=time<IMPACT_TIME+.12;ballRing.material.opacity=time<SHOT_TIME?.25:.18;
    if(trail.length){const [from,to]=signature.trail;trail.forEach((dot,i)=>{const t=time-i*.012;dot.visible=t>=from&&time<=to;if(dot.visible)dot.position.set(...(i?eventBallPosition(event.type,t):bp))})}
@@ -2391,6 +2419,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
+   // The captured throw-out moves the imported keeper's arms away from the
+   // authored rig, so its glove meshes travel with the real hands.
+   const throwing=importedKeeper?.handWorld&&event.type==='big_chance_saved'&&keeperAction==='classic'?smooth((time-KEEPER_THROW_START)/.3):0;
+   for(let g=0;g<2;g++){const glove=keeper.gloves[g];if(!glove)continue;
+    glove.userData.rest??=glove.position.clone();glove.position.copy(glove.userData.rest);
+    if(throwing>.001&&importedKeeper.handWorld(g,keeperHandWorld)){glove.parent.updateWorldMatrix(true,false);glove.position.lerp(glove.parent.worldToLocal(keeperHandWorld),throwing)}}
+   // The captured throw-out carries the ball in the imported keeper's hands.
+   if(keeperHeldWeight>.001&&importedKeeper?.handWorld&&time>KEEPER_THROW_START){
+    const r=importedKeeper.handWorld(1,keeperHandWorld),l=importedKeeper.handWorld(0,keeperContactWorld);
+    if(r&&l){const w=smooth((time-KEEPER_THROW_START)/.3),toRight=smooth((time-KEEPER_THROW_START-.25)/.3);
+     keeperHandWorld.lerp(keeperContactWorld,.5*(1-toRight));ball.parent.worldToLocal(keeperHandWorld);
+     ball.position.lerp(keeperHandWorld,w)}
+   }
    const activeIcons=activeSignatureMoments(signatures,time);
    for(const {moment,sprite} of signatureIcons){
     const on=activeIcons.includes(moment),owner=moment.actor===16?keeper:moment.actor===17?buildKeeper:players[moment.actor];
@@ -2704,7 +2745,7 @@ export function play(event,signal){
       if(ceremony==='kickoff'){headline.textContent=event.competition||'ANPFIFF';name.textContent=`${event.homeName||'Heim'} – ${event.awayName||'Gast'}`;detail.textContent='Die Teams laufen ein'}
       else if(ceremony){headline.textContent='ABPFIFF';name.textContent=`${event.homeName||'Heim'} ${event.homeScore??0} : ${event.awayScore??0} ${event.awayName||'Gast'}`;detail.textContent=event.result==='draw'?'Unentschieden':`Sieg für ${event.team==='away'?event.awayName||'Gast':event.homeName||'Heim'}`}
       else if(event.type==='goal'){const late=lateGoalDrama(event);headline.textContent=late?'SPÄTES TOR':'TOR';name.textContent=event.playerName;detail.textContent=late==='winner'?`Siegtreffer in der ${Math.round(event.minute)}. Minute`:late==='equaliser'?`Ausgleich in der ${Math.round(event.minute)}. Minute`:event.teamName?`für ${event.teamName}`:'TOR'}
-      else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
+      else if(event.type==='big_chance_saved'){headline.textContent='PARADE';name.textContent=event.keeperName||'TORWART';detail.textContent=`Schuss von ${event.playerName}${({classic:' · Gefangen',fingertip:' · Fingerspitzen',parry:' · Abgewehrt',low_reflex:' · Reflexparade',rush_spread:' · Herausgelaufen',high_reach:' · Hoch abgewehrt'})[event.keeperAction]||''}`}
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.
