@@ -9,10 +9,10 @@
  */
 import * as THREE from './vendor/three/three.module.min.js';
 import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
-import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21368';
+import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21369';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
-export const MIXAMO_KEEPER_LAYER_VERSION='21.368-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
+export const MIXAMO_KEEPER_LAYER_VERSION='21.369-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
 const smooth=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
 
@@ -31,7 +31,7 @@ export function keeperCaptureClip(action='classic'){
  return action==='high_reach'||action==='fingertip'?'keeper_dive_high':'keeper_dive';
 }
 // Weights of the ready sway and the dive over the play.
-// V21.368: game time of the caught ball's throw-out. The capture's hold
+// V21.369: game time of the caught ball's throw-out. The capture's hold
 // (ball at the chest) starts it, the release lands at KEEPER_THROW.release.
 export const KEEPER_THROW=Object.freeze({start:9.1,release:9.85});
 export function keeperThrowCaptureTime(time,keys){
@@ -54,7 +54,7 @@ export function keeperCaptureWeights(time,action='classic'){
  const legs=smooth(time,5.6,5.92)*(1-smooth(time,8.1,8.7));
  // Hand IK onto the authored gloves: full around the ball contact only.
  let hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
- // V21.368: a caught ball (classic save) stays in both gloves until the
+ // V21.369: a caught ball (classic save) stays in both gloves until the
  // keeper is up again; then the captured overhand throw owns the arms.
  const throwOut=action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
  if(action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
@@ -298,7 +298,7 @@ export function gaitCaptureWeights(speed=0){
  const s=clamp(speed);
  const jog=smooth(s,.1,.2)*(1-smooth(s,.5,.68));
  const idle=1-smooth(s,.025,.09);
- // V21.368: faster runs and sprints follow a real captured running stride (CMU).
+ // V21.369: faster runs and sprints follow a real captured running stride (CMU).
  const run=smooth(s,.5,.68);
  return{jog,idle,run};
 }
@@ -354,7 +354,7 @@ export function createGaitCaptureLayer(bones,playerRoot){
  return{apply,applyLegs,state};
 }
 
-// V21.368: captured two-handed throw-in. Game seconds of the set piece
+// V21.369: captured two-handed throw-in. Game seconds of the set piece
 // (physical, not the stretched highlight clock): the ball is back behind the
 // head at THROW_IN.back and leaves both hands at THROW_IN.release (3d-extended-match
 // RESTART_RELEASE.throw_in). Feet stay on the authored spot (no step-in).
@@ -377,6 +377,40 @@ export function createThrowInCaptureLayer(bones,playerRoot){
   const clip=rig.clips.throw_in;
   rig.pose('throw_in',Math.min(clip.frames-1,throwInCaptureTime(seconds,clip.keys)*clip.rate),{body:w,legs:0},0);
   state.clip='throw_in';state.weight=w;return state;
+ }
+ return{apply,state};
+}
+
+// V21.369: a tackled attacker trips over the sliding leg, lands, lies a
+// moment and gets back up (Mixamo 'soccer trip' + 'standing up'). Game
+// seconds after the tackle contact; the root path comes from the scene.
+export const FALL=Object.freeze({down:.6,standStart:1.55,standUp:3.0,end:3.6});
+export function fallCaptureWeights(t){
+ const body=smooth(t,-.12,.05)*(1-smooth(t,FALL.standUp-.05,FALL.end));
+ const stand=smooth(t,FALL.standStart-.2,FALL.standStart+.1);
+ // Lying on the turf: from the landing until the hips are up again.
+ const ground=smooth(t,FALL.down-.3,FALL.down)*(1-smooth(t,FALL.standStart+.5,FALL.standUp-.3));
+ return{body,stand,ground};
+}
+export function createFallCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,ground:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO);
+ if(!rig||!rig.clips.trip||!rig.clips.stand_up)return{apply:()=>state,state};
+ // fall: {contact, weight, mirror}
+ function apply(time=0,fall=null){
+  state.clip='none';state.weight=0;state.ground=0;
+  if(!fall||!Number.isFinite(fall.contact))return state;
+  const t=time-fall.contact,w=fallCaptureWeights(t),k=clamp(fall.weight??1),body=w.body*k;
+  if(body<=.001)return state;
+  const mirror=fall.mirror?1:0,trip=rig.clips.trip,up=rig.clips.stand_up;
+  const tripTime=trip.keys.hit+t*(trip.keys.down-trip.keys.hit)/FALL.down;
+  rig.pose('trip',clamp(tripTime*trip.rate,0,trip.frames-1),{body,legs:body},mirror);
+  if(w.stand>.001){
+   const s=up.keys.lying+Math.max(0,t-FALL.standStart)*(up.keys.up-up.keys.lying)/(FALL.standUp-FALL.standStart);
+   rig.pose('stand_up',clamp(s*up.rate,0,up.frames-1),{body:body*w.stand,legs:body*w.stand},mirror);
+  }
+  state.clip=w.stand>.5?'stand_up':'trip';state.weight=body;state.ground=w.ground*k;
+  return state;
  }
  return{apply,state};
 }
