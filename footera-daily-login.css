@@ -1,0 +1,20 @@
+/* V21.378 Login-Serie */
+.daily-login-home[hidden]{display:none}
+.dl-banner{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:16px;border:1px solid #ffd36b66;background:linear-gradient(100deg,#ffd36b26,#ff9f4314 60%,#ffffff05);color:#fff;text-align:left}
+.dl-banner.big{border-color:#ffd36b;box-shadow:0 0 0 1px #ffd36b55,0 8px 24px #ffd36b22}
+.dl-gift{font-size:26px}
+.dl-banner-copy{display:grid;gap:2px;flex:1;min-width:0}
+.dl-banner-copy small{font-size:11px;font-weight:1000;letter-spacing:.08em;color:#ffd36b}
+.dl-banner-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl-arrow{font-size:24px;color:#ffd36b}
+.dl-lead{margin:0 0 10px;font-size:13px;color:#c9d6d0}
+.dl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dl-day{position:relative;display:grid;gap:4px;align-content:start;min-height:78px;padding:10px 8px;border-radius:14px;background:#ffffff0a;border:1px solid #ffffff17;text-align:center}
+.dl-day span{font-size:11px;font-weight:1000;letter-spacing:.06em;color:#9fb0aa;text-transform:uppercase}
+.dl-day strong{font-size:12px;line-height:1.25;color:#fff}
+.dl-day b{position:absolute;top:6px;right:8px;color:#2ecf7e;font-size:14px}
+.dl-day.done{opacity:.55}
+.dl-day.today{border-color:#ffd36b;background:#ffd36b1a}
+.dl-day.big{grid-column:1/-1;min-height:64px;background:linear-gradient(100deg,#ffd36b2b,#ff9f431a);border-color:#ffd36b88}
+.dl-day.big strong{font-size:14px}
+.dl-claim{width:100%;margin-top:12px;min-height:46px}
