@@ -5566,7 +5566,9 @@ async function runPackReveal(plan){
 }
 // V21.371 Stadion-Sound for pack openings (drum hits, riser, boom). Sound only.
 // A skipped tunnel stays quiet: no burst of three drum hits at once.
-function packSound(step){if((step==="clue"||step==="board")&&packRevealSkip?.tunnel)return null;try{return window.FooteraSound?.pack(step)||null}catch(_){return null}}
+// V21.373 (Basti: Walkout-Sound "sehr billig"): pack openings are silent for now.
+const PACK_SOUND_ENABLED=false;
+function packSound(step){if(!PACK_SOUND_ENABLED)return null;if((step==="clue"||step==="board")&&packRevealSkip?.tunnel)return null;try{return window.FooteraSound?.pack(step)||null}catch(_){return null}}
 async function runPackRevealSteps(plan,opening,flash,theme,tunnelWait,cardWait){
  opening.className="opening active revealing mode-"+plan.mode+(theme==="gold"?"":" theme-"+theme)+(isMomentumItem(plan.cards[0])?" theme-momentum":isFounderItem(plan.cards[0])?` theme-founder${isMarcoFounderItem(plan.cards[0])?" theme-founder-rangers":isNiklasFounderItem(plan.cards[0])||isMaxFounderItem(plan.cards[0])?" theme-founder-worms":""}`:"");
  $("openPackBtn").disabled=true;$("openPackBtn").style.display="none";
@@ -9525,7 +9527,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.372";
+const GFUT_BUILD="V21.373";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9583,7 +9585,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21372",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21373",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

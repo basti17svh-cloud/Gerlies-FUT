@@ -55,37 +55,19 @@ export function crowdExcitement(distanceToGoal,{base=.32}={}){
 }
 
 // When each outcome sound fires, in scene seconds.
-export function outcomeCues(event,{impactTime,goalArrival,actionTime=4.4,ceremonyCut=null}={}){
+// V21.373 (Basti: "erst mal nur Ball und Torsound"): the scenes play only
+// ball sounds (touches, post) and the goal (net + cheer). No crowd bed, no
+// "Ohhh", applause, chant or whistles for now.
+export const SCENE_CROWD_BED=false;
+export function outcomeCues(event,{impactTime,goalArrival}={}){
  const cues=[],type=event?.type,home=event?.team!=='away';
- if(type==='ceremony'){
-  if(event.ceremony==='kickoff'){
-   cues.push({time:.2,cue:'applause',seconds:4.2,level:.55},{time:1.6,cue:'chant',seconds:5.2,level:.2});
-   cues.push({time:Math.max(2,(ceremonyCut??4.4)+3.6),cue:'whistle',pattern:'kickoff'});
-  }else{
-   cues.push({time:.15,cue:'whistle',pattern:'final'});
-   cues.push({time:1.5,cue:event.result==='draw'?'applause':'roar',size:event.result==='draw'?0:home?.85:.4,seconds:4.5,level:.5});
-  }
-  return cues;
- }
  if(type==='goal'){
   const at=Number.isFinite(goalArrival)?goalArrival:6.9;
   cues.push({time:at,cue:'net'},{time:at+.03,cue:'roar',size:home?1:.42});
-  if(home)cues.push({time:at+3.2,cue:'chant',seconds:4.2,level:.2});
-  else cues.push({time:at+.15,cue:'groan',size:.45});
  }else if(type==='shot_post'){
-  const at=Number.isFinite(impactTime)?impactTime:6.4;
-  cues.push({time:at,cue:'post'},{time:at+.05,cue:'groan',size:home?1:.55});
- }else if(type==='big_chance_saved'){
-  const at=Number.isFinite(impactTime)?impactTime:6.4;
-  cues.push({time:at+.02,cue:'groan',size:home?.95:.5},{time:at+1.2,cue:'applause',seconds:2.4,level:home?.3:.45});
- }else if(type==='big_chance_missed'){
-  const at=Number.isFinite(impactTime)?impactTime:6.4,clear=event.keeperAction==='line_clear';
-  cues.push({time:at+.05,cue:'groan',size:home?1.05:.5});
-  if(clear)cues.push({time:at+.7,cue:'applause',seconds:2.2,level:home?.3:.5});
- }else if(type==='ball_won'){
-  cues.push({time:actionTime+.1,cue:'applause',seconds:2,level:home?.42:.22});
+  cues.push({time:Number.isFinite(impactTime)?impactTime:6.4,cue:'post'});
  }
- return cues.sort((a,b)=>a.time-b.time);
+ return cues;
 }
 
 // Drives FooteraSound for one 3D scene. Returns a no-op when sound is off.
@@ -101,6 +83,7 @@ export function createSceneSound(event,{sound=globalThis.FooteraSound,startAt=0,
  const rain=weather?.kind==='rain'?clamp(Number(weather.intensity)||.6,.2,1):0;
  function start(){
   if(started)return;started=true;
+  if(!SCENE_CROWD_BED)return;
   if(log)log.push({name:'crowd',args:[{level:ceremony?.42:.32,rain}],time:lastTime});
   bed=sound.crowd?.({level:ceremony?.42:.32,rain})||null;
  }

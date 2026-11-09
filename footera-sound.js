@@ -311,7 +311,7 @@
  if(root.document){
   const wire=()=>{const selects=[...root.document.querySelectorAll('[data-sound-mode]')];
    const paint=()=>selects.forEach(s=>{s.value=enabled?'on':'off'});paint();
-   selects.forEach(s=>s.addEventListener('change',()=>{setEnabled(s.value!=='off');if(enabled)applause(1.2,.35)}));
+   selects.forEach(s=>s.addEventListener('change',()=>{setEnabled(s.value!=='off');if(enabled)kick(.7)}));
    onChange(paint)};
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',wire,{once:true});else wire();
  }
