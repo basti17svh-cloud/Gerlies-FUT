@@ -243,6 +243,8 @@ function itemKind(item,base){
  if(item && item.variant==="story")return "story";
  if(item && (item.eventType==="totw" || String(item.eventName||"").startsWith("Team of the Week")))return "totw";
  if(item && item.variant==="special")return "special";
+ // Upgraded Founder cards (94) carry exactly their two chosen PlayStyles+.
+ if(item && item.variant==="founder" && (item.playstylePlusAdds||[]).length)return "founder";
  return rarity(base||{});
 }
 function cardLimits(kind,base){
@@ -300,6 +302,10 @@ function resolve(base,item){
  if(kind==="icon"&&!Array.from(map.values()).some(x=>x.plus)){
   const sig=signatureStyle(base,new Set(map.keys()));
   if(sig&&map.has(sig))map.set(sig,{...map.get(sig),plus:true});
+ }
+ if(kind==="founder"){
+  const chosen=new Set(listValues(item.playstylePlusAdds).map(v=>canonical(v,true)).filter(Boolean).map(x=>x.id));
+  for(const [id,row] of map)if(row.plus!==chosen.has(id))map.set(id,{...row,plus:chosen.has(id)});
  }
  const limits=cardLimits(kind,base);
  let rows=Array.from(map.values());

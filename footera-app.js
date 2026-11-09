@@ -97,6 +97,20 @@ function isExclusiveFounderBase(p){return isBastianBase(p)||isMarcoBase(p)||isNi
 function founderItem(){return{uid:"footera-founder-bastian",pid:FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:FOUNDER_SAVE_ID}}
 function marcoFounderItem(){return{uid:"footera-founder-marco",pid:MARCO_FOUNDER_PLAYER_ID,tradeable:false,acquired:Date.now(),evo:0,evoStats:{},variant:"founder",eventType:"founder",eventName:"FOUNDER",boost:0,rare:true,acquisitionSource:"Founder Pack",ownerSaveId:MARCO_FOUNDER_SAVE_ID}}
 const FOUNDER_RULES=[{saveId:FOUNDER_SAVE_ID,playerId:FOUNDER_PLAYER_ID,packId:FOUNDER_PACK_ID,base:FOUNDER_BASE,create:founderItem,uid:"footera-founder-bastian",claimed:"founderClaimed",opening:"founderOpening"},{saveId:MARCO_FOUNDER_SAVE_ID,playerId:MARCO_FOUNDER_PLAYER_ID,packId:MARCO_FOUNDER_PACK_ID,base:MARCO_FOUNDER_BASE,create:marcoFounderItem,uid:"footera-founder-marco",claimed:"marcoFounderClaimed",opening:"marcoFounderOpening"},{userId:NIKLAS_FOUNDER_USER_ID,playerId:NIKLAS_FOUNDER_PLAYER_ID,packId:NIKLAS_FOUNDER_PACK_ID,base:NIKLAS_FOUNDER_BASE,create:niklasFounderItem,uid:"footera-founder-niklas",claimed:"niklasFounderClaimed",opening:"niklasFounderOpening"},{saveId:MAX_FOUNDER_SAVE_ID,playerId:MAX_FOUNDER_PLAYER_ID,packId:MAX_FOUNDER_PACK_ID,base:MAX_FOUNDER_BASE,create:maxFounderItem,uid:"footera-founder-max",claimed:"maxFounderClaimed",opening:"maxFounderOpening"}];
+// Founder 94 upgrade (Basti 2026-11-09): every owner claims it once from the home screen;
+// the club card then shows 94 with new stats and two position-fitting PlayStyles+.
+const FOUNDER_UPGRADE_RATING=94,FOUNDER_UPGRADE_STATS=Object.freeze([95,95,88,94,50,89]);
+const FOUNDER_UPGRADE_PLUS=Object.freeze({"footera-founder-bastian":["Finesse Shot","Quick Step"],"footera-founder-marco":["Power Header","Low Driven Shot"],"footera-founder-niklas":["Aerial","Power Shot"],"footera-founder-max":["Low Driven Shot","Incisive Pass"]});
+function founderUpgraded(s,rule){return Number(s?.founderUpgrades?.[rule?.uid]||0)>=FOUNDER_UPGRADE_RATING}
+function founderCardFields(rule,upgraded){return upgraded?{displayRating:FOUNDER_UPGRADE_RATING,eventStats:[...FOUNDER_UPGRADE_STATS],playstylePlusAdds:[...(FOUNDER_UPGRADE_PLUS[rule.uid]||[])]}:{displayRating:88,eventStats:null,playstylePlusAdds:[]}}
+function pendingFounderUpgrades(s=state){return FOUNDER_RULES.filter(rule=>ownsFounderRule(s,rule)&&!founderUpgraded(s,rule)&&(s.club||[]).some(i=>String(i?.pid||"")===rule.playerId))}
+function claimFounderUpgrade(rule,s=state){
+ if(!rule||!ownsFounderRule(s,rule)||founderUpgraded(s,rule))return null;
+ const card=(s.club||[]).find(i=>String(i?.pid||"")===rule.playerId);if(!card)return null;
+ s.founderUpgrades={...(s.founderUpgrades||{}),[rule.uid]:FOUNDER_UPGRADE_RATING};
+ Object.assign(card,founderCardFields(rule,true));
+ return card
+}
 function founderRuleForItem(item){return FOUNDER_RULES.find(r=>r.playerId===String(item?.pid||""))}
 function founderRuleForPack(id){return FOUNDER_RULES.find(r=>r.packId===id)}
 function reconcileFounderState(s){
@@ -115,7 +129,7 @@ function reconcileFounderState(s){
   const card=s.club.find(founder),inReveal=s.pendingPack.some(founder);
   if(card||s[rule.claimed]){
    const kept=card||rule.create();if(!card)s.club.push(kept);
-   Object.assign(kept,rule.create(),{acquired:Number(kept.acquired)||Date.now(),eventStats:null,overridePosition:"",displayRating:88,evoPlaystyles:[]});
+   Object.assign(kept,rule.create(),{acquired:Number(kept.acquired)||Date.now(),overridePosition:"",evoPlaystyles:[]},founderCardFields(rule,founderUpgraded(s,rule)));
    s.packs[rule.packId]=0;s[rule.claimed]=true;s[rule.opening]=false;s.pendingPack=s.pendingPack.filter(i=>!founder(i));
   }else if(inReveal){s.packs[rule.packId]=0}
   else{s.packs[rule.packId]=1;s[rule.opening]=false}
@@ -4045,7 +4059,7 @@ function cardHTML(p,item=null,mini=false,shownPosition=null,includeChemBoost=tru
    // Special designs keep their own skin; a small badge shows the Evolution instead.
  const evoActive=!!(item&&activeEvolutionForUid(item.uid)),evoLabel=evoActive?"Aktive Evolution":"Evolution";
  const evoMarker=item&&(evoActive||(cls!=="evolution"&&isEvolutionItem(item)))?`<span class="evo-active-marker" title="${evoLabel}" aria-label="${evoLabel}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 1.4 6.1 4 8 2.6-1.9 4-4 4-8M8 21c0-4 1.4-6.1 4-8 2.6 1.9 4 4 4 8"/></svg></span>`:"";
-   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
+   return`<div class="${mini?"mini":""}"><div class="card-shell founder-shell bastian-static-founder-shell" data-rating="${r}"><div class="founder-card-art" data-rating="${r}"><img class="founder-static-card" src="${Number(r)>=94?"./assets/footera/founder-bastian-card-94.webp":FOUNDER_BASTIAN_STATIC_SRC}" alt="${esc(p.fullName||p.name||"Bastian Gerlach")} Founder-Karte" draggable="false"><span class="founder-live-position">${esc(positionLabel(pos,p))}</span>${cardAltPositionsHTML(p,pos)}</div>${evoMarker}${playstyleMarker}</div>${includeChemBoost&&typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.badgeHTML(item,mini):""}</div>`
   }
   const legacyDecor=cls==="legacy"?`<svg class="legacy-facets" viewBox="0 0 100 143" preserveAspectRatio="none" aria-hidden="true">
     <path fill="#6c27aa" opacity=".4" d="M9 17 38 7 57 28 32 50 13 43Z"/><path fill="#ffcf83" opacity=".22" d="M13 43 32 50 23 70 7 62Z"/>
@@ -8722,9 +8736,49 @@ function renderHomeHero(){
  roster.innerHTML=eventPlayers.slice(0,4).map((entry,index)=>`<button type="button" class="home-momentum-player" data-home-event-player="${index}" aria-label="${esc(entry.player.name)} Spielerbiografie öffnen">${cardHTML(entry.player,entry.item,true,entry.player.position)}</button>`).join("")+(eventPlayers.length>4?`<span class="home-momentum-count">+${eventPlayers.length-4} weitere Karten im Team</span>`:"");
  $("homeSliderDots").innerHTML=slides.map((_,i)=>`<span class="home-slider-dot ${i===homeHeroSlide?"active":""}" data-home-slide="${i}" aria-hidden="true"></span>`).join("")
 }
+function renderFounderUpgradeNotice(){
+ const box=$("homeFounderUpgradeNotice");if(!box)return;
+ const rules=pendingFounderUpgrades();box.hidden=!rules.length;
+ const copy=$("homeFounderUpgradeCopy");if(copy&&rules.length)copy.textContent=`${rules.map(r=>r.base.name).join(" · ")}: 88 wird zu 94 mit zwei PlayStyles+.`
+}
+function founderUpgradeModal(){
+ let el=$("founderUpgradeModal");if(el)return el;
+ el=document.createElement("div");el.id="founderUpgradeModal";el.className="modal player-pick-modal founder-upgrade-modal";
+ el.innerHTML='<section class="player-pick-panel" role="dialog" aria-modal="true" aria-labelledby="founderUpgradeTitle"><button type="button" class="pick-close" data-founder-upgrade-close aria-label="Später abholen">×</button><small class="pick-eyebrow">FOUNDER-UPGRADE</small><h2 id="founderUpgradeTitle">Deine Founder-Karte wird 94</h2><p id="founderUpgradeText"></p><div id="founderUpgradeStage" class="founder-upgrade-stage"></div><button type="button" class="primary pick-confirm" data-founder-upgrade-claim>Belohnung abholen</button><p class="pick-footnote">Die Karte bleibt nicht handelbar und behält ihr Design.</p></section>';
+ document.body.appendChild(el);return el
+}
+function openFounderUpgrade(){
+ const rule=pendingFounderUpgrades()[0];if(!rule){renderFounderUpgradeNotice();return}
+ founderUpgradeModal();const card=state.club.find(i=>String(i?.pid||"")===rule.playerId);
+ const preview={...card,uid:"founder-upgrade-preview",...founderCardFields(rule,true)};
+ const plus=(FOUNDER_UPGRADE_PLUS[rule.uid]||[]).map(n=>typeof FooteraPlayStyles!=="undefined"?(FooteraPlayStyles.definitions.find(d=>d.aliases?.includes(n))?.name||n):n);
+ $("founderUpgradeText").textContent=`${rule.base.fullName}: 88 wird zu 94. Neu: TEM 95 · SCH 95 · PAS 88 · DRI 94 · DEF 50 · PHY 89 und PlayStyles+ ${plus.join(" und ")}.`;
+ $("founderUpgradeStage").innerHTML=`<div class="founder-upgrade-card before">${cardHTML(displayBase(card),card)}</div><span class="founder-upgrade-arrow" aria-hidden="true">›</span><div class="founder-upgrade-card after">${cardHTML(displayBase(preview),preview)}</div>`;
+ const btn=document.querySelector("[data-founder-upgrade-claim]");btn.disabled=false;btn.textContent="Belohnung abholen";btn.dataset.founderRule=rule.uid;
+ $("founderUpgradeModal").classList.remove("claimed");
+ showUiLayer("founderUpgradeModal","founder-upgrade")
+}
+function finishFounderUpgradeClaim(btn){
+ const rule=FOUNDER_RULES.find(r=>r.uid===btn.dataset.founderRule),card=claimFounderUpgrade(rule);
+ if(!card){closeUiLayer("founderUpgradeModal","founder-upgrade");renderAll();return}
+ $("founderUpgradeModal").classList.add("claimed");btn.disabled=true;
+ $("founderUpgradeStage").innerHTML=`<div class="founder-upgrade-card after founder-upgrade-reveal">${cardHTML(displayBase(card),card)}</div>`;
+ $("founderUpgradeTitle").textContent=`${rule.base.name} ist jetzt 94!`;
+ renderAll();toast(`${rule.base.name} ist jetzt eine 94er Founder-Karte.`);
+ btn.textContent=pendingFounderUpgrades().length?"Nächstes Upgrade":"Fertig";btn.disabled=false;btn.dataset.founderRule="";
+}
+if(typeof document!=="undefined")document.addEventListener("click",e=>{
+ if(e.target.closest?.("[data-founder-upgrade-open]")){openFounderUpgrade();return}
+ if(e.target.closest?.("[data-founder-upgrade-close]")){closeUiLayer("founderUpgradeModal","founder-upgrade");return}
+ const btn=e.target.closest?.("[data-founder-upgrade-claim]");if(!btn)return;
+ if(btn.dataset.founderRule)finishFounderUpgradeClaim(btn);
+ else if(pendingFounderUpgrades().length)openFounderUpgrade();
+ else closeUiLayer("founderUpgradeModal","founder-upgrade")
+});
 function renderHomeRewards(){
  const claimable=homeClaimableTasks(),objectivesReady=availableRotatingObjectiveRewardsCount(),passReady=availablePassRewardsCount(),packs=homeOwnedPacks(),pending=competitionPending(),total=claimable.length+objectivesReady+passReady+pending.length+packs.reduce((n,pack)=>n+(state.packs[pack.id]||0),0);
  $("homeReadyCount").textContent=String(total);
+ renderFounderUpgradeNotice();
  $("homeReadySummary").textContent=total?`Du hast ${total} Belohnung${total===1?"":"en"}, die abgeholt werden können.`:"Aktuell warten keine Belohnungen auf dich.";
  const cards=pending.map(row=>'<div class="home-reward-card"><div class="reward-gift">'+(row.mode==="champions"?"FC":row.mode==="squad"?"SB":"RV")+'</div><div class="home-reward-copy"><strong>'+esc(row.mode==="champions"?"Champions":row.mode==="squad"?"Squad-Battles":"Rivals")+'-Belohnung abholbereit</strong><small>'+esc(row.mode==="rivals"?(Number(row.division)===0?"Elite":"Division "+row.division)+' · '+row.milestone+' Punkte':row.rank)+'</small><p>'+esc(rewardLabel(row))+'</p><button class="primary" type="button" data-weekly-reward-open data-weekly-reward-mode="'+esc(row.mode)+'" data-weekly-reward-week="'+esc(row.week)+'">Rewards ansehen</button></div></div>')
  if(claimable.length){const first=claimable[0];cards.push(`<div class="home-reward-card"><div class="reward-gift"><svg viewBox="0 0 48 48"><path d="M8 20h32v22H8zM5 14h38v8H5zM24 14v28M14 14c-5-2-5-10 0-10 5 0 10 10 10 10M34 14c5-2 5-10 0-10-5 0-10 10-10 10"/></svg></div><div class="home-reward-copy"><strong>Aufgaben-Belohnungen</strong><small>${claimable.length} Aufgabe${claimable.length===1?"":"n"} abgeschlossen</small><p>${esc(first.title)} · ${esc(rewardText(first.reward))}</p><button class="primary" data-go="objectivesView">Jetzt abholen</button></div></div>`)}
