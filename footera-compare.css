@@ -1,0 +1,40 @@
+/* V21.375 Spielervergleich */
+#playerCompareModal .pc-sub{font-size:11px;color:#8fa09a;margin-top:2px}
+.pc-heads{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);align-items:center;gap:6px}
+.pc-solo{display:grid;justify-items:center}
+.pc-side{display:grid;justify-items:center;gap:5px;min-width:0}
+.pc-card{display:grid;place-items:center;width:100%;padding:8px 4px;border:1px solid #20302b;border-radius:14px;background:radial-gradient(circle at 50% 25%,rgba(100,215,255,.08),transparent 55%),#080e11}
+.pc-card>div{width:min(132px,100%)}
+.pc-card .card-shell{width:100%}
+.pc-side small{font-size:11px;color:#9fb0aa;font-weight:800;text-align:center}
+.pc-swap{width:34px;height:34px;padding:0;border-radius:50%;font-size:16px;line-height:1}
+.pc-verdict{margin:12px 0 8px;padding:9px 12px;border:1px solid #2f6b4f;border-radius:10px;background:#0f231a;color:#b9ffd8;font-size:13px;font-weight:900;text-align:center}
+.pc-verdict small{display:block;margin-top:3px;font-size:11px;font-weight:800;color:#9fc7b3}
+.pc-table{display:grid;gap:4px}
+.pc-row{display:grid;grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr);align-items:center;gap:8px;padding:6px 8px;border-radius:9px;background:#0d1512}
+.pc-row.big{background:#101c18;padding:8px}
+.pc-label{text-align:center;font-size:11px;font-weight:900;color:#c6d3ce;letter-spacing:.02em}
+.pc-val{display:grid;gap:4px;min-width:0}
+.pc-val.l{justify-items:end;text-align:right}
+.pc-val.r{justify-items:start;text-align:left}
+.pc-val b{font-size:15px;font-weight:1000;color:#e8efec}
+.pc-row.big .pc-val b{font-size:22px}
+.pc-val i{display:block;width:100%;height:5px;border-radius:9px;background:#1c2a25;overflow:hidden}
+.pc-val.l i{direction:rtl}
+.pc-val i span{display:block;height:100%;border-radius:9px;background:#5f716a}
+.pc-val.better b{color:#7dffb2}
+.pc-val.better i span{background:linear-gradient(90deg,#2ecf7e,#7dffb2)}
+.pc-val.worse b{color:#9aa7a2}
+.pc-pos .pc-val b{font-size:11px;font-weight:900;color:#d7e2de}
+.pc-pick{margin-top:14px;padding-top:12px;border-top:1px solid #20302b}
+.pc-pick-head{display:grid;gap:7px}
+.pc-pick-head strong{font-size:13px}
+.pc-pick-head input{width:100%;min-height:38px;padding:0 12px;border:1px solid #2f3d38;border-radius:10px;background:#0f1714;color:#fff;font-size:14px}
+.pc-pick-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.pc-chip{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center;padding:7px 9px;border:1px solid #293730;border-radius:10px;background:#0f1714;color:#fff;text-align:left}
+.pc-chip b{grid-row:1/3;font-size:17px;font-weight:1000;color:var(--gold,#f5d36b)}
+.pc-chip span{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-chip small{font-size:11px;color:#8fa09a}
+.pc-chip.active{border-color:#2ecf7e;background:#11281d}
+.pc-empty{grid-column:1/-1;padding:10px;color:#8fa09a;font-size:12px;text-align:center}
+@media(max-width:380px){.pc-row{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr);gap:6px;padding:5px 6px}.pc-label{font-size:11px}}
