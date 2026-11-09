@@ -46,7 +46,7 @@ test('summary counts only matches of that week and picks player of the week',()=
 });
 
 test('match and pack hooks fill this week\'s log, best pull keeps the top 3',()=>{
- const rows=[{uid:'u1',base:{id:'1',name:'Kane'},minutes:90,goals:2,assists:0,rating:8.4},{uid:'u2',base:{id:'2',name:'Bank'},minutes:0,goals:0,assists:0,rating:0}];
+ const rows=[{uid:'u1',item:{uid:'u1',base:{id:'1',name:'Kane'},clubStats:{big:1}},base:{id:'1',name:'Kane'},minutes:90,goals:2,assists:0,rating:8.4},{uid:'u2',base:{id:'2',name:'Bank'},minutes:0,goals:0,assists:0,rating:0}];
  const {api,store}=load({rows,potm:{side:'home',uid:'u1'}});
  const m={};api.afterMatch(m);api.afterMatch(m);// same match twice counts once
  api.afterPack([{base:{name:'A',ovr:80}},{base:{name:'B',ovr:91}},{base:{name:'C',ovr:85}},{base:{name:'D',ovr:70}}]);
@@ -54,7 +54,10 @@ test('match and pack hooks fill this week\'s log, best pull keeps the top 3',()=
  const log=JSON.parse(store.get('footera-week-recap-v1'));const w=Object.values(log.weeks)[0];
  assert.equal(w.players.u1.goals,2);assert.equal(w.players.u1.n,1);assert.equal(w.players.u1.potm,1);
  assert.equal(w.players.u2,undefined,'unused bench players are not counted');
- assert.deepEqual(w.best.map(x=>x.name),['B','C','A']);assert.equal(w.packs,1);assert.equal(w.sbcs,1);
+ assert.equal(w.players.u1.item.clubStats,undefined,'career stats are not copied');
+ assert.deepEqual(w.best.map(x=>x.name),['B','C','A']);
+ assert.equal(w.best[0].item.base.name,'B','a copy of the card is kept so it can be shown later');
+ assert.equal(w.players.u1.uid,'u1');assert.equal(w.packs,1);assert.equal(w.sbcs,1);
 });
 
 test('the Monday card is due once, only when last week had something',()=>{
@@ -75,4 +78,12 @@ test('recap is wired into the app, cache and Extras',()=>{
  assert.match(app,/applyClubGoalStats\(\);globalThis\.FooteraWeekRecap\?\.afterMatch\(match\)/);
  assert.match(app,/state\.stats\.packs=\(state\.stats\.packs\|\|0\)\+1;save\(\);globalThis\.FooteraWeekRecap\?\.afterPack\(items\)/);
  assert.match(app,/state\.stats\.sbcs\+\+;globalThis\.FooteraWeekRecap\?\.afterSbc\(\)/);
+});
+
+test('share pictures draw card panels (gradients) so dark text stays readable',()=>{
+ const share=fs.readFileSync(path.join(root,'footera-share.js'),'utf8');
+ assert.match(share,/function paintBackground\(/);
+ assert.match(share,/window\.FooteraShare=\{inviteUrl,share,drawCard,/);
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
+ const v=html.match(/footera-share\.js\?v=(\d+)/)[1];assert.ok(sw.includes(`./footera-share.js?v=${v}`));assert.ok(Number(v)>=21376);
 });

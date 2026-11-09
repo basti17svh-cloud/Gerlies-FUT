@@ -15,6 +15,11 @@
 .wr-fact{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:#ffffff0a;border-left:3px solid #2ecf7e}
 .wr-fact.top{border-left-color:#f5d36b}
 .wr-fact.pull{border-left-color:#ffb36b}
+.wr-fact.has-card{grid-template-columns:minmax(0,1fr) 74px;column-gap:12px;align-content:center}
+.wr-fact.has-card>:not(.wr-thumb){grid-column:1}
+.wr-thumb{grid-column:2;grid-row:1/4;align-self:center;width:74px}
+.wr-thumb>div{width:100%}
+.wr-thumb .card-shell{width:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
 .wr-fact small{font-size:11px;font-weight:1000;letter-spacing:.06em;color:#9fc7b3}
 .wr-fact strong{font-size:17px;font-weight:1000;color:#fff}
 .wr-fact strong em{font-style:normal;color:#f5d36b;margin-left:4px}

@@ -89,6 +89,36 @@
   for(const src of [...new Set([el.currentSrc||el.src,...list])].filter(Boolean).slice(0,4)){const img=await loadImage(src);if(img)return img}
   return null
  }
+ // V21.376: card panels (rating column, name bar, stat strip) are CSS colours and gradients, not images.
+ // Without them the dark text sat on the dark frame and was barely readable on share pictures.
+ function splitTop(v){const out=[];let depth=0,cur="";for(const ch of String(v)){if(ch==="(")depth++;if(ch===")")depth--;if(ch===","&&depth===0){out.push(cur.trim());cur="";continue}cur+=ch}if(cur.trim())out.push(cur.trim());return out}
+ function gradientLayers(v){const out=[];const re=/linear-gradient\(/g;let m;while((m=re.exec(v))){let depth=1,i=m.index+m[0].length;for(;i<v.length&&depth;i++){if(v[i]==="(")depth++;else if(v[i]===")")depth--}out.push(v.slice(m.index+m[0].length,i-1));re.lastIndex=i}return out}
+ function polygonPath(ctx,clip,x,y,w,h){
+  const m=/^polygon\((.*)\)$/.exec(String(clip||"").trim());if(!m)return false;
+  const pts=splitTop(m[1]).map(p=>p.trim().split(/\s+/).map((v,i)=>v.endsWith("%")?parseFloat(v)/100*(i?h:w):parseFloat(v)));
+  if(pts.length<3||pts.some(p=>p.length!==2||!p.every(Number.isFinite)))return false;
+  ctx.beginPath();pts.forEach(([px,py],i)=>i?ctx.lineTo(x+px,y+py):ctx.moveTo(x+px,y+py));ctx.closePath();return true
+ }
+ function rectPath(ctx,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();if(!r){ctx.rect(x,y,w,h);return}ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+ function paintBackground(ctx,cs,x,y,w,h,s){
+  const radius=(parseFloat(cs.borderTopLeftRadius)||0)*s;
+  const shape=()=>{if(!polygonPath(ctx,cs.clipPath,x,y,w,h))rectPath(ctx,x,y,w,h,radius)};
+  const bg=cs.backgroundColor;
+  if(bg&&bg!=="transparent"&&!/rgba\([^)]*,\s*0\)$/.test(bg)){ctx.fillStyle=bg;shape();ctx.fill()}
+  for(const layer of gradientLayers(String(cs.backgroundImage||"")).reverse()){
+   const parts=splitTop(layer);let angle=180;
+   const head=parts[0]||"";
+   if(/deg$/.test(head)){angle=parseFloat(head);parts.shift()}
+   else if(/^to /.test(head)){const d=head.slice(3);angle=d.includes("right")?(d.includes("top")?45:d.includes("bottom")?135:90):d.includes("left")?(d.includes("top")?315:d.includes("bottom")?225:270):d.includes("top")?0:180;parts.shift()}
+   const stops=parts.map(p=>{const m=/^(.*?)(?:\s+(-?[\d.]+)%)?(?:\s+(-?[\d.]+)%)?$/.exec(p);return{color:m?m[1].trim():p,pos:m&&m[2]!=null?Number(m[2])/100:null}}).filter(x=>x.color);
+   if(stops.length<2)continue;
+   stops.forEach((st,i)=>{if(st.pos==null)st.pos=i/(stops.length-1)});
+   const a=angle*Math.PI/180,cx=x+w/2,cy=y+h/2,half=Math.abs(w/2*Math.sin(a))+Math.abs(h/2*Math.cos(a));
+   const grad=ctx.createLinearGradient(cx-Math.sin(a)*half,cy+Math.cos(a)*half,cx+Math.sin(a)*half,cy-Math.cos(a)*half);
+   try{for(const st of stops)grad.addColorStop(Math.max(0,Math.min(1,st.pos)),st.color)}catch(e){continue}
+   ctx.fillStyle=grad;shape();ctx.fill()
+  }
+ }
  function transformText(t,mode){return mode==="uppercase"?t.toUpperCase():mode==="lowercase"?t.toLowerCase():t}
  // Draws the card exactly as the page laid it out: frame and portrait images, inline SVG ornaments and text.
  async function drawCard(ctx,card,x,y,width){
@@ -102,6 +132,14 @@
    const r=el.getBoundingClientRect();if(!r.width||!r.height)continue;
    const [rx,ry,rw,rh]=at(r);
    ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,Number(cs.opacity)||1));
+   if(el!==card)paintBackground(ctx,cs,rx,ry,rw,rh,s);
+   // Absolute ::before panels (e.g. the light rating column on gold cards).
+   const pc=getComputedStyle(el,"::before");
+   // Full-card shine overlays (radial gradients, blend modes) are left out: they cannot be copied faithfully.
+   if(pc.content&&pc.content!=="none"&&pc.position==="absolute"&&pc.display!=="none"&&pc.mixBlendMode==="normal"&&!/radial|conic|url\(/.test(pc.backgroundImage)&&!(parseFloat(pc.width)>=box.width*.9&&parseFloat(pc.height)>=box.height*.9)){
+    const pw=parseFloat(pc.width),ph=parseFloat(pc.height),pl=parseFloat(pc.left),pt=parseFloat(pc.top);
+    if(pw>0&&ph>0&&Number.isFinite(pl)&&Number.isFinite(pt))paintBackground(ctx,pc,rx+(pl+(parseFloat(cs.borderLeftWidth)||0))*s,ry+(pt+(parseFloat(cs.borderTopWidth)||0))*s,pw*s,ph*s,s)
+   }
    for(const src of cssUrls(cs.backgroundImage)){const img=await loadImage(new URL(src,location.href).href);if(img)drawFit(ctx,img,rx,ry,rw,rh,cs.backgroundSize==="cover"?"cover":cs.backgroundSize==="contain"?"contain":"fill")}
    if(el.tagName==="IMG"&&el.naturalWidth){const img=await corsCopy(el);if(img)drawFit(ctx,img,rx,ry,rw,rh,cs.objectFit)}
    if(el instanceof SVGSVGElement){hidden.add(el);const img=await svgImage(el);if(img)ctx.drawImage(img,rx,ry,rw,rh)}
@@ -348,5 +386,5 @@
   if(e.target.closest("#resultShareBtn")){sharePack();return}
   if(e.target.closest("#shareInviteLink")){shareInvite()}
  });
- window.FooteraShare={inviteUrl,share,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,showWinInvite,afterWin,afterPack,afterMatch,claimReferralRewards,start};
+ window.FooteraShare={inviteUrl,share,drawCard,shareInvite,preparePack,sharePack,renderSharePicture,acceptInvite,pendingInvite,showInstallHint,showWinInvite,afterWin,afterPack,afterMatch,claimReferralRewards,start};
 })();
