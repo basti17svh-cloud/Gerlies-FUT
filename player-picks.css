@@ -41,3 +41,7 @@
 .pick-option.duplicate.revealed .pick-select-label{color:#ffe0aa}
 .pick-option.duplicate.selected{border-color:#f4b878}
 @media(max-width:600px){.pick-option .pick-duplicate-badge{font-size:9px;padding:3px 7px}}
+.pick-ticket.pick-icon{background:linear-gradient(110deg,#5b4a1d,#f0dc9a22 55%,#1f2219);border-color:#e9cf7f}.pick-ticket.pick-icon .pick-ticket-rating{font-size:16px;letter-spacing:.08em;color:#ffe9a8}.icon-pick-options .pick-flip-back{background:radial-gradient(circle at 50% 30%,#fff2c4,#c9a24c 55%,#6e5420)!important;color:#2a1f08}
+.sbc-icon-pick-art{display:grid;place-items:center}.sbc-icon-pick-card{display:grid;place-items:center;gap:3px;width:112px;height:156px;padding:12px 8px;border-radius:14px 14px 40px 40px;background:radial-gradient(circle at 50% 28%,#fff6d2,#e3c06a 48%,#7b5b1d);border:2px solid #f6e3a2;box-shadow:0 12px 26px #0009,inset 0 0 18px #fff6;color:#2a1f08;text-align:center}.sbc-icon-pick-card b{font-size:26px;font-weight:1000;letter-spacing:.12em}.sbc-icon-pick-card small{font-size:10px;font-weight:900;letter-spacing:.14em}.sbc-icon-pick-card em{font-style:normal;font-size:12px;font-weight:900;padding:3px 8px;border-radius:999px;background:#2a1f08;color:#ffe7a0}
+.sbc-feature-card.icon-pick-sbc{background:linear-gradient(135deg,#3b301a,#14140f 70%);border-color:#d8b765}
+@media(max-width:560px){.sbc-icon-pick-card{width:96px;height:134px}.sbc-icon-pick-card b{font-size:21px}}
