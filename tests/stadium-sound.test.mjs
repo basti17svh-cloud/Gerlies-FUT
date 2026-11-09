@@ -107,7 +107,7 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
  assert.equal(S.enabled(),true,'on by default');
  assert.equal(S.context(),null);
  for(const n of ['kick','net','post','whistle','roar','groan','applause','chant'])assert.doesNotThrow(()=>S[n]());
- assert.equal(S.crowd(),null);assert.equal(S.pack('tunnel'),undefined);
+ assert.equal(S.crowd(),null);assert.equal(S.pack('tunnel'),null);
  assert.equal(S.setEnabled(false),false);assert.equal(storage.get('footera-sound-v1'),'off');
  assert.equal(S.setEnabled(true),true);assert.equal(storage.get('footera-sound-v1'),'on');
  delete globalThis.FooteraSound;delete globalThis.localStorage;
@@ -115,18 +115,20 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
 
 test('release wiring: script order, scene import, cache, settings and pack hooks',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),app=read('footera-app.js'),css=read('3d-highlights.css');
- assert.ok(html.indexOf('footera-sound.js?v=21373')>0&&html.indexOf('footera-sound.js?v=21373')<html.indexOf('3d-highlights.js?v='));
+ assert.ok(html.indexOf('footera-sound.js?v=21374')>0&&html.indexOf('footera-sound.js?v=21374')<html.indexOf('3d-highlights.js?v='));
  assert.match(html,/<select data-sound-mode[^>]*><option value="on">An<\/option><option value="off">Aus<\/option>/);
  assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21373'/);
- for(const f of ['./3d-stadium-sound.mjs?v=21373','./footera-sound.js?v=21373'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-stadium-sound.mjs?v=21373','./footera-sound.js?v=21374'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
  assert.match(css,/\.fh3d-sound\{[^}]*width:44px;height:44px/);
- for(const step of ['tunnel','clue','flash','board','plain','card'])assert.ok(app.includes(`packSound("${step}")`),step);
+ for(const step of ['tunnel','clue','flash','board','plain','card'])assert.ok(app.includes(`packSound("${step}"`),step);
  assert.match(app,/tunnelSound\?\.stop\?\.\(\)/);
- // V21.373: pack openings silent for now (switch kept for a better walkout sound).
- assert.match(app,/const PACK_SOUND_ENABLED=false;\nfunction packSound\(step\)\{if\(!PACK_SOUND_ENABLED\)return null;/);
+ // V21.374: pack openings play the recorded walkout again; the swell is timed to the flash.
+ assert.match(app,/const PACK_SOUND_ENABLED=true;\nfunction packSound\(step,opts\)\{if\(!PACK_SOUND_ENABLED\)return null;/);
+ assert.match(app,/packSound\("tunnel",\{flashIn:4\.25\*\(plan\.pace\|\|1\)\}\)/);
+ assert.match(app,/window\.FooteraSound\?\.preload\?\.\(\)/);
 });
 
 test('V21.372 clear sound: no hiss layers (no clap/applause noise, no rain hiss, crowd noise only as low rumble)',()=>{
@@ -139,4 +141,59 @@ test('V21.372 clear sound: no hiss layers (no clap/applause noise, no rain hiss,
  assert.doesNotMatch(packs,/noise\(/,'walkout is tonal: no noise riser');
  const whistle=src.slice(src.indexOf(' function whistle('),src.indexOf(' function roar('));
  assert.doesNotMatch(whistle,/noise\(/,'clean whistle tone');
+});
+
+test('V21.374 walkout: real CC0 recordings, credited, small, and every one is used',()=>{
+ const dir=new URL('../assets/sounds/walkout/',import.meta.url),credits=read('assets/sounds/walkout/CREDITS.md'),src=read('footera-sound.js');
+ const names=JSON.parse(src.match(/SAMPLE_NAMES=(\[[^\]]+\])/)[1].replace(/'/g,'"'));
+ let total=0;
+ for(const n of names){
+  const f=new URL(n+'.mp3',dir),size=fs.statSync(f).size;total+=size;
+  assert.ok(size>8000&&size<200000,n+' '+size);
+  const row=credits.split('\n').find(l=>l.startsWith('| `'+n+'.mp3`'));
+  assert.ok(row&&/\| CC0 1\.0 \|$/.test(row),n+' credited as CC0');
+  assert.ok(src.includes(`'${n}'`),n);
+ }
+ assert.ok(total<700000,'walkout sounds stay under 700 KB: '+total);
+ assert.deepEqual(fs.readdirSync(dir).filter(f=>f.endsWith('.mp3')).sort(),names.map(n=>n+'.mp3').sort(),'no unused files');
+ assert.match(src,/SAMPLE_BASE='assets\/sounds\/walkout\/',SAMPLE_V='21374'/);
+});
+
+function fakeAudio(){
+ const started=[];
+ const param=()=>({value:1,setValueAtTime(){},setTargetAtTime(v,t){this.target=[v,t]},cancelScheduledValues(){},exponentialRampToValueAtTime(){},linearRampToValueAtTime(){}});
+ const node=()=>({connect(){},gain:param(),frequency:param(),Q:param()});
+ const c={currentTime:0,state:'running',sampleRate:44100,destination:{},
+  createGain:()=>node(),createBiquadFilter:()=>({...node(),type:''}),createDynamicsCompressor:()=>({...node(),threshold:param(),knee:param(),ratio:param(),attack:param(),release:param()}),
+  createBufferSource(){const s={...node(),playbackRate:param(),buffer:null,start(at){started.push({name:s.buffer.name,at,rate:s.playbackRate.value})}};return s},
+  decodeAudioData:(data)=>Promise.resolve({name:data.name})};
+ return{c,started};
+}
+
+test('V21.374 walkout timing: swell and riser peak on the card, a skip fades them, nothing loaded = silence',async()=>{
+ const storage=new Map();
+ globalThis.localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v))};
+ const fetched=[];
+ globalThis.fetch=async url=>{fetched.push(url);const name=url.split('/').pop().split('.')[0];return{ok:true,arrayBuffer:async()=>({name})}};
+ delete require.cache[require.resolve('../footera-sound.js')];
+ require('../footera-sound.js');
+ const S=globalThis.FooteraSound;
+ try{
+  const {c,started}=fakeAudio(),bus={context:c,connect(){}};
+  // Not loaded yet: no sound, no error.
+  const empty=fakeAudio();assert.doesNotThrow(()=>S.pack('flash',0,{context:empty.c,connect(){}}));
+  assert.equal(empty.started.length,0);fetched.length=0;
+  assert.equal(await S.preload(c),true);
+  assert.equal(fetched.filter(u=>u.includes('?v=21374')).length,9);
+  const t=S.pack('tunnel',1,bus,{flashIn:4.25});
+  const at=n=>started.find(s=>s.name===n)?.at;
+  assert.equal(at('stadium'),1);
+  assert.ok(Math.abs(at('swell')+2.25-5.25)<1e-9,'swell peaks on the flash');
+  assert.ok(Math.abs(at('riser')+3.98-5.25)<1e-9,'riser ends on the flash');
+  S.pack('clue',2.2,bus);S.pack('clue',3.2,bus);S.pack('clue',4.1,bus);
+  assert.deepEqual(started.filter(s=>s.name==='hit').map(s=>+s.rate.toFixed(2)),[1,1.06,1.12],'clues climb');
+  S.pack('flash',5.25,bus);
+  for(const n of ['boom','cheer','fireworks','sparkle'])assert.ok(at(n)!==undefined,n);
+  assert.ok(typeof t.stop==='function');assert.doesNotThrow(()=>t.stop(5.25));assert.doesNotThrow(()=>t.stop(2));
+ }finally{delete globalThis.FooteraSound;delete globalThis.localStorage;delete globalThis.fetch}
 });

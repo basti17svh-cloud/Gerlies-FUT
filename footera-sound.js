@@ -1,6 +1,6 @@
 /* Footera Stadion-Sound (V21.371).
- * Every sound is synthesised live with the Web Audio API: no audio files, no
- * download, no licence questions. Presentation only: nothing here reads or
+ * Match sounds are synthesised live with the Web Audio API. Since V21.374 the
+ * pack walkout plays short real recordings (CC0, assets/sounds/walkout/). Presentation only: nothing here reads or
  * writes the match, the save or any online data.
  *
  * window.FooteraSound
@@ -9,7 +9,8 @@
  *  crowd(opts)                stadium bed: {level(v,ramp), muffle(on), stop(fade)}
  *  kick(strength) net() post() whistle(pattern) roar(size) groan(size)
  *  applause(seconds,level) chant(seconds,level)
- *  pack(step)                 pack opening: 'tunnel' | 'clue' | 'flash' | 'board' | 'plain' | 'card'
+ *  pack(step,opts)            pack opening: 'tunnel' | 'clue' | 'flash' | 'board' | 'plain' | 'card'
+ *  preload()                  fetch + decode the walkout recordings (called when a pack screen opens)
  * Every one-shot also accepts an absolute start time ('at') so the same voices
  * can be rendered into an OfflineAudioContext (QA videos).
  */
@@ -134,15 +135,6 @@
   const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(pitch,at);o.frequency.exponentialRampToValueAtTime(pitch*.55,at+.25);env(g,at,.004,level,.02,.32);o.connect(g);g.connect(d);o.start(at);o.stop(at+.45);
   const o2=c.createOscillator(),g2=c.createGain();o2.frequency.value=pitch*2.7;env(g2,at,.002,level*.18,0,.08);o2.connect(g2);g2.connect(d);o2.start(at);o2.stop(at+.12);
  }
- // A short tonal chord, brass-like: saws through an opening low-pass.
- function chord(c,d,at,notes,{level=.2,dur=1,attack=.02,release=.8,bright=2600,seed=1}={}){
-  const r=rng(seed),lp=filter(c,'lowpass',500,1.2),g=c.createGain();
-  lp.frequency.setValueAtTime(500,at);lp.frequency.exponentialRampToValueAtTime(bright,at+attack+.12);lp.frequency.exponentialRampToValueAtTime(Math.max(600,bright*.4),at+dur+release);
-  env(g,at,attack,level,Math.max(0,dur-attack),release);chain(lp,g,d);
-  for(const f of notes)for(const det of[-7,7]){const o=c.createOscillator(),og=c.createGain();o.type=r()<.5?'sawtooth':'square';o.frequency.value=f;o.detune.value=det+(r()-.5)*4;og.gain.value=1/(notes.length*2.4);o.connect(og);og.connect(lp);o.start(at);o.stop(at+dur+release+.1)}
- }
- function bell(c,d,at,f,level=.06,decay=.9){for(const[m,a]of[[1,1],[2.76,.35],[5.4,.12]]){const o=c.createOscillator(),g=c.createGain();o.frequency.value=f*m;env(g,at,.002,level*a,0,decay/m**.4);o.connect(g);g.connect(d);o.start(at);o.stop(at+decay+.1)}}
- const NOTE=n=>440*Math.pow(2,(n-69)/12);
 
  // ---------------------------------------------------------------- one-shots
  function kick(strength=.5,at,dest,side=0){
@@ -247,54 +239,79 @@
  }
 
  // ---------------------------------------------------------------- packs
- // V21.372 walkout: a small film score instead of noise. D minor tension in
- // the tunnel, each clue a timpani hit with a higher brass stab, the card a
- // boom with a bright D major chord, bells and the crowd.
- function timpani(c,d,at,pitch=73,level=.55){
-  drum(c,d,at,level,pitch);
-  const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(pitch*1.5,at);o.frequency.exponentialRampToValueAtTime(pitch*1.45,at+.6);env(g,at,.004,level*.25,.05,.9);o.connect(g);g.connect(d);o.start(at);o.stop(at+1.1);
+ // V21.374 (Basti: synthesised walkout "sehr billig"): the walkout plays real
+ // recordings instead: a football stadium in the dark, a crowd that swells
+ // up to the card, a deep hit per clue and a boom, cheer and firework on the
+ // card. All CC0, sources in assets/sounds/walkout/CREDITS.md. The files are
+ // only fetched when a pack is opened; anything not loaded yet stays silent.
+ const SAMPLE_BASE='assets/sounds/walkout/',SAMPLE_V='21374';
+ const SAMPLE_NAMES=['stadium','swell','riser','hit','thud','boom','cheer','fireworks','sparkle'];
+ const sampleSets=new WeakMap();
+ function decode(c,data){return new Promise((resolve,reject)=>{try{const p=c.decodeAudioData(data,resolve,reject);if(p&&typeof p.then==='function')p.then(resolve,reject)}catch(e){reject(e)}})}
+ function preload(target){
+  const c=target||context();if(!c||typeof root.fetch!=='function')return Promise.resolve(false);
+  let set=sampleSets.get(c);
+  if(!set){set={buffers:new Map()};sampleSets.set(c,set);
+   set.ready=Promise.all(SAMPLE_NAMES.map(name=>root.fetch(SAMPLE_BASE+name+'.mp3?v='+SAMPLE_V)
+    .then(r=>r.ok?r.arrayBuffer():Promise.reject(new Error(String(r.status))))
+    .then(data=>decode(c,data)).then(buf=>{set.buffers.set(name,buf)}).catch(()=>{})))
+    .then(()=>set.buffers.size===SAMPLE_NAMES.length)}
+  return set.ready;
+ }
+ function play(c,d,name,at,{gain=1,rate=1}={}){
+  const buf=sampleSets.get(c)?.buffers.get(name);if(!buf)return null;
+  const s=c.createBufferSource(),g=c.createGain();s.buffer=buf;s.playbackRate.value=rate;g.gain.value=gain;
+  s.connect(g);g.connect(d);s.start(Math.max(at,c.currentTime));return s;
  }
  let clueCount=0;
- function pack(step,at,dest){
-  const x=ready(at,dest);if(!x)return;const{c}=x;let d=x.dest;at=x.at;
+ // step: 'tunnel' | 'clue' | 'board' | 'flash' | 'card' | 'plain'.
+ // opts.flashIn: seconds from the tunnel start to the card flash, so the
+ // crowd swell and the riser peak exactly on the card.
+ function pack(step,at,dest,opts){
+  if(at&&typeof at==='object'&&!dest&&!opts){opts=at;at=undefined}
+  const x=ready(at,dest);if(!x)return null;const{c}=x;const d=x.dest;at=x.at;
+  preload(c);
   if(step==='tunnel'){
-   // Drone that swells until the flash calls stop(); fades by itself at END.
-   const own=c.createGain();own.connect(d);d=own;const RISE=4.3,END=9.5;clueCount=0;
-   const lp=filter(c,'lowpass',220,2),g=c.createGain();
-   lp.frequency.setValueAtTime(220,at);lp.frequency.exponentialRampToValueAtTime(1500,at+RISE);
-   g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.2,at+1.2);g.gain.exponentialRampToValueAtTime(.3,at+RISE);g.gain.setValueAtTime(.3,at+END-.6);g.gain.exponentialRampToValueAtTime(.0001,at+END);chain(lp,g,d);
-   for(const[n,det]of[[38,0],[45,5],[50,-4],[53,3]]){const o=c.createOscillator(),og=c.createGain();o.type='sawtooth';o.frequency.value=NOTE(n);o.detune.value=det;og.gain.value=.12;o.connect(og);og.connect(lp);o.start(at);o.stop(at+END+.05)}
-   // Rising tone (a long upward sweep) for the tension.
-   const sw=c.createOscillator(),sg=c.createGain();sw.type='triangle';sw.frequency.setValueAtTime(NOTE(62),at+.5);sw.frequency.exponentialRampToValueAtTime(NOTE(86),at+RISE);
-   sg.gain.setValueAtTime(.0001,at+.5);sg.gain.exponentialRampToValueAtTime(.035,at+RISE);sg.gain.setValueAtTime(.035,at+END-.6);sg.gain.exponentialRampToValueAtTime(.0001,at+END);sw.connect(sg);sg.connect(d);sw.start(at+.5);sw.stop(at+END+.05);
-   // Heartbeat that gets faster.
-   let t=at+.15,gap=.85;while(t<at+RISE-.2){drum(c,d,t,.3,72);drum(c,d,t+.16,.2,66);t+=gap;gap=Math.max(.42,gap*.86)}
-   hold(END);
-   return{stop(when){try{const t=when??now(c);own.gain.cancelScheduledValues(t);own.gain.setTargetAtTime(.0001,t,.08)}catch(_){}}};
+   clueCount=0;
+   const flashIn=clamp(Number(opts?.flashIn)||4.25,1.5,12);
+   const bed=c.createGain(),build=c.createGain();bed.connect(d);build.connect(d);
+   // Stadium in the dark: a soft murmur, slightly darkened.
+   const lp=filter(c,'lowpass',2600);lp.connect(bed);
+   play(c,lp,'stadium',at,{gain:.24});
+   play(c,build,'riser',at+flashIn-3.98,{gain:.2});
+   const swellLp=filter(c,'lowpass',6500);swellLp.connect(build);
+   play(c,swellLp,'swell',at+flashIn-2.25,{gain:.42});
+   hold(flashIn+1.5);
+   return{stop(when){try{const t=when??now(c),early=t<at+flashIn-.35;
+    bed.gain.cancelScheduledValues(t);bed.gain.setTargetAtTime(.0001,t,early?.06:.45);
+    if(early){build.gain.cancelScheduledValues(t);build.gain.setTargetAtTime(.0001,t,.05)}}catch(_){}}};
   }
   if(step==='clue'||step==='board'){
-   // Nation, position, club: timpani + a brass stab that climbs each time.
-   const k=clueCount++%3,root=[[50,53,57],[53,57,60],[57,60,64]][k];
-   timpani(c,d,at,step==='board'?82:73,.55);
-   chord(c,d,at+.01,root.map(NOTE),{level:step==='board'?.12:.16,dur:.28,release:.5,bright:2400,seed:30+k});
-   hold(1);return;
+   // Nation, position, club: a deep hit that climbs a little each time.
+   const k=clueCount++%3;
+   if(step==='board')play(c,d,'thud',at,{gain:.75,rate:1+k*.06});
+   else play(c,d,'hit',at,{gain:.5,rate:1+k*.06});
+   hold(2.3);return null;
   }
   if(step==='flash'){
-   // The card: boom, a bright D major chord, bells and the crowd.
-   const o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(70,at);o.frequency.exponentialRampToValueAtTime(36,at+1.1);env(g,at,.005,.55,.05,1.3);o.connect(g);g.connect(d);o.start(at);o.stop(at+1.5);
-   timpani(c,d,at,73,.5);
-   chord(c,d,at+.02,[50,57,62,66,69,74].map(NOTE),{level:.24,dur:1.4,attack:.03,release:1.8,bright:3600,seed:41});
-   const notes=[74,78,81,86,90,93];notes.forEach((n,i)=>bell(c,d,at+.08+i*.07,NOTE(n),.05,1.1));
-   roar(.75,at+.15,dest);clueCount=0;hold(5);return;
+   // The card: boom, the stadium erupts, a firework goes up, sparkle on the card.
+   clueCount=0;
+   play(c,d,'boom',at,{gain:.9});
+   play(c,d,'hit',at,{gain:.42,rate:.9});
+   // Crowd recordings are gently darkened: no bright rustle on a phone speaker.
+   const soft=filter(c,'lowpass',6500);soft.connect(d);
+   play(c,soft,'cheer',at+.04,{gain:.72});
+   play(c,d,'fireworks',at-.99+.6,{gain:.4});
+   play(c,d,'sparkle',at+.38,{gain:.45});
+   hold(8);return null;
   }
   if(step==='card'){
-   // Second card of a double walkout: bells and a short chord.
-   [81,86,90].forEach((n,i)=>bell(c,d,at+i*.06,NOTE(n),.05,.9));
-   chord(c,d,at,[62,66,69].map(NOTE),{level:.14,dur:.5,release:.8,seed:43});
-   applause(1.8,.4,at+.05,dest);return;
+   // Second card of a double walkout.
+   play(c,d,'thud',at,{gain:.6});play(c,d,'sparkle',at+.02,{gain:.5});
+   hold(2.2);return null;
   }
-  // plain pack: a quick bright chime.
-  [79,83,86].forEach((n,i)=>bell(c,d,at+i*.05,NOTE(n),.045,.7));hold(.9);
+  // plain pack: a short sparkle with a soft thud.
+  play(c,d,'thud',at,{gain:.4});play(c,d,'sparkle',at,{gain:.42});hold(2);return null;
  }
 
  function setEnabled(on){
@@ -315,5 +332,5 @@
    onChange(paint)};
   if(root.document.readyState==='loading')root.document.addEventListener('DOMContentLoaded',wire,{once:true});else wire();
  }
- root.FooteraSound=Object.freeze({enabled:()=>enabled,setEnabled,onChange,context:()=>enabled?ctx:null,wake,crowd,kick,net,post,whistle,roar,groan,applause,chant,pack,offlineBus,KEY});
+ root.FooteraSound=Object.freeze({enabled:()=>enabled,setEnabled,onChange,context:()=>enabled?ctx:null,wake,crowd,kick,net,post,whistle,roar,groan,applause,chant,pack,preload,offlineBus,KEY});
 })(typeof window!=='undefined'?window:globalThis);
