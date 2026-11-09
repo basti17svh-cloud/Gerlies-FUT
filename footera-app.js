@@ -401,6 +401,7 @@ const PACKS=[
  {"id":"81x3-sbc","name":"3× 81+ Spielerpack","coins":null,"points":null,"type":"special","count":3,"min":81,"max":99,"guarantee":81,"rareCount":3,"store":false,"reward":true,"desc":"3 Spieler · alle garantiert 81+","iconChance":0.0007},
  {"id":"83x3-sbc","name":"3× 83+ Spielerpack","coins":null,"points":null,"type":"special","count":3,"min":83,"max":99,"guarantee":83,"rareCount":3,"store":false,"reward":true,"desc":"3 Spieler · alle garantiert 83+","iconChance":0.0007},
  {"id":"84x3-sbc","name":"3× 84+ Spielerpack","coins":null,"points":null,"type":"special","count":3,"min":84,"max":99,"guarantee":84,"rareCount":3,"store":false,"reward":true,"desc":"3 Spieler · alle garantiert 84+","iconChance":0.0007},
+ {"id":"84x2-sbc","name":"2× 84+ Spielerpack","coins":null,"points":null,"type":"special","count":2,"min":84,"max":99,"guarantee":84,"rareCount":2,"store":false,"reward":true,"desc":"2 Spieler · alle garantiert 84+","iconChance":0.0007},
  {"id":"85x2-sbc","name":"2× 85+ Spielerpack","coins":null,"points":null,"type":"special","count":2,"min":85,"max":99,"guarantee":85,"rareCount":2,"store":false,"reward":true,"desc":"2 Spieler · alle garantiert 85+","iconChance":0.0007},
  {id:"83",name:"83+ Players Pack",coins:null,points:null,type:"special",count:1,min:83,max:99,guarantee:83,store:false,reward:true,desc:"1 Spieler · garantiert 83+",iconChance:0.0005},
  {id:"85",name:"85+ Players Pack",coins:null,points:null,type:"special",count:3,min:75,max:99,guarantee:85,store:false,reward:true,desc:"3 Gold-Spieler · mind. 1× 85+",iconChance:0.002},
@@ -2677,6 +2678,17 @@ function activeBlackFridayDealSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now);
  return BLACKFRIDAY_DEAL_SBCS.filter(def=>ts>=Date.parse(def.releaseAt)&&ts<Date.parse(def.activeUntilAt)).map((def,order)=>({...def,filter:b=>true,count:11,once:true,live:true,expiresAt:Date.parse(def.activeUntilAt),releaseKey:def.releaseAt,theme:"blackfriday",order}))
 }
+// Icon Player Pick (Basti 2026-11-09): three part SBCs, the group bonus is one pick of 1 out of 4 random Icons (untradeable).
+const ICON_PICK_SBC_SET={groupSet:"icon_player_pick_20261109",releaseAt:"2026-11-09T00:00:00+01:00",groupReward:{iconPick:{choices:4,count:1}},segments:[
+ {name:"Icon-Pick – 85er-Team mit TOTW",desc:"Teil 1/3 für den Icon Player Pick.",req:"11 Spieler · Ø GES 85 · min. 1 TOTW",minAvg:85,minTotw:1,reward:{pack:"goldplayers",qty:1}},
+ {name:"Icon-Pick – 86er-Team",desc:"Teil 2/3 für den Icon Player Pick.",req:"11 Spieler · Ø GES 86",minAvg:86,reward:{pack:"primegold",qty:1}},
+ {name:"Icon-Pick – 86er-Team mit TOTW",desc:"Teil 3/3 für den Icon Player Pick.",req:"11 Spieler · Ø GES 86 · min. 1 TOTW",minAvg:86,minTotw:1,reward:{pack:"84x2-sbc",qty:1}}
+]};
+function activeIconPickSBCs(now=new Date()){
+ const ts=now instanceof Date?now.getTime():Number(now),def=ICON_PICK_SBC_SET;
+ if(!(ts>=Date.parse(def.releaseAt)))return[];
+ return def.segments.map((seg,i)=>({group:"Profis",id:`${def.groupSet}_${i+1}`,...seg,filter:b=>true,count:11,once:true,live:true,iconPickSbc:true,theme:"icon-pick",groupSet:def.groupSet,groupReward:def.groupReward,releaseKey:def.releaseAt,order:i}))
+}
 function activeEventPlayerSBCs(now=new Date()){
  const ts=now instanceof Date?now.getTime():Number(now),out=[];
  for(const event of EVENT_PROMO_RELEASES){
@@ -2692,7 +2704,7 @@ function activeEventPlayerSBCs(now=new Date()){
  }
  return out
 }
-function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeBlackFridayDealSBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
+function allActiveSBCs(now=new Date()){return [...(globalThis.FooteraPotm?.activeSBCs(now)||[]),...activeHalloweenTeam1SBCs(now),...activeBlackFridayDealSBCs(now),...activeIconPickSBCs(now),...activeEventPlayerSBCs(now),...activeDailySBCs(now),...activeGrindSBCs(now),...activeMarqueeSBCs(now),...SBCS]}
 function getActiveSbcById(id){return allActiveSBCs().find(x=>x.id===id)||null}
 function sbcIsCompleted(sbc){return !!(sbc?.once&&state.sbcCompletions?.[sbc.id])}
 function sbcTimeLeft(ts){
@@ -6676,9 +6688,12 @@ function updateMarketCountdowns(){
 setInterval(updateMarketCountdowns,1000);
 initializePortraitLoading();
 
-function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${Math.min(99,Number(task.player.ovr)+Number(halloweenUpgradeFor({eventType:task.eventType})?.ovr||0))} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`${spec.season==="s1"?"Story":"Saison"}-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);return a.join(" · ")}
+function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIVES.find(t=>t.id===r.eventObjective);if(task)a.push(`${Math.min(99,Number(task.player.ovr)+Number(halloweenUpgradeFor({eventType:task.eventType})?.ovr||0))} ${task.player.name} – ${task.eventName}`)}if(r.coins)a.push(`${fmt(r.coins)} Coins`);if(r.points)a.push(`${fmt(r.points)} Footera Points`);if(r.sp)a.push(`${fmt(r.sp)} SP`);if(r.pack)a.push(`${r.qty||1}× ${PACKS.find(p=>p.id===r.pack)?.name}`);if(r.story){const spec=STORY_PASS_PLAYERS[r.story];if(spec)a.push(`${spec.season==="s1"?"Story":"Saison"}-Spieler ${spec.rating} ${spec.name} · exklusiv im Pass`)}if(r.coinBoost)a.push(`+${fmt(r.coinBoost.amount)} Coins × ${r.coinBoost.games} Spiele`);if(r.iconPick)a.push(iconPickLabel(r.iconPick));return a.join(" · ")}
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
-function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);claimSeasonRewards()}
+function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);if(r.iconPick)grantIconPick(r.iconPick,r.iconPickSource||"sbc");claimSeasonRewards()}
+// Local Icon Player Picks: the four Icons are rolled once on first opening and stored, so closing never rerolls.
+function grantIconPick(spec,source="sbc"){state.iconPicks=Array.isArray(state.iconPicks)?state.iconPicks:[];const n=Math.max(1,Math.min(5,Number(spec?.count||1)));for(let k=0;k<n;k++)state.iconPicks.push({id:"iconpick-"+uid(),choices:Math.max(2,Math.min(6,Number(spec?.choices||4))),minRating:Math.max(0,Number(spec?.minRating||0)),source,createdAt:Date.now(),options:null});return n}
+function iconPickLabel(spec){return `Icon Player Pick (1 aus ${Number(spec?.choices||4)})`}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
 function grantSeasonOnly(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)grantStoryPassPlayer(r.story);if(r.coinBoost)addCoinBoost(r.coinBoost)}
 function parsePlayStyles(base,item){if(typeof FooteraPlayStyles!=="undefined")return FooteraPlayStyles.resolve(base,item).styles;const out=[];const add=(v,plus=false)=>{if(!v)return;if(Array.isArray(v))v.forEach(x=>out.push({name:String(x),plus}));else String(v).split(/[,|;]/).map(x=>x.trim()).filter(Boolean).forEach(x=>out.push({name:x,plus}))};add(base?.playstyles,false);add(base?.playstylesPlus,true);if(item?.evoPlaystyle)out.push({name:item.evoPlaystyle,plus:false});if(Array.isArray(item?.evoPlaystyles))item.evoPlaystyles.forEach(x=>out.push({name:String(x),plus:false}));if(item?.evoPlaystylePlus)out.push({name:item.evoPlaystylePlus,plus:true});if(Array.isArray(item?.evoPlaystylesPlus))item.evoPlaystylesPlus.forEach(x=>out.push({name:String(x),plus:true}));return out.slice(0,8)}
@@ -7019,10 +7034,10 @@ function sbcMissingButtonText(sbc,stats){
  const first=open[0];return `Noch offen: ${first.label}${first.value?` ${first.value}`:""}${open.length>1?` · +${open.length-1}`:""}`
 }
 function sbcPackName(id){return ({bronze:"Bronze-Spielerpack",silver:"Silber-Spielerpack",gold:"Premium-Goldpack","82":"82+-Spielerpack","85":"85+-Spielerpack"})[id]||PACKS.find(p=>p.id===id)?.name||"Pack"}
-function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${(reward.qty||1)>1?`${reward.qty}× `:""}${sbcPackName(reward.pack)}`:""].filter(Boolean).join(" · ")}
+function sbcRewardText(reward){return[reward?.coins?`${fmt(reward.coins)} Coins`:"",reward?.pack?`${(reward.qty||1)>1?`${reward.qty}× `:""}${sbcPackName(reward.pack)}`:"",reward?.iconPick?iconPickLabel(reward.iconPick):""].filter(Boolean).join(" · ")}
 function sbcRewardPackLabel(reward){
  if(reward?.pack)return sbcPackName(reward.pack);
- if(reward?.coins)return `${fmt(reward.coins)} Coins`;return"Belohnung"
+ if(reward?.coins)return `${fmt(reward.coins)} Coins`;if(reward?.iconPick)return iconPickLabel(reward.iconPick);return"Belohnung"
 }
 function sbcRequirementChips(s,stats){
  return sbcRequirementParts(s,stats).map(({label,ok})=>`<span class="sbc-part-req ${ok?"ok":""}">${ok?"✓ ":""}${esc(label)}</span>`).join("")
@@ -7339,7 +7354,7 @@ function sbcAssistantHTML(sbc){
 function renderSbcEditor(sbc){
  const draft=sbcDraft(sbc.id),stats=sbcDraftStats(sbc,draft),formation=FORMATIONS["4-3-3"],spots=squadPitchSpots(formation),filled=stats.count>0;
  const activeSelected=stats.items.filter(i=>(state.squad||[]).includes(i.uid)).length,storageSelected=stats.items.filter(i=>(state.sbcStorage||[]).some(x=>x.uid===i.uid)).length;
- return `<div class="sbc-builder"><div class="sbc-builder-head"><button type="button" class="sbc-builder-back" data-sbc-back aria-label="Zurück">‹</button><div class="sbc-builder-title"><strong>${esc(sbc.name)}</strong><span>Belohnung: ${esc(sbcRewardText(sbc.reward)||sbcRewardPackLabel(sbc.reward))}</span></div></div>
+ return `<div class="sbc-builder"><div class="sbc-builder-head"><button type="button" class="sbc-builder-back" data-sbc-back aria-label="Zurück">‹</button><div class="sbc-builder-title"><strong>${esc(sbc.name)}</strong><span>Belohnung: ${esc(sbcRewardText(sbc.reward)||sbcRewardPackLabel(sbc.reward))}${sbc.iconPickSbc?` · Gruppenbonus: ${esc(sbcRewardText(sbc.groupReward))}`:""}</span></div></div>
  <ul class="sbc-checklist" aria-label="Bedingungen">${sbcChecklist(sbc,stats).map(r=>`<li class="${r.ok?"ok":""}"><i aria-hidden="true">${r.ok?"✓":"✗"}</i><span>${esc(r.label)}</span><b>${esc(r.value)}</b></li>`).join("")}</ul>
  <div class="sbc-squad-summary"><span>GES <b>${stats.count?stats.teamRating:"–"}</b></span><span>Chemie <b>${stats.chem}/33</b></span><span>Spieler <b>${stats.count}/${sbc.count}</b></span></div>
  <div class="sbc-editor-pitch">${formation.map((slot,i)=>sbcWorkSlotHTML(sbc,i,{...slot,...spots[i]},draft,stats.chemScores)).join("")}</div>
@@ -7351,6 +7366,7 @@ function renderSbcEditor(sbc){
 function sbcFeatureGroupCard(rows,detail=false){
  if(!rows?.length)return"";
  const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100);
+ if(sample.iconPickSbc)return iconPickFeatureCard(rows,detail);
  const isPlayer=!!sample.eventSbc,found=isPlayer?eventSbcRewardDefinition(sample.groupReward):null;
  const title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Spieler-SBC"):"Top-Partien";
  const desc=isPlayer?`${sample.eventId===FLASHBACK_REUS_EVENT.id?"LA Galaxy · MLS · Rückblick auf Borussia Dortmund 2013/14. ":sample.eventPlayer?.blurb||""}Schließe alle Teil-SBCs ab und erhalte ${sample.eventPlayer?.ovr?eventDisplayOvr(sample.eventId,sample.eventPlayer.ovr):""} ${found?.event?.name||"Event"} ${sample.eventPlayer?.name||"den Spieler"} untauschbar.`:"Schließe alle vier Top-Partien ab. Jede Teil-SBC gibt eine Belohnung; danach folgt der Gruppenbonus.";
@@ -7366,16 +7382,22 @@ function sbcFeatureGroupCard(rows,detail=false){
  const status=claimed?"Gruppenbelohnung erhalten":complete?"Alle Teil-SBCs abgeschlossen":(sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv");
  return `<article class="sbc-feature-card ${isPlayer?"profi":"top-partien"} ${sample.eventId===FLASHBACK_REUS_EVENT.id?"flashback-sbc":eventThemeOf(sample.eventId)==="halloween"?"halloween-sbc":eventThemeOf(sample.eventId)==="blackfriday"?"blackfriday-sbc":""} ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">${isPlayer?"PROFI-SBC":"DONNERSTAG BIS DONNERSTAG · 19:00 UHR"}</span><h3>${esc(title)}</h3><p>${esc(desc)}</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)}${isPlayer?" (untauschbar)":""}</span></div></div>${art}</div><div class="sbc-feature-footer"><span>${isPlayer?"Nicht wiederholbar":"Top-Partien"}</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
 }
+const ICON_PICK_ART='<div class="sbc-feature-pack sbc-icon-pick-art" aria-hidden="true"><span class="sbc-icon-pick-card"><b>ICON</b><small>PLAYER PICK</small><em>1 aus 4</em></span></div>';
+function iconPickFeatureCard(rows,detail=false){
+ const sample=rows[0],p=sbcGroupProgress(sample.groupSet),claimed=!!state.sbcGroupClaims?.[sample.groupSet],complete=p.total>0&&p.done>=p.total,pct=Math.round((p.done/Math.max(1,p.total))*100),reward=sbcRewardText(sample.groupReward);
+ const attrs=detail?'':` data-sbc-set="${esc(sample.groupSet)}" role="button" tabindex="0"`,status=claimed?"Icon Pick erhalten":complete?"Alle Teil-SBCs abgeschlossen":"Aktiv";
+ return `<article class="sbc-feature-card profi icon-pick-sbc ${detail?"detail":""}"${attrs}><div class="sbc-feature-main"><div class="sbc-feature-copy"><span class="sbc-feature-kicker">ICON-SBC</span><h3>Icon Player Pick</h3><p>Schließe alle ${p.total} Teil-SBCs ab und wähle 1 aus 4 zufälligen Icons. Die Karte ist untauschbar.</p><div class="sbc-feature-progressline"><b>${p.done}/${p.total} SBCs</b><span>${complete?"Abgeschlossen":"abgeschlossen"}</span></div><div class="sbc-feature-track"><i style="width:${pct}%"></i></div><div class="sbc-feature-reward"><strong>GRUPPEN-BONUS</strong><span>${esc(reward)} (untauschbar)</span></div></div>${ICON_PICK_ART}</div><div class="sbc-feature-footer"><span>Nicht wiederholbar</span><b>${esc(status)}</b><span class="sbc-feature-arrow">›</span></div></article>`
+}
 function sbcGroupedRows(rows){
  const map=new Map();for(const row of rows){const key=row.groupSet||row.id;if(!map.has(key))map.set(key,[]);map.get(key).push(row)}
  return [...map.values()]
 }
 function sbcSetDetailHTML(rows){
  if(!rows?.length)return"";
- const sample=rows[0],isPlayer=!!sample.eventSbc,title=isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
- const reward=isPlayer?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
+ const sample=rows[0],isIconPick=!!sample.iconPickSbc,isPlayer=!!sample.eventSbc||isIconPick,title=isIconPick?"Icon Player Pick":isPlayer?(eventSbcNamedTitle(sample)||sample.eventPlayer?.name||"Profi-SBC"):"Top-Partien",done=rows.filter(sbcIsCompleted).length,total=rows.length,pct=Math.round(done/Math.max(1,total)*100),claimed=!!state.sbcGroupClaims?.[sample.groupSet];
+ const reward=isPlayer&&!isIconPick?eventSbcRewardLabel(sample.groupReward):sbcRewardText(sample.groupReward),expiry=sample.expiresAt?`Noch ${sbcTimeLeft(sample.expiresAt)}`:"Aktiv";
  const bonusState=claimed?"ERHALTEN":done>=total?"FREIGESCHALTET":`NOCH ${total-done} SBC${total-done===1?"":"s"}`;
- return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
+ return `<div class="sbc-set-detail-nav"><button type="button" data-sbc-set-back>‹</button><div><strong>${esc(title)}</strong><span>${done}/${total} SBCs abgeschlossen</span></div></div><section class="sbc-set-summary ${isPlayer?"profi":"top-partien"}"><div class="sbc-set-summary-top"><div><span class="sbc-set-summary-kicker">${isIconPick?"ICON-SBC":isPlayer?"PROFI-SBC":"TOP-PARTIEN"}</span><h3>${esc(title)}</h3><p>${isIconPick?`Schließe alle ${total} Teil-SBCs ab und wähle danach 1 aus 4 zufälligen Icons.`:isPlayer?`Schließe alle ${total} Teil-SBCs ab, um die Spielerkarte zu erhalten.`:`Schließe alle ${total} Aufgaben ab und sichere dir den Gruppenbonus.`}</p></div><span class="sbc-set-expiry">${esc(expiry)}</span></div><div class="sbc-set-progress"><strong>${done}/${total}</strong><div class="sbc-set-progress-bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div><div class="sbc-set-bonus"><div><small>GRUPPEN-BONUS</small><b>${esc(reward)}${isPlayer?" · untauschbar":""}</b></div><em>${bonusState}</em></div></section><div class="sbc-set-list">${rows.map(sbcOverviewCard).join("")}</div>`
 }
 function renderSBC(){
  state.sbcCompletions=state.sbcCompletions||{};state.sbcGroupClaims=state.sbcGroupClaims||{};
@@ -7431,8 +7453,8 @@ function finalizeSbcSubmission(id){
  });
  for(const uid of ids)removeActiveEvolutionForUid(uid);
  state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
- grant(sbc.reward);state.stats.sbcs++;globalThis.FooteraWeekRecap?.afterSbc();state.sbcCompletions=state.sbcCompletions||{};if(sbc.once)state.sbcCompletions[sbc.id]=true;const groupMessage=maybeGrantSbcGroupReward(sbc);
- delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});const rewardPack=queuedSbcGroupRewardPack;queuedSbcGroupRewardPack=null;save();renderAll();if(rewardPack)openPack(rewardPack.packId,rewardPack.items);toast((teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")+groupMessage)
+ const iconPicksBefore=(state.iconPicks||[]).length;grant(sbc.reward);state.stats.sbcs++;globalThis.FooteraWeekRecap?.afterSbc();state.sbcCompletions=state.sbcCompletions||{};if(sbc.once)state.sbcCompletions[sbc.id]=true;const groupMessage=maybeGrantSbcGroupReward(sbc);
+ delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});const rewardPack=queuedSbcGroupRewardPack;queuedSbcGroupRewardPack=null;save();renderAll();if(rewardPack)openPack(rewardPack.packId,rewardPack.items);if((state.iconPicks||[]).length>iconPicksBefore)globalThis.FooteraPlayerPicks?.openIconPick?.();toast((teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")+groupMessage)
 }
 function submitSbcById(id){
  const sbc=getActiveSbcById(id);if(!sbc)return;if(sbc.scoreSbc)return toast("Öffne diese POTM-SBC über die Punkteabgabe.");if(sbcIsCompleted(sbc))return toast("Diese SBC wurde bereits abgeschlossen.");const stats=sbcDraftStats(sbc);if(!stats.ok)return toast("Die SBC-Bedingungen sind noch nicht erfüllt.");
@@ -9546,7 +9568,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.379";
+const GFUT_BUILD="V21.380";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9604,7 +9626,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21379",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21380",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
