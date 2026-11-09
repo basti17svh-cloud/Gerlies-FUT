@@ -74,3 +74,14 @@ test('a stored pick opens the four stored Icons and lists them in the store',()=
  assert.match(ctx.els.playerPickOptions.innerHTML,/ICON PICK/);
  assert.match(ctx.els.playerPickTitle.textContent,/^Icon Player Pick$/);
 });
+
+test('Basti receives three Icon picks once as a direct gift',()=>{
+ let n=0;const ctx={state:{profile:{saveId:'GF-9AE6CDDEFE8A458D'},packs:{}},uid:()=>'g'+(++n),PACKS:[],save(){},flushSave(){},isTesterClub:()=>false,TESTER_REWARDS:[]};vm.createContext(ctx);
+ vm.runInContext(section('// Local Icon Player Picks','function iconPickLabel(')+section('const DIRECT_REWARDS=','// Thank-you gifts')+section('function grantDirectRewards(','const PROMO_CODES='),ctx);
+ const first=vm.runInContext('grantDirectRewards()',ctx);
+ assert.ok(first.some(r=>r.id==='basti_iconpicks_20261109'));
+ assert.equal(ctx.state.iconPicks.length,3);
+ assert.ok(ctx.state.iconPicks.every(p=>p.choices===4&&p.options===null&&p.source==='gift'));
+ assert.equal(vm.runInContext('grantDirectRewards()',ctx).length,0);
+ assert.equal(ctx.state.iconPicks.length,3,'nur einmal');
+});

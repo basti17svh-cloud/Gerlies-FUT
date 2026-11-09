@@ -9283,7 +9283,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.clos
 
 
 const DIRECT_REWARDS=Object.freeze({
- "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"}],
+ "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_iconpicks_20261109",iconPick:{choices:4,count:3},label:"3× Icon Player Pick (1 aus 4)"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 // Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
@@ -9305,6 +9305,10 @@ function grantDirectRewards(){
    const qty=Math.max(1,Number(reward.qty||1));
    state.packs[reward.pack]=(state.packs[reward.pack]||0)+qty;
    state.directClaims[reward.id]={claimedAt:Date.now(),reward:{pack:reward.pack,qty}};
+   granted.push(reward)
+  }else if(reward.iconPick){
+   const count=grantIconPick(reward.iconPick,"gift");
+   state.directClaims[reward.id]={claimedAt:Date.now(),reward:{iconPick:{...reward.iconPick,count}}};
    granted.push(reward)
   }
  }
