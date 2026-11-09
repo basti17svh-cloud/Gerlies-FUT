@@ -4853,7 +4853,7 @@ function openPlayerDetails(item,index=null,fromPreview=false){
  const squadActions=inSquad?`<button class="menu-action" data-replace-slot="${index}"><span><span>Spieler austauschen</span><small>Diesen Kaderplatz mit einem Spieler aus dem Verein neu besetzen.</small></span><b>›</b></button>${fromPreview?`<button class="menu-action" data-preview-swap-start="${index}"><span><span>Mit Kaderplatz tauschen</span><small>Spieler in Startelf, Bank oder Reserve direkt tauschen.</small></span><b>›</b></button>`:''}<button class="menu-action" data-move-club="${esc(item.uid)}" data-move-club-index="${index}"><span><span>In den Verein</span><small>Spieler aus der Aufstellung nehmen und Kaderplatz freimachen.</small></span><b>›</b></button>`:`<button class="menu-action" data-insert-item="${esc(item.uid)}"><span><span>In Mannschaft</span><small>Spieler auf einen Kaderplatz setzen.</small></span><b>›</b></button>`;
  const listLabel=isOnTransferList(item.uid)?"Von Transferliste entfernen":"Auf Transferliste";
  const sellDisabled=!item.tradeable||isFounderItem(item)||!!activeSale,sellText=activeSale?"Aktiv auf Transfermarkt":"Auf Transfermarkt anbieten",sellNote=!item.tradeable?"Dieses Item ist untauschbar.":activeSale?"Angebot läuft bereits.":blockedByTeam?"Beim Anbieten wird der Spieler automatisch aus allen gespeicherten Teams entfernt.":"Startpreis, Sofortkauf und Dauer festlegen.";
- const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}" ${(!item.tradeable||isFounderItem(item))?"disabled":""}><span><span>${listLabel}</span><small>Spieler passiv auf deiner Transferliste vormerken.</small></span><b>›</b></button><button class="menu-action" data-direct-sell="${esc(item.uid)}" ${sellDisabled?"disabled":""}><span><span>${sellText}</span><small>${sellNote}</small></span><b>›</b></button>${isFounderItem(item)||isStoryItem(item)?"":`<button class="menu-action" data-price-compare="${esc(item.uid)}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button>`}</div>`;
+ const menu=`<div class="detail-menu"><button class="menu-action" data-open-bio="${esc(item.uid)}" data-open-bio-index="${inSquad?index:-1}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${window.FooteraCompare?FooteraCompare.menuHTML("data-player-compare",item.uid):""}${squadActions}<button class="menu-action" data-transferlist="${esc(item.uid)}" ${(!item.tradeable||isFounderItem(item))?"disabled":""}><span><span>${listLabel}</span><small>Spieler passiv auf deiner Transferliste vormerken.</small></span><b>›</b></button><button class="menu-action" data-direct-sell="${esc(item.uid)}" ${sellDisabled?"disabled":""}><span><span>${sellText}</span><small>${sellNote}</small></span><b>›</b></button>${isFounderItem(item)||isStoryItem(item)?"":`<button class="menu-action" data-price-compare="${esc(item.uid)}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button>`}</div>`;
  $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:shown,slot,fits,chem,context:inSquad?"Mannschaft":"Verein"})}${menu}`;
  showUiLayer("playerModal","player")
 }
@@ -4869,7 +4869,7 @@ function openPackPlayerDetails(k){
  const storeAvailable=(state.sbcStorage||[]).length<100;
  const duplicateStorageActions=duplicate&&!isFounderItem(item)&&!isFooteraLiveCard(item)?`<button class="menu-action" data-pack-profile-sbcstore="${k}" ${storeAvailable?"":"disabled"}><span><span>${storeAvailable?"In SBC-Speicher":"SBC-Speicher voll (100/100)"}</span><small>Duplikat für spätere SBCs sichern${item.tradeable?" · bleibt tauschbar":""}.</small></span><b>›</b></button>${twin?`<button class="menu-action" data-pack-profile-swap="${k}"><span><span>Mit Vereinskarte tauschen</span><small>Untauschbare Pack-Karte behalten und die tauschbare Vereinskarte freigeben.</small></span><b>›</b></button>`:""}`:"";
  const resolveAction=`<button class="menu-action" data-pack-profile-sell="${k}"><span><span>${item.tradeable?`Schnellverkaufen · +${fmt(quickSell(item))} Coins`:"Abstoßen"}</span><small>${item.tradeable?"Item sofort gegen Coins auflösen.":"Untauschbares Item endgültig verwerfen."}</small></span><b>›</b></button>`;
- $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateStorageActions}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button><button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
+ $("playerDetailBody").innerHTML=`${playerOverviewHTML(b,item,{shownPosition:b.position,slot:null,fits:true,chem:null,context:duplicate?"Pack-Duplikat":"Pack-Inhalt"})}<div class="detail-menu">${normalActions}${tradeActions}${duplicateStorageActions}${resolveAction}<button class="menu-action" data-pack-bio="${k}"><span><span>Vollständige Spielerbiografie</span><small>Attribute, Positionen und zusätzliche Infos ansehen.</small></span><b>›</b></button>${window.FooteraCompare?FooteraCompare.menuHTML("data-pack-player-compare",k):""}<button class="menu-action" data-pack-price-compare="${k}"><span><span>Preisvergleich</span><small>Nur Marktangebote für genau diesen Spieler anzeigen.</small></span><b>›</b></button></div>`;
  showUiLayer("playerModal","player")
 }
 let suppressSquadClick=false;
@@ -4957,6 +4957,9 @@ $("playerDetailBody").addEventListener("click",e=>{
        packProfileStore=e.target.closest("[data-pack-profile-sbcstore]"),
        packProfileSwap=e.target.closest("[data-pack-profile-swap]"),
        packProfileSell=e.target.closest("[data-pack-profile-sell]");
+ const playerCompare=e.target.closest("[data-player-compare]"),packPlayerCompare=e.target.closest("[data-pack-player-compare]");
+ if(playerCompare){const item=state.club.find(x=>x.uid===playerCompare.dataset.playerCompare);if(item)window.FooteraCompare?.open(item);return;}
+ if(packPlayerCompare){const k=Number(packPlayerCompare.dataset.packPlayerCompare),item=pendingPack[k];if(item&&!pendingResolved.has(k))window.FooteraCompare?.open(item);return;}
  if(packBio){const k=Number(packBio.dataset.packBio),item=pendingPack[k];if(item&&!pendingResolved.has(k))openBiography(item,-1);return;}
  if(packCompare){const k=Number(packCompare.dataset.packPriceCompare),item=pendingPack[k];if(item&&!pendingResolved.has(k))openPriceComparison(item);return;}
  if(packDirectSell){const k=Number(packDirectSell.dataset.packDirectSell),item=pendingPack[k];if(item&&!pendingResolved.has(k))openTransferOfferModal(item,{packIndex:k});return;}
@@ -9529,7 +9532,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.374";
+const GFUT_BUILD="V21.375";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -9587,7 +9590,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21374",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21375",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
