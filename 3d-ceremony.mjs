@@ -85,9 +85,12 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 }
 
 // ---- cameras: calm TV shots, no zoom; one cut in the middle of each scene.
+export const CEREMONY_ARENA_SHOT=1.7;
 export const CEREMONY_CUT=Object.freeze({kickoff:4.4,fulltime:5});
 export function ceremonyCamera(kind,time){
  if(kind==='kickoff'){
+  // V21.382: the scene opens high in the corner of the floodlit arena.
+  if(time<CEREMONY_ARENA_SHOT){const u=time/CEREMONY_ARENA_SHOT;return{position:[50-u*2.4,24-u*.9,62-u*3],target:[0,5.5,-8],fov:38,phase:'arena'}}
   if(time<CEREMONY_CUT.kickoff)return{position:[3.6-time*.22,1.72,0],target:[16,1.32,0],fov:38,phase:'walkout'};
   const z=mix(-9.6,9.2,smooth((time-CEREMONY_CUT.kickoff)/6));
   // Aimed below the line so the players stand above the match card.
