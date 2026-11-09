@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.375</title>
+<title>Footera V21.376</title>
 <link rel="stylesheet" href="./footera-app.css?v=21350">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
@@ -49,6 +49,7 @@
 <link rel="stylesheet" href="./playstyles.css?v=21271">
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <link rel="stylesheet" href="./footera-compare.css?v=21375">
+<link rel="stylesheet" href="./footera-week-recap.css?v=21376">
 <link rel="stylesheet" href="./footera-tutorial.css?v=21330">
 <script src="./club-crest-art.js?v=2130"></script>
 <script src="./pack-odds.js?v=21121"></script>
@@ -135,7 +136,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.375</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.376</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -409,6 +410,7 @@
 <section id="extrasView" class="view"><div class="headline"><h2>Extras</h2><p>Promocode und App-Einstellungen.</p></div><div class="section"><div class="extras-grid">
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
+  <div class="extras-card"><span class="extras-kicker">DEIN CLUB</span><h3>Wochenrückblick</h3><p>Jeden Montag fasst Footera deine letzte Woche zusammen: Spiele, Tore, Spieler der Woche und beste Pack-Ziehung. Zum Teilen als Bild.</p><button type="button" class="secondary" data-week-recap-open>Rückblick ansehen</button></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>3D Highlights</h3><p>Kurze Live-Szenen für Tore und große Chancen. Bei nicht unterstützten Geräten läuft die gewohnte Spieldarstellung weiter.</p><label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights"></select></label></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>Stadion-Sound</h3><p>Ballkontakte, Netz und Torjubel in den 3D-Szenen, Stadion-Walkout beim Pack-Öffnen. Folgt dem Lautlos-Schalter deines Handys.</p><label class="highlight-mode">Stadion-Sound<select data-sound-mode aria-label="Stadion-Sound"><option value="on">An</option><option value="off">Aus</option></select></label></div>
   <div class="extras-card"><span class="extras-kicker">DATENSCHUTZ</span><h3>Besucherstatistik</h3><p>Optionale, anonyme Besucherstatistik. Du kannst deine Einwilligung hier jederzeit ändern.</p><div id="analyticsSettingsSlot"></div></div>
@@ -726,8 +728,9 @@
 <script src="./footera-cosmetic-evolutions.js?v=21335"></script>
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
-<script src="./footera-app.js?v=21375"></script>
+<script src="./footera-app.js?v=21376"></script>
 <script src="./footera-compare.js?v=21375"></script>
+<script src="./footera-week-recap.js?v=21376"></script>
 <script src="./season-system.js?v=21297"></script>
 <script src="./competition-system.js?v=21333"></script>
 <script src="./champions-system.js?v=21318"></script>
