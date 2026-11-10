@@ -6706,7 +6706,31 @@ function rewardText(r){const a=[];if(r.eventObjective){const task=EVENT_OBJECTIV
 function addCoinBoost(boost){const entry={games:Number(boost.games||0),amount:Number(boost.amount||0)};if(entry.games<=0||entry.amount<=0)return;if(state.coinBoost?.games>0){state.coinBoostQueue=state.coinBoostQueue||[];state.coinBoostQueue.push(entry)}else state.coinBoost=entry}
 function grant(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.sp)state.sp=(state.sp||0)+r.sp;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.coinBoost)addCoinBoost(r.coinBoost);if(r.iconPick)grantIconPick(r.iconPick,r.iconPickSource||"sbc");claimSeasonRewards()}
 // Local Icon Player Picks: the four Icons are rolled once on first opening and stored, so closing never rerolls.
-function grantIconPick(spec,source="sbc"){state.iconPicks=Array.isArray(state.iconPicks)?state.iconPicks:[];const n=Math.max(1,Math.min(5,Number(spec?.count||1)));for(let k=0;k<n;k++)state.iconPicks.push({id:"iconpick-"+uid(),choices:Math.max(2,Math.min(6,Number(spec?.choices||4))),minRating:Math.max(0,Number(spec?.minRating||0)),source,createdAt:Date.now(),options:null});return n}
+function grantIconPick(spec,source="sbc"){
+ state.iconPicks=Array.isArray(state.iconPicks)?state.iconPicks:[];
+ const n=Math.max(1,Math.min(5,Number(spec?.count||1)));
+ const choices=Math.max(2,Math.min(6,Number(spec?.choices||4)));
+ const requested=Array.isArray(spec?.options)?spec.options:null;
+ const fixed=requested?.length===choices&&new Set(requested).size===choices
+   &&requested.every(id=>typeof id==="string"&&MID_ICON_BASES.some(base=>base.id===id))
+   ?requested:null;
+ // Stable one-off ticket IDs allow delivery from cloud or device without duplication.
+ const ticketId=n===1&&typeof spec?.ticketId==="string"&&/^iconpick-[a-z0-9-]{4,100}$/.test(spec.ticketId)?spec.ticketId:null;
+ let added=0;
+ for(let k=0;k<n;k++){
+  const id=ticketId||"iconpick-"+uid();
+  if(Object.prototype.hasOwnProperty.call(state.iconPickClaims||{},id))continue;
+  const existing=state.iconPicks.find(p=>p?.id===id);
+  if(existing){
+   // An updated, unclaimed gift keeps its stable ID but receives the corrected offer.
+   if(fixed){existing.options=[...fixed];existing.choices=choices}
+   continue;
+  }
+  state.iconPicks.push({id,choices,minRating:Math.max(0,Number(spec?.minRating||0)),source,createdAt:Date.now(),options:fixed?[...fixed]:null});
+  added++;
+ }
+ return added;
+}
 function iconPickLabel(spec){return `Icon Player Pick (1 aus ${Number(spec?.choices||4)})`}
 function claimSeasonRewards(){for(const lvl of SEASON_REWARDS){if((state.sp||0)>=lvl.sp&&!state.seasonClaims[lvl.level]){state.seasonClaims[lvl.level]=true;if(lvl.level>1)grantSeasonOnly(lvl.reward)}}}
 function grantSeasonOnly(r){if(r.coins)state.coins+=r.coins;if(r.points)state.points+=r.points;if(r.pack&&r.pack!=="founder-bastian")state.packs[r.pack]=(state.packs[r.pack]||0)+(r.qty||1);if(r.story)grantStoryPassPlayer(r.story);if(r.coinBoost)addCoinBoost(r.coinBoost)}
@@ -9338,6 +9362,7 @@ $("friendTeamModalBody").addEventListener("click",e=>{const player=e.target.clos
 
 const DIRECT_REWARDS=Object.freeze({
  "GF-9AE6CDDEFE8A458D":[{id:"basti_86plus_20260925",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_83plus_20261003",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_83plus_20261003_b2",pack:"83",qty:1,label:"83+ Players Pack"},{id:"basti_86plus_20261003_b2",pack:"86",qty:1,label:"86+ Players Pack"},{id:"basti_2x86plus_20261003_b2",pack:"2x86",qty:1,label:"2× 86+ Players Pack"},{id:"basti_iconpicks_20261109",iconPick:{choices:4,count:3},label:"3× Icon Player Pick (1 aus 4)"},{id:"basti_iconpicks_restore_20261110",iconPick:{choices:4,count:5},label:"5× Icon Player Pick (1 aus 4)"}],
+ "GF-35FADCCBA5AD4E15":[{id:"max_iconpick_surprise_20261110",iconPick:{count:1,choices:4,ticketId:"iconpick-surprise-max-20261110",options:["midicon-michael-owen","midicon-ronaldinho","midicon-xabi-alonso","midicon-john-barnes"]},label:"Icon Player Pick (1 aus 4)"}],
  "GF-7D87D08A06104571":[{id:"marco_premium_goldplayers_20260930",pack:"marco-premium-goldplayers-20260930",qty:1,label:"Premium Goldspieler-Pack"}]
 });
 // Thank-you gifts for the tester clubs (Marco and Niklas), identified like their Founder cards.
@@ -9362,8 +9387,9 @@ function grantDirectRewards(){
    granted.push(reward)
   }else if(reward.iconPick){
    const count=grantIconPick(reward.iconPick,"gift");
-   state.directClaims[reward.id]={claimedAt:Date.now(),reward:{iconPick:{...reward.iconPick,count}}};
-   granted.push(reward)
+   state.directClaims[reward.id]={claimedAt:Date.now(),reward:{iconPick:{choices:reward.iconPick.choices,count,ticketId:reward.iconPick.ticketId||null}}};
+   if(count>0)granted.push(reward);
+   else{save();flushSave()}
   }
  }
  if(granted.length){save();flushSave()}
