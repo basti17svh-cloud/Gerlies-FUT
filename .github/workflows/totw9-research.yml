@@ -17,7 +17,7 @@ jobs:
           def key(s): return ''.join(c for c in unicodedata.normalize('NFD',s.lower()) if not unicodedata.combining(c)).replace('ø','o')
           rows=list(csv.DictReader(open('assets/players-db.csv')))
           out={}
-          for q in ["Berger","Caprile","Kayla Sharples","Mittelstädt","Carlos Romero","Vušković","El Hilali","Peddemors","Kimmich","Arda Güler","Gruda","Fermín","Grønbæk","Shaw","Alessia Russo","Trinity Rodman","Liam Delap","Thierno Barry","Christian Pulisic", "Douvikas"]:
+          for q in ["Berger","Caprile","Kayla Sharples","Mittelstädt","Carlos Romero","Vušković","El Hilali","Peddemors","Kimmich","Arda Güler","Gruda","Fermín","Grønbæk","Shaw","Alessia Russo","Trinity Rodman","Liam Delap","Thierno Barry","Christian Pulisic", "Douvikas", "Darwin", "Bisseck", "Jørgensen", "Fabián Ruiz"]:
            terms=key(q).split()
            hits=[r for r in rows if all(t in key(' '.join(v for k,v in r.items() if 'name' in k)) for t in terms)]
            out[q]=hits
