@@ -408,71 +408,69 @@
    "\nChampions auf Gerät: "+record(local)+"\nChampions in Cloud: "+record(cloud)+
    "\nNur auf Gerät: "+[...localIds].filter(id=>!cloudIds.has(id)).length+" Karten; nur Cloud: "+[...cloudIds].filter(id=>!localIds.has(id)).length+" Karten.";
  }
- async function saveCloud(resolveConflict=false){
+ // The game always reads and plays from the device. Online is backup only.
+ async function commitDeviceFirstBackup(client,u,local,remote){
+  if(remote?.save_data?.profile?.saveId&&remote.save_data.profile.saveId!==local.profile?.saveId){
+   autoStatus="Der Online-Spielstand gehört zu einem anderen Verein. Dieses Gerät bleibt aktiv.";
+   return false;
+  }
+  const upload=remote?.save_data?mergeUnclaimedIconPicks(local,remote.save_data):local;
+  if(remote?.save_data){
+   // Never overwrite a server-confirmed purchase or reward missing locally.
+   try{checkProtectedCloudRewards(upload,remote.save_data)}
+   catch(e){
+    autoStatus="Der Gerätestand bleibt aktiv. Eine bestätigte Online-Belohnung ist zusätzlich geschützt.";
+    return false;
+   }
+   if(structurallyEqual(upload,remote.save_data)){
+    applyMergedIconPicks(local,upload);
+    savePoint(u,upload,remote.revision);
+    autoStatus="";
+    return true;
+   }
+   // Before device-first upload, retain the old cloud snapshot for recovery.
+   if(root.FooteraBackup?.preserveRollback&&
+      (!syncPoint(u)||syncPoint(u).revision!==remote.revision))
+    await root.FooteraBackup.preserveRollback(JSON.stringify(remote.save_data),"cloud-before-upload");
+  }
+  if(pendingPlayerPick()||pendingChallengeReward())return false;
+  changeLocked();
+  if(root.localStorage.getItem(OWNER)!==u.id||
+     !structurallyEqual(localData(),local)||(await user())?.id!==u.id)return false;
+  const {data,error}=await client.rpc("footera_store_cloud_save",{
+   p_save:upload,p_base_revision:remote?.revision||0
+  });
+  if(error){
+   // Compare-and-swap prevents concurrent saves from erasing one another.
+   if(["PT409","409"].includes(String(error.code||"")))return false;
+   throw error;
+  }
+  applyMergedIconPicks(local,upload);
+  savePoint(u,upload,data);
+  autoStatus="";
+  return true;
+ }
+ async function saveCloud(){
   changeLocked();
   if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
-  if(autoBusy)throw Error("Eine Einlösung läuft noch. Bitte diese zuerst abschließen.");
+  if(autoBusy)throw Error("Eine Sicherung läuft noch.");
   autoBusy=true;
-  let finishSync;const done=new Promise(resolve=>{finishSync=resolve});autoBusyDone=done;
+  let complete;
+  const done=new Promise(resolve=>{complete=resolve});
+  autoBusyDone=done;
   try{
    const {c,u}=await requirePermanent();ensureOwned(u);
-   if(pendingChallengeReward())throw Error("Zuerst die ausstehende Cup-Belohnung erneut abholen. Nichts überschrieben.");
-   if(pendingPlayerPick())throw Error("Zuerst die ausstehende Pick-Einlösung abschließen. Nichts überschrieben.");
-   const local=localData(),cloud=await cloudInfo(),point=syncPoint(u);
-   if(cloud){
-    if(cloud.save_data?.profile?.saveId!==local.profile?.saveId)
-     throw Error("Cloud und Gerät gehören zu unterschiedlichen Vereinen. Keine Überschreibung.");
-    root.FooteraBackup?.validateState(cloud.save_data);
-    if(structurallyEqual(local,cloud.save_data)){
-     savePoint(u,local,cloud.revision);autoStatus="";
-     msg("Beide Spielstände sind identisch. Cloud-Version "+cloud.revision+".");await render();return true;
-    }
-    checkProtectedCloudRewards(local,cloud.save_data);
-    const conflict=!point||point.saveId!==local.profile.saveId||(point.revision!==cloud.revision&&!pointMatches(point,cloud.save_data));
-    if(conflict&&resolveConflict!==true){
-     autoStatus="Auf beiden Geräten gibt es Änderungen. Wähle im Spielstandvergleich den Stand, mit dem du weiterspielen möchtest.";
-     throw Error("Zwei unterschiedliche Spielstände. Bitte im Vergleich 'Diesen Gerätestand verwenden' oder 'Online-Stand übernehmen' wählen.");
-    }
-    if(conflict){
-     if(!root.confirm("Mit diesem Gerätestand auf allen Geräten weiterspielen?\n\n"+
-       describeCloudDifference(local,cloud.save_data)+
-       "\n\nDer bisherige Online-Stand wird vorher automatisch als Rückfallsicherung auf diesem Gerät aufbewahrt. Guthaben wird nicht addiert."))return false;
-     if(!root.FooteraBackup?.preserveRollback)throw Error("Rückfallsicherung ist noch nicht bereit. Bitte Footera neu öffnen.");
-     await root.FooteraBackup.preserveRollback(JSON.stringify(cloud.save_data),"cloud-before-upload");
-     await root.FooteraBackup.preserveRollback(JSON.stringify(local));
-    }
-   }
-   const upload=cloud?mergeUnclaimedIconPicks(local,cloud.save_data):local;
-   changeLocked();
-   if(!structurallyEqual(localData(),local))throw Error("Spielstand wurde während des Abgleichs verändert. Erneut vergleichen.");
-   if((await user())?.id!==u.id)throw Error("Das angemeldete Konto wurde während des Abgleichs geändert. Nichts überschrieben.");
-   ensureOwned(u);
-   const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:upload,p_base_revision:cloud?.revision||0});
-   if(error)throw error; // Backend compare-and-swap prevents concurrent overwrite.
-   applyMergedIconPicks(local,upload);
-   savePoint(u,upload,data);autoStatus="";
-   msg("Online gesichert. Dein aktueller Fortschritt ist auf den anderen Geräten verfügbar.");
-   await render();
-   return true;
-  }finally{autoBusy=false;finishSync();if(autoBusyDone===done)autoBusyDone=null}
+   return await commitDeviceFirstBackup(c,u,localData(),await cloudInfo());
+  }finally{
+   autoBusy=false;complete();
+   if(autoBusyDone===done)autoBusyDone=null;
+  }
  }
- async function resolveCloudConflict(){return saveCloud(true);}
+ async function resolveCloudConflict(){return saveCloud()}
  async function synchronizeCloud(){
-   if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
-   if(autoBusy)throw Error("Eine Einlösung läuft noch. Bitte diese zuerst abschließen.");
-   await autoAttachAndBackup();
-   if(root.FooteraAccountReplacingSave)return "loading";
-   const {u}=await requirePermanent();ensureOwned(u);
-   const local=localData(),cloud=await cloudInfo();
-   if(cloud&&structurallyEqual(local,cloud.save_data)){
-     savePoint(u,local,cloud.revision);autoStatus="";return "saved";
-   }
-   if(cloud){
-     const point=syncPoint(u);
-     if(cloud.save_data?.profile?.saveId!==local.profile?.saveId)throw Error("Dieses Konto enthält einen anderen Verein. Keine Spielstände wurden ersetzt.");
-     if(!point||point.saveId!==local.profile.saveId||(point.revision!==cloud.revision&&!pointMatches(point,cloud.save_data)))return "conflict";
-   }
-   return await saveCloud()?"saved":"cancelled";
+  if(autoBusyDone)await pickDeadline(autoBusyDone,20000);
+  await autoAttachAndBackup();
+  return "device";
  }
  function scheduleCloudSync(){
    if(root.FooteraAccountReplacingSave)return;
@@ -943,67 +941,20 @@
        return;
      }
      const point=syncPoint(u);
-     if(cloud.save_data&&cloud.save_data?.profile?.saveId!==save.profile?.saveId){
-       autoStatus="Im Konto ist bereits ein anderer Verein gesichert. Keine automatische Überschreibung.";
-       return;
+     if(point?.saveId&&point.saveId!==save.profile?.saveId){
+      autoStatus="Die lokale Vereins-ID ist abweichend. Dieses Gerät bleibt aktiv.";
+      return;
      }
-     // Import only unclaimed Icon gifts into the active device. Do not replace
-     // card inventories, FC Points, coins, squad, or match progress.
-     const gifted=mergeUnclaimedIconPicks(save,cloud.save_data);
-     if(gifted!==save){
-       applyMergedIconPicks(save,gifted);
-       autoStatus="Offene Icon Player Picks wurden auf deinem Gerät ergänzt. Dein Fortschritt bleibt erhalten.";
-       return;
+     if(point?.revision===cloud.revision&&pointMatches(point,save)){
+      autoStatus="";return;
      }
-     if(!point){
-       if(structurallyEqual(cloud.save_data,save)){
-         root.localStorage.setItem(OWNER,u.id);
-         savePoint(u,save,cloud.revision);
-       }else autoStatus="Der lokale und der Cloud-Spielstand unterscheiden sich. Keine automatische Überschreibung.";
-       return;
+     // Fetch content if an external write increased the revision.
+     const latest=cloud.save_data?cloud:await cloudInfo();
+     if(latest?.save_data?.profile?.saveId!==save.profile?.saveId){
+      autoStatus="Ein anderer Verein ist online gespeichert. Das Gerät bleibt aktiv.";
+      return;
      }
-     if(point.saveId!==save.profile?.saveId){
-   autoStatus="Cloud und Gerät gehören zu unterschiedlichen Vereinen. Keine Überschreibung.";
-   return;
-  }
-  if(point.revision!==cloud.revision){
-   const latest=await cloudInfo(); // metadata-only revision is not a real content conflict
-   if(latest?.save_data?.profile?.saveId!==save.profile?.saveId){
-    autoStatus="Unterschiedliche Vereine. Cloud-Abgleich gesperrt.";
-    return;
-   }
-   if(structurallyEqual(latest.save_data,save)){
-    savePoint(u,save,latest.revision);autoStatus="";return;
-   }
-   const withTickets=mergeUnclaimedIconPicks(save,latest.save_data);
-   // A cloud-only Icon gift can safely join the current device save.
-   if(withTickets!==save&&structurallyEqual(withTickets,latest.save_data)){
-    if(root.FooteraBackup?.preserveRollback)
-     await root.FooteraBackup.preserveRollback(JSON.stringify(save));
-    if(root.localStorage.getItem(OWNER)!==u.id)return;
-    applyMergedIconPicks(save,withTickets);
-    savePoint(u,withTickets,latest.revision);
-    autoStatus="";return;
-   }
-   // Device-first: never silently replace an existing local club on a
-   // different cloud revision. Truly independent edits require comparison.
-   if(pointMatches(point,save)&&!pendingPlayerPick()){
-    autoStatus="Dieses Gerät bleibt aktiv. Ein anderer Online-Stand kann im Profil geprüft werden.";
-    return;
-   }
-   if(point.hash&&pointMatches(point,latest.save_data)){
-    const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:latest.revision});
-    if(error)throw error;
-    savePoint(u,save,data);autoStatus="";return;
-   }
-    autoStatus="Du spielst auf diesem Gerät weiter. Der abweichende Online-Stand bleibt gesichert und kann im Profil geprüft werden.";
-   return;
-  }
-  if(pointMatches(point,save)){autoStatus="";return;}
-     const {data,error}=await c.rpc("footera_store_cloud_save",{p_save:save,p_base_revision:point.revision});
-     if(error)throw error;
-     savePoint(u,save,data);
-     autoStatus="Dein Verein wurde automatisch in der Cloud aktualisiert.";
+     await commitDeviceFirstBackup(c,u,save,latest);
    }finally{autoBusy=false;finishAutoSync();if(autoBusyDone===done)autoBusyDone=null}
  }
  // Ask once per app start, never in the middle of a pack, Pick or open dialog.
@@ -1269,22 +1220,8 @@
    const providers=(u.identities||[]).map(x=>x.provider).filter(Boolean);
    labelValue("footeraProfileMethod",providers.map(x=>x==="email"?"E-Mail":x==="google"?"Google":x).join(" · ")||"Anmeldung");
    labelValue("footeraProfileSince",u.created_at?new Date(u.created_at).toLocaleDateString("de-DE"):"–");
-   try{
-     const mode=await renderSaveOverview(u,state);
-     // Opening the profile finishes a pending save instead of asking for a button press.
-     if((mode==="pending"||mode==="unsaved")&&!busy&&!autoBusy&&!profileAutoSyncing){
-       profileAutoSyncing=true;
-       profileSaveAction("sync").finally(()=>{profileAutoSyncing=false;showSyncFallback()});
-     }
-   }
-   catch(e){
-     $("footeraSaveOverview").dataset.state="offline";
-     labelValue("footeraSaveTitle","Offline · wird nachgeholt");
-     labelValue("footeraSaveDescription","Dein Fortschritt bleibt auf diesem Gerät gespeichert und wird online gesichert, sobald die Verbindung zurück ist.");
-     labelValue("footeraSaveTime","");
-     $("footeraProfileBackup").hidden=false;$("footeraProfileBackup").disabled=false;$("footeraProfileBackup").dataset.action="check";$("footeraProfileBackup").textContent="Erneut prüfen";
-     $("footeraSaveCompare").hidden=true;
-   }
+   // The device is always the game source; the backup chooser stays hidden.
+   if($("footeraSaveOverview"))$("footeraSaveOverview").hidden=true;
    // A fully secured club may still lack its online friend profile when an
    // earlier database constraint rejected the club's formation. Retry from
    // the profile page and surface the actual blocker instead of a blank code.
@@ -1456,7 +1393,7 @@
    $("footeraSignOut").hidden=!logged;
    // Saving is automatic; the old cloud buttons stay only for assigning a local club.
    const cloudBox=dialog.querySelector(".footera-account-cloud");
-   if(cloudBox)cloudBox.hidden=$("footeraAccountAdopt").hidden;
+   if(cloudBox)cloudBox.hidden=true;
    $("footeraAccountSave").hidden=true;$("footeraAccountLoad").hidden=true;
    $("footeraSetPassword").textContent=logged||recovery?"Passwort festlegen / ändern":"Passwort vergessen";
    $("footeraAccountPassword").placeholder=guest?"Nach E-Mail-Bestätigung festlegen":"Mindestens 10 Zeichen";
@@ -1524,13 +1461,13 @@
      '<div class="footera-profile-hero"><span class="footera-profile-avatar">F</span><div><small>MEIN ACCOUNT</small><h3 id="footeraProfileUsername">–</h3><p id="footeraProfileClub">–</p><p id="footeraProfileStatus">–</p></div></div>'+
      '<h3 class="footera-profile-section-title">Mein Verein</h3>'+
      '<div class="footera-profile-stats"><div><small>SPIELERKARTEN</small><strong id="footeraProfileCards">–</strong></div><div><small>MÜNZEN</small><strong id="footeraProfileCoins">–</strong></div><div><small>FC POINTS</small><strong id="footeraProfilePoints">–</strong></div></div>'+
-     '<section class="footera-save-overview" id="footeraSaveOverview" data-state="checking" aria-labelledby="footeraSaveTitle">'+
+     '<section class="footera-save-overview" id="footeraSaveOverview" data-state="checking" aria-labelledby="footeraSaveTitle" hidden>'+
      '<h3 id="footeraSaveTitle" role="status" aria-live="polite">Spielstand wird geprüft …</h3><p id="footeraSaveDescription"></p><p id="footeraSaveTime" class="footera-save-time"></p>'+
      '<div class="footera-save-actions"><button id="footeraProfileBackup" type="button" hidden disabled>Bitte warten …</button><button id="footeraProfileLoad" type="button" hidden disabled>Auf diesem Gerät laden</button></div>'+
      '<p class="footera-profile-backup-feedback" id="footeraProfileBackupFeedback" role="status" aria-live="polite"></p>'+
      '<details id="footeraSaveCompare" class="footera-save-compare" hidden><summary>Online-Unterschied prüfen</summary><table><thead><tr><th scope="col"></th><th scope="col">Dieses Gerät</th><th scope="col">Online</th></tr></thead><tbody id="footeraSaveComparisonRows"></tbody></table><div class="footera-save-actions footera-save-choice"><button id="footeraSaveUseDevice" type="button" disabled>Mit diesem Gerät weiterspielen</button><button id="footeraSaveUseCloud" type="button" disabled>Mit dem Online-Stand weiterspielen</button></div><p>Der andere Stand wird als Rückfallsicherung aufbewahrt. Nichts wird addiert.</p></details>'+
      '<p class="footera-save-hint">Footera speichert automatisch. Auf einem anderen Gerät einfach mit demselben Konto anmelden.</p></section>'+
-     '<details class="footera-profile-fold" id="footeraProfileSettings"><summary>Einstellungen</summary><dl class="footera-profile-details"><div><dt>Benutzername</dt><dd id="footeraProfileUsernameValue">–</dd></div><div><dt>E-Mail</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Vereins-ID</dt><dd id="footeraProfileSaveId">–</dd></div><div><dt>Anmeldung</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div><div><dt>Online gesichert</dt><dd id="footeraProfileCloud">–</dd></div></dl><button id="footeraProfileRename" class="footera-profile-quiet" type="button">Benutzername ändern</button><button id="footeraProfileChangeEmail" class="footera-profile-quiet" type="button">E-Mail-Adresse ändern</button><div id="footeraProfileEmailHost" hidden></div><button id="footeraProfilePassword" class="footera-profile-quiet" type="button">Passwort ändern</button><button id="footeraProfileSignOut" class="footera-profile-quiet" type="button">Auf diesem Gerät abmelden</button></details>'+
+     '<details class="footera-profile-fold" id="footeraProfileSettings"><summary>Einstellungen</summary><dl class="footera-profile-details"><div><dt>Benutzername</dt><dd id="footeraProfileUsernameValue">–</dd></div><div><dt>E-Mail</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Vereins-ID</dt><dd id="footeraProfileSaveId">–</dd></div><div><dt>Anmeldung</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div></dl><button id="footeraProfileRename" class="footera-profile-quiet" type="button">Benutzername ändern</button><button id="footeraProfileChangeEmail" class="footera-profile-quiet" type="button">E-Mail-Adresse ändern</button><div id="footeraProfileEmailHost" hidden></div><button id="footeraProfilePassword" class="footera-profile-quiet" type="button">Passwort ändern</button><button id="footeraProfileSignOut" class="footera-profile-quiet" type="button">Auf diesem Gerät abmelden</button></details>'+
      '<details class="footera-profile-fold footera-profile-advanced" id="footeraProfileAdvanced"><summary>Erweitert</summary>'+
      '<h4>Sicherungsdatei</h4><p>Nur für Notfälle: eine Kopie als Datei aufbewahren oder öffnen.</p><button id="footeraProfileExport" class="footera-profile-quiet" type="button">Sicherungsdatei herunterladen</button><button id="footeraProfileCloudRollback" class="footera-profile-quiet" type="button">Vorherigen Online-Stand als Datei sichern</button><button id="footeraProfileImport" class="footera-profile-quiet" type="button">Sicherungsdatei öffnen …</button><input id="footeraProfileImportFile" type="file" accept=".json,application/json" hidden><p id="footeraProfileFileFeedback" class="footera-profile-backup-feedback" role="status" aria-live="polite"></p><p id="footeraProfileBackupHint">Dateien ersetzen nur den Stand auf diesem Gerät.</p>'+
      '<div class="footera-profile-danger"><small>KONTO LÖSCHEN</small><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
@@ -1661,7 +1598,7 @@
      e.preventDefault();
      run(()=>requestAccountEmailChange($("footeraNewEmail").value));
    });
-   $("footeraAccountSave").addEventListener("click",()=>run(async()=>{const result=await synchronizeCloud();if(result==="conflict"){hide();await showProfile();openSaveComparison()}else msg("Dein aktueller Spielstand ist online gesichert.")}));
+   $("footeraAccountSave").addEventListener("click",()=>run(async()=>{const result=await synchronizeCloud();if(result==="device")msg("Dein Gerätestand bleibt aktiv.")}));
    $("footeraAccountResolve").addEventListener("click",()=>run(resolveCloudConflict));
    $("footeraAccountLoad").addEventListener("click",()=>run(restoreCloud));
    $("footeraAccountAdopt").addEventListener("click",()=>run(adoptLocal));
