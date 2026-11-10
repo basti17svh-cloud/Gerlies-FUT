@@ -1,0 +1,167 @@
+/* FOOTERA Matchday · red broadcast skin (V21.388)
+   Presentation only: existing match simulation, event flow, 3D highlights,
+   player management and all data-bound statistics are unchanged. */
+#match.match{
+  color:#f8f4f4;
+  background:
+    radial-gradient(ellipse 90% 32% at 48% 18%,rgba(105,10,19,.23),transparent 75%),
+    linear-gradient(180deg,rgba(12,3,6,.88),rgba(9,1,3,.98) 520px),
+    url("./assets/footera/stadion.webp") center top / 100% auto no-repeat,
+    #0b0305;
+  padding-top:calc(12px + env(safe-area-inset-top));
+  padding-bottom:calc(100px + env(safe-area-inset-bottom))
+}
+#match .matchinner{width:100%;max-width:680px;margin-inline:auto}
+#match .match-sticky-header{
+  top:calc(-12px - env(safe-area-inset-top));
+  padding:calc(10px + env(safe-area-inset-top)) 0 11px;
+  background:linear-gradient(180deg,#100305fa 10%,#100305f6 82%,#100305eb);
+  backdrop-filter:blur(15px)
+}
+#match .match-broadcast-head{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;gap:7px;margin:0 2px 9px;
+  color:#f9f5f5;font-size:clamp(10px,2.75vw,14px);
+  letter-spacing:.075em;font-weight:950;line-height:1.3
+}
+#match .match-broadcast-head>span:first-child{white-space:nowrap}
+#match .match-broadcast-head b{color:#ff5260}
+#match .match-broadcast-head #matchWeather{
+  display:block;grid-column:2;min-width:0;color:#f4f2f3;
+  font-size:clamp(10px,2.8vw,13px);letter-spacing:0;text-align:center;white-space:nowrap
+}
+#match .match-broadcast-head #matchWeather[hidden]{display:none}
+#match #matchCompetition{
+  grid-column:3;max-width:none;font-size:clamp(9px,2.55vw,13px);
+  color:#f9f5f5;letter-spacing:.008em;text-align:right
+}
+#match .scoreboard{
+  border:1px solid #ad3646;border-radius:18px;padding:11px 13px 9px;
+  background:linear-gradient(150deg,rgba(49,7,12,.97),rgba(22,4,8,.98) 78%);
+  box-shadow:0 8px 26px #0008,0 0 23px #8a1b231b,inset 0 1px #ffa5a521
+}
+#match .match-score-meta{align-items:center}
+#match .match-running-pill{
+  padding:7px 11px;border:1px solid #8d2834;background:#350b12;
+  color:#ffc3cb;font-size:clamp(10px,2.5vw,12px);letter-spacing:.055em;
+  box-shadow:0 0 11px #9c1d2522
+}
+#match .match-running-pill i{
+  width:7px;height:7px;flex:none;background:#ff6979;
+  box-shadow:0 0 10px 2px #ef4b64a3
+}
+#match .minute{
+  border-radius:10px;padding:5px 10px;
+  background:#5b080f;color:#f9e45e;font-weight:950;
+  font-size:clamp(14px,4vw,19px)
+}
+#match .match-score-line{
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  gap:8px;margin:10px 0 4px
+}
+#match .match-team-name{color:#faf5f5;font-size:clamp(11px,3.15vw,16px);font-weight:950}
+#match .score{color:#fff;font-size:clamp(37px,10vw,58px);text-shadow:0 4px 15px #000}
+#match .match-progress-track{
+  height:4px;margin:9px 5px 0;border-radius:20px;
+  background:#ffffff1f;overflow:hidden
+}
+#match .match-progress-track span{
+  background:linear-gradient(90deg,#ed1b35,#ffa4a8);
+  box-shadow:0 0 12px #ff4c5c8c
+}
+#match .match-overview{padding:0}
+#match .match-overview .matchstats{gap:7px;margin-top:6px}
+#match .match-overview .mstat{
+  min-height:56px;padding:7px 2px;
+  border:1px solid #9a2837;border-radius:0 0 12px 12px;
+  background:linear-gradient(170deg,#2c080e,#170508);
+  box-shadow:inset 0 1px #ffffff0b;
+  gap:3px
+}
+#match .match-overview .mstat strong{
+  color:#fff;font-size:clamp(13px,3.65vw,20px);min-height:19px
+}
+#match .match-overview .mstat span{
+  color:#e2c6ca;font-size:clamp(9px,2.45vw,12px);letter-spacing:.045em
+}
+#match .match-tactical-summary{
+  margin:9px 3px 0;color:#e4d6d8;
+  font-size:clamp(10px,2.8vw,13px);line-height:1.5
+}
+#match .match-timeline-wrap{margin:12px 0 13px}
+#match .match-timeline{padding:1px 2px 6px}
+#match .match-timeline-start,#match .match-timeline-event{
+  min-height:33px;padding:7px 11px;border:1px solid #aa3042;
+  border-radius:99px;background:#29070e;color:#fff1f1;font-weight:800
+}
+#match .match-timeline-event.goal{border-color:#ffc25a;background:#362112;color:#fff1c8}
+#match .match-timeline-event.sub{border-color:#f68b8b;color:#ffe0e0}
+#match .match-live-stage{
+  border:1px solid #c53b49;border-radius:20px;
+  background:linear-gradient(175deg,#3b090f,#1a060a 83%);
+  box-shadow:0 13px 32px #0009,inset 0 1px #ffdada21
+}
+#match .match-stage-head{
+  padding:11px 14px;color:#faf6f5;
+  font-size:clamp(11px,2.9vw,14px);letter-spacing:.085em
+}
+#match #matchSceneMinute{color:#f8e454;font-size:clamp(12px,3.3vw,16px)}
+#match .match-scene-pitch{height:clamp(146px,38vw,225px);padding:5px 14px 7px}
+#match .match-pitch-lines{
+  border:2px solid #e0f5deae;
+  background:repeating-linear-gradient(90deg,#105c36 0 12.5%,#0e4f31 12.5% 25%);
+  box-shadow:0 0 0 5px #103d24,inset 0 0 23px #00190b52
+}
+#match .match-pitch-lines:before{border-left-color:#e8f7e9a3}
+#match .match-pitch-center,#match .match-pitch-box,#match .match-pitch-goal{border-color:#e8f7e9a3}
+#match .match-players.home i{background:#c9ff2f;border-color:#fff}
+#match .match-players.away i{background:#ff667b;border-color:#ffe8ec}
+#match .match-ball{background:#09090b;border-color:#fff;box-shadow:0 0 0 7px #f2ffc958,0 0 18px #e8fd72a8}
+#match .match-scene-caption{
+  min-height:57px;padding:11px 12px;border-top:1px solid #89313c;
+  background:linear-gradient(180deg,#21080b,#1b0609)
+}
+#match #matchSceneType{color:#ff5366;font-size:clamp(10px,2.7vw,13px)}
+#match #matchSceneText{color:#f9f2f2;font-size:clamp(11px,3.03vw,14px);line-height:1.35}
+#match .match-ticker{
+  margin-top:9px;border:1px solid #92313c;border-radius:13px;
+  background:linear-gradient(160deg,#22080b,#140608);
+  color:#f0e8e8;box-shadow:0 7px 17px #0005
+}
+#match .match-ticker-line{color:#f1eded}
+#match .match-ticker-line time{color:#ff6072}
+#match .highlight-mode{color:#f2e5e6;font-size:clamp(11px,2.8vw,13px)}
+#match .highlight-mode select{
+  min-height:43px;border:1px solid #d0404a;border-radius:10px;
+  background:linear-gradient(140deg,#3e1319,#251015);color:#fff0f1;
+  box-shadow:inset 0 1px #ffb5b51c;font-size:clamp(11px,3vw,14px)
+}
+#match .match-primary-controls,#match .match-manager-actions{
+  background:linear-gradient(180deg,#100408e8,#100408 24px);
+  box-shadow:0 -9px 20px #100408db
+}
+#match .match-primary-controls button{
+  border:1px solid #a83340;border-radius:12px;
+  background:linear-gradient(135deg,#3c1319,#241014);
+  color:#fff4f4;font-weight:950
+}
+#match .match-primary-controls #manageTeamBtn{
+  border-color:#f23f53;background:linear-gradient(125deg,#590b14,#32090e);
+  color:#fff;box-shadow:inset 0 1px #ffb3b324
+}
+#match .match-primary-controls button:focus-visible,
+#match .highlight-mode select:focus-visible{
+  outline:2px solid #ff8390;outline-offset:3px
+}
+@media(max-width:389px){
+  #match.match{padding-left:9px;padding-right:9px}
+  #match .scoreboard{padding:10px 9px}
+  #match .match-broadcast-head{gap:4px}
+  #match .match-score-line{gap:5px}
+  #match .match-scene-pitch{padding-inline:12px}
+  #match .match-primary-controls{width:calc(100% - 16px)}
+}
+@media(prefers-reduced-motion:reduce){
+  #match .match-running-pill i{box-shadow:none}
+  #match .match-progress-track span{transition:none}
+}
