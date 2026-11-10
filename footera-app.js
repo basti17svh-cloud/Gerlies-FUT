@@ -6053,7 +6053,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_ID={
  "231866":32500,   // Rodri 90
  "192119":87500,   // Thibaut Courtois 90
  "238794":725000, // Vini Jr. 89
- "262531":875000, // Claudia Pina 89
+ "262531":700000, // Claudia Pina 89
  "227102":230000,  // Caroline Graham Hansen 89
  "158023":81500,   // Lionel Messi 89
  "212198":13500,   // Bruno Fernandes 89
@@ -6078,7 +6078,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
  "nuno-mendes":346000,
  "khvicha-kvaratskhelia":82000,
  "mariona":69500,
- "ewa-pajor":36000,
+ "ewa-pajor":90000,
  "temwa-chawinga":34000,
  "gianluigi-donnarumma":61000
 };
@@ -6152,10 +6152,10 @@ function marketRoundPrice(v){v=Number(v);if(Number.isNaN(v))v=150;v=Math.max(150
 const ICON_PRICE_CURVE={87:85000,88:145000,89:250000,90:420000,91:650000,92:950000,93:1400000,94:2100000,95:3000000};
 const ICON_PRICE_ANCHORS={
  "ronaldo":13400000, // Ronaldo
- "mia-hamm":10000000, // Mia Hamm
+ "mia-hamm":9000000, // Mia Hamm
  "pele":8000000, // Pelé
  "franz-beckenbauer":2650000, // Franz Beckenbauer
- "eusebio":8800000, // Eusébio
+ "eusebio":7900000, // Eusébio
  "lothar-matthaus":4200000, // Lothar Matthäus — base-icon-pc-fallback
  "zinedine-zidane":4650000, // Zinedine Zidane
  "ruud-gullit":7500000, // Ruud Gullit
@@ -6174,7 +6174,7 @@ const ICON_PRICE_ANCHORS={
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":6800000, // Ronaldinho
- "carlos-alberto":2250000, // Carlos Alberto
+ "carlos-alberto":1900000, // Carlos Alberto
  "gianluigi-buffon":835000, // Gianluigi Buffon
  "lilian-thuram":3200000, // Lilian Thuram
  "yaya-toure":1990000, // Yaya Touré
