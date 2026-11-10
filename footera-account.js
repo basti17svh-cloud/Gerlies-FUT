@@ -947,6 +947,14 @@
        autoStatus="Im Konto ist bereits ein anderer Verein gesichert. Keine automatische Überschreibung.";
        return;
      }
+     // Import only unclaimed Icon gifts into the active device. Do not replace
+     // card inventories, FC Points, coins, squad, or match progress.
+     const gifted=mergeUnclaimedIconPicks(save,cloud.save_data);
+     if(gifted!==save){
+       applyMergedIconPicks(save,gifted);
+       autoStatus="Offene Icon Player Picks wurden auf deinem Gerät ergänzt. Dein Fortschritt bleibt erhalten.";
+       return;
+     }
      if(!point){
        if(structurallyEqual(cloud.save_data,save)){
          root.localStorage.setItem(OWNER,u.id);
