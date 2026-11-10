@@ -1730,7 +1730,578 @@ const TOTW_WEEK_8={
     }
   ]
 };
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8];
+const TOTW_WEEK_9={
+  "id": 9,
+  "name": "Team of the Week 9",
+  "releaseDate": "2026-11-11",
+  "activeUntil": "18.11.2026 18:59",
+  "sourceStatus": "admin-approved",
+  "players": [
+    {
+      "names": [
+        "Khadija Shaw"
+      ],
+      "eaId": "246219",
+      "ovr": 91,
+      "position": "ST",
+      "stats": [
+        80,
+        92,
+        72,
+        82,
+        42,
+        89
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/246219.png",
+        "gender": "female",
+        "name": "Khadija Shaw",
+        "fullName": "Khadija Shaw",
+        "ovr": 90,
+        "position": "ST",
+        "alt": "",
+        "team": "Manchester City",
+        "league": "Barclays WSL",
+        "nation": "Jamaica",
+        "nationFlag": "https://drop-assets.ea.com/images/1SgInjnqMDYuDkFjbevgOa/691b6af6a426f84f477787fcf1fb4264/f_82.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2xh8GK9bWhg2H0vFjJJyRY/f613cec23720efc16bb1d5128533d130/l116017.png",
+        "teamId": "116017"
+      }
+    },
+    {
+      "names": [
+        "Alessia Russo"
+      ],
+      "eaId": "258980",
+      "ovr": 89,
+      "position": "ST",
+      "stats": [
+        85,
+        90,
+        74,
+        87,
+        39,
+        79
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/258980.png",
+        "gender": "female",
+        "name": "Alessia Russo",
+        "fullName": "Alessia Russo",
+        "ovr": 88,
+        "position": "ST",
+        "alt": "",
+        "team": "Arsenal",
+        "league": "Barclays WSL",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4t9DKfDfbPaPKTz7BMFHV1/65b982cd4906e4ea855d24f53bce4f7a/l116009.png",
+        "teamId": "116009"
+      }
+    },
+    {
+      "names": [
+        "Trinity Rodman"
+      ],
+      "eaId": "266928",
+      "ovr": 89,
+      "position": "RW",
+      "stats": [
+        93,
+        85,
+        84,
+        85,
+        56,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/266928.png",
+        "gender": "female",
+        "name": "Trinity Rodman",
+        "fullName": "Trinity Rodman",
+        "ovr": 87,
+        "position": "LM",
+        "alt": "",
+        "team": "Washington Spirit",
+        "league": "NWSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4zfVOnjuRUdxWmbJMF315Q/4f619c10f3400611188d8eef843b1c46/l116304.png",
+        "teamId": "116304"
+      }
+    },
+    {
+      "names": [
+        "Joshua Kimmich"
+      ],
+      "eaId": "212622",
+      "ovr": 89,
+      "position": "CDM",
+      "stats": [
+        72,
+        75,
+        91,
+        85,
+        82,
+        80
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/212622.png",
+        "gender": "male",
+        "name": "Joshua Kimmich",
+        "fullName": "Joshua Kimmich",
+        "ovr": 88,
+        "position": "CDM",
+        "alt": "",
+        "team": "FC Bayern München",
+        "league": "Bundesliga",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5wM3rRU8Ur4APhQqMNElyT/1183d0c79858e8f9b39f7f5ff94fda25/l21.png",
+        "teamId": "21"
+      }
+    },
+    {
+      "names": [
+        "Ann-Katrin Berger"
+      ],
+      "eaId": "258310",
+      "ovr": 88,
+      "position": "GK",
+      "stats": [
+        88,
+        86,
+        83,
+        89,
+        45,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/258310.png",
+        "gender": "female",
+        "name": "Ann-Katrin Berger",
+        "fullName": "Ann-Katrin Berger",
+        "ovr": 87,
+        "position": "GK",
+        "alt": "",
+        "team": "Gotham FC",
+        "league": "NWSL",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5rHbnMxLlcPg6oQIrZYSjW/158056b005015036b6fa5280dd54af5a/l116310.png",
+        "teamId": "116310"
+      }
+    },
+    {
+      "names": [
+        "Fabián Ruiz",
+        "Fabián Ruiz Peña"
+      ],
+      "eaId": "226271",
+      "ovr": 88,
+      "position": "CM",
+      "stats": [
+        62,
+        81,
+        85,
+        84,
+        78,
+        75
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/226271.png",
+        "gender": "male",
+        "name": "Fabián Ruiz",
+        "fullName": "Fabián Ruiz Peña",
+        "ovr": 86,
+        "position": "CM",
+        "alt": "",
+        "team": "Paris SG",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5khNvXbdBeFYsYuxeoNi5d/a5684fa8f1d60295481216448abaa6f1/l73.png",
+        "teamId": "73"
+      }
+    },
+    {
+      "names": [
+        "Fermín López",
+        "Fermín",
+        "Fermín López Marín"
+      ],
+      "eaId": "277179",
+      "ovr": 87,
+      "position": "CAM",
+      "stats": [
+        83,
+        88,
+        82,
+        87,
+        64,
+        74
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/277179.png",
+        "gender": "male",
+        "name": "Fermín López",
+        "fullName": "Fermín López Marín",
+        "ovr": 85,
+        "position": "CAM",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1mqjNAj4Z0u1vnDMZSwntN/a5ad57005eea6cacd12d70bbb632a295/l241.png",
+        "teamId": "241"
+      }
+    },
+    {
+      "names": [
+        "Arda Güler"
+      ],
+      "eaId": "264309",
+      "ovr": 86,
+      "position": "CAM",
+      "stats": [
+        80,
+        82,
+        89,
+        87,
+        56,
+        59
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/264309.png",
+        "gender": "male",
+        "name": "Arda Güler",
+        "fullName": "Arda Güler",
+        "ovr": 83,
+        "position": "RM",
+        "alt": "",
+        "team": "Real Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Turkey",
+        "nationFlag": "https://drop-assets.ea.com/images/4Q4jboDNIuKZKWrzRQwe43/9a75eccaa6de77e27559d3eefab098fc/f_48.png",
+        "clubLogo": "https://drop-assets.ea.com/images/34HMRqpbKClVJjsfNA58W4/8160bfc9e82012236d0394859c80b2bf/l243.png",
+        "teamId": "243"
+      }
+    },
+    {
+      "names": [
+        "Maximilian Mittelstädt"
+      ],
+      "eaId": "227647",
+      "ovr": 85,
+      "position": "LB",
+      "stats": [
+        78,
+        66,
+        81,
+        80,
+        82,
+        76
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/227647.png",
+        "gender": "male",
+        "name": "Maximilian Mittelstädt",
+        "fullName": "Maximilian Mittelstädt",
+        "ovr": 83,
+        "position": "LB",
+        "alt": "",
+        "team": "VfB Stuttgart",
+        "league": "Bundesliga",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5kZF2A2w4ftyuOJr1OdLPv/178f8801a977eb958fc1db30fe90ac73/l36.png",
+        "teamId": "36"
+      }
+    },
+    {
+      "names": [
+        "Elia Caprile"
+      ],
+      "eaId": "255303",
+      "ovr": 83,
+      "position": "GK",
+      "stats": [
+        82,
+        79,
+        79,
+        89,
+        52,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/255303.png",
+        "gender": "male",
+        "name": "Elia Caprile",
+        "fullName": "Elia Caprile",
+        "ovr": 80,
+        "position": "GK",
+        "alt": "",
+        "team": "Cagliari",
+        "league": "Serie A Enilive",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "https://drop-assets.ea.com/images/74XGEx6woj5o0Gk0rpDD5A/a3d12677068754b1dce1fac052c49b99/l1842.png",
+        "teamId": "1842"
+      }
+    },
+    {
+      "names": [
+        "Tasos Douvikas"
+      ],
+      "eaId": "261478",
+      "ovr": 83,
+      "position": "ST",
+      "stats": [
+        81,
+        84,
+        72,
+        80,
+        39,
+        74
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/261478.png",
+        "gender": "male",
+        "name": "Tasos Douvikas",
+        "fullName": "Tasos Douvikas",
+        "ovr": 78,
+        "position": "ST",
+        "alt": "",
+        "team": "Como",
+        "league": "Serie A Enilive",
+        "nation": "Greece",
+        "nationFlag": "https://drop-assets.ea.com/images/1mUTBFEHJtYms9Y0VgAcIk/2665aa8641ad55e56096b7a155d6089a/f_22.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3xMIk1ycYRVK8rvTFwuYcn/4063f0b741a14ea6d20f907f5640efd7/l1745.png",
+        "teamId": "1745"
+      }
+    },
+    {
+      "names": [
+        "Carlos Romero",
+        "Carlos Romero Serrano"
+      ],
+      "eaId": "270728",
+      "ovr": 83,
+      "position": "LB",
+      "stats": [
+        84,
+        79,
+        80,
+        83,
+        80,
+        77
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/270728.png",
+        "gender": "male",
+        "name": "Carlos Romero",
+        "fullName": "Carlos Romero Serrano",
+        "ovr": 80,
+        "position": "LB",
+        "alt": "",
+        "team": "Villarreal CF",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/22KN5nd9mWHI6jpETGjFsh/a6435ebed4486b4afd36536d430bcfa1/l483.png",
+        "teamId": "483"
+      }
+    },
+    {
+      "names": [
+        "Kayla Sharples"
+      ],
+      "eaId": "267276",
+      "ovr": 83,
+      "position": "CB",
+      "stats": [
+        52,
+        47,
+        56,
+        66,
+        87,
+        75
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/267276.png",
+        "gender": "female",
+        "name": "Kayla Sharples",
+        "fullName": "Kayla Sharples",
+        "ovr": 80,
+        "position": "CB",
+        "alt": "",
+        "team": "KC Current",
+        "league": "NWSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1X6iguvAyRmIhdvdfKnjkq/fda392c2834355b057d6a99537dde418/l116309.png",
+        "teamId": "116309"
+      }
+    },
+    {
+      "names": [
+        "Thierno Barry"
+      ],
+      "eaId": "276295",
+      "ovr": 82,
+      "position": "ST",
+      "stats": [
+        85,
+        82,
+        71,
+        78,
+        27,
+        78
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/276295.png",
+        "gender": "male",
+        "name": "Thierno Barry",
+        "fullName": "Thierno Barry",
+        "ovr": 76,
+        "position": "ST",
+        "alt": "",
+        "team": "Everton",
+        "league": "Premier League",
+        "nation": "France",
+        "nationFlag": "https://drop-assets.ea.com/images/6O6L3Tw8ha7CokoEp9xppS/bd62283fa0e10eeb4a55c728fd69b0cb/f_18.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1fj9Xp6ytTBK0ZhXLCU5kp/1f00ca6a01bbc24ea8fda382dcaad545/l7.png",
+        "teamId": "7"
+      }
+    },
+    {
+      "names": [
+        "Brajan Gruda"
+      ],
+      "eaId": "272612",
+      "ovr": 81,
+      "position": "RM",
+      "stats": [
+        86,
+        76,
+        80,
+        86,
+        34,
+        67
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/272612.png",
+        "gender": "male",
+        "name": "Brajan Gruda",
+        "fullName": "Brajan Gruda",
+        "ovr": 77,
+        "position": "CAM",
+        "alt": "",
+        "team": "RB Leipzig",
+        "league": "Bundesliga",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6h45zAStsIK7QZ5UQ6ggWo/be342f3814ffbf92297d2e08148376b5/l112172.png",
+        "teamId": "112172"
+      }
+    },
+    {
+      "names": [
+        "Yann Aurel Bisseck"
+      ],
+      "eaId": "241736",
+      "ovr": 81,
+      "position": "CB",
+      "stats": [
+        81,
+        61,
+        66,
+        74,
+        80,
+        83
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/241736.png",
+        "gender": "male",
+        "name": "Yann Aurel Bisseck",
+        "fullName": "Yann Aurel Bisseck",
+        "ovr": 78,
+        "position": "CB",
+        "alt": "",
+        "team": "Inter",
+        "league": "Serie A Enilive",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "",
+        "teamId": "131682"
+      }
+    },
+    {
+      "names": [
+        "Ella Peddemors"
+      ],
+      "eaId": "76201",
+      "ovr": 80,
+      "position": "CM",
+      "stats": [
+        73,
+        74,
+        76,
+        79,
+        74,
+        70
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/76201.png",
+        "gender": "female",
+        "name": "Ella Peddemors",
+        "fullName": "Ella Peddemors",
+        "ovr": 75,
+        "position": "CAM",
+        "alt": "",
+        "team": "VfL Wolfsburg",
+        "league": "GPFBL",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/NHTKpKpeoDgBFKpWA6zvJ/fa455a8a924554336ea7e935ebc35f52/l115998.png",
+        "teamId": "115998"
+      }
+    },
+    {
+      "names": [
+        "Kasper Jørgensen"
+      ],
+      "eaId": "247782",
+      "ovr": 78,
+      "position": "RB",
+      "stats": [
+        88,
+        74,
+        73,
+        74,
+        72,
+        82
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/9/247782.png",
+        "gender": "male",
+        "name": "Kasper Jørgensen",
+        "fullName": "Kasper Jørgensen",
+        "ovr": 69,
+        "position": "RM",
+        "alt": "",
+        "team": "LASK",
+        "league": "Ö. Bundesliga",
+        "nation": "Denmark",
+        "nationFlag": "https://drop-assets.ea.com/images/vGTihHbrmHA7rD8XdIYKB/f0408c9ddcf10274ba4c9b4d6b06c03e/f_13.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4sbRAlEWQAtulPwIpvMYwz/d2a946c04a752a5de5a3605435be047a/l252.png",
+        "teamId": "252"
+      }
+    }
+  ]
+};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8,TOTW_WEEK_9];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
