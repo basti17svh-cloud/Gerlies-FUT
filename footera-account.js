@@ -1397,10 +1397,8 @@
    $("footeraAccountSave").hidden=true;$("footeraAccountLoad").hidden=true;
    $("footeraSetPassword").textContent=logged||recovery?"Passwort festlegen / ändern":"Passwort vergessen";
    $("footeraAccountPassword").placeholder=guest?"Nach E-Mail-Bestätigung festlegen":"Mindestens 10 Zeichen";
-   if(logged){
-     try{$("footeraAccountCloud").textContent=cloudText(await cloudInfo(true))+(autoStatus?" · "+autoStatus:"")}
-     catch(e){$("footeraAccountCloud").textContent="Cloud nicht erreichbar: "+safeMessage(e)}
-   }else $("footeraAccountCloud").textContent="Cloud-Sicherung nach der Anmeldung verfügbar.";
+   // No cloud status request is needed to display the local-first account.
+   if($("footeraAccountCloud"))$("footeraAccountCloud").textContent="";
  }
  function show(){
    if(!dialog)return;
@@ -1469,7 +1467,7 @@
      '<p class="footera-save-hint">Footera speichert automatisch. Auf einem anderen Gerät einfach mit demselben Konto anmelden.</p></section>'+
      '<details class="footera-profile-fold" id="footeraProfileSettings"><summary>Einstellungen</summary><dl class="footera-profile-details"><div><dt>Benutzername</dt><dd id="footeraProfileUsernameValue">–</dd></div><div><dt>E-Mail</dt><dd id="footeraProfileEmail">–</dd></div><div><dt>Freundescode</dt><dd id="footeraProfileFriendCode">–</dd></div><div><dt>Vereins-ID</dt><dd id="footeraProfileSaveId">–</dd></div><div><dt>Anmeldung</dt><dd id="footeraProfileMethod">–</dd></div><div><dt>Registriert seit</dt><dd id="footeraProfileSince">–</dd></div></dl><button id="footeraProfileRename" class="footera-profile-quiet" type="button">Benutzername ändern</button><button id="footeraProfileChangeEmail" class="footera-profile-quiet" type="button">E-Mail-Adresse ändern</button><div id="footeraProfileEmailHost" hidden></div><button id="footeraProfilePassword" class="footera-profile-quiet" type="button">Passwort ändern</button><button id="footeraProfileSignOut" class="footera-profile-quiet" type="button">Auf diesem Gerät abmelden</button></details>'+
      '<details class="footera-profile-fold footera-profile-advanced" id="footeraProfileAdvanced"><summary>Erweitert</summary>'+
-     '<h4>Sicherungsdatei</h4><p>Nur für Notfälle: eine Kopie als Datei aufbewahren oder öffnen.</p><button id="footeraProfileExport" class="footera-profile-quiet" type="button">Sicherungsdatei herunterladen</button><button id="footeraProfileCloudRollback" class="footera-profile-quiet" type="button">Vorherigen Online-Stand als Datei sichern</button><button id="footeraProfileImport" class="footera-profile-quiet" type="button">Sicherungsdatei öffnen …</button><input id="footeraProfileImportFile" type="file" accept=".json,application/json" hidden><p id="footeraProfileFileFeedback" class="footera-profile-backup-feedback" role="status" aria-live="polite"></p><p id="footeraProfileBackupHint">Dateien ersetzen nur den Stand auf diesem Gerät.</p>'+
+     '<h4>Sicherungsdatei</h4><p>Nur für Notfälle: eine Kopie als Datei aufbewahren oder öffnen.</p><button id="footeraProfileExport" class="footera-profile-quiet" type="button">Sicherungsdatei herunterladen</button><button id="footeraProfileCloudRollback" class="footera-profile-quiet" type="button">Rückfallsicherung herunterladen</button><button id="footeraProfileImport" class="footera-profile-quiet" type="button">Sicherungsdatei öffnen …</button><input id="footeraProfileImportFile" type="file" accept=".json,application/json" hidden><p id="footeraProfileFileFeedback" class="footera-profile-backup-feedback" role="status" aria-live="polite"></p><p id="footeraProfileBackupHint">Dateien ersetzen nur den Stand auf diesem Gerät.</p>'+
      '<div class="footera-profile-danger"><small>KONTO LÖSCHEN</small><p>Entfernt deine Anmeldung, deinen Verein und Cloud-Spielstand sowie deine zugehörigen Online-Daten. Diese Aktion kann nicht rückgängig gemacht werden.</p><button id="footeraProfileDelete" type="button">Konto unwiderruflich löschen</button></div>'+
      '</details></section>';
    document.body.append(profilePage);
