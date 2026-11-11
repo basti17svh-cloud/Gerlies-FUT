@@ -200,4 +200,5 @@ test('every POTM month is complete data with its own label, 28-day window and a 
   const entry=portraits.find(p=>r.face===`assets/footera/events/potm/${p.folder}/${p.file}`);assert.ok(entry,r.id+' portrait in scripts/potm-portraits.json');assert.equal(entry.pid,r.pid);
  }
  assert.ok(source.includes('POTM · ${esc(r.month)}')&&!source.includes('POTM · SEPTEMBER'));
+ assert.ok(!source.includes('· September<'),'detail header uses the release month');
 });
