@@ -178,5 +178,15 @@
     "overall": 85,
     "club": "Orlando City",
     "source": "https://game-assets.fut.gg/2027/player-item/27-50526413.1ee3a9d6b0cd1ecc551d06d04495de84305d1ee175ab8f24f01d654256aa2a3d.webp"
+  },
+  {
+    "name": "Rafael Leão",
+    "id": "241721",
+    "game": 27,
+    "item": 67350585,
+    "file": "241721.png",
+    "overall": 87,
+    "club": "Galatasaray",
+    "source": "https://game-assets.fut.gg/2027/player-item/27-67350585.97775dc9e8a30ea9ba19d97cdfe4bf8813e8ddf99cd9baff82bc4cc4f8366937.webp"
   }
 ]
