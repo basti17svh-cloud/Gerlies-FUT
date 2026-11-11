@@ -130,6 +130,19 @@
     "scheduled": true
   },
   {
+    "id": "2026-11-11-1900-totw-9",
+    "postAt": "2026-11-11T19:00:00+01:00",
+    "title": "TOTW 9",
+    "kind": "totw",
+    "plan": {
+      "instagram": "reel",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
     "id": "2026-11-13-1300-letzte-chance-bryan-mbeumo",
     "postAt": "2026-11-13T13:00:00+01:00",
     "title": "Letzte Chance: die SBC Bryan Mbeumo 88",

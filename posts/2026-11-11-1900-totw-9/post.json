@@ -1,0 +1,42 @@
+{
+  "kind": "totw",
+  "theme": "totw",
+  "postAt": "2026-11-11T19:00:00+01:00",
+  "title": "TOTW 9",
+  "keys": [
+    "totw:1794420000000"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🚨 TOTW 9 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇯🇲 91 Khadija Shaw\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 89 Alessia Russo\n🇺🇸 89 Trinity Rodman\n🇩🇪 89 Joshua Kimmich\n🇩🇪 88 Ann-Katrin Berger\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "type": "reel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "TOTW 9 ist da 🚨",
+    "caption": "🚨 TOTW 9 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇯🇲 91 Khadija Shaw\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 89 Alessia Russo\n🇺🇸 89 Trinity Rodman\n🇩🇪 89 Joshua Kimmich\n🇩🇪 88 Ann-Katrin Berger\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🚨 TOTW 9 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇯🇲 91 Khadija Shaw\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 89 Alessia Russo\n🇺🇸 89 Trinity Rodman\n🇩🇪 89 Joshua Kimmich\n🇩🇪 88 Ann-Katrin Berger\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "reel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-11-1900-totw-9",
+  "media": {
+    "feed": [
+      "feed-1.jpg",
+      "feed-2.jpg"
+    ],
+    "story": [
+      "story-1.jpg",
+      "story-2.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}
