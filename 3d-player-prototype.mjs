@@ -8,6 +8,7 @@ import {sampleGlbBodyMotion} from './3d-glb-motion.mjs?v=2175';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
+import {athleticBody,athleticSeed} from './3d-athletic-body.mjs?v=21391';
 import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21369';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
@@ -646,6 +647,20 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   apply.add('spine_02',pitch*.35,yaw*.22,bank*.24);
   apply.add('spine_03',pitch*.25,yaw*.18,bank*.16);
  }
+ // V21.391 (off with footera-3d-lively=0): lean, shoulder turn against the
+ // hips, a real arm pump and a living stance on top of the captured gait.
+ let livelyOn=true;try{livelyOn=globalThis.localStorage?.getItem('footera-3d-lively')!=='0'}catch(_){}
+ const livelySeed=athleticSeed(name),lively={};
+ function athleticLayer(info,share){
+  const b=athleticBody(frameTime,info.speed,info.stride||0,livelySeed,lively),w=share;
+  apply.add('pelvis',0,b.pelvisYaw*w,b.pelvisRoll*w);
+  apply.add('spine_01',b.spinePitch*.4*w,b.spineYaw*.2*w,b.spineRoll*.4*w);
+  apply.add('spine_02',b.spinePitch*.35*w,b.spineYaw*.3*w,b.spineRoll*.35*w);
+  apply.add('spine_03',b.spinePitch*.25*w,b.spineYaw*.5*w,b.spineRoll*.25*w);
+  apply.add('Head',b.headPitch*w,b.headYaw*w,b.headRoll*w);
+  apply.add('upperarm_l',b.armPitch[0]*w,0,0);apply.add('upperarm_r',b.armPitch[1]*w,0,0);
+  apply.add('lowerarm_l',b.elbow[0]*w,0,0);apply.add('lowerarm_r',b.elbow[1]*w,0,0);
+ }
  function animate(time=0,info={}){
   const driver=existingDriver,keeperRole=info.role==='keeper';
   frameTime=Number.isFinite(time)?time:0;
@@ -732,6 +747,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const gaitShare=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
    clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
   if(gaitShare>.001){gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);leanIntoTurn(info,gaitShare)}
+  const livelyShare=livelyOn&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
+   clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
+  if(livelyShare>.001)athleticLayer(info,livelyShare);
   if(!acro||acro.weight<.5)matchFeet();
   // V21.297: the captured stride owns the swinging leg (knee drive, heel
   // kick); the standing leg stays on its planted IK boot, so the hips never
