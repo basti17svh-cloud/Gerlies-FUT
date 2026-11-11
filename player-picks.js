@@ -38,6 +38,8 @@
   if(!base)return;
   const item=makeMidIconItem(base,false);item.acquisitionSource='icon-pick';item.rare=true;
   state.club.push(item);
+  state.iconPickClaims=state.iconPickClaims||{};
+  state.iconPickClaims[pick.id]={selectedId:base.id,claimedAt:Date.now()};
   state.iconPicks=iconPicks().filter(p=>p.id!==pick.id);
   save();if(typeof flushSave==='function')flushSave();
   closeUiLayer('playerPickModal','player-pick');offer=null;selected='';
