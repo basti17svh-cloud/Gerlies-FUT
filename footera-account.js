@@ -415,6 +415,15 @@
    return false;
   }
   const upload=remote?.save_data?mergeUnclaimedIconPicks(local,remote.save_data):local;
+  const point=syncPoint(u);
+  // A device without changes since its last backup has nothing new to save.
+  // Never let it replace newer online progress written by another device.
+  if(upload===local&&remote?.save_data&&point?.saveId===local.profile?.saveId&&
+     point.revision!==remote.revision&&pointMatches(point,local)&&
+     !structurallyEqual(local,remote.save_data)){
+   autoStatus="";
+   return false;
+  }
   if(remote?.save_data){
    // Never overwrite a server-confirmed purchase or reward missing locally.
    try{checkProtectedCloudRewards(upload,remote.save_data)}
@@ -591,7 +600,7 @@
      &&String(c.wins??'')===String(r.wins??'')&&String(c.division??'')===String(r.division??'')
      &&String(c.milestone??'')===String(r.milestone??'')&&String(c.rank??'')===String(r.rank??'')
      &&c.reward?.playerPicks?.length)))
-     throw Error("Deine Pick-Belohnung ist lokal gesichert, aber noch nicht in der Cloud bestätigt. Bitte im Profil den Cloud-Konflikt lösen und hier erneut aktualisieren.");
+     throw Error("Deine Pick-Belohnung ist lokal gesichert, aber noch nicht in der Cloud bestätigt. Bitte später hier erneut aktualisieren.");
  }
  // Compact delivery sends only the chosen option and expected revision. The
  // synchronized cloud is the server's base; a lost response replays one receipt.
