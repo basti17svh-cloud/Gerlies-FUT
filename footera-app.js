@@ -2902,7 +2902,7 @@ const BLACKFRIDAY_TEAM2_EVENT={id:"blackfriday-2026-team2",name:"BLACK FRIDAY",s
  {pid:"248165",dynamicFace:"assets/footera/events/blackfriday/dynamic/248165.webp",name:"Andrei Rațiu",ovr:83,position:"RB",baseOvr:80,team:"Rayo Vallecano",league:"LALIGA EA SPORTS",nation:"Romania",alt:"RM,RW",stats:[98, 71, 78, 85, 78, 75],playstylePlusAdds:["rapid"]},
  {pid:"207865",dynamicFace:"assets/footera/events/blackfriday/dynamic/207865.webp",name:"Marquinhos",ovr:89,position:"CB",baseOvr:87,team:"Paris SG",league:"Ligue 1 McDonald's",nation:"Brazil",alt:"",stats:[78, 59, 79, 77, 92, 85],playstylePlusAdds:["anticipate"]},
  {pid:"262138",dynamicFace:"assets/footera/events/blackfriday/dynamic/262138.webp",name:"Castello Lukeba",ovr:84,position:"CB",baseOvr:81,team:"RB Leipzig",league:"Bundesliga",nation:"France",alt:"LB",stats:[83, 47, 74, 78, 86, 80],playstylePlusAdds:["intercept"]},
- {pid:"241736",dynamicFace:"assets/footera/events/blackfriday/dynamic/241736.webp",name:"Yann Aurel Bisseck",ovr:82,position:"CB",baseOvr:78,team:"Inter",league:"Serie A Enilive",nation:"Germany",alt:"",stats:[83, 62, 69, 77, 82, 85],playstylePlusAdds:["bruiser"]},
+ {pid:"273906",dynamicFace:"assets/footera/events/blackfriday/dynamic/273906.webp",name:"Renato Veiga",ovr:82,position:"CB",baseOvr:78,team:"Villarreal CF",league:"LALIGA EA SPORTS",nation:"Portugal",alt:"",stats:[82, 64, 76, 76, 82, 85],playstylePlusAdds:["bruiser"]},
  {pid:"209499",dynamicFace:"assets/footera/events/blackfriday/dynamic/209499.webp",name:"Fabinho",ovr:84,position:"CDM",baseOvr:82,team:"Trabzonspor",league:"Trendyol Süper Lig",nation:"Brazil",alt:"CM,CB",stats:[54, 72, 80, 78, 84, 87],playstylePlusAdds:["intercept"]},
  {pid:"239837",dynamicFace:"assets/footera/events/blackfriday/dynamic/239837.webp",name:"Alexis Mac Allister",ovr:86,position:"CM",baseOvr:84,team:"Liverpool",league:"Premier League",nation:"Argentina",alt:"CDM",stats:[64, 84, 86, 85, 80, 77],playstylePlusAdds:["tiki-taka"]},
  {pid:"239807",dynamicFace:"assets/footera/events/blackfriday/dynamic/239807.webp",name:"Davide Frattesi",ovr:83,position:"CM",baseOvr:80,team:"SS Lazio",league:"Serie A Enilive",nation:"Italy",alt:"CAM",stats:[84, 81, 82, 84, 77, 78],playstylePlusAdds:["relentless"]},
@@ -10223,7 +10223,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.390";
+const GFUT_BUILD="V21.392";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10281,7 +10281,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21390",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21392",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
