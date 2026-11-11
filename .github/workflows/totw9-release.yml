@@ -1,0 +1,46 @@
+name: Prepare approved TOTW 9 release
+on:
+  push:
+    branches: ['release/totw9-20261111']
+    paths: ['.github/workflows/totw9-release.yml']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import approved roster and genuine portraits
+        run: |
+          git fetch origin content/totw9-poster-20261111
+          git checkout FETCH_HEAD -- assets/footera/totw/9 assets/footera/social/totw9-2026-11-11.png scripts/totw9-week.json scripts/totw-portraits-9.json
+          python scripts/release-totw9.py
+          cat scripts/totw9-release-test-fragment.txt >> tests/totw-rules.test.cjs
+          node scripts/build-pick-catalog.cjs
+      - name: Validate release rules and server catalog
+        run: node --test tests/totw-rules.test.cjs tests/totw5-release.test.cjs tests/live-content.test.cjs
+      - name: Install isolated browser
+        run: |
+          npm install --prefix /tmp/footera-totw-browser playwright@1.51.1
+          /tmp/footera-totw-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check TOTW 9 mobile preview and offline PWA
+        env:
+          NODE_PATH: /tmp/footera-totw-browser/node_modules
+          TOTW_PREVIEW_WEEK: '9'
+        run: node tests/totw5-preview.browser.cjs
+      - name: Commit verified release
+        run: |
+          git config user.name 'Footera Release Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add footera-app.js index.html service-worker.js scripts/totw-current.json scripts/totw9-week.json scripts/totw-portraits-9.json online/footera-pick-catalog.sql tests/totw-rules.test.cjs assets/footera/totw/9 assets/footera/social/totw9-2026-11-11.png
+          git commit -m 'Release approved mixed TOTW 9 for 11 November 19:00 Berlin'
+          git push origin HEAD
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: totw9-release-check
+          path: test-artifacts/totw9-preview-*.png

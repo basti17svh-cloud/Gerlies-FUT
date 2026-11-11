@@ -1,0 +1,30 @@
+
+test('TOTW 9 release is approved and gated at 19:00 Berlin on 11 November with the approved mixed roster',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===9);
+ assert.ok(week);assert.equal(week.sourceStatus,'admin-approved');
+ assert.equal(c.totwRosterErrors(week).join(', '),'');
+ assert.equal(week.players.length,18);
+ assert.equal(week.players.filter(p=>p.fallback.gender==='female').length,6);
+ assert.equal(new Set(week.players.map(p=>p.fallback.team)).size,18);
+ const chosen=new Set(week.players.map(p=>p.eaId));
+ for(const previous of c.WEEKS.filter(w=>[7,8].includes(w.id)))
+  assert.ok(previous.players.every(p=>!chosen.has(p.eaId)));
+ assert.equal(c.activeTotwWeek(new Date('2026-11-11T17:59:59Z'))?.id,8);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-11T18:00:00Z'))?.id,9);
+ assert.equal(c.latestPublishedTotw(new Date('2026-11-11T17:59:59Z'))?.id,8);
+ assert.equal(c.latestPublishedTotw(new Date('2026-11-11T18:00:00Z'))?.id,9);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-18T17:59:59Z'))?.id,9);
+ assert.notEqual(c.activeTotwWeek(new Date('2026-11-18T18:00:00Z'))?.id,9);
+ const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
+ const rows=sql.split('\n').filter(line=>line.startsWith("('totw:9:"));
+ assert.equal(rows.length,week.players.filter(p=>p.ovr>=84).length);
+ for(const p of week.players){
+  assert.ok(fs.existsSync(path.join(root,p.fallback.face)));
+  assert.ok(fs.readFileSync(path.join(root,'service-worker.js'),'utf8').includes(JSON.stringify(p.fallback.face)));
+  if(p.ovr>=84){
+   const row=rows.find(r=>r.startsWith("('totw:9:"+p.eaId+"'"));
+   assert.ok(row);assert.ok(row.includes("'2026-11-11 19:00'::timestamp at time zone 'Europe/Berlin'"));
+   assert.ok(row.includes('"eventStats":'+JSON.stringify(p.stats)));
+  }
+ }
+});
