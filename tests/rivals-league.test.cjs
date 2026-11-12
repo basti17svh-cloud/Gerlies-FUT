@@ -128,7 +128,7 @@ test('page wiring: script after friends hub, panels, reward centre and cache ent
  assert.match(html,/id="rvLeague"/);assert.match(html,/id="friendsLeague"/);
  assert.match(sw,/"\.\/rivals-league\.js\?v=21352"/);assert.match(sw,/"\.\/rivals-league\.css\?v=21337"/);
  assert.match(sw,/"\.\/weekly-rewards\.js\?v=21333"/);assert.match(html,/weekly-rewards\.js\?v=21333/);
- assert.match(sw,/"\.\/competition-system\.js\?v=21395"/);assert.match(html,/competition-system\.js\?v=21395/);
+ assert.match(sw,/"\.\/competition-system\.js\?v=21396"/);assert.match(html,/competition-system\.js\?v=21396/);
  assert.match(rewards,/league:"Rivals-Freundesliga"/);
  assert.match(read('online/footera-rivals-league-v21.337.sql'),/footera_rivals_league_board/);
 });
