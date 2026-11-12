@@ -1,4 +1,4 @@
-// V21.400 Footera Kurier: after every match a "tomorrow's newspaper" front page about the game.
+// V21.400 Footera Kurier (V21.402 dark mode): after every match a "tomorrow's newspaper" front page about the game.
 // Headline, scorers, story, player of the match with his card, Kurier grades and a coach quote. Shareable as a picture.
 // Read-only: everything comes from the finished `match` object; nothing in the save changes.
 (function(root){
@@ -162,24 +162,25 @@
   const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d"),st=story(f);
   try{await document.fonts?.ready}catch(e){}
   const SERIF="Georgia,'Times New Roman',serif",SANS="Inter,system-ui,sans-serif",F=(w,px,fam=SANS)=>`${w} ${px}px ${fam}`;
-  g.fillStyle="#f3ecdc";g.fillRect(0,0,W,H);
-  g.fillStyle="#1a1712";g.textAlign="left";g.font=F(700,24);g.fillText(`AUSGABE NR. ${no}`,70,78);g.textAlign="right";g.fillText(up(dateLine(at)),W-70,78);
-  g.textAlign="center";g.font=F(900,104,SERIF);g.fillText("FOOTERA KURIER",W/2,190,W-120);
-  g.fillRect(70,215,W-140,6);g.fillRect(70,229,W-140,2);
-  g.fillStyle="#b3121f";g.font=F(900,30);g.fillText(up(st.kicker),W/2,288);
-  g.fillStyle="#111";g.font=F(900,78,SERIF);let y=370;for(const line of wrap(g,st.title,W-140).slice(0,3)){g.fillText(line,W/2,y,W-140);y+=84}
-  g.fillStyle="#3a342b";g.font=F(500,34,SERIF);for(const line of wrap(g,st.sub,W-180).slice(0,2)){g.fillText(line,W/2,y+6);y+=44}
-  y+=26;g.fillStyle="#111";g.fillRect(70,y,W-140,150);
+  g.fillStyle="#0e1411";g.fillRect(0,0,W,H);{const glow=g.createRadialGradient(W/2,0,40,W/2,0,H*.7);glow.addColorStop(0,"rgba(255,77,94,.16)");glow.addColorStop(1,"rgba(255,77,94,0)");g.fillStyle=glow;g.fillRect(0,0,W,H)}
+  g.fillStyle="#a9b3ad";g.textAlign="left";g.font=F(700,24);g.fillText(`AUSGABE NR. ${no}`,70,78);g.textAlign="right";g.fillText(up(dateLine(at)),W-70,78);
+  g.textAlign="center";g.fillStyle="#fff";g.font=F(900,104,SERIF);g.fillText("FOOTERA KURIER",W/2,190,W-120);
+  g.fillStyle="#e8e2d4";g.fillRect(70,215,W-140,6);g.fillRect(70,229,W-140,2);
+  g.fillStyle="#ff4d5e";g.font=F(900,30);g.fillText(up(st.kicker),W/2,288);
+  g.fillStyle="#fff";g.font=F(900,78,SERIF);let y=370;for(const line of wrap(g,st.title,W-140).slice(0,3)){g.fillText(line,W/2,y,W-140);y+=84}
+  g.fillStyle="#b9c4be";g.font=F(500,34,SERIF);for(const line of wrap(g,st.sub,W-180).slice(0,2)){g.fillText(line,W/2,y+6);y+=44}
+  y+=26;g.fillStyle="#050807";g.fillRect(70,y,W-140,150);g.strokeStyle="#2c3a33";g.lineWidth=2;g.strokeRect(70,y,W-140,150);
   g.fillStyle="#f3ecdc";g.font=F(900,92);g.fillText(`${f.gh} : ${f.ga}`,W/2,y+108);
   g.font=F(800,30);g.textAlign="left";g.fillText(f.home,100,y+88,300);g.textAlign="right";g.fillText(f.away,W-100,y+88,300);
   y+=190;
-  const cardW=300,hasCard=!!f.potm?.row?.base&&!!root.FooteraShare?.drawCard;
+  const bottom=H-150,cardW=Math.max(170,Math.min(300,Math.floor((bottom-y-50)/1.43))),hasCard=!!f.potm?.row?.base&&!!root.FooteraShare?.drawCard;
   const textX=hasCard?70+cardW+40:70,textW=W-70-textX;
-  if(hasCard){await drawCardAt(f.potm.row,70,y,cardW);g.fillStyle="#3a342b";g.textAlign="center";g.font=F(700,24);g.fillText(`${f.potm.name} · Note ${f.potm.rating.toFixed(1)}`,70+cardW/2,y+cardW*1.43+36,cardW+20)}
-  g.textAlign="left";g.fillStyle="#1a1712";g.font=F(500,31,SERIF);let ty=y+30;
-  for(const p of st.article){for(const line of wrap(g,p,textW)){if(ty>H-170)break;g.fillText(line,textX,ty);ty+=42}ty+=16}
-  g.fillStyle="#111";g.fillRect(70,H-120,W-140,3);g.textAlign="center";g.font=F(900,32);g.fillText("FOOTERA – BUILD YOUR ERA",W/2,H-70);
-  g.fillStyle="#5a5246";g.font=F(600,24);g.fillText("Insta @official_footera · TikTok @footera_official",W/2,H-32);
+  if(hasCard){await drawCardAt(f.potm.row,70,y,cardW);g.fillStyle="#9fb0a8";g.textAlign="center";g.font=F(700,24);g.fillText(`${f.potm.name} · Note ${f.potm.rating.toFixed(1)}`,70+cardW/2,y+cardW*1.43+36,cardW+20)}
+  g.textAlign="left";g.fillStyle="#e8e2d4";g.font=F(500,31,SERIF);let ty=y+30;
+  // Only whole paragraphs, never a sentence cut off at the bottom.
+  for(const p of st.article){const lines=wrap(g,p,textW);if(ty+(lines.length-1)*42>bottom)break;for(const line of lines){g.fillText(line,textX,ty);ty+=42}ty+=16}
+  g.fillStyle="#e8e2d4";g.fillRect(70,H-120,W-140,3);g.textAlign="center";g.font=F(900,32);g.fillText("FOOTERA – BUILD YOUR ERA",W/2,H-70);
+  g.fillStyle="#9fb0a8";g.font=F(600,24);g.fillText("Insta @official_footera · TikTok @footera_official",W/2,H-32);
   async function drawCardAt(row,x,cy,width){
    const host=document.createElement("div");host.className="footera-share-stage";host.setAttribute("aria-hidden","true");
    try{host.innerHTML=cardFor({row});document.body.append(host);
