@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "name": "mbappe",
+      "itemId": 151226691,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p151226691.png",
+      "asset": "mbappe.png",
+      "bytes": 210299,
+      "sha256": "4ccc3c92f8934fbfe75afce35ca873ac73639a0346f395e8635ab15755f730b2"
+    }
+  ]
+}

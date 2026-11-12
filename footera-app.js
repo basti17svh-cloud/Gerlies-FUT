@@ -3956,7 +3956,7 @@ function portraitBounds(el){
   // Unreadable cross-origin file: square files are EA head crops with the usual margins.
   if(Math.abs(w-h)<=Math.max(w,h)*.02)box={x0:.14,y0:.09,x1:.86,y1:1};
  }}
- PORTRAIT_BOUNDS.set(url,box);return box;
+ if(w&&h)PORTRAIT_BOUNDS.set(url,box);return box;
 }
 function fitCardPortrait(el){
  if(!el?.closest?.('.card-shell .face')||el.closest('.founder-shell'))return;
@@ -3967,10 +3967,12 @@ function fitCardPortrait(el){
  // Rendered file inside the face box (object-fit:contain, anchored bottom centre).
  const fit=Math.min(fw/nw,fh/nh),dw=nw*fit,dh=nh*fit,ox=(fw-dw)/2,oy=fh-dh;
  const bx0=ox+b.x0*dw,bx1=ox+b.x1*dw,by0=oy+b.y0*dh,by1=oy+b.y1*dh,bw=bx1-bx0,bh=by1-by0;
- // Fill the box height; wide shots may overflow the sides a little (clipped like a card window).
- const k=Math.max(1,Math.min(1.6,fh*.9/bh,fw*1.12/bw));
- // Scale about the box bottom centre, then put the figure's bottom on the box bottom, centred.
- const tx=fw/2-(fw/2+k*((bx0+bx1)/2-fw/2)),ty=fh-(fh+k*(by1-fh));
+ // POTM art (full EA action cut-outs) fills the box like the EA card: the figure may run a little past the bottom
+ // behind the name bar and overflow the sides. Every other portrait keeps the original fit (fill the height, bottom-aligned).
+ const potmArt=/\/events\/potm\//.test(String(el.currentSrc||el.src||''));
+ const k=potmArt?Math.max(1,Math.min(2.2,fh*1.02/bh,fw*1.45/bw)):Math.max(1,Math.min(1.6,fh*.9/bh,fw*1.12/bw));
+ // Scale about the box bottom centre, centre the figure, bottom on the box bottom (POTM: top kept just under the box top).
+ const tx=fw/2-(fw/2+k*((bx0+bx1)/2-fw/2)),tyBottom=fh-(fh+k*(by1-fh)),ty=potmArt?Math.max(tyBottom,fh*.05-(fh+k*(by0-fh))):tyBottom;
  if(k<1.015&&Math.abs(tx)<1&&Math.abs(ty)<1){el.style.removeProperty('transform');return}
  el.style.setProperty('transform-origin','50% 100%','important');
  el.style.setProperty('transform',`translate(${(tx/fw*100).toFixed(2)}%,${(ty/fh*100).toFixed(2)}%) scale(${k.toFixed(3)})`,'important');
@@ -10223,7 +10225,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.393";
+const GFUT_BUILD="V21.394";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10281,7 +10283,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21393",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21394",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

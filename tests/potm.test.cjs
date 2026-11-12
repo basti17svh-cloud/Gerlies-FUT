@@ -22,16 +22,16 @@ function app(saved){
 }
 
 test('published POTMs apply Early Bird prices except Gross with unchanged eligibility and 28-day UTC windows',()=>{
- const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.eaTarget,r.target,r.minRating]),[['247827',91,700000,294000,45],['190765',84,18750,13125,45],['233419',89,1300000,546000,45],['231447',85,90000,37800,45]]);
+ const {potm}=app();assert.deepEqual(Array.from(potm.releases,r=>[r.pid,r.ovr,r.eaTarget,r.target,r.minRating]),[['247827',91,700000,294000,45],['190765',84,18750,13125,45],['233419',89,1300000,546000,45],['231447',85,90000,37800,45],['231747',92,5200000,3640000,45]]);
  for(const r of potm.releases){assert.equal(Date.parse(r.until)-Date.parse(r.from),28*86400000);assert.equal(potm.isActive(r,Date.parse(r.from)-1),false);assert.equal(potm.isActive(r,Date.parse(r.from)),true);assert.equal(potm.isActive(r,Date.parse(r.until)-1),true);assert.equal(potm.isActive(r,Date.parse(r.until)),false);assert.ok(r.stats.length===6&&r.stats.every(n=>n>0&&n<=99))}
- assert.equal(potm.activeSBCs(new Date('2026-10-04')).length,4);assert.equal(potm.activeSBCs(new Date('2026-10-31')).length,0);assert.ok(potm.activeSBCs(new Date('2026-10-04')).every(r=>r.scoreSbc&&r.once));assert.equal(potm.releases.some(r=>r.theme==='ligue-1'),false);
+ assert.equal(potm.activeSBCs(new Date('2026-10-04')).length,4);assert.equal(potm.activeSBCs(new Date('2026-10-31')).length,0);assert.equal(potm.activeSBCs(new Date('2026-11-12T17:59:59Z')).length,0);assert.deepEqual(Array.from(potm.activeSBCs(new Date('2026-11-12T18:00:00Z')),r=>r.id),['potm-2026-10-mbappe']);assert.ok(potm.activeSBCs(new Date('2026-10-04')).every(r=>r.scoreSbc&&r.once));assert.equal(potm.releases.some(r=>r.theme==='ligue-1'),false);
 });
 test('published EA OVR table handles every boundary and rejects invalid ratings',()=>{
  const {potm}=app();for(const [r,points] of [[44,0],[45,20],[64,20],[65,35],[74,35],[75,90],[83,410],[84,830],[85,2100],[86,4100],[87,5500],[88,8300],[89,11000],[90,14000],[91,19000],[92,20000],[93,25000],[94,30000],[95,40000],[96,55000],[97,85000],[98,90000],[99,100000],[100,0],[84.5,0],[NaN,0]])assert.equal(potm.scoreForRating(r),points,String(r));
 });
 test('Early Bird takes 40 percent off current Footera prices while Gross remains unchanged',()=>{
  const {potm}=app();
- assert.deepEqual(Array.from(potm.releases,r=>[r.standardTarget,r.earlyBird,r.target]),[[490000,true,294000],[13125,false,13125],[910000,true,546000],[63000,true,37800]]);
+ assert.deepEqual(Array.from(potm.releases,r=>[r.standardTarget,r.earlyBird,r.target]),[[490000,true,294000],[13125,false,13125],[910000,true,546000],[63000,true,37800],[3640000,false,3640000]]);
 });
 test('previous partial submissions reaching an Early Bird target claim without more cards',()=>{
  for(const index of [0,2,3]){
@@ -200,4 +200,5 @@ test('every POTM month is complete data with its own label, 28-day window and a 
   const entry=portraits.find(p=>r.face===`assets/footera/events/potm/${p.folder}/${p.file}`);assert.ok(entry,r.id+' portrait in scripts/potm-portraits.json');assert.equal(entry.pid,r.pid);
  }
  assert.ok(source.includes('POTM · ${esc(r.month)}')&&!source.includes('POTM · SEPTEMBER'));
+ assert.ok(!source.includes('· September<'),'detail header uses the release month');
 });
