@@ -40,6 +40,10 @@ test('Team 1 tops out at 91 and Team 2 stays mostly affordable (82-89)',()=>{
  assert.ok(two.filter(r=>r<=84).length>=11,'most of Team 2 is affordable');
 });
 
+// Basti 2026-11-12: Bisseck may keep his Black Friday Team 2 card although TOTW 9
+// (11.11.) is under five weeks earlier. Only this player and this TOTW week.
+const FIVE_WEEK_EXCEPTIONS=[{pid:'241736',from:'Team of the Week 9'}];
+const allowedRecent=(p,from)=>FIVE_WEEK_EXCEPTIONS.some(x=>x.pid===String(p.pid)&&x.from===from);
 const bfCards=c=>[
  ...['BLACKFRIDAY_EVENT','BLACKFRIDAY_TEAM2_EVENT','BLACKFRIDAY_SUNDAY_SBC_EVENT'].flatMap(k=>{const ev=c[k];return[...ev.players.map(p=>({p,start:ev.activeFrom})),...(ev.sbcPlayer?[{p:ev.sbcPlayer,start:ev.sbcPlayer.releaseAt}]:[])]}),
  ...c.EVENT_OBJECTIVES.filter(t=>t.eventType==='blackfriday-objective').map(t=>({p:t.player,start:t.activeFrom}))
@@ -54,7 +58,7 @@ test('nobody had a TOTW, POTM or promo card in the five weeks before their Black
  for(const m of fs.readFileSync(path.join(root,'potm.js'),'utf8').matchAll(/pid:"(\d+)",name:"([^"]+)".*?ovr:(\d+).*?stats:\[([^\]]+)\].*?from:"([^"]+)"/g))promos.push({ids:[m[1]],names:[norm(m[2])],from:'POTM',at:at(m[5]),ovr:Number(m[3]),stats:m[4].split(',').map(Number),gk:false});
  for(const {p,start} of cards){
   const hits=promos.filter(r=>r.ids.includes(String(p.pid))||r.names.includes(norm(p.name)));
-  const recent=hits.find(r=>r.at<=at(start)+864e5&&at(start)-r.at<five);
+  const recent=hits.find(r=>r.at<=at(start)+864e5&&at(start)-r.at<five&&!allowedRecent(p,r.from));
   assert.equal(recent,undefined,`${p.name} already had a ${recent?.from} card`);
   // A Black Friday card must beat every earlier special card of the same player.
   for(const old of hits.filter(r=>r.at<at(start))){
@@ -69,7 +73,7 @@ test('TOTW weeks around Black Friday never pick a Black Friday player (five week
  const c=setup(),five=35*864e5,cards=bfCards(c);
  for(let n=1;c['TOTW_WEEK_'+n];n++){
   const w=c['TOTW_WEEK_'+n],released=at(w.releaseDate+'T19:00:00+01:00'),ids=new Set(w.players.map(x=>String(x.eaId)));
-  for(const {p,start} of cards)if(released<=at(start)&&at(start)-released<five)assert.ok(!ids.has(String(p.pid)),`TOTW ${n} must not contain ${p.name}`);
+  for(const {p,start} of cards)if(released<=at(start)&&at(start)-released<five&&!allowedRecent(p,w.name))assert.ok(!ids.has(String(p.pid)),`TOTW ${n} must not contain ${p.name}`);
  }
 });
 
