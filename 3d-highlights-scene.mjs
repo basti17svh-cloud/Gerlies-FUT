@@ -14,7 +14,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21301';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21252';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21382';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
@@ -56,6 +56,9 @@ import {isContactDemo,stagedDefenderPosition,stagedBallPosition,applyContactStag
 import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACKING_VERSION} from './3d-defender-tracking.mjs?v=21301';
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
+// V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
+import {createArena} from './3d-arena.mjs?v=21382';
+export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21341';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
 
@@ -1059,7 +1062,7 @@ export function playerPosition(index,time,type='goal',sequence='central',placeme
 }
 export function makeScene(renderer,event,weak=false,high=false,mobileStandard=false,baselineRig=false,pilotMotion=false,allowImported=true,modelVariant='quaternius'){
  const enhancedRigMotion=!baselineRig&&!(typeof window!=='undefined'&&window.__FOOTERA_V2137_BASELINE===true);
- const spooky=halloweenNight();
+ const spooky=halloweenNight(),arenaOn=footeraArenaWanted();
  const scene=new THREE.Scene();scene.background=new THREE.Color(spooky?'#0b0714':'#16262b');scene.fog=spooky?new THREE.Fog('#160c20',120,262):new THREE.Fog('#1b2d31',148,286);
  const camera=new THREE.PerspectiveCamera(28,1,.5,350);
  const resources=new Set(),track=o=>(resources.add(o),o);
@@ -1217,7 +1220,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const pixels=ctx.createImageData(w,h),data=pixels.data;
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const wx=x/w*78-39,wz=(1-y/h)*119-59.5,inside=Math.abs(wx)<34&&Math.abs(wz)<52.5;
-    const stripe=inside?(Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
+    const stripe=inside?(arenaOn?0:Math.floor((wz+52.5)/7.5)%2?5:-5):-9;
     const broad=Math.sin(x*.018+y*.011)*1.0+Math.sin(y*.053-x*.021)*1.1;
     const fibre=(hash(y*w+x)-.5)*10,tuft=(hash(Math.floor(x/5)+Math.floor(y/5)*211)-.5)*2.4;
     const wear=Math.exp(-((Math.abs(wz)-50.2)**2/6+wx*wx/22))*4;
@@ -1683,6 +1686,10 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.340: weather per match (snow, rain or clear), presentation only.
   const weather=createStadiumWeather(THREE,{scene,field,renderer,camera,weather:sceneWeatherFor(event),weak,high,track,spooky,pitch,hemi,sun,fill,ballMaterial:ballSurface.material,
    ballAt:ceremony?null:t=>eventBallPosition(event.type,t),actors:()=>weatherActors()});
+  // V21.382: the arena reads the weather's sky and fog, so it comes second.
+  const arenaActors=[...players.map(p=>p.root),keeper.root];
+  const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,
+   actors:()=>arenaActors,goalAt:event.type==='goal'&&!ceremony?netArrival:null,hash})):null;
   // Breath clouds start at the real head bone when the GLB squad is shown.
   let weatherActorCache=null;
   function weatherActors(){
@@ -1919,7 +1926,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
-   weather.update(time);
+   weather.update(time);arena?.update(time,camera);
    renderer.render(scene,camera);
   }
   // V21.296: the two side huggers lay an arm round the scorer, the
@@ -2504,7 +2511,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
-   weather.update(time);
+   weather.update(time);arena?.update(time,camera);
    renderer.render(scene,camera);
   }
   function reduceQuality(){
@@ -2594,7 +2601,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     riggedBones:players[0].skinned?.bones||0,
     riggedVertices:players[0].skinned?.vertexCount||0,
     skeletonClip:players[0].skeletonMotion?.clip.name||'',
-    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect,eventBallPosition(event.type,renderTime))?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
+    defensiveRoles:defensiveUnit?.roles||null,playerPositions:players.map(p=>[p.root.position.x,p.root.position.z]),defenderAction,keeperAction,defenderIndex,defenderMotion:defensiveMotion(defenderAction,renderTime,defenderIndex,defenderIndex),keeperReaction:eventKeeperPose(event.type,renderTime,finish,sequence,keeperAction),facing,supportFootClearance,controlCarrier:control.index,controlWeight:control.weight,ballToCarrier:control.index<0||!players[control.index]?null:Math.hypot(ball.position.x-players[control.index].root.position.x,ball.position.z-players[control.index].root.position.z),direction,sequence,finish,cameraPhase:currentCameraPhase,cameraShot:celebrationActive&&renderTime>=CELEBRATION_CUT?'scorer-close-up':extended&&extendedSetPieceCamera(sequence,renderTime,direction,camera.aspect,eventBallPosition(event.type,renderTime))?'set-piece':'broadcast',camera:camera.position.toArray(),cameraTarget:camTarget.toArray(),cameraDistance:camera.position.distanceTo(camTarget),visibleFieldPlayers:visible,fieldPlayers:players.length,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:weak?'low':high?'high':'standard',arena:arena?.info||null,crowdFans:crowdStatic.torso.count+crowdDynamic.torso.count,crowdAnimated:crowdDetailReduced?0:crowdDynamic.torso.count,crowdFlags:flagPole.visible?flagPole.count:0,crowdSampleY:samplePosition.y,flagSample:flagPosition.toArray(),goalScreenX:goalScreen.x,shooterScreenX:project(players[0].root.getWorldPosition(new THREE.Vector3())).x,goalScreen:goalScreen.toArray(),deliveryFrameScreen:cameraDelivery(sequence)?[0,1.8].map(y=>project(players[cameraDelivery(sequence).passer].root.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0))).toArray()):[],goalFrameScreen:[-3.66,3.66].flatMap(x=>[-52.5,-54.4].map(z=>project(new THREE.Vector3(...worldPosition([x,2.44,z],direction))).toArray())),ballScreen:ballScreen.toArray(),wingerScreen:wingerScreen.toArray(),runnerScreen:runnerScreen.toArray(),gloves:keeper.gloves.map(g=>g.getWorldPosition(new THREE.Vector3()).toArray()),ball:ballWorld.toArray()};
   }
   // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
   const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
