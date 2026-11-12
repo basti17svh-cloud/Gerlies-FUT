@@ -7,6 +7,22 @@
       "asset": "mbappe.png",
       "bytes": 210299,
       "sha256": "4ccc3c92f8934fbfe75afce35ca873ac73639a0346f395e8635ab15755f730b2"
+    },
+    {
+      "name": "fuellkrug",
+      "itemId": 67314295,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p67314295.png",
+      "asset": "fuellkrug.png",
+      "bytes": 300652,
+      "sha256": "74ced301a9b8d172048939ce2edf4d60453d652226348a2bc3dbd877d3e4602a"
+    },
+    {
+      "name": "calo",
+      "itemId": 50583417,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p50583417.png",
+      "asset": "calo.png",
+      "bytes": 407028,
+      "sha256": "60e4da4f442f0f12f9fd642d53b6dfb1411d6c32d696517adbdcc154259af461"
     }
   ]
 }
