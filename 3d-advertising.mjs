@@ -13,6 +13,23 @@ function instagramGlyph(ctx,x,y,size){
  ctx.beginPath();ctx.arc(x+size/2,y+size/2,29,0,Math.PI*2);ctx.stroke();
  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(x+size*.70,y+size*.30,8,0,Math.PI*2);ctx.fill();
 }
+// TikTok note: white glyph with the cyan/red offset shadows on a black tile.
+function tiktokNote(ctx,x,y,size,color){
+ const u=size/100;
+ ctx.strokeStyle=color;ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.lineWidth=14*u;
+ ctx.beginPath();ctx.arc(x+38*u,y+66*u,14*u,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x+52*u,y+66*u);ctx.lineTo(x+52*u,y+20*u);
+ ctx.quadraticCurveTo(x+56*u,y+38*u,x+76*u,y+40*u);ctx.stroke();
+}
+function tiktokGlyph(ctx,x,y,size){
+ ctx.fillStyle='#010101';
+ ctx.beginPath();ctx.roundRect(x,y,size,size,43);ctx.fill();
+ const inner=size*.96,ix=x+(size-inner)/2-size*.03,iy=y+(size-inner)/2+size*.02,o=size*.024;
+ tiktokNote(ctx,ix-o,iy-o,inner,'#25f4ee');
+ tiktokNote(ctx,ix+o,iy+o,inner,'#fe2c55');
+ tiktokNote(ctx,ix,iy,inner,'#ffffff');
+}
 // Carved jack-o'-lantern for the HALLOWEEN boards: orange body, glowing triangle eyes and grin.
 function pumpkinGlyph(ctx,cx,cy,r){
  const body=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
@@ -39,11 +56,11 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   ctx.restore();return;
  }
  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
- const instagram=kind==='instagram';
- ctx.fillStyle=instagram?'#fffaf8':'#0d1b24';
+ const instagram=kind==='instagram',tiktok=kind==='tiktok';
+ ctx.fillStyle=instagram?'#fffaf8':tiktok?'#121212':'#0d1b24';
  ctx.fillRect(0,0,WIDTH,HEIGHT);
- ctx.fillStyle=instagram?'#e83191':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
- ctx.fillStyle=instagram?'#d6d9db':'#374955';ctx.fillRect(0,249,WIDTH,7);
+ ctx.fillStyle=instagram?'#e83191':tiktok?'#25f4ee':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
+ ctx.fillStyle=instagram?'#d6d9db':tiktok?'#fe2c55':'#374955';ctx.fillRect(0,249,WIDTH,7);
  ctx.textBaseline='middle';ctx.textAlign='center';
  if(instagram){
   // Equal spacing: logo / handle / logo, readable from the match camera.
@@ -51,6 +68,12 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   instagramGlyph(ctx,WIDTH-58-198,29,198);
   ctx.fillStyle='#111e26';ctx.font='800 174px Arial, sans-serif';
   ctx.fillText('official_footera',WIDTH/2,136,1440);
+ }else if(tiktok){
+  // Same layout as the Instagram board: logo / handle / logo.
+  tiktokGlyph(ctx,58,29,198);
+  tiktokGlyph(ctx,WIDTH-58-198,29,198);
+  ctx.fillStyle='#ffffff';ctx.font='800 174px Arial, sans-serif';
+  ctx.fillText('footera_official',WIDTH/2,136,1440);
  }else{
   if(footeraLogo?.complete&&footeraLogo.naturalWidth>0){
    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
