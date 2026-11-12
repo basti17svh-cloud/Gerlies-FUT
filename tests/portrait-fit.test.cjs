@@ -48,3 +48,13 @@ test('POTM action cut-outs fill the window like the EA card (Mbappé V21.394 loo
 test('portrait bounds are not cached before the image has loaded',()=>{
  assert.match(html,/if\(w&&h\)PORTRAIT_BOUNDS\.set\(url,box\)/);
 });
+test('all dynamic card art (event dynamicFace crops, Momentum) gets the same big fit as POTM',()=>{
+ // Basti 2026-11-12: "Genau so sollen ALLE dynamischen Karten sein". Halloween crop 392x422 filling its file.
+ const b={x0:.05,y0:.04,x1:.95,y1:1},opt={nw:392,nh:422,fw:170,fh:121};
+ const plain=parse(run(b,opt).transform)||[0,0,1];
+ for(const src of ['./assets/footera/events/halloween/dynamic/220901.webp','./assets/footera/events/blackfriday/dynamic/188545.webp','./assets/footera/events/momentum/team2/musiala.webp','./assets/footera/events/season2/dynamic/251852.webp']){
+  const t=parse(run(b,{...opt,src}).transform);assert.ok(t&&t[2]>=plain[2]*1.2,'bigger: '+src);
+ }
+ // Small 160px head crops (faces/, portraits-raw/, TOTW) keep the plain fit.
+ assert.equal(run({x0:.14,y0:.09,x1:.86,y1:1},{nw:160,nh:160,fw:170,fh:121,src:'./assets/footera/events/halloween/faces/1.png'}).transform,run({x0:.14,y0:.09,x1:.86,y1:1},{nw:160,nh:160,fw:170,fh:121}).transform);
+});
