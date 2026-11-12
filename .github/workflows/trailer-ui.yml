@@ -1,0 +1,57 @@
+name: Trailer UI captures (temporary, never merge)
+on:
+  push:
+    branches: ['claude/project-thread-p87qqt']
+    paths:
+      - 'trailer-render/ui-request.txt'
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        scene: [walkout, founder, home, squad, store, sbc, evo, events, play, pass]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Capture
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          NET_LIVE: '1'
+        run: |
+          cd trailer-render && node ui.cjs ${{ matrix.scene }} /tmp/ui/${{ matrix.scene }} 3 && cd ..
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/ui/${{ matrix.scene }}/f%04d.jpg -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/ui-${{ matrix.scene }}.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ui-${{ matrix.scene }}
+          path: out/ui-${{ matrix.scene }}.mp4
+  commit:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/arts
+      - name: Commit
+        run: |
+          mkdir -p trailer-render/cap
+          find /tmp/arts -name '*.mp4' -exec cp {} trailer-render/cap/ \;
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add trailer-render/cap
+          git diff --cached --quiet && exit 0
+          git commit -m 'trailer: UI captures [skip ci]'
+          for i in 1 2 3; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin HEAD:"${GITHUB_REF_NAME}" && break; sleep 5; done
