@@ -202,3 +202,7 @@ test('every POTM month is complete data with its own label, 28-day window and a 
  assert.ok(source.includes('POTM · ${esc(r.month)}')&&!source.includes('POTM · SEPTEMBER'));
  assert.ok(!source.includes('· September<'),'detail header uses the release month');
 });
+test('October 2026 POTM portraits are imported and cached offline',()=>{
+ const sw=fs.readFileSync(path.join(__dirname,'..','service-worker.js'),'utf8');
+ for(const f of ['mbappe','fuellkrug','calo']){assert.ok(fs.existsSync(path.join(__dirname,'..','assets/footera/events/potm/oktober-2026/'+f+'.png')),f);assert.ok(sw.includes('./assets/footera/events/potm/oktober-2026/'+f+'.png'),'SW SHELL '+f)}
+});
