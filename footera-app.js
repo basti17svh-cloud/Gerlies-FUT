@@ -6619,9 +6619,9 @@ const SPECIAL_PRICE_CURVE={75:10000,76:10000,77:10000,78:10000,79:10000,80:10500
 const TOTW_PRICE_CURVE={75:10500,76:10500,77:10500,78:10500,79:10500,80:10500,81:11000,82:12000,83:14000,84:18000,85:26000,86:40000,87:65000,88:105000,89:175000,90:300000,91:575000,92:900000,93:1300000,94:1800000,95:2400000,96:3200000,97:4200000,98:5500000,99:7000000};
 // Real-market anchors stop elite/meta golds from being priced like generic cards of the same rating.
 const BASE_GOLD_PRICE_ANCHORS_BY_ID={
- "231747":3250000, // Kylian Mbappé 91
+ "231747":2950000, // Kylian Mbappé 91
  "239085":51000,  // Erling Haaland 91
- "231443":1899000, // Ousmane Dembélé 90
+ "231443":1700000, // Ousmane Dembélé 90
  "277643":185000,  // Lamine Yamal 90
  "252371":155000,  // Jude Bellingham 90
  "247827":105000,  // Michael Olise 90
@@ -6663,7 +6663,7 @@ const BASE_GOLD_PRICE_ANCHORS_BY_NAME={
 };
 const TOTW_PRICE_ANCHORS={
  "277643|91":1850000, // Lamine Yamal
- "247827|91":1050000, // Michael Olise
+ "247827|91":900000, // Michael Olise
  "220941|89":256000   // David Raya
 };
 let MARKET_META_PERCENTILE=new Map(),MARKET_META_BUCKETS=new Map(),MARKET_META_MODEL_SIZE=0;
@@ -6736,7 +6736,7 @@ const ICON_PRICE_ANCHORS={
  "franz-beckenbauer":2650000, // Franz Beckenbauer
  "eusebio":7900000, // Eusébio
  "lothar-matthaus":4200000, // Lothar Matthäus — base-icon-pc-fallback
- "zinedine-zidane":4650000, // Zinedine Zidane
+ "zinedine-zidane":4300000, // Zinedine Zidane
  "ruud-gullit":7500000, // Ruud Gullit
  "formiga":3450000, // Formiga — same-player-holo-fallback
  "thierry-henry":3880000, // Thierry Henry
@@ -6744,16 +6744,16 @@ const ICON_PRICE_ANCHORS={
  "alex-morgan":2800000, // Alex Morgan
  "bobby-charlton":2560000, // Bobby Charlton
  "johan-cruyff":6200000, // Johan Cruyff
- "paolo-maldini":4200000, // Paolo Maldini
- "diego-armando-maradona":6700000, // Diego Armando Maradona
+ "paolo-maldini":3650000, // Paolo Maldini
+ "diego-armando-maradona":6100000, // Diego Armando Maradona
  "kenny-dalglish":1900000, // Kenny Dalglish
- "homare-sawa":1850000, // Homare Sawa
+ "homare-sawa":1450000, // Homare Sawa
  "jairzinho":4000000, // Jairzinho
  "zico":5200000, // Zico
  "garrincha":2160000, // Garrincha
  "gareth-bale":3350000, // Gareth Bale
  "ronaldinho":6800000, // Ronaldinho
- "carlos-alberto":1900000, // Carlos Alberto
+ "carlos-alberto":1700000, // Carlos Alberto
  "gianluigi-buffon":835000, // Gianluigi Buffon
  "lilian-thuram":3200000, // Lilian Thuram
  "yaya-toure":1990000, // Yaya Touré
