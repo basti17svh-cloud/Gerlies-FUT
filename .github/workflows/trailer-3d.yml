@@ -1,0 +1,71 @@
+name: Trailer 3D captures (temporary, never merge)
+on:
+  push:
+    branches: ['claude/project-thread-p87qqt']
+    paths:
+      - 'trailer-render/cap-request.txt'
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: K, type: kickoff, score: '0:0', from: '0.1', frames: '240', team: home, minute: '0', who: ''}
+          - {name: GA, type: goal, score: '1:1', from: '1.2', frames: '360', team: home, minute: '58', who: 'Jamal Musiala'}
+          - {name: GB, type: goal, score: '0:0', from: '4.4', frames: '240', team: away, minute: '7', who: 'Erling Haaland'}
+          - {name: GC, type: goal, score: '2:2', from: '1.2', frames: '360', team: home, minute: '90', who: 'Michael Olise'}
+          - {name: S1, type: save, score: '1:1', from: '3.0', frames: '210', team: away, minute: '24', who: 'Bukayo Saka'}
+          - {name: P1, type: post, score: '2:1', from: '3.0', frames: '200', team: away, minute: '75', who: 'Erling Haaland'}
+          - {name: F, type: fulltime, score: '3:2', from: '0.1', frames: '200', team: home, minute: '90', who: ''}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/pc playwright@1.51.1
+          /tmp/pc/node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y fonts-inter ffmpeg
+      - name: Capture
+        env:
+          NODE_PATH: /tmp/pc/node_modules
+          NET_LIVE: '1'
+          TYPE: ${{ matrix.type }}
+          SCORE: ${{ matrix.score }}
+          STAGEH: '791'
+          VIEWH: '1000'
+          DPR: '2.6471'
+        run: |
+          node trailer-render/cap.cjs /tmp/cap/${{ matrix.name }} ${{ matrix.from }} ${{ matrix.frames }} 30 432 ${{ matrix.team }} ${{ matrix.minute }} '' '${{ matrix.who }}'
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cap-${{ matrix.name }}
+          path: out/${{ matrix.name }}.mp4
+  commit:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/arts
+      - name: Commit
+        run: |
+          mkdir -p trailer-render/cap
+          find /tmp/arts -name '*.mp4' -exec cp {} trailer-render/cap/ \;
+          git config user.name 'Footera Asset Bot'
+          git config user.email 'footera-assets@users.noreply.github.com'
+          git add trailer-render/cap
+          git diff --cached --quiet && exit 0
+          git commit -m 'trailer: 3D captures [skip ci]'
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
