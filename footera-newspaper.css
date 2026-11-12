@@ -1,22 +1,22 @@
-/* V21.400 Footera Kurier: newspaper front page after a match */
+/* V21.400 Footera Kurier: newspaper front page after a match. V21.402: dark mode (Basti) */
 #newspaperModal{z-index:260}
 #newspaperModal .np-inner{max-width:560px;margin:0 auto}
-.np-open{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;margin:10px 0;padding:12px 14px;border:1px solid #d9cfb6;border-radius:14px;background:linear-gradient(135deg,#f6efde,#e7dcc2);color:#1a1712;text-align:left;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.np-open{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;margin:10px 0;padding:12px 14px;border:1px solid #3a4a41;border-radius:14px;background:linear-gradient(135deg,#141c18,#0b110e);color:#f1ece0;text-align:left;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.35)}
 .np-open>span{font-size:26px;line-height:1}
-.np-open strong{display:block;font:900 15px/1.2 Georgia,"Times New Roman",serif;color:#111}
-.np-open small{display:block;margin-top:2px;font-size:12px;font-weight:700;color:#5a5246}
-.np-open i{font-style:normal;font-size:24px;font-weight:900;color:#b3121f}
-.np-paper{position:relative;padding:16px 14px 12px;border-radius:6px;background:#f3ecdc;color:#1a1712;box-shadow:0 14px 34px rgba(0,0,0,.55);font-family:Georgia,"Times New Roman",serif;transform:rotate(-.4deg);animation:np-in .55s cubic-bezier(.2,.9,.3,1.2) both}
+.np-open strong{display:block;font:900 15px/1.2 Georgia,"Times New Roman",serif;color:#fff}
+.np-open small{display:block;margin-top:2px;font-size:12px;font-weight:700;color:#9fb0a8}
+.np-open i{font-style:normal;font-size:24px;font-weight:900;color:#ff4d5e}
+.np-paper{position:relative;padding:16px 14px 12px;border-radius:6px;border:1px solid #26332c;background:radial-gradient(circle at 50% 0,rgba(255,77,94,.10),transparent 55%),#0e1411;color:#e8e2d4;box-shadow:0 14px 34px rgba(0,0,0,.65);font-family:Georgia,"Times New Roman",serif;transform:rotate(-.4deg);animation:np-in .55s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes np-in{from{opacity:0;transform:rotate(-8deg) scale(.6)}to{opacity:1;transform:rotate(-.4deg) scale(1)}}
 @media (prefers-reduced-motion:reduce){.np-paper{animation:none}}
-.np-mast{border-bottom:4px double #1a1712;padding-bottom:6px;text-align:center}
-.np-mast h1{margin:4px 0 2px;font:900 clamp(30px,9vw,44px)/1 Georgia,"Times New Roman",serif;letter-spacing:.01em;color:#111}
-.np-mast-row{display:flex;justify-content:space-between;gap:8px;font:800 11px/1.3 Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#3a342b}
-.np-mast-sub{border-top:1px solid #1a1712;padding-top:4px}
-.np-kicker{margin:12px 0 2px;font:900 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b3121f;text-align:center}
-.np-title{margin:4px 0 6px;font:900 clamp(25px,7.4vw,34px)/1.05 Georgia,"Times New Roman",serif;text-align:center;color:#111;overflow-wrap:anywhere}
-.np-sub{margin:0 0 12px;font:italic 500 15px/1.35 Georgia,"Times New Roman",serif;text-align:center;color:#3a342b}
-.np-score{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;padding:10px;background:#111;color:#f3ecdc;border-radius:4px}
+.np-mast{border-bottom:4px double #e8e2d4;padding-bottom:6px;text-align:center}
+.np-mast h1{margin:4px 0 2px;font:900 clamp(30px,9vw,44px)/1 Georgia,"Times New Roman",serif;letter-spacing:.01em;color:#fff}
+.np-mast-row{display:flex;justify-content:space-between;gap:8px;font:800 11px/1.3 Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:#a9b3ad}
+.np-mast-sub{border-top:1px solid #e8e2d4;padding-top:4px}
+.np-kicker{margin:12px 0 2px;font:900 12px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#ff4d5e;text-align:center}
+.np-title{margin:4px 0 6px;font:900 clamp(25px,7.4vw,34px)/1.05 Georgia,"Times New Roman",serif;text-align:center;color:#fff;overflow-wrap:anywhere}
+.np-sub{margin:0 0 12px;font:italic 500 15px/1.35 Georgia,"Times New Roman",serif;text-align:center;color:#b9c4be}
+.np-score{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;padding:10px;background:#050807;border:1px solid #2c3a33;color:#f3ecdc;border-radius:4px}
 .np-team strong{display:block;font:900 13px/1.2 Inter,system-ui,sans-serif;overflow-wrap:anywhere}
 .np-team.away{text-align:right}
 .np-team ul{margin:4px 0 0;padding:0;list-style:none;font:600 11px/1.45 Inter,system-ui,sans-serif;color:#d8cfb9}
@@ -30,22 +30,22 @@
 .np-card{width:118px}
 .np-card>div{width:100%}
 .np-card .card-shell{width:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
-.np-photo figcaption{margin-top:6px;font:600 11px/1.3 Inter,system-ui,sans-serif;color:#5a5246}
-.np-photo figcaption b{display:block;color:#111}
+.np-photo figcaption{margin-top:6px;font:600 11px/1.3 Inter,system-ui,sans-serif;color:#9fb0a8}
+.np-photo figcaption b{display:block;color:#fff}
 .np-photo figcaption span{display:block}
 .np-team i{white-space:nowrap}
 .np-text p{margin:0 0 8px;font:400 14px/1.45 Georgia,"Times New Roman",serif;text-align:left;hyphens:auto}
-.np-text p.np-lead::first-letter{float:left;font-size:42px;line-height:.9;font-weight:900;padding:2px 3px 0 0;color:#b3121f}
-.np-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:6px;border-top:1px solid #1a1712;padding-top:10px}
-.np-box h3{margin:0 0 6px;font:900 11px/1 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#b3121f}
+.np-text p.np-lead::first-letter{float:left;font-size:42px;line-height:.9;font-weight:900;padding:2px 3px 0 0;color:#ff4d5e}
+.np-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:6px;border-top:1px solid #3a4a41;padding-top:10px}
+.np-box h3{margin:0 0 6px;font:900 11px/1 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#ff4d5e}
 .np-grades{margin:0;padding:0;list-style:none}
-.np-grades li{display:flex;justify-content:space-between;gap:6px;padding:3px 0;border-bottom:1px dotted #b8ad94;font:600 12px/1.3 Inter,system-ui,sans-serif}
+.np-grades li{display:flex;justify-content:space-between;gap:6px;padding:3px 0;border-bottom:1px dotted #34443b;font:600 12px/1.3 Inter,system-ui,sans-serif}
 .np-grades li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.np-grades li b{color:#0d6b3a}
-.np-grades li.low b{color:#b3121f}
-.np-quote blockquote{margin:0;font:italic 600 14px/1.4 Georgia,"Times New Roman",serif;color:#1a1712}
-.np-quote cite{display:block;margin-top:6px;font:700 11px/1.2 Inter,system-ui,sans-serif;font-style:normal;color:#5a5246}
-.np-foot{margin-top:12px;padding-top:6px;border-top:3px solid #1a1712;font:900 11px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;text-align:center}
+.np-grades li b{color:#7dffb2}
+.np-grades li.low b{color:#ff7a88}
+.np-quote blockquote{margin:0;font:italic 600 14px/1.4 Georgia,"Times New Roman",serif;color:#f1ece0}
+.np-quote cite{display:block;margin-top:6px;font:700 11px/1.2 Inter,system-ui,sans-serif;font-style:normal;color:#9fb0a8}
+.np-foot{margin-top:12px;padding-top:6px;border-top:3px solid #e8e2d4;font:900 11px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;text-align:center}
 .np-actions{display:grid;margin-top:14px}
 .np-actions button{min-height:46px;font-size:14px}
 @media (max-width:360px){.np-body{grid-template-columns:96px minmax(0,1fr)}.np-card{width:96px}.np-columns{grid-template-columns:minmax(0,1fr)}}
