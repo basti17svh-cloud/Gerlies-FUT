@@ -43,7 +43,7 @@ test('release uses four verified upcoming fixtures and fresh completion IDs',()=
  assert.equal(r[2].minEitherMatchClub,1);assert.equal(r[3].requireBothMatchClubs,true);
  assert.equal(new Set(r.map(s=>s.groupSet)).size,1);
  assert.equal(rows(c,'2026-10-29T17:59:59Z').length,0,'never launch before Thursday 19');
- assert.equal(rows(c,'2026-11-12T18:00:00Z').length,0,'never relabel old fixtures as a fresh week');
+ assert.equal(rows(c,'2026-11-19T18:00:00Z').length,0,'never relabel old fixtures as a fresh week');
 });
 test('weekly boundary refreshes an open SBC view independently of daily and grind keys',()=>{
  const c=setup();c.promoWindowKey=()=> 'same-daily-key';c.sbcRotationWindow=()=>({key:'same-grind-key'});
@@ -71,7 +71,7 @@ test('November 5 release switches exactly at 19, remains stable and expires with
  const ids=Array.from(r,s=>s.id);
  assert.equal(new Set(ids).size,4);assert.equal(new Set(r.map(s=>s.matchLeague)).size,4);
  for(const at of ['2026-11-06T00:00:00Z','2026-11-09T18:00:00Z','2026-11-12T17:59:59Z'])assert.deepEqual(Array.from(rows(c,at),s=>s.id),ids);
- assert.equal(rows(c,'2026-11-12T18:00:00Z').length,0);
+ assert.equal(rows(c,'2026-11-19T18:00:00Z').length,0);
  for(const s of r){assert.equal(s.expiresAt,Date.parse('2026-11-12T18:00:00Z'));assert.ok(Date.parse(s.kickoffAt)>Date.parse('2026-11-05T18:00:00Z')&&Date.parse(s.kickoffAt)<s.expiresAt);assert.ok(!old.some(o=>o.id===s.id));}
  // No club repetition, including aliases, and no reward/requirement change.
  for(let i=0;i<4;i++){
