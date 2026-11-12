@@ -3181,6 +3181,12 @@ const MARQUEE_RELEASES={
   {key:"forest-man-city",name:"Nottingham Forest – Manchester City",league:"Premier League",nation:"England",kickoffAt:"2026-11-07T18:30:00+01:00",sourceUrl:"https://www.premierleague.com/en/news/4725574/fixture-amendments-for-premier-league-matches-in-november",clubs:[["Nott'm Forest","Nottingham Forest","Nottm Forest"],["Manchester City","Man City"]]},
   {key:"fiorentina-juventus",name:"Fiorentina – Juventus",league:"Serie A",nation:"Italy",kickoffAt:"2026-11-08T20:45:00+01:00",sourceUrl:"https://www.legaseriea.it/serie-a/news/quando-si-gioca-anticipi-e-posticipi-fino-alla-12a-giornata",clubs:[["Fiorentina","ACF Fiorentina"],["Juventus","Juventus FC"]]},
   {key:"atletico-barcelona",name:"Atlético de Madrid – FC Barcelona",league:"LALIGA EA SPORTS",nation:"Spain",kickoffAt:"2026-11-08T21:00:00+01:00",sourceUrl:"https://www.laliga.com/es-DE/noticias/horarios-de-la-duodecima-jornada-de-laliga-ea-sports-2026-27",clubs:[["Atlético de Madrid","Atletico Madrid","Atlético Madrid","Atletico de Madrid"],["FC Barcelona","Barcelona"]]}
+ ],
+ "2026-11-12":[
+  {key:"rochdale-york",name:"Rochdale – York City",league:"EFL League Two",nation:"England",kickoffAt:"2026-11-14T16:00:00+01:00",sourceUrl:"https://rochdaleafc.co.uk/dale-welcome-york-city-next-saturday/",clubs:[["Rochdale","Rochdale AFC"],["York City","York City FC"]]},
+  {key:"stockport-reading",name:"Stockport County – Reading",league:"EFL League One",nation:"England",kickoffAt:"2026-11-14T16:00:00+01:00",sourceUrl:"https://www.readingfc.co.uk/news/2026/november/03/stockport-county-league-one-away-tickets/",clubs:[["Stockport","Stockport County"],["Reading","Reading FC"]]},
+  {key:"granada-las-palmas",name:"Granada CF – UD Las Palmas",league:"LaLiga 2",nation:"Spain",kickoffAt:"2026-11-15T16:15:00+01:00",sourceUrl:"https://www.laliga.com/laliga-hypermotion/resultados/2026-27/jornada-14",clubs:[["Granada CF","Granada"],["UD Las Palmas","Las Palmas"]]},
+  {key:"oviedo-girona",name:"Real Oviedo – Girona FC",league:"LaLiga 2",nation:"Spain",kickoffAt:"2026-11-14T21:00:00+01:00",sourceUrl:"https://www.laliga.com/laliga-hypermotion/resultados/2026-27/jornada-14",clubs:[["R. Oviedo","Real Oviedo","Oviedo"],["Girona FC","Girona"]]}
  ]
 };
 
@@ -4800,7 +4806,7 @@ const LEAGUE_NAME_ALIASES={
  "brack super league":"Swiss Super League","raiffeisen super league":"Swiss Super League",
  "serie a enilive":"Serie A","serie bkt":"Serie B","ligue 1 mcdonalds":"Ligue 1",
  "laliga":"LALIGA EA SPORTS","laliga ea sports":"LALIGA EA SPORTS","la liga":"LALIGA EA SPORTS",
- "laliga hypermotion":"LaLiga 2"
+ "laliga hypermotion":"LaLiga 2","laliga 2":"LaLiga 2"
 };
 const EA_MENS_CLUB_LEAGUES={
  "1A Pro League":["KRC Genk","Genk","KAA Gent","Gent","Club Brugge KV","Club Brugge","RSC Anderlecht","Anderlecht","Royal Antwerp FC","Royal Antwerp","Antwerp","Union Saint-Gilloise","Union SG","Standard Liège","Standard Liege","Sporting Charleroi","Charleroi","Cercle Brugge","KV Mechelen","Mechelen","OH Leuven","Oud-Heverlee Leuven","Sint-Truidense VV","STVV","KVC Westerlo","Westerlo","FCV Dender EH","Dender","Zulte Waregem","KV Kortrijk","Kortrijk","Beerschot","KAS Eupen","Eupen","La Louvière","RAAL La Louvière"],
@@ -10225,7 +10231,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.396";
+const GFUT_BUILD="V21.397";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10283,7 +10289,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21396",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21397",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
