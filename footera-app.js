@@ -7854,14 +7854,28 @@ function sbcFillScore(sbc,rows,outCost=sbcFillOutOfPositionCost(sbc)){
  let cost=0,out=0;rows.forEach((r,i)=>{if(r){cost+=r.cost;if(!r.fits[i])out++}});
  return sbcFillShortfall(sbc,rows)*1e7+cost+out*outCost
 }
+function sbcFillRequiredTraits(sbc){
+ return [["totw",sbc.minTotw],["momentum",sbc.minMomentum],["reqNation",sbc.requiredNation?1:0],["reqClub",sbc.requiredClub?1:0],["reqLeague",sbc.requiredLeague?1:0],["matchLeague",sbc.minMatchLeaguePlayers]].filter(([,n])=>Number(n)>0).map(([k,n])=>[k,Number(n)])
+}
 // Local search from a cheap start: swap single players for unused cards, or two players between slots, while it gets better.
 function sbcFillSearch(sbc,fixed,pool,leaguePref,strict=false){
- const slots=fixed.length,free=fixed.map((r,i)=>r?-1:i).filter(i=>i>=0),rows=[...fixed],used=new Set(fixed.filter(Boolean).map(r=>r.uid));
+ // "used" holds player keys, not card ids: a TOTW card and a gold card of the same player may both be in the pool, only one may play.
+ const slots=fixed.length,free=fixed.map((r,i)=>r?-1:i).filter(i=>i>=0),rows=[...fixed],used=new Set(fixed.filter(Boolean).map(r=>r.pid));
  const startCost=r=>r.cost*(leaguePref&&r.league!==leaguePref?3:1);
- const order=[...free].sort((a,b)=>pool.filter(r=>r.fits[a]).length-pool.filter(r=>r.fits[b]).length);
+ let order=[...free].sort((a,b)=>pool.filter(r=>r.fits[a]).length-pool.filter(r=>r.fits[b]).length);
+ // Required cards (TOTW, nation, league ...) go in first. Otherwise a cheap start under the Ø target can be a dead end:
+ // swapping in a lower-rated TOTW card fixes one requirement but breaks the rating, so no single swap looks better.
+ for(const [key,need] of sbcFillRequiredTraits(sbc)){
+  let have=rows.filter(r=>r&&r[key]).length;
+  for(const r of [...pool].filter(r=>r[key]).sort((a,b)=>startCost(a)-startCost(b))){
+   if(have>=need||!order.length)break;if(used.has(r.pid))continue;
+   const slot=order.find(i=>r.fits[i])??order[order.length-1];
+   rows[slot]=r;used.add(r.pid);order=order.filter(i=>i!==slot);have++
+  }
+ }
  for(const slot of order){
-  let best=null;for(const r of pool){if(used.has(r.uid))continue;const score=startCost(r)+(r.fits[slot]?0:sbcFillOutOfPositionCost(sbc)*4);if(!best||score<best.score)best={r,score}}
-  if(best){rows[slot]=best.r;used.add(best.r.uid)}
+  let best=null;for(const r of pool){if(used.has(r.pid))continue;const score=startCost(r)+(r.fits[slot]?0:sbcFillOutOfPositionCost(sbc)*4);if(!best||score<best.score)best={r,score}}
+  if(best){rows[slot]=best.r;used.add(best.r.pid)}
  }
  const outCost=strict?1e6:sbcFillOutOfPositionCost(sbc),scoreOf=list=>sbcFillScore(sbc,list,outCost);
  let score=scoreOf(rows);
@@ -7870,8 +7884,8 @@ function sbcFillSearch(sbc,fixed,pool,leaguePref,strict=false){
   for(const slot of free){
    const current=rows[slot];
    for(const r of pool){
-    if(used.has(r.uid))continue;rows[slot]=r;const next=scoreOf(rows);
-    if(next<score-1e-9){score=next;if(current)used.delete(current.uid);used.add(r.uid);improved=true;break}
+    if(used.has(r.pid))continue;rows[slot]=r;const next=scoreOf(rows);
+    if(next<score-1e-9){score=next;if(current)used.delete(current.pid);used.add(r.pid);improved=true;break}
     rows[slot]=current
    }
   }
@@ -7904,14 +7918,16 @@ function sbcAutoFillPlan(sbc,draft,opts=sbcAssistantDefaults()){
  const used=new Set(draft.squad.filter(Boolean).map(String)),parked=new Set((draft.test||[]).filter(Boolean).map(String)),busy=new Set(opts.protectTeams===false?[]:[...(state.squad||[]),...(state.squadPresets||[]).flatMap(p=>p?.squad||[])].filter(Boolean).map(String));
  for(const e of typeof activeEvolutionEntries==="function"?activeEvolutionEntries():[])busy.add(String(e.uid));
  for(const uid of globalThis.FooteraFavorites?.list()||[])busy.add(String(uid));
- const fixedPlayers=new Set(fixed.filter(Boolean).map(r=>r.pid)),cheapest=new Map();
+ const fixedPlayers=new Set(fixed.filter(Boolean).map(r=>r.pid)),cheapest=new Map(),traitKeys=[sbc.minTotw?"totw":"",sbc.minMomentum?"momentum":""].filter(Boolean);
  for(const x of sbcSourceItems()){const uid=String(x.item.uid),b=displayBase(x.item);if(!b||used.has(uid)||busy.has(uid)||isFooteraLiveCard(x.item)||!sbc.filter(b))continue;const rating=itemRating(x.item);
   if(!parked.has(uid)&&(rating<Number(opts.min||0)||rating>Number(opts.max??99)||!itemMatchesQuality(x.item,opts.quality,b)||opts.league&&String(resolvedAffiliation(b)?.league||"")!==opts.league))continue;
   // Cards parked in the Testareal were prepared on purpose, so they are used first.
-  const r=sbcFillRow(sbc,x,form);if(parked.has(uid))r.cost=.5;if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r)}
- const pool=[...cheapest.values()];
+  const r=sbcFillRow(sbc,x,form);if(parked.has(uid))r.cost=.5;if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r);
+  // Also keep the cheapest TOTW/MOMENTUM card of a player whose gold card is cheaper; the search lets only one of them play.
+  for(const key of traitKeys)if(r[key]){const k=r.pid+"#"+key,p=cheapest.get(k);if(!p||r.cost<p.cost)cheapest.set(k,r)}}
+ const pool=[...new Map([...cheapest.values()].map(r=>[r.uid,r])).values()],players=new Set(pool.map(r=>r.pid)).size;
  const free=fixed.filter(r=>!r).length;
- if(pool.length<free)return{missing:free-pool.length};
+ if(players<free)return{missing:free-players};
  const fixedLeagues=[...new Set(fixed.filter(Boolean).map(r=>r.league))];
  let anchors=[""];
  if(sbc.sameLeague){
@@ -8036,7 +8052,9 @@ function renderSBC(){
  $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&blackFridaySbcLive?"blackfriday-live":g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
-  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
+  // Profis: the newest event SBC on top (Black Friday deals above the older Icon Pick), finished sets at the bottom.
+  const setDone=x=>x[0].groupSet&&x[0].groupReward?!!state.sbcGroupClaims?.[x[0].groupSet]:x.every(sbcIsCompleted),released=x=>Date.parse(x[0].releaseKey||"")||0;
+  const sets=sbcGroupedRows(groupRows).map((x,i)=>({x,i})).sort((a,b)=>activeSbcGroup!=="Profis"?a.i-b.i:(setDone(a.x)-setDone(b.x))||(released(b.x)-released(a.x))||a.i-b.i).map(e=>e.x);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
  }
  const banner=sbcGroupBannerHTML(activeSbcGroup,groupRows);
  // Ready SBCs first, then the open ones, finished ones at the bottom.
@@ -10232,7 +10250,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.400";
+const GFUT_BUILD="V21.401";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10290,7 +10308,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21400",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21401",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
