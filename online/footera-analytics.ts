@@ -1,5 +1,6 @@
 // Footera V21.133 — opt-in, first-party, pseudonymous visits.
 // Public entry for consenting visitors. No IP, user agent, page URL or email stored.
+// V21.408: action "error" stores cleaned JavaScript error reports (footera-error-report.js).
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 const origin = "https://basti17svh-cloud.github.io";
 const headers = {
@@ -20,7 +21,7 @@ Deno.serve(async (req: Request) => {
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
   if(req.method!=="POST")return respond({error:"Method not allowed"},405);
   if(req.headers.get("origin")!==origin)return respond({error:"Origin not permitted"},403);
-  if(Number(req.headers.get("content-length")||"0")>2048)return respond({error:"Oversized event"},413);
+  if(Number(req.headers.get("content-length")||"0")>8192)return respond({error:"Oversized event"},413);
   const agent=req.headers.get("user-agent")||"";
   if(/bot|crawler|spider|prerender|headless|lighthouse/i.test(agent))
     return respond({ok:true,ignored:true});
@@ -30,7 +31,18 @@ Deno.serve(async (req: Request) => {
   if(data.consent!==true||typeof data.visitor_id!=="string"||!validUuid.test(data.visitor_id))
     return respond({error:"Analytics requires prior visitor consent"},400);
   const action=data.action;
-  if(action!=="visit"&&action!=="forget")return respond({error:"Unknown action"},400);
+  if(action!=="visit"&&action!=="forget"&&action!=="error")return respond({error:"Unknown action"},400);
+  if(action==="error"){
+    const list=data.errors;
+    if(!Array.isArray(list)||list.length<1||list.length>8)return respond({error:"Invalid errors"},400);
+    for(const e of list){
+      if(!e||typeof e!=="object"||typeof e.message!=="string"||!e.message.trim()||e.message.length>300)
+        return respond({error:"Invalid error entry"},400);
+      for(const [k,max] of [["source",90],["build",16],["screen",40],["device",40]] as const)
+        if(e[k]!=null&&(typeof e[k]!=="string"||e[k].length>max))return respond({error:"Invalid error entry"},400);
+      if(!["error","promise","manual"].includes(e.kind))return respond({error:"Invalid error entry"},400);
+    }
+  }
   if(action==="visit"&&(!sourceList.has(data.source)||typeof data.source!=="string"))
     return respond({error:"Invalid traffic source"},400);
   const url=Deno.env.get("SUPABASE_URL")||"";
@@ -45,9 +57,11 @@ Deno.serve(async (req: Request) => {
   }
   const hash=toHex(await crypto.subtle.digest("SHA-256",
     new TextEncoder().encode(data.visitor_id.toLowerCase())));
-  const method=action==="visit"?"footera_analytics_log_consent_visit":"footera_analytics_forget_visitor";
+  const method=action==="visit"?"footera_analytics_log_consent_visit":action==="error"?"footera_error_log":"footera_analytics_forget_visitor";
   const params=action==="visit"
     ? {p_visitor_hash:hash,p_source:data.source,p_verified_user_id:verifiedUserId}
+    : action==="error"
+    ? {p_visitor_hash:hash,p_errors:data.errors}
     : {p_visitor_hash:hash,p_verified_user_id:verifiedUserId};
   try{
     const {error}=await admin.rpc(method,params);
