@@ -41,6 +41,16 @@ function pumpkinGlyph(ctx,cx,cy,r){
  for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(cx+s*r*.16,cy-r*.08);ctx.lineTo(cx+s*r*.36,cy-r*.42);ctx.lineTo(cx+s*r*.56,cy-r*.08);ctx.fill()}
  ctx.beginPath();ctx.moveTo(cx-r*.58,cy+r*.18);ctx.lineTo(cx-r*.3,cy+r*.3);ctx.lineTo(cx-r*.15,cy+r*.18);ctx.lineTo(cx,cy+r*.32);ctx.lineTo(cx+r*.15,cy+r*.18);ctx.lineTo(cx+r*.3,cy+r*.3);ctx.lineTo(cx+r*.58,cy+r*.18);ctx.lineTo(cx+r*.36,cy+r*.58);ctx.lineTo(cx-r*.36,cy+r*.58);ctx.fill();
 }
+// Six-armed snowflake for the WINTERNÄCHTE boards.
+function snowflakeGlyph(ctx,cx,cy,r,color){
+ ctx.save();ctx.strokeStyle=color;ctx.lineCap='round';ctx.lineWidth=r*.13;
+ for(let i=0;i<6;i++){
+  const a=i*Math.PI/3,c=Math.cos(a),s=Math.sin(a);
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+c*r,cy+s*r);ctx.stroke();
+  for(const t of [.5,.75])for(const d of [-1,1]){const b=a+d*Math.PI/4,bx=cx+c*r*t,by=cy+s*r*t;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(b)*r*.28,by+Math.sin(b)*r*.28);ctx.stroke()}
+ }
+ ctx.restore();
+}
 export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
  if(kind==='halloween'){
   ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
@@ -53,6 +63,20 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   ctx.fillText('HALLOWEEN',860,137,960);
   ctx.fillStyle='#f4e6ff';ctx.font='800 92px Arial, sans-serif';
   ctx.fillText('BLUTMOND',1560,140,380);
+  ctx.restore();return;
+ }
+ if(kind==='winter'||kind==='silvester'){
+  // WINTERNÄCHTE (V21.406): Christmas red with gold, New Year night blue with gold.
+  const xmas=kind==='winter';
+  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
+  const bg=ctx.createLinearGradient(0,0,WIDTH,0);
+  if(xmas){bg.addColorStop(0,'#3a0b16');bg.addColorStop(.5,'#5c0f1f');bg.addColorStop(1,'#3a0b16')}else{bg.addColorStop(0,'#05081a');bg.addColorStop(.5,'#14204a');bg.addColorStop(1,'#05081a')}
+  ctx.fillStyle=bg;ctx.fillRect(0,0,WIDTH,HEIGHT);
+  ctx.fillStyle='#ffd36b';ctx.fillRect(0,0,WIDTH,7);ctx.fillRect(0,249,WIDTH,7);
+  for(const x of [150,WIDTH-150])snowflakeGlyph(ctx,x,128,86,xmas?'#fff6d8':'#ffe08a');
+  ctx.textBaseline='middle';ctx.textAlign='center';
+  ctx.fillStyle='#ffe08a';ctx.font='900 150px Arial, sans-serif';
+  ctx.fillText(xmas?'FROHE WEIHNACHTEN':'FROHES NEUES 2027',WIDTH/2,137,1500);
   ctx.restore();return;
  }
  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
