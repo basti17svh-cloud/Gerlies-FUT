@@ -88,3 +88,16 @@ test('the chat is loaded, cached and offered in the match report and Extras',()=
  assert.ok(html.includes('data-kabine-open'),'Extras entry');
  assert.match(app,/FooteraKabine\?\.buttonHTML/);assert.match(app,/FooteraKabine\?\.afterMatch\(match\)/);assert.match(app,/FooteraKabine\?\.afterPack\(items\)/);assert.match(app,/FooteraKabine\?\.afterSbc\(stats\.items\)/);
 });
+
+test('the share picture uses the whole chat of the latest match, in order, nothing left out',()=>{
+ const rows=squad().map(p=>({uid:p.uid,base:{name:p.name,id:p.pid,position:p.pos,ovr:p.ovr},position:p.pos,rating:p.rating,goals:p.uid==='u2'?3:0,assists:0,minutes:p.minutes,saves:p.saves,reds:0}));
+ const ctx={matchReportPerformanceRows:()=>rows,matchReportPotm:()=>({base:{name:'Harry Kane'},uid:'u2',side:'home',rating:9.5}),matchHomeTeamName:()=>'FC Gerlies',matchAwayTeamName:()=>'Köln',displayBase:i=>({name:'Florian Wirtz',id:'p9',ovr:89}),itemRating:()=>89,squadItems:()=>[]};
+ const {api:k}=load(ctx);
+ k.afterMatch({finished:true,resultId:'r9',home:3,away:0,initialStarters:rows.slice(0,11).map(r=>r.uid),goalEvents:[g('home',10,'Harry Kane','u2'),g('home',50,'Harry Kane','u2'),g('home',80,'Harry Kane','u2')]});
+ const ref=k.read().msgs[0].ref;k.answer(ref,0);
+ k.afterPack([{uid:'w1',variant:'gold'}]);
+ const all=k.read().msgs,block=k.shareBlock();
+ assert.deepEqual(block.map(m=>m.id),all.filter(m=>m.ref===ref).map(m=>m.id));
+ assert.ok(block.length>=9,'match messages plus coach answer');
+ assert.ok(block.some(m=>m.kind==='me'));
+});
