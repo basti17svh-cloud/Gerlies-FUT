@@ -1,4 +1,4 @@
-/* V21.413 Team of the Year – Abstimmung */
+/* V21.414 Team of the Year – Abstimmung */
 .toty-home[hidden]{display:none}
 .toty-banner{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:16px;border:1px solid #ffd76a77;background:linear-gradient(100deg,#0b1d4a,#1b3a8a55 60%,#ffffff05);color:#fff;text-align:left}
 .toty-banner.done{opacity:.8;border-color:#ffffff22}

@@ -1,4 +1,4 @@
--- Footera V21.413: Team of the Year 2026, fan vote (Basti 2026-11-13).
+-- Footera V21.414: Team of the Year 2026, fan vote (Basti 2026-11-13).
 -- One ballot per account between Fr 11.12.2026 19:00 and So 03.01.2027 19:00 Berlin:
 -- 1 goalkeeper, 4 defenders, 3 midfielders, 3 attackers, all from the fixed nominee list.
 -- The ballot table is never exposed; everyone reads only the per-player totals.

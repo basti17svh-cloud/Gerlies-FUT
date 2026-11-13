@@ -1,6 +1,6 @@
-// V21.413 Team of the Year 2026 – fan vote (Basti 2026-11-13).
+// V21.414 Team of the Year 2026 – fan vote (Basti 2026-11-13).
 // Fr 11.12.2026 19:00 to So 03.01.2027 19:00 Berlin: every account picks 1 TW, 4 ABW, 3 MF, 3 ST from the nominees.
-// The server (online/footera-toty-vote-v21.413.sql) keeps one ballot per account; the thank-you pack (6x 84+)
+// The server (online/footera-toty-vote-v21.414.sql) keeps one ballot per account; the thank-you pack (6x 84+)
 // is granted only when footera_toty_claim_reward returns true, which happens once per account.
 (function(root){
  "use strict";

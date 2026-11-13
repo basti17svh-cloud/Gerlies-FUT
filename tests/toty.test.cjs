@@ -1,5 +1,5 @@
 'use strict';
-// V21.413 Team of the Year fan vote: 1/4/3/3 ballot, time window, reward only when the server says so.
+// V21.414 Team of the Year fan vote: 1/4/3/3 ballot, time window, reward only when the server says so.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.join(__dirname,'..');
 const src=fs.readFileSync(path.join(root,'footera-toty.js'),'utf8');
@@ -28,7 +28,7 @@ test('nominees: 5 TW, 12 ABW, 10 MF, 10 ST, unique real players from the databas
 
 test('client nominees match the SQL seed',()=>{
  const {FooteraToty:api}=load();
- const sql=fs.readFileSync(path.join(root,'online/footera-toty-vote-v21.413.sql'),'utf8');
+ const sql=fs.readFileSync(path.join(root,'online/footera-toty-vote-v21.414.sql'),'utf8');
  for(const n of api.NOMINEES)assert.match(sql,new RegExp(`\\(2026,\\s*'${n.pid}',\\s*'${n.slot}'\\)`),n.name);
 });
 
@@ -117,8 +117,20 @@ test('app wires the banner, calendar rows and the files ship with the build',()=
  assert.match(app,/globalThis\.FooteraToty\?\.renderHome\(\)/);
  assert.match(html,/id="totyHome"/);
  assert.match(cal,/TOTY-Abstimmung startet/);
- for(const f of ['footera-toty.js?v=21413','footera-toty.css?v=21413']){
+ for(const f of ['footera-toty.js?v=21414','footera-toty.css?v=21414']){
   assert.ok(html.includes(f),`index.html ${f}`);
   assert.ok(sw.includes(`"./${f}"`),`service worker ${f}`);
  }
+});
+
+test('TOTY card design A ships with its aura and maps toty items to the toty class',()=>{
+ const app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8'),css=fs.readFileSync(path.join(root,'toty-card.css'),'utf8');
+ assert.match(app,/cosmeticDesign==="toty"\|\|String\(item\?\.eventType\|\|""\)\.startsWith\("toty"\)\)return"toty"/);
+ assert.match(app,/cls==="toty"\?" toty-shell"/);
+ assert.ok(html.includes('toty-card.css?v=21414'));
+ for(const f of ['./toty-card.css?v=21414','./assets/footera/events/toty/card-toty-v1.webp'])assert.ok(sw.includes(`"${f}"`),f);
+ assert.ok(fs.existsSync(path.join(root,'assets/footera/events/toty/card-toty-v1.webp')));
+ assert.match(css,/@keyframes toty-rays/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/\.mini \.card-shell\.toty-shell/);
 });
