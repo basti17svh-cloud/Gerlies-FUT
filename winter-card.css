@@ -1,0 +1,26 @@
+/* WINTER / Weihnachten 2026 (Adventskalender-Spieler, Winternächte). Same field grid as the Black Friday/Halloween cards;
+   only artwork and light are local. Artwork: assets/footera/events/advent/card-winter-v1.webp (scripts/generate-winter-card.cjs rot). */
+.card-shell .custom-card.winter{
+ background:transparent url("./assets/footera/events/advent/card-winter-v1.webp") center / 100% 100% no-repeat;
+ color:#fff6d8;clip-path:none;box-shadow:none;
+ --card-info-left:9%;--card-info-width:21%;
+ --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
+ --card-portrait-left:29%;--card-portrait-right:5%;
+ --card-portrait-top:11%;--card-portrait-height:50%;
+ --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-stats-left:3%;--card-stats-right:3%;--card-alt-bottom:13%;
+ --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
+ --card-name-color:#fff6d8;
+ --card-stats-color:#ffe08a;
+ --card-value-color:#fffdf4;
+}
+.card-shell .custom-card.winter:before,.card-shell .custom-card.winter .card-top:before{content:none}
+.card-shell .custom-card.winter .pname{clip-path:none;text-shadow:0 1px 2px #000,0 0 7px #ffcf5a99!important}
+.card-shell .custom-card.winter .ovr{color:#fffdf4;text-shadow:0 1px 4px #000,0 0 12px #ffcf5a}
+.card-shell .custom-card.winter .pos{color:#ffe08a;text-shadow:0 1px 3px #000}
+.card-shell .custom-card.winter .face img{filter:drop-shadow(0 .7cqw 1.1cqw #000c) drop-shadow(0 0 1.4cqw #ffe08a33)}
+.card-shell .custom-card.winter .stats{text-shadow:0 1px 3px #000}
+.card-shell .custom-card.winter .stats span{border-color:transparent}
+.quality-tag.winter{border-color:#ffe08a!important;background:linear-gradient(125deg,#1c0409,#5c0f1f)!important;color:#fff6d8!important;box-shadow:0 0 12px #ffcf5a55!important}
