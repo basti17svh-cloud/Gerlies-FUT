@@ -12,7 +12,7 @@ const OUT=[[4,'Kane'],[2,'Olise'],[9,'Shaw']];
  try{
   const ctx=await browser.newContext({viewport:{width:1080,height:1350},deviceScaleFactor:2,serviceWorkers:'block'});
   const page=await ctx.newPage();await page.goto(base+'/index.html');
-  await page.waitForTimeout(LOCAL?3000:12000);
+  await page.waitForTimeout(2000);await page.evaluate(()=>{if(!PLAYERS.length)syncDatabase(true)});await page.waitForFunction(()=>typeof PLAYERS!=='undefined'&&PLAYERS.length>10000,{},{timeout:90000});await page.waitForTimeout(1500);
   const grab=async picks=>{const cards=[];for(const [week,name] of picks){
    let card=null;for(let t=0;t<40&&!card;t++){
     card=await page.evaluate(([week,name])=>{for(const id of ['bootIntro','dbGate','onboarding','usernameRequiredModal'])document.getElementById(id)?.remove();
@@ -53,6 +53,6 @@ const OUT=[[4,'Kane'],[2,'Olise'],[9,'Shaw']];
   await render('best-of-totw-feed.png',1080,1350,'--pad:50px 36px;--kgap:16px;--h1:92px;--top:34px;--rgap:30px;--c1:218px;--c2:190px;--bot:40px',title+elfRows+foot);
   await render('best-of-totw-story.png',1080,1920,'--pad:150px 36px;--kgap:26px;--h1:118px;--top:60px;--rgap:44px;--c1:270px;--c2:232px;--bot:150px',title+elfRows+foot);
   const outRow=`<div class="rows"><div class="row r1">${out.map(c=>tag(c)).join('')}</div></div>`;
-  await render('best-of-totw-knapp-raus.png',1080,1350,'--pad:50px 36px;--kgap:30px;--h1:104px;--top:70px;--rgap:30px;--c1:300px;--c2:190px;--bot:40px',`<div class="kicker">BEST OF TOTW</div><h1>KNAPP <b>RAUS</b></h1><div class="sub">WEN HÄTTEST DU REINGENOMMEN? 👇</div>`+outRow+foot);
+  await render('best-of-totw-knapp-raus.png',1080,1350,'--pad:50px 36px;--kgap:30px;--h1:104px;--top:130px;--rgap:30px;--c1:322px;--c2:190px;--bot:40px',`<div class="kicker">BEST OF TOTW</div><h1>KNAPP <b>RAUS</b></h1><div class="sub">WEN HÄTTEST DU REINGENOMMEN? 👇</div>`+outRow+foot);
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
