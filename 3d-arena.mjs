@@ -1,4 +1,4 @@
-import {createSurroundings} from './3d-stadium.mjs?v=21407';
+import {createSurroundings} from './3d-stadium.mjs?v=21410';
 // Footera V21.382 "Flutlicht-Arena": the floodlit night stadium around the
 // existing pitch and stands. Purely visual and fully deterministic (time in,
 // picture out); it never touches simulation, camera or player motion.

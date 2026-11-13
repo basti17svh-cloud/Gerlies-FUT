@@ -11,7 +11,7 @@ const mix=(a,b,t)=>a+(b-a)*t;
 const angleMix=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
 const facing=(from,to)=>Math.atan2(-(to[0]-from[0]),-(to[1]-from[1]));
 export const FACE_CAMERA=-Math.PI/2;
-import {stadiumIntroCamera} from './3d-stadium.mjs?v=21407';
+import {stadiumIntroCamera} from './3d-stadium.mjs?v=21410';
 export function ceremonyKind(event){return CEREMONY_KINDS.includes(event?.ceremony)?event.ceremony:''}
 
 // ---- walk-out: two columns come off the main-stand side, turn at the
@@ -87,7 +87,7 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 
 // ---- cameras: calm TV shots, no zoom; one cut in the middle of each scene.
 // V21.406 (Basti: "vor dem Spiel soll man in einer Szene das Stadion sehen"):
-// the stadium shot runs 4 s (V21.407, was 3.4), from high above the roof down into the bowl.
+// the stadium shot runs 4 s (V21.410, was 3.4), from high above the roof down into the bowl.
 export const CEREMONY_ARENA_SHOT=4;
 export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5});
 const CEREMONY_END=10.4;

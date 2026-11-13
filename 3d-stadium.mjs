@@ -8,7 +8,7 @@
 //  - the stadium shot before kick-off
 // Pure and deterministic: seeded hashes only, no randomness, no clock.
 
-export const STADIUM_VERSION='21.406-stadiums';
+export const STADIUM_VERSION='21.410-stadiums';
 export const STADIUM_STYLES=Object.freeze(['arena','kessel','tradition']);
 export const STADIUM_STYLE_LABELS=Object.freeze({arena:'Flutlicht-Arena',kessel:'Hexenkessel',tradition:'Traditionsstadion'});
 export const STADIUM_NAME_MAX=28;
@@ -128,7 +128,7 @@ export function createFanWall(THREE,{scene,track=o=>o,weak=false,host='#d8ff3e',
 // From high above the roof, round the bowl and down into the corner.
 export function stadiumIntroCamera(time,duration){
  const u=Math.max(0,Math.min(1,time/duration)),e=u*u*(3-2*u);
- // V21.407 (Basti: "man sieht nur eine Ecke"): starts high behind one end so
+ // V21.410 (Basti: "man sieht nur eine Ecke"): starts high behind one end so
  // the whole stadium and its surroundings fit a portrait phone, holds for a
  // moment, then swings round and down into the corner.
  const hold=Math.max(0,Math.min(1,(time/duration-.18)/.82)),f=hold*hold*(3-2*hold);
@@ -136,7 +136,7 @@ export function stadiumIntroCamera(time,duration){
  return{position:[Math.cos(angle)*radius*.62,height,Math.sin(angle)*radius],target:[0,f*5.5,-14+f*6],fov:46-f*8,phase:'arena'};
 }
 
-// ---- around the stadium (V21.407, Basti: "Außenansicht mit mehr Leben") ----
+// ---- around the stadium (V21.410, Basti: "Außenansicht mit mehr Leben") ----
 // Plaza, ring road with street lights, fans on their way in, trees and a car
 // park on the main-stand side. Seen in the stadium shot before kick-off; the
 // match cameras never look this far out. Static: no per-frame work.

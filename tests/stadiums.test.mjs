@@ -71,7 +71,7 @@ test('own stadium in the club identity; every second match away in the opponent 
  const html=read('index.html');assert.match(html,/data-identity-tab="stadium"/);assert.match(html,/id="identityStadiumName"/);
 });
 
-test('V21.407 outside the stadium: fans on the plaza, street lights, trees and a car park, never inside the bowl',async()=>{
+test('V21.410 outside the stadium: fans on the plaza, street lights, trees and a car park, never inside the bowl',async()=>{
  const {surroundingsPlan}=await import('../3d-stadium.mjs');
  for(const weak of [false,true]){
   const p=surroundingsPlan({facadeRadius:34,weak});
