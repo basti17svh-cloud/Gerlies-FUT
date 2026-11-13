@@ -20,22 +20,27 @@ const SAMPLE=(process.env.SAMPLE||'').split(',').filter(Boolean).map(Number);
   const max=await p.evaluate(()=>document.scrollingElement.scrollHeight-innerHeight);const a=Math.min(from,max),b=Math.min(to,max);
   for(let i=0;i<frames;i++){const y=a+(b-a)*ease(i/(frames-1));await p.evaluate(y=>{window.scrollTo(0,y);window.__step(1000/30)},y);await shot()}await step(hold)};
  if(scene==='kurier'||scene==='kabine'){
-  const res=await p.evaluate(()=>{
+  const XI=JSON.parse(fs.readFileSync(path.join(__dirname,'xi-full.json'),'utf8'));
+  const res=await p.evaluate((XI)=>{
    FooteraHighlights.setMode('off');
-   const opp=['Gianluigi Donnarumma','Achraf Hakimi','Marquinhos','Willian Pacho','Nuno Mendes','Vitinha','João Neves','Fabián Ruiz','Ousmane Dembélé','Khvicha Kvaratskhelia','Désiré Doué'].map(__pick).filter(Boolean);
+   const byId=id=>PLAYERS.find(x=>String(x.id)===String(id));const pk=r=>byId(r.id)||__pick(r.name);
+   const home=XI.home.map(pk).filter(Boolean);const items=home.map(b=>makeItem(b,false,{rare:true}));state.club=items;state.squad=items.slice(0,18).map(i=>i.uid);state.profile.clubName=XI.homeName;try{renderHeaderClubName()}catch(_){}
+   const want='Michael Olise';const orig=chooseMatchAttacker;chooseMatchAttacker=function(side,kind,ex){if(side==='home'&&match&&match.minute>=86){const r=matchActorRows(side).find(r=>(r.base?.name||r.name||'')===want);if(r)return r}return orig.apply(this,arguments)};
+   const opp=XI.away.slice(0,11).map(pk).filter(Boolean);
    let tries=0;
-   for(;tries<80;tries++){
+   for(;tries<6000;tries++){
     try{cancelMatch3D();stopMatchTimer()}catch(_){}
     localStorage.removeItem('footera-kabine-v1');
-    startMatch('rivals',{name:'Paris Royal',rating:88,chem:33,power:89,formation:'4-3-3',tactic:'balanced',squad:opp});
+    startMatch('rivals',{name:XI.awayName,rating:88,chem:33,power:89,formation:'4-3-3',tactic:'balanced',squad:opp});
     try{cancelMatch3D();stopMatchTimer()}catch(_){}
     match.injuryTriggered=true;let g=0;while(!match.finished&&g++<5000){simTick();try{cancelMatch3D();if(match.highlightActive)dismissMatchGoalMoment(false)}catch(_){}match.highlightActive=false;match.highlight3DPending=false;match.paused=false}
-    const late=(match.goalEvents||[]).some(e=>e.side==='home'&&e.minute>=85);
-    if(match.home>match.away&&match.home+match.away>=3&&late)break;
+    const ge=match.goalEvents||[],last=ge[ge.length-1];
+    if(match.home===3&&match.away===2&&last&&last.side==='home'&&last.minute>=89&&/Olise/.test(last.playerName||''))break;
    }
    try{document.getElementById('footeraWinInvite')?.remove()}catch(_){}
+   state.stats=state.stats||{};state.stats.matches=27;
    return {tries,score:[match.home,match.away],goals:(match.goalEvents||[]).map(e=>e.minute+e.side+' '+e.playerName)};
-  });console.log(JSON.stringify(res));
+  },XI);console.log(JSON.stringify(res));
   await step(10);
   if(scene==='kurier'){await p.evaluate(()=>{document.getElementById('footeraWinInvite')?.remove();FooteraNewspaper.open(match)});await step(45);
    const max=await p.evaluate(()=>{const m=document.getElementById('newspaperModal');return m.scrollHeight-m.clientHeight});
