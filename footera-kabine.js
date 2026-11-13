@@ -364,26 +364,36 @@
  /* ---------- share picture: the chat of the latest match ---------- */
  function wrap(g,text,maxW){const words=String(text).split(/\s+/),lines=[];let cur="";for(const w of words){const t=cur?cur+" "+w:w;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=w}else cur=t}if(cur)lines.push(cur);return lines}
  function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
- async function picture(){
-  const v=read(),ref=latestMatchRef(v)||v.msgs[v.msgs.length-1]?.ref;const block=v.msgs.filter(m=>m.ref===ref);if(!block.length)return null;
-  const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+ // The picture shows exactly the chat of the latest match: every message of that block, in order (no gaps).
+ function shareBlock(v=read()){const ref=latestMatchRef(v)||v.msgs[v.msgs.length-1]?.ref;return ref?v.msgs.filter(m=>m.ref===ref):[]}
+ // What the person sees right now in the chat: every message at least half on screen, in order.
+ function visibleMessages(v=read()){
+  try{const list=document.querySelector("#kabineList");if(!list||!list.isConnected||!list.clientHeight)return[];
+   const box=list.getBoundingClientRect(),ids=new Set();
+   list.querySelectorAll("[data-kb-id]").forEach(el=>{const r=el.getBoundingClientRect(),seen=Math.min(r.bottom,box.bottom)-Math.max(r.top,box.top);if(r.height&&seen>=Math.min(r.height,box.height)*.5)ids.add(el.dataset.kbId)});
+   return v.msgs.filter(m=>ids.has(m.id));
+  }catch(e){return[]}
+ }
+ async function picture(messages=null){
+  const block=Array.isArray(messages)&&messages.length?messages:shareBlock();if(!block.length)return null;
+  const W=1080,TOP=150,BOTTOM=110,PAD=30,c=document.createElement("canvas"),probe=c.getContext("2d");
   try{await document.fonts?.ready}catch(e){}
   const SANS="Inter,system-ui,sans-serif",F=(w,px)=>`${w} ${px}px ${SANS}`;
-  g.fillStyle="#0b141a";g.fillRect(0,0,W,H);
-  g.fillStyle="#1f2c34";g.fillRect(0,0,W,150);
-  g.fillStyle="#25d366";g.beginPath();g.arc(90,75,42,0,Math.PI*2);g.fill();g.fillStyle="#0b141a";g.font=F(900,38);g.textAlign="center";g.fillText("⚽",90,89);
-  g.textAlign="left";g.fillStyle="#e9edef";g.font=F(800,40);g.fillText(`${clubName()} · Kabine`,155,70,W-200);g.fillStyle="#8696a0";g.font=F(600,26);g.fillText(members(),155,110,W-200);
-  // Lay out from the bottom so the newest messages are always on the picture.
-  const items=[],maxW=700;g.font=F(500,32);
+  const items=[],maxW=700;probe.font=F(500,32);
   for(const m of block){
    if(m.kind==="sys"){items.push({m,h:70});continue}
-   const lines=wrap(g,plain(m.text),maxW-60);items.push({m,lines,h:(m.kind==="msg"?44:0)+lines.length*42+44+(m.react?34:0)+18});
+   const lines=wrap(probe,plain(m.text),maxW-60);items.push({m,lines,h:(m.kind==="msg"?44:0)+lines.length*42+44+(m.react?34:0)+18});
   }
-  // The "Abpfiff" line always stays on top, then as many of the newest messages as fit.
-  const head=items[0]?.m.kind==="sys"?items.shift():null;
-  let total=head?head.h:0,start=items.length;while(start>0&&total+items[start-1].h<H-150-150){total+=items[start-1].h;start--}
-  let y=180;
-  for(const it of [...(head?[head]:[]),...items.slice(start)]){
+  // 4:5 when it fits, taller up to 9:16 for long chats; beyond that the chat is scaled down, never cut.
+  const body=items.reduce((n,it)=>n+it.h,0),H=Math.max(1350,Math.min(1920,TOP+BOTTOM+PAD*2+body)),room=H-TOP-BOTTOM-PAD*2,k=Math.min(1,room/body);
+  c.width=W;c.height=H;const g=c.getContext("2d");
+  g.fillStyle="#0b141a";g.fillRect(0,0,W,H);
+  g.fillStyle="#1f2c34";g.fillRect(0,0,W,TOP);
+  g.fillStyle="#25d366";g.beginPath();g.arc(90,75,42,0,Math.PI*2);g.fill();g.fillStyle="#0b141a";g.font=F(900,38);g.textAlign="center";g.fillText("⚽",90,89);
+  g.textAlign="left";g.fillStyle="#e9edef";g.font=F(800,40);g.fillText(`${clubName()} · Kabine`,155,70,W-200);g.fillStyle="#8696a0";g.font=F(600,26);g.fillText(members(),155,110,W-200);
+  g.save();g.translate((W-W*k)/2,TOP+PAD);g.scale(k,k);
+  let y=0;
+  for(const it of items){
    const m=it.m;
    if(m.kind==="sys"){g.font=F(700,26);const w=Math.min(W-120,g.measureText(m.text).width+48);g.fillStyle="#1d2a30";rr(g,(W-w)/2,y,w,48,14);g.fill();g.fillStyle="#ffd279";g.textAlign="center";g.fillText(m.text,W/2,y+33,W-150);y+=it.h;continue}
    g.font=F(500,32);const textW=Math.max(...it.lines.map(l=>g.measureText(l).width),m.kind==="msg"?(g.font=F(800,28),g.measureText(m.who.name).width):0);g.font=F(500,32);
@@ -396,13 +406,14 @@
    if(m.react){g.font=F(700,26);const t=`${m.react.e} ${m.react.n}`,rw=g.measureText(t).width+30;g.fillStyle="#2a3942";rr(g,bx+20,y+bh-10,rw,40,20);g.fill();g.fillStyle="#e9edef";g.fillText(t,bx+35,y+bh+19)}
    y+=it.h;
   }
+  g.restore();
   g.fillStyle="#1f2c34";g.fillRect(0,H-110,W,110);g.fillStyle="#e9edef";g.textAlign="center";g.font=F(900,32);g.fillText("FOOTERA – BUILD YOUR ERA",W/2,H-62);
   g.fillStyle="#8696a0";g.font=F(600,22);g.fillText("Insta @official_footera · TikTok @footera_official",W/2,H-28);
   const blob=await new Promise(r=>{try{c.toBlob(r,"image/png")}catch(e){r(null)}});
   return blob?new File([blob],"footera-kabine.png",{type:"image/png"}):null;
  }
  async function sharePicture(){
-  const file=await picture();if(!file)return;
+  finishPlay();const file=await picture(visibleMessages());if(!file)return;
   const share=root.FooteraShare?.share,url=root.FooteraShare?.inviteUrl?root.FooteraShare.inviteUrl("","kabine"):location.href;
   if(share)await share({title:"Footera Kabine",text:"💬 Das schreibt meine Mannschaft nach dem Spiel. ⚽",url,file});
  }
@@ -418,6 +429,6 @@
   refreshBadges();
  }
 
- root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,afterMatch,afterPack,afterSbc,answer,replyOptions,read,unread,open,close,buttonHTML,picture,listHTML,short,_T:T,_REPLIES:REPLIES};
+ root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,afterMatch,afterPack,afterSbc,answer,replyOptions,read,unread,open,close,buttonHTML,picture,shareBlock,visibleMessages,listHTML,short,_T:T,_REPLIES:REPLIES};
  if(typeof document!=="undefined"&&document.addEventListener){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start()}
 })(window);
