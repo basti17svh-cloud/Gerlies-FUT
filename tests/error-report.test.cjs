@@ -87,3 +87,14 @@ test('Escape without an open window no longer throws (first error the live smoke
  ctx.top='missingModal';assert.equal(ctx.dismissTopModal(),false);
  ctx.top='packModal';assert.equal(ctx.dismissTopModal(),true);assert.equal(ctx.closed,1);
 });
+
+test('V21.418: profile shows the statistics link only after the server confirms admin access', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const acc = fs.readFileSync(path.join(__dirname, '..', 'footera-account.js'), 'utf8');
+  const fn = fs.readFileSync(path.join(__dirname, '..', 'online', 'footera-analytics-admin.ts'), 'utf8');
+  assert.match(acc, /id="footeraProfileStatsLink" href="\.\/online\/footera-analytics-dashboard\.html" hidden>/);
+  assert.match(acc, /functions\.invoke\("footera-analytics-admin",\{body:\{check:true\}\}\)/);
+  assert.match(acc, /link\.hidden=!ok/);
+  // The check answer comes only after the footera_analytics_admins lookup.
+  assert.ok(fn.indexOf('footera_analytics_admins') < fn.indexOf('body?.check===true'));
+});
