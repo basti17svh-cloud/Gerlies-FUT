@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scene: [walkout, founder, home, squad, store, sbc, evo, events, play, pass]
+        scene: [kurier, kabine]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
