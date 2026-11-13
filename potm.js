@@ -1,4 +1,4 @@
-/* Real FC 27 POTMs. September checked 4 October 2026; October LaLiga (Mbappé) checked 11 November 2026, Footera release 12 November 19:00 Berlin (Basti); October Bundesliga (Füllkrug) and Serie A (Calò) checked 12 November 2026 (fut.gg, EA added 15:00 / 13:00 UTC); October Premier League (Jackson) checked 13 November 2026 (EA added 11:00 UTC).
+/* Real FC 27 POTMs. September checked 4 October 2026; October LaLiga (Mbappé) checked 11 November 2026, Footera release 12 November 19:00 Berlin (Basti); October Bundesliga (Füllkrug) and Serie A (Calò) checked 12 November 2026 (fut.gg, EA added 15:00 / 13:00 UTC); October Premier League (Jackson) checked 13 November 2026 (EA added 11:00 UTC). All four October POTMs complete; portraits imported by potm-portraits.
    Requirements: FUT.GG; UTC expiry: FCData; OVR scores: EA launch update.
    New month: append the league winners (Bundesliga, Premier League, LaLiga, Serie A) with month
    label, EA item stats, EA SBC target and EA's UTC from/until (28 days). Footera target = EA × 0.7.
