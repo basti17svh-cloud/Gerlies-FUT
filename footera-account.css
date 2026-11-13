@@ -151,3 +151,7 @@
 .footera-account-extras{margin-top:10px}
 .footera-account-extras .footera-backup{margin:8px 0 0;padding:12px}
 @media(max-width:420px){.footera-save-choice{grid-template-columns:1fr}}
+
+/* Device-first saves: keep legacy cloud conflict controls mounted for
+   compatibility, but never show a cloud/local choice in the UI. */
+.footera-save-overview,.footera-account-cloud{display:none!important}

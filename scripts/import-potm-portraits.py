@@ -11,7 +11,7 @@ rows = json.loads((root / 'scripts/potm-portraits.json').read_text())
 def fetch(row):
     item, pid = row['itemId'], row['pid']
     urls = [f'https://cdn.futbin.com/content/fifa27/img/players/p{item}.png',
-            f'https://cdn.futwiz.com/assets/img/fc27/faces/{pid}.png']
+            *row.get('urls', []), f'https://cdn.futwiz.com/assets/img/fc27/faces/{pid}.png']
     errors = []
     for url in urls:
         try:

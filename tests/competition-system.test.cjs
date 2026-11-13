@@ -206,3 +206,22 @@ test('catch-up stays owner-only, is never early and does not duplicate an existi
   assert.equal(t.state.weeklyRewards.filter(r=>r.mode==='rivals'&&r.week===oldWeek).length,1);assert.equal(t.state.weeklyRewards[0].claimed,claimed);
  }
 });
+test('Basti gets the full Elite 35 reward for the week ending 12 November at 09:00, owner-only',()=>{
+ const owner='GF-9AE6CDDEFE8A458D',week='1793865600000',next='1794470400000';
+ assert.equal(new Date(Number(week)).toISOString(),'2026-11-05T08:00:00.000Z');
+ const before=setup({now:'2026-11-12T07:59:59Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:15,week}}});
+ assert.equal(before.api.competitionPending('rivals').filter(r=>r.week===week).length,0);
+ const {state,api}=setup({now:'2026-11-12T08:00:00Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:15,week}}});
+ const [row]=api.competitionPending('rivals').filter(r=>r.week===week);
+ assert.equal(row.week,week);assert.equal(row.division,0);assert.equal(row.milestone,35);assert.equal(row.reward.coins,65000);
+ assert.equal(row.reward.packs.length,5);assert.equal(row.reward.playerPicks[0].minRating,84);
+ assert.equal(state.rivals.week,next);assert.equal(state.rivals.weeklyPoints,0);
+ // A row an older build already wrote (15 points, lower division) is lifted while unclaimed, never duplicated.
+ const old={mode:'rivals',week,division:3,milestone:15,points:15,reward:{coins:17000,packs:[]},claimed:false};
+ const lifted=setup({now:'2026-11-12T09:00:00Z',initial:{profile:{saveId:owner},rivals:{division:0,weeklyPoints:0,week:next},weeklyRewards:[old]}});
+ const rows=lifted.state.weeklyRewards.filter(r=>r.mode==='rivals'&&r.week===week);
+ assert.equal(rows.length,1);assert.equal(rows[0].division,0);assert.equal(rows[0].milestone,35);assert.equal(rows[0].reward.coins,65000);
+ // Other players keep their own division and points.
+ const other=setup({now:'2026-11-12T08:00:00Z',initial:{profile:{saveId:'GF-OTHER'},rivals:{division:4,weeklyPoints:15,week},weeklyRewards:[]}});
+ const [o]=other.api.competitionPending('rivals').filter(r=>r.week===week);assert.equal(o.division,4);assert.equal(o.milestone,15);
+});

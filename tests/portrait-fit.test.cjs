@@ -5,13 +5,13 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const html=require('./helpers/app-html.cjs')();
 const start=html.indexOf('const PORTRAIT_BOUNDS=new Map();'),end=html.indexOf('\n',html.indexOf("el.style.setProperty('transform',",start));
 const code=html.slice(start,end+1)+'\n}';
-function run(bounds,{nw=400,nh=300,fw=100,fh=140,shell=true,founder=false}={}){
+function run(bounds,{nw=400,nh=300,fw=100,fh=140,shell=true,founder=false,src='x.webp'}={}){
  const props={};
- const el={naturalWidth:nw,naturalHeight:nh,src:'x.webp',currentSrc:'x.webp',
+ const el={naturalWidth:nw,naturalHeight:nh,src,currentSrc:src,
   parentElement:{clientWidth:fw,clientHeight:fh},
   closest:s=>s==='.card-shell .face'?shell:s==='.founder-shell'?founder:null,
   style:{setProperty:(k,v)=>{props[k]=v},removeProperty:k=>{delete props[k]}}};
- const fit=new Function('document','ResizeObserver',code+';PORTRAIT_BOUNDS.set("x.webp",'+JSON.stringify(bounds)+');return fitCardPortrait;')({},undefined);
+ const fit=new Function('document','ResizeObserver',code+';PORTRAIT_BOUNDS.set('+JSON.stringify(src)+','+JSON.stringify(bounds)+');return fitCardPortrait;')({},undefined);
  fit(el);return props;
 }
 const parse=t=>{const m=/translate\((-?[\d.]+)%,(-?[\d.]+)%\) scale\(([\d.]+)\)/.exec(t||'');return m?m.slice(1).map(Number):null};
@@ -35,4 +35,16 @@ test('POTM art is placed by the fit alone, not by hand-tuned CSS on top of it',(
  // Olise V21.307: 186% CSS width plus the 1.6x fit cropped the face off the card.
  const css=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','potm.css'),'utf8');
  assert.doesNotMatch(css,/--potm-face-|img\[src\*="events\/potm\/"\]/);
+});
+test('POTM action cut-outs fill the window like the EA card (Mbappé V21.394 looked too small)',()=>{
+ // Mbappé file 649x900, arms spread: alpha bbox 75..580 x 207..837.
+ const b={x0:75/649,y0:207/900,x1:580/649,y1:837/900},opt={nw:649,nh:900,fw:170,fh:121};
+ const plain=parse(run(b,opt).transform),potm=parse(run(b,{...opt,src:'./assets/footera/events/potm/oktober-2026/mbappe.png'}).transform);
+ assert.ok(potm[2]>plain[2]*1.1,'POTM figure clearly bigger than the general fit');
+ // Top of the figure stays inside the window (head never cut), the legs may run behind the name plate.
+ const dh=900*Math.min(170/649,121/900),top=121-dh+b.y0*dh,k=potm[2],ty=potm[1]/100*121;
+ const shownTop=121+k*(top-121)+ty;assert.ok(shownTop>=0&&shownTop<121*.1,'head just under the window top: '+shownTop);
+});
+test('portrait bounds are not cached before the image has loaded',()=>{
+ assert.match(html,/if\(w&&h\)PORTRAIT_BOUNDS\.set\(url,box\)/);
 });

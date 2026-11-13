@@ -167,3 +167,18 @@ test('assistant settings: quality, rating range and strict positions limit the a
  assert.equal(t3.squad().filter(Boolean).length,0);assert.match(t3.toasts.at(-1),/passende Positionen/);
  t3.run('sbcQuickFill()');assert.equal(t3.squad().filter(Boolean).length,11,'without the switch an outfield player may stand in goal');
 });
+
+// Black Friday check 2026-11-12: "Ø 84 · min. 1 TOTW" stayed unsolvable although the club could do it.
+test('auto-fill solves a TOTW requirement even when the TOTW card is rated below the squad target',()=>{
+ const club=[...FORM.map((p,i)=>card(p,84,{uid:`a${i}`,pid:`a${i}`})),...FORM.map((p,i)=>card(p,86,{uid:`b${i}`,pid:`b${i}`})),card('CM',81,{uid:'totw81',pid:'t1',cosmeticDesign:'totw',rare:true})];
+ const t=setup({club,sbc:{id:'bf',count:11,req:'11 Spieler · Ø GES 84 · min. 1 TOTW',minAvg:84,minTotw:1,filter:()=>true}});
+ t.run('sbcQuickFill()');
+ assert.ok(t.squad().includes('totw81'),t.toasts.join(' | '));assert.equal(t.stats().ok,true);
+});
+test('auto-fill uses a TOTW card even when a cheaper gold card of the same player is in the club, but never both',()=>{
+ const club=[...FORM.map((p,i)=>card(p,84,{uid:`g${i}`,pid:`p${i}`})),card('CM',86,{uid:'totw-p5',pid:'p5',cosmeticDesign:'totw',rare:true}),...FORM.map((p,i)=>card(p,85,{uid:`x${i}`,pid:`x${i}`}))];
+ const t=setup({club,sbc:{id:'bf2',count:11,req:'11 Spieler · Ø GES 84 · min. 1 TOTW',minAvg:84,minTotw:1,filter:()=>true}});
+ t.run('sbcQuickFill()');
+ const squad=t.squad(),pids=squad.map(uid=>club.find(c=>c.uid===uid).pid);
+ assert.ok(squad.includes('totw-p5'),t.toasts.join(' | '));assert.equal(new Set(pids).size,11,'one card per player');assert.equal(t.stats().ok,true);
+});

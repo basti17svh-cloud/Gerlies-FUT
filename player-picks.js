@@ -3,8 +3,48 @@
  'use strict';
  let rows=[],owner='',listedSaveId='',loading=false,busy=false,offer=null,selected='',revealed=new Set(),message='',mounted=false,needsCloudRestore=false,lastRefresh=0,rewardSyncKey='',lastAutoRecovery=0;
  const $=id=>document.getElementById(id);
- const title=p=>p.source==='tournament'?'Turnier-Siegerpick':p.source==='halloween-cup'?'Halloween Team 1 Player Pick':p.type==='champions-red'?'Champions Player Pick':'Player Pick';
+ const title=p=>p.local?'Icon Player Pick':p.source==='tournament'?'Turnier-Siegerpick':p.source==='halloween-cup'?'Halloween Team 1 Player Pick':p.type==='champions-red'?'Champions Player Pick':'Player Pick';
  const saveId=()=>state.profile?.saveId||'';
+ const ratingSuffix=p=>p.min_rating?' · '+p.min_rating+'+':'';
+ // Icon Player Picks from SBCs live in the save (state.iconPicks) and work without an account.
+ const iconPicks=()=>Array.isArray(state.iconPicks)?state.iconPicks:[];
+ const iconBase=pid=>(typeof MID_ICON_BASES!=='undefined'?MID_ICON_BASES:[]).find(b=>b.id===pid)||null;
+ function iconPreview(base,pickId){
+  const item=makeMidIconItem(base,false);
+  return {...item,uid:'preview-'+pickId+'-'+base.id,baseSnapshot:base,acquisitionSource:'icon-pick'};
+ }
+ function rollIconOptions(pick){
+  const pool=(typeof MID_ICON_BASES!=='undefined'?MID_ICON_BASES:[]).filter(b=>Number(b.ovr||0)>=Number(pick.minRating||0));
+  const copy=[...pool];
+  for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}
+  return copy.slice(0,pick.choices).map(b=>b.id);
+ }
+ function openIconPick(id){
+  if(busy||offer)return;
+  const list=iconPicks(),pick=id?list.find(p=>p.id===id):list[0];if(!pick)return;
+  if(!Array.isArray(pick.options)||pick.options.length!==pick.choices||!pick.options.every(iconBase)){
+   pick.options=rollIconOptions(pick);
+   if(pick.options.length!==pick.choices){toast('Gerade sind nicht genug Icons verfügbar. Dein Pick bleibt erhalten.');return}
+   save();
+  }
+  offer={local:true,id:pick.id,choices:pick.choices,min_rating:pick.minRating||0,options:pick.options.map(pid=>({id:pid,item:iconPreview(iconBase(pid),pick.id)}))};
+  selected='';revealed=new Set();needsCloudRestore=false;
+  modal();renderOffer();$('playerPickFeedback').textContent='';
+  showUiLayer('playerPickModal','player-pick');
+  document.querySelector('[data-pick-close]').focus();
+ }
+ function chooseIconPick(){
+  const pick=iconPicks().find(p=>p.id===offer?.id),base=pick&&pick.options?.includes(selected)?iconBase(selected):null;
+  if(!base)return;
+  const item=makeMidIconItem(base,false);item.acquisitionSource='icon-pick';item.rare=true;
+  state.club.push(item);
+  state.iconPickClaims=state.iconPickClaims||{};
+  state.iconPickClaims[pick.id]={selectedId:base.id,claimedAt:Date.now()};
+  state.iconPicks=iconPicks().filter(p=>p.id!==pick.id);
+  save();if(typeof flushSave==='function')flushSave();
+  closeUiLayer('playerPickModal','player-pick');offer=null;selected='';
+  renderAll();toast(base.name+' ist jetzt in deinem Verein.');
+ }
  // Matches the server's duplicate decision. Different card variants,
  // promo versions and cosmetic designs are not mistaken for duplicates.
  function samePickCard(a,b){
@@ -49,7 +89,7 @@
   const box=$('homePlayerPickNotice');if(!box)return;
   // Historical reward receipts and sync messages are not outstanding Picks.
   // Only a successful server listing for this account and club can show a count.
-  const count=availablePicks().length;
+  const count=availablePicks().length+iconPicks().length;
   box.hidden=count===0;
   const qty=$('homePlayerPickCount');if(qty)qty.textContent=String(count);
   const copy=$('homePlayerPickCopy');if(copy)copy.textContent=count===1?'1 Player Pick wartet im Store auf dich.':count+' Player Picks warten im Store auf dich.';
@@ -62,6 +102,7 @@
   const available=availablePicks();
   host.innerHTML='<div class="pick-heading"><div><small>DEINE AUSWAHL</small><h3>Meine Player Picks</h3></div><button type="button" data-picks-refresh '+(loading||busy?'disabled':'')+'>Aktualisieren</button></div>'+
    (retry?'<p class="pick-notice">Eine Einlösung wartet auf Bestätigung. Deine Auswahl bleibt gespeichert.</p><button type="button" class="primary" data-pick-recover '+(busy?'disabled':'')+'>Einlösung abschließen</button>':'')+
+   iconPicks().map(p=>'<article class="pick-ticket pick-icon"><span class="pick-ticket-rating">ICON</span><div><strong>Icon Player Pick</strong><small>1 aus '+p.choices+' · Zufällige Icons · untauschbar</small></div><button type="button" class="primary" data-pick-icon-open="'+esc(p.id)+'" '+(busy?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('')+
    '<p class="pick-status" role="status">'+esc(message||(loading?'Picks werden geladen …':available.length?'Wähle pro Pick einen Spieler. Alle Picks sind untauschbar.':'Noch keine offenen Player Picks.'))+'</p>'+
    available.map(p=>'<article class="pick-ticket '+(p.type==='champions-red'?'pick-red':'')+'"><span class="pick-ticket-rating">'+p.min_rating+'+</span><div><strong>'+title(p)+'</strong><small>1 aus '+p.choices+' · '+(p.source==='halloween-cup'?'Garantiert aus allen 18 Spielern von Team 1':p.type==='champions-red'?'Aktive TOTW- und Eventkarten':'Goldspieler')+'</small></div><button type="button" class="primary" data-pick-open="'+esc(p.id)+'" '+(busy||retry?'disabled':'')+'>'+(p.options?'Fortsetzen':'Öffnen')+'</button></article>').join('');
  }
@@ -100,13 +141,14 @@
  }
  function renderOffer(){
   if(!offer)return;
-  modal();$('playerPickTitle').textContent=title(offer)+' · '+offer.min_rating+'+';
+  modal();$('playerPickTitle').textContent=title(offer)+ratingSuffix(offer);
   $('playerPickDescription').textContent='1 aus '+offer.choices+' · Tippe eine Karte zum Aufdecken an. Auswahl bleibt gespeichert.';
+  $('playerPickOptions').classList.toggle('icon-pick-options',!!offer.local);
   $('playerPickOptions').innerHTML=offer.options.map((o,i)=>{
    const item=pickIconItem({...o.item,uid:'preview-'+o.id,acquisitionSource:'reward-pick'}),base=item.baseSnapshot,shown=revealed.has(o.id);
    const label=base?.name||'Spieler',duplicate=pickDuplicateLocation(item),ownedLabel=duplicate==='club'?'Bereits im Verein':'Bereits im SBC-Speicher';
    const selectionLabel=selected===o.id?'✓ Ausgewählt':shown?(duplicate?'Duplikat · Auswählen':'Auswählen'):'Aufdecken';
-   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+(duplicate?' duplicate':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+(duplicate?' · '+ownedLabel:'')+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">PLAYER PICK</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+(duplicate?'<span class="pick-duplicate-badge" aria-hidden="true">DUPLIKAT</span>':'')+'</span></span><span class="pick-select-label">'+selectionLabel+'</span></button>';
+   return '<button type="button" class="pick-option '+(shown?'revealed ':'')+(selected===o.id?'selected':'')+(duplicate?' duplicate':'')+'" data-pick-option="'+esc(o.id)+'" aria-pressed="'+(selected===o.id)+'" '+(busy?'disabled':'')+' aria-label="'+(shown?esc(label)+(duplicate?' · '+ownedLabel:'')+' auswählen':'Karte '+(i+1)+' aufdecken')+'"><span class="pick-flip"><span class="pick-flip-face pick-flip-back" aria-hidden="true"><span class="pick-back-emblem">F</span><span class="pick-back-brand">FOOTERA</span><span class="pick-back-type">'+(offer.local?'ICON PICK':'PLAYER PICK')+'</span><span class="pick-back-prompt">ANTIPPEN ZUM AUFDECKEN</span></span><span class="pick-flip-face pick-flip-front">'+cardHTML(base,item)+(duplicate?'<span class="pick-duplicate-badge" aria-hidden="true">DUPLIKAT</span>':'')+'</span></span><span class="pick-select-label">'+selectionLabel+'</span></button>';
   }).join('');
   const b=document.querySelector('[data-pick-confirm]');b.disabled=!selected||busy;b.textContent=busy?'Wird eingelöst …':'Auswahl bestätigen';
   document.querySelector('[data-pick-close]').disabled=busy;
@@ -177,6 +219,7 @@
  }
  async function choose(recover=false){
   if(busy)return;
+  if(!recover&&offer?.local){chooseIconPick();return}
   const pending=window.FooteraAccount.pendingPlayerPick();
   const id=recover?pending?.pickId:offer?.id,option=recover?pending?.optionId:selected;
   if(!id||!option)return;
@@ -197,6 +240,7 @@
   const original=renderStore;renderStore=function(){original();render();refresh()};
   document.addEventListener('click',e=>{
    if(e.target.closest('[data-picks-refresh]')){refresh(true);return}
+   const iconOpen=e.target.closest('[data-pick-icon-open]');if(iconOpen){openIconPick(iconOpen.dataset.pickIconOpen);return}
    const retryOpen=e.target.closest('[data-pick-reopen]');if(retryOpen&&!busy){open(retryOpen.dataset.pickReopen);return}
    const openButton=e.target.closest('[data-pick-open]');if(openButton){open(openButton.dataset.pickOpen);return}
    const option=e.target.closest('[data-pick-option]');if(option&&!busy){
@@ -233,7 +277,7 @@
   setTimeout(refresh,3500);
   setInterval(()=>{if(!document.hidden&&['storeView','homeView'].includes(currentViewId()))refresh()},30000);
  }
- window.FooteraPlayerPicks={refresh,applyDelivery,isBusy:()=>busy,onClose:()=>{
+ window.FooteraPlayerPicks={refresh,openIconPick,applyDelivery,isBusy:()=>busy,onClose:()=>{
   offer=null;selected='';revealed=new Set();needsCloudRestore=false;refresh(true);
  },isActive:()=>busy||!!offer||!!$('playerPickModal')?.classList.contains('active')};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();

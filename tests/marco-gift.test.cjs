@@ -51,6 +51,7 @@ function app({owner=OWNER,seed=1,saved=null,at='2026-09-30T14:00:00Z'}={}){
   'let pendingResolved=new Set(state.pendingResolved);',
   section('function openPack(','function finishPack(){'),
   section('let saveQueued=false','function toast(t){'),
+  section('// Local Icon Player Picks','function iconPickLabel('),
   section('const DIRECT_REWARDS=','const PROMO_CODES='),
   'for(const icon of MID_ICON_BASES)P_BY_ID.set(icon.id,icon);'
  ].join('\n'),ctx);

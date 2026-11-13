@@ -198,9 +198,10 @@ test('Niklas opens his pack through the real Store button without paying and can
  click();assert.equal(ctx.state.stats.packs,13);assert.equal(ctx.state.pendingPack.length,1);
 });
 
-test('Max Wittenberg has the agreed ST/ZOM founder profile, FSV Hohenroth crest and only his save ID gets the pack',()=>{
+test('Max Wittenberg has the agreed ST/ZOM/LF/RF founder profile, FSV Hohenroth crest and only his save ID gets the pack',()=>{
+ // Since 2026-11-10 Max also plays both wings (CAM,LW,RW shown as ZOM/LF/RF).
  const ctx=setup(),b=call(ctx,'MAX_FOUNDER_BASE'),item=call(ctx,'maxFounderItem')();
- assert.deepEqual([b.name,b.fullName,b.ovr,b.position,b.alt,b.height,b.preferredFoot,b.team,b.league],['M. Wittenberg','Max Wittenberg',88,'ST','CAM',175,'Right','FSV Hohenroth','Footera']);
+ assert.deepEqual([b.name,b.fullName,b.ovr,b.position,b.alt,b.height,b.preferredFoot,b.team,b.league],['M. Wittenberg','Max Wittenberg',88,'ST','CAM,LW,RW',175,'Right','FSV Hohenroth','Footera']);
  assert.deepEqual([b.pac,b.sho,b.pas,b.dri,b.def,b.phy],[91,89,82,88,45,84]);
  for(const f of [b.face,b.clubLogo,b.leagueLogo])assert.ok(fs.existsSync(path.join(__dirname,'..',f)),f);
  assert.equal(item.tradeable,false);assert.equal(call(ctx,'isFounderItem')(item),true);assert.equal(call(ctx,'isExclusiveFounderBase')(b),true);
