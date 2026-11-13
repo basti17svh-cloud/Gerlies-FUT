@@ -54,7 +54,7 @@ test('a clock from the future or broken values never pay',()=>{
 
 test('files ship with the build',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
- for(const f of ['footera-comeback.js?v=21407','footera-comeback.css?v=21407']){
+ for(const f of ['footera-comeback.js?v=21411','footera-comeback.css?v=21411']){
   assert.ok(html.includes(f),`index.html ${f}`);
   assert.ok(sw.includes(`"./${f}"`),`service worker ${f}`);
  }

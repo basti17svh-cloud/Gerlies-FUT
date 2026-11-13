@@ -114,3 +114,23 @@
 .kit-design-option b{font-size:10px;letter-spacing:.07em}
 .kit-design-option small{font-size:9px;line-height:1.25;text-align:center;color:#a3b6aa;overflow-wrap:anywhere}
 .kit-design-option[aria-pressed="true"] small{color:#e5f5b8}
+/* V21.406 stadium tab */
+.identity-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+.stadium-preview{position:relative;height:150px;margin:10px 0 12px;border-radius:14px;overflow:hidden;background:linear-gradient(#0b1620,#13242c);border:1px solid #33473e}
+.stadium-preview-sky{position:absolute;inset:0 0 auto;height:44px}
+.stadium-preview-sky .roof{position:absolute;left:-6%;right:-6%;top:10px;height:16px;border-radius:0 0 50% 50%/0 0 100% 100%;background:#22313a;box-shadow:0 3px 0 #f4f8ffcc}
+.stadium-kessel .stadium-preview-sky .roof{box-shadow:0 3px 0 var(--seat-a)}
+.stadium-preview-sky .mast{position:absolute;top:4px;width:4px;height:58px;background:#3a474e}
+.stadium-preview-sky .mast::before{content:"";position:absolute;left:-9px;top:-2px;width:22px;height:10px;border-radius:3px;background:#fff;box-shadow:0 0 14px 4px #fff8}
+.stadium-preview-sky .mast.l{left:8%}.stadium-preview-sky .mast.r{right:8%}
+.stadium-preview-stand{position:absolute;left:0;right:0;top:34px;height:62px;display:grid;grid-template-rows:repeat(6,1fr);gap:2px;transform:perspective(220px) rotateX(24deg)}
+.stadium-tradition .stadium-preview-stand{top:46px;height:50px}
+.stadium-preview-stand i{display:block;background-color:var(--seat-a);background-image:radial-gradient(circle at 50% 35%,#f0d5ba 0 2px,transparent 2.5px),radial-gradient(ellipse at 50% 110%,#e4e1d8cc 0 4px,transparent 4.5px);background-size:9px 100%,9px 100%;background-repeat:repeat-x}
+.stadium-preview-stand i:nth-child(even){background-color:var(--seat-b)}
+.stadium-preview-pitch{position:absolute;left:0;right:0;bottom:0;height:52px;background:repeating-linear-gradient(90deg,#2f8f45 0 22px,#2a8240 22px 44px)}
+.stadium-preview strong{position:absolute;left:10px;bottom:20px;padding:4px 8px;border-radius:6px;background:#08131ae6;color:#fff;font:italic 900 15px/1.1 system-ui;text-transform:uppercase}
+.stadium-preview small{position:absolute;left:10px;bottom:4px;color:#e9f6d0;font:800 10px/1.2 system-ui;letter-spacing:1px;text-shadow:0 1px 2px #000}
+.stadium-styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+.stadium-styles button{display:flex;flex-direction:column;gap:3px;min-height:64px;padding:8px;border:1px solid #33473e;border-radius:11px;background:#101a16;color:#b8c7bf;text-align:left}
+.stadium-styles button b{font-size:11px;overflow-wrap:anywhere;color:#eef6e8}.stadium-styles button span{font-size:10px;line-height:1.25}
+.stadium-styles button.active{border-color:#d8ff3e;background:#27351e;box-shadow:inset 0 0 0 1px #d8ff3e44}

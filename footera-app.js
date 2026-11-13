@@ -3360,14 +3360,35 @@ function defaultClubIdentity(){return{
  kits:{
   home:{pattern:"solid",shirtPrimary:"#d8ff3e",shirtSecondary:"#173627",shorts:"#111714",socks:"#d8ff3e"},
   away:{pattern:"diagonal",shirtPrimary:"#f1f4f2",shirtSecondary:"#173627",shorts:"#f1f4f2",socks:"#173627"}
- }
+ },
+ // V21.406: own stadium. Empty name/colours follow club name and club colours.
+ stadium:{name:"",style:"arena",seatPrimary:"",seatSecondary:""}
 }}
+const STADIUM_STYLES={arena:{label:"Flutlicht-Arena",text:"Oberrang, Dach und Lichtring"},kessel:{label:"Hexenkessel",text:"Steile Ränge, Lichtring in Vereinsfarbe"},tradition:{label:"Traditionsstadion",text:"Offen, mit vier Flutlichtmasten"}};
+function cleanClubStadium(raw){const x=raw&&typeof raw==="object"?raw:{},hex=v=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():"";
+ return{name:String(x.name??"").replace(/[<>\u0000-\u001f]/g,"").replace(/\s+/g," ").trim().slice(0,28),style:Object.hasOwn(STADIUM_STYLES,x.style)?x.style:"arena",seatPrimary:hex(x.seatPrimary),seatSecondary:hex(x.seatSecondary)}}
+// The stadium as the 3D scenes get it: blanks filled from club name and colours.
+function resolvedClubStadium(identity,clubName){const id=cleanClubIdentity(identity),s=id.stadium;
+ return{name:s.name||`${String(clubName||"Footera Club").trim()} Arena`.slice(0,28),style:s.style,seatPrimary:s.seatPrimary||id.colors.primary,seatSecondary:s.seatSecondary||id.colors.secondary}}
+// Every opponent always plays in the same ground, built and named from its name.
+function opponentClubStadium(name,kit){
+ const club=String(name||"Gast").trim()||"Gast";let h=2166136261;for(const c of club)h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
+ const style=["arena","kessel","tradition"][h%3],base=club.replace(/^(?:1\.\s*)?(?:FC|SC|SV|VfB|VfL|TSG|AC|AS|SS|RC|CF|CD|SL|AFC)\s+/i,"").trim()||club;
+ const hex=v=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():"";
+ return{name:(style==="arena"?`${base} Arena`:style==="kessel"?`Stadion ${base}`:`${base} Park`).slice(0,28),style,seatPrimary:hex(kit?.shirtPrimary)||"#c8102e",seatSecondary:hex(kit?.shirtSecondary)||"#1d2430"}}
+// Basti 2026-11-13 "Abwechselnd Heim/Auswärts": every second match is shown in
+// the opponent's ground. Only the picture changes; result and home advantage stay.
+function matchStadiumFor(matchNumber,opponentProfile,opponentName,awayKit){
+ const venue=Number(matchNumber)%2===1?"away":"home";
+ if(venue==="home")return{venue,stadium:resolvedClubStadium(state.profile?.clubIdentity,state.profile?.clubName)};
+ const own=opponentProfile?.clubIdentity?.stadium;
+ return{venue,stadium:own&&(own.name||own.style!=="arena")?resolvedClubStadium(opponentProfile.clubIdentity,opponentProfile.name||opponentName):opponentClubStadium(opponentName,awayKit)}}
 function safeClubHex(value,fallback){return /^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():fallback}
 function cleanClubKit(src,def){src=src&&typeof src==="object"?src:{};return{pattern:["solid","stripes","hoops","diagonal","halves","sleeves","center","pinstripes","quarters","chevron","chestband","shoulders","sidepanels","reverse","doubleband","checkers","diamonds","fade","splitstripe","cuffs","volt","rift","prism","topo","velocity","deco","orbit"].includes(src.pattern)?src.pattern:def.pattern,shirtPrimary:safeClubHex(src.shirtPrimary,def.shirtPrimary),shirtSecondary:safeClubHex(src.shirtSecondary,def.shirtSecondary),shorts:safeClubHex(src.shorts,def.shorts),socks:safeClubHex(src.socks,def.socks)}}
 function cleanClubIdentity(raw){
  const d=defaultClubIdentity(),x=raw&&typeof raw==="object"?raw:{},crest=x.crest&&typeof x.crest==="object"?x.crest:{},colors=x.colors&&typeof x.colors==="object"?x.colors:{},kits=x.kits&&typeof x.kits==="object"?x.kits:{};
 
- return{crest:{shape:["shield","round","hex","point","modern","oval","diamond"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,symbolColor:safeClubHex(crest.symbolColor||crest.accent||colors.accent,d.crest.symbolColor),textColor:safeClubHex(crest.textColor,d.crest.textColor),field:["solid","split","stripes","diagonal","quarters"].includes(crest.field)?crest.field:"solid",decoration:crest.decoration==="laurel"?"laurel":"none",stars:[0,1,2,3].includes(Number(crest.stars))?Number(crest.stars):0,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:cleanClubKit(kits.home,d.kits.home),away:cleanClubKit(kits.away,d.kits.away)}}
+ return{crest:{shape:["shield","round","hex","point","modern","oval","diamond"].includes(crest.shape)?crest.shape:d.crest.shape,symbol:["star","ball","bolt","diamond","crown","f","eagle","lion","wolf","flame","trophy","anchor","castle","sun","moon","cross","comet","skull","bull","bear","fox","horse","dragon","shark","snake","owl","scorpion","swords","shieldmark","fleur","gear","mountain","trident","target","waves","ram"].includes(crest.symbol)?crest.symbol:d.crest.symbol,primary:safeClubHex(crest.primary||colors.primary,d.crest.primary),secondary:safeClubHex(crest.secondary||colors.secondary,d.crest.secondary),accent:safeClubHex(crest.accent||colors.accent,d.crest.accent),borderColor:safeClubHex(crest.borderColor||crest.primary||colors.primary,d.crest.borderColor),borderWidth:["thin","medium","strong","massive"].includes(crest.borderWidth)?crest.borderWidth:d.crest.borderWidth,symbolColor:safeClubHex(crest.symbolColor||crest.accent||colors.accent,d.crest.symbolColor),textColor:safeClubHex(crest.textColor,d.crest.textColor),field:["solid","split","stripes","diagonal","quarters"].includes(crest.field)?crest.field:"solid",decoration:crest.decoration==="laurel"?"laurel":"none",stars:[0,1,2,3].includes(Number(crest.stars))?Number(crest.stars):0,initials:String(crest.initials||"F").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5)||"F"},colors:{primary:safeClubHex(colors.primary,d.colors.primary),secondary:safeClubHex(colors.secondary,d.colors.secondary),accent:safeClubHex(colors.accent,d.colors.accent)},kits:{home:cleanClubKit(kits.home,d.kits.home),away:cleanClubKit(kits.away,d.kits.away)},stadium:cleanClubStadium(x.stadium)}
 }
 function ensureClubIdentityState(){
  state.profile=state.profile||{};
@@ -6536,8 +6557,18 @@ function renderClubIdentityPreview(){
  if($("identityColorChipSecondary"))$("identityColorChipSecondary").style.background=x.colors.secondary;
  if($("identityColorChipAccent"))$("identityColorChipAccent").style.background=x.colors.accent;
  document.querySelectorAll("[data-crest-shape]").forEach(b=>b.classList.toggle("active",b.dataset.crestShape===x.crest.shape));
- document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol));renderIdentityColorTools()
+ document.querySelectorAll("[data-crest-symbol]").forEach(b=>b.classList.toggle("active",b.dataset.crestSymbol===x.crest.symbol));renderIdentityColorTools();renderStadiumIdentity(x,d.clubName)
 }
+// V21.406 stadium tab: name, build and seat colours, with a small drawn preview.
+function renderStadiumIdentity(identity,clubName){
+ const st=resolvedClubStadium(identity,clubName),box=$("identityStadiumPreview"),styles=$("identityStadiumStyles");
+ if(box){const rows=Array.from({length:6},(_,r)=>`<i></i>`).join("");
+  box.className=`stadium-preview stadium-${st.style}`;box.style.setProperty("--seat-a",st.seatPrimary);box.style.setProperty("--seat-b",st.seatSecondary);
+  box.innerHTML=`<div class="stadium-preview-sky">${st.style==="tradition"?'<b class="mast l"></b><b class="mast r"></b>':'<b class="roof"></b>'}</div><div class="stadium-preview-stand">${rows}</div><div class="stadium-preview-pitch"></div><strong>${esc(st.name)}</strong><small>${esc(STADIUM_STYLES[st.style].label)}</small>`}
+ if(styles){if(!styles.children.length)styles.innerHTML=Object.entries(STADIUM_STYLES).map(([id,s])=>`<button type="button" role="radio" data-stadium-style="${id}"><b>${esc(s.label)}</b><span>${esc(s.text)}</span></button>`).join("");
+  styles.querySelectorAll("[data-stadium-style]").forEach(b=>{const on=b.dataset.stadiumStyle===st.style;b.classList.toggle("active",on);b.setAttribute("aria-checked",String(on))})}
+}
+$("identityStadiumStyles")?.addEventListener("click",e=>{const b=e.target.closest("[data-stadium-style]");if(!b)return;if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();clubIdentityDraft.identity.stadium={...cleanClubStadium(clubIdentityDraft.identity.stadium),style:b.dataset.stadiumStyle};renderClubIdentityPreview()});
 function renderClubIdentity(){
  if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();const d=clubIdentityDraft,x=cleanClubIdentity(d.identity);d.identity=x;
  const set=(id,val)=>{const el=$(id);if(el&&document.activeElement!==el)el.value=val};
@@ -6546,6 +6577,7 @@ function renderClubIdentity(){
  set("identityColorPrimary",x.colors.primary);set("identityColorSecondary",x.colors.secondary);set("identityColorAccent",x.colors.accent);
  set("identityHomePattern",x.kits.home.pattern);set("identityHomePrimary",x.kits.home.shirtPrimary);set("identityHomeSecondary",x.kits.home.shirtSecondary);set("identityHomeShorts",x.kits.home.shorts);set("identityHomeSocks",x.kits.home.socks);
  set("identityAwayPattern",x.kits.away.pattern);set("identityAwayPrimary",x.kits.away.shirtPrimary);set("identityAwaySecondary",x.kits.away.shirtSecondary);set("identityAwayShorts",x.kits.away.shorts);set("identityAwaySocks",x.kits.away.socks);
+ {const st=resolvedClubStadium(x,d.clubName);set("identityStadiumName",x.stadium.name);const n=$("identityStadiumName");if(n)n.placeholder=`${d.clubName||"Footera Club"} Arena`;set("identityStadiumSeatPrimary",st.seatPrimary);set("identityStadiumSeatSecondary",st.seatSecondary)}
  syncIdentityTabs();renderClubIdentityPreview()
 }
 document.querySelector(".club-section-tabs")?.addEventListener("click",e=>{const b=e.target.closest("[data-club-section]");if(!b)return;clubSection=b.dataset.clubSection;if(clubSection==="identity")clubIdentityDraft=makeClubIdentityDraft();renderClub()});
@@ -6554,6 +6586,9 @@ $("identityCrestShapes")?.addEventListener("click",e=>{const b=e.target.closest(
 $("identityCrestSymbols")?.addEventListener("click",e=>{const b=e.target.closest("[data-crest-symbol]");if(!b||!clubIdentityDraft)return;clubIdentityDraft.identity.crest.symbol=b.dataset.crestSymbol;renderClubIdentityPreview()});
 function bindIdentityInput(id,apply,event="input"){$(id)?.addEventListener(event,e=>{if(!clubIdentityDraft)clubIdentityDraft=makeClubIdentityDraft();apply(e.target.value,clubIdentityDraft);renderClubIdentityPreview()})}
 bindIdentityInput("identityClubName",(v,d)=>d.clubName=String(v).slice(0,30));
+bindIdentityInput("identityStadiumName",(v,d)=>d.identity.stadium={...cleanClubStadium(d.identity.stadium),name:String(v).slice(0,28)});
+bindIdentityInput("identityStadiumSeatPrimary",(v,d)=>d.identity.stadium={...cleanClubStadium(d.identity.stadium),seatPrimary:v});
+bindIdentityInput("identityStadiumSeatSecondary",(v,d)=>d.identity.stadium={...cleanClubStadium(d.identity.stadium),seatSecondary:v});
 bindIdentityInput("identityClubShortName",(v,d)=>d.clubShortName=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));
 bindIdentityInput("identityCrestInitials",(v,d)=>d.identity.crest.initials=String(v).toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5));bindIdentityInput("identityCrestBorderColor",(v,d)=>d.identity.crest.borderColor=v);bindIdentityInput("identityCrestBorderWidth",(v,d)=>d.identity.crest.borderWidth=v,"change");
 for(const [id,key] of Object.entries({Primary:"primary",Secondary:"secondary",SymbolColor:"symbolColor",TextColor:"textColor",Accent:"accent"}))bindIdentityInput("identityCrest"+id,(v,d)=>d.identity.crest[key]=v);
@@ -8287,12 +8322,13 @@ function startMatch(mode,opponent=null,kitSelection=null){
  if(opponentProfile?.squad&&typeof opponentSquadChemistry==="function")opponentProfile={...opponentProfile,chemScores:opponentSquadChemistry(opponentProfile.squad.map(opponentMatchBase),opponentProfile.formation,opponentProfile.items||opponentProfile.squad)};
  const kickoffOptions=matchKitOptions(opponentProfile||{name}),selectedKits=kitSelection&&["home","away"].includes(kitSelection.home)&&["home","away"].includes(kitSelection.away)?kitSelection:createDefaultMatchKitSelection(opponentProfile||{name});
  const kickoffKits={home:{...kickoffOptions.home[selectedKits.home]},away:{...kickoffOptions.away[selectedKits.away]}};
+ const matchVenue=typeof matchStadiumFor==="function"?matchStadiumFor(state.stats?.matches||0,opponentProfile,name,kickoffKits.away):{venue:"home",stadium:null};
  const kickoffTeamIdentity={home:typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null,away:opponentProfile?.clubIdentity?(typeof cleanClubIdentity==="function"?cleanClubIdentity(opponentProfile.clubIdentity):opponentProfile.clubIdentity):null};
 
  if(typeof cancelMatch3D==="function")cancelMatch3D();
  matchManagerDraft=null;
  match={
- mode,tournament:tournamentContext,halloweenCup:cupContext,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
+ mode,tournament:tournamentContext,halloweenCup:cupContext,venue:matchVenue.venue,stadium:matchVenue.stadium,minute:0,home:0,away:0,power,chem:m.chem,opp,opponentProfile,opponentName:name,kickoffKits,kickoffTeamIdentity,finished:false,paused:false,
  chemBoostChem:[...(m.chemScores||[])],
  resultId:uid(),battleDifficulty:mode==="squad"?state.squadBattle?.difficulty||"pro":null,
   clubIndex:new Map(state.club.map(item=>[item.uid,item])),
@@ -10261,7 +10297,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.407";
+const GFUT_BUILD="V21.411";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10319,7 +10355,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21407",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21411",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
