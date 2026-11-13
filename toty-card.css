@@ -1,0 +1,69 @@
+/* TEAM OF THE YEAR 2026 card (Basti 2026-11-13: design A "Krone & Strahlen" in midnight blue, with something
+   striking around the card because TOTY is the biggest event). Same field grid as the winter/Black Friday cards.
+   Artwork: assets/footera/events/toty/card-toty-v1.webp (scripts/generate-toty-card.cjs krone). */
+.card-shell .custom-card.toty{
+ background:transparent url("./assets/footera/events/toty/card-toty-v1.webp") center / 100% 100% no-repeat;
+ color:#fffbe8;clip-path:none;box-shadow:none;overflow:visible;
+ --card-info-left:9%;--card-info-width:21%;
+ --card-emblems-top:38.5%;--card-emblems-gap:1cqw;
+ --card-club-size:10cqw;--card-league-size:9cqw;
+ --card-portrait-left:29%;--card-portrait-right:5%;
+ --card-portrait-top:11%;--card-portrait-height:50%;
+ --card-name-top:61.5%;--card-bottom-left:8%;--card-bottom-right:8%;
+ --card-bottom-bottom:18%;--card-name-height:35%;--card-stats-top:41%;
+ --card-stats-left:3%;--card-stats-right:3%;--card-alt-bottom:13%;
+ --card-column-fill:transparent;--card-name-fill:transparent;--card-name-border:transparent;--card-stats-fill:transparent;
+ --card-name-color:#fffbe8;--card-stats-color:#ffd76a;--card-value-color:#fffdf4;
+}
+.card-shell .custom-card.toty .card-top:before{content:none}
+.card-shell .custom-card.toty .pname{clip-path:none;text-shadow:0 1px 2px #000,0 0 8px #ffd76a99!important}
+.card-shell .custom-card.toty .ovr{color:#fffdf4;text-shadow:0 1px 4px #000,0 0 14px #ffd76a}
+.card-shell .custom-card.toty .pos{color:#ffd76a;text-shadow:0 1px 3px #000}
+.card-shell .custom-card.toty .face img{filter:drop-shadow(0 .7cqw 1.1cqw #000c) drop-shadow(0 0 1.6cqw #ffd76a40)}
+.card-shell .custom-card.toty .stats{text-shadow:0 1px 3px #000}
+.card-shell .custom-card.toty .stats span{border-color:transparent}
+
+/* Around the card: rotating golden light rays, a pulsing gold/blue aura and sparks that rise past the frame. */
+.card-shell.toty-shell{position:relative;isolation:isolate;animation:toty-pulse 2.6s ease-in-out infinite}
+.card-shell.toty-shell:before,.card-shell.toty-shell:after{content:"";position:absolute;pointer-events:none;z-index:-1;border:0;text-shadow:none;color:transparent;top:auto;left:auto;right:auto}
+.card-shell.toty-shell:before{
+ inset:-22% -30%;border-radius:50%;
+ background:repeating-conic-gradient(from 0deg,#ffd76a00 0deg 7deg,#ffd76a66 9deg,#ffd76a00 11deg 18deg);
+ -webkit-mask:radial-gradient(closest-side,#000 38%,#0008 62%,#0000 100%);mask:radial-gradient(closest-side,#000 38%,#0008 62%,#0000 100%);
+ animation:toty-rays 16s linear infinite;
+}
+.card-shell.toty-shell:after{
+ inset:-6% -9%;border-radius:22%;
+ background:radial-gradient(closest-side,#ffd76a88,#ffb52e44 45%,#2f6bff55 70%,#0000 100%);
+ filter:blur(8px);animation:toty-aura 2.6s ease-in-out infinite;
+}
+.card-shell .custom-card.toty:before{
+ content:"";position:absolute;inset:-12% -10%;z-index:6;pointer-events:none;border:0;clip-path:none;
+ background:
+  radial-gradient(circle,#fff 0 2px,#ffd76a99 3px,#0000 5px) 6% 88%/16% 12% no-repeat,
+  radial-gradient(circle,#ffe9a3 0 2.4px,#ffd76a88 3.5px,#0000 6px) 95% 78%/16% 12% no-repeat,
+  radial-gradient(circle,#fff 0 1.8px,#ffd76a88 3px,#0000 5px) 2% 36%/14% 10% no-repeat,
+  radial-gradient(circle,#ffd76a 0 2.2px,#fff6 3.2px,#0000 5.5px) 99% 26%/14% 10% no-repeat,
+  radial-gradient(circle,#fff 0 2px,#ffd76a88 3px,#0000 5px) 50% 0%/14% 9% no-repeat,
+  radial-gradient(circle,#9fc4ff 0 1.6px,#0000 4px) 14% 6%/12% 9% no-repeat,
+  radial-gradient(circle,#9fc4ff 0 1.6px,#0000 4px) 88% 4%/12% 9% no-repeat,
+  radial-gradient(circle,#fff 0 1.6px,#0000 4px) 28% 99%/12% 8% no-repeat,
+  radial-gradient(circle,#fff 0 1.6px,#0000 4px) 74% 100%/12% 8% no-repeat;
+ animation:toty-sparks 3.2s ease-in-out infinite;
+}
+.card-shell .custom-card.toty:after{
+ content:"";position:absolute;inset:0;z-index:5;pointer-events:none;border:0;
+ background:linear-gradient(115deg,#0000 40%,#fff6cf40 48%,#ffffff70 50%,#fff6cf40 52%,#0000 60%) -150% 0/250% 100% no-repeat;
+ -webkit-mask:url("./assets/footera/events/toty/card-toty-v1.webp") center/100% 100% no-repeat;mask:url("./assets/footera/events/toty/card-toty-v1.webp") center/100% 100% no-repeat;
+ animation:toty-shine 4.5s ease-in-out infinite;
+}
+@keyframes toty-rays{to{transform:rotate(360deg)}}
+@keyframes toty-pulse{0%,100%{filter:drop-shadow(0 0 6px #ffd76a99) drop-shadow(0 10px 14px #0008)}50%{filter:drop-shadow(0 0 16px #ffd76a) drop-shadow(0 0 28px #3d7bff99)}}
+@keyframes toty-aura{50%{opacity:.55;transform:scale(1.04)}}
+@keyframes toty-sparks{0%,100%{opacity:.35;transform:translateY(2%)}50%{opacity:1;transform:translateY(-3%)}}
+@keyframes toty-shine{0%,35%{background-position:-150% 0}75%,100%{background-position:250% 0}}
+/* Small cards in squads and lists stay calm: glow only, no motion. */
+.mini .card-shell.toty-shell:before,.mini .card-shell .custom-card.toty:before{display:none}
+.mini .card-shell.toty-shell,.mini .card-shell.toty-shell:after,.mini .card-shell .custom-card.toty:after{animation:none}
+@media (prefers-reduced-motion:reduce){.card-shell.toty-shell,.card-shell.toty-shell:before,.card-shell.toty-shell:after,.card-shell .custom-card.toty:before,.card-shell .custom-card.toty:after{animation:none}}
+.quality-tag.toty{border-color:#ffd76a!important;background:linear-gradient(125deg,#030924,#132a6b)!important;color:#fffbe8!important;box-shadow:0 0 12px #ffd76a66!important}
