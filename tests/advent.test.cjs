@@ -107,3 +107,16 @@ test('app wires the banner and the files ship with the build',()=>{
  assert.ok(fs.existsSync(path.join(root,'assets/footera/events/advent/card-winter-v1.webp')));
  assert.ok(sw.includes('"./assets/footera/events/advent/card-winter-v1.webp"'));
 });
+
+test('Winternächte: Silvester-SBC one week from midnight, free winter evolution, both wired',()=>{
+ const app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8');
+ const i=app.indexOf('const WINTER_SBCS='),j=app.indexOf('function allActiveSBCs(');
+ const ctx={};vm.createContext(ctx);vm.runInContext(app.slice(i,j)+';this.WINTER_SBCS=WINTER_SBCS;this.activeWinterSBCs=activeWinterSBCs;',ctx);
+ const ids=t=>ctx.activeWinterSBCs(new Date(t)).map(s=>s.id).join(',');
+ assert.equal(ids('2026-12-31T23:59:00+01:00'),'');
+ assert.equal(ids('2027-01-01T00:00:00+01:00'),'silvester_20270101');
+ assert.equal(ids('2027-01-08T00:00:00+01:00'),'');
+ assert.equal(Date.parse(ctx.WINTER_SBCS[0].activeUntilAt)-Date.parse(ctx.WINTER_SBCS[0].releaseAt),7*864e5,'one full week');
+ assert.match(app,/function allActiveSBCs\(now=new Date\(\)\)\{return \[[^\n]*activeWinterSBCs\(now\)/);
+ assert.match(app,/"id":"winter_nights"[^\n]*"design":"winter"[^\n]*"activeFrom":"2026-12-11T19:00:00\+01:00"/);
+});
