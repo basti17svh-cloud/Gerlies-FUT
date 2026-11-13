@@ -68,7 +68,7 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    const own=line.side==="home"?/^Gegner \d+$/:/^Spieler \d+$/;
    check("3D clearance gets the defending team's names",line.names.length>=4&&line.names.filter(Boolean).every(n=>own.test(n)));
    check("the shooter is not among the clearers",!line.names.includes(line.shooter));
-   // V21.414: the card of a goal-line clearance is the clearing defender's card, not the shooter's.
+   // V21.415: the card of a goal-line clearance is the clearing defender's card, not the shooter's.
    check("every defending actor has its own card",line.cards.length===8&&line.names.every((n,i)=>!n||line.cards[i].includes(n)));
    check("no clearance card shows the shooter",line.cards.every(t=>!t.includes(line.shooter+" ")&&!t.endsWith(line.shooter)));
    check("commentary calls it a clearance on the line",/Linie/.test(line.caption)&&/Linie/.test(line.ticker));

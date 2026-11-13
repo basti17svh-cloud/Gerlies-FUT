@@ -2864,7 +2864,7 @@ export function play(event,signal){
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.
       else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';
-       // V21.414: name AND card of the defender who clears (defending actors 8-15), never the shooter.
+       // V21.415: name AND card of the defender who clears (defending actors 8-15), never the shooter.
        const clearSlot=world?.lineClearIndex>=8?world.lineClearIndex-8:Math.max(0,Math.min(7,(event.defenderIndex??8)-8)),clearName=(world?.lineClearIndex>=8&&event.defendNames?.[clearSlot])||event.defenderName||'Verteidiger';
        name.textContent=clearName;
        const clearCard=event.defendCardsHTML?.[clearSlot];

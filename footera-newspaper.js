@@ -208,7 +208,7 @@
    await shareShown(btn);
   });
  }
- // V21.414: the picture (with the POTM card and its photo) takes several seconds. Phones only open
+ // V21.415: the picture (with the POTM card and its photo) takes several seconds. Phones only open
  // the share sheet right after a tap, so the picture is prepared as soon as the Kurier opens
  // (like the pack share). If it is still not ready at the tap, a second tap shares it.
  const SHARE_LABEL="Titelseite teilen",READY_LABEL="Bild bereit – jetzt teilen";

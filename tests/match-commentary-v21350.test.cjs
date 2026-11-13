@@ -107,7 +107,7 @@ test('V21.365: a goal-line clearance names the defending team and the 3D card na
  const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
  assert.match(bridge,/defendNames:names\.slice\(8\)/);
  assert.ok(H.snapshot({type:'big_chance_missed',id:'x',defendNames:['A','B']}).defendNames[1]==='B','snapshot keeps the defending names');
- // V21.414: the CARD is the clearer's too, not the shooter's.
+ // V21.415: the CARD is the clearer's too, not the shooter's.
  assert.match(line,/card\.innerHTML=clearCard/);
  assert.match(bridge,/defendCardsHTML=presentation\.keeperAction==='line_clear'/);
  assert.equal(H.snapshot({type:'big_chance_missed',id:'y',defendCardsHTML:['<b>A</b>','<b>B</b>']}).defendCardsHTML[1],'<b>B</b>','snapshot keeps the defender cards');

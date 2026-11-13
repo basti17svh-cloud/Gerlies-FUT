@@ -50,7 +50,7 @@ test('the newspaper is loaded, cached and offered in the match report',()=>{
  assert.match(app,/FooteraNewspaper\?\.buttonHTML/);
 });
 
-test('V21.414: the share picture is prepared when the Kurier opens, so the tap can open the share sheet',()=>{
+test('V21.415: the share picture is prepared when the Kurier opens, so the tap can open the share sheet',()=>{
  const src=fs.readFileSync(path.join(root,'footera-newspaper.js'),'utf8');
  assert.match(src,/setTimeout\(\(\)=>\{if\(shown===ed\)prepareShare\(\)\}/,'prepare right after opening');
  assert.match(src,/if\(ed\.ready\)\{/,'a ready picture is shared directly in the tap');
