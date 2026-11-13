@@ -19,8 +19,8 @@ const [out,from,to,fps='30',width='432',team='home',minute='22',seq='',scorer=''
   const mk=(r)=>({id:r.id,name:r.name,fullName:r.full||r.name,position:r.pos,alt:'',ovr:r.ovr,pac:r.pac,sho:r.sho,pas:r.pas,dri:r.dri,def:r.def,phy:r.phy,nation:r.nation,team:r.club,league:r.league,gender:"Men's Football",face:r.face||''});
   PLAYERS=xi.home.map(mk);const away=xi.away.map(mk);P_BY_ID=new Map([...PLAYERS,...away].map(p=>[p.id,p]));
   const homeIdentity=defaultClubIdentity(),awayIdentity=defaultClubIdentity();
-  homeIdentity.crest={...homeIdentity.crest,initials:'BL',symbol:'f',primary:'#e3202b',secondary:'#1a0507',accent:'#ffffff',borderColor:'#e3202b'};
-  awayIdentity.crest={...awayIdentity.crest,initials:'PL',symbol:'diamond',primary:'#6b2bd9',secondary:'#160a2b',accent:'#ffffff',borderColor:'#6b2bd9'};
+  homeIdentity.crest={...homeIdentity.crest,initials:xi.homeInitials||'BL',symbol:'f',primary:xi.homeColor||'#e3202b',secondary:'#1a0507',accent:'#ffffff',borderColor:xi.homeColor||'#e3202b'};
+  awayIdentity.crest={...awayIdentity.crest,initials:xi.awayInitials||'PL',symbol:'diamond',primary:xi.awayColor||'#6b2bd9',secondary:'#160a2b',accent:'#ffffff',borderColor:xi.awayColor||'#6b2bd9'};
   state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName=xi.homeName;state.profile.clubIdentity=homeIdentity;state.tactic='balanced';
   FooteraHighlights.setMode('important');
   startMatch('rivals',{name:xi.awayName,rating:87,chem:33,power:90,formation:'4-3-3',tactic:'balanced',squad:away.slice(0,11),clubIdentity:awayIdentity});
