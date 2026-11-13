@@ -1,0 +1,40 @@
+{
+  "kind": "teaser",
+  "theme": "blackfriday",
+  "postAt": "2026-11-20T19:00:00+01:00",
+  "title": "Teaser: BLACK FRIDAY",
+  "keys": [
+    "bf-teaser"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🖤 BLACK FRIDAY KOMMT ⚡\n\nAb Fr 27.11. 19 Uhr gibt es in Footera 18 neue Neon-Karten, jeden Tag einen neuen Deal und −30 % auf Coin-Packs im Shop.\nErkennst du schon jemanden? 👀\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🖤\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "type": "reel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "BLACK FRIDAY: ab Fr 27.11. 19 Uhr ⚡",
+    "caption": "🖤 BLACK FRIDAY KOMMT ⚡\n\nAb Fr 27.11. 19 Uhr gibt es in Footera 18 neue Neon-Karten, jeden Tag einen neuen Deal und −30 % auf Coin-Packs im Shop.\nErkennst du schon jemanden? 👀\n\nFootera, der Fußball-Manager fürs Handy. Link in Bio 🖤\n#footera #buildyourera #blackfriday #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🖤 BLACK FRIDAY KOMMT ⚡\n\nAb Fr 27.11. 19 Uhr gibt es in Footera 18 neue Neon-Karten, jeden Tag einen neuen Deal und −30 % auf Coin-Packs im Shop.\n\n👉 tinyurl.com/footera-play\n#footera"
+  },
+  "plan": {
+    "instagram": "reel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-20-1900-black-friday-teaser",
+  "media": {
+    "feed": [
+      "feed-1.jpg"
+    ],
+    "story": [
+      "story-1.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}
