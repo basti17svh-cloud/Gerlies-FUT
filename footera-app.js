@@ -482,7 +482,7 @@ const TOTW_WEEK_2={id:2,name:"Team of the Week 2",releaseDate:"2026-09-23",activ
  {names:["Michael Olise","Michael Akpovie Olise"],ovr:91,position:"RM"},
  {names:["Raphinha","Raphael Dias Belloli","Raphael Dias Belloli"],ovr:89,position:"ST"},
  {names:["Sophia Wilson","Sophia Smith","Sophia Olivia Wilson"],ovr:89,position:"ST"},
- {names:["Marquinhos","Marcos Aoas Correa","Marcos Aoás Corrêa"],ovr:88,position:"CB"},
+ {names:["Marquinhos","Marcos Aoas Correa","Marcos Aoás Corrêa"],eaId:"207865",ovr:88,position:"CB"},
  {names:["Mohamed Salah","Mohamed Salah Hamed Mahrous Ghaly"],ovr:88,position:"RM"},
  {names:["Antoine Semenyo","Antoine Serlom Semenyo"],ovr:86,position:"LM"},
  {names:["Corentin Tolisso"],ovr:84,position:"CM"},
@@ -541,7 +541,7 @@ const TOTW_WEEK_4={id:4,name:"Team of the Week 4",releaseDate:"2026-10-07",activ
  {names:["Bukayo Saka"],ovr:89,position:"RW",stats:[91,88,88,91,62,74]},
  {names:["Robert Lewandowski"],ovr:87,position:"ST",stats:[72,91,82,84,46,83]},
  {names:["Goncalo Ramos","Gonçalo Ramos"],ovr:84,position:"ST",stats:[84,87,76,82,42,84]},
- {names:["Rasmus Hojlund","Rasmus Højlund"],ovr:84,position:"ST",stats:[88,85,71,80,41,86]}
+ {names:["Rasmus Hojlund","Rasmus Højlund"],eaId:"259399",ovr:84,position:"ST",stats:[88,85,71,80,41,86]}
 ]};
 // TOTW 5: von Basti am 13.10.2026 freigegeben; Start 14.10.2026 um 19:00 Europe/Berlin. Ratings/Attribute sind redaktionelles Balancing.
 // Prüfunterlagen: docs/TOTW-5-Vorschlag-2026-10-14.md
@@ -2316,7 +2316,579 @@ const TOTW_WEEK_9={
     }
   ]
 };
-const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8,TOTW_WEEK_9];
+const TOTW_WEEK_10={
+  "id": 10,
+  "name": "Team of the Week 10",
+  "releaseDate": "2026-11-18",
+  "activeUntil": "25.11.2026 18:59",
+  "sourceStatus": "admin-approved",
+  "players": [
+    {
+      "names": [
+        "Erling Haaland",
+        "Erling Braut Haaland"
+      ],
+      "eaId": "239085",
+      "ovr": 94,
+      "position": "ST",
+      "stats": [
+        90,
+        96,
+        75,
+        84,
+        50,
+        93
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/239085.png",
+        "gender": "male",
+        "name": "Erling Haaland",
+        "fullName": "Erling Haaland",
+        "ovr": 91,
+        "position": "ST",
+        "alt": "",
+        "team": "Manchester City",
+        "league": "Premier League",
+        "nation": "Norway",
+        "nationFlag": "https://drop-assets.ea.com/images/4hQ7uSEUWnYt04vImczTbF/44a5161e223630f594665532c652235d/f_36.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1z2AYmFlWqkgS3x843JD8a/6ed6da8aa9716d829aee498fc32f2e77/l10.png",
+        "teamId": "10"
+      }
+    },
+    {
+      "names": [
+        "Lamine Yamal",
+        "Lamine Yamal Nasraoui Ebana"
+      ],
+      "eaId": "277643",
+      "ovr": 94,
+      "position": "RW",
+      "stats": [
+        92,
+        91,
+        92,
+        97,
+        42,
+        67
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/277643.png",
+        "gender": "male",
+        "name": "Lamine Yamal",
+        "fullName": "Lamine Yamal Nasraoui Ebana",
+        "ovr": 90,
+        "position": "RW",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1mqjNAj4Z0u1vnDMZSwntN/a5ad57005eea6cacd12d70bbb632a295/l241.png",
+        "teamId": "241"
+      }
+    },
+    {
+      "names": [
+        "Harry Kane"
+      ],
+      "eaId": "202126",
+      "ovr": 93,
+      "position": "ST",
+      "stats": [
+        79,
+        96,
+        91,
+        90,
+        53,
+        89
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/202126.png",
+        "gender": "male",
+        "name": "Harry Kane",
+        "fullName": "Harry Kane",
+        "ovr": 90,
+        "position": "ST",
+        "alt": "",
+        "team": "FC Bayern München",
+        "league": "Bundesliga",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5wM3rRU8Ur4APhQqMNElyT/1183d0c79858e8f9b39f7f5ff94fda25/l21.png",
+        "teamId": "21"
+      }
+    },
+    {
+      "names": [
+        "Jude Bellingham"
+      ],
+      "eaId": "252371",
+      "ovr": 93,
+      "position": "CAM",
+      "stats": [
+        83,
+        90,
+        91,
+        93,
+        83,
+        89
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/252371.png",
+        "gender": "male",
+        "name": "Jude Bellingham",
+        "fullName": "Jude Bellingham",
+        "ovr": 90,
+        "position": "CAM",
+        "alt": "",
+        "team": "Real Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "England",
+        "nationFlag": "https://drop-assets.ea.com/images/35hLo6rrWulclB91DI4FnJ/68313bbad9fbab2b5b4576760a5e2f25/f_14.png",
+        "clubLogo": "https://drop-assets.ea.com/images/34HMRqpbKClVJjsfNA58W4/8160bfc9e82012236d0394859c80b2bf/l243.png",
+        "teamId": "243"
+      }
+    },
+    {
+      "names": [
+        "Achraf Hakimi"
+      ],
+      "eaId": "235212",
+      "ovr": 92,
+      "position": "RB",
+      "stats": [
+        95,
+        87,
+        85,
+        86,
+        85,
+        84
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/235212.png",
+        "gender": "male",
+        "name": "Achraf Hakimi",
+        "fullName": "Achraf Hakimi",
+        "ovr": 88,
+        "position": "RB",
+        "alt": "",
+        "team": "Paris SG",
+        "league": "Ligue 1 McDonald's",
+        "nation": "Morocco",
+        "nationFlag": "https://drop-assets.ea.com/images/3UoYayFcbMxukoSVxhuNA1/7e5fc32b3a4f855f859eec7052308dec/f_129.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5khNvXbdBeFYsYuxeoNi5d/a5684fa8f1d60295481216448abaa6f1/l73.png",
+        "teamId": "73"
+      }
+    },
+    {
+      "names": [
+        "Gabriel",
+        "Gabriel dos S. Magalhães"
+      ],
+      "eaId": "232580",
+      "ovr": 91,
+      "position": "CB",
+      "stats": [
+        69,
+        52,
+        68,
+        70,
+        94,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/232580.png",
+        "gender": "male",
+        "name": "Gabriel",
+        "fullName": "Gabriel dos S. Magalhães",
+        "ovr": 89,
+        "position": "CB",
+        "alt": "",
+        "team": "Arsenal",
+        "league": "Premier League",
+        "nation": "Brazil",
+        "nationFlag": "https://drop-assets.ea.com/images/1zIpqTDvpVquYcP9pMkVyz/eec11242b62569723aa4b8396507b155/f_54.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5bkEBXjBM35OGYplhZJak8/e73ded69d93416a9f1ecccca15243c1f/l1.png",
+        "teamId": "1"
+      }
+    },
+    {
+      "names": [
+        "Sophia Wilson"
+      ],
+      "eaId": "264012",
+      "ovr": 91,
+      "position": "ST",
+      "stats": [
+        93,
+        92,
+        82,
+        90,
+        46,
+        81
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/264012.png",
+        "gender": "female",
+        "name": "Sophia Wilson",
+        "fullName": "Sophia Wilson",
+        "ovr": 88,
+        "position": "ST",
+        "alt": "",
+        "team": "Portland Thorns",
+        "league": "NWSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/2TD0ygkKoBSbz4FrAxefsu/444f31cd75c4f07eed5eae5208fad846/l116302.png",
+        "teamId": "116302"
+      }
+    },
+    {
+      "names": [
+        "Melchie Dumornay"
+      ],
+      "eaId": "265898",
+      "ovr": 91,
+      "position": "CAM",
+      "stats": [
+        95,
+        88,
+        84,
+        93,
+        63,
+        77
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/265898.png",
+        "gender": "female",
+        "name": "Melchie Dumornay",
+        "fullName": "Melchie Dumornay",
+        "ovr": 88,
+        "position": "CAM",
+        "alt": "",
+        "team": "OL Lyonnes",
+        "league": "Arkema PL",
+        "nation": "Haiti",
+        "nationFlag": "https://drop-assets.ea.com/images/2SPS1jdi0r8Yu16gxmQWaa/dbb14e1ff1f620d344a371ce575d18ed/f_80.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6wWzOnLJxX9H4yjsyZrPZY/4697eaf2f5c0922badf61028cb82c00b/l116033.png",
+        "teamId": "116033"
+      }
+    },
+    {
+      "names": [
+        "Gregor Kobel"
+      ],
+      "eaId": "235073",
+      "ovr": 90,
+      "position": "GK",
+      "stats": [
+        90,
+        88,
+        86,
+        92,
+        57,
+        89
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/235073.png",
+        "gender": "male",
+        "name": "Gregor Kobel",
+        "fullName": "Gregor Kobel",
+        "ovr": 87,
+        "position": "GK",
+        "alt": "",
+        "team": "Borussia Dortmund",
+        "league": "Bundesliga",
+        "nation": "Switzerland",
+        "nationFlag": "https://drop-assets.ea.com/images/4Hbb0jUSB8bQeIOLkBPfp8/729dd94f435d0d75683bbf978e442b6d/f_47.png",
+        "clubLogo": "https://drop-assets.ea.com/images/d7CmUJ9ZoYPG5RSUBTJYQ/14a4c56aba96321f8901ec9726bfa7a5/l22.png",
+        "teamId": "22"
+      }
+    },
+    {
+      "names": [
+        "Manuela Giugliano"
+      ],
+      "eaId": "227095",
+      "ovr": 90,
+      "position": "CM",
+      "stats": [
+        84,
+        88,
+        87,
+        90,
+        75,
+        77
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/227095.png",
+        "gender": "female",
+        "name": "Manuela Giugliano",
+        "fullName": "Manuela Giugliano",
+        "ovr": 85,
+        "position": "CM",
+        "alt": "",
+        "team": "Roma",
+        "league": "Calcio A Femminile",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "https://drop-assets.ea.com/images/19IhOwiXzGPZFYWwufcIbb/2b0e24b4d84a485f01144ca2e2991d74/l116282.png",
+        "teamId": "116282"
+      }
+    },
+    {
+      "names": [
+        "Christopher Nkunku"
+      ],
+      "eaId": "232411",
+      "ovr": 90,
+      "position": "ST",
+      "stats": [
+        89,
+        91,
+        85,
+        92,
+        51,
+        72
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/232411.png",
+        "gender": "male",
+        "name": "Christopher Nkunku",
+        "fullName": "Christopher Nkunku",
+        "ovr": 80,
+        "position": "ST",
+        "alt": "",
+        "team": "RB Leipzig",
+        "league": "Bundesliga",
+        "nation": "France",
+        "nationFlag": "https://drop-assets.ea.com/images/6O6L3Tw8ha7CokoEp9xppS/bd62283fa0e10eeb4a55c728fd69b0cb/f_18.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1EoW6b2VkhiP3S0vqikd9s/f181f899a2037360f70a9a8aba18af30/l112172.png",
+        "teamId": "112172"
+      }
+    },
+    {
+      "names": [
+        "Florian Wirtz"
+      ],
+      "eaId": "256630",
+      "ovr": 89,
+      "position": "CAM",
+      "stats": [
+        88,
+        85,
+        90,
+        93,
+        53,
+        69
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/256630.png",
+        "gender": "male",
+        "name": "Florian Wirtz",
+        "fullName": "Florian Wirtz",
+        "ovr": 86,
+        "position": "CAM",
+        "alt": "",
+        "team": "Liverpool",
+        "league": "Premier League",
+        "nation": "Germany",
+        "nationFlag": "https://drop-assets.ea.com/images/1lGSCnyMba9ZEOpZCeBpC2/3bebb12c4fe8ef41e274feadf042b4a4/f_21.png",
+        "clubLogo": "https://drop-assets.ea.com/images/1yBVvRngv3RWtnaILTKHRD/3b55c3c2108821da9f35dcf9d37b9f76/l9.png",
+        "teamId": "9"
+      }
+    },
+    {
+      "names": [
+        "Scott McTominay"
+      ],
+      "eaId": "237238",
+      "ovr": 89,
+      "position": "CM",
+      "stats": [
+        83,
+        90,
+        81,
+        86,
+        83,
+        91
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/237238.png",
+        "gender": "male",
+        "name": "Scott McTominay",
+        "fullName": "Scott McTominay",
+        "ovr": 86,
+        "position": "CM",
+        "alt": "",
+        "team": "SSC Napoli",
+        "league": "Serie A Enilive",
+        "nation": "Scotland",
+        "nationFlag": "https://drop-assets.ea.com/images/70yEEZqspJ7r5uElnWnfXG/a33b722fc7fef5fef7973308ec355382/f_42.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3LrwaeMG9Bss0vv01WwOvu/f664523f946741a618254279d391575f/l48.png",
+        "teamId": "48"
+      }
+    },
+    {
+      "names": [
+        "Álex Baena",
+        "Alejandro Baena Rodríguez",
+        "Alex Baena"
+      ],
+      "eaId": "257279",
+      "ovr": 89,
+      "position": "LM",
+      "stats": [
+        83,
+        85,
+        91,
+        90,
+        68,
+        74
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/257279.png",
+        "gender": "male",
+        "name": "Álex Baena",
+        "fullName": "Alejandro Baena Rodríguez",
+        "ovr": 83,
+        "position": "LM",
+        "alt": "",
+        "team": "Atlético de Madrid",
+        "league": "LALIGA EA SPORTS",
+        "nation": "Spain",
+        "nationFlag": "https://drop-assets.ea.com/images/5czCGhYic3zXSTHyDJ4NLN/cff657d5afa0896a9928efd06b006b2c/f_45.png",
+        "clubLogo": "https://drop-assets.ea.com/images/5uY2FeTtMC6lBPGwyYu2Xt/6862fd9c16665720a21be1e843cec6d1/l240.png",
+        "teamId": "240"
+      }
+    },
+    {
+      "names": [
+        "Alessandro Bastoni"
+      ],
+      "eaId": "237383",
+      "ovr": 88,
+      "position": "CB",
+      "stats": [
+        77,
+        59,
+        84,
+        81,
+        90,
+        85
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/237383.png",
+        "gender": "male",
+        "name": "Alessandro Bastoni",
+        "fullName": "Alessandro Bastoni",
+        "ovr": 86,
+        "position": "CB",
+        "alt": "",
+        "team": "Inter",
+        "league": "Serie A Enilive",
+        "nation": "Italy",
+        "nationFlag": "https://drop-assets.ea.com/images/tYRAxpZ9iMTi56Je0DUrw/3a6a962d0821f0b0ac9fd5403b7bf68e/f_27.png",
+        "clubLogo": "",
+        "teamId": "131682"
+      }
+    },
+    {
+      "names": [
+        "Ellie Carpenter"
+      ],
+      "eaId": "240030",
+      "ovr": 88,
+      "position": "RB",
+      "stats": [
+        89,
+        63,
+        83,
+        81,
+        85,
+        86
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/240030.png",
+        "gender": "female",
+        "name": "Ellie Carpenter",
+        "fullName": "Ellie Carpenter",
+        "ovr": 85,
+        "position": "RB",
+        "alt": "",
+        "team": "Chelsea",
+        "league": "Barclays WSL",
+        "nation": "Australia",
+        "nationFlag": "https://drop-assets.ea.com/images/7ut4RiJMANPGetPTIa138J/c67ba149e73818ac92fff8b0a2921564/f_195.png",
+        "clubLogo": "https://drop-assets.ea.com/images/6I13EmNTiAN7xdciB3lFZA/c53140979fd9ef1040e9225ca2f1da99/l116010.png",
+        "teamId": "116010"
+      }
+    },
+    {
+      "names": [
+        "Phallon Tullis-Joyce"
+      ],
+      "eaId": "267212",
+      "ovr": 87,
+      "position": "GK",
+      "stats": [
+        85,
+        84,
+        82,
+        88,
+        47,
+        88
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/267212.png",
+        "gender": "female",
+        "name": "Phallon Tullis-Joyce",
+        "fullName": "Phallon Tullis-Joyce",
+        "ovr": 83,
+        "position": "GK",
+        "alt": "",
+        "team": "Manchester Utd",
+        "league": "Barclays WSL",
+        "nation": "United States",
+        "nationFlag": "https://drop-assets.ea.com/images/3YG1ifwtxKbjthjiTB1rMd/5262c747115817e1cf4a6457f4d72b2c/f_95.png",
+        "clubLogo": "https://drop-assets.ea.com/images/4jiZaFaZ8mTJtRTC3IIZxZ/d99383533e4e505d2894d2f80c1c429f/l116012.png",
+        "teamId": "116012"
+      }
+    },
+    {
+      "names": [
+        "Esmee Brugts"
+      ],
+      "eaId": "267530",
+      "ovr": 86,
+      "position": "LB",
+      "stats": [
+        88,
+        74,
+        80,
+        82,
+        81,
+        75
+      ],
+      "fallback": {
+        "face": "./assets/footera/totw/10/267530.png",
+        "gender": "female",
+        "name": "Esmee Brugts",
+        "fullName": "Esmee Brugts",
+        "ovr": 84,
+        "position": "LB",
+        "alt": "",
+        "team": "FC Barcelona",
+        "league": "Liga F Moeve",
+        "nation": "Holland",
+        "nationFlag": "https://drop-assets.ea.com/images/6IUseVhI515LrEflcP5yuE/00a7b1f9b86811254b69a89750af3072/f_34.png",
+        "clubLogo": "https://drop-assets.ea.com/images/3O18C8TunaPk3FnyZelRaC/ec559b48b127777ec0d5b17d32260719/l116325.png",
+        "teamId": "116325"
+      }
+    }
+  ]
+};
+const TOTW_WEEKS=[TOTW_WEEK_1,TOTW_WEEK_2,TOTW_WEEK_3,TOTW_WEEK_4,TOTW_WEEK_5,TOTW_WEEK_6,TOTW_WEEK_7,TOTW_WEEK_8,TOTW_WEEK_9,TOTW_WEEK_10];
 
 function totwAddCalendarDays(isoDate,days){
  const [y,m,d]=String(isoDate||"").split("-").map(Number);
@@ -2628,7 +3200,10 @@ function resolveTotwWeekBase(team,info,index){
  let candidates=PLAYERS.filter(p=>totwAliasMatch(p,info)===100);
  if(info?.eaId){const byId=candidates.filter(p=>String(p.id||"")===String(info.eaId));if(byId.length)candidates=byId}
  const base=uniqueTotwPlayer(candidates),out=mergeTotwWeekBase(team,base,null,index);
- TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);return out
+ TOTW_ARCHIVE_BASE_CACHE.set(key,out);if(out?.id)P_BY_ID.set(String(out.id),out);
+ // Cards packed while a TOTW entry could not be matched to the database kept this preview id; keep them resolvable after the fix.
+ const legacy="totw-"+(team?.id||0)+"-preview-"+index;if(out?.id&&String(out.id)!==legacy&&!P_BY_ID.has(legacy))P_BY_ID.set(legacy,out);
+ return out
 }
 function allTotwMarketBases(){return publishedTotwWeeks().flatMap(team=>team.players.map((info,index)=>resolveTotwWeekBase(team,info,index)))}
 function resolveTotwBase(info,index){
@@ -10311,7 +10886,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.422";
+const GFUT_BUILD="V21.423";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10369,7 +10944,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21422",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21423",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

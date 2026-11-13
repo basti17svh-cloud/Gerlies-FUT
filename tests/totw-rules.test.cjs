@@ -158,3 +158,32 @@ test('TOTW 9 release is approved and gated at 19:00 Berlin on 11 November with t
   }
  }
 });
+
+test('TOTW 10 is the Best-of-TOTW jubilee: approved, gated at 19:00 Berlin on 18 November, built like a normal week',()=>{
+ const c=setup(),week=c.WEEKS.find(w=>w.id===10);
+ assert.ok(week);assert.equal(week.sourceStatus,'admin-approved');
+ assert.equal(c.totwRosterErrors(week).join(', '),'');
+ assert.equal(week.players.length,18);
+ assert.equal(week.players.filter(p=>p.fallback.gender==='female').length,6);
+ // Every jubilee card is an upgraded version of a card from TOTW 1-9.
+ const earlier=new Set(c.WEEKS.filter(w=>w.id<10).flatMap(w=>w.players.map(p=>key(p.names[0]))));
+ assert.equal(week.players.filter(p=>!p.names.some(n=>earlier.has(key(n)))).map(p=>p.names[0]).join(', '),'');
+ assert.equal(c.activeTotwWeek(new Date('2026-11-18T17:59:59Z'))?.id,9);
+ assert.equal(c.activeTotwWeek(new Date('2026-11-18T18:00:00Z'))?.id,10);
+ assert.equal(c.latestPublishedTotw(new Date('2026-11-18T17:59:59Z'))?.id,9);
+ assert.equal(c.latestPublishedTotw(new Date('2026-11-18T18:00:00Z'))?.id,10);
+ const sql=fs.readFileSync(path.join(root,'online/footera-pick-catalog.sql'),'utf8');
+ const rows=sql.split('\n').filter(line=>line.startsWith("('totw:10:"));
+ assert.equal(rows.length,week.players.filter(p=>p.ovr>=84).length);
+ for(const p of week.players){
+  assert.ok(fs.existsSync(path.join(root,p.fallback.face)),p.fallback.face);
+  assert.ok(fs.readFileSync(path.join(root,'service-worker.js'),'utf8').includes(JSON.stringify(p.fallback.face)));
+  if(p.ovr>=84)assert.ok(rows.find(r=>r.startsWith("('totw:10:"+p.eaId+"'"))?.includes("'2026-11-18 19:00'::timestamp at time zone 'Europe/Berlin'"));
+ }
+});
+
+test('archive TOTW cards resolve to real database players (Marquinhos TOTW 2 had no picture)',()=>{
+ const c=setup(),find=(w,n)=>c.WEEKS.find(x=>x.id===w).players.find(p=>p.names[0]===n);
+ assert.equal(find(2,'Marquinhos').eaId,'207865','two database players are called Marquinhos');
+ assert.equal(find(4,'Rasmus Hojlund').eaId,'259399','ø does not normalise to o');
+});
