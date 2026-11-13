@@ -123,10 +123,10 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
 
 test('release wiring: script order, scene import, cache, settings and pack hooks',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),app=read('footera-app.js'),css=read('3d-highlights.css');
- assert.ok(html.indexOf('footera-sound.js?v=21406')>0&&html.indexOf('footera-sound.js?v=21406')<html.indexOf('3d-highlights.js?v='));
+ assert.ok(html.indexOf('footera-sound.js?v=21412')>0&&html.indexOf('footera-sound.js?v=21412')<html.indexOf('3d-highlights.js?v='));
  assert.match(html,/<select data-sound-mode[^>]*><option value="on">An<\/option><option value="off">Aus<\/option>/);
  assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21406'/);
- for(const f of ['./3d-stadium-sound.mjs?v=21406','./footera-sound.js?v=21406'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-stadium-sound.mjs?v=21406','./footera-sound.js?v=21412'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
@@ -146,10 +146,10 @@ test('crowds use real recordings without synthesized voices, noise or drums',()=
  assert.doesNotMatch(crowd,/noise\(|createOscillator\(/);
  const credits=read('assets/sounds/stadium/CREDITS.md');
  let bytes=0;
- for(const n of ['bed','groan','applause']){
+ for(const n of ['bed','groan','applause','goal']){
   const size=fs.statSync(new URL('../assets/sounds/stadium/'+n+'.mp3',import.meta.url)).size;
   bytes+=size;assert.ok(size>10000);assert.ok(credits.includes('`'+n+'.mp3`'));
-  assert.ok(read('service-worker.js').includes('./assets/sounds/stadium/'+n+'.mp3?v=21406'));
+  assert.ok(read('service-worker.js').includes('./assets/sounds/stadium/'+n+'.mp3?v=21412'));
  }
  assert.ok(bytes<600000,'new match audio under 600 KB');
 });
@@ -248,10 +248,12 @@ test('recorded crowd loader deduplicates requests, retries failures; no delayed 
  assert.equal(sources.length,0,'loading must not play a delayed goal');
  fail=false;assert.equal(await S.preloadStadium(c),true);assert.equal(requests.length,5,'retry only the failed file');
  const home=S.roar(1,0,bus),away=S.roar(.42,0,bus);assert.ok(home&&away);
+ assert.equal(sources[0].buffer.name,'goal','match uses Millerntor goal instead of pack arena cheer');
+ assert.ok(sources[0].stopArgs[0]<=5.82,'goal reaction capped at 5.8 seconds');
  assert.notEqual(sources[0].startArgs[1],sources[1].startArgs[1],'vary entry points at original pitch');
  assert.equal(sources[0].playbackRate.value,1);assert.equal(sources[1].playbackRate.value,1);
  home.stop(.1);assert.ok(sources[0].stopArgs[0]<.2);
- assert.ok(S.groan(.8,0,bus));assert.ok(S.applause(3,.5,0,bus));
+ assert.ok(S.groan(.8,0,bus));assert.ok(sources.at(-1).stopArgs[0]<=2.72,'miss reaction capped at 2.7 seconds');assert.ok(S.applause(3,.5,0,bus));
  assert.equal(oscillators.length,0);
 });
 
