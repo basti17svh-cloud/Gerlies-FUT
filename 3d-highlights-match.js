@@ -41,7 +41,7 @@ function match3DAttackOrder(event){
 }
 function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  // Visual only; never affect the match simulation or its random stream.
- const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice(),names=Array(16).fill('');
+ const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice(),names=Array(16).fill(''),rowsAt=Array(16).fill(null);
  const valid=(v,fb)=>{const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=99?n:fb};
  const rows=side=>typeof matchActorRows==="function"?(matchActorRows(side)||[]):[];
  const field=side=>rows(side).filter(row=>!/^(GK|TW|TH)$/i.test(String(row.slot||"")));
@@ -57,16 +57,16 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
   const list=field(side),anchor=list.find(row=>same(row,lead))||null,ordered=anchor?[anchor,...list.filter(row=>row!==anchor)]:list;
   let slot=0;
   for(let i=0;i<ordered.length&&i<8;i++){
-   if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);names[offset+target]=String(ordered[i]?.name||'');continue}
+   if(i===0&&anchor){out[offset+target]=number(side,ordered[i],out[offset+target]);names[offset+target]=String(ordered[i]?.name||'');rowsAt[offset+target]=ordered[i];continue}
    while(anchor&&slot===target)slot++;
    if(slot>7)break;
-   out[offset+slot]=number(side,ordered[i],out[offset+slot]);names[offset+slot]=String(ordered[i]?.name||'');slot++;
+   out[offset+slot]=number(side,ordered[i],out[offset+slot]);names[offset+slot]=String(ordered[i]?.name||'');rowsAt[offset+slot]=ordered[i];slot++;
   }
  };
  match3DAttackOrder(event).forEach((row,i)=>{if(row)out[i]=number(attackSide,row,out[i])});
  fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
  // V21.365: names of the defending actors (index 8-15), e.g. for a goal-line clearance.
- return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1),defendNames:names.slice(8)};
+ return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1),defendNames:names.slice(8),defendRows:rowsAt.slice(8),defendSide};
 }
 // Cosmetic-only complexion metadata from explicit player records; no ancestry inference.
 function match3DSkinTones(event){
@@ -112,21 +112,7 @@ function match3DPresentationMeta(event,current){
   :(Number.isInteger(Number(index))&&Number(index)>=0?rows.find(r=>Number(r.index)===Number(index)):null);
  const row=(saved&&named)||indexed||named
   ||(saved?rows.find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||''))):null);
- let playerCardHTML='';
- if(row?.base&&typeof cardHTML==='function'){
-  const homeItem=displaySide==='home'&&typeof state!=='undefined'?(current?.clubIndex?.get(row.uid)||state.club?.find(i=>String(i.uid)===String(row.uid))):null;
-  const awayCandidate=displaySide==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
-  const item=homeItem||awayCandidate||null;
-  try{
-   const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;
-   playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||'';
-  }catch(e){console.warn('Matchday card fallback',e)}
- }
- if(!playerCardHTML){
-  const safe=typeof esc==='function'?esc:s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const label=String(row?.name||actorName||'Spieler'),rating=Math.max(0,Math.round(Number(row?.base?.ovr)||0));
-  playerCardHTML='<div class="fh3d-identity-fallback"><strong>'+safe(rating||'–')+'</strong><span>'+safe(row?.slot||row?.base?.position||'')+'</span><b>'+safe(label)+'</b></div>';
- }
+ const playerCardHTML=match3DCardHTML(displaySide,row,current,actorName);
  const homeName=String((typeof state!=='undefined'&&state.profile?.clubName)||'Heimteam');
  const awayName=String(current?.opponentProfile?.clubName||current?.opponentProfile?.name||current?.opponentName||'Gegner');
  const teamName=displaySide==='away'?awayName:homeName;
@@ -143,6 +129,25 @@ function match3DPresentationMeta(event,current){
   teamCrestHTML='<span class="fh3d-opponent-crest" role="img" aria-label="'+safe(teamName)+'">'+safe(initials)+'</span>';
  }
  return{playerCardHTML,teamName,teamCrestHTML};
+}
+// The match card of one actor row (club item at home, opponent item away), or a small fallback.
+function match3DCardHTML(displaySide,row,current,actorName=''){
+ let playerCardHTML='';
+ if(row?.base&&typeof cardHTML==='function'){
+  const homeItem=displaySide==='home'&&typeof state!=='undefined'?(current?.clubIndex?.get(row.uid)||state.club?.find(i=>String(i.uid)===String(row.uid))):null;
+  const awayCandidate=displaySide==='away'?(current?.opponentProfile?.items?.[row.index]||(row.entry&&typeof row.entry==='object'&&row.entry.pid?row.entry:null)):null;
+  const item=homeItem||awayCandidate||null;
+  try{
+   const base=item&&typeof displayBase==='function'?(displayBase(item)||row.base):row.base;
+   playerCardHTML=cardHTML(base,item,false,row.slot||base.position,false)||'';
+  }catch(e){console.warn('Matchday card fallback',e)}
+ }
+ if(!playerCardHTML){
+  const safe=typeof esc==='function'?esc:s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const label=String(row?.name||actorName||'Spieler'),rating=Math.max(0,Math.round(Number(row?.base?.ovr)||0));
+  playerCardHTML='<div class="fh3d-identity-fallback"><strong>'+safe(rating||'–')+'</strong><span>'+safe(row?.slot||row?.base?.position||'')+'</span><b>'+safe(label)+'</b></div>';
+ }
+ return playerCardHTML;
 }
 // Resolve styles from copies of actor data; never consume simulation RNG.
 function match3DActorStyles(side,{uid='',index=-1,name=''}={}){
@@ -187,6 +192,8 @@ function match3DWeather(current){
  if(!current.weather&&typeof FooteraWeather!=='undefined')current.weather=FooteraWeather.forMatch(current.resultId||current.mode||'match');
  return current.weather||null;
 }
+// V21.406: the ground of this match (own or opponent's, alternating) for every scene.
+function match3DStadium(current){return current?.stadium?{venue:current.venue==='away'?'away':'home',stadium:current.stadium}:{}}
 function queueMatch3D(event){
  if(typeof FooteraHighlights==='undefined'||!FooteraHighlights.accepts(event.type)||!match||match.paused||match.finished)return false;
  const current=match;
@@ -243,14 +250,19 @@ function queueMatch3D(event){
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
   presentation.defendNames=shirtInfo.defendNames;
+  presentation.defendRows=shirtInfo.defendRows;presentation.defendSide=shirtInfo.defendSide;
 
 
  presentation.shotPlacement=FooteraHighlights.chooseShotPlacement(presentation,match3DQueue.history||[]);
  const reactions=FooteraHighlights.chooseReactions(presentation);
  presentation.defenderAction=event.type==='ball_won'?(event.defenseKind==='interception'?'lane_read':String(event.sequence||'').startsWith('defense_slide_tackle')?'slide_attempt':'close_down'):reactions.defenderAction;presentation.keeperAction=reactions.keeperAction;
+ // Goal-line clearance: the card shows the defender who clears, not the shooter.
+ // The scene picks the clearing actor (8-15) by position, so every defending actor gets its card.
+ presentation.defendCardsHTML=presentation.keeperAction==='line_clear'&&presentation.defendRows?presentation.defendRows.map((row,i)=>row?match3DCardHTML(presentation.defendSide,row,current,presentation.defendNames?.[i]):''):[];
+ delete presentation.defendRows;
  presentation.signatures=FooteraHighlights.signatureMoments?.(presentation)||[];
  presentation.signature=FooteraHighlights.signatureStyle?.(presentation)||null;
- const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),weather:match3DWeather(current),
+ const queued=match3DQueue.enqueue({...presentation,period:FooteraHighlights.getMatchPeriod(current),weather:match3DWeather(current),...match3DStadium(current),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
  // The simulation stays authoritative. Only the visible scoreboard is held at
@@ -287,7 +299,7 @@ function queueMatchCeremony3D(kind){
  const home=current.kickoffKits?.home||identity?.kits?.home;
  const opponentIdentity=current.opponentProfile?.clubIdentity;
  const away=current.kickoffKits?.away||opponentIdentity?.kits?.away||opponentIdentity?.kits?.home;
- return match3DQueue.enqueue({...base,id:'ceremony:'+kind,weather:match3DWeather(current),ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
+ return match3DQueue.enqueue({...base,id:'ceremony:'+kind,weather:match3DWeather(current),...match3DStadium(current),ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
   result:kind==='fulltime'&&!decided?'draw':'win',homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
   homeScore:current.home,awayScore:current.away,competition:document.getElementById('matchCompetition')?.textContent||'',bigMatch:current.mode==='champions',
   teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,keeperName:goalie?.name||'',

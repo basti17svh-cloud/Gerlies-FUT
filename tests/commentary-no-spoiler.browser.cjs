@@ -56,7 +56,8 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
      const s=match.shotEvents.at(-1);
      if(s&&s.lineClear3D&&match.shotEvents.length===n+1&&!match.finished){
       const ev=(window.qaQueued||[]).find(e=>e.keeperAction==="line_clear");
-      return{found:true,side:s.side,shooter:s.shooter,names:ev?.defendNames||[],caption:match.lastScene?.text||"",ticker:match.commentary.slice(-3).map(x=>x.text).join(" | ")};
+      const cards=(ev?.defendCardsHTML||[]).map(h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent});
+      return{found:true,side:s.side,shooter:s.shooter,names:ev?.defendNames||[],cards,caption:match.lastScene?.text||"",ticker:match.commentary.slice(-3).map(x=>x.text).join(" | ")};
      }
     }
    }
@@ -67,6 +68,9 @@ const check=(label,value)=>{assert.ok(value,label);console.log("PASS",label)};
    const own=line.side==="home"?/^Gegner \d+$/:/^Spieler \d+$/;
    check("3D clearance gets the defending team's names",line.names.length>=4&&line.names.filter(Boolean).every(n=>own.test(n)));
    check("the shooter is not among the clearers",!line.names.includes(line.shooter));
+   // V21.415: the card of a goal-line clearance is the clearing defender's card, not the shooter's.
+   check("every defending actor has its own card",line.cards.length===8&&line.names.every((n,i)=>!n||line.cards[i].includes(n)));
+   check("no clearance card shows the shooter",line.cards.every(t=>!t.includes(line.shooter+" ")&&!t.endsWith(line.shooter)));
    check("commentary calls it a clearance on the line",/Linie/.test(line.caption)&&/Linie/.test(line.ticker));
   }else check("a goal-line clearance was simulated",false);
   check("no uncaught errors",!errors.length);

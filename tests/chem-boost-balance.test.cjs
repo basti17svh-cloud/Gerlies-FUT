@@ -24,16 +24,25 @@ function harness(){
  }
  return{sample};
 }
-test('all six boosts at chemistry 0–3, every boost matchup and extreme rating gaps remain plausible',()=>{
- const {sample}=harness(),rows=[];
+// V21.408: split into three tests so CI can run them in parallel (--test-name-pattern); every
+// sample() call resets its own seed, so the numbers are identical to the old single test.
+const rows=[];
+test('all six boosts at chemistry 0–3 remain plausible',()=>{
+ const {sample}=harness();
  for(let chem=0;chem<=3;chem++){
   const normal=sample(null,chem);rows.push({boost:'Kein Boost',chem,...normal});
   for(const d of C.DEFINITIONS){const result=sample(d.id,chem);rows.push({boost:d.name,chem,...result});if(!chem)assert.deepEqual(result,normal,`${d.name}: zero chemistry must be exactly neutral`);
    assert.ok(result.win<.75,`${d.name}: unrealistic advantage ${result.win}`);assert.ok(result.goals<normal.goals+1.5);assert.ok(result.xg<normal.xg+1.5);assert.ok(result.shots<normal.shots+5);assert.ok(Math.abs(result.possession-normal.possession)<6);assert.ok(Number.isFinite(result.duels));
   }
  }
- for(let a=0;a<6;a++)for(let b=a+1;b<6;b++){const result=sample(C.DEFINITIONS[a].id,3,C.DEFINITIONS[b].id,84,84,60);rows.push({boost:C.DEFINITIONS[a].name,against:C.DEFINITIONS[b].name,chem:3,...result});assert.ok(result.win>.10&&result.win<.80,'no boost matchup dominates equal-rated teams');}
- for(const [rating,away] of [[84,50],[50,84]])for(const id of [null,'vollstrecker']){const result=sample(id,3,null,rating,away,100);rows.push({boost:id||'Kein Boost',chem:3,rating,againstRating:away,...result});assert.ok(rating>away?result.win>.80:result.win<.20,'boosts cannot erase extreme squad strength differences');}
- // A reproducible developer report, kept outside runtime save data.
- fs.writeFileSync('/tmp/chem-boost-balance-results.json',JSON.stringify({matches:4*7*80+15*60+4*100,rows},null,2));
 });
+test('every boost matchup between equal teams remains plausible',()=>{
+ const {sample}=harness();
+ for(let a=0;a<6;a++)for(let b=a+1;b<6;b++){const result=sample(C.DEFINITIONS[a].id,3,C.DEFINITIONS[b].id,84,84,60);rows.push({boost:C.DEFINITIONS[a].name,against:C.DEFINITIONS[b].name,chem:3,...result});assert.ok(result.win>.10&&result.win<.80,'no boost matchup dominates equal-rated teams');}
+});
+test('boosts cannot erase extreme rating gaps',()=>{
+ const {sample}=harness();
+ for(const [rating,away] of [[84,50],[50,84]])for(const id of [null,'vollstrecker']){const result=sample(id,3,null,rating,away,100);rows.push({boost:id||'Kein Boost',chem:3,rating,againstRating:away,...result});assert.ok(rating>away?result.win>.80:result.win<.20,'boosts cannot erase extreme squad strength differences');}
+});
+// A reproducible developer report, kept outside runtime save data (only the parts that ran).
+test.after(()=>fs.writeFileSync('/tmp/chem-boost-balance-results.json',JSON.stringify({matches:rows.length,rows},null,2)));

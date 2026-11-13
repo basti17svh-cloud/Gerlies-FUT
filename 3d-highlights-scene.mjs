@@ -3,9 +3,9 @@ import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
-import {createSceneSound} from './3d-stadium-sound.mjs?v=21373';
+import {createSceneSound} from './3d-stadium-sound.mjs?v=21406';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21391';
@@ -14,7 +14,8 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
 import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21301';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21382';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21410';
+import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
 export {prepareFooteraPlayerModel,prepareFooteraMakeHumanModel,isFooteraPlayerModelReady,prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage};
@@ -27,6 +28,23 @@ export function halloweenNight(at=Date.now()){
  if(typeof location!=='undefined'&&/[?&]halloween=1\b/.test(location.search))return true;
  if(typeof forced==='boolean')return forced;
  return at>=Date.parse('2026-10-30T19:00:00+01:00')&&at<Date.parse('2026-11-06T19:00:00+01:00');
+}
+// WINTERNÄCHTE 2026 (V21.406): Christmas boards 11.12. 19:00 to 27.12., New Year boards until 07.01.2027;
+// fireworks over the stands on New Year's Eve (31.12. 18:00 to 01.01. 06:00 Berlin).
+// window.__FOOTERA_SEASON='winter'|'silvester'|'' and ?silvester=1 override the date for previews and QA.
+export function winterBoardKind(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_SEASON:undefined;
+ if(typeof location!=='undefined'&&/[?&]silvester=1\b/.test(location.search))return 'silvester';
+ if(typeof forced==='string')return forced==='winter'||forced==='silvester'?forced:'';
+ if(at>=Date.parse('2026-12-11T19:00:00+01:00')&&at<Date.parse('2026-12-27T00:00:00+01:00'))return 'winter';
+ if(at>=Date.parse('2026-12-27T00:00:00+01:00')&&at<Date.parse('2027-01-07T00:00:00+01:00'))return 'silvester';
+ return '';
+}
+export function silvesterNight(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_SEASON:undefined;
+ if(typeof location!=='undefined'&&/[?&]silvester=1\b/.test(location.search))return true;
+ if(typeof forced==='string')return forced==='silvester';
+ return at>=Date.parse('2026-12-31T18:00:00+01:00')&&at<Date.parse('2027-01-01T06:00:00+01:00');
 }
 // V21.340: the match's weather; a preview/QA override (?wetter=, __FOOTERA_WEATHER,
 // footera-3d-weather=0) wins over the weather picked at kick-off.
@@ -57,7 +75,7 @@ import {isTrackingAction,createTrackingTimeline,applyTrackingPose,DEFENDER_TRACK
 import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
-import {createArena} from './3d-arena.mjs?v=21382';
+import {createArena} from './3d-arena.mjs?v=21410';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21341';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1267,12 +1285,18 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.18 — broadcast crowd/stadium pass. Humans stay instanced and deterministic;
   // darker tiering, irregular spacing and segmented flags add depth without extra per-fan draw calls.
   box(100,.1,143,'#172126',0,-.15,0,scene);
+  // V21.406 stadiums (Basti: "Es sollen überall Fans sein", individual grounds).
+  // The host's fans fill both long sides and their end; the guests get their
+  // end and the block next to it. Without stadium data: the Footera arena.
+  const stadium=event.stadium?cleanStadium(event.stadium):null,look=stadium?stadiumLook(stadium):null;
+  const hostTeam=event.venue==='away'?'away':'home',guestTeam=hostTeam==='home'?'away':'home',hostEnd=hostTeam==='home'?-1:1;
+  const stepColours=look&&!spooky?[look.steps[0],look.steps[1]]:['#172126','#202c31'];
   const crowdKits=kitColors(event),crowd=[],crowdRows=weak?8:mobileStandard?10:high?12:12,sideCols=weak?94:mobileStandard?144:high?204:170,endCols=weak?64:mobileStandard?102:high?148:120;
-  const sideSupporter=z=>z<-22?'home':z>22?'away':'neutral';
+  const sideSupporter=z=>z*hostEnd<-38?guestTeam:Math.abs(z)<14?'neutral':hostTeam;
   for(const side of [-1,1]){
    for(let row=0;row<12;row++){
-    box(2.0,.64,119,row%2?'#172126':'#202c31',side*(39.3+row*1.42),.52+row*.72,0,scene);
-    box(79,.64,2.0,row%2?'#172126':'#202c31',0,.52+row*.72,side*(59.4+row*1.42),scene);
+    box(2.0,.64,119,row%2?stepColours[0]:stepColours[1],side*(39.3+row*1.42),.52+row*.72,0,scene);
+    box(79,.64,2.0,row%2?stepColours[0]:stepColours[1],0,.52+row*.72,side*(59.4+row*1.42),scene);
     if(row<crowdRows){
      for(let col=0;col<sideCols;col++){
       const z=-56+col*(112/Math.max(1,sideCols-1));
@@ -1292,7 +1316,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const radius=2.3+row*1.42,count=8;
    for(let col=0;col<count;col++){
     const angle=(col+.5)/count*Math.PI/2,x=sx*(37+Math.cos(angle)*radius),z=sz*(57.1+Math.sin(angle)*radius);
-    const terrace=box(radius*Math.PI/(2*count)+.20,.64,2,row%2?'#172126':'#202c31',x,.52+row*.72,z,scene);terrace.rotation.y=-sx*sz*angle-Math.PI/2;
+    const terrace=box(radius*Math.PI/(2*count)+.20,.64,2,row%2?stepColours[0]:stepColours[1],x,.52+row*.72,z,scene);terrace.rotation.y=-sx*sz*angle-Math.PI/2;
     if(row<crowdRows){const slots=weak?1:Math.max(1,Math.round(radius*.16));for(let n=0;n<slots;n++){
      const a=(col+(n+.5)/slots)/count*Math.PI/2;
      crowd.push({x:sx*(37+Math.cos(a)*radius),y:1.13+row*.72,z:sz*(57.1+Math.sin(a)*radius),team:sz<0?'home':'away',row,zone:'corner'});
@@ -1309,7 +1333,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   const animatedShare=weak?.22:mobileStandard?.44:high?.76:.62;
   const crowdSpecs=crowd.map((p,i)=>({...p,x:p.x+(p.zone==='end'?(hash(i*89+7)-.5)*.46:(hash(i*89+7)-.5)*.12),z:p.z+(p.zone==='side'?(hash(i*97+11)-.5)*.46:(hash(i*97+11)-.5)*.12),index:i,phase:hash(i*29+3)*Math.PI*2,loop:Math.floor(hash(i*31+9)*3),height:1.25+hash(i*37+5)*.38,width:.94+hash(i*41+7)*.28,depth:.96+hash(i*43+11)*.18,lift:hash(i*47+13)*.13,animated:hash(i*53+17)<animatedShare}));
-  const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated);
+  // V21.406: instances in a scattered order, so the slow-frame reduction (which
+  // draws only the first share) thins every stand evenly instead of emptying
+  // whole stands. The fan wall behind keeps the seats full.
+  const scatter=(a,b)=>hash(a.index*61+29)-hash(b.index*61+29);
+  const crowdStaticSpecs=crowdSpecs.filter(x=>!x.animated).sort(scatter),crowdDynamicSpecs=crowdSpecs.filter(x=>x.animated).sort(scatter);
+  const fanWall=createFanWall(THREE,{scene,track,weak,hash,hostEnd,
+   host:crowdKits[hostTeam].shirt,hostSecondary:crowdKits[hostTeam].shirtSecondary,guest:crowdKits[guestTeam].shirt,guestSecondary:crowdKits[guestTeam].shirtSecondary,
+   aisles:{side:Array.from({length:Math.ceil(sideCols/28)},(_,k)=>-56+(k*28+.5)*112/(sideCols-1)),end:Array.from({length:Math.ceil(endCols/26)},(_,k)=>-37+(k*26+.5)*74/(endCols-1))}});
   const crowdDummy=new THREE.Object3D(),crowdColor=new THREE.Color(),crowdArmAxis=new THREE.Vector3(0,1,0),crowdArmDirection=new THREE.Vector3(),neutralFanPalette=['#313a3d','#65717a','#ddd9cf','#8e6f58'],crowdPantsPalette=['#1c252b','#2c3842','#41484d','#32445d','#54473f'];
   function fanPalette(team){
    const kit=team==='home'?crowdKits.home:team==='away'?crowdKits.away:null;
@@ -1438,6 +1469,37 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    update(-1);return{update};
   })();
+  // Winternächte (V21.406): New Year's Eve fireworks above the stands at goals, walk-outs and the final whistle.
+  // Each rocket bursts into one THREE.Points cloud that falls and fades, then re-launches, so long scenes keep it.
+  const fireworks=silvesterNight()&&(event.type==='goal'||ceremony)?(()=>{
+   const palette=['#ff4d6d','#ffd166','#7bdff2','#b8f2e6','#c77dff','#ffffff','#06d6a0'];
+   const count=weak?4:7,sparks=weak?44:72,period=2.9,side=ceremony==='kickoff'?1:-1;
+   // High above both long stands: the walk-out opening shot, the final whistle and replays look up there.
+   const spark=canvasTexture(32,32,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.35,'rgba(255,255,255,.75)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const bursts=[];
+   for(let k=0;k<count;k++){
+    const geometry=track(new THREE.BufferGeometry()),dirs=new Float32Array(sparks*3),pos=new Float32Array(sparks*3);
+    for(let i=0;i<sparks;i++){
+     const u=hash(k*97+i*13+1)*2-1,a=hash(k*89+i*7+3)*Math.PI*2,r=Math.sqrt(1-u*u),sp=.82+hash(k*71+i*5)*.36;
+     dirs[i*3]=r*Math.cos(a)*sp;dirs[i*3+1]=u*sp;dirs[i*3+2]=r*Math.sin(a)*sp;
+    }
+    geometry.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const material=track(new THREE.PointsMaterial({map:spark,color:palette[k%palette.length],size:weak?3.6:3.2,sizeAttenuation:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+    const points=new THREE.Points(geometry,material);points.renderOrder=13;points.frustumCulled=false;scene.add(points);
+    const at=[(k%2?side:-side)*(40+hash(k*41+9)*18),30+hash(k*43+2)*8,-46+k/(count-1||1)*92+(hash(k*47+5)-.5)*8];
+    bursts.push({points,geometry,material,dirs,pos,at,radius:9+hash(k*53+1)*5,offset:(event.type==='goal'&&!ceremony?netArrival+.4:.3)+k*(period/count)+hash(k*59+3)*.5});
+   }
+   function update(time){
+    for(const b of bursts){
+     const t=time-b.offset,on=t>=0;b.points.visible=on;if(!on)continue;
+     const u=(t%period)/period,grow=1-Math.pow(1-Math.min(1,u*2.2),3),drop=u*u*6;
+     for(let i=0;i<b.dirs.length;i+=3){b.pos[i]=b.at[0]+b.dirs[i]*b.radius*grow;b.pos[i+1]=b.at[1]+b.dirs[i+1]*b.radius*grow-drop;b.pos[i+2]=b.at[2]+b.dirs[i+2]*b.radius*grow}
+     b.geometry.attributes.position.needsUpdate=true;
+     b.material.opacity=u<.08?u/.08:Math.max(0,1-(u-.08)/.62);
+    }
+   }
+   update(-1);return{update};
+  })():null;
   const tifo=bigNight?(()=>{
    const kit=crowdKits.home,club=String(event.homeName||'FOOTERA').toUpperCase();
    const tex=canvasTexture(1024,320,(ctx,w,h)=>{
@@ -1462,7 +1524,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Two shared high-contrast textures; anisotropic mip filtering
   // keeps the touchline text stable at acute camera angles without shimmer.
-  const adKinds=spooky?['footera','halloween','instagram']:['footera','instagram'];
+  const seasonBoard=spooky?'halloween':winterBoardKind();
+  const adKinds=seasonBoard?['footera',seasonBoard,'instagram','tiktok']:['footera','instagram','tiktok'];
   const adMaterials=adKinds.map(kind=>{
    const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
    tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
@@ -1688,7 +1751,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    ballAt:ceremony?null:t=>eventBallPosition(event.type,t),actors:()=>weatherActors()});
   // V21.382: the arena reads the weather's sky and fog, so it comes second.
   const arenaActors=[...players.map(p=>p.root),keeper.root];
-  const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,
+  const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,look,
    actors:()=>arenaActors,goalAt:event.type==='goal'&&!ceremony?netArrival:null,hash})):null;
   // Breath clouds start at the real head bone when the GLB squad is shown.
   let weatherActorCache=null;
@@ -1893,6 +1956,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   let capturedParticipantActive=0;
   // V21.226 ceremonies: walk-out and final whistle. Locomotion, footwork and
   // the GLB squad as in play; authored poses for line-up, joy and despair.
+  let ceremonyFog=null;
   const ceremonyStates=ceremony?[...players,keeper].map(()=>({arms:0,rootY:0})):[];
   const keeperCeremonyStride=ceremony?(()=>{const table=new Float32Array(105);let prev=ceremonyActor(ceremony,16,0,{draw:ceremonyDraw});
    for(let j=1;j<=104;j++){const next=ceremonyActor(ceremony,16,j*DURATION/104,{draw:ceremonyDraw}),d=Math.hypot(next.x-prev.x,next.z-prev.z);table[j]=table[j-1]+d*Math.PI*2/runningStrideLength(clamp(d/(DURATION/104)/6.5));prev=next}
@@ -1919,9 +1983,11 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
-   updateCrowd(time);pyro?.update(time);
+   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
    const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
+   // V21.406 stadium shot: fog and far plane move out with the high camera.
+   if(scene.fog){ceremonyFog??={near:scene.fog.near,far:scene.fog.far,camera:camera.far};const d=Math.max(0,camera.position.length()-60);scene.fog.near=ceremonyFog.near+d;scene.fog.far=ceremonyFog.far+d;camera.far=ceremonyFog.camera+d}
    lastCameraTime=time;
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
@@ -2463,7 +2529,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     sprite.visible=on&&!!owner;
     if(sprite.visible){const head=owner.root.getWorldPosition(new THREE.Vector3());sprite.position.set(head.x,head.y+2.45,head.z);const [from,to]=moment.badge;sprite.material.opacity=smooth((time-from)/.18)*(1-smooth((time-to+.2)/.2));sprite.scale.setScalar(1.35)}
    }
-   updateCrowd(time);pyro?.update(time);
+   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
    // Extended match scenes must use the exact same stable broadcast track.
    const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect,eventBallPosition(event.type,time)))||broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
@@ -2579,6 +2645,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
      weather:weather.info.inspect?.()||{kind:'clear'},
+     stadium:{name:stadium?.name||'',style:stadium?.style||'arena',venue:hostTeam==='home'?'home':'away',fanWallQuads:fanWall.quads,arena:arena?.info?{style:arena.info.style,upperTier:arena.info.upperTier,roof:arena.info.roof,masts:arena.info.masts||0}:null},
      playerModelTier:allQuaternius&&importedKeeper?(humanSquad?'human-entire-squad':'quaternius-entire-squad'):weak?'low-hybrid':'full-squad',
      importedSquadCount:importedPlayers.filter(Boolean).length,
       importedHairStyles:importedPlayers.filter(Boolean).map(p=>p.hairStyle),
@@ -2664,6 +2731,13 @@ export function play(event,signal){
    if(event.team==='away')pair.append(awayCrest,homeCrest);else pair.append(homeCrest,awayCrest);meta.append(pair);
   }
   hud.append(card,mark,copy,meta);layer.append(hud);
+  // V21.406: the stadium's name over the stadium shot before kick-off.
+  const stadiumTitle=ceremony==='kickoff'&&event.stadium?.name?document.createElement('div'):null;
+  if(stadiumTitle){stadiumTitle.className='fh3d-stadium-title';stadiumTitle.setAttribute('aria-live','polite');
+   const kicker=document.createElement('small'),title=document.createElement('strong'),venue=document.createElement('span');
+   kicker.textContent='WILLKOMMEN IM';title.textContent=String(event.stadium.name);
+   venue.textContent=event.venue==='away'?`Auswärtsspiel bei ${event.awayName||'Gast'}`:`Heimspiel · ${event.homeName||'Heim'}`;
+   stadiumTitle.append(kicker,title,venue);layer.append(stadiumTitle)}
   // V21.226 replay: a FOOTERA wipe in and out and a small WIEDERHOLUNG tag.
   // V21.320: the stinger carries the Footera emblem on dark chrome-and-red bands.
   const replayEligible=event.type==='goal'&&event.replay!==false&&!ceremony;
@@ -2789,10 +2863,17 @@ export function play(event,signal){
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.
-      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';name.textContent=(world?.lineClearIndex>=8&&event.defendNames?.[world.lineClearIndex-8])||event.defenderName||'Verteidiger';detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
+      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';
+       // V21.415: name AND card of the defender who clears (defending actors 8-15), never the shooter.
+       const clearSlot=world?.lineClearIndex>=8?world.lineClearIndex-8:Math.max(0,Math.min(7,(event.defenderIndex??8)-8)),clearName=(world?.lineClearIndex>=8&&event.defendNames?.[clearSlot])||event.defenderName||'Verteidiger';
+       name.textContent=clearName;
+       const clearCard=event.defendCardsHTML?.[clearSlot];
+       if(clearCard)card.innerHTML=clearCard;else{const ph=document.createElement('div');ph.className='fh3d-identity-fallback';ph.textContent=clearName;card.replaceChildren(ph)}
+       detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
+     stadiumTitle?.classList.toggle('visible',displayTime>=.45&&displayTime<CEREMONY_ARENA_SHOT-.2);
      if(sample.done){
       if(!replayEligible){finish('played');return}
       replayState={elapsed:0,last:now};layer.classList.add('fh3d-wipe-in');layer.dataset.replay='1';

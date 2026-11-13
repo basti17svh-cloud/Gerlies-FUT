@@ -241,3 +241,9 @@ html.fh3d-scroll-lock body{overflow:hidden!important}
 @keyframes fh3dWipeLogo{0%,36%{opacity:0;transform:scale(.72) rotate(-6deg)}46%{opacity:1;transform:scale(1.06) rotate(0)}56%{opacity:1;transform:scale(1)}68%,100%{opacity:0;transform:scale(1.12)}}
 .fh3d-replay-tag{position:absolute;z-index:6;top:74px;left:12px;padding:5px 9px;border-radius:6px;background:#e3262fe8;color:#fff;font:900 11px/1 system-ui;letter-spacing:1.6px;opacity:0;transition:opacity .2s}
 .fh3d-replay-on .fh3d-replay-tag{opacity:1}
+/* V21.406 stadium shot before kick-off: the ground's name, TV lower third style. */
+.fh3d-stadium-title{position:absolute;z-index:6;left:14px;right:14px;bottom:18%;display:flex;flex-direction:column;align-items:flex-start;gap:3px;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s}
+.fh3d-stadium-title.visible{opacity:1;transform:none}
+.fh3d-stadium-title small{padding:3px 8px;border-radius:4px;background:#d8ff3e;color:#0d1a12;font:900 10px/1.1 system-ui;letter-spacing:1.8px}
+.fh3d-stadium-title strong{max-width:100%;padding:6px 10px;border-radius:6px;background:#08131ae6;color:#fff;font:italic 900 clamp(19px,6vw,28px)/1.05 system-ui;letter-spacing:.4px;text-transform:uppercase;overflow-wrap:anywhere;box-shadow:0 6px 18px #0007}
+.fh3d-stadium-title span{padding:3px 8px;border-radius:4px;background:#08131acc;color:#dfe8ec;font:700 12px/1.2 system-ui}

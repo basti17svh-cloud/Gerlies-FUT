@@ -13,6 +13,23 @@ function instagramGlyph(ctx,x,y,size){
  ctx.beginPath();ctx.arc(x+size/2,y+size/2,29,0,Math.PI*2);ctx.stroke();
  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(x+size*.70,y+size*.30,8,0,Math.PI*2);ctx.fill();
 }
+// TikTok note: white glyph with the cyan/red offset shadows on a black tile.
+function tiktokNote(ctx,x,y,size,color){
+ const u=size/100;
+ ctx.strokeStyle=color;ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.lineWidth=14*u;
+ ctx.beginPath();ctx.arc(x+38*u,y+66*u,14*u,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x+52*u,y+66*u);ctx.lineTo(x+52*u,y+20*u);
+ ctx.quadraticCurveTo(x+56*u,y+38*u,x+76*u,y+40*u);ctx.stroke();
+}
+function tiktokGlyph(ctx,x,y,size){
+ ctx.fillStyle='#010101';
+ ctx.beginPath();ctx.roundRect(x,y,size,size,43);ctx.fill();
+ const inner=size*.96,ix=x+(size-inner)/2-size*.03,iy=y+(size-inner)/2+size*.02,o=size*.024;
+ tiktokNote(ctx,ix-o,iy-o,inner,'#25f4ee');
+ tiktokNote(ctx,ix+o,iy+o,inner,'#fe2c55');
+ tiktokNote(ctx,ix,iy,inner,'#ffffff');
+}
 // Carved jack-o'-lantern for the HALLOWEEN boards: orange body, glowing triangle eyes and grin.
 function pumpkinGlyph(ctx,cx,cy,r){
  const body=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
@@ -23,6 +40,16 @@ function pumpkinGlyph(ctx,cx,cy,r){
  ctx.fillStyle='#ffe27a';
  for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(cx+s*r*.16,cy-r*.08);ctx.lineTo(cx+s*r*.36,cy-r*.42);ctx.lineTo(cx+s*r*.56,cy-r*.08);ctx.fill()}
  ctx.beginPath();ctx.moveTo(cx-r*.58,cy+r*.18);ctx.lineTo(cx-r*.3,cy+r*.3);ctx.lineTo(cx-r*.15,cy+r*.18);ctx.lineTo(cx,cy+r*.32);ctx.lineTo(cx+r*.15,cy+r*.18);ctx.lineTo(cx+r*.3,cy+r*.3);ctx.lineTo(cx+r*.58,cy+r*.18);ctx.lineTo(cx+r*.36,cy+r*.58);ctx.lineTo(cx-r*.36,cy+r*.58);ctx.fill();
+}
+// Six-armed snowflake for the WINTERNÄCHTE boards.
+function snowflakeGlyph(ctx,cx,cy,r,color){
+ ctx.save();ctx.strokeStyle=color;ctx.lineCap='round';ctx.lineWidth=r*.13;
+ for(let i=0;i<6;i++){
+  const a=i*Math.PI/3,c=Math.cos(a),s=Math.sin(a);
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+c*r,cy+s*r);ctx.stroke();
+  for(const t of [.5,.75])for(const d of [-1,1]){const b=a+d*Math.PI/4,bx=cx+c*r*t,by=cy+s*r*t;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(b)*r*.28,by+Math.sin(b)*r*.28);ctx.stroke()}
+ }
+ ctx.restore();
 }
 export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
  if(kind==='halloween'){
@@ -38,12 +65,26 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   ctx.fillText('BLUTMOND',1560,140,380);
   ctx.restore();return;
  }
+ if(kind==='winter'||kind==='silvester'){
+  // WINTERNÄCHTE (V21.406): Christmas red with gold, New Year night blue with gold.
+  const xmas=kind==='winter';
+  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
+  const bg=ctx.createLinearGradient(0,0,WIDTH,0);
+  if(xmas){bg.addColorStop(0,'#3a0b16');bg.addColorStop(.5,'#5c0f1f');bg.addColorStop(1,'#3a0b16')}else{bg.addColorStop(0,'#05081a');bg.addColorStop(.5,'#14204a');bg.addColorStop(1,'#05081a')}
+  ctx.fillStyle=bg;ctx.fillRect(0,0,WIDTH,HEIGHT);
+  ctx.fillStyle='#ffd36b';ctx.fillRect(0,0,WIDTH,7);ctx.fillRect(0,249,WIDTH,7);
+  for(const x of [150,WIDTH-150])snowflakeGlyph(ctx,x,128,86,xmas?'#fff6d8':'#ffe08a');
+  ctx.textBaseline='middle';ctx.textAlign='center';
+  ctx.fillStyle='#ffe08a';ctx.font='900 150px Arial, sans-serif';
+  ctx.fillText(xmas?'FROHE WEIHNACHTEN':'FROHES NEUES 2027',WIDTH/2,137,1500);
+  ctx.restore();return;
+ }
  ctx.save();ctx.scale(w/WIDTH,h/HEIGHT);
- const instagram=kind==='instagram';
- ctx.fillStyle=instagram?'#fffaf8':'#0d1b24';
+ const instagram=kind==='instagram',tiktok=kind==='tiktok';
+ ctx.fillStyle=instagram?'#fffaf8':tiktok?'#121212':'#0d1b24';
  ctx.fillRect(0,0,WIDTH,HEIGHT);
- ctx.fillStyle=instagram?'#e83191':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
- ctx.fillStyle=instagram?'#d6d9db':'#374955';ctx.fillRect(0,249,WIDTH,7);
+ ctx.fillStyle=instagram?'#e83191':tiktok?'#25f4ee':'#dc293d';ctx.fillRect(0,0,WIDTH,7);
+ ctx.fillStyle=instagram?'#d6d9db':tiktok?'#fe2c55':'#374955';ctx.fillRect(0,249,WIDTH,7);
  ctx.textBaseline='middle';ctx.textAlign='center';
  if(instagram){
   // Equal spacing: logo / handle / logo, readable from the match camera.
@@ -51,6 +92,12 @@ export function drawPerimeterBoard(ctx,w,h,kind='footera',footeraLogo=null){
   instagramGlyph(ctx,WIDTH-58-198,29,198);
   ctx.fillStyle='#111e26';ctx.font='800 174px Arial, sans-serif';
   ctx.fillText('official_footera',WIDTH/2,136,1440);
+ }else if(tiktok){
+  // Same layout as the Instagram board: logo / handle / logo.
+  tiktokGlyph(ctx,58,29,198);
+  tiktokGlyph(ctx,WIDTH-58-198,29,198);
+  ctx.fillStyle='#ffffff';ctx.font='800 174px Arial, sans-serif';
+  ctx.fillText('footera_official',WIDTH/2,136,1440);
  }else{
   if(footeraLogo?.complete&&footeraLogo.naturalWidth>0){
    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';

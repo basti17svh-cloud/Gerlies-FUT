@@ -1,4 +1,4 @@
-// Footera Stadion-Sound for 3D scenes (V21.371).
+// Footera Stadion-Sound for 3D scenes (V21.406).
 // Turns what the scene already shows into stadium sound: the ball's own
 // movement gives every pass and shot its kick, the distance to goal lifts the
 // crowd, and the outcome (net, post, save, miss) gets its roar or "Ohhh".
@@ -54,18 +54,21 @@ export function crowdExcitement(distanceToGoal,{base=.32}={}){
  return clamp(base+.45*clamp((42-d)/30,0,1),0,.9);
 }
 
-// When each outcome sound fires, in scene seconds.
-// V21.373 (Basti: "erst mal nur Ball und Torsound"): the scenes play only
-// ball sounds (touches, post) and the goal (net + cheer). No crowd bed, no
-// "Ohhh", applause, chant or whistles for now.
-export const SCENE_CROWD_BED=false;
-export function outcomeCues(event,{impactTime,goalArrival}={}){
+// Crowd reactions follow contact/outcome, never the shot launch.
+export const SCENE_CROWD_BED=true;
+export function outcomeCues(event,{impactTime,goalArrival,ceremonyCut}={}){
  const cues=[],type=event?.type,home=event?.team!=='away';
+ const at=Number.isFinite(impactTime)?impactTime:6.4;
  if(type==='goal'){
-  const at=Number.isFinite(goalArrival)?goalArrival:6.9;
-  cues.push({time:at,cue:'net'},{time:at+.03,cue:'roar',size:home?1:.42});
+  const goalAt=Number.isFinite(goalArrival)?goalArrival:6.9;
+  cues.push({time:goalAt,cue:'net'},{time:goalAt+.08,cue:'roar',size:home?1:.42});
  }else if(type==='shot_post'){
-  cues.push({time:Number.isFinite(impactTime)?impactTime:6.4,cue:'post'});
+  cues.push({time:at,cue:'post'},{time:at+.12,cue:'groan',size:home?.85:.4});
+ }else if(type==='big_chance_missed'||type==='big_chance_saved'){
+  cues.push({time:at+.12,cue:'groan',size:home?.8:.4});
+  if(type==='big_chance_saved')cues.push({time:at+.9,cue:'applause',seconds:2.4,level:home?.3:.55});
+ }else if(type==='ceremony'&&event.ceremony==='fulltime'){
+  cues.push({time:Math.max(0,Number(ceremonyCut)||0)+.15,cue:'applause',seconds:3,level:.45});
  }
  return cues;
 }
@@ -76,7 +79,9 @@ export function createSceneSound(event,{sound=globalThis.FooteraSound,startAt=0,
  if(!sound||!sound.enabled?.())return noop;
  const ceremony=event?.type==='ceremony';
  const cues=outcomeCues(event,{impactTime,goalArrival,actionTime,ceremonyCut});
- const fire=(name,...args)=>{if(log)log.push({name,args,time:lastTime});try{return sound[name]?.(...args)}catch(_){return null}};
+ const reactions=new Set();
+ try{sound.preloadStadium?.()?.catch?.(()=>{})}catch(_){}
+ const fire=(name,...args)=>{if(log)log.push({name,args,time:lastTime});try{const handle=sound[name]?.(...args);if(handle?.stop)reactions.add(handle);return handle}catch(_){return null}};
  // Switched on mid-scene: cues that are already over stay silent.
  let lastTime=Number(startAt)||0,next=cues.filter(c=>c.time<(Number(startAt)||0)).length,bed=null,started=false,replayOn=false,peakUntil=-1,disposed=false;
  const kicks=createKickDetector();
@@ -118,6 +123,6 @@ export function createSceneSound(event,{sound=globalThis.FooteraSound,startAt=0,
    if(log)log.push({name:'muffle',args:[replayOn],time:lastTime});
    bed?.muffle(replayOn);bed?.level(replayOn?.26:.4,.3);
   },
-  dispose(){if(disposed)return;disposed=true;if(log)log.push({name:'stop',args:[],time:lastTime});bed?.stop(.7)}
+  dispose(){if(disposed)return;disposed=true;if(log)log.push({name:'stop',args:[],time:lastTime});bed?.stop(.4);for(const h of reactions)h.stop(.18);reactions.clear()}
  };
 }

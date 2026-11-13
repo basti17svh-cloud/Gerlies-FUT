@@ -1,0 +1,27 @@
+/* V21.414 Team of the Year – Abstimmung */
+.toty-home[hidden]{display:none}
+.toty-banner{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:16px;border:1px solid #ffd76a77;background:linear-gradient(100deg,#0b1d4a,#1b3a8a55 60%,#ffffff05);color:#fff;text-align:left}
+.toty-banner.done{opacity:.8;border-color:#ffffff22}
+.toty-icon{font-size:26px}
+.toty-banner-copy{display:grid;gap:2px;flex:1;min-width:0}
+.toty-banner-copy small{font-size:11px;font-weight:1000;letter-spacing:.08em;color:#ffd76a}
+.toty-banner-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toty-arrow{font-size:24px;color:#ffd76a}
+.toty-lead{margin:0 0 10px;font-size:13px;color:#c9d6d0}
+.toty-msg{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#ffd76a1a;border:1px solid #ffd76a55;font-size:13px}
+.toty-slot{margin:0 0 12px}
+.toty-slot h4{display:flex;justify-content:space-between;margin:0 0 6px;font-size:14px}
+.toty-slot h4 span{color:#9fb0aa}
+.toty-slot h4 span.full{color:#2ecf7e}
+.toty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
+.toty-pick{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;padding:7px 9px;border-radius:12px;border:1px solid #ffffff1f;background:#ffffff0a;color:#fff;text-align:left;font:inherit;min-width:0}
+.toty-pick b{grid-row:span 2;font-size:18px;color:#ffd76a}
+.toty-pick span{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toty-pick small{font-size:11px;color:#9fb0aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toty-pick.on{border-color:#ffd76a;background:linear-gradient(140deg,#1b3a8a,#0b1d4a);box-shadow:0 0 0 1px #ffd76a66}
+.toty-pick:disabled{cursor:default}
+.toty-pick:disabled:not(.on){opacity:.55}
+.toty-standings{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#ffffff08;border:1px solid #ffd76a44}
+.toty-standings h4{margin:0 0 6px;font-size:14px;color:#ffd76a}
+.toty-standings p{margin:0 0 4px;font-size:13px}
+.toty-submit{position:sticky;bottom:0;width:100%;margin-top:4px}

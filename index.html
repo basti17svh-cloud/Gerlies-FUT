@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.398</title>
+<title>Footera V21.416</title>
 <link rel="stylesheet" href="./footera-app.css?v=21350">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
@@ -37,9 +37,9 @@
 <link rel="stylesheet" href="./evolution-card.css?v=21315">
 <link rel="stylesheet" href="./friend-online.css?v=21246">
 <link rel="stylesheet" href="./matchday.css">
-<link rel="stylesheet" href="./3d-highlights.css?v=21371">
+<link rel="stylesheet" href="./3d-highlights.css?v=21410">
 <link rel="stylesheet" href="./club-stats.css">
-<link rel="stylesheet" href="./club-identity.css?v=21269">
+<link rel="stylesheet" href="./club-identity.css?v=21410">
 <link rel="stylesheet" href="./club-crest-premium.css?v=2130">
 <link rel="stylesheet" href="./ux-overview.css?v=2114">
 <link rel="stylesheet" href="./play-hub.css?v=21215">
@@ -50,7 +50,14 @@
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <link rel="stylesheet" href="./footera-compare.css?v=21375">
 <link rel="stylesheet" href="./footera-week-recap.css?v=21376">
+<link rel="stylesheet" href="./footera-newspaper.css?v=21415">
+<link rel="stylesheet" href="./footera-kabine.css?v=21405">
 <link rel="stylesheet" href="./footera-daily-login.css?v=21378">
+<link rel="stylesheet" href="./footera-advent.css?v=21411">
+<link rel="stylesheet" href="./footera-comeback.css?v=21411">
+<link rel="stylesheet" href="./footera-toty.css?v=21414">
+<link rel="stylesheet" href="./winter-card.css?v=21411">
+<link rel="stylesheet" href="./toty-card.css?v=21414">
 <link rel="stylesheet" href="./footera-higher-lower.css?v=21379">
 <link rel="stylesheet" href="./footera-favorites.css?v=21377">
 <link rel="stylesheet" href="./footera-tutorial.css?v=21330">
@@ -68,7 +75,7 @@
 <link rel="stylesheet" href="./desktop-layout.css?v=21265">
 <link rel="stylesheet" href="./desktop-clarity.css?v=21268">
 <link rel="stylesheet" href="./sbc-simple.css?v=21339">
-<link rel="stylesheet" href="./event-calendar.css?v=21335">
+<link rel="stylesheet" href="./event-calendar.css?v=21414">
 <link rel="stylesheet" href="./matchday-red.css?v=21388">
 </head>
 <body>
@@ -140,7 +147,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.398</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.416</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -196,6 +203,8 @@
       </button>
 
       <div id="dailyLoginHome" class="daily-login-home" hidden></div>
+      <div id="adventHome" class="advent-home" hidden></div>
+      <div id="totyHome" class="toty-home" hidden></div>
       <div id="weeklyRewardHome" class="weekly-reward-home" hidden></div>
       <div id="competitionHome" class="home-competition"></div>
 
@@ -423,6 +432,7 @@
   <div class="extras-card"><span class="extras-kicker">REWARDS</span><h3>Promocode</h3><p>Promocodes gelten einmal pro Spielstand. Die Belohnung wird direkt deinem Konto gutgeschrieben.</p><div class="promo-entry"><input id="promoCodeInput" maxlength="40" autocomplete="off" autocapitalize="none" placeholder="Code eingeben"><button id="redeemPromoCode" class="primary">Einlösen</button></div><div class="promo-reward"><div><strong id="promoRewardTitle">Promocode-Belohnung</strong><span id="promoRewardSub">Jeder gültige Code hat seine eigene Belohnung.</span></div><div style="font-size:28px">◆</div></div><div id="promoStatus" class="promo-status">Gib deinen Promocode ein und tippe auf „Einlösen“.</div></div>
   <div class="extras-card"><span class="extras-kicker">APP</span><h3>Footera installieren</h3><p id="pwaInstallHint">Installiere Footera als App auf deinem Gerät.</p><button id="extrasInstallBtn" class="primary">Footera installieren</button></div>
   <div class="extras-card"><span class="extras-kicker">DEIN CLUB</span><h3>Wochenrückblick</h3><p>Jeden Montag fasst Footera deine letzte Woche zusammen: Spiele, Tore, Spieler der Woche und beste Pack-Ziehung. Zum Teilen als Bild.</p><button type="button" class="secondary" data-week-recap-open>Rückblick ansehen</button></div>
+  <div class="extras-card"><span class="extras-kicker">DEIN CLUB</span><h3>Kabinen-Chat</h3><p>Die Gruppe deiner Mannschaft: Nach jedem Spiel schreiben deine Spieler, was sie vom Spiel halten. Neue Topstars stellen sich vor, und du antwortest als Trainer.</p><button type="button" class="secondary" data-kabine-open>Kabine öffnen <span class="kb-extras-count" data-kabine-count hidden></span></button></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>3D Highlights</h3><p>Kurze Live-Szenen für Tore und große Chancen. Bei nicht unterstützten Geräten läuft die gewohnte Spieldarstellung weiter.</p><label class="highlight-mode">3D Highlights<select data-highlight-mode aria-label="3D Highlights"></select></label></div>
   <div class="extras-card"><span class="extras-kicker">MATCHDAY</span><h3>Stadion-Sound</h3><p>Ballkontakte, Netz und Torjubel in den 3D-Szenen, Stadion-Walkout beim Pack-Öffnen. Folgt dem Lautlos-Schalter deines Handys.</p><label class="highlight-mode">Stadion-Sound<select data-sound-mode aria-label="Stadion-Sound"><option value="on">An</option><option value="off">Aus</option></select></label></div>
   <div class="extras-card"><span class="extras-kicker">DATENSCHUTZ</span><h3>Besucherstatistik</h3><p>Optionale, anonyme Besucherstatistik. Du kannst deine Einwilligung hier jederzeit ändern.</p><div id="analyticsSettingsSlot"></div></div>
@@ -465,6 +475,7 @@
       <button type="button" data-identity-tab="crest">Wappen</button>
       <button type="button" data-identity-tab="colors">Farben</button>
       <button type="button" data-identity-tab="kits">Trikots</button>
+      <button type="button" data-identity-tab="stadium">Stadion</button>
     </div>
 
     <div class="identity-panel active" data-identity-panel="general">
@@ -529,6 +540,19 @@
         </div></div>
       </div>
       <div class="identity-future-note">Farben lassen sich zwischen Vereinsfarben, allen Wappenfarben sowie Heim- und Auswärtstrikot exakt kopieren. Die Trikotmuster werden auch in den 3D-Highlights verwendet.</div>
+    </div>
+
+    <div class="identity-panel" data-identity-panel="stadium">
+      <h3>Dein Stadion</h3><p>So sieht dein Heimstadion in den 3D-Szenen aus. Jedes zweite Spiel ist ein Auswärtsspiel im Stadion des Gegners (nur Optik, am Ergebnis ändert sich nichts).</p>
+      <div id="identityStadiumPreview" class="stadium-preview" aria-hidden="true"></div>
+      <div class="identity-fields">
+        <label class="identity-field">Stadionname<input id="identityStadiumName" maxlength="28" placeholder="Footera Club Arena"></label>
+      </div>
+      <div id="identityStadiumStyles" class="stadium-styles" role="radiogroup" aria-label="Bauart"></div>
+      <div class="identity-fields">
+        <label class="identity-field">Sitzfarbe 1<input id="identityStadiumSeatPrimary" type="color"></label>
+        <label class="identity-field">Sitzfarbe 2<input id="identityStadiumSeatSecondary" type="color"></label>
+      </div>
     </div>
 
     <button id="saveClubIdentity" class="primary identity-save" type="button">Vereinsidentität speichern</button>
@@ -730,8 +754,8 @@
 
 
 <script src="./footera-weather.js?v=21340"></script>
-<script src="./footera-sound.js?v=21374"></script>
-<script src="./3d-highlights.js?v=21391"></script>
+<script src="./footera-sound.js?v=21412"></script>
+<script src="./3d-highlights.js?v=21415"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=21381"></script>
 <script src="./footera-match-actions.js?v=21303"></script>
@@ -741,19 +765,24 @@
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
 <script src="./footera-favorites.js?v=21377"></script>
-<script src="./footera-app.js?v=21398"></script>
+<script src="./footera-app.js?v=21416"></script>
 <script src="./footera-compare.js?v=21375"></script>
 <script src="./footera-week-recap.js?v=21376"></script>
+<script src="./footera-newspaper.js?v=21415"></script>
+<script src="./footera-kabine.js?v=21405"></script>
 <script src="./footera-daily-login.js?v=21378"></script>
+<script src="./footera-advent.js?v=21411"></script>
+<script src="./footera-comeback.js?v=21411"></script>
+<script src="./footera-toty.js?v=21414"></script>
 <script src="./footera-higher-lower.js?v=21379"></script>
-<script src="./season-system.js?v=21297"></script>
+<script src="./season-system.js?v=21413"></script>
 <script src="./competition-system.js?v=21396"></script>
 <script src="./champions-system.js?v=21318"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online-3d.js?v=21304"></script>
 <script src="./friend-online.js?v=21262"></script>
 <script src="./player-looks.js?v=21258"></script>
-<script src="./3d-highlights-match.js?v=21365"></script>
+<script src="./3d-highlights-match.js?v=21415"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./halloween-cup.js?v=21352"></script>
@@ -762,8 +791,8 @@
 <script src="./weekly-rewards.js?v=21333"></script>
 <script src="./friends-hub.js"></script>
 <script src="./rivals-league.js?v=21352"></script>
-<script src="./potm.js?v=21398"></script>
-<script src="./event-calendar.js?v=21339"></script>
+<script src="./potm.js?v=21416"></script>
+<script src="./event-calendar.js?v=21414"></script>
 <script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21300"></script>
