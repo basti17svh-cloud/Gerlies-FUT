@@ -51,6 +51,12 @@ function footeraEventCalendar(at=Date.now(),{days=EVENT_CALENDAR_DAYS,limit=EVEN
   add({at:eventCalendarMs(`${y}-12-01T00:00:00+01:00`),kind:"event",theme:"winter",rank:0,title:"Adventskalender startet",sub:"24 Türchen · jeden Tag ein Geschenk",short:"Adventskalender",go:"homeView",key:"advent-start:"+y});
   add({at:eventCalendarMs(`${y}-12-24T00:00:00+01:00`),kind:"event",theme:"winter",rank:0,title:"Heiligabend-Türchen",sub:"Hinter Türchen 24 wartet ein Weihnachtsspieler",short:"Heiligabend-Türchen",go:"homeView",key:"advent-xmas:"+y});
  }
+ // TOTY fan vote (V21.413): start and end of the vote.
+ if(typeof FooteraToty!=="undefined"){
+  const t=FooteraToty,s=t.SEASON;
+  add({at:eventCalendarMs(t.VOTE_FROM),kind:"event",theme:"toty",rank:0,title:"TOTY-Abstimmung startet",sub:"Wähle deine Elf des Jahres · Dankeschön "+t.REWARD_LABEL,short:"TOTY-Abstimmung",go:"homeView",key:"toty-vote:"+s});
+  add({at:eventCalendarMs(t.VOTE_UNTIL),kind:"event",theme:"toty",rank:0,title:"TOTY-Abstimmung endet",sub:"Letzte Chance für deine Stimme",short:"TOTY-Ende",go:"homeView",key:"toty-vote-end:"+s});
+ }
  // Winternächte: Silvester-SBC from midnight into the new year.
  for(const def of typeof WINTER_SBCS!=="undefined"?WINTER_SBCS:[]){
   const start=eventCalendarMs(def.releaseAt),end=eventCalendarMs(def.activeUntilAt);
