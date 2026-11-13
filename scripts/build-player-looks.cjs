@@ -75,22 +75,12 @@ function measure(img){
  const nearest=(cents,v)=>Object.entries(cents).sort((a,b)=>dist3(a[1],v)-dist3(b[1],v))[0][0];
  const centroid=(key,pick,rows)=>{const g={};for(const [c,m] of rows){const k=c[key];(g[k]||(g[k]=[])).push(pick(m))}
   return Object.fromEntries(Object.entries(g).map(([k,v])=>[k,v[0].map((_,j)=>v.map(x=>x[j]).sort((a,b)=>a-b)[v.length>>1])]))};
- // Skin (V21.419): tones 1-6 are ordered, so five brightness cut-offs are
- // fitted on the hand-set players (fewest tones off), instead of the nearest
- // centroid, which mixed up 2 and 3. Every measured face gets a tone, also
- // when the hair is not readable (bald heads, headbands).
- const skinL=m=>m.skinL;
- const cuts=(()=>{
-  const rows=labelled.map(([c,m])=>[skinL(m),Number(c[0])]).sort((a,b)=>b[0]-a[0]);
-  // Dynamic programme over the rows sorted light to dark: tone t covers a run.
-  const n=rows.length,INF=1e9,cost=Array.from({length:7},()=>new Array(n+1).fill(INF)),from=Array.from({length:7},()=>new Array(n+1).fill(0));
-  cost[0][0]=0;
-  for(let t=1;t<=6;t++)for(let j=0;j<=n;j++){let run=0;for(let i=j;i>=0;i--){if(i<j)run+=Math.abs(rows[i][1]-t);const c=cost[t-1][i]+run;if(c<cost[t][j]){cost[t][j]=c;from[t][j]=i}}}
-  const out=[];let j=n;for(let t=6;t>=1;t--){const i=from[t][j];out[t]=i;j=i}
-  // Cut between tone t-1 and t: midway between the neighbouring rows.
-  return [1,2,3,4,5].map(t=>{const i=out[t+1];return i<=0?Infinity:i>=n?-Infinity:(rows[i-1][0]+rows[i][0])/2});
- })();
- const tone=m=>{const L=skinL(m);let t=1;for(const c of cuts)if(L<c)t++;return String(t)};
+ // Skin: nearest hand-set brightness median. V21.419 tried ordered cut-offs
+ // fitted on the hand-set players: better on them (within one tone 79 -> 86 %),
+ // but it turned 782 other players from tone 4 to 2 (EA portrait exposure
+ // varies too much for brightness alone), so the centroids stay.
+ const skinKey=m=>[m.skinL,0,0],skinC=centroid(0,skinKey,labelled.filter(([,m])=>m.hair));
+ const tone=m=>nearest(skinC,skinKey(m));
  const withHair=labelled.filter(([,m])=>m.hair);
  const hairKey=m=>m.hair,hairC=centroid(2,hairKey,withHair);
  delete hairC.P;delete hairC.Y;delete hairC.W;delete hairC.R; // too few hand samples; dyed/grey stay hand-set only
@@ -99,7 +89,7 @@ function measure(img){
  const decide=m=>{
   if(!m)return null;
   const skin=tone(m);
-  if(!m.hair)return skin+'___';
+  if(!m.hair)return null;
   const bald=m.hairSkin<45&&Math.abs((m.hair[0]-m.hair[2])-(m.skin[0]-m.skin[2]))<25;
   return skin+(bald?'x':'k')+(bald?'S':nearest(hairC,hairKey(m)))+(beardRatio(m)<best.t?'v':'n');
  };
@@ -109,7 +99,7 @@ function measure(img){
   const near=j===0?labelled.filter(([c,m])=>{const d=decide(m);return d&&Math.abs(d[0]-c[0])<=1}).length:ok;
   report.push(name+' exact '+(ok/rows.length).toFixed(2)+(j===0?' within1 '+(near/labelled.length).toFixed(2):''));
  }
- report.push('skin cut-offs '+JSON.stringify(cuts.map(c=>Math.round(c*10)/10)),'hair centroids '+JSON.stringify(hairC));
+ report.push('skin centroids '+JSON.stringify(skinC),'hair centroids '+JSON.stringify(hairC));
  const looks={};todo.forEach((p,i)=>{const d=decide(ms[i]);if(d)looks[p.player_id]=d});
  report.push('players '+todo.length+' coded '+Object.keys(looks).length);
  console.log(report.join('\n'));
