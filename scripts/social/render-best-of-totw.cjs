@@ -36,7 +36,7 @@ const OUT=[[4,'Kane'],[2,'Olise'],[9,'Shaw']];
    h1{font:900 var(--h1)/.95 Arial,sans-serif!important;letter-spacing:-3px!important;text-align:center!important;color:#ffe5a0!important;margin:0!important;text-shadow:0 3px 28px #dba33940}
    h1 b{color:#fff}.sub{text-align:center;margin-top:12px;font-size:21px;font-weight:800;letter-spacing:3px;color:#efe1b8}
    .rows{display:flex;flex-direction:column;align-items:center;gap:var(--rgap);margin-top:var(--top)}.row{display:flex;justify-content:center;gap:12px}
-   .pc{position:relative;filter:drop-shadow(0 6px 10px #000c)}.pc .card-shell{width:100%!important;max-width:none!important;margin:0!important}
+   .pc{position:relative;filter:drop-shadow(0 6px 10px #000c)}.pc .card-shell{width:100%!important;max-width:none!important;margin:0!important}.pc .card-alt-positions{display:none!important}
    .r1 .pc{width:var(--c1)}.r2 .pc{width:var(--c2)}
    .wk{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:#c8102e;color:#fff;font-size:13px;font-weight:900;letter-spacing:1.5px;padding:3px 9px;border-radius:9px;white-space:nowrap;box-shadow:0 2px 6px #000a}
    .bottom{position:absolute;left:55px;right:55px;bottom:var(--bot);text-align:center}.line{height:1px;background:linear-gradient(90deg,transparent,#b89553aa,transparent);margin-bottom:20px}
