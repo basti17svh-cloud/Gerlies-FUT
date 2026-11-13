@@ -9,14 +9,14 @@
 .adv-banner-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adv-arrow{font-size:24px;color:#9fdcff}
 .adv-lead{margin:0 0 10px;font-size:13px;color:#c9d6d0}
-.adv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.adv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:dense;gap:7px}
 .adv-door{position:relative;display:grid;gap:3px;align-content:center;justify-items:center;min-height:74px;padding:8px 4px;border-radius:12px;background:linear-gradient(160deg,#173a5c,#0f2236);border:1px solid #9fdcff2e;color:#fff;text-align:center;font:inherit}
 .adv-door .adv-num{font-size:22px;font-weight:1000;line-height:1;color:#e8f6ff;text-shadow:0 0 8px #9fdcff66}
 .adv-door strong{font-size:11px;line-height:1.2;color:#c9dbe8;overflow-wrap:anywhere}
 .adv-door b{position:absolute;top:4px;right:6px;color:#2ecf7e;font-size:12px}
 .adv-door.big{background:linear-gradient(160deg,#5a1424,#2a0c14);border-color:#ffe08a66}
 .adv-door.big .adv-num{color:#ffe08a;text-shadow:0 0 10px #ffe08a88}
-.adv-door.xmas{grid-column:span 2}
+.adv-door.big{grid-column:span 2}
 .adv-door.today{cursor:pointer;border-color:#ffe08a;box-shadow:0 0 0 2px #ffe08a66,0 0 18px #ffe08a44;animation:adv-pulse 1.6s ease-in-out infinite}
 .adv-door.today strong{color:#ffe08a;font-weight:1000}
 .adv-door.open{background:#ffffff0d;border-color:#2ecf7e55}
