@@ -1,0 +1,32 @@
+/* V21.406 Adventskalender */
+.advent-home[hidden]{display:none}
+.adv-banner{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:16px;border:1px solid #9fdcff66;background:linear-gradient(100deg,#2a6fb02e,#c8213a1f 62%,#ffffff05);color:#fff;text-align:left}
+.adv-banner.big{border-color:#ffe08a;box-shadow:0 0 0 1px #ffe08a55,0 8px 24px #ffe08a22}
+.adv-banner.done{opacity:.72;border-color:#ffffff22}
+.adv-gift{font-size:26px}
+.adv-banner-copy{display:grid;gap:2px;flex:1;min-width:0}
+.adv-banner-copy small{font-size:11px;font-weight:1000;letter-spacing:.08em;color:#9fdcff}
+.adv-banner-copy strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adv-arrow{font-size:24px;color:#9fdcff}
+.adv-lead{margin:0 0 10px;font-size:13px;color:#c9d6d0}
+.adv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:dense;gap:7px}
+.adv-door{position:relative;display:grid;gap:3px;align-content:center;justify-items:center;min-height:74px;padding:8px 4px;border-radius:12px;background:linear-gradient(160deg,#173a5c,#0f2236);border:1px solid #9fdcff2e;color:#fff;text-align:center;font:inherit}
+.adv-door .adv-num{font-size:22px;font-weight:1000;line-height:1;color:#e8f6ff;text-shadow:0 0 8px #9fdcff66}
+.adv-door strong{font-size:11px;line-height:1.2;color:#c9dbe8;overflow-wrap:anywhere}
+.adv-door b{position:absolute;top:4px;right:6px;color:#2ecf7e;font-size:12px}
+.adv-door.big{background:linear-gradient(160deg,#5a1424,#2a0c14);border-color:#ffe08a66}
+.adv-door.big .adv-num{color:#ffe08a;text-shadow:0 0 10px #ffe08a88}
+.adv-door.big{grid-column:span 2}
+.adv-door.today{cursor:pointer;border-color:#ffe08a;box-shadow:0 0 0 2px #ffe08a66,0 0 18px #ffe08a44;animation:adv-pulse 1.6s ease-in-out infinite}
+.adv-door.today strong{color:#ffe08a;font-weight:1000}
+.adv-door.open{background:#ffffff0d;border-color:#2ecf7e55}
+.adv-door.open .adv-num{font-size:15px;color:#9fb0aa;text-shadow:none}
+.adv-door.open strong{color:#fff}
+.adv-door.missed{opacity:.38;filter:grayscale(.8)}
+.adv-door.locked{opacity:.8}
+.adv-door:disabled{animation:none}
+.adv-xmas-reveal{display:grid;justify-items:center;gap:8px;margin:0 0 12px;padding:12px;border-radius:16px;background:linear-gradient(160deg,#5a142455,#173a5c55);border:1px solid #ffe08a66;text-align:center}
+.adv-xmas-reveal p{margin:0;font-size:14px}
+.adv-xmas-card{width:min(190px,56vw)}
+@keyframes adv-pulse{50%{box-shadow:0 0 0 2px #ffe08a99,0 0 26px #ffe08a77}}
+@media (prefers-reduced-motion:reduce){.adv-door.today{animation:none}}

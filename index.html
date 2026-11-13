@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="./squad-tactics.css?v=2124">
 <link rel="stylesheet" href="./squad-numbers.css?v=2185">
 <link rel="stylesheet" href="./footera-cosmetic-evolutions.css?v=21194">
-<title>Footera V21.412</title>
+<title>Footera V21.418</title>
 <link rel="stylesheet" href="./footera-app.css?v=21350">
 <link rel="stylesheet" href="./footera-theme.css">
 <link rel="stylesheet" href="./weekly-rewards.css?v=21318">
@@ -50,9 +50,14 @@
 <link rel="stylesheet" href="./player-profile.css?v=2114">
 <link rel="stylesheet" href="./footera-compare.css?v=21375">
 <link rel="stylesheet" href="./footera-week-recap.css?v=21376">
-<link rel="stylesheet" href="./footera-newspaper.css?v=21402">
+<link rel="stylesheet" href="./footera-newspaper.css?v=21415">
 <link rel="stylesheet" href="./footera-kabine.css?v=21405">
 <link rel="stylesheet" href="./footera-daily-login.css?v=21378">
+<link rel="stylesheet" href="./footera-advent.css?v=21411">
+<link rel="stylesheet" href="./footera-comeback.css?v=21411">
+<link rel="stylesheet" href="./footera-toty.css?v=21414">
+<link rel="stylesheet" href="./winter-card.css?v=21411">
+<link rel="stylesheet" href="./toty-card.css?v=21414">
 <link rel="stylesheet" href="./footera-higher-lower.css?v=21379">
 <link rel="stylesheet" href="./footera-favorites.css?v=21377">
 <link rel="stylesheet" href="./footera-tutorial.css?v=21330">
@@ -71,7 +76,7 @@
 <link rel="stylesheet" href="./desktop-layout.css?v=21265">
 <link rel="stylesheet" href="./desktop-clarity.css?v=21268">
 <link rel="stylesheet" href="./sbc-simple.css?v=21339">
-<link rel="stylesheet" href="./event-calendar.css?v=21335">
+<link rel="stylesheet" href="./event-calendar.css?v=21414">
 <link rel="stylesheet" href="./matchday-red.css?v=21388">
 </head>
 <body>
@@ -143,7 +148,7 @@
 
 <div class="app">
 <header class="topbar"><div class="toprow">
-    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.412</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
+    <div class="brand"><div class="mark" role="img" aria-label="Footera"></div><div><h1>Footera <span class="build-badge" id="buildBadge">V21.418</span></h1><small id="dbIndicator" title="Dein Team">DEIN CLUB</small></div></div>
   <div class="wallet"><div class="walletbox coin" aria-label="Footera Coins" title="Footera Coins"><img class="wallet-currency-icon" src="./assets/footera/coins.webp" alt="" aria-hidden="true"><strong id="coins">0</strong></div><div class="walletbox pts" aria-label="Footera Points" title="Footera Points"><img class="wallet-currency-icon" src="./assets/footera/points.webp" alt="" aria-hidden="true"><strong id="points">0</strong></div></div>
 </div></header>
 
@@ -199,6 +204,8 @@
       </button>
 
       <div id="dailyLoginHome" class="daily-login-home" hidden></div>
+      <div id="adventHome" class="advent-home" hidden></div>
+      <div id="totyHome" class="toty-home" hidden></div>
       <div id="weeklyRewardHome" class="weekly-reward-home" hidden></div>
       <div id="competitionHome" class="home-competition"></div>
 
@@ -748,8 +755,8 @@
 
 
 <script src="./footera-weather.js?v=21340"></script>
-<script src="./footera-sound.js?v=21406"></script>
-<script src="./3d-highlights.js?v=21410"></script>
+<script src="./footera-sound.js?v=21412"></script>
+<script src="./3d-highlights.js?v=21415"></script>
 <script src="./chem-boosts.js?v=2114"></script>
 <script src="./playstyles.js?v=21381"></script>
 <script src="./footera-match-actions.js?v=21303"></script>
@@ -759,21 +766,24 @@
 <script src="./kit-pattern-art.js?v=21269"></script>
 <script src="./kit-design-picker.js?v=21269"></script>
 <script src="./footera-favorites.js?v=21377"></script>
-<script src="./footera-app.js?v=21412"></script>
+<script src="./footera-app.js?v=21418"></script>
 <script src="./footera-compare.js?v=21375"></script>
 <script src="./footera-week-recap.js?v=21376"></script>
-<script src="./footera-newspaper.js?v=21402"></script>
+<script src="./footera-newspaper.js?v=21415"></script>
 <script src="./footera-kabine.js?v=21405"></script>
 <script src="./footera-daily-login.js?v=21378"></script>
+<script src="./footera-advent.js?v=21411"></script>
+<script src="./footera-comeback.js?v=21411"></script>
+<script src="./footera-toty.js?v=21414"></script>
 <script src="./footera-higher-lower.js?v=21379"></script>
-<script src="./season-system.js?v=21297"></script>
+<script src="./season-system.js?v=21413"></script>
 <script src="./competition-system.js?v=21396"></script>
 <script src="./champions-system.js?v=21318"></script>
 <script src="./online-config.js"></script>
 <script src="./friend-online-3d.js?v=21304"></script>
 <script src="./friend-online.js?v=21262"></script>
 <script src="./player-looks.js?v=21258"></script>
-<script src="./3d-highlights-match.js?v=21410"></script>
+<script src="./3d-highlights-match.js?v=21415"></script>
 <script src="./chem-boosts-ui.js?v=2114"></script>
 <script src="./club-stats.js"></script>
 <script src="./halloween-cup.js?v=21352"></script>
@@ -782,8 +792,8 @@
 <script src="./weekly-rewards.js?v=21333"></script>
 <script src="./friends-hub.js"></script>
 <script src="./rivals-league.js?v=21352"></script>
-<script src="./potm.js?v=21394"></script>
-<script src="./event-calendar.js?v=21339"></script>
+<script src="./potm.js?v=21416"></script>
+<script src="./event-calendar.js?v=21414"></script>
 <script src="./squad-tactics.js?v=21201"></script>
 <script src="./squad-numbers.js?v=2185"></script>
 <script src="./footera-backup.js?v=21300"></script>

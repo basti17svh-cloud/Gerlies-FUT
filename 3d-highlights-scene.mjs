@@ -5,7 +5,7 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedP
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21406';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21403';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21391';
@@ -28,6 +28,23 @@ export function halloweenNight(at=Date.now()){
  if(typeof location!=='undefined'&&/[?&]halloween=1\b/.test(location.search))return true;
  if(typeof forced==='boolean')return forced;
  return at>=Date.parse('2026-10-30T19:00:00+01:00')&&at<Date.parse('2026-11-06T19:00:00+01:00');
+}
+// WINTERNÄCHTE 2026 (V21.406): Christmas boards 11.12. 19:00 to 27.12., New Year boards until 07.01.2027;
+// fireworks over the stands on New Year's Eve (31.12. 18:00 to 01.01. 06:00 Berlin).
+// window.__FOOTERA_SEASON='winter'|'silvester'|'' and ?silvester=1 override the date for previews and QA.
+export function winterBoardKind(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_SEASON:undefined;
+ if(typeof location!=='undefined'&&/[?&]silvester=1\b/.test(location.search))return 'silvester';
+ if(typeof forced==='string')return forced==='winter'||forced==='silvester'?forced:'';
+ if(at>=Date.parse('2026-12-11T19:00:00+01:00')&&at<Date.parse('2026-12-27T00:00:00+01:00'))return 'winter';
+ if(at>=Date.parse('2026-12-27T00:00:00+01:00')&&at<Date.parse('2027-01-07T00:00:00+01:00'))return 'silvester';
+ return '';
+}
+export function silvesterNight(at=Date.now()){
+ const forced=typeof window!=='undefined'?window.__FOOTERA_SEASON:undefined;
+ if(typeof location!=='undefined'&&/[?&]silvester=1\b/.test(location.search))return true;
+ if(typeof forced==='string')return forced==='silvester';
+ return at>=Date.parse('2026-12-31T18:00:00+01:00')&&at<Date.parse('2027-01-01T06:00:00+01:00');
 }
 // V21.340: the match's weather; a preview/QA override (?wetter=, __FOOTERA_WEATHER,
 // footera-3d-weather=0) wins over the weather picked at kick-off.
@@ -1452,6 +1469,37 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    update(-1);return{update};
   })();
+  // Winternächte (V21.406): New Year's Eve fireworks above the stands at goals, walk-outs and the final whistle.
+  // Each rocket bursts into one THREE.Points cloud that falls and fades, then re-launches, so long scenes keep it.
+  const fireworks=silvesterNight()&&(event.type==='goal'||ceremony)?(()=>{
+   const palette=['#ff4d6d','#ffd166','#7bdff2','#b8f2e6','#c77dff','#ffffff','#06d6a0'];
+   const count=weak?4:7,sparks=weak?44:72,period=2.9,side=ceremony==='kickoff'?1:-1;
+   // High above both long stands: the walk-out opening shot, the final whistle and replays look up there.
+   const spark=canvasTexture(32,32,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.35,'rgba(255,255,255,.75)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+   const bursts=[];
+   for(let k=0;k<count;k++){
+    const geometry=track(new THREE.BufferGeometry()),dirs=new Float32Array(sparks*3),pos=new Float32Array(sparks*3);
+    for(let i=0;i<sparks;i++){
+     const u=hash(k*97+i*13+1)*2-1,a=hash(k*89+i*7+3)*Math.PI*2,r=Math.sqrt(1-u*u),sp=.82+hash(k*71+i*5)*.36;
+     dirs[i*3]=r*Math.cos(a)*sp;dirs[i*3+1]=u*sp;dirs[i*3+2]=r*Math.sin(a)*sp;
+    }
+    geometry.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const material=track(new THREE.PointsMaterial({map:spark,color:palette[k%palette.length],size:weak?3.6:3.2,sizeAttenuation:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+    const points=new THREE.Points(geometry,material);points.renderOrder=13;points.frustumCulled=false;scene.add(points);
+    const at=[(k%2?side:-side)*(40+hash(k*41+9)*18),30+hash(k*43+2)*8,-46+k/(count-1||1)*92+(hash(k*47+5)-.5)*8];
+    bursts.push({points,geometry,material,dirs,pos,at,radius:9+hash(k*53+1)*5,offset:(event.type==='goal'&&!ceremony?netArrival+.4:.3)+k*(period/count)+hash(k*59+3)*.5});
+   }
+   function update(time){
+    for(const b of bursts){
+     const t=time-b.offset,on=t>=0;b.points.visible=on;if(!on)continue;
+     const u=(t%period)/period,grow=1-Math.pow(1-Math.min(1,u*2.2),3),drop=u*u*6;
+     for(let i=0;i<b.dirs.length;i+=3){b.pos[i]=b.at[0]+b.dirs[i]*b.radius*grow;b.pos[i+1]=b.at[1]+b.dirs[i+1]*b.radius*grow-drop;b.pos[i+2]=b.at[2]+b.dirs[i+2]*b.radius*grow}
+     b.geometry.attributes.position.needsUpdate=true;
+     b.material.opacity=u<.08?u/.08:Math.max(0,1-(u-.08)/.62);
+    }
+   }
+   update(-1);return{update};
+  })():null;
   const tifo=bigNight?(()=>{
    const kit=crowdKits.home,club=String(event.homeName||'FOOTERA').toUpperCase();
    const tex=canvasTexture(1024,320,(ctx,w,h)=>{
@@ -1476,7 +1524,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Two shared high-contrast textures; anisotropic mip filtering
   // keeps the touchline text stable at acute camera angles without shimmer.
-  const adKinds=spooky?['footera','halloween','instagram','tiktok']:['footera','instagram','tiktok'];
+  const seasonBoard=spooky?'halloween':winterBoardKind();
+  const adKinds=seasonBoard?['footera',seasonBoard,'instagram','tiktok']:['footera','instagram','tiktok'];
   const adMaterials=adKinds.map(kind=>{
    const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
    tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
@@ -1934,7 +1983,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
-   updateCrowd(time);pyro?.update(time);
+   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
    const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
    // V21.406 stadium shot: fog and far plane move out with the high camera.
@@ -2480,7 +2529,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     sprite.visible=on&&!!owner;
     if(sprite.visible){const head=owner.root.getWorldPosition(new THREE.Vector3());sprite.position.set(head.x,head.y+2.45,head.z);const [from,to]=moment.badge;sprite.material.opacity=smooth((time-from)/.18)*(1-smooth((time-to+.2)/.2));sprite.scale.setScalar(1.35)}
    }
-   updateCrowd(time);pyro?.update(time);
+   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
    // Extended match scenes must use the exact same stable broadcast track.
    const cam=labFocusedPreview?eventCameraState(direction,time,camera.aspect,event.type,sequence,finish,keeperAction):(extended&&extendedSetPieceCamera(sequence,time,direction,camera.aspect,eventBallPosition(event.type,time)))||broadcastFor(camera.aspect)(time);
    currentCameraPhase=cam.phase;
@@ -2814,7 +2863,13 @@ export function play(event,signal){
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.
-      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';name.textContent=(world?.lineClearIndex>=8&&event.defendNames?.[world.lineClearIndex-8])||event.defenderName||'Verteidiger';detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
+      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';
+       // V21.415: name AND card of the defender who clears (defending actors 8-15), never the shooter.
+       const clearSlot=world?.lineClearIndex>=8?world.lineClearIndex-8:Math.max(0,Math.min(7,(event.defenderIndex??8)-8)),clearName=(world?.lineClearIndex>=8&&event.defendNames?.[clearSlot])||event.defenderName||'Verteidiger';
+       name.textContent=clearName;
+       const clearCard=event.defendCardsHTML?.[clearSlot];
+       if(clearCard)card.innerHTML=clearCard;else{const ph=document.createElement('div');ph.className='fh3d-identity-fallback';ph.textContent=clearName;card.replaceChildren(ph)}
+       detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);

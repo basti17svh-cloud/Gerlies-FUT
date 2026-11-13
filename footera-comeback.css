@@ -1,0 +1,9 @@
+/* V21.406 Comeback-Geschenk */
+.cb-modal{max-width:380px;text-align:center;display:grid;gap:8px;justify-items:center}
+.cb-gift{font-size:46px;line-height:1}
+.cb-modal h3{margin:0;font-size:22px}
+.cb-modal p{margin:0;font-size:14px;color:#c9d6d0}
+.cb-reward{padding:10px 14px;border-radius:12px;border:1px solid #ffd36b88;background:#ffd36b1a}
+.cb-reward strong{color:#ffd36b;font-size:15px}
+.cb-hint{font-size:12px!important}
+.cb-modal .primary{width:100%;min-height:46px;margin-top:6px}

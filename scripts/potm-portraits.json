@@ -3,5 +3,8 @@
  {"folder": "september-2026", "file": "gross.png", "name": "Pascal Groß", "pid": "190765", "itemId": 84076845},
  {"folder": "september-2026", "file": "raphinha.png", "name": "Raphinha", "pid": "233419", "itemId": 84119499},
  {"folder": "september-2026", "file": "malen.png", "name": "Donyell Malen", "pid": "231447", "itemId": 50563095},
- {"folder": "oktober-2026", "file": "mbappe.png", "name": "Kylian Mbappé", "pid": "231747", "itemId": 151226691, "urls": ["https://game-assets.fut.gg/cdn-cgi/image/quality=100,width=600,format=png/2027/player-item/27-151226691.eb0dd231166dd2fefae0a04e7dc4dda70bc509f533a7250fbf08f7073bb24e43.webp", "https://game-assets.fut.gg/cdn-cgi/image/quality=85,width=300,format=auto/2027/player-item/27-151226691.eb0dd231166dd2fefae0a04e7dc4dda70bc509f533a7250fbf08f7073bb24e43.webp"]}
+ {"folder": "oktober-2026", "file": "mbappe.png", "name": "Kylian Mbappé", "pid": "231747", "itemId": 151226691, "urls": ["https://game-assets.fut.gg/cdn-cgi/image/quality=100,width=600,format=png/2027/player-item/27-151226691.eb0dd231166dd2fefae0a04e7dc4dda70bc509f533a7250fbf08f7073bb24e43.webp", "https://game-assets.fut.gg/cdn-cgi/image/quality=85,width=300,format=auto/2027/player-item/27-151226691.eb0dd231166dd2fefae0a04e7dc4dda70bc509f533a7250fbf08f7073bb24e43.webp"]},
+ {"folder": "oktober-2026", "file": "fuellkrug.png", "name": "Niclas Füllkrug", "pid": "205431", "itemId": 67314295},
+ {"folder": "oktober-2026", "file": "calo.png", "name": "Giacomo Calò", "pid": "251769", "itemId": 50583417},
+ {"folder": "oktober-2026", "file": "jackson.png", "name": "Nicolas Jackson", "pid": "259197", "itemId": 134476925}
 ]

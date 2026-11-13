@@ -1,5 +1,5 @@
-/* Footera Stadion-Sound (V21.406).
- * Ball sounds use Web Audio; fans use real CC0 recordings (V21.406). The
+/* Footera Stadion-Sound (V21.412).
+ * Ball sounds use Web Audio; fans use real CC0 recordings (V21.412). The
  * pack walkout plays short real recordings (CC0, assets/sounds/walkout/). Presentation only: nothing here reads or
  * writes the match, the save or any online data.
  *
@@ -147,8 +147,8 @@
  // Real crowd recordings only. Never fall back to synthetic vowel voices.
  // One-shots are dropped when not decoded yet, so a late download cannot
  // cheer an old goal. The bed can fade in late, unless its scene was disposed.
- const STADIUM_V='21406';
- const STADIUM_FILES={bed:'stadium/bed',groan:'stadium/groan',applause:'stadium/applause',cheer:'walkout/cheer'};
+ const STADIUM_V='21412';
+ const STADIUM_FILES={bed:'stadium/bed',groan:'stadium/groan',applause:'stadium/applause',cheer:'stadium/goal'};
  const stadiumSets=new WeakMap();
  function preloadStadium(target){
   const c=target||context();if(!c||typeof root.fetch!=='function')return Promise.resolve(false);
@@ -178,9 +178,9 @@
  function roar(size=1,at,dest){
   size=clamp(size,.2,1.2);
   // Original pitch, with different entry points rather than robot detuning.
-  return reaction('cheer',{gain:.72*size,seconds:5.8,offset:(reactionVariant++%3)*.35,side:size<.6?.38:-.12,at,dest});
+  return reaction('cheer',{gain:.72*size,seconds:5.8,offset:(reactionVariant++%3)*.035,side:size<.6?.38:-.12,at,dest});
  }
- function groan(size=1,at,dest){return reaction('groan',{gain:.55*clamp(size,.2,1.2),seconds:2.75,side:size<.6?.3:-.1,at,dest})}
+ function groan(size=1,at,dest){return reaction('groan',{gain:.55*clamp(size,.2,1.2),seconds:2.7,side:size<.6?.3:-.1,at,dest})}
  function applause(seconds=3,level=.5,at,dest){return reaction('applause',{gain:.5*clamp(level,0,1),seconds:clamp(seconds,.3,7),at,dest})}
  // Kept for API compatibility: no fabricated spoken/sung club name.
  function chant(){return null}

@@ -49,3 +49,10 @@ test('the newspaper is loaded, cached and offered in the match report',()=>{
  assert.ok(html.indexOf('footera-newspaper.js')>html.indexOf('footera-app.js'),'loads after the app');
  assert.match(app,/FooteraNewspaper\?\.buttonHTML/);
 });
+
+test('V21.415: the share picture is prepared when the Kurier opens, so the tap can open the share sheet',()=>{
+ const src=fs.readFileSync(path.join(root,'footera-newspaper.js'),'utf8');
+ assert.match(src,/setTimeout\(\(\)=>\{if\(shown===ed\)prepareShare\(\)\}/,'prepare right after opening');
+ assert.match(src,/if\(ed\.ready\)\{/,'a ready picture is shared directly in the tap');
+ assert.match(src,/Bild bereit – jetzt teilen/,'a slow picture asks for one more tap instead of failing silently');
+});
