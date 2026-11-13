@@ -30,5 +30,8 @@ Deno.serve(async req=>{
  if(!allowed)return reply({error:"Für dieses Footera-Konto ist kein Statistik-Adminzugriff freigeschaltet."},403);
  const {data,error}=await admin.rpc("footera_analytics_summary");
  if(error){console.error("Footera stats report failed",error.code);return reply({error:"Statistik momentan nicht verfügbar."},503)}
- return reply({report:data});
+ // V21.408: top JavaScript errors of the last 7 days (only from browsers with statistics consent).
+ const errs=await admin.rpc("footera_error_summary",{p_days:7});
+ if(errs.error)console.error("Footera error summary failed",errs.error.code);
+ return reply({report:{...data,errors_7d:errs.error?null:errs.data}});
 });
