@@ -4,7 +4,7 @@ const {server}=require('../../tests/3d-highlights.browser.cjs');
 const root=path.join(__dirname,'../..'),outDir=path.join(root,'assets/footera/social/best-of-totw');
 const LOCAL=process.env.LOCAL==='1';
 // [week, card name as shown, kicker label]
-const ELF=[[6,'Mbappé'],[6,'Haaland'],[8,'Yamal'],[4,'Bellingham'],[8,'Hakimi'],[7,'Gabriel'],[8,'Rice'],[8,'Dumornay'],[4,'Donnarumma'],[2,'Marquinhos'],[4,'Cancelo']];
+const ELF=[[6,'Mbappé'],[6,'Haaland'],[8,'Yamal'],[4,'Bellingham'],[8,'Hakimi'],[7,'Gabriel'],[8,'Rice'],[8,'Dumornay'],[4,'Donnarumma'],[3,'Bastoni'],[4,'Cancelo']];
 const OUT=[[4,'Kane'],[2,'Olise'],[9,'Shaw']];
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
