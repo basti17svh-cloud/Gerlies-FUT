@@ -11,7 +11,7 @@ const mix=(a,b,t)=>a+(b-a)*t;
 const angleMix=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
 const facing=(from,to)=>Math.atan2(-(to[0]-from[0]),-(to[1]-from[1]));
 export const FACE_CAMERA=-Math.PI/2;
-import {stadiumIntroCamera} from './3d-stadium.mjs?v=21406';
+import {stadiumIntroCamera} from './3d-stadium.mjs?v=21407';
 export function ceremonyKind(event){return CEREMONY_KINDS.includes(event?.ceremony)?event.ceremony:''}
 
 // ---- walk-out: two columns come off the main-stand side, turn at the
