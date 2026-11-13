@@ -100,7 +100,7 @@ test('app wires the banner and the files ship with the build',()=>{
  const app=fs.readFileSync(path.join(root,'footera-app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
  assert.match(app,/globalThis\.FooteraAdvent\?\.renderHome\(\)/);
  assert.match(html,/id="adventHome"/);
- for(const f of ['footera-advent.js?v=21406','footera-advent.css?v=21406','winter-card.css?v=21406']){
+ for(const f of ['footera-advent.js?v=21407','footera-advent.css?v=21407','winter-card.css?v=21407']){
   assert.ok(html.includes(f),`index.html ${f}`);
   assert.ok(sw.includes(`"./${f}"`),`service worker ${f}`);
  }
