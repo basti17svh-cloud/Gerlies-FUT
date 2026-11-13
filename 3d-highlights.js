@@ -57,11 +57,15 @@
    homeName:String(event.homeName||''),awayName:String(event.awayName||''),competition:String(event.competition||''),bigMatch:event.bigMatch===true,
    homeScore:Number.isFinite(Number(event.homeScore))?Number(event.homeScore):null,awayScore:Number.isFinite(Number(event.awayScore))?Number(event.awayScore):null,
    defendCrestHTML:String(event.defendCrestHTML||''),squadNames:Object.freeze((Array.isArray(event.squadNames)?event.squadNames:[]).slice(0,16).map(n=>String(n||''))),
+   // V21.406 stadiums: the ground of this match and whose ground it is.
+   venue:event.venue==='away'?'away':'home',
+   stadium:event.stadium&&typeof event.stadium==='object'?Object.freeze({name:String(event.stadium.name||'').replace(/[<>]/g,'').slice(0,28),style:['arena','kessel','tradition'].includes(event.stadium.style)?event.stadium.style:'arena',
+    seatPrimary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatPrimary||''))?String(event.stadium.seatPrimary):'#d8ff3e',seatSecondary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatSecondary||''))?String(event.stadium.seatSecondary):'#173627'}):null,
    replay:event.replay!==false});
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21403').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21406').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});

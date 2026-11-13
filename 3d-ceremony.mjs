@@ -11,6 +11,7 @@ const mix=(a,b,t)=>a+(b-a)*t;
 const angleMix=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
 const facing=(from,to)=>Math.atan2(-(to[0]-from[0]),-(to[1]-from[1]));
 export const FACE_CAMERA=-Math.PI/2;
+import {stadiumIntroCamera} from './3d-stadium.mjs?v=21406';
 export function ceremonyKind(event){return CEREMONY_KINDS.includes(event?.ceremony)?event.ceremony:''}
 
 // ---- walk-out: two columns come off the main-stand side, turn at the
@@ -85,14 +86,17 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 }
 
 // ---- cameras: calm TV shots, no zoom; one cut in the middle of each scene.
-export const CEREMONY_ARENA_SHOT=1.7;
-export const CEREMONY_CUT=Object.freeze({kickoff:4.4,fulltime:5});
+// V21.406 (Basti: "vor dem Spiel soll man in einer Szene das Stadion sehen"):
+// the stadium shot runs 3.4 s, from high above the roof down into the bowl.
+export const CEREMONY_ARENA_SHOT=3.4;
+export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5});
+const CEREMONY_END=10.4;
 export function ceremonyCamera(kind,time){
  if(kind==='kickoff'){
   // V21.382: the scene opens high in the corner of the floodlit arena.
-  if(time<CEREMONY_ARENA_SHOT){const u=time/CEREMONY_ARENA_SHOT;return{position:[50-u*2.4,24-u*.9,62-u*3],target:[0,5.5,-8],fov:38,phase:'arena'}}
+  if(time<CEREMONY_ARENA_SHOT)return stadiumIntroCamera(time,CEREMONY_ARENA_SHOT);
   if(time<CEREMONY_CUT.kickoff)return{position:[3.6-time*.22,1.72,0],target:[16,1.32,0],fov:38,phase:'walkout'};
-  const z=mix(-9.6,9.2,smooth((time-CEREMONY_CUT.kickoff)/6));
+  const z=mix(-9.6,9.2,smooth((time-CEREMONY_CUT.kickoff)/(CEREMONY_END-CEREMONY_CUT.kickoff)));
   // Aimed below the line so the players stand above the match card.
   return{position:[21.5,2.9,z],target:[9,-.55,z*.94],fov:31,phase:'lineup'};
  }

@@ -46,14 +46,20 @@ test('camera flashes: a few all the time, a burst right after a goal that fades 
  for(let t=0;t<12;t+=.05){const v=arenaFlashLevel(t,6.4);assert.ok(v>=.16&&v<=1)}
 });
 
-test('the walk-out opens with a high shot of the arena, then the known cameras',()=>{
- assert.ok(CEREMONY_ARENA_SHOT>1&&CEREMONY_ARENA_SHOT<CEREMONY_CUT.kickoff-2,'the walk-out keeps most of its time');
+test('the walk-out opens with the stadium shot: from above the roof down into the bowl',()=>{
+ // V21.406 (Basti: "vor dem Spiel soll man das Stadion sehen"): 3.4 s instead of 1.7 s.
+ assert.ok(CEREMONY_ARENA_SHOT>=3&&CEREMONY_ARENA_SHOT<=CEREMONY_CUT.kickoff-2,'the walk-out keeps time');
+ const first=ceremonyCamera('kickoff',0);assert.ok(first.position[1]>90,'starts high above the roof (33.6 m)');
+ let prev=Infinity;
  for(let t=0;t<CEREMONY_ARENA_SHOT;t+=.1){
   const c=ceremonyCamera('kickoff',t);assert.equal(c.phase,'arena');
-  // Above the lower tier, below the roof ring and inside the open bowl.
-  assert.ok(c.position[1]>18&&c.position[1]<28);
-  assert.ok(Math.hypot(c.position[0]-37,c.position[2]-57.1)<15.5);
+  assert.ok(c.position[1]<=prev+1e-9,'only descends');prev=c.position[1];
+  assert.ok(c.position[0]>1,'broadcast side');
  }
+ // Ends where the old opening shot was: above the lower tier, inside the bowl.
+ const last=ceremonyCamera('kickoff',CEREMONY_ARENA_SHOT-.01);
+ assert.ok(last.position[1]>18&&last.position[1]<28);
+ assert.ok(Math.hypot(last.position[0]-37,last.position[2]-57.1)<15.5);
  assert.equal(ceremonyCamera('kickoff',CEREMONY_ARENA_SHOT+.01).phase,'walkout');
  assert.equal(ceremonyCamera('kickoff',CEREMONY_CUT.kickoff+.5).phase,'lineup');
  assert.notEqual(ceremonyCamera('fulltime',.5).phase,'arena');
@@ -61,11 +67,11 @@ test('the walk-out opens with a high shot of the arena, then the known cameras',
 
 test('arena is wired into the scene, versioned and cached offline',()=>{
  const scene=read('3d-highlights-scene.mjs'),sw=read('service-worker.js'),hl=read('3d-highlights.js'),arena=read('3d-arena.mjs');
- assert.match(scene,/from '\.\/3d-arena\.mjs\?v=21382'/);
+ assert.match(scene,/from '\.\/3d-arena\.mjs\?v=21406'/);
  assert.match(scene,/footera-3d-arena'\)!=='0'/,'opt-out flag');
  assert.equal(scene.match(/arena\?\.update\(time,camera\)/g).length,2,'match scene and ceremony both update it');
  const version=hl.match(/3d-highlights-scene\.mjs\?v=(\d+)/)[1];
- for(const f of ['./3d-arena.mjs?v=21382','./3d-highlights-scene.mjs?v='+version,'./3d-ceremony.mjs?v=21382'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-arena.mjs?v=21406','./3d-highlights-scene.mjs?v='+version,'./3d-ceremony.mjs?v=21406'])assert.ok(sw.includes(`"${f}"`),f);
  // Deterministic: no clock and no RNG inside the module.
  assert.ok(!/Math\.random|Date\.now|performance\.now/.test(arena));
 });

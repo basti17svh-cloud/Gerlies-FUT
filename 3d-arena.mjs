@@ -105,7 +105,7 @@ const TURF_FRAGMENT=`{
 	diffuseColor.rgb*=pool*vec3(0.86,0.80,1.04);
 }`;
 
-export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,weak=false,high=false,spooky=false,snow=false,kits=null,actors=()=>[],goalAt=null,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
+export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,weak=false,high=false,spooky=false,snow=false,kits=null,look=null,actors=()=>[],goalAt=null,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
  const group=new THREE.Group();group.name='FooteraArena';scene.add(group);
  const info={grade:false,turf:false,shadows:0,flashes:0,lamps:0};
  const tex=(w,h,draw,repeat=false)=>{const t=track(new THREE.CanvasTexture(canvas(w,h,draw)));t.colorSpace=THREE.SRGBColorSpace;if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping}return t};
@@ -198,14 +198,18 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
 
  // ---- Upper tier, roof and light ring --------------------------------------
  const home=kits?.home?.shirt||'#37df78',away=kits?.away?.shirt||'#d85a6a';
+ // V21.406 stadiums: build (upper tier, roof), seat colours, ring and ribbon.
+ const upperTier=look?look.upper:{r0:21.2,y0:12.4,r1:34,y1:25.2},hasRoof=look?look.roof!==false:true;
+ const seatRows=spooky?['#15101f','#15101f']:look?.tierSeat||['#16222a','#1b2931'];
+ info.style=look?.style||'arena';info.upperTier=!!upperTier;info.roof=hasRoof;
  const TIER_REPEATS=6;
  const tierTexture=tex(weak?512:1024,weak?128:256,(ctx,w,h)=>{
   ctx.fillStyle=spooky?'#15101f':'#101a20';ctx.fillRect(0,0,w,h);
   const rows=22,cols=weak?84:168,rh=h/rows,cw=w/cols,neutral=['#c9ccd0','#8f98a3','#39424c','#b79a84','#5b6b7c','#d9d2c2','#2c3540','#a9b4bd'];
   for(let r=0;r<rows;r++){
-   ctx.fillStyle=r%2?'#16222a':'#1b2931';ctx.fillRect(0,r*rh,w,rh*.9);
+   ctx.fillStyle=r%2?seatRows[0]:seatRows[1];ctx.fillRect(0,r*rh,w,rh*.9);
    for(let c=0;c<cols;c++){
-    const k=r*977+c*131;if(hash(k)>.86||c%42<2)continue;
+    const k=r*977+c*131;if(hash(k)>.95||c%42<2)continue;
     const pick=hash(k+5);
     ctx.fillStyle=pick<.16?home:pick<.3?away:neutral[Math.floor(hash(k+9)*neutral.length)];
     ctx.globalAlpha=.5+.4*hash(k+3);
@@ -223,7 +227,19 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  const basic=(opts)=>track(new THREE.MeshBasicMaterial({side:THREE.DoubleSide,...opts}));
  const add=(geometry,material,name)=>{const o=new THREE.Mesh(track(geometry),material);o.name=name;o.frustumCulled=false;group.add(o);return o};
  // Upper tier: the canvas top is the highest row, in the roof's shade.
- const tier=add(loftBand(THREE,21.2,12.4,34,25.2,perimeterLength/TIER_REPEATS),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier');
+ const tier=upperTier?add(loftBand(THREE,upperTier.r0,upperTier.y0,upperTier.r1,upperTier.y1,perimeterLength/TIER_REPEATS),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier'):null;
+ // V21.406: closed outer facade (seen in the stadium shot before kick-off)
+ // with light strips in the seat colour, and the ground around the stadium.
+ {const fr=upperTier?upperTier.r1+.02:19.4,fy=upperTier?upperTier.y1:10.6,accent=spooky?'#ff8a3c':look?.seatPrimary||'#7fd6ff';
+  const facadeTexture=tex(256,128,(ctx,w,h)=>{
+   ctx.fillStyle=spooky?'#120d1a':'#141e24';ctx.fillRect(0,0,w,h);
+   ctx.fillStyle=spooky?'#1c1528':'#1d2a31';for(let x=0;x<w;x+=32)ctx.fillRect(x+3,6,26,h-12);
+   ctx.globalAlpha=.85;ctx.fillStyle=accent;for(let x=0;x<w;x+=64)ctx.fillRect(x+30,0,4,h);ctx.fillRect(0,h*.08,w,3);
+   ctx.globalAlpha=1;
+  },true);
+  add(loftBand(THREE,fr,0,fr,fy,perimeterLength/(TIER_REPEATS*4)),basic({map:facadeTexture,fog:false}),'FooteraStadiumFacade');
+  const ground=new THREE.Mesh(track(new THREE.PlaneGeometry(900,900)),track(new THREE.MeshBasicMaterial({color:spooky?'#07050c':'#0b1316'})));
+  ground.rotation.x=-Math.PI/2;ground.position.y=-.24;ground.name='FooteraStadiumGround';group.add(ground)}
  // Balcony front between the two tiers with a thin lit edge.
  // LED ribbon on the balcony front: the glowing band behind every close-up.
  const RIBBON_REPEATS=10;
@@ -235,7 +251,10 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   ctx.fillStyle=spooky?'#ff8a3c':'#69ff7f';for(let i=0;i<5;i++){ctx.beginPath();const x=24+i*26;ctx.moveTo(x,10);ctx.lineTo(x+16,h/2);ctx.lineTo(x,h-10);ctx.lineTo(x+9,h-10);ctx.lineTo(x+25,h/2);ctx.lineTo(x+9,10);ctx.fill()}
   ctx.fillStyle='#ffffff';ctx.font='900 44px Arial, sans-serif';ctx.textBaseline='middle';ctx.textAlign='center';
   ctx.fillText('FOOTERA',w*.36,h/2+2);
-  ctx.fillStyle=spooky?'#ffb060':'#bfff3f';ctx.font='800 30px Arial, sans-serif';ctx.fillText('BUILD YOUR ERA',w*.73,h/2+2);
+  // V21.406: the stadium's own name on the balcony instead of the slogan.
+  const second=look?.name?String(look.name).toUpperCase():'BUILD YOUR ERA';
+  ctx.fillStyle=spooky?'#ffb060':look?.ribbon||'#bfff3f';let fs=30;ctx.font=`800 ${fs}px Arial, sans-serif`;while(fs>16&&ctx.measureText(second).width>w*.4){fs-=2;ctx.font=`800 ${fs}px Arial, sans-serif`}
+  ctx.fillText(second,w*.73,h/2+2);
  },true);
  ribbonTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
  const ribbonMaterial=basic({map:ribbonTexture,fog:false,toneMapped:false});
@@ -249,12 +268,21 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   const lit=ctx.createLinearGradient(0,0,0,h);lit.addColorStop(0,'rgba(0,0,0,.3)');lit.addColorStop(.65,'rgba(190,215,235,.05)');lit.addColorStop(1,'rgba(190,215,235,.26)');
   ctx.fillStyle=lit;ctx.fillRect(0,0,w,h);
  },true);
- const roofGeometry=loftBand(THREE,15.5,29.2,36,33.6,8);
- add(roofGeometry,basic({map:roofTexture}),'FooteraArenaRoof');
+ if(hasRoof)add(loftBand(THREE,15.5,29.2,36,33.6,8),basic({map:roofTexture}),'FooteraArenaRoof');
  // Light ring along the roof's inner edge: one continuous modern LED band.
- const ringColour=new THREE.Color(spooky?'#ffd9b0':'#f4f8ff');
+ const ringColour=new THREE.Color(spooky?'#ffd9b0':look?.ring||'#f4f8ff');
  // Ring, the lit balcony edge and the dark back wall share one unlit draw call.
- const trim=[[loftBand(THREE,15.4,28.35,15.5,29.2,1),ringColour],[loftBand(THREE,21.1,12.5,21.1,12.72,1),new THREE.Color(spooky?'#ff8a3c':'#dfeaf2')],[loftBand(THREE,34,25.2,34.5,34,1),new THREE.Color(spooky?'#0e0a16':'#0c1418')]];
+ const wallColour=new THREE.Color(spooky?'#0e0a16':'#0c1418');
+ const trim=[[loftBand(THREE,21.1,12.5,21.1,12.72,1),new THREE.Color(spooky?'#ff8a3c':'#dfeaf2')]];
+ if(hasRoof)trim.push([loftBand(THREE,15.4,28.35,15.5,29.2,1),ringColour]);
+ if(upperTier)trim.push([loftBand(THREE,upperTier.r1,upperTier.y1,upperTier.r1+.5,hasRoof?34:upperTier.y1+1.6,1),wallColour]);
+ // Open grounds (Traditionsstadion): four floodlight masts behind the corners.
+ const masts=hasRoof?[]:FLOODLIGHTS.map(([x,y,z])=>[x*1.13,y+5,z*1.1]);
+ for(const [x,y,z] of masts){
+  const pole=new THREE.BoxGeometry(.9,y,.9);pole.translate(x,y/2,z);trim.push([pole,new THREE.Color('#2b363c')]);
+  const head=new THREE.BoxGeometry(6.4,3.4,.5);head.rotateY(Math.atan2(x,z));head.translate(x,y+1,z);trim.push([head,new THREE.Color('#1b2328')]);
+ }
+ info.masts=masts.length;
  {const position=[],colour=[],index=[];let base=0;
   for(const [g,c] of trim){
    const p=g.attributes.position.array;for(let i=0;i<p.length;i+=3){position.push(p[i],p[i+1],p[i+2]);colour.push(c.r,c.g,c.b)}
@@ -266,12 +294,15 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  // Lamp glow: additive sprites every few metres along the ring, a denser,
  // brighter cluster in the four corners where the shadow-casting banks sit.
  const lampPositions=[],lampSizes=[];
- {const ring=arenaPerimeter(15.3),step=weak?13:7.5;let next=0;
+ if(hasRoof){const ring=arenaPerimeter(15.3),step=weak?13:7.5;let next=0;
   for(let i=1;i<ring.points.length;i++){
    const a=ring.points[i-1],b=ring.points[i],span=b.u-a.u;
    while(next<=b.u){const t=span?(next-a.u)/span:0;lampPositions.push(a.x+(b.x-a.x)*t,28.6,a.z+(b.z-a.z)*t);lampSizes.push(1);next+=step}
   }
   for(const [x,y,z] of FLOODLIGHTS){lampPositions.push(x,y-1.6,z);lampSizes.push(2.6)}}
+ // Mast heads: a 3x2 grid of lamps on each panel, facing the pitch.
+ for(const [x,y,z] of masts){const a=Math.atan2(x,z),cx=Math.cos(a),sx=-Math.sin(a);
+  for(let i=0;i<3;i++)for(let j=0;j<2;j++){const o=(i-1)*2.1;lampPositions.push(x+cx*o-Math.sin(a)*.4,y+.2+j*1.6,z+sx*o-Math.cos(a)*.4);lampSizes.push(1.9)}}
  const lampGeometry=track(new THREE.BufferGeometry());
  lampGeometry.setAttribute('position',new THREE.Float32BufferAttribute(lampPositions,3));lampGeometry.setAttribute('aSize',new THREE.Float32BufferAttribute(lampSizes,1));
  const lampUniforms={uColor:{value:ringColour.clone()},uScale:{value:1},uSize:{value:weak?7:9}};
@@ -285,10 +316,10 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  // ---- Camera flashes -------------------------------------------------------
  const flashPositions=[],flashSeeds=[],flashCount=weak?70:high?260:190;
  for(let i=0;i<flashCount;i++){
-  const row=Math.floor(hash(i*19+3)*11),upper=hash(i*23+7)<.32,t=hash(i*29+11);
+  const row=Math.floor(hash(i*19+3)*11),upper=!!upperTier&&hash(i*23+7)<.32,t=hash(i*29+11);
   if(upper){
-   const rad=22+hash(i*31+1)*11,ring=arenaPerimeter(rad),k=Math.min(ring.points.length-2,Math.floor(t*(ring.points.length-1))),a=ring.points[k],b=ring.points[k+1],f=hash(i*37+5);
-   flashPositions.push(a.x+(b.x-a.x)*f,12.9+(rad-21.2),a.z+(b.z-a.z)*f);
+   const f0=.07+hash(i*31+1)*.86,rad=upperTier.r0+(upperTier.r1-upperTier.r0)*f0,ring=arenaPerimeter(rad),k=Math.min(ring.points.length-2,Math.floor(t*(ring.points.length-1))),a=ring.points[k],b=ring.points[k+1],f=hash(i*37+5);
+   flashPositions.push(a.x+(b.x-a.x)*f,.5+upperTier.y0+(upperTier.y1-upperTier.y0)*f0,a.z+(b.z-a.z)*f);
   }
   else if(hash(i*41+13)<.6){const side=hash(i*43+17)<.5?-1:1;flashPositions.push(side*(39.3+row*1.42),1.75+row*.72,-54+t*108)}
   else{const side=hash(i*47+19)<.5?-1:1;flashPositions.push(-36+t*72,1.75+row*.72,side*(59.4+row*1.42))}

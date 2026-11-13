@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {ceremonyActor,ceremonyCamera,kickoffArrival,replayWindow,replayCamera,FACE_CAMERA} from '../3d-ceremony.mjs';
+import {ceremonyActor,ceremonyCamera,kickoffArrival,replayWindow,replayCamera,FACE_CAMERA,CEREMONY_CUT} from '../3d-ceremony.mjs';
 import {applyCelebrationPose} from '../3d-goal-celebration.mjs';
 import {createHighlightPlayback} from '../3d-playback-clock.mjs';
 const H=createRequire(import.meta.url)('../3d-highlights.js');
@@ -53,9 +53,9 @@ test('new poses move the driver joints and fade out with their weight', ()=>{
 
 test('cameras stay on the broadcast side and cut once', ()=>{
  for(const kind of ['kickoff','fulltime'])for(let t=0;t<=10.4;t+=.2){
-  const c=ceremonyCamera(kind,t);assert.ok(c.position[0]>1&&c.position[1]>1.5,kind+t);assert.ok(c.fov>=27&&c.fov<=38);
+  const c=ceremonyCamera(kind,t);assert.ok(c.position[0]>1&&c.position[1]>1.5,kind+t);assert.ok(c.fov>=27&&c.fov<=(c.phase==='arena'?46:38));
  }
- assert.notEqual(ceremonyCamera('kickoff',4).phase,ceremonyCamera('kickoff',5).phase);
+ assert.notEqual(ceremonyCamera('kickoff',CEREMONY_CUT.kickoff-.5).phase,ceremonyCamera('kickoff',CEREMONY_CUT.kickoff+.5).phase);
 });
 
 test('replay covers strike to net and films from behind the goal of either end', ()=>{
