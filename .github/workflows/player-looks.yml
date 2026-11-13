@@ -27,7 +27,8 @@ jobs:
           PNGJS: /tmp/looks/node_modules/pngjs
           SHEET: ${{ vars.LOOKS_SHEET || '' }}
         run: |
-          if [ -f qa/looks-debug ]; then SHEET=$(cat qa/looks-debug) node scripts/build-player-looks.cjs; fi
+          # qa/looks-debug (from:count by rating) also draws audit sheets with the final codes.
+          if [ -f qa/looks-debug ]; then export SHEET=$(cat qa/looks-debug); fi
           node scripts/build-player-looks.cjs
       - name: Commit results to this branch
         run: |
