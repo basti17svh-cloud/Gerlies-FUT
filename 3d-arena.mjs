@@ -113,6 +113,8 @@ const TURF_FRAGMENT=`{
 export function createArena(THREE,{scene,field,renderer,pitch=null,track=o=>o,weak=false,high=false,spooky=false,snow=false,kits=null,look=null,actors=()=>[],goalAt=null,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
  const group=new THREE.Group();group.name='FooteraArena';scene.add(group);
  const info={grade:false,turf:false,shadows:0,flashes:0,lamps:0};
+ // Scene objects stay out of info: inspect() serialises info to JSON.
+ let surroundings=null;
  const tex=(w,h,draw,repeat=false)=>{const t=track(new THREE.CanvasTexture(canvas(w,h,draw)));t.colorSpace=THREE.SRGBColorSpace;if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping}return t};
  info.grade=installArenaGrade(THREE,renderer);
 
@@ -258,7 +260,8 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
   add(loftBand(THREE,fr,0,fr,fy,arenaPerimeter(fr).length/FACADE_REPEATS),basic({map:facadeTexture,fog:false,toneMapped:false,color:'#d8dde0'}),'FooteraStadiumFacade');
   const ground=new THREE.Mesh(track(new THREE.PlaneGeometry(900,900)),track(new THREE.MeshBasicMaterial({color:spooky?'#07050c':'#0b1316'})));
   ground.rotation.x=-Math.PI/2;ground.position.y=-.24;ground.name='FooteraStadiumGround';group.add(ground);
-  info.surroundings=createSurroundings(THREE,{group,track,perimeter:arenaPerimeter,band:(r0,y0,r1,y1,u)=>loftBand(THREE,r0,y0,r1,y1,u),facadeRadius:fr,kits,look,weak,spooky,hash});}
+  surroundings=createSurroundings(THREE,{group,track,perimeter:arenaPerimeter,band:(r0,y0,r1,y1,u)=>loftBand(THREE,r0,y0,r1,y1,u),facadeRadius:fr,kits,look,weak,spooky,hash});
+  info.surroundings={people:surroundings.people,lamps:surroundings.lamps,trees:surroundings.trees,cars:surroundings.cars};}
  // Balcony front between the two tiers with a thin lit edge.
  // LED ribbon on the balcony front: the glowing band behind every close-up.
  const RIBBON_REPEATS=10;
@@ -361,7 +364,7 @@ void main(){float cycle=fract(uTime*(0.55+aSeed.x*0.5)+aSeed.y*17.0);
  const size=new THREE.Vector2();
  function update(time=0,camera=null){
   updateShadows();
-  if(info.surroundings?.group)info.surroundings.group.visible=!!camera&&camera.position.y>28;
+  if(surroundings?.group)surroundings.group.visible=!!camera&&camera.position.y>28;
   ribbonTexture.offset.x=(time*.012)%1;
   flashUniforms.uTime.value=time;flashUniforms.uLevel.value=arenaFlashLevel(time,goalAt);
   if(camera){
