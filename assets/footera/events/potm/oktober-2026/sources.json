@@ -23,6 +23,14 @@
       "asset": "calo.png",
       "bytes": 407028,
       "sha256": "60e4da4f442f0f12f9fd642d53b6dfb1411d6c32d696517adbdcc154259af461"
+    },
+    {
+      "name": "jackson",
+      "itemId": 134476925,
+      "source": "https://cdn.futbin.com/content/fifa27/img/players/p134476925.png",
+      "asset": "jackson.png",
+      "bytes": 277323,
+      "sha256": "a5cda3f3a43f3a8dcff010b472f63f3e2559decefb9d019b922d7d9dfd5e599b"
     }
   ]
 }
