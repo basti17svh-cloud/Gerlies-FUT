@@ -5,7 +5,7 @@ import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedP
 import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21373';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
-import {drawPerimeterBoard} from './3d-advertising.mjs?v=21229';
+import {drawPerimeterBoard} from './3d-advertising.mjs?v=21403';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
 import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21391';
@@ -1462,7 +1462,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   // Two shared high-contrast textures; anisotropic mip filtering
   // keeps the touchline text stable at acute camera angles without shimmer.
-  const adKinds=spooky?['footera','halloween','instagram']:['footera','instagram'];
+  const adKinds=spooky?['footera','halloween','instagram','tiktok']:['footera','instagram','tiktok'];
   const adMaterials=adKinds.map(kind=>{
    const tex=canvasTexture(2048,256,(ctx,w,h)=>drawPerimeterBoard(ctx,w,h,kind));
    tex.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());

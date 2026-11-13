@@ -6052,7 +6052,7 @@ if(b){
 }
 const o=e.target.closest("[data-owned]");if(o){const id=o.dataset.owned;if((state.packs[id]||0)<1)return;const rule=founderRuleForPack(id);if(rule&&(!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||pendingPack.some(i=>i.pid===rule.playerId)))return;const entitlement=state.rewardPackQueue?.find(x=>x.id===id),items=generatePack(id,entitlement?.tradeable??true);if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.packs[id]--;if(rule)state[rule.opening]=true;if(entitlement)state.rewardPackQueue.splice(state.rewardPackQueue.indexOf(entitlement),1);save();openPack(id,items);if(rule)flushSave()}})
 let pendingResolved=new Set(state.pendingResolved);
-function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();globalThis.FooteraWeekRecap?.afterPack(items);if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false;try{window.FooteraSound?.preload?.()}catch(_){}}
+function openPack(id,prepared){const items=prepared||generatePack(id),founder=items?.find(isFounderItem),rule=founderRuleForPack(id);if(founder&&(!rule||founder.pid!==rule.playerId||!state[rule.opening]||!ownsFounderRule(state,rule)||state.club.some(i=>i.pid===rule.playerId)||items.length!==1))return toast("Founder Pack nicht verfügbar.");if(rule&&!founder)return toast("Founder Pack nicht verfügbar.");if(!items.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");pendingPack=items;pendingResolved=new Set();state.pendingChemBoosts=typeof FooteraChemBoosts!=="undefined"?FooteraChemBoosts.rollPack(PACKS.find(p=>p.id===id),Math.random,uid):[];if(!pendingPack.length)return toast("Für dieses Pack konnten keine Spieler erzeugt werden.");state.pendingPack=pendingPack;state.pendingResolved=[];ensureObjectiveWindows();state.stats.packs=(state.stats.packs||0)+1;save();globalThis.FooteraWeekRecap?.afterPack(items);globalThis.FooteraKabine?.afterPack(items);if(typeof flushSave==="function")flushSave();updateObjectiveIndicators();const opening=$("opening"),name=PACKS.find(p=>p.id===id)?.name||"Pack";opening.className="opening active";$("openStage").style.display="block";$("reveal").classList.remove("active");$("revealCard").innerHTML="";$("revealSecondCard").innerHTML="";resetBoardIntro();resetWalkoutTunnel();$("bigPack").classList.remove("pulse");$("bigPackArt").src=packArtSrc(id);$("bigPackArt").alt=name;$("bigPackName").textContent=name;$("packCountdown").textContent="";$("openPackBtn").style.display="inline-block";$("openPackBtn").disabled=false;try{window.FooteraSound?.preload?.()}catch(_){}}
 function packIsSpecial(item){return !!item&&(item.variant==="special"||item.variant==="icon-mid")}
 function packRevealTheme(item){
  if(item?.variant==="icon-mid")return"icon";
@@ -7854,14 +7854,28 @@ function sbcFillScore(sbc,rows,outCost=sbcFillOutOfPositionCost(sbc)){
  let cost=0,out=0;rows.forEach((r,i)=>{if(r){cost+=r.cost;if(!r.fits[i])out++}});
  return sbcFillShortfall(sbc,rows)*1e7+cost+out*outCost
 }
+function sbcFillRequiredTraits(sbc){
+ return [["totw",sbc.minTotw],["momentum",sbc.minMomentum],["reqNation",sbc.requiredNation?1:0],["reqClub",sbc.requiredClub?1:0],["reqLeague",sbc.requiredLeague?1:0],["matchLeague",sbc.minMatchLeaguePlayers]].filter(([,n])=>Number(n)>0).map(([k,n])=>[k,Number(n)])
+}
 // Local search from a cheap start: swap single players for unused cards, or two players between slots, while it gets better.
 function sbcFillSearch(sbc,fixed,pool,leaguePref,strict=false){
- const slots=fixed.length,free=fixed.map((r,i)=>r?-1:i).filter(i=>i>=0),rows=[...fixed],used=new Set(fixed.filter(Boolean).map(r=>r.uid));
+ // "used" holds player keys, not card ids: a TOTW card and a gold card of the same player may both be in the pool, only one may play.
+ const slots=fixed.length,free=fixed.map((r,i)=>r?-1:i).filter(i=>i>=0),rows=[...fixed],used=new Set(fixed.filter(Boolean).map(r=>r.pid));
  const startCost=r=>r.cost*(leaguePref&&r.league!==leaguePref?3:1);
- const order=[...free].sort((a,b)=>pool.filter(r=>r.fits[a]).length-pool.filter(r=>r.fits[b]).length);
+ let order=[...free].sort((a,b)=>pool.filter(r=>r.fits[a]).length-pool.filter(r=>r.fits[b]).length);
+ // Required cards (TOTW, nation, league ...) go in first. Otherwise a cheap start under the Ø target can be a dead end:
+ // swapping in a lower-rated TOTW card fixes one requirement but breaks the rating, so no single swap looks better.
+ for(const [key,need] of sbcFillRequiredTraits(sbc)){
+  let have=rows.filter(r=>r&&r[key]).length;
+  for(const r of [...pool].filter(r=>r[key]).sort((a,b)=>startCost(a)-startCost(b))){
+   if(have>=need||!order.length)break;if(used.has(r.pid))continue;
+   const slot=order.find(i=>r.fits[i])??order[order.length-1];
+   rows[slot]=r;used.add(r.pid);order=order.filter(i=>i!==slot);have++
+  }
+ }
  for(const slot of order){
-  let best=null;for(const r of pool){if(used.has(r.uid))continue;const score=startCost(r)+(r.fits[slot]?0:sbcFillOutOfPositionCost(sbc)*4);if(!best||score<best.score)best={r,score}}
-  if(best){rows[slot]=best.r;used.add(best.r.uid)}
+  let best=null;for(const r of pool){if(used.has(r.pid))continue;const score=startCost(r)+(r.fits[slot]?0:sbcFillOutOfPositionCost(sbc)*4);if(!best||score<best.score)best={r,score}}
+  if(best){rows[slot]=best.r;used.add(best.r.pid)}
  }
  const outCost=strict?1e6:sbcFillOutOfPositionCost(sbc),scoreOf=list=>sbcFillScore(sbc,list,outCost);
  let score=scoreOf(rows);
@@ -7870,8 +7884,8 @@ function sbcFillSearch(sbc,fixed,pool,leaguePref,strict=false){
   for(const slot of free){
    const current=rows[slot];
    for(const r of pool){
-    if(used.has(r.uid))continue;rows[slot]=r;const next=scoreOf(rows);
-    if(next<score-1e-9){score=next;if(current)used.delete(current.uid);used.add(r.uid);improved=true;break}
+    if(used.has(r.pid))continue;rows[slot]=r;const next=scoreOf(rows);
+    if(next<score-1e-9){score=next;if(current)used.delete(current.pid);used.add(r.pid);improved=true;break}
     rows[slot]=current
    }
   }
@@ -7904,14 +7918,16 @@ function sbcAutoFillPlan(sbc,draft,opts=sbcAssistantDefaults()){
  const used=new Set(draft.squad.filter(Boolean).map(String)),parked=new Set((draft.test||[]).filter(Boolean).map(String)),busy=new Set(opts.protectTeams===false?[]:[...(state.squad||[]),...(state.squadPresets||[]).flatMap(p=>p?.squad||[])].filter(Boolean).map(String));
  for(const e of typeof activeEvolutionEntries==="function"?activeEvolutionEntries():[])busy.add(String(e.uid));
  for(const uid of globalThis.FooteraFavorites?.list()||[])busy.add(String(uid));
- const fixedPlayers=new Set(fixed.filter(Boolean).map(r=>r.pid)),cheapest=new Map();
+ const fixedPlayers=new Set(fixed.filter(Boolean).map(r=>r.pid)),cheapest=new Map(),traitKeys=[sbc.minTotw?"totw":"",sbc.minMomentum?"momentum":""].filter(Boolean);
  for(const x of sbcSourceItems()){const uid=String(x.item.uid),b=displayBase(x.item);if(!b||used.has(uid)||busy.has(uid)||isFooteraLiveCard(x.item)||!sbc.filter(b))continue;const rating=itemRating(x.item);
   if(!parked.has(uid)&&(rating<Number(opts.min||0)||rating>Number(opts.max??99)||!itemMatchesQuality(x.item,opts.quality,b)||opts.league&&String(resolvedAffiliation(b)?.league||"")!==opts.league))continue;
   // Cards parked in the Testareal were prepared on purpose, so they are used first.
-  const r=sbcFillRow(sbc,x,form);if(parked.has(uid))r.cost=.5;if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r)}
- const pool=[...cheapest.values()];
+  const r=sbcFillRow(sbc,x,form);if(parked.has(uid))r.cost=.5;if(fixedPlayers.has(r.pid))continue;const prev=cheapest.get(r.pid);if(!prev||r.cost<prev.cost)cheapest.set(r.pid,r);
+  // Also keep the cheapest TOTW/MOMENTUM card of a player whose gold card is cheaper; the search lets only one of them play.
+  for(const key of traitKeys)if(r[key]){const k=r.pid+"#"+key,p=cheapest.get(k);if(!p||r.cost<p.cost)cheapest.set(k,r)}}
+ const pool=[...new Map([...cheapest.values()].map(r=>[r.uid,r])).values()],players=new Set(pool.map(r=>r.pid)).size;
  const free=fixed.filter(r=>!r).length;
- if(pool.length<free)return{missing:free-pool.length};
+ if(players<free)return{missing:free-players};
  const fixedLeagues=[...new Set(fixed.filter(Boolean).map(r=>r.league))];
  let anchors=[""];
  if(sbc.sameLeague){
@@ -8036,7 +8052,9 @@ function renderSBC(){
  $("sbcTabs").innerHTML=groups.map(g=>`<button class="sbc-tab ${g===activeSbcGroup?"active":""} ${g==="Profis"&&blackFridaySbcLive?"blackfriday-live":g==="Profis"&&halloweenSbcLive?"halloween-live":""}" data-sbc-group="${esc(g)}">${esc(g)}</button>`).join("");
  const groupRows=rows.filter(s=>s.group===activeSbcGroup);
  if(activeSbcGroup==="Profis"||activeSbcGroup==="Top-Partien"){
-  const sets=sbcGroupedRows(groupRows);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
+  // Profis: the newest event SBC on top (Black Friday deals above the older Icon Pick), finished sets at the bottom.
+  const setDone=x=>x[0].groupSet&&x[0].groupReward?!!state.sbcGroupClaims?.[x[0].groupSet]:x.every(sbcIsCompleted),released=x=>Date.parse(x[0].releaseKey||"")||0;
+  const sets=sbcGroupedRows(groupRows).map((x,i)=>({x,i})).sort((a,b)=>activeSbcGroup!=="Profis"?a.i-b.i:(setDone(a.x)-setDone(b.x))||(released(b.x)-released(a.x))||a.i-b.i).map(e=>e.x);$("sbcGrid").innerHTML=sets.length?sets.map(x=>x[0].groupSet?sbcFeatureGroupCard(x):x.map(sbcOverviewCard).join("")).join(""):'<div class="online-note">Keine SBCs in dieser Kategorie.</div>';return
  }
  const banner=sbcGroupBannerHTML(activeSbcGroup,groupRows);
  // Ready SBCs first, then the open ones, finished ones at the bottom.
@@ -8070,7 +8088,7 @@ function finalizeSbcSubmission(id){
  });
  for(const uid of ids)removeActiveEvolutionForUid(uid);
  state.club=state.club.filter(i=>!ids.has(i.uid));state.sbcStorage=(state.sbcStorage||[]).filter(i=>!ids.has(i.uid));state.transferList=(state.transferList||[]).filter(uid=>!ids.has(uid));
- const iconPicksBefore=(state.iconPicks||[]).length;grant(sbc.reward);state.stats.sbcs++;globalThis.FooteraWeekRecap?.afterSbc();state.sbcCompletions=state.sbcCompletions||{};if(sbc.once)state.sbcCompletions[sbc.id]=true;const groupMessage=maybeGrantSbcGroupReward(sbc);
+ const iconPicksBefore=(state.iconPicks||[]).length;grant(sbc.reward);state.stats.sbcs++;globalThis.FooteraWeekRecap?.afterSbc();globalThis.FooteraKabine?.afterSbc(stats.items);state.sbcCompletions=state.sbcCompletions||{};if(sbc.once)state.sbcCompletions[sbc.id]=true;const groupMessage=maybeGrantSbcGroupReward(sbc);
  delete SBC_WORKSPACE[id];persistSbcWorkspace();pendingSbcSubmissionId=null;activeSbcId=null;sbcPickerState=null;if(history.state?.gfut&&history.state.kind==="sbc-editor")replaceUiState("view",{view:"sbcView"});const rewardPack=queuedSbcGroupRewardPack;queuedSbcGroupRewardPack=null;save();renderAll();if(rewardPack)openPack(rewardPack.packId,rewardPack.items);if((state.iconPicks||[]).length>iconPicksBefore)globalThis.FooteraPlayerPicks?.openIconPick?.();toast((teams.length?`SBC abgeschlossen. Betroffene Teams aktualisiert: ${teams.join(", ")}.`:"SBC abgeschlossen.")+groupMessage)
 }
 function submitSbcById(id){
@@ -9181,6 +9199,8 @@ function renderMatchReport(){
   <div><span>Karten</span><b>${cardsHome}</b><small>${cardsAway}</small></div>
  </div>
  ${potm?`<section class="match-potm"><div class="match-potm-card">${potmCard}</div><div class="match-potm-copy"><span>SPIELER DES SPIELS</span><strong>${esc(potm.name)}</strong><small>${esc(potmTeam)}</small><div><b>${potm.rating.toFixed(1)}</b><em>Matchrating</em></div><p>${esc(matchPerformanceDetail(potm))}</p></div></section>`:""}
+ ${globalThis.FooteraNewspaper?.buttonHTML?.()||""}
+ ${globalThis.FooteraKabine?.buttonHTML?.()||""}
  <section class="match-report-events"><div class="match-report-section-title"><strong>Timeline</strong><span>Tore, Karten, Wechsel</span></div><div class="match-report-event-list">${timeline.length?timeline.map(e=>`<div class="match-report-event ${e.side} ${e.kind}"><time>${e.minute}'</time><i>${e.icon}</i><div><strong>${esc(e.title)}</strong><span>${esc(e.detail)}</span></div></div>`).join(""):'<div class="match-report-empty">Keine besonderen Ereignisse.</div>'}</div></section>
  ${matchTacticReportHTML()}
  <details class="match-report-performance-details"><summary><div><strong>Spielerleistungen</strong><span>${esc(matchHomeTeamName())} · Bewertungen & Statistiken</span></div><i aria-hidden="true">⌄</i></summary>${performanceSummary}<div class="match-report-teams">${matchReportPerformanceHTML(matchHomeTeamName(),homeRows)}${matchReportPerformanceHTML(matchAwayTeamName(),awayRows)}</div></details>`
@@ -9208,7 +9228,7 @@ function finishMatch(){
  const penaltyPanel=$("penaltyShootoutPanel");if(penaltyPanel)penaltyPanel.hidden=true;
  stopMatchTimer();
  dismissMatchGoalMoment(false);
- match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();globalThis.FooteraWeekRecap?.afterMatch(match);
+ match.finished=true;match.minute=match.extraTimeStarted?120:90;updateMatchUI();applyClubGoalStats();globalThis.FooteraWeekRecap?.afterMatch(match);globalThis.FooteraKabine?.afterMatch(match);
  recordMatchEvent("break","", "Abpfiff");
  state.stats.matches++;globalThis.FooteraShare?.afterMatch();
  const isFriendly=String(match.mode).startsWith("friendly");
@@ -10231,7 +10251,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.397";
+const GFUT_BUILD="V21.404";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10289,7 +10309,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21397",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21404",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
