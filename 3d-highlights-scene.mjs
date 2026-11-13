@@ -2863,7 +2863,13 @@ export function play(event,signal){
       else if(event.type==='ball_won'){headline.textContent=event.defenseKind==='interception'?'ABGEFANGEN':'BALLGEWINN';name.textContent=event.defenderName||'VERTEIDIGER';detail.textContent=event.defenseKind==='interception'?'Pass von '+event.playerName+' abgefangen':'Zweikampf gegen '+event.playerName+' gewonnen'}
       else if(event.type==='shot_post'){headline.textContent='PFOSTEN';name.textContent=event.playerName;detail.textContent='Ganz knapp'}
       // V21.365: name the defender who clears (defending actors 8-15), not the shooter.
-      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';name.textContent=(world?.lineClearIndex>=8&&event.defendNames?.[world.lineClearIndex-8])||event.defenderName||'Verteidiger';detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
+      else if(event.keeperAction==='line_clear'){headline.textContent='GEKLÄRT';
+       // V21.415: name AND card of the defender who clears (defending actors 8-15), never the shooter.
+       const clearSlot=world?.lineClearIndex>=8?world.lineClearIndex-8:Math.max(0,Math.min(7,(event.defenderIndex??8)-8)),clearName=(world?.lineClearIndex>=8&&event.defendNames?.[clearSlot])||event.defenderName||'Verteidiger';
+       name.textContent=clearName;
+       const clearCard=event.defendCardsHTML?.[clearSlot];
+       if(clearCard)card.innerHTML=clearCard;else{const ph=document.createElement('div');ph.className='fh3d-identity-fallback';ph.textContent=clearName;card.replaceChildren(ph)}
+       detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
      hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
