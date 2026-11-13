@@ -2316,12 +2316,14 @@ const TOTW_WEEK_9={
     }
   ]
 };
+// Best of TOTW (Basti 2026-11-13): jubilee reissue of the best TOTW 1-9 cards with their original ratings.
 const TOTW_WEEK_10={
   "id": 10,
   "name": "Team of the Week 10",
   "releaseDate": "2026-11-18",
   "activeUntil": "25.11.2026 18:59",
   "sourceStatus": "admin-approved",
+  "bestOf": true,
   "players": [
     {
       "names": [
@@ -2329,15 +2331,15 @@ const TOTW_WEEK_10={
         "Erling Braut Haaland"
       ],
       "eaId": "239085",
-      "ovr": 94,
+      "ovr": 93,
       "position": "ST",
       "stats": [
-        90,
-        96,
-        75,
-        84,
-        50,
-        93
+        89,
+        95,
+        74,
+        83,
+        49,
+        92
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/239085.png",
@@ -2361,15 +2363,15 @@ const TOTW_WEEK_10={
         "Lamine Yamal Nasraoui Ebana"
       ],
       "eaId": "277643",
-      "ovr": 94,
+      "ovr": 93,
       "position": "RW",
       "stats": [
-        92,
         91,
-        92,
-        97,
-        42,
-        67
+        90,
+        91,
+        96,
+        41,
+        66
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/277643.png",
@@ -2392,15 +2394,15 @@ const TOTW_WEEK_10={
         "Harry Kane"
       ],
       "eaId": "202126",
-      "ovr": 93,
+      "ovr": 92,
       "position": "ST",
       "stats": [
-        79,
-        96,
-        91,
+        78,
+        95,
         90,
-        53,
-        89
+        89,
+        52,
+        88
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/202126.png",
@@ -2423,15 +2425,15 @@ const TOTW_WEEK_10={
         "Jude Bellingham"
       ],
       "eaId": "252371",
-      "ovr": 93,
+      "ovr": 92,
       "position": "CAM",
       "stats": [
-        83,
+        82,
+        89,
         90,
-        91,
-        93,
-        83,
-        89
+        92,
+        82,
+        88
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/252371.png",
@@ -2454,15 +2456,15 @@ const TOTW_WEEK_10={
         "Achraf Hakimi"
       ],
       "eaId": "235212",
-      "ovr": 92,
+      "ovr": 91,
       "position": "RB",
       "stats": [
-        95,
-        87,
-        85,
+        94,
         86,
+        84,
         85,
-        84
+        84,
+        83
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/235212.png",
@@ -2486,15 +2488,15 @@ const TOTW_WEEK_10={
         "Gabriel dos S. Magalhães"
       ],
       "eaId": "232580",
-      "ovr": 91,
+      "ovr": 90,
       "position": "CB",
       "stats": [
-        69,
-        52,
         68,
-        70,
-        94,
-        88
+        51,
+        67,
+        69,
+        93,
+        87
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/232580.png",
@@ -2517,15 +2519,15 @@ const TOTW_WEEK_10={
         "Sophia Wilson"
       ],
       "eaId": "264012",
-      "ovr": 91,
+      "ovr": 90,
       "position": "ST",
       "stats": [
-        93,
         92,
-        82,
-        90,
-        46,
-        81
+        91,
+        81,
+        89,
+        45,
+        80
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/264012.png",
@@ -2548,15 +2550,15 @@ const TOTW_WEEK_10={
         "Melchie Dumornay"
       ],
       "eaId": "265898",
-      "ovr": 91,
+      "ovr": 90,
       "position": "CAM",
       "stats": [
-        95,
-        88,
-        84,
-        93,
-        63,
-        77
+        94,
+        87,
+        83,
+        92,
+        62,
+        76
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/265898.png",
@@ -2579,15 +2581,15 @@ const TOTW_WEEK_10={
         "Gregor Kobel"
       ],
       "eaId": "235073",
-      "ovr": 90,
+      "ovr": 89,
       "position": "GK",
       "stats": [
-        90,
-        88,
-        86,
-        92,
-        57,
-        89
+        89,
+        87,
+        85,
+        91,
+        56,
+        88
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/235073.png",
@@ -2610,15 +2612,15 @@ const TOTW_WEEK_10={
         "Manuela Giugliano"
       ],
       "eaId": "227095",
-      "ovr": 90,
+      "ovr": 89,
       "position": "CM",
       "stats": [
-        84,
-        88,
+        83,
         87,
-        90,
-        75,
-        77
+        86,
+        89,
+        74,
+        76
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/227095.png",
@@ -2641,15 +2643,15 @@ const TOTW_WEEK_10={
         "Christopher Nkunku"
       ],
       "eaId": "232411",
-      "ovr": 90,
+      "ovr": 89,
       "position": "ST",
       "stats": [
-        89,
+        88,
+        90,
+        84,
         91,
-        85,
-        92,
-        51,
-        72
+        50,
+        71
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/232411.png",
@@ -2672,15 +2674,15 @@ const TOTW_WEEK_10={
         "Florian Wirtz"
       ],
       "eaId": "256630",
-      "ovr": 89,
+      "ovr": 88,
       "position": "CAM",
       "stats": [
-        88,
-        85,
-        90,
-        93,
-        53,
-        69
+        87,
+        84,
+        89,
+        92,
+        52,
+        68
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/256630.png",
@@ -2703,15 +2705,15 @@ const TOTW_WEEK_10={
         "Scott McTominay"
       ],
       "eaId": "237238",
-      "ovr": 89,
+      "ovr": 88,
       "position": "CM",
       "stats": [
-        83,
-        90,
-        81,
-        86,
-        83,
-        91
+        82,
+        89,
+        80,
+        85,
+        82,
+        90
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/237238.png",
@@ -2736,15 +2738,15 @@ const TOTW_WEEK_10={
         "Alex Baena"
       ],
       "eaId": "257279",
-      "ovr": 89,
+      "ovr": 88,
       "position": "LM",
       "stats": [
-        83,
-        85,
-        91,
+        82,
+        84,
         90,
-        68,
-        74
+        89,
+        67,
+        73
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/257279.png",
@@ -2767,15 +2769,15 @@ const TOTW_WEEK_10={
         "Alessandro Bastoni"
       ],
       "eaId": "237383",
-      "ovr": 88,
+      "ovr": 87,
       "position": "CB",
       "stats": [
-        77,
-        59,
-        84,
-        81,
-        90,
-        85
+        76,
+        58,
+        83,
+        80,
+        89,
+        84
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/237383.png",
@@ -2798,15 +2800,15 @@ const TOTW_WEEK_10={
         "Ellie Carpenter"
       ],
       "eaId": "240030",
-      "ovr": 88,
+      "ovr": 87,
       "position": "RB",
       "stats": [
-        89,
-        63,
-        83,
-        81,
-        85,
-        86
+        88,
+        62,
+        82,
+        80,
+        84,
+        85
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/240030.png",
@@ -2829,15 +2831,15 @@ const TOTW_WEEK_10={
         "Phallon Tullis-Joyce"
       ],
       "eaId": "267212",
-      "ovr": 87,
+      "ovr": 86,
       "position": "GK",
       "stats": [
-        85,
         84,
-        82,
-        88,
-        47,
-        88
+        83,
+        81,
+        87,
+        46,
+        87
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/267212.png",
@@ -2860,15 +2862,15 @@ const TOTW_WEEK_10={
         "Esmee Brugts"
       ],
       "eaId": "267530",
-      "ovr": 86,
+      "ovr": 85,
       "position": "LB",
       "stats": [
         88,
-        74,
+        75,
         80,
         82,
-        81,
-        75
+        82,
+        76
       ],
       "fallback": {
         "face": "./assets/footera/totw/10/267530.png",

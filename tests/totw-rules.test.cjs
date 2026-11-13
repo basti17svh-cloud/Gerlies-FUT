@@ -28,7 +28,7 @@ test('from TOTW 6 on, no TOTW player is part of a promo event or event SBC runni
 });
 test('from TOTW 6 on, every TOTW card beats the same player\'s earlier special cards in rating and every face stat',()=>{
  const c=setup();
- for(const team of c.WEEKS.filter(w=>Number(w.id)>=6)){
+ for(const team of c.WEEKS.filter(w=>Number(w.id)>=6&&!w.bestOf)){
   const released=Date.parse(team.releaseDate+'T19:00:00+02:00');
   const earlier=[
    ...c.WEEKS.filter(w=>Number(w.id)<Number(team.id)).flatMap(w=>w.players.map(p=>({src:`TOTW ${w.id}`,id:String(p.eaId||''),names:p.names,ovr:p.ovr,pos:p.position,stats:p.stats}))),
@@ -165,9 +165,14 @@ test('TOTW 10 is the Best-of-TOTW jubilee: approved, gated at 19:00 Berlin on 18
  assert.equal(c.totwRosterErrors(week).join(', '),'');
  assert.equal(week.players.length,18);
  assert.equal(week.players.filter(p=>p.fallback.gender==='female').length,6);
- // Every jubilee card is an upgraded version of a card from TOTW 1-9.
- const earlier=new Set(c.WEEKS.filter(w=>w.id<10).flatMap(w=>w.players.map(p=>key(p.names[0]))));
- assert.equal(week.players.filter(p=>!p.names.some(n=>earlier.has(key(n)))).map(p=>p.names[0]).join(', '),'');
+ // Every jubilee card is the player's best TOTW 1-9 card again, same rating and stats (Basti: no upgrade).
+ assert.equal(week.bestOf,true);
+ for(const p of week.players){
+  const keys=new Set(p.names.map(key)),old=c.WEEKS.filter(w=>w.id<10).flatMap(w=>w.players).filter(o=>String(o.eaId||o.fallback?.id||'')===p.eaId||o.names.some(n=>keys.has(key(n))));
+  assert.ok(old.length,p.names[0]);
+  assert.equal(p.ovr,Math.max(...old.map(o=>o.ovr)),p.names[0]+' keeps the rating of the best earlier TOTW card');
+  assert.ok(old.some(o=>o.ovr===p.ovr&&JSON.stringify(o.stats||['pac','sho','pas','dri','def','phy'].map(s=>o.fallback?.[s]))===JSON.stringify(p.stats)),p.names[0]+' keeps the original stats');
+ }
  assert.equal(c.activeTotwWeek(new Date('2026-11-18T17:59:59Z'))?.id,9);
  assert.equal(c.activeTotwWeek(new Date('2026-11-18T18:00:00Z'))?.id,10);
  assert.equal(c.latestPublishedTotw(new Date('2026-11-18T17:59:59Z'))?.id,9);
