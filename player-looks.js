@@ -1,5 +1,6 @@
 /* Footera V21.219 player looks for the 3D highlights: skin tone, hair colour,
- * haircut and beard per real player (V21.258: women's players flagged female).
+ * haircut and beard per real player (V21.258: women's players flagged female;
+ * V21.419: every Icon hand-set, dreadlocks and long hair, women's haircuts).
  * Two sources, both keyed by EA id:
  * assets/player-looks.json, measured from EA's own player portraits by
  * scripts/build-player-looks.cjs, and hand-set looks for well-known players,
@@ -9,7 +10,10 @@
 (function(root){
  'use strict';
  // One look = 4 characters: skin 1-6, haircut, hair colour, beard; '_' = unknown.
- const STYLE={k:'short01',f:'short02',r:'short04',a:'afro01',x:'bald'};
+ // V21.419: d dreadlocks (Gullit, Rijkaard), p ponytail/man bun (Baggio, Ibra),
+ // b shoulder-length (Nedved, Batistuta), t braid (women only).
+ const STYLE={k:'short01',f:'short02',r:'short04',a:'afro01',x:'bald',d:'dreads01',p:'ponytail01',b:'bob02',t:'Braid01'};
+ const WOMEN_STYLES=new Set(['ponytail01','bob02','Braid01','bald']);
  const COLOR={S:'#14110f',D:'#3b2a1f',B:'#6e5038',L:'#9a7448',G:'#c9a061',P:'#e8d7a8',R:'#a4552a',Y:'#8f8c88',W:'#e9e6df'};
  const BEARD={n:'none',v:'Full_beard',m:'Moustache'};
  // Hand-set for the best-known players, read off their EA portraits (and a few
@@ -76,6 +80,40 @@
   '243952':'1kLn', '244470':'1kDv', '244749':'2kSn', '245630':'6kSv', '246350':'1kDm', '247463':'6kSn', '248165':'1fDm', '250753':'1kSn',
   '250954':'4kSm', '250955':'1kLn', '251566':'2kSm', '251752':'1kDv', '253163':'3kWm', '254022':'1fLm', '254796':'6aSn', '255303':'2kSv',
   '256769':'1kLv'});
+ // Icons (V21.419, Basti 2026-11-13: "Pele" too light, Gullit without his
+ // dreadlocks): keyed by the game's Icon id, as the player looked in his Icon
+ // era, read off the Icon card portraits and public photos. Skin 1 very fair
+ // to 6 deep brown.
+ const ICONS=Object.freeze({
+  'midicon-ronaldo':'4xSn', 'midicon-mia-hamm':'1pLn', 'midicon-pele':'6kSn', 'midicon-franz-beckenbauer':'1fDn', 'midicon-eusebio':'6kSn',
+  'midicon-lothar-matthaus':'1fBn', 'midicon-zinedine-zidane':'2xDn', 'midicon-ruud-gullit':'5dSm', 'midicon-formiga':'5pSn', 'midicon-thierry-henry':'5xSn',
+  'midicon-ferenc-puskas':'1rSn', 'midicon-alex-morgan':'1pBn', 'midicon-bobby-charlton':'1rBn', 'midicon-johan-cruyff':'1bDn', 'midicon-paolo-maldini':'2bDn',
+  'midicon-diego-armando-maradona':'3aSn', 'midicon-kenny-dalglish':'1fBn', 'midicon-homare-sawa':'2bSn', 'midicon-jairzinho':'5aSn', 'midicon-zico':'2aSn',
+  'midicon-garrincha':'4kSn', 'midicon-gareth-bale':'1pDv', 'midicon-ronaldinho':'4dSn', 'midicon-carlos-alberto':'5aSn', 'midicon-gianluigi-buffon':'1fDn',
+  'midicon-lilian-thuram':'6kSn', 'midicon-yaya-toure':'6xSn', 'midicon-samuel-eto-o':'6kSn', 'midicon-karl-heinz-rummenigge':'1aLn', 'midicon-kaka':'2kDn',
+  'midicon-sergio-aguero':'2kSn', 'midicon-george-best':'1bSv', 'midicon-zlatan-ibrahimovic':'2pSv', 'midicon-lotta-schelin':'1pGn', 'midicon-francesco-totti':'1fDn',
+  'midicon-iniesta':'1xDn', 'midicon-gerd-muller':'1fSn', 'midicon-petr-cech':'1kDn', 'midicon-rio-ferdinand':'5kSn', 'midicon-alessandro-del-piero':'2fDn',
+  'midicon-patrick-vieira':'6xSn', 'midicon-emilio-butragueno':'1fDn', 'midicon-raul':'2fSn', 'midicon-oliver-kahn':'1fGn', 'midicon-christine-sinclair':'1pDn',
+  'midicon-fernando-torres':'1fGn', 'midicon-raphael-varane':'4kSn', 'midicon-rivellino':'3fSm', 'midicon-wayne-rooney':'1kBn', 'midicon-hege-riise':'1pGn',
+  'midicon-caroline-seger':'1pLn', 'midicon-ashley-cole':'4kSn', 'midicon-hristo-stoichkov':'2fSn', 'midicon-julie-foudy':'1pBn', 'midicon-roberto-baggio':'2pSv',
+  'midicon-eric-cantona':'1fSn', 'midicon-socrates':'3aSv', 'midicon-casillas':'2fSn', 'midicon-marinette-pichon':'1bDn', 'midicon-frank-lampard':'1fBn',
+  'midicon-tobin-heath':'1pLn', 'midicon-cafu':'5xSn', 'midicon-kelly-smith':'1pDn', 'midicon-michael-essien':'6xSn', 'midicon-cha-bum-kun':'2fSn',
+  'midicon-franck-ribery':'1xDn', 'midicon-michael-owen':'1kDn', 'midicon-aya-miyama':'2pSn', 'midicon-dennis-bergkamp':'1fLn', 'midicon-luis-figo':'2fDn',
+  'midicon-peter-schmeichel':'1fGn', 'midicon-claude-makelele':'5xSn', 'midicon-ian-wright':'5xSn', 'midicon-xavi':'2kDn', 'midicon-philipp-lahm':'1kBn',
+  'midicon-paul-scholes':'1kRn', 'midicon-john-barnes':'5kSn', 'midicon-roy-keane':'1kDv', 'midicon-yuki-nagasato':'2pSn', 'midicon-camille-abily':'1pBn',
+  'midicon-andriy-shevchenko':'1kLn', 'midicon-edwin-van-der-sar':'1xLn', 'midicon-marco-van-basten':'1fLn', 'midicon-giorgio-chiellini':'2fSv', 'midicon-laurent-blanc':'1kDn',
+  'midicon-didier-drogba':'6kSv', 'midicon-frank-rijkaard':'5dSn', 'midicon-robin-van-persie':'1kSv', 'midicon-ronald-koeman':'1fGn', 'midicon-marcelo':'4aSn',
+  'midicon-michael-laudrup':'1fDn', 'midicon-mario-kempes':'2bSn', 'midicon-gianluca-zambrotta':'2kSn', 'midicon-javier-zanetti':'2rSn', 'midicon-hugo-sanchez':'3fSm',
+  'midicon-lucio':'4xSn', 'midicon-dunga':'1fLn', 'midicon-marcel-desailly':'6xSn', 'midicon-steven-gerrard':'1kDn', 'midicon-bastian-schweinsteiger':'1fLn',
+  'midicon-steffi-jones':'5bSn', 'midicon-nadine-angerer':'1bDn', 'midicon-roberto-carlos':'5xSn', 'midicon-ellen-white':'1pDn', 'midicon-pavel-nedved':'1bGn',
+  'midicon-pepe':'3xSv', 'midicon-jean-pierre-papin':'1fDn', 'midicon-sissi':'5xSn', 'midicon-gheorghe-hagi':'2fSn', 'midicon-sol-campbell':'6xSn',
+  'midicon-emmanuel-petit':'1pGn', 'midicon-xabi-alonso':'1fDv', 'midicon-rivaldo':'4fSn', 'midicon-birgit-prinz':'1bLn', 'midicon-andrea-pirlo':'2bSv',
+  'midicon-alessandro-nesta':'2fSn', 'midicon-hernan-crespo':'2fDn', 'midicon-toni-kroos':'1kLn', 'midicon-bobby-moore':'1fGn', 'midicon-gary-lineker':'1fDn',
+  'midicon-franco-baresi':'2fDn', 'midicon-robert-pires':'1fDv', 'midicon-geoff-hurst':'1fBn', 'midicon-fabio-cannavaro':'2kSn', 'midicon-fernando-hierro':'2fSn',
+  'midicon-nemanja-vidic':'1kDn', 'midicon-ian-rush':'1fDm', 'midicon-juan-roman-riquelme':'3kSv', 'midicon-gabriel-batistuta':'2bSn', 'midicon-gennaro-gattuso':'2fSv',
+  'midicon-alan-shearer':'1kDn', 'midicon-maicon':'5xSn', 'midicon-miroslav-klose':'1kDn', 'midicon-david-beckham':'1fGn', 'midicon-ruud-van-nistelrooy':'1kDn',
+  'midicon-carles-puyol':'2dDn'});
+ const ICON_WOMEN=new Set(['midicon-alex-morgan', 'midicon-aya-miyama', 'midicon-birgit-prinz', 'midicon-camille-abily', 'midicon-caroline-seger', 'midicon-christine-sinclair', 'midicon-ellen-white', 'midicon-formiga', 'midicon-hege-riise', 'midicon-homare-sawa', 'midicon-julie-foudy', 'midicon-kelly-smith', 'midicon-lotta-schelin', 'midicon-marinette-pichon', 'midicon-mia-hamm', 'midicon-nadine-angerer', 'midicon-sissi', 'midicon-steffi-jones', 'midicon-tobin-heath', 'midicon-yuki-nagasato']);
  let measured={};
  function decode(code){
   const c=String(code||''),out={};
@@ -87,20 +125,22 @@
  }
  function get(player){
   const id=String(player?.id??'').trim();if(!id)return null;
-  const look={...decode(measured[id]),...decode(HAND[id])};
+  const look={...decode(measured[id]),...decode(HAND[id]??ICONS[id])};
   return Object.keys(look).length?look:null;
  }
  // Women's players (EA gender "Women's Football", V21.258) get the female
  // body, a women's haircut and no beard in 3D; a men's haircut code never applies.
  function isFemale(player){
   const g=String(player?.gender??player?.sex??'').trim().toLowerCase();
-  return g==='f'||/wom[ae]n|female|frau/.test(g);
+  return g==='f'||/wom[ae]n|female|frau/.test(g)||ICON_WOMEN.has(String(player?.id??''));
  }
  // What the 3D scene takes: skin as tone 1-6, the rest as a custom look.
  function sceneSkin(player){return get(player)?.skin||null}
  function sceneLook(player){
   const look=get(player)||{},female=isFemale(player);
   const out={};for(const k of female?['hairColor']:['hair','hairColor','beard'])if(look[k])out[k]=look[k];
+  // Women keep a women's haircut (ponytail, bob, braid or shaved, like Sissi).
+  if(female&&WOMEN_STYLES.has(look.hair))out.hair=look.hair;
   if(female)out.female=true;
   return Object.keys(out).length?out:null;
  }
@@ -108,5 +148,5 @@
  const ready=typeof root.fetch==='function'&&root.document
   ?root.fetch('./assets/player-looks.json').then(r=>r.ok?r.json():null).then(load).catch(()=>0)
   :Promise.resolve(0);
- root.FooteraPlayerLooks=Object.freeze({HAND,decode,get,isFemale,sceneSkin,sceneLook,load,ready});
+ root.FooteraPlayerLooks=Object.freeze({HAND,ICONS,decode,get,isFemale,sceneSkin,sceneLook,load,ready});
 })(typeof window!=='undefined'?window:globalThis);

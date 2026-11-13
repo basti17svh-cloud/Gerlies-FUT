@@ -10,7 +10,7 @@
 import {paintFooteraKitTile} from './3d-rigged-footballer.mjs?v=21269';
 import {footeraHDWanted,upgradeFooteraHero} from './3d-player-hd.mjs?v=21349';
 
-const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21349',import.meta.url);
+const HUMAN_URL=new URL('./assets/footera/models/footera-humans.glb?v=21419',import.meta.url);
 const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','lowerarm_l','lowerarm_r',
  'hand_l','hand_r','thigh_l','thigh_r','calf_l','calf_r','foot_l','foot_r','ball_l','ball_r'];
 let source=null,pending=null;
@@ -58,6 +58,8 @@ const HAIR_SHADES=['#1b1512','#2a1d16','#3b2a1f','#14110f','#4f3826','#6e5038','
 // beard:'none'|'Full_beard'|'Moustache'}; anything missing stays name-picked.
 // custom.female (V21.258, women's players from the EA record): the female body
 // morph and skin, a women's haircut and never a beard.
+// V21.419: custom.hair may also name a special cut (info.hairSpecial, e.g.
+// 'dreads01') or, for men, a women's cut (ponytail01, bob02).
 // role (V21.346): {keeper:true} for goalkeepers, who stand a little taller.
 export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,custom=null,role=null){
  const h=hash(name),pick=(list,shift)=>list[(h>>>shift)%list.length];
@@ -90,8 +92,12 @@ export function footeraHumanLook(name='',skinTone='#c88f69',info=source?.info,cu
   skin:tone,skinKey:(dark?'dark':'light')+(female?'Female':''),female,height:Math.round(height*1000)/1000,
   hairColor:dark?pick(['#120f0e','#1b1512','#241a14'],17):pick(HAIR_SHADES,17)};
  if(custom){
-  if(!female&&(custom.hair==='bald'||hair.includes(custom.hair)))look.hair=custom.hair==='bald'?null:custom.hair;
-  else if(female&&hair.includes(custom.hair))look.hair=custom.hair;
+  // V21.419: a set haircut may also come from the special cuts (dreadlocks)
+  // and, for long-haired men (Baggio, Nedved), from the women's ponytail or
+  // bob; women may be shaved too. The name pick never chooses these.
+  const allowed=[...hair,...(info?.hairSpecial||[]),...(female?[]:info?.hairFemale||[])];
+  if(custom.hair==='bald')look.hair=null;
+  else if(allowed.includes(custom.hair))look.hair=custom.hair;
   if(!female){if(custom.beard==='none')look.facial=null;else if(facial.includes(custom.beard))look.facial=custom.beard}
   if(/^#[0-9a-f]{6}$/i.test(String(custom.hairColor||'')))look.hairColor=custom.hairColor;
  }
