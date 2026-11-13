@@ -2,6 +2,11 @@
   {
     "name": "Lautaro Martínez",
     "id": "231478",
+    "games": [
+      27,
+      26
+    ],
+    "all": true,
     "source": "https://cdn.futwiz.com/assets/img/fc27/faces/231478.png",
     "sha256": "380238c035c4aae487ddcf0a92f1826fbb584abdddbfce1395dad24b2c2d1dfc"
   }
