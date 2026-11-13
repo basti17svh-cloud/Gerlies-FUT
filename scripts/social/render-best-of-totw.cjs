@@ -19,8 +19,8 @@ const OUT=[[4,'Kane'],[2,'Olise'],[9,'Shaw']];
      eventSelectedId='totw-'+week;renderEvents();document.querySelectorAll('.event-player .face img').forEach(i=>{i.loading='eager'});
      const el=[...document.querySelectorAll('.event-player')].find(e=>e.innerText.includes(name));if(!el)return null;
      const img=el.querySelector('.face img');const flag=el.innerText.includes('🏳');
-     return{html:el.querySelector('.card-shell').outerHTML,rating:Number(el.querySelector('.ovr')?.textContent.match(/\d+/)?.[0]||0),ok:!!img&&img.complete&&img.naturalWidth>=100&&!flag}},[week,name]);
-    if(card&&!card.ok&&!LOCAL){card=null;await page.waitForTimeout(750)}}
+     return{html:el.querySelector('.card-shell').outerHTML,rating:Number(el.querySelector('.ovr')?.textContent.match(/\d+/)?.[0]||0),ok:!!img&&img.complete&&img.naturalWidth>=100,src:img?.currentSrc||img?.getAttribute('src')||'none',flag}},[week,name]);
+    if(card&&!card.ok&&!LOCAL){console.log('waiting',name,card.src,card.flag);if(t<39){card=null;await page.waitForTimeout(750)}}}
    assert.ok(card,`card ${name} (TOTW ${week}) not rendered with portrait`);cards.push({...card,week,name})}
    return cards.sort((a,b)=>b.rating-a.rating)};
   const elf=await grab(ELF),out=await grab(OUT);
