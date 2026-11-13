@@ -155,3 +155,5 @@
 /* Device-first saves: keep legacy cloud conflict controls mounted for
    compatibility, but never show a cloud/local choice in the UI. */
 .footera-save-overview,.footera-account-cloud{display:none!important}
+/* V21.418 admin-only statistics link */
+.footera-profile-admin{display:block;margin:12px 0 0;padding:12px 14px;border-radius:12px;background:#1d2d22;border:1px solid #6f8f3c;color:#f2ffcf;font-weight:700;text-decoration:none}.footera-profile-admin[hidden]{display:none}.footera-profile-admin small{display:block;margin-top:3px;font-weight:400;font-size:11px;color:#bdcbb7}

@@ -10181,7 +10181,7 @@ $("campaignModal").addEventListener("click",e=>{if(e.target===$("campaignModal")
 // Windows that guard a required step or a purchase/reward flow stay open.
 const BACKDROP_LOCKED_MODALS=new Set(["usernameRequiredModal","footeraPointsPurchaseModal","weeklyRewardModal","onlineDuelModal","squadBattleModal"]);
 function dismissTopModal(){
- const id=topUiLayer(),el=id&&$(id);
+ const id=topUiLayer(),el=id?$(id):null; // no open window: topUiLayer() is "" (Escape used to throw here)
  if(!el?.classList.contains("modal")||BACKDROP_LOCKED_MODALS.has(id))return false;
  if(history.state?.gfut)history.back();else closeTopUiLayer();
  return true

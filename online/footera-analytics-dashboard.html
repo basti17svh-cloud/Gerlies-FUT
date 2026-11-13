@@ -66,6 +66,12 @@ footer{margin-top:20px}
    <div style="overflow-x:auto"><table><thead><tr><th>Tag</th><th>Besucher*</th><th>Instagram*</th><th>Neue Konten</th><th>Neue Vereine</th></tr></thead><tbody id="days"></tbody></table></div>
    <p class="note">*Nur mit Besuchsstatistik-Einwilligung. Vereinsgründungen werden erst ab Einführung dieser Statistik datiert.</p>
  </div>
+ <div class="box">
+   <h2>Top-Fehler · letzte 7 Tage</h2>
+   <p id="errorsHead" class="note"></p>
+   <div style="overflow-x:auto"><table><thead><tr><th>Geräte</th><th>Anzahl</th><th>Fehler</th><th>Wo</th><th>Version</th><th>Bildschirm · Gerät</th><th>Zuletzt</th></tr></thead><tbody id="errors"></tbody></table></div>
+   <p class="note">Automatische JavaScript-Fehlerberichte, nur von Browsern mit Statistik-Einwilligung. „Geräte“ = verschiedene Browser, die den Fehler hatten. Ohne Namen, Verein oder E-Mail; Daten werden nach 30 Tagen gelöscht.</p>
+ </div>
  <footer class="note">Anmeldungen und Vereinsprofile stammen aus der Supabase-Datenbank; freiwillige Besucherzahlen sind ein separates Messsystem. Alte Website-Besuche lassen sich nicht rückwirkend rekonstruieren.</footer>
 </div>
 </main>
@@ -143,6 +149,15 @@ footer{margin-top:20px}
      for(const val of [d.day,d.visitors,d.instagram,d.registrations,d.club_creations]){
        const td=document.createElement("td");td.textContent=typeof val==="number"?fmt(val):String(val);tr.append(td);
      }tbody.append(tr);
+   }
+   const er=r.errors_7d,etb=$("errors");etb.replaceChildren();
+   $("errorsHead").textContent=!er?"Fehlerberichte gerade nicht verfügbar.":er.distinct_errors?fmt(er.distinct_errors)+" verschiedene Fehler, "+fmt(er.total_hits)+" Meldungen insgesamt.":"Keine Fehler gemeldet. 🎉";
+   for(const e of (er&&er.top)||[]){
+     const tr=document.createElement("tr");
+     const last=e.last_seen?new Date(e.last_seen).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+     for(const val of [e.browsers,e.hits,e.message,e.source,e.build,[e.screen,e.device].filter(Boolean).join(" · "),last]){
+       const td=document.createElement("td");td.textContent=typeof val==="number"?fmt(val):String(val||"");tr.append(td);
+     }etb.append(tr);
    }
    $("app").style.display="block";
    $("status").textContent="Aktualisiert: "+new Date(r.as_of).toLocaleString("de-DE")+".";

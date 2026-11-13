@@ -28,7 +28,14 @@ Deno.serve(async req=>{
     .select("user_id").eq("user_id",user.id).maybeSingle();
  if(permissionError)return reply({error:"Berechtigung konnte nicht geprüft werden."},503);
  if(!allowed)return reply({error:"Für dieses Footera-Konto ist kein Statistik-Adminzugriff freigeschaltet."},403);
+ // V21.418: the game asks {check:true} to decide whether to show the profile link.
+ let body:Record<string,unknown>={};
+ try{body=await req.json()}catch{}
+ if(body?.check===true)return reply({admin:true});
  const {data,error}=await admin.rpc("footera_analytics_summary");
  if(error){console.error("Footera stats report failed",error.code);return reply({error:"Statistik momentan nicht verfügbar."},503)}
- return reply({report:data});
+ // V21.408: top JavaScript errors of the last 7 days (only from browsers with statistics consent).
+ const errs=await admin.rpc("footera_error_summary",{p_days:7});
+ if(errs.error)console.error("Footera error summary failed",errs.error.code);
+ return reply({report:{...data,errors_7d:errs.error?null:errs.data}});
 });
