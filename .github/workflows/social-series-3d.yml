@@ -14,15 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: G1, type: goal, score: '0:0', from: '4.6', frames: '220', team: away, minute: '17', who: 'Rafael Leão'}
-          - {name: S1, type: save, score: '0:1', from: '4.8', frames: '160', team: home, minute: '29', who: 'Kylian Mbappé'}
-          - {name: G2, type: goal, score: '0:1', from: '4.6', frames: '220', team: away, minute: '40', who: 'Scott McTominay'}
-          - {name: G3, type: goal, score: '0:2', from: '4.6', frames: '220', team: home, minute: '55', who: 'Jude Bellingham'}
-          - {name: P1, type: post, score: '1:2', from: '4.8', frames: '150', team: home, minute: '70', who: 'Lamine Yamal'}
-          - {name: G4, type: goal, score: '1:2', from: '1.2', frames: '330', team: home, minute: '81', who: 'Lamine Yamal'}
-          - {name: G5, type: goal, score: '2:2', from: '4.6', frames: '240', team: away, minute: '88', who: 'Lautaro Martínez'}
-          - {name: K, type: kickoff, score: '0:0', from: '0.2', frames: '150', team: home, minute: '0', who: ''}
-          - {name: F, type: fulltime, score: '2:3', from: '0.2', frames: '150', team: home, minute: '90', who: ''}
+          - {name: G1, type: goal, score: '0:0', from: '4.6', frames: '220', team: home, minute: '22', who: 'Kylian Mbappé'}
+          - {name: G2, type: goal, score: '1:0', from: '4.6', frames: '220', team: away, minute: '26', who: 'Lautaro Martínez'}
+          - {name: S1, type: save, score: '1:1', from: '4.8', frames: '160', team: away, minute: '35', who: 'Rafael Leão'}
+          - {name: G3, type: goal, score: '1:1', from: '1.2', frames: '330', team: home, minute: '52', who: 'Lamine Yamal'}
+          - {name: P1, type: post, score: '2:1', from: '4.8', frames: '150', team: away, minute: '70', who: 'Scott McTominay'}
+          - {name: G4, type: goal, score: '2:1', from: '4.6', frames: '220', team: home, minute: '83', who: 'Vini Jr.'}
+          - {name: G5, type: goal, score: '3:1', from: '4.6', frames: '220', team: home, minute: '90', who: 'Jude Bellingham'}
+          - {name: K, type: kickoff, score: '0:0', from: '0.2', frames: '330', team: home, minute: '0', who: ''}
+          - {name: F, type: fulltime, score: '4:1', from: '0.2', frames: '150', team: home, minute: '90', who: ''}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
