@@ -205,12 +205,34 @@
   el.addEventListener("click",async e=>{
    if(e.target.closest("[data-np-close]")||e.target===el){typeof closeUiLayer==="function"?closeUiLayer(MODAL_ID,KIND):el.classList.remove("active");return}
    const btn=e.target.closest("[data-np-share]");if(!btn||!shown)return;
-   btn.disabled=true;
-   try{const file=await picture(shown.f,shown);const share=root.FooteraShare?.share;const url=root.FooteraShare?.inviteUrl?root.FooteraShare.inviteUrl("","kurier"):location.href;
-    const st=story(shown.f);if(share)await share({title:"Footera Kurier",text:`📰 ${st.title} ${shown.f.home} ${shown.f.gh}:${shown.f.ga} ${shown.f.away}. ⚽`,url,file})}
-   catch(err){console.warn("Kurier teilen:",err)}
-   finally{btn.disabled=false}
+   await shareShown(btn);
   });
+ }
+ // V21.415: the picture (with the POTM card and its photo) takes several seconds. Phones only open
+ // the share sheet right after a tap, so the picture is prepared as soon as the Kurier opens
+ // (like the pack share). If it is still not ready at the tap, a second tap shares it.
+ const SHARE_LABEL="Titelseite teilen",READY_LABEL="Bild bereit – jetzt teilen";
+ function prepareShare(){
+  const ed=shown;if(!ed)return null;
+  if(!ed.job)ed.job=picture(ed.f,ed).catch(err=>{console.warn("Kurier Bild:",err);return null}).then(file=>{ed.file=file;ed.ready=true;return file});
+  return ed.job;
+ }
+ function shareData(ed){
+  const url=root.FooteraShare?.inviteUrl?root.FooteraShare.inviteUrl("","kurier"):location.href,st=story(ed.f);
+  return{title:"Footera Kurier",text:`📰 ${st.title} ${ed.f.home} ${ed.f.gh}:${ed.f.ga} ${ed.f.away}. ⚽`,url,file:ed.file||null};
+ }
+ async function shareShown(btn){
+  const ed=shown;if(!ed||ed.busy)return;
+  const share=root.FooteraShare?.share;
+  if(ed.ready){
+   try{if(share){const r=await share(shareData(ed));if(r==="shared"&&typeof toast==="function")toast("Danke fürs Teilen!")}}
+   catch(err){console.warn("Kurier teilen:",err)}
+   finally{if(btn.isConnected)btn.textContent=SHARE_LABEL}
+   return;
+  }
+  ed.busy=true;btn.disabled=true;btn.textContent="Wird vorbereitet …";
+  try{await prepareShare()}finally{ed.busy=false;if(shown===ed&&btn.isConnected){btn.disabled=false;btn.textContent=READY_LABEL}}
+
  }
  function open(m){
   const live=m||(typeof match!=="undefined"?match:null);
@@ -218,8 +240,10 @@
   const f=fromMatch(live);if(!f)return null;
   ensureModal();
   shown={f,at:new Date(),no:edition()};
+  const shareBtn=document.querySelector("#"+MODAL_ID+" [data-np-share]");if(shareBtn){shareBtn.disabled=false;shareBtn.textContent=SHARE_LABEL}
   $("#newspaperBody").innerHTML=html(f,shown);
   if(typeof showUiLayer==="function")showUiLayer(MODAL_ID,KIND);else $("#"+MODAL_ID).classList.add("active");
+  {const ed=shown;setTimeout(()=>{if(shown===ed)prepareShare()},350)}
   const body=$("#"+MODAL_ID);if(body)body.scrollTop=0;
   return f;
  }

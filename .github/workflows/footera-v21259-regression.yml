@@ -6,24 +6,67 @@ on:
       - '3d-highlights.js'
       - '3d-highlights-scene.mjs'
       - 'tests/fifteen-attacks-v21259.test.cjs'
+      - 'tests/match-simulation.test.cjs'
+      - 'tests/chem-boost-balance.test.cjs'
       - '.github/workflows/footera-v21259-regression.yml'
 permissions:
   contents: read
+# V21.408 (13.11.2026): the single job ran 13-25 minutes and was sometimes cancelled at its limit.
+# Two files are almost all of it (match-simulation ~20 min, chem-boost-balance ~12 min on 4 busy
+# cores), so they run as their own parallel parts, split by test name. Every test still runs once.
 jobs:
   all-node-tests:
+    name: all-node-tests (${{ matrix.part }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: Rest
+            files: REST
+            pattern: ''
+          # Measured locally: rating advantages ~8 min, similar opponent ~5 min, fast setting ~3.5 min,
+          # 90 OVR ~2.5 min, 84/26 ~1.7 min, the remaining tests take seconds.
+          - part: Spielsimulation 1
+            files: tests/match-simulation.test.cjs
+            pattern: '^rating advantages'
+          - part: Spielsimulation 2
+            files: tests/match-simulation.test.cjs
+            pattern: '^a similar opponent|^a 84/26'
+          - part: Spielsimulation 3
+            files: tests/match-simulation.test.cjs
+            pattern: '^90 OVR|^the fast setting|^a named red card|^pregame|^a goal shows|^simulation resolves|^real saves|^V21\.30[23]:'
+          - part: Chemie-Boosts 1
+            files: tests/chem-boost-balance.test.cjs
+            pattern: 'all six boosts'
+          - part: Chemie-Boosts 2
+            files: tests/chem-boost-balance.test.cjs
+            pattern: 'matchup|extreme rating'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Syntax checks
+        if: matrix.files == 'REST'
         run: |
           node --check 3d-playbook.mjs
           node --check 3d-highlights.js
           node --check 3d-highlights-scene.mjs
           node --check footera-app.js
           node --check service-worker.js
-      - name: Full standard Node test suite
-        run: node --test --test-concurrency=4 tests/*.test.cjs tests/*.test.mjs
+      - name: Node tests (${{ matrix.part }})
+        env:
+          FILES: ${{ matrix.files }}
+          PATTERN: ${{ matrix.pattern }}
+        run: |
+          if [ "$FILES" = "REST" ]; then
+            ls tests/*.test.cjs tests/*.test.mjs | grep -v -e 'tests/match-simulation.test.cjs' -e 'tests/chem-boost-balance.test.cjs' > /tmp/files.txt
+            node --test --test-concurrency=4 $(cat /tmp/files.txt)
+          else
+            node --test --test-name-pattern="$PATTERN" "$FILES"
+          fi
+      - name: Every test ran in exactly one part
+        if: matrix.files == 'REST'
+        run: node scripts/check-test-parts.cjs

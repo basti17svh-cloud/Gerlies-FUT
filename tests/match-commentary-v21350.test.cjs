@@ -101,10 +101,14 @@ test('V21.365: caption and ticker wait for the 3D scene instead of spoiling it',
 test('V21.365: a goal-line clearance names the defending team and the 3D card names the defender',()=>{
  const t=C.describe({resultId:'line'},'lineclear',shot({team:'FC Footera',opponent:'Rivals XI',shooter:'Kane'})).text;
  assert.match(t,/Rivals XI|Rettung auf der Linie/);assert.doesNotMatch(t,/Kane klärt|Kane rettet/);
- const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8'),line=scene.split('\n').find(l=>l.includes("keeperAction==='line_clear'){headline.textContent='GEKLÄRT'"));
+ const scene=fs.readFileSync(path.join(root,'3d-highlights-scene.mjs'),'utf8'),at=scene.indexOf("keeperAction==='line_clear'){headline.textContent='GEKLÄRT'"),line=at>0?scene.slice(at,scene.indexOf('auf der Linie geklärt',at)):'';
  assert.ok(line&&!/name\.textContent=event\.playerName/.test(line),'clearance card must not show the shooter as the clearer');
  assert.match(line,/defendNames/);
  const bridge=fs.readFileSync(path.join(root,'3d-highlights-match.js'),'utf8');
  assert.match(bridge,/defendNames:names\.slice\(8\)/);
  assert.ok(H.snapshot({type:'big_chance_missed',id:'x',defendNames:['A','B']}).defendNames[1]==='B','snapshot keeps the defending names');
+ // V21.415: the CARD is the clearer's too, not the shooter's.
+ assert.match(line,/card\.innerHTML=clearCard/);
+ assert.match(bridge,/defendCardsHTML=presentation\.keeperAction==='line_clear'/);
+ assert.equal(H.snapshot({type:'big_chance_missed',id:'y',defendCardsHTML:['<b>A</b>','<b>B</b>']}).defendCardsHTML[1],'<b>B</b>','snapshot keeps the defender cards');
 });

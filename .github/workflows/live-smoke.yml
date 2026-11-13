@@ -1,0 +1,79 @@
+name: Täglicher Live-Rauchtest
+# Proposal #12 (13.11.2026): every morning a simulated phone opens the real Footera page and plays
+# the main path as a brand-new player (start, starter pack, store pack, friendly match, SBC,
+# transfer search, reload). Read-only for the backend: no login, no guest account, no statistics.
+# If something breaks, an issue "Live-Rauchtest rot" is opened (GitHub notifies the repo owner).
+on:
+  schedule:
+    - cron: '15 5 * * *' # 06:15 Berlin in winter, 07:15 in summer
+  workflow_dispatch:
+  pull_request:
+    paths: ['scripts/live-smoke.cjs', '.github/workflows/live-smoke.yml']
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: live-smoke
+  cancel-in-progress: false
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependency
+        run: |
+          npm install --prefix /tmp/footera-browser playwright@1.51.1
+          /tmp/footera-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Smoke test
+        id: smoke
+        env:
+          NODE_PATH: /tmp/footera-browser/node_modules
+          # Pull requests test the checkout itself, the schedule tests the live site.
+          FOOTERA_SMOKE_LOCAL: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+        run: node scripts/live-smoke.cjs
+      - name: Summary
+        if: always()
+        run: |
+          node -e '
+          const r=require("./test-artifacts/live-smoke/report.json");
+          const lines=["## Live-Rauchtest "+(r.version||""),"","| Schritt | Ergebnis | Dauer | Detail |","|---|---|---|---|"];
+          for(const s of r.steps)lines.push(`| ${s.name} | ${s.ok?"✅":s.optional?"⚠️":"❌"} | ${(s.ms/1000).toFixed(1)} s | ${String(s.detail||s.error||"").replace(/[|\n]/g," ").slice(0,160)} |`);
+          if(r.errors.length){lines.push("","**JavaScript-Fehler:**");for(const e of r.errors.slice(0,10))lines.push("- "+e.type+": "+e.text.replace(/\n/g," ")+(e.stack?" ("+e.stack.slice(0,160)+")":""))}
+          require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n");
+          ' || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-smoke-screens
+          path: test-artifacts/live-smoke/
+          retention-days: 14
+      - name: Open or update the "Live-Rauchtest rot" issue
+        if: failure() && github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('fs');let r={steps:[],errors:[]};
+            try{r=JSON.parse(fs.readFileSync('test-artifacts/live-smoke/report.json','utf8'))}catch{}
+            const bad=r.steps.filter(s=>!s.ok).map(s=>`- **${s.name}**: ${String(s.error||'').split('\n')[0].slice(0,200)}`);
+            const errs=(r.errors||[]).slice(0,5).map(e=>`- ${e.type}: ${e.text}`);
+            const run=`${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body=[`Der tägliche Live-Rauchtest (${r.version||'Version unbekannt'}) ist am ${new Date().toLocaleString('de-DE',{timeZone:'Europe/Berlin'})} fehlgeschlagen.`,'',...bad,...(errs.length?['','JavaScript-Fehler:',...errs]:[]),'',`Bildschirmfotos und Bericht: ${run}`].join('\n');
+            const title='Live-Rauchtest rot';
+            const open=await github.rest.issues.listForRepo({...context.repo,state:'open',per_page:50});
+            const existing=open.data.find(i=>i.title===title&&!i.pull_request);
+            if(existing)await github.rest.issues.createComment({...context.repo,issue_number:existing.number,body});
+            else await github.rest.issues.create({...context.repo,title,body,assignees:[context.repo.owner]});
+      - name: Close the issue again once the test is green
+        if: success() && github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const open=await github.rest.issues.listForRepo({...context.repo,state:'open',per_page:50});
+            for(const i of open.data.filter(i=>i.title==='Live-Rauchtest rot'&&!i.pull_request)){
+              await github.rest.issues.createComment({...context.repo,issue_number:i.number,body:'Wieder grün: '+new Date().toLocaleString('de-DE',{timeZone:'Europe/Berlin'})});
+              await github.rest.issues.update({...context.repo,issue_number:i.number,state:'closed'});
+            }

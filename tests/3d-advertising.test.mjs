@@ -41,8 +41,27 @@ test('stadium rotates Footera, Instagram and TikTok boards',async()=>{
  const fs=await import('node:fs');
  const scene=fs.readFileSync(new URL('../3d-highlights-scene.mjs',import.meta.url),'utf8');
  assert.match(scene,/\['footera','instagram','tiktok'\]/);
- assert.match(scene,/\['footera','halloween','instagram','tiktok'\]/);
+ // Halloween or Winternächte take the second slot (V21.406).
+ assert.match(scene,/const seasonBoard=spooky\?'halloween':winterBoardKind\(\);/);
+ assert.match(scene,/seasonBoard\?\['footera',seasonBoard,'instagram','tiktok'\]/);
  const sw=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
  const v=(scene.match(/3d-advertising\.mjs\?v=(\d+)/)||[])[1];
  assert.ok(v&&sw.includes(`"./3d-advertising.mjs?v=${v}"`));
+});
+test('Winternächte boards: Christmas until 27.12., New Year until 07.01., fireworks only on New Year\'s Eve',async()=>{
+ const {ctx,ops}=context();drawPerimeterBoard(ctx,2048,256,'winter');
+ assert.ok(ops.some(op=>op[0]==='text'&&op[1]==='FROHE WEIHNACHTEN'));
+ const b=context();drawPerimeterBoard(b.ctx,2048,256,'silvester');
+ assert.ok(b.ops.some(op=>op[0]==='text'&&op[1]==='FROHES NEUES 2027'));
+ const fs=await import('node:fs');
+ const scene=fs.readFileSync(new URL('../3d-highlights-scene.mjs',import.meta.url),'utf8');
+ const fn=name=>{const i=scene.indexOf(`export function ${name}(`),j=scene.indexOf('\n}\n',i);return new Function(`${scene.slice(i+7,j+3)};return ${name}`)()};
+ const board=fn('winterBoardKind'),night=fn('silvesterNight'),t=s=>Date.parse(s);
+ assert.equal(board(t('2026-12-11T18:59:00+01:00')),'');
+ assert.equal(board(t('2026-12-11T19:00:00+01:00')),'winter');
+ assert.equal(board(t('2026-12-27T00:00:00+01:00')),'silvester');
+ assert.equal(board(t('2027-01-07T00:00:00+01:00')),'');
+ assert.equal(night(t('2026-12-31T17:59:00+01:00')),false);
+ assert.equal(night(t('2026-12-31T23:30:00+01:00')),true);
+ assert.equal(night(t('2027-01-01T06:00:00+01:00')),false);
 });
