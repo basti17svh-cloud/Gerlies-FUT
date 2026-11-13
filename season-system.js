@@ -35,11 +35,17 @@ for(const tier of SEASON_REWARDS)tier.premium=premiumTierReward(tier.level);
 for(let level=11;level<=30;level++)SEASON_REWARDS.push({level,sp:13500+(level-10)*650,reward:FREE_EXTRA[level-11],premium:premiumTierReward(level)});
 // Season-specific SP cost on top of the shared ladder. Season 2 levels cost 50 % more:
 // matches plus daily/weekly/season/catch-up objectives let active players finish 26,500 SP in about two weeks.
-const SEASON_SP_SCALE={s2:1.5};
+const SEASON_SP_SCALE={s2:1.5,s3:1.5};
 function seasonLevelSp(tier,seasonKey=seasonInfo().key){return Math.round(tier.baseSp*(SEASON_SP_SCALE[seasonKey]||1)/50)*50}
 for(const tier of SEASON_REWARDS){tier.baseSp=tier.sp;Object.defineProperty(tier,"sp",{enumerable:true,configurable:true,get(){return seasonLevelSp(this)}})}
 // Season-specific reward swaps on top of the shared 30-tier ladder.
-const SEASON_REWARD_OVERRIDES={s2:{free:{4:{pack:"halloween-pack"},16:{pack:"pass-83x10"},28:{pack:"pass-84x5"}},premium:{6:{pack:"halloween-pack"},16:{pack:"pass-84x10"},28:{pack:"pass-85x7"}}}};
+// Season 3 "Winternächte" (Basti 2026-11-13): premium beats free on every level, premium pays 500 Footera Points in total
+// (the price of the next premium pass), the free track only 200 Points in total.
+const S3_FREE={9:{points:100},14:{points:50},16:{pack:"pass-83x10"},19:{points:50},24:{coins:5000},28:{pack:"pass-84x5"}};
+const S3_PREMIUM={1:{coins:3000},4:{pack:"82"},6:{coins:2000,pack:"85"},7:{points:100},8:{pack:"goldplayers",qty:2},9:{points:100,coins:3000},12:{pack:"82",qty:2},
+ 14:{points:100},16:{pack:"pass-84x10"},17:{pack:"goldplayers",qty:2},19:{points:100},21:{coins:5000,pack:"82"},22:{pack:"85"},24:{points:100,coins:2000},
+ 26:{coins:6000,pack:"goldplayers"},27:{coins:3000,pack:"85"},28:{pack:"pass-85x7"},29:{pack:"85",qty:2}};
+const SEASON_REWARD_OVERRIDES={s3:{free:S3_FREE,premium:S3_PREMIUM},s2:{free:{4:{pack:"halloween-pack"},16:{pack:"pass-83x10"},28:{pack:"pass-84x5"}},premium:{6:{pack:"halloween-pack"},16:{pack:"pass-84x10"},28:{pack:"pass-85x7"}}}};
 function seasonStoryKey(seasonKey,which,level){
  const key=`${seasonKey}-${which==="premium"?"premium-":""}${level}`;
  if(seasonKey==="s1")return level===15||level===30?key:"";
@@ -124,7 +130,8 @@ const OBJECTIVE_STATS=["competitiveMatches","competitiveWins","rivalsMatches","r
 const SEASON_SCHEDULE=[
  {number:1,key:"s1",name:"THE BEGINNING",start:"2026-09-17T19:00:00+02:00",end:"2026-10-30T19:00:00+01:00"},
  {number:2,key:"s2",name:"BLUTMOND",start:"2026-10-30T19:00:00+01:00",end:"2026-12-11T19:00:00+01:00"},
- {number:3,key:"s3",name:"SAISON 3",start:"2026-12-11T19:00:00+01:00",end:null}
+ {number:3,key:"s3",name:"WINTERNÄCHTE",start:"2026-12-11T19:00:00+01:00",end:"2027-01-29T19:00:00+01:00"},
+ {number:4,key:"s4",name:"SAISON 4",start:"2027-01-29T19:00:00+01:00",end:null}
 ];
 function seasonInfo(at=new Date()){
  const date=new Date(at),current=[...SEASON_SCHEDULE].reverse().find(s=>date>=new Date(s.start))||SEASON_SCHEDULE[0];
