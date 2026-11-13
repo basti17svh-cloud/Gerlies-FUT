@@ -1,3 +1,4 @@
+import {createSurroundings} from './3d-stadium.mjs?v=21407';
 // Footera V21.382 "Flutlicht-Arena": the floodlit night stadium around the
 // existing pitch and stands. Purely visual and fully deterministic (time in,
 // picture out); it never touches simulation, camera or player motion.
@@ -35,6 +36,10 @@ export function installArenaGrade(THREE,renderer){
 
 // Rounded-rectangle bowl around the lower stands: straight runs parallel to
 // the pitch, quarter circles round the corner terraces (centres ±37, ±57.1).
+// Dark club colours (e.g. #053300) would not glow: lift them towards white.
+function glowColour(hex){const n=parseInt(String(hex).slice(1),16),[r,g,b]=[(n>>16)&255,(n>>8)&255,n&255].map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;if(d)h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360;
+ const l0=(mx+mn)/2,s0=d?d/(1-Math.abs(2*l0-1)):0,l=Math.max(l0,.56),sat=d?Math.max(s0,.75):0,c=(1-Math.abs(2*l-1))*sat,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+ const [a,b2,c2]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return'#'+[a,b2,c2].map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('')}
 const CORNER_X=37,CORNER_Z=57.1,CORNER_STEPS=10;
 export function arenaPerimeter(radius){
  const points=[];let length=0;
@@ -228,18 +233,32 @@ void main(){vec3 d=normalize(vDir);float up=clamp(d.y,0.0,1.0);
  const add=(geometry,material,name)=>{const o=new THREE.Mesh(track(geometry),material);o.name=name;o.frustumCulled=false;group.add(o);return o};
  // Upper tier: the canvas top is the highest row, in the roof's shade.
  const tier=upperTier?add(loftBand(THREE,upperTier.r0,upperTier.y0,upperTier.r1,upperTier.y1,perimeterLength/TIER_REPEATS),basic({map:tierTexture,color:spooky?'#b8a6d8':'#c4ccd2'}),'FooteraArenaUpperTier'):null;
- // V21.406: closed outer facade (seen in the stadium shot before kick-off)
- // with light strips in the seat colour, and the ground around the stadium.
- {const fr=upperTier?upperTier.r1+.02:19.4,fy=upperTier?upperTier.y1:10.6,accent=spooky?'#ff8a3c':look?.seatPrimary||'#7fd6ff';
-  const facadeTexture=tex(256,128,(ctx,w,h)=>{
-   ctx.fillStyle=spooky?'#120d1a':'#141e24';ctx.fillRect(0,0,w,h);
-   ctx.fillStyle=spooky?'#1c1528':'#1d2a31';for(let x=0;x<w;x+=32)ctx.fillRect(x+3,6,26,h-12);
-   ctx.globalAlpha=.85;ctx.fillStyle=accent;for(let x=0;x<w;x+=64)ctx.fillRect(x+30,0,4,h);ctx.fillRect(0,h*.08,w,3);
-   ctx.globalAlpha=1;
+ // V21.406/407: closed outer facade (seen in the stadium shot before kick-off):
+ // fins, glowing bands in the seat colour and the stadium's name, and around
+ // it plaza, ring road, street lights, fans on their way in, trees and parking.
+ {const fr=upperTier?upperTier.r1+.02:19.4,fy=upperTier?upperTier.y1:10.6,accent=spooky?'#ff8a3c':glowColour(look?.seatPrimary||'#7fd6ff'),accent2=spooky?'#7a3cff':look?.seatSecondary||'#e9f6ff';
+  const FACADE_REPEATS=6,label=String(look?.name||'FOOTERA ARENA').toUpperCase();
+  const facadeTexture=tex(weak?1024:2048,128,(ctx,w,h)=>{
+   ctx.fillStyle=spooky?'#120d1a':'#18242b';ctx.fillRect(0,0,w,h);
+   // Glass and steel fins.
+   for(let x=0;x<w;x+=24){ctx.fillStyle=(x/24)%2?'#22313a':'#1d2b33';ctx.fillRect(x+2,14,20,h-26)}
+   // Two glowing bands and soft light along the fins in the club colours.
+   ctx.shadowColor=accent;ctx.shadowBlur=14;ctx.fillStyle=accent;ctx.fillRect(0,6,w,5);ctx.fillRect(0,h-12,w,4);
+   ctx.shadowBlur=0;ctx.globalAlpha=.55;for(let x=0;x<w;x+=48)ctx.fillRect(x+22,14,3,h-26);
+   ctx.globalAlpha=.22;ctx.fillStyle=accent2;for(let x=24;x<w;x+=96)ctx.fillRect(x,14,22,h-26);ctx.globalAlpha=1;
+   // The name, big and lit, twice per tile.
+   let size=58;ctx.font=`italic 900 ${size}px Arial, sans-serif`;while(size>28&&ctx.measureText(label).width>w*.36){size-=2;ctx.font=`italic 900 ${size}px Arial, sans-serif`}
+   ctx.textAlign='center';ctx.textBaseline='middle';
+   for(const x of [w*.25,w*.75]){const tw=ctx.measureText(label).width;ctx.fillStyle='#071016e6';ctx.fillRect(x-tw/2-18,h/2-size*.62,tw+36,size*1.24);
+    ctx.shadowColor=accent;ctx.shadowBlur=16;ctx.fillStyle='#ffffff';ctx.fillText(label,x,h/2+2);ctx.shadowBlur=0}
   },true);
-  add(loftBand(THREE,fr,0,fr,fy,perimeterLength/(TIER_REPEATS*4)),basic({map:facadeTexture,fog:false}),'FooteraStadiumFacade');
+  facadeTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  // The band's u runs counter-clockwise: mirrored so the name reads from outside.
+  facadeTexture.repeat.x=-1;
+  add(loftBand(THREE,fr,0,fr,fy,arenaPerimeter(fr).length/FACADE_REPEATS),basic({map:facadeTexture,fog:false,toneMapped:false,color:'#d8dde0'}),'FooteraStadiumFacade');
   const ground=new THREE.Mesh(track(new THREE.PlaneGeometry(900,900)),track(new THREE.MeshBasicMaterial({color:spooky?'#07050c':'#0b1316'})));
-  ground.rotation.x=-Math.PI/2;ground.position.y=-.24;ground.name='FooteraStadiumGround';group.add(ground)}
+  ground.rotation.x=-Math.PI/2;ground.position.y=-.24;ground.name='FooteraStadiumGround';group.add(ground);
+  info.surroundings=createSurroundings(THREE,{group,track,perimeter:arenaPerimeter,band:(r0,y0,r1,y1,u)=>loftBand(THREE,r0,y0,r1,y1,u),facadeRadius:fr,kits,look,weak,spooky,hash});}
  // Balcony front between the two tiers with a thin lit edge.
  // LED ribbon on the balcony front: the glowing band behind every close-up.
  const RIBBON_REPEATS=10;
@@ -342,13 +361,15 @@ void main(){float cycle=fract(uTime*(0.55+aSeed.x*0.5)+aSeed.y*17.0);
  const size=new THREE.Vector2();
  function update(time=0,camera=null){
   updateShadows();
+  if(info.surroundings?.group)info.surroundings.group.visible=!!camera&&camera.position.y>28;
   ribbonTexture.offset.x=(time*.012)%1;
   flashUniforms.uTime.value=time;flashUniforms.uLevel.value=arenaFlashLevel(time,goalAt);
   if(camera){
    // Point sprites are sized in pixels: metres * (buffer height / 2 tan(fov/2)).
    renderer.getDrawingBufferSize(size);
    const scale=size.y/(2*Math.tan((camera.fov||28)*Math.PI/360));
-   lampUniforms.uScale.value=scale;flashUniforms.uScale.value=scale;
+   // Above the roof (stadium shot) the ring is close: smaller glows, no haze.
+   lampUniforms.uScale.value=scale*Math.max(.3,Math.min(1,1-(camera.position.y-30)/45));flashUniforms.uScale.value=scale;
   }
  }
  return {group,info,update,tier,uniforms:{flash:flashUniforms,lamp:lampUniforms,sky:skyUniforms},

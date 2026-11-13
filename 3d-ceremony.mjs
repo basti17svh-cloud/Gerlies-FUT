@@ -87,8 +87,8 @@ export function ceremonyActor(kind,index,time,{draw=false}={}){
 
 // ---- cameras: calm TV shots, no zoom; one cut in the middle of each scene.
 // V21.406 (Basti: "vor dem Spiel soll man in einer Szene das Stadion sehen"):
-// the stadium shot runs 3.4 s, from high above the roof down into the bowl.
-export const CEREMONY_ARENA_SHOT=3.4;
+// the stadium shot runs 4 s (V21.407, was 3.4), from high above the roof down into the bowl.
+export const CEREMONY_ARENA_SHOT=4;
 export const CEREMONY_CUT=Object.freeze({kickoff:6,fulltime:5});
 const CEREMONY_END=10.4;
 export function ceremonyCamera(kind,time){

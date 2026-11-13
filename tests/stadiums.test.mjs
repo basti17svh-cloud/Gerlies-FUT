@@ -70,3 +70,18 @@ test('own stadium in the club identity; every second match away in the opponent 
  assert.equal(matchStadiumFor(2,null,'x',{}).venue,'home');
  const html=read('index.html');assert.match(html,/data-identity-tab="stadium"/);assert.match(html,/id="identityStadiumName"/);
 });
+
+test('V21.407 outside the stadium: fans on the plaza, street lights, trees and a car park, never inside the bowl',async()=>{
+ const {surroundingsPlan}=await import('../3d-stadium.mjs');
+ for(const weak of [false,true]){
+  const p=surroundingsPlan({facadeRadius:34,weak});
+  assert.ok(p.people.length>=200&&p.lamps.length>=30&&p.trees.length>=40&&p.cars.length>=60,JSON.stringify({people:p.people.length,cars:p.cars.length}));
+  // Everyone stands outside the facade (rounded rectangle, corner centres ±37/±57.1).
+  const outside=(x,z,r)=>{const dx=Math.max(0,Math.abs(x)-37),dz=Math.max(0,Math.abs(z)-57.1);return Math.hypot(dx,dz)>=r};
+  assert.ok(p.people.every(v=>outside(v.x,v.z,34.5)));assert.ok(p.trees.every(t=>outside(t.x,t.z,58)));
+  assert.ok(p.cars.every(c=>c.x>=p.park.x0&&c.x<=p.park.x1));
+ }
+ assert.ok(!/Math\.random|Date\.now/.test(read('3d-stadium.mjs')));
+ // The stadium shot starts behind one end, high enough to show the whole ground.
+ const c=ceremonyCamera('kickoff',0);assert.ok(c.position[2]>200&&c.position[1]>120);
+});

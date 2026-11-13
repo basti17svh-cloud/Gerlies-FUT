@@ -128,6 +128,80 @@ export function createFanWall(THREE,{scene,track=o=>o,weak=false,host='#d8ff3e',
 // From high above the roof, round the bowl and down into the corner.
 export function stadiumIntroCamera(time,duration){
  const u=Math.max(0,Math.min(1,time/duration)),e=u*u*(3-2*u);
- const angle=.42+e*.45,radius=235-e*155,height=125-e*101;
- return{position:[Math.cos(angle)*radius*.62,height,Math.sin(angle)*radius],target:[0,e*5.5,-10+e*2],fov:46-e*8,phase:'arena'};
+ // V21.407 (Basti: "man sieht nur eine Ecke"): starts high behind one end so
+ // the whole stadium and its surroundings fit a portrait phone, holds for a
+ // moment, then swings round and down into the corner.
+ const hold=Math.max(0,Math.min(1,(time/duration-.18)/.82)),f=hold*hold*(3-2*hold);
+ const angle=1.36-f*.49,radius=232-f*152,height=138-f*114;
+ return{position:[Math.cos(angle)*radius*.62,height,Math.sin(angle)*radius],target:[0,f*5.5,-14+f*6],fov:46-f*8,phase:'arena'};
+}
+
+// ---- around the stadium (V21.407, Basti: "Außenansicht mit mehr Leben") ----
+// Plaza, ring road with street lights, fans on their way in, trees and a car
+// park on the main-stand side. Seen in the stadium shot before kick-off; the
+// match cameras never look this far out. Static: no per-frame work.
+export function surroundingsPlan({facadeRadius:fr=34,weak=false,hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}}={}){
+ const CX=37,CZ=57.1;
+ // A point on the rounded rectangle of radius r at fraction t of its length.
+ const at=(r,t)=>{const straightX=2*CZ,straightZ=2*CX,arc=Math.PI/2*r,total=2*straightX+2*straightZ+4*arc;let d=((t%1)+1)%1*total;
+  const segs=[[straightX,(s)=>[CX+r,-CZ+s,1,0]],[arc,(s)=>{const a=s/r;return[CX+Math.cos(a)*r,CZ+Math.sin(a)*r,Math.cos(a),Math.sin(a)]}],[straightZ,(s)=>[CX-s,CZ+r,0,1]],[arc,(s)=>{const a=Math.PI/2+s/r;return[-CX+Math.cos(a)*r,CZ+Math.sin(a)*r,Math.cos(a),Math.sin(a)]}],
+   [straightX,(s)=>[-CX-r,CZ-s,-1,0]],[arc,(s)=>{const a=Math.PI+s/r;return[-CX+Math.cos(a)*r,-CZ+Math.sin(a)*r,Math.cos(a),Math.sin(a)]}],[straightZ,(s)=>[-CX+s,-CZ-r,0,-1]],[arc,(s)=>{const a=Math.PI*1.5+s/r;return[CX+Math.cos(a)*r,-CZ+Math.sin(a)*r,Math.cos(a),Math.sin(a)]}]];
+  for(const [len,f] of segs){if(d<=len)return f(d);d-=len}return segs[0][1](0)};
+ const plaza=[fr,fr+24],road=[fr+24,fr+33];
+ // Fans: denser towards the four entrances in the middle of each stand.
+ const people=[],peopleCount=weak?240:700,entrances=[0.115,0.385,0.615,0.885];
+ for(let i=0;i<peopleCount;i++){
+  const near=hash(i*7+1)<.6,t=near?entrances[i%4]+(hash(i*7+2)-.5)*(hash(i*7+3)*.09):hash(i*7+4),r=plaza[0]+1.2+Math.pow(hash(i*7+5),near?1.6:1)*(plaza[1]-plaza[0]-2.4);
+  const [x,z,nx,nz]=at(r,t);people.push({x,z,heading:Math.atan2(-nx,-nz)+(hash(i*7+6)-.5)*1.2,team:hash(i*7+8)<.48?'home':hash(i*7+8)<.86?'away':'neutral',size:.9+hash(i*7+9)*.25,index:i});
+ }
+ const lamps=[];{const n=Math.round((2*114+2*74+2*Math.PI*(road[0]+.5))/16);for(let i=0;i<n;i++){const [x,z]=at(road[0]+.6,i/n);lamps.push([x,z])}}
+ // Car park on the main-stand side (+x), trees everywhere else around.
+ const park={x0:CX+road[1]+6,x1:CX+road[1]+6+(weak?28:46),z0:-66,z1:66};
+ const cars=[];for(let row=0,x=park.x0+3;x<park.x1-2;row++,x+=row%2?6.2:9.8)for(let z=park.z0+2;z<park.z1-2;z+=2.7){const k=Math.round(z*7.3)*31+row*977;if(hash(k)<.78)cars.push({x,z,yaw:(row%2?0:Math.PI)+(hash(k+1)-.5)*.08,colour:Math.floor(hash(k+2)*8)})}
+ const trees=[];for(let i=0,tries=0;trees.length<(weak?45:110)&&tries<900;tries++,i++){const [x,z]=at(road[1]+5+hash(i*5+1)*42,hash(i*5+2));if(x>park.x0-6&&x<park.x1+6&&z>park.z0-6&&z<park.z1+6)continue;trees.push({x,z,s:.8+hash(i*5+3)*.6})}
+ return{plaza,road,people,lamps,cars,trees,park};
+}
+export function createSurroundings(THREE,{group,track=o=>o,band,facadeRadius,kits=null,weak=false,spooky=false,hash}={}){
+ const plan=surroundingsPlan({facadeRadius,weak,hash}),out=new THREE.Group();out.name='FooteraStadiumSurroundings';group.add(out);
+ const tex=(w,h,draw)=>{const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=track(new THREE.CanvasTexture(c));t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t};
+ const mesh=(g,m,name)=>{const o=new THREE.Mesh(track(g),track(m));o.name=name;out.add(o);return o};
+ // Plaza: warm-lit paving, brightest along the facade.
+ const paving=tex(256,64,(ctx,w,h)=>{const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#8a8f8c');g.addColorStop(1,'#3e4648');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#00000030';ctx.lineWidth=1;for(let x=0;x<w;x+=16){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=8){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}});
+ mesh(band(plan.plaza[0],-.18,plan.plaza[1],-.18,24),new THREE.MeshBasicMaterial({side:THREE.DoubleSide,map:paving,color:spooky?'#9a8fb0':'#c9c4b8'}),'FooteraStadiumPlaza');
+ const asphalt=tex(256,32,(ctx,w,h)=>{ctx.fillStyle='#22282b';ctx.fillRect(0,0,w,h);ctx.fillStyle='#e6e2c8';for(let x=0;x<w;x+=64)ctx.fillRect(x,h/2-1,34,2);ctx.fillStyle='#bfc4c4';ctx.fillRect(0,1,w,1);ctx.fillRect(0,h-2,w,1)});
+ mesh(band(plan.road[0],-.19,plan.road[1],-.19,30),new THREE.MeshBasicMaterial({side:THREE.DoubleSide,map:asphalt}),'FooteraStadiumRoad');
+ mesh(band(plan.road[1],-.2,plan.road[1]+60,-.2,40),new THREE.MeshBasicMaterial({side:THREE.DoubleSide,color:spooky?'#100c16':'#14241a'}),'FooteraStadiumLawn');
+ // Car park surface with bay lines.
+ {const p=plan.park,w=p.x1-p.x0,d=p.z1-p.z0,lines=tex(128,256,(ctx,cw,ch)=>{ctx.fillStyle='#262c2f';ctx.fillRect(0,0,cw,ch);ctx.fillStyle='#c9cdc8';for(let y=0;y<ch;y+=10)ctx.fillRect(0,y,cw*.3,1)});
+  lines.repeat.set(Math.max(1,Math.round(w/16)),Math.round(d/26));const g=new THREE.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);g.translate((p.x0+p.x1)/2,-.17,0);mesh(g,new THREE.MeshBasicMaterial({map:lines}),'FooteraStadiumCarPark')}
+ const dummy=new THREE.Object3D(),colour=new THREE.Color();
+ // Fans walking in: torso + head, in both clubs' colours.
+ const home=kits?.home?.shirt||'#d8ff3e',away=kits?.away?.shirt||'#e9ecf3',neutral=['#2b3540','#d9d4c8','#55606a','#8f7a66'];
+ const bodies=new THREE.InstancedMesh(track(new THREE.CylinderGeometry(.24,.2,1.25,5)),track(new THREE.MeshLambertMaterial({color:'#ffffff'})),plan.people.length);
+ const heads=new THREE.InstancedMesh(track(new THREE.SphereGeometry(.15,5,4)),track(new THREE.MeshLambertMaterial({color:'#e2b48c'})),plan.people.length);
+ plan.people.forEach((p,i)=>{dummy.position.set(p.x,.45+.62*p.size,p.z);dummy.rotation.set(0,p.heading,0);dummy.scale.setScalar(p.size*1.15);dummy.updateMatrix();bodies.setMatrixAt(i,dummy.matrix);
+  bodies.setColorAt(i,colour.set(p.team==='home'?home:p.team==='away'?away:neutral[p.index%4]));
+  dummy.position.y=.45+1.4*p.size;dummy.updateMatrix();heads.setMatrixAt(i,dummy.matrix)});
+ bodies.name='FooteraStadiumVisitors';out.add(bodies,heads);track(bodies);track(heads);
+ // Street lights: poles plus warm glow sprites.
+ const poles=new THREE.InstancedMesh(track(new THREE.BoxGeometry(.25,7,.25)),track(new THREE.MeshLambertMaterial({color:'#3b464c'})),plan.lamps.length);
+ plan.lamps.forEach(([x,z],i)=>{dummy.position.set(x,3.3,z);dummy.rotation.set(0,0,0);dummy.scale.setScalar(1);dummy.updateMatrix();poles.setMatrixAt(i,dummy.matrix)});out.add(poles);track(poles);
+ const glow=tex(64,64,(ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(255,246,214,1)');g.addColorStop(.25,'rgba(255,214,140,.55)');g.addColorStop(1,'rgba(255,190,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)});
+ const lampPos=[];plan.lamps.forEach(([x,z])=>lampPos.push(x,6.9,z));
+ const lg=track(new THREE.BufferGeometry());lg.setAttribute('position',new THREE.Float32BufferAttribute(lampPos,3));
+ const lights=new THREE.Points(lg,track(new THREE.PointsMaterial({map:glow,size:7,sizeAttenuation:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,fog:false})));lights.name='FooteraStadiumStreetLights';out.add(lights);
+ // Warm pools of light on the road under each lamp.
+ const pool=new THREE.InstancedMesh(track(new THREE.CircleGeometry(4.2,12)),track(new THREE.MeshBasicMaterial({map:glow,transparent:true,opacity:.32,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false})),plan.lamps.length);
+ plan.lamps.forEach(([x,z],i)=>{dummy.position.set(x,-.12,z);dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.setScalar(1);dummy.updateMatrix();pool.setMatrixAt(i,dummy.matrix)});out.add(pool);track(pool);
+ // Trees and cars.
+ const trees=new THREE.InstancedMesh(track(new THREE.ConeGeometry(2.4,7.5,6)),track(new THREE.MeshLambertMaterial({color:'#ffffff'})),plan.trees.length);
+ plan.trees.forEach((t,i)=>{dummy.position.set(t.x,3.6*t.s,t.z);dummy.rotation.set(0,0,0);dummy.scale.setScalar(t.s);dummy.updateMatrix();trees.setMatrixAt(i,dummy.matrix);trees.setColorAt(i,colour.set(['#1f3a26','#24452b','#1a3322'][i%3]))});out.add(trees);track(trees);
+ const carColours=['#d7dadb','#1d2226','#8b1d22','#2a4a7a','#9aa3a8','#3c3f42','#e6e2d6','#24563a'];
+ const cars=new THREE.InstancedMesh(track(new THREE.BoxGeometry(1.8,1.35,4.3)),track(new THREE.MeshLambertMaterial({color:'#ffffff'})),Math.max(1,plan.cars.length));cars.count=plan.cars.length;
+ plan.cars.forEach((c,i)=>{dummy.position.set(c.x,.5,c.z);dummy.rotation.set(0,c.yaw+Math.PI/2,0);dummy.scale.setScalar(1);dummy.updateMatrix();cars.setMatrixAt(i,dummy.matrix);cars.setColorAt(i,colour.set(carColours[c.colour]))});out.add(cars);track(cars);
+ // Only drawn when the camera is high above the stands (the stadium shot):
+ // match cameras never see this far out, so they pay no draw calls for it.
+ out.visible=false;
+ return{group:out,people:plan.people.length,lamps:plan.lamps.length,trees:plan.trees.length,cars:plan.cars.length};
 }

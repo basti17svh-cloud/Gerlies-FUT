@@ -8312,7 +8312,7 @@ function startMatch(mode,opponent=null,kitSelection=null){
  if(opponentProfile?.squad&&typeof opponentSquadChemistry==="function")opponentProfile={...opponentProfile,chemScores:opponentSquadChemistry(opponentProfile.squad.map(opponentMatchBase),opponentProfile.formation,opponentProfile.items||opponentProfile.squad)};
  const kickoffOptions=matchKitOptions(opponentProfile||{name}),selectedKits=kitSelection&&["home","away"].includes(kitSelection.home)&&["home","away"].includes(kitSelection.away)?kitSelection:createDefaultMatchKitSelection(opponentProfile||{name});
  const kickoffKits={home:{...kickoffOptions.home[selectedKits.home]},away:{...kickoffOptions.away[selectedKits.away]}};
- const matchVenue=matchStadiumFor(state.stats?.matches||0,opponentProfile,name,kickoffKits.away);
+ const matchVenue=typeof matchStadiumFor==="function"?matchStadiumFor(state.stats?.matches||0,opponentProfile,name,kickoffKits.away):{venue:"home",stadium:null};
  const kickoffTeamIdentity={home:typeof clubIdentitySnapshot==="function"?clubIdentitySnapshot():null,away:opponentProfile?.clubIdentity?(typeof cleanClubIdentity==="function"?cleanClubIdentity(opponentProfile.clubIdentity):opponentProfile.clubIdentity):null};
 
  if(typeof cancelMatch3D==="function")cancelMatch3D();
