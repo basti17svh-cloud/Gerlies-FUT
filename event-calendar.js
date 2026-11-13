@@ -45,6 +45,18 @@ function footeraEventCalendar(at=Date.now(),{days=EVENT_CALENDAR_DAYS,limit=EVEN
   add({at:start,kind:"sbc",theme:"halloween",rank:1,title:def.name,sub:"Sonntags-SBC · garantierter HALLOWEEN-Spieler",short:def.name,go:"sbcView",key:"sbc-start:"+def.id});
   if(now>=start)add({at:end,kind:"sbc",theme:"halloween",rank:6,title:`${def.name} endet`,sub:"Sonntags-SBC",short:`${def.name} endet`,go:"sbcView",key:"sbc-end:"+def.id});
  }
+ // Adventskalender (V21.406): start on 1.12. and the last door on Christmas Eve. No player name (no spoilers).
+ if(typeof FooteraAdvent!=="undefined"){
+  const y=FooteraAdvent.YEAR;
+  add({at:eventCalendarMs(`${y}-12-01T00:00:00+01:00`),kind:"event",theme:"winter",rank:0,title:"Adventskalender startet",sub:"24 Türchen · jeden Tag ein Geschenk",short:"Adventskalender",go:"homeView",key:"advent-start:"+y});
+  add({at:eventCalendarMs(`${y}-12-24T00:00:00+01:00`),kind:"event",theme:"winter",rank:0,title:"Heiligabend-Türchen",sub:"Hinter Türchen 24 wartet ein Weihnachtsspieler",short:"Heiligabend-Türchen",go:"homeView",key:"advent-xmas:"+y});
+ }
+ // Winternächte: Silvester-SBC from midnight into the new year.
+ for(const def of typeof WINTER_SBCS!=="undefined"?WINTER_SBCS:[]){
+  const start=eventCalendarMs(def.releaseAt),end=eventCalendarMs(def.activeUntilAt);
+  add({at:start,kind:"sbc",theme:"winter",rank:1,title:def.name,sub:"Silvester-SBC · ab 0:00 Uhr",short:def.name,go:"sbcView",key:"sbc-start:"+def.id});
+  if(now>=start)add({at:end,kind:"sbc",theme:"winter",rank:6,title:`${def.name} endet`,sub:"Silvester-SBC",short:`${def.name} endet`,go:"sbcView",key:"sbc-end:"+def.id});
+ }
  // BLACK FRIDAY: pack deals of the day (no player names in them) and the coin-shop discount.
  for(const def of typeof BLACKFRIDAY_DEAL_SBCS!=="undefined"?BLACKFRIDAY_DEAL_SBCS:[]){
   const start=eventCalendarMs(def.releaseAt),end=eventCalendarMs(def.activeUntilAt);
