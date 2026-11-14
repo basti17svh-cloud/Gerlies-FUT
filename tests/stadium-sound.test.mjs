@@ -123,10 +123,10 @@ test('FooteraSound loads without Web Audio and every call is a safe no-op',()=>{
 
 test('release wiring: script order, scene import, cache, settings and pack hooks',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),scene=read('3d-highlights-scene.mjs'),app=read('footera-app.js'),css=read('3d-highlights.css');
- assert.ok(html.indexOf('footera-sound.js?v=21412')>0&&html.indexOf('footera-sound.js?v=21412')<html.indexOf('3d-highlights.js?v='));
+ assert.ok(html.indexOf('footera-sound.js?v=21424')>0&&html.indexOf('footera-sound.js?v=21424')<html.indexOf('3d-highlights.js?v='));
  assert.match(html,/<select data-sound-mode[^>]*><option value="on">An<\/option><option value="off">Aus<\/option>/);
  assert.match(scene,/from '\.\/3d-stadium-sound\.mjs\?v=21406'/);
- for(const f of ['./3d-stadium-sound.mjs?v=21406','./footera-sound.js?v=21412'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-stadium-sound.mjs?v=21406','./footera-sound.js?v=21424'])assert.ok(sw.includes(`"${f}"`),f);
  assert.match(scene,/stadiumSound\.update\(displayTime,world\.soundProbe\?\.\(\)\)/);
  assert.match(scene,/stadiumSound\.replay\(true\)/);
  assert.match(scene,/done=true;try\{stadiumSound\.dispose\(\)\}/);
