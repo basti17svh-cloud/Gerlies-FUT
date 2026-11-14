@@ -3,7 +3,7 @@
  "use strict";
  const DEFAULT_TACTICS=Object.freeze({width:50,depth:50,pressing:50,buildUp:"balanced",attackFocus:"balanced",dribbling:50,crossing:50,longShots:50});
  const ASSIGNMENTS=Object.freeze([
-  {key:"captain",label:"Kapitän",hint:"Führt die Mannschaft auf dem Platz."},
+  {key:"captain",label:"Kapitän",hint:"Trägt die Binde und führt das Team beim Einlaufen an."},
   {key:"cornerLeft",label:"Ecke links",hint:"Schlägt Eckbälle von der linken Seite."},
   {key:"cornerRight",label:"Ecke rechts",hint:"Schlägt Eckbälle von der rechten Seite."},
   {key:"freeKicks",label:"Freistöße",hint:"Übernimmt direkte Freistöße."},
@@ -54,6 +54,15 @@
   if(a)a.textContent=`${mentalityLabel()} · Breite ${t.width} · Tiefe ${t.depth}`;
   if(r)r.textContent=`${rows.length}/11 Spieler · Rollen & Fokus`;
   if(x){const captain=rows.find(row=>String(row.item.uid)===String(assign.captain));x.textContent=captain?`Kapitän: ${captain.base.name}`:"Kapitän · Ecken · Standards"}
+  markCaptain(rows,assign.captain);
+ }
+ // V21.428 Kapitänsbinde: a small C on the captain's card in the line-up.
+ function markCaptain(rows=starterRows(),uid=normalizeAssignments(undefined,{auto:true,persist:false}).captain){
+  const pitch=document.getElementById("pitch");if(!pitch)return;
+  pitch.querySelectorAll(".captain-badge").forEach(el=>el.remove());
+  const row=rows.find(r=>String(r.item.uid)===String(uid||""));if(!row)return;
+  const slot=pitch.querySelector(`.slot[data-slot="${row.index}"]`);if(!slot)return;
+  slot.insertAdjacentHTML("beforeend",`<span class="captain-badge" title="Kapitän: ${h(row.base.name)}" aria-label="Kapitän">C</span>`);
  }
  function icon(type){
   if(type==="tactics")return '<svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M10 12h10M4 12h2M4 18h8M16 18h4"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg>';
