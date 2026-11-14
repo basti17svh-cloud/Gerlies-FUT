@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
-import {FOOTERA_CAPTAIN_BAND,footeraCaptainBandColors} from '../3d-player-human.mjs';
+import {FOOTERA_CAPTAIN_BAND,footeraCaptainBandColors,paintFooteraHumanKit} from '../3d-player-human.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
@@ -31,15 +31,25 @@ function armProfile(name){
  return out;
 }
 
-test('the band sits on the bare upper arm, below the sleeve and just outside the skin',()=>{
- const B=FOOTERA_CAPTAIN_BAND,at=B.along*B.armLength,top=at-B.height/2;
- const sleeve=Math.max(...[...armProfile('FooteraShirt').keys()]);
- assert.ok(top>sleeve,`band top ${top.toFixed(3)} m must start below the sleeve hem ${sleeve.toFixed(3)} m`);
- const skin=armProfile('FooteraBody');
- for(const [k,r] of skin)if(Math.abs(k-at)<=B.height/2+.01){
-  assert.ok(B.radius>r,`band radius ${B.radius} over the arm (${r.toFixed(3)} m at ${k})`);
-  assert.ok(B.radius-r<.015,`band hugs the arm (gap ${(B.radius-r).toFixed(3)} m at ${k})`);
- }
+test('the band is woven into the left sleeve: inside the sleeve and wrapping all of it',()=>{
+ // Basti 2026-11-14: a separate ring "hängt am Arm" -> the band is part of the shirt now.
+ const B=FOOTERA_CAPTAIN_BAND,sleeve=armProfile('FooteraShirt'),hem=Math.max(...sleeve.keys());
+ assert.ok(B.at-B.half>0&&B.at+B.half<=hem+.01,`band ${(B.at-B.half).toFixed(3)}-${(B.at+B.half).toFixed(3)} m stays on the sleeve (hem ${hem})`);
+ for(const [k,r] of sleeve)if(Math.abs(k-B.at)<=B.half)assert.ok(B.across>=r,`band reaches round the sleeve (${r.toFixed(3)} m at ${k})`);
+ assert.ok(B.shoulder[0]>0,'+x of the authored body = the player\'s left arm');
+});
+
+test('only the captain\'s shirt gets the band painted',()=>{
+ const paint=captain=>{
+  const fills=[];let fillStyle='';
+  const ctx=new Proxy({},{get:(t,k)=>k==='fillStyle'?fillStyle:k==='measureText'?()=>({width:10}):k in t?t[k]:k==='fill'?()=>fills.push(fillStyle):()=>{},
+   set:(t,k,v)=>{if(k==='fillStyle')fillStyle=v;else t[k]=v;return true}});
+  globalThis.FooteraKitArt??={ids:[]};
+  paintFooteraHumanKit(ctx,512,{shirt:'#b0172f',shirtSecondary:'#ffffff',pattern:'solid',shorts:'#ffffff',socks:'#b0172f'},{captain,shade:false,knit:false});
+  return fills;
+ };
+ assert.equal(paint(true).filter(c=>c==='#f2c230').length,2,'front and back half of the sleeve');
+ assert.equal(paint(false).filter(c=>c==='#f2c230').length,0);
 });
 
 test('classic yellow band, a dark one on yellow shirts so it always reads',()=>{
@@ -49,10 +59,10 @@ test('classic yellow band, a dark one on yellow shirts so it always reads',()=>{
  assert.equal(footeraCaptainBandColors('#fdb913').band,'#16191f');
 });
 
-test('the band hangs on upperarm_l (the left arm) and is disposed with the player',()=>{
+test('the band reaches the 3D kit of the right actors',()=>{
  const human=read('3d-player-human.mjs');
- assert.match(human,/getObjectByName\?\.\('upperarm_l'\)/);
- assert.match(human,/if\(opts\.captain\)\{const band=addFooteraCaptainBand\(THREE,model,kit\.shirt,opts\.detail\);if\(band\)owned\.push\(\.\.\.band\)\}/);
+ assert.match(human,/if\(opts\.captain\)paintFooteraCaptainBand\(ctx,size,shirt,bands,metres\);/);
+ assert.doesNotMatch(human,/CylinderGeometry/,'no separate ring hanging off the arm');
  assert.match(read('3d-player-prototype.mjs'),/captain:look\.captain===true\}\)/);
  const scene=read('3d-highlights-scene.mjs');
  assert.match(scene,/captain:Array\.isArray\(event\.captainActors\)&&event\.captainActors\.includes\(i\)/);

@@ -186,6 +186,7 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   ctx.fillStyle=ink;ctx.fillText(word,0,0);ctx.restore();
  }
  ctx.restore();
+ if(opts.captain)paintFooteraCaptainBand(ctx,size,shirt,bands,metres);
  // Shorts with side piping; the small number sits on the front left leg.
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=shorts;ctx.fillRect(0,size*bands.shorts[0]-2,size,size*(bands.shorts[1]-bands.shorts[0])+4);
  if(metres.shorts)for(const half of ['front','back']){
@@ -326,46 +327,42 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  }
  // HD preview: richer surfaces on the close-up heroes only.
  if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
- if(opts.captain){const band=addFooteraCaptainBand(THREE,model,kit.shirt,opts.detail);if(band)owned.push(...band)}
  return{owned,kitMap,canvas};
 }
 
 // V21.428 Kapitänsbinde: the captain from the squad's "Aufgaben" wears a band
-// round the upper LEFT arm, just below the sleeve. A short open tube parented
-// to upperarm_l, so it follows every mocap pose without touching the skin.
-// Sizes are in metres of the authored body (upper arm .266 m long).
-export const FOOTERA_CAPTAIN_BAND=Object.freeze({along:.65,radius:.062,height:.042,armLength:.266});
+// round the LEFT sleeve. Basti: a separate ring hung off the arm, so the band
+// is woven into the shirt itself (kit texture), and it moves with the cloth.
+// The kit is projected front/back, so the band is painted on both halves
+// (mirrored on the back) and wraps the sleeve. Bind pose, metres: upper arm
+// from the shoulder (.214,1.443) down .665/-.747; the sleeve ends ~.13 m down.
+export const FOOTERA_CAPTAIN_BAND=Object.freeze({shoulder:[.214,1.443],dir:[.665,-.747],at:.084,half:.03,across:.11,inner:.236});
 export function footeraCaptainBandColors(shirt='#1b4c52'){
  // Classic yellow band; on yellow or gold shirts a dark one, so it always reads.
  const [r,g,b]=hexRGB(shirt),near=Math.hypot(r-.95,g-.76,b-.19)<.42;
  return near?{band:'#16191f',ink:'#f2c230'}:{band:'#f2c230',ink:'#16191f'};
 }
-export function paintFooteraCaptainBand(ctx,w,h,shirt){
- const {band,ink}=footeraCaptainBandColors(shirt);
- ctx.fillStyle=band;ctx.fillRect(0,0,w,h);
- ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(0,0,w,h*.1);ctx.fillRect(0,h*.9,w,h*.1);
- ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(0,h*.12,w,h*.06);
- // One C on each side of the arm, so it reads from the camera wherever it is.
- ctx.fillStyle=ink;ctx.font=`900 ${Math.round(h*.8)}px "Arial Narrow","Roboto Condensed",Arial,sans-serif`;
- ctx.textAlign='center';ctx.textBaseline='middle';
- // The strip wraps a 39 cm round band 4 cm high: squeeze the letter by that
- // ratio and mirror it, since the tube's u runs clockwise seen from outside.
- const B=FOOTERA_CAPTAIN_BAND,k=(B.height/h)/(2*Math.PI*B.radius/w);
- for(const u of [.25,.75]){ctx.save();ctx.translate(w*u,h*.54);ctx.scale(-k,1);ctx.fillText('C',0,0);ctx.restore()}
-}
-function addFooteraCaptainBand(THREE,model,shirt,detail){
- const arm=model.getObjectByName?.('upperarm_l'),elbow=arm?.getObjectByName?.('lowerarm_l');
- if(!arm||!elbow||typeof document==='undefined')return null;
- const B=FOOTERA_CAPTAIN_BAND,axis=elbow.position.clone(),length=axis.length();if(!(length>0))return null;
- const unit=length/B.armLength,canvas=document.createElement('canvas');canvas.width=detail?256:128;canvas.height=detail?64:32;
- const ctx=canvas.getContext('2d');if(!ctx)return null;
- paintFooteraCaptainBand(ctx,canvas.width,canvas.height,shirt);
- const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=false;texture.name='FooteraCaptainBand';
- const geometry=new THREE.CylinderGeometry(B.radius*unit,B.radius*unit*.93,B.height*unit,detail?24:14,1,true);
- const material=new THREE.MeshStandardMaterial({map:texture,roughness:.74,side:THREE.DoubleSide});
- const mesh=new THREE.Mesh(geometry,material);mesh.name='FooteraCaptainBand';mesh.castShadow=true;mesh.frustumCulled=false;
- mesh.position.copy(axis).multiplyScalar(B.along);
- mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis.normalize());
- arm.add(mesh);
- return[{geometry,material,texture}];
+function paintFooteraCaptainBand(ctx,size,shirt,bands,metres){
+ const B=FOOTERA_CAPTAIN_BAND,{band,ink}=footeraCaptainBandColors(shirt);
+ const [sx,sy]=B.shoulder,[dx,dy]=B.dir,px=-dy,py=dx,cx=sx+dx*B.at,cy=sy+dy*B.at;
+ const corner=(a,c)=>[cx+dx*a*B.half+px*c*B.across,cy+dy*a*B.half+py*c*B.across];
+ for(const half of ['front','back']){
+  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,half);
+  if(half==='back')ctx.scale(-1,1);
+  // Never onto the chest or the back next to the armpit.
+  ctx.beginPath();ctx.rect(B.inner,.9,.62-B.inner,.7);ctx.clip();
+  ctx.beginPath();[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,c],i)=>{const [x,y]=corner(a,c);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();
+  ctx.fillStyle=band;ctx.fill();
+  // Woven edges.
+  ctx.strokeStyle='rgba(0,0,0,.32)';ctx.lineWidth=.004;
+  for(const a of [-.92,.92]){const [x0,y0]=corner(a,-1),[x1,y1]=corner(a,1);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke()}
+  if(half==='front'){
+   // The C on the outer face, upright when the arm hangs.
+   ctx.save();ctx.translate(cx+px*.03,cy+py*.03);ctx.rotate(Math.atan2(dx,-dy));
+   const h=B.half*1.55;ctx.scale(h/100,-h/100);
+   ctx.font='900 132px "Arial Narrow","Roboto Condensed",Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle=ink;ctx.fillText('C',0,6);ctx.restore();
+  }
+  ctx.restore();
+ }
 }
