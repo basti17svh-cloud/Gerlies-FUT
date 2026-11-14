@@ -2747,6 +2747,9 @@ export function play(event,signal){
   if(replayEligible)layer.append(wipe,replayTag);
   const goalArrival=shotArrival('goal',event.sequence,event.finish,event.shotPlacement||null)+goalNetDelay(event.shotPlacement||null);
   host.append(layer);
+  // V21.424 Tor-Clips: a goal of your own team is recorded as a vertical video (presentation only).
+  let goalClip=null;
+  if(event.type==='goal'&&!ceremony){try{goalClip=globalThis.FooteraGoalClip?.begin?.(event,canvas,layer)||null}catch(_){goalClip=null}}
   let soundTime=0;
   const makeSceneSound=startAt=>createSceneSound(event,{startAt,goalArrival,impactTime:event.type==='goal'||event.type==='ball_won'||ceremony?undefined:shotArrival(event.type,event.sequence,event.finish,event.shotPlacement||null),
    ceremonyCut:ceremony?CEREMONY_CUT[ceremony]:null,weather:weatherNow,log:Array.isArray(globalThis.__FOOTERA_SOUND_LOG)?globalThis.__FOOTERA_SOUND_LOG:null});
@@ -2754,7 +2757,7 @@ export function play(event,signal){
   const paintSound=()=>{if(!soundBtn)return;const on=soundApi.enabled();soundBtn.textContent=on?'🔊':'🔇';soundBtn.setAttribute('aria-label',on?'Stadion-Sound ausschalten':'Stadion-Sound einschalten');soundBtn.setAttribute('aria-pressed',String(on))};paintSound();
   soundBtn?.addEventListener('click',e=>{e.stopPropagation();const on=soundApi.setEnabled(!soundApi.enabled());stadiumSound.dispose();stadiumSound=on?makeSceneSound(soundTime):createSceneSound(event,{sound:null});if(on&&replayState?.on)stadiumSound.replay(true);paintSound()});
   function finish(result){
-   if(done)return;done=true;try{stadiumSound.dispose()}catch(_){}cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
+   if(done)return;done=true;try{goalClip?.end(result)}catch(_){}try{stadiumSound.dispose()}catch(_){}cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
    const focused=layer.contains(document.activeElement);stageFrame?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
@@ -2810,7 +2813,7 @@ export function play(event,signal){
     if(r.elapsed>=WIPE){
      if(!r.on){r.on=true;layer.classList.add('fh3d-replay-on');stadiumSound.replay(true)}
      const time=Math.min(replayRange.to,replayRange.from+(r.elapsed-WIPE)*REPLAY_RATE);
-     if(!r.out||r.elapsed-r.out<WIPE){world.update(time,{replay:true});layer.dataset.playbackTime=time.toFixed(3);stadiumSound.update(time,world.soundProbe?.())}
+     if(!r.out||r.elapsed-r.out<WIPE){world.update(time,{replay:true});if(goalClip)try{goalClip.frame(true,true)}catch(_){}layer.dataset.playbackTime=time.toFixed(3);stadiumSound.update(time,world.soundProbe?.())}
      if(time>=replayRange.to&&!r.out){r.out=r.elapsed;layer.classList.remove('fh3d-wipe-in');void wipe.offsetWidth;layer.classList.add('fh3d-wipe-out')}
      if(r.out&&r.elapsed-r.out>=WIPE){finish('played');return}
     }
@@ -2832,6 +2835,7 @@ export function play(event,signal){
      if(frames===40&&slowFrames>14){quality='adaptive';world.reduceQuality()}
      const displayTime=sample.time;
      world.update(displayTime);
+     if(goalClip)try{goalClip.frame(displayTime>=goalArrival,false)}catch(_){}
      soundTime=displayTime;stadiumSound.update(displayTime,world.soundProbe?.());
      if(!layer.classList.contains('fh3d-ready')){
       playback.presented(performance.now());
