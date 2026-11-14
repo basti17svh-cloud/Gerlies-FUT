@@ -182,6 +182,19 @@
     "scheduled": true
   },
   {
+    "id": "2026-11-18-1900-totw-10",
+    "postAt": "2026-11-18T19:00:00+01:00",
+    "title": "TOTW 10",
+    "kind": "totw",
+    "plan": {
+      "instagram": "reel",
+      "story": true,
+      "tiktok": "video",
+      "x": true
+    },
+    "scheduled": false
+  },
+  {
     "id": "2026-11-20-1900-black-friday-teaser",
     "postAt": "2026-11-20T19:00:00+01:00",
     "title": "Teaser: BLACK FRIDAY",

@@ -1,0 +1,42 @@
+{
+  "kind": "totw",
+  "theme": "totw",
+  "postAt": "2026-11-18T19:00:00+01:00",
+  "title": "TOTW 10",
+  "keys": [
+    "totw:1795024800000"
+  ],
+  "status": "entwurf",
+  "instagram": {
+    "caption": "🚨 TOTW 10 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇳🇴 93 Erling Haaland\n🇪🇸 93 Lamine Yamal\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Harry Kane\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Jude Bellingham\n🇲🇦 91 Achraf Hakimi\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "type": "reel"
+  },
+  "story": true,
+  "tiktok": {
+    "title": "TOTW 10 ist da 🚨",
+    "caption": "🚨 TOTW 10 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇳🇴 93 Erling Haaland\n🇪🇸 93 Lamine Yamal\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Harry Kane\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Jude Bellingham\n🇲🇦 91 Achraf Hakimi\n\nWen ziehst du? 👇\nFOOTERA – BUILD YOUR ERA\n#footera #buildyourera #teamderwoche #fußball #mobilegame",
+    "format": "video"
+  },
+  "x": {
+    "priority": 1,
+    "text": "🚨 TOTW 10 IST DA!\n\nAb 19 Uhr in den Packs ⚫🔴\n\n🇳🇴 93 Erling Haaland\n🇪🇸 93 Lamine Yamal\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Harry Kane\n🏴󠁧󠁢󠁥󠁮󠁧󠁿 92 Jude Bellingham\n🇲🇦 91 Achraf Hakimi\n\n👉 tinyurl.com/footera-play"
+  },
+  "plan": {
+    "instagram": "reel",
+    "story": true,
+    "tiktok": "video",
+    "x": true
+  },
+  "id": "2026-11-18-1900-totw-10",
+  "media": {
+    "feed": [
+      "feed-1.jpg",
+      "feed-2.jpg"
+    ],
+    "story": [
+      "story-1.jpg",
+      "story-2.jpg"
+    ],
+    "reel": "reel.mp4"
+  }
+}
