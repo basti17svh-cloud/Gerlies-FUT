@@ -1,6 +1,6 @@
 """TOTW 10 = Best of TOTW (jubilee, Basti 2026-11-13): the strongest cards of TOTW 1-9 upgraded, built like a normal week."""
 import json,pathlib,re
-V='21.423';VN=V.replace('.','')
+V='21.425';VN=V.replace('.','')
 week=json.loads(pathlib.Path('scripts/totw10-week.json').read_text())
 assert week['sourceStatus']=='admin-approved' and len(week['players'])==18
 app=pathlib.Path('footera-app.js');s=app.read_text()
@@ -17,7 +17,7 @@ s=re.sub(r'footera-app\.js\?v=\d+','footera-app.js?v='+VN,s);p.write_text(s)
 p=pathlib.Path('manifest.webmanifest');s=p.read_text()
 s=re.sub(r'Footera V\d+\.\d+','Footera V'+V,s);s=re.sub(r'index\.html\?v=\d+\.\d+','index.html?v='+V,s);p.write_text(s)
 p=pathlib.Path('service-worker.js');s=p.read_text()
-s=re.sub(r'const CACHE="[^"]+";','const CACHE="footera-v21-423-best-of-totw";',s)
+s=re.sub(r'const CACHE="[^"]+";','const CACHE="footera-v21-425-best-of-totw";',s)
 s=re.sub(r'footera-app\.js\?v=\d+','footera-app.js?v='+VN,s)
 portraits=','.join(json.dumps('./assets/footera/totw/10/'+p['eaId']+'.png') for p in week['players'])
 if './assets/footera/totw/10/' not in s:s=s.replace('const SHELL=[','const SHELL=['+portraits+',',1)
