@@ -2757,7 +2757,7 @@ export function play(event,signal){
   const paintSound=()=>{if(!soundBtn)return;const on=soundApi.enabled();soundBtn.textContent=on?'🔊':'🔇';soundBtn.setAttribute('aria-label',on?'Stadion-Sound ausschalten':'Stadion-Sound einschalten');soundBtn.setAttribute('aria-pressed',String(on))};paintSound();
   soundBtn?.addEventListener('click',e=>{e.stopPropagation();const on=soundApi.setEnabled(!soundApi.enabled());stadiumSound.dispose();stadiumSound=on?makeSceneSound(soundTime):createSceneSound(event,{sound:null});if(on&&replayState?.on)stadiumSound.replay(true);paintSound()});
   function finish(result){
-   if(done)return;done=true;try{goalClip?.end(result)}catch(_){}try{stadiumSound.dispose()}catch(_){}cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
+   if(done)return;done=true;try{stadiumSound.dispose()}catch(_){}try{goalClip?.end(result)}catch(_){}cancelAnimationFrame(raf);clearTimeout(timer);observer?.disconnect();signal.removeEventListener('abort',onAbort);canvas.removeEventListener('webglcontextlost',onLost);window.removeEventListener('keydown',onKey);
    try{world?.dispose();renderer?.dispose();renderer?.forceContextLoss()}catch(_){}
    const focused=layer.contains(document.activeElement);stageFrame?.classList.remove('highlight3d-active');layer.remove();if(focused&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true});resolve(result);
   }
