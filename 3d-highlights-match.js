@@ -39,6 +39,16 @@ function match3DAttackOrder(event){
  const rest=rows.filter(r=>r!==scorer&&r!==creator);for(let i=0;i<8;i++)if(!out[i])out[i]=rest.shift()||null;
  return out;
 }
+// V21.428 Kapitänsbinde: the home captain is the one picked in "Aufgaben"
+// (match.assignments at kick-off). Off the pitch, the band passes to the best
+// rated outfield player on it, as it does for the opponent.
+function match3DCaptainRow(side,current){
+ const all=typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
+ const uid=side==='home'?String(current?.assignments?.captain||''):'';
+ const chosen=uid?all.find(r=>String(r.uid)===uid):null;if(chosen)return chosen;
+ return all.filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||''))).sort((a,b)=>(Number(b.base?.ovr)||0)-(Number(a.base?.ovr)||0)||a.index-b.index)[0]||null;
+}
+function match3DSameRow(side,a,b){return !!a&&!!b&&(side==='home'?String(a.uid)===String(b.uid):Number(a.index)===Number(b.index))}
 function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
  // Visual only; never affect the match simulation or its random stream.
  const fallbacks=[9,10,7,11,18,21,6,8,4,5,3,2,14,17,15,20],out=fallbacks.slice(),names=Array(16).fill(''),rowsAt=Array(16).fill(null);
@@ -63,10 +73,13 @@ function match3DShirtNumbers(event,current,defender,goalie,defenderIndex){
    out[offset+slot]=number(side,ordered[i],out[offset+slot]);names[offset+slot]=String(ordered[i]?.name||'');rowsAt[offset+slot]=ordered[i];slot++;
   }
  };
- match3DAttackOrder(event).forEach((row,i)=>{if(row)out[i]=number(attackSide,row,out[i])});
+ const attackCaptain=match3DCaptainRow(attackSide,current),defendCaptain=match3DCaptainRow(defendSide,current),captainActors=[];
+ match3DAttackOrder(event).forEach((row,i)=>{if(row){out[i]=number(attackSide,row,out[i]);if(match3DSameRow(attackSide,row,attackCaptain))captainActors.push(i)}});
  fill(defendSide,8,defender,Math.max(0,Math.min(7,Number(defenderIndex)-8)));
+ rowsAt.forEach((row,i)=>{if(i>=8&&match3DSameRow(defendSide,row,defendCaptain))captainActors.push(i)});
  // V21.365: names of the defending actors (index 8-15), e.g. for a goal-line clearance.
- return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1),defendNames:names.slice(8),defendRows:rowsAt.slice(8),defendSide};
+ return {shirtNumbers:out,keeperShirtNumber:number(defendSide,goalie,1),defendNames:names.slice(8),defendRows:rowsAt.slice(8),defendSide,
+  captainActors,keeperCaptain:match3DSameRow(defendSide,goalie,defendCaptain)};
 }
 // Cosmetic-only complexion metadata from explicit player records; no ancestry inference.
 function match3DSkinTones(event){
@@ -249,6 +262,7 @@ function queueMatch3D(event){
   Object.assign(presentation,match3DSkinTones({...presentation,defenderUid:defender?.uid,defenderSourceIndex:defender?.index,defenderName:defender?.name,defenderIndex:presentation.defenderIndex}));
   presentation.shirtNumbers=shirtInfo.shirtNumbers;
   presentation.keeperShirtNumber=shirtInfo.keeperShirtNumber;
+  presentation.captainActors=shirtInfo.captainActors;presentation.keeperCaptain=shirtInfo.keeperCaptain;
   presentation.defendNames=shirtInfo.defendNames;
   presentation.defendRows=shirtInfo.defendRows;presentation.defendSide=shirtInfo.defendSide;
 
@@ -289,7 +303,10 @@ function queueMatchCeremony3D(kind){
  const team=kind==='fulltime'?winner:'home',defending=team==='home'?'away':'home';
  const rows=side=>typeof matchActorRows==='function'?(matchActorRows(side)||[]):[];
  const field=side=>rows(side).filter(r=>!/^(GK|TW|TH)$/i.test(String(r.slot||'')));
- const attackRows=field(team).slice(0,8),defendRows=field(defending).slice(0,8),lead=attackRows[0]||null;
+ // V21.428: at the walk-out your captain leads the team out, first in the column.
+ // (The lead is actor 0; numbers, looks and names all follow it via playerId.)
+ const captainFirst=(side,list)=>{const cap=kind==='kickoff'?match3DCaptainRow(side,current):null,at=cap?list.findIndex(r=>match3DSameRow(side,r,cap)):-1;return at>0?[list[at],...list.filter((_,i)=>i!==at)]:list};
+ const attackRows=captainFirst(team,field(team)).slice(0,8),defendRows=field(defending).slice(0,8),lead=attackRows[0]||null;
  const goalie=rows(defending).find(r=>/^(GK|TW|TH)$/i.test(String(r.slot||'')))||null;
  const base={type:'ceremony',team,playerId:team==='home'?lead?.uid:lead?.index,playerName:lead?.name||''};
  const crest=side=>match3DPresentationMeta({type:'goal',team:side,playerName:''},current).teamCrestHTML;
@@ -305,7 +322,7 @@ function queueMatchCeremony3D(kind){
   teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,
   // V21.427 Fan-Choreo: the fans' own tifo at the walk-out of a home match (device-local design).
   choreo:kind==='kickoff'&&typeof FooteraChoreo!=='undefined'?FooteraChoreo.forMatch(current):null,keeperName:goalie?.name||'',
-  shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,...match3DSkinTones(base),
+  shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,captainActors:numbers.captainActors,keeperCaptain:numbers.keeperCaptain,...match3DSkinTones(base),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
 }

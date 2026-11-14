@@ -179,7 +179,8 @@
   const quiet=p=>p&&!spoke.has(keyOf(p));
   const byRating=P.slice().sort((a,b)=>num(b.rating)-num(a.rating));
   const keeper=P.find(p=>p.pos==="GK");
-  const captain=P.filter(p=>p.pos!=="GK"&&p.started!==false).sort((a,b)=>num(b.ovr)-num(a.ovr))[0]||byRating[0]||null;
+  // V21.428: the captain picked in "Aufgaben" (the one with the band), else the best outfield starter.
+  const captain=(d.captainUid&&P.find(p=>String(p.uid)===String(d.captainUid)))||P.filter(p=>p.pos!=="GK"&&p.started!==false).sort((a,b)=>num(b.ovr)-num(a.ovr))[0]||byRating[0]||null;
   const voice=(salt,not=[])=>{const pool=P.filter(p=>!not.includes(p)&&quiet(p));return pool.length?pool[hash(s+salt)%pool.length]:null};
   const anyVoice=(salt,not=[])=>voice(salt,not)||(()=>{const pool=P.filter(p=>!not.includes(p));return pool.length?pool[hash(s+salt)%pool.length]:null})();
   const reactN=(salt,min=2,max=9)=>min+hash(s+"r"+salt)%(max-min+1);
@@ -364,7 +365,7 @@
   return{
    seed:matchRef(m),home:typeof matchHomeTeamName==="function"?matchHomeTeamName():"Footera Club",away:typeof matchAwayTeamName==="function"?matchAwayTeamName():"Gegner",
    gh:m.home,ga:m.away,pensWinner:m.penaltyWinner,pensHome:m.pensHome,pensAway:m.pensAway,extraTime:!!m.extraTimeStarted,mode:m.mode,tournament:!!m.tournament,
-   opp:num(m.opp),power:num(m.power),weather:String(m.weather?.kind||""),injuredUid:m.injuryTriggered&&m.forcedOut?String(m.forcedOut):"",
+   opp:num(m.opp),power:num(m.power),captainUid:String(m.assignments?.captain||""),weather:String(m.weather?.kind||""),injuredUid:m.injuryTriggered&&m.forcedOut?String(m.forcedOut):"",
    hour:t.hour,minute:t.minute,prev:hist.results,recentGags:hist.gags,memo:v.memo,mood:v.mood,
    goals:(m.goalEvents||[]).map(g=>({side:g.side,minute:num(g.minute),scorer:String(g.scorer||""),scorerUid:String(g.scorerUid||""),assist:String(g.assist||""),assistUid:String(g.assistUid||""),type:g.type})),
    players,potm:potm?{name:String(potm.base?.name||potm.name||""),uid:String(potm.uid||""),side:potm.side,rating:num(potm.rating)}:null

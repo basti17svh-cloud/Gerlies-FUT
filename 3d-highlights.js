@@ -52,6 +52,9 @@
    keeperSkinTone:event.keeperSkinTone??null,
    playerLooks:Object.freeze(Array.from({length:16},(_,i)=>cleanLook((Array.isArray(event.playerLooks)?event.playerLooks:[])[i]))),
    keeperLook:cleanLook(event.keeperLook),
+   // V21.428 Kapitänsbinde: which actors (0-15) wear the captain's band; the keeper separately.
+   captainActors:Object.freeze((Array.isArray(event.captainActors)?event.captainActors:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<=15).slice(0,2)),
+   keeperCaptain:event.keeperCaptain===true,
    keeperShirtNumber:Number.isInteger(Number(event.keeperShirtNumber))&&Number(event.keeperShirtNumber)>=1&&Number(event.keeperShirtNumber)<=99?Number(event.keeperShirtNumber):1,
    // V21.226 ceremonies (walk-out / final whistle) and the goal replay.
    ceremony:['kickoff','fulltime'].includes(event.ceremony)?event.ceremony:'',result:['win','draw'].includes(event.result)?event.result:'',
@@ -74,7 +77,7 @@
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21427').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21428').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});

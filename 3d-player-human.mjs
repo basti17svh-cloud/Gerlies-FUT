@@ -186,6 +186,7 @@ export function paintFooteraHumanKit(ctx,size,kit={},opts={},info=source?.info){
   ctx.fillStyle=ink;ctx.fillText(word,0,0);ctx.restore();
  }
  ctx.restore();
+ if(opts.captain)paintFooteraCaptainBand(ctx,size,shirt,bands,metres);
  // Shorts with side piping; the small number sits on the front left leg.
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=shorts;ctx.fillRect(0,size*bands.shorts[0]-2,size,size*(bands.shorts[1]-bands.shorts[0])+4);
  if(metres.shorts)for(const half of ['front','back']){
@@ -327,4 +328,41 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
  // HD preview: richer surfaces on the close-up heroes only.
  if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
  return{owned,kitMap,canvas};
+}
+
+// V21.428 Kapitänsbinde: the captain from the squad's "Aufgaben" wears a band
+// round the LEFT sleeve. Basti: a separate ring hung off the arm, so the band
+// is woven into the shirt itself (kit texture), and it moves with the cloth.
+// The kit is projected front/back, so the band is painted on both halves
+// (mirrored on the back) and wraps the sleeve. Bind pose, metres: upper arm
+// from the shoulder (.214,1.443) down .665/-.747; the sleeve ends ~.13 m down.
+export const FOOTERA_CAPTAIN_BAND=Object.freeze({shoulder:[.214,1.443],dir:[.665,-.747],at:.084,half:.03,across:.11,inner:.236});
+export function footeraCaptainBandColors(shirt='#1b4c52'){
+ // Classic yellow band; on yellow or gold shirts a dark one, so it always reads.
+ const [r,g,b]=hexRGB(shirt),near=Math.hypot(r-.95,g-.76,b-.19)<.42;
+ return near?{band:'#16191f',ink:'#f2c230'}:{band:'#f2c230',ink:'#16191f'};
+}
+function paintFooteraCaptainBand(ctx,size,shirt,bands,metres){
+ const B=FOOTERA_CAPTAIN_BAND,{band,ink}=footeraCaptainBandColors(shirt);
+ const [sx,sy]=B.shoulder,[dx,dy]=B.dir,px=-dy,py=dx,cx=sx+dx*B.at,cy=sy+dy*B.at;
+ const corner=(a,c)=>[cx+dx*a*B.half+px*c*B.across,cy+dy*a*B.half+py*c*B.across];
+ for(const half of ['front','back']){
+  ctx.save();garmentSpace(ctx,size,bands.shirt,metres.shirt,half);
+  if(half==='back')ctx.scale(-1,1);
+  // Never onto the chest or the back next to the armpit.
+  ctx.beginPath();ctx.rect(B.inner,.9,.62-B.inner,.7);ctx.clip();
+  ctx.beginPath();[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,c],i)=>{const [x,y]=corner(a,c);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();
+  ctx.fillStyle=band;ctx.fill();
+  // Woven edges.
+  ctx.strokeStyle='rgba(0,0,0,.32)';ctx.lineWidth=.004;
+  for(const a of [-.92,.92]){const [x0,y0]=corner(a,-1),[x1,y1]=corner(a,1);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke()}
+  if(half==='front'){
+   // The C on the outer face, upright when the arm hangs.
+   ctx.save();ctx.translate(cx+px*.03,cy+py*.03);ctx.rotate(Math.atan2(dx,-dy));
+   const h=B.half*1.55;ctx.scale(h/100,-h/100);
+   ctx.font='900 132px "Arial Narrow","Roboto Condensed",Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle=ink;ctx.fillText('C',0,6);ctx.restore();
+  }
+  ctx.restore();
+ }
 }
