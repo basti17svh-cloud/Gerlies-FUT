@@ -2,7 +2,7 @@ name: Prepare Best-of TOTW 10 release
 on:
   push:
     branches: ['claude/project-thread-m6q31x']
-    paths: ['.github/workflows/totw10-release.yml','scripts/totw10-week.json','scripts/totw-portraits-*.json']
+    paths: ['.github/workflows/totw10-release.yml','scripts/totw10-week.json','scripts/totw-portraits-*.json','scripts/render-totw-poster.cjs']
   workflow_dispatch:
 permissions:
   contents: write
