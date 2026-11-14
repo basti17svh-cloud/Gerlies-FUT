@@ -1500,19 +1500,40 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    update(-1);return{update};
   })():null;
-  const tifo=bigNight?(()=>{
+  // V21.427 Fan-Choreo: at the walk-out of a home match the fans pull up their own tifo (designed in the
+  // club identity, drawn by FooteraChoreo.draw). Champions nights without one keep the club-colour tifo.
+  const customChoreo=ceremony==='kickoff'&&event.venue!=='away'&&event.choreo&&typeof globalThis.FooteraChoreo?.draw==='function'?event.choreo:null;
+  const tifo=bigNight||customChoreo?(()=>{
    const kit=crowdKits.home,club=String(event.homeName||'FOOTERA').toUpperCase();
-   const tex=canvasTexture(1024,320,(ctx,w,h)=>{
+   const legacy=(ctx,w,h)=>{
     for(let i=0;i<12;i++){ctx.fillStyle=i%2?kit.shirtSecondary:kit.shirt;ctx.fillRect(i*w/12,0,w/12+1,h)}
     ctx.fillStyle='#00000030';ctx.fillRect(0,h*.30,w,h*.38);
     // The walk-out shot sees about the middle third of the stand: keep the text there.
     ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
     let size=92;ctx.font=`italic 900 ${size}px system-ui`;while(size>34&&ctx.measureText(club).width>w*.36){size-=4;ctx.font=`italic 900 ${size}px system-ui`}
     ctx.fillText(club,w/2,h*.49);ctx.font='800 26px system-ui';ctx.globalAlpha=.92;ctx.fillText('BUILD YOUR ERA',w/2,h*.62);ctx.fillText('★ ★ ★',w/2,h*.22);
-   });
-   const slope=Math.atan(.72/1.42),plane=mesh(track(new THREE.PlaneGeometry(58,17.6)),track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false,color:'#d8d8d8'})),scene);
+   };
+   const paint=(ctx,w,h,crestImage)=>{if(customChoreo){try{globalThis.FooteraChoreo.draw(ctx,w,h,customChoreo,crestImage);return}catch(_){}}legacy(ctx,w,h)};
+   const crestNow=customChoreo?.crest?footeraCrestImageNow(event.teamCrestHTML):null;
+   const tex=canvasTexture(1024,320,(ctx,w,h)=>paint(ctx,w,h,crestNow));
+   if(customChoreo?.crest&&!crestNow)loadFooteraCrestImage(event.teamCrestHTML).then(img=>{const canvas=tex.image;if(!img||!canvas?.getContext)return;paint(canvas.getContext('2d'),canvas.width,canvas.height,img);tex.needsUpdate=true}).catch(()=>{});
+   const slope=Math.atan(.72/1.42),height=17.6,geometry=track(new THREE.PlaneGeometry(58,height));
+   // Pivot on the bottom edge: the fans pull the banner up the terrace.
+   geometry.translate(0,height/2,0);
+   const plane=mesh(geometry,track(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false,color:'#d8d8d8'})),scene);
    // Over the main stand, behind the tunnel: the backdrop of the walk-out shot.
-   plane.rotation.set(-slope,-Math.PI/2,0,'YXZ');plane.position.set(47.1,6.7,0);return plane;
+   plane.rotation.set(-slope,-Math.PI/2,0,'YXZ');
+   const up=new THREE.Vector3(0,1,0).applyEuler(plane.rotation);
+   // Held up over the fans' heads (1.5 m off the terrace), so the crowd no longer cuts through the lower half.
+   const normal=new THREE.Vector3(0,0,1).applyEuler(plane.rotation);if(normal.x>0)normal.negate();
+   plane.position.set(47.1,6.7,0).addScaledVector(up,-height/2).addScaledVector(normal,1.5);
+   // Rises during the stadium flight (0.5-3.6 s), fully up for the walk-out shot; a light ripple afterwards.
+   function update(time){
+    if(!customChoreo)return;
+    const u=clamp((time-.5)/3.1,0,1),rise=1-Math.pow(1-u,3);
+    plane.visible=rise>.01;plane.scale.set(1,Math.max(.01,rise)*(1+.006*Math.sin(time*2.3)*u),1);
+   }
+   update(0);return{update};
   })():null;
   let lastCrowdUpdate=-1,crowdDetailReduced=false;
   function updateCrowd(time,force=false){
@@ -1983,7 +2004,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    importedPlayer?.animate(time,importedMotionFrame);
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
    importedKeeper?.animate(time,keeperMotionFrame);
-   updateCrowd(time);pyro?.update(time);fireworks?.update(time);
+   updateCrowd(time);pyro?.update(time);fireworks?.update(time);tifo?.update(time);
    const cam=ceremonyCamera(ceremony,time);currentCameraPhase=cam.phase;
    camera.position.set(...worldPosition(cam.position,direction));camTarget.set(...worldPosition(cam.target,direction));camera.fov=cam.fov;
    // V21.406 stadium shot: fog and far plane move out with the high camera.

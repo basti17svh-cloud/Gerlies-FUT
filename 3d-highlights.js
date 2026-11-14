@@ -62,11 +62,19 @@
    venue:event.venue==='away'?'away':'home',
    stadium:event.stadium&&typeof event.stadium==='object'?Object.freeze({name:String(event.stadium.name||'').replace(/[<>]/g,'').slice(0,28),style:['arena','kessel','tradition'].includes(event.stadium.style)?event.stadium.style:'arena',
     seatPrimary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatPrimary||''))?String(event.stadium.seatPrimary):'#d8ff3e',seatSecondary:/^#[0-9a-f]{6}$/i.test(String(event.stadium.seatSecondary||''))?String(event.stadium.seatSecondary):'#173627'}):null,
+   // V21.427 Fan-Choreo (walk-out tifo): plain values only.
+   choreo:cleanChoreo(event.choreo),
    replay:event.replay!==false});
+ }
+ function cleanChoreo(c){
+  if(!c||typeof c!=='object')return null;
+  const hex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f,txt=(v,n)=>String(v||'').replace(/[<>]/g,'').slice(0,n);
+  return Object.freeze({motif:['stripes','split','checker','sun','waves','crest'].includes(c.motif)?c.motif:'stripes',a:hex(c.a,'#d8ff3e'),b:hex(c.b,'#173627'),ink:hex(c.ink,'#ffffff'),
+   text:txt(c.text,30),top:txt(c.top,30),crest:c.crest!==false,stars:[0,1,2,3].includes(Number(c.stars))?Number(c.stars):0});
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.
  function stage(){const custom=typeof root.FooteraHighlightsStage==='function'?root.FooteraHighlightsStage():null;return custom||root.document?.getElementById('matchLiveStage')||null}
- function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21424').catch(e=>{loader=null;throw e}))}
+ function loadRenderer(){return loader||(loader=import('./3d-highlights-scene.mjs?v=21427').catch(e=>{loader=null;throw e}))}
   // Idle preparation never stalls the match or hides its live field.
   function prewarm(){if(mode==='off'||!root.document)return;loadRenderer().then(m=>{
    m.prepareFooteraPlayerModel().catch(()=>{});

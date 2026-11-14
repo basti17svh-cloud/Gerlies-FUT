@@ -302,7 +302,9 @@ function queueMatchCeremony3D(kind){
  return match3DQueue.enqueue({...base,id:'ceremony:'+kind,weather:match3DWeather(current),...match3DStadium(current),ceremony:kind,minute:kind==='kickoff'?0:Math.floor(current.minute||90),period:1,sequence:'central',finish:'normal',
   result:kind==='fulltime'&&!decided?'draw':'win',homeName:typeof matchHomeTeamName==='function'?matchHomeTeamName():'Heim',awayName:typeof matchAwayTeamName==='function'?matchAwayTeamName():'Gast',
   homeScore:current.home,awayScore:current.away,competition:document.getElementById('matchCompetition')?.textContent||'',bigMatch:current.mode==='champions',
-  teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,keeperName:goalie?.name||'',
+  teamCrestHTML:crest(team),defendCrestHTML:crest(defending),squadNames:names,
+  // V21.427 Fan-Choreo: the fans' own tifo at the walk-out of a home match (device-local design).
+  choreo:kind==='kickoff'&&typeof FooteraChoreo!=='undefined'?FooteraChoreo.forMatch(current):null,keeperName:goalie?.name||'',
   shirtNumbers:numbers.shirtNumbers,keeperShirtNumber:numbers.keeperShirtNumber,...match3DSkinTones(base),
   homeColor:home?.shirtPrimary,homeSecondary:home?.shirtSecondary,homePattern:home?.pattern,homeShorts:home?.shorts,homeSocks:home?.socks,homeKitConfigured:!!home,
   awayColor:away?.shirtPrimary,awaySecondary:away?.shirtSecondary,awayPattern:away?.pattern,awayShorts:away?.shorts,awaySocks:away?.socks,awayKitConfigured:!!away});
