@@ -44,6 +44,9 @@ test('keeper capture timing: ready before the shot, dive around the save, hands 
  assert.equal(keeperCaptureWeights(8.5,'classic').throwOut,0);
  assert.equal(keeperCaptureWeights(9.6,'classic').throwOut,1);assert.equal(keeperCaptureWeights(9.6,'classic').hands,0);
  assert.equal(keeperCaptureWeights(9.6,'parry').throwOut,0,'a parried ball is not thrown');
+ // V21.437: a beaten keeper keeps the captured arms through his whole dive.
+ for(const t of [5.5,6,6.6,7,7.8,8.5])assert.equal(keeperCaptureWeights(t,'classic','goal').hands,0,'captured arms when beaten '+t);
+ assert.ok(keeperCaptureWeights(4.5,'classic','goal').hands<.01,'captured ready stance owns the arms');
  const tk=FOOTERA_MIXAMO.clips.keeper_throw.keys;
  assert.equal(keeperThrowCaptureTime(8,tk),tk.hold);
  assert.ok(Math.abs(keeperThrowCaptureTime(KEEPER_THROW.release,tk)-tk.release)<1e-9,'release on the game key');

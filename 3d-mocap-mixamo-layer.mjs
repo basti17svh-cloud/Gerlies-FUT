@@ -43,7 +43,13 @@ export function keeperThrowCaptureTime(time,keys){
  if(time<=KEEPER_THROW.release)return hold+(time-KEEPER_THROW.start)*(release-hold)/(KEEPER_THROW.release-KEEPER_THROW.start);
  return release+(time-KEEPER_THROW.release);
 }
-export function keeperCaptureWeights(time,action='classic'){
+// V21.437: the capture owns the arms. Hand IK onto the authored gloves only
+// where a glove really meets the ball (a save, around the contact) or holds
+// it (a caught ball); a beaten keeper (type 'goal' …) keeps the captured arms
+// all through his dive. Before V21.437 the IK pulled both arms onto the
+// procedural guide for most of the dive: one arm hung to the turf and the
+// elbow bent backwards on the landing.
+export function keeperCaptureWeights(time,action='classic',type='big_chance_saved'){
  // The low spread block (rush_spread) has no matching capture: it keeps the
  // authored smother and only borrows the captured ready stance.
  if(action==='rush_spread'){
@@ -54,12 +60,15 @@ export function keeperCaptureWeights(time,action='classic'){
  const ready=.8*smooth(time,3.2,3.8)*(1-smooth(time,5.05,5.45));
  // Legs join for the push-off and leave again as the authored get-up plants them.
  const legs=smooth(time,5.6,5.92)*(1-smooth(time,8.1,8.7));
- // Hand IK onto the authored gloves: full around the ball contact only.
- let hands=1-.75*smooth(time,5.55,5.9)*(1-smooth(time,6.2,6.4))-.75*smooth(time,7.05,7.5);
+ const save=type==='big_chance_saved';
+ // Authored arms only where no capture plays (before the ready stance).
+ let hands=1-Math.max(dive,ready/.8);
+ // A save: the gloves meet the ball around the contact (6.34-6.96).
+ if(save)hands=Math.max(hands,smooth(time,6.2,6.4)*(1-smooth(time,6.98,7.3)));
  // V21.369: a caught ball (classic save) stays in both gloves until the
  // keeper is up again; then the captured overhand throw owns the arms.
- const throwOut=action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
- if(action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
+ const throwOut=save&&action==='classic'?smooth(time,KEEPER_THROW.start,KEEPER_THROW.start+.3):0;
+ if(save&&action==='classic')hands=Math.max(hands,smooth(time,6.25,6.5))*(1-throwOut);
  return{dive,ready,legs,hands:clamp(hands),throwOut};
 }
 
@@ -72,7 +81,7 @@ export function createKeeperCaptureLayer(bones,playerRoot){
  function apply(time=0,dive=null){
   state.clip='none';state.weight=0;state.hands=1;
   if(!dive)return state;
-  const action=String(dive.action||'classic'),w=keeperCaptureWeights(time,action);
+  const action=String(dive.action||'classic'),w=keeperCaptureWeights(time,action,dive.type||'big_chance_saved');
   state.hands=w.hands;
   if(w.ready>.001&&w.dive<.999){
    const clip=rig.clips.keeper_ready;
@@ -366,21 +375,25 @@ export function createGaitCaptureLayer(bones,playerRoot,seed=0){
   return state;
  }
  // swing: [left, right] 0..1, how much each leg is in the air right now.
+ // V21.437: a proper weighted blend of the speed bands (running average);
+ // before, each band slerped on top of the last, so a share of the old leg
+ // pose stayed in every band change.
  function applyLegs(speed=0,stride=0,share=1,swing=[0,0]){
   const g=gaitCaptureWeights(speed),k=clamp(share);
-  let total=0;
+  let total=0;const acc=[1-k*clamp(swing[0]),1-k*clamp(swing[1])];
   for(const [r,name,key] of strides){
    const w=g[key]*k;
    if(!r||w<=.001)continue;total+=w;
    const clip=r.clips[name],frame=cyclePhase(clip,stride)*(clip.frames-1);
    for(let i=0;i<2;i++){
     const legs=w*clamp(swing[i]);if(legs<=.001)continue;
-    r.pose(name,frame,{body:0,legs},0,LEG_SKIP[i]);
+    acc[i]+=legs;
+    r.pose(name,frame,{body:0,legs:legs/acc[i]},0,LEG_SKIP[i]);
    }
   }
   return total;
  }
- return{apply,applyLegs,state};
+ return{apply,applyLegs,state,fullGait:!!gaitRig};
 }
 const LOOK_SKIP=new Set(['pelvis','thigh_l','calf_l','foot_l','thigh_r','calf_r','foot_r']);
 
