@@ -1,8 +1,7 @@
 name: Serie C squads from Wikipedia
+# Run by hand when the squads change (e.g. after the January transfer window), copy the SC| lines into
+# data/serie-c-squads.json and run: node scripts/build-serie-c.cjs --merge
 on:
-  push:
-    branches: ['claude/**']
-    paths: ['scripts/serie-c-collect.cjs','scripts/serie-c-clubs.json','.github/workflows/serie-c-collect.yml']
   workflow_dispatch:
 permissions:
   contents: read

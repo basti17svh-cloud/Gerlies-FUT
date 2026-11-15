@@ -4621,7 +4621,8 @@ function portraitCandidates(p){
  faces.filter(u=>u&&!/^https?:/i.test(String(u))).forEach(add);
  if(p?.isIcon){if(p?.futwizId)add(ownFaceUrl("icons",p.futwizId));faces.forEach(add);add(iconPortraitUrl(p));if(p?.futwizId)futwizFaceCandidates(p.futwizId).forEach(add);add(ICON_PORTRAIT_CACHE[iconPortraitKey(p.name)]?.url);return arr}
  const legacy=u=>/https?:\/\/(?:cdn\.sofifa\.net|ratings-images-prod\.pulse\.ea\.com)\//i.test(String(u||""));
- const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v))||"";
+ // Footera's own Serie C ids (900000000+) have no EA portrait anywhere, so only their own art is tried.
+ const portraitId=[p?.futwizId,p?.id].map(v=>String(v||"" )).find(v=>/^[0-9]+$/.test(v)&&Number(v)<900000000)||"";
  if(portraitId)add(ownFaceUrl("faces",portraitId));faces.filter(u=>!legacy(u)).forEach(add);if(portraitId)futwizFaceCandidates(portraitId).forEach(add);faces.filter(legacy).forEach(add);if(portraitId){sofifaFaceCandidates(portraitId).forEach(add);fifaRostersFaceCandidates(portraitId,27).forEach(add)}return arr
 }
 // Portraits copied once into Footera's own Supabase storage (scripts/mirror-player-faces.cjs); external sources stay as fallback.
@@ -5453,6 +5454,7 @@ function knownEAClubLeague(team){
  KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,"");
  return""
 }
+/* V21.432 — Serie C 2026-27: 60 clubs with their real squads (assets/players-serie-c.csv) and Ronaldinho at Ravenna. */
 /* V21.431 — one name per league: different data sources spell some leagues differently, which put them twice into the league filters. */
 const LEAGUE_CANONICAL_NAMES={"bundesliga 2":"2. Bundesliga","2 bundesliga":"2. Bundesliga","o bundesliga":"Österreichische Fußball-Bundesliga","ö bundesliga":"Österreichische Fußball-Bundesliga","liga i":"SUPERLIGA","superliga romania":"SUPERLIGA","super league greece":"Hellas Liga","stoiximan super league":"Hellas Liga"};
 function canonicalLeagueName(name){const raw=String(name||"").trim();if(!raw)return raw;const k=raw.toLowerCase().replace(/[^a-z0-9äöüß ]+/g," ").replace(/\s+/g," ").trim();return LEAGUE_CANONICAL_NAMES[k]||raw}
@@ -10930,7 +10932,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.431";
+const GFUT_BUILD="V21.432";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10988,7 +10990,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21431",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21432",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.

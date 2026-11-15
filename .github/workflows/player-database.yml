@@ -12,6 +12,8 @@ on:
       - 'assets/players-db.csv'
       - 'assets/players-db-version.json'
       - 'tests/player-database.test.cjs'
+      - 'tests/serie-c.test.cjs'
+      - 'assets/players-serie-c.csv'
       - 'footera-app.js'
   schedule:
     # Thursdays 06:00 UTC, after EA's weekly rating updates.
@@ -54,4 +56,4 @@ jobs:
         with:
           node-version: '22'
       - name: The game loads the checked-in player database
-        run: node --test tests/player-database.test.cjs tests/player-traits.test.cjs tests/startup-state.test.cjs
+        run: node --test tests/player-database.test.cjs tests/serie-c.test.cjs tests/player-traits.test.cjs tests/startup-state.test.cjs
