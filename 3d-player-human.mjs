@@ -290,6 +290,42 @@ export function footeraSkinTint(skin,mean){
  const max=.2126*mean[0]+.7152*mean[1]+.0722*mean[2]>.5?1.12:2.4;
  return target.map((c,i)=>clamp(toLinear(c)/Math.max(.02,toLinear(mean[i])),.3,max));
 }
+// V21.436: how much of each body vertex a haircut covers (1 within 6 mm of a
+// hair vertex, fading out by 1.8 cm, so the painted scalp has a soft
+// hairline) and the triangles that touch it. Cached per body and cut
+// geometry; grid lookup in the bind pose.
+const hairCaps=new WeakMap();
+export function hairCapIndex(body,hair,full=.006,reach=.018){
+ let perBody=hairCaps.get(body);if(!perBody)hairCaps.set(body,perBody=new WeakMap());
+ if(perBody.has(hair))return perBody.get(hair);
+ const hp=hair.getAttribute('position'),bp=body.getAttribute('position'),index=body.getIndex();
+ if(!hp||!bp||!index){perBody.set(hair,null);return null}
+ const cell=reach,grid=new Map(),key=(x,y,z)=>x+','+y+','+z;let low=Infinity;
+ for(let i=0;i<hp.count;i++){
+  const x=hp.getX(i),y=hp.getY(i),z=hp.getZ(i);low=Math.min(low,y);
+  const k=key(Math.floor(x/cell),Math.floor(y/cell),Math.floor(z/cell));let list=grid.get(k);if(!list)grid.set(k,list=[]);list.push(x,y,z);
+ }
+ const cover=new Float32Array(bp.count);
+ for(let v=0;v<bp.count;v++){
+  const x=bp.getX(v),y=bp.getY(v),z=bp.getZ(v);if(y<low-reach)continue;
+  const gx=Math.floor(x/cell),gy=Math.floor(y/cell),gz=Math.floor(z/cell);let best=reach*reach;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+   const list=grid.get(key(gx+dx,gy+dy,gz+dz));if(!list)continue;
+   for(let i=0;i<list.length;i+=3){const ex=list[i]-x,ey=list[i+1]-y,ez=list[i+2]-z,d=ex*ex+ey*ey+ez*ez;if(d<best)best=d}
+  }
+  const u=Math.min(1,Math.max(0,(Math.sqrt(best)-full)/(reach-full)));cover[v]=1-u*u*(3-2*u);
+ }
+ // Thin crowns: every cut covers the top of the head, also where its cards
+ // leave a gap wider than the reach.
+ let top=-Infinity;for(let i=0;i<hp.count;i++)top=Math.max(top,hp.getY(i));
+ // From the hair's highest point down (long tails and braids hang far lower).
+ const crown=top-.065;
+ for(let v=0;v<bp.count;v++){const y=bp.getY(v);if(y>crown)cover[v]=Math.max(cover[v],Math.min(1,(y-crown)/.012))}
+ const out=[],ix=index.array;
+ for(let t=0;t<ix.length;t+=3)if(cover[ix[t]]>.01||cover[ix[t+1]]>.01||cover[ix[t+2]]>.01)out.push(ix[t],ix[t+1],ix[t+2]);
+ const result={index:bp.count>65535?Uint32Array.from(out):Uint16Array.from(out),cover};
+ perBody.set(hair,result);return result;
+}
 // Bake this player's face into private geometry copies, drop unused haircuts
 // and give every surface its own material. Returns disposables.
 export function dressFooteraHuman(THREE,model,look,kit,opts={}){
@@ -301,6 +337,9 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
   return true;
  };
  const meshes=[];model.traverse(node=>{if(node.isSkinnedMesh)(keep(node.name)?meshes:remove).push(node)});
+ // V21.436: which scalp triangles the chosen haircut covers (bind pose, before the face bake).
+ const bodyMesh=meshes.find(m=>m.name==='FooteraBody'),hairMesh=meshes.find(m=>m.name==='FooteraHair-'+look.hair);
+ const capIndex=bodyMesh&&hairMesh?hairCapIndex(bodyMesh.geometry,hairMesh.geometry):null;
  for(const node of remove)node.removeFromParent();
  const size=opts.detail?1024:512,canvas=document.createElement('canvas');canvas.width=canvas.height=size;
  const ctx=canvas.getContext('2d');
@@ -346,6 +385,23 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    mesh.castShadow=name.startsWith('FooteraHair');
   }
   mesh.material=material;owned.push({geometry,material});
+ }
+ // V21.436 (Basti: "fleckig, als würden Haare fehlen"): hair cards leave gaps
+ // where the scalp shows through. Like real football games, the scalp under
+ // the cut is painted in the hair colour: a second draw of those body
+ // triangles (same baked positions and skinning), pulled just in front of
+ // the skin. Bald players (Zidane) have no cut and keep their head.
+ if(capIndex&&capIndex.index.length){
+  const src=bodyMesh.geometry,geometry=new THREE.BufferGeometry();
+  for(const key of ['position','normal','skinIndex','skinWeight'])if(src.getAttribute(key))geometry.setAttribute(key,src.getAttribute(key));
+  geometry.setIndex(new THREE.BufferAttribute(capIndex.index,1));
+  const rgba=new Float32Array(capIndex.cover.length*4).fill(1);for(let v=0;v<capIndex.cover.length;v++)rgba[v*4+3]=capIndex.cover[v];
+  geometry.setAttribute('color',new THREE.BufferAttribute(rgba,4));
+  const material=new THREE.MeshStandardMaterial({color:new THREE.Color(look.hairColor).multiplyScalar(.8),roughness:.92,metalness:0,
+   vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4});
+  const cap=new THREE.SkinnedMesh(geometry,material);cap.name='FooteraHairCap';
+  cap.bind(bodyMesh.skeleton,bodyMesh.bindMatrix);cap.frustumCulled=false;cap.castShadow=false;cap.receiveShadow=true;
+  bodyMesh.parent.add(cap);owned.push({geometry,material});
  }
  // HD preview: richer surfaces on the close-up heroes only.
  if(opts.detail&&footeraHDWanted())owned.push(...upgradeFooteraHero(THREE,meshes,look,kitMap,footeraKitLayout(info),hash(look.hair+look.skin)%97+1));
