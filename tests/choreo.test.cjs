@@ -40,7 +40,7 @@ test('saved design is cleaned: colours, motif, text length, placeholders',()=>{
 
 test('draw paints every motif without errors',()=>{
  const {api}=load();const calls=[];
- const ctx=new Proxy({},{get:(t,k)=>k in t?t[k]:k==='measureText'?(s=>({width:String(s).length*20})):(...a)=>calls.push(k),set:(t,k,v)=>(t[k]=v,true)});
+ const ctx=new Proxy({},{get:(t,k)=>k in t?t[k]:k==='measureText'?(s=>({width:String(s).length*20})):/Gradient$/.test(String(k))?(()=>({addColorStop(){}})):(...a)=>calls.push(k),set:(t,k,v)=>(t[k]=v,true)});
  for(const motif of Object.keys(api.MOTIFS))api.draw(ctx,1024,320,{motif,a:'#111111',b:'#eeeeee',ink:'#ffffff',text:'FC GERLIES',top:'BUILD YOUR ERA',stars:2,crest:true},null);
  assert.ok(calls.includes('fillText'));
 });
@@ -58,4 +58,19 @@ test('loaded, cached, in the club identity, in Extras and in the 3D walk-out',()
  assert.match(hl,/choreo:cleanChoreo\(event\.choreo\)/);
  assert.match(scene,/FooteraChoreo\.draw\(ctx,w,h,customChoreo,crestImage\)/);
  assert.match(scene,/tifo\?\.update\(time\)/);
+});
+
+// V21.438: many more designs and a different motif at every home match.
+test('24 motifs, each with an icon, and "jedes Heimspiel ein anderes Motiv"',()=>{
+ const {api}=load();
+ assert.ok(Object.keys(api.MOTIFS).length>=24,'motifs: '+Object.keys(api.MOTIFS).length);
+ const css=fs.readFileSync(path.join(root,'footera-choreo.css'),'utf8');
+ for(const id of Object.keys(api.MOTIFS))assert.ok(css.includes('i.m-'+id),'icon for '+id);
+ assert.equal(api.forMatch({venue:'home',resultId:'a'}).motif,'stripes','fixed motif by default');
+ api.save({...api.read(),rotate:true});
+ const seen=new Set();for(let i=0;i<40;i++)seen.add(api.forMatch({venue:'home',resultId:'r'+i}).motif);
+ assert.ok(seen.size>=12,'many motifs over 40 home matches: '+seen.size);
+ assert.equal(api.forMatch({venue:'home',resultId:'r7'}).motif,api.forMatch({venue:'home',resultId:'r7'}).motif,'same match, same choreo');
+ const hl=fs.readFileSync(path.join(root,'3d-highlights.js'),'utf8');
+ assert.match(hl,/FooteraChoreo\.MOTIFS/,'the 3D walk-out accepts every motif');
 });

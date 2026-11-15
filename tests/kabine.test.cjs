@@ -94,9 +94,9 @@ test('the coach comes back after the next match: bench threat, praise, Straflauf
  const r=api.matchMessages({seed:'cb1',home:'FC Gerlies',away:'Mainz',gh:1,ga:0,players,goals:[g('home',55,'Leroy Sané','u4')],potm:null,
   memo:{benched:{uid:'u4',name:'Leroy Sané'},run:true},mood:20});
  const t=text(r);
- assert.match(t,/Leroy Sané: (Bank\? Welche Bank|Hab mir die Ansage)/,'the threatened player answers with a goal');
+ assert.match(t,/Leroy Sané: (Bank\? Welche Bank|Hab mir die Ansage|Trainer, die Bank|Danke für die Motivation)/,'the threatened player answers with a goal');
  assert.match(t,/Straflauf/);
- assert.match(t,/Stimmung|Spaß/,'low mood is felt');
+ assert.match(t,/Stimmung|Spaß|lachen|Gerade in solchen Wochen/,'low mood is felt');
  const p2=squad();p2[4].minutes=0;p2[4].rating=0;
  const r2=api.matchMessages({seed:'cb2',home:'FC Gerlies',away:'Mainz',gh:0,ga:1,players:p2,goals:[g('away',70,'X','')],potm:null,memo:{benched:{uid:'u4',name:'Leroy Sané'}}});
  assert.match(text(r2),/@\[Leroy Sané\].*Bank/,'teammates tease the benched player');
@@ -191,4 +191,57 @@ test('the share picture uses the whole chat of the latest match, in order, nothi
  assert.deepEqual(block.map(m=>m.id),all.filter(m=>m.ref===ref).map(m=>m.id));
  assert.ok(block.length>=9,'match messages plus coach answer');
  assert.ok(block.some(m=>m.kind==='me'));
+});
+
+// V21.438: many different memes, many more lines, funny unless there is trouble.
+test('memes: many cards in six layouts, a different one every time, none from the players after trouble',()=>{
+ const rows=squad().map(p=>({uid:p.uid,base:{name:p.name,id:p.pid,position:p.pos,ovr:p.ovr},position:p.pos,rating:p.rating,goals:p.uid==='u2'?1:0,assists:0,minutes:p.minutes,saves:p.saves,reds:0}));
+ const ctx={matchReportPerformanceRows:()=>rows,matchReportPotm:()=>null,matchHomeTeamName:()=>'FC Gerlies',matchAwayTeamName:()=>'Köln'};
+ const {api:k}=load(ctx);
+ const coach=[];
+ for(let i=0;i<15;i++){
+  const res=[[2,0],[1,1],[0,1]][i%3];
+  const goals=[...Array(res[0])].map((_,x)=>g('home',10+x*20,'Harry Kane','u2')).concat([...Array(res[1])].map((_,x)=>g('away',30+x*20,'X','')));
+  k.afterMatch({finished:true,resultId:'mm'+i,home:res[0],away:res[1],initialStarters:rows.slice(0,11).map(r=>r.uid),goalEvents:goals});
+  const v=k.read(),out=k.answer(v.msgs[v.msgs.length-1].ref,'meme');coach.push(out[0]?.meme?.id);
+ }
+ const v=k.read(),memes=v.msgs.filter(m=>m.meme&&typeof m.meme==='object');
+ assert.ok(coach.every(Boolean),'every coach meme is a meme card');
+ assert.equal(new Set(coach).size,coach.length,'the coach never sends the same meme twice in 15 matches');
+ assert.ok(new Set(memes.map(m=>m.meme.t)).size>=5,'different layouts');
+ assert.ok(memes.some(m=>m.kind==='msg'),'players send memes too');
+ const html=k.listHTML(v.msgs);
+ assert.match(html,/kb-meme2/);assert.ok(!/undefined|\{\w+\}/.test(html),'all meme placeholders filled');
+ for(const m of memes)assert.ok(!/undefined|\{\w+\}/.test(m.text),m.text);
+ // after a defeat the players stay serious: no meme from them
+ const lossRefs=new Set(v.msgs.filter(m=>m.kind==='sys'&&m.ctx?.result==='loss').map(m=>m.ref));
+ assert.ok(lossRefs.size>=4);
+ assert.ok(!v.msgs.some(m=>lossRefs.has(m.ref)&&m.kind==='msg'&&m.meme),'no player memes after a defeat');
+ assert.ok(memes.filter(m=>lossRefs.has(m.ref)).every(m=>m.kind==='me'),'only the coach may cheer them up with one');
+});
+
+test('lines do not come back right away and every category has many lines',()=>{
+ for(const [key,list] of Object.entries(api._T))assert.ok(list.length>=(/^cb/.test(key)?2:5),key+' has '+list.length+' lines');
+ assert.ok(api._GAGS.length>=50,'running gags: '+api._GAGS.length);
+ let recent=[];const seen=[];
+ for(let i=0;i<8;i++){
+  const r=api.matchMessages({seed:'fresh'+i,home:'A',away:'B',gh:1,ga:0,players:squad(),goals:[g('home',10,'Harry Kane','u2')],potm:null,recentLines:recent});
+  const t=r.messages.filter(m=>m.kind==='msg'&&!m.meme).map(m=>m.text);
+  seen.push(r.messages[1].text);
+  recent=[...recent,...r.lines];
+ }
+ assert.equal(new Set(seen).size,seen.length,'the headline after eight 1:0 wins is different every time');
+});
+
+test('after a heavy defeat or a red card the group is serious: no running gags',()=>{
+ for(let i=0;i<20;i++){
+  const players=squad();
+  const r=api.matchMessages({seed:'heavy'+i,home:'A',away:'B',gh:0,ga:4,players,goals:[1,2,3,4].map(x=>g('away',x*15,'X','')),potm:null});
+  assert.deepEqual([...r.ctx.gags],[],'no gag after 0:4');
+  const p2=squad();p2[6].reds=1;
+  const r2=api.matchMessages({seed:'red'+i,home:'A',away:'B',gh:0,ga:1,players:p2,goals:[g('away',50,'X','')],potm:null});
+  assert.deepEqual([...r2.ctx.gags],[]);
+  const r3=api.matchMessages({seed:'mild'+i,home:'A',away:'B',gh:0,ga:1,players:squad(),goals:[g('away',50,'X','')],potm:null});
+  for(const id of r3.ctx.gags){const gag=api._GAGS.find(x=>x.id===id);assert.ok(gag.when==='loss'||gag.calm,'only calm gags after a defeat: '+id)}
+ }
 });

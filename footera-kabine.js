@@ -16,7 +16,24 @@
  // "Christopher Nkunku" -> "Nkunku"; "Vini Jr." and short names stay.
  const short=v=>{const n=String(v||"").trim(),w=n.split(/\s+/);return w.length>=2&&n.length>12&&!/^(jr\.?|junior)$/i.test(w[w.length-1])?w.slice(1).join(" "):n};
  function hash(s){let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
- const pick=(list,seed,salt="")=>list[hash(seed+"|"+salt)%list.length];
+ // V21.438: lines do not come back right away. While a chat is written (fresh(...)), pick() skips lines used in the last
+ // chats (kept as short keys in v.lines) and takes the one used longest ago when every line of a list was used.
+ let FRESH=null;
+ const lineKey=t=>hash(t).toString(36);
+ const pick=(list,seed,salt="")=>{
+  const st=hash(seed+"|"+salt)%list.length;
+  if(!FRESH||list.length<2||typeof list[st]!=="string"||list[st].length<8)return list[st];
+  let best=null,bestAt=Infinity;
+  for(let i=0;i<list.length;i++){const t=list[(st+i)%list.length],k=lineKey(t),at=FRESH.at.has(k)?FRESH.at.get(k):-1;if(at<bestAt){best=t;bestAt=at;if(at<0)break}}
+  const k=lineKey(best);FRESH.at.set(k,FRESH.n++);FRESH.used.push(k);return best;
+ };
+ function fresh(recent,fn){
+  const prev=FRESH,at=new Map();(Array.isArray(recent)?recent:[]).forEach((k,i)=>at.set(String(k),i));
+  FRESH={at,n:at.size,used:[]};
+  try{const value=fn();return{value,used:FRESH.used}}finally{FRESH=prev}
+ }
+ const MAX_LINES=420;
+ const keepLines=(v,used)=>{v.lines=[...(Array.isArray(v.lines)?v.lines:[]),...used].slice(-MAX_LINES)};
  const fill=(text,vars)=>String(text).replace(/\{(\w+)\}/g,(_,k)=>vars[k]??"");
  const keyOf=p=>p?String(p.uid||p.name):"";
  const whoOf=p=>({name:String(p.name||"Spieler"),uid:String(p.uid||""),pid:String(p.pid||"")});
@@ -125,6 +142,90 @@
   leave:["Wo sind die alle hin? 😅","Machts gut, Leute 🫡","Und wieder wird's leerer hier 🥲","Der Trainer räumt auf 😳","Bin ich der Nächste? 😰"],
   leaveBye:["Danke für alles, Leute 🫡","War mir eine Ehre 🥲","Ich werd euch vermissen ❤️","Spind ist frei. Viel Glück, Leute 🫡"]
  };
+ // V21.438: many more lines in every category (Basti: "viel mehr unterschiedliche Antworten", "viel lustiger,
+ // außer es gibt Ärger"). Defeats, red cards and crises stay calm; everything else got funnier.
+ const MORE_T={
+  hattrick:["Ich hätte noch einen vierten gemacht, aber dann wär's unhöflich geworden 😇⚽","Mama hat angerufen. Sie will den Ball. Ich auch 😤⚽⚽⚽","Hattrick. Ich geh heute mit dem Ball ins Bett 🛏️⚽","Ab heute bitte mit 'Herr Hattrick' ansprechen 🎩⚽","{n} Tore und morgen muss ich trotzdem die Hütchen aufbauen 😑","Der Ball und ich, das ist jetzt was Ernstes ❤️⚽"],
+  lateWinner:["{min}. Minute und ich hatte schon die Ausrede fürs Unentschieden fertig 😅⚽","Wer in der {min}. noch trifft, darf heute die Musik im Bus aussuchen 😎🎶","{min}. Minute. Ich glaub, der Trainer hat geweint 🥹⚽","Kurz vor Schluss, {min}. Minute. Ich hör den Jubel immer noch 🔊","Ich hab in der {min}. die Augen zugemacht und draufgehalten. Lief 🙈⚽","{min}. Minute! Meine Smartwatch hat Alarm geschlagen ⌚🚨"],
+  lateEqualizer:["{min}. Minute. Der Punkt fühlt sich an wie ein Sieg 😤","Bis zur {min}. gezittert, dann zugeschlagen 💪","Wer hat gesagt, das Spiel ist vorbei? {min}. Minute 😏","Puh. {min}. Minute. Ich brauch erstmal Wasser 💧"],
+  pensWinKeeper:["Ich hab in die Augen geguckt und die Ecke gesehen 👀🧤","Der Schütze hat mit dem Fuß gezuckt. Hab ich bemerkt 😏🧤","Elfer halten ist wie Lotto, nur dass ich immer gewinne 🧤🎰"],
+  pensWin:["Ich hab beim Elfmeterschießen nicht hingeguckt. Ist es vorbei? 🙈","Nerven wie Drahtseile. Meine Knie sagen was anderes 😅","Mein Herz hat bei jedem Schuss eine Pause gemacht 🫀"],
+  pensLoss:["Das tut weh. Aber wir haben bis zum Ende gekämpft 🫂","Wir lassen den Kopf nicht hängen. Nächstes Mal 💪","Niemand ist schuld. Wir gewinnen zusammen und verlieren zusammen 🤝"],
+  bigComeback:["Ich will diese Halbzeitansprache als Klingelton 📢🔥","Nach dem 0:2 hab ich kurz meinen Kontostand gecheckt, um mich zu beruhigen. Dann gewonnen 😂💪","Diese Mannschaft hat Nerven aus Titan 🦾","Rückstand? Wir nennen das Aufwärmen 😎"],
+  comeback:["Erst Schreck, dann Sieg. Mein Blutdruck dankt 😮‍💨","Rückstand gedreht. Ich liebe dieses Team ❤️","Hinten liegen ist nur Anlauf nehmen 🏃‍♂️💨"],
+  blownLead:["Das müssen wir in Ruhe aufarbeiten. Führung halten lernen wir 💪","Wir hatten es in der Hand. Nächstes Mal machen wir's zu 🔒","Ärgerlich. Aber wir wissen jetzt, woran wir arbeiten 📋"],
+  bigWin:["{score}. Ich hab dem Gegner nach dem Spiel ein Taschentuch gegeben 🤧😂","{score}. Der Anzeigetafel-Typ hatte heute richtig zu tun 🔢😂","Bei {score} hab ich angefangen, die Fans zu grüßen 👋😂","{score}! Bitte keiner {away} anrufen, die brauchen Ruhe 📵😂","{score}. Das Netz vom Tor muss geflickt werden 🥅🪡"],
+  win:["Drei Punkte und alle Knochen heil. Perfekt 😎","Sieg! Ich schreib das gleich meiner Oma 👵📲","Gewonnen. Ich hab gar nicht gemerkt, dass ich müde bin 💪","3 Punkte im Sack, Sack ist zu, ab nach Hause 🎒😎","Gewonnen und keiner hat sich blamiert. Fast keiner 😏","Sieg! Heute schlaf ich wie ein Baby 👶💤","Läuft bei uns. Und zwar 90 Minuten lang 🏃‍♂️💨","Wieder ein Sieg. Ich gewöhn mich langsam dran 😌"],
+  draw0:["0:0. Die Netze bleiben heute trocken 🥅","Torlos. Wenigstens hinten war alles dicht 🔒","0:0. Spannend wie eine Steuererklärung 📄😅","Ein Punkt und null Tore. Weiter arbeiten 📋"],
+  draw:["Unentschieden. Ich weiß nicht, ob ich mich freuen soll 🤷","Ein Punkt ist besser als keiner. Sagt mein Mathe-Lehrer 📐","Remis. Beim nächsten Mal machen wir den Sack zu 💪","Punkteteilung. Wie beim Döner: gerecht, aber zu wenig 🥙"],
+  bigLoss:["Das war heute nicht wir. Morgen fangen wir neu an 💪","Ganz bitter. Wir arbeiten das zusammen auf 🫂","{score}. Da gibt's nichts schönzureden. Nächste Woche reagieren wir 😤"],
+  loss:["Heute nicht. Wir kommen stärker zurück 💪","Niederlage tut weh. Lernen, abhaken, weiter 🫂","Mund abwischen, morgen wieder Gas geben 😤","Wir stehen zusammen. Gerade jetzt 🤝"],
+  goal_penalty:["Ich hab dem Keeper vorher zugezwinkert. Hat geklappt 😉⚽","Elfer? Hab ich im Schlaf geübt. Wirklich, ich träum davon 😴⚽","Den hätte meine Oma auch reingemacht. Aber ich hab's gemacht 😎"],
+  goal_freekick:["Ich hab der Mauer vorher gesagt, dass sie springen soll. Sie hat's geglaubt 😏🧱","Freistoß-Gott? Ich nehm den Titel an 👑🎯","Das war Physik. Und Talent. Hauptsächlich Talent 🎯"],
+  goal_solo:["Fünf Gegenspieler und ich. War ein faires Duell 😎","Ich hab nicht nach links und nicht nach rechts geguckt. Nur aufs Tor 🎯","Solo! Ich spiel auch gern ab, ehrlich. Nur heute nicht 😅"],
+  brace:["Zwei Tore. Ich hab's meiner Kaffeemaschine versprochen ☕⚽⚽","Doppelpack! Ab heute teil ich nur noch in Zweierpacks ✌️😎","Das zweite war schöner. Ich sag's ja nur ✌️"],
+  goal:["Das Tor widme ich meinem Physio. Der hat meine Wade gerettet 🦵⚽","Ich wollte eigentlich flanken. Pssst 🤫⚽","Habt ihr gesehen, wie ich danach zur Kurve gelaufen bin? Das war geplant 🏃‍♂️❤️","Tor! Ich schick das Video gleich in die Familiengruppe 📲⚽","Wenn ich treffe, gewinnen wir. Statistik lügt nicht 📊😎","Ich wollt nur kurz Hallo sagen. Mit dem Ball. Ins Netz 👋⚽"],
+  assist:["@[{scorer}] das Tor gehört zu 60 % mir. Mindestens 😤🎁","@[{scorer}] ich will Erwähnung im Interview 🎙️😏","Der Pass war so gut, @[{scorer}] musste nur noch stehen bleiben 😂","@[{scorer}] Assist-König meldet sich zum Dienst 🫡🎁","@[{scorer}] du schuldest mir einen Kaffee. Groß ☕"],
+  cleanSheet:["Zu null. Ich hätte nebenbei ein Buch lesen können 📖🧤","Kein Gegentor! Meine Handschuhe sind noch wie neu 🧤✨","Weiße Weste und frisch gewaschene Hose. Perfekter Tag 🧤😎","Hinten dicht. Wer will, kann bei uns Torwart-Urlaub buchen 🏖️🧤"],
+  saves:["{n} Paraden. Ich will das in die Vereinschronik 📜🧤","{n} Mal gehalten. Ich glaub, ich hab den Ball öfter berührt als unsere Stürmer 😏🧤","{n} Paraden heute. Krieg ich dafür einen Extra-Pudding? 🍮🧤"],
+  keeperBad:["Heute war nicht mein Tag. Ich arbeite dran, versprochen 🙏","Ich nehm das auf mich. Nächstes Mal halt ich die 💪","Tut mir leid, Leute. Ich bin morgen früh als Erster im Training 🧤"],
+  red:["Das war unnötig von mir. Sorry an alle 🙏","Ich hab euch hängen lassen. Kommt nicht wieder 😓","Die Rote nehm ich auf meine Kappe. Ich lern draus 🟥"],
+  redWin:["Zu zehnt durchgezogen. Das ist Teamgeist 🤝","Wir kämpfen auch für dich 💪","Nächstes Mal bleibst du auf dem Platz, ja? 😅🤝"],
+  redLoss:["Wir reden morgen in Ruhe drüber 🫂","Passiert jedem mal. Wir halten zusammen 🤝","Kopf hoch. Wir brauchen dich nächste Woche 💪"],
+  yellow:["Gelb. Ich hab nur 'Entschuldigung' gesagt. Ziemlich laut 🟨😅","Der Schiri mag mich einfach nicht 🟨🙄","Gelb für Zeitspiel. Ich hab nur meinen Schuh gebunden. Zweimal 🟨👟"],
+  yellowReply:["Kasse freut sich. Ich hab schon die Quittung 🧾😏","Ab in die Kasse damit 💶👋","Danke für die Spende 💶🙏"],
+  injury:["Nur eine Prellung. Ich hab schon schlimmer ausgesehen 😅🧊","Der Physio hat mich gelobt. Fürs Jammern 🙄🧊","Alles halb so wild, bin bald wieder da 💪"],
+  injuryReply:["Werd schnell wieder fit, wir brauchen dich 🙏","Ich bring dir Gummibärchen vorbei 🐻","Ruh dich aus. Wir halten deinen Platz warm 🪑"],
+  joker:["Ich hab auf der Bank so viel nachgedacht, da musste ein Tor raus 🤔⚽","Rein, Tor, raus aus der Kabine. Effizient 😎","Mein Platz auf der Bank war warm, mein Fuß war heißer 🔥🃏"],
+  sub:["{m} Minuten Vollgas. Das reicht für eine Woche 😮‍💨","Ich hab mehr gelaufen als in der ganzen Hinrunde. In {m} Minuten 😅","Danke für die {m} Minuten. Nächstes Mal 90? 👀"],
+  potmTease:["@[{potm}] {r}. Bitte gib uns mal einen Tipp, wie das geht 🙏","@[{potm}] du hast heute für zwei gespielt. Krieg ich dein Gehalt? 😂","@[{potm}] {r}. Das gibt's eigentlich nur in Footera 🎮😂","Ich hab @[{potm}] heute bei jedem Ballkontakt angeschrien. Vor Freude 😭👑"],
+  potmReply:["Ich bin auch nur ein Mensch. Ein sehr guter 😎","Danke Leute 🥹 Nächste Runde geht auf mich","Ohne euch wär ich nur ein Typ mit Ball 🙏⚽","Psst, nicht so laut, sonst will ich mehr Gehalt 🤫💰"],
+  potmAway:["Dieser {name}… ich glaub, der hat einen Turbo eingebaut 🚀","Ich hab {name} den ganzen Abend nur von hinten gesehen 😩","{name} hat heute alles richtig gemacht. Respekt 🤝"],
+  low:["Note {r}. Das war nichts. Ich arbeite dran 💪","{r}… morgen bin ich als Erster im Training 🙏","Heute hab ich mehr gesucht als gefunden. Kommt nicht wieder 😓"],
+  party:["DJ, Lautstärke auf 11 🔊🕺","Kabinentanz in 3, 2, 1… 💃🕺","Siegerdusche! Wer hat das Shampoo? 🚿🎶","Heute singt die ganze Kabine. Auch die, die's nicht können 🎤😂","Ich hab schon die Tanzschuhe an 🕺👟","Wer heute nicht mittanzt, muss die Trikots waschen 🧺🕺"],
+  winStreak:["{n} Siege in Folge. Ich hab Angst, meine Glücksunterhose zu waschen 🩲😂","{n} Siege am Stück! Bitte keiner was ändern. Auch nicht die Frisur 💇‍♂️🔥","Serie: {n}. Mein Fantasy-Team ist neidisch 📈😎"],
+  streakEnd:["Nach {n} Siegen war's halt mal fällig. Neue Serie startet jetzt 💪","Die Serie ist vorbei, die Mannschaft nicht 🤝"],
+  lossStreak:["{n} Niederlagen. Wir reden, wir arbeiten, wir kommen raus 💪","Schwere Phase. Jetzt erst recht zusammenhalten 🤝"],
+  lossBreak:["Ich hab vor Freude meinen Schienbeinschoner geküsst 😘🦵","Die Last ist weg! Ich hab gerade 3 Kilo verloren 😮‍💨","Wieder gewonnen! Ich wusste es. Okay, ich hab's gehofft 🙏"],
+  unbeaten:["{n} Spiele ohne Niederlage. Psst, nicht laut sagen 🤫","{n} Mal nicht verloren. Ich klopf auf Holz 🪵👊","{n} Spiele ungeschlagen. Ich trag ab jetzt jeden Tag dieselbe Mütze 🧢🤫","Ungeschlagen seit {n} Spielen. Die Kabine riecht nach Erfolg. Und nach Socken 🧦😂"],
+  rivalsWin:["Rivals-Punkte! Ich hab die Tabelle schon dreimal gecheckt 📈👀","Rivals-Liga, wir klopfen an. Ganz laut 🚪📈"],
+  rivalsLoss:["Rivals-Punkte weg. Nächste Woche holen wir sie uns wieder 💪","Rivals tut heute weh. Wir bleiben dran 📈"],
+  championsWin:["Champions-Nacht! Ich hab die Hymne mitgesummt 🎶⭐","Unter Flutlicht sehen meine Schuhe noch geiler aus ✨👟"],
+  championsLoss:["Wir lernen aus dieser Nacht. Nächstes Mal unter Flutlicht wieder 💪","Große Bühne, harte Lektion. Wir kommen wieder ⭐","Champions ist kein Wunschkonzert. Weiter arbeiten 💪"],
+  tournamentWin:["Turnier läuft! Ich hab schon Platz im Schrank für den Pokal gemacht 🏆🗄️","Eine Runde weiter. Pokal, wir sehen uns 🏆👀"],
+  tournamentLoss:["Raus aus dem Turnier. Das tut weh, aber wir lernen draus 💪","Turnier vorbei. Nächstes Mal gehen wir weiter 🏆","Ausgeschieden. Das nehmen wir als Antrieb fürs nächste Turnier 🏆💪"],
+  upsetWin:["{away} hatte die besseren Werte. Wir hatten das größere Herz ❤️😎","Underdog? Eher Under-Wolf 🐺","Die Buchmacher weinen gerade 😂📉"],
+  upsetLoss:["Das war gegen {away} zu wenig. Wir müssen das besser machen 😤","Gegen {away} darf das nicht passieren. Mund abputzen 💪","Wir haben {away} unterschätzt. Das passiert uns nicht nochmal 😤","Abhaken, aber nicht vergessen. Gegen {away} wollen wir Revanche 💪"],
+  rain:["Ich hab heute mehr Wasser geschluckt als im Schwimmbad 🌧️🏊","Die Haare sind ruiniert. Das Spiel war's wert 🌧️💇‍♂️","Regen ist nur Gratis-Dusche während des Spiels 🚿🌧️"],
+  snow:["Ich hab in der Halbzeit einen Schneemann gebaut. Er hat besser verteidigt als ich ⛄😂","Schnee! Ich fühl mich wie ein Pinguin auf Stollen 🐧❄️","Meine Finger sind noch eingefroren. Ich tipp mit der Nase 👃❄️"],
+  night:["{time} Uhr… ich krieg morgen bestimmt eine Krankmeldung vom Trainer 😴","Um {time} Uhr Fußball. Wir sind Profis. Oder verrückt 🌙⚽","{time} Uhr. Meine Mama denkt, ich schlafe 🤫🌙"],
+  morning:["Frühes Spiel, frühe Punkte. Ich geh jetzt wieder ins Bett 😴","Noch vor dem Mittagessen gewonnen. Produktiver Tag ☀️","Spiel vor dem Frühstück gewonnen. Jetzt Müsli 🥣😎","Wer früh aufsteht, gewinnt. Oder so ähnlich ☀️⚽"],
+  moodLow:["Kopf hoch, Leute. Wir sind besser, als es gerade aussieht 💪","Lasst uns morgen beim Training einfach mal wieder lachen 🫂","Wir sind ein Team. Gerade in solchen Wochen 🤝"],
+  moodHigh:["Diese Kabine ist besser als jedes Wellness-Hotel 🧖‍♂️❤️","Stimmung hier ist so gut, ich will gar nicht nach Hause 🏠❌","Ich hab heute zum ersten Mal den Trainer lachen gesehen 😮😂"],
+  join:["Moin! Ich bring gute Laune und schlechte Witze mit 😄","Hallo Leute 👋 Wer ist hier der Kabinen-DJ? Wir müssen reden 🎧","Bin da! Wo ist das WLAN-Passwort? 📶😅","Servus! Ich hab gehört, hier gibt's die besten Pizzaabende 🍕","Hallo zusammen! Ich bin schüchtern. Das hält ungefähr 3 Minuten 😇"],
+  joinIcon:["Ich trau mich kaum zu schreiben. Hallo, Legende 🙇","Darf ich dich nachher um ein Foto bitten? Für meine Mama 📸🥹","Jetzt müssen wir uns alle benehmen. Eine Legende liest mit 😳"],
+  joinReply:["Willkommen! Erste Regel: Nie den Platz vom Kapitän im Bus nehmen 😂","Willkommen! Der Kaffee ist schlecht, aber die Leute sind super ☕❤️","Herzlich willkommen 🤝 Die Kabine ist links, der Spiegel ist meistens besetzt 🪞","Neu hier? Keine Sorge, wir beißen nur im Training 😁","Willkommen! Tipp: Nie das Essen vom Kühlschrank-Fach oben rechts nehmen 🥪⚠️"],
+  joinRival:["Ich hab gerade beschlossen, ab morgen um 6 zu trainieren 😤⏰","Willkommen… Konkurrenz belebt das Geschäft, oder? 😅","Okay, jetzt wird's ernst. Ich esse ab heute Brokkoli 🥦😤"],
+  joinFee:["Einstand ist Pflicht. Kuchen, Getränke, eine Rede 🎂🎤","Einstand bitte mit Schokokuchen. Keine Rosinen 🎂🚫","Neu hier heißt: nächste Runde Kakao geht auf dich ☕😏"],
+  leave:["Und wieder ein leerer Spind 🥲","Der Trainer macht ernst 😳","Gruppe wird kleiner, Herz wird schwerer 💔","Ich räum dann mal die Schuhe weg, die dagelassen wurden 👟🥲","Ich schreib jetzt nur noch nett, sonst bin ich der Nächste 😇"],
+  cbSermonWin:["Nach der Predigt hab ich mich nicht getraut, auch nur einen Meter weniger zu laufen 😅","Predigt gewirkt. Meine Ohren sind aber immer noch rot 👂🔥","Ich hab die Predigt als Wecker eingestellt. Funktioniert 📢⏰"],
+  cbSermonLoss:["Die Ansage war berechtigt. Wir müssen mehr bringen 😓","Wir haben den Trainer gehört. Jetzt müssen wir's zeigen 💪"],
+  cbRun:["Hab nach dem Straflauf zwei Tage nur rückwärts Treppen genommen 🪜😵","Der Straflauf hat geholfen. Sagt mein Kopf. Meine Waden sagen was anderes 🦵😭","Ich hab beim Straflauf ein Reh überholt 🦌💨"],
+  cbPizzaWin:["Pizza am Abend, Punkte am Tag. Das ist die Formel 🍕📈","Ich schlag vor: Pizza vor jedem Spiel. Für die Wissenschaft 🍕🧪","Ich glaub, die Salami-Pizza hat heute mitgespielt 🍕⚽"],
+  cbPizzaLoss:["Nächstes Mal Pizza erst NACH dem Sieg 🍕","Pizza war gut. Der Rest nicht 😓"],
+  cbDayOffWin:["Freier Tag, volle Akkus, drei Punkte 🔋⚽","Ich hab am freien Tag 14 Stunden geschlafen. Hat sich gelohnt 😴⚽"],
+  cbDayOffLoss:["Freier Tag ist vorbei, jetzt wird wieder gearbeitet 💪"],
+  cbPartyWin:["Die Party hat Kraft gegeben. Oder es war der Kaffee danach ☕🎉","Ich hab nach der Party noch getanzt. Im Spiel. Bei jedem Zweikampf 🕺⚽"],
+  cbPartyLoss:["Okay, vielleicht war die Party ein bisschen lang 😬"],
+  cbBenchScored:["Trainer, die Bank kann mich mal. Mit Respekt 😏⚽","Danke für die Motivation, Trainer. Tor ist für Sie 🫡⚽"],
+  cbBenchGood:["Die Bank hat heute auf mich gewartet. Vergeblich 😎","Hab mir das Kissen gar nicht erst ausgepackt 🪑❌"],
+  cbBenchBad:["Ich glaub, ich kenn bald jede Schraube an der Bank 🪑🔩","Ich bring nächstes Mal eine Decke mit. Für die Bank 🧣🪑"],
+  cbBenchOut:["@[{name}] hat heute die beste Aussicht im Stadion gehabt. Von der Bank 🪑🔭","@[{name}], wie war das Spiel von der Bank? 😂🪑"],
+  cbPraisedAgain:["@[{name}] schon wieder. Der Trainer braucht bald eine neue Lieblingsfarbe 🙄😂","Ich glaub, @[{name}] hat das Lob als Treibstoff getankt ⛽😂","@[{name}] liefert, und wir dürfen applaudieren 👏🙄"],
+  cbPraisedQuiet:["@[{name}] hat sich wohl auf dem Lob ausgeruht 🛋️😂","Das Lob vom letzten Mal war wohl zu schwer, @[{name}] 😏","@[{name}], die Lob-Batterie ist leer, oder? 🔋😂"],
+  leaveBye:["Macht's gut! Und passt auf meinen Spind auf 🫡","Danke für die schöne Zeit. Ich schick euch eine Postkarte 💌","Tschüss, Leute! Ihr wart die Besten ❤️🫡"]
+ };
+ for(const k of Object.keys(MORE_T))T[k]=[...(T[k]||[]),...MORE_T[k]];
  // Running gags with recurring characters (see castRoles). Lines: [speaker, text]; speaker is a role, "x"/"y" (any
  // other player), "keeper", "captain" or "striker". {late},{dj},... insert the role's short name.
  const GAGS=[
@@ -146,11 +247,50 @@
   {id:"maskottchen",lines:[["x","Hat jemand gesehen, wie das Maskottchen von {away} ausgerutscht ist? 😂"],["y","Bestes Highlight des Tages 😂🎥"]]},
   {id:"selfie",when:"win",lines:[["style","Siegerfoto in die Gruppe! 📸"],["x","Mein Doppelkinn ist drauf, löschen 😭"],["dj","Zu spät, ist schon mein Profilbild 😂"]]},
   {id:"buslaut",when:"win",lines:[["dj","Die Busfahrt wird LAUT heute 🔊🚌"],["late","Wartet auf mich!!! 🏃‍♂️"]]},
-  {id:"traurig",when:"loss",lines:[["x","Heute keine Musik im Bus, oder? 😶"],["dj","Nur traurige Lieder 🎻😢"]]},
+  {id:"traurig",when:"loss",lines:[["x","Heute im Bus lieber leise, oder? 😶"],["dj","Ich hab nur ruhige Lieder dabei 🎻"]]},
   {id:"nochmal",when:"loss",lines:[["x","Wer schaut sich das Spiel nochmal an? 👀"],["y","Ich nicht. Nie wieder. 🙈"]]},
   {id:"eisbad",lines:[["x","Eisbad nach dem Spiel war heute brutal 🥶🛁"],["food","Ich hab danach drei Kakao gebraucht ☕☕☕"]]},
   {id:"oma",lines:[["captain","Meine Oma hat angerufen. Sie fand die Aufstellung mutig 😂👵"],["x","Oma als Co-Trainer, ich bin dafür 🙋"]]}
  ];
+ // V21.438: more running gags. After a defeat only the calm ones (calm:true or when:"loss") are told, after a heavy
+ // defeat none: when there is trouble the group stays serious.
+ GAGS.push(
+  {id:"wecker",lines:[["late","Mein Wecker hat heute nicht geklingelt ⏰"],["x","@[{late}] du hast keinen Wecker. Du hast Ausreden 😂"],["late","Beides gleich zuverlässig 😇"]]},
+  {id:"navi",lines:[["late","Navi sagt noch 40 Minuten 🚗"],["x","@[{late}] du wohnst 5 Minuten vom Stadion weg 😂"],["late","Ich nehm die landschaftlich schöne Route 🌄"]]},
+  {id:"karaoke",when:"win",lines:[["dj","Karaoke im Bus heute. Keine Ausreden 🎤"],["x","Bitte nicht wieder das eine Lied mit dem Refrain, den keiner kann 😭"],["dj","Genau DESWEGEN 😎🎶"]]},
+  {id:"aux",lines:[["x","Wer hat @[{dj}] schon wieder das Aux-Kabel gegeben? 😩"],["dj","Das Aux-Kabel hat MICH gewählt 🎧"]]},
+  {id:"nudel",lines:[["food","Hab für morgen Nudelsalat gemacht. 4 Kilo 🥗"],["x","@[{food}] für wen?"],["food","Für mich. Ihr kriegt was ab, wenn ihr lieb seid 😇"]]},
+  {id:"riegel",calm:true,lines:[["x","Wer hat meinen Proteinriegel aus der Tasche genommen? 😤"],["food","Ich hab nur geguckt, ob er noch gut ist 🫣"]]},
+  {id:"lag",lines:[["gamer","Hab heute Nacht bis 3 Footera gezockt 🎮"],["x","Das erklärt deinen ersten Ballkontakt 😂"],["gamer","Das war Lag, Leute 📶"]]},
+  {id:"walkout",lines:[["gamer","Ich hab gerade einen Walkout gezogen und bin aus dem Bett gefallen 🎮😱"],["x","Screenshot oder es ist nie passiert 📸"],["gamer","Bin noch am Boden. Schick ich später 🫠"]]},
+  {id:"spiegel",lines:[["style","Kabinenspiegel ist ab heute reserviert. Für mich 🪞"],["x","Der war schon immer für dich reserviert 😂"]]},
+  {id:"socken",lines:[["style","Neue Stutzen bestellt. Limited Edition 🧦✨"],["x","Es sind weiße Socken 😐"],["style","LIMITIERTE weiße Socken 😤"]]},
+  {id:"parfum",lines:[["x","Warum riecht der ganze Bus nach Parfüm? 🤢"],["style","Das heißt Duft, Banause 😌"],["y","Ich riech es noch durch die Jacke 😷"]]},
+  {id:"kasse2",calm:true,lines:[["kasse","Neue Regel: Handy in der Besprechung = 5 € 📵💶"],["x","Gilt das auch für den Trainer? 👀"],["kasse","…nächste Frage 😅"]]},
+  {id:"kasse3",calm:true,lines:[["kasse","Kassenstand: 312 € und ein Knopf 💶🔘"],["x","Wer zahlt mit Knöpfen?! 😂"],["y","Kein Kommentar 🤐"]]},
+  {id:"handschuh",lines:[["keeper","Neue Handschuhe. Die halten alles 🧤✨"],["striker","Morgen 20 Schüsse, @[{keeper}]. Dann reden wir 😏"],["keeper","Bring Pflaster mit 😎"]]},
+  {id:"abschlag",lines:[["x","@[{keeper}] warum ging dein Abschlag ins Publikum? 😂"],["keeper","Das war ein Geschenk für die Fans 🎁"]]},
+  {id:"knoten",calm:true,lines:[["x","Wer hat meine Schnürsenkel zusammengeknotet? 👟🪢"],["y","Ich war's nicht. Aber Respekt an den Täter 😂"]]},
+  {id:"waerme",calm:true,lines:[["x","Hat jemand eine Wärmflasche? Ich spür meine Zehen nicht mehr 🥶"],["y","Ich leih dir meine Mütze. Die von Oma gestrickte 🧶"]]},
+  {id:"wlan",lines:[["x","Kabinen-WLAN ist schon wieder tot 📶"],["gamer","Ich war's nicht. Ich hab nur ein Update geladen. 30 GB 😇"]]},
+  {id:"teamabend",lines:[["captain","Teamabend nächste Woche: Bowling oder Escape Room? 🎳🔐"],["x","Bowling. Im Escape Room finden wir @[{late}] nie wieder 😂"],["late","Ich find wenigstens den Ausgang 😤"]]},
+  {id:"trikot",when:"win",lines:[["x","Hab mit einem von {away} das Trikot getauscht 👕"],["y","Und? Riecht's nach Niederlage? 😏"]]},
+  {id:"rasen",lines:[["x","Der Rasen heute war wie ein Teppich 🌱"],["y","Du bist dreimal ohne Gegner hingefallen 😂"],["x","Teppich mit Falten 😤"]]},
+  {id:"selfie2",lines:[["x","Das Maskottchen wollte ein Selfie mit mir 📸"],["y","Auf dem Foto weiß man nicht, wer wer ist 😂"]]},
+  {id:"interview",when:"win",lines:[["striker","Hab im Interview 4-mal 'am Ende des Tages' gesagt 🎙️"],["x","Am Ende des Tages zählt nur das 😂"],["captain","Am Ende des Tages haben wir gewonnen 😎"]]},
+  {id:"fanpost",lines:[["x","Ich hab Fanpost bekommen! 💌"],["y","Von deiner Oma zählt nicht 😂"],["x","…nächste Frage 😤"]]},
+  {id:"busplatz",calm:true,lines:[["x","Wer sitzt schon wieder auf MEINEM Platz im Bus? 🚌"],["y","Da steht nirgendwo dein Name 😏"],["x","Doch. Mit Edding. Unter dem Sitz 😤"]]},
+  {id:"dehnen",calm:true,lines:[["x","Der Physio meint, ich soll mehr dehnen 🧘"],["y","Du kommst nicht mal an deine Knie 😂"]]},
+  {id:"zusammen",when:"loss",lines:[["captain","Morgen Training wie immer. Wir stehen zusammen 🤝"],["x","Bin da. Als Erster 💪"],["late","Ich auch. Versprochen. Pünktlich 🫡"]]},
+  {id:"aufarbeiten",when:"loss",lines:[["x","Ich hab mir die Gegentore angeschaut. Das kriegen wir hin 💪"],["captain","Genau so. Nächste Woche zeigen wir's 🤝"]]},
+  {id:"kekse",when:"loss",lines:[["food","Ich hab Kekse im Bus. Für alle 🍪"],["x","Danke, das tut gerade gut 🫂"]]},
+  {id:"remisfrisur",when:"draw",lines:[["x","Unentschieden. Wie mein Gefühl gerade 😐"],["y","Wenigstens die Frisur von @[{style}] hat gewonnen 💇‍♂️"],["style","Wie immer 😎"]]},
+  {id:"remisdj",when:"draw",lines:[["dj","Bus-Playlist heute: halb fröhlich, halb traurig 🎧"],["x","Also wieder Schlager 😂"]]},
+  {id:"pfand",calm:true,lines:[["kasse","Wer hat die 40 Pfandflaschen in der Kabine gesammelt? 🍾"],["food","Das ist meine Altersvorsorge 😤"]]},
+  {id:"hund",lines:[["x","Mein Hund hat das Spiel mitgeschaut und gebellt, als ich am Ball war 🐶"],["y","Er wollte dir sagen, dass du abspielen sollst 😂"]]},
+  {id:"geburtstag",lines:[["captain","Nicht vergessen: @[{food}] hat morgen Geburtstag 🎂"],["food","Ich wünsch mir ein Buffet. Ein großes 🍗🍝🍰"],["x","Wir hatten an eine Karte gedacht 😂"]]}
+ );
+ for(const g of GAGS)if(["kasse","schoner","kabel","flasche","eisbad","oma"].includes(g.id))g.calm=true;
 
  /* ---------- recurring characters ---------- */
  // The same player keeps the same role as long as he is in the squad (by uid, not by match).
@@ -167,7 +307,8 @@
  }
 
  /* ---------- match chat (pure, exported for tests) ---------- */
- function matchMessages(d){
+ function matchMessages(d){const r=fresh(d&&d.recentLines,()=>matchRaw(d||{}));r.value.lines=r.used;return r.value}
+ function matchRaw(d){
   const s=String(d.seed||""),out=[],spoke=new Map(),MAX=12;
   const P=(Array.isArray(d.players)?d.players:[]).filter(p=>p&&(num(p.minutes)>0||num(p.goals)>0||num(p.assists)>0));
   const gh=num(d.gh),ga=num(d.ga),goals=(Array.isArray(d.goals)?d.goals:[]).slice().sort((a,b)=>num(a.minute)-num(b.minute));
@@ -303,9 +444,13 @@
   // 6) running gags: one per match (two on a quiet night), never one of the last few again
   const recent=new Set(Array.isArray(d.recentGags)?d.recentGags:[]),usedGags=[];
   const striker=P.filter(p=>["ST","CF"].includes(p.pos)).sort((x,y)=>num(y.ovr)-num(x.ovr))[0]||null;
+  // V21.438: when there is trouble the jokes stop: after a defeat only calm gags, after a heavy one or a red card none.
+  const trouble=result==="loss"||!!sent||ga-gh>=3;
+  const tone=g=>result==="loss"?g.when==="loss"||(g.calm&&!g.when):!g.when||g.when===result;
   const tryGag=salt=>{
-   const pool=GAGS.filter(g=>(!g.when||g.when===result)&&!recent.has(g.id)&&!usedGags.includes(g.id));
-   const list=pool.length?pool:GAGS.filter(g=>(!g.when||g.when===result)&&!usedGags.includes(g.id));
+   if(result==="loss"&&(ga-gh>=3||sent))return false;
+   const pool=GAGS.filter(g=>tone(g)&&!recent.has(g.id)&&!usedGags.includes(g.id));
+   const list=pool.length?pool:GAGS.filter(g=>tone(g)&&!usedGags.includes(g.id));
    for(let i=0;i<list.length;i++){
     const g=list[(hash(s+salt)+i)%list.length];
     const cast={...roles,keeper,captain,striker},taken=new Set();
@@ -328,6 +473,14 @@
   if(mood<=30)say(voice("ml")||captain,pick(T.moodLow,s,"ml"));
   else if(mood>=85&&good)say(voice("mh"),pick(T.moodHigh,s,"mh"),{e:"❤️",n:reactN("mh",4,9)});
   if(good){const p=voice("party");if(p)say(p,pick(T.party,s,"party"),{e:"🎶",n:reactN("party",2,7)})}
+
+  // 8) V21.438: a player sends a meme (not after a defeat or a red card); a different one every time
+  if(!trouble&&out.filter(m=>m.kind!=="sys").length<=9&&hash(s+"meme")%5<3){
+   const mv={...vars};for(const r of ROLES)if(roles[r])mv[r]=short(roles[r].name);if(keeper)mv.keeper=short(keeper.name);if(striker)mv.striker=short(striker.name);
+   const who=roles.gamer&&quiet(roles.gamer)?roles.gamer:voice("meme")||anyVoice("meme");
+   const meme=who&&room()?memeFor(result,"team",s,d.recentMemes,mv):null;
+   if(meme){const m=memeMsg("msg",meme,who);m.react={e:"😂",n:reactN("meme",3,10)};spoke.set(keyOf(who),(spoke.get(keyOf(who))||0)+1);out.push(m)}
+  }
 
   const ctx={type:"match",result,gh,ga,away:vars.away,mode,best:ctxP(best),worst:ctxP(worst&&num(worst.rating)<6.6?worst:null),
    red:ctxP(sent),yellow:ctxP(booked),joker:ctxP(jokerT?.p),keeper:keeper?{...ctxP(keeper),clean:ga===0&&num(keeper.minutes)>=60,saves:num(keeper.saves)}:null,
@@ -353,7 +506,7 @@
  }
  function history(v){
   const ctxs=v.msgs.filter(m=>m.kind==="sys"&&String(m.ref).startsWith("m:")&&(m.ctx||m.result));
-  return{results:ctxs.map(m=>m.ctx?.result||m.result).slice(-12),gags:ctxs.flatMap(m=>m.ctx?.gags||[]).slice(-5)};
+  return{results:ctxs.map(m=>m.ctx?.result||m.result).slice(-12),gags:ctxs.flatMap(m=>m.ctx?.gags||[]).slice(-10)};
  }
  function fromMatch(m,v=read(),at=Date.now()){
   if(!m||typeof matchReportPerformanceRows!=="function")return null;
@@ -366,7 +519,7 @@
    seed:matchRef(m),home:typeof matchHomeTeamName==="function"?matchHomeTeamName():"Footera Club",away:typeof matchAwayTeamName==="function"?matchAwayTeamName():"Gegner",
    gh:m.home,ga:m.away,pensWinner:m.penaltyWinner,pensHome:m.pensHome,pensAway:m.pensAway,extraTime:!!m.extraTimeStarted,mode:m.mode,tournament:!!m.tournament,
    opp:num(m.opp),power:num(m.power),captainUid:String(m.assignments?.captain||""),weather:String(m.weather?.kind||""),injuredUid:m.injuryTriggered&&m.forcedOut?String(m.forcedOut):"",
-   hour:t.hour,minute:t.minute,prev:hist.results,recentGags:hist.gags,memo:v.memo,mood:v.mood,
+   hour:t.hour,minute:t.minute,prev:hist.results,recentGags:hist.gags,recentLines:Array.isArray(v.lines)?v.lines:[],recentMemes:recentMemes(v),memo:v.memo,mood:v.mood,
    goals:(m.goalEvents||[]).map(g=>({side:g.side,minute:num(g.minute),scorer:String(g.scorer||""),scorerUid:String(g.scorerUid||""),assist:String(g.assist||""),assistUid:String(g.assistUid||""),type:g.type})),
    players,potm:potm?{name:String(potm.base?.name||potm.name||""),uid:String(potm.uid||""),side:potm.side,rating:num(potm.rating)}:null
   };
@@ -379,8 +532,8 @@
    if(!live?.finished||live.kabineRecorded)return 0;
    const d=fromMatch(live);if(!d||!d.players.length)return 0;
    live.kabineRecorded=true;
-   const {result,messages}=matchMessages(d);
-   return append(d.seed,messages.map(x=>({...x,result})),{update:v=>{v.memo={};v.mood=clamp(v.mood+(MOOD_RESULT[result]||0),0,100)}});
+   const {result,messages,lines}=matchMessages(d);
+   return append(d.seed,messages.map(x=>({...x,result})),{update:v=>{v.memo={};v.mood=clamp(v.mood+(MOOD_RESULT[result]||0),0,100);keepLines(v,lines||[])}});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
  }
  function squadVoices(exclude=new Set()){
@@ -392,7 +545,7 @@
  }
  function ratingOf(item,b){try{return num(typeof itemRating==="function"?itemRating(item):b?.ovr)||num(b?.ovr)}catch(e){return num(b?.ovr)}}
  // The best new signing of a pack (84+, special cards and icons) joins the group.
- function joinMessages(newcomer,voices,seed){
+ function joinMessages(newcomer,voices,seed,recentM=[]){
   const out=[{kind:"sys",text:`Trainer hat ${newcomer.name} hinzugefügt`,ctx:{type:"pack",n:whoOf(newcomer),icon:!!newcomer.icon,pos:String(newcomer.pos||""),players:voices.slice(0,8).map(v=>({...whoOf(v),pos:String(v.pos||"")}))}}];
   out.push({kind:"msg",who:whoOf(newcomer),text:pick(T.join,seed,"j")});
   const mates=voices.filter(v=>v.uid!==newcomer.uid&&v.name!==newcomer.name);
@@ -401,6 +554,9 @@
   const rival=newcomer.pos&&mates.find(v=>v.pos&&v.pos===newcomer.pos&&!out.some(o=>o.who?.uid===v.uid));
   if(rival)out.push({kind:"msg",who:whoOf(rival),text:pick(T.joinRival,seed,"jv"),react:{e:"😂",n:2+hash(seed+"jvn")%5}});
   else{const f=mates.find(v=>!out.some(o=>o.who?.uid===v.uid));if(f&&hash(seed+"fee")%2===0)out.push({kind:"msg",who:whoOf(f),text:pick(T.joinFee,seed,"jf")})}
+  // V21.438: sometimes a teammate welcomes the signing with a meme
+  const mm=mates.find(v=>!out.some(o=>o.who?.uid===v.uid));
+  if(mm&&hash(seed+"jmeme")%2===0){const m=memeMsg("msg",memeFor("pack","team",seed,recentM,{N:short(newcomer.name)}),mm);if(m){m.react={e:"😂",n:2+hash(seed+"jmn")%6};out.push(m)}}
   return out;
  }
  function afterPack(items){
@@ -411,15 +567,19 @@
    const best=ranked[0];if(!best)return 0;
    const newcomer={name:String(best.b.name||"Spieler"),uid:String(best.item.uid||""),pid:String(best.b.id||""),icon:!!best.b.isIcon,pos:String(best.b.position||"").toUpperCase()};
    const ref="p:"+(newcomer.uid||newcomer.pid+"|"+Date.now());
-   return append(ref,joinMessages(newcomer,squadVoices(new Set([newcomer.uid])),ref));
+   const v=read(),r=fresh(v.lines,()=>joinMessages(newcomer,squadVoices(new Set([newcomer.uid])),ref,recentMemes(v)));
+   return append(ref,r.value,{update:x=>keepLines(x,r.used)});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
  }
- function leaveMessages(names,more,voices,seed,leaver=null){
+ function leaveMessages(names,more,voices,seed,leaver=null,recentM=[]){
   const list=more>0?`${names.join(", ")} und ${more} weitere`:names.join(" und ");
   const out=[];
   if(leaver)out.push({kind:"msg",who:whoOf(leaver),text:pick(T.leaveBye,seed,"lb"),react:{e:"🫡",n:3+hash(seed+"lbn")%7}});
   out.push({kind:"sys",text:`${list} ${names.length+more>1?"haben":"hat"} die Gruppe verlassen (SBC)`,ctx:{type:"sbc",gone:names.slice(0,2),players:voices.slice(0,8).map(v=>({...whoOf(v),pos:String(v.pos||"")}))}});
-  if(voices.length)out.push({kind:"msg",who:whoOf(voices[hash(seed)%Math.min(3,voices.length)]),text:pick(T.leave,seed,"l")});
+  const first=voices.length?voices[hash(seed)%Math.min(3,voices.length)]:null;
+  if(first)out.push({kind:"msg",who:whoOf(first),text:pick(T.leave,seed,"l")});
+  const mm=voices.find(v=>v!==first);
+  if(mm&&hash(seed+"smeme")%5<2){const m=memeMsg("msg",memeFor("sbc","team",seed,recentM,{}),mm);if(m)out.push(m)}
   return out;
  }
  // Players handed in for an SBC leave the group (only when a 82+ player was among them).
@@ -429,7 +589,8 @@
    const gone=items.map(i=>{const b=displayBase(i);return b?{name:String(b.name||"Spieler"),ovr:ratingOf(i,b),uid:String(i.uid||""),pid:String(b.id||"")}:null}).filter(Boolean).sort((x,y)=>y.ovr-x.ovr);
    if(!gone.length||gone[0].ovr<82)return 0;
    const top=gone.slice(0,2).map(x=>x.name),ref="s:"+gone.map(x=>x.uid).join(",").slice(0,180);
-   return append(ref,leaveMessages(top,gone.length-top.length,squadVoices(new Set(gone.map(x=>x.uid))),ref,gone[0]));
+   const v=read(),r=fresh(v.lines,()=>leaveMessages(top,gone.length-top.length,squadVoices(new Set(gone.map(x=>x.uid))),ref,gone[0],recentMemes(v)));
+   return append(ref,r.value,{update:x=>keepLines(x,r.used)});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
  }
 
@@ -440,84 +601,207 @@
  const W=c=>c.result==="win",NL=c=>c.result!=="win";
  const COACH={
   praiseBest:{label:c=>`⭐ ${short(c.best.name)} loben`,when:c=>c.type==="match"&&c.best,mood:8,memo:c=>({praised:{uid:c.best.uid,name:c.best.name}}),
-   say:["@[{B}] Weltklasse heute! 👑 So will ich das sehen.","@[{B}], so spielt ein Anführer! 👏","Ein Extra-Lob an @[{B}]. Note {r}! 🔥","@[{B}] ich hab Gänsehaut bekommen. Danke! 🙌"],
-   re:[["best",["Danke Trainer 🥹 Ich geb's an die Jungs weiter","Krieg ich jetzt die Kapitänsbinde? 😏","Screenshot gemacht. Kommt ins Profil 📸😂","Ich weiß, Trainer. Ich weiß 😎"]],
-    ["x",["Trainerliebling 😂","Und wer hat die Bälle aufgelegt? 🙄","@[{B}] muss jetzt die ganze Woche Kaffee holen ☕😂","Schleimer-Alarm 🚨😂","Jetzt hebt @[{B}] komplett ab 🚀😂"]],
-    ["keeper",["Ich hab übrigens auch gespielt 🧤😤","Hallo? Weiße Weste? 🧤👀"],c=>c.keeper&&c.keeper.clean&&c.keeper.uid!==c.best.uid],
-    ["y",["Ab morgen trägt @[{B}] die Nase noch höher 👃😂","Ich will auch gelobt werden 🥺","Kann man den Chat stumm schalten, bevor jetzt wieder angegeben wird? 🔕😂"]],
-    ["best",["Neid ist die höchste Form der Anerkennung 😎","Ihr dürft mir ab jetzt die Tasche tragen 😂"],c=>hash(c.best.name)%2===0]]},
+   say:["@[{B}] Weltklasse heute! 👑 So will ich das sehen.","@[{B}], so spielt ein Anführer! 👏","Ein Extra-Lob an @[{B}]. Note {r}! 🔥","@[{B}] ich hab Gänsehaut bekommen. Danke! 🙌","@[{B}] wenn du so weiterspielst, muss ich dir ein Denkmal bauen 🗿👏","@[{B}] Note {r}. Ich hab's ausgedruckt und an den Kühlschrank gehängt 🧲📄","@[{B}] heute warst du nicht von dieser Welt 👽🔥","Ich sag's nur einmal, @[{B}]: überragend. Und jetzt nicht abheben 😏"],
+   re:[["best",["Danke Trainer 🥹 Ich geb's an die Jungs weiter","Krieg ich jetzt die Kapitänsbinde? 😏","Screenshot gemacht. Kommt ins Profil 📸😂","Ich weiß, Trainer. Ich weiß 😎","Kann ich das Lob auch in Urlaubstagen haben? 🏖️😇","Meine Mama hat geweint 🥹","Ich hab mich gerade selbst geliked 👍😂"]],
+    ["x",["Trainerliebling 😂","Und wer hat die Bälle aufgelegt? 🙄","@[{B}] muss jetzt die ganze Woche Kaffee holen ☕😂","Schleimer-Alarm 🚨😂","Jetzt hebt @[{B}] komplett ab 🚀😂","@[{B}] trägt ab morgen eine Krone im Training 👑🙄","Ich hab übrigens auch mitgespielt. Nur so 🙋","Wir brauchen eine größere Kabinentür für @[{B}]s Ego 🚪😂"]],
+    ["keeper",["Ich hab übrigens auch gespielt 🧤😤","Hallo? Weiße Weste? 🧤👀","Und wer hat hinten alles weggefangen? 🧤🙄"],c=>c.keeper&&c.keeper.clean&&c.keeper.uid!==c.best.uid],
+    ["y",["Ab morgen trägt @[{B}] die Nase noch höher 👃😂","Ich will auch gelobt werden 🥺","Kann man den Chat stumm schalten, bevor jetzt wieder angegeben wird? 🔕😂","Nächstes Mal bin ich dran, Trainer 😤","Ich lob mich jetzt einfach selbst: gut gemacht, ich 👏😂"]],
+    ["best",["Neid ist die höchste Form der Anerkennung 😎","Ihr dürft mir ab jetzt die Tasche tragen 😂","Autogramme gibt's morgen nach dem Training ✍️"],c=>hash(c.best.name)%2===0]]},
   praiseKeeper:{label:c=>`🧤 ${short(c.keeper.name)} feiern`,when:c=>c.type==="match"&&c.keeper&&(c.keeper.clean||c.keeper.saves>=4)&&c.best?.uid!==c.keeper.uid,mood:5,
-   say:["@[{K}] du warst heute eine Wand 🧱🧤","@[{K}] Hände aus Gold heute 🧤✨"],
-   re:[["keeper",["Endlich sieht's mal einer 🥹🧤","Ich nehm Lob auch in Form von Pizza 🍕🧤"]],["x",["Hände aus Klebstoff 🧤✨","Ohne dich wär das heute nix geworden 🙏"]]]},
+   say:["@[{K}] du warst heute eine Wand 🧱🧤","@[{K}] Hände aus Gold heute 🧤✨","@[{K}] ich hab das Tor mal vermessen. Es war heute kleiner. Wegen dir 📏🧤","@[{K}] du hast heute mehr gehalten als mein Kühlschrank 🧊🧤"],
+   re:[["keeper",["Endlich sieht's mal einer 🥹🧤","Ich nehm Lob auch in Form von Pizza 🍕🧤","Hab ich doch gesagt: Die Ecke gehört mir 😎","Meine Handschuhe bedanken sich 🧤🙏"]],["x",["Hände aus Klebstoff 🧤✨","Ohne dich wär das heute nix geworden 🙏","Unser Torwart: Wand, Krake und Held in einem 🐙🧱","Ich hab mich beim Konter nur auf dich verlassen. Hat geklappt 😅"]]]},
   praiseJoker:{label:c=>`🃏 ${short(c.joker.name)} feiern`,when:c=>c.type==="match"&&c.joker&&c.best?.uid!==c.joker.uid,mood:5,
-   say:["Was ein Joker, @[{J}]! 🃏🔥","@[{J}] rein, Tor, Held. So einfach 🃏"],
-   re:[["joker",["Nächstes Mal Startelf? 👀😏","Die Bank hat mich heiß gemacht 🔥"]],["x",["Jetzt will @[{J}] bestimmt mehr Gehalt 💰😂","Super-Sub! 🦸"]]]},
+   say:["Was ein Joker, @[{J}]! 🃏🔥","@[{J}] rein, Tor, Held. So einfach 🃏","@[{J}] die beste Einwechslung meiner Karriere. Und ich wechsle viel ein 🃏😎"],
+   re:[["joker",["Nächstes Mal Startelf? 👀😏","Die Bank hat mich heiß gemacht 🔥","Ich hab auf der Bank schon mal das Tor visualisiert 🧘⚽"]],["x",["Jetzt will @[{J}] bestimmt mehr Gehalt 💰😂","Super-Sub! 🦸","Joker sticht. Und wir haben alle gezittert 🃏😅"]]]},
   praiseTeam:{label:()=>"👏 Alle loben",when:c=>c.type==="match"&&c.result!=="loss",mood:6,
-   say:["Stark, Leute! Jeder einzelne 👏","Ich bin stolz auf euch. Wirklich. 🫶","So sieht ein Team aus 💪"],
-   re:[["captain",["Danke, Trainer! 🙌","Wir geben das Lob an die Fans weiter 🙌"]],["x",["💪💪💪","Trainer wird emotional 🥹😂","Ich hab's mir eingerahmt 🖼️"]]]},
+   say:["Stark, Leute! Jeder einzelne 👏","Ich bin stolz auf euch. Wirklich. 🫶","So sieht ein Team aus 💪","Ich hab beim Zuschauen vergessen, Kaffee zu trinken. So gut wart ihr ☕👏","Heute habt ihr mir die Arbeit leicht gemacht. Das darf öfter passieren 😌","Wer heute nicht stolz ist, hat nicht zugeschaut 🫶"],
+   re:[["captain",["Danke, Trainer! 🙌","Wir geben das Lob an die Fans weiter 🙌","Das war für Sie, Trainer 🫡"]],["x",["💪💪💪","Trainer wird emotional 🥹😂","Ich hab's mir eingerahmt 🖼️","Kann ich das schriftlich haben? Für meinen Berater 📄😂","Ich hab Gänsehaut. Oder das ist noch vom Eisbad 🥶"]],["y",["Teamwork makes the dream work 🤝","Gruppenkuscheln! 🫂😂"]]]},
   cheerUp:{label:()=>"🫂 Aufbauen",when:c=>c.type==="match"&&c.result==="loss",mood:6,
-   say:["Kopf hoch, Leute. Ich glaub an euch. 🫂","Eine Niederlage macht uns nicht kaputt. Wir kommen zurück! 💪"],
-   re:[["captain",["Wir zahlen das zurück, versprochen 🤝","Danke, Trainer. Das brauchten wir 🙏"]],["x",["❤️","Nächstes Spiel geht's richtig ab 😤"]]]},
+   say:["Kopf hoch, Leute. Ich glaub an euch. 🫂","Eine Niederlage macht uns nicht kaputt. Wir kommen zurück! 💪","Heute hat's nicht gereicht. Aber ich hab gesehen, wie ihr gekämpft habt. Darauf bauen wir 🤝","Wir verlieren zusammen und wir stehen zusammen wieder auf 💪"],
+   re:[["captain",["Wir zahlen das zurück, versprochen 🤝","Danke, Trainer. Das brauchten wir 🙏","Wir sind bereit für die nächste Woche 💪"]],["x",["❤️","Nächstes Spiel geht's richtig ab 😤","Danke Trainer, das tut gut 🙏","Morgen bin ich als Erster da 💪"]]]},
   criticize:{label:c=>`😤 ${short(c.worst.name)} kritisieren`,when:c=>c.type==="match"&&c.worst&&c.worst.uid!==c.best?.uid,mood:-4,
-   say:["@[{W}] das war heute zu wenig. Da erwarte ich mehr.","@[{W}], wir müssen reden. Morgen 10 Uhr, mein Büro 🚪","@[{W}] Note {wr}… ich sag lieber nix 😶"],
-   re:[["worst",["Ich weiß, Trainer. Kommt nicht wieder 🙏","War der Rasen! 😤 …okay, war ich.","Autsch. Aber berechtigt 😓","Kann ich das Büro-Gespräch per Sprachnachricht machen? 😅"]],
-    ["x",["Uiuiui 😬","Ich hol schon mal Popcorn 🍿","Oha, er hat 'wir müssen reden' geschrieben 😳"]],["y",["Kopf hoch @[{W}] 🫂","Ich war auch nicht viel besser, psst 🤫"]]]},
+   say:["@[{W}] das war heute zu wenig. Da erwarte ich mehr.","@[{W}], wir müssen reden. Morgen 10 Uhr, mein Büro 🚪","@[{W}] Note {wr}… ich sag lieber nix 😶","@[{W}] ich weiß, dass du mehr kannst. Das will ich nächste Woche sehen.","@[{W}] Note {wr}. Das ist nicht dein Anspruch und nicht meiner."],
+   re:[["worst",["Ich weiß, Trainer. Kommt nicht wieder 🙏","War der Rasen! 😤 …okay, war ich.","Autsch. Aber berechtigt 😓","Kann ich das Büro-Gespräch per Sprachnachricht machen? 😅","Verstanden. Ich bin morgen eine Stunde früher da 💪"]],
+    ["x",["Uiuiui 😬","Ich hol schon mal Popcorn 🍿","Oha, er hat 'wir müssen reden' geschrieben 😳","Ich sag heute einfach nichts mehr 🤐"]],["y",["Kopf hoch @[{W}] 🫂","Ich war auch nicht viel besser, psst 🤫","@[{W}] wir trainieren morgen zusammen extra 🤝"]]]},
+  coffee:{label:c=>`☕ ${short(c.worst.name)} zum Gespräch einladen`,when:c=>c.type==="match"&&c.worst&&c.worst.uid!==c.best?.uid,mood:4,
+   say:["@[{W}] komm morgen auf einen Kaffee vorbei. Wir reden in Ruhe ☕","@[{W}] Kopf hoch. Ich glaub an dich. Morgen Kaffee? ☕","@[{W}] jeder hat mal so ein Spiel. Wir schauen es uns morgen zusammen an ☕🤝"],
+   re:[["worst",["Danke Trainer, das bedeutet mir viel 🙏","Bin da. Ich bring Kekse mit 🍪","Danke. Ich zeig nächste Woche ein anderes Gesicht 💪"]],["x",["Starker Trainer 🤝","@[{W}] wir stehen hinter dir 🫂","So geht Führung 👏"]],["y",["❤️","Ehrenmann, Trainer 🙌","@[{W}] wird schon wieder 💪"]]]},
   bench:{label:c=>`🪑 ${short(c.worst.name)} mit Bank drohen`,when:c=>c.type==="match"&&c.worst&&c.worst.uid!==c.best?.uid,mood:-6,memo:c=>({benched:{uid:c.worst.uid,name:c.worst.name}}),
-   say:["Noch so ein Spiel, @[{W}], und du wärmst die Bank 🪑","@[{W}] die Bank hat schon nach dir gefragt 🪑😏","@[{W}] ich hab dir schon mal ein Kissen auf die Bank gelegt 🪑"],
-   re:[["worst",["NEIN Trainer, bitte nicht 😭","Ich trainier ab morgen doppelt, versprochen 💪","Die Bank ist kalt um diese Jahreszeit 🥶","Challenge accepted 😤"]],["x",["Ich nehm deinen Platz gern 👀","Kissen leih ich dir 🪑😂","Bank-Wärmer-Club, willkommen 🪑😂"]],["y",["Harte Ansage 😳","Ich sag nix. Ich will nicht der Nächste sein 🤐"]]]},
+   say:["Noch so ein Spiel, @[{W}], und du wärmst die Bank 🪑","@[{W}] die Bank hat schon nach dir gefragt 🪑😏","@[{W}] ich hab dir schon mal ein Kissen auf die Bank gelegt 🪑","@[{W}] die Bank hat WLAN. Nur so als Info 🪑📶"],
+   re:[["worst",["NEIN Trainer, bitte nicht 😭","Ich trainier ab morgen doppelt, versprochen 💪","Die Bank ist kalt um diese Jahreszeit 🥶","Challenge accepted 😤","Ich hab's verstanden. Nächstes Mal zeig ich's 😤"]],["x",["Ich nehm deinen Platz gern 👀","Kissen leih ich dir 🪑😂","Bank-Wärmer-Club, willkommen 🪑😂","Ich reservier dir den Platz mit Heizung 🔥🪑"]],["y",["Harte Ansage 😳","Ich sag nix. Ich will nicht der Nächste sein 🤐","Oha. Der Trainer meint's ernst 😬"]]]},
   sermon:{label:()=>"📢 Kabinenpredigt",when:c=>c.type==="match",mood:c=>W(c)?-3:-8,memo:()=>({sermon:true}),
-   say:c=>W(c)?["Ja, gewonnen. ABER: Die zweite Halbzeit war ein Kindergeburtstag! 📢😤","Glaubt bloß nicht, dass ich zufrieden bin! Nur weil's 3 Punkte gibt! 📢","ICH. WILL. MEHR. Auch wenn wir gewinnen! 📢🔥"]
-    :["SO NICHT, LEUTE! Ich will Leidenschaft sehen! Laufbereitschaft! ZWEIKÄMPFE! 📢😤","Ich war noch nie so sauer. NIE. Morgen will ich Gesichter sehen, die brennen 🔥📢","Wer heute nicht gekämpft hat, braucht morgen nicht zu kommen. Punkt. 📢"],
-   re:[["x",["😶","Ja, Trainer 😶","…","Ich hab Angst 😰"]],["sys",["{y} hat die Gruppe stummgeschaltet 🔕","{y} hat das Handy weggelegt 📵"],c=>hash(c.away+c.gh)%2===0],
-    ["z",["Wer hat ihn so wütend gemacht? 👀","Meine Ohren klingeln, und das ist nur ein Chat 😵","Selbst mein Handy hat vibriert 📳😳"]],["captain",["Ihr habt ihn gehört, Leute. 💪","Verstanden, Chef. Wir liefern 🫡"]]]},
+   say:c=>W(c)?["Ja, gewonnen. ABER: Die zweite Halbzeit war ein Kindergeburtstag! 📢😤","Glaubt bloß nicht, dass ich zufrieden bin! Nur weil's 3 Punkte gibt! 📢","ICH. WILL. MEHR. Auch wenn wir gewinnen! 📢🔥","Gewonnen, aber mit DER Einstellung gewinnen wir nächste Woche nichts! 📢"]
+    :["SO NICHT, LEUTE! Ich will Leidenschaft sehen! Laufbereitschaft! ZWEIKÄMPFE! 📢😤","Ich war noch nie so sauer. NIE. Morgen will ich Gesichter sehen, die brennen 🔥📢","Wer heute nicht gekämpft hat, braucht morgen nicht zu kommen. Punkt. 📢","Das war nicht unser Fußball. Ab morgen wird wieder gearbeitet. Jeder einzelne. 📢"],
+   re:[["x",["😶","Ja, Trainer 😶","…","Ich hab Angst 😰","Verstanden 🫡"]],["sys",["{y} hat die Gruppe stummgeschaltet 🔕","{y} hat das Handy weggelegt 📵"],c=>hash(c.away+c.gh)%2===0],
+    ["z",["Wer hat ihn so wütend gemacht? 👀","Meine Ohren klingeln, und das ist nur ein Chat 😵","Selbst mein Handy hat vibriert 📳😳","Er hat Recht. Wir müssen mehr bringen 😤"]],["captain",["Ihr habt ihn gehört, Leute. 💪","Verstanden, Chef. Wir liefern 🫡","Kein Wort mehr. Morgen zeigen wir's auf dem Platz 💪"]]]},
   pizza:{label:()=>"🍕 Pizza für alle",when:c=>c.type==="match"&&c.result!=="loss",mood:10,memo:()=>({pizza:true}),
-   say:["Pizza geht heute auf mich 🍕","Pizza für alle! Ihr habt's euch verdient 🍕🍕","Ich hab 20 Pizzen bestellt. Keine Diskussion 🍕"],
-   re:[["food",["TRAINER 😍🍕","Ich nehm drei. Mit extra Käse 🧀","Ich bin schon an der Tür 🏃‍♂️🍕"]],["x",["Ich nehm Salami!","Ananas auf Pizza ist verboten in dieser Kabine 🍍🚫","Bester Trainer der Liga 🍕❤️"]],["y",["@[{food}] lass uns auch was übrig 😂","Wer Ananas bestellt, fliegt raus 🍍😤"]]]},
+   say:["Pizza geht heute auf mich 🍕","Pizza für alle! Ihr habt's euch verdient 🍕🍕","Ich hab 20 Pizzen bestellt. Keine Diskussion 🍕","Pizza! Aber wer Ananas bestellt, läuft morgen extra 🍍🏃","Pizza für alle. Die Rechnung schick ich an die Mannschaftskasse. Spaß! 🍕😏"],
+   re:[["food",["TRAINER 😍🍕","Ich nehm drei. Mit extra Käse 🧀","Ich bin schon an der Tür 🏃‍♂️🍕","Ich hab schon vorbestellt. Seit der 70. Minute 🍕😇","Familiengröße. Für mich allein 🍕🍕"]],["x",["Ich nehm Salami!","Ananas auf Pizza ist verboten in dieser Kabine 🍍🚫","Bester Trainer der Liga 🍕❤️","Ich will den Rand von allen 🍕😋"]],["y",["@[{food}] lass uns auch was übrig 😂","Wer Ananas bestellt, fliegt raus 🍍😤","Gibt's auch Nachtisch? 🍰👀","Diät ab Montag. Wie immer 😅"]]]},
   party:{label:()=>"🎉 Party heute Abend",when:W,mood:10,memo:()=>({party:true}),
-   say:["Heute Abend wird gefeiert 🎉 Musik an!","Party! Aber um 12 seid ihr alle im Bett 😏🎉"],
-   re:[["dj",["DJ {dj} ist bereit 🎧🔥","Playlist steht seit der 80. Minute 😎🎶"]],["late",["Ich komm später 😅","Wann geht's los? Ich bin noch beim Friseur 💇‍♂️"]],["x",["@[{late}] du kommst IMMER später 😂"]],["style",["Ich hab mein Outfit schon seit Dienstag geplant 👔✨"]]]},
+   say:["Heute Abend wird gefeiert 🎉 Musik an!","Party! Aber um 12 seid ihr alle im Bett 😏🎉","Ihr habt's verdient: Party! Ich komm auch. Kurz. Mit Tanzschuhen 🕺","Feiern erlaubt. Morgen Training trotzdem um 10. Ich sag's nur 🎉⏰"],
+   re:[["dj",["DJ {dj} ist bereit 🎧🔥","Playlist steht seit der 80. Minute 😎🎶","Ich hab neue Lieder! Also vier statt drei 🎧😎"]],["late",["Ich komm später 😅","Wann geht's los? Ich bin noch beim Friseur 💇‍♂️","Ich bin pünktlich! …zur Afterparty 😇"]],["x",["@[{late}] du kommst IMMER später 😂","Trainer auf der Tanzfläche? Das will ich sehen 🕺📹"]],["style",["Ich hab mein Outfit schon seit Dienstag geplant 👔✨","Glitzerhemd ist gebügelt ✨👔"]]]},
+  song:{label:()=>"🎶 Kabinenlied anstimmen",when:W,mood:6,
+   say:["Kabinenlied! Alle mitsingen, auch die, die keinen Ton treffen 🎶","Ich fang an: 'Wir sind die Besten…' 🎶 Jetzt ihr!","🎶 Lalala, drei Punkte sind da 🎶 Hab ich selbst gedichtet 😌"],
+   re:[["dj",["Ich mach den Beat 🥁🎧","Remix kommt heute Nacht 🎧🔥"]],["x",["Trainer, bitte nicht singen 🙉😂","Ich hab's aufgenommen. Für die Weihnachtsfeier 📹😏","Das war schief. Aber mit Herz ❤️😂"]],["captain",["Alle mitsingen, das ist ein Befehl 🎶🫡","Lauter! Die Nachbarkabine soll's hören 🔊"]]]},
+  photo:{label:()=>"📸 Mannschaftsfoto",when:c=>c.type==="match"&&c.result!=="loss",mood:4,
+   say:["Mannschaftsfoto! Alle in die Mitte, und keiner macht Hasenohren 📸🐰","Lächeln, Leute! Das kommt in die Vereinszeitung 📸","Siegerfoto! Wer die Augen zu hat, zahlt in die Kasse 📸💶"],
+   re:[["style",["Moment, Haare richten 💇‍♂️","Nur von meiner guten Seite. Also allen 😎"]],["late",["Wartet, ich bin gleich da!!! 🏃‍♂️📸","Hab ich's verpasst? 😭"]],["x",["Wer hat Hasenohren gemacht?! 🐰😂","Ich hatte die Augen zu. Nochmal 😭","Ich steh hinten, da sieht man mein Doppelkinn nicht 🙈"]]]},
   dayOff:{label:()=>"😴 Morgen frei",when:c=>c.type==="match"&&c.result!=="loss",mood:8,memo:()=>({dayoff:true}),
-   say:["Morgen ist frei. Genießt es 😴","Freier Tag! Aber keine Dummheiten 😏"],
-   re:[["x",["BESTER TRAINER DER WELT 🙌","Ich liebe dich, Trainer 😭❤️"]],["gamer",["Footera-Marathon, ich komme 🎮","Endlich Zeit für meine Packs 🎮📦"]],["late",["Endlich mal pünktlich: im Bett 😂"]]]},
+   say:["Morgen ist frei. Genießt es 😴","Freier Tag! Aber keine Dummheiten 😏","Morgen frei. Wer trotzdem trainiert, kriegt von mir einen Keks 🍪","Freier Tag! Bitte nicht alle gleichzeitig Footera zocken, sonst bricht der Server zusammen 🎮😂"],
+   re:[["x",["BESTER TRAINER DER WELT 🙌","Ich liebe dich, Trainer 😭❤️","Wecker ist aus. Für immer 😴","Ich schlaf bis Mittag. Und dann weiter 😴💤"]],["gamer",["Footera-Marathon, ich komme 🎮","Endlich Zeit für meine Packs 🎮📦","Snacks sind gekauft, Controller ist geladen 🎮🍿"]],["late",["Endlich mal pünktlich: im Bett 😂","Perfekt, dann bin ich übermorgen pünktlich. Vielleicht 😇"]]]},
   run:{label:()=>"🏃 Straflauf um 7",when:c=>c.type==="match",mood:-6,memo:()=>({run:true}),
-   say:c=>W(c)?["Gewonnen, schön. Trotzdem: morgen 7 Uhr Straflauf. Für die zweite Halbzeit 🏃‍♂️⏰"]:["Morgen 7 Uhr. Straflauf. Alle. 🏃‍♂️⏰","Ich hab den Hügel hinterm Trainingsplatz gefunden. Bis morgen um 7 ⛰️🏃"],
-   re:[["late",["7 UHR?! Da schlaf ich noch tief und fest 😭","Gibt's 7 Uhr auch abends? 😅"]],["x",["Meine Beine weinen jetzt schon 🦵😭","Ich hab plötzlich Fieber 🤒"]],["y",["Kann ich krank sein? 🤒","Ich bring Kaffee mit ☕","Wer zuletzt ankommt, zahlt Frühstück 🥐"]]]},
+   say:c=>W(c)?["Gewonnen, schön. Trotzdem: morgen 7 Uhr Straflauf. Für die zweite Halbzeit 🏃‍♂️⏰","Drei Punkte, ja. Die Kondition war trotzdem ein Witz. Morgen 7 Uhr 🏃‍♂️"]:["Morgen 7 Uhr. Straflauf. Alle. 🏃‍♂️⏰","Ich hab den Hügel hinterm Trainingsplatz gefunden. Bis morgen um 7 ⛰️🏃","Morgen früh um 7: Laufen, bis ihr wieder wisst, wie Gewinnen geht 🏃‍♂️⏰"],
+   re:[["late",["7 UHR?! Da schlaf ich noch tief und fest 😭","Gibt's 7 Uhr auch abends? 😅","Ich stell mir 4 Wecker. Und komm trotzdem zu spät 😩"]],["x",["Meine Beine weinen jetzt schon 🦵😭","Ich hab plötzlich Fieber 🤒","Verstanden. Wir laufen 💪"]],["y",["Kann ich krank sein? 🤒","Ich bring Kaffee mit ☕","Wer zuletzt ankommt, zahlt Frühstück 🥐","Okay. Haben wir verdient 😓"]]]},
   video:{label:()=>"📼 Videoanalyse",when:c=>c.type==="match"&&c.result!=="win",mood:-2,
-   say:["Morgen 9 Uhr Videoanalyse 📼 Popcorn gibt's keins.","Ich hab 47 Szenen rausgeschnitten. Wir gehen alle durch 📼"],
-   re:[["x",["Oh nein… 😩","Kann man die Gegentore vorspulen? ⏩"]],["gamer",["Kann ich den Controller mitbringen? 🎮"]],["y",["47?! Ich bring Schlafsack mit 😴"]]]},
+   say:["Morgen 9 Uhr Videoanalyse 📼 Popcorn gibt's keins.","Ich hab 47 Szenen rausgeschnitten. Wir gehen alle durch 📼","Videoanalyse morgen. Ich hab die Gegentore in Zeitlupe. Und in Super-Zeitlupe 📼"],
+   re:[["x",["Oh nein… 😩","Kann man die Gegentore vorspulen? ⏩","Gute Idee. Wir müssen das verstehen 📋"]],["gamer",["Kann ich den Controller mitbringen? 🎮","Gibt's die Szenen auch als Replay mit anderer Kamera? 🎥"]],["y",["47?! Ich bring Schlafsack mit 😴","Ich schreib mit. Versprochen ✍️"]]]},
   fine:{label:c=>`💶 Strafe für ${short((c.red||c.yellow).name)}`,when:c=>c.type==="match"&&(c.red||c.yellow),mood:-2,
-   say:c=>c.red?["@[{R}] Rote Karte = 50 € in die Mannschaftskasse 💶"]:["@[{R}] Gelb wegen Meckern = 10 € in die Kasse 💶"],
-   re:[["red",["Wie viel?! 😳","Kann ich in Raten zahlen? 😅","Ich zahl mit Panini-Bildern 😂"]],["kasse",["Kasse klingelt 💰😏","Notiert ✍️💶"]],["x",["Davon gibt's dann Pizza 🍕"]]]},
+   say:c=>c.red?["@[{R}] Rote Karte = 50 € in die Mannschaftskasse 💶","@[{R}] die Rote kostet 50 €. Und eine Runde Kuchen fürs Team 💶🎂"]:["@[{R}] Gelb wegen Meckern = 10 € in die Kasse 💶","@[{R}] Gelbe Karte: 10 €. Diskutieren kostet extra 💶😏"],
+   re:[["red",["Wie viel?! 😳","Kann ich in Raten zahlen? 😅","Ich zahl mit Panini-Bildern 😂","Okay. Hab ich verdient 😓"]],["kasse",["Kasse klingelt 💰😏","Notiert ✍️💶","Quittung kommt per Post 🧾"]],["x",["Davon gibt's dann Pizza 🍕","Die Kasse wird langsam reicher als ich 💰😂"]]]},
   tactics:{label:()=>"📋 Taktik-Ansage",when:c=>c.type==="match",mood:1,
-   say:["Nächstes Spiel: hoch pressen, schnell umschalten! 📋","Mehr über die Flügel, Leute! 📋 Flanken, Flanken, Flanken!","Ab sofort: Wer den Ball verliert, holt ihn zurück. Punkt. 📋"],
-   re:[["captain",["Verstanden, Chef 🫡","Jawohl! 📋💪"]],["x",["Ich hab nur 'Flanken' gelesen und bin schon motiviert 😂","Ich schreib's mir auf den Arm ✍️"]],["striker",["Hauptsache, ich krieg den Ball 😏"]]]},
+   say:["Nächstes Spiel: hoch pressen, schnell umschalten! 📋","Mehr über die Flügel, Leute! 📋 Flanken, Flanken, Flanken!","Ab sofort: Wer den Ball verliert, holt ihn zurück. Punkt. 📋","Neue Regel: Rückpass nur, wenn's brennt. Und es brennt selten 🔥📋","Nächstes Mal mehr Mut im letzten Drittel. Ich will Abschlüsse sehen! 📋⚽"],
+   re:[["captain",["Verstanden, Chef 🫡","Jawohl! 📋💪","Ich übersetz das für die Jungs: Laufen! 🏃"]],["x",["Ich hab nur 'Flanken' gelesen und bin schon motiviert 😂","Ich schreib's mir auf den Arm ✍️","Ich hab ein Taktikbrett gekauft. Weiß noch nicht, wie rum 📋🙃"]],["striker",["Hauptsache, ich krieg den Ball 😏","Ich bin das letzte Drittel. Gebt mir einfach den Ball 😎"]]]},
   voice:{label:()=>"🎤 Sprachnachricht",when:c=>c.type==="match",mood:2,voice:true,
-   re:[["x",["{dur} Minuten?! 😂","Hab's auf 2-fach gehört, klang wie ein Eichhörnchen 🐿️😂","Trainer, das ist ein Podcast, keine Sprachnachricht 🎙️😂"]],
-    ["y",["Kann jemand zusammenfassen? 🙏","Ich bin nach 30 Sekunden eingeschlafen 😴","Bin im Bus, hör ich später. Also nie 😅"]],
-    ["captain",["Zusammenfassung: Trainer ist {feel}. 🫡"]]]},
+   re:[["x",["{dur} Minuten?! 😂","Hab's auf 2-fach gehört, klang wie ein Eichhörnchen 🐿️😂","Trainer, das ist ein Podcast, keine Sprachnachricht 🎙️😂","Im Hintergrund bellt ein Hund. Gehört der zum Trainerteam? 🐶😂","Ich hab bei Minute 2 kurz geweint. Bei Minute 3 auch 🥹"]],
+    ["y",["Kann jemand zusammenfassen? 🙏","Ich bin nach 30 Sekunden eingeschlafen 😴","Bin im Bus, hör ich später. Also nie 😅","Ich hab nur 'Leidenschaft' verstanden. 14 Mal 😂"]],
+    ["captain",["Zusammenfassung: Trainer ist {feel}. 🫡","Kurzfassung für alle: Trainer ist {feel}. Gern geschehen 🫡","TL;DR: Trainer ist {feel}. Und er hat einen neuen Lieblingssatz 🫡","Ich hab mitgeschrieben: Trainer ist {feel}. Rest war Hintergrundgeräusch 😅"]]]},
   meme:{label:()=>"😂 Meme schicken",when:c=>c.type==="match",mood:5,meme:true,
-   re:[["x",["😂😂😂","Trainer ist online witziger als in der Kabine 😂","WER hat ihm gezeigt, wie Memes gehen? 👀"]],["y",["Hab's in meinen Status gestellt 📲","Ich fühl mich angegriffen 😤😂"]]]},
+   re:[["x",["😂😂😂","Trainer ist online witziger als in der Kabine 😂","WER hat ihm gezeigt, wie Memes gehen? 👀","Ich kann nicht mehr 😭😂","Das kommt in die Kabinen-Ruhmeshalle 🏛️😂","Der Trainer hat einen Social-Media-Praktikanten, ich schwör 😂"]],["y",["Hab's in meinen Status gestellt 📲","Ich fühl mich angegriffen 😤😂","Das bin ich. Das bin wirklich ich 😭","Zu real, Trainer. Zu real 💀"]]]},
   // pack signings
   welcome:{label:c=>`🤝 ${short(c.n.name)} begrüßen`,when:c=>c.type==="pack",mood:4,
-   say:c=>c.icon?["Willkommen, @[{N}]! Eine echte Legende bei uns 🙇"]:["Willkommen, @[{N}]! 🤝 Zeig, was du kannst.","@[{N}] schön, dass du da bist! 🤝"],
-   re:[["new",["Danke Trainer! Ich geb alles 💪","Wann ist das erste Training? 👀"]],["x",["Einstand nicht vergessen 🎂😏","Willkommen im Irrenhaus 😂"]]]},
+   say:c=>c.icon?["Willkommen, @[{N}]! Eine echte Legende bei uns 🙇","@[{N}] willkommen! Die Jungs sind schon ganz aufgeregt 🙇✨"]:["Willkommen, @[{N}]! 🤝 Zeig, was du kannst.","@[{N}] schön, dass du da bist! 🤝","@[{N}] willkommen! Training ist um 10. Also wirklich 10 🤝⏰"],
+   re:[["new",["Danke Trainer! Ich geb alles 💪","Wann ist das erste Training? 👀","Ich bin bereit. Wo ist mein Spind? 🔑"]],["x",["Einstand nicht vergessen 🎂😏","Willkommen im Irrenhaus 😂","Endlich ist hier mal einer, der normal ist. Hoffentlich 😅"]]]},
   cake:{label:()=>"🎂 Einstand fordern",when:c=>c.type==="pack",mood:3,
-   say:["Neuzugang heißt Einstand. Kuchen für alle, @[{N}] 🎂","@[{N}] Regel Nummer 1: Wer neu ist, bringt Kuchen 🎂"],
-   re:[["new",["Welcher Kuchen? 😅","Ich kann nur Fertigkuchen 😬🎂"]],["food",["Schoko bitte! 🍫","Zwei Bleche, mindestens 🎂🎂"]]]},
+   say:["Neuzugang heißt Einstand. Kuchen für alle, @[{N}] 🎂","@[{N}] Regel Nummer 1: Wer neu ist, bringt Kuchen 🎂","@[{N}] Einstand: Kuchen, Getränke und ein Lied vor versammelter Mannschaft 🎂🎤"],
+   re:[["new",["Welcher Kuchen? 😅","Ich kann nur Fertigkuchen 😬🎂","Ein Lied?! Ich bring lieber zwei Kuchen 🎂🎂"]],["food",["Schoko bitte! 🍫","Zwei Bleche, mindestens 🎂🎂","Ich übernehm das Probeessen 🍰😇"]]]},
   number:{label:()=>"👕 Trikotnummer geben",when:c=>c.type==="pack",mood:3,
-   say:["@[{N}] du kriegst die {num} 👕","@[{N}] Rückennummer {num}. Trag sie mit Stolz 👕"],
-   re:[["new",["Meine Lieblingsnummer 😍","Ich wollte eigentlich die 10 😤","Mama wird stolz sein 🥹👕"]],["x",["Die 10 bleibt meine 😏","Die {num} hatte vorher ein Bronze-Spieler 😂"]]]},
+   say:["@[{N}] du kriegst die {num} 👕","@[{N}] Rückennummer {num}. Trag sie mit Stolz 👕","@[{N}] die {num} gehört jetzt dir. Bitte nicht falsch rum anziehen 👕😏"],
+   re:[["new",["Meine Lieblingsnummer 😍","Ich wollte eigentlich die 10 😤","Mama wird stolz sein 🥹👕"]],["x",["Die 10 bleibt meine 😏","Die {num} hatte vorher ein Bronze-Spieler 😂","Die {num}? Die bringt Glück. Meistens 🍀"]]]},
   // SBC
   thanks:{label:()=>"🫡 Danke sagen",when:c=>c.type==="sbc",mood:2,
-   say:c=>[`Danke für alles, ${c.gone.map(short).join(" und ")}! 🫡`,"Ihr wart super. Danke! 🫡"],
-   re:[["x",["Wir vergessen euch nie 🥲","Lebt wohl 🫡"]],["y",["Wer kriegt jetzt den Spind? 👀","Ich nehm die Duschgel-Sammlung 😂"]]]},
+   say:c=>[`Danke für alles, ${c.gone.map(short).join(" und ")}! 🫡`,"Ihr wart super. Danke! 🫡",`${c.gone.map(short).join(" und ")}: Die Tür steht euch immer offen 🫡❤️`],
+   re:[["x",["Wir vergessen euch nie 🥲","Lebt wohl 🫡","Ich behalte euren Platz im Herzen. Den im Bus nehm ich aber 😏"]],["y",["Wer kriegt jetzt den Spind? 👀","Ich nehm die Duschgel-Sammlung 😂","Ich hab noch ein Abschiedsfoto. Kommt in die Vitrine 🖼️"]]]},
   business:{label:()=>"💼 Geschäft ist Geschäft",when:c=>c.type==="sbc",mood:-3,
-   say:["Geschäft ist Geschäft. Weiter geht's 💼","Kommt vor. Wir bauen weiter 💼"],
-   re:[["x",["Kalt, Trainer 🥶","Bin ich der Nächste? 😳"]],["y",["Ich mach ab jetzt freiwillig Extraschichten 😰"]]]}
+   say:["Geschäft ist Geschäft. Weiter geht's 💼","Kommt vor. Wir bauen weiter 💼","So ist Fußball. Wir schauen nach vorne 💼"],
+   re:[["x",["Kalt, Trainer 🥶","Bin ich der Nächste? 😳","Ich bin ab jetzt der netteste Spieler der Welt 😇"]],["y",["Ich mach ab jetzt freiwillig Extraschichten 😰","Ich putz ab morgen die Schuhe vom Trainer 👞😅"]]]}
  };
- const ORDER=["praiseBest","praiseKeeper","praiseJoker","praiseTeam","cheerUp","criticize","bench","fine","sermon","pizza","party","dayOff","run","video","voice","meme","tactics","welcome","cake","number","thanks","business"];
- const NICE=["pizza","party","dayOff","praiseTeam"],HARSH=["run","sermon","bench","video"];
- const MEMES=["[Meme] Ich nach 90 Minuten Pressing: 💀","[Meme] 'Nur kurz auslaufen' – der Trainer, 45 Minuten später 🏃‍♂️🏃‍♂️🏃‍♂️","[Meme] Unsere Abwehr beim Konter: 🚪🏃‍♂️💨","[Meme] Wenn der Schiri 8 Minuten Nachspielzeit anzeigt: 😱","[Meme] Der Ball, wenn ich flanke: 🛰️","[Meme] Ich beim Aufwärmen vs. ich in der 89. Minute: 🦁 / 🐌"];
+ const ORDER=["praiseBest","praiseKeeper","praiseJoker","praiseTeam","cheerUp","coffee","criticize","bench","fine","sermon","pizza","party","song","photo","dayOff","run","video","voice","meme","tactics","welcome","cake","number","thanks","business"];
+ const NICE=["pizza","party","dayOff","praiseTeam","song","photo"],HARSH=["run","sermon","bench","video"];
+ /* ---------- memes (V21.438) ---------- */
+ // Real meme cards in six layouts instead of one line of text. They rotate: a meme that was sent in the last 40 memes
+ // is not sent again while fresh ones are left. by: "coach" = only the coach sends it, "team" = only players.
+ // when: win / draw / loss / notloss / pack / sbc (empty = any match except defeats). After a defeat only the coach sends
+ // a (motivating) meme and the players send none; after a red card or a heavy defeat nobody does.
+ // Layouts: two (no / yes), nobody (Niemand: / X:), expect (Erwartung / Realität), classic (top, picture, bottom),
+ // brain (four growing brains), pov (POV + picture).
+ const MEME_CARDS=[
+  {id:"packs",by:"team",t:"two",no:"Nach dem Spiel auslaufen",yes:"Nach dem Spiel direkt Packs öffnen 📦"},
+  {id:"35m",t:"two",no:"Kurzer Pass zum freien Mann",yes:"Schuss aus 35 Metern, weil ich's kann 🚀"},
+  {id:"neon",by:"team",t:"two",no:"Schwarze Schuhe",yes:"Neon-Schuhe, damit der Trainer mich auch sieht 👟✨"},
+  {id:"eisbad",t:"two",no:"Eisbad nach dem Spiel",yes:"Warme Dusche und eine Decke 🛁"},
+  {id:"stuermer",t:"two",no:"Defensiv denken",yes:"Mit fünf Stürmern spielen und hoffen 🙏"},
+  {id:"kopfball",by:"team",t:"two",no:"Kopfball",yes:"Kopfball, bei dem die Frisur sitzen bleibt 💇‍♂️"},
+  {id:"gamerNobody",by:"team",t:"nobody",who:"{gamer}",a:"Ich hab heute 3 Walkouts gezogen, nur dass ihr's wisst 🎮"},
+  {id:"lateNobody",by:"team",t:"nobody",who:"{late}",a:"Bin gleich da 🏃‍♂️ (Anpfiff war vor 20 Minuten)"},
+  {id:"foodNobody",t:"nobody",who:"{food}",a:"Gibt's nach dem Spiel noch Nudeln? 🍝"},
+  {id:"styleNobody",t:"nobody",who:"{style}",a:"Wie sitzen meine Haare auf dem Mannschaftsfoto? 💇‍♂️"},
+  {id:"djNobody",t:"nobody",who:"{dj}",a:"*dreht in der Kabine die Bässe auf* 🔊"},
+  {id:"kasseNobody",t:"nobody",who:"Die Mannschaftskasse",a:"Hallo, ich bin's. Ich bin leer 💸"},
+  {id:"abseits",by:"team",t:"nobody",who:"Ich",a:"ABSEITS!!! (war keins) 🙋‍♂️"},
+  {id:"fallrueck",t:"expect",e:"Mein Fallrückzieher im Training",ee:"🦸",r:"Mein Fallrückzieher im Spiel",re:"🤕"},
+  {id:"flanke",t:"expect",e:"Meine Flanke im Kopf",ee:"🎯",r:"Meine Flanke in echt",re:"🛰️"},
+  {id:"jubel",t:"expect",e:"Torjubel, so wie geplant",ee:"🕺",r:"Torjubel, so wie passiert",re:"🤸💥"},
+  {id:"foto",t:"expect",e:"Ich auf dem Mannschaftsfoto (Plan)",ee:"😎",r:"Ich auf dem Mannschaftsfoto (echt)",re:"😵‍💫"},
+  {id:"nachspiel",t:"classic",top:"Wenn der Schiri",art:"⏱️😱",bottom:"8 Minuten Nachspielzeit anzeigt"},
+  {id:"loewe",t:"classic",top:"Ich beim Aufwärmen 🦁",art:"➡️",bottom:"Ich in der 89. Minute 🐌"},
+  {id:"bananen",t:"classic",top:"{food} in der Halbzeit",art:"🍌🍌🍌🍌",bottom:"„Ich hab keinen Hunger“"},
+  {id:"djLieder",t:"classic",top:"Wenn {dj}",art:"🎧🔁",bottom:"wieder dieselben drei Lieder spielt"},
+  {id:"abschlag",t:"classic",top:"Der Ball",art:"⚽💨🌌",bottom:"wenn {keeper} abschlägt"},
+  {id:"kontrolle",t:"classic",top:"Der Trainer",art:"🧐",bottom:"wenn einer beim Laufen abkürzt"},
+  {id:"brainBall",t:"brain",rows:["Ball nach vorne","Ball über die Flügel","Ball zurück zum Torwart","Ball direkt in die Kabine, Feierabend"]},
+  {id:"brainTor",by:"team",t:"brain",rows:["Ein Tor schießen","Zwei Tore schießen","Den Elfer rausholen","Den Torjubel schon im Bus üben"]},
+  {id:"brainSchoner",t:"brain",rows:["Schienbeinschoner","Schienbeinschoner mit Foto","Schienbeinschoner mit Foto von Mama","Schienbeinschoner mit Foto vom Trainer 😳"]},
+  {id:"auslaufen",t:"pov",pov:"POV: Der Trainer sagt „nur kurz auslaufen“",art:"🏃‍♂️🏃‍♂️🏃‍♂️⏰"},
+  {id:"schoner",t:"pov",pov:"POV: Du hast vergessen, deine Schienbeinschoner zu waschen",art:"🧦☣️"},
+  {id:"konter",t:"pov",pov:"POV: Unsere Abwehr beim Konter",art:"🚪🏃‍♂️💨"},
+  {id:"lateBus",t:"pov",pov:"POV: Der Bus wartet und {late} sucht seinen zweiten Schuh",art:"🚌👟❓"},
+  {id:"zaun",by:"team",t:"pov",pov:"POV: Du schießt im Training den Ball über den Zaun",art:"⚽🌳🏡😬"},
+  {id:"bald",t:"pov",pov:"POV: {late} schreibt „bin in 2 Minuten da“",art:"⏳⏳⏳"},
+  // after a win
+  {id:"profilbild",when:"win",by:"team",t:"two",no:"Bescheiden bleiben",yes:"Das {score} als Profilbild 📲"},
+  {id:"aufessen",when:"win",t:"two",no:"Ein Sieg",yes:"Ein Sieg UND {food} hat noch was übrig gelassen 🍕"},
+  {id:"gegnerDanach",when:"win",t:"expect",e:"{away} vor dem Spiel",ee:"😤",r:"{away} nach dem Spiel",re:"🫥"},
+  {id:"gegnerKlassik",when:"win",t:"classic",top:"{away} nach dem",art:"🫠",bottom:"{score}"},
+  {id:"dreiPunkte",when:"win",t:"classic",top:"Drei Punkte",art:"🥳",bottom:"und morgen trotzdem Training"},
+  {id:"mauer",when:"win",t:"classic",top:"Unsere Abwehr heute",art:"🧱🧱🧱",bottom:"Betreten verboten"},
+  {id:"busPov",when:"win",t:"pov",pov:"POV: Sieg, Bus, und {dj} hat das Aux-Kabel",art:"🔊🚌🕺"},
+  {id:"brainSieg",when:"win",t:"brain",rows:["Gewinnen","Hoch gewinnen","Hoch gewinnen, zu null","Gewinnen und der Trainer gibt Eis aus 🍦"]},
+  {id:"vorhersage",when:"win",by:"team",t:"nobody",who:"{striker}",a:"Ich hab das Tor übrigens im Bus vorhergesagt 🔮"},
+  {id:"keeperLangweilig",when:"win",by:"team",t:"nobody",who:"{keeper}",a:"Ich hab die ganze Zeit mitgefiebert. Auch wenn der Ball nie bei mir war 🧤"},
+  {id:"regeneration",when:"win",by:"team",t:"nobody",who:"Der Trainer",a:"Morgen um 9 Uhr Regeneration 😏"},
+  // after a draw
+  {id:"punkt",when:"draw",t:"classic",top:"Ein Punkt",art:"🤷",bottom:"besser als kein Punkt. Glaub ich"},
+  {id:"moralisch",when:"draw",t:"two",no:"Unentschieden",yes:"„Moralischer Sieger“ 😌"},
+  {id:"remisPov",when:"draw",t:"pov",pov:"POV: 90 Minuten alles gegeben und es steht {score}",art:"😐🤝😐"},
+  // coach
+  {id:"aufstellung",by:"coach",t:"nobody",who:"Trainer",a:"*schickt um 23 Uhr die Aufstellung für Samstag* 📋"},
+  {id:"zusatz",by:"coach",t:"two",no:"Freier Tag",yes:"Freiwilliges Zusatztraining um 7 😇"},
+  {id:"taktikTafel",by:"coach",t:"expect",e:"Meine Taktik an der Tafel",ee:"📋✨",r:"Meine Taktik auf dem Platz",re:"🍝"},
+  {id:"brainTaktik",by:"coach",t:"brain",rows:["4-4-2","4-3-3","3-5-2","Einfach alle stürmen lassen"]},
+  {id:"memesGelernt",by:"coach",t:"pov",pov:"POV: Der Trainer hat herausgefunden, wie Memes gehen",art:"🧓📲😂"},
+  {id:"taktikRum",by:"coach",t:"classic",top:"Wenn ihr den Taktikzettel",art:"📋🙃",bottom:"falsch rum haltet"},
+  {id:"pfeife",by:"coach",t:"two",no:"Mit Worten motivieren",yes:"Einmal laut pfeifen 📯"},
+  // after a defeat: only the coach, and it motivates
+  {id:"wirNaechstes",when:"loss",by:"coach",t:"classic",top:"Wir heute",art:"😓➡️🦁",bottom:"Wir im nächsten Spiel"},
+  {id:"brainLernen",when:"loss",by:"coach",t:"brain",rows:["Verlieren","Aus der Niederlage lernen","Videoanalyse","Nächstes Spiel alle umhauen 💪"]},
+  {id:"kopfHoch",when:"loss",by:"coach",t:"two",no:"Kopf hängen lassen",yes:"Kopf hoch und nächste Woche zurückschlagen 💪"},
+  {id:"planSpiel",when:"loss",by:"coach",t:"expect",e:"Unser Plan",ee:"📋",r:"Das Spiel heute",re:"🌪️"},
+  {id:"zusammenLoss",when:"loss",by:"coach",t:"classic",top:"Verlieren wir zusammen",art:"🤝",bottom:"gewinnen wir auch zusammen"},
+  {id:"loeweLoss",when:"loss",by:"coach",t:"pov",pov:"POV: Wir nächste Woche nach dieser Niederlage",art:"🦁🔥"},
+  {id:"kakaoLoss",when:"loss",by:"coach",t:"nobody",who:"Trainer",a:"Morgen 10 Uhr Training. Danach Kakao für alle ☕"},
+  {id:"adlerLoss",when:"loss",by:"coach",t:"expect",e:"Wir heute",ee:"🐣",r:"Wir in zwei Wochen",re:"🦅"},
+  {id:"brainMut",when:"loss",by:"coach",t:"brain",rows:["Ärgern","Abhaken","Analysieren","Zurückschlagen 💥"]},
+  {id:"enttaeuscht",when:"loss",by:"coach",t:"pov",pov:"POV: Der Trainer ist nicht sauer, nur motiviert",art:"🔥📋"},
+  // pack signing
+  {id:"neuWir",when:"pack",t:"classic",top:"Wir, als {N}",art:"🤩",bottom:"in die Gruppe kam"},
+  {id:"neuBank",when:"pack",t:"nobody",who:"Die Ersatzbank",a:"Ich hab schon mal einen Platz warm gemacht 🪑"},
+  {id:"neuKabine",when:"pack",t:"pov",pov:"POV: {N} fragt, wo die Kabine ist",art:"🗺️😅"},
+  {id:"neuEinstand",when:"pack",t:"two",no:"Den Neuen höflich begrüßen",yes:"Den Neuen sofort zum Einstand verdonnern 🎂"},
+  // SBC
+  {id:"sbcKabine",when:"sbc",t:"classic",top:"Die Kabine",art:"🥲",bottom:"nach der SBC"},
+  {id:"sbcSeite",when:"sbc",t:"pov",pov:"POV: Der Trainer öffnet wieder die SBC-Seite",art:"😰📱"},
+  {id:"sbcSpind",when:"sbc",t:"two",no:"Abschiedsfeier",yes:"Spind sofort leer räumen und das Duschgel behalten 🧴"}
+ ];
+ const MEME_KEEP=40;
+ const memeFields=m=>m.t==="two"?[m.no,m.yes]:m.t==="nobody"?[m.who,m.a]:m.t==="expect"?[m.e,m.ee,m.r,m.re]:m.t==="classic"?[m.top,m.art,m.bottom]:m.t==="brain"?m.rows:[m.pov,m.art];
+ function memeText(m){
+  if(m.t==="two")return`${m.no} 🙅 / ${m.yes} 👉`;
+  if(m.t==="nobody")return`Niemand: … ${m.who}: ${m.a}`;
+  if(m.t==="expect")return`Erwartung: ${m.e} ${m.ee} / Realität: ${m.r} ${m.re}`;
+  if(m.t==="classic")return`${m.top} ${m.art} ${m.bottom}`;
+  if(m.t==="brain")return m.rows.join(" → ");
+  return`${m.pov} ${m.art}`;
+ }
+ // kind: win/draw/loss (match), pack, sbc. by: coach/team. vars fill the placeholders; a meme whose
+ // placeholders are not known (no DJ in the squad ...) is skipped. Fresh memes first, then the one sent longest ago.
+ function memeFor(kind,by,seed,recent=[],vars={}){
+  const fits=m=>{
+   if(m.by&&m.by!==by)return false;
+   if(kind==="pack"||kind==="sbc")return m.when===kind;
+   if(kind==="loss")return m.when==="loss"&&by==="coach";
+   return!m.when||m.when===kind||(m.when==="notloss");
+  };
+  const known=m=>memeFields(m).every(f=>[...String(f).matchAll(/\{(\w+)\}/g)].every(x=>vars[x[1]]));
+  const pool=MEME_CARDS.filter(m=>fits(m)&&known(m));if(!pool.length)return null;
+  const last=new Map();(Array.isArray(recent)?recent:[]).forEach((id,i)=>last.set(id,i));
+  const order=pool.slice().sort((a,b)=>(last.has(a.id)?last.get(a.id):-1)-(last.has(b.id)?last.get(b.id):-1)||hash(seed+a.id)-hash(seed+b.id));
+  const m=order[0],out={id:m.id,t:m.t};
+  for(const k of ["no","yes","who","a","e","ee","r","re","top","art","bottom","pov"])if(m[k]!=null)out[k]=fill(m[k],vars);
+  if(m.rows)out.rows=m.rows.map(r=>fill(r,vars));
+  return out;
+ }
+ const memeMsg=(kind,meme,who=null)=>meme?{kind,...(who?{who:whoOf(who)}:{}),text:"[Meme] "+memeText(meme),meme}:null;
+ function recentMemes(v){return v.msgs.filter(m=>m.meme&&typeof m.meme==="object"&&m.meme.id).map(m=>m.meme.id).slice(-MEME_KEEP)}
  const maxAnswers=c=>c?.type==="match"?3:1;
  function blockCtx(v,ref){
   const block=v.msgs.filter(m=>m.ref===ref),c=block.find(m=>m.ctx)?.ctx;
@@ -535,7 +819,8 @@
  // The newest of the last few chats that still waits for the coach (a pack signing after the match does not hide it).
  function openRef(v){const refs=[...new Set(v.msgs.map(m=>m.ref))].slice(-4).reverse();return refs.find(r=>replyOptions(v,r).length)||""}
  // Pure: what happens when the coach picks option id in chat ctx (used = earlier answers in that chat).
- function coachMessages(id,c,ref,prior=[]){
+ function coachMessages(id,c,ref,prior=[],recent=[],recentM=[]){return fresh(recent,()=>coachRaw(id,c,ref,prior,recentM)).value}
+ function coachRaw(id,c,ref,prior=[],recentM=[]){
   const o=COACH[id];if(!o||!c||!o.when(c))return[];
   const seed=ref+"|"+id+"|"+prior.length,players=Array.isArray(c.players)?c.players:[];
   const captain=c.captain||players.find(p=>p.pos!=="GK")||players[0]||null;
@@ -553,7 +838,11 @@
   for(const r of [...ROLES,"kasse"])if(roles[r])vars[r]=short(roles[r].name);
   const out=[];
   if(o.voice)out.push({kind:"me",text:`🎤 Sprachnachricht (${dur})`,voice:dur});
-  else if(o.meme)out.push({kind:"me",text:pick(MEMES,seed,"meme"),meme:true});
+  else if(o.meme){
+   const mv={away:vars.away,score:`${num(c.gh)}:${num(c.ga)}`};for(const r of ROLES)if(roles[r])mv[r]=short(roles[r].name);if(c.keeper)mv.keeper=short(c.keeper.name);if(striker)mv.striker=short(striker.name);
+   const kind=c.result==="loss"?"loss":c.result==="draw"?"draw":"win";
+   out.push(memeMsg("me",memeFor(kind,"coach",seed,recentM,mv))||{kind:"me",text:"[Meme] Ich nach 90 Minuten an der Seitenlinie: 💀",meme:true});
+  }
   else{const pool=typeof o.say==="function"?o.say(c):o.say;out.push({kind:"me",text:fill(pick(pool,seed,"say"),vars)})}
   const speakerFor=sel=>{
    for(const part of String(sel).split("|")){
@@ -579,7 +868,8 @@
  }
  function answer(ref,key){
   const v=read(),opts=replyOptions(v,ref),o=typeof key==="number"?opts[key]:opts.find(x=>x.id===key);if(!o)return[];
-  const c=blockCtx(v,ref),prior=used(v,ref)||[],out=coachMessages(o.id,c,ref,prior);if(!out.length)return[];
+  const c=blockCtx(v,ref),prior=used(v,ref)||[],r=fresh(v.lines,()=>coachRaw(o.id,c,ref,prior,recentMemes(v))),out=r.value;if(!out.length)return[];
+  keepLines(v,r.used);
   const last=num(v.msgs[v.msgs.length-1]?.ts);let ts=Math.max(Date.now(),last+1);
   out.forEach((m,i)=>v.msgs.push({...m,ref,id:ref+"#r"+prior.length+"-"+i,ts:ts+i*1000}));
   v.replies[ref]=[...prior,o.id];
@@ -610,13 +900,25 @@
   const bars=Array.from({length:26},(_,i)=>`<i style="height:${4+hash(m.id+i)%17}px"></i>`).join("");
   return`<div class="kb-voice"><span class="kb-voice-play" aria-hidden="true">▶</span><span class="kb-voice-wave" aria-hidden="true">${bars}</span><span class="kb-voice-len">${escText(m.voice)}</span></div><span class="kb-sr">${escText(m.text)}</span>`;
  }
- function memeHTML(m){const t=String(m.text).replace(/^\[Meme\]\s*/,"");return`<div class="kb-meme"><small>MEME</small><p>${textHTML(t)}</p></div>`}
+ // V21.438: meme cards in six layouts (older chats keep their one-line memes).
+ function memeHTML(m){
+  const c=m.meme&&typeof m.meme==="object"?m.meme:null,e=v=>textHTML(String(v??""));
+  if(!c){const t=String(m.text).replace(/^\[Meme\]\s*/,"");return`<div class="kb-meme"><small>MEME</small><p>${textHTML(t)}</p></div>`}
+  const theme=hash(c.id)%6;let body="";
+  if(c.t==="two")body=`<div class="kb-mm-two"><div class="no"><span aria-hidden="true">🙅‍♂️</span><p>${e(c.no)}</p></div><div class="yes"><span aria-hidden="true">😎👉</span><p>${e(c.yes)}</p></div></div>`;
+  else if(c.t==="nobody")body=`<div class="kb-mm-nobody"><p>Niemand:</p><p>Absolut niemand:</p><p><b>${e(c.who)}:</b> ${e(c.a)}</p></div>`;
+  else if(c.t==="expect")body=`<div class="kb-mm-expect"><div><small>ERWARTUNG</small><span aria-hidden="true">${e(c.ee)}</span><p>${e(c.e)}</p></div><div><small>REALITÄT</small><span aria-hidden="true">${e(c.re)}</span><p>${e(c.r)}</p></div></div>`;
+  else if(c.t==="classic")body=`<div class="kb-mm-classic"><p>${e(c.top)}</p><span aria-hidden="true">${e(c.art)}</span><p>${e(c.bottom)}</p></div>`;
+  else if(c.t==="brain")body=`<div class="kb-mm-brain">${(c.rows||[]).map((r,i)=>`<div class="b${i}"><p>${e(r)}</p><span aria-hidden="true">🧠</span></div>`).join("")}</div>`;
+  else body=`<div class="kb-mm-pov"><p>${e(c.pov)}</p><span aria-hidden="true">${e(c.art)}</span></div>`;
+  return`<div class="kb-meme kb-meme2 kb-mt${theme}"><small>MEME</small>${body}</div><span class="kb-sr">${escText(plain(m.text).replace(/^\[Meme\]\s*/,""))}</span>`;
+ }
  function msgHTML(m,prev){
   if(m.kind==="sys")return`<div class="kb-sys" data-kb-id="${escText(m.id)}"><span>${escText(m.text)}</span></div>`;
   const time=`<time>${escText(timeLabel(m.ts))}</time>`;
-  if(m.kind==="me"){const body=m.voice?voiceHTML(m):m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`;return`<div class="kb-row me" data-kb-id="${escText(m.id)}"><div class="kb-bubble${m.voice?" kb-has-voice":""}">${body}${time}<i class="kb-ticks" aria-hidden="true">✓✓</i></div></div>`}
+  if(m.kind==="me"){const body=m.voice?voiceHTML(m):m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`;return`<div class="kb-row me" data-kb-id="${escText(m.id)}"><div class="kb-bubble${m.voice?" kb-has-voice":""}${m.meme?" kb-has-meme":""}">${body}${time}<i class="kb-ticks" aria-hidden="true">✓✓</i></div></div>`}
   const first=!prev||prev.kind!=="msg"||prev.who?.name!==m.who?.name;
-  return`<div class="kb-row${first?" first":""}" data-kb-id="${escText(m.id)}">${first?avatarHTML(m.who):'<span class="kb-ava-space"></span>'}<div class="kb-bubble">${first?`<strong style="color:${colorFor(m.who.name)}">${escText(m.who.name)}</strong>`:""}<p>${textHTML(m.text)}</p>${time}${m.react?`<span class="kb-react">${escText(m.react.e)} ${num(m.react.n)}</span>`:""}</div></div>`;
+  return`<div class="kb-row${first?" first":""}" data-kb-id="${escText(m.id)}">${first?avatarHTML(m.who):'<span class="kb-ava-space"></span>'}<div class="kb-bubble${m.meme?" kb-has-meme":""}">${first?`<strong style="color:${colorFor(m.who.name)}">${escText(m.who.name)}</strong>`:""}${m.meme?memeHTML(m):`<p>${textHTML(m.text)}</p>`}${time}${m.react?`<span class="kb-react">${escText(m.react.e)} ${num(m.react.n)}</span>`:""}</div></div>`;
  }
  function listHTML(msgs,now=Date.now()){
   let html="",day="";
@@ -736,7 +1038,7 @@
   const items=[],maxW=700;probe.font=F(500,32);
   for(const m of block){
    if(m.kind==="sys"){items.push({m,h:70});continue}
-   const lines=wrap(probe,plain(m.text),maxW-60);items.push({m,lines,h:(m.kind==="msg"?44:0)+lines.length*42+44+(m.react?34:0)+18});
+   const lines=wrap(probe,plain(m.text).replace(/^\[Meme\]\s*/,"😂 MEME · "),maxW-60);items.push({m,lines,h:(m.kind==="msg"?44:0)+lines.length*42+44+(m.react?34:0)+18});
   }
   // 4:5 when it fits, taller up to 9:16 for long chats; beyond that the chat is scaled down, never cut.
   const body=items.reduce((n,it)=>n+it.h,0),H=Math.max(1350,Math.min(1920,TOP+BOTTOM+PAD*2+body)),room=H-TOP-BOTTOM-PAD*2,k=Math.min(1,room/body);
@@ -783,6 +1085,6 @@
   refreshBadges();
  }
 
- root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,coachMessages,castRoles,afterMatch,afterPack,afterSbc,answer,replyOptions,answersLeft,openRef,read,unread,open,close,buttonHTML,picture,shareBlock,visibleMessages,listHTML,short,moodInfo,_T:T,_GAGS:GAGS,_COACH:COACH};
+ root.FooteraKabine={KEY,matchMessages,joinMessages,leaveMessages,coachMessages,castRoles,afterMatch,afterPack,afterSbc,answer,replyOptions,answersLeft,openRef,read,unread,open,close,buttonHTML,picture,shareBlock,visibleMessages,listHTML,short,moodInfo,_T:T,_GAGS:GAGS,_COACH:COACH,_MEMES:MEME_CARDS,memeFor};
  if(typeof document!=="undefined"&&document.addEventListener){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start()}
 })(window);
