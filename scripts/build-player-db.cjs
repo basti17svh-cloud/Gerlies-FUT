@@ -12,6 +12,7 @@ const SITE='https://www.ea.com',PAGE_PATH='/en/games/ea-sports-fc/ratings';
 const GAME='fc-27';
 const OUT=path.join(__dirname,'..','assets','players-db.csv');
 // The game compares this revision with its offline copy and downloads the new file only when it changed.
+const SERIE_C=path.join(__dirname,'..','assets','players-serie-c.csv');
 const VERSION_OUT=path.join(__dirname,'..','assets','players-db-version.json');
 const PARALLEL=6;
 const MIN_MEN=10000,MIN_WOMEN=1000;
@@ -132,8 +133,11 @@ function check(rows,men,women){
  if(fail.length||all.items.length<all.total*.98){
   console.error('Not writing the player database:',fail.join('; ')||'incomplete download');process.exit(1);
  }
- const csv=[COLUMNS.join(','),...rows.map(r=>COLUMNS.map(c=>cell(r[c])).join(','))].join('\n')+'\n';
+ // EA has no Serie C: Footera's own Serie C file (scripts/build-serie-c.cjs) is appended unchanged.
+ const serieC=fs.existsSync(SERIE_C)?fs.readFileSync(SERIE_C,'utf8').trim().split('\n').slice(1).filter(Boolean):[];
+ if(serieC.length)console.log(`Appending ${serieC.length} Serie C players from assets/players-serie-c.csv`);
+ const csv=[COLUMNS.join(','),...rows.map(r=>COLUMNS.map(c=>cell(r[c])).join(',')),...serieC].join('\n')+'\n';
  fs.writeFileSync(OUT,csv);
- fs.writeFileSync(VERSION_OUT,JSON.stringify({game:GAME,revision:require('crypto').createHash('sha256').update(csv).digest('hex').slice(0,16),players:rows.length})+'\n');
- console.log(`Wrote ${rows.length} players (${(csv.length/1048576).toFixed(1)} MB) to assets/players-db.csv`);
+ fs.writeFileSync(VERSION_OUT,JSON.stringify({game:GAME,revision:require('crypto').createHash('sha256').update(csv).digest('hex').slice(0,16),players:rows.length+serieC.length})+'\n');
+ console.log(`Wrote ${rows.length+serieC.length} players (${(csv.length/1048576).toFixed(1)} MB) to assets/players-db.csv`);
 })().catch(e=>{console.error(e);process.exit(1)});
