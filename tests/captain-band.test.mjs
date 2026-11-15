@@ -61,7 +61,7 @@ test('classic yellow band, a dark one on yellow shirts so it always reads',()=>{
 
 test('the band reaches the 3D kit of the right actors',()=>{
  const human=read('3d-player-human.mjs');
- assert.match(human,/if\(opts\.captain\)paintFooteraCaptainBand\(ctx,size,shirt,bands,metres\);/);
+ assert.match(human,/if\(opts\.captain\)paintFooteraCaptainBand\(ctx,size,shirt,bands,metres,info\);/);
  assert.doesNotMatch(human,/CylinderGeometry/,'no separate ring hanging off the arm');
  assert.match(read('3d-player-prototype.mjs'),/captain:look\.captain===true\}\)/);
  const scene=read('3d-highlights-scene.mjs');
@@ -146,6 +146,7 @@ test('release V21.428 bumps every changed asset',()=>{
   assert.ok(atLeast(html,f),f);assert.ok(atLeast(sw,f),'sw '+f);
  }
  for(const f of ['./3d-highlights-scene.mjs','./3d-player-prototype.mjs','./3d-player-human.mjs'])assert.ok(atLeast(sw,f),'sw '+f);
- assert.match(read('3d-highlights-scene.mjs'),/3d-player-human\.mjs\?v=21428/);
- assert.match(read('3d-player-prototype.mjs'),/3d-player-human\.mjs\?v=21428/);
+ // V21.433 (realistic players) bumps the human module again.
+ assert.ok(atLeast(read('3d-highlights-scene.mjs'),'3d-player-human.mjs'));
+ assert.ok(atLeast(read('3d-player-prototype.mjs'),'3d-player-human.mjs'));
 });
