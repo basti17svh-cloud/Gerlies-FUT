@@ -76,8 +76,6 @@ import {sampleFlowRun,ATTACK_FLOW_VERSION} from './3d-attack-flow.mjs?v=2160';
 import {createStadiumWeather} from './3d-weather.mjs?v=21340';
 // V21.382 Flutlicht-Arena: living turf, floodlight shadows, upper tier, roof and night sky.
 import {createArena} from './3d-arena.mjs?v=21410';
-// V21.429 Anzeigetafel: video boards behind both goals with the real score.
-import {createScoreboards,scoreboardInfo,footeraScoreboardWanted} from './3d-scoreboard.mjs?v=21429';
 export function footeraArenaWanted(){try{return globalThis.localStorage?.getItem('footera-3d-arena')!=='0'}catch(_){return true}}
 import {hasAuthoredFinish,getPlay,PLAYBOOK_IDS,playPosition,playBall,playCarrier,playTouches,playPassWindows,playReception,DEFENSIVE_SCENES,defensePosition,defenseBall} from './3d-playbook.mjs?v=21341';
 import {scenarioMotionActor,applyScenarioPose} from './3d-cinematic-scenarios.mjs?v=21341';
@@ -1777,8 +1775,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const arenaActors=[...players.map(p=>p.root),keeper.root];
   const arena=arenaOn?track(createArena(THREE,{scene,field,renderer,pitch,track,weak,high,spooky,snow:sceneWeatherFor(event)?.kind==='snow',kits:crowdKits,look,
    actors:()=>arenaActors,goalAt:event.type==='goal'&&!ceremony?netArrival:null,hash})):null;
-  const scoreboard=arena&&footeraScoreboardWanted()?createScoreboards(THREE,{group:arena.group,track,weak,colors:{home:crowdKits?.home?.shirt,away:crowdKits?.away?.shirt},
-   info:scoreboardInfo(event,{ceremony,goalAt:netArrival})}):null;
   // Breath clouds start at the real head bone when the GLB squad is shown.
   let weatherActorCache=null;
   function weatherActors(){
@@ -2018,7 +2014,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
-   weather.update(time);arena?.update(time,camera);scoreboard?.update(time);
+   weather.update(time);arena?.update(time,camera);
    renderer.render(scene,camera);
   }
   // V21.296: the two side huggers lay an arm round the scorer, the
@@ -2592,10 +2588,6 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // V21.226 replay: the same seconds again from high behind the goal.
     const shooter=actorPosition(0,SHOT_TIME),cam=replayCamera(direction,shooter,bp);
     camera.position.set(...cam.position);camTarget.set(...cam.target);camera.fov=cam.fov;currentCameraPhase='replay';
-    // V21.429 Anzeigetafel: the replay opens on the run-in from inside the box,
-    // looking up at the video board behind that goal (new score, scorer).
-    if(scoreboard&&time<SHOT_TIME-.25){const d=direction===-1?-1:1;
-     camera.position.set(shooter[0]*.2*d,2.6,-30*d);camTarget.set(0,9.2,-76*d);camera.fov=36}
    }
    // Preview QA only: a portrait camera on one player's head.
    const qaCam=globalThis.__FOOTERA_QA_PORTRAIT;
@@ -2607,7 +2599,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    camera.updateProjectionMatrix();camera.lookAt(camTarget);camera.updateMatrixWorld();
    scene.updateMatrixWorld(true);
    for(const batch of batches.values()){batch.nodes.forEach((node,i)=>batch.mesh.setMatrixAt(i,node.userData.hideForFooteraPrototype?hiddenPrototypeMatrix:node.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true}
-   weather.update(time);arena?.update(time,camera);scoreboard?.update(time);
+   weather.update(time);arena?.update(time,camera);
    renderer.render(scene,camera);
   }
   function reduceQuality(){
@@ -2675,7 +2667,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     motion23Cushion:motion23Sample?.cushion||0,motion23Brake:motion23Sample?.brake||0,motion23Launch:motion23Sample?.launch||0,
     motion2:motion2Active,motion2Side:motion2Active?sampleWinger2(renderTime,sequence,finish).side:0,motion2Feint:motion2Active?sampleWinger2(renderTime,sequence,finish).fake:0,motion2Touch:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).touch:0,motion2Aim:motion2Active?sampleWinger2(renderTime,sequence,finish,event.playerStyles).aim:0,motion2Stage:motion2Active?sampleWinger2(renderTime,sequence,finish).phase:'inactive',motion2Defender:motion2Active?sampleDefender2(renderTime,Math.hypot(players[defenderIndex].root.position.x-players[0].root.position.x,players[defenderIndex].root.position.z-players[0].root.position.z),sequence).phase:'inactive',motion2CutBoot:motion2Active?players[0].ankles[sequence.endsWith('_left')?0:1].getWorldPosition(new THREE.Vector3()).toArray():null,motion2PlantBoot:motion2Active?players[0].ankles[0].getWorldPosition(new THREE.Vector3()).toArray():null,labActors:pilotMotion?['attacker','provider','support','support','support','defender']:[],squadMotion:players.map(p=>[p.upper.rotation.x,p.upper.rotation.y,p.upper.rotation.z,p.rig.rotation.z,p.arms[0].rotation.x,p.arms[1].rotation.x,p.knees[0].rotation.x,p.knees[1].rotation.x]),motionPose:{wingerYaw:players[1].upper.rotation.y,wingerRoll:players[1].upper.rotation.z,strikerPitch:players[0].upper.rotation.x,strikerYaw:players[0].upper.rotation.y,strikerRoll:players[0].upper.rotation.z,strikerKickHip:players[0].legs[1].rotation.x,strikerKickKnee:players[0].knees[1].rotation.x,strikerAnkle:players[0].ankles[1].rotation.z,keeperPitch:keeper.upper.rotation.x,keeperKnee:keeper.knees[0].rotation.x,keeperTakeoff:keeper.legs[0].rotation.x},riggedActors:players.filter(p=>!!p.skinned).length+(keeper.skinned?1:0),
      weather:weather.info.inspect?.()||{kind:'clear'},
-     stadium:{name:stadium?.name||'',style:stadium?.style||'arena',venue:hostTeam==='home'?'home':'away',fanWallQuads:fanWall.quads,arena:arena?.info?{style:arena.info.style,upperTier:arena.info.upperTier,roof:arena.info.roof,masts:arena.info.masts||0}:null},scoreboard:scoreboard?scoreboard.info():null,
+     stadium:{name:stadium?.name||'',style:stadium?.style||'arena',venue:hostTeam==='home'?'home':'away',fanWallQuads:fanWall.quads,arena:arena?.info?{style:arena.info.style,upperTier:arena.info.upperTier,roof:arena.info.roof,masts:arena.info.masts||0}:null},
      playerModelTier:allQuaternius&&importedKeeper?(humanSquad?'human-entire-squad':'quaternius-entire-squad'):weak?'low-hybrid':'full-squad',
      importedSquadCount:importedPlayers.filter(Boolean).length,
       importedHairStyles:importedPlayers.filter(Boolean).map(p=>p.hairStyle),
