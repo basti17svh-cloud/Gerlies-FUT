@@ -9,12 +9,12 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
 import {athleticBody,athleticSeed} from './3d-athletic-body.mjs?v=21391';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21433';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createCelebrateCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21435';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
 import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21370';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21433';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21435';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -582,6 +582,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  const mixamoKick=createMixamoKickLayer(makehuman?new Map():bones,playerRoot);
  // V21.364: football jog and ready stance (Mixamo) for everyday running and standing.
  const gaitBody=createGaitCaptureLayer(makehuman?new Map():bones,playerRoot,athleticSeed(name));
+ const celebrateBody=createCelebrateCaptureLayer(makehuman?new Map():bones,playerRoot);
  // V21.361: captured backwards/sideways jogs for defenders facing the ball.
  const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
@@ -762,6 +763,9 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   }
   // The football jog also owns each swinging leg (after the library capture).
   if(gaitShare>.001)gaitBody.applyLegs(info.speed,info.stride||0,gaitShare*(info.grounded===false?0:1),legSwing);
+  // V21.434: captured goal celebration (fist pump, cheering, dances …) on
+  // top of the authored one; the authored root keeps the kneel and the run.
+  if(kickCapture&&!keeperRole&&!acro&&info.celebrate>0&&info.celebration?.capture)celebrateBody.apply(info.celebration.capture);
   // A defender running backwards or sideways follows the captured jog instead.
   if(kickCapture&&!keeperRole&&!acro&&info.travel)runBody.apply(info.travel,info.stride);
   // A pass receiver cushions the ball with a captured first touch.

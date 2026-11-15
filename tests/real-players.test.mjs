@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as THREE from '../vendor/three/three.module.min.js';
-import {footeraHumanLook,footeraHumanSource} from '../3d-player-human.mjs';
+import {footeraHumanLook,footeraHumanSource,hairCapIndex} from '../3d-player-human.mjs';
 
 // V21.433 realistic men's body (tools/build-footera-real.py, "Man Player" by
 // RiverofCreative, CC-BY-4.0). It must be a drop-in for the MakeHuman body:
@@ -133,4 +133,31 @@ test('looks: without the realistic body loaded every player keeps the MakeHuman 
  const src=fs.readFileSync(path.join(root,'3d-player-human.mjs'),'utf8');
  assert.match(src,/footera-3d-real'\)!=='0'/,'opt-out flag');
  assert.match(src,/custom\?\.female!==true&&!!sourceReal/,'women stay on the MakeHuman body');
+});
+
+test('hair: the scalp under a cut is painted in the hair colour, softly, never the face', ()=>{
+ // V21.436 (Basti: "fleckig, als würden Haare fehlen"): hair cards leave gaps.
+ const geo=(file,mesh)=>{const g=readGlb(file),prim=g.json.meshes.find(m=>m.name===mesh).primitives[0],
+  pos=g.accessor(prim.attributes.POSITION),idx=prim.indices!=null?g.accessor(prim.indices):null,
+  out=new THREE.BufferGeometry();out.setAttribute('position',new THREE.BufferAttribute(Float32Array.from(pos),3));
+  if(idx)out.setIndex(new THREE.BufferAttribute(idx,1));return out};
+ const body=geo('assets/footera/models/footera-real.glb','FooteraBody');
+ const pos=body.getAttribute('position');
+ for(const cut of ['short02','short04','afro01','ccshort']){
+  const cap=hairCapIndex(body,geo('assets/footera/models/footera-real.glb','FooteraHair-'+cut));
+  assert.ok(cap.index.length>300,cut+' covers the scalp');
+  let top=0,face=0,soft=0;
+  for(let v=0;v<pos.count;v++){
+   const y=pos.getY(v),z=pos.getZ(v);
+   if(y>1.78&&cap.cover[v]>.99)top++;
+   // Eyes and cheeks (front of the face, below the brows) stay skin.
+   if(y<1.68&&y>1.58&&z>.06&&cap.cover[v]>.3)face++;
+   if(cap.cover[v]>.05&&cap.cover[v]<.95)soft++;
+  }
+  assert.ok(top>20,cut+' crown fully covered: '+top);
+  assert.equal(face,0,cut+' face stays skin');
+  assert.ok(soft>20,cut+' soft hairline');
+ }
+ // The same geometries give the cached result.
+ assert.equal(hairCapIndex(body,body),hairCapIndex(body,body));
 });
