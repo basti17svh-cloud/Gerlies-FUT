@@ -53,6 +53,22 @@ class GLB:
         self.j['accessors'].append(acc)
         return len(self.j['accessors']) - 1
 
+    def morph_accessor(self, delta, count):
+        """Morph delta in the smaller of two forms: sparse float32 when few
+        vertices move, else dense normalized int16 metres (KHR_mesh_quantization,
+        0.03 mm steps). Never sparse int16: three.js re-normalizes sparse
+        values of normalized accessors. Deltas must stay under 1 m."""
+        moved = int((np.abs(delta).max(1) > 2e-4).sum())
+        if moved * 16 <= count * 6:
+            return self.sparse_accessor(delta, count)
+        q = np.clip(np.round(delta * 32767), -32767, 32767).astype(np.int16)
+        acc = self.accessor(q, normalized=True)
+        self.j['accessors'][acc]['min'] = q.min(0).astype(int).tolist(); self.j['accessors'][acc]['max'] = q.max(0).astype(int).tolist()
+        for key in ('extensionsUsed', 'extensionsRequired'):
+            if 'KHR_mesh_quantization' not in self.j.setdefault(key, []):
+                self.j[key].append('KHR_mesh_quantization')
+        return acc
+
     def image(self, data, mime):
         self.j['images'].append({'bufferView': self._view(data), 'mimeType': mime})
         self.j['textures'].append({'source': len(self.j['images']) - 1, 'sampler': 0})

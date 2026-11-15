@@ -9,12 +9,12 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21301';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
 import {athleticBody,athleticSeed} from './3d-athletic-body.mjs?v=21391';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21369';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21433';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
 import {createSecondaryMotion} from './3d-secondary-motion.mjs?v=21370';
-import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21428';
+import {footeraHumanSource,footeraHumanLook,dressFooteraHuman,footeraShirtName} from './3d-player-human.mjs?v=21433';
 
 const ASSET_URL=new URL('./assets/footera/models/footballer-prototype.glb',import.meta.url);
 const MAKEHUMAN_URL=new URL('./assets/footera/models/makehuman-male.glb',import.meta.url);
@@ -224,14 +224,15 @@ export function splitAtlasSeams(geometry,zones,normalized){
 // look (V21.193 human players): {number, shirtName, skinTone, crest, boots, custom}.
 export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',detail=true,variant='quaternius',fallbackAtlas=null,look={}){
  const human=variant==='human';
- const asset=human?footeraHumanSource():variant==='makehuman'?sourceMakeHuman:source;
+ // The look picks the body first: men on the realistic body (V21.433).
+ const humanLook=human&&footeraHumanSource()?footeraHumanLook(name,look.skinTone,undefined,look.custom,{keeper:look.keeper===true}):null;
+ const asset=human?footeraHumanSource(humanLook):variant==='makehuman'?sourceMakeHuman:source;
  if(!asset)return null;
  const makehuman=variant==='makehuman';
  const model=asset.clone(asset.scene);
  model.name='FooteraImportedFootballer';
  let dressed=null;
  // Haircuts the player does not wear leave the clone before it is measured.
- const humanLook=human?footeraHumanLook(name,look.skinTone,undefined,look.custom,{keeper:look.keeper===true}):null;
  if(human)dressed=dressFooteraHuman(THREE,model,humanLook,kit||{},
   {detail,number:look.number,shirtName:look.shirtName??footeraShirtName(name),crest:look.crest,boots:look.boots,captain:look.captain===true});
  const bones=new Map(),meshes=[];
@@ -580,7 +581,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
  // V21.363: penalty and open-play strike captured from the Mixamo pack (CMU for the rest).
  const mixamoKick=createMixamoKickLayer(makehuman?new Map():bones,playerRoot);
  // V21.364: football jog and ready stance (Mixamo) for everyday running and standing.
- const gaitBody=createGaitCaptureLayer(makehuman?new Map():bones,playerRoot);
+ const gaitBody=createGaitCaptureLayer(makehuman?new Map():bones,playerRoot,athleticSeed(name));
  // V21.361: captured backwards/sideways jogs for defenders facing the ball.
  const runBody=createRunCaptureLayer(makehuman?new Map():bones,playerRoot);
  const groundProbe=['Head','hand_l','hand_r','pelvis','foot_l','foot_r','ball_l','ball_r'].map(n=>bones.get(n)).filter(Boolean);
