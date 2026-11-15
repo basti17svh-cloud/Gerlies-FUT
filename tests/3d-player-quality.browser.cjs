@@ -66,12 +66,16 @@ const server=http.createServer((req,res)=>{
      const free=i=>i===frame.motion.kickFoot&&frame.motion.kickPin<.98;
      if(frame.motion.kickLegs>.01)frame.motion.feet.forEach((foot,i)=>{if(free(i))assert.ok(foot[1]>-.06,`${sequence} ${time}: captured kicking boot stays above the grass`)});
      if(frame.motion.bodyWeight<.01)onTarget.forEach((ok,i)=>assert.ok(ok||free(i),`${sequence} ${time}: imported boot follows the original contact target`));
-     else{assert.ok(onTarget.some(Boolean),`${sequence} ${time}: the standing boot stays on its contact target`);
+     // V21.437: the captured stride owns both legs; a boot on the turf is held
+     // on its world-fixed footprint (not on the procedural target any more).
+     else{if(!(frame.motion.plantWeight>.01))assert.ok(onTarget.some(Boolean),`${sequence} ${time}: the standing boot stays on its contact target`);
       const low=Math.min(...frame.motion.toes.map(t=>t[1]),...frame.motion.feet.map(f=>f[1]));
       assert.ok(low>-.06&&low<.07,`${sequence} ${time}: captured stride keeps a boot on the grass (${low.toFixed(3)})`)}
      if(time===0){
       assert.ok(frame.motion.feet[0][0]<frame.motion.feet[1][0],'left/right driver mapping');
-      frame.motion.toes.forEach((toe,i)=>assert.ok(toe[2]<frame.motion.feet[i][2]-.05,'imported toes face the same way as the run'));
+      // V21.437: a captured swing points its boot down; check the boots on the turf.
+      frame.motion.toes.forEach((toe,i)=>{if(frame.motion.feet[i][1]<.16)assert.ok(toe[2]<frame.motion.feet[i][2]-.05,'imported toes face the same way as the run')});
+      assert.ok(frame.motion.feet.some(f=>f[1]<.16),'a boot is on the turf');
      }
     }
     evidence.push({sequence,time,...frame});

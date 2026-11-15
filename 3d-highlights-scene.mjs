@@ -8,7 +8,7 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21436';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21437';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21436';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
@@ -1899,6 +1899,32 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    return mix(table[lo],table[lo+1],at-lo);
   }
   function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
+  // V21.437: real footprints. The stride phase follows the distance run, so
+  // each support phase has a fixed middle: the boot is planted where the body
+  // is at that moment and stays there (world-fixed) until it lifts; in the
+  // air it travels from that print to the next. Pure function of time, so a
+  // replay or a seek gives the same prints. Returned in field coordinates as
+  // the root positions at mid-stance; the model adds the hip's side offset.
+  function gaitTimeOf(index,phase){
+   const a=gaitTables[index],raw=phase-index*2.399;
+   if(raw<=a[0])return 0;if(raw>=a[gaitSamples])return DURATION;
+   let lo=0,hi=gaitSamples;while(hi-lo>1){const m=(lo+hi)>>1;if(a[m]<=raw)lo=m;else hi=m}
+   const span=a[hi]-a[lo];return(lo+(span>1e-9?(raw-a[lo])/span:0))*DURATION/gaitSamples;
+  }
+  function footPrints(index,time,speed,out){
+   const phase=gaitPhase(index,time),duty=runningDuty(speed),TAU=Math.PI*2;
+   for(let k=0;k<2;k++){
+    const c=phase+k*Math.PI,u=((c/TAU)%1+1)%1,start=c-u*TAU,mid=start+duty*Math.PI;
+    const o=out[k]||(out[k]={x:0,z:0,support:0,next:null});
+    const at=actorPosition(index,gaitTimeOf(index,mid-k*Math.PI));
+    if(u<duty){o.x=at[0];o.z=at[1];o.support=1;o.span=0;continue}
+    // In the air: from this print to the next one, easing in and out (the
+    // boot leaves and meets the turf at the turf's speed).
+    const nextAt=actorPosition(index,gaitTimeOf(index,mid+TAU-k*Math.PI)),w=(u-duty)/(1-duty),e=w*w*(3-2*w);
+    o.x=at[0]+(nextAt[0]-at[0])*e;o.z=at[1]+(nextAt[1]-at[1])*e;o.support=0;o.span=Math.hypot(nextAt[0]-at[0],nextAt[1]-at[1]);
+   }
+   return out;
+  }
   // Distance-based ball roll: the football no longer spins at a constant
   // unrelated speed during stops, turns or high-speed forward carries.
   const ballRollSamples=208,ballRollPath=new Float32Array(ballRollSamples+1);
@@ -1979,7 +2005,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const importedMotionFrame={speed:0,turn:0,acceleration:0,control:0,stride:0,sequence,finish,clipEnabled};
   const kickInfo=Object.freeze({finish,foot:event.shotFoot==='Left'?'Left':'Right'});
   const penaltyKickInfo=extended==='penalty'?Object.freeze({finish:'penalty',foot:kickInfo.foot,contact:SHOT_TIME,lead:extendedTiming(sequence).shot/SHOT_TIME}):null;
-  const squadMotionFrames=players.map(()=>({...importedMotionFrame}));
+  // V21.437: only the scorer hands his body to the authored strike around
+  // the shot; everybody else keeps the captured gait (striker:false).
+  const squadMotionFrames=players.map(()=>({...importedMotionFrame,striker:false}));
   const keeperMotionFrame={...importedMotionFrame,role:'keeper',clipEnabled:false};
   // V21.353: the captured dive follows the same authored save as the rig.
   const keeperDiveInfo=(()=>{const impact=eventShotImpact(event.type,sequence,finish);
@@ -2133,6 +2161,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const frame=squadMotionFrames[i];
     frame.speed=speed;frame.turn=turn;frame.acceleration=acceleration;
     frame.control=controlWeight;frame.stride=stride;frame.travel=backpedal>.001?[vx,vz,backpedal]:null;
+    // V21.437: world-fixed footprints for the captured stride (not during hugs).
+    frame.prints=hugWeight(i,time)?null:footPrints(i,time,speed,frame.printStore||(frame.printStore=[]));
     const receiving=importedPlayers[i]?.runCapture&&!celebrating?receiveFor(i,time):null;
     if(receiving){
      // Cushion with the boot on the side the pass comes from (inside of the far boot).
@@ -2143,7 +2173,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     }
     if(i===0){importedMotionFrame.speed=speed;importedMotionFrame.turn=turn;
      importedMotionFrame.acceleration=acceleration;importedMotionFrame.control=controlWeight;
-     importedMotionFrame.stride=stride}
+     importedMotionFrame.stride=stride;importedMotionFrame.prints=frame.prints}
     const capture=capturedInputs.get(i);
     if(capture){capture.speed=speed;capture.turn=turn;capture.acceleration=acceleration;
      capture.control=controlWeight;capture.stride=stride}
@@ -2550,6 +2580,25 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // run-up plays in the set piece's stretched game time.
    importedMotionFrame.kick=event.type==='ball_won'?null:!extended?kickInfo:
     extended==='penalty'?penaltyKickInfo:null;
+   // V21.437: real ball contacts. The visible boot meets the ball at every
+   // close-control touch and every first touch; the header meets it with the
+   // head. Pure functions of time (the ball is already placed for this frame).
+   importedMotionFrame.contact=null;importedMotionFrame.headBall=null;
+   for(const f of squadMotionFrames)if(f)f.contact=null;
+   if(!extended&&event.type!=='ball_won'){
+    const carry=controlCarrier(time,sequence);
+    if(carry.weight>.001&&carry.index<players.length){
+     const touch=footballTouchSample(gaitPhase(carry.index,time),carry.weight,sequence),f=carry.index===0?importedMotionFrame:squadMotionFrames[carry.index];
+     if(f&&touch.contact>.001)f.contact={foot:touch.foot,weight:touch.contact*(1-(sampleSkill(sequence,time)?.weight||0)),ball:bp,radius:MATCH_BALL_RADIUS};
+    }
+    for(let i=0;i<players.length;i++){
+     const f=i===0?importedMotionFrame:squadMotionFrames[i],r=squadMotionFrames[i]?.receive||(i===0?importedMotionFrame.receive:null);
+     if(!f||!r||!Number.isFinite(r.arrival))continue;
+     const u=(time-r.arrival)/.17,w=Math.abs(u)<1?(1-u*u)**2*(r.weight??1):0;
+     if(w>.001&&(!f.contact||f.contact.weight<w))f.contact={foot:r.mirror?1:0,weight:w,ball:bp,radius:MATCH_BALL_RADIUS};
+    }
+    if(finish==='header'){const u=(time-SHOT_TIME)/.22;importedMotionFrame.headBall=Math.abs(u)<1?{weight:(1-u*u)**2,ball:bp,radius:MATCH_BALL_RADIUS}:null}
+   }
    importedPlayer?.animate(time,importedMotionFrame);
    embraceScorer();
    for(let i=1;i<importedPlayers.length;i++)importedPlayers[i]?.animate(time,squadMotionFrames[i]);
