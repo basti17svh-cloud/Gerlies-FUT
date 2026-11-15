@@ -12,7 +12,7 @@ import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21369';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {FOOTERA_MIXAMO_GAIT} from './3d-mocap-mixamo-gait-data.mjs?v=21433';
-import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21434';
+import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21439';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 export const MIXAMO_KEEPER_LAYER_VERSION='21.369-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));

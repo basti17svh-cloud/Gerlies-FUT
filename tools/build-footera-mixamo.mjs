@@ -71,6 +71,8 @@ const CELEBRATE_CLIPS={
  waving:{file:'Waving.fbx',side:0,keys:{}},
  samba:{file:'Samba_Dancing.fbx',side:0,end:6,keys:{}},
  hip_hop:{file:'Hip_Hop_Dancing.fbx',side:0,end:6,keys:{}},
+ // V21.439 final whistle: a winner's fist-pump idle (Victory Idle).
+ victory:{file:'Victory_Idle.fbx',side:0,end:6,keys:{}},
 };
 const RATE=30;
 const gait=process.argv.includes('--gait'),celebrate=process.argv.includes('--celebrate'),dir=process.argv.slice(2).find(a=>!a.startsWith('--'));

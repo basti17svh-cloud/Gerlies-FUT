@@ -3,7 +3,7 @@
  * the goal replay camera. Presentation only: no match state, no RNG.
  * Field-local metres, ceremonies always use attack direction 1, so the
  * broadcast side (main stand, tunnel) is +x. Heading 0 faces -z. */
-export const CEREMONY_VERSION='21.226-ceremonies';
+export const CEREMONY_VERSION='21.439-ceremonies';
 export const CEREMONY_KINDS=Object.freeze(['kickoff','fulltime']);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=v=>{const x=clamp(v);return x*x*(3-2*x)};
@@ -47,39 +47,87 @@ function kickoffActor(index,time){
  return{x:p[0],z:p[1],heading:angleMix(travel,FACE_CAMERA,turn),pose:turn>.4?'lineup':null,s:time-done+.3,weight:smooth((time-done+.3)/.6)};
 }
 
-// ---- final whistle: a ring of winners round G, each loser on the same ray.
-export const FULLTIME_CENTRE=Object.freeze([9,-1]);
-function ray(j){const a=j*Math.PI/4+.3,r=6.5+(j%3)*1.1;return{c:Math.cos(a),s:Math.sin(a),r}}
-const at=(d,c,s)=>[FULLTIME_CENTRE[0]+d*c,FULLTIME_CENTRE[1]+d*s];
-const LOSER_POSES=['kneel_down','hands_on_knees','hands_on_head','kneel_down'];
-function between(a,b,t0,t1,time){const u=smooth((time-t0)/(t1-t0));return[mix(a[0],b[0],u),mix(a[1],b[1],u)]}
+// ---- final whistle. V21.439 (Basti: "Dieses rumhampeln in der Mitte nervt
+// mich"): no more ring of bouncing winners round one spot. Like on TV the
+// players are spread over the pitch where the whistle caught them and coast
+// to a stop. Each winner reacts his own way with real captured motion
+// (Mixamo), the losers drop their heads, then every pair walks together for
+// one handshake, and the teams head off: winners to the main stand to thank
+// their fans, losers slowly to their own end.
+// [winner spot, loser offset from him, the way he was jogging]
+const FULLTIME_PAIRS=Object.freeze([
+ [[3,-2],[-2.4,1.7],.4],[[-3,-6],[-2.1,2.3],2.3],[[8,2.5],[-2.6,-1.9],-.9],[[-5,2],[-2.2,2.5],1.4],
+ [[10,-7],[-2.5,2],-.2],[[.5,6],[-2.8,-1.5],3],[[4.5,-10],[-2.6,-2],-2.4],[[-6.5,-9],[-2.5,-2.2],1.9]]);
+export const FULLTIME_CENTRE=Object.freeze([2,-2]);
+// Where the winners line up in front of the main stand to thank their fans.
+export const FULLTIME_FANS=Object.freeze([15,-2]);
+// What each winner does at the whistle (captured clips; procedural fallbacks
+// in 3d-goal-celebration.mjs) and each loser's reaction (one sits down).
+export const FULLTIME_JOY=Object.freeze(['victory','cheering','pump','excited','rallying','waving','victory','cheering']);
+export const FULLTIME_DESPAIR=Object.freeze(['hands_on_hips','hands_on_head','hands_on_knees','kneel_down','hands_on_head','hands_on_hips','hands_on_knees','hands_on_hips']);
+export const FULLTIME_TIMES=Object.freeze({coast:1,coastLen:1.3,meet:2.9,shake:3.8,shakeEnd:5,leave:5,jog:3.1,walkOff:1.05});
+const FT=FULLTIME_TIMES;
+const lerp2=(a,b,u)=>[mix(a[0],b[0],u),mix(a[1],b[1],u)];
+function pairSpots(j){
+ const [w,o,dir]=FULLTIME_PAIRS[j],l=[w[0]+o[0],w[1]+o[1]],m=[(w[0]+l[0])/2,(w[1]+l[1])/2],d=Math.hypot(o[0],o[1]);
+ return{w,l,dir,meetW:[m[0]-o[0]/d*.42,m[1]-o[1]/d*.42],meetL:[m[0]+o[0]/d*.42,m[1]+o[1]/d*.42]};
+}
+// Winners' places in the line, ordered by where they come from (no crossing).
+const FAN_SLOT=(()=>{const order=[...Array(8).keys()].sort((a,b)=>pairSpots(a).meetW[1]-pairSpots(b).meetW[1]);const slot=[];order.forEach((j,k)=>{slot[j]=k});return slot})();
+function fanSpot(j){const k=FAN_SLOT[j];return[FULLTIME_FANS[0]-(k%2)*.9,FULLTIME_FANS[1]+(k-3.5)*1.3]}
+// Walks with a soft start and stop (eased), at most ~1.7 m/s.
+function walk(a,b,t0,t1,time){return lerp2(a,b,smooth((time-t0)/(t1-t0)))}
+// A steady jog/walk at `speed` from a to b: 0.5 s to get going, soft stop.
+function travel(a,b,t0,speed,time){
+ const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<1e-6)return a.slice();
+ const t=Math.max(0,time-t0),d=t<.5?speed*t*t:speed*(t-.25);
+ return lerp2(a,b,arrive(L,1,d)/L);
+}
 function fulltimeSpot(index,time,draw){
- if(index===16)return[FULLTIME_CENTRE[0]-12,FULLTIME_CENTRE[1]-4];
- const winner=index<8,j=winner?index:index-8,{c,s,r}=ray(j);
- if(!winner){const from=at(r,c,s),meet=at(r*.5+.42,c,s);return between(from,meet,4.9,7.2,time)}
- const start=[FULLTIME_CENTRE[0]+r*.62*Math.cos(Math.atan2(s,c)+.55),FULLTIME_CENTRE[1]+r*.62*Math.sin(Math.atan2(s,c)+.55)];
- const meet=at(r*.5-.42,c,s);
- if(draw)return between(start,meet,4.9,7.2,time);
- const huddle=between(start,at(1.25,c,s),0,2.2,time);
- return time<5.2?huddle:between(at(1.25,c,s),meet,5.2,7.2,time);
+ if(index===16){
+  // The beaten keeper walks slowly out of his area, hands on the hips.
+  return walk([-15,-23],[-17.5,-16],.6,10.4,time);
+ }
+ const winner=index<8,j=winner?index:index-8,p=pairSpots(j),home=winner?p.w:p.l,meet=winner?p.meetW:p.meetL;
+ if(time>FT.leave){
+  // Winners (after a draw: the home side) jog over to the main stand (+x),
+  // the others walk slowly towards their own end.
+  return winner?travel(meet,fanSpot(j),FT.leave,FT.jog,time):travel(meet,[meet[0]-5.5,meet[1]*.92],FT.leave+.2,FT.walkOff,time);
+ }
+ if(time>FT.meet)return walk(home,meet,FT.meet,FT.shake,time);
+ // Coasting to a stop from a jog along his running line.
+ const dir=winner?p.dir:p.dir+.5,u=clamp(time/FT.coast),back=FT.coastLen*(1-u)*(1-u);
+ return[home[0]-Math.sin(dir)*back,home[1]-Math.cos(dir)*back];
 }
 function fulltimeActor(index,time,draw){
  const p=fulltimeSpot(index,time,draw),before=fulltimeSpot(index,time-.05,draw),after=fulltimeSpot(index,time+.05,draw);
  const moving=Math.hypot(after[0]-before[0],after[1]-before[1])>.006;
  const winner=index<8,j=winner?index:index-8;
- if(index===16)return{x:p[0],z:p[1],heading:facing(p,FULLTIME_CENTRE)+Math.PI,pose:'kneel_down',s:time,weight:1};
- const partner=fulltimeSpot(winner?index+8:index-8,time,draw),centre=FULLTIME_CENTRE;
- let heading,pose=null,s=0,weight=1;
- if(moving)heading=Math.atan2(-(after[0]-before[0]),-(after[1]-before[1]));
- else if(time>=7)heading=facing(p,partner);
- else if(winner&&!draw)heading=facing(p,centre);
- else heading=facing(centre,p);
- if(time<4.9&&!(winner&&!draw&&time<1.6)){
-  pose=draw?'hands_on_hips':winner?'cheer':LOSER_POSES[j%4];
-  s=winner&&!draw?time-1.6:time;weight=1-smooth((time-(winner&&!draw?4.95:4.5))/.45);
- }else if(time>=6.9&&time<8.9){pose='handshake';s=time-6.9;weight=smooth((time-6.9)/.3)*(1-smooth((time-8.5)/.4))}
- else if(time>=8.6){pose='applause';s=time-8.6;weight=smooth((time-8.6)/.4)}
- return{x:p[0],z:p[1],heading,pose,s,weight};
+ const travelHeading=moving?Math.atan2(-(after[0]-before[0]),-(after[1]-before[1])):null;
+ if(index===16)return{x:p[0],z:p[1],heading:travelHeading??0,pose:'hands_on_hips',s:time,weight:smooth((time-.8)/.6)};
+ const partner=fulltimeSpot(winner?index+8:index-8,time,draw);
+ let heading;
+ if(time>=FT.meet-.2&&time<FT.leave+.15)heading=facing(p,partner);
+ else if(travelHeading!==null)heading=travelHeading;
+ else if(time>=FT.leave)heading=winner?FACE_CAMERA:-FACE_CAMERA;
+ else heading=winner&&!draw?FACE_CAMERA:facing(p,FULLTIME_CENTRE)+Math.PI;
+ // A moving player turns into his walk, a stopped one to his fans.
+ if(time>=FT.leave&&travelHeading!==null){const arrived=fulltimeSpot(index,time+.6,draw),left=Math.hypot(arrived[0]-p[0],arrived[1]-p[1]);
+  heading=angleMix(winner?FACE_CAMERA:-FACE_CAMERA,travelHeading,smooth(left/.6))}
+ let pose=null,s=0,weight=0;
+ const react0=winner?.3+(j*.23)%.45:.2+(j*.17)%.35,react1=FT.meet-.1;
+ if(time<FT.meet+.3){
+  pose=draw?(j%3===1?'applause':'hands_on_hips'):winner?FULLTIME_JOY[j]:FULLTIME_DESPAIR[j];
+  s=time-react0;weight=smooth((time-react0)/.45)*(1-smooth((time-react1)/.4));
+ }else if(time>=FT.shake-.15&&time<FT.shakeEnd+.1){
+  pose='handshake';s=time-(FT.shake-.15);weight=smooth(s/.3)*(1-smooth((time-(FT.shakeEnd-.35))/.4));
+ }else if(time>=FT.leave+.4){
+  // Applauding the fans; winners once they stand in front of the stand.
+  const there=winner?1-smooth((Math.hypot(...(([a,b])=>[a-p[0],b-p[1]])(fanSpot(j)))-.4)/1.2):1;
+  pose=winner&&!draw&&j%4===2?'waving':'applause';s=time-(FT.leave+.4);
+  weight=winner?there:.65*smooth((time-(FT.leave+1.6))/.8);
+ }
+ return{x:p[0],z:p[1],heading,pose:weight>0?pose:null,s,weight};
 }
 export function ceremonyActor(kind,index,time,{draw=false}={}){
  return kind==='kickoff'?kickoffActor(index,time):fulltimeActor(index,time,draw);
@@ -101,10 +149,12 @@ export function ceremonyCamera(kind,time){
   return{position:[21.5,2.9,z],target:[9,-.55,z*.94],fov:31,phase:'lineup'};
  }
  const [gx,gz]=FULLTIME_CENTRE;
- // Aimed a little below the players: the result card covers the lower third.
- if(time<CEREMONY_CUT.fulltime)return{position:[gx+15,3.6,gz-4+time*.4],target:[gx,-.4,gz],fov:30,phase:'final-whistle'};
- const u=time-CEREMONY_CUT.fulltime;
- return{position:[gx+16,3.4,gz+5-u*.5],target:[gx,-.3,gz],fov:32,phase:'handshakes'};
+ // V21.439: a wide TV picture of the whole scene first (aimed a little below
+ // the players: the result card covers the lower third), then a low camera
+ // in front of the winners walking to the main stand.
+ if(time<CEREMONY_CUT.fulltime)return{position:[gx+22-time*.5,7-time*.25,gz-5+time*1.1],target:[gx-.5,-1.2,gz-1+time*.3],fov:34,phase:'final-whistle'};
+ const u=time-CEREMONY_CUT.fulltime,[fx,fz]=FULLTIME_FANS,come=smooth(u/4.2);
+ return{position:[fx+11.5-u*.3,2.2,fz+2.2-u*.4],target:[mix(fx-6,fx-1,come),mix(.2,.55,come),fz+.6-u*.2],fov:32,phase:'to-the-fans'};
 }
 
 // ---- goal replay: high behind the goal, through the net, at half speed.
