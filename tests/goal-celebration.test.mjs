@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose} from '../3d-goal-celebration.mjs';
+import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose,
+ celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateCelebration,mateCloseness} from '../3d-goal-celebration.mjs';
 
 const joint=()=>({rotation:{x:0,y:0,z:0},position:{x:0,y:0,z:0}});
 const driver=()=>({rig:joint(),upper:joint(),arms:[joint(),joint()],elbows:[joint(),joint()],legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()]});
@@ -82,4 +83,35 @@ test('Haaland sits down cross-legged and stays still', ()=>{
  assert.ok(Math.abs(sat.rootY-out.rootY)<.01,'no bobbing once seated');
  assert.ok(later.knees[0].rotation.x<-2&&later.legs[0].rotation.x>1.2,'knees folded, thighs forward');
  assert.ok(later.legs[0].rotation.z<-.6&&later.legs[1].rotation.z>.6,'knees out to the sides');
+});
+
+// V21.434 (Basti: "nicht so steril"): the scorer has his own short moment,
+// teammates come one by one for a short contact, then everyone jogs back.
+test('the scorer lets go of his pose and jogs back with the group', ()=>{
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS]){
+  const hold=celebrationHold(kind);
+  // The whole moment fits the 3.4 s the scene shows after the goal.
+  assert.ok(hold>=1.8&&hold<=2.9,kind+' hold '+hold);
+  assert.equal(celebrationRelease(kind,hold-.1),1);
+  assert.equal(celebrationRelease(kind,hold+.8),0);
+  assert.equal(celebrationWalkBack(kind,hold),0);
+  let last=0;
+  for(let s=hold;s<hold+3;s+=.05){const w=celebrationWalkBack(kind,s);assert.ok(w>=last);
+   // A jog, never a sprint: at most 1.2 m/s.
+   assert.ok(w-last<=1.2*.05+1e-9);last=w}
+ }
+});
+test('teammates vary their contact, then clap, and never hang on the scorer', ()=>{
+ const seen=new Set();
+ for(let g=0;g<60;g++)for(const slot of [0,1]){const a=mateAction('goal'+g,slot);assert.ok(MATE_ACTIONS.includes(a));seen.add(a)}
+ assert.deepEqual([...seen].sort(),[...MATE_ACTIONS].sort());
+ assert.notEqual(mateAction('x',0),mateAction('x',1),'two arriving mates do different things');
+ for(const a of MATE_ACTIONS){
+  assert.equal(mateCelebration(a,-.1),null);
+  assert.equal(mateCelebration(a,.5)[0],a);
+  assert.equal(mateCelebration(a,2.2)[0],'applause');
+  assert.equal(mateCelebration(a,3.5),null);
+  assert.equal(mateCloseness(a,0),1);assert.equal(mateCloseness(a,2),0);
+  for(const s of [.3,.9,1.4]){const out={};applyCelebrationPose(driver(),a,s,out,1);assert.ok(Number.isFinite(out.arms))}
+ }
 });
