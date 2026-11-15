@@ -72,7 +72,7 @@
  function cleanChoreo(c){
   if(!c||typeof c!=='object')return null;
   const hex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f,txt=(v,n)=>String(v||'').replace(/[<>]/g,'').slice(0,n);
-  return Object.freeze({motif:['stripes','split','checker','sun','waves','crest'].includes(c.motif)?c.motif:'stripes',a:hex(c.a,'#d8ff3e'),b:hex(c.b,'#173627'),ink:hex(c.ink,'#ffffff'),
+  return Object.freeze({motif:(typeof FooteraChoreo!=='undefined'&&FooteraChoreo.MOTIFS?Object.keys(FooteraChoreo.MOTIFS):['stripes','split','checker','sun','waves','crest']).includes(c.motif)?c.motif:'stripes',a:hex(c.a,'#d8ff3e'),b:hex(c.b,'#173627'),ink:hex(c.ink,'#ffffff'),
    text:txt(c.text,30),top:txt(c.top,30),crest:c.crest!==false,stars:[0,1,2,3].includes(Number(c.stars))?Number(c.stars):0});
  }
  // V21.246: an online friendly sets FooteraHighlightsStage to its own live stage.

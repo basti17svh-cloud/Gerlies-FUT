@@ -6,9 +6,13 @@
 (function(root){
  "use strict";
  const KEY="footera-choreo-v1";
- const MOTIFS=Object.freeze({stripes:"Streifen",split:"Halb & halb",checker:"Schachbrett",sun:"Sonne",waves:"Wellen",crest:"Riesenwappen"});
- const SUGGEST=Object.freeze(["{CLUB}","NUR DER {SHORT}","WIR SIND {SHORT}","BUILD YOUR ERA","BIS ZUM SCHLUSS","EINE LIEBE","NIE ALLEIN","AUF GEHT'S, {SHORT}!","UNSER VEREIN · UNSER STOLZ","HEUTE ZÄHLT NUR DER SIEG"]);
- const TOPS=Object.freeze(["BUILD YOUR ERA","SEIT {YEAR}","DIE KURVE IST DA","FÜR IMMER {SHORT}","EIN LEBEN LANG",""]);
+ // V21.438: 18 more motifs (Basti: "bei den Choreos soll es viel mehr Designs geben") and an option to show a
+ // different motif at every home match.
+ const MOTIFS=Object.freeze({stripes:"Streifen",split:"Halb & halb",checker:"Schachbrett",sun:"Sonne",waves:"Wellen",crest:"Riesenwappen",
+  hoops:"Querstreifen",diagonal:"Diagonal",sash:"Schärpe",cross:"Kreuz",rings:"Ringe",diamonds:"Rauten",chevron:"Pfeile",zigzag:"Zickzack",
+  flames:"Flammen",starfield:"Sternenmeer",dots:"Konfetti",heart:"Herz",crown:"Krone",mosaic:"Mosaik",bolt:"Blitz",sunrise:"Morgenrot",gradient:"Farbverlauf",frame:"Rahmen"});
+ const SUGGEST=Object.freeze(["{CLUB}","NUR DER {SHORT}","WIR SIND {SHORT}","BUILD YOUR ERA","BIS ZUM SCHLUSS","EINE LIEBE","NIE ALLEIN","AUF GEHT'S, {SHORT}!","UNSER VEREIN · UNSER STOLZ","HEUTE ZÄHLT NUR DER SIEG","HERZ · STOLZ · {SHORT}","UNSERE STADT · UNSER CLUB","ALLES FÜR {SHORT}","WIR SIND DIE KURVE","FEUER UND FLAMME","KÖNIGE DER STADT"]);
+ const TOPS=Object.freeze(["BUILD YOUR ERA","SEIT {YEAR}","DIE KURVE IST DA","FÜR IMMER {SHORT}","EIN LEBEN LANG","","90 MINUTEN VOLLGAS","HEIMSPIEL","IHR SEID NIE ALLEIN"]);
  const hexOk=v=>/^#[0-9a-f]{6}$/i.test(String(v||""));
  const cleanText=(v,max)=>String(v??"").replace(/[<>]/g,"").replace(/\s+/g," ").trim().toUpperCase().slice(0,max);
  const escText=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -23,11 +27,11 @@
  }
  function defaults(id=identity()){
   const kit=id?.kits?.home||{};
-  return{on:true,motif:"stripes",a:hexOk(kit.shirtPrimary)?kit.shirtPrimary:"#d8ff3e",b:hexOk(kit.shirtSecondary)?kit.shirtSecondary:"#173627",ink:"#ffffff",text:"",top:"BUILD YOUR ERA",crest:true,stars:3};
+  return{on:true,rotate:false,motif:"stripes",a:hexOk(kit.shirtPrimary)?kit.shirtPrimary:"#d8ff3e",b:hexOk(kit.shirtSecondary)?kit.shirtSecondary:"#173627",ink:"#ffffff",text:"",top:"BUILD YOUR ERA",crest:true,stars:3};
  }
  function clean(v,base=defaults()){
   const s=v&&typeof v==="object"?v:{};
-  return{on:s.on===undefined?base.on:s.on!==false,motif:MOTIFS[s.motif]?s.motif:base.motif,
+  return{on:s.on===undefined?base.on:s.on!==false,rotate:s.rotate===undefined?!!base.rotate:s.rotate===true,motif:MOTIFS[s.motif]?s.motif:base.motif,
    a:hexOk(s.a)?s.a:base.a,b:hexOk(s.b)?s.b:base.b,ink:hexOk(s.ink)?s.ink:base.ink,
    text:s.text===undefined?base.text:cleanText(s.text,26),top:s.top===undefined?base.top:cleanText(s.top,28),
    crest:s.crest===undefined?base.crest:s.crest!==false,stars:[0,1,2,3].includes(Number(s.stars))?Number(s.stars):base.stars};
@@ -36,18 +40,22 @@
  function stored(){try{const v=JSON.parse(localStorage.getItem(KEY)||"null");return v&&typeof v==="object"?v:null}catch(e){return null}}
  function read(){return clean(stored())}
  function save(spec){const v=clean(spec);try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}return v}
+ function hashText(t){let h=2166136261;for(const ch of String(t)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
  function fillNames(text,names=clubNames()){return cleanText(String(text||"").replace(/\{CLUB\}/g,names.club).replace(/\{SHORT\}/g,names.short).replace(/\{YEAR\}/g,"2026"),30)}
  // What the 3D walk-out shows: only at your own ground, only when switched on.
  function forMatch(match){
   if(!match||match.venue==="away"||match.mode==="friend_online")return null;
   const s=read();if(!s.on)return null;
   const names=clubNames();
-  return{motif:s.motif,a:s.a,b:s.b,ink:s.ink,text:fillNames(s.text,names)||names.club,top:fillNames(s.top,names),crest:s.crest,stars:s.stars};
+  // "Jedes Heimspiel ein anderes Motiv": the motif follows the match id (same match = same choreo).
+  const keys=Object.keys(MOTIFS),motif=s.rotate?keys[hashText(String(match.resultId||match.seed||match.opponentName||""))%keys.length]:s.motif;
+  return{motif,a:s.a,b:s.b,ink:s.ink,text:fillNames(s.text,names)||names.club,top:fillNames(s.top,names),crest:s.crest,stars:s.stars};
  }
 
  /* ---------- drawing (shared by the editor preview, the share picture and the 3D tifo) ---------- */
  function mixHex(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),x=p(a),y=p(b);return"#"+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,"0")).join("")}
  function luminance(h){const [r,g,b]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*r+.7152*g+.0722*b}
+ const rnd=i=>{const x=Math.sin(i*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
  function drawStar(ctx,x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}ctx.closePath();ctx.fill()}
  function fitFont(ctx,text,weight,start,min,maxWidth){let size=start;ctx.font=`italic ${weight} ${size}px system-ui,Arial,sans-serif`;while(size>min&&ctx.measureText(text).width>maxWidth){size-=2;ctx.font=`italic ${weight} ${size}px system-ui,Arial,sans-serif`}return size}
  function background(ctx,w,h,s){
@@ -57,6 +65,28 @@
   else if(s.motif==="checker"){const n=16,m=Math.round(n*h/w)||5,cw=w/n,ch=h/m;for(let x=0;x<n;x++)for(let y=0;y<m;y++)if((x+y)%2)ctx.fillRect(x*cw,y*ch,cw+1,ch+1)}
   else if(s.motif==="sun"){const cx=w/2,cy=h*.52,R=w;for(let i=0;i<24;i+=2){const a0=i*Math.PI/12,a1=(i+1)*Math.PI/12;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a0)*R,cy+Math.sin(a0)*R);ctx.lineTo(cx+Math.cos(a1)*R,cy+Math.sin(a1)*R);ctx.closePath();ctx.fill()}}
   else if(s.motif==="waves"){const bands=6;for(let k=0;k<bands;k+=2){ctx.beginPath();const y0=k*h/bands,y1=(k+1)*h/bands;ctx.moveTo(0,y0);for(let x=0;x<=w;x+=8)ctx.lineTo(x,y0+Math.sin(x/w*Math.PI*6)*h*.035);for(let x=w;x>=0;x-=8)ctx.lineTo(x,y1+Math.sin(x/w*Math.PI*6)*h*.035);ctx.closePath();ctx.fill()}}
+  else if(s.motif==="hoops"){for(let i=1;i<7;i+=2)ctx.fillRect(0,i*h/7,w,h/7+1)}
+  else if(s.motif==="diagonal"){const sw=w/16;for(let x=-h;x<w+h;x+=sw*2){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+sw,0);ctx.lineTo(x+sw-h,h);ctx.lineTo(x-h,h);ctx.closePath();ctx.fill()}}
+  else if(s.motif==="sash"){ctx.beginPath();ctx.moveTo(w*.12,0);ctx.lineTo(w*.36,0);ctx.lineTo(w*.88,h);ctx.lineTo(w*.64,h);ctx.closePath();ctx.fill()}
+  else if(s.motif==="cross"){ctx.fillRect(w*.27,0,w*.09,h);ctx.fillRect(0,h*.4,w,h*.2)}
+  else if(s.motif==="rings"){const cx=w/2,cy=h/2,step=w*.045;for(let r=w*.62,i=0;r>0;r-=step,i++){ctx.fillStyle=i%2?a:b;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill()}}
+  else if(s.motif==="diamonds"){const n=12,cw=w/n,ch=h/4;for(let x=0;x<n;x++)for(let y=0;y<4;y++){const mx=x*cw+cw/2,my=y*ch+ch/2;ctx.beginPath();ctx.moveTo(mx,my-ch/2);ctx.lineTo(mx+cw/2,my);ctx.lineTo(mx,my+ch/2);ctx.lineTo(mx-cw/2,my);ctx.closePath();ctx.fill()}}
+  else if(s.motif==="chevron"){const t=h/9,d=h*.3;for(let y0=-d;y0<h+t;y0+=t*2){ctx.beginPath();ctx.moveTo(0,y0+d);ctx.lineTo(w/2,y0);ctx.lineTo(w,y0+d);ctx.lineTo(w,y0+d+t);ctx.lineTo(w/2,y0+t);ctx.lineTo(0,y0+d+t);ctx.closePath();ctx.fill()}}
+  else if(s.motif==="zigzag"){const t=h/8,n=14,amp=h*.06;for(let y0=0;y0<h+t;y0+=t*2){ctx.beginPath();for(let i=0;i<=n;i++)ctx.lineTo(i*w/n,y0+(i%2?amp:-amp));for(let i=n;i>=0;i--)ctx.lineTo(i*w/n,y0+t+(i%2?amp:-amp));ctx.closePath();ctx.fill()}}
+  else if(s.motif==="flames"){const layer=(col,base,amp,freq,ph)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,h);for(let x=0;x<=w;x+=4){const u=x/w*Math.PI*freq+ph;ctx.lineTo(x,h-base-Math.pow(Math.abs(Math.sin(u)),3)*amp-Math.sin(u*2.3)*amp*.12)}ctx.lineTo(w,h);ctx.closePath();ctx.fill()};
+   layer(b,h*.2,h*.75,9,0);layer(mixHex(b,a,.45),h*.1,h*.5,11,1.3);layer(mixHex(b,"#ffffff",.35),h*.02,h*.25,13,2.1)}
+  else if(s.motif==="starfield"){for(let i=0;i<90;i++){const x=rnd(i)*w,y=rnd(i+300)*h,r=3+rnd(i+600)*(i%9===0?14:7);ctx.globalAlpha=.55+rnd(i+900)*.45;drawStar(ctx,x,y,r)}ctx.globalAlpha=1}
+  else if(s.motif==="dots"){const cols=[b,mixHex(a,b,.5),mixHex(b,"#ffffff",.4)];for(let i=0;i<260;i++){ctx.fillStyle=cols[i%3];ctx.beginPath();ctx.arc(rnd(i)*w,rnd(i+500)*h,3+rnd(i+1000)*9,0,Math.PI*2);ctx.fill()}}
+  else if(s.motif==="heart"){const cx=w/2,cy=h*.52,k=h*.5;ctx.beginPath();ctx.moveTo(cx,cy+k*.85);ctx.bezierCurveTo(cx-k*2.1,cy-k*.15,cx-k*1.05,cy-k*1.35,cx,cy-k*.55);ctx.bezierCurveTo(cx+k*1.05,cy-k*1.35,cx+k*2.1,cy-k*.15,cx,cy+k*.85);ctx.closePath();ctx.fill()}
+  else if(s.motif==="crown"){const cx=w/2,bw=w*.62,top=h*.05,bot=h*.95;ctx.beginPath();ctx.moveTo(cx-bw/2,bot);ctx.lineTo(cx-bw/2,top);ctx.lineTo(cx-bw/4,h*.36);ctx.lineTo(cx,top);ctx.lineTo(cx+bw/4,h*.36);ctx.lineTo(cx+bw/2,top);ctx.lineTo(cx+bw/2,bot);ctx.closePath();ctx.fill();
+   ctx.fillStyle=mixHex(b,"#ffffff",.4);for(const x of [cx-bw/2,cx,cx+bw/2]){ctx.beginPath();ctx.arc(x,top,h*.05,0,Math.PI*2);ctx.fill()}}
+  else if(s.motif==="mosaic"){const n=32,m=Math.max(4,Math.round(n*h/w)),cw=w/n,ch=h/m,cols=[a,b,mixHex(a,b,.5),mixHex(b,"#000000",.25)];for(let x=0;x<n;x++)for(let y=0;y<m;y++){ctx.fillStyle=cols[Math.floor(rnd(x*97+y*13)*cols.length)];ctx.fillRect(x*cw,y*ch,cw+1,ch+1)}}
+  else if(s.motif==="bolt"){ctx.beginPath();ctx.moveTo(w*.58,0);ctx.lineTo(w*.7,0);ctx.lineTo(w*.56,h*.44);ctx.lineTo(w*.66,h*.44);ctx.lineTo(w*.36,h);ctx.lineTo(w*.46,h*.54);ctx.lineTo(w*.36,h*.54);ctx.closePath();ctx.fill()}
+  else if(s.motif==="sunrise"){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,a);g.addColorStop(1,mixHex(a,b,.45));ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.fillStyle=b;const cx=w/2,cy=h*1.02;
+   for(let i=0;i<18;i+=2){const a0=Math.PI+i*Math.PI/18,a1=a0+Math.PI/18;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a0)*w,cy+Math.sin(a0)*w);ctx.lineTo(cx+Math.cos(a1)*w,cy+Math.sin(a1)*w);ctx.closePath();ctx.fill()}
+   ctx.beginPath();ctx.arc(cx,cy,h*.42,Math.PI,0);ctx.fill()}
+  else if(s.motif==="gradient"){const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,a);g.addColorStop(.5,mixHex(a,b,.5));g.addColorStop(1,b);ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+  else if(s.motif==="frame"){const t=h*.09;ctx.fillRect(0,0,w,t);ctx.fillRect(0,h-t,w,t);ctx.fillRect(0,0,t,h);ctx.fillRect(w-t,0,t,h);ctx.fillRect(t*1.5,t*1.5,w-t*3,h*.018);ctx.fillRect(t*1.5,h-t*1.5-h*.018,w-t*3,h*.018)}
   else if(s.motif==="crest"){ctx.fillRect(0,0,w*.1,h);ctx.fillRect(w*.9,0,w*.1,h);ctx.fillStyle=mixHex(a,"#000000",.18);ctx.fillRect(w*.1,0,w*.012,h);ctx.fillRect(w*.888,0,w*.012,h)}
  }
  // spec: cleaned choreo with names filled in. crest: a decoded crest image (or null).
@@ -108,7 +138,8 @@
   const colorRow=(key,label)=>`<div class="choreo-color"><span>${label}</span><div class="choreo-swatches">${sw.map(c=>`<button type="button" data-choreo-color="${key}" data-value="${c}" style="--c:${c}" class="${s[key].toLowerCase()===c?"active":""}" aria-label="${label} ${c}"></button>`).join("")}<input type="color" data-choreo-input="${key}" value="${s[key]}" aria-label="${label} frei wählen"></div></div>`;
   return `<div class="choreo-stage" aria-hidden="true"><div class="choreo-roof"></div><div class="choreo-stand"><canvas width="1024" height="320"></canvas></div><div class="choreo-crowd"></div><div class="choreo-pitch"></div></div>
   <label class="choreo-switch"><input type="checkbox" data-choreo-toggle="on" ${s.on?"checked":""}><span>Bei jedem Heimspiel im 3D-Einlauf zeigen</span></label>
-  <div class="choreo-label">Motiv</div><div class="choreo-motifs" role="radiogroup" aria-label="Motiv">${Object.entries(MOTIFS).map(([id,label])=>`<button type="button" role="radio" aria-checked="${s.motif===id}" class="${s.motif===id?"active":""}" data-choreo-motif="${id}"><i class="m-${id}" style="--a:${s.a};--b:${s.b}"></i>${label}</button>`).join("")}</div>
+  <label class="choreo-switch"><input type="checkbox" data-choreo-toggle="rotate" ${s.rotate?"checked":""}><span>Jedes Heimspiel ein anderes Motiv (Farben und Spruch bleiben)</span></label>
+  <div class="choreo-label">Motiv · ${Object.keys(MOTIFS).length} Designs</div><div class="choreo-motifs${s.rotate?" rotating":""}" role="radiogroup" aria-label="Motiv">${Object.entries(MOTIFS).map(([id,label])=>`<button type="button" role="radio" aria-checked="${s.motif===id}" class="${s.motif===id?"active":""}" data-choreo-motif="${id}"><i class="m-${id}" style="--a:${s.a};--b:${s.b}"></i>${label}</button>`).join("")}</div>
   ${colorRow("a","Farbe 1")}${colorRow("b","Farbe 2")}${colorRow("ink","Schrift")}
   <label class="identity-field choreo-text">Spruchband<input data-choreo-input="text" maxlength="26" value="${escText(s.text)}" placeholder="${escText(names.club)}" autocapitalize="characters"></label>
   <div class="choreo-chips">${SUGGEST.map(t=>`<button type="button" data-choreo-suggest="${escText(t)}">${escText(fillNames(t,names))}</button>`).join("")}</div>
@@ -179,7 +210,7 @@
   });
   doc.addEventListener("input",e=>{const el=e.target?.closest?.("#identityChoreo [data-choreo-input]");if(!el)return;const k=el.dataset.choreoInput;
    update({[k]:k==="stars"?Number(el.value):el.value},false)});
-  doc.addEventListener("change",e=>{const el=e.target?.closest?.("#identityChoreo [data-choreo-toggle]");if(el)update({[el.dataset.choreoToggle]:el.checked},false);
+  doc.addEventListener("change",e=>{const el=e.target?.closest?.("#identityChoreo [data-choreo-toggle]");if(el)update({[el.dataset.choreoToggle]:el.checked},el.dataset.choreoToggle==="rotate");
    const inp=e.target?.closest?.("#identityChoreo [data-choreo-input]");if(inp&&inp.type==="color")render()});
   // Club colours or crest may have changed: repaint when the club view is shown again.
   doc.addEventListener("visibilitychange",()=>{if(!doc.hidden&&panel()?.childElementCount)paint()});
