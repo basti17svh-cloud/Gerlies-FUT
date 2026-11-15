@@ -18,9 +18,17 @@ const NEEDED=['pelvis','spine_01','spine_03','Head','upperarm_l','upperarm_r','l
 // a real face, cloth and boots. Women's players keep the MakeHuman body.
 // localStorage footera-3d-real=0 turns it off.
 const REAL_URL=new URL('./assets/footera/models/footera-real.glb?v=21433',import.meta.url);
+// V21.436 MetaHuman body (Basti's own MetaHuman from Unreal, DNA export,
+// tools/build-footera-metahuman.py): same bones, mesh names and kit layout as
+// the realistic body above, which stays the fallback.
+// localStorage footera-3d-metahuman=0 goes back to the Man Player body.
+const METAHUMAN_URL=new URL('./assets/footera/models/footera-metahuman.glb?v=21436',import.meta.url);
 let source=null,sourceReal=null,pending=null;
 export function footeraRealPlayersWanted(){
  try{return globalThis.localStorage?.getItem('footera-3d-real')!=='0'}catch(_){return true}
+}
+export function footeraMetaHumanWanted(){
+ try{return globalThis.localStorage?.getItem('footera-3d-metahuman')!=='0'}catch(_){return true}
 }
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 
@@ -49,7 +57,8 @@ export async function prepareFooteraHumanModel(){
   // The realistic body is optional: if it fails, every player keeps the
   // MakeHuman body.
   const [human,real]=await Promise.all([load(HUMAN_URL.href),
-   footeraRealPlayersWanted()?load(REAL_URL.href).catch(()=>null):Promise.resolve(null)]);
+   footeraRealPlayersWanted()?(footeraMetaHumanWanted()?load(METAHUMAN_URL.href).catch(()=>load(REAL_URL.href)):load(REAL_URL.href))
+    .catch(()=>null):Promise.resolve(null)]);
   source=human;sourceReal=real?{...real,real:true}:null;
   return true;
  })().catch(error=>{pending=null;throw error});
