@@ -1,0 +1,26 @@
+/* Footera V21.440 — Karten zum Anfassen (footera-card-shine.js) */
+.fcs-tilt{--fcs-rx:0deg;--fcs-ry:0deg;--fcs-gx:50%;--fcs-gy:30%;--fcs-hx:50%;--fcs-hy:50%;--fcs-amt:0;transform:perspective(760px) rotateX(var(--fcs-rx)) rotateY(var(--fcs-ry));transform-style:flat;transition:transform .65s cubic-bezier(.2,.85,.25,1)}
+.fcs-tilt.fcs-live{transition:transform .09s linear}
+#reveal .reveal-cards .fcs-tilt{touch-action:none}
+#bioModal :is(.bio-hero-card,.bio-card) .fcs-tilt{touch-action:pan-y}
+.custom-card>.fcs-glare[data-masked=none]{display:none}
+.custom-card>.fcs-glare{position:absolute;inset:0;z-index:60;pointer-events:none;overflow:hidden;display:block;border-radius:inherit}
+.fcs-glare>b{position:absolute;inset:0;display:block;opacity:0;transition:opacity .45s ease}
+.fcs-glare>.fcs-foil{-webkit-mask-image:radial-gradient(circle at var(--fcs-gx) var(--fcs-gy),#000 0,rgba(0,0,0,.55) 30%,transparent 62%);mask-image:radial-gradient(circle at var(--fcs-gx) var(--fcs-gy),#000 0,rgba(0,0,0,.55) 30%,transparent 62%)}
+/* Lichtpunkt folgt dem Finger */
+.fcs-glare>.fcs-light{background:radial-gradient(circle at var(--fcs-gx) var(--fcs-gy),rgba(255,255,255,.7) 0,rgba(255,255,255,.18) 18%,rgba(255,255,255,0) 40%);mix-blend-mode:soft-light}
+.fcs-on .fcs-glare>.fcs-light{opacity:calc(.35 + var(--fcs-amt)*.5)}
+/* Gold mit SELTEN-Zeichen: zusätzlicher feiner Metallglanz */
+.card-shell[data-shine=rare] .fcs-foil{background:linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,244,200,.55) 47%,rgba(255,255,255,.08) 53%,rgba(255,255,255,0) 66%);background-size:260% 260%;background-position:var(--fcs-hx) var(--fcs-hy);mix-blend-mode:overlay}
+.fcs-on .card-shell[data-shine=rare] .fcs-foil{opacity:.75}
+/* Icons: goldener Schimmer */
+.card-shell[data-shine=icon] .fcs-foil{background:linear-gradient(120deg,rgba(255,255,255,0) 22%,rgba(255,226,140,.7) 42%,rgba(255,255,255,.85) 50%,rgba(255,210,110,.6) 58%,rgba(255,255,255,0) 76%);background-size:240% 240%;background-position:var(--fcs-hx) var(--fcs-hy);mix-blend-mode:overlay}
+.fcs-on .card-shell[data-shine=icon] .fcs-foil{opacity:.6}
+/* Sonderkarten: Holo-Folie in Regenbogenfarben */
+.card-shell[data-shine=holo] .fcs-foil{background:repeating-linear-gradient(110deg,#ff5f8a 0,#ffd36b 7%,#7dffb0 14%,#5fd0ff 21%,#b28cff 28%,#ff5f8a 35%);background-size:300% 300%;background-position:var(--fcs-hx) var(--fcs-hy);mix-blend-mode:color-dodge;filter:saturate(1.15)}
+.fcs-on .card-shell[data-shine=holo] .fcs-foil{opacity:calc(.1 + var(--fcs-amt)*.3)}
+/* Einmaliger Lichtstreifen, wenn die Karte erscheint */
+.fcs-glare>.fcs-sweep{background:linear-gradient(105deg,rgba(255,255,255,0) 38%,rgba(255,255,255,.75) 49%,rgba(255,255,255,.18) 53%,rgba(255,255,255,0) 62%);background-size:300% 100%;background-position:120% 0;mix-blend-mode:overlay;transition:none}
+.fcs-glare.fcs-sweeping>.fcs-sweep{animation:fcs-sweep 1.25s cubic-bezier(.35,.1,.25,1) both}
+@keyframes fcs-sweep{0%{opacity:0;background-position:120% 0}15%{opacity:1}85%{opacity:1}100%{opacity:0;background-position:-20% 0}}
+@media (prefers-reduced-motion:reduce){.fcs-tilt{transform:none!important;transition:none!important}.fcs-glare{display:none!important}}
