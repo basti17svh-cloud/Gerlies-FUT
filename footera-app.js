@@ -5453,7 +5453,14 @@ function knownEAClubLeague(team){
  KNOWN_EA_CLUB_LEAGUE_CACHE.set(raw,"");
  return""
 }
-function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){
+/* V21.431 — one name per league: different data sources spell some leagues differently, which put them twice into the league filters. */
+const LEAGUE_CANONICAL_NAMES={"bundesliga 2":"2. Bundesliga","2 bundesliga":"2. Bundesliga","o bundesliga":"Österreichische Fußball-Bundesliga","ö bundesliga":"Österreichische Fußball-Bundesliga","liga i":"SUPERLIGA","superliga romania":"SUPERLIGA","super league greece":"Hellas Liga","stoiximan super league":"Hellas Liga"};
+function canonicalLeagueName(name){const raw=String(name||"").trim();if(!raw)return raw;const k=raw.toLowerCase().replace(/[^a-z0-9äöüß ]+/g," ").replace(/\s+/g," ").trim();return LEAGUE_CANONICAL_NAMES[k]||raw}
+/* V21.431 — league filters: the Top 5 leagues first, the rest alphabetically. */
+const TOP5_LEAGUE_ORDER=["Premier League","LALIGA EA SPORTS","Bundesliga","Serie A","Ligue 1"];
+function sortLeaguesTop5First(list){return [...list].sort((a,b)=>{const ia=TOP5_LEAGUE_ORDER.indexOf(a),ib=TOP5_LEAGUE_ORDER.indexOf(b);if(ia>=0||ib>=0)return(ia<0?99:ia)-(ib<0?99:ib);return String(a).localeCompare(String(b),"de")})}
+function leagueFromClub(team,rawLeague="",leagueId="",gender="",source=""){return canonicalLeagueName(leagueFromClubRaw(team,rawLeague,leagueId,gender,source))}
+function leagueFromClubRaw(team,rawLeague="",leagueId="",gender="",source=""){
  const id=String(leagueId||"").trim();if(EA_LEAGUE_NAME_BY_ID[id])return EA_LEAGUE_NAME_BY_ID[id];
  const tk=normalizeKey(team),rk=normalizeKey(rawLeague);
  const verified=verifiedClubBadge(team,{gender,league:rawLeague,source});
@@ -5953,7 +5960,7 @@ function pickerItemQuality(item,base=displayBase(item)){
 function itemMatchesQuality(item,quality,base=displayBase(item)){return !quality||pickerItemQuality(item,base)===quality||(quality==="special"&&isEvolutionItem(item))}
 function pickerAffiliationOptions(){
  const rows=state.club.map(item=>{const base=displayBase(item);if(!base)return null;const a=resolvedAffiliation(base);return{league:String(a?.league||"").trim(),club:String(a?.team||"").trim()}}).filter(Boolean);
- return{leagues:[...new Set(rows.map(x=>x.league).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),rows}
+ return{leagues:sortLeaguesTop5First(new Set(rows.map(x=>x.league).filter(Boolean))),rows}
 }
 function populatePickerClubFilter(league="",preferredClub=""){
  const select=$("pickerClubFilter");if(!select)return;
@@ -7061,7 +7068,7 @@ function syncClubFilterOptions(rows=clubFilterItems()){
  const wantedLeague=leagueEl.value,wantedClub=clubEl.value,sourceSig=rows.map(x=>`${x.item.uid}:${x.a?.league||""}:${x.a?.team||""}`).join(";"),sig=`${AFFILIATION_CACHE_EPOCH}|${wantedLeague}|${sourceSig}`;
  if(sig===clubFilterOptionsSignature)return;
  clubFilterOptionsSignature=sig;
- const leagues=[...new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+ const leagues=sortLeaguesTop5First(new Set(rows.map(x=>String(x.a?.league||"").trim()).filter(Boolean)));
  leagueEl.innerHTML='<option value="">Alle Ligen</option>'+leagues.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
  leagueEl.value=leagues.includes(wantedLeague)?wantedLeague:"";
  const activeLeague=leagueEl.value;
@@ -7604,7 +7611,7 @@ function qualityLabel(x){if(isMomentumItem(x))return"MOMENTUM";if(x.variant==="i
 function specialVariant(type=""){const eventName="Legacy Event",boost=2+Math.floor(Math.random()*3);return{variant:"special",eventName,boost,legacyEvent:true}}
 function marketFilters(){let min=Number($("marketRatingMin").value||65),max=Number($("marketRatingMax").value||99);if(min>max)[min,max]=[max,min];const q=$("marketQuality").value;if(q==="bronze"){min=0;max=64}return{name:normalizeKey($("marketName").value),league:$("marketLeague").value,club:$("marketClub").value,nation:$("marketNation").value,position:$("marketPosition").value,quality:q,specialType:$("marketSpecialType").value,ratingMin:min,ratingMax:max,priceMin:Number($("marketPriceMin").value||0),priceMax:Number($("marketPriceMax").value||0)}}
 function updateRatingUI(){let min=Number($("marketRatingMin").value),max=Number($("marketRatingMax").value);if(min>max){if(document.activeElement===$("marketRatingMin"))$("marketRatingMax").value=min;else $("marketRatingMin").value=max;min=Number($("marketRatingMin").value);max=Number($("marketRatingMax").value)}const bronze=$("marketQuality").value==="bronze";$("marketRatingMin").disabled=bronze;$("marketRatingMax").disabled=bronze;$("marketRatingLabel").textContent=bronze?"Bronze · bis 64":`${min} – ${max}`;$("marketRatingFloor").textContent=bronze?"≤64":"65";$("marketSpecialTypeWrap").style.opacity="1"}
-function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||p.league===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
+function updateMarketDependentFilters(){const league=$("marketLeague").value,clubCurrent=$("marketClub").value,nationCurrent=$("marketNation").value,source=[...marketPlayersForLeague(league),...totwFallbackFilterPlayers().filter(p=>!league||canonicalLeagueName(p.league)===league)],clubs=[...new Set(source.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketClub").innerHTML='<option value="">Alle Vereine</option>'+clubs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clubs.includes(clubCurrent))$("marketClub").value=clubCurrent;const nations=[...new Set(source.map(p=>p.nation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));$("marketNation").innerHTML='<option value="">Alle Nationen</option>'+nations.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");if(nations.includes(nationCurrent))$("marketNation").value=nationCurrent}
 function sampleMarketPool(pool,limit=200){const n=pool.length,k=Math.min(n,limit),picked=pool.slice(0,k);for(let i=k;i<n;i++){const j=Math.floor(Math.random()*(i+1));if(j<k)picked[j]=pool[i]}return picked.sort(()=>Math.random()-.5)}
 function createMarketListing(base,filters,offerIndex=0){let variant="",eventName="",eventType="",boost=0,overridePosition="",promoEntry=null,extra=null;const live=totwInfo(base),archived=base?._totwWeekId?{ovr:Number(base._totwRating||0),position:base._totwPosition||base.position,name:base._totwWeekName||"Team of the Week"}:null;
  if(base?.isIcon||filters.specialType==="icon"){variant="icon-mid";eventName="Icon"}
@@ -7645,7 +7652,7 @@ const MARKET_PAGE_SIZE=20,MARKET_SNAPSHOT_LIMIT=440;
 let marketAllListings=[],marketPage=1,marketInventory=[],marketSnapshotKey="";
 function marketSnapshotHash(v){let h=2166136261;for(const ch of String(v||"")){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 function marketSnapshotCoreKey(f){return JSON.stringify([f.name,f.league,f.club,f.nation,f.position,f.ratingMin,f.ratingMax,PLAYERS.length,activeTotwWeek()?.id||0,activeMomentumEvent()?.id||"",marketPromoReleases().map(e=>e.id).join(","),!!halloweenUpgradeFor({eventType:"halloween"})])}
-function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||String(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
+function marketBaseMatchesCore(p,f){return (!f.name||playerSearchText(p).includes(f.name))&&(!f.league||canonicalLeagueName(p?.league||resolvedAffiliation(p)?.league||"")===f.league)&&(!f.club||p.team===f.club)&&(!f.nation||p.nation===f.nation)&&positionPlusMatch(p,f.position)&&Number(p.ovr||0)>=f.ratingMin&&Number(p.ovr||0)<=f.ratingMax}
 function marketSnapshotBases(f){
  const regular=f.league?marketPlayersForLeague(f.league):PLAYERS,pool=regular.filter(p=>marketBaseMatchesCore(p,f));
  if(pool.length<=MARKET_SNAPSHOT_LIMIT)return pool.slice();
@@ -8441,7 +8448,7 @@ function sbcPickerCandidates(){
 function sbcPickerOptions(sbc){
  const nations=new Set(),leagues=new Set(),clubs=new Set(),league=String(sbcPickerState?.league||"");
  for(const x of sbcSourceItems()){const b=displayBase(x.item);if(!b||!sbc.filter(b))continue;const a=resolvedAffiliation(b)||{};if(b.nation)nations.add(String(b.nation));if(a.league)leagues.add(String(a.league));if(a.team&&(!league||a.league===league))clubs.add(String(a.team))}
- const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sort(leagues),clubs:sort(clubs)}
+ const sort=(set,show=v=>v)=>[...set].sort((a,b)=>show(a).localeCompare(show(b),"de"));return{nations:sort(nations,nationLabel),leagues:sortLeaguesTop5First(leagues),clubs:sort(clubs)}
 }
 function sbcPickerHTML(sbc){
  if(!sbcPickerState)return"";
@@ -8640,7 +8647,7 @@ function sbcQuickFill(opts=sbcAssistantDefaults()){
  const inserted=plan.draft.squad.filter(Boolean).length-manual.length;
  sbcAssistantState=null;sbcSetDraft(sbc.id,plan.draft);renderSBC();toast(`${inserted} günstige Spieler eingesetzt. Bereit zum Abgeben.`)
 }
-function sbcAssistantLeagues(sbc){return [...new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"))}
+function sbcAssistantLeagues(sbc){return sortLeaguesTop5First(new Set(sbcSourceItems().map(x=>displayBase(x.item)).filter(b=>b&&sbc.filter(b)).map(b=>String(resolvedAffiliation(b)?.league||"").trim()).filter(Boolean)))}
 function sbcAssistantHTML(sbc){
  if(!sbcAssistantState)return"";const a=sbcAssistantState;
  const toggle=(id,title,hint,on)=>`<label class="sbc-assistant-toggle"><div><strong>${title}</strong><small>${hint}</small></div><span class="sbc-switch"><input id="${id}" type="checkbox" ${on?"checked":""}><span></span></span></label>`;
@@ -10133,7 +10140,7 @@ function rebuildMarketFilterIndex(){const index=new Map();for(const p of PLAYERS
 function scheduleMarketFilterIndexRebuild(){if(!PLAYERS.length)return;clearTimeout(MARKET_FILTER_INDEX_TIMER);MARKET_FILTER_INDEX_TIMER=setTimeout(rebuildMarketFilterIndex,350)}
 function marketPlayersForLeague(league){if(!MARKET_FILTER_INDEX.size&&PLAYERS.length)rebuildMarketFilterIndex();return league?MARKET_FILTER_INDEX.get(String(league))||[]:PLAYERS}
 function totwFallbackFilterPlayers(){return (totwIsActive()?LIVE_TOTW.players:[]).map((info,i)=>mergeTotwBase(null,null,i)).filter(p=>p.team||p.league||p.nation)}
-function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].filter(Boolean))].sort((a,b)=>a.localeCompare(b));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
+function fillLeagueFilter(){const cur=$("marketLeague")?.value||"",fallbackLeagues=totwFallbackFilterPlayers().map(p=>resolvedAffiliation(p).league),leagues=[...new Set([...PLAYERS.map(p=>p.league),...MID_ICON_BASES.map(p=>p.league),...fallbackLeagues].map(canonicalLeagueName).filter(Boolean))];leagues.splice(0,leagues.length,...sortLeaguesTop5First(leagues));if($("marketLeague")){$("marketLeague").innerHTML='<option value="">Alle Ligen</option>'+leagues.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");if(leagues.includes(cur))$("marketLeague").value=cur;updateMarketDependentFilters();updateRatingUI()}}
 
 
 function maybePromptForUsername(){
@@ -10923,7 +10930,7 @@ function initFooteraBootIntro(){
  }
 }
 
-const GFUT_BUILD="V21.430";
+const GFUT_BUILD="V21.431";
 if($("buildBadge"))$("buildBadge").textContent=GFUT_BUILD;
 function packFlowInProgress(){return pendingPack.length>0||(state.pendingChemBoosts||[]).length>0||$("opening")?.classList.contains("active")||$("results")?.classList.contains("active")}
 let gerliesStartupReady=false,gerliesUpdateRegistration=null,gerliesUpdatePending=null,gerliesUpdateTimer=0,gerliesUpdateReloading=false;
@@ -10981,7 +10988,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
  window.addEventListener("load",()=>{
   FOOTERA_INTRO_DONE.then(()=>{
    let previousController=navigator.serviceWorker.controller;
-   navigator.serviceWorker.register("./service-worker.js?v=21430",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
+   navigator.serviceWorker.register("./service-worker.js?v=21431",{scope:"./"}).then(async reg=>{gerliesUpdateRegistration=reg;await reg.update();checkForGerliesUpdate()}).catch(err=>console.warn("Service Worker:",err));
    navigator.serviceWorker.addEventListener("controllerchange",()=>{
     const previous=previousController;previousController=navigator.serviceWorker.controller;
     // A new cache controller does not mean the already loaded page is old.
