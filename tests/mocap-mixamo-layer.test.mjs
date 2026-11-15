@@ -154,26 +154,40 @@ test('mixamo kicks: penalty and open-play strike, contact lined up, stretched pe
  assert.ok(at('foot_l').z>at('foot_r').z,'left-footed: mirrored');
 });
 
-test('gait capture: football jog, captured run/sprint and ready stance by speed, actions left alone',async()=>{
- const {gaitCaptureWeights,createGaitCaptureLayer}=await import('../3d-mocap-mixamo-layer.mjs');
+test('gait capture: walk, football jog, captured run/sprint and ready stance by speed, actions left alone',async()=>{
+ const {gaitCaptureWeights,createGaitCaptureLayer,gaitIdleClip,lookAroundWeight}=await import('../3d-mocap-mixamo-layer.mjs');
+ const {FOOTERA_MIXAMO_GAIT}=await import('../3d-mocap-mixamo-gait-data.mjs');
+ for(const name of ['walk','run','sprint'])assert.ok(FOOTERA_MIXAMO_GAIT.clips[name]?.loop&&Number.isFinite(FOOTERA_MIXAMO_GAIT.clips[name].keys.leftForward),name);
+ for(const name of ['idle_breath','idle_stand','look_around'])assert.ok(FOOTERA_MIXAMO_GAIT.clips[name],name);
+ assert.equal(gaitCaptureWeights(.1).walk,1,'V21.433: a real walk between standing and jogging');
+ assert.equal(gaitCaptureWeights(.65).run,1,'V21.433: loose captured running stride');
+ assert.equal(gaitCaptureWeights(.9).sprint,1,'V21.433: captured sprint');
+ // Every band sums to one: no speed where the body drops back to the rest pose.
+ for(let s=0;s<=1;s+=.01){const w=gaitCaptureWeights(s);assert.ok(Math.abs(w.idle+w.walk+w.jog+w.run+w.sprint-1)<1e-9,'sum at '+s.toFixed(2))}
+ // Players stand their own way; the choice is fixed per player.
+ assert.deepEqual(new Set([0,.4,.8].map(gaitIdleClip)),new Set(['ready_idle','idle_breath','idle_stand']));
+ assert.equal(lookAroundWeight(5,.3),lookAroundWeight(5,.3));assert.ok(lookAroundWeight(5,0)<.01&&lookAroundWeight(1.5,0)>.99);
  assert.ok(FOOTERA_MIXAMO.clips.jog_fwd?.loop);assert.ok(FOOTERA_MIXAMO.clips.ready_idle);
  assert.equal(gaitCaptureWeights(0).idle,1);assert.equal(gaitCaptureWeights(0).jog,0);
- assert.equal(gaitCaptureWeights(.35).jog,1);assert.equal(gaitCaptureWeights(.35).idle,0);
- assert.equal(gaitCaptureWeights(.9).jog,0);assert.equal(gaitCaptureWeights(.9).run,1,'sprints follow the captured CMU run');assert.equal(gaitCaptureWeights(.3).run,0);
+ assert.equal(gaitCaptureWeights(.22).jog,1);assert.equal(gaitCaptureWeights(.22).idle,0);
+ assert.equal(gaitCaptureWeights(.9).jog,0);assert.equal(gaitCaptureWeights(.2).run,0);
  const {bones,player,scene,at}=rig(0),layer=createGaitCaptureLayer(bones,player);
- assert.equal(layer.apply(1,.35,0,0).clip,'none','no share: shots, tricks, celebrations');
+ assert.equal(layer.apply(1,.22,0,0).clip,'none','no share: shots, tricks, celebrations');
  const before=bones.get('pelvis').quaternion.clone(),head=bones.get('Head').quaternion.clone();
- assert.equal(layer.apply(1,.35,1.2,1).clip,'jog_fwd');
+ assert.equal(layer.apply(1,.22,1.2,1).clip,'jog_fwd');
  assert.ok(!bones.get('pelvis').quaternion.equals(before),'the hips move like the jog (posed before the foot IK)');
  // Legs: only the swinging leg follows the capture; the planted one keeps its IK pose.
  const l=bones.get('thigh_l').quaternion.clone(),r=bones.get('thigh_r').quaternion.clone();
- assert.ok(layer.applyLegs(.35,1.2,1,[1,0])>0);
+ assert.ok(layer.applyLegs(.22,1.2,1,[1,0])>0);
  assert.ok(!bones.get('thigh_l').quaternion.equals(l),'swinging left leg');
  assert.ok(bones.get('thigh_r').quaternion.equals(r),'planted right leg untouched');
- assert.ok(layer.applyLegs(.9,1.2,1,[1,1])>0,'sprint legs follow the captured run');
- assert.equal(layer.apply(1,.9,1.2,1).clip,'run');
+ assert.ok(layer.applyLegs(.9,1.2,1,[1,1])>0,'sprint legs follow the captured sprint');
+ assert.equal(layer.apply(1,.9,1.2,1).clip,'sprint');
+ assert.equal(layer.apply(1,.65,1.2,1).clip,'run');
+ assert.equal(layer.apply(1,.1,1.2,1).clip,'walk');
  assert.ok(bones.get('Head').quaternion.equals(head),'head keeps looking at the ball');
  assert.equal(layer.apply(1,0,0,1).clip,'ready_idle');
+ assert.equal(createGaitCaptureLayer(bones,player,.5).apply(1,0,0,1).clip,'idle_breath');
  // Deterministic: the same time gives the same stance (the game rebuilds the
  // procedural pose every frame, so start each sample from the same pose).
  const rest=[...bones].map(([,b])=>[b,b.quaternion.clone()]),reset=()=>{for(const [b,q] of rest)b.quaternion.copy(q)};
