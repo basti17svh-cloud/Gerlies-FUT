@@ -139,11 +139,13 @@ test('line-up card shows a C, Aufgaben explains the band, Kabine uses the captai
 
 test('release V21.428 bumps every changed asset',()=>{
  const html=read('index.html'),sw=read('service-worker.js'),app=read('footera-app.js');
- assert.match(app,/const GFUT_BUILD="V21\.428"/);
- for(const url of ['./squad-tactics.js?v=21428','./squad-tactics.css?v=21428','./footera-kabine.js?v=21428','./3d-highlights.js?v=21428','./3d-highlights-match.js?v=21428','./footera-app.js?v=21428']){
-  assert.ok(html.includes(url),url);assert.ok(sw.includes(`"${url}"`),'sw '+url);
+ // Later releases may bump these again (V21.429 Anzeigetafel): at least 21428.
+ const atLeast=(text,file,min=21428)=>{const re=new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\?v=(\\d+)','g');const v=[...text.matchAll(re)].map(m=>Number(m[1]));return v.length>0&&v.every(n=>n>=min)};
+ assert.ok(Number(app.match(/const GFUT_BUILD="V21\.(\d+)"/)[1])>=428);
+ for(const f of ['./squad-tactics.js','./squad-tactics.css','./footera-kabine.js','./3d-highlights.js','./3d-highlights-match.js','./footera-app.js']){
+  assert.ok(atLeast(html,f),f);assert.ok(atLeast(sw,f),'sw '+f);
  }
- for(const url of ['./3d-highlights-scene.mjs?v=21428','./3d-player-prototype.mjs?v=21428','./3d-player-human.mjs?v=21428'])assert.ok(sw.includes(`"${url}"`),'sw '+url);
+ for(const f of ['./3d-highlights-scene.mjs','./3d-player-prototype.mjs','./3d-player-human.mjs'])assert.ok(atLeast(sw,f),'sw '+f);
  assert.match(read('3d-highlights-scene.mjs'),/3d-player-human\.mjs\?v=21428/);
  assert.match(read('3d-player-prototype.mjs'),/3d-player-human\.mjs\?v=21428/);
 });
