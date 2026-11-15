@@ -317,7 +317,8 @@ export function dressFooteraHuman(THREE,model,look,kit,opts={}){
    const pos=geometry.getAttribute('position'),out=pos.array.slice();
    for(const [key,weight] of Object.entries(look.morphs||{})){
     const index=names[key],delta=morphs[index];if(index==null||!delta||!weight)continue;
-    const d=delta.array;for(let i=0;i<out.length;i++)out[i]+=d[i]*weight;
+    // V21.433: the realistic body stores its deltas as normalized int16.
+    const d=delta.array,w=delta.normalized?weight/32767:weight;for(let i=0;i<out.length;i++)out[i]+=d[i]*w;
    }
    geometry.setAttribute('position',new THREE.BufferAttribute(out,3));
    geometry.morphAttributes={};geometry.morphTargetsRelative=false;

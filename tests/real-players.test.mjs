@@ -14,10 +14,17 @@ function readGlb(file){
  const b=fs.readFileSync(path.join(root,file)),n=b.readUInt32LE(12);
  const json=JSON.parse(b.subarray(20,20+n).toString()),bin=b.subarray(20+n+8);
  const accessor=i=>{
-  const a=json.accessors[i],v=json.bufferViews[a.bufferView],size={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16}[a.type];
-  const Type={5126:Float32Array,5123:Uint16Array,5125:Uint32Array,5121:Uint8Array}[a.componentType];
-  const start=bin.byteOffset+v.byteOffset+(a.byteOffset||0);
-  return new Type(bin.buffer.slice(start,start+a.count*size*Type.BYTES_PER_ELEMENT));
+  const a=json.accessors[i],size={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16}[a.type];
+  const types={5126:Float32Array,5123:Uint16Array,5125:Uint32Array,5121:Uint8Array,5122:Int16Array},Type=types[a.componentType];
+  const view=(index,offset,count,T)=>{const v=json.bufferViews[index],start=bin.byteOffset+(v.byteOffset||0)+(offset||0);
+   return new T(bin.buffer.slice(start,start+count*T.BYTES_PER_ELEMENT))};
+  const out=a.bufferView==null?new Type(a.count*size):view(a.bufferView,a.byteOffset,a.count*size,Type);
+  if(a.sparse){
+   const ix=view(a.sparse.indices.bufferView,a.sparse.indices.byteOffset,a.sparse.count,types[a.sparse.indices.componentType]);
+   const val=view(a.sparse.values.bufferView,a.sparse.values.byteOffset,a.sparse.count*size,Type);
+   ix.forEach((v,k)=>{for(let c=0;c<size;c++)out[v*size+c]=val[k*size+c]});
+  }
+  return out;
  };
  return{json,accessor,bytes:b.length};
 }
@@ -39,13 +46,45 @@ const info=real.json.extras.footera;
 test('real GLB: credited CC-BY source, mobile-sized, every part present',()=>{
  assert.match(info.source,/Man Player.*RiverofCreative.*CC-BY-4\.0/);
  assert.match(info.credit,/sketchfab\.com\/3d-models\/man-player-4c7133dbb06e4136891d59231372d818/);
- assert.ok(real.bytes<3.5e6,'GLB stays under 3.5 MB: '+real.bytes);
+ assert.ok(real.bytes<8e6,'GLB stays under 8 MB: '+real.bytes);
  const meshes=real.json.meshes.map(m=>m.name);
  for(const name of ['FooteraBody','FooteraShirt','FooteraShorts','FooteraSocks','FooteraBoots','FooteraEyes','FooteraLashes'])assert.ok(meshes.includes(name),name);
- for(const hair of info.hair)assert.ok(meshes.includes('FooteraHair-'+hair),hair);
- // Women's players stay on the MakeHuman body: no women's parts here.
- assert.deepEqual(info.hairFemale,[]);
+ // Every MakeHuman haircut, beard and brow is fitted onto this head too, so
+ // the per-player looks (player-looks.js) work on both bodies.
+ const mh=human.json.extras.footera;
+ for(const hair of [...info.hair,...info.hairFemale,...info.hairSpecial])assert.ok(meshes.includes('FooteraHair-'+hair),hair);
+ for(const hair of [...mh.hair,...mh.hairFemale,...mh.hairSpecial])assert.ok(meshes.includes('FooteraHair-'+hair),'MakeHuman cut '+hair);
+ for(const beard of mh.facial)assert.ok(meshes.includes('FooteraFacial-'+beard),beard);
+ for(const brow of mh.brows)assert.ok(meshes.includes('FooteraBrows-'+brow),brow);
  assert.ok(info.skins.light!=null&&info.skinMean.light.length===3);
+});
+
+test('real GLB: face morphs, own dark skin and a clean-shaven head',()=>{
+ // V21.433: the MakeHuman face morphs carried onto the head, so every man
+ // gets his own face (footeraHumanLook picks the weights from his name).
+ const mh=human.json.extras.footera.morphs;
+ for(const key of info.morphs)assert.ok(mh.includes(key),key);
+ const body=real.json.meshes.find(m=>m.name==='FooteraBody');
+ const names=body.extras.targetNames,prim=body.primitives[0];
+ for(const key of ['race_african','race_asian','race_caucasian','head_square','jaw_width','chin_prominent','nose_width','nose_length','cheekbones','brow_ridge'])
+  assert.ok(names.includes(key),'body morph '+key);
+ const pos=real.accessor(prim.attributes.POSITION),head=real.json.nodes.find(n=>n.name==='Head');
+ for(const [k,key] of names.entries()){
+  const acc=real.json.accessors[prim.targets[k].POSITION],raw=real.accessor(prim.targets[k].POSITION);
+  // Dense targets are normalized int16 metres (KHR_mesh_quantization).
+  const d=acc.normalized?Float32Array.from(raw,v=>v/32767):raw;let moved=0,low=Infinity;
+  for(let v=0;v<d.length/3;v++){const m=Math.hypot(d[v*3],d[v*3+1],d[v*3+2]);if(m>.001){moved++;low=Math.min(low,pos[v*3+1])}}
+  // Small features (lips) may move only a few vertices; the shape keys must move many.
+  if(key!=='lips_volume')assert.ok(moved>10,key+' moves the face: '+moved);
+  // Only the head and neck move, never the kit or the legs.
+  assert.ok(low>1.35,key+' stays on the head ('+low.toFixed(2)+' m)');
+ }
+ if(prim.targets.some(t=>real.json.accessors[t.POSITION].normalized))assert.ok(real.json.extensionsRequired.includes('KHR_mesh_quantization'));
+ // Dark complexions get their own warm atlas, not a grey multiply of the light one.
+ assert.notEqual(info.skins.dark,info.skins.light);
+ assert.ok(info.skinMean.dark[0]<.5&&info.skinMean.dark[0]>info.skinMean.dark[2]);
+ // Beards are the beard meshes: names pick clean-shaven or a beard.
+ assert.ok(info.facial.length>=2);
 });
 
 test('real GLB: same bones in the same order, frames aligned with the MakeHuman rig',()=>{

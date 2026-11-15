@@ -26,6 +26,9 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
 from glb_writer import GLB
+from glb_read import GLBRead
+import footera_face_transfer as face
+from footera_shave import shave
 
 SRC = sys.argv[1]
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -353,6 +356,54 @@ socks['pos'][:, 1] = np.minimum(socks['pos'][:, 1], SOCK_TOP)
 body['idx'] = body['idx'][~gone & ~inside_sock]
 body = drop_unused(body)
 
+# ------------------------------------------------------------------ face variety (V21.433)
+# The MakeHuman face morphs (ethnicity, jaw, nose, lips, cheekbones, ...) and
+# its haircuts, beards and brows, fitted onto this head (tools/footera_face_transfer.py).
+MHG = GLBRead(os.path.join(ROOT, 'assets/footera/models/footera-humans.glb'))
+MH_BONES = MHG.j['extras']['footera']['bones']
+assert MH_BONES == [b[0] for b in BONES]
+HEAD = BONE_INDEX['Head']
+
+
+def mh_weights(m):
+    W = np.zeros((len(m['pos']), len(BONES)))
+    for k in range(4):
+        np.add.at(W, (np.arange(len(W)), m['j'][:, k]), m['w'][:, k])
+    return W
+
+
+mh_body = MHG.mesh('FooteraBody'); mh_body['W'] = mh_weights(mh_body)
+mh_hw = mh_body['W'][:, HEAD]
+neck_mh = (MH['neck_01'][0][1] + MH['Head'][0][1]) / 2
+neck_real = (JOINTS[BONE_INDEX['neck_01'], 1] + JOINTS[HEAD, 1]) / 2
+FIT = face.HeadFit(mh_body['pos'], mh_hw, body['pos'], body['W'][:, HEAD], neck_mh, neck_real)
+print('head fit scale', FIT.scale.round(3), 'offset', FIT.offset.round(3))
+mh_head = mh_hw > .9
+MH_LIFT = {n: mh_body['morphs'][mh_body['morph_names'].index(n)][mh_head].mean(0) for n in face.FACE_MORPHS}
+mh_deltas = face.face_deltas(mh_body, FIT, mh_hw)
+body['morphs'] = face.prune(face.transfer_to_surface(body['pos'], body['W'][:, HEAD], mh_body['pos'], mh_hw, FIT, mh_deltas))
+print('body face morphs:', len(body['morphs']))
+
+
+# Hair, beards and teeth only keep the targets that move them visibly (size).
+def follow_face(m, rigid=None, keep=.001):
+    m['morphs'] = face.prune(face.follow(m['pos'], body['pos'], body['morphs'], rigid_groups=rigid), keep)
+    return m
+
+
+def mh_part(name):
+    """A MakeHuman haircut/beard/brow fitted onto this head, with its own
+    morph deltas (head lift removed) so it follows every face."""
+    m = MHG.mesh(name); W = mh_weights(m)
+    pos = FIT.apply(m['pos'])
+    nrm = m['nrm'] / FIT.scale; nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
+    morphs = {}
+    for n in face.FACE_MORPHS:
+        if n in m['morph_names']:
+            morphs[n] = FIT.delta(m['morphs'][m['morph_names'].index(n)] - MH_LIFT[n])
+    return {'pos': pos, 'nrm': nrm, 'uv': m['uv'], 'W': W, 'idx': m['idx'], 'morphs': face.prune(morphs, .0025),
+            'material': m['material']}
+
 # ------------------------------------------------------------------ kit UV
 SHIRT_V, SHORTS_V, SOCKS_V = (0., .62), (.64, .86), (.88, 1.)
 
@@ -412,7 +463,10 @@ TEX = os.path.join(SRC, 'textures')
 def atlas(names, suffix, size=1024):
     img = Image.new('RGB', (size, size)); h = size // 2
     for n, (x, y) in zip(names, [(0, 0), (h, 0), (0, h), (h, h)]):
-        img.paste(Image.open(os.path.join(TEX, f'{n}_{suffix}.png')).convert('RGB').resize((h, h), Image.LANCZOS), (x, y))
+        part = Image.open(os.path.join(TEX, f'{n}_{suffix}.png')).convert('RGB')
+        if n == 'Std_Skin_Head' and suffix == 'baseColor':
+            part = shave(part)   # beards come from the beard meshes now (V21.433)
+        img.paste(part.resize((h, h), Image.LANCZOS), (x, y))
     return img
 
 
@@ -427,6 +481,28 @@ skin_tex = g.image(*enc(skin_img))
 skin_nrm = g.image(*enc(atlas(SKINS, 'normal'), 'JPEG', 90))
 pix = np.asarray(skin_img.resize((64, 64))).reshape(-1, 3).astype(np.float32)
 mean = (np.median(pix[pix.sum(1) > 60], 0) / 255).round(3).tolist()
+
+
+def deepen(img, target=(.36, .23, .165), chroma=1.3):
+    """Dark-skin version of the atlas (V21.433). A plain multiply of the
+    light photo greys deep complexions out, so the detail is kept as
+    luminance ratio around the median, the colour moves to a warm brown and
+    its own variation (lips, cheeks, knuckles) gets more saturation."""
+    a = np.asarray(img).astype(np.float32) / 255
+    lin = np.where(a <= .04045, a / 12.92, ((a + .055) / 1.055) ** 2.4)
+    m = np.where(np.array(mean) <= .04045, np.array(mean) / 12.92, ((np.array(mean) + .055) / 1.055) ** 2.4)
+    t = np.where(np.array(target) <= .04045, np.array(target) / 12.92, ((np.array(target) + .055) / 1.055) ** 2.4)
+    w = np.array([.2126, .7152, .0722])
+    rel = lin / m                                         # per channel, 1 at the median skin
+    lum = rel @ w
+    col = lum[..., None] + (rel - lum[..., None]) * chroma
+    out = np.clip(col * t, 0, 1)
+    srgb = np.where(out <= .0031308, out * 12.92, 1.055 * out ** (1 / 2.4) - .055)
+    return Image.fromarray((srgb * 255).clip(0, 255).astype(np.uint8))
+
+
+DARK = (.36, .23, .165)
+skin_dark_tex = g.image(*enc(deepen(skin_img, DARK)))
 
 # ------------------------------------------------------------------ assemble
 
@@ -470,7 +546,10 @@ def add(name, m, material):
     idx = m['idx'].ravel()
     prim = {'attributes': attrs, 'indices': g.accessor(idx.astype(np.uint16 if len(m['pos']) < 65536 else np.uint32), 34963),
             'material': material}
-    n = g.node(name=name, mesh=g.mesh(name, prim), skin=0)
+    names = list(m.get('morphs') or {})
+    if names:
+        prim['targets'] = [{'POSITION': g.morph_accessor(m['morphs'][k], len(m['pos']))} for k in names]
+    n = g.node(name=name, mesh=g.mesh(name, prim, names or None), skin=0)
     g.j['nodes'][root]['children'].append(n)
     return len(m['pos']), len(idx) // 3
 
@@ -491,25 +570,37 @@ stats['FooteraBoots'] = add('FooteraBoots', boots, g.material(name='FooteraBoots
     'baseColorTexture': {'index': g.image(*png(os.path.join(TEX, 'Boots_baseColor.png'), 512, 'JPEG', mode='flat'))},
     'metallicFactor': 0, 'roughnessFactor': .45}, normalTexture={'index': g.image(*png(os.path.join(TEX, 'Boots_normal.png'), 256, 'JPEG'))}))
 HAIR = 'ccshort'
-stats['FooteraHair-' + HAIR] = add('FooteraHair-' + HAIR, mesh_by_mat['embed_hair_male'], g.material(
+stats['FooteraHair-' + HAIR] = add('FooteraHair-' + HAIR, follow_face(mesh_by_mat['embed_hair_male'], keep=.0025), g.material(
     name='Footera-' + HAIR, alphaMode='MASK', alphaCutoff=.3, doubleSided=True,
     pbrMetallicRoughness={'baseColorTexture': {'index': g.image(*png(os.path.join(TEX, 'embed_hair_male_baseColor.png'), 512, mode='tint'))},
                           'metallicFactor': 0, 'roughnessFactor': .78}))
-eyes = merge([mesh_by_mat['Std_Eye_L'], mesh_by_mat['Std_Eye_R']])
+MH_INFO = MHG.j['extras']['footera']
+MH_PARTS = ([('FooteraHair-' + h) for h in MH_INFO['hair'] + MH_INFO['hairFemale'] + MH_INFO['hairSpecial']] +
+            [('FooteraFacial-' + f) for f in MH_INFO['facial']] + [('FooteraBrows-' + b) for b in MH_INFO['brows']])
+mh_tex = {}
+for name in MH_PARTS:
+    part = mh_part(name); mat = dict(part['material']); pbr = dict(mat['pbrMetallicRoughness'])
+    t = pbr['baseColorTexture']['index']
+    if t not in mh_tex:
+        mh_tex[t] = g.image(*MHG.image(t))
+    pbr['baseColorTexture'] = {'index': mh_tex[t]}; mat['pbrMetallicRoughness'] = pbr
+    stats[name] = add(name, part, g.material(**mat))
+eyes = merge([mesh_by_mat['Std_Eye_L'], mesh_by_mat['Std_Eye_R']]); follow_face(eyes, eyes['pos'][:, 0] > 0)
 stats['FooteraEyes'] = add('FooteraEyes', eyes, g.material(name='FooteraEyes', pbrMetallicRoughness={
     'baseColorTexture': {'index': g.image(*png(os.path.join(TEX, 'Std_Eye_L_baseColor.png'), 256, 'JPEG'))},
     'metallicFactor': 0, 'roughnessFactor': .25}))
-cornea = merge([mesh_by_mat['Std_Cornea_L'], mesh_by_mat['Std_Cornea_R']])
+cornea = merge([mesh_by_mat['Std_Cornea_L'], mesh_by_mat['Std_Cornea_R']]); follow_face(cornea, cornea['pos'][:, 0] > 0)
 stats['FooteraCornea'] = add('FooteraCornea', cornea, g.material(name='FooteraCornea', alphaMode='BLEND', pbrMetallicRoughness={
     'baseColorFactor': [1, 1, 1, .08], 'metallicFactor': 0, 'roughnessFactor': .04}))
 detail_parts = ['Std_Upper_Teeth', 'Std_Lower_Teeth', 'Std_Tongue', 'Std_Nails']
 det = Image.new('RGB', (512, 512))
 for n, (x, y) in zip(detail_parts, [(0, 0), (256, 0), (0, 256), (256, 256)]):
     det.paste(Image.open(os.path.join(TEX, f'{n}_baseColor.jpeg')).convert('RGB').resize((256, 256), Image.LANCZOS), (x, y))
+# Teeth and tongue sit behind closed lips: no face morphs needed (size).
 detail = merge([mesh_by_mat[n] for n in detail_parts], atlas=[(0, 0, .5), (.5, 0, .5), (0, .5, .5), (.5, .5, .5)])
 stats['FooteraDetail'] = add('FooteraDetail', detail, g.material(name='FooteraDetail', pbrMetallicRoughness={
     'baseColorTexture': {'index': g.image(*enc(det, 'JPEG', 84))}, 'metallicFactor': 0, 'roughnessFactor': .4}))
-stats['FooteraLashes'] = add('FooteraLashes', mesh_by_mat['Std_Eyelash'], g.material(
+stats['FooteraLashes'] = add('FooteraLashes', follow_face(mesh_by_mat['Std_Eyelash']), g.material(
     name='FooteraLashes', alphaMode='MASK', alphaCutoff=.5, doubleSided=True, pbrMetallicRoughness={
         'baseColorTexture': {'index': g.image(*png(os.path.join(TEX, 'Std_Eyelash_baseColor.png'), 256, mode='tint'))},
         'metallicFactor': 0, 'roughnessFactor': .8}))
@@ -526,8 +617,9 @@ def captain_band():
 size = g.save(OUT, extras={'footera': {
     'source': 'Man Player by RiverofCreative, CC-BY-4.0',
     'credit': 'This work is based on "Man Player" (https://sketchfab.com/3d-models/man-player-4c7133dbb06e4136891d59231372d818) by RiverofCreative (https://sketchfab.com/RiverofCreative) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)',
-    'morphs': [], 'hair': [HAIR], 'hairFemale': [], 'hairSpecial': [], 'facial': [], 'brows': [],
-    'skins': {'light': skin_tex, 'dark': skin_tex}, 'skinMean': {'light': mean, 'dark': mean},
+    'morphs': face.FACE_MORPHS, 'hair': [HAIR] + MH_INFO['hair'], 'hairFemale': MH_INFO['hairFemale'],
+    'hairSpecial': MH_INFO['hairSpecial'], 'facial': MH_INFO['facial'], 'brows': MH_INFO['brows'],
+    'skins': {'light': skin_tex, 'dark': skin_dark_tex}, 'skinMean': {'light': mean, 'dark': list(DARK)},
     'bones': [b[0] for b in BONES], 'kitBands': {'shirt': SHIRT_V, 'shorts': SHORTS_V, 'socks': SOCKS_V},
     'captainBand': captain_band(),
     'kitMetres': {'shirt': [round(s_across, 3), round(s_top, 3), round(s_bottom, 3)],
