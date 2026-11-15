@@ -13,7 +13,7 @@ import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
-import {pickCelebration,celebrationDistance,applyCelebrationPose} from './3d-goal-celebration.mjs?v=21301';
+import {pickCelebration,celebrationDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21434';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21410';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
@@ -1141,8 +1141,19 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const p=stagedPlayerPosition(index,time,type,seq);
   if(index!==0)return huggers.length?hugPosition(index,time,p):p;
   const d=celebrationShift(time);
-  return d?[p[0]+celebrationRun[0]*d,p[1]+celebrationRun[1]*d]:p;
+  if(!d)return p;
+  const q=[p[0]+celebrationRun[0]*d,p[1]+celebrationRun[1]*d];
+  // V21.434: after his own moment the scorer jogs back with the group.
+  const back=celebrationActive?celebrationWalkBack(celebrationKind,time-CELEBRATION_START):0;
+  return back?[q[0]+walkBackDir[0]*back,q[1]+walkBackDir[1]*back]:q;
  }
+ // Back towards the halfway line (the attacked goal is at local z -52.5),
+ // drifting a little towards the middle of the pitch.
+ const walkBackDir=(()=>{
+  if(!celebrationActive)return[0,1];
+  const p=stagedPlayerPosition(0,CELEBRATION_START),d=celebrationDistance(celebrationKind,celebrationHold(celebrationKind));
+  const x=p[0]+celebrationRun[0]*d,l=Math.hypot(-x*.08,1);return[-x*.08/l,1/l];
+ })();
  // V21.193: the two nearest teammates sprint to the scorer and hug him,
  // one on each side, a little behind so the close-up still sees his face.
  const HUG_START=CELEBRATION_START+.2;
@@ -1153,7 +1164,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // V21.297: only teammates who can get there at a footballer's sprint;
    // 24 m in 2.4 s peaked at 15 m/s, with legs cycling twice too fast.
    .filter(h=>h.d<(lateDrama?21:18)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
-   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/5.3,1.3,3.1),state:{arms:0,rootY:0}}));
+   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/5.3,1.3,3.1)+(lateDrama?0:slot*.35),state:{arms:0,rootY:0},
+    // V21.434: one short contact each (jump hug, high five, head pat), then clapping and the jog back.
+    action:lateDrama&&slot>=2?'jump_hug':mateAction(celebrationKey,slot)}));
  })():[];
  function hugWeight(index,time){
   const h=time>HUG_START?huggers.find(x=>x.index===index):null;
@@ -1162,11 +1175,15 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  function hugPosition(index,time,p){
   const u=hugWeight(index,time);if(!u)return p;
   const h=huggers.find(x=>x.index===index),s=actorPosition(0,time),[rx,rz]=celebrationRun;
-  // Slots 0/1 hug from the sides; a late-drama pile-up adds a ring behind him.
-  const side=h.slot<2?(h.slot?-1:1):[-.75,.75,0][h.slot-2],back=h.slot<2?.14:h.slot<4?.72:1.05,wide=h.slot<2?.46:Math.abs(side)>0?.52:0;
-  const sx=Math.sign(side)||0;
+  // Slots 0/1 meet him at the sides; a late-drama pile-up adds a ring behind him.
+  const side=h.slot<2?(h.slot?-1:1):[-.75,.75,0][h.slot-2],sx=Math.sign(side)||0;
+  let back=h.slot<2?.14:h.slot<4?.72:1.05,wide=h.slot<2?(h.action==='jump_hug'?.46:.6):Math.abs(side)>0?.52:0;
+  // V21.434: after the contact he steps off to walk beside the scorer.
+  const close=mateCloseness(h.action,time-mateContact(h));
+  back=mix(.45+.35*h.slot,back,close);wide=mix(.95,wide,close);
   return[mix(p[0],s[0]-rz*sx*wide-rx*back,u),mix(p[1],s[1]+rx*sx*wide-rz*back,u)];
  }
+ function mateContact(h){return HUG_START+h.arrive*.8}
  // V21.200 (Basti): no zoom cameras in match scenes. Star finishes and
  // goal-line clearances stay in the normal TV picture; only the scorer
  // close-up after a goal and the set-piece TV angles remain.
@@ -2024,7 +2041,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const scorer=importedPlayer?.model;
    for(const h of huggers){
     const frame=squadMotionFrames[h.index];if(!frame)continue;
-    const on=frame.celebration&&h.slot<2&&scorer?smooth((frame.celebration.arms-.55)/.4):0;
+    const on=frame.celebration&&frame.celebration.kind==='jump_hug'&&h.slot<2&&scorer?smooth((frame.celebration.arms-.55)/.4):0;
     if(on<=0){frame.embrace=null;continue}
     const left=scorer.getObjectByName('upperarm_l'),right=scorer.getObjectByName('upperarm_r'),neck=scorer.getObjectByName('neck_01');
     if(!left||!right||!neck){frame.embrace=null;continue}
@@ -2083,7 +2100,17 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // threshold, and turn into the celebration line instead of snapping round.
     const standing=facingAt(i,time);
     const celebrating=!celebrationActive?0:i===0?smooth((time-CELEBRATION_START)/.35):smooth((hugWeight(i,time)-.4)/.35);
-    let heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationHeading,celebrating);
+    // V21.434: the arriving teammate turns to the scorer for the contact,
+    // and the whole group faces the way it walks once the moment is over.
+    let celebrationFacing=celebrationHeading;
+    if(celebrating>0){
+     const walk=Math.atan2(-walkBackDir[0],-walkBackDir[1]),going=smooth((time-CELEBRATION_START-celebrationHold(celebrationKind)-.1)/.9);
+     const h=i?huggers.find(x=>x.index===i):null;
+     if(h){const sp=actorPosition(0,time),c=time-mateContact(h),toScorer=Math.atan2(-(sp[0]-x),-(sp[1]-z));
+      celebrationFacing=angleMix(angleMix(celebrationHeading,toScorer,.75*mateCloseness(h.action,c)*smooth((c+.5)/.5)),walk,going);
+     }else celebrationFacing=angleMix(celebrationHeading,walk,going);
+    }
+    let heading=angleMix(moving?angleMix(standing,Math.atan2(-vx,-vz),smooth((speed-.0005)/.003)):standing,celebrationFacing,celebrating);
     // V21.361: a jogging defender with the ball behind his running line keeps
     // facing the ball and runs backwards or sideways (captured Mixamo jogs).
     let backpedal=0;
@@ -2481,13 +2508,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    // Authored goal celebration on the scorer's driver; the GLB follows it.
    importedMotionFrame.celebrate=0;importedMotionFrame.rootY=null;celebrationState.rootY=0;
    if(celebrationActive&&time>CELEBRATION_START){
-    applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState);
+    applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState,celebrationRelease(celebrationKind,time-CELEBRATION_START));
     importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;importedMotionFrame.celebration=celebrationState;
    }
    for(const h of huggers){
     const frame=squadMotionFrames[h.index],u=hugWeight(h.index,time);
-    if(u>.8){
-     applyCelebrationPose(players[h.index],h.slot%2?'hug_right':'hug_left',time-HUG_START-h.arrive*.8,h.state);
+    const act=u>.8?mateCelebration(h.action,time-mateContact(h)):null;
+    if(act){
+     applyCelebrationPose(players[h.index],act[0],act[1],h.state,act[2]);
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;
     }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
    }
