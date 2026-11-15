@@ -2,19 +2,19 @@ import {signatureTimeline,activeSignatureMoments,applyPlusMotion} from './3d-pla
 import {sampleSkill,applySkillPose,applyFootedPose} from './3d-skill-actions.mjs?v=21303';
 import {createMatchBallSurface,MATCH_BALL_NAME,MATCH_BALL_RADIUS} from './3d-match-ball.mjs?v=21270';
 import {EXTENDED_SEQUENCES,extendedKind,extendedTiming,extendedSeconds,extendedPosition,extendedContact,extendedBall,extendedControl,extendedCamera,extendedSetPieceCamera,extendedPhase,poseExtendedActor} from './3d-extended-match.mjs?v=21341';
-import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21304';
+import {createHighlightPlayback} from './3d-playback-clock.mjs?v=21439';
 import {createSceneSound} from './3d-stadium-sound.mjs?v=21406';
 import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21437';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21439';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21436';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
-import {pickCelebration,celebrationDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21435';
-import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21410';
+import {pickCelebration,celebrationRoute,celebrationRouteDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21439';
+import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21439';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
 import {applyFootwork,applyShotApproach} from './3d-footwork-dynamics.mjs?v=21301';
@@ -802,14 +802,14 @@ export function kitColors(event){
  const keeper=['#f4b52b','#10bda7','#bc63e8'].find(c=>{const k=new THREE.Color(c);return [h,new THREE.Color(away.shirt)].every(t=>Math.hypot(k.r-t.r,k.g-t.g,k.b-t.b)>.55)})||'#42e2ee';
  return{home,away,keeper};
 }
-export function crowdReactionState(type,attackTeam,supporterTeam,time){
+export function crowdReactionState(type,attackTeam,supporterTeam,time,end=DURATION){
  const supporter=supporterTeam==='home'||supporterTeam==='away'?supporterTeam:'neutral',attacking=supporter===attackTeam;
  // V21.226 ceremonies: the whole ground is up for the walk-out; at the final
  // whistle the winners' end celebrates and the losers' end goes quiet.
  if(type==='ceremony_kickoff')return{suspense:0,mood:supporter==='neutral'?.45:.85};
  if(type==='ceremony_fulltime'||type==='ceremony_draw')return{suspense:0,mood:supporter==='neutral'||type==='ceremony_draw'?.3:attacking?1:-.4};
  const suspense=smooth((time-(SHOT_TIME-.85))/.72)*(1-smooth((time-IMPACT_TIME)/.22));
- const after=smooth((time-IMPACT_TIME)/.38),fade=Math.max(.22,1-smooth((time-(DURATION-1.35))/1.1));
+ const after=smooth((time-IMPACT_TIME)/.38),fade=Math.max(.22,1-smooth((time-(end-1.35))/1.1));
  let mood=0;
  if(supporter==='neutral')mood=type==='goal'?.34:type==='big_chance_saved'?.2:.12;
  else if(type==='goal')mood=attacking?1:-.55;
@@ -1126,13 +1126,20 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const celebrationKey=`${event.matchId??''}|${event.id??''}|${event.minute??''}|${event.playerName??''}`;
  const celebrationKind=globalThis.__FOOTERA_QA_CELEBRATION||(celebrationKey===celebrationMemory.key?celebrationMemory.kind:pickCelebration(event,celebrationMemory.kind));
  if(celebrationActive&&celebrationKey!==celebrationMemory.key)celebrationMemory={key:celebrationKey,kind:celebrationKind};
- const celebrationRun=(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
+ // V21.439 (Basti: "Die Torjubel spielen sich alle auf der selben Stelle ab.
+ // Ich will dass die Spieler in Richtung Eckfahne gehen"): each goal picks a
+ // spot (near/far corner flag, the fans behind the goal, the touchline). The
+ // scorer sprints there first; his own celebration starts at GESTURE_START and
+ // the scene runs that much longer (SCENE_END), so nothing of it is cut.
+ const celebrationPlan=celebrationActive?celebrationRoute(celebrationKind,celebrationKey,stagedPlayerPosition(0,CELEBRATION_START),direction,globalThis.__FOOTERA_QA_CELEBRATION_SPOT||null):null;
+ const CELEBRATION_APPROACH=celebrationPlan?.approachTime||0,GESTURE_START=CELEBRATION_START+CELEBRATION_APPROACH,SCENE_END=DURATION+CELEBRATION_APPROACH;
+ const celebrationRun=celebrationPlan?celebrationPlan.run:(()=>{const x=direction,z=.28,l=Math.hypot(x,z);return[x/l,z/l]})();
  function celebrationShift(time){
   if(!celebrationActive||time<=CELEBRATION_START)return 0;
   // V21.297: accelerate into the run-off over 0.4 s; the curves start at
   // full speed, which jerked the scorer from a walk into a sprint.
   const s=time-CELEBRATION_START,ramp=.4;
-  return celebrationDistance(celebrationKind,s<ramp?s*s/(2*ramp):s-ramp/2);
+  return celebrationRouteDistance(celebrationKind,celebrationPlan,s<ramp?s*s/(2*ramp):s-ramp/2);
  }
  // Facing along the run-away line for the whole celebration, even while
  // the scorer stands still (no snap back to his tactical facing).
@@ -1144,14 +1151,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   if(!d)return p;
   const q=[p[0]+celebrationRun[0]*d,p[1]+celebrationRun[1]*d];
   // V21.434: after his own moment the scorer jogs back with the group.
-  const back=celebrationActive?celebrationWalkBack(celebrationKind,time-CELEBRATION_START):0;
+  const back=celebrationActive?celebrationWalkBack(celebrationKind,time-GESTURE_START):0;
   return back?[q[0]+walkBackDir[0]*back,q[1]+walkBackDir[1]*back]:q;
  }
  // Back towards the halfway line (the attacked goal is at local z -52.5),
  // drifting a little towards the middle of the pitch.
  const walkBackDir=(()=>{
   if(!celebrationActive)return[0,1];
-  const p=stagedPlayerPosition(0,CELEBRATION_START),d=celebrationDistance(celebrationKind,celebrationHold(celebrationKind));
+  const p=stagedPlayerPosition(0,CELEBRATION_START),d=celebrationShift(GESTURE_START+celebrationHold(celebrationKind));
   const x=p[0]+celebrationRun[0]*d,l=Math.hypot(-x*.08,1);return[-x*.08/l,1/l];
  })();
  // V21.193: the two nearest teammates sprint to the scorer and hug him,
@@ -1159,12 +1166,14 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
  const HUG_START=CELEBRATION_START+.2;
  const huggers=celebrationActive?(()=>{
   // Measured to where the scorer will be, since he keeps running away.
-  const s=actorPosition(0,HUG_START+2.6);
+  const s=actorPosition(0,GESTURE_START+2.6),late=CELEBRATION_APPROACH;
   return RUNS.map((r,i)=>{const p=stagedPlayerPosition(i,HUG_START);return{index:i,d:i&&r.team==='attack'?Math.hypot(p[0]-s[0],p[1]-s[1]):Infinity}})
    // V21.297: only teammates who can get there at a footballer's sprint;
    // 24 m in 2.4 s peaked at 15 m/s, with legs cycling twice too fast.
-   .filter(h=>h.d<(lateDrama?21:18)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
-   .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/5.3,1.3,3.1)+(lateDrama?0:slot*.35),state:{arms:0,rootY:0},
+   .filter(h=>h.d<(lateDrama?21:18)+5.3*late).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
+   // V21.439: after a sprint to the corner they follow him there and arrive
+   // as his own moment ends, at the same jog/sprint pace as before.
+   .map((h,slot)=>({index:h.index,slot,arrive:Math.max(clamp(h.d/5.3,1.3,3.1+late),late+1.3)+(lateDrama?0:slot*.35),state:{arms:0,rootY:0},
     // V21.434: one short contact each (jump hug, high five, head pat), then clapping and the jog back.
     action:lateDrama&&slot>=2?'jump_hug':mateAction(celebrationKey,slot),after:mateAfter(celebrationKey,slot)}));
  })():[];
@@ -1375,7 +1384,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   }
   const crowdStatic=crowdGroup(crowdStaticSpecs,false),crowdDynamic=crowdGroup(crowdDynamicSpecs,true);
   function writeCrowdFan(spec,i,group,time=0,paint=false){
-   const reaction=group.dynamic?crowdReactionState(crowdType,event.team,spec.team,time):{suspense:0,mood:0};
+   const reaction=group.dynamic?crowdReactionState(crowdType,event.team,spec.team,time,SCENE_END):{suspense:0,mood:0};
    const positive=Math.max(0,reaction.mood),negative=Math.max(0,-reaction.mood),wave=group.dynamic?Math.sin(time*(1.35+spec.loop*.41)+spec.phase):0;
    const cheerBeat=group.dynamic?Math.abs(Math.sin(time*(4.25+spec.loop*.55)+spec.phase)):0;
    const jump=cheerBeat*positive*.34,bob=wave*.045+jump+reaction.suspense*.055;
@@ -1426,7 +1435,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   flagPole.frustumCulled=flagCloth.frustumCulled=false;flagCloth.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(flagPole,flagCloth);track(flagPole);track(flagCloth);
   function writeFlag(spec,i,time=0,paint=false){
    crowdDummy.position.set(spec.x,spec.y,spec.z);crowdDummy.rotation.set(0,0,0);crowdDummy.scale.set(1,1.75+spec.scale*.72,1);crowdDummy.updateMatrix();flagPole.setMatrixAt(i,crowdDummy.matrix);
-   const reaction=crowdReactionState(crowdType,event.team,spec.team,time),baseWave=time*(2.25+spec.scale*.42)+spec.phase,amp=.12+reaction.suspense*.13+Math.max(0,reaction.mood)*.34;
+   const reaction=crowdReactionState(crowdType,event.team,spec.team,time,SCENE_END),baseWave=time*(2.25+spec.scale*.42)+spec.phase,amp=.12+reaction.suspense*.13+Math.max(0,reaction.mood)*.34;
    for(let segment=0;segment<flagSegments;segment++){
     const index=i*flagSegments+segment,wave=Math.sin(baseWave+segment*.72),previous=Math.sin(baseWave+(segment-1)*.72),bend=(wave-previous)*amp;
     crowdDummy.position.set(spec.x+(.38+segment*.62)*spec.scale+wave*amp*(.18+.12*segment),spec.y+.56+.36*spec.scale+Math.abs(wave)*amp*.09,spec.z-(spec.team==='home'?-1:1)*(.03+segment*.012));
@@ -1885,20 +1894,20 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    for(let j=0;j<=160;j++){let x=0,z=0;for(let k=Math.max(1,j-6);k<=Math.min(160,j+6);k++){x+=steps[k*2];z+=steps[k*2+1]}
     table[j]=Math.hypot(x,z)>.02?Math.atan2(-x,-z):j?table[j-1]:raw[0]}
   }
-  const facingAt=(index,time)=>{const x=clamp(time/DURATION)*160,j=Math.min(159,Math.floor(x));return angleMix(facingTables[index][j],facingTables[index][j+1],x-j)};
-  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=DURATION/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];steps[j*2]=next[0]-previous[0];steps[j*2+1]=next[1]-previous[1];previous=next}smoothFacing(facingTables[index]);return a});
+  const facingAt=(index,time)=>{const x=clamp(time/SCENE_END)*160,j=Math.min(159,Math.floor(x));return angleMix(facingTables[index][j],facingTables[index][j+1],x-j)};
+  const gaitSamples=160,facingTables=RUNS.map(()=>new Float32Array(161)),gaitTables=RUNS.map((_,index)=>{const a=new Float32Array(gaitSamples+1),dt=SCENE_END/gaitSamples;let previous=stagedPlayerPosition(index,0,event.type,sequence),shownPrevious=actorPosition(index,0);for(let j=1;j<=gaitSamples;j++){const next=stagedPlayerPosition(index,j*dt,event.type,sequence),distance=Math.hypot(next[0]-previous[0],next[1]-previous[1]),shown=actorPosition(index,j*dt),travel=Math.hypot(shown[0]-shownPrevious[0],shown[1]-shownPrevious[1]),speed=clamp(travel/dt/6.5*(extended&&j*dt<SHOT_TIME?5.4/extendedTiming(sequence).shot:1)),strideLength=runningStrideLength(speed)*Math.max(.12,locomotionEffort(speed));a[j]=a[j-1]+travel*Math.PI*2/strideLength;shownPrevious=shown;facingTables[index][j]=distance>.00001?Math.atan2(-(next[0]-previous[0]),-(next[1]-previous[1])):facingTables[index][j-1];if(j===1)facingTables[index][0]=facingTables[index][j];steps[j*2]=next[0]-previous[0];steps[j*2+1]=next[1]-previous[1];previous=next}smoothFacing(facingTables[index]);return a});
   // Huggers leave their authored run: keep the legs cycling with the real
   // distance they cover on the way to the scorer.
   const hugStrides=new Map();
   function hugStride(index,time){
    let table=hugStrides.get(index);
-   if(!table){table=new Float32Array(65);const dt=(DURATION-HUG_START)/64;let prev=actorPosition(index,HUG_START);table[0]=gaitPhase(index,HUG_START);
+   if(!table){table=new Float32Array(65);const dt=(SCENE_END-HUG_START)/64;let prev=actorPosition(index,HUG_START);table[0]=gaitPhase(index,HUG_START);
     for(let j=1;j<=64;j++){const next=actorPosition(index,HUG_START+j*dt),distance=Math.hypot(next[0]-prev[0],next[1]-prev[1]);table[j]=table[j-1]+distance*Math.PI*2/runningStrideLength(clamp(distance/dt/6.5));prev=next}
     hugStrides.set(index,table)}
-   const at=clamp((time-HUG_START)/(DURATION-HUG_START))*64,lo=Math.min(63,Math.floor(at));
+   const at=clamp((time-HUG_START)/(SCENE_END-HUG_START))*64,lo=Math.min(63,Math.floor(at));
    return mix(table[lo],table[lo+1],at-lo);
   }
-  function gaitPhase(index,time){const at=clamp(time/DURATION)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
+  function gaitPhase(index,time){const at=clamp(time/SCENE_END)*gaitSamples,lo=Math.min(gaitSamples-1,Math.floor(at));return mix(gaitTables[index][lo],gaitTables[index][lo+1],at-lo)+index*2.399}
   // V21.437: real footprints. The stride phase follows the distance run, so
   // each support phase has a fixed middle: the boot is planted where the body
   // is at that moment and stays there (world-fixed) until it lifts; in the
@@ -1907,9 +1916,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // the root positions at mid-stance; the model adds the hip's side offset.
   function gaitTimeOf(index,phase){
    const a=gaitTables[index],raw=phase-index*2.399;
-   if(raw<=a[0])return 0;if(raw>=a[gaitSamples])return DURATION;
+   if(raw<=a[0])return 0;if(raw>=a[gaitSamples])return SCENE_END;
    let lo=0,hi=gaitSamples;while(hi-lo>1){const m=(lo+hi)>>1;if(a[m]<=raw)lo=m;else hi=m}
-   const span=a[hi]-a[lo];return(lo+(span>1e-9?(raw-a[lo])/span:0))*DURATION/gaitSamples;
+   const span=a[hi]-a[lo];return(lo+(span>1e-9?(raw-a[lo])/span:0))*SCENE_END/gaitSamples;
   }
   function footPrints(index,time,speed,out){
    const phase=gaitPhase(index,time),duty=runningDuty(speed),TAU=Math.PI*2;
@@ -1930,13 +1939,13 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   const ballRollSamples=208,ballRollPath=new Float32Array(ballRollSamples+1);
   {let previous=eventBallPosition(event.type,0,sequence,finish,keeperAction);
    for(let i=1;i<=ballRollSamples;i++){
-    const t=i*DURATION/ballRollSamples,next=eventBallPosition(event.type,t,sequence,finish,keeperAction);
+    const t=i*SCENE_END/ballRollSamples,next=eventBallPosition(event.type,t,sequence,finish,keeperAction);
     const travelled=Math.hypot(next[0]-previous[0],next[2]-previous[2]);
-    ballRollPath[i]=ballRollPath[i-1]+(t<=SHOT_TIME?travelled/.14:4*DURATION/ballRollSamples);
+    ballRollPath[i]=ballRollPath[i-1]+(t<=SHOT_TIME?travelled/.14:4*SCENE_END/ballRollSamples);
     previous=next;
    }
   }
-  function ballRollAt(time){const x=clamp(time/DURATION)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
+  function ballRollAt(time){const x=clamp(time/SCENE_END)*ballRollSamples,i=Math.min(ballRollSamples-1,Math.floor(x));return mix(ballRollPath[i],ballRollPath[i+1],x-i)}
   const hiddenPrototypeMatrix=new THREE.Matrix4().makeScale(0,0,0);
   const camTarget=new THREE.Vector3(),broadcastTracks=new Map();
   const broadcastFor=aspect=>{
@@ -1975,7 +1984,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    p.root.updateWorldMatrix(true,true);
    const current=stagedPlayerPosition(state.index,time,event.type,sequence),
     before=stagedPlayerPosition(state.index,Math.max(0,time-.05),event.type,sequence),
-    after=stagedPlayerPosition(state.index,Math.min(DURATION,time+.05),event.type,sequence),
+    after=stagedPlayerPosition(state.index,Math.min(SCENE_END,time+.05),event.type,sequence),
     vx=after[0]-before[0],vz=after[1]-before[1],length=Math.hypot(vx,vz),
     fx=length>.00001?vx/length:0,fz=length>.00001?vz/length:-1;
    const desiredX=current[0]+fx*.49,desiredZ=current[1]+fz*.49;
@@ -2038,7 +2047,9 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const state=ceremonyStates[index];
    frame.speed=speed;frame.turn=0;frame.acceleration=0;frame.control=0;frame.stride=stride;frame.grounded=true;
    if(a.pose&&a.weight>.002){
-    applyCelebrationPose(p,a.pose,a.s,state,a.weight);
+    // V21.439: a player standing still lets the captured clip move his legs
+    // too (not the jumping one: the capture has no hip height).
+    applyCelebrationPose(p,a.pose,a.s,state,a.weight,a.pose==='excited'?0:1-smooth((speed-.01)/.04));
     frame.celebrate=state.arms;frame.rootY=state.rootY;frame.celebration=state;
    }else{frame.celebrate=0;frame.rootY=null;frame.celebration=null}
   }
@@ -2122,7 +2133,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    };
    const markTackle=(i,contact,weight)=>{const f=i===0?importedMotionFrame:squadMotionFrames[i];if(f&&weight>.001)f.tackle={contact,weight}};
    players.forEach((p,i)=>{const [x,z]=actorPosition(i,time,event.type,sequence),prev=actorPosition(i,Math.max(0,time-.02),event.type,sequence),next=actorPosition(i,time+.02,event.type,sequence),vx=next[0]-prev[0],vz=next[1]-prev[1],speed=clamp(Math.hypot(vx,vz)/.26),moving=speed>.002;
-    const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(DURATION,time+.13),event.type,sequence);
+    const back=actorPosition(i,Math.max(0,time-.13),event.type,sequence),ahead=actorPosition(i,Math.min(SCENE_END,time+.13),event.type,sequence);
     // V21.297: ease from the (smoothed) standing facing into the running
     // direction as the player gets going, instead of switching at a speed
     // threshold, and turn into the celebration line instead of snapping round.
@@ -2132,7 +2143,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     // and the whole group faces the way it walks once the moment is over.
     let celebrationFacing=celebrationHeading;
     if(celebrating>0){
-     const walk=Math.atan2(-walkBackDir[0],-walkBackDir[1]),going=smooth((time-CELEBRATION_START-celebrationHold(celebrationKind)-.1)/.9);
+     const walk=Math.atan2(-walkBackDir[0],-walkBackDir[1]),going=smooth((time-GESTURE_START-celebrationHold(celebrationKind)-.1)/.9);
      const h=i?huggers.find(x=>x.index===i):null;
      if(h){const sp=actorPosition(0,time),c=time-mateContact(h),toScorer=Math.atan2(-(sp[0]-x),-(sp[1]-z));
       celebrationFacing=angleMix(angleMix(celebrationHeading,toScorer,.75*mateCloseness(h.action,c)*smooth((c+.5)/.5)),walk,going);
@@ -2144,7 +2155,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     let backpedal=0;
     if(i>=8&&importedPlayers[i]?.runCapture&&!celebrating&&event.type!=='ball_won'){
      // Averaged over +-0.6 s so the defender turns round calmly, never in a frame.
-     let sum=0;for(let k=-10;k<=10;k++)sum+=backpedalRaw(i,clamp(time+k*.06,0,DURATION));
+     let sum=0;for(let k=-10;k<=10;k++)sum+=backpedalRaw(i,clamp(time+k*.06,0,SCENE_END));
      backpedal=sum/21*(1-smooth((time-(SHOT_TIME-1))/1));
      const toBall=Math.atan2(-(defensiveBall[0]-x),-(defensiveBall[2]-z));
      if(backpedal>.001)heading=angleMix(heading,toBall,backpedal);
@@ -2537,8 +2548,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    // Authored goal celebration on the scorer's driver; the GLB follows it.
    importedMotionFrame.celebrate=0;importedMotionFrame.rootY=null;celebrationState.rootY=0;
-   if(celebrationActive&&time>CELEBRATION_START){
-    applyCelebrationPose(players[0],celebrationKind,time-CELEBRATION_START,celebrationState,celebrationRelease(celebrationKind,time-CELEBRATION_START));
+   if(celebrationActive&&time>GESTURE_START){
+    applyCelebrationPose(players[0],celebrationKind,time-GESTURE_START,celebrationState,celebrationRelease(celebrationKind,time-GESTURE_START));
     importedMotionFrame.celebrate=celebrationState.arms;importedMotionFrame.rootY=celebrationState.rootY;importedMotionFrame.celebration=celebrationState;
    }
    for(const h of huggers){
@@ -2653,7 +2664,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
     const root=players[0].root.getWorldPosition(celebrationAnchor),k=direction;
     // V21.191: a real close-up. Head and chest stay above the result card,
     // with a slow push-in (6.0 m to 5.1 m) instead of a static medium shot.
-    const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,since=time-CELEBRATION_CUT,drift=since*.3;
+    const runX=celebrationRun[0]*k,runZ=celebrationRun[1]*k,since=Math.max(0,time-CELEBRATION_CUT-CELEBRATION_APPROACH),drift=since*.3;
     const pu=clamp(since/2.6),push=pu*pu*pu*(pu*(pu*6-15)+10),near=lateDrama?mix(7.2,6.2,push):mix(6,5.1,push),side=mix(1.1,.75,push)-drift*.3;
     const lift=celebrationState.rootY*.75;
     camera.position.set(root.x+runX*near-runZ*side,root.y+1.5+lift*.5,root.z+runZ*near+runX*side);
@@ -2713,8 +2724,8 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    const facing=players.map((p,index)=>{const before=stagedPlayerPosition(index,Math.max(0,renderTime-.02),event.type,sequence),after=stagedPlayerPosition(index,renderTime+.02,event.type,sequence),front=new THREE.Vector3(0,0,-1).transformDirection(p.upper.matrixWorld),toe=new THREE.Vector3(0,0,-1).transformDirection(p.ankles[0].matrixWorld);return{index,forward:[front.x,front.z],toe:[toe.x,toe.z],backpedal:squadMotionFrames[index]?.travel?.[2]||0,velocity:[(after[0]-before[0])*direction,(after[1]-before[1])*direction]}});
    const defenderPos=stagedPlayerPosition(defenderIndex,renderTime,event.type,sequence),attackerPos=stagedPlayerPosition(0,renderTime,event.type,sequence);
    const defenderRoute=labTrackingPreview?trackingTimeline.sample(renderTime):null;
-   const runnerBefore=stagedPlayerPosition(0,Math.max(0,renderTime-.016),event.type,sequence),runnerAfter=stagedPlayerPosition(0,Math.min(DURATION,renderTime+.016),event.type,sequence);
-   const runnerDt=Math.max(.001,Math.min(DURATION,renderTime+.016)-Math.max(0,renderTime-.016));
+   const runnerBefore=stagedPlayerPosition(0,Math.max(0,renderTime-.016),event.type,sequence),runnerAfter=stagedPlayerPosition(0,Math.min(SCENE_END,renderTime+.016),event.type,sequence);
+   const runnerDt=Math.max(.001,Math.min(SCENE_END,renderTime+.016)-Math.max(0,renderTime-.016));
    return{plusMoments:signatureIcons.map(({moment,sprite})=>({id:moment.id,who:moment.who,phase:moment.phase,actor:moment.actor,badge:moment.badge,variant:moment.variant,visible:sprite.visible,position:sprite.position.toArray(),ownerPosition:(moment.actor===16?keeper:moment.actor===17?buildKeeper:players[moment.actor])?.root.getWorldPosition(new THREE.Vector3()).toArray()||null})),skillAction:sampleSkill(sequence,renderTime),shotFoot:event.shotFoot||'',strikeFeet:players[0].ankles.map(a=>field.worldToLocal(a.getWorldPosition(new THREE.Vector3())).toArray()),strikerRoot:players[0].root.position.toArray(),
     extendedPhase:extendedPhase(sequence,renderTime,event.team,event.type),buildKeeperPosition:buildKeeper?.root.position.toArray()||null,contactMotionVersion:CONTACT_MOTION_VERSION,attackFlowVersion:ATTACK_FLOW_VERSION,
     attackFlowSpeed:Math.hypot(runnerAfter[0]-runnerBefore[0],runnerAfter[1]-runnerBefore[1])/runnerDt,defenderTrackingVersion:DEFENDER_TRACKING_VERSION,
@@ -2772,7 +2783,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
   // V21.371 Stadion-Sound: the ball's world position and the attacked goal.
   const soundBall=new THREE.Vector3(),soundGoal=worldPosition([0,0,-52.5],direction);
   function soundProbe(){ball.getWorldPosition(soundBall);return{ball:[soundBall.x,soundBall.y,soundBall.z],goal:soundGoal}}
-  return{update,resize,dispose,inspect,reduceQuality,soundProbe,lineClearIndex:lineClearer?lineClearer.index:-1};
+  return{update,resize,dispose,inspect,reduceQuality,soundProbe,lineClearIndex:lineClearer?lineClearer.index:-1,duration:SCENE_END,celebrationSpot:celebrationPlan?.spot||null};
  }catch(error){for(const resource of resources){try{resource.dispose?.()}catch(_){}}scene.clear();throw error}
 }
 export function play(event,signal){
@@ -2867,11 +2878,11 @@ export function play(event,signal){
   // Browser tests on a software renderer (1-2 fps) keep wall-clock pace and
   // skip the very-slow 2D fallback; real phones keep both safety nets.
   const realtimeTest=!!globalThis.FOOTERA_TEST_REALTIME_3D;
-  const playback=createHighlightPlayback(event,DURATION,realtimeTest?{maxFrameMs:2000}:undefined);
+  let playback=createHighlightPlayback(event,DURATION,realtimeTest?{maxFrameMs:2000}:undefined);
   const replayRange=replayEligible?replayWindow(SHOT_TIME,goalArrival):null,WIPE=.32;
   const replaySeconds=replayRange?(replayRange.to-replayRange.from)/REPLAY_RATE+WIPE*2:0;
   let replayState=null;
-  timer=setTimeout(()=>finish('fallback'),Math.max(realtimeTest?180000:30000,(playback.totalSeconds+replaySeconds)*1000+12000));
+  timer=setTimeout(()=>finish('fallback'),Math.max(realtimeTest?180000:30000,(playback.totalSeconds+replaySeconds+3.5)*1000+12000));
   try{
    const memory=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8,dpr=devicePixelRatio||1,mobile=innerWidth<=600||matchMedia?.('(pointer:coarse)')?.matches===true,
     // V21.185: Chrome reports 6 GB phones as deviceMemory 4. Only 2-3 GB or
@@ -2892,6 +2903,8 @@ export function play(event,signal){
    // otherwise (or until its file has loaded) the verified Quaternius squad.
    const modelVariant=!weak&&footeraHumanPlayersWanted()&&isFooteraHumanModelReady()?'human':'quaternius';
    world=makeScene(renderer,event,weak,high,mobileStandard,false,fluidMotion,!forceLegacyModel,modelVariant);
+   // V21.439: a sprint to the corner flag makes the goal scene longer.
+   if(world.duration>DURATION)playback=createHighlightPlayback(event,DURATION,{...(realtimeTest?{maxFrameMs:2000}:{}),tail:world.duration-DURATION});
    layer.dataset.motion=fluidMotion?'fluid':'legacy';
    const modelInfo=world.inspect();
    const imported=!!modelInfo.importedFootballer;
@@ -2975,7 +2988,7 @@ export function play(event,signal){
        detail.textContent=`Schuss von ${event.playerName} auf der Linie geklärt`}
       else{headline.textContent='VORBEI';name.textContent=event.playerName;detail.textContent='Chance vergeben'}
      }
-     hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<DURATION-.2);
+     hud.classList.toggle('visible',displayTime>=revealAt&&displayTime<(world.duration||DURATION)-.2);
      stadiumTitle?.classList.toggle('visible',displayTime>=.45&&displayTime<CEREMONY_ARENA_SHOT-.2);
      if(sample.done){
       if(!replayEligible){finish('played');return}

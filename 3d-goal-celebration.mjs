@@ -10,7 +10,7 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.435-captured-celebrations';
+export const CELEBRATION_VERSION='21.439-celebration-spots';
 export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms','rally','dance']);
 // Celebrations only a star performs, never picked at random.
 export const STAR_CELEBRATIONS=Object.freeze(['zen','cold','samba','mask']);
@@ -63,6 +63,9 @@ const CAPTURE={fist_pump:['fist_pump',.9,1.45],open_arms:['cheering',.95,1.7],ra
 const FALLBACK={rally:'open_arms',dance:'samba'};
 // After the contact a teammate claps, or celebrates his own way (captured).
 const MATE_AFTER=['applause','excited','cheering','waving'];
+// V21.439 final whistle: captured clips played from their first frame (pose
+// kind -> clip). Without the capture they fall back to clapping.
+const DIRECT={excited:'excited',cheering:'cheering',waving:'waving',victory:'victory',rallying:'rallying',pump:'fist_pump'};
 // How the scorer's own pose hands back to walking (1 = full celebration).
 export function celebrationRelease(kind,s){return 1-smooth((s-celebrationHold(kind))/.7)}
 // Metres walked back towards the halfway line after the hold (1.2 m/s, eased in).
@@ -92,7 +95,7 @@ export function mateAfter(key='',slot=0){
 // The captured clip that drives a celebration kind, or null.
 export function celebrationCapture(kind){
  if(CAPTURE[kind])return CAPTURE[kind][0];
- return['excited','cheering','waving'].includes(kind)?kind:null;
+ return DIRECT[kind]||null;
 }
 // How long the teammate stays right at the scorer's side (then walks next to him).
 export function mateCloseness(action,s){return s<0?1:1-smooth((s-1.3)/.6)}
@@ -131,6 +134,59 @@ export function celebrationDistance(kind,s){
  return ease(s,1.5,5.6);
 }
 
+// V21.439 (Basti: "Die Torjubel spielen sich alle auf der selben Stelle ab.
+// Ich will dass die Spieler in Richtung Eckfahne gehen"): every goal picks
+// WHERE the scorer celebrates. Field-local metres (attacked goal at z -52.5,
+// camera side x*direction>0). He first sprints along the line towards that
+// spot (approach), then his own celebration (celebrationDistance) carries
+// him the last metres. The scene grows by the approach time, so the
+// celebration itself keeps its full length.
+export const CELEBRATION_SPOTS=Object.freeze(['corner_near','corner_far','fans_goal','touchline']);
+export const CELEBRATION_SPRINT=Object.freeze({min:5.6,max:7.8,top:7.2,ease:.9,maxApproach:19});
+function spotTarget(spot,start,d){
+ const sx=Math.abs(start[0])>4?Math.sign(start[0]):d;
+ if(spot==='corner_near')return[30.6*d,-49.6];
+ if(spot==='corner_far')return[-30.6*d,-49.6];
+ // Towards the fans behind the goal, beside the post on the scorer's side.
+ if(spot==='fans_goal')return[sx*Math.max(12.5,Math.min(19,Math.abs(start[0])+5)),-50.4];
+ return[30.8*d,Math.min(-14,start[1]+7)];
+}
+function spotHash(key){let h=2166136261;for(const c of String(key)+'#spot')h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
+// start: scorer's field-local position when the celebration begins.
+export function celebrationRoute(kind,key='',start=[0,-40],direction=1,forced=null){
+ const d=direction===-1?-1:1,len=celebrationDistance(kind,celebrationHold(kind)),h=spotHash(key);
+ // Starting speed of the authored run, so the sprint flows into it.
+ const v0=Math.max(CELEBRATION_SPRINT.min,Math.min(CELEBRATION_SPRINT.max,(celebrationDistance(kind,.05)-celebrationDistance(kind,0))/.05));
+ const order=CELEBRATION_SPOTS.map((_,i)=>CELEBRATION_SPOTS[(h+i)%CELEBRATION_SPOTS.length]);
+ if(CELEBRATION_SPOTS.includes(forced))order.unshift(forced);
+ for(const spot of order){
+  const target=spotTarget(spot,start,d),dx=target[0]-start[0],dz=target[1]-start[1],L=Math.hypot(dx,dz);
+  // The spot must leave room for the celebration's own run (no run off the
+  // pitch) and the far corner is only for a scorer on that half.
+  if(L<len+1.2)continue;
+  if(spot==='corner_far'&&L>31)continue;
+  const approach=Math.min(CELEBRATION_SPRINT.maxApproach,L-len-.6);
+  // A long approach is a real sprint that eases into the celebration's run.
+  const top=Math.max(v0,CELEBRATION_SPRINT.top),ease=CELEBRATION_SPRINT.ease,easeLen=(top+v0)/2*ease;
+  const sprint=approach>easeLen+.5&&top>v0;
+  const approachTime=sprint?(approach-easeLen)/top+ease:approach/v0;
+  return{spot,target,run:[dx/L,dz/L],approach,approachTime,speed:v0,top:sprint?top:v0,ease:sprint?ease:0};
+ }
+ // Fallback: the classic run-off towards the camera touchline.
+ const x=d,z=.28,l=Math.hypot(x,z);
+ return{spot:'classic',target:null,run:[x/l,z/l],approach:0,approachTime:0,speed:v0,top:v0,ease:0};
+}
+// Metres along the route, s seconds after the run-off began (sprint, then
+// the celebration's own run).
+export function celebrationRouteDistance(kind,route,s){
+ s=Math.max(0,s);const a=route?.approachTime||0;
+ if(s>=a)return(route?.approach||0)+celebrationDistance(kind,s-a);
+ const {top,speed:v0,ease}=route,cruise=a-ease;
+ if(s<=cruise)return top*s;
+ // Linear slow-down from the sprint to the celebration's own pace.
+ const u=s-cruise;return top*cruise+top*u+(v0-top)*u*u/(2*ease);
+}
+
 function blankPose(){
  return{armsOn:1,rig:[0,0,0],upper:[0,0,0],arms:[[0,0,0],[0,0,0]],elbows:[.35,.35],
   legs:[[0,0,0],[0,0,0]],knees:[0,0],ankles:[0,0],drop:0,lift:0,legs_w:0,
@@ -161,7 +217,7 @@ function looseStance(t,s,amount){
 
 function pose(t,kind,s){
  reset(t);
- kind=FALLBACK[kind]||(['excited','cheering','waving'].includes(kind)?'applause':kind);
+ kind=FALLBACK[kind]||(DIRECT[kind]?'applause':kind);
  // Breathing heave and a little life in the shoulders for every celebration.
  const breathe=Math.sin(s*2.4);
  t.upper[0]+=.035*breathe;t.shrug[0]=t.shrug[1]=.04+.03*breathe;
@@ -366,7 +422,9 @@ function pose(t,kind,s){
  * (jump) in metres, and the shoulder shrug, head aim and open-hand amount for
  * the imported model's extra joints. */
 // weight (V21.226) fades a pose back out to the locomotion underneath.
-export function applyCelebrationPose(p,kind,s,out={},weight=1){
+// standLegs (V21.439, 0..1): a standing player may let a directly captured
+// clip (DIRECT) move his legs too; walking players keep their stride.
+export function applyCelebrationPose(p,kind,s,out={},weight=1,standLegs=0){
  const name=kind;
  pose(late,kind,s-FOREARM_LAG);
  pose(now,kind,s);
@@ -396,7 +454,9 @@ export function applyCelebrationPose(p,kind,s,out={},weight=1){
  const clip=celebrationCapture(name),cap=CAPTURE[name];
  if(clip){
   const start=cap?cap[1]:0,body=clamp(weight)*smooth((s-start)/.35);
-  out.capture=body>.001?{clip,seconds:Math.max(0,s-start),body,legs:cap?body*smooth((s-cap[2])/.4):0}:null;
+  const legs=cap?body*smooth((s-cap[2])/.4):body*clamp(standLegs);
+  out.capture=body>.001?{clip,seconds:Math.max(0,s-start),body,legs}:null;
+  if(!cap&&legs>out.legs)out.legs=legs;
  }else out.capture=null;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];

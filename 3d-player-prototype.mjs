@@ -9,7 +9,7 @@ import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {createUalPoseLayer} from './3d-mocap-ual-layer.mjs?v=21437';
 import {createCmuKickLayer} from './3d-mocap-cmu-layer.mjs?v=21353';
 import {athleticBody,athleticSeed} from './3d-athletic-body.mjs?v=21391';
-import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createCelebrateCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21437';
+import {createKeeperCaptureLayer,createStrikerCaptureLayer,strikerCaptureWeights,createTackleCaptureLayer,createRunCaptureLayer,createReceiveCaptureLayer,createMixamoKickLayer,createGaitCaptureLayer,createCelebrateCaptureLayer,createThrowInCaptureLayer,createFallCaptureLayer} from './3d-mocap-mixamo-layer.mjs?v=21439';
 import {createFooteraSurfaceMaps,vertexFooteraOcclusion} from './3d-player-materials.mjs?v=2178';
 import {footeraAtlasUV} from './3d-rigged-footballer.mjs?v=21269';
 import {FACE_NY_MIN,faceUV,createFooteraFaceTexture} from './3d-player-face.mjs?v=21191';
@@ -871,8 +871,14 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   // Everyday football jog and ready stance (hips, spine, arms), wherever the
   // library gait owns the body (not in shots, tricks, celebrations or the
   // air); posed before the foot IK so the planted boots stay put.
-  const gaitShare=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
-   clamp((bodyState?.weight||0)/.92)*(1-clamp(info.celebrate||0))*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
+  const gaitBase=kickCapture&&!keeperRole&&!acro&&Number.isFinite(info.speed)?
+   clamp((bodyState?.weight||0)/.92)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(1-clamp(info.travel?.[2]||0)):0;
+  const gaitShare=gaitBase*(1-clamp(info.celebrate||0));
+  // V21.439: an arm-only pose (clapping, waving, a scorer's gesture while he
+  // still runs) no longer switches the captured stride off; before, those
+  // players ran on the old CC0 legs. Only authored legs (kneel, slide, a
+  // captured dance on the spot) take the legs over.
+  const gaitLegShare=gaitBase*(1-(info.celebration?clamp(info.celebration.legs??info.celebrate):0));
   if(gaitShare>.001){gaitBody.apply(frameTime,info.speed,info.stride||0,gaitShare);leanIntoTurn(info,gaitShare)}
   // V21.437: the captured walk/run/sprint (Locomotion Pack) already leans,
   // twists and pumps the arms; the procedural layer on top doubled the arm
@@ -891,7 +897,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
    capturedBody.applyLegs(1.12*(1-authoredLegs)*(1-clamp(info.skillWeight||0))*(1-clamp(info.footActionWeight||0))*(1-clamp(info.plusWeight||0))*(info.grounded===false?0:1),legSwing);
   }
   // The football jog also owns each swinging leg (after the library capture).
-  if(gaitShare>.001)gaitBody.applyLegs(info.speed,info.stride||0,gaitShare*(info.grounded===false?0:1),legSwing);
+  if(gaitLegShare>.001)gaitBody.applyLegs(info.speed,info.stride||0,gaitLegShare*(info.grounded===false?0:1),legSwing);
   // V21.434: captured goal celebration (fist pump, cheering, dances …) on
   // top of the authored one; the authored root keeps the kneel and the run.
   if(kickCapture&&!keeperRole&&!acro&&info.celebrate>0&&info.celebration?.capture)celebrateBody.apply(info.celebration.capture);
@@ -910,7 +916,7 @@ export function mountFooteraPlayerModel(playerRoot,existingDriver,kit,name='',de
   const plantShare=Math.max(gaitBody.fullGait?strideShare:0,runLegs);
   if(plantShare>.001){
    // (gaitShare: celebrating players keep their authored run, only planted.)
-   if(gaitShare>.001&&gaitBody.fullGait)gaitBody.applyLegs(info.speed,info.stride||0,gaitShare,FULL_LEGS);
+   if(gaitLegShare>.001&&gaitBody.fullGait)gaitBody.applyLegs(info.speed,info.stride||0,gaitLegShare,FULL_LEGS);
    for(let i=0;i<2;i++){
     const swing=driver.gait[i]?.swingShape??(driver.gait[i]?.support?0:1);
     // Prints only while really striding (a standing player keeps the authored stance).

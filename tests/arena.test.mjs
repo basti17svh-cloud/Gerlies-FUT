@@ -71,7 +71,7 @@ test('arena is wired into the scene, versioned and cached offline',()=>{
  assert.match(scene,/footera-3d-arena'\)!=='0'/,'opt-out flag');
  assert.equal(scene.match(/arena\?\.update\(time,camera\)/g).length,2,'match scene and ceremony both update it');
  const version=hl.match(/3d-highlights-scene\.mjs\?v=(\d+)/)[1];
- for(const f of ['./3d-arena.mjs?v=21410','./3d-highlights-scene.mjs?v='+version,'./3d-ceremony.mjs?v=21410'])assert.ok(sw.includes(`"${f}"`),f);
+ for(const f of ['./3d-arena.mjs?v=21410','./3d-highlights-scene.mjs?v='+version,'./3d-ceremony.mjs?v=21439'])assert.ok(sw.includes(`"${f}"`),f);
  // Deterministic: no clock and no RNG inside the module.
  assert.ok(!/Math\.random|Date\.now|performance\.now/.test(arena));
 });

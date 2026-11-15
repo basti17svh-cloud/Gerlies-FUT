@@ -5,7 +5,9 @@ import {extendedTiming} from './3d-extended-match.mjs?v=21160';
 // maxFrameMs caps one frame's advance so a hitch never skips the action;
 // browser tests on a software renderer lift it to keep wall-clock pace.
 export const SHOT_RATE=1.5;
-export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100}={}){
+// tail (V21.439): extra scene seconds after the normal end, e.g. the scorer's
+// sprint to the corner flag before his celebration; played at the same pace.
+export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail=0}={}){
  // V21.226 walk-out / final whistle: plain real time, no shot segments.
  if(event.type==='ceremony'){
   let elapsed=0,last;
@@ -30,7 +32,8 @@ export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100}={})
  if(event.type==='goal'&&!extended)segments.push({from:6.72,to:7.32,rate:.4});
  const extra=segments.reduce((sum,x)=>sum+(x.to-x.from)/scale*(1/x.rate-1),0);
  const shotReal=1.25/SHOT_RATE;
- const totalSeconds=extended?extended.duration-1.25+shotReal:buildupSeconds+(duration-buildEnd)/scale+extra;
+ const extraTail=extended?0:Math.max(0,Number(tail)||0);
+ const totalSeconds=(extended?extended.duration-1.25+shotReal:buildupSeconds+(duration-buildEnd)/scale+extra)+extraTail/scale;
  const after=u=>{
   // Real seconds since the action to scene time, through the timed segments.
   let t=buildEnd;
@@ -50,7 +53,7 @@ export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100}={})
    if(last!==undefined)elapsed+=Math.max(0,Math.min(maxFrameMs,now-last))/1000;
    last=now;
    const time=extended?(elapsed<extended.shot?elapsed/extended.shot*5.4:elapsed<extended.shot+shotReal?5.4+(elapsed-extended.shot)*SHOT_RATE:6.65+(elapsed-extended.shot-shotReal)/(extended.duration-extended.shot-1.25)*3.75):elapsed<buildupSeconds?elapsed/buildupSeconds*buildEnd:after(elapsed-buildupSeconds);
-   return{time:Math.min(duration,time),done:elapsed>=totalSeconds};
+   return{time:Math.min(duration+extraTail,time),done:elapsed>=totalSeconds};
   }
  };
 }

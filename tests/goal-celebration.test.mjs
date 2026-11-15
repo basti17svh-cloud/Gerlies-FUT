@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose,
- celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateAfter,mateCelebration,mateCloseness,celebrationCapture} from '../3d-goal-celebration.mjs';
+ celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateAfter,mateCelebration,mateCloseness,celebrationCapture,
+ celebrationRoute,celebrationRouteDistance,CELEBRATION_SPOTS} from '../3d-goal-celebration.mjs';
 
 const joint=()=>({rotation:{x:0,y:0,z:0},position:{x:0,y:0,z:0}});
 const driver=()=>({rig:joint(),upper:joint(),arms:[joint(),joint()],elbows:[joint(),joint()],legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()]});
@@ -133,4 +134,29 @@ test('captured celebrations: every clip exists, the feet join only after the run
  const mate={};applyCelebrationPose(driver(),'excited',.8,mate,1);assert.equal(mate.capture.legs,0);
  const after=new Set();for(let g=0;g<40;g++)after.add(mateAfter('g'+g,0));
  assert.ok(after.has('applause')&&after.size>=3);
+});
+
+// V21.439 (Basti: "Die Torjubel spielen sich alle auf der selben Stelle ab"):
+test('celebration spots: corner flags, fans behind the goal, touchline; always on the pitch', ()=>{
+ const seen=new Set();
+ for(let g=0;g<80;g++)for(const start of [[0,-38],[-12,-40],[14,-36],[-4,-44]])for(const d of [1,-1]){
+  const kind=pickCelebration({id:'r'+g,playerName:'A',minute:g});
+  const r=celebrationRoute(kind,'r'+g,start,d);seen.add(r.spot);
+  let last=0;
+  for(let s=0;s<=r.approachTime+3.5;s+=.05){
+   const m=celebrationRouteDistance(kind,r,s),x=start[0]+r.run[0]*m,z=start[1]+r.run[1]*m;
+   assert.ok(m>=last-1e-9,'never backwards');
+   // A sprint, never faster than a footballer, slowing into the celebration.
+   assert.ok((m-last)/.05<8.6,'speed '+((m-last)/.05));
+   assert.ok(Math.abs(x)<33.6&&z>-52.2&&z<0,`${r.spot} on the pitch ${x.toFixed(1)},${z.toFixed(1)}`);
+   last=m;
+  }
+  // The longest sprint adds at most ~3 s to the goal scene.
+  assert.ok(r.approachTime<=3.1,r.approachTime);
+  if(r.spot==='corner_near')assert.ok(r.run[0]*d>0&&r.run[1]<0,'towards the near corner flag');
+ }
+ for(const spot of CELEBRATION_SPOTS)assert.ok(seen.has(spot),spot);
+ // Stable per goal, and the spot can be forced for QA.
+ assert.deepEqual(celebrationRoute('badge','k',[0,-38],1),celebrationRoute('badge','k',[0,-38],1));
+ assert.equal(celebrationRoute('badge','k',[0,-38],1,'corner_near').spot,'corner_near');
 });
