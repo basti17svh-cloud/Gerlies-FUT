@@ -55,3 +55,9 @@ test('the weekly EA refresh keeps the Serie C',()=>{
 test('Serie C cards never look up EA portraits by their Footera id',()=>{
  assert.match(html,/Number\(v\)<900000000/);
 });
+
+test('the revision file counts the Serie C players too',()=>{
+ const version=JSON.parse(fs.readFileSync(path.join(root,'assets','players-db-version.json'),'utf8'));
+ const own=fs.readFileSync(path.join(root,'assets','players-serie-c.csv'),'utf8').trim().split('\n').length-1;
+ assert.ok(version.players>=own+10000,`${version.players} players listed`);
+});
