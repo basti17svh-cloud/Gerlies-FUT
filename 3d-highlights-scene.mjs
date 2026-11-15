@@ -8,12 +8,12 @@ import {createDefensiveUnit} from './3d-defensive-unit.mjs?v=21155';
 import {drawPerimeterBoard} from './3d-advertising.mjs?v=21411';
 import * as THREE from './vendor/three/three.module.min.js';
 import {createStableCameraTrack} from './3d-camera-director.mjs?v=2196';
-import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21433';
+import {isFooteraPlayerModelReady,isFooteraMakeHumanModelReady,mountFooteraPlayerModel,prepareFooteraPlayerModel,prepareFooteraMakeHumanModel} from './3d-player-prototype.mjs?v=21435';
 import {prepareFooteraHumanModel,isFooteraHumanModelReady,loadFooteraCrestImage,footeraCrestImageNow} from './3d-player-human.mjs?v=21433';
 import {createGlbClipLayer} from './3d-glb-clip-blend.mjs?v=2175';
 import {applyBroadcastLook} from './3d-broadcast-look.mjs?v=21349';
 import {footeraHDWanted} from './3d-player-hd.mjs?v=21349';
-import {pickCelebration,celebrationDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21434';
+import {pickCelebration,celebrationDistance,applyCelebrationPose,celebrationHold,celebrationRelease,celebrationWalkBack,mateAction,mateAfter,mateCelebration,mateCloseness} from './3d-goal-celebration.mjs?v=21435';
 import {ceremonyKind,ceremonyActor,ceremonyCamera,CEREMONY_CUT,CEREMONY_ARENA_SHOT,replayCamera,replayWindow,REPLAY_RATE} from './3d-ceremony.mjs?v=21410';
 import {cleanStadium,stadiumLook,createFanWall} from './3d-stadium.mjs?v=21410';
 export {ceremonyKind,replayWindow,REPLAY_RATE};
@@ -1166,7 +1166,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    .filter(h=>h.d<(lateDrama?21:18)).sort((a,b)=>a.d-b.d).slice(0,lateDrama?5:2)
    .map((h,slot)=>({index:h.index,slot,arrive:clamp(h.d/5.3,1.3,3.1)+(lateDrama?0:slot*.35),state:{arms:0,rootY:0},
     // V21.434: one short contact each (jump hug, high five, head pat), then clapping and the jog back.
-    action:lateDrama&&slot>=2?'jump_hug':mateAction(celebrationKey,slot)}));
+    action:lateDrama&&slot>=2?'jump_hug':mateAction(celebrationKey,slot),after:mateAfter(celebrationKey,slot)}));
  })():[];
  function hugWeight(index,time){
   const h=time>HUG_START?huggers.find(x=>x.index===index):null;
@@ -2513,7 +2513,7 @@ export function makeScene(renderer,event,weak=false,high=false,mobileStandard=fa
    }
    for(const h of huggers){
     const frame=squadMotionFrames[h.index],u=hugWeight(h.index,time);
-    const act=u>.8?mateCelebration(h.action,time-mateContact(h)):null;
+    const act=u>.8?mateCelebration(h.action,time-mateContact(h),h.after):null;
     if(act){
      applyCelebrationPose(players[h.index],act[0],act[1],h.state,act[2]);
      frame.celebrate=h.state.arms;frame.rootY=h.state.rootY;frame.celebration=h.state;

@@ -12,6 +12,7 @@ import {createCaptureRetarget} from './3d-mocap-capture-core.mjs?v=21353';
 import {FOOTERA_MIXAMO} from './3d-mocap-mixamo-data.mjs?v=21369';
 import {FOOTERA_CMU_RUN} from './3d-mocap-cmu-run-data.mjs?v=21366';
 import {FOOTERA_MIXAMO_GAIT} from './3d-mocap-mixamo-gait-data.mjs?v=21433';
+import {FOOTERA_MIXAMO_CELEBRATE} from './3d-mocap-mixamo-celebrate-data.mjs?v=21434';
 import {sampleGoalkeeperMotion} from './3d-goalkeeper-biomechanics.mjs?v=21114';
 export const MIXAMO_KEEPER_LAYER_VERSION='21.369-mixamo-keeper-striker-tackle-run-receive-kick-gait-throw';
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:0));
@@ -442,4 +443,31 @@ export function createFallCaptureLayer(bones,playerRoot){
   return state;
  }
  return{apply,state};
+}
+
+// V21.434: captured goal celebrations (Mixamo Fist Pump, Cheering, Rallying,
+// Hip Hop and Samba Dancing, Excited, Waving). The scene picks the clip and
+// the seconds (3d-goal-celebration.mjs celebrationCapture); the root path,
+// kneel/jump height and the facing stay authored. Long holds play the capture
+// back and forth, so a pose never jumps.
+const HIPS=new Set(['pelvis','spine_01']);
+export function createCelebrateCaptureLayer(bones,playerRoot){
+ const state={clip:'none',weight:0,source:'Mixamo'};
+ const rig=createCaptureRetarget(bones,playerRoot,FOOTERA_MIXAMO_CELEBRATE);
+ if(!rig)return{apply:()=>state,state,handles:()=>false};
+ const handles=name=>!!rig.clips[name];
+ // capture: {clip, seconds, body, legs}
+ function apply(capture=null){
+  state.clip='none';state.weight=0;
+  if(!capture||!handles(capture.clip))return state;
+  const body=clamp(capture.body);if(body<=.001)return state;
+  const clip=rig.clips[capture.clip],span=(clip.frames-1)/clip.rate,t=Math.max(0,capture.seconds||0);
+  const u=t%(2*span),at=u<span?u:2*span-u;
+  // Without the legs (a teammate walking back) the hips stay with the walk,
+  // so the capture never leans the whole body over the striding legs.
+  const legs=clamp(capture.legs)*body;
+  rig.pose(capture.clip,clamp(at*clip.rate,0,clip.frames-1),{body:legs>.001?body:body*.75,legs},0,legs>.001?null:HIPS);
+  state.clip=capture.clip;state.weight=body;return state;
+ }
+ return{apply,state,handles};
 }

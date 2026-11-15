@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CELEBRATIONS,STAR_CELEBRATIONS,signatureCelebration,pickCelebration,celebrationDistance,applyCelebrationPose,
- celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateCelebration,mateCloseness} from '../3d-goal-celebration.mjs';
+ celebrationHold,celebrationRelease,celebrationWalkBack,MATE_ACTIONS,mateAction,mateAfter,mateCelebration,mateCloseness,celebrationCapture} from '../3d-goal-celebration.mjs';
 
 const joint=()=>({rotation:{x:0,y:0,z:0},position:{x:0,y:0,z:0}});
 const driver=()=>({rig:joint(),upper:joint(),arms:[joint(),joint()],elbows:[joint(),joint()],legs:[joint(),joint()],knees:[joint(),joint()],ankles:[joint(),joint()]});
@@ -114,4 +114,23 @@ test('teammates vary their contact, then clap, and never hang on the scorer', ()
   assert.equal(mateCloseness(a,0),1);assert.equal(mateCloseness(a,2),0);
   for(const s of [.3,.9,1.4]){const out={};applyCelebrationPose(driver(),a,s,out,1);assert.ok(Number.isFinite(out.arms))}
  }
+});
+
+// V21.435: captured Mixamo celebrations (Basti's uploads, baked; raw FBX never in the repo).
+test('captured celebrations: every clip exists, the feet join only after the run', async ()=>{
+ const {FOOTERA_MIXAMO_CELEBRATE:D}=await import('../3d-mocap-mixamo-celebrate-data.mjs');
+ for(const kind of [...CELEBRATIONS,...STAR_CELEBRATIONS,'excited','cheering','waving']){
+  const clip=celebrationCapture(kind);if(clip)assert.ok(D.clips[clip],kind+' -> '+clip);
+ }
+ for(const kind of ['fist_pump','open_arms','rally','dance','samba'])assert.ok(celebrationCapture(kind),kind);
+ // The scorer still running: upper body only.
+ const run={};applyCelebrationPose(driver(),'dance',1.2,run,1);
+ assert.ok(run.capture&&run.capture.legs<.01);
+ const stand={};applyCelebrationPose(driver(),'dance',2.2,stand,1);
+ assert.ok(stand.capture.legs>.9&&stand.capture.body>.9);
+ const none={};applyCelebrationPose(driver(),'knee_slide',1.5,none,1);assert.equal(none.capture,null);
+ // Teammates' captured cheer never moves their walking legs.
+ const mate={};applyCelebrationPose(driver(),'excited',.8,mate,1);assert.equal(mate.capture.legs,0);
+ const after=new Set();for(let g=0;g<40;g++)after.add(mateAfter('g'+g,0));
+ assert.ok(after.has('applause')&&after.size>=3);
 });

@@ -10,8 +10,8 @@
  * overshoot, forearms trail the upper arms, elbows never lock straight and
  * the whole body keeps breathing, swaying and shifting its weight.
  */
-export const CELEBRATION_VERSION='21.434-natural-celebrations';
-export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms']);
+export const CELEBRATION_VERSION='21.435-captured-celebrations';
+export const CELEBRATIONS=Object.freeze(['airplane','jump_spin','knee_slide','badge','fist_pump','arms_crossed','open_arms','rally','dance']);
 // Celebrations only a star performs, never picked at random.
 export const STAR_CELEBRATIONS=Object.freeze(['zen','cold','samba','mask']);
 // Trademark celebrations of real stars, matched on the whole card name so a
@@ -41,7 +41,7 @@ const FOREARM_LAG=.11;
 const NATURAL=(()=>{try{return globalThis.localStorage?.getItem('footera-3d-motion-capture')!=='0'}catch(_){return true}})();
 // [seconds into the celebration when the arms leave the run, blend seconds]
 const GESTURE={airplane:[0,.5],jump_spin:[.85,.35],knee_slide:[.4,.35],badge:[1.1,.45],arms_crossed:[1,.4],
- open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4]};
+ open_arms:[.95,.45],zen:[1,.5],cold:[.95,.4],samba:[.9,.4],mask:[1.2,.4],fist_pump:[.9,.4],rally:[.8,.4],dance:[1,.4]};
 // Two incommensurate waves: alive, but never a metronome.
 const drift=(s,f,phase=0)=>.6*Math.sin(s*f+phase)+.4*Math.sin(s*f*1.618+phase*2.3);
 
@@ -51,8 +51,18 @@ const drift=(s,f,phase=0)=>.6*Math.sin(s*f+phase)+.4*Math.sin(s*f*1.618+phase*2.
 // a pat on the head), clap, and after a few seconds the whole group jogs back
 // together. Seconds into the celebration when the scorer's own gesture ends.
 const HOLD={airplane:2.6,jump_spin:2.0,knee_slide:2.3,badge:2.2,fist_pump:2.0,arms_crossed:2.3,open_arms:2.2,
- zen:2.5,cold:2.3,samba:2.8,mask:2.4};
+ zen:2.5,cold:2.3,samba:2.8,mask:2.4,rally:2.4,dance:2.6};
 export function celebrationHold(kind){return HOLD[kind]??2.2}
+// V21.434: real captured motion (Mixamo clips Basti downloaded, baked into
+// 3d-mocap-mixamo-celebrate-data.mjs) for the gestures a capture does better:
+// [clip, celebration second it starts, celebration second the feet join in].
+// Before that the scorer is still running, so only the upper body follows.
+const CAPTURE={fist_pump:['fist_pump',.9,1.45],open_arms:['cheering',.95,1.7],rally:['rallying',.8,1.5],
+ dance:['hip_hop',1,1.3],samba:['samba',.9,1.25]};
+// Fallback shapes for the captured kinds when the capture is not loaded.
+const FALLBACK={rally:'open_arms',dance:'samba'};
+// After the contact a teammate claps, or celebrates his own way (captured).
+const MATE_AFTER=['applause','excited','cheering','waving'];
 // How the scorer's own pose hands back to walking (1 = full celebration).
 export function celebrationRelease(kind,s){return 1-smooth((s-celebrationHold(kind))/.7)}
 // Metres walked back towards the halfway line after the hold (1.2 m/s, eased in).
@@ -68,11 +78,21 @@ export function mateAction(key='',slot=0){
 }
 // The arriving teammate's poses, s seconds after he reaches the scorer:
 // [pose kind, pose seconds, weight] (null = just his normal movement).
-export function mateCelebration(action,s){
+// after: what he does next (MATE_AFTER, see mateAfter()).
+export function mateCelebration(action,s,after='applause'){
  if(s<0)return null;
  if(s<1.7)return[action,s,1-smooth((s-1.25)/.45)];
- if(s<3.3)return['applause',s-1.6,smooth((s-1.6)/.3)*(1-smooth((s-2.7)/.5))];
+ if(s<3.3)return[after,s-1.6,smooth((s-1.6)/.3)*(1-smooth((s-2.7)/.5))];
  return null;
+}
+export function mateAfter(key='',slot=0){
+ let h=2166136261;for(const c of String(key)+'#after')h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
+ return MATE_AFTER[(h+slot*3)%MATE_AFTER.length];
+}
+// The captured clip that drives a celebration kind, or null.
+export function celebrationCapture(kind){
+ if(CAPTURE[kind])return CAPTURE[kind][0];
+ return['excited','cheering','waving'].includes(kind)?kind:null;
 }
 // How long the teammate stays right at the scorer's side (then walks next to him).
 export function mateCloseness(action,s){return s<0?1:1-smooth((s-1.3)/.6)}
@@ -105,7 +125,8 @@ export function celebrationDistance(kind,s){
  if(kind==='zen')return ease(s,1.3,5.4);
  if(kind==='cold')return ease(s,1.3,5.6);
  // Dances on the spot after a short run, drifting a little with the steps.
- if(kind==='samba')return ease(s,1.2,4.8)+.25*smooth((s-1.2)/2.4);
+ if(kind==='samba'||kind==='dance')return ease(s,1.2,4.8)+.25*smooth((s-1.2)/2.4);
+ if(kind==='rally')return ease(s,1.5,5.8);
  if(kind==='mask')return ease(s,1.4,5.8);
  return ease(s,1.5,5.6);
 }
@@ -140,6 +161,7 @@ function looseStance(t,s,amount){
 
 function pose(t,kind,s){
  reset(t);
+ kind=FALLBACK[kind]||(['excited','cheering','waving'].includes(kind)?'applause':kind);
  // Breathing heave and a little life in the shoulders for every celebration.
  const breathe=Math.sin(s*2.4);
  t.upper[0]+=.035*breathe;t.shrug[0]=t.shrug[1]=.04+.03*breathe;
@@ -345,6 +367,7 @@ function pose(t,kind,s){
  * the imported model's extra joints. */
 // weight (V21.226) fades a pose back out to the locomotion underneath.
 export function applyCelebrationPose(p,kind,s,out={},weight=1){
+ const name=kind;
  pose(late,kind,s-FOREARM_LAG);
  pose(now,kind,s);
  const w=smooth(s/.55)*clamp(weight)*now.armsOn,legs=now.legs_w*clamp(weight);
@@ -366,7 +389,15 @@ export function applyCelebrationPose(p,kind,s,out={},weight=1){
  // Lower the hips onto the knees (or lift for the jump); feet follow via IK.
  const rootY=(now.lift-now.drop)*clamp(weight);
  p.rig.position.y=mix(p.rig.position.y,rootY,Math.max(w,legs));
- out.arms=w;out.legs=legs;out.body=smooth(s/.55)*clamp(weight);out.rootY=rootY;out.kind=kind;
+ out.arms=w;out.legs=legs;out.body=smooth(s/.55)*clamp(weight);out.rootY=rootY;out.kind=name;
+ // Captured clip on the imported model (seconds into the clip, its weight;
+ // the feet join in only once the scorer has stopped running). Teammates'
+ // clips (no table entry) keep the walking legs.
+ const clip=celebrationCapture(name),cap=CAPTURE[name];
+ if(clip){
+  const start=cap?cap[1]:0,body=clamp(weight)*smooth((s-start)/.35);
+  out.capture=body>.001?{clip,seconds:Math.max(0,s-start),body,legs:cap?body*smooth((s-cap[2])/.4):0}:null;
+ }else out.capture=null;
  out.head=[now.head[0]*w,now.head[1]*w];
  out.shrug=[now.shrug[0]*w,now.shrug[1]*w];
  // Hands open a beat after the arm moves, like the forearm.
