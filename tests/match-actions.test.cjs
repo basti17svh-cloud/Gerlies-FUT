@@ -43,9 +43,14 @@ test('3D respects the simulated finish and attack type for goals, saves and miss
   const finish=kind==='cross'?(i%2?'header':'volley'):kind==='distance'?'power':kind==='through'&&i%2?'chip':'normal';
   const event={type,id:String(i),actionKind:kind,finish,creatorName:'Creator',playerStyles:[{id:'finesse-shot',plus:true}]};
   const visual=H.choosePresentation(event);
-  assert.equal(visual.finish,finish);
+  // V21.445 Traumtore always show their own technique, and only for a
+  // simulated finish they suit (a heel flick for a flat ball, never a header).
+  const dream=H.DREAM_RULES[visual.sequence];
+  if(dream){assert.equal(visual.finish,dream.finish);assert.ok(dream.kinds.includes(kind)&&dream.sims.includes(finish),visual.sequence);}
+  else assert.equal(visual.finish,finish);
   // V21.195 star moments: a screamer, a volley or a solo feint may show instead.
-  if(kind==='distance')assert.ok(['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(visual.sequence),visual.sequence);
+  if(dream)assert.ok(H.PLAYBOOK_SCENES.some(s=>s.id===visual.sequence&&s.family===(kind==='dribble'&&visual.family==='dribble'?'dribble':visual.family)));
+  else if(kind==='distance')assert.ok(['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(visual.sequence),visual.sequence);
   else if(kind==='cross'){
     const authored=H.PLAYBOOK_SCENES.find(s=>s.id===visual.sequence);
     if(authored)assert.equal(authored.finish,finish,'authored cross plays require matching finish');

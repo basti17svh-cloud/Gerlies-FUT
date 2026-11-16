@@ -1,4 +1,5 @@
 import {extendedTiming} from './3d-extended-match.mjs?v=21160';
+import {isDreamGoal,dreamShotRate} from './3d-dream-goals.mjs?v=21445';
 // Presentation time advances only through visible frames, never through loading.
 // Preserve the authored paths and the speed of the shot/aftermath; give the
 // supply pass, reception and approach at least seven seconds on screen.
@@ -27,7 +28,10 @@ export function createHighlightPlayback(event,duration=10.4,{maxFrameMs=100,tail
  // A PlayStyle+ finisher gets a TV slow motion into the strike, for every
  // outcome alike; the flight itself stays at the common shot pace.
  const signature=event.type!=='ball_won'&&!extended&&(event.signatures?.length?event.signatures.some(m=>m.phase==='finish'&&m.who==='scorer'):event.signature?.who==='scorer'&&!['technical','trickster','rapid','quick-step','first-touch','press-proven'].includes(event.signature?.id));
- const segments=event.type==='ball_won'?[]:[...(signature?[{from:4.85,to:5.4,rate:.4}]:[]),{from:5.4,to:6.65,rate:SHOT_RATE}];
+ // V21.445 Traumtore: a heel flick from four metres or a diving header flies
+ // faster than a shot from thirty (same for every outcome of that scene).
+ const shotRate=isDreamGoal(event.sequence)?dreamShotRate(event.sequence):SHOT_RATE;
+ const segments=event.type==='ball_won'?[]:[...(signature?[{from:4.85,to:5.4,rate:.4}]:[]),{from:5.4,to:6.65,rate:shotRate}];
  // The build-up runs at its own pace until the first timed segment begins.
  const buildEnd=segments.length?Math.min(actionTime,segments[0].from):actionTime;
  const buildupSeconds=extended?extended.shot:Math.max(7,actionTime/scale)*buildEnd/actionTime;

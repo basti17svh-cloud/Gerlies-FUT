@@ -84,7 +84,7 @@ export function applyFootwork(p,time,speed,turn,acceleration,stride,guard=1){
 // Bracing before the authored shot, not during ball contact or follow-through.
 // No root motion, keeper modification, new objects or result decisions.
 export function applyShotApproach(p,time,finish='normal',sequence='central'){
- if(finish==='header'||finish==='volley'||finish==='bicycle')return 0;
+ if(finish==='header'||finish==='volley'||finish==='bicycle'||finish==='backheel')return 0;
  const t=clamp(time,0,10.4);
  const weight=smooth((t-4.20)/.27)*(1-smooth((t-4.68)/.22));
  if(weight<=.00001)return 0;

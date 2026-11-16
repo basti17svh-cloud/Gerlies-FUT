@@ -89,7 +89,7 @@ export function finishSignature(time,finish='normal',styles=[]){
 }
 export function applyFinishContinuity(p,time,finish,styles=[]){
  const m=finishSignature(time,finish,styles);
- if(['header','volley','bicycle'].includes(finish))return m;
+ if(['header','volley','bicycle','backheel'].includes(finish))return m;
  const a=m.accent;
  p.upper.rotation.x-=.09*a*m.load;
  p.arms[0].rotation.z-=.13*a*m.load;p.arms[1].rotation.z+=.13*a*m.load;
