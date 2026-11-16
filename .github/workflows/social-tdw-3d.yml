@@ -44,7 +44,7 @@ jobs:
         run: |
           node marketing-render-series/cap3d3.cjs /tmp/cap/${{ matrix.name }} 0.2 480 30 432 home ${{ matrix.minute }} '${{ matrix.seq }}' '${{ matrix.who }}'
           mkdir -p out
-          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
+          ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2' -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
           cp /tmp/cap/${{ matrix.name }}/meta.json out/${{ matrix.name }}.json
           ls -la out
       - uses: actions/upload-artifact@v4
