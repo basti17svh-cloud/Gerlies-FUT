@@ -588,6 +588,17 @@
   if(mm&&hash(seed+"jmeme")%2===0){const m=memeMsg("msg",memeFor("pack","team",seed,recentM,{N:short(newcomer.name)}),mm);if(m){m.react={e:"😂",n:2+hash(seed+"jmn")%6};out.push(m)}}
   return out;
  }
+ // V21.447 Spielervorstellung: after a big pull the newcomer's own first message carries his presentation photo.
+ const SIGN_TEXT=["📸 Offizielles Vorstellungsfoto ist raus!","Erstes Foto im neuen Trikot 📸✍️","Vertrag unterschrieben, Foto gemacht. Los geht's ✍️📸","Die Fotografen haben mich nicht mehr losgelassen 📸😅"];
+ function withSigningPhoto(list,item,ref){
+  try{
+   const S=root.FooteraSigning;if(!S||!item)return list;
+   const spec=S.spec(item,{seed:ref+"|sign"});if(!spec)return list;
+   const i=list.findIndex(m=>m.kind==="msg");if(i<0)return list;
+   const out=list.slice();out.splice(i+1,0,{kind:"msg",who:list[i].who,text:pick(SIGN_TEXT,ref,"sg"),photo:{...spec,signing:true},react:{e:"🔥",n:3+hash(ref+"sgn")%8}});
+   return out;
+  }catch(e){return list}
+ }
  function afterPack(items){
   try{
    if(!Array.isArray(items)||!items.length||typeof displayBase!=="function")return 0;
@@ -597,7 +608,9 @@
    const newcomer={name:String(best.b.name||"Spieler"),uid:String(best.item.uid||""),pid:String(best.b.id||""),icon:!!best.b.isIcon,pos:String(best.b.position||"").toUpperCase()};
    const ref="p:"+(newcomer.uid||newcomer.pid+"|"+Date.now());
    const v=read(),r=fresh(v.lines,()=>joinMessages(newcomer,squadVoices(new Set([newcomer.uid])),ref,recentMemes(v)));
-   return append(ref,r.value,{update:x=>keepLines(x,r.used)});
+   // V21.447: the new signing posts his presentation photo (shirt or scarf in front of the press wall)
+   const list=withSigningPhoto(r.value,best.item,ref);
+   return append(ref,list,{update:x=>keepLines(x,r.used)});
   }catch(e){console.warn("Kabinen-Chat:",e);return 0}
  }
  function leaveMessages(names,more,voices,seed,leaver=null,recentM=[]){
@@ -950,7 +963,7 @@
  /* ---------- V21.443 Siegerfoto ---------- */
  // The photo is rendered on the device from the stored line-up (3d-kabine-photo.mjs) the first time it is shown,
  // one at a time; the newest few stay cached (smaller JPEG) so the chat opens with the picture right away.
- const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21443";
+ const PHOTO_KEY="footera-kabine-photos-v1",PHOTO_KEEP=4,PHOTO_MODULE="./3d-kabine-photo.mjs?v=21447";
  const photoMem=new Map();let photoQueue=Promise.resolve();const photoBusy=new Set(),photoFailed=new Set();
  const cssId=id=>String(id).replace(/["\\]/g,"\\$&");
  function photoCache(){try{const c=JSON.parse(localStorage.getItem(PHOTO_KEY)||"{}");return c&&typeof c==="object"&&!Array.isArray(c)?c:{}}catch(e){return{}}}
@@ -960,8 +973,8 @@
   catch(e){try{localStorage.setItem(PHOTO_KEY,JSON.stringify({[id]:{url,at:Date.now()}}))}catch(_){}}
  }
  function photoHTML(m){
-  const url=photoUrl(m.id),alt="Siegerfoto aus der Kabine";
-  return`<div class="kb-photo${url?" ready":""}" data-kb-photo="${escText(m.id)}">${url?`<img src="${escText(url)}" alt="${alt}">`:`<div class="kb-photo-wait"><span aria-hidden="true">📸</span><small>${photoFailed.has(m.id)?"Foto konnte nicht entwickelt werden":"Foto wird entwickelt …"}</small></div>`}</div>`;
+  const url=photoUrl(m.id),alt=m.photo?.signing?"Vorstellungsfoto":"Siegerfoto aus der Kabine";
+  return`<div class="kb-photo${m.photo?.signing?" kb-photo-portrait":""}${url?" ready":""}" data-kb-photo="${escText(m.id)}">${url?`<img src="${escText(url)}" alt="${alt}">`:`<div class="kb-photo-wait"><span aria-hidden="true">📸</span><small>${photoFailed.has(m.id)?"Foto konnte nicht entwickelt werden":"Foto wird entwickelt …"}</small></div>`}</div>`;
  }
  function shrink(url,w=800,q=.82){
   return new Promise(res=>{const img=new Image();img.onload=()=>{try{const c=document.createElement("canvas"),h=Math.round(img.height*w/img.width);c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q))}catch(e){res(url)}};img.onerror=()=>res(url);img.src=url});
@@ -978,7 +991,7 @@
    photoQueue=photoQueue.then(async()=>{
     try{
      const mod=await import(PHOTO_MODULE);
-     const r=await mod.renderKabinePhoto(m.photo,{width:1080,height:810});
+     const r=m.photo.signing?await mod.renderSigningPhoto(m.photo,{width:1080,height:1350}):await mod.renderKabinePhoto(m.photo,{width:1080,height:810});
      photoMem.set(id,r.url);showPhoto(id,r.url);keepPhoto(id,await shrink(r.url));
     }catch(e){console.warn("Siegerfoto:",e);photoFailed.add(id);document.querySelectorAll(`[data-kb-photo="${cssId(id)}"] small`).forEach(s=>s.textContent="Foto konnte nicht entwickelt werden")}
     finally{photoBusy.delete(id)}
