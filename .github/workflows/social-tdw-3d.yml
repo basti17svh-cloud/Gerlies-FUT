@@ -7,23 +7,22 @@ on:
 permissions:
   contents: write
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.p.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        run: echo "matrix=$(jq -c . marketing-render-series/tdw-plan.json)" >> "$GITHUB_OUTPUT"
   capture:
+    needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - {name: T10, xi: xi-tdw-b.json, seq: near_post_flick_header_left, who: 'Harry Kane', minute: '12'}
-          - {name: T09, xi: xi-tdw-b.json, seq: recycle_curler_right, who: 'Martin Ødegaard', minute: '27'}
-          - {name: T08, xi: xi-tdw-b.json, seq: counter_sprint_left, who: 'Erling Haaland', minute: '38'}
-          - {name: T07, xi: xi-tdw-a.json, seq: halfvolley_drive, who: 'Jude Bellingham', minute: '44'}
-          - {name: T06, xi: xi-tdw-a.json, seq: slalom_left, who: 'Jamal Musiala', minute: '51'}
-          - {name: T05, xi: xi-tdw-b.json, seq: winger_takeon_right, who: 'Michael Olise', minute: '58'}
-          - {name: T04, xi: xi-tdw-a.json, seq: chip_one_on_one, who: 'Vini Jr.', minute: '66'}
-          - {name: T03, xi: xi-tdw-a.json, seq: finesse_halfspace, who: 'Lamine Yamal', minute: '73'}
-          - {name: T02, xi: xi-tdw-a.json, seq: edge_rocket, who: 'Bruno Fernandes', minute: '81'}
-          - {name: T01, xi: xi-tdw-a.json, seq: bicycle, who: 'Kylian Mbappé', minute: '89'}
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,8 +40,9 @@ jobs:
           TYPE: goal
           SCORE: '0:0'
           XI: ${{ matrix.xi }}
+          CLUB: ${{ toJSON(matrix.club) }}
         run: |
-          node marketing-render-series/cap3d3.cjs /tmp/cap/${{ matrix.name }} 0.2 480 30 432 home ${{ matrix.minute }} '${{ matrix.seq }}' '${{ matrix.who }}'
+          node marketing-render-series/cap3d3.cjs /tmp/cap/${{ matrix.name }} ${{ matrix.from || '0.2' }} ${{ matrix.frames || '480' }} 30 432 home ${{ matrix.minute }} '${{ matrix.seq }}' '${{ matrix.who }}'
           mkdir -p out
           ffmpeg -y -loglevel error -framerate 30 -i /tmp/cap/${{ matrix.name }}/f%04d.jpg -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2' -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p out/${{ matrix.name }}.mp4
           cp /tmp/cap/${{ matrix.name }}/meta.json out/${{ matrix.name }}.json
@@ -63,7 +63,7 @@ jobs:
       - name: Commit
         run: |
           mkdir -p marketing-render-series/tdw
-          find /tmp/arts -name 'T*' -type f -exec cp {} marketing-render-series/tdw/ \;
+          find /tmp/arts -type f \( -name '*.mp4' -o -name '*.json' \) -exec cp {} marketing-render-series/tdw/ \;
           git config user.name 'Footera Asset Bot'
           git config user.email 'footera-assets@users.noreply.github.com'
           git add marketing-render-series/tdw

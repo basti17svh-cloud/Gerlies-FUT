@@ -14,20 +14,23 @@ const [out,from,to,fps='30',width='432',team='home',minute='22',seq='',scorer=''
 
  const fsx=require('fs');const xi=JSON.parse(fsx.readFileSync(__dirname+'/'+(process.env.XI||'xi-full.json'),'utf8'));
  await fixture(page);
- await page.evaluate(({xi,minute})=>{
+ const CLUB=process.env.CLUB?JSON.parse(process.env.CLUB):null;
+ await page.evaluate(({xi,minute,CLUB})=>{
   cancelMatch3D();stopMatchTimer();dismissMatchGoalMoment(false);
   const mk=(r)=>({id:r.id,name:r.name,fullName:r.full||r.name,position:r.pos,alt:'',ovr:r.ovr,pac:r.pac,sho:r.sho,pas:r.pas,dri:r.dri,def:r.def,phy:r.phy,nation:r.nation,team:r.club,league:r.league,gender:"Men's Football",face:r.face||''});
   PLAYERS=xi.home.map(mk);const away=xi.away.map(mk);P_BY_ID=new Map([...PLAYERS,...away].map(p=>[p.id,p]));
   const homeIdentity=defaultClubIdentity(),awayIdentity=defaultClubIdentity();
   homeIdentity.crest={...homeIdentity.crest,initials:xi.homeInitials||'BL',symbol:'f',primary:xi.homeColor||'#e3202b',secondary:'#1a0507',accent:'#ffffff',borderColor:xi.homeColor||'#e3202b'};
   awayIdentity.crest={...awayIdentity.crest,initials:xi.awayInitials||'PL',symbol:'diamond',primary:xi.awayColor||'#6b2bd9',secondary:'#160a2b',accent:'#ffffff',borderColor:xi.awayColor||'#6b2bd9'};
+  if(CLUB){const cr=(id,c)=>{id.crest={...id.crest,initials:c.init,symbol:c.symbol||id.crest.symbol,shape:c.shape||id.crest.shape,primary:c.color,secondary:c.secondary||'#111111',accent:c.accent||'#ffffff',borderColor:c.color}};if(CLUB.home)cr(homeIdentity,CLUB.home);if(CLUB.away)cr(awayIdentity,CLUB.away);if(CLUB.home)xi.homeName=CLUB.home.name;if(CLUB.away)xi.awayName=CLUB.away.name}
   state.club=PLAYERS.map(p=>makeItem(p,false));state.squad=state.club.map(i=>i.uid);state.formation='4-3-3';state.profile.clubName=xi.homeName;state.profile.clubIdentity=homeIdentity;state.tactic='balanced';
   FooteraHighlights.setMode('important');
   startMatch('rivals',{name:xi.awayName,rating:87,chem:33,power:90,formation:'4-3-3',tactic:'balanced',squad:away.slice(0,11),clubIdentity:awayIdentity});
   cancelMatch3D();stopMatchTimer();
   match.kickoffKits={home:{pattern:'solid',shirtPrimary:'#f4f4f6',shirtSecondary:'#e3202b',shorts:'#141418',socks:'#f4f4f6'},away:{pattern:'solid',shirtPrimary:'#3d0f73',shirtSecondary:'#c6ff3d',shorts:'#f4f4f6',socks:'#3d0f73'}};
+  if(CLUB){const C=CLUB;if(C.home){match.kickoffKits.home={pattern:'solid',...C.home.kit}}if(C.away){match.opponentName=C.away.name;match.kickoffKits.away={pattern:'solid',...C.away.kit}}if(C.flip)match.halftimeLogged=true}
   match.injuryTriggered=true;match.redTriggered=true;matchSpeed=5000;match.minute=Number(minute);updateMatchUI();document.getElementById('match').scrollTop=0;
- },{xi,minute});
+ },{xi,minute,CLUB});
  const SCENEV=(require('fs').readFileSync(require('path').join(__dirname,'..','3d-highlights.js'),'utf8').match(/3d-highlights-scene\.mjs\?v=(\d+)/)||[])[1];console.log('scene v',SCENEV);
  console.log('models',await page.evaluate(async(SCENEV)=>{const m=await import('./3d-highlights-scene.mjs?v='+SCENEV);await m.prepareFooteraPlayerModel().catch(e=>String(e));await (m.prepareFooteraHumanModel?.()||Promise.resolve()).catch(e=>String(e));return [m.isFooteraPlayerModelReady(),m.isFooteraHumanModelReady()]},SCENEV));
  if(scorer)await page.evaluate(want=>{const o=chooseMatchAttacker;chooseMatchAttacker=function(side,kind,ex){const rows=matchActorRows(side);const r=rows.find(r=>(r.base?.name||r.name||'')===want);return r||o.apply(this,arguments)}},scorer);

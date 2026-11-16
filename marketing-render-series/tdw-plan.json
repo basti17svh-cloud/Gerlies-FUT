@@ -1,0 +1,8 @@
+[
+ {"name":"X1","xi":"xi-tdw-b.json","seq":"counter_sprint_left","who":"Harry Kane","minute":"30","from":"4.0","frames":"75",
+  "club":{"home":{"name":"FC Bayern München","init":"FCB","color":"#dc052d","secondary":"#0066b2","symbol":"star","shape":"round","kit":{"shirtPrimary":"#dc052d","shirtSecondary":"#ffffff","shorts":"#dc052d","socks":"#dc052d"}},
+          "away":{"name":"Borussia Dortmund","init":"BVB","color":"#fde100","secondary":"#000000","symbol":"bolt","shape":"round","kit":{"shirtPrimary":"#fde100","shirtSecondary":"#000000","shorts":"#000000","socks":"#fde100"}},"flip":true}},
+ {"name":"X2","xi":"xi-tdw-a.json","seq":"counter_sprint_left","who":"Lamine Yamal","minute":"30","from":"4.0","frames":"75",
+  "club":{"home":{"name":"FC Barcelona","init":"FCB","color":"#a50044","secondary":"#004d98","symbol":"shieldmark","shape":"point","kit":{"pattern":"stripes","shirtPrimary":"#a50044","shirtSecondary":"#004d98","shorts":"#004d98","socks":"#a50044"}},
+          "away":{"name":"Real Madrid","init":"RMA","color":"#febe10","secondary":"#00529f","symbol":"crown","shape":"round","kit":{"shirtPrimary":"#f6f6f6","shirtSecondary":"#febe10","shorts":"#f6f6f6","socks":"#f6f6f6"}},"flip":false}}
+]
