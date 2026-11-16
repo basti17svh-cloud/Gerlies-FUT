@@ -1,6 +1,7 @@
 /* Live integration smoke: production scripts, simulated action metadata and WebGL. */
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 const {server,fixture}=require('./3d-highlights.browser.cjs');
+const FooteraHighlightsRules=require('../3d-highlights.js').DREAM_RULES;
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const url=`http://127.0.0.1:${server.address().port}`;
@@ -19,12 +20,16 @@ const {server,fixture}=require('./3d-highlights.browser.cjs');
     FooteraMatchActions={...original,pick:()=>kind,goalChance:()=>1};Math.random=()=>.1;
     try{simAttack(true);return{shot:match.shotEvents.at(-1),goal:match.goalEvents.at(-1),event:window.qaActionEvent}}finally{FooteraMatchActions=original;Math.random=random}
    },kind);
-   assert.equal(data.shot.actionKind,kind);assert.equal(data.event.actionKind,kind);assert.equal(data.goal.finish,data.shot.finish);assert.equal(data.event.finish,data.shot.finish);
+   assert.equal(data.shot.actionKind,kind);assert.equal(data.event.actionKind,kind);assert.equal(data.goal.finish,data.shot.finish);
+   // V21.445 Traumtore: a dream goal may show for a fitting chance with its own technique.
+   const dream=FooteraHighlightsRules[data.event.sequence];
+   if(dream){assert.ok(dream.kinds.includes(kind)&&dream.sims.includes(data.shot.finish),data.event.sequence);assert.equal(data.event.finish,dream.finish)}
+   else assert.equal(data.event.finish,data.shot.finish);
    assert.equal(data.event.playerId,data.shot.shooterUid);assert.equal(data.event.creatorUid,data.shot.creatorUid);
    // V21.195 star moments: a screamer (long_shot, power_drive, finesse_halfspace) may show too;
    // V21.204 added four more distance plays.
-   if(kind==='distance')assert.ok(['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','finesse_halfspace','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(data.event.sequence),data.event.sequence);
-   if(kind==='cross')assert.equal(data.event.finish,'header');
+   if(!dream&&kind==='distance')assert.ok(['first_time_power','layoff_distance','switch_distance_left','edge_pullback_right','long_shot','power_drive','finesse_halfspace','edge_rocket','recycle_rocket_left','recycle_curler_right','halfvolley_drive','first_touch_layoff_rocket','halfspace_set_and_drive','long_switch_to_rocket','sprint_stop_screamer','edge_halfvolley_left','trailing_midfielder_hit','reverse_layoff_curler'].includes(data.event.sequence),data.event.sequence);
+   if(kind==='cross'&&!dream)assert.equal(data.event.finish,'header');
    await page.waitForSelector('.fh3d canvas',{timeout:30000});
    assert.ok(await page.locator('.fh3d canvas').evaluate(c=>c.width>0&&c.height>0&&!c.getContext('webgl2').isContextLost()));
    if(process.env.FOOTERA_ACTION_SCREENSHOT)await page.locator('#matchLiveStage').screenshot({path:process.env.FOOTERA_ACTION_SCREENSHOT+'-'+kind+'.png'});
