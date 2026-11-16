@@ -1,0 +1,82 @@
+{
+ "Jude Bellingham": {
+  "id": "252371",
+  "name": "Jude Bellingham",
+  "ovr": 90,
+  "team": "Real Madrid",
+  "position": "CAM",
+  "file": "jude-bellingham.png"
+ },
+ "Harry Kane": {
+  "id": "202126",
+  "name": "Harry Kane",
+  "ovr": 90,
+  "team": "FC Bayern München",
+  "position": "ST",
+  "file": "harry-kane.png"
+ },
+ "Bruno Fernandes": {
+  "id": "212198",
+  "name": "Bruno Fernandes",
+  "ovr": 89,
+  "team": "Man Utd",
+  "position": "CAM",
+  "file": "bruno-fernandes.png"
+ },
+ "Dominik Szoboszlai": {
+  "id": "236772",
+  "name": "Dominik Szoboszlai",
+  "ovr": 86,
+  "team": "Liverpool",
+  "position": "CAM",
+  "file": "dominik-szoboszlai.png"
+ },
+ "Erling Haaland": {
+  "id": "239085",
+  "name": "Erling Haaland",
+  "ovr": 91,
+  "team": "Manchester City",
+  "position": "ST",
+  "file": "erling-haaland.png"
+ },
+ "Declan Rice": {
+  "id": "234378",
+  "name": "Declan Rice",
+  "ovr": 88,
+  "team": "Arsenal",
+  "position": "CDM",
+  "file": "declan-rice.png"
+ },
+ "Rafael Leão": {
+  "id": "241721",
+  "name": "Rafael Leão",
+  "ovr": 83,
+  "team": "AC Milan",
+  "position": "LW",
+  "file": "rafael-leao.png"
+ },
+ "Bradley Barcola": {
+  "id": "264652",
+  "name": "Bradley Barcola",
+  "ovr": 85,
+  "team": "Liverpool",
+  "position": "LW",
+  "file": "bradley-barcola.png"
+ },
+ "Lamine Yamal": {
+  "id": "277643",
+  "name": "Lamine Yamal",
+  "ovr": 90,
+  "team": "FC Barcelona",
+  "position": "RW",
+  "file": "lamine-yamal.png"
+ },
+ "Lautaro Martínez": {
+  "id": "231478",
+  "name": "Lautaro Martínez",
+  "ovr": 87,
+  "team": "Inter",
+  "position": "ST",
+  "file": "lautaro-martinez.png"
+ }
+}
